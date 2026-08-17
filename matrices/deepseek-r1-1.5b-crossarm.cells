@@ -1,0 +1,16 @@
+# DeepSeek-R1-Distill-Qwen-1.5B across arms — the "add a model = one cells file"
+# worked example (model already in ModelCatalog for the Apple arms; Android cells
+# ARE the registration). Recipes differ per arm and say so per row
+# (quant-per-arm-rule): mlx 4-bit / litert INT8 (only conversion published) /
+# llama.cpp Q4_K_M.
+
+# --- anchors ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# --- DeepSeek-R1-Distill-Qwen-1.5B ---
+mac mlx-swift mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit short-chat
+mac litert-lm litert-community/DeepSeek-R1-Distill-Qwen-1.5B short-chat
+android litert-lm litert-community/DeepSeek-R1-Distill-Qwen-1.5B short-chat backend=cpu file=DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv4096.litertlm
+android litert-lm litert-community/DeepSeek-R1-Distill-Qwen-1.5B short-chat backend=gpu file=DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv4096.litertlm
+android llama.cpp bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF short-chat file=DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf

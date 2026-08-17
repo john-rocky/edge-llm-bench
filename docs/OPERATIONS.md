@@ -76,7 +76,16 @@ working-rule slug table); this file is only *how to run the machine*.
    and thinking-mode defaults differ per arm (budget-mode-rule; checklist in
    the knowledge repo).
 5. Android: the cells line IS the registration (HF repo id + `file=` for GGUF
-   quant choice). Nothing else to edit.
+   quant choice). Nothing else to edit. `file=` also accepts a LOCAL PATH for
+   side-loaded artifacts (a conversion not published on HF): the driver pushes
+   the file directly. The model id in the cell stays the row's identity either
+   way.
+6. No published `.litertlm` for the model you want (today true for the
+   LFM2.5 / MiniCPM class — litert-community has no conversion)? Convert it
+   yourself (the litert-samples conversion skills document the recipe), then
+   either publish the artifact or side-load it: iOS via the staging step,
+   Android via `file=<local path>`. The leaderboard cell stays honestly empty
+   until an artifact exists — that emptiness is itself the datum.
 
 ## Runbook: add an engine arm
 
