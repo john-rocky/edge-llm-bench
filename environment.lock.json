@@ -1,0 +1,173 @@
+{
+  "lockfile_schema": 1,
+  "description": "Machine-readable pin registry: every engine, instrument, and model behind the published tables, plus the per-capture overrides. Continuous-bench condition 1 (one-command reproduction). Update this file in the same commit as any capture that changes a pin.",
+  "updated": "2026-08-15",
+  "arms": {
+    "litert-lm": {
+      "source": "https://github.com/google-ai-edge/LiteRT-LM",
+      "vendored_via": "ios/BenchmarkApp/scripts/bootstrap.sh (LITERTLM_TAG; local SwiftPM package, engine = release binaryTarget)",
+      "default_tag": "v0.13.1",
+      "captures": {
+        "2026-07 campaign rows": {
+          "tag": "v0.13.1"
+        },
+        "2026-08-04 v0.15.0 re-measure": {
+          "tag": "v0.15.0",
+          "artifacts": {
+            "CLiteRTLM.xcframework.zip": "sha256:d6ccf6b54362d894ff71a7580c7e446d36767dab908aecfbb16ffca0fa0bc59b",
+            "CLiteRTLM_mac.xcframework.zip": "sha256:d23cf189ce8f6bb2556c0a023805e245d1ec862434e501eb60f353488033c1b5"
+          }
+        }
+      },
+      "android": {
+        "built_by": "android/scripts/build_litert_lm_main.sh (bazel + NDK r28b+; releases ship no Android binary, verified v0.14-v0.16)",
+        "macos_host_flag": "--enable_platform_specific_config (rules_rust E0463 otherwise; google-ai-edge/LiteRT-LM#3247)",
+        "tag_built": "v0.16.0",
+        "observed": "v0.16.0",
+        "litert_lm_main_sha256": "37d6b9d65fbbb11331873fabf097bf2488324f96797ab4d08f09b336d5b1898d",
+        "gpu_so_count": 7,
+        "litert_lm_advanced_main_sha256": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+        "note_advanced_main": "synthetic PxD rows need litert_lm_advanced_main — only it consumes --benchmark_prefill/decode_tokens (verified in source AND on device: plain main ran its ~20-token default prompt regardless of the flags)"
+      }
+    },
+    "llama.cpp": {
+      "source": "https://github.com/ggml-org/llama.cpp",
+      "artifact": "llama-b8999-xcframework.zip (release binary)",
+      "tag": "b8999",
+      "android": {
+        "artifact": "llama-b8999-bin-android-arm64.tar.gz",
+        "note": "official release binary at the same tag as the Apple arm (official-sdk rule); CPU-only — GPU needs a custom NDK build (phase 2, disclosed n/a)",
+        "llama_bench_sha256": "abb8870353a06bb464c0730fcf31cb569b4e9d70859a80a9bfd083be85e26f7c",
+        "llama_cli_sha256": "a84df7c76613fdcf291bdb2d4e0dddc4a41f0d6901552908ba640fe93fbd4753"
+      }
+    },
+    "mlx-swift-lm": {
+      "source": "https://github.com/ml-explore/mlx-swift-examples",
+      "pinned_by": "revision in ios/BenchmarkApp/project.yml (floating-branch incident documented there)",
+      "revision": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "coreai-models": {
+      "source": "https://github.com/apple/coreai-models",
+      "tag": "0.2.0",
+      "caveat": "PLE models (Gemma-4 E2B/E4B) additionally require the unpublished local patch coreai-pipelined-static-inputs.patch (COREAI_STATIC_INPUTS) — this arm is NOT independently reproducible yet; see gap audit.",
+      "captures": {
+        "2026-08-15 muse-glimmer-30b 3-way (Mac)": {
+          "source": "https://github.com/john-rocky/coreai-models",
+          "branch": "zoo-0.2",
+          "commit": "58aab35",
+          "session_diff": "patches/coreai-models-58aab35-muse-bench-session.diff",
+          "note": "fork engine, NOT the pinned 0.2.0 arm — 0.2.0 neither builds/runs on macOS 27.0 26A5406e (FM ABI) nor supports muse_glimmer; labelled 'fork engine (reference)' per methodology/core-ai-arm-provenance.md. See results/raw/2026-08-15-muse-glimmer-30b-3way/ENV.md."
+        }
+      }
+    },
+    "executorch": {
+      "source": "https://github.com/pytorch/executorch",
+      "commit": "abc5586",
+      "patch": "patches/executorch-abc5586-empty-data-path.diff",
+      "built": "cmake solo_runner (examples/models/muse-glimmer, Metal backend)",
+      "note": "muse-glimmer-30b 3-way capture only (2026-08-15); Meta's own example runner per fairness rule 10"
+    },
+    "cactus": {
+      "source": "https://github.com/cactus-compute/cactus",
+      "commit": "1ace6d78",
+      "built": "from source into cactus-ios.xcframework by bootstrap.sh",
+      "android": {
+        "status": "planned",
+        "note": "phase-2 slot at the same pinned commit; the driver reports 'not built' so the table row exists with a reason (failed-runs-stay)"
+      }
+    }
+  },
+  "python_instruments": {
+    "litert-pip-0.15": {
+      "purpose": "0.15 side of the same-instrument version delta + resident A/B (litert-lm CLI; bench_litert_015_mac_speed.sh, 2026-08-04 rows)",
+      "venv": "~/venvs/lt0150run",
+      "python": "3.14.6",
+      "spec": "tools/python-envs/lt0150run.requirements.txt",
+      "packages": {
+        "litert-lm": "0.15.0",
+        "litert-lm-api": "0.15.0",
+        "litert-lm-builder": "0.15.0"
+      }
+    },
+    "litert-pip-0.14-contrast": {
+      "purpose": "0.14 side of the same-instrument delta and resident A/B",
+      "venv": "~/venvs/lt092run",
+      "python": "3.10.13",
+      "spec": "tools/python-envs/lt092run.requirements.txt",
+      "packages": {
+        "litert-lm": "0.14.0",
+        "litert-lm-api": "0.14.0",
+        "litert-lm-builder": "0.14.0"
+      },
+      "note": "despite the name, doubles as the conversion env: litert-torch 0.9.1 (release — the version int4 conversion requires) + ai-edge-litert 2.1.6; the 83-package freeze in the spec is the observed truth"
+    },
+    "mlx-vlm-muse": {
+      "purpose": "MLX arm of the muse-glimmer-30b 3-way (mlx_vlm.generate; mlx-lm 0.31.3 has no muse_glimmer)",
+      "venv": "session venv (not retained)",
+      "python": "3.14",
+      "spec": "tools/python-envs/mlx-vlm-muse.requirements.txt",
+      "packages": {
+        "mlx-vlm": "0.6.13",
+        "mlx": "0.32.0",
+        "transformers": "5.15.0"
+      }
+    },
+    "litert-api-015-crossvalidation": {
+      "purpose": "gsm8k_litert_pip_thinking.py — released 0.15.0 dylib reproduces the ctx4096 yardstick pair (89/92) per-question",
+      "venv": ".venv-litert015 (repo root, git-ignored)",
+      "python": "3.14.6",
+      "spec": "tools/python-envs/venv-litert015.requirements.txt",
+      "packages": {
+        "litert-lm-api": "0.15.0"
+      }
+    }
+  },
+  "models": {
+    "litert-community/gemma-4-E2B-it-litert-lm": {
+      "file": "gemma-4-E2B-it.litertlm",
+      "hf_revision": "9262660a1676eed6d0c477ab1a86344430854664",
+      "note": "the June snapshot used unchanged across v0.13.1 and v0.15.0 rows; its template carries the enable_thinking branch"
+    },
+    "mlboydaisuke/Muse-Glimmer-30B-CoreAI": {
+      "file": "muse_glimmer_30b_decode_int4hu_block32_sym/",
+      "hf_revision": "dcda323073af4570eb178c2b645ff12616f258df",
+      "note": "self-made export (int4hu, 16.35 GB) — disclosure in results/raw/2026-08-15-muse-glimmer-30b-3way/ENV.md; export script public (john-rocky/coreai-model-zoo @ a11f0f8, branch muse-glimmer-30b) but authoring deps unpushed, so not yet third-party rebuildable"
+    },
+    "mlx-community/Muse-Glimmer-30B-4bit": {
+      "hf_revision": "3e7677d7a40d348a3daba263a2b1c0aa41910710",
+      "note": "community 4-bit, 18 GB (muse-glimmer 3-way MLX arm)"
+    },
+    "meta-models/Muse-Glimmer-30B-ExecuTorch-PTE": {
+      "file": "muse-glimmer-k-quant-17G-128K-text-solo-metal/muse-glimmer-k-quant-17G-128K-text-solo-metal.pte",
+      "hf_revision": "fc6fa93cdefeddc93abd7abf883e99279af7ea51",
+      "note": "Meta's official k-quant Metal artifact, 17.9 GB (muse-glimmer 3-way ExecuTorch arm)"
+    }
+  },
+  "quality_instruments": {
+    "litert-mac-verify": {
+      "path": "tools/litert-mac-verify",
+      "purpose": "Mac GSM8K quality instrument — the yardstick surface behind the LiteRT rows (v0.13.1 86.0; v0.15.0 88.0 at ctx2048, 89.0/92.0 off/thinking at ctx4096)",
+      "build": "swift build --package-path tools/litert-mac-verify -c release",
+      "override_env": "LITERT_MAC_VERIFY",
+      "depends_on": {
+        "swift-litert-lm": {
+          "source": "https://github.com/john-rocky/swift-litert-lm",
+          "revision": "e4e48d9d8df9abfa0d1180b8c0305a3b0d16d25d",
+          "tag": "yardstick-2026-08-04",
+          "branch": "bench/v0.15.0-thinking",
+          "note": "official v0.15.0 release binaryTargets (zips + checksums as under arms.litert-lm captures) + official Swift wrapper re-vendored at the tag (ThinkingConfig) + LiteRTChat thinking passthrough. The v0.13.1-era 86.0 row's instrument state = fork main@c8eae63 (pre-ThinkingConfig; see tools/litert-mac-verify/README.md)."
+        }
+      }
+    }
+  },
+  "engine_version_stamping": {
+    "since": "2026-08-05",
+    "mechanism": "ios/BenchmarkApp/scripts/stamp_engine_pins.sh (xcodegen preBuildScripts on both targets + bootstrap step 8) records the OBSERVED vendored state — git describe of each Vendored/ clone, the CLiteRTLM binaryTarget zip+checksum from LiteRT-LM's Package.swift, the llama.xcframework.tag sidecar — into Vendored/engine-pins.json, which the app target bundles as a resource (declared script output -> Copy Bundle Resources -> codesign); BenchmarkResult carries the arm-under-test's pin as engineVersion/engineArtifact (schema v1). Revised 2026-08-13 from the original post-build Info.plist mutation: that undeclared edit raced the build graph on incremental builds (key dropped after ProcessInfoPlistFile reruns; signature invalidated when codesign did not rerun). Observed state, not env defaults: requested tags and vendored reality drift (v0.13.1 clone ships v0.13.0 engine zips). Mac yardstick CLI: BENCH_ENGINE_PINS_FILE=ios/BenchmarkApp/Vendored/engine-pins.json. Unreadable pin => omitted => row records nil, never a guess.",
+    "note": "this lockfile remains the per-capture pin REGISTRY (what should be vendored); the stamp is the per-row WITNESS (what actually was) — regression tracking (condition 3) joins rows on the witness"
+  },
+  "external_instruments_not_yet_in_repo": {
+    "coreai-llm-runner": "parity_gsm8k.py --which coreai shells to COREAI_RUNNER (default ~/code/coreai/coreai-models/.build/release/llm-runner); gemma-4 PLE bundles additionally need the unpublished COREAI_STATIC_INPUTS engine patch — best-effort until Apple publishes it",
+    "coreai-thinking-tokenizer": "--which coreai --thinking renders prompts with the HF tokenizer at ~/code/litertlm-convert/src_models/gemma-4-E2B-it-qat-mobile-transformers",
+    "cactus-checkout": "--which cactus needs a cactus checkout with a built engine dylib (methodology/cactus-arm-session.md)"
+  }
+}

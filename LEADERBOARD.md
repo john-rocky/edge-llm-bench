@@ -1,0 +1,63 @@
+# Leaderboard — current standings per platform
+
+Neutral, reproducible standings for local LLM runtimes on-device. Every number
+carries its recipe (quantization + engine build): arms run at their own best
+available build, which is only a fair comparison when the recipe is visible.
+Method and rules: `methodology/fairness-rules.md`. Raw records: `results/`.
+Regenerate: `python3 scripts/build_summary.py && python3 scripts/render_leaderboard.py`.
+
+<!-- BEGIN GENERATED: scripts/render_leaderboard.py -->
+
+Generated from `results/summary/*.csv` (latest capture 2026-08-17) by `scripts/render_leaderboard.py` — do not edit inside the markers.
+
+Headline task: **short-chat**, warm = median of same-session warm runs (cold-warm-split); other tasks and full history: RESULTS.md. Rows sort by warm decode; the recipe (quantization, engine build) is part of every row — a faster number under a different recipe is a different deployment profile, not a win.
+
+† = quantization label carries the audited in-place correction (Gemma-4 `.litertlm` is the wNa8o8 mobile schema; early rows recorded "INT4 (QAT)" — quant-label-rule). mem MB = phys_footprint on Apple rows, RSS on Android rows (no footprint equivalent; methodology/android.md).
+
+## mac
+
+### Mac Studio (M4 Max)
+
+**Qwen 3 0.6B**
+
+| runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
+|---|---|---|---|---|---|---|---|---|---|---|
+| mlx-swift | `mlx-community/Qwen3-0.6B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 555.9 | 556.0 | 2018.9 | 10.0 | 646.5 | — | 2026-08-17 |
+| litert-lm | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 309.9 | 311.3 | 566.9 | 59.0 | 795.4 | — | 2026-08-17 |
+
+<details><summary>single-arm cells (no cross-runtime comparison)</summary>
+
+| model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
+|---|---|---|---|---|---|---|---|
+| Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 156.0 | 128.9 | 2026-08-17 |
+
+</details>
+
+## ios
+
+**Structural exclusions** (failed-runs-stay — the row exists, the reason is the datum):
+
+- `core-ai core-ai/phi-4-mini-gpu short-chat` — partial-rotary-unsupported
+- `core-ai core-ai/qwen3-1.7b-ane short-chat` — invoke-fail-bd71203
+
+## android
+
+### Pixel 8a
+
+**Qwen 3 0.6B**
+
+| runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
+|---|---|---|---|---|---|---|---|---|---|---|
+| llama.cpp | `unsloth/Qwen3-0.6B-GGUF` | Q4_K_M | b8999 | — | 29.7 | 221.4 | — | 1253.5 | — | 2026-08-17 |
+| litert-lm-gpu | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.15.0 / v0.16.0 | — | 15.2 | 41.6 | 550.0 | 1144.3 | — | 2026-08-17 |
+| litert-lm-cpu | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.15.0 / v0.16.0 | — | 15.3 | 9.0 | 2310.0 | 1646.0 | — | 2026-08-17 |
+
+<details><summary>single-arm cells (no cross-runtime comparison)</summary>
+
+| model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
+|---|---|---|---|---|---|---|---|
+| Gemma 4 E2B | litert-lm-gpu | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | — | 8.4 | 2026-08-17 |
+
+</details>
+
+<!-- END GENERATED: scripts/render_leaderboard.py -->

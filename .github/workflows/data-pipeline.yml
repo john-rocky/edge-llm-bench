@@ -1,0 +1,58 @@
+name: data pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  cells-valid:
+    name: matrix cell files validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python scripts/validate_cells.py matrices/*.cells
+      - name: regression matrices carry anchors
+        run: python scripts/validate_cells.py --require-anchor matrices/release-regression-*.cells matrices/anchors.cells
+
+  summary-fresh:
+    name: results/summary matches the raw tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python scripts/build_summary.py
+      - name: committed CSVs are current
+        run: git diff --exit-code results/summary/
+
+  leaderboard-check:
+    name: LEADERBOARD.md is rendered
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python scripts/render_leaderboard.py --check
+
+  scripts-compile:
+    name: every script parses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: py_compile all python
+        run: python -m py_compile scripts/*.py android/bench/*.py bench
+      - name: bash -n all shell scripts
+        run: for f in scripts/*.sh android/scripts/*.sh ios/BenchmarkApp/scripts/*.sh; do bash -n "$f" || exit 1; done
+
+  # NOTE: no Xcode build job — the app/tool require the iOS 27 / macOS 27 SDK
+  # (Xcode 27 beta), which GitHub-hosted runners do not ship. Builds are
+  # verified on owner hardware (docs/OPERATIONS.md).

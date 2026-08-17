@@ -1,0 +1,295 @@
+name: BenchmarkApp
+options:
+  bundleIdPrefix: com.iosllmbenchmark
+  deploymentTarget:
+    iOS: "18.0"
+    macOS: "14.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: minimal
+
+packages:
+  mlx-swift-lm:
+    url: https://github.com/ml-explore/mlx-swift-lm
+    # Pinned by revision, not `branch: main`. A floating branch is why this checkout and
+    # ~/code/apple-silicon-llm-bench ended up on different loaders (2026-06-09 vs 2026-07-16)
+    # and why Gemma-4-E2B loaded in one and not the other: only the July revision gives
+    # Gemma4Attention the `isKvSharedLayer` branch that skips kProj/vProj/kNorm on the 20
+    # KV-shared layers, which is what the shipped checkpoints expect. A benchmark harness
+    # cannot float its runtime dependency — the runtime IS the thing under measurement.
+    revision: 60bd0d7880c82980f9481f8be78862e9b63c58a3
+  mlx-swift:
+    url: https://github.com/ml-explore/mlx-swift
+    # Transitive pin, same reason as mlx-swift-lm above but one level deeper:
+    # mlx-swift-lm declares mlx-swift with a `from:` range. 0.31.6 is the
+    # version the 2026-08-11 builds actually resolved (workspace state), and
+    # mlx-swift-lm@60bd0d78 does not compile below 0.31.5 (maskFill /
+    # greatestFiniteMagnitudeArray). NOTE the toolchain coupling: 0.31.5+
+    # manifests need Swift tools 6.3, i.e. Xcode 27 beta — Xcode 26.1.1
+    # (Swift 6.2.1) cannot even resolve this graph. Build with
+    # DEVELOPER_DIR=/Applications/Xcode-27*.app/Contents/Developer if
+    # xcode-select points at a stable Xcode.
+    exactVersion: 0.31.6
+  swift-huggingface:
+    url: https://github.com/huggingface/swift-huggingface
+    from: "0.8.1"
+  swift-transformers:
+    url: https://github.com/huggingface/swift-transformers
+    from: "1.0.0"
+  executorch:
+    url: https://github.com/pytorch/executorch.git
+    branch: swiftpm-1.3.0.20260501
+  Anemll:
+    path: Vendored/Anemll/anemll-swift-cli
+  # CoreML-LLM (the CoreML/ANE arm) is OFF by default as of 2026-07-17.
+  #   * It is not one of the engines this tool is being asked to track
+  #     (LiteRT-LM, llama.cpp, Core AI, MLX, Cactus).
+  #   * It is this repo author's own library, which sits badly in a benchmark that
+  #     presents itself as neutral.
+  #   * Core AI is Apple's successor and covers both the GPU and ANE paths.
+  #   * It only ever built from an unpushed local checkout (the comment this replaces
+  #     pointed at ~/Downloads/CoreML-LLM for an in-tree `.qwen3_06b` preset), which is
+  #     why a clean clone could not build the app at all.
+  # CoreMLRuntime.swift is guarded by `#if canImport(CoreMLLLM)`, so dropping the
+  # dependency compiles the arm out; past results in results/raw/ are unaffected.
+  # To measure it again, restore this package + the dependency below and point it at a
+  # checkout that carries the presets it needs.
+  # CoreML-LLM:
+  #   path: Vendored/CoreML-LLM
+  LiteRT-LM:
+    # Local path (not url:) so SwiftPM accepts the package's `.unsafeFlags(-all_load)`
+    # — versioned/remote products with unsafe flags are rejected by SwiftPM.
+    # Vendored/ is git-ignored; clone with GIT_LFS_SKIP_SMUDGE=1 (broken Android LFS blob upstream).
+    path: Vendored/LiteRT-LM
+  coreai-models:
+    # Apple's official Core AI Swift runtime (CoreAILM). Local path because the
+    # package floor is iOS/macOS 27 and our checkout carries small local fixes.
+    # Vendored/ is git-ignored; symlink it: Vendored/coreai-models -> ~/code/coreai/coreai-models
+    path: Vendored/coreai-models
+
+targets:
+  BenchmarkApp:
+    type: application
+    platform: iOS
+    # Bumped 18.0 -> 27.0: the coreai-models Swift package (CoreAILM) requires
+    # iOS 27. The whole current benchmark campaign runs on iPhone 17 Pro (iOS 27).
+    # If older-device installs (15/16 Pro) are needed again, split CoreAI into a
+    # separate iOS-27 target instead of bumping this one.
+    deploymentTarget: "27.0"
+    sources:
+      - path: Sources
+      # Observed engine pins, bundled as a resource so EnginePins can read them at run
+      # time. Written by scripts/stamp_engine_pins.sh (bootstrap step 8 + the pre-build
+      # phase below, whose declared output orders it before Copy Bundle Resources).
+      # A resource is signed like any other file — unlike the first design's post-build
+      # Info.plist mutation, which raced ProcessInfoPlistFile/codesign (2026-08-13).
+      # optional: the file does not exist on a clean clone until bootstrap/first build.
+      - path: Vendored/engine-pins.json
+        buildPhase: resources
+        optional: true
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: iOS LLM Bench
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "1"
+        NSCameraUsageDescription: "Used to benchmark live vision-language model inference (VLM) on the camera feed."
+        UILaunchScreen: {}
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes:
+          - processing
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.iosllmbenchmark.benchmarkapp
+        CODE_SIGN_ENTITLEMENTS: BenchmarkApp.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_STRICT_CONCURRENCY: minimal
+        OTHER_LDFLAGS: "-ObjC"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        # Off by default so a clean clone builds against Apple's RELEASED coreai-models.
+        # Per-layer-embedding models (Gemma-4 E2B/E4B) need EngineOptions.staticInputBuffers,
+        # which is not in 0.1.0 or 0.2.0 — it comes from a local engine patch. With this off,
+        # every other arm and every non-PLE Core AI model still builds and runs; PLE models
+        # report as unsupported instead of breaking the build.
+        # To measure the PLE arm, point Vendored/coreai-models at a patched checkout and build
+        # with: SWIFT_ACTIVE_COMPILATION_CONDITIONS="$(inherited) COREAI_STATIC_INPUTS"
+        # See methodology/core-ai-arm-provenance.md.
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+    preBuildScripts:
+      # Regenerate the OBSERVED engine pins (git state of Vendored/ clones, the CLiteRTLM
+      # binaryTarget zip+checksum, the llama sidecar tag) so every BenchmarkResult records
+      # engineVersion/engineArtifact (schema v1; continuous-bench condition 3).
+      # Observed state, not env defaults: a stale Vendored/ clone under a changed
+      # LITERTLM_TAG must not mislabel rows. Re-runs every build by design.
+      #
+      # The json is a DECLARED OUTPUT: that edge orders this script before the
+      # Copy Bundle Resources task that ships it. Do not go back to mutating the
+      # built product post-build — an undeclared in-place edit is invisible to the
+      # build graph, and on incremental builds it ran after ProcessInfoPlistFile
+      # (key dropped) or after codesign (0xe8008001 at install). Both observed
+      # 2026-08-13.
+      - name: Stamp engine pins
+        script: '"$SRCROOT/scripts/stamp_engine_pins.sh"'
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - $(SRCROOT)/Vendored/engine-pins.json
+    dependencies:
+      - package: mlx-swift-lm
+        product: MLXLLM
+      - package: mlx-swift-lm
+        product: MLXVLM            # vision-language models (Qwen3-VL) for the camera bench
+      - package: mlx-swift-lm
+        product: MLXLMCommon
+      - package: swift-huggingface
+        product: HuggingFace
+      - package: swift-transformers
+        product: Transformers
+      # - package: CoreML-LLM      # arm off by default — see the packages: note above
+      #   product: CoreMLLLM
+      - package: coreai-models
+        product: CoreAILM            # Apple Core AI runtime (iOS 27) for the CoreAIRuntime
+      # NOTE: executorch products are dropped from the iOS app while Core AI is
+      # linked — coreai-models' CXGrammar.xcframework and executorch.xcframework
+      # both emit `include/module.modulemap` to the shared products dir, which
+      # Xcode rejects ("Multiple commands produce module.modulemap"). ExecuTorch
+      # isn't part of the Core AI/CoreML/MLX comparison. ExecuTorchRuntime falls
+      # back to its canImport(ExecuTorchLLM)=false stub. Restore these (or split
+      # Core AI into its own target) to re-enable the ExecuTorch runtime.
+      - package: Anemll
+        product: AnemllCore
+      - package: LiteRT-LM
+        product: LiteRTLM
+      - framework: Vendored/llama.xcframework
+        embed: true
+        codeSign: true
+        optional: true
+      # Cactus engine (cactus-compute/cactus) — static-lib xcframework built from
+      # source by scripts/bootstrap.sh (`bash apple/build.sh` in the clone). The
+      # framework bundles cactus_engine.h + modulemap, so `import cactus` works;
+      # CactusRuntime is canImport-guarded and stubs out when this is absent.
+      - framework: Vendored/cactus-ios.xcframework
+        embed: true
+        codeSign: true
+        optional: true
+
+  yardstick:
+    type: tool
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      # Shared with the iOS app, minus the SwiftUI-only Views layer.
+      # Each adapter is added back to the Mac target only after its
+      # vendor SDK has been verified to build for macOS.
+      - path: Sources/Benchmark
+      - path: Sources/Models
+      - path: Sources/Runtimes/MLXRuntime.swift
+      - path: Sources/Runtimes/MLXBridges.swift
+      - path: Sources/Runtimes/HFDownloader.swift
+      - path: Sources/Runtimes/LLMRuntime.swift
+      # canImport(CoreMLLLM)-guarded; compiles to a stub now the package is off.
+      - path: Sources/Runtimes/CoreMLRuntime.swift
+      - path: Sources/Runtimes/ExecuTorchRuntime.swift
+      - path: Sources/Runtimes/LlamaCppRuntime.swift
+      - path: Sources/Runtimes/AnemllRuntime.swift
+      - path: Sources/Runtimes/AppleFMRuntime.swift
+      - path: Sources/Runtimes/MediaPipeRuntime.swift
+      - path: ../../apple/YardstickCLI/Sources
+    settings:
+      base:
+        PRODUCT_NAME: yardstick
+        SWIFT_STRICT_CONCURRENCY: minimal
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        OTHER_LDFLAGS: "-ObjC"
+        SKIP_INSTALL: NO
+        # Tool targets can't embed frameworks the way .app bundles do; point
+        # the runtime linker at the xcframework's macOS slice so the
+        # `llama.framework` dylib resolves without `DYLD_FRAMEWORK_PATH`.
+        # @executable_path first: SwiftPM copies dylib products (libCLiteRTLM_mac.dylib)
+        # next to the tool binary in Products/Release — without it the litert dylib only
+        # resolves when the binary happens to run from a directory on the llama rpath.
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path $(SRCROOT)/Vendored/llama.xcframework/macos-arm64_x86_64"
+    preBuildScripts:
+      # Tool targets bundle no resources; this refreshes Vendored/engine-pins.json so the
+      # CLI can stamp rows via BENCH_ENGINE_PINS_FILE (see EnginePins.swift). No declared
+      # output here: the app target already claims that node, and this phase has no
+      # in-build consumer to order against.
+      - name: Stamp engine pins
+        script: '"$SRCROOT/scripts/stamp_engine_pins.sh"'
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - package: mlx-swift-lm
+        product: MLXLLM
+      - package: mlx-swift-lm
+        product: MLXLMCommon
+      - package: swift-huggingface
+        product: HuggingFace
+      - package: swift-transformers
+        product: Transformers
+      # - package: CoreML-LLM      # arm off by default — see the packages: note above
+      #   product: CoreMLLLM
+      # executorch is OFF for the macOS tool: its xcframework and LiteRT-LM's CLiteRTLM_mac
+      # both ship include/module.modulemap, and xcodebuild's ProcessXCFramework copies both
+      # into Products/Release/ -> "Multiple commands produce ... module.modulemap". The
+      # ExecuTorch arm has never been benched on the Mac; ExecuTorchRuntime.swift is
+      # canImport-guarded and compiles to a stub without the package. (iOS app keeps it.)
+      # - package: executorch
+      #   product: executorch
+      - package: Anemll
+        product: AnemllCore
+      - package: LiteRT-LM
+        product: LiteRTLM
+      - framework: Vendored/llama.xcframework
+        embed: false
+        codeSign: false
+        optional: true
+      # No cactus dependency here: cactus-ios.xcframework ships iOS slices only, and
+      # `optional: true` does not make xcodebuild tolerate a missing-platform slice — it
+      # fails the whole macOS build ("no library for this platform", 2026-07-28). The Mac
+      # campaign has no cactus arm and CactusRuntime.swift is not in this target's sources.
+
+# Shared scheme so `xcodebuild -scheme BenchmarkApp` works headlessly (the device
+# bench scripts and Core AI capture drive it via -scheme). Without this block
+# xcodegen emits no scheme and every `-scheme BenchmarkApp` invocation fails.
+schemes:
+  # Shared scheme so `xcodebuild -scheme yardstick` works headlessly (the Mac warm
+  # campaign builds the CLI this way; without it -derivedDataPath is rejected).
+  yardstick:
+    build:
+      targets:
+        yardstick: all
+    run:
+      config: Release
+  BenchmarkApp:
+    build:
+      targets:
+        BenchmarkApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

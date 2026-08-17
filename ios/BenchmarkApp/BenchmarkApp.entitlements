@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Large on-device LLM weights are mmap'd. Both are required for ≳2 GB models on
+	     iPhone: increased-memory-limit raises the jetsam footprint ceiling (fixes the
+	     many-section case, e.g. Ministral-3B), extended-virtual-addressing gives the
+	     virtual-address space for a single large contiguous section mmap (fixes the
+	     big-single-section case, e.g. Llama-3.2-3B). Without both, the weight-section
+	     mmap fails with ENOMEM even on a 12 GB device. -->
+	<key>com.apple.developer.kernel.increased-memory-limit</key>
+	<true/>
+	<key>com.apple.developer.kernel.extended-virtual-addressing</key>
+	<true/>
+</dict>
+</plist>
