@@ -30,6 +30,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 | model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
 |---|---|---|---|---|---|---|---|
 | Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 156.0 | 128.9 | 2026-08-17 |
+| litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 77.7 | 78.7 | 2026-08-18 |
 | mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit | mlx-swift | `mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 146.2 | 145.9 | 2026-08-17 |
 
 </details>
@@ -71,7 +72,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 | runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
 |---|---|---|---|---|---|---|---|---|---|---|
-| litert-lm-gpu | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | — | 14.4 | 56.2 | 430.0 | 1177.0 | — | 2026-08-18 |
+| litert-lm-gpu | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | — | 12.7 | 48.5 | 500.0 | 1178.7 | — | 2026-08-18 |
 | litert-lm-cpu | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 | v0.16.0 | — | 22.3 | 11.3 | 1940.0 | 886.0 | — | 2026-08-18 |
 
 <details><summary>single-arm cells (no cross-runtime comparison)</summary>
