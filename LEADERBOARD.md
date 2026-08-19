@@ -8,7 +8,7 @@ Regenerate: `python3 scripts/build_summary.py && python3 scripts/render_leaderbo
 
 <!-- BEGIN GENERATED: scripts/render_leaderboard.py -->
 
-Generated from `results/summary/*.csv` (latest capture 2026-08-18) by `scripts/render_leaderboard.py` — do not edit inside the markers.
+Generated from `results/summary/*.csv` (latest capture 2026-08-19) by `scripts/render_leaderboard.py` — do not edit inside the markers.
 
 Headline task: **short-chat**, warm = median of same-session warm runs (cold-warm-split); other tasks and full history: RESULTS.md. Rows sort by warm decode; the recipe (quantization, engine build) is part of every row — a faster number under a different recipe is a different deployment profile, not a win.
 
@@ -36,6 +36,24 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 </details>
 
 ## ios
+
+### iPhone 17 Pro
+
+**Qwen 3 0.6B**
+
+| runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
+|---|---|---|---|---|---|---|---|---|---|---|
+| mlx-swift | `mlx-community/Qwen3-0.6B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 171.6 | 172.6 | 453.9 | 46.0 | 478.9 | — | 2026-08-19 |
+| litert-lm | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 121.5 | 122.5 | 185.5 | 151.5 | 458.7 | — | 2026-08-19 |
+
+<details><summary>single-arm cells (no cross-runtime comparison)</summary>
+
+| model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
+|---|---|---|---|---|---|---|---|
+| Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 51.0 | 55.4 | 2026-08-19 |
+| litert-community/Qwen3-4B | litert-lm | `litert-community/Qwen3-4B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 16.1 | 23.1 | 2026-08-19 |
+
+</details>
 
 **Structural exclusions** (failed-runs-stay — the row exists, the reason is the datum):
 
