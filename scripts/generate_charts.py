@@ -110,54 +110,68 @@ def chart_regression():
 
 
 def chart_pixel_demo():
-    """Pixel 8a decode by model x arm (the model-agnostic demo), recipes labeled."""
+    """Pixel 8a — one panel per model, arms compared WITHIN each model only.
+    A single sorted axis across models implied a cross-model race (a 1B and a
+    1.5B are not competitors); small multiples remove that reading."""
     rows = load_rows()
-    spec = [  # (display, runtime, model substring, quant label)
-        ("DeepSeek-R1-1.5B", "llama.cpp", "DeepSeek-R1-Distill-Qwen-1.5B-GGUF", "Q4_K_M"),
-        ("DeepSeek-R1-1.5B", "litert-lm-cpu", "DeepSeek-R1-Distill-Qwen-1.5B", "INT8"),
-        ("DeepSeek-R1-1.5B", "litert-lm-gpu", "DeepSeek-R1-Distill-Qwen-1.5B", "INT8"),
-        ("LFM2.5-1.2B", "litert-lm-cpu", "LFM2.5-1.2B", "int4"),
-        ("LFM2.5-1.2B", "litert-lm-gpu", "LFM2.5-1.2B", "int4_gpu"),
-        ("MiniCPM5-1B", "litert-lm-cpu", "MiniCPM5-1B", "wi4b32_wi8_afp32"),
-        ("MiniCPM5-1B", "litert-lm-gpu", "MiniCPM5-1B", "wi4b32 gpu-opt"),
+    models = [  # (panel title, [(arm label, runtime, model substring, quant)])
+        ("DeepSeek-R1-Distill-1.5B", [
+            ("llama.cpp (Q4_K_M)", "llama.cpp", "DeepSeek-R1-Distill-Qwen-1.5B-GGUF", None),
+            ("LiteRT-LM cpu (INT8)", "litert-lm-cpu", "DeepSeek-R1-Distill-Qwen-1.5B", None),
+            ("LiteRT-LM gpu (INT8)", "litert-lm-gpu", "DeepSeek-R1-Distill-Qwen-1.5B", None),
+        ]),
+        ("LFM2.5-1.2B-Instruct", [
+            ("LiteRT-LM cpu (int4)", "litert-lm-cpu", "LFM2.5-1.2B", None),
+            ("LiteRT-LM gpu (int4_gpu)", "litert-lm-gpu", "LFM2.5-1.2B", None),
+        ]),
+        ("MiniCPM5-1B", [
+            ("LiteRT-LM cpu (wi4b32_wi8)", "litert-lm-cpu", "MiniCPM5-1B", None),
+            ("LiteRT-LM gpu (gpu-opt)", "litert-lm-gpu", "MiniCPM5-1B", None),
+        ]),
     ]
-    bars = []
-    for disp, rt, msub, quant in spec:
-        # same thermal tolerance as the table (nominal+light on Android) so the
-        # two published images can never disagree on a number
+
+    def med(rt, msub):
         vals = [float(r["decode_tps"]) for r in rows
                 if r["platform"] == "android" and r["runtime"] == rt
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["decode_tps"]
                 and (r["thermal_initial"] or "") in ("nominal", "light", "")]
-        med = statistics.median(vals) if vals else None
-        if med:
-            arm = rt.replace("litert-lm-", "LiteRT-LM ") if rt.startswith("litert") else rt
-            bars.append((f"{disp} — {arm} ({quant})", med, ARM_COLOR[rt]))
-    bars.sort(key=lambda b: b[1])
-    fig, ax = plt.subplots(figsize=(8.6, 0.52 * len(bars) + 1.8), dpi=200)
+        return statistics.median(vals) if vals else None
+
+    heights = [len(arms) for _, arms in models]
+    fig, axes = plt.subplots(len(models), 1, figsize=(8.6, 0.62 * sum(heights) + 2.4),
+                             dpi=200, sharex=True,
+                             gridspec_kw={"height_ratios": heights, "hspace": 0.75})
     fig.patch.set_facecolor(SURFACE)
-    style_ax(ax)
-    ys = range(len(bars))
-    ax.barh(ys, [b[1] for b in bars], height=0.55,
-            color=[b[2] for b in bars], edgecolor=SURFACE, linewidth=2)
-    for y, (label, v, _) in zip(ys, bars):
-        ax.text(v + 0.3, y, f"{v:.1f}", va="center", fontsize=9, color=INK)
-    ax.set_yticks(list(ys))
-    ax.set_yticklabels([b[0] for b in bars], fontsize=9, color=INK)
-    ax.set_xlabel("decode tok/s — short-chat, fresh process (cold), median of runs",
-                  fontsize=9, color=MUTED)
-    ax.set_title("Pixel 8a — models added by one cells line each (recipes differ per "
-                 "row and are part of the label)", fontsize=11, color=INK,
-                 loc="left", pad=12)
-    handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in (BLUE, ORANGE)]
-    ax.legend(handles, ["LiteRT-LM", "llama.cpp"], loc="lower right", frameon=False,
-              fontsize=9, labelcolor=INK)
-    fig.tight_layout()
+    xmax = 0
+    for ax, (title, arms) in zip(axes, models):
+        style_ax(ax)
+        labels, vals, colors = [], [], []
+        for label, rt, msub, _ in arms:
+            v = med(rt, msub)
+            if v:
+                labels.append(label); vals.append(v); colors.append(ARM_COLOR[rt])
+        ys = range(len(vals))
+        ax.barh(ys, vals, height=0.6, color=colors, edgecolor=SURFACE, linewidth=2)
+        for y, v in zip(ys, vals):
+            ax.text(v + 0.3, y, f"{v:.1f}", va="center", fontsize=9, color=INK)
+            xmax = max(xmax, v)
+        ax.set_yticks(list(ys))
+        ax.set_yticklabels(labels, fontsize=9, color=INK)
+        ax.invert_yaxis()
+        ax.set_title(title, fontsize=10, color=INK, loc="left", pad=4)
+    for ax in axes:
+        ax.set_xlim(0, xmax * 1.12)
+    axes[-1].set_xlabel("decode tok/s — short-chat, fresh process (cold), median of runs; "
+                        "runs starting past Android thermal 'light' excluded",
+                        fontsize=9, color=MUTED)
+    fig.suptitle("Pixel 8a — arms compared within each model (each model = one "
+                 "config line; recipes stated per arm)", fontsize=11, color=INK,
+                 x=0.02, ha="left")
     fig.savefig(os.path.join(OUT, "pixel8a_model_demo.png"),
                 facecolor=SURFACE, bbox_inches="tight")
     plt.close(fig)
-    return len(bars)
+    return sum(heights)
 
 
 def chart_crossarm_table():
