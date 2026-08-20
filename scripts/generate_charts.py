@@ -123,14 +123,14 @@ def chart_pixel_demo():
     ]
     bars = []
     for disp, rt, msub, quant in spec:
-        med = None
-        for cold in ("True", "False"):
-            vals = [float(r["decode_tps"]) for r in load_rows()
-                    if r["platform"] == "android" and r["runtime"] == rt
-                    and msub in r["model_id"] and r["task"] == "short-chat"
-                    and r["cold_run"] == cold and r["decode_tps"]]
-            if vals:
-                med = statistics.median(vals + ([med] if med else []))
+        # same thermal tolerance as the table (nominal+light on Android) so the
+        # two published images can never disagree on a number
+        vals = [float(r["decode_tps"]) for r in rows
+                if r["platform"] == "android" and r["runtime"] == rt
+                and msub in r["model_id"] and r["task"] == "short-chat"
+                and r["decode_tps"]
+                and (r["thermal_initial"] or "") in ("nominal", "light", "")]
+        med = statistics.median(vals) if vals else None
         if med:
             arm = rt.replace("litert-lm-", "LiteRT-LM ") if rt.startswith("litert") else rt
             bars.append((f"{disp} — {arm} ({quant})", med, ARM_COLOR[rt]))
@@ -223,9 +223,66 @@ def chart_crossarm_table():
     plt.close(fig)
 
 
+def chart_demo_models_table():
+    """Just the three demo models, every arm that has a number (for chat posts)."""
+    rows = load_rows()
+    OK = {"mac": ("nominal", ""), "ios": ("nominal", ""),
+          "android": ("nominal", "light", "")}
+
+    def med(plat, rt, msub):
+        vals = [float(r["decode_tps"]) for r in rows
+                if r["platform"] == plat and r["runtime"] == rt
+                and msub in r["model_id"] and r["task"] == "short-chat"
+                and r["decode_tps"] and (r["thermal_initial"] or "") in OK[plat]]
+        return f"{statistics.median(vals):.1f}" if vals else "—"
+
+    data = [
+        ["DeepSeek-R1-Distill-1.5B",
+         "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek") +
+         "\nLiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"),
+         "llama.cpp Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
+         "cpu " + med("android", "litert-lm-cpu", "DeepSeek") +
+         " / gpu " + med("android", "litert-lm-gpu", "DeepSeek") + "  (INT8)"],
+        ["LFM2.5-1.2B-Instruct", "—", "—",
+         "cpu " + med("android", "litert-lm-cpu", "LFM2.5") + " (int4) / gpu " +
+         med("android", "litert-lm-gpu", "LFM2.5") + " (int4_gpu)"],
+        ["MiniCPM5-1B", "—", "—",
+         "cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
+         " (wi4b32_wi8) / gpu " + med("android", "litert-lm-gpu", "MiniCPM") +
+         " (gpu-opt)"],
+    ]
+    cols = ["model", "Mac Studio M4 Max", "Pixel 8a — llama.cpp", "Pixel 8a — LiteRT-LM"]
+    fig, ax = plt.subplots(figsize=(13.2, 3.4), dpi=200)
+    fig.patch.set_facecolor(SURFACE)
+    ax.axis("off")
+    t = ax.table(cellText=data, colLabels=cols, loc="center", cellLoc="left",
+                 colWidths=[0.18, 0.22, 0.2, 0.4])
+    t.auto_set_font_size(False)
+    t.set_fontsize(9.5)
+    t.scale(1, 2.4)
+    for (r, c), cell in t.get_celld().items():
+        cell.set_edgecolor(GRID)
+        cell.set_text_props(color=INK)
+        if r == 0:
+            cell.set_text_props(color=MUTED, fontweight="bold")
+            cell.set_facecolor("#f0efec")
+        else:
+            cell.set_facecolor(SURFACE)
+    ax.set_title("Three models added by one config line each — decode tok/s, short-chat, "
+                 "fresh process.\nRecipes differ per cell and are stated in it; "
+                 "cross-recipe cells are deployment profiles, not one race. "
+                 "Pixel: runs starting past Android thermal 'light' excluded.",
+                 fontsize=10, color=INK, loc="left", pad=14)
+    fig.tight_layout()
+    fig.savefig(os.path.join(OUT, "demo_models_table.png"),
+                facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     n1 = chart_regression()
     n2 = chart_pixel_demo()
     chart_crossarm_table()
+    chart_demo_models_table()
     print(f"wrote {OUT}: v0160_regression_verdicts.png ({n1} cells), "
           f"pixel8a_model_demo.png ({n2} bars), crossarm_table.png")
