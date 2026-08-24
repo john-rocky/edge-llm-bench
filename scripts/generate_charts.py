@@ -190,16 +190,31 @@ def chart_crossarm_table():
                 and r["cold_run"] == cold and r["decode_tps"]
                 and (r["thermal_initial"] or "") in OK_THERMAL[plat]]
         return f"{statistics.median(vals):.1f}" if vals else "—"
+
+    def ios_warm(msub, label):
+        # "—" must not conflate "not measured" with "measured, excluded by the
+        # nominal-start filter" — disclose which one it is, from the data.
+        v = med("ios", "litert-lm", msub, "False")
+        if v != "—":
+            return label + " " + v
+        captured = any(r["platform"] == "ios" and r["runtime"] == "litert-lm"
+                       and msub in r["model_id"] and r["task"] == "short-chat"
+                       and r["decode_tps"] for r in rows)
+        return label + " — (fair starts only)" if captured else "—"
     data = [
         ["DeepSeek-R1-1.5B", "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek"),
-         "—", "llama Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
+         ios_warm("DeepSeek", "LiteRT INT8"),
+         "llama Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
          "LiteRT INT8 " + med("android", "litert-lm-cpu", "DeepSeek")],
         ["", "LiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"), "", "",
          "LiteRT gpu " + med("android", "litert-lm-gpu", "DeepSeek")],
-        ["LFM2.5-1.2B", "—", "—", "—",
+        # LFM2.5 iPhone: structural exclusion, not a gap — engine creation fails
+        # (Metal half4*float4 codegen + DUS shape at ctx=672); see
+        # matrices/lu-focus-litert-ios.cells and the stored console report.
+        ["LFM2.5-1.2B", "—", "engine-create fail (Metal)", "—",
          "LiteRT int4 cpu " + med("android", "litert-lm-cpu", "LFM2.5") +
          " / gpu " + med("android", "litert-lm-gpu", "LFM2.5")],
-        ["MiniCPM5-1B", "—", "—", "—",
+        ["MiniCPM5-1B", "—", ios_warm("MiniCPM", "LiteRT gpu-opt"), "—",
          "LiteRT cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
          " / gpu-opt " + med("android", "litert-lm-gpu", "MiniCPM")],
         ["Gemma-4-E2B", "LiteRT wNa8o8 " + med("mac", "litert-lm", "gemma-4-E2B", "False"),
@@ -211,7 +226,7 @@ def chart_crossarm_table():
     ]
     cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro", "Pixel 8a (llama.cpp)",
             "Pixel 8a (LiteRT-LM)"]
-    fig, ax = plt.subplots(figsize=(11.5, 0.55 * len(data) + 1.6), dpi=200)
+    fig, ax = plt.subplots(figsize=(12.5, 0.55 * len(data) + 1.6), dpi=200)
     fig.patch.set_facecolor(SURFACE)
     ax.axis("off")
     t = ax.table(cellText=data, colLabels=cols, loc="center", cellLoc="left")
@@ -228,7 +243,8 @@ def chart_crossarm_table():
             cell.set_facecolor(SURFACE)
     ax.set_title("decode tok/s per arm (warm where the protocol defines it, else cold; "
                  "each cell states its recipe — cross-recipe cells are different\n"
-                 "deployment profiles, not one race. Pixel cells include runs starting "
+                 "deployment profiles, not one race. iPhone/Mac cells: nominal thermal "
+                 "starts only. Pixel cells include runs starting "
                  "at Android thermal 'light'; hotter starts excluded)",
                  fontsize=10, color=INK, loc="left", pad=14)
     fig.tight_layout()
@@ -244,33 +260,57 @@ def chart_demo_models_table():
           "android": ("nominal", "light", "")}
 
     def med(plat, rt, msub):
+        # cold (fresh-process) only — the same basis as the crossarm table's
+        # Mac/Pixel cells, so the two published images never disagree on a
+        # number (pooling warm runs skewed Mac cells by a few tenths).
         vals = [float(r["decode_tps"]) for r in rows
                 if r["platform"] == plat and r["runtime"] == rt
                 and msub in r["model_id"] and r["task"] == "short-chat"
+                and r["cold_run"] == "True"
                 and r["decode_tps"] and (r["thermal_initial"] or "") in OK[plat]]
         return f"{statistics.median(vals):.1f}" if vals else "—"
+
+    def ios_warm(msub):
+        # Same definition as the crossarm table's iPhone cells (warm, nominal
+        # start) so the two published images never disagree on a number; "—"
+        # discloses whether runs exist that the thermal filter excluded.
+        vals = [float(r["decode_tps"]) for r in rows
+                if r["platform"] == "ios" and r["runtime"] == "litert-lm"
+                and msub in r["model_id"] and r["task"] == "short-chat"
+                and r["cold_run"] == "False" and r["decode_tps"]
+                and (r["thermal_initial"] or "") in OK["ios"]]
+        if vals:
+            return f"{statistics.median(vals):.1f}"
+        captured = any(r["platform"] == "ios" and r["runtime"] == "litert-lm"
+                       and msub in r["model_id"] and r["task"] == "short-chat"
+                       and r["decode_tps"] for r in rows)
+        return "— (fair-start runs only)" if captured else "—"
 
     data = [
         ["DeepSeek-R1-Distill-1.5B",
          "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek") +
          "\nLiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"),
+         "LiteRT INT8 " + ios_warm("DeepSeek"),
          "llama.cpp Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
          "cpu " + med("android", "litert-lm-cpu", "DeepSeek") +
          " / gpu " + med("android", "litert-lm-gpu", "DeepSeek") + "  (INT8)"],
-        ["LFM2.5-1.2B-Instruct", "—", "—",
+        # LFM2.5 iPhone: structural exclusion (engine-create fail) — see
+        # matrices/lu-focus-litert-ios.cells + the stored console report.
+        ["LFM2.5-1.2B-Instruct", "—", "engine-create fail\n(Metal half4×float4)", "—",
          "cpu " + med("android", "litert-lm-cpu", "LFM2.5") + " (int4) / gpu " +
          med("android", "litert-lm-gpu", "LFM2.5") + " (int4_gpu)"],
-        ["MiniCPM5-1B", "—", "—",
+        ["MiniCPM5-1B", "—", "gpu-opt " + ios_warm("MiniCPM"), "—",
          "cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
          " (wi4b32_wi8) / gpu " + med("android", "litert-lm-gpu", "MiniCPM") +
          " (gpu-opt)"],
     ]
-    cols = ["model", "Mac Studio M4 Max", "Pixel 8a — llama.cpp", "Pixel 8a — LiteRT-LM"]
-    fig, ax = plt.subplots(figsize=(13.2, 3.4), dpi=200)
+    cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro — LiteRT-LM",
+            "Pixel 8a — llama.cpp", "Pixel 8a — LiteRT-LM"]
+    fig, ax = plt.subplots(figsize=(14.8, 3.4), dpi=200)
     fig.patch.set_facecolor(SURFACE)
     ax.axis("off")
     t = ax.table(cellText=data, colLabels=cols, loc="center", cellLoc="left",
-                 colWidths=[0.18, 0.22, 0.2, 0.4])
+                 colWidths=[0.15, 0.19, 0.18, 0.16, 0.32])
     t.auto_set_font_size(False)
     t.set_fontsize(9.5)
     t.scale(1, 2.4)
@@ -283,8 +323,9 @@ def chart_demo_models_table():
         else:
             cell.set_facecolor(SURFACE)
     ax.set_title("Three models added by one config line each — decode tok/s, short-chat, "
-                 "fresh process.\nRecipes differ per cell and are stated in it; "
-                 "cross-recipe cells are deployment profiles, not one race. "
+                 "fresh process (iPhone: warm in-process runs).\nRecipes differ per cell "
+                 "and are stated in it; cross-recipe cells are deployment profiles, not "
+                 "one race. iPhone/Mac: nominal thermal starts only; "
                  "Pixel: runs starting past Android thermal 'light' excluded.",
                  fontsize=10, color=INK, loc="left", pad=14)
     fig.tight_layout()

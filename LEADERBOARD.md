@@ -8,7 +8,7 @@ Regenerate: `python3 scripts/build_summary.py && python3 scripts/render_leaderbo
 
 <!-- BEGIN GENERATED: scripts/render_leaderboard.py -->
 
-Generated from `results/summary/*.csv` (latest capture 2026-08-19) by `scripts/render_leaderboard.py` — do not edit inside the markers.
+Generated from `results/summary/*.csv` (latest capture 2026-08-24) by `scripts/render_leaderboard.py` — do not edit inside the markers.
 
 Headline task: **short-chat**, warm = median of same-session warm runs (cold-warm-split); other tasks and full history: RESULTS.md. Rows sort by warm decode; the recipe (quantization, engine build) is part of every row — a faster number under a different recipe is a different deployment profile, not a win.
 
@@ -51,6 +51,8 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 | model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
 |---|---|---|---|---|---|---|---|
 | Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 51.0 | 55.4 | 2026-08-19 |
+| litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 26.7 | 31.2 | 2026-08-24 |
+| litert-community/MiniCPM5-1B | litert-lm | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | 34.9 | 36.3 | 2026-08-24 |
 | litert-community/Qwen3-4B | litert-lm | `litert-community/Qwen3-4B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 16.1 | 23.1 | 2026-08-19 |
 
 </details>
@@ -59,6 +61,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 - `core-ai core-ai/phi-4-mini-gpu short-chat` — partial-rotary-unsupported
 - `core-ai core-ai/qwen3-1.7b-ane short-chat` — invoke-fail-bd71203
+- `litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat` — engine-create-fail-metal-half4-float4-dus-shape
 
 ## android
 
