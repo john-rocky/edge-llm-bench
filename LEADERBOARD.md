@@ -52,6 +52,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 |---|---|---|---|---|---|---|---|
 | Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 51.0 | 55.4 | 2026-08-19 |
 | litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 26.7 | 31.2 | 2026-08-24 |
+| litert-community/LFM2.5-1.2B-Instruct | litert-lm | `litert-community/LFM2.5-1.2B-Instruct` | int4_gpu (litert-community descriptor) | v0.16.0 | 68.3 | 68.1 | 2026-08-25 |
 | litert-community/MiniCPM5-1B | litert-lm | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | 35.5 | 34.9 | 2026-08-24 |
 | litert-community/Qwen3-4B | litert-lm | `litert-community/Qwen3-4B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 16.1 | 23.1 | 2026-08-19 |
 
@@ -110,7 +111,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 | runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
 |---|---|---|---|---|---|---|---|---|---|---|
-| llama.cpp | `unsloth/Qwen3-0.6B-GGUF` | Q4_K_M | b8999 | — | 12.8 | 242.4 | — | 1252.5 | — | 2026-08-25 |
+| llama.cpp | `unsloth/Qwen3-0.6B-GGUF` | Q4_K_M | b8999 | — | 109.7 | 253.9 | — | 1251.6 | — | 2026-08-25 |
 | litert-lm-gpu | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | — | 54.4 | 153.1 | 150.0 | 550.6 | — | 2026-08-25 |
 | litert-lm-cpu | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | — | 27.7 | 23.8 | 870.0 | 2022.6 | — | 2026-08-25 |
 
@@ -140,7 +141,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 | model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
 |---|---|---|---|---|---|---|---|
 | Gemma 4 E2B | litert-lm-gpu | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | — | 27.8 | 2026-08-25 |
-| bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF | llama.cpp | `bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF` | Q4_K_M | b8999 | — | 9.1 | 2026-08-25 |
+| bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF | llama.cpp | `bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF` | Q4_K_M | b8999 | — | 46.2 | 2026-08-25 |
 
 </details>
 
