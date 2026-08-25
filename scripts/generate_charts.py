@@ -191,12 +191,14 @@ def chart_crossarm_table():
                 and (r["thermal_initial"] or "") in OK_THERMAL[plat]]
         return f"{statistics.median(vals):.1f}" if vals else "—"
 
-    def ios_warm(msub, label):
+    def ios_warm(msub, label, suffix=""):
         # "—" must not conflate "not measured" with "measured, excluded by the
         # nominal-start filter" — disclose which one it is, from the data.
+        # `suffix` states a per-cell budget deviation (e.g. LFM2.5's ctx 1024,
+        # LiteRT-LM#3129) and only appears once a number exists to qualify.
         v = med("ios", "litert-lm", msub, "False")
         if v != "—":
-            return label + " " + v
+            return (label + " " + v + (" " + suffix if suffix else "")).strip()
         captured = any(r["platform"] == "ios" and r["runtime"] == "litert-lm"
                        and msub in r["model_id"] and r["task"] == "short-chat"
                        and r["decode_tps"] for r in rows)
@@ -208,10 +210,11 @@ def chart_crossarm_table():
          "LiteRT INT8 " + med("android", "litert-lm-cpu", "DeepSeek")],
         ["", "LiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"), "", "",
          "LiteRT gpu " + med("android", "litert-lm-gpu", "DeepSeek")],
-        # LFM2.5 iPhone: structural exclusion, not a gap — engine creation fails
-        # (Metal half4*float4 codegen + DUS shape at ctx=672); see
-        # matrices/lu-focus-litert-ios.cells and the stored console report.
-        ["LFM2.5-1.2B", "—", "engine-create fail (Metal)", "—",
+        # LFM2.5 iPhone runs at context-tokens=1024 (the file's exported prefill
+        # plan; the 08-24 engine-create failure was this harness's own
+        # max_num_tokens config, not the runtime — LiteRT-LM#3129, corrected
+        # in matrices/lu-focus-litert-ios.cells).
+        ["LFM2.5-1.2B", "—", ios_warm("LFM2.5", "LiteRT int4_gpu", "(ctx 1024)"), "—",
          "LiteRT int4 cpu " + med("android", "litert-lm-cpu", "LFM2.5") +
          " / gpu " + med("android", "litert-lm-gpu", "LFM2.5")],
         ["MiniCPM5-1B", "—", ios_warm("MiniCPM", "LiteRT gpu-opt"), "—",
@@ -270,17 +273,19 @@ def chart_demo_models_table():
                 and r["decode_tps"] and (r["thermal_initial"] or "") in OK[plat]]
         return f"{statistics.median(vals):.1f}" if vals else "—"
 
-    def ios_warm(msub):
+    def ios_warm(msub, suffix=""):
         # Same definition as the crossarm table's iPhone cells (warm, nominal
         # start) so the two published images never disagree on a number; "—"
         # discloses whether runs exist that the thermal filter excluded.
+        # `suffix` states a per-cell budget deviation and only appears with a
+        # number (LFM2.5's ctx 1024 — LiteRT-LM#3129).
         vals = [float(r["decode_tps"]) for r in rows
                 if r["platform"] == "ios" and r["runtime"] == "litert-lm"
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["cold_run"] == "False" and r["decode_tps"]
                 and (r["thermal_initial"] or "") in OK["ios"]]
         if vals:
-            return f"{statistics.median(vals):.1f}"
+            return f"{statistics.median(vals):.1f}" + (" " + suffix if suffix else "")
         captured = any(r["platform"] == "ios" and r["runtime"] == "litert-lm"
                        and msub in r["model_id"] and r["task"] == "short-chat"
                        and r["decode_tps"] for r in rows)
@@ -294,9 +299,10 @@ def chart_demo_models_table():
          "llama.cpp Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
          "cpu " + med("android", "litert-lm-cpu", "DeepSeek") +
          " / gpu " + med("android", "litert-lm-gpu", "DeepSeek") + "  (INT8)"],
-        # LFM2.5 iPhone: structural exclusion (engine-create fail) — see
-        # matrices/lu-focus-litert-ios.cells + the stored console report.
-        ["LFM2.5-1.2B-Instruct", "—", "engine-create fail\n(Metal half4×float4)", "—",
+        # LFM2.5 iPhone runs at context-tokens=1024 (exported prefill plan;
+        # 08-24's failure was the harness's own max_num_tokens config —
+        # LiteRT-LM#3129, corrected in matrices/lu-focus-litert-ios.cells).
+        ["LFM2.5-1.2B-Instruct", "—", "int4_gpu " + ios_warm("LFM2.5", "(ctx 1024)"), "—",
          "cpu " + med("android", "litert-lm-cpu", "LFM2.5") + " (int4) / gpu " +
          med("android", "litert-lm-gpu", "LFM2.5") + " (int4_gpu)"],
         ["MiniCPM5-1B", "—", "gpu-opt " + ios_warm("MiniCPM"), "—",
