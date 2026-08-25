@@ -46,6 +46,13 @@ def style_ax(ax):
     ax.set_axisbelow(True)
 
 
+# Every table in this file is a per-DEVICE view (its column headers name the
+# device), so every filter must pin the device, not just the platform — the
+# Galaxy S26's first session (platform=android) silently pooled into the
+# "Pixel 8a" columns the day it landed. Same-device-class rule.
+DEV = {"mac": "Mac16,9", "ios": "iPhone18,1", "android": "Pixel 8a"}
+
+
 def load_rows():
     with open(os.path.join(ROOT, "results", "summary", "device-runs.csv")) as fh:
         return list(csv.DictReader(fh))
@@ -132,7 +139,8 @@ def chart_pixel_demo():
 
     def med(rt, msub):
         vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == "android" and r["runtime"] == rt
+                if r["platform"] == "android" and r["device"] == DEV["android"]
+                and r["runtime"] == rt
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["decode_tps"]
                 and (r["thermal_initial"] or "") in ("nominal", "light", "")]
@@ -185,7 +193,8 @@ def chart_crossarm_table():
 
     def med(plat, rt, msub, cold="True"):
         vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == plat and r["runtime"] == rt
+                if r["platform"] == plat and r["device"] == DEV[plat]
+                and r["runtime"] == rt
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["cold_run"] == cold and r["decode_tps"]
                 and (r["thermal_initial"] or "") in OK_THERMAL[plat]]
@@ -199,7 +208,7 @@ def chart_crossarm_table():
         v = med("ios", "litert-lm", msub, "False")
         if v != "—":
             return (label + " " + v + (" " + suffix if suffix else "")).strip()
-        captured = any(r["platform"] == "ios" and r["runtime"] == "litert-lm"
+        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == "litert-lm"
                        and msub in r["model_id"] and r["task"] == "short-chat"
                        and r["decode_tps"] for r in rows)
         return label + " — (fair starts only)" if captured else "—"
@@ -267,7 +276,8 @@ def chart_demo_models_table():
         # Mac/Pixel cells, so the two published images never disagree on a
         # number (pooling warm runs skewed Mac cells by a few tenths).
         vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == plat and r["runtime"] == rt
+                if r["platform"] == plat and r["device"] == DEV[plat]
+                and r["runtime"] == rt
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["cold_run"] == "True"
                 and r["decode_tps"] and (r["thermal_initial"] or "") in OK[plat]]
@@ -280,13 +290,13 @@ def chart_demo_models_table():
         # `suffix` states a per-cell budget deviation and only appears with a
         # number (LFM2.5's ctx 1024 — LiteRT-LM#3129).
         vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == "ios" and r["runtime"] == "litert-lm"
+                if r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == "litert-lm"
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["cold_run"] == "False" and r["decode_tps"]
                 and (r["thermal_initial"] or "") in OK["ios"]]
         if vals:
             return f"{statistics.median(vals):.1f}" + (" " + suffix if suffix else "")
-        captured = any(r["platform"] == "ios" and r["runtime"] == "litert-lm"
+        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == "litert-lm"
                        and msub in r["model_id"] and r["task"] == "short-chat"
                        and r["decode_tps"] for r in rows)
         return "— (fair-start runs only)" if captured else "—"
