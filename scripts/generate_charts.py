@@ -269,7 +269,9 @@ def chart_crossarm_table():
         # plan; the 08-24 engine-create failure was this harness's own
         # max_num_tokens config, not the runtime — LiteRT-LM#3129, corrected
         # in matrices/lu-focus-litert-ios.cells).
-        ["LFM2.5-1.2B", "—", ios_warm("LFM2.5", "LiteRT int4_gpu", "(ctx 1024)"), "—",
+        ["LFM2.5-1.2B", "—",
+         ios_warm("LFM2.5", "LiteRT int4_gpu", "(ctx 1024)") + "\n" +
+         ios_warm("lfm2.5-1.2b", "Core AI", "(S=1 export)", runtime="core-ai"), "—",
          "LiteRT int4 cpu " + med("android", "litert-lm-cpu", "LFM2.5") +
          " / gpu " + med("android", "litert-lm-gpu", "LFM2.5")],
         ["MiniCPM5-1B", "—",
@@ -367,7 +369,7 @@ def chart_demo_models_table():
         # (exclude row in matrices/lu-focus-litert-ios.cells), not the runtime's.
         ["LFM2.5-1.2B-Instruct", "—",
          "LiteRT int4_gpu " + ios_warm("LFM2.5", "(ctx 1024)") +
-         "\nCore AI — (our adapter, hybrid)", "—",
+         "\nCore AI " + ios_warm("lfm2.5-1.2b", "(S=1 export)", runtime="core-ai"), "—",
          "cpu " + med("android", "litert-lm-cpu", "LFM2.5") + " (int4) / gpu " +
          med("android", "litert-lm-gpu", "LFM2.5") + " (int4_gpu)"],
         ["MiniCPM5-1B", "—",

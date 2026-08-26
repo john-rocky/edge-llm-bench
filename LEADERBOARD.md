@@ -43,7 +43,7 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 | runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
 |---|---|---|---|---|---|---|---|---|---|---|
-| mlx-swift | `mlx-community/Qwen3-0.6B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 177.6 | 174.0 | 515.0 | 38.0 | 487.2 | — | 2026-08-26 |
+| mlx-swift | `mlx-community/Qwen3-0.6B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 178.8 | 178.7 | 533.6 | 37.0 | 488.2 | — | 2026-08-26 |
 | core-ai | `core-ai/qwen3-0.6b-gpu` | INT4 (dynamic, macOS-26-era export) | 0.2.0+static-inputs-patch | 147.4 | 152.3 | 954.1 | 23.0 | 180.2 | — | 2026-08-26 |
 | litert-lm | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 121.6 | 120.6 | 183.9 | 151.5 | 465.4 | — | 2026-08-26 |
 
@@ -52,9 +52,10 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 | model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
 |---|---|---|---|---|---|---|---|
 | Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 51.0 | 55.4 | 2026-08-19 |
+| core-ai/lfm2.5-1.2b-gpu | core-ai | `core-ai/lfm2.5-1.2b-gpu` | int8hu block32 sym (untied head) | 0.2.0+static-inputs-patch | 45.5 | 45.7 | 2026-08-26 |
 | core-ai/minicpm5-1b-gpu | core-ai | `core-ai/minicpm5-1b-gpu` | INT8 (sym, dynamic) | 0.2.0+static-inputs-patch | 72.1 | 72.2 | 2026-08-26 |
 | litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 26.7 | 31.2 | 2026-08-24 |
-| litert-community/LFM2.5-1.2B-Instruct | litert-lm | `litert-community/LFM2.5-1.2B-Instruct` | int4_gpu (litert-community descriptor) | v0.16.0 | 68.3 | 68.6 | 2026-08-26 |
+| litert-community/LFM2.5-1.2B-Instruct | litert-lm | `litert-community/LFM2.5-1.2B-Instruct` | int4_gpu (litert-community descriptor) | v0.16.0 | 69.5 | 69.9 | 2026-08-26 |
 | litert-community/MiniCPM5-1B | litert-lm | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | 34.2 | 36.2 | 2026-08-26 |
 | litert-community/Qwen3-4B | litert-lm | `litert-community/Qwen3-4B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 16.1 | 23.1 | 2026-08-19 |
 
@@ -62,7 +63,6 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 **Structural exclusions** (failed-runs-stay — the row exists, the reason is the datum):
 
-- `core-ai core-ai/lfm2.5-1.2b-gpu short-chat` — app-adapter-ndarray-shape-substitution-hybrid
 - `core-ai core-ai/phi-4-mini-gpu short-chat` — partial-rotary-unsupported
 - `core-ai core-ai/qwen3-0.6b-ane short-chat` — invoke-fail-staticshape-logitsinference
 - `core-ai core-ai/qwen3-1.7b-ane short-chat` — invoke-fail-bd71203
