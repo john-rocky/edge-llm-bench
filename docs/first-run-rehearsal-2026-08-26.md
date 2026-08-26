@@ -19,9 +19,26 @@ truly fresh Mac comes on top of the timeline here.
 | `./bench release-watch` — works with zero setup | 2 s |
 | `./bench matrix` naive attempts (stumbles 1-2) | ~2 min |
 | build attempt without bootstrap (stumble 6) | fails in 1 s |
-| `bootstrap.sh` (vendored engines, incl. cactus source build) | see below |
-| `build_yardstick_mac.sh` (full flavor) | see below |
-| first measured cell | see below |
+| `bootstrap.sh` (vendored engines) | 37 min¹ |
+| `build_yardstick_mac.sh` (full flavor, clean derived data) | 4 min 13 s |
+| first measured cell (mlx Qwen3-0.6B, runs=3, model cached²) | 5 s |
+
+**Clone → first honest Mac number ≈ 45 min**, dominated by bootstrap's
+cactus source build (compiles the engine twice: device + simulator). The
+first cell's decode came out **565.7 tok/s vs the leaderboard's 566.3 cold —
+0.1% agreement**: a fresh clone reproduces the published number.
+
+¹ contended: a second bootstrap ran in parallel on the same machine and
+link; solo, expect ~20-30 min. ² a cold HF cache adds the model download
+(~35 s for the 350 MB Qwen3-0.6B-4bit on this link).
+
+Post-fix verification: with the tag default and the maxNumTokens patch in
+place, a from-scratch bootstrap + clean-derived-data build succeeded on the
+canonical checkout as well (`** BUILD SUCCEEDED **`, `bench doctor` all
+green). One rehearsal artifact to not repeat: rebuilding into derived data
+that had already resolved the v0.13.1 package produced a bogus
+`suppress_tokens_config` "cannot find in scope" error — stale module state,
+not a repo defect; wipe `DD_MAC` when the vendored LiteRT-LM tag changes.
 
 ## Stumbles, in the order a new user hits them
 

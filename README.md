@@ -48,11 +48,13 @@ the regression verdicts ship in the repo. To measure, start with
 ./bench doctor        # says exactly what is missing, with the fix command
 ```
 
-**Mac lane** — the shortest path to a first number:
+**Mac lane** — the shortest path to a first number (~45 min first time,
+measured 2026-08-26: ~30 min bootstrap, ~5 min build, seconds to measure;
+`docs/first-run-rehearsal-2026-08-26.md`):
 
 ```bash
 brew install xcodegen coreutils
-ios/BenchmarkApp/scripts/bootstrap.sh      # vendored engines
+ios/BenchmarkApp/scripts/bootstrap.sh      # vendored engines — the long step
 scripts/build_yardstick_mac.sh             # full-flavor CLI build
 ./bench matrix matrices/deepseek-r1-1.5b-crossarm.cells --platform mac
 ```
