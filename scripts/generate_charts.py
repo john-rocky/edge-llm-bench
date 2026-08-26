@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Generate docs/charts/*.png from the accumulation layer — never from literals.
 
-Reads results/summary/device-runs.csv and results/regression-reports/*/verdicts.json;
-if a number here disagrees with the leaderboard, the bug is here, not there.
+Reads results/summary/device-runs.csv and results/regression-reports/*/verdicts.json.
+Cell values come from render_leaderboard.arm_row — the same latest-session
+aggregation that renders LEADERBOARD.md — so a chart and the leaderboard cannot
+show two numbers for one cell. (Until 2026-08-26 charts pooled cold runs across
+sessions: a few percent off the leaderboard on Pixel cells, and wrong by 2× on
+any device whose history holds pre-fix sessions — the S26 mask-artifact rows.)
 
 Palette: dataviz-validated defaults (categorical #2a78d6/#eb6834/#1baf7a passes
 CVD+normal-vision checks on the #fcfcfb surface; the contrast WARN on aqua is
@@ -13,7 +17,10 @@ import csv
 import json
 import glob
 import os
-import statistics
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from render_leaderboard import arm_row  # noqa: E402
 
 import matplotlib
 matplotlib.use("Agg")
@@ -54,55 +61,29 @@ DEV = {"mac": "Mac16,9", "ios": "iPhone18,1", "android": "Pixel 8a"}
 
 
 
-def ios_admissible_campaigns(rows, tol=0.05):
-    """iPhone chart admission: nominal starts, plus fair-start sessions whose
-    in-session mlx anchor matches the newest all-nominal anchor within tol.
-
-    Why: plugged + warm ambient pins this device's reported thermal state at
-    'fair' regardless of load (2026-08-26: powered off, it would not cool
-    below 'fair'), so the state label cannot discriminate suppression there.
-    The anchor can: the same day produced fair-at-full-speed (mlx 177 vs the
-    nominal-era 171.6, litert/LFM matching their nominal-session values
-    exactly) AND fair-with-suppression (mlx 127-159, rejected by this gate).
-    Sessions without an anchor fall back to nominal-only.
-    """
-    import collections
-    anchors = collections.defaultdict(list)      # campaign -> warm anchor vals
-    anchor_nominal = collections.defaultdict(lambda: True)
-    for r in rows:
-        if (r["platform"] == "ios" and r["device"] == DEV["ios"]
-                and r["runtime"] == "mlx-swift" and "Qwen3-0.6B" in r["model_id"]
-                and r["task"] == "short-chat" and r["cold_run"] == "False"
-                and r["decode_tps"]):
-            anchors[r["campaign"]].append(float(r["decode_tps"]))
-            if (r["thermal_initial"] or "nominal") != "nominal":
-                anchor_nominal[r["campaign"]] = False
-    ref = None
-    for c in sorted(anchors, reverse=True):      # newest campaign dirs sort last; reverse -> newest first
-        if anchor_nominal[c]:
-            ref = statistics.median(anchors[c]); break
-    if ref is None:
-        return set()
-    return {c for c, vals in anchors.items()
-            if abs(statistics.median(vals) / ref - 1) <= tol}
-
-
-def ios_row_ok(r, admissible):
-    t = r["thermal_initial"] or ""
-    return t in ("nominal", "") or (t == "fair" and r["campaign"] in admissible)
-
 def load_rows():
     with open(os.path.join(ROOT, "results", "summary", "device-runs.csv")) as fh:
         return list(csv.DictReader(fh))
 
 
-def nominal_median(rows, campaign_sub, runtime, model_sub, task, cold):
-    vals = [float(r["decode_tps"]) for r in rows
-            if campaign_sub in r["campaign"] and r["runtime"] == runtime
-            and model_sub in r["model_id"] and r["task"] == task
-            and r["cold_run"] == cold and r["decode_tps"]
-            and (r["thermal_initial"] or "nominal") == "nominal"]
-    return statistics.median(vals) if vals else None
+def cell(rows, plat, rt, msub, dev=None):
+    """One (device, runtime, model) cell on the LEADERBOARD basis: arm_row over
+    the cell's full history (latest-session selection happens inside arm_row).
+    A substring matching two artifacts would silently pool them — refuse."""
+    sel = [r for r in rows
+           if r["platform"] == plat and r["device"] == (dev or DEV[plat])
+           and r["runtime"] == rt and msub in r["model_id"]
+           and r["task"] == "short-chat"]
+    ids = {r["model_id"] for r in sel}
+    if len(ids) > 1:
+        raise SystemExit(f"ambiguous cell {plat}/{rt}/{msub!r}: {sorted(ids)}")
+    return arm_row(sel) if sel else None
+
+
+def cell_num(rows, plat, rt, msub, field="cold"):
+    c = cell(rows, plat, rt, msub)
+    v = c and c[field]
+    return f"{v:.1f}" if v else "—"
 
 
 def chart_regression():
@@ -176,13 +157,8 @@ def chart_pixel_demo():
     ]
 
     def med(rt, msub):
-        vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == "android" and r["device"] == DEV["android"]
-                and r["runtime"] == rt
-                and msub in r["model_id"] and r["task"] == "short-chat"
-                and r["decode_tps"]
-                and (r["thermal_initial"] or "") in ("nominal", "light", "")]
-        return statistics.median(vals) if vals else None
+        c = cell(rows, "android", rt, msub)
+        return c and c["cold"]
 
     heights = [len(arms) for _, arms in models]
     fig, axes = plt.subplots(len(models), 1, figsize=(8.6, 0.62 * sum(heights) + 2.4),
@@ -208,8 +184,8 @@ def chart_pixel_demo():
         ax.set_title(title, fontsize=10, color=INK, loc="left", pad=4)
     for ax in axes:
         ax.set_xlim(0, xmax * 1.12)
-    axes[-1].set_xlabel("decode tok/s — short-chat, fresh process (cold), median of runs; "
-                        "runs starting past Android thermal 'light' excluded",
+    axes[-1].set_xlabel("decode tok/s — short-chat, fresh process (cold); latest capture "
+                        "session per cell, the same numbers as LEADERBOARD.md",
                         fontsize=9, color=MUTED)
     fig.suptitle("Pixel 8a — arms compared within each model (each model = one "
                  "config line; recipes stated per arm)", fontsize=11, color=INK,
@@ -223,41 +199,18 @@ def chart_pixel_demo():
 def chart_crossarm_table():
     """The cross-platform demo table as an image (for chat posts)."""
     rows = load_rows()
-    # iOS/Mac: nominal-start only (4-level scale; fairness §2). Android's
-    # 7-level scale is finer — 'light' starts are accepted and DISCLOSED in
-    # the caption; anything hotter is excluded.
-    OK_THERMAL = {"mac": {"nominal", ""}, "ios": {"nominal", ""},
-                  "android": {"nominal", "light", ""}}
 
-    def med(plat, rt, msub, cold="True"):
-        vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == plat and r["device"] == DEV[plat]
-                and r["runtime"] == rt
-                and msub in r["model_id"] and r["task"] == "short-chat"
-                and r["cold_run"] == cold and r["decode_tps"]
-                and (r["thermal_initial"] or "") in OK_THERMAL[plat]]
-        return f"{statistics.median(vals):.1f}" if vals else "—"
+    def med(plat, rt, msub, field="cold"):
+        return cell_num(rows, plat, rt, msub, field)
 
     def ios_warm(msub, label, suffix="", runtime="litert-lm"):
-        # "—" must not conflate "not measured" with "measured, excluded by the
-        # nominal-start filter" — disclose which one it is, from the data.
         # `suffix` states a per-cell budget deviation (e.g. LFM2.5's ctx 1024,
         # LiteRT-LM#3129) and only appears once a number exists to qualify.
-        # Same gated pool as the demo table (nominal + anchor-matched fair) —
-        # two published images must never show two numbers for one cell.
-        adm = ios_admissible_campaigns(rows)
-        vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == "ios" and r["device"] == DEV["ios"]
-                and r["runtime"] == runtime and msub in r["model_id"]
-                and r["task"] == "short-chat" and r["cold_run"] == "False"
-                and r["decode_tps"] and ios_row_ok(r, adm)]
-        v = f"{statistics.median(vals):.1f}" if vals else "—"
-        if v != "—":
-            return (label + " " + v + (" " + suffix if suffix else "")).strip()
-        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == runtime
-                       and msub in r["model_id"] and r["task"] == "short-chat"
-                       and r["decode_tps"] for r in rows)
-        return label + " — (fair starts only)" if captured else "—"
+        c = cell(rows, "ios", runtime, msub)
+        v = c and c["warm"]
+        if v:
+            return (label + f" {v:.1f}" + (" " + suffix if suffix else "")).strip()
+        return label + " —" if c else "—"
     data = [
         ["DeepSeek-R1-1.5B", "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek"),
          ios_warm("DeepSeek", "LiteRT INT8"),
@@ -279,9 +232,9 @@ def chart_crossarm_table():
          ios_warm("minicpm5-1b", "Core AI", runtime="core-ai"), "—",
          "LiteRT cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
          " / gpu-opt " + med("android", "litert-lm-gpu", "MiniCPM")],
-        ["Gemma-4-E2B", "LiteRT wNa8o8 " + med("mac", "litert-lm", "gemma-4-E2B", "False"),
+        ["Gemma-4-E2B", "LiteRT wNa8o8 " + med("mac", "litert-lm", "gemma-4-E2B", "warm"),
          ios_warm("gemma-4-E2B", "LiteRT wNa8o8"), "—", "—"],
-        ["Qwen3-0.6B", "mlx " + med("mac", "mlx-swift", "Qwen3-0.6B", "False"),
+        ["Qwen3-0.6B", "mlx " + med("mac", "mlx-swift", "Qwen3-0.6B", "warm"),
          ios_warm("Qwen3-0.6B", "LiteRT"),
          "llama " + med("android", "llama.cpp", "Qwen3-0.6B"),
          "LiteRT gpu " + med("android", "litert-lm-gpu", "Qwen3-0.6B")],
@@ -296,20 +249,19 @@ def chart_crossarm_table():
     t.auto_set_font_size(False)
     t.set_fontsize(9)
     t.scale(1, 1.6)
-    for (r, c), cell in t.get_celld().items():
-        cell.set_edgecolor(GRID)
-        cell.set_text_props(color=INK)
+    for (r, c), tc in t.get_celld().items():
+        tc.set_edgecolor(GRID)
+        tc.set_text_props(color=INK)
         if r == 0:
-            cell.set_text_props(color=MUTED, fontweight="bold")
-            cell.set_facecolor("#f0efec")
+            tc.set_text_props(color=MUTED, fontweight="bold")
+            tc.set_facecolor("#f0efec")
         else:
-            cell.set_facecolor(SURFACE)
+            tc.set_facecolor(SURFACE)
     ax.set_title("decode tok/s per arm (warm where the protocol defines it, else cold; "
                  "each cell states its recipe — cross-recipe cells are different\n"
-                 "deployment profiles, not one race. iPhone: nominal starts, plus fair-start "
-                 "sessions whose in-session anchor matches the nominal-era anchor "
-                 "within 5% (see devices/iphone-17-pro.md). Pixel cells include runs starting "
-                 "at Android thermal 'light'; hotter starts excluded)",
+                 "deployment profiles, not one race. Cell values are LEADERBOARD.md's: "
+                 "latest capture session per cell, never pooled across sessions — "
+                 "warm = median of same-session warm runs, cold = that session's last cold run)",
                  fontsize=10, color=INK, loc="left", pad=14)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "crossarm_table.png"),
@@ -320,39 +272,20 @@ def chart_crossarm_table():
 def chart_demo_models_table():
     """Just the three demo models, every arm that has a number (for chat posts)."""
     rows = load_rows()
-    OK = {"mac": ("nominal", ""), "ios": ("nominal", ""),
-          "android": ("nominal", "light", "")}
 
     def med(plat, rt, msub):
-        # cold (fresh-process) only — the same basis as the crossarm table's
-        # Mac/Pixel cells, so the two published images never disagree on a
-        # number (pooling warm runs skewed Mac cells by a few tenths).
-        vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == plat and r["device"] == DEV[plat]
-                and r["runtime"] == rt
-                and msub in r["model_id"] and r["task"] == "short-chat"
-                and r["cold_run"] == "True"
-                and r["decode_tps"] and (r["thermal_initial"] or "") in OK[plat]]
-        return f"{statistics.median(vals):.1f}" if vals else "—"
+        # cold (fresh-process) — LEADERBOARD basis via cell(), the same as the
+        # crossarm table's Mac/Pixel cells.
+        return cell_num(rows, plat, rt, msub)
 
     def ios_warm(msub, suffix="", runtime="litert-lm"):
-        # Same definition as the crossarm table's iPhone cells (warm, nominal
-        # start) so the two published images never disagree on a number; "—"
-        # discloses whether runs exist that the thermal filter excluded.
         # `suffix` states a per-cell budget deviation and only appears with a
         # number (LFM2.5's ctx 1024 — LiteRT-LM#3129).
-        adm = ios_admissible_campaigns(rows)
-        vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == runtime
-                and msub in r["model_id"] and r["task"] == "short-chat"
-                and r["cold_run"] == "False" and r["decode_tps"]
-                and ios_row_ok(r, adm)]
-        if vals:
-            return f"{statistics.median(vals):.1f}" + (" " + suffix if suffix else "")
-        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == runtime
-                       and msub in r["model_id"] and r["task"] == "short-chat"
-                       and r["decode_tps"] for r in rows)
-        return "— (fair-start runs only)" if captured else "—"
+        c = cell(rows, "ios", runtime, msub)
+        v = c and c["warm"]
+        if v:
+            return f"{v:.1f}" + (" " + suffix if suffix else "")
+        return "—"
 
     data = [
         ["DeepSeek-R1-Distill-1.5B",
@@ -389,19 +322,19 @@ def chart_demo_models_table():
     t.auto_set_font_size(False)
     t.set_fontsize(9.5)
     t.scale(1, 2.4)
-    for (r, c), cell in t.get_celld().items():
-        cell.set_edgecolor(GRID)
-        cell.set_text_props(color=INK)
+    for (r, c), tc in t.get_celld().items():
+        tc.set_edgecolor(GRID)
+        tc.set_text_props(color=INK)
         if r == 0:
-            cell.set_text_props(color=MUTED, fontweight="bold")
-            cell.set_facecolor("#f0efec")
+            tc.set_text_props(color=MUTED, fontweight="bold")
+            tc.set_facecolor("#f0efec")
         else:
-            cell.set_facecolor(SURFACE)
+            tc.set_facecolor(SURFACE)
     ax.set_title("Three models added by one config line each — decode tok/s, short-chat, "
                  "fresh process (iPhone: warm in-process runs).\nRecipes differ per cell "
                  "and are stated in it; cross-recipe cells are deployment profiles, not "
-                 "one race. iPhone: nominal starts + anchor-matched fair sessions (5%; devices/iphone-17-pro.md); "
-                 "Pixel: runs starting past Android thermal 'light' excluded.",
+                 "one race. Cell values are LEADERBOARD.md's: latest capture session per "
+                 "cell — warm = same-session median, cold = the session's last cold run.",
                  fontsize=10, color=INK, loc="left", pad=14)
     fig.tight_layout()
     fig.savefig(os.path.join(OUT, "demo_models_table.png"),
