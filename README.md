@@ -39,6 +39,37 @@ keeps all of it consistent.
 **Operating manual** — release regressions, adding a model / arm / device,
 what stays manual and why: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
+## Setup
+
+Reading needs none: the leaderboard, every raw record (`results/raw/`), and
+the regression verdicts ship in the repo. To measure, start with
+
+```bash
+./bench doctor        # says exactly what is missing, with the fix command
+```
+
+**Mac lane** — the shortest path to a first number:
+
+```bash
+brew install xcodegen coreutils
+ios/BenchmarkApp/scripts/bootstrap.sh      # vendored engines
+scripts/build_yardstick_mac.sh             # full-flavor CLI build
+./bench matrix matrices/deepseek-r1-1.5b-crossarm.cells --platform mac
+```
+
+**Android lane** — prebuilt engine binaries are on the
+[releases page](https://github.com/john-rocky/edge-llm-bench/releases), so no
+bazel/NDK build is needed: `android/README.md` (~15 min with an authorized
+device).
+
+**iPhone lane** — the heavy one: building and installing BenchmarkApp needs
+Xcode signing plus two increased-memory entitlements that are GUI-only. Plan
+half a day the first time; `docs/OPERATIONS.md` has the runbook.
+
+Captures self-police: a run that starts hot or lands with wide trial spread
+is quarantined and retried once automatically (`scripts/cell_gate.py`); what
+stays flagged is marked, never silently kept.
+
 ## What keeps the numbers honest
 
 - **The recipe is part of every row.** Arms run their own best available

@@ -8,10 +8,16 @@ working-rule slug table); this file is only *how to run the machine*.
 ## The core loop
 
 ```
+./bench doctor               # preflight: what is missing, with the fix command
 ./bench release-watch        # upstream releases vs environment.lock.json pins
 ./bench matrix  <cells>      # standing matrix -> summary -> RESULTS -> LEADERBOARD
 ./bench regress <cells> --engine <arm> --version <v> --baseline <selector>
 ```
+
+`doctor` exists so a run never dies mid-capture on a missing tool, binary, or
+device — every failure it reports comes with the command that fixes it. A
+`matrix` invocation whose platform filter matches zero cells now refuses
+loudly instead of rebuilding the summary and looking like a capture.
 
 - Cell files: `matrices/*.cells` (grammar: `matrices/README.md`). CI validates
   them (`cells-valid`).
@@ -33,7 +39,10 @@ working-rule slug table); this file is only *how to run the machine*.
      and the Mac CLI (`scripts/build_yardstick_mac.sh`) **on real hardware** —
      there is no CI build (hosted runners lack the required Xcode).
    - Android: `LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh`,
-     push per `android/README.md`.
+     push per `android/README.md`. Then attach `android/bin/<tag>/` (+ a full
+     SHA256SUMS) to a GitHub release `android-litert-lm-<tag>` — upstream
+     ships no Android binary, so the release asset is what lets anyone else
+     skip the bazel+NDK build.
    - Record artifact sha256s in `environment.lock.json` (the registry); the
      build stamps the *observed* pins into every row (the witness) — if they
      disagree, the row is telling you the truth.
@@ -131,6 +140,15 @@ working-rule slug table); this file is only *how to run the machine*.
 - **Cross-session device drift is 16-25%** (iphone-session-variance): never
   compare absolute numbers across sittings without anchors; the differ
   enforces this (INFO-ONLY / anchor-normalized).
+- **HOT and wide-spread captures auto-retry once** (`scripts/cell_gate.py`,
+  wired into the mac and iPhone runners): the flagged capture is quarantined
+  in raw (mac: `<cell>.jsonl.attempt1`; iPhone: `device-jsonl-flagged/` —
+  kept for audit, outside build_summary's globs, never pooled into the
+  session median) and the cell re-runs after a real cooldown. A flagged
+  retry stands, with a `FLAGGED.txt` note; SHORT (crash/timeout) never
+  retries — failed-runs-stay owns that path. Android is not auto-retried:
+  it has no warm regime, so its spread gate lives in the differ
+  (UNRELIABLE at scoring time).
 - **litert cells can stall ~10 min at teardown** — the iPhone runner's
   gtimeout is load-bearing; keep `CELL_TIMEOUT=3600` for litert cells.
 - **The SPM-built Mac yardstick silently lacks four runtimes** — matrix
