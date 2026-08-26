@@ -53,6 +53,44 @@ def style_ax(ax):
 DEV = {"mac": "Mac16,9", "ios": "iPhone18,1", "android": "Pixel 8a"}
 
 
+
+def ios_admissible_campaigns(rows, tol=0.05):
+    """iPhone chart admission: nominal starts, plus fair-start sessions whose
+    in-session mlx anchor matches the newest all-nominal anchor within tol.
+
+    Why: plugged + warm ambient pins this device's reported thermal state at
+    'fair' regardless of load (2026-08-26: powered off, it would not cool
+    below 'fair'), so the state label cannot discriminate suppression there.
+    The anchor can: the same day produced fair-at-full-speed (mlx 177 vs the
+    nominal-era 171.6, litert/LFM matching their nominal-session values
+    exactly) AND fair-with-suppression (mlx 127-159, rejected by this gate).
+    Sessions without an anchor fall back to nominal-only.
+    """
+    import collections
+    anchors = collections.defaultdict(list)      # campaign -> warm anchor vals
+    anchor_nominal = collections.defaultdict(lambda: True)
+    for r in rows:
+        if (r["platform"] == "ios" and r["device"] == DEV["ios"]
+                and r["runtime"] == "mlx-swift" and "Qwen3-0.6B" in r["model_id"]
+                and r["task"] == "short-chat" and r["cold_run"] == "False"
+                and r["decode_tps"]):
+            anchors[r["campaign"]].append(float(r["decode_tps"]))
+            if (r["thermal_initial"] or "nominal") != "nominal":
+                anchor_nominal[r["campaign"]] = False
+    ref = None
+    for c in sorted(anchors, reverse=True):      # newest campaign dirs sort last; reverse -> newest first
+        if anchor_nominal[c]:
+            ref = statistics.median(anchors[c]); break
+    if ref is None:
+        return set()
+    return {c for c, vals in anchors.items()
+            if abs(statistics.median(vals) / ref - 1) <= tol}
+
+
+def ios_row_ok(r, admissible):
+    t = r["thermal_initial"] or ""
+    return t in ("nominal", "") or (t == "fair" and r["campaign"] in admissible)
+
 def load_rows():
     with open(os.path.join(ROOT, "results", "summary", "device-runs.csv")) as fh:
         return list(csv.DictReader(fh))
@@ -200,15 +238,23 @@ def chart_crossarm_table():
                 and (r["thermal_initial"] or "") in OK_THERMAL[plat]]
         return f"{statistics.median(vals):.1f}" if vals else "—"
 
-    def ios_warm(msub, label, suffix=""):
+    def ios_warm(msub, label, suffix="", runtime="litert-lm"):
         # "—" must not conflate "not measured" with "measured, excluded by the
         # nominal-start filter" — disclose which one it is, from the data.
         # `suffix` states a per-cell budget deviation (e.g. LFM2.5's ctx 1024,
         # LiteRT-LM#3129) and only appears once a number exists to qualify.
-        v = med("ios", "litert-lm", msub, "False")
+        # Same gated pool as the demo table (nominal + anchor-matched fair) —
+        # two published images must never show two numbers for one cell.
+        adm = ios_admissible_campaigns(rows)
+        vals = [float(r["decode_tps"]) for r in rows
+                if r["platform"] == "ios" and r["device"] == DEV["ios"]
+                and r["runtime"] == runtime and msub in r["model_id"]
+                and r["task"] == "short-chat" and r["cold_run"] == "False"
+                and r["decode_tps"] and ios_row_ok(r, adm)]
+        v = f"{statistics.median(vals):.1f}" if vals else "—"
         if v != "—":
             return (label + " " + v + (" " + suffix if suffix else "")).strip()
-        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == "litert-lm"
+        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == runtime
                        and msub in r["model_id"] and r["task"] == "short-chat"
                        and r["decode_tps"] for r in rows)
         return label + " — (fair starts only)" if captured else "—"
@@ -226,15 +272,18 @@ def chart_crossarm_table():
         ["LFM2.5-1.2B", "—", ios_warm("LFM2.5", "LiteRT int4_gpu", "(ctx 1024)"), "—",
          "LiteRT int4 cpu " + med("android", "litert-lm-cpu", "LFM2.5") +
          " / gpu " + med("android", "litert-lm-gpu", "LFM2.5")],
-        ["MiniCPM5-1B", "—", ios_warm("MiniCPM", "LiteRT gpu-opt"), "—",
+        ["MiniCPM5-1B", "—",
+         ios_warm("MiniCPM", "LiteRT gpu-opt") + "\n" +
+         ios_warm("minicpm5-1b", "Core AI", runtime="core-ai"), "—",
          "LiteRT cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
          " / gpu-opt " + med("android", "litert-lm-gpu", "MiniCPM")],
         ["Gemma-4-E2B", "LiteRT wNa8o8 " + med("mac", "litert-lm", "gemma-4-E2B", "False"),
-         "LiteRT wNa8o8 " + med("ios", "litert-lm", "gemma-4-E2B", "False"), "—", "—"],
+         ios_warm("gemma-4-E2B", "LiteRT wNa8o8"), "—", "—"],
         ["Qwen3-0.6B", "mlx " + med("mac", "mlx-swift", "Qwen3-0.6B", "False"),
-         "LiteRT " + med("ios", "litert-lm", "Qwen3-0.6B", "False"),
+         ios_warm("Qwen3-0.6B", "LiteRT"),
          "llama " + med("android", "llama.cpp", "Qwen3-0.6B"),
          "LiteRT gpu " + med("android", "litert-lm-gpu", "Qwen3-0.6B")],
+        ["", "", ios_warm("qwen3-0.6b", "Core AI", runtime="core-ai"), "", ""],
     ]
     cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro", "Pixel 8a (llama.cpp)",
             "Pixel 8a (LiteRT-LM)"]
@@ -255,8 +304,9 @@ def chart_crossarm_table():
             cell.set_facecolor(SURFACE)
     ax.set_title("decode tok/s per arm (warm where the protocol defines it, else cold; "
                  "each cell states its recipe — cross-recipe cells are different\n"
-                 "deployment profiles, not one race. iPhone/Mac cells: nominal thermal "
-                 "starts only. Pixel cells include runs starting "
+                 "deployment profiles, not one race. iPhone: nominal starts, plus fair-start "
+                 "sessions whose in-session anchor matches the nominal-era anchor "
+                 "within 5% (see devices/iphone-17-pro.md). Pixel cells include runs starting "
                  "at Android thermal 'light'; hotter starts excluded)",
                  fontsize=10, color=INK, loc="left", pad=14)
     fig.tight_layout()
@@ -283,20 +333,21 @@ def chart_demo_models_table():
                 and r["decode_tps"] and (r["thermal_initial"] or "") in OK[plat]]
         return f"{statistics.median(vals):.1f}" if vals else "—"
 
-    def ios_warm(msub, suffix=""):
+    def ios_warm(msub, suffix="", runtime="litert-lm"):
         # Same definition as the crossarm table's iPhone cells (warm, nominal
         # start) so the two published images never disagree on a number; "—"
         # discloses whether runs exist that the thermal filter excluded.
         # `suffix` states a per-cell budget deviation and only appears with a
         # number (LFM2.5's ctx 1024 — LiteRT-LM#3129).
+        adm = ios_admissible_campaigns(rows)
         vals = [float(r["decode_tps"]) for r in rows
-                if r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == "litert-lm"
+                if r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == runtime
                 and msub in r["model_id"] and r["task"] == "short-chat"
                 and r["cold_run"] == "False" and r["decode_tps"]
-                and (r["thermal_initial"] or "") in OK["ios"]]
+                and ios_row_ok(r, adm)]
         if vals:
             return f"{statistics.median(vals):.1f}" + (" " + suffix if suffix else "")
-        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == "litert-lm"
+        captured = any(r["platform"] == "ios" and r["device"] == DEV["ios"] and r["runtime"] == runtime
                        and msub in r["model_id"] and r["task"] == "short-chat"
                        and r["decode_tps"] for r in rows)
         return "— (fair-start runs only)" if captured else "—"
@@ -305,22 +356,28 @@ def chart_demo_models_table():
         ["DeepSeek-R1-Distill-1.5B",
          "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek") +
          "\nLiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"),
-         "LiteRT INT8 " + ios_warm("DeepSeek"),
+         "LiteRT INT8 " + ios_warm("DeepSeek") + "\nCore AI — (bundle pending export)",
          "llama.cpp Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
          "cpu " + med("android", "litert-lm-cpu", "DeepSeek") +
          " / gpu " + med("android", "litert-lm-gpu", "DeepSeek") + "  (INT8)"],
         # LFM2.5 iPhone runs at context-tokens=1024 (exported prefill plan;
         # 08-24's failure was the harness's own max_num_tokens config —
         # LiteRT-LM#3129, corrected in matrices/lu-focus-litert-ios.cells).
-        ["LFM2.5-1.2B-Instruct", "—", "int4_gpu " + ios_warm("LFM2.5", "(ctx 1024)"), "—",
+        # LFM Core AI: our adapter's ShortConv-hybrid binding limitation
+        # (exclude row in matrices/lu-focus-litert-ios.cells), not the runtime's.
+        ["LFM2.5-1.2B-Instruct", "—",
+         "LiteRT int4_gpu " + ios_warm("LFM2.5", "(ctx 1024)") +
+         "\nCore AI — (our adapter, hybrid)", "—",
          "cpu " + med("android", "litert-lm-cpu", "LFM2.5") + " (int4) / gpu " +
          med("android", "litert-lm-gpu", "LFM2.5") + " (int4_gpu)"],
-        ["MiniCPM5-1B", "—", "gpu-opt " + ios_warm("MiniCPM"), "—",
+        ["MiniCPM5-1B", "—",
+         "LiteRT gpu-opt " + ios_warm("MiniCPM") +
+         "\nCore AI INT8 " + ios_warm("minicpm5-1b", runtime="core-ai"), "—",
          "cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
          " (wi4b32_wi8) / gpu " + med("android", "litert-lm-gpu", "MiniCPM") +
          " (gpu-opt)"],
     ]
-    cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro — LiteRT-LM",
+    cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro",
             "Pixel 8a — llama.cpp", "Pixel 8a — LiteRT-LM"]
     fig, ax = plt.subplots(figsize=(14.8, 3.4), dpi=200)
     fig.patch.set_facecolor(SURFACE)
@@ -341,7 +398,7 @@ def chart_demo_models_table():
     ax.set_title("Three models added by one config line each — decode tok/s, short-chat, "
                  "fresh process (iPhone: warm in-process runs).\nRecipes differ per cell "
                  "and are stated in it; cross-recipe cells are deployment profiles, not "
-                 "one race. iPhone/Mac: nominal thermal starts only; "
+                 "one race. iPhone: nominal starts + anchor-matched fair sessions (5%; devices/iphone-17-pro.md); "
                  "Pixel: runs starting past Android thermal 'light' excluded.",
                  fontsize=10, color=INK, loc="left", pad=14)
     fig.tight_layout()
