@@ -354,7 +354,7 @@ def chart_crossarm_table():
          "Pixel 8a · llama.cpp", "Pixel 8a · LiteRT-LM"],
         [1.55, 2.55, 2.85, 1.95, 2.75],
         table_rows,
-        "Values are LEADERBOARD.md's: latest capture session per cell, never pooled "
+        "Values are the leaderboard render's (shipped raw -> build_summary -> render_leaderboard): latest capture session per cell, never pooled "
         "across sessions — warm = median of same-session warm runs, cold = the "
         "session's last cold run.\nLFM2.5 LiteRT cells run at context 1024 (the "
         "file's exported prefill plan — LiteRT-LM#3129); Android v1 has no warm "
@@ -407,7 +407,7 @@ def chart_demo_models_table():
          "Pixel 8a · llama.cpp", "Pixel 8a · LiteRT-LM"],
         [1.85, 2.55, 2.85, 1.95, 2.75],
         table_rows,
-        "Values are LEADERBOARD.md's: latest capture session per cell, never pooled "
+        "Values are the leaderboard render's (shipped raw -> build_summary -> render_leaderboard): latest capture session per cell, never pooled "
         "across sessions — warm = median of same-session warm runs, cold = the "
         "session's last cold run.\nLFM2.5 LiteRT cells run at context 1024 (the "
         "file's exported prefill plan — LiteRT-LM#3129).")
