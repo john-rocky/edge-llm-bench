@@ -1,0 +1,12 @@
+# Fill the Mac column for the demo models (the README crossarm table's "—"
+# holes that are measurable — 2026-08-27). Same artifacts/settings as the
+# iPhone leg where the constraint carries: LFM2.5's litert file needs
+# max_num_tokens >= its exported prefill plan (1024), so that cell runs at
+# context-tokens=1024 — a disclosed budget deviation (LiteRT-LM#3129 notes in
+# lu-focus-litert-ios.cells). mlx arms use the size-matched mlx-community
+# 4-bit builds (LFM2.5-1.2B published since the LFM2-350M-era comparator).
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat runs=4 context-tokens=1024
+mac mlx-swift mlx-community/LFM2.5-1.2B-Instruct-4bit short-chat runs=4
+mac litert-lm litert-community/MiniCPM5-1B short-chat runs=4
+mac mlx-swift mlx-community/MiniCPM5-1B-4bit short-chat runs=4

@@ -147,10 +147,12 @@ def chart_pixel_demo():
             ("LiteRT-LM gpu (INT8)", "litert-lm-gpu", "DeepSeek-R1-Distill-Qwen-1.5B", None),
         ]),
         ("LFM2.5-1.2B-Instruct", [
+            ("llama.cpp (Q4_K_M)", "llama.cpp", "LFM2.5-1.2B", None),
             ("LiteRT-LM cpu (int4)", "litert-lm-cpu", "LFM2.5-1.2B", None),
             ("LiteRT-LM gpu (int4_gpu)", "litert-lm-gpu", "LFM2.5-1.2B", None),
         ]),
         ("MiniCPM5-1B", [
+            ("llama.cpp (Q4_K_M)", "llama.cpp", "MiniCPM5-1B", None),
             ("LiteRT-LM cpu (wi4b32_wi8)", "litert-lm-cpu", "MiniCPM5-1B", None),
             ("LiteRT-LM gpu (gpu-opt)", "litert-lm-gpu", "MiniCPM5-1B", None),
         ]),
@@ -196,150 +198,211 @@ def chart_pixel_demo():
     return sum(heights)
 
 
+YELLOW = "#eda100"   # categorical slot 4 (dataviz palette) — the Core AI arm
+ZEBRA = "#f4f3f1"
+HEAD_INK = "#55544f"
+
+
+def _cell_line(rows, color, label, plat, rt, msub, field="cold", note=""):
+    """One arm line for a value table: (dot color, value, muted recipe label)."""
+    c = cell(rows, plat, rt, msub)
+    v = c and c[field]
+    lab = label + (f" · {note}" if note else "")
+    return (color, f"{v:.1f}" if v else "—", lab)
+
+
+def draw_value_table(fname, title, subtitle, columns, widths, table_rows, footnote):
+    """Typeset a value table: no cell borders, zebra row banding, and per arm
+    line a colored identity dot + bold value + muted recipe label (identity is
+    never color-alone — the label carries it; dots reinforce). columns[0] is
+    the model column; widths are inches; table_rows: [(model, [cell, ...])]
+    where cell = list of (color, value, label) lines, [] = em-dash cell."""
+    LINE, PAD, MARGIN = 0.235, 0.16, 0.30
+    n_lines = [max(1, max((len(c) for c in cells), default=1))
+               for _, cells in table_rows]
+    row_h = [n * LINE + PAD for n in n_lines]
+    W = MARGIN * 2 + sum(widths)
+    title_h, sub_h, head_h, foot_h = 0.40, 0.30, 0.34, 0.56
+    H = 0.22 + title_h + sub_h + head_h + sum(row_h) + foot_h
+    fig = plt.figure(figsize=(W, H), dpi=200)
+    fig.patch.set_facecolor(SURFACE)
+    rend = fig.canvas.get_renderer()
+    inv = fig.transFigure.inverted()
+
+    def xf(x):
+        return x / W
+
+    def yf(y):          # y in inches from the top
+        return 1 - y / H
+
+    def text(x, y, s, size, color, weight="normal", va="center"):
+        return fig.text(xf(x), yf(y), s, fontsize=size, color=color,
+                        fontweight=weight, ha="left", va=va)
+
+    def advance(t):
+        return inv.transform((t.get_window_extent(rend).x1, 0))[0] * W
+
+    col_x = [MARGIN]
+    for w in widths[:-1]:
+        col_x.append(col_x[-1] + w)
+
+    y = 0.22 + title_h / 2
+    text(MARGIN, y, title, 13, INK, "bold")
+    y += title_h / 2 + sub_h / 2
+    text(MARGIN, y, subtitle, 9, MUTED)
+    y += sub_h / 2
+    for x, label in zip(col_x, columns):
+        text(x, y + head_h / 2, label, 9.5, HEAD_INK, "bold")
+    y += head_h
+    fig.add_artist(plt.Line2D([xf(MARGIN * 0.6), 1 - xf(MARGIN * 0.6)],
+                              [yf(y)] * 2, transform=fig.transFigure,
+                              color=GRID, linewidth=1))
+
+    for i, ((model, cells), h) in enumerate(zip(table_rows, row_h)):
+        if i % 2 == 1:
+            fig.add_artist(plt.Rectangle(
+                (xf(MARGIN * 0.5), yf(y + h)), 1 - 2 * xf(MARGIN * 0.5),
+                h / H, transform=fig.transFigure, facecolor=ZEBRA,
+                edgecolor="none", zorder=0))
+        first_y = y + PAD / 2 + LINE / 2
+        text(col_x[0], first_y, model, 10, INK, "bold")
+        for x, lines in zip(col_x[1:], cells):
+            if not lines:
+                text(x + 0.17, first_y, "—", 10, MUTED)
+                continue
+            for j, (color, value, label) in enumerate(lines):
+                ly = y + PAD / 2 + (j + 0.5) * LINE
+                if color:
+                    text(x, ly, "●", 6.5, color)
+                t = text(x + 0.17, ly, value, 10.5,
+                         INK if value != "—" else MUTED, "bold")
+                text(advance(t) + 0.09, ly, label, 8.5, MUTED)
+        y += h
+
+    text(MARGIN, y + 0.22, footnote, 8, MUTED, va="top")
+    fig.savefig(os.path.join(OUT, fname), facecolor=SURFACE)
+    plt.close(fig)
+
+
 def chart_crossarm_table():
-    """The cross-platform demo table as an image (for chat posts)."""
+    """The cross-platform standings table (README hero + chat posts)."""
     rows = load_rows()
 
-    def med(plat, rt, msub, field="cold"):
-        return cell_num(rows, plat, rt, msub, field)
+    def L(*a, **k):
+        return _cell_line(rows, *a, **k)
 
-    def ios_warm(msub, label, suffix="", runtime="litert-lm"):
-        # `suffix` states a per-cell budget deviation (e.g. LFM2.5's ctx 1024,
-        # LiteRT-LM#3129) and only appears once a number exists to qualify.
-        c = cell(rows, "ios", runtime, msub)
-        v = c and c["warm"]
-        if v:
-            return (label + f" {v:.1f}" + (" " + suffix if suffix else "")).strip()
-        return label + " —" if c else "—"
-    data = [
-        ["DeepSeek-R1-1.5B", "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek"),
-         ios_warm("DeepSeek", "LiteRT INT8"),
-         "llama Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
-         "LiteRT INT8 " + med("android", "litert-lm-cpu", "DeepSeek")],
-        ["", "LiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"), "", "",
-         "LiteRT gpu " + med("android", "litert-lm-gpu", "DeepSeek")],
-        # LFM2.5 iPhone runs at context-tokens=1024 (the file's exported prefill
-        # plan; the 08-24 engine-create failure was this harness's own
-        # max_num_tokens config, not the runtime — LiteRT-LM#3129, corrected
-        # in matrices/lu-focus-litert-ios.cells).
-        ["LFM2.5-1.2B", "—",
-         ios_warm("LFM2.5", "LiteRT int4_gpu", "(ctx 1024)") + "\n" +
-         ios_warm("lfm2.5-1.2b", "Core AI", "(S=1 export)", runtime="core-ai"), "—",
-         "LiteRT int4 cpu " + med("android", "litert-lm-cpu", "LFM2.5") +
-         " / gpu " + med("android", "litert-lm-gpu", "LFM2.5")],
-        ["MiniCPM5-1B", "—",
-         ios_warm("MiniCPM", "LiteRT gpu-opt") + "\n" +
-         ios_warm("minicpm5-1b", "Core AI", runtime="core-ai"), "—",
-         "LiteRT cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
-         " / gpu-opt " + med("android", "litert-lm-gpu", "MiniCPM")],
-        ["Gemma-4-E2B", "LiteRT wNa8o8 " + med("mac", "litert-lm", "gemma-4-E2B", "warm"),
-         ios_warm("gemma-4-E2B", "LiteRT wNa8o8"), "—", "—"],
-        ["Qwen3-0.6B", "mlx " + med("mac", "mlx-swift", "Qwen3-0.6B", "warm"),
-         ios_warm("Qwen3-0.6B", "LiteRT"),
-         "llama " + med("android", "llama.cpp", "Qwen3-0.6B"),
-         "LiteRT gpu " + med("android", "litert-lm-gpu", "Qwen3-0.6B")],
-        ["", "", ios_warm("qwen3-0.6b", "Core AI", runtime="core-ai"), "", ""],
+    table_rows = [
+        ("Qwen3-0.6B", [
+            [L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "Qwen3-0.6B", "warm"),
+             L(BLUE, "LiteRT · int4 mixed", "mac", "litert-lm", "Qwen3-0.6B", "warm")],
+            [L(AQUA, "mlx · 4bit", "ios", "mlx-swift", "Qwen3-0.6B", "warm"),
+             L(YELLOW, "Core AI · int4 dynamic", "ios", "core-ai", "qwen3-0.6b", "warm"),
+             L(BLUE, "LiteRT · int4 mixed", "ios", "litert-lm", "Qwen3-0.6B", "warm")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "Qwen3-0.6B")],
+            [L(BLUE, "LiteRT gpu · int4 mixed", "android", "litert-lm-gpu", "Qwen3-0.6B"),
+             L(BLUE, "LiteRT cpu · int4 mixed", "android", "litert-lm-cpu", "Qwen3-0.6B")],
+        ]),
+        ("DeepSeek-R1-1.5B", [
+            [L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "DeepSeek"),
+             L(BLUE, "LiteRT · INT8", "mac", "litert-lm", "DeepSeek")],
+            [L(BLUE, "LiteRT · INT8", "ios", "litert-lm", "DeepSeek", "warm")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "DeepSeek")],
+            [L(BLUE, "LiteRT gpu · INT8", "android", "litert-lm-gpu", "DeepSeek"),
+             L(BLUE, "LiteRT cpu · INT8", "android", "litert-lm-cpu", "DeepSeek")],
+        ]),
+        # LFM2.5 runs at context-tokens=1024 on every litert arm (the file's
+        # exported prefill plan — LiteRT-LM#3129 notes in the cells files).
+        ("LFM2.5-1.2B", [
+            [L(BLUE, "LiteRT · int4_gpu", "mac", "litert-lm", "LFM2.5", "warm", "ctx 1024"),
+             L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "LFM2.5", "warm")],
+            [L(BLUE, "LiteRT · int4_gpu", "ios", "litert-lm", "LFM2.5", "warm", "ctx 1024"),
+             L(YELLOW, "Core AI · int8hu", "ios", "core-ai", "lfm2.5-1.2b", "warm", "S=1 export")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "LFM2.5")],
+            [L(BLUE, "LiteRT gpu · int4_gpu", "android", "litert-lm-gpu", "LFM2.5"),
+             L(BLUE, "LiteRT cpu · int4", "android", "litert-lm-cpu", "LFM2.5")],
+        ]),
+        ("MiniCPM5-1B", [
+            [L(BLUE, "LiteRT · gpu-opt", "mac", "litert-lm", "MiniCPM", "warm"),
+             L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "MiniCPM", "warm")],
+            [L(BLUE, "LiteRT · gpu-opt", "ios", "litert-lm", "MiniCPM", "warm"),
+             L(YELLOW, "Core AI · INT8", "ios", "core-ai", "minicpm5-1b", "warm")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "MiniCPM")],
+            [L(BLUE, "LiteRT gpu · gpu-opt", "android", "litert-lm-gpu", "MiniCPM"),
+             L(BLUE, "LiteRT cpu · wi4b32_wi8", "android", "litert-lm-cpu", "MiniCPM")],
+        ]),
+        ("Gemma-4-E2B", [
+            [L(BLUE, "LiteRT · wNa8o8", "mac", "litert-lm", "gemma-4-E2B", "warm")],
+            [L(BLUE, "LiteRT · wNa8o8", "ios", "litert-lm", "gemma-4-E2B", "warm")],
+            [],
+            [L(BLUE, "LiteRT gpu · wNa8o8", "android", "litert-lm-gpu", "gemma-4-E2B")],
+        ]),
     ]
-    cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro", "Pixel 8a (llama.cpp)",
-            "Pixel 8a (LiteRT-LM)"]
-    fig, ax = plt.subplots(figsize=(12.5, 0.55 * len(data) + 1.6), dpi=200)
-    fig.patch.set_facecolor(SURFACE)
-    ax.axis("off")
-    t = ax.table(cellText=data, colLabels=cols, loc="center", cellLoc="left")
-    t.auto_set_font_size(False)
-    t.set_fontsize(9)
-    t.scale(1, 1.6)
-    for (r, c), tc in t.get_celld().items():
-        tc.set_edgecolor(GRID)
-        tc.set_text_props(color=INK)
-        if r == 0:
-            tc.set_text_props(color=MUTED, fontweight="bold")
-            tc.set_facecolor("#f0efec")
-        else:
-            tc.set_facecolor(SURFACE)
-    ax.set_title("decode tok/s per arm (warm where the protocol defines it, else cold; "
-                 "each cell states its recipe — cross-recipe cells are different\n"
-                 "deployment profiles, not one race. Cell values are LEADERBOARD.md's: "
-                 "latest capture session per cell, never pooled across sessions — "
-                 "warm = median of same-session warm runs, cold = that session's last cold run)",
-                 fontsize=10, color=INK, loc="left", pad=14)
-    fig.tight_layout()
-    fig.savefig(os.path.join(OUT, "crossarm_table.png"),
-                facecolor=SURFACE, bbox_inches="tight")
-    plt.close(fig)
+    draw_value_table(
+        "crossarm_table.png",
+        "Decode speed per arm — tok/s",
+        "Warm where the protocol defines it, else cold · the recipe travels with "
+        "every cell · cross-recipe cells are different deployment profiles, not one race",
+        ["model", "Mac Studio M4 Max", "iPhone 17 Pro",
+         "Pixel 8a · llama.cpp", "Pixel 8a · LiteRT-LM"],
+        [1.55, 2.55, 2.85, 1.95, 2.75],
+        table_rows,
+        "Values are LEADERBOARD.md's: latest capture session per cell, never pooled "
+        "across sessions — warm = median of same-session warm runs, cold = the "
+        "session's last cold run.\nLFM2.5 LiteRT cells run at context 1024 (the "
+        "file's exported prefill plan — LiteRT-LM#3129); Android v1 has no warm "
+        "regime (methodology/android.md).")
 
 
 def chart_demo_models_table():
-    """Just the three demo models, every arm that has a number (for chat posts)."""
+    """The three demo models, every arm with a number (for chat posts)."""
     rows = load_rows()
 
-    def med(plat, rt, msub):
-        # cold (fresh-process) — LEADERBOARD basis via cell(), the same as the
-        # crossarm table's Mac/Pixel cells.
-        return cell_num(rows, plat, rt, msub)
+    def L(*a, **k):
+        return _cell_line(rows, *a, **k)
 
-    def ios_warm(msub, suffix="", runtime="litert-lm"):
-        # `suffix` states a per-cell budget deviation and only appears with a
-        # number (LFM2.5's ctx 1024 — LiteRT-LM#3129).
-        c = cell(rows, "ios", runtime, msub)
-        v = c and c["warm"]
-        if v:
-            return f"{v:.1f}" + (" " + suffix if suffix else "")
-        return "—"
-
-    data = [
-        ["DeepSeek-R1-Distill-1.5B",
-         "mlx 4bit " + med("mac", "mlx-swift", "DeepSeek") +
-         "\nLiteRT INT8 " + med("mac", "litert-lm", "DeepSeek"),
-         "LiteRT INT8 " + ios_warm("DeepSeek") + "\nCore AI — (bundle pending export)",
-         "llama.cpp Q4_K_M " + med("android", "llama.cpp", "DeepSeek"),
-         "cpu " + med("android", "litert-lm-cpu", "DeepSeek") +
-         " / gpu " + med("android", "litert-lm-gpu", "DeepSeek") + "  (INT8)"],
-        # LFM2.5 iPhone runs at context-tokens=1024 (exported prefill plan;
-        # 08-24's failure was the harness's own max_num_tokens config —
-        # LiteRT-LM#3129, corrected in matrices/lu-focus-litert-ios.cells).
-        # LFM Core AI: our adapter's ShortConv-hybrid binding limitation
-        # (exclude row in matrices/lu-focus-litert-ios.cells), not the runtime's.
-        ["LFM2.5-1.2B-Instruct", "—",
-         "LiteRT int4_gpu " + ios_warm("LFM2.5", "(ctx 1024)") +
-         "\nCore AI " + ios_warm("lfm2.5-1.2b", "(S=1 export)", runtime="core-ai"), "—",
-         "cpu " + med("android", "litert-lm-cpu", "LFM2.5") + " (int4) / gpu " +
-         med("android", "litert-lm-gpu", "LFM2.5") + " (int4_gpu)"],
-        ["MiniCPM5-1B", "—",
-         "LiteRT gpu-opt " + ios_warm("MiniCPM") +
-         "\nCore AI INT8 " + ios_warm("minicpm5-1b", runtime="core-ai"), "—",
-         "cpu " + med("android", "litert-lm-cpu", "MiniCPM") +
-         " (wi4b32_wi8) / gpu " + med("android", "litert-lm-gpu", "MiniCPM") +
-         " (gpu-opt)"],
+    table_rows = [
+        ("DeepSeek-R1-1.5B", [
+            [L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "DeepSeek"),
+             L(BLUE, "LiteRT · INT8", "mac", "litert-lm", "DeepSeek")],
+            [L(BLUE, "LiteRT · INT8", "ios", "litert-lm", "DeepSeek", "warm"),
+             (YELLOW, "—", "Core AI · bundle pending export")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "DeepSeek")],
+            [L(BLUE, "LiteRT gpu · INT8", "android", "litert-lm-gpu", "DeepSeek"),
+             L(BLUE, "LiteRT cpu · INT8", "android", "litert-lm-cpu", "DeepSeek")],
+        ]),
+        ("LFM2.5-1.2B-Instruct", [
+            [L(BLUE, "LiteRT · int4_gpu", "mac", "litert-lm", "LFM2.5", note="ctx 1024"),
+             L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "LFM2.5")],
+            [L(BLUE, "LiteRT · int4_gpu", "ios", "litert-lm", "LFM2.5", "warm", "ctx 1024"),
+             L(YELLOW, "Core AI · int8hu", "ios", "core-ai", "lfm2.5-1.2b", "warm", "S=1 export")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "LFM2.5")],
+            [L(BLUE, "LiteRT gpu · int4_gpu", "android", "litert-lm-gpu", "LFM2.5"),
+             L(BLUE, "LiteRT cpu · int4", "android", "litert-lm-cpu", "LFM2.5")],
+        ]),
+        ("MiniCPM5-1B", [
+            [L(BLUE, "LiteRT · gpu-opt", "mac", "litert-lm", "MiniCPM"),
+             L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "MiniCPM")],
+            [L(BLUE, "LiteRT · gpu-opt", "ios", "litert-lm", "MiniCPM", "warm"),
+             L(YELLOW, "Core AI · INT8", "ios", "core-ai", "minicpm5-1b", "warm")],
+            [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "MiniCPM")],
+            [L(BLUE, "LiteRT gpu · gpu-opt", "android", "litert-lm-gpu", "MiniCPM"),
+             L(BLUE, "LiteRT cpu · wi4b32_wi8", "android", "litert-lm-cpu", "MiniCPM")],
+        ]),
     ]
-    cols = ["model", "Mac Studio M4 Max", "iPhone 17 Pro",
-            "Pixel 8a — llama.cpp", "Pixel 8a — LiteRT-LM"]
-    fig, ax = plt.subplots(figsize=(14.8, 3.4), dpi=200)
-    fig.patch.set_facecolor(SURFACE)
-    ax.axis("off")
-    t = ax.table(cellText=data, colLabels=cols, loc="center", cellLoc="left",
-                 colWidths=[0.15, 0.19, 0.18, 0.16, 0.32])
-    t.auto_set_font_size(False)
-    t.set_fontsize(9.5)
-    t.scale(1, 2.4)
-    for (r, c), tc in t.get_celld().items():
-        tc.set_edgecolor(GRID)
-        tc.set_text_props(color=INK)
-        if r == 0:
-            tc.set_text_props(color=MUTED, fontweight="bold")
-            tc.set_facecolor("#f0efec")
-        else:
-            tc.set_facecolor(SURFACE)
-    ax.set_title("Three models added by one config line each — decode tok/s, short-chat, "
-                 "fresh process (iPhone: warm in-process runs).\nRecipes differ per cell "
-                 "and are stated in it; cross-recipe cells are deployment profiles, not "
-                 "one race. Cell values are LEADERBOARD.md's: latest capture session per "
-                 "cell — warm = same-session median, cold = the session's last cold run.",
-                 fontsize=10, color=INK, loc="left", pad=14)
-    fig.tight_layout()
-    fig.savefig(os.path.join(OUT, "demo_models_table.png"),
-                facecolor=SURFACE, bbox_inches="tight")
-    plt.close(fig)
+    draw_value_table(
+        "demo_models_table.png",
+        "Three models, one config line each — decode tok/s",
+        "short-chat, fresh process · iPhone cells are warm in-process runs · "
+        "recipes differ per cell and are stated in it — different deployment "
+        "profiles, not one race",
+        ["model", "Mac Studio M4 Max", "iPhone 17 Pro",
+         "Pixel 8a · llama.cpp", "Pixel 8a · LiteRT-LM"],
+        [1.85, 2.55, 2.85, 1.95, 2.75],
+        table_rows,
+        "Values are LEADERBOARD.md's: latest capture session per cell, never pooled "
+        "across sessions — warm = median of same-session warm runs, cold = the "
+        "session's last cold run.\nLFM2.5 LiteRT cells run at context 1024 (the "
+        "file's exported prefill plan — LiteRT-LM#3129).")
 
 
 if __name__ == "__main__":
