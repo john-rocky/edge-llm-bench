@@ -31,14 +31,18 @@ jobs:
         run: git diff --exit-code results/summary/
 
   leaderboard-check:
-    name: LEADERBOARD.md is rendered
+    # LEADERBOARD.md is a LOCAL artifact now (harness-only public framing —
+    # the repo ships the harness + raw records, not cross-runtime standings),
+    # so CI verifies it RENDERS from the shipped raw, not that a committed
+    # copy is fresh.
+    name: leaderboard renders from shipped raw
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python scripts/render_leaderboard.py --check
+      - run: python scripts/render_leaderboard.py
 
   scripts-compile:
     name: every script parses

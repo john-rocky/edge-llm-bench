@@ -9,9 +9,17 @@ devices — built to run continuously, not as one-off campaigns.
   one schema (`schema/result.v1.json`), one accumulation layer, one
   leaderboard
 
-![Cross-runtime decode table: per-model rows across Mac Studio, iPhone 17 Pro, and Pixel 8a, with the recipe stated in every cell](docs/charts/crossarm_table.png)
+![LiteRT-LM v0.16.0 release-regression verdicts — one bar per scored cell, anchor-normalized where cross-session](docs/charts/v0160_regression_verdicts.png)
 
-Full standings, including the Galaxy S26 rows: [`LEADERBOARD.md`](LEADERBOARD.md).
+This repo is shared as a **harness**. The pipeline, every raw capture record,
+and the machine-readable regression verdicts ship here — but the repo does
+not publish cross-runtime standings. Render your own locally any time from
+the shipped raw:
+
+```bash
+python3 scripts/build_summary.py && python3 scripts/render_leaderboard.py
+# -> LEADERBOARD.md (local, gitignored)
+```
 
 ## The loop
 
@@ -31,18 +39,19 @@ android litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=gpu f
 
 Every run emits schema-v1 JSON per record plus its raw console log
 (`results/raw/<campaign>/`) — a number without a stored report is not a
-measurement. `results/summary/*.csv` is the derived accumulation layer;
-[`LEADERBOARD.md`](LEADERBOARD.md) renders from it; regression verdicts
-persist as machine-readable JSON under `results/regression-reports/`. CI
-keeps all of it consistent.
+measurement. `results/summary/*.csv` is the derived accumulation layer; a
+local `LEADERBOARD.md` renders from it (`scripts/render_leaderboard.py`);
+regression verdicts persist as machine-readable JSON under
+`results/regression-reports/`. CI keeps all of it consistent.
 
 **Operating manual** — release regressions, adding a model / arm / device,
 what stays manual and why: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Setup
 
-Reading needs none: the leaderboard, every raw record (`results/raw/`), and
-the regression verdicts ship in the repo. To measure, start with
+Reading needs none: every raw record (`results/raw/`) and the regression
+verdicts ship in the repo, and the standings render locally from them (one
+command, above). To measure, start with
 
 ```bash
 ./bench doctor        # says exactly what is missing, with the fix command
@@ -72,7 +81,7 @@ half a day the first time; `docs/OPERATIONS.md` has the runbook.
 Mac and iPhone captures self-police: a run that starts hot, lands with wide
 trial spread, or records no decode at all is quarantined and retried once
 automatically (`scripts/cell_gate.py`); what stays flagged is marked ⚠ in the
-leaderboard and charts, never silently kept. The Android driver's guards are
+locally rendered leaderboard and charts, never silently kept. The Android driver's guards are
 a thermal-nominal wait and a per-device campaign lock (two interleaved
 drivers corrupt both campaigns — measured; `methodology/android.md`); its
 post-capture gate is a disclosed phase-2 gap.
@@ -97,9 +106,9 @@ Full rules, cited by slug from the code: [`methodology/fairness-rules.md`](metho
 
 ## Coverage
 
-**measured** = rows in the leaderboard today. **wired** = the arm builds at
-its pinned version but has no published rows yet. **n/a** always carries its
-reason — that is part of the method, not an apology.
+**measured** = stored capture sessions in `results/raw/` today. **wired** =
+the arm builds at its pinned version but has no stored captures yet. **n/a**
+always carries its reason — that is part of the method, not an apology.
 
 | engine | Mac Studio (M4 Max) | iPhone 17 Pro | Pixel 8a | Galaxy S26 |
 |---|---|---|---|---|

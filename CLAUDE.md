@@ -46,6 +46,13 @@ Full text: `methodology/fairness-rules.md`. The five working rules:
 - **Generated files are generated.** LEADERBOARD.md between its markers,
   `results/summary/*`, `docs/charts/*.png` (only via
   `scripts/generate_charts.py` — never hand-draw a numbers figure).
+- **Cross-runtime standings stay LOCAL (2026-08-27, owner decision).** The
+  public repo is shared as a harness only: LEADERBOARD.md and the comparison
+  charts (crossarm_table / demo_models_table / pixel8a_model_demo) are
+  gitignored — render locally, never commit or re-add them. Single-runtime
+  regression charts (v0160_regression_verdicts.png) are the committed
+  exception. Cross-runtime speed comparison is published for Gemma-4 only,
+  and in the archive repo, not here.
 - **Quarantined captures stay on disk.** `*.jsonl.attempt1` /
   `device-jsonl-flagged/` are audit trail, not garbage.
 - **Builds**: `bootstrap.sh` then `build_yardstick_mac.sh`; derived data is
