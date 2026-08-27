@@ -49,7 +49,8 @@ the regression verdicts ship in the repo. To measure, start with
 ```
 
 **Mac lane** — the shortest path to a first number (~45 min first time,
-measured 2026-08-26: ~30 min bootstrap, ~5 min build, seconds to measure;
+measured 2026-08-26: 37 min bootstrap on a contended machine — expect
+~20–30 min solo — plus a 4-min build, then seconds to measure;
 `docs/first-run-rehearsal-2026-08-26.md`):
 
 ```bash
@@ -68,9 +69,13 @@ device).
 Xcode signing plus two increased-memory entitlements that are GUI-only. Plan
 half a day the first time; `docs/OPERATIONS.md` has the runbook.
 
-Captures self-police: a run that starts hot or lands with wide trial spread
-is quarantined and retried once automatically (`scripts/cell_gate.py`); what
-stays flagged is marked, never silently kept.
+Mac and iPhone captures self-police: a run that starts hot, lands with wide
+trial spread, or records no decode at all is quarantined and retried once
+automatically (`scripts/cell_gate.py`); what stays flagged is marked ⚠ in the
+leaderboard and charts, never silently kept. The Android driver's guards are
+a thermal-nominal wait and a per-device campaign lock (two interleaved
+drivers corrupt both campaigns — measured; `methodology/android.md`); its
+post-capture gate is a disclosed phase-2 gap.
 
 ## What keeps the numbers honest
 

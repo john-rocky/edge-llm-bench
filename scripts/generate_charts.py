@@ -20,7 +20,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_leaderboard import arm_row  # noqa: E402
+from render_leaderboard import arm_row, SPREAD_FLAG  # noqa: E402
 
 import matplotlib
 matplotlib.use("Agg")
@@ -204,10 +204,14 @@ HEAD_INK = "#55544f"
 
 
 def _cell_line(rows, color, label, plat, rt, msub, field="cold", note=""):
-    """One arm line for a value table: (dot color, value, muted recipe label)."""
+    """One arm line for a value table: (dot color, value, muted recipe label).
+    A warm value whose trial spread exceeds SPREAD_FLAG carries the same ⚠ as
+    its LEADERBOARD row — the chart must not look cleaner than the table."""
     c = cell(rows, plat, rt, msub)
     v = c and c[field]
     lab = label + (f" · {note}" if note else "")
+    if v and field == "warm" and c["spread"] > SPREAD_FLAG:
+        lab += f" · ⚠ spread {c['spread']:.0f}%"
     return (color, f"{v:.1f}" if v else "—", lab)
 
 
@@ -303,8 +307,12 @@ def chart_crossarm_table():
              L(BLUE, "LiteRT cpu · int4 mixed", "android", "litert-lm-cpu", "Qwen3-0.6B")],
         ]),
         ("DeepSeek-R1-1.5B", [
-            [L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "DeepSeek"),
-             L(BLUE, "LiteRT · INT8", "mac", "litert-lm", "DeepSeek")],
+            # mac lines say "warm" like every other mac line here — the
+            # subtitle promises warm-where-defined, and warm exists (audit
+            # 2026-08-27 caught these two on the cold field, a 0.2% cosmetic
+            # inconsistency but a broken promise)
+            [L(AQUA, "mlx · 4bit", "mac", "mlx-swift", "DeepSeek", "warm"),
+             L(BLUE, "LiteRT · INT8", "mac", "litert-lm", "DeepSeek", "warm")],
             [L(BLUE, "LiteRT · INT8", "ios", "litert-lm", "DeepSeek", "warm")],
             [L(ORANGE, "llama · Q4_K_M", "android", "llama.cpp", "DeepSeek")],
             [L(BLUE, "LiteRT gpu · INT8", "android", "litert-lm-gpu", "DeepSeek"),

@@ -30,12 +30,12 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 | model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
 |---|---|---|---|---|---|---|---|
 | Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 156.0 | 128.9 | 2026-08-17 |
-| litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 77.7 | 78.7 | 2026-08-18 |
+| litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 77.7 ⚠spread 6% | 78.7 | 2026-08-18 |
 | litert-community/LFM2.5-1.2B-Instruct | litert-lm | `litert-community/LFM2.5-1.2B-Instruct` | int4_gpu (litert-community descriptor) | v0.16.0 | 325.8 | 335.2 | 2026-08-27 |
 | litert-community/MiniCPM5-1B | litert-lm | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | 123.2 | 122.6 | 2026-08-27 |
 | mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit | mlx-swift | `mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 146.2 | 145.9 | 2026-08-17 |
 | mlx-community/LFM2.5-1.2B-Instruct-4bit | mlx-swift | `mlx-community/LFM2.5-1.2B-Instruct-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 518.4 | 516.7 | 2026-08-27 |
-| mlx-community/MiniCPM5-1B-4bit | mlx-swift | `mlx-community/MiniCPM5-1B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 540.8 | 528.0 | 2026-08-27 |
+| mlx-community/MiniCPM5-1B-4bit | mlx-swift | `mlx-community/MiniCPM5-1B-4bit` | Q4 | 60bd0d7880c82980f9481f8be78862e9b63c58a3 | 540.8 ⚠spread 11% | 528.0 | 2026-08-27 |
 
 </details>
 
@@ -55,13 +55,13 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 | model | runtime | artifact | quant | engine | warm tok/s | cold tok/s | captured |
 |---|---|---|---|---|---|---|---|
-| Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 51.0 | 55.4 | 2026-08-19 |
+| Gemma 4 E2B | litert-lm | `litert-community/gemma-4-E2B-it-litert-lm` | wNa8o8 (int2/int4/int8 + int8 activations, QAT) | v0.16.0 | 51.0 ⚠spread 21% | 55.4 | 2026-08-19 |
 | core-ai/lfm2.5-1.2b-gpu | core-ai | `core-ai/lfm2.5-1.2b-gpu` | int8hu block32 sym (untied head) | 0.2.0+static-inputs-patch | 45.5 | 45.7 | 2026-08-26 |
 | core-ai/minicpm5-1b-gpu | core-ai | `core-ai/minicpm5-1b-gpu` | INT8 (sym, dynamic) | 0.2.0+static-inputs-patch | 72.1 | 72.2 | 2026-08-26 |
-| litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 26.7 | 31.2 | 2026-08-24 |
+| litert-community/DeepSeek-R1-Distill-Qwen-1.5B | litert-lm | `litert-community/DeepSeek-R1-Distill-Qwen-1.5B` | INT8 | v0.16.0 | 26.7 ⚠spread 19% | 31.2 | 2026-08-24 |
 | litert-community/LFM2.5-1.2B-Instruct | litert-lm | `litert-community/LFM2.5-1.2B-Instruct` | int4_gpu (litert-community descriptor) | v0.16.0 | 69.5 | 69.9 | 2026-08-26 |
-| litert-community/MiniCPM5-1B | litert-lm | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | 34.2 | 36.2 | 2026-08-26 |
-| litert-community/Qwen3-4B | litert-lm | `litert-community/Qwen3-4B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 16.1 | 23.1 | 2026-08-19 |
+| litert-community/MiniCPM5-1B | litert-lm | `litert-community/MiniCPM5-1B` | wi4b32_wi8_afp32 (gpu-opt) | v0.16.0 | 34.2 ⚠spread 14% | 36.2 | 2026-08-26 |
+| litert-community/Qwen3-4B | litert-lm | `litert-community/Qwen3-4B` | INT4 (mixed, blockwise gs32) | v0.16.0 | 16.1 ⚠spread 60% | 23.1 | 2026-08-19 |
 
 </details>
 
@@ -73,13 +73,15 @@ Headline task: **short-chat**, warm = median of same-session warm runs (cold-war
 
 ## android
 
+Android decode spans are not budget-matched across arms: llama-cli caps at the 128-token task budget, while `litert_lm_main` runs to the model's own stop (441–1037 generated tokens per run in the raw records) — v0.16.0 has no working output cap on that binary. LiteRT decode rates reproduce within ~1% across sessions, so the longer span is not visibly depressing them, but the asymmetry is real and per-run token counts are in `results/raw/` (budget-mode-rule; methodology/android.md).
+
 ### Pixel 8a
 
 **Qwen 3 0.6B**
 
 | runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |
 |---|---|---|---|---|---|---|---|---|---|---|
-| llama.cpp | `unsloth/Qwen3-0.6B-GGUF` | Q4_K_M | b8999 | — | 26.7 | 156.7 | — | 1252.1 | — | 2026-08-27 |
+| llama.cpp | `unsloth/Qwen3-0.6B-GGUF` | Q4_K_M | b8999 | — | 26.7 | 197.4 | — | 1252.4 | — | 2026-08-27 |
 | litert-lm-gpu | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | — | 15.2 | 41.5 | 550.0 | 764.6 | — | 2026-08-17 |
 | litert-lm-cpu | `litert-community/Qwen3-0.6B` | INT4 (mixed, blockwise gs32) | v0.16.0 | — | 15.3 | 9.8 | 2110.0 | 1250.1 | — | 2026-08-17 |
 

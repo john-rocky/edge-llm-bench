@@ -1,0 +1,45 @@
+Quarantined 2026-08-27 (adversarial audit before the campaign's numbers ship).
+These 6 runs stay on disk as audit trail; they are out of app-path-android/ so
+build_summary no longer ingests them. Nothing here is deleted.
+
+Incident
+--------
+Two run_campaign.py drivers interleaved on Pixel 8a (4C131JEKB15210) during
+this campaign: session_provenance.txt records driver starts at 09:19:03 and
+09:44:08 JST against the same cells file. Interleaved llama-cli processes
+collapse each other's decode by 4-70x. run_campaign.py has since grown a
+per-serial flock (rc=3 on double launch, tested 2026-08-27) so the mistake is
+now impossible rather than rare.
+
+What is PROVEN per run (log banner = the model the engine actually loaded):
+- ... Qwen3-0.6B ... T00-47-52Z_run2  (decode 1.1)  banner: MiniCPM5-1B —
+  MISLABELED record: a MiniCPM run stored under the Qwen filename. Its
+  prefill (156.7 tok/s) was, until this quarantine, the published Pixel Qwen
+  llama.cpp prefill (the session median landed on it).
+- ... MiniCPM5-1B ... T00-53-11Z_run1 (decode 0.3)  banner: Qwen3-0.6B —
+  MISLABELED record, the mirror image of the above.
+
+What is contention collapse inside the proven two-driver window (decode
+< 50% of the same cell's clean-batch median; clean batches: Qwen 22.0-26.2,
+MiniCPM 20.7-25.9, LFM 18.9-24.1):
+- ... Qwen3-0.6B ... T00-45-50Z_run1  decode 1.4
+- ... Qwen3-0.6B ... T00-53-30Z_run3  decode 0.4
+- ... LFM2.5     ... T00-44-10Z_run1  decode 9.6   (run ended 00:44:10Z,
+  seconds after the second driver start 00:44:08Z; its start precedes it —
+  overlap from an even earlier driver invocation is plausible because the
+  round-robin runner outlives its last log line, but is NOT proven)
+- ... MiniCPM5-1B ... T00-41-53Z_run1 decode 5.0   (ended 00:41:53Z, before
+  the second recorded driver start; same caveat — collapse is measured,
+  mechanism for this one is inferred from the incident, not proven)
+
+Effect on published numbers (verified against render_leaderboard.arm_row):
+- cold tok/s cells (cold[-1]) were never touched — all three published colds
+  (Qwen 26.7, LFM 21.1, MiniCPM 20.7) come from clean post-window batches.
+- The Pixel Qwen comparison row's prefill and mem medians WERE polluted
+  (prefill 156.7 = the mislabeled run above; clean-runs median ≈ 197.5).
+  Summary/LEADERBOARD/charts regenerated after this quarantine.
+
+cell_gate.py at the time judged warm spread only and Android captures are
+all-cold, so nothing flagged these at capture; it now returns COLLAPSE for a
+cold run under half the cell median (and DEAD for missing decode), verified
+against this exact window as the attack case.
