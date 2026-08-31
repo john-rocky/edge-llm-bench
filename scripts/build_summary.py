@@ -218,6 +218,7 @@ def build_device():
             "thermal_final": m.get("finalThermalState"),
             "battery_state": dev.get("batteryState"),
             "cold_run": m.get("coldRun"),
+            "first_ever": m.get("firstEver"),
             "device": DEVICE_ALIASES.get(dev.get("modelIdentifier"),
                                          dev.get("modelIdentifier")),
             "os_version": dev.get("systemVersion"),

@@ -146,9 +146,12 @@ loudly instead of rebuilding the summary and looking like a capture.
   kept for audit, outside build_summary's globs, never pooled into the
   session median) and the cell re-runs after a real cooldown. A flagged
   retry stands, with a `FLAGGED.txt` note; SHORT (crash/timeout) never
-  retries — failed-runs-stay owns that path. Android is not auto-retried:
-  it has no warm regime, so its spread gate lives in the differ
-  (UNRELIABLE at scoring time).
+  retries — failed-runs-stay owns that path. The Android runner is wired
+  too (quarantine: `*.json.attempt1` beside the record): its cold-only
+  regime can never trip the 5% warm-spread bar, so the gate's COLLAPSE
+  verdict fires instead — slowest cold decode under half the cold median,
+  the contended-device signature (cold trials legitimately spread 15-30%).
+  The differ still marks wide cells UNRELIABLE at scoring time.
 - **litert cells can stall ~10 min at teardown** — the iPhone runner's
   gtimeout is load-bearing; keep `CELL_TIMEOUT=3600` for litert cells.
 - **The SPM-built Mac yardstick silently lacks four runtimes** — matrix

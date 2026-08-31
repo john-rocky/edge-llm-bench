@@ -211,6 +211,8 @@ def cells(rows, metric):
             continue
         if (r.get("thermal_initial") or "") not in NOMINAL_STATES:
             continue
+        if r.get("first_ever") == "True":
+            continue  # engine-cache build run (cold-warm-split) — never pooled
         out.setdefault(tuple(r[k] for k in GROUP), []).append(
             (float(v), (r["timestamp"] or "")[:10]))
     return out

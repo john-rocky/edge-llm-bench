@@ -11,8 +11,15 @@ Order and discipline (fairness rules as code):
   - >=COOLDOWN s between runs; the thermal gate waits for status 0 (nominal)
     up to THERMAL_WAIT s and records the state either way.
   - exclude=/manual= cells are skipped with the reason logged (SKIPPED.txt).
+  - capture gate (scripts/cell_gate.py; mac/iPhone parity): a flagged cell is
+    quarantined in raw (*.json.attempt1, outside build_summary's glob) and
+    re-runs ONCE as a block after GATE_COOLDOWN s; a flagged retry stands
+    with a FLAGGED.txt note. SHORT never retries (failed-runs-stay).
+    GATE_RETRY=0 disables. The cold-only regime trips COLLAPSE (50% bar),
+    not SPREAD — Android cold trials legitimately spread 15-30%.
 """
 import fcntl
+import glob
 import os
 import subprocess
 import sys
@@ -24,6 +31,8 @@ from device_probe import thermal_status  # noqa: E402
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 COOLDOWN = int(os.environ.get("COOLDOWN", "120"))
 THERMAL_WAIT = int(os.environ.get("THERMAL_WAIT", "600"))
+GATE_COOLDOWN = int(os.environ.get("GATE_COOLDOWN", "180"))
+GATE_RETRY = os.environ.get("GATE_RETRY", "1") == "1"
 SERIAL = os.environ.get("BENCH_ANDROID_SERIAL")
 
 
@@ -67,6 +76,8 @@ def run_cell_once(cell, out_dir, runs):
     cmd = [sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
            "--runtime", cell["runtime"], "--model-id", cell["model_id"],
            "--task", cell["task"], "--runs", str(runs), "--out", out_dir]
+    if runs > 1:  # the >=COOLDOWN discipline holds INSIDE a multi-run cell too
+        cmd += ["--cooldown", str(COOLDOWN)]
     if cell["opts"].get("backend"):
         cmd += ["--backend", cell["opts"]["backend"]]
     if cell["opts"].get("file"):
@@ -83,6 +94,70 @@ def run_cell_once(cell, out_dir, runs):
     if rc:
         with open(os.path.join(out_dir, "FAILURES.txt"), "a") as fh:
             fh.write(f"{cell['runtime']} {cell['model_id']} {cell['task']} rc={rc}\n")
+
+
+def arm_of(cell):
+    # mirrors run_cell.py's arm: backend is part of arm identity for litert-lm only
+    if cell["runtime"] == "litert-lm":
+        return f"litert-lm-{cell['opts'].get('backend')}"
+    return cell["runtime"]
+
+
+def cell_id(cell):
+    return f"{arm_of(cell)} {cell['model_id']} {cell['task']}"
+
+
+def cell_records(cell, out_dir):
+    """This cell's schema-v1 records, oldest first (names embed the UTC stamp;
+    *.json.attempt1 quarantine files fall outside the pattern by suffix)."""
+    pat = (f"{arm_of(cell)}_{cell['model_id'].replace('/', '_')}_"
+           f"{cell['task']}_*.json")
+    return sorted(glob.glob(os.path.join(out_dir, pat)))
+
+
+def note(out_dir, fname, line):
+    print(line)
+    with open(os.path.join(out_dir, fname), "a") as fh:
+        fh.write(line + "\n")
+
+
+RETRY_VERDICTS = ("HOT", "SPREAD", "DEAD", "COLLAPSE")
+
+
+def gate_verdict(cell, out_dir, runs):
+    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "cell_gate.py"),
+                        "--runs", str(runs)] + cell_records(cell, out_dir),
+                       capture_output=True, text=True)
+    # a crashed gate must not read as a pass (an empty verdict matched no flag
+    # pattern and the capture sailed through — audited 2026-08-27, iPhone runner)
+    return r.stdout.strip() or "GATE_ERROR"
+
+
+def apply_gate(cell, out_dir, runs):
+    """Judge a completed cell; quarantine + re-run ONCE if flagged (spread-rule
+    as code, mac/iPhone parity). The retry is a consecutive block — disclosed
+    in session_provenance.txt because it deviates from per-round interleaving."""
+    if not GATE_RETRY:
+        return
+    verdict = gate_verdict(cell, out_dir, runs)
+    if verdict == "GATE_ERROR":
+        note(out_dir, "FLAGGED.txt", f"GATE_ERROR {cell_id(cell)} (gate crashed; capture unjudged)")
+        return
+    if verdict.split()[0] not in RETRY_VERDICTS:
+        return  # OK, or SHORT — a crash/timeout is never retried (failed-runs-stay)
+    print(f"gate: {verdict} — quarantine + cooldown {GATE_COOLDOWN}s, re-run once")
+    for f in cell_records(cell, out_dir)[-runs:]:
+        os.rename(f, f + ".attempt1")  # stays in raw for audit, outside the *.json glob
+    note(out_dir, "session_provenance.txt",
+         f"gate retry {cell_id(cell)} verdict={verdict} (block re-run, not interleaved)")
+    time.sleep(GATE_COOLDOWN)
+    wait_nominal(out_dir)
+    run_cell_once(cell, out_dir, runs)
+    retry = gate_verdict(cell, out_dir, runs)
+    if retry == "GATE_ERROR" or retry.split()[0] in RETRY_VERDICTS:
+        note(out_dir, "FLAGGED.txt",
+             f"GATE_FAIL {cell_id(cell)} first='{verdict}' retry='{retry}' "
+             "(retry kept; ⚠ downstream)")
 
 
 def main():
@@ -113,7 +188,10 @@ def main():
               "refusing to start (two drivers corrupt both campaigns)", file=sys.stderr)
         return 3
     campaign = os.environ.get("CAMPAIGN", time.strftime("%Y-%m-%d") + "-android-matrix")
-    out_dir = os.path.join(ROOT, "results", "raw", campaign, "app-path-android")
+    # BENCH_RAW_ROOT: selftest.py redirects captures into its temp dir — a
+    # failed selftest must never leak fake rows where build_summary globs
+    raw_root = os.environ.get("BENCH_RAW_ROOT") or os.path.join(ROOT, "results", "raw")
+    out_dir = os.path.join(raw_root, campaign, "app-path-android")
     os.makedirs(out_dir, exist_ok=True)
     anchors, payload, skipped = parse_cells(cells_file)
     for cell, reason in skipped:
@@ -135,7 +213,12 @@ def main():
             time.sleep(COOLDOWN)
         first = False
         wait_nominal(out_dir)
-        run_cell_once(cell, out_dir, int(cell["opts"].get("runs", "3")))
+        runs = int(cell["opts"].get("runs", "3"))
+        run_cell_once(cell, out_dir, runs)
+        # gate anchors immediately: a contended anchor poisons every
+        # anchor-normalized verdict of the session, so it must not stand
+        # while the payload measures against it
+        apply_gate(cell, out_dir, runs)
 
     # payload: interleave per round (round-robin across cells)
     max_rounds = max((int(c["opts"].get("runs", "3")) for c in payload), default=0)
@@ -147,6 +230,8 @@ def main():
             wait_nominal(out_dir)
             run_cell_once(cell, out_dir, 1)
         print(f"--- round {rnd}/{max_rounds} complete (publish every round)")
+    for cell in payload:  # a payload cell is complete only after its last round
+        apply_gate(cell, out_dir, int(cell["opts"].get("runs", "3")))
     print(f"\ncampaign dir: {os.path.dirname(out_dir)}")
     return 0
 

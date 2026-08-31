@@ -44,6 +44,18 @@ jobs:
           python-version: "3.11"
       - run: python scripts/render_leaderboard.py
 
+  android-driver-selftest:
+    # fake-adb end-to-end: record shape, firstEver marker, witness stamping,
+    # capture gate + quarantine + retry — no device needed
+    name: android driver selftest (fake adb)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python android/bench/selftest.py
+
   scripts-compile:
     name: every script parses
     runs-on: ubuntu-latest
