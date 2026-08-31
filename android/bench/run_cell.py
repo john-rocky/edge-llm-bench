@@ -340,8 +340,13 @@ def main():
             adb(["shell", f"mkdir -p {DEV_DIR}/markers && touch {marker}"], args.serial)
             cache_built = True
 
-        iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        stamp = iso.replace(":", "-")  # filename-safe form
+        now = datetime.datetime.now(datetime.timezone.utc)
+        iso = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        # filename stamp carries microseconds: two 1-run invocations of the
+        # same cell inside one second silently OVERWROTE each other's record
+        # and log (stored-report-rule) — caught by selftest.py on a fast CI
+        # runner, where two payload rounds landed in the same second
+        stamp = now.strftime("%Y-%m-%dT%H-%M-%S.%f")
         console_name = f"{arm}_{args.model_id.replace('/', '_')}_{args.task}_{stamp}_run{i}.log"
         with open(os.path.join(args.out, console_name), "w") as fh:
             fh.write(console)
