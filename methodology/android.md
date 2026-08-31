@@ -27,7 +27,13 @@ v1 measures the same engine through `litert_lm_main`.
 - One engine process per run = **cold** by this repo's definition (fresh
   process, caches on disk). The very first run per (model, backend) builds the
   ML Drift / OpenCL caches → labelled `firstEver`, reported separately, never
-  as the engine's speed (cold-warm-split).
+  as the engine's speed (cold-warm-split). Detection is automatic: a marker
+  file on the device (`markers/<artifact>.<backend>.cachebuilt`, written after
+  the first clean exit) — the caches live on the device, so host state cannot
+  know whether this (model, backend) already compiled there. litert-lm only;
+  llama.cpp keeps no persistent compile cache. `firstEver` rows stay in raw
+  and in `device-runs.csv`, and are excluded from every metric pool
+  (leaderboard `arm_row`, `regression_diff` cells).
 - **No warm regime in v1**: the CLIs have no in-process repeat for prompt tasks
   (`--multi_turns` is interactive). Android cells therefore compare against
   Apple **cold** rows only. llama-bench (`native-benchmark-*` task) repeats
@@ -86,5 +92,18 @@ mitigation: a 25-question on-device spot check through
 ## Session discipline
 
 Anchors first, payload interleaved per round (interleave-arms), ≥120 s
-cooldown, publish every round. Cross-session comparisons only through anchors
+cooldown — between cells AND between the runs inside a multi-run cell
+(`run_cell.py --cooldown`, passed by the campaign runner). Publish every
+round. Cross-session comparisons only through anchors
 (`regression_diff.py --anchors`), same as Apple.
+
+Capture gate (mac/iPhone parity, `scripts/cell_gate.py`): every completed
+cell is judged; HOT / DEAD / COLLAPSE quarantines the capture in raw
+(`*.json.attempt1`) and re-runs the cell ONCE after `GATE_COOLDOWN`
+(default 180 s) — anchors immediately (a contended anchor poisons every
+anchor-normalized verdict of the session), payload cells after their last
+round. The retry is a consecutive block, disclosed in
+`session_provenance.txt` because it deviates from per-round interleaving.
+A flagged retry stands with a `FLAGGED.txt` note; SHORT never retries
+(failed-runs-stay). The whole path runs device-free in CI:
+`android/bench/selftest.py` (fake adb, scripted engine output, real gate).

@@ -54,7 +54,7 @@ Full text: `methodology/fairness-rules.md`. The five working rules:
   exception. Cross-runtime speed comparison is published for Gemma-4 only,
   and in the archive repo, not here.
 - **Quarantined captures stay on disk.** `*.jsonl.attempt1` /
-  `device-jsonl-flagged/` are audit trail, not garbage.
+  `*.json.attempt1` / `device-jsonl-flagged/` are audit trail, not garbage.
 - **Builds**: `bootstrap.sh` then `build_yardstick_mac.sh`; derived data is
   repo-local (`.build/dd-mac`). Wipe it when the vendored LiteRT-LM tag
   changes — stale module state produces bogus "cannot find in scope" errors.

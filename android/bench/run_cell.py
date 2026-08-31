@@ -8,6 +8,10 @@
 Design decisions (methodology/android.md):
   - one engine process per run = COLD by the repo's definition; the very first
     run per (model, backend) builds engine caches and is labelled firstEver.
+    Detection is a marker file on the DEVICE ({DEV_DIR}/markers/): the caches
+    live there, so host-side state cannot know whether this device already
+    compiled this (model, backend). litert-lm only — llama.cpp keeps no
+    persistent compile cache, so its first run is an ordinary cold run.
   - metrics use BenchmarkResult field names (what build_summary.py reads);
     absent metrics stay absent. llama-cli has no TTFT; litert has no sampler
     control (conditions.sampler = "engine-default", a disclosed same-budget
@@ -255,7 +259,11 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--serial", default=None)
     ap.add_argument("--first-ever", action="store_true",
-                    help="mark run 1 as firstEver (engine cache build)")
+                    help="force-mark run 1 as firstEver (the on-device marker "
+                         "detects it automatically for litert-lm)")
+    ap.add_argument("--cooldown", type=int, default=0,
+                    help="seconds to sleep between runs 2..N (the campaign "
+                         "runner passes COOLDOWN; bare CLI smoke runs default 0)")
     ap.add_argument("--timeout", type=int, default=1800)
     args = ap.parse_args()
 
@@ -274,11 +282,23 @@ def main():
         prompt_dev, budget, args.max_tokens, args.context_tokens)
     engine_version, engine_artifact = observed_engine(binname, pins, args.serial)
 
+    # firstEver detection: marker beside the on-device caches (see module doc).
+    cache_built = True
+    marker = None
+    if args.runtime == "litert-lm":
+        marker = (f"{DEV_DIR}/markers/"
+                  f"{os.path.basename(model_dev)}.{args.backend}.cachebuilt")
+        out = adb(["shell", f"ls {marker} >/dev/null 2>&1 && echo present || echo absent"],
+                  args.serial)
+        cache_built = "present" in out
+
     os.makedirs(args.out, exist_ok=True)
     dev = device_info(args.serial)
     model_sha = sha256_file(model_local)
     ok = 0
     for i in range(1, args.runs + 1):
+        if i > 1 and args.cooldown:
+            time.sleep(args.cooldown)
         raw_status, thermal_name = thermal_status(args.serial)
         batt = battery(args.serial)
         t0 = time.time()
@@ -312,8 +332,13 @@ def main():
         })
         if rss_mb is not None:
             metrics["memoryMedianResidentMB"] = rss_mb
-        if args.first_ever and i == 1:
+        # every run until the first clean exit is (or may be finishing) the
+        # cache build; the first run that exits 0 writes the marker
+        if (args.first_ever and i == 1) or not cache_built:
             metrics["firstEver"] = True
+        if exit_code == 0 and not cache_built:
+            adb(["shell", f"mkdir -p {DEV_DIR}/markers && touch {marker}"], args.serial)
+            cache_built = True
 
         iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         stamp = iso.replace(":", "-")  # filename-safe form

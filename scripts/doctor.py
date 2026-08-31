@@ -166,19 +166,28 @@ def check_android(required):
         return
     serial = serial or devs[0]
     check(OK, "Android device", serial)
+    try:
+        import huggingface_hub  # noqa: F401
+        check(OK, "huggingface_hub", "installed")
+    except ImportError:
+        check(lvl, "huggingface_hub",
+              "python3 -m pip install huggingface_hub (the driver downloads models on the host)")
     base = ["adb"] + (["-s", serial] if serial else [])
-    rc, out = run(base + ["shell", "sha256sum", "/data/local/tmp/llmbench/litert_lm_main"])
-    if rc != 0 or "No such file" in out:
-        check(lvl, "litert_lm_main on device",
-              "not pushed — android/README.md; binaries: android/bin/ or the GitHub release assets")
-    else:
+    for binname, source in (
+            ("litert_lm_main", "android/bin/ or the GitHub release assets"),
+            ("llama-cli", "android/scripts/fetch_llama_android.sh")):
+        rc, out = run(base + ["shell", "sha256sum", f"/data/local/tmp/llmbench/{binname}"])
+        if rc != 0 or "No such file" in out:
+            check(lvl, f"{binname} on device",
+                  f"not pushed — android/README.md; binaries: {source}")
+            continue
         sha = out.split()[0]
         try:
             pins = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))
             known = json.dumps(pins).find(sha) >= 0
         except OSError:
             known = False
-        check(OK if known else WARN, "litert_lm_main on device",
+        check(OK if known else WARN, f"{binname} on device",
               sha[:12] + ("" if known else " — sha not in android/engine-pins.json; rows will stamp 'unknown'"))
 
 

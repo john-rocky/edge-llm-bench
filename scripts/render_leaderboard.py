@@ -90,21 +90,25 @@ def latest_session(rows):
 def arm_row(rows):
     """One leaderboard line from one cell's latest-session rows."""
     sess, date = latest_session(rows)
-    warm = [fnum(r["decode_tps"]) for r in sess if r["cold_run"] == "False"]
+    # firstEver rows are the engine-cache build (cold-warm-split: reported
+    # separately, never as the engine's speed) — they stay in the session for
+    # quant/engine identity but contribute to no metric pool
+    meas = [r for r in sess if r.get("first_ever") != "True"]
+    warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
     warm = [v for v in warm if v]
-    cold = [fnum(r["decode_tps"]) for r in sess if r["cold_run"] == "True"]
+    cold = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "True"]
     cold = [v for v in cold if v]
     wmed = statistics.median(warm) if warm else None
     spread = ((max(warm) - min(warm)) / wmed * 100) if wmed and len(warm) > 1 else 0.0
-    prefill = [fnum(r["prefill_tps"]) for r in sess]
+    prefill = [fnum(r["prefill_tps"]) for r in meas]
     prefill = [v for v in prefill if v]
-    ttft = [fnum(r["ttft_ms"]) for r in sess]
+    ttft = [fnum(r["ttft_ms"]) for r in meas]
     ttft = [v for v in ttft if v]
     # iOS rows carry phys_footprint; android rows only RSS (no Android
     # equivalent of footprint — never fabricated). Same column, semantics
     # disclosed in the header note.
     mem = [fnum(r["mem_footprint_median_mb"]) or fnum(r["mem_resident_median_mb"])
-           for r in sess]
+           for r in meas]
     mem = [v for v in mem if v]
     quants, qcorr = set(), False
     for r in sess:
@@ -122,7 +126,7 @@ def arm_row(rows):
         "mem": statistics.median(mem) if mem else None,
         "quant": (" / ".join(quants) or "unrecorded") + ("†" if qcorr else ""),
         "engine": " / ".join(engines) or "pre-stamp",
-        "date": date, "n": len(sess),
+        "date": date, "n": len(meas),
     }
 
 

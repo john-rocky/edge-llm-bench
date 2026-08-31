@@ -77,3 +77,13 @@ Records land as schema-v1 JSON under `results/raw/<campaign>/app-path-android/`
 next to each record (stored-report-rule). `python3 scripts/build_summary.py`
 then folds them into `results/summary/device-runs.csv` with `platform=android`,
 and the leaderboard renders the android section automatically.
+
+The campaign runner applies the full session discipline unattended: thermal
+gate, ≥`COOLDOWN` between runs, one-driver-per-device lock, capture gate with
+quarantine + one retry (`methodology/android.md`), and automatic `firstEver`
+labelling of engine-cache-build runs via an on-device marker. Verify the whole
+driver with no phone attached:
+
+```bash
+python3 android/bench/selftest.py      # fake adb; CI runs this on every push
+```
