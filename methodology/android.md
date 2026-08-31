@@ -33,7 +33,11 @@ v1 measures the same engine through `litert_lm_main`.
   know whether this (model, backend) already compiled there. litert-lm only;
   llama.cpp keeps no persistent compile cache. `firstEver` rows stay in raw
   and in `device-runs.csv`, and are excluded from every metric pool
-  (leaderboard `arm_row`, `regression_diff` cells).
+  (leaderboard `arm_row`, `regression_diff` cells). One-time cold-start
+  behavior, verified on the S26 2026-08-31: a device whose caches predate
+  the marker scheme labels its next run 1 firstEver anyway — conservative
+  (one clean run leaves the pool once per (model, backend)), never the
+  reverse (a cache build never pools as speed).
 - **No warm regime in v1**: the CLIs have no in-process repeat for prompt tasks
   (`--multi_turns` is interactive). Android cells therefore compare against
   Apple **cold** rows only. llama-bench (`native-benchmark-*` task) repeats
