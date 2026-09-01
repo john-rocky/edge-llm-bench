@@ -116,6 +116,28 @@ per-token energy figure; iOS energy stays on the battery-tick basis
 (energy.md). Sessions without the sidecar simply record no power — never a
 fabricated number.
 
+## Reading the series — traps the first baseline already hit (2026-09-01)
+
+- **The first minutes are a ramp, not a leak.** granite-4.2-3b's footprint
+  climbed 2,419 → 4,057 MB inside the first two minutes (the 4096-token KV
+  working set paging in) and then moved +21 MB over the remaining 28 — the
+  whole-session least-squares slope (0.08 MB/turn) told the truth, the
+  first-vs-last-turn delta (+1,659 MB) did not. Judge slope on the
+  post-ramp region.
+- **A one-token turn evades the degeneracy heuristic** (it needs ≥10 words),
+  and a session of them never trips `empty-output` (which needs *zero*
+  chunks). granite spent whole multi-minute stretches emitting exactly one
+  token per turn at KV > ~2000 — the deepest collapse in the session, and
+  its `degenerate` flags read *false*. Read `decodeTokens`/`chunkCount`
+  alongside the flag: median decode tokens ≈ 1 is the collapse, whatever
+  the flag says.
+- **Rollover-attributed memory is its own column.** gemma-4-E2B grew
+  +1.0 MB *per conversation rollover* on average (197 rollovers → +198 MB
+  across 30 min; plain turns netted −51 MB). Attribute footprint deltas to
+  rollover vs plain turns before calling a slope a leak — and a persistent
+  per-rollover cost IS the leak-class signal, at the conversation
+  granularity rather than the turn one.
+
 ## Reading a baseline
 
 A healthy session: decay within a few percent, memory slope ≈ 0 after the
