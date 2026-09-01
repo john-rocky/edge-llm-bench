@@ -93,13 +93,16 @@ memory slope, per-turn degeneracy; LiteRT-LM only, no cross-runtime rows).
 Known structural findings (2026-09-01 baseline, v0.16.0 — all four filed
 upstream; evidence in the campaign's records + `diagnostics/`):
 
-- Thinking-template bundles whose assistant-history re-render is not a
-  byte-prefix extension of the live render (litert-community Qwen3-0.6B
-  int4: an empty `<think></think>` pair only in the live render) cannot
-  hold a multi-turn conversation at all — turn 2 dies with `INTERNAL: The
-  new rendered template string does not start with the previous...`. The
-  endurance row records it as `status=crash`; that row is the datum, not a
-  capture bug. → LiteRT-LM #3443.
+- Bundles whose embedded template renders assistant history differently
+  depending on position cannot hold a multi-turn conversation at all —
+  turn 2 dies with `INTERNAL: The new rendered template string does not
+  start with the previous...` (litert-community Qwen3-0.6B
+  `qwen3_0_6b_mixed_int4`: the stock Hugging Face Qwen3 template renders
+  the trailing assistant turn with a `<think>` block that disappears once
+  the next user message is appended; the engine compares two history
+  renders, not the live prompt). The endurance row records it as
+  `status=crash`; that row is the datum, not a capture bug. → LiteRT-LM
+  #3443 (root cause + same-weights fix posted 2026-09-02).
 - A bundle's real context ceiling can sit below the accepted
   `maxNumTokens` (gemma-4-E2B: 2048 under a 4096 request) and there is no
   API to query it; the harness's kv-wall rollover absorbs the resulting
