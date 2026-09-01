@@ -39,6 +39,7 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from device_probe import adb, battery, device_info, thermal_status  # noqa: E402
+import endurance_cell  # noqa: E402
 import parsers  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -68,6 +69,7 @@ def observed_engine(binname, pins, serial):
     sha = out.split()[0]
     key_by_bin = {"litert_lm_main": ("litert-lm", "litert_lm_main_sha256"),
                   "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
+                  "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
                   "llama-cli": ("llama.cpp", "llama_cli_sha256"),
                   "llama-bench": ("llama.cpp", "llama_bench_sha256")}
     engine, field = key_by_bin[binname]
@@ -271,6 +273,16 @@ def main():
         ap.error("litert-lm needs --backend cpu|gpu (arm identity)")
     arm = f"litert-lm-{args.backend}" if args.runtime == "litert-lm" else "llama.cpp"
 
+    if endurance_cell.ENDURANCE_TASK.match(args.task):
+        if args.runtime != "litert-lm":
+            ap.error("endurance-chat is litert-lm-only (needs the persistent-"
+                     "conversation driver; methodology/endurance.md)")
+        if args.runs > 1:
+            print(f"WARNING --runs {args.runs} ignored for endurance — one "
+                  "session per invocation; sessions are never pooled",
+                  file=sys.stderr)
+        return endurance_cell.run(args)
+
     pins = load_pins()
 
     model_dev, model_local = ensure_model(args.model_id, args.file, args.runtime, args.serial)
@@ -393,6 +405,9 @@ def main():
 ANDROID_QUANT_LABELS = {
     "qwen3_0_6b_mixed_int4.litertlm": "INT4 (mixed, blockwise gs32)",
     "gemma-4-E2B-it.litertlm": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
+    # same artifact + label as the Mac endurance baseline row (thinking bundle,
+    # disclosed there; ModelCatalog "Granite 4.2 3B (.litertlm, thinking)")
+    "granite-4.2-3b_int4.litertlm": "int4 BOCTAV4 (block32, int8 embedder)",
     "DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv4096.litertlm": "INT8",
     # litert-community filename recipe descriptors, kept verbatim (a bare
     # "int4" is not a spec; the descriptor is exactly what the repo states)

@@ -4,8 +4,11 @@
 Runs run_campaign.py -> run_cell.py -> parsers against a fake `adb` whose
 device state lives in a temp dir, so CI and a fresh clone verify the whole
 capture path — record shape, firstEver labelling via the on-device marker,
-witness stamping, capture gate + quarantine + retry — with no phone attached.
-The fake scripts ENGINE OUTPUT, never verdicts: the gate judges real records.
+witness stamping, capture gate + quarantine + retry, and the endurance
+session path (streaming turn sidecar, host-derived decay/slope/degeneracy
+verdicts, failed-runs-stay) — with no phone attached. The fake scripts
+ENGINE OUTPUT, never verdicts: the gate and the endurance derivations judge
+real records.
 
   python3 android/bench/selftest.py     # exit 0 = pass; temp dirs kept on failure
 
@@ -55,7 +58,28 @@ def engine(cmd):
     return 0
 
 
+def endurance(cmd):
+    # Scripted DRIVER OUTPUT (never verdicts): the host harness derives
+    # decay/slope/degeneracy from these lines exactly as from a real driver.
+    spec = json.load(open(os.path.join(STATE, "endurance_script.json")))
+    print("ENDURANCE_LOAD " + json.dumps(spec.get("load", {"loadSeconds": 1.5})))
+    for t in spec["turns"]:
+        print("ENDURANCE_TURN " + json.dumps(t))
+    if spec.get("session") is not None:
+        print("ENDURANCE_SESSION " + json.dumps(spec["session"]))
+    return spec.get("exit", 0)
+
+
 def shell(cmd):
+    # "./" = actually running the driver; a bare mention (sha256sum for the
+    # witness stamp) must fall through to the real handlers
+    if "./litert_lm_endurance_main" in cmd:
+        return endurance(cmd)
+    if cmd.startswith("tail "):
+        p = mp(cmd.split()[-1])
+        if os.path.exists(p):
+            sys.stdout.write(open(p).read()[-8192:])
+        return 0
     if cmd.startswith("getprop"):
         print({"ro.product.model": "FakePhone",
                "ro.build.version.release": "16",
@@ -118,6 +142,8 @@ def main(argv):
         return 0
     if argv[0] == "shell":
         return shell(" ".join(argv[1:]))
+    if argv[0] == "exec-out":  # streaming path (endurance driver)
+        return shell(" ".join(argv[1:]))
     return 0
 
 
@@ -161,7 +187,7 @@ def main():
 
     # fake on-device engine binaries (sha deliberately unmatched in the pins
     # registry -> the witness must stamp "unknown", never a guessed tag)
-    for name in ("litert_lm_main", "llama-cli"):
+    for name in ("litert_lm_main", "litert_lm_endurance_main", "llama-cli"):
         with open(os.path.join(dev, name), "w") as fh:
             fh.write("fake " + name)
 
@@ -244,6 +270,120 @@ def main():
        "block re-run disclosed in session_provenance.txt")
     ok(not os.path.exists(os.path.join(out_b, "FLAGGED.txt")),
        "clean retry leaves no FLAGGED.txt")
+
+    # --- campaign C: endurance session, completed --------------------------
+    # Scripted driver output; the HOST derives the verdicts (decay windows,
+    # resident slope, degeneracy counts, medians) — this pins that math and
+    # the streaming sidecar path with no phone and no 30-minute wait.
+    def turn(i, t, rate, rollover=False, degenerate=False):
+        d = {"turn": i, "promptIndex": (i - 1) % 12, "startedAtSeconds": t,
+             "rollover": rollover, "ttftMS": 500.0, "wallSeconds": 5.0,
+             "chunkCount": 200, "prefillTokens": 30,
+             "prefillTokensPerSecond": 60.0, "decodeTokens": 256,
+             "decodeTokensPerSecond": rate,
+             "decodeTokensPerSecondWallClock": rate * 0.9,
+             "kvTokensAfterTurn": 100 * i, "residentAfterTurnMB": 1000.0 + i,
+             "stopReason": "length", "degenerate": degenerate,
+             "outputHead": "fake output"}
+        if rollover:
+            d["rolloverReason"] = "budget"
+        return d
+
+    spec_c = {
+        "load": {"loadSeconds": 1.5},
+        # first 300 s window: 20 tok/s; last window: 10 tok/s -> decay 50%;
+        # resident 1001..1006 over turns 1..6 -> slope exactly 1.0 MB/turn
+        "turns": [turn(1, 0, 20.0), turn(2, 10, 20.0), turn(3, 20, 20.0),
+                  turn(4, 650, 10.0, rollover=True),
+                  turn(5, 660, 10.0, degenerate=True), turn(6, 700, 10.0)],
+        "session": {"status": "completed", "turnsCompleted": 6,
+                    "elapsedSeconds": 705.0, "loadSeconds": 1.5,
+                    "plannedMinutes": 30, "contextTokens": 1024,
+                    "turnCap": 256, "residentFinalMB": 1006.0,
+                    "residentPeakMB": 1010.0},
+        "exit": 0,
+    }
+    json.dump(spec_c, open(os.path.join(state, "endurance_script.json"), "w"))
+    cells_c = os.path.join(tmp, "c.cells")
+    with open(cells_c, "w") as fh:
+        fh.write(f"android litert-lm fake/model endurance-chat-30m runs=1 "
+                 f"backend=gpu context-tokens=1024 file={litert_model}\n")
+    env["CAMPAIGN"] = "selftest-c"
+    print("--- campaign C (endurance session: sidecar + derived verdicts)")
+    rc = run_campaign(env, cells_c)
+    ok(rc == 0, f"campaign C exits 0 (got {rc})")
+
+    out_c = os.path.join(raw_root, "selftest-c", "app-path-android")
+    erecs = records(out_c, "litert-lm-gpu_fake_model_endurance-chat-30m")
+    ok(len(erecs) == 1, f"1 endurance record (got {len(erecs)})")
+    if erecs:
+        _, r = erecs[0]
+        e = r.get("endurance", {})
+        ok(e.get("status") == "completed", "endurance.status completed")
+        ok(e.get("decodeDecayPercent") == 50.0,
+           f"decay derived from window medians (got {e.get('decodeDecayPercent')})")
+        ok(abs(e.get("memorySlopeMBPerTurn", 0) - 1.0) < 1e-9,
+           f"resident slope 1.0 MB/turn (got {e.get('memorySlopeMBPerTurn')})")
+        ok(e.get("memorySlopeBasis") == "resident-vmrss",
+           "slope basis disclosed as resident (no fabricated phys_footprint)")
+        ok(e.get("conversationRollovers") == 1, "rollover counted")
+        ok(e.get("degenerateTurnCount") == 1 and e.get("firstDegenerateTurn") == 5,
+           "degeneracy flags lifted from the turn series")
+        ok(r["metrics"]["decodeTokensPerSecond"] == 15.0,
+           "session decode = median of per-turn engine rates")
+        ok(r["metrics"].get("memoryMedianResidentMB") == 1003.5,
+           "memoryMedianResidentMB = median of per-turn VmRSS")
+        ok("firstEver" not in r["metrics"],
+           "marker from campaign A covers endurance too (shared engine cache)")
+        ok(str(r["engineVersion"]).startswith("unknown"),
+           "endurance binary witness: unmatched sha stamps 'unknown'")
+        ok(r["conditions"]["sampler"].startswith("topK40/topP0.9/temp0.7"),
+           "driver-set protocol sampler recorded")
+        sidecar = os.path.join(out_c, e.get("turnsSidecar", ""))
+        ok(os.path.exists(sidecar), "turns sidecar stored beside the record")
+        if os.path.exists(sidecar):
+            lines = [json.loads(ln) for ln in open(sidecar) if ln.strip()]
+            ok(len(lines) == 6, f"sidecar has all 6 turns (got {len(lines)})")
+            ok(all(t.get("thermalState") == "nominal" for t in lines),
+               "host stamps thermal state onto every turn line")
+        ok(os.path.exists(os.path.join(out_c, r["provenance"]["rawLog"])),
+           "endurance raw console log stored (stored-report-rule)")
+    ok(not os.path.exists(os.path.join(out_c, "FLAGGED.txt")),
+       "clean endurance capture not flagged")
+
+    # --- campaign D: endurance crash mid-session (failed-runs-stay) --------
+    spec_d = {
+        "turns": [turn(1, 0, 22.0), turn(2, 10, 21.0)],
+        "session": {"status": "crash", "turnsCompleted": 2,
+                    "elapsedSeconds": 15.0, "loadSeconds": 1.5,
+                    "plannedMinutes": 30, "contextTokens": 1024,
+                    "turnCap": 256,
+                    "failureDetail": "INTERNAL: The new rendered template "
+                                     "string does not start with the previous"},
+        "exit": 1,
+    }
+    json.dump(spec_d, open(os.path.join(state, "endurance_script.json"), "w"))
+    env["CAMPAIGN"] = "selftest-d"
+    print("--- campaign D (endurance crash keeps record + partial series)")
+    rc = run_campaign(env, cells_c)
+    ok(rc == 0, f"campaign D exits 0 (got {rc})")
+    out_d = os.path.join(raw_root, "selftest-d", "app-path-android")
+    drecs = records(out_d, "litert-lm-gpu_fake_model_endurance-chat-30m")
+    ok(len(drecs) == 1, f"crash session still writes its record (got {len(drecs)})")
+    if drecs:
+        _, r = drecs[0]
+        ok(r["endurance"].get("status") == "crash"
+           and "rendered template" in r["endurance"].get("failureDetail", ""),
+           "crash status + failure detail on the record")
+        sidecar = os.path.join(out_d, r["endurance"].get("turnsSidecar", ""))
+        partial = ([json.loads(ln) for ln in open(sidecar) if ln.strip()]
+                   if os.path.exists(sidecar) else [])
+        ok(len(partial) == 2, f"partial series kept: 2 turns on disk (got {len(partial)})")
+    fails_txt = os.path.join(out_d, "FAILURES.txt")
+    ok(os.path.exists(fails_txt) and "endurance-chat-30m" in open(fails_txt).read(),
+       "failed session logged to FAILURES.txt")
+    ok(not glob.glob(os.path.join(out_d, "*.json.attempt1")),
+       "a crash session is never quarantine-retried (failed-runs-stay)")
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")

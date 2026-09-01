@@ -42,6 +42,8 @@ LiteRT-LM only for now — the loop needs a persistent conversation, a native
 per-call cap, and per-turn engine counters, which the cross-runtime
 `LLMRuntime.generate` surface deliberately does not expose (same precedent as
 `--litert-native-benchmark`). This lane produces **no cross-runtime rows**.
+Platforms: Mac (`EnduranceChatTask` in the Swift yardstick,
+`matrices/endurance-mac.cells`) and Android (see the Android section below).
 
 ## What is recorded
 
@@ -99,6 +101,46 @@ Two files per cell, both raw (stored-report-rule):
   (`iphone-session-variance`), and `runs=1` is enforced in the cells.
 - **failed-runs-stay** — crash/hang/empty sessions keep row, record, and
   partial series; the CLI exits 1 so the runner logs the failure too.
+
+## Android (adb lane, Galaxy S26 first)
+
+Same task, same script, same cap and budgets, same derived verdicts — with
+the lane's measurement mechanics (methodology/android.md) and one extra
+build step, because **the stock CLIs cannot run this protocol**:
+`litert_lm_main` sends exactly one message per process, and
+`litert_lm_advanced_main --multi_turns` is an interactive stdin loop that
+exits on the first engine error — no script, no rollover, no per-turn
+records. So the Android lane gets what the Mac lane already has in Swift:
+harness code driving the engine's `Conversation` API.
+
+- **Driver**: `litert_lm_endurance_main` — source in
+  `android/native/litert_lm_endurance_main.cc`, compiled against a *pristine*
+  LiteRT-LM checkout at the pinned tag by
+  `android/scripts/build_litert_lm_endurance.sh` (staged as a new bazel
+  package; upstream files untouched). The binary sha256 AND the driver
+  source sha256 are recorded in `android/engine-pins.json`; rows stamp the
+  observed binary like every other cell (registry/witness).
+- **Host half**: `android/bench/endurance_cell.py` streams the driver's
+  per-turn lines into the `.turns.ndjson` sidecar as they arrive (a USB drop
+  or driver death keeps the partial series) and assembles the schema-v1
+  record. Records land under `app-path-android/` like every Android cell.
+- **Memory basis**: the driver self-samples `/proc/self/status` VmRSS at
+  each turn boundary — the same field the lane's 0.5 s sampler reads for
+  every other cell, exactly turn-aligned. `phys_footprint` has no Android
+  equivalent, so the `footprint*` fields stay absent and the slope verdict
+  runs on resident, disclosed per record as
+  `endurance.memorySlopeBasis: "resident-vmrss"`.
+- **Thermal**: `dumpsys thermalservice`, sampled ~15 s by a host thread and
+  stamped onto each turn line as the latest known state (per-turn dumpsys
+  would contend with sub-second turns); initial/final states recorded like
+  every Android cell.
+- **Sampler**: the driver sets the protocol configuration (temperature 0.7,
+  topP 0.9, topK 40) natively. The lane's prompt-task cells run
+  engine-default because `litert_lm_main` exposes no sampler flags — that
+  disclosed deviation does *not* apply here.
+- Cells: `matrices/endurance-android.cells`. The whole path — streaming
+  sidecar, derived verdicts, failed-runs-stay — runs device-free in CI via
+  `android/bench/selftest.py` (fake adb, scripted driver output).
 
 ## Power (Mac, optional)
 

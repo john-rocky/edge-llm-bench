@@ -41,6 +41,27 @@ PROMPTS = {
     "long-context-1024-gen256": (long_context(1024, True), 256),
 }
 
+# EnduranceChatTask.turnPrompts mirrored verbatim (methodology/endurance.md;
+# rationale prompts/endurance-chat.md). The Android endurance driver reads
+# this as one prompt per line — the script is part of the measurement
+# contract (same-budget), so changing a line means a new task id, not an
+# edit in place. Not in PROMPTS/budgets.tsv: endurance's 256-token cap is a
+# PER-TURN cap carried by the task, not a single-prompt decode budget.
+ENDURANCE_TURNS = [
+    "Let's talk about running language models on phones. In two or three sentences, what is the biggest engineering constraint?",
+    "Which matters more for the experience you just described: prefill speed or decode speed? Answer briefly and say why.",
+    "Give me a concrete example with a model around 2B parameters.",
+    "Summarize our conversation so far in one short paragraph.",
+    "Now switch topics: explain KV cache growth during a long chat, in a few sentences.",
+    "How does quantization interact with the problem you just explained? Keep it brief.",
+    "Earlier you named an engineering constraint. Does quantization help with that one too? A short answer is fine.",
+    "Write a four-line rhyming poem about a phone getting warm while it thinks.",
+    "In one sentence each, name three ways a chat app can shorten its context when the conversation gets long.",
+    "Which of those three would you pick for a low-RAM device, and why? Two sentences.",
+    "Summarize everything we have discussed in this whole conversation in one short paragraph.",
+    "Ask me one good follow-up question about on-device AI, then answer it yourself in two sentences.",
+]
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -50,6 +71,11 @@ def main():
             fh.write(text)
         sha = hashlib.sha256(text.encode()).hexdigest()
         print(f"{task}: {len(text)} bytes, budget {budget}, sha256 {sha[:16]}…")
+    turns = "\n".join(ENDURANCE_TURNS) + "\n"
+    with open(os.path.join(OUT, "endurance-chat.turns.txt"), "w") as fh:
+        fh.write(turns)
+    print(f"endurance-chat.turns: {len(ENDURANCE_TURNS)} prompts, "
+          f"sha256 {hashlib.sha256(turns.encode()).hexdigest()[:16]}…")
     # budgets sidecar so drivers don't hardcode them
     with open(os.path.join(OUT, "budgets.tsv"), "w") as fh:
         for task, (_, budget) in PROMPTS.items():

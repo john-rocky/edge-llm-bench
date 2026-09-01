@@ -87,3 +87,26 @@ driver with no phone attached:
 ```bash
 python3 android/bench/selftest.py      # fake adb; CI runs this on every push
 ```
+
+## Endurance sessions (endurance-chat-<N>m)
+
+30-minute multi-turn chat sessions — one engine process, one conversation
+whose KV accumulates, rollover instead of silent widening, per-turn
+decode/memory/thermal/degeneracy series (`methodology/endurance.md`,
+Android section). The stock CLIs cannot run this (one message per process /
+interactive-only `--multi_turns`), so the lane ships a harness driver built
+against the pinned tag:
+
+```bash
+android/scripts/build_litert_lm_endurance.sh          # bazel; ~10-20 min cold
+adb push android/bin/v0.16.0/litert_lm_endurance_main /data/local/tmp/llmbench/
+adb shell chmod +x /data/local/tmp/llmbench/litert_lm_endurance_main
+CAMPAIGN=$(date +%F)-s26-endurance BENCH_CPU_MASK= \
+  python3 android/bench/run_campaign.py matrices/endurance-android.cells
+```
+
+Each cell is ONE session (runs=1; sessions are never pooled). Per cell the
+campaign dir gets the schema-v1 record, a `.turns.ndjson` per-turn sidecar
+written as turns complete (a crash keeps its evidence), and the raw console
+log. The selftest covers this path too — the endurance wiring is proven in
+CI on every push, no phone attached.

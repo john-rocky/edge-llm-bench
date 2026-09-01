@@ -1,0 +1,25 @@
+# Endurance baseline — Android, LiteRT-LM only (methodology/endurance.md,
+# "Android" section). Driver: litert_lm_endurance_main (harness build at the
+# pinned tag — android/scripts/build_litert_lm_endurance.sh); host half:
+# android/bench/endurance_cell.py. Single-runtime lane by design: no
+# cross-runtime rows, light -> heavy ordering and real cooldowns carry the
+# thermal discipline (same shape as endurance-mac.cells).
+#
+# One session per cell (runs=1; sessions are never pooled). Same two bundles
+# as the 2026-09-01 Mac baseline's full sessions, same per-bundle budgets:
+# the gemma-4-E2B bundle's real state ceiling is 2048 (a bundle property —
+# the engine hits its KV wall under a 4096 request; upstream #3444), so its
+# cell pins the budget the bundle can hold; the kv-wall rollover covers any
+# ceiling that still sits below it. backend=gpu on both: the ML Drift GPU
+# path is the arm this device's gemma rows already measure, and the
+# app-representative one for a 30-minute chat.
+#
+# granite-4.2-3b is a THINKING bundle (catalog: "Granite 4.2 3B (.litertlm,
+# thinking)"): its rows are thinking rows, not speed-comparable with
+# non-thinking models at the same cap.
+#
+# Run one short-chat cell per (model, backend) first on a fresh device —
+# otherwise the 30-minute session doubles as the engine-cache build and is
+# labelled firstEver (docs/OPERATIONS.md, Android endurance runbook).
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm endurance-chat-30m runs=1 backend=gpu context-tokens=2048 cooldown=300 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/granite-4.2-3b endurance-chat-30m runs=1 backend=gpu context-tokens=4096 cooldown=300 file=granite-4.2-3b_int4.litertlm

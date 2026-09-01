@@ -111,6 +111,38 @@ upstream; evidence in the campaign's records + `diagnostics/`):
 - ~1 MB of footprint is retained per conversation rollover (gemma, 197
   cycles → +198 MB/30 min). → #3446.
 
+## Runbook: run an endurance baseline (Android, Galaxy S26)
+
+Protocol: `methodology/endurance.md` (Android section — same task, script,
+cap, and budgets as the Mac baseline; VmRSS memory basis, host-sampled
+thermal).
+
+1. Build + push the harness driver once per tag:
+   `android/scripts/build_litert_lm_endurance.sh`, then push
+   `android/bin/<tag>/litert_lm_endurance_main` next to the engine binaries
+   (`android/README.md`, Endurance section). The pins entry gains the binary
+   AND driver-source sha256 (registry/witness).
+2. On a fresh (model, backend): run one short-chat cell first so the
+   engine-cache build doesn't ride the 30-minute session (it would be
+   labelled `firstEver` honestly, but the session is better spent measured).
+3. `CAMPAIGN=<date>-s26-endurance BENCH_CPU_MASK= python3
+   android/bench/run_campaign.py matrices/endurance-android.cells` —
+   `BENCH_CPU_MASK=` because the S26 runs unmasked (devices/galaxy-s26.md).
+   Each cell is ONE session; expect ~1.5 h for the two-model baseline
+   including cooldowns. USB stays attached; don't touch the phone
+   mid-session (a USB renegotiation kills the stream — the partial series
+   stays on disk, but the session is over).
+4. Per cell: `<cell>.json` (schema-v1, `endurance` block carries the
+   verdicts), `<cell>.turns.ndjson` (written as turns complete), raw log.
+   A crash/hang session exits 1 into FAILURES.txt while its record stands
+   (failed-runs-stay). The cell gate applies as usual.
+5. Read verdicts like the Mac baseline (`endurance.status`,
+   `decodeDecayPercent`, `memorySlopeMBPerTurn` — resident basis on
+   Android, `memorySlopeBasis` says so), and read the sidecar series before
+   naming a cause: the ramp-vs-leak, one-token-turn, and rollover-cost
+   traps from the Mac baseline apply unchanged (endurance.md, "Reading the
+   series").
+
 ## Runbook: add a model
 
 1. Speed axis: add a `ModelInfo` per runtime to

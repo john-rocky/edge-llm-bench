@@ -1,0 +1,42 @@
+# edge-llm-bench harness package — staged into the LiteRT-LM checkout as
+# runtime/endurance/BUILD by android/scripts/build_litert_lm_endurance.sh.
+# NOT upstream code: the engine sources stay pristine at the pinned tag; this
+# package only links the harness's endurance driver against them (linkopts
+# mirror upstream's litert_lm_main android target so the GPU accelerator
+# .so set resolves the same way).
+
+cc_binary(
+    name = "litert_lm_endurance_main",
+    srcs = ["litert_lm_endurance_main.cc"],
+    linkopts = select({
+        "@litert//litert:litert_runtime_link_mode_dynamic": [],
+        # Export LiteRt* symbols for LiteRt accelerator shlibs.
+        "//conditions:default": ["-Wl,--export-dynamic-symbol=LiteRt*"],
+    }) + select({
+        "@platforms//os:android": ["-lEGL", "-lGLESv3"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "@com_google_absl//absl/base:log_severity",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:globals",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/time",
+        "@nlohmann_json//:json",
+        "//runtime/conversation",
+        "//runtime/conversation:io_types",
+        "//runtime/engine:engine_factory",
+        "//runtime/engine:engine_impl_selected",
+        "//runtime/engine:engine_interface",
+        "//runtime/engine:engine_settings",
+        "//runtime/engine:io_types",
+        "//runtime/executor:executor_settings_base",
+        "//runtime/executor:llm_executor_settings",
+        "//runtime/proto:sampler_params_cc_proto",
+    ],
+)

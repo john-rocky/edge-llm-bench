@@ -82,12 +82,16 @@
         "decodeTokSFirstWindowMedian": { "type": "number" },
         "decodeTokSLastWindowMedian": { "type": "number" },
         "decodeDecayPercent": { "type": "number", "description": "(first-window - last-window)/first-window x100; positive = slower at the end" },
-        "memorySlopeMBPerTurn": { "type": "number", "description": "least-squares slope of after-turn phys_footprint (memory.md basis); persistent positive slope across rollovers = leak-class signal" },
+        "memorySlopeMBPerTurn": { "type": "number", "description": "least-squares slope of the after-turn memory series on the platform's memory.md basis (mac: phys_footprint; android: VmRSS resident — memorySlopeBasis names it); persistent positive slope across rollovers = leak-class signal" },
         "memorySlopeMBPerMinute": { "type": "number" },
+        "memorySlopeBasis": { "type": "string", "description": "series the slope fields were computed on: absent = phys_footprint (mac, the original basis); 'resident-vmrss' = /proc/<pid>/status VmRSS (android — phys_footprint has no equivalent and is never fabricated)" },
         "footprintAfterFirstTurnMB": { "type": "number" },
         "footprintAfterLastTurnMB": { "type": "number" },
+        "residentAfterFirstTurnMB": { "type": "number", "description": "android: VmRSS after turn 1 (the footprint* fields stay absent on android)" },
+        "residentAfterLastTurnMB": { "type": "number" },
         "degenerateTurnCount": { "type": "integer" },
         "firstDegenerateTurn": { "type": "integer" },
+        "failureDetail": { "type": "string", "description": "present when status != completed: the engine error, watchdog reason, or host-watchdog reason" },
         "turnsSidecar": { "type": "string", "description": "basename of the per-turn NDJSON sidecar in the same campaign dir (stored-report-rule)" }
       }
     },

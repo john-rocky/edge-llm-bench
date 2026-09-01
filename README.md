@@ -134,6 +134,37 @@ always carries its reason — that is part of the method, not an apology.
   driver reports the row with its reason.
 - Energy cells are manual by design (battery-delta needs the cable out).
 
+## Endurance
+
+Run-once benchmarks answer "how fast is turn 1". A chat app lives with a
+different question: what happens to the 40th turn of a conversation the
+process has been holding for half an hour. The endurance task
+(`endurance-chat-30m`) measures that on real devices — one engine process,
+one conversation with accumulating KV, a fixed 12-prompt script, a native
+256-token per-turn cap. Every turn is recorded as it completes: engine
+decode rate, KV occupancy, memory, thermal state, degeneracy. A crash at
+turn 37 keeps turns 1–36 as evidence. When the conversation outgrows its
+context budget it rolls over the way a chat app would; the rollover is
+counted, never a silently widened budget.
+
+Each session derives four verdicts: decode decay (first 5 minutes vs last
+5), memory slope (leak-class detection, rollover-attributed), degeneracy
+onset, and completion. Protocol and fairness rules:
+[`methodology/endurance.md`](methodology/endurance.md). Lanes: Mac
+(`matrices/endurance-mac.cells`) and Android on Galaxy S26
+(`matrices/endurance-android.cells`) — the Android lane builds a small
+harness driver against the pinned LiteRT-LM tag because no stock CLI can
+hold a scripted multi-turn conversation. LiteRT-LM only for now; no
+cross-runtime rows. The whole Android path also runs with no phone attached
+(`android/bench/selftest.py`, fake adb), so CI proves the wiring on every
+push.
+
+This is deliberately the half of the eval story that quality harnesses
+don't cover: tools like ai-edge-eval measure what a model answers; this
+repo measures what the device and engine do over time. Sustained
+performance on real hardware, with the raw per-turn series stored behind
+every claim.
+
 ## Seed baseline
 
 This repo starts with the 2026-08-17 LiteRT-LM v0.15.0 → v0.16.0 regression
