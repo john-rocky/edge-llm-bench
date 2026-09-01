@@ -166,6 +166,13 @@ fabricated number.
   whole-session least-squares slope (0.08 MB/turn) told the truth, the
   first-vs-last-turn delta (+1,659 MB) did not. Judge slope on the
   post-ramp region.
+- **The ramp scales with decode speed, not wall clock** (S26 baseline,
+  2026-09-01): at 27 tok/s the Galaxy S26's gemma session was still climbing
+  15 minutes in (window slopes +3.6 → +0.8 → +0.2 MB/turn) before settling
+  into a bounded rollover sawtooth — the same warm-up the Mac finished in
+  2 minutes at 155 tok/s. A "post-ramp" cutoff borrowed from a faster
+  device reads warm-up as leak; judge the ramp per session from the
+  windowed slopes, not from a fixed minute mark.
 - **A one-token turn evades the degeneracy heuristic** (it needs ≥10 words),
   and a session of them never trips `empty-output` (which needs *zero*
   chunks). granite spent whole multi-minute stretches emitting exactly one

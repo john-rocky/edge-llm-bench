@@ -107,7 +107,10 @@ upstream; evidence in the campaign's records + `diagnostics/`):
 - Structured think-prefix bundles (granite-4.2-3b): history re-render keeps
   the pre-opened `<think>` unclosed and drops the thought, so coherence
   collapses silently at ANY turn cap — verified with the cap-1024 probe and
-  `yardstick debug-render`. → #3445.
+  `yardstick debug-render`. → #3445. Reproduced on Android (S26, gpu,
+  2026-09-01 baseline): degenerate from turn 2, 32 of 46 turns, history
+  growing ~29 KV tokens/turn — the collapse is in the shared template
+  layer, not a macOS-path artifact.
 - ~1 MB of footprint is retained per conversation rollover (gemma, 197
   cycles → +198 MB/30 min). → #3446.
 

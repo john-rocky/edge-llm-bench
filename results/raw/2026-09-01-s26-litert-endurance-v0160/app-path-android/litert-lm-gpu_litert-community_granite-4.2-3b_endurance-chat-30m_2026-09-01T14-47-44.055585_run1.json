@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "1f5323fe-2dd5-496b-99d5-b67aadea3311",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "791d0f17ac6f010bbf248a205637bf9da76d0420dc95b44bdc955527bf52d567",
+  "model": {
+    "id": "litert-community/granite-4.2-3b",
+    "quantization": "int4 BOCTAV4 (block32, int8 embedder)",
+    "file": "litert-community_granite-4.2-3b_granite-4.2-3b_int4.litertlm",
+    "sha256": "2abaaca65ecd4cf13cd0acd594cec53d48cae1ef975e30bfa898a7d2f6e7dbc0"
+  },
+  "task": "endurance-chat-30m",
+  "timestamp": "2026-09-01T14:47:44Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-06-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.98,
+    "batteryState": "charging",
+    "batteryLevelFinal": 1.0
+  },
+  "conditions": {
+    "sampler": "topK40/topP0.9/temp0.7 (driver-set; endurance protocol)",
+    "cpuAffinity": "none",
+    "contextTokens": 4096,
+    "turnScriptSha256": "08f61f1f921a8c4d5d399eb2bee709ae82187a51a6694f0ddcd71f43b7c6c9d1",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 2,
+    "screen": "on-usb",
+    "elapsedSeconds": 1841.0,
+    "exitCode": 0
+  },
+  "metrics": {
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+endurance-r1",
+    "decodeTokensPerSecond": 12.927994468292365,
+    "promptTokenCount": 1322,
+    "generatedTokenCount": 11612,
+    "streamedChunkCount": 10378,
+    "totalGenerationTimeSeconds": 1828.3153150081635,
+    "stopReason": "stop",
+    "initialThermalState": "nominal",
+    "finalThermalState": "moderate",
+    "contextTokensConfigured": 4096,
+    "loadTimeSeconds": 10.221648216247559,
+    "firstTokenLatencyMS": 538,
+    "promptTokensPerSecond": 1.6271338722437714,
+    "decodeTokensPerSecondWallClock": 11.59682973962761,
+    "memoryMedianResidentMB": 2585.21484375,
+    "memoryPeakResidentMB": 4546.93359375,
+    "memoryFinalResidentMB": 2585.109375
+  },
+  "endurance": {
+    "plannedMinutes": 30,
+    "elapsedSeconds": 1828.3153150081635,
+    "turnsCompleted": 46,
+    "conversationRollovers": 0,
+    "turnOutputTokenCap": 256,
+    "status": "completed",
+    "windowSeconds": 300.0,
+    "degenerateTurnCount": 32,
+    "memorySlopeBasis": "resident-vmrss",
+    "turnsSidecar": "litert-lm-gpu_litert-community_granite-4.2-3b_endurance-chat-30m_2026-09-01T14-47-44.055585_run1.turns.ndjson",
+    "decodeTokSFirstWindowMedian": 12.684100849920732,
+    "decodeTokSLastWindowMedian": 13.108805606445342,
+    "decodeDecayPercent": -3.348323712888678,
+    "memorySlopeMBPerTurn": 5.514085385831021,
+    "memorySlopeMBPerMinute": 7.947237186842652,
+    "residentAfterFirstTurnMB": 1370.19140625,
+    "residentAfterLastTurnMB": 2585.109375,
+    "firstDegenerateTurn": 2
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_granite-4.2-3b_endurance-chat-30m_2026-09-01T14-47-44.055585_run1.log",
+    "harness": "android/bench/endurance_cell.py"
+  }
+}
