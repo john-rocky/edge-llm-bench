@@ -90,14 +90,26 @@ memory slope, per-turn degeneracy; LiteRT-LM only, no cross-runtime rows).
    read the sidecar series before naming a cause — a sawtooth that resets at
    rollover is KV, not a leak.
 
-Known structural finding (2026-09-01, v0.16.0): thinking-template bundles
-whose assistant-history re-render is not a byte-prefix extension of the live
-render (e.g. the litert-community Qwen3-0.6B int4 bundle's empty
-`<think></think>` pair) cannot hold a multi-turn conversation at all — turn 2
-dies with `INTERNAL: The new rendered template string does not start with the
-previous rendered template string`. The endurance row records it as
-`status=crash` with the render diff in the console log; that row is the
-datum, not a capture bug.
+Known structural findings (2026-09-01 baseline, v0.16.0 — all four filed
+upstream; evidence in the campaign's records + `diagnostics/`):
+
+- Thinking-template bundles whose assistant-history re-render is not a
+  byte-prefix extension of the live render (litert-community Qwen3-0.6B
+  int4: an empty `<think></think>` pair only in the live render) cannot
+  hold a multi-turn conversation at all — turn 2 dies with `INTERNAL: The
+  new rendered template string does not start with the previous...`. The
+  endurance row records it as `status=crash`; that row is the datum, not a
+  capture bug. → LiteRT-LM #3443.
+- A bundle's real context ceiling can sit below the accepted
+  `maxNumTokens` (gemma-4-E2B: 2048 under a 4096 request) and there is no
+  API to query it; the harness's kv-wall rollover absorbs the resulting
+  mid-conversation `FAILED_PRECONDITION`. → #3444.
+- Structured think-prefix bundles (granite-4.2-3b): history re-render keeps
+  the pre-opened `<think>` unclosed and drops the thought, so coherence
+  collapses silently at ANY turn cap — verified with the cap-1024 probe and
+  `yardstick debug-render`. → #3445.
+- ~1 MB of footprint is retained per conversation rollover (gemma, 197
+  cycles → +198 MB/30 min). → #3446.
 
 ## Runbook: add a model
 
