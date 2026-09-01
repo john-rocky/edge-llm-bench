@@ -1,0 +1,20 @@
+# Endurance baseline — Mac, LiteRT-LM only (methodology/endurance.md).
+# Single-runtime lane by design: no cross-runtime rows here, so the
+# interleave-arms rule has nothing to interleave; light -> heavy ordering and
+# real cooldowns carry the thermal discipline instead.
+#
+# One session per cell (runs=1; sessions are never pooled). context-tokens is
+# the conversation budget the rollover policy enforces; the per-turn output
+# cap (256) is part of the task. The budget is per-bundle and RECORDED on the
+# row (contextTokensConfigured), not uniform: the gemma-4-E2B bundle's real
+# state ceiling is 2048 — under a 4096 request the engine hits its KV wall at
+# 2048 (turn-21 FAILED_PRECONDITION, 2026-09-01 smoke) — so its cell pins the
+# budget the bundle can actually hold, and the harness's kv-wall rollover
+# covers any bundle whose ceiling sits below the requested budget anyway.
+#
+# granite-4.2-3b is a THINKING bundle (its template opens a <think> channel
+# every turn): its rows are thinking rows, disclosed in the catalog entry, and
+# not speed-comparable with the two non-thinking models at the same cap.
+mac litert-lm litert-community/Qwen3-0.6B endurance-chat-30m runs=1 context-tokens=4096 cooldown=120
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm endurance-chat-30m runs=1 context-tokens=2048 cooldown=300
+mac litert-lm litert-community/granite-4.2-3b endurance-chat-30m runs=1 context-tokens=4096 cooldown=300

@@ -142,6 +142,238 @@ public actor MediaPipeRuntime: LLMRuntime {
         )
     }
 
+    // MARK: - Endurance (multi-turn) session
+
+    /// Outcome of the endurance turn loop (per-turn records travel through the
+    /// `onTurn` callback; see `EnduranceSession`).
+    public struct EnduranceLoopOutcome: Sendable {
+        /// completed | crash | hang | empty-output
+        public let status: String
+        public let failureDetail: String?
+    }
+
+    /// Watchdog needs to poke `Conversation.cancel()` from a detached task;
+    /// the box makes the single non-Sendable capture explicit.
+    private final class ConversationCancelBox: @unchecked Sendable {
+        private let conversation: Conversation
+        init(_ c: Conversation) { conversation = c }
+        func cancel() { try? conversation.cancel() }
+    }
+
+    private final class TurnWatchdogState: @unchecked Sendable {
+        private let lock = NSLock()
+        private var lastEvent = CFAbsoluteTimeGetCurrent()
+        private var finished = false
+        private var fired: String?
+        func touch() { lock.lock(); lastEvent = CFAbsoluteTimeGetCurrent(); lock.unlock() }
+        func finish() { lock.lock(); finished = true; lock.unlock() }
+        func fire(_ reason: String) { lock.lock(); fired = fired ?? reason; lock.unlock() }
+        var lastEventTime: CFAbsoluteTime { lock.lock(); defer { lock.unlock() }; return lastEvent }
+        var isFinished: Bool { lock.lock(); defer { lock.unlock() }; return finished }
+        var firedReason: String? { lock.lock(); defer { lock.unlock() }; return fired }
+    }
+
+    /// The endurance turn loop (`methodology/endurance.md`): one engine
+    /// process, one conversation whose KV accumulates across scripted turns,
+    /// for `task.minutes` of wall clock. Per-turn output is capped natively
+    /// (`maxOutputTokens` — v0.16+ API, so no post-cap drain and the engine's
+    /// per-turn decode counters cover exactly the measured tokens; the 0.12-era
+    /// cap-by-draining in `runGenerate` is unnecessary here). When the next
+    /// turn would not fit `contextTokens`, the conversation is replaced (a
+    /// rollover) — the chat-app behavior, recorded, never silent widening.
+    ///
+    /// LiteRT-LM-only by design, like `nativeBenchmark`: the loop needs
+    /// `getTokenCount` / per-turn `getBenchmarkInfo` / a persistent
+    /// conversation, which the generic `LLMRuntime` surface does not expose.
+    public func enduranceChat(
+        task: EnduranceChatTask,
+        contextTokens: Int,
+        onTurn: @Sendable @escaping (EnduranceTurnRecord) -> Void
+    ) async throws -> EnduranceLoopOutcome {
+        guard let engine else { throw LLMRuntimeError.modelNotLoaded }
+
+        let stallSeconds: Double = 180      // no stream event for this long => hang
+        let turnCapSeconds: Double = 600    // absolute per-turn bound => hang
+        let duration = Double(task.minutes) * 60
+        let cap = task.parameters.maxTokens
+
+        let sampler = try SamplerConfig(
+            topK: 40,
+            topP: task.parameters.topP,
+            temperature: task.parameters.temperature
+        )
+        func makeConversation() async throws -> Conversation {
+            try await engine.createConversation(
+                with: ConversationConfig(samplerConfig: sampler))
+        }
+
+        var conversation = try await makeConversation()
+        let sessionStart = CFAbsoluteTimeGetCurrent()
+        var turnIndex = 0
+        var emptyStreak = 0
+
+        while CFAbsoluteTimeGetCurrent() - sessionStart < duration {
+            turnIndex += 1
+            let promptIndex = (turnIndex - 1) % EnduranceChatTask.turnPrompts.count
+            let promptText = EnduranceChatTask.turnPrompts[promptIndex]
+
+            // Rollover check: leave room for this prompt + the output cap.
+            var rollover = false
+            var rolloverReason: String?
+            let kvNow = (try? conversation.getTokenCount()) ?? 0
+            let reserve = promptText.count / 3 + 16 + cap + 32
+            if kvNow + reserve > contextTokens {
+                conversation = try await makeConversation()
+                rollover = true
+                rolloverReason = "budget"
+            }
+
+            var turnStart = CFAbsoluteTimeGetCurrent()
+            var firstChunkAt: CFAbsoluteTime?
+            var lastChunkAt: CFAbsoluteTime?
+            var chunkCount = 0
+            var collected = ""
+            var turnError: Error?
+            var watchdogFired: String?
+            var attempt = 0
+
+            attemptLoop: while true {
+                attempt += 1
+                turnStart = CFAbsoluteTimeGetCurrent()
+                firstChunkAt = nil; lastChunkAt = nil
+                chunkCount = 0; collected = ""; turnError = nil
+
+                let watchdog = TurnWatchdogState()
+                let cancelBox = ConversationCancelBox(conversation)
+                let attemptStart = turnStart
+                let watchTask = Task.detached {
+                    while !Task.isCancelled {
+                        try? await Task.sleep(nanoseconds: 5_000_000_000)
+                        if watchdog.isFinished { return }
+                        let now = CFAbsoluteTimeGetCurrent()
+                        if now - watchdog.lastEventTime > stallSeconds {
+                            watchdog.fire("stall>\(Int(stallSeconds))s"); break
+                        }
+                        if now - attemptStart > turnCapSeconds {
+                            watchdog.fire("turn>\(Int(turnCapSeconds))s"); break
+                        }
+                    }
+                    if watchdog.firedReason != nil { cancelBox.cancel() }
+                }
+
+                do {
+                    for try await chunk in conversation.sendMessageStream(
+                        Message(promptText), maxOutputTokens: cap
+                    ) {
+                        watchdog.touch()
+                        // Visible text may arrive as plain content OR on a channel
+                        // (thinking models stream their thought channel); both count
+                        // for degeneracy and for the wall-clock chunk tally.
+                        var text = chunk.toString
+                        for (_, v) in chunk.channels.sorted(by: { $0.key < $1.key }) {
+                            text += v
+                        }
+                        guard !text.isEmpty else { continue }
+                        let now = CFAbsoluteTimeGetCurrent()
+                        if firstChunkAt == nil { firstChunkAt = now }
+                        lastChunkAt = now
+                        chunkCount += 1
+                        if collected.count < 4000 { collected.append(text) }
+                    }
+                } catch {
+                    turnError = error
+                }
+                watchdog.finish()
+                watchTask.cancel()
+                if watchdog.firedReason != nil {
+                    // surfaced below as a hang; never retried
+                    turnError = turnError ?? LLMRuntimeError.generationFailed("watchdog")
+                    watchdogFired = watchdog.firedReason
+                    break attemptLoop
+                }
+
+                // KV-wall rollover: the engine refuses a turn outright when the
+                // remaining state entries are smaller than its smallest prefill
+                // signature — the bundle's REAL context ceiling, which can sit
+                // below the requested budget (gemma-4-E2B: wall at 2048 under a
+                // 4096 request, 2026-09-01). A chat app rolls over here; so do
+                // we — once, on a fresh conversation, recorded as such.
+                if let e = turnError, chunkCount == 0, attempt == 1,
+                   String(describing: e).contains("state entries") {
+                    conversation = try await makeConversation()
+                    rollover = true
+                    rolloverReason = "kv-wall@\(kvNow): \(String(describing: e).prefix(120))"
+                    continue attemptLoop
+                }
+                break attemptLoop
+            }
+
+            let turnEnd = lastChunkAt ?? CFAbsoluteTimeGetCurrent()
+            // The engine's "last*" counters describe the last COMPLETED turn.
+            // A turn that died before streaming anything would otherwise
+            // inherit the previous turn's numbers — a wrong-looking-right
+            // record (observed on the 2026-09-01 smoke: the crashed turn 2
+            // carried turn 1's 256 tokens).
+            let bench = chunkCount > 0 ? (try? conversation.getBenchmarkInfo()) : nil
+            let decodeTokens = bench.map { $0.lastDecodeTokenCount }
+            let wallRate: Double? = {
+                guard let f = firstChunkAt, let l = lastChunkAt, chunkCount >= 2,
+                      l > f else { return nil }
+                return Double(chunkCount - 1) / (l - f)
+            }()
+
+            let hung = watchdogFired != nil
+            let stopReason: String
+            if hung { stopReason = "hang" }
+            else if turnError != nil { stopReason = "error" }
+            else if (decodeTokens ?? chunkCount) >= cap { stopReason = "length" }
+            else { stopReason = "stop" }
+
+            let record = EnduranceTurnRecord(
+                turn: turnIndex,
+                promptIndex: promptIndex,
+                startedAtSeconds: turnStart - sessionStart,
+                rollover: rollover,
+                rolloverReason: rolloverReason,
+                ttftMS: firstChunkAt.map { ($0 - turnStart) * 1000 },
+                wallSeconds: turnEnd - turnStart,
+                chunkCount: chunkCount,
+                prefillTokens: bench.map { $0.lastPrefillTokenCount },
+                prefillTokensPerSecond: bench.map { $0.lastPrefillTokensPerSecond },
+                decodeTokens: decodeTokens,
+                decodeTokensPerSecond: bench.map { $0.lastDecodeTokensPerSecond },
+                decodeTokensPerSecondWallClock: wallRate,
+                kvTokensAfterTurn: try? conversation.getTokenCount(),
+                footprintAfterTurnMB: MemoryMonitor.footprintMB(),
+                residentAfterTurnMB: MemoryMonitor.residentMB(),
+                thermalState: ThermalMonitor.describe(ProcessInfo.processInfo.thermalState),
+                stopReason: stopReason,
+                degenerate: DegeneracyCheck.isDegenerate(collected),
+                outputHead: String(collected.prefix(160))
+            )
+            onTurn(record)
+
+            if hung {
+                return EnduranceLoopOutcome(
+                    status: "hang", failureDetail: watchdogFired)
+            }
+            if let e = turnError {
+                return EnduranceLoopOutcome(
+                    status: "crash", failureDetail: String(describing: e))
+            }
+            // A model that streams nothing turn after turn is a collapse
+            // finding, not a reason to spin for the rest of the window.
+            emptyStreak = chunkCount == 0 ? emptyStreak + 1 : 0
+            if emptyStreak >= 3 {
+                return EnduranceLoopOutcome(
+                    status: "empty-output",
+                    failureDetail: "3 consecutive turns streamed no text")
+            }
+            if Task.isCancelled { break }
+        }
+        return EnduranceLoopOutcome(status: "completed", failureDetail: nil)
+    }
+
     public nonisolated func generate(
         prompt: String,
         parameters: GenerationParameters

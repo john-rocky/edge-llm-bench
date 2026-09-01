@@ -490,6 +490,25 @@ public enum ModelCatalog {
             hfFilePatterns: ["qwen3_0_6b_mixed_int4.litertlm"],
             primaryFile: "qwen3_0_6b_mixed_int4.litertlm"
         ),
+        // granite-4.2-3b — IBM dense THINKING model; our own conversion, shipped to
+        // litert-community 2026-08-31 (litertlm-convert granite42_work/FINDINGS.md;
+        // toolchain litert-torch 0.9.3 / litert-lm-builder 0.16.1). int4 recipe is
+        // BOCTAV4 block32 with the embedder externalized at int8 and the HF
+        // tokenizer.json section embedded — a recipe, not a bit-width
+        // (quant-label-rule). The bundle's chat template opens a <think> channel on
+        // every assistant turn, so generated output = thought + answer; rows for
+        // this model are thinking rows and are not speed-comparable with
+        // non-thinking models at the same output cap.
+        ModelInfo(
+            id: "litert-community/granite-4.2-3b",
+            displayName: "Granite 4.2 3B (.litertlm, thinking)",
+            quantization: "int4 BOCTAV4 (block32, int8 embedder)",
+            parameterCountB: 3.0,
+            onDiskSizeMB: 2089,
+            hfRepoId: "litert-community/granite-4.2-3b",
+            hfFilePatterns: ["granite-4.2-3b_int4.litertlm"],
+            primaryFile: "granite-4.2-3b_int4.litertlm"
+        ),
         // Lu's focus models (Liquid/LFM2 + MiniCPM) — NOT on litert-community, so these are
         // OUR own .litertlm conversions, side-loaded (no HF download; hfRepoId is a local marker).
         // See MODEL_AVAILABILITY.md / MODEL_MATRIX.md.

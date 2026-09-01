@@ -143,6 +143,17 @@ struct YardstickApp {
             return
         }
 
+        // Endurance sessions run INSTEAD of the generic per-run loop: one
+        // 30-minute-class multi-turn session per invocation, per-turn series to
+        // a sidecar, one schema-v1 session record to the JSONL.
+        if let enduranceTask = task as? EnduranceChatTask {
+            try await runEndurance(
+                runtime: runtime, runtimeID: runtimeID, model: model,
+                task: enduranceTask, contextTokens: contextTokens,
+                runs: runs, outputPath: outputPath)
+            return
+        }
+
         let runner = BenchmarkRunner()
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -185,6 +196,78 @@ struct YardstickApp {
                 "yardstick: run=\(runIndex) cold=\(runIndex == 1 && (runs > 1 || coldRun) ? 1 : 0) TTFT=\(m.firstTokenLatencyMS)ms decode=\(String(format: "%.2f", m.decodeTokensPerSecond))tok/s peakMB=\(Int(m.memoryPeakDuringDecodeMB))\n".utf8
             ))
         }
+    }
+
+    /// One endurance session (`methodology/endurance.md`): the multi-turn loop
+    /// lives on `MediaPipeRuntime.enduranceChat`, the sampling/assembly in
+    /// `EnduranceSession`. Per-turn records stream to `<output>.turns.ndjson`
+    /// AS THEY COMPLETE (a crash leaves the series on disk); the session record
+    /// appends to the JSONL like any other run. Exit 1 when the session did not
+    /// complete — the record still stands (failed-runs-stay).
+    static func runEndurance(
+        runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
+        task: EnduranceChatTask, contextTokens: Int?, runs: Int,
+        outputPath: String?
+    ) async throws {
+        #if canImport(LiteRTLM)
+        guard let litert = runtime as? MediaPipeRuntime else {
+            throw CLIError.invalidArgument(
+                "endurance-chat requires --runtime litert-lm (got '\(runtimeID)') — the loop needs a persistent conversation + per-turn engine counters")
+        }
+        if runs > 1 {
+            FileHandle.standardError.write(Data(
+                "yardstick: WARNING --runs \(runs) ignored for endurance — one session per invocation; sessions are never pooled\n".utf8))
+        }
+
+        let sidecarPath: String? = outputPath.map { p in
+            p.hasSuffix(".jsonl")
+                ? String(p.dropLast(".jsonl".count)) + ".turns.ndjson"
+                : p + ".turns.ndjson"
+        }
+        let sidecar = try sidecarPath.map { try NDJSONWriter(path: $0) }
+        let turnEncoder = JSONEncoder()
+        turnEncoder.outputFormatting = [.sortedKeys]
+
+        FileHandle.standardError.write(Data(
+            "yardstick: endurance session task=\(task.id) model=\(model.id) context_tokens=\(contextTokens ?? EnduranceChatTask.defaultContextTokens) turn_cap=\(task.parameters.maxTokens)\n".utf8))
+
+        let output = try await EnduranceSession.run(
+            runtime: litert, model: model, task: task,
+            contextTokens: contextTokens,
+            turnsSidecarName: sidecarPath.map { URL(fileURLWithPath: $0).lastPathComponent }
+        ) { record in
+            if let data = try? turnEncoder.encode(record) {
+                sidecar?.writeLine(data)
+            }
+            let decode = record.decodeTokensPerSecond.map { String(format: "%.1f", $0) } ?? "-"
+            FileHandle.standardError.write(Data(
+                "yardstick: turn=\(record.turn) t=\(Int(record.startedAtSeconds))s decode=\(decode)tok/s kv=\(record.kvTokensAfterTurn ?? -1) footprintMB=\(Int(record.footprintAfterTurnMB)) stop=\(record.stopReason)\(record.rollover ? " ROLLOVER" : "")\(record.degenerate ? " DEGENERATE" : "")\n".utf8))
+        }
+        sidecar?.close()
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+        let json = try encoder.encode(output.result)
+        FileHandle.standardOutput.write(json)
+        FileHandle.standardOutput.write(Data("\n".utf8))
+        if let outputPath {
+            try appendJSONL(result: output.result, path: outputPath)
+            FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
+        }
+
+        let e = output.result.endurance
+        FileHandle.standardError.write(Data(
+            "yardstick: endurance status=\(e?.status ?? "?") turns=\(e?.turnsCompleted ?? 0) rollovers=\(e?.conversationRollovers ?? 0) decode_median=\(String(format: "%.2f", output.result.metrics.decodeTokensPerSecond))tok/s decay=\(e?.decodeDecayPercent.map { String(format: "%.1f%%", $0) } ?? "n/a") mem_slope=\(e?.memorySlopeMBPerTurn.map { String(format: "%.2fMB/turn", $0) } ?? "n/a") degenerate_turns=\(e?.degenerateTurnCount ?? 0)\n".utf8))
+        if let status = e?.status, status != "completed" {
+            FileHandle.standardError.write(Data(
+                "yardstick: endurance session did not complete (\(status)): \(e?.failureDetail ?? "?") — record kept\n".utf8))
+            exit(1)
+        }
+        #else
+        throw CLIError.invalidArgument(
+            "endurance-chat unavailable: LiteRTLM is not linked into this build")
+        #endif
     }
 
     /// LiteRT-LM's own `benchmark()` entry point — force-prefill `prefill` tokens with no
@@ -298,6 +381,7 @@ struct YardstickApp {
         print("  long-context — 2K-token prefill + short reply, measures prefill")
         print("  cactus-parity— 1K-token prefill + 100-token reply, matches `cactus benchmark`")
         print("  sustained    — 512-token generation, watches thermal drift")
+        print("  endurance-chat-30m — scripted multi-turn chat, 30 min; per-turn decode/memory/degeneracy series (litert-lm only)")
         print("  lifecycle    — short generation x N, mimics chat session reuse")
         print("")
         print("Available models per runtime — pass `--model <id-or-hf-repo>`.")
@@ -435,6 +519,45 @@ struct YardstickApp {
             See `yardstick list` for the catalog of available tasks and models.
             """
         )
+    }
+}
+
+/// Append-only NDJSON writer for the endurance turn sidecar. Locked because the
+/// onTurn callback is @Sendable; each line is flushed immediately so a crashed
+/// session leaves every completed turn on disk.
+final class NDJSONWriter: @unchecked Sendable {
+    private let handle: FileHandle
+    private let lock = NSLock()
+
+    init(path: String) throws {
+        let fm = FileManager.default
+        let url = URL(fileURLWithPath: path)
+        try fm.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // A leftover sidecar from a quarantined/retried cell is audit trail,
+        // not something to truncate: rotate it aside the way the runner
+        // rotates the .jsonl (first free .attemptN suffix).
+        if let attrs = try? fm.attributesOfItem(atPath: path),
+           (attrs[.size] as? Int ?? 0) > 0 {
+            var n = 1
+            while fm.fileExists(atPath: "\(path).attempt\(n)") { n += 1 }
+            try? fm.moveItem(atPath: path, toPath: "\(path).attempt\(n)")
+        }
+        fm.createFile(atPath: path, contents: nil)
+        handle = try FileHandle(forWritingTo: url)
+        try handle.seekToEnd()
+    }
+
+    func writeLine(_ data: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        try? handle.write(contentsOf: data + Data("\n".utf8))
+    }
+
+    func close() {
+        lock.lock()
+        defer { lock.unlock() }
+        try? handle.close()
     }
 }
 

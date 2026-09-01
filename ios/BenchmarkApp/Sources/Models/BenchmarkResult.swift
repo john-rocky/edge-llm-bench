@@ -33,6 +33,11 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
     public let parameters: GenerationParameters
     public let metrics: Metrics
     public let outputSample: String
+    /// Session-level derived stats for endurance tasks (schema v1 `endurance`,
+    /// additive). `nil` on every other task. The full per-turn series lives in
+    /// the raw sidecar this record's `endurance.turnsSidecar` names — derived
+    /// stats travel with the record, raw series stay raw.
+    public let endurance: EnduranceSummary?
 
     public init(
         id: UUID = UUID(),
@@ -47,7 +52,8 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
         task: String,
         parameters: GenerationParameters,
         metrics: Metrics,
-        outputSample: String
+        outputSample: String,
+        endurance: EnduranceSummary? = nil
     ) {
         self.id = id
         self.schemaVersion = schemaVersion
@@ -62,6 +68,89 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
         self.parameters = parameters
         self.metrics = metrics
         self.outputSample = outputSample
+        self.endurance = endurance
+    }
+}
+
+/// Derived session stats for an endurance run (see `EnduranceChatTask` /
+/// `methodology/endurance.md`). Every value here is computable from the turn
+/// sidecar; they are duplicated onto the record so a session's verdicts —
+/// decay, memory slope, degeneracy count, completion status — survive as data
+/// even when only the summary layer is consulted.
+public struct EnduranceSummary: Codable, Sendable {
+    /// The task's wall-clock window as planned (`endurance-chat-<N>m`).
+    public let plannedMinutes: Int
+    /// Wall-clock actually covered, start of turn 1 → end of last turn.
+    public let elapsedSeconds: Double
+    /// Turns that finished (streamed to a natural end or the output cap).
+    public let turnsCompleted: Int
+    /// Conversations created *after* the first one because the next turn would
+    /// not have fit the context budget. A rollover turn re-prefills from empty.
+    public let conversationRollovers: Int
+    /// Per-turn output cap actually enforced (native `maxOutputTokens`).
+    public let turnOutputTokenCap: Int
+    /// `completed` | `crash` (a turn threw) | `hang` (turn watchdog fired) |
+    /// `empty-output` (three consecutive turns streamed no text — a collapse
+    /// finding, cut short instead of spinning out the window). Failed sessions
+    /// keep their record and their partial series (failed-runs-stay).
+    public let status: String
+    /// For non-completed sessions: the watchdog reason or the thrown error's
+    /// description — the crash record must say why (stored-report-rule).
+    public let failureDetail: String?
+    /// Median engine decode tok/s over turns starting in the first
+    /// `windowSeconds` of the session, and over turns starting in the last
+    /// `windowSeconds`. The decay verdict compares like-for-like windows
+    /// *within one session* — never across sessions (session-drift rule).
+    public let windowSeconds: Double
+    public let decodeTokSFirstWindowMedian: Double?
+    public let decodeTokSLastWindowMedian: Double?
+    /// (first − last) / first × 100; positive = the session got slower.
+    public let decodeDecayPercent: Double?
+    /// Least-squares slope of after-turn `phys_footprint` (memory.md basis)
+    /// against turn index / minutes. A persistent positive slope that survives
+    /// rollovers is the leak-class signal this task exists to catch.
+    public let memorySlopeMBPerTurn: Double?
+    public let memorySlopeMBPerMinute: Double?
+    public let footprintAfterFirstTurnMB: Double?
+    public let footprintAfterLastTurnMB: Double?
+    /// Turns whose (thought + text) output tripped the degeneracy heuristic
+    /// (looping n-grams / vocabulary collapse / special-token spam — the
+    /// litertlm-convert `verify_quality.degenerate()` rules).
+    public let degenerateTurnCount: Int
+    public let firstDegenerateTurn: Int?
+    /// Basename of the per-turn NDJSON sidecar next to this record
+    /// (stored-report-rule: the series is the report).
+    public let turnsSidecar: String?
+
+    public init(
+        plannedMinutes: Int, elapsedSeconds: Double, turnsCompleted: Int,
+        conversationRollovers: Int, turnOutputTokenCap: Int, status: String,
+        failureDetail: String?,
+        windowSeconds: Double,
+        decodeTokSFirstWindowMedian: Double?, decodeTokSLastWindowMedian: Double?,
+        decodeDecayPercent: Double?,
+        memorySlopeMBPerTurn: Double?, memorySlopeMBPerMinute: Double?,
+        footprintAfterFirstTurnMB: Double?, footprintAfterLastTurnMB: Double?,
+        degenerateTurnCount: Int, firstDegenerateTurn: Int?, turnsSidecar: String?
+    ) {
+        self.plannedMinutes = plannedMinutes
+        self.elapsedSeconds = elapsedSeconds
+        self.turnsCompleted = turnsCompleted
+        self.conversationRollovers = conversationRollovers
+        self.turnOutputTokenCap = turnOutputTokenCap
+        self.status = status
+        self.failureDetail = failureDetail
+        self.windowSeconds = windowSeconds
+        self.decodeTokSFirstWindowMedian = decodeTokSFirstWindowMedian
+        self.decodeTokSLastWindowMedian = decodeTokSLastWindowMedian
+        self.decodeDecayPercent = decodeDecayPercent
+        self.memorySlopeMBPerTurn = memorySlopeMBPerTurn
+        self.memorySlopeMBPerMinute = memorySlopeMBPerMinute
+        self.footprintAfterFirstTurnMB = footprintAfterFirstTurnMB
+        self.footprintAfterLastTurnMB = footprintAfterLastTurnMB
+        self.degenerateTurnCount = degenerateTurnCount
+        self.firstDegenerateTurn = firstDegenerateTurn
+        self.turnsSidecar = turnsSidecar
     }
 }
 

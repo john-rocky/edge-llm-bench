@@ -68,6 +68,29 @@
       }
     },
     "harnessStamp": { "type": "string", "description": "measurement-contract id (+suffixes like +litert-thinking)" },
+    "endurance": {
+      "type": "object",
+      "description": "endurance-chat-<N>m session stats (additive, 2026-09-01; methodology/endurance.md). Derived within ONE session — never pooled across sessions. The full per-turn series is raw: the .turns.ndjson sidecar named by turnsSidecar, beside the record.",
+      "properties": {
+        "plannedMinutes": { "type": "integer" },
+        "elapsedSeconds": { "type": "number" },
+        "turnsCompleted": { "type": "integer" },
+        "conversationRollovers": { "type": "integer", "description": "fresh conversations forced by the context budget (full re-prefill); the chat-app rollover, recorded instead of silently widening the budget" },
+        "turnOutputTokenCap": { "type": "integer" },
+        "status": { "type": "string", "description": "completed | crash | hang | empty-output — failed sessions keep their record and partial series (failed-runs-stay)" },
+        "windowSeconds": { "type": "number" },
+        "decodeTokSFirstWindowMedian": { "type": "number" },
+        "decodeTokSLastWindowMedian": { "type": "number" },
+        "decodeDecayPercent": { "type": "number", "description": "(first-window - last-window)/first-window x100; positive = slower at the end" },
+        "memorySlopeMBPerTurn": { "type": "number", "description": "least-squares slope of after-turn phys_footprint (memory.md basis); persistent positive slope across rollovers = leak-class signal" },
+        "memorySlopeMBPerMinute": { "type": "number" },
+        "footprintAfterFirstTurnMB": { "type": "number" },
+        "footprintAfterLastTurnMB": { "type": "number" },
+        "degenerateTurnCount": { "type": "integer" },
+        "firstDegenerateTurn": { "type": "integer" },
+        "turnsSidecar": { "type": "string", "description": "basename of the per-turn NDJSON sidecar in the same campaign dir (stored-report-rule)" }
+      }
+    },
     "provenance": {
       "type": "object",
       "properties": {

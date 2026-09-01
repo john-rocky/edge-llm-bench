@@ -65,6 +65,40 @@ loudly instead of rebuilding the summary and looking like a capture.
 5. Commit the new campaign dir + regression report + regenerated summary/
    RESULTS/LEADERBOARD. CI holds it all together.
 
+## Runbook: run an endurance baseline (Mac, LiteRT-LM)
+
+Protocol: `methodology/endurance.md` (30-min multi-turn sessions; decay,
+memory slope, per-turn degeneracy; LiteRT-LM only, no cross-runtime rows).
+
+1. `./bench doctor --platform mac`; machine must be quiet (the runner's
+   heavy-pipeline guard is necessary but not sufficient for a 30-min session
+   — check `top` yourself).
+2. Optional power trace: start the `sudo powermetrics` sidecar from
+   endurance.md *before* the campaign (root; runners never assume it).
+3. `CAMPAIGN=<date>-mac-litert-endurance ./scripts/bench_matrix_mac.sh run
+   matrices/endurance-mac.cells` — each cell is ONE session (`runs=1`,
+   enforced by validate_cells; sessions are never pooled). Expect ~2 h for
+   the three-model baseline including cooldowns.
+4. Per cell the campaign dir gets `<cell>.jsonl` (one schema-v1 session
+   record, `endurance` block carries the verdicts) plus
+   `<cell>.turns.ndjson` (per-turn series, written as turns complete — a
+   crash keeps its evidence). The cell gate applies: HOT quarantines and
+   re-runs once; a crash/hang session exits 1 and lands in FAILURES.txt
+   while its record stands (failed-runs-stay).
+5. Read verdicts from the session records (`endurance.status`,
+   `decodeDecayPercent`, `memorySlopeMBPerTurn`, `degenerateTurnCount`);
+   read the sidecar series before naming a cause — a sawtooth that resets at
+   rollover is KV, not a leak.
+
+Known structural finding (2026-09-01, v0.16.0): thinking-template bundles
+whose assistant-history re-render is not a byte-prefix extension of the live
+render (e.g. the litert-community Qwen3-0.6B int4 bundle's empty
+`<think></think>` pair) cannot hold a multi-turn conversation at all — turn 2
+dies with `INTERNAL: The new rendered template string does not start with the
+previous rendered template string`. The endurance row records it as
+`status=crash` with the render diff in the console log; that row is the
+datum, not a capture bug.
+
 ## Runbook: add a model
 
 1. Speed axis: add a `ModelInfo` per runtime to

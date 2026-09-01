@@ -23,6 +23,9 @@ TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-8k", "long-context-32k", "cactus-parity", "sustained",
          "energy", "quality", "lifecycle"}
 NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
+# endurance-chat-<N>m — multi-turn endurance sessions (methodology/endurance.md);
+# duration is part of the task id, like the long-context sweep variants.
+ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
 STR_KEYS = {"exclude", "file", "backend"}
@@ -79,8 +82,16 @@ def validate_file(path, catalog=None, require_anchor=False):
                 errors.append(f"{where}: unknown platform {plat!r}")
             if rt not in RUNTIMES:
                 errors.append(f"{where}: unknown runtime {rt!r}")
-            if task not in TASKS and not NATIVE_TASK.match(task):
+            if (task not in TASKS and not NATIVE_TASK.match(task)
+                    and not ENDURANCE_TASK.match(task)):
                 errors.append(f"{where}: unknown task {task!r}")
+            if ENDURANCE_TASK.match(task) and rt != "litert-lm":
+                errors.append(f"{where}: endurance-chat is litert-lm-only "
+                              "(needs a persistent conversation + per-turn "
+                              "engine counters; methodology/endurance.md)")
+            if ENDURANCE_TASK.match(task) and opts.get("runs", "1") != "1":
+                errors.append(f"{where}: endurance cells take runs=1 — one "
+                              "session per cell; sessions are never pooled")
             if task == "energy" and opts.get("manual") != "1":
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")

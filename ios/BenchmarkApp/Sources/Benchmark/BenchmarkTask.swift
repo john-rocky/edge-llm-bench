@@ -47,9 +47,18 @@ public enum BenchmarkTaskCatalog {
         EnergyTask(),
         QualityTask(),
         AppLifecycleTask(),
+        EnduranceChatTask(),                    // 30 min, the standing protocol
+        EnduranceChatTask(minutes: 2),          // smoke variant for harness checks
     ]
 
     public static func task(for id: String) -> (any BenchmarkTask)? {
-        all.first(where: { $0.id == id })
+        if let t = all.first(where: { $0.id == id }) { return t }
+        // Any endurance duration is a valid task id (endurance-chat-<N>m) —
+        // the catalog lists the canonical two, the pattern admits the rest.
+        if id.hasPrefix("endurance-chat-"), id.hasSuffix("m"),
+           let n = Int(id.dropFirst("endurance-chat-".count).dropLast()), n > 0 {
+            return EnduranceChatTask(minutes: n)
+        }
+        return nil
     }
 }
