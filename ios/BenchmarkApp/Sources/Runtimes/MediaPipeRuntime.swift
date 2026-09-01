@@ -374,6 +374,52 @@ public actor MediaPipeRuntime: LLMRuntime {
         return EnduranceLoopOutcome(status: "completed", failureDetail: nil)
     }
 
+    /// Diagnostic transcript dump (yardstick `debug-render`): run a short
+    /// scripted conversation and report, per turn, (a) the incremental render
+    /// of the user message, (b) what the stream delivered on content vs
+    /// channels, (c) how the template renders a synthesized assistant-history
+    /// message shaped like that turn, and (d) KV occupancy. Exists to answer
+    /// "what does an assistant turn look like in history after channel
+    /// filtering" from the public API surface alone.
+    public func debugRenderTranscript(
+        prompts: [String], maxOutputTokens: Int
+    ) async throws -> [String] {
+        guard let engine else { throw LLMRuntimeError.modelNotLoaded }
+        func esc(_ s: String) -> String {
+            s.replacingOccurrences(of: "\n", with: "⏎")
+        }
+        var out: [String] = []
+        let sampler = try SamplerConfig(topK: 40, topP: 0.9, temperature: 0.7)
+        let conversation = try await engine.createConversation(
+            with: ConversationConfig(samplerConfig: sampler))
+        out.append("PREFACE=[\(esc((try? conversation.renderPrefaceIntoString()) ?? "<err>"))]")
+        for (i, p) in prompts.enumerated() {
+            let n = i + 1
+            let userMsg = Message(p)
+            out.append("TURN \(n) USER-RENDER=[\(esc((try? conversation.renderMessageIntoString(userMsg)) ?? "<err>"))]")
+            var text = ""
+            var channels: [String: String] = [:]
+            do {
+                for try await chunk in conversation.sendMessageStream(
+                    userMsg, maxOutputTokens: maxOutputTokens
+                ) {
+                    text += chunk.toString
+                    for (k, v) in chunk.channels { channels[k, default: ""] += v }
+                }
+            } catch {
+                out.append("TURN \(n) STREAM-ERROR=\(error)")
+                break
+            }
+            out.append("TURN \(n) STREAM content(\(text.count)ch)=[\(esc(String(text.prefix(240))))…] channels=\(channels.map { "\($0.key)(\($0.value.count)ch)" }.sorted())")
+            let historyShape = Message(
+                contents: Contents(contents: text.isEmpty ? [] : [.text(text)]),
+                role: .model, channels: channels)
+            out.append("TURN \(n) ASSISTANT-HISTORY-RENDER=[\(esc((try? conversation.renderMessageIntoString(historyShape)) ?? "<err>"))]")
+            out.append("TURN \(n) kvAfter=\((try? conversation.getTokenCount()) ?? -1)")
+        }
+        return out
+    }
+
     public nonisolated func generate(
         prompt: String,
         parameters: GenerationParameters

@@ -51,15 +51,23 @@ public struct EnduranceChatTask: BenchmarkTask {
     /// Per-TURN output cap (`maxTokens`), enforced natively via LiteRT-LM's
     /// `maxOutputTokens` — same cap for every model and every engine version
     /// (same-budget). Sampling matches Task C: typical chat, not greedy.
-    public let parameters = GenerationParameters(maxTokens: 256, temperature: 0.7, topP: 0.9)
+    public let parameters: GenerationParameters
 
     /// Default context (KV) budget when the cell passes no `--context-tokens`.
     /// Rollover — not silent widening — is what happens when a conversation
     /// outgrows it.
     public static let defaultContextTokens = 4096
 
-    public init(minutes: Int = 30) {
+    /// `turnCap` other than 256 is a DIAGNOSTIC knob (CLI env
+    /// `ENDURANCE_TURN_CAP`), not a protocol variant: the cap is part of the
+    /// measurement contract, and a non-256 run must never land in a standing
+    /// campaign. It exists because the 2026-09-01 baseline needed a
+    /// cap-vs-coherence probe (does a thinking model recover when turns can
+    /// finish their <think> block?) — the row stays self-describing through
+    /// `parameters.maxTokens` / `endurance.turnOutputTokenCap`.
+    public init(minutes: Int = 30, turnCap: Int = 256) {
         self.minutes = minutes
         self.id = "endurance-chat-\(minutes)m"
+        self.parameters = GenerationParameters(maxTokens: turnCap, temperature: 0.7, topP: 0.9)
     }
 }

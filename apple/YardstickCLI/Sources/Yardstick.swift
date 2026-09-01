@@ -59,6 +59,13 @@ struct YardstickApp {
             // four runtimes (YARDSTICK_SPM) but `list` prints all of them statically.
             // Runners hard-fail on spm-lite (scripts/bench_matrix_mac.sh).
             print("yardstick flavor=\(buildFlavor) harness=\(BenchmarkRunner.harnessStamp)")
+        case "debug-render":
+            // Diagnostic: show EXACTLY what the engine renders for a short
+            // scripted conversation — preface, per-message render, and the
+            // conversation's own KV token count after each turn. Exists to
+            // answer "what does an assistant history turn look like after
+            // channel filtering" without instrumenting the engine.
+            try await debugRender(Array(argv.dropFirst()))
         case "--help", "-h", "help":
             printUsage()
         default:
@@ -146,7 +153,15 @@ struct YardstickApp {
         // Endurance sessions run INSTEAD of the generic per-run loop: one
         // 30-minute-class multi-turn session per invocation, per-turn series to
         // a sidecar, one schema-v1 session record to the JSONL.
-        if let enduranceTask = task as? EnduranceChatTask {
+        if var enduranceTask = task as? EnduranceChatTask {
+            // Diagnostic-only cap override (see EnduranceChatTask.init) — loud,
+            // because a non-256 row is off-protocol by definition.
+            if let raw = ProcessInfo.processInfo.environment["ENDURANCE_TURN_CAP"],
+               let cap = Int(raw), cap > 0, cap != enduranceTask.parameters.maxTokens {
+                FileHandle.standardError.write(Data(
+                    "yardstick: WARNING ENDURANCE_TURN_CAP=\(cap) — DIAGNOSTIC run, off the standing protocol (cap 256); do not pool with campaign rows\n".utf8))
+                enduranceTask = EnduranceChatTask(minutes: enduranceTask.minutes, turnCap: cap)
+            }
             try await runEndurance(
                 runtime: runtime, runtimeID: runtimeID, model: model,
                 task: enduranceTask, contextTokens: contextTokens,
@@ -195,6 +210,37 @@ struct YardstickApp {
             FileHandle.standardError.write(Data(
                 "yardstick: run=\(runIndex) cold=\(runIndex == 1 && (runs > 1 || coldRun) ? 1 : 0) TTFT=\(m.firstTokenLatencyMS)ms decode=\(String(format: "%.2f", m.decodeTokensPerSecond))tok/s peakMB=\(Int(m.memoryPeakDuringDecodeMB))\n".utf8
             ))
+        }
+    }
+
+    /// `yardstick debug-render` — see `MediaPipeRuntime.debugRenderTranscript`.
+    /// LiteRT-only, diagnostic-only; prints one greppable line per probe.
+    static func debugRender(_ argv: [String]) async throws {
+        var modelID: String? = nil
+        var contextTokens = 4096
+        var turns = 3
+        var cap = 256
+        var i = 0
+        while i < argv.count {
+            switch argv[i] {
+            case "--model", "--model-id": modelID = argv.value(after: &i)
+            case "--context-tokens": contextTokens = Int(argv.value(after: &i)) ?? contextTokens
+            case "--turns": turns = Int(argv.value(after: &i)) ?? turns
+            case "--max-output-tokens": cap = Int(argv.value(after: &i)) ?? cap
+            default:
+                FileHandle.standardError.write(Data("unknown flag: \(argv[i])\n".utf8))
+                exit(2)
+            }
+        }
+        let runtime = MediaPipeRuntime()
+        let model = try resolveModel(idOrHF: modelID, runtime: runtime)
+        await runtime.prepareContext(maxContextTokens: contextTokens)
+        try await runtime.loadModel(model) { _ in }
+        let prompts = Array(EnduranceChatTask.turnPrompts.prefix(max(1, turns)))
+        for line in try await runtime.debugRenderTranscript(
+            prompts: prompts, maxOutputTokens: cap
+        ) {
+            print(line)
         }
     }
 
