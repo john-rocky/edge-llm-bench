@@ -24,6 +24,10 @@ public actor ResultStore {
         self.decoder = decoder
     }
 
+    /// `Documents/results/` — where records land, and where an endurance
+    /// session streams its per-turn sidecar so it sits next to its record.
+    public nonisolated var resultsDirectory: URL { directory }
+
     public func save(_ result: BenchmarkResult) throws -> URL {
         let url = directory.appendingPathComponent("\(filename(for: result)).json")
         let data = try encoder.encode(result)

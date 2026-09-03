@@ -312,6 +312,15 @@ struct HeadlessRunnerView: View {
             await finish(4)
             return
         }
+        // Endurance sessions run INSTEAD of the generic per-run loop (same rule as
+        // the Mac CLI, Yardstick.runEndurance): one multi-turn session per
+        // invocation, per-turn series streamed to an NDJSON sidecar next to the
+        // record, one schema-v1 session record through ResultStore.
+        if let enduranceTask = task as? EnduranceChatTask {
+            await runEndurance(runtime: runtime, model: model, task: enduranceTask,
+                               contextTokens: spec.contextTokens, runs: spec.runs)
+            return
+        }
         // Energy task: allow the driver to tune the sustain window + per-call
         // output cap per run. A small --max-tokens (e.g. 128) keeps the context
         // short so full-attention runtimes (MLX) stay near their burst rate
@@ -398,6 +407,102 @@ struct HeadlessRunnerView: View {
         }
         await log("YARDSTICK_ALL_DONE")
         await finish(0)
+    }
+
+    /// One endurance session (`methodology/endurance.md`) on the phone: the
+    /// multi-turn loop lives on `MediaPipeRuntime.enduranceChat`, the
+    /// sampling/assembly in `EnduranceSession` — the same code the Mac CLI
+    /// runs. Per-turn records stream to `Documents/results/<cell>_<start>.turns.ndjson`
+    /// AS THEY COMPLETE (a crash leaves the series on disk; the record names the
+    /// sidecar in `endurance.turnsSidecar`), the session record is saved like any
+    /// other run. A session that did not complete keeps its record and reports
+    /// RUN_FAIL (failed-runs-stay).
+    private func runEndurance(
+        runtime: any LLMRuntime, model: ModelInfo, task: EnduranceChatTask,
+        contextTokens: Int?, runs: Int
+    ) async {
+        #if canImport(LiteRTLM)
+        guard let litert = runtime as? MediaPipeRuntime else {
+            await log("YARDSTICK_FATAL endurance requires runtime=litert-lm (persistent conversation + per-turn engine counters)")
+            await finish(5)
+            return
+        }
+        if runs > 1 {
+            await log("YARDSTICK_WARN endurance runs=\(runs) ignored — one session per invocation; sessions are never pooled")
+        }
+        let budget = contextTokens ?? EnduranceChatTask.defaultContextTokens
+
+        // Sidecar name is fixed BEFORE the session so turns can stream as they
+        // complete; same shape as ResultStore's record names, stamped with the
+        // session start (the record itself is stamped when it is assembled).
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate]
+        let stamp = formatter.string(from: Date()).replacingOccurrences(of: ":", with: "-")
+        let sidecarName = "\(spec.runtime.rawValue)_\(model.id.replacingOccurrences(of: "/", with: "_"))_\(task.id)_\(stamp).turns.ndjson"
+        let sidecarURL = ResultStore.shared.resultsDirectory.appendingPathComponent(sidecarName)
+        let sidecar: NDJSONWriter
+        do {
+            sidecar = try NDJSONWriter(path: sidecarURL.path)
+        } catch {
+            await log("YARDSTICK_FATAL endurance sidecar_open_failed \(error.localizedDescription)")
+            await finish(6)
+            return
+        }
+        let turnEncoder = JSONEncoder()
+        turnEncoder.outputFormatting = [.sortedKeys]
+
+        await log("YARDSTICK_BEGIN runtime=\(spec.runtime.rawValue) model=\(model.id) task=\(task.id) runs=1 context_tokens=\(budget) turn_cap=\(task.parameters.maxTokens) sidecar=\(sidecarName)")
+        do {
+            let output = try await EnduranceSession.run(
+                runtime: litert, model: model, task: task,
+                contextTokens: contextTokens, turnsSidecarName: sidecarName
+            ) { record in
+                if let data = try? turnEncoder.encode(record) {
+                    sidecar.writeLine(data)
+                }
+                // Console only (the driver's transcript); the on-screen log stays
+                // quiet so a 30-minute session does not grow a 3,000-line view.
+                let decode = record.decodeTokensPerSecond.map { String(format: "%.1f", $0) } ?? "-"
+                print("YARDSTICK_TURN turn=\(record.turn) t=\(Int(record.startedAtSeconds))s decode=\(decode)tok/s kv=\(record.kvTokensAfterTurn ?? -1) footprintMB=\(Int(record.footprintAfterTurnMB)) residentMB=\(Int(record.residentAfterTurnMB ?? 0)) thermal=\(record.thermalState) stop=\(record.stopReason)\(record.rollover ? " ROLLOVER" : "")\(record.degenerate ? " DEGENERATE" : "")")
+                fflush(stdout)
+            }
+            sidecar.close()
+            let result = output.result
+            _ = try? await ResultStore.shared.save(result)
+            let e = result.endurance
+            func fmt(_ v: Double?) -> String { v.map { String(format: "%.2f", $0) } ?? "n/a" }
+            await log("YARDSTICK_ENDURANCE status=\(e?.status ?? "?") turns=\(e?.turnsCompleted ?? 0) rollovers=\(e?.conversationRollovers ?? 0) elapsed_s=\(Int(e?.elapsedSeconds ?? 0)) decode_median=\(fmt(result.metrics.decodeTokensPerSecond)) first_window=\(fmt(e?.decodeTokSFirstWindowMedian)) last_window=\(fmt(e?.decodeTokSLastWindowMedian)) decay_pct=\(fmt(e?.decodeDecayPercent)) mem_slope_mb_per_turn=\(fmt(e?.memorySlopeMBPerTurn)) footprint_first_mb=\(fmt(e?.footprintAfterFirstTurnMB)) footprint_last_mb=\(fmt(e?.footprintAfterLastTurnMB)) degenerate_turns=\(e?.degenerateTurnCount ?? 0) thermal_initial=\(result.metrics.initialThermalState) thermal_final=\(result.metrics.finalThermalState) sidecar=\(sidecarName)")
+            if let status = e?.status, status != "completed" {
+                await log("YARDSTICK_RUN_FAIL run=1 error=endurance \(status): \(e?.failureDetail ?? "?") (record kept)")
+            } else {
+                await log(String(
+                    format: "YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=%.2f decode_tok_s_wall=%.2f ttft_ms=%d prefill_tok_s=%.1f prefill_tok_s_wall=%.1f prompt_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f ctx=%d tokens=%d thermal_initial=%@ thermal_final=%@ harness=%@",
+                    result.metrics.decodeTokensPerSecond,
+                    result.metrics.decodeTokensPerSecondWallClock ?? 0,
+                    result.metrics.firstTokenLatencyMS,
+                    result.metrics.promptTokensPerSecond,
+                    result.metrics.promptTokensPerSecondWallClock ?? 0,
+                    result.metrics.promptTokenCount,
+                    result.metrics.memoryPeakDuringDecodeMB,
+                    result.metrics.memoryMedianMB ?? 0,
+                    result.metrics.memoryMedianResidentMB ?? 0,
+                    result.metrics.contextTokensConfigured ?? 0,
+                    result.metrics.generatedTokenCount,
+                    result.metrics.initialThermalState,
+                    result.metrics.finalThermalState,
+                    result.metrics.harnessStamp ?? "?"
+                ))
+            }
+        } catch {
+            sidecar.close()
+            await log("YARDSTICK_RUN_FAIL run=1 error=\(error.localizedDescription) (partial turn series kept in \(sidecarName))")
+        }
+        await log("YARDSTICK_ALL_DONE")
+        await finish(0)
+        #else
+        await log("YARDSTICK_FATAL endurance unavailable (LiteRTLM not linked)")
+        await finish(5)
+        #endif
     }
 
     /// Calls LiteRT-LM's own `benchmark` entry point instead of driving a task through

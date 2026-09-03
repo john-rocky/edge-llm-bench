@@ -100,6 +100,47 @@ public enum DegeneracyCheck {
     }
 }
 
+/// Append-only NDJSON writer for the endurance turn sidecar. Locked because the
+/// onTurn callback is @Sendable; each line is flushed immediately so a crashed
+/// session leaves every completed turn on disk. Shared by the Mac CLI
+/// (`yardstick`, sidecar next to the JSONL) and the iOS headless driver
+/// (sidecar in `Documents/results/` next to the record).
+final class NDJSONWriter: @unchecked Sendable {
+    private let handle: FileHandle
+    private let lock = NSLock()
+
+    init(path: String) throws {
+        let fm = FileManager.default
+        let url = URL(fileURLWithPath: path)
+        try fm.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // A leftover sidecar from a quarantined/retried cell is audit trail,
+        // not something to truncate: rotate it aside the way the runner
+        // rotates the .jsonl (first free .attemptN suffix).
+        if let attrs = try? fm.attributesOfItem(atPath: path),
+           (attrs[.size] as? Int ?? 0) > 0 {
+            var n = 1
+            while fm.fileExists(atPath: "\(path).attempt\(n)") { n += 1 }
+            try? fm.moveItem(atPath: path, toPath: "\(path).attempt\(n)")
+        }
+        fm.createFile(atPath: path, contents: nil)
+        handle = try FileHandle(forWritingTo: url)
+        try handle.seekToEnd()
+    }
+
+    func writeLine(_ data: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        try? handle.write(contentsOf: data + Data("\n".utf8))
+    }
+
+    func close() {
+        lock.lock()
+        defer { lock.unlock() }
+        try? handle.close()
+    }
+}
+
 #if canImport(LiteRTLM)
 
 /// Drives one endurance session end to end: samplers + model load around

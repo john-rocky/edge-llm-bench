@@ -42,7 +42,7 @@ OUT="$REPO/results/raw/$CAMPAIGN"
 log(){ printf '\n=== %s ===\n' "$*"; }
 
 STAMP(){ echo "$OUT/.campaign_start"; }
-pull_new(){
+pull_new(){ # records (*.json) + endurance turn sidecars (*.turns.ndjson, next to their record)
   local tmp; tmp="$(mktemp -d)"
   xcrun devicectl device copy from --device "$DEV" --domain-type appDataContainer \
     --domain-identifier "$APP" --source Documents/results --destination "$tmp" >/dev/null 2>&1
@@ -50,8 +50,12 @@ pull_new(){
   local n=0 f base
   while IFS= read -r -d '' f; do
     base="$(basename "$f")"
-    [ -e "$OUT/device-jsonl/$base" ] || { cp "$f" "$OUT/device-jsonl/$base"; n=$((n+1)); }
-  done < <(find "$tmp" -name "*.json" -newer "$(STAMP)" -print0 2>/dev/null)
+    # A quarantined capture is still on the device: once moved to
+    # device-jsonl-flagged/ it must not be pulled back into the session
+    # (observed 2026-09-04: the HOT retry re-pulled the flagged trio).
+    [ -e "$OUT/device-jsonl/$base" ] || [ -e "$OUT/device-jsonl-flagged/$base" ] \
+      || { cp "$f" "$OUT/device-jsonl/$base"; n=$((n+1)); }
+  done < <(find "$tmp" \( -name "*.json" -o -name "*.ndjson" \) -newer "$(STAMP)" -print0 2>/dev/null)
   rm -rf "$tmp"
   echo "$n"
 }
