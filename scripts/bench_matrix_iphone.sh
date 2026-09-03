@@ -88,6 +88,10 @@ quarantine_cell(){ # <runtime> <model-id> <task> <runs> — move the judged capt
   # median the re-run was meant to clean (the pre-2026-08-26 behavior).
   mkdir -p "$OUT/device-jsonl-flagged"
   cell_files "$1" "$2" "$3" | tail -n "$4" | while IFS= read -r f; do
+    # An endurance record names its per-turn sidecar; the series goes with it.
+    local sc
+    sc="$(python3 -c 'import json,sys; print((json.load(open(sys.argv[1])).get("endurance") or {}).get("turnsSidecar") or "")' "$f" 2>/dev/null || true)"
+    [ -n "$sc" ] && [ -e "$OUT/device-jsonl/$sc" ] && mv "$OUT/device-jsonl/$sc" "$OUT/device-jsonl-flagged/"
     mv "$f" "$OUT/device-jsonl-flagged/"
   done
 }

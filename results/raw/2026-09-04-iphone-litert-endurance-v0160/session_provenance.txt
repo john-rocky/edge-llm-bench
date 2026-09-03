@@ -1,0 +1,18 @@
+    • OS Build Update: 24A5418b
+    • OS Version: 27.0
+session start 2026-09-04 01:52:58
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code/6921fb20-b9d8-4a3e-bf8c-50307f9f6083/scratchpad/iphone-gemma-endurance-smoke.cells
+
+# --- operator notes (2026-09-04) ---
+This dir holds the 2-minute SMOKE of the new iOS endurance driver (endurance-chat-2m, the app's harness-check variant; same row
+  as the 30-minute cell with minutes=2), run before committing 30 minutes to it. Same app build / device / staged bundle as
+  2026-09-04-iphone-gemma-shortchat (see its session_provenance.txt): Release, bundle com.daisukemajima.llmbench, binary sha256
+  prefix c06ba502623a832d, iPhone 17 Pro iOS 27.0, wired, charging (battery plateau 80%), gemma-4-E2B-it.litertlm sideloaded.
+Driver check: PASS — both sessions completed; per-turn NDJSON sidecar streamed next to the record and pulled by the runner
+  (capture 1: 52 turns, 2 rollovers, 120 s, sidecar 16-52-58Z; capture 2: 63 turns, 3 rollovers, 122 s, sidecar 16-59-04Z);
+  endurance block on the record (status/turns/rollovers/memory slope/footprints); first/last-window medians and decay are null
+  by design for a 2-minute session (the windows are 300 s).
+Thermal: SERIOUS for both captures (the phone had just finished the r2 gemma short-chat) -> gate HOT, quarantined, retry after 240 s
+  also serious, kept (FLAGGED.txt). decode medians 31.5 then 37.9 tok/s — throttled numbers, harness evidence only.
+Tidy: the quarantined capture's sidecar was moved by hand next to its record in device-jsonl-flagged/ (the runner only moved the
+  .json); scripts/bench_matrix_iphone.sh quarantine_cell now moves the sidecar named in endurance.turnsSidecar as well.
