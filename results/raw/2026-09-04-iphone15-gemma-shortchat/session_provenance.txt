@@ -1,0 +1,20 @@
+    • OS Build Update: 23G71
+    • OS Version: 26.6
+session start 2026-09-04 01:49:41
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code/6921fb20-b9d8-4a3e-bf8c-50307f9f6083/scratchpad/iphone-gemma-short-chat.cells
+
+# --- operator notes (2026-09-04) ---
+device: iPhone 15 (iPhone15,4, 6 GB class), iOS 26.6 23G71, paired over localNetwork (Wi-Fi tunnel, not USB), UDID 00008120-001915AE34B8201E.
+build: the committed app targets iOS 27.0 (coreai-models floor), so an iOS-26 variant was generated from a scratch spec
+  (ios/BenchmarkApp/project-ios26.yml = project.yml with name BenchmarkApp-ios26, deploymentTarget 26.0, the coreai-models package
+  and its CoreAILM dependency removed — CoreAIRuntime compiles to its canImport stub; MLX/LiteRT-LM/llama/cactus unchanged, same
+  Package.resolved pins copied in), Release, bundle com.daisukemajima.llmbench, team MFN25KNUGJ, derived data .build/dd-ios26,
+  BenchmarkApp binary sha256 prefix 8408b777648bba9b, engine pins identical to the iPhone 17 Pro build (litert-lm v0.16.0, mlx-swift 60bd0d78).
+  The scratch spec and project are not committed; the diff above is the whole recipe.
+timeline: 01:1x app installed over Wi-Fi (devicectl install: ok, bundle com.daisukemajima.llmbench); 01:38 headless launch works on
+  the LOCKED phone (energy-task probe: thermal nominal, MLX Qwen3-0.6B-4bit download started, 14 MB/350 MB, probe killed by
+  its own 90 s timeout); 01:38-01:41 gemma-4-E2B-it.litertlm (sha256 181938105e0e..., 2,588,147,712 bytes) staged into the app
+  container over Wi-Fi (copy exit 0); 01:49:41 anchor cell launch -> "The requested application com.daisukemajima.llmbench is
+  not installed" (LaunchServices -10814), no record; at 01:54 `devicectl device info apps` lists no apps, the app container
+  is gone, and the lock state had changed from passcodeRequired=true (01:37) to false (01:54): someone unlocked and is using this phone
+  and the app was removed between 01:41 and 01:49. Stopped here — not reinstalled, no rows. Zero measurements on this device.
