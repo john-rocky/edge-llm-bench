@@ -1,0 +1,17 @@
+    • OS Build Update: 24A5418b
+    • OS Version: 27.0
+session start 2026-09-04 01:36:28
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code/6921fb20-b9d8-4a3e-bf8c-50307f9f6083/scratchpad/iphone-gemma-short-chat.cells
+
+# --- operator notes (2026-09-04, appended after the sitting) ---
+Same app build / staging / device as 2026-09-04-iphone-gemma-shortchat (see its session_provenance.txt): Release build
+  sha256 prefix c06ba502623a832d, bundle com.daisukemajima.llmbench, gemma-4-E2B-it.litertlm sideloaded (sha256 181938105e0e...),
+  iPhone 17 Pro iOS 27.0 24A5418b, wired, charging, battery held at 80% for the whole sitting (optimized charging plateau).
+Started 01:36:26 after the phone read `fair` on the energy-task thermal probe (it had read `serious` from 01:23 to 01:34 idle).
+anchor: mlx-swift Qwen3-0.6B-4bit 178.7/180.1/179.3 tok/s at fair -> gate HOT -> quarantined; retry 179.8/180.0/178.5 at fair, kept
+  (FLAGGED.txt). Fair-at-full-speed again: matches the 08-26 nominal-era anchor (171.6) within 5%.
+gemma-4-E2B short-chat (01:46:21, after the 300 s cooldown): SERIOUS from run 1 — 29.5 cold, 30.9/30.7/31.1 warm (quarantined);
+  retry after 240 s (01:51): cold run 1, then 57.3/54.3/52.4 warm, all `serious`, kept by the retry-stands rule (FLAGGED.txt).
+  Warm spread 9% (>5%): UNRELIABLE by the spread rule as well as thermally flagged. The phone sits at the fair/serious boundary at this
+  ambient: a 40 s MLX anchor leaves it at fair, the 2.6 GB gemma load tips it to serious before run 1. No clean gemma short-chat row
+  was obtained tonight (same failure class as 2026-08-19); cooling the device is a physical (owner) step.
