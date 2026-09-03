@@ -1,0 +1,37 @@
+    • OS Build Update: 24A5418b
+    • OS Version: 27.0
+session start 2026-09-04 00:51:40
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code/6921fb20-b9d8-4a3e-bf8c-50307f9f6083/scratchpad/iphone-gemma-short-chat.cells
+    • OS Build Update: 24A5418b
+    • OS Version: 27.0
+session start 2026-09-04 01:16:23
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code/6921fb20-b9d8-4a3e-bf8c-50307f9f6083/scratchpad/iphone-gemma-short-chat-only.cells
+
+# --- operator notes (2026-09-04, appended after the sitting) ---
+app build: Release, bundle com.daisukemajima.llmbench, team MFN25KNUGJ (command-line overrides; project.pbxproj unchanged),
+  DEVELOPER_DIR=Xcode-27.0.0-Beta.5, derived data .build/dd-ios, source = HEAD 56125c3 + the iOS endurance driver
+  (Sources/BenchmarkApp.swift runEndurance, NDJSONWriter moved into Sources/Benchmark/EnduranceSession.swift,
+  ResultStore.resultsDirectory) committed right after this sitting; BenchmarkApp binary sha256 prefix c06ba502623a832d.
+  Engine pins as stamped: litert-lm v0.16.0 (CLiteRTLM.xcframework.zip sha256 4e0f683d...), mlx-swift 60bd0d78, core-ai 0.2.0+static-inputs-patch.
+device: iPhone 17 Pro (iPhone18,1), iOS 27.0 24A5418b, wired USB, charging (battery 55% -> 75% across the sitting, ~1%/min).
+anchor: mlx-swift Qwen3-0.6B-4bit, 3 runs, first capture 179.1/178.9/178.9 tok/s thermal fair -> gate HOT, quarantined
+  (device-jsonl-flagged/), retry 171.5/178.5/179.7 thermal fair, kept with FLAGGED.txt (fair-at-full-speed, see devices/iphone-17-pro.md:
+  08-26 nominal-era anchor 171.6, within 5%).
+gemma-4-E2B first attempt (01:00:52): the bundle was NOT on the device (Documents/models/litert-lm/litert-community__gemma-4-E2B-it-litert-lm/
+  was empty; the 08-19 download lived in Library/Caches/huggingface which iOS has since purged). The in-app HF download stalled at
+  2.27 of 2.59 GB (tmp/CFNetworkDownload_8oR9y0.tmp, mtime 01:02) and the app was SIGKILLed ~10.5 min after launch
+  ("App terminated due to signal 9", no litert log lines, no record) -> runner verdict SHORT 0, no retry (failed-runs-stay path).
+  Root cause of the SIGKILL not established (candidates: storage pressure — the same pressure that purged the cache — or the
+  download task dying with the app); the partial tmp file is still in the container.
+gemma-4-E2B staging: gemma-4-E2B-it.litertlm copied over USB (devicectl copy to) from /Users/majimadaisuke/models/litertlm/
+  into Documents/models/litert-lm/litert-community__gemma-4-E2B-it-litert-lm/, 2,588,147,712 bytes,
+  sha256 181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c = the HF blob of litert-community/gemma-4-E2B-it-litert-lm
+  revision b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1 (Mac hub cache refs/main, 2026-09-03). Sideloaded, so modelRevision is null in the records.
+gemma-4-E2B re-run (01:16:23, cells iphone-gemma-short-chat-only.cells, same row): device thermal SERIOUS throughout — the phone was
+  being fast-charged (75% by 01:22) and reported serious even idle (energy-task defer probe at 01:23: initial_thermal=serious).
+  First capture 22.1/20.4/20.4/20.4 tok/s (quarantined), retry after 240 s: 61.0 cold, 57.8/54.8/39.7 warm, all serious, kept by the
+  gate's retry-stands rule with FLAGGED.txt. THIS SITTING IS THERMALLY INVALID FOR THE GEMMA ROW (same failure class as 2026-08-19):
+  it is kept as evidence; the clean re-take is the -r2 campaign taken after the phone cooled.
+runner note: the HOT retry re-pulled the quarantined anchor trio into device-jsonl/ (pull_new only checked device-jsonl/); the
+  three byte-identical duplicates were removed from device-jsonl/ (originals stay in device-jsonl-flagged/) and pull_new now also
+  checks device-jsonl-flagged/ (scripts/bench_matrix_iphone.sh).
