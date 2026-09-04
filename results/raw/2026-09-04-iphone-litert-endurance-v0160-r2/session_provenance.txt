@@ -1,0 +1,38 @@
+    • OS Build Update: 24A5418b
+    • OS Version: 27.0
+session start 2026-09-04 09:26:27
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code/6921fb20-b9d8-4a3e-bf8c-50307f9f6083/scratchpad/iphone-gemma-endurance.cells
+
+# --- operator notes (2026-09-04) ---
+S1-2a step 2b: the 30-minute endurance session that was aborted 34 s in at 06:37 (see
+  results/raw/2026-09-04-iphone-litert-endurance-v0160/, kept as the aborted attempt). Re-run under a fresh
+  campaign name so that dir stays untouched; the approved cell line is unchanged
+  (`ios litert-lm litert-community/gemma-4-E2B-it-litert-lm endurance-chat-30m runs=1 context-tokens=2048 cooldown=300`,
+  the endurance-mac.cells L19 row with platform mac -> ios).
+Device / app: iPhone 17 Pro (A6F3E849-1947-5202-9AD1-9C881CA58EEF), iOS 27.0 24A5418b, wired to the Mac (USB power only,
+  slow charge). Same install as the 06:11 r3 short-chat and the 01:52 2-minute smoke: bundle com.daisukemajima.llmbench
+  0.2.0, buildConfiguration Release on the record, gemma-4-E2B-it.litertlm sideloaded. No rebuild, no reinstall.
+Pre-flight thermal probe (09:25:41, one mlx-swift Qwen3-0.6B-4bit short-chat run — the cheapest launch that reports the
+  record's device block): initialThermalState nominal, finalThermalState nominal, batteryLevel 0.90, batteryState
+  charging, decode 169.6 tok/s cold. One probe, no wait needed. The probe record predates .campaign_start, so the
+  runner's -newer pull did not take it.
+Session 09:26:27 -> 09:56:31, gate verdict OK (started nominal; a single-run endurance capture has no warm spread to judge,
+  and no cold pair to collapse). status completed, 737 turns, 40 rollovers, 1800.2 s, 53,110 decode tokens,
+  0 degenerate turns. No FLAGGED.txt, no FAILURES.
+  decode median 30.29 tok/s; 5-minute window medians 32.72 / 31.94 / 30.56 / 29.65 / 28.73 / 27.95 -> decay 14.59 %.
+  The slide is monotone across all six windows with no step at any rollover.
+  Thermal per turn: nominal for the first 20 turns (28 s), fair from turn 21, serious from turn 177 (377 s) to the end —
+  561 of 737 turns at serious. initial nominal / final serious / peak serious. The capture starts nominal, so it stands
+  unflagged; the sustained-serious stretch is what a 30-minute GPU session does to this phone, and any causal reading of
+  the 14.6 % against it needs a second session (e.g. under a fan) before it can be claimed.
+  Memory: endurance.memorySlopeMBPerTurn 0.0354 is a least-squares fit on footprintAfterTurnMB (verified: lsq on the
+  sidecar footprint series = 0.03544, on the resident series = -0.291). Footprint 481.6 -> 509.8 MB, +28.3 MB over
+  40 rollovers = 0.71 MB per rollover, the same order as the Mac and Android baselines' ~1 MB (LiteRT-LM #3446).
+  Resident runs the other way: 892 MB at turn 1, peak 1143 MB inside the first 10 minutes, then settling to ~955-965 MB
+  for the rest of the session — per-turn resident median 966 MB, peak 1143 MB (record memoryMedianResidentMB 966.7,
+  memoryPeakResidentMB 1143.1). Read the peak from the series, not from the tail.
+  Lane gap worth knowing: the iOS endurance record carries no `endurance.memorySlopeBasis` field at all, while the
+  Android record writes `"resident-vmrss"`. The iOS basis has to be inferred from the sidecar (footprint, above).
+Sidecar: 737 NDJSON rows, turns 1..737 contiguous, every row carrying the full per-turn block (`rolloverReason` appears
+  only on the 40 rollover rows, by design). The record validates against schema/result.v1.json with nothing required
+  missing.
