@@ -54,6 +54,10 @@ for their published campaigns).
 - `anchors.cells` — session-anchor cells, one (or two) per platform.
 - `release-regression-litert.cells` — the cells re-measured when a LiteRT-LM
   release ships.
+- `dashboard-text-v1.cells` — the dashboard's initial text-only model set
+  (Gemma 4 E2B/E4B, Qwen3 0.6B/1.7B/4B) across LiteRT-LM / MLX / llama.cpp on
+  every platform, with disabled Qwen3.5 / LFM2.5 placeholders; companion
+  one-pager `docs/dashboard-cells-v1.md`.
 
 ## Validation
 

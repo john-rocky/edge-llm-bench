@@ -390,6 +390,29 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3.5-9B-Q4_K_M.gguf"],
             primaryFile: "Qwen3.5-9B-Q4_K_M.gguf"
         ),
+        // Qwen3-0.6B / 1.7B — the same unsloth Q4_K_M files the Android llama.cpp cells
+        // fetch (anchors.cells, dashboard-text-v1.cells), so the Apple and Android llama
+        // rows share one artifact per model. Third-party PTQ; the recipe is in the label.
+        ModelInfo(
+            id: "unsloth/Qwen3-0.6B-GGUF/Q4_K_M",
+            displayName: "Qwen3-0.6B Q4_K_M (GGUF)",
+            quantization: "Q4_K_M",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 397,
+            hfRepoId: "unsloth/Qwen3-0.6B-GGUF",
+            hfFilePatterns: ["Qwen3-0.6B-Q4_K_M.gguf"],
+            primaryFile: "Qwen3-0.6B-Q4_K_M.gguf"
+        ),
+        ModelInfo(
+            id: "unsloth/Qwen3-1.7B-GGUF/Q4_K_M",
+            displayName: "Qwen3-1.7B Q4_K_M (GGUF)",
+            quantization: "Q4_K_M",
+            parameterCountB: 1.7,
+            onDiskSizeMB: 1107,
+            hfRepoId: "unsloth/Qwen3-1.7B-GGUF",
+            hfFilePatterns: ["Qwen3-1.7B-Q4_K_M.gguf"],
+            primaryFile: "Qwen3-1.7B-Q4_K_M.gguf"
+        ),
         ModelInfo(
             id: "unsloth/Qwen3-4B-GGUF/Q4_K_M",
             displayName: "Qwen3-4B Q4_K_M (GGUF)",
@@ -490,6 +513,24 @@ public enum ModelCatalog {
             hfFilePatterns: ["qwen3_0_6b_mixed_int4.litertlm"],
             primaryFile: "qwen3_0_6b_mixed_int4.litertlm"
         ),
+        // Qwen3-1.7B — litert-community's repo (INT8 file since 2026-06-25, the wi4b32 file
+        // added 2026-08-05) ships two files:
+        // `Qwen3_1.7B.litertlm`, dynamic INT8; `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm`,
+        // dynamic INT4 block-32 weights / FP32 activations carrying the LiteRT-LM GPU graph
+        // optimizations). The Apple arms run the Metal GPU path, so the wi4b32 file is the
+        // entry; the card itself calls it a GPU specialist and points CPU users at the INT8
+        // file (the Android cpu cell does that via file=). NOT the same recipe as the 0.6B/4B
+        // mixed-INT4 (TorchAO) entries — the label says so (quant-label-rule).
+        ModelInfo(
+            id: "litert-community/Qwen3-1.7B",
+            displayName: "Qwen3 1.7B (.litertlm)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+            parameterCountB: 1.7,
+            onDiskSizeMB: 932,
+            hfRepoId: "litert-community/Qwen3-1.7B",
+            hfFilePatterns: ["Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"],
+            primaryFile: "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+        ),
         // granite-4.2-3b — IBM dense THINKING model; our own conversion, shipped to
         // litert-community 2026-08-31 (litertlm-convert granite42_work/FINDINGS.md;
         // toolchain litert-torch 0.9.3 / litert-lm-builder 0.16.1). int4 recipe is
@@ -546,8 +587,11 @@ public enum ModelCatalog {
             hfFilePatterns: ["LFM2.5-1.2B-Instruct_int4_gpu.litertlm"],
             primaryFile: "LFM2.5-1.2B-Instruct_int4_gpu.litertlm"
         ),
-        // Qwen3-1.7B — litert-community has NO 1.7B (only 0.6B/4B/8B/14B), so these are
-        // OUR own conversions (scripts/export_coreai_qwen3.sh has the Core AI side; the
+        // Qwen3-1.7B, OUR own conversions — made before the catalog carried the
+        // litert-community 1.7B (that repo has shipped an INT8 file since 2026-06-25 and the
+        // wi4b32 GPU build since 2026-08-05; it is the `litert-community/Qwen3-1.7B` entry
+        // above). These stay as the disclosed own-recipe rows
+        // (scripts/export_coreai_qwen3.sh has the Core AI side; the
         // LiteRT side is `litertlm-convert/export_simple_template.py`). Two LiteRT rows:
         //   • int8 (safe baseline, `dynamic_wi8_afp32`)
         //   • int4 mixed (`MIXED4`: int4 body + int8 tied-embedding/lm_head). The earlier

@@ -1,0 +1,167 @@
+# Dashboard text-only model set, v1 (prepared 2026-09-05 for the 2026-09-07
+# kick-off). Model set as specified by the LiteRT team on 2026-09-04: Gemma 4
+# E2B/E4B + Qwen3 0.6B/1.7B/4B, text-only first. Qwen3.5 and LFM2.5 join once
+# their upstream changes have landed and been validated — disabled placeholder
+# rows at the bottom. Companion one-pager (cell table, bundle inventory, open
+# questions): docs/dashboard-cells-v1.md.
+#
+# Shape: one short-chat cell per (model, arm) on each platform. The arms are
+# the engines with a PUBLISHED artifact for every model in the set —
+# LiteRT-LM (litert-community), MLX (mlx-community), llama.cpp (unsloth GGUF at
+# Q4_K_M). Core AI stays out of v1 (Apple-only, side-loaded own exports; its
+# Gemma-4 bundles need an unpublished engine patch — see the one-pager).
+# Recipes differ per arm and are stated per row (quant-per-arm-rule); the
+# file= / catalog entry carries the recipe descriptor, never a bare "int4"
+# (quant-label-rule). Order light -> heavy, arms interleaved per model block
+# (interleave-arms); Gemma-4 and 4B cells cooldown=300. The Qwen3-0.6B
+# non-litert row is each platform's session anchor and doubles as that model's
+# measurement (same pattern as android-first-session.cells).
+#
+# Run one platform at a time; the device is whatever the runner env selects
+# (BENCH_ANDROID_SERIAL / BENCH_UDID), so the same file serves every device:
+#   ./bench matrix matrices/dashboard-text-v1.cells --platform android
+#   ./bench matrix matrices/dashboard-text-v1.cells --platform iphone
+#   ./bench matrix matrices/dashboard-text-v1.cells --platform mac
+# Apple arms: the three catalog entries added 2026-09-05 (litert Qwen3-1.7B,
+# llama.cpp Qwen3-0.6B/1.7B) need a rebuilt app / yardstick before they run.
+
+# =========================== Android ===========================
+# litert backend is arm identity (litert-lm-cpu / litert-lm-gpu never pool);
+# llama.cpp is the official CPU-only binary (b8999). Per-backend artifacts as
+# the repos intend: Qwen3-1.7B gpu = the dynamic INT4 block-32 file (the card:
+# GPU-graph build, "a GPU specialist"), cpu = the dynamic INT8 file (the card:
+# use INT8 on CPU). Gemma rows keep the standard files the existing rows use;
+# the `-gpu.litertlm` variants published 2026-08-07 are undocumented on the
+# cards (open question in the one-pager). Cells that have never run in this
+# repo (E4B anything, 1.7B anything, gemma cpu, llama for 1.7B/4B/gemma) are
+# first-session cells: memory on the 8 GB Pixel 8a is the thing to watch for
+# the E4B and 4B rows (failed-runs-stay).
+
+# --- Qwen3-0.6B ---
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+
+# --- Qwen3-1.7B (litert-community: INT8 file since 2026-06-25, wi4b32 GPU build since 2026-08-05) ---
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=cpu file=Qwen3_1.7B.litertlm
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+android llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat file=Qwen3-1.7B-Q4_K_M.gguf
+
+# --- Gemma 4 E2B (litert = wNa8o8 mobile schema, non-transferable; llama = PTQ Q4_K_M,
+#     Google's own QAT GGUF is unloadable as shipped — ModelCatalog.swift) ---
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+
+# --- Qwen3-4B ---
+android litert-lm litert-community/Qwen3-4B short-chat backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-4B short-chat backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+
+# --- Gemma 4 E4B (never measured in this repo on any arm) ---
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
+
+# =========================== iPhone ============================
+# litert = Metal GPU (the runtime default); mlx = Metal; llama.cpp = the
+# pinned b8999 xcframework (Metal). MLX Gemma-4 rows use the QAT OptiQ builds —
+# the catalog's cross-runtime build (the PTQ 4-bit entries sit beside them for
+# the recipe delta only). With the pinned mlx-swift-lm only the 2026-07-06
+# re-upload revision of the mlx-community Gemma-4 repos loads; that is HF main
+# today. The llama.cpp arm is wired but has no rows in this repo yet; the
+# 6.5 GB OptiQ E4B and 5.0 GB Q4_K_M E4B are the memory-risk cells on the
+# phone. Qwen3-4B litert measured 2026-08-19 with a wide thermal spread —
+# hence cooldown=300 on every 4B-class cell.
+
+# --- Qwen3-0.6B ---
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B short-chat
+ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+
+# --- Qwen3-1.7B ---
+ios mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
+ios litert-lm litert-community/Qwen3-1.7B short-chat
+ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+
+# --- Gemma 4 E2B ---
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat cooldown=300
+ios mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
+ios llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
+
+# --- Qwen3-4B ---
+ios mlx-swift mlx-community/Qwen3-4B-4bit short-chat cooldown=300
+ios litert-lm litert-community/Qwen3-4B short-chat cooldown=300
+ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
+
+# --- Gemma 4 E4B ---
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
+ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300
+ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
+
+# ============================= Mac =============================
+# Same three arms through the full-flavor yardstick (scripts/build_yardstick_mac.sh;
+# the runner refuses the spm-lite build for llama.cpp cells). Core AI's Mac
+# wrapper is not used in v1.
+
+# --- Qwen3-0.6B ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B short-chat
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+
+# --- Qwen3-1.7B ---
+mac mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
+mac litert-lm litert-community/Qwen3-1.7B short-chat
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+
+# --- Gemma 4 E2B ---
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat cooldown=300
+mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
+
+# --- Qwen3-4B ---
+mac mlx-swift mlx-community/Qwen3-4B-4bit short-chat cooldown=300
+mac litert-lm litert-community/Qwen3-4B short-chat cooldown=300
+mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
+
+# --- Gemma 4 E4B ---
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
+mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
+
+# ===================== DISABLED placeholders =====================
+# Qwen3.5 and LFM2.5 — held by the LiteRT team on 2026-09-04 ("not all changes
+# for these have landed/validated"). Uncomment when they say go. The
+# litert-community repos were refreshed 2026-09-04: Qwen3.5-0.8B/2B ship
+# `<name>_int8.litertlm` (+ a VL int8), Qwen3.5-4B ships int8 + mixed_int4,
+# LFM2.5-1.2B-Instruct ships int4 / int4_gpu / int8. Apple-side ids below are
+# the existing catalog entries where one exists; LFM2.5 litert on Apple needs
+# context-tokens=1024 (LiteRT-LM#3129, lu-focus-litert-ios.cells).
+#
+# --- Qwen3.5 (sizes to confirm with the LiteRT team) ---
+#android litert-lm litert-community/Qwen3.5-0.8B short-chat backend=cpu file=Qwen3.5-0.8B_int8.litertlm
+#android litert-lm litert-community/Qwen3.5-0.8B short-chat backend=gpu file=Qwen3.5-0.8B_int8.litertlm
+#android llama.cpp bartowski/Qwen_Qwen3.5-0.8B-GGUF short-chat file=Qwen_Qwen3.5-0.8B-Q4_K_M.gguf
+#android litert-lm litert-community/Qwen3.5-2B short-chat backend=cpu file=Qwen3.5-2B_int8.litertlm
+#android litert-lm litert-community/Qwen3.5-2B short-chat backend=gpu file=Qwen3.5-2B_int8.litertlm
+#android llama.cpp unsloth/Qwen3.5-2B-GGUF short-chat file=Qwen3.5-2B-Q4_K_M.gguf
+#android litert-lm litert-community/Qwen3.5-4B short-chat backend=cpu cooldown=300 file=Qwen3.5-4B_mixed_int4.litertlm
+#android litert-lm litert-community/Qwen3.5-4B short-chat backend=gpu cooldown=300 file=Qwen3.5-4B_mixed_int4.litertlm
+#android llama.cpp unsloth/Qwen3.5-4B-GGUF short-chat cooldown=300 file=Qwen3.5-4B-Q4_K_M.gguf
+#ios mlx-swift mlx-community/Qwen3.5-0.8B-MLX-4bit short-chat
+#ios llama.cpp bartowski/Qwen_Qwen3.5-0.8B-GGUF/Q4_K_M short-chat
+#ios mlx-swift mlx-community/Qwen3.5-2B-MLX-4bit short-chat
+#ios llama.cpp unsloth/Qwen3.5-2B-GGUF/Q4_K_M short-chat
+#mac mlx-swift mlx-community/Qwen3.5-0.8B-MLX-4bit short-chat
+#mac llama.cpp bartowski/Qwen_Qwen3.5-0.8B-GGUF/Q4_K_M short-chat
+#mac mlx-swift mlx-community/Qwen3.5-2B-MLX-4bit short-chat
+#mac llama.cpp unsloth/Qwen3.5-2B-GGUF/Q4_K_M short-chat
+# (Qwen3.5 litert entries for iOS/Mac: not in ModelCatalog yet — add with the go.)
+#
+# --- LFM2.5-1.2B-Instruct ---
+#android litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=cpu file=LFM2.5-1.2B-Instruct_int4.litertlm
+#android litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=gpu file=LFM2.5-1.2B-Instruct_int4_gpu.litertlm
+#android llama.cpp LiquidAI/LFM2.5-1.2B-Instruct-GGUF short-chat file=LFM2.5-1.2B-Instruct-Q4_K_M.gguf
+#ios litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat context-tokens=1024
+#mac litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat context-tokens=1024
+#mac mlx-swift mlx-community/LFM2.5-1.2B-Instruct-4bit short-chat
