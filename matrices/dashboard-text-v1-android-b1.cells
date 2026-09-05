@@ -1,0 +1,14 @@
+# Android half B (Qwen3 4B, Gemma 4 E4B) of dashboard-text-v1.cells — the SAME cells, split for phones whose
+# free storage cannot hold the whole set at once: the runner pushes every model in
+# round 1 and LiteRT writes an XNNPACK cache of ~0.6-0.8x the model size beside each
+# CPU-run bundle, so the full set needs ~28 GB on the device (measured on the S26,
+# 2026-09-05) and the Pixel 8a had 19 GB free. Each half carries the session anchor;
+# rows are byte-identical to the parent file. Delete the pushed models of half A
+# Half B is itself split in two on the Pixel 8a (14 GB free on the day): B1 = Qwen3 4B, B2 = Gemma 4 E4B,
+# each with the anchor; remove the previous half's pushes between them.
+#   ./bench matrix matrices/dashboard-text-v1-android-b1.cells --platform android
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-4B short-chat backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-4B short-chat backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
