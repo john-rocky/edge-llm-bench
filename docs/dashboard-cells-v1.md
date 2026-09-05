@@ -132,8 +132,27 @@ every run at thermal nominal, all 15 first-time Mac cells ran including the
 spread 12% on its first attempt, was quarantined as `.jsonl.attempt1`, and
 the retry stands. Prefill figures from the short-chat prompt (about 21
 tokens) are dominated by fixed overhead and are not the card-comparable
-prefill number — that is the 1024-token task (open question 3). iPhone and
-Pixel 8a stay Monday cells.
+prefill number — that is the 1024-token task (open question 3).
+
+iPhone 17 Pro, same afternoon (campaign `results/raw/2026-09-05-dashboard-v1-ios/`):
+12 of the 15 cells, 4 runs each (anchor 3). The phone sat at thermal "fair"
+while charging, the state this device reports when plugged in a warm room
+(devices/iphone-17-pro.md); the MLX anchor read 179 tok/s, the same value
+as the newest all-nominal anchor (2026-09-04), so the session is admissible
+under that device's rule, and every capture carries its `HOT` gate note
+(quarantined first capture in `device-jsonl-flagged/`, retry kept). The
+three Gemma 4 E4B cells did not produce rows: the LiteRT launch was refused
+because the phone was locked at that moment, the MLX cell failed with "No
+space left on device" while fetching the 7.5 GB OptiQ E4B repo (the phone's
+storage was full after the day's staging and downloads), and the llama.cpp
+cell's app process died during model load with the storage still full — not
+established as a memory ceiling. A fill-in attempt for the E4B cells at
+14:50 lost the device connection before its anchor ran (aborted, noted in
+`2026-09-05-dashboard-v1-ios-e4b/`). Pixel 8a: a first attempt at 12:07 was
+aborted — a sibling lane's benchmark was running on the phone at the same
+time (quarantined captures and the note in
+`2026-09-05-dashboard-v1-pixel8a-a-android/`); the phone is scheduled
+through that lane's hold file and the two halves run once it is free.
 
 Two reading notes for the Android rows, both properties of the harness, not
 of the engines: run 1 of a fresh (model, backend) is the engine-cache build

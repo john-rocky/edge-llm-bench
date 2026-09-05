@@ -1,0 +1,10 @@
+session start 2026-09-05 12:06:36 cells=matrices/dashboard-text-v1-android-a.cells cooldown=120s
+gate retry llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat verdict=HOT nominal,nominal,light (block re-run, not interleaved)
+
+# --- operator notes (2026-09-05) ---
+ABORTED at 12:25 JST after the anchor cell (llama.cpp Qwen3-0.6B, runs 1-3 = 1.1 / 2.7 / 0.4 tok/s vs 31 tok/s on
+2026-09-03): a foreign benchmark process was running on the phone at the same time
+(`litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/gputest_s7p8a/s7_under_test.litertlm --benchmark`,
+375% CPU, 1.5 GB RSS, another session's conversion QA), and the SoC sat under a charge-throttle cap
+(policy4/8 max 1065/1164 MHz, VIRTUAL-SKIN-CHARGE status 2). The gate quarantined the capture (*.json.attempt1, kept as
+audit); no measurement from this directory is valid. Re-run as a fresh campaign once the phone is free.
