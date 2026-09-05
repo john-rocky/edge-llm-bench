@@ -120,7 +120,7 @@ exactly the three new ids — expected until the Apple binaries are rebuilt.
 
 ## First pass (2026-09-05)
 
-The set has been run end to end on all four devices the same day: the Galaxy S26, the Mac M4 Max, the Pixel 8a, and 12 of 15 cells on the iPhone 17 Pro. S26 (campaign
+The set has been run end to end on all four devices the same day: the Galaxy S26, the Mac M4 Max, the Pixel 8a, and 14 of 15 cells on the iPhone 17 Pro. S26 (campaign
 `results/raw/2026-09-05-dashboard-v1-android/`): 15 cells × 3 runs, every
 run at thermal nominal, no gate flags, no failures — including the
 first-ever rows for Gemma 4 E4B and Qwen3 1.7B on any arm, and the first
@@ -138,7 +138,8 @@ tokens) are dominated by fixed overhead and are not the card-comparable
 prefill number — that is the 1024-token task (open question 3).
 
 iPhone 17 Pro, same afternoon (campaign `results/raw/2026-09-05-dashboard-v1-ios/`):
-12 of the 15 cells, 4 runs each (anchor 3). The phone sat at thermal "fair"
+12 of the 15 cells, 4 runs each (anchor 3), plus two of the three E4B cells in an
+evening fill-in (below). The phone sat at thermal "fair"
 while charging, the state this device reports when plugged in a warm room
 (devices/iphone-17-pro.md); the MLX anchor read 179 tok/s, the same value
 as the newest all-nominal anchor (2026-09-04), so the session is admissible
@@ -151,7 +152,13 @@ storage was full after the day's staging and downloads), and the llama.cpp
 cell's app process died during model load with the storage still full — not
 established as a memory ceiling. A fill-in attempt for the E4B cells at
 14:50 lost the device connection before its anchor ran (aborted, noted in
-`2026-09-05-dashboard-v1-ios-e4b/`).
+`2026-09-05-dashboard-v1-ios-e4b/`). A second fill-in in the evening
+(`2026-09-05-dashboard-v1-ios-e4b2/`, own anchor at nominal, 177–179 tok/s)
+captured the LiteRT and llama.cpp E4B cells — both gate-retried, the LiteRT
+capture spreading 34% on its first attempt and its retry crossing into fair —
+while the MLX E4B cell failed again with "No space left on device" after
+fetching 40% of the 7.5 GB repo; that one cell stays open until the phone has
+about 8 GB free (the partial download sits in the app's hub cache and resumes).
 
 Pixel 8a, afternoon and evening, as three sessions because the phone had
 14–21 GB free and the full set needs about 28 GB on the device
