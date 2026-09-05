@@ -106,18 +106,21 @@ exactly the three new ids — expected until the Apple binaries are rebuilt.
    Xcode (signing and the increased-memory entitlements are GUI steps).
 2. Pre-fetch the Android artifacts into the host cache; a multi-GB download
    inside a thermal session is wasted cooldown.
-3. Connect the Pixel 8a (today only the Galaxy S26 and the iPhone 17 Pro are
-   attached) and set `BENCH_UDID` (`./bench doctor` warns that 7 devices
-   are visible).
-4. Expect the never-run cells to find their limits: Gemma 4 E4B and Qwen3 4B
-   on the 8 GB Pixel 8a, the 6.5 GB OptiQ E4B and the 5 GB Q4_K_M E4B on the
-   phone. Those results are data, not setbacks.
+3. Keep the phones attached and, on the iPhone, Auto-Lock off: a locked
+   phone refuses the headless launch (it cost the E4B LiteRT cell on
+   2026-09-05). Set `BENCH_UDID` (`./bench doctor` warns that 7 devices are
+   visible). Check the sibling lanes' device holds before starting.
+4. Storage is the binding constraint on phones, not memory: the full set
+   needs about 28 GB on an Android device (models plus LiteRT's XNNPACK
+   caches) and about 35 GB of app storage on the iPhone (staged files plus
+   in-app MLX downloads); the split Android cells files exist for that. The
+   4B-class models themselves fit the 8 GB Pixel 8a on every arm.
 5. Budget about half a day per platform including downloads; cooldowns
    dominate (300 s before every Gemma 4 and 4B cell).
 
 ## First pass (2026-09-05)
 
-The set has been run end to end on the Galaxy S26 and the Mac M4 Max. S26 (campaign
+The set has been run end to end on all four devices the same day: the Galaxy S26, the Mac M4 Max, the Pixel 8a, and 12 of 15 cells on the iPhone 17 Pro. S26 (campaign
 `results/raw/2026-09-05-dashboard-v1-android/`): 15 cells × 3 runs, every
 run at thermal nominal, no gate flags, no failures — including the
 first-ever rows for Gemma 4 E4B and Qwen3 1.7B on any arm, and the first
@@ -148,11 +151,21 @@ storage was full after the day's staging and downloads), and the llama.cpp
 cell's app process died during model load with the storage still full — not
 established as a memory ceiling. A fill-in attempt for the E4B cells at
 14:50 lost the device connection before its anchor ran (aborted, noted in
-`2026-09-05-dashboard-v1-ios-e4b/`). Pixel 8a: a first attempt at 12:07 was
-aborted — a sibling lane's benchmark was running on the phone at the same
-time (quarantined captures and the note in
-`2026-09-05-dashboard-v1-pixel8a-a-android/`); the phone is scheduled
-through that lane's hold file and the two halves run once it is free.
+`2026-09-05-dashboard-v1-ios-e4b/`).
+
+Pixel 8a, afternoon and evening, as three sessions because the phone had
+14–21 GB free and the full set needs about 28 GB on the device
+(campaigns `2026-09-05-dashboard-v1-pixel8a-a2-android/`, `-b1-android/`,
+`-b2-android/`, cells files `dashboard-text-v1-android-{a,b1,b2}.cells`,
+each with its own anchor; my pushes were removed between sessions): all 15
+cells, 3 runs each, every run at thermal nominal, no gate flags. Both
+4B-class models fit the 8 GB phone on every arm — Qwen3 4B at 4–7 tok/s,
+Gemma 4 E4B at 5–8 tok/s — so the memory-risk cells listed above became
+ordinary rows. A first attempt at 12:07 was aborted: a sibling lane's
+benchmark was running on the phone at the same time (its quarantined
+captures and note stay in `2026-09-05-dashboard-v1-pixel8a-a-android/`);
+the phone is now shared through that lane's hold file (`device-busy` note
+in the operating memory).
 
 Two reading notes for the Android rows, both properties of the harness, not
 of the engines: run 1 of a fresh (model, backend) is the engine-cache build
