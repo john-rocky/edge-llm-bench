@@ -115,6 +115,56 @@ exactly the three new ids — expected until the Apple binaries are rebuilt.
 5. Budget about half a day per platform including downloads; cooldowns
    dominate (300 s before every Gemma 4 and 4B cell).
 
+## First pass (2026-09-05)
+
+The set has been run end to end on the Galaxy S26 and the Mac M4 Max. S26 (campaign
+`results/raw/2026-09-05-dashboard-v1-android/`): 15 cells × 3 runs, every
+run at thermal nominal, no gate flags, no failures — including the
+first-ever rows for Gemma 4 E4B and Qwen3 1.7B on any arm, and the first
+Gemma 4 CPU rows. The 4B-class cells fit: Qwen3 4B and Gemma 4 E4B hold
+5.4–5.9 GB resident on the CPU arms of this 12 GB phone, which is the number
+to hold against the 8 GB Pixel 8a on Monday.
+
+The Mac M4 Max pass followed the same morning (campaign
+`results/raw/2026-09-05-dashboard-v1-mac/`): 15 cells × 4 runs (anchor 3),
+every run at thermal nominal, all 15 first-time Mac cells ran including the
+6.5 GB OptiQ E4B build. One gate retry: the llama.cpp Qwen3 0.6B capture
+spread 12% on its first attempt, was quarantined as `.jsonl.attempt1`, and
+the retry stands. Prefill figures from the short-chat prompt (about 21
+tokens) are dominated by fixed overhead and are not the card-comparable
+prefill number — that is the 1024-token task (open question 3). iPhone and
+Pixel 8a stay Monday cells.
+
+Two reading notes for the Android rows, both properties of the harness, not
+of the engines: run 1 of a fresh (model, backend) is the engine-cache build
+and is stamped `firstEver` (summaries here drop it); and the memory column
+is VmRSS, which does not count the GPU arm's buffers — the LiteRT GPU rows'
+resident figures are not comparable with the CPU arms' (methodology
+`android.md`). The Android llama.cpp rows run at `n_ctx` 4096, the lane's
+standing setting, while the LiteRT rows run at each bundle's default context
+— both recorded per run (`conditions.contextTokens`); decode on a
+150-token conversation is not expected to move with it, the resident memory
+column does (an inference, not measured here). The litert-community card's
+own S26 figure for the Qwen3 1.7B GPU file (40.5 tok/s, 205-token prompt,
+`litert_lm_advanced_main`) sits above this cell's 33.7 — a different
+protocol; a card-comparable number is the 1024-token task's to produce.
+The S26 ordering on Qwen3 0.6B (llama.cpp CPU 106, LiteRT GPU 54, LiteRT
+CPU 25 tok/s) reproduces the 2026-08-25 session (104 / 52 / 28) within a
+few percent.
+
+Mac reading note: every llama.cpp cell on the Mac completes its four runs
+and writes its records, then the yardstick process aborts at exit inside
+llama.cpp b8999's Metal teardown (`ggml_metal_rsets_free` → `ggml_abort`,
+crash reports of 2026-09-05). The runner records that exit code as `FAIL`
+in `FAILURES.txt`; the rows stand (`failed-runs-stay`) and the gate verdicts
+are unaffected. It is a harness/engine exit-path defect to chase, not a
+measurement.
+
+Per-cell medians are in `results/summary/device-runs.csv` (campaigns
+`2026-09-05-dashboard-v1-android` and `-mac`); cross-runtime standings
+render locally (`LEADERBOARD.md`) and are not published in this repo by
+design.
+
 ## Competitor arms
 
 | Arm | Platforms | In v1 | Status |
