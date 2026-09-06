@@ -96,7 +96,11 @@ ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
 
 # --- Gemma 4 E4B ---
 ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
-ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300
+# iPhone 17 Pro, 2026-09-06: the 7.5 GB OptiQ E4B repo downloads, then the app is killed (SIGKILL) while
+# loading the 6.5 GB of text weights — a memory ceiling on this phone, not a download problem. The row
+# stays (failed-runs-stay); a smaller MLX build (mlx-community/gemma-4-e4b-it-4bit, 5.1 GB) is the
+# candidate for an iPhone MLX E4B row and is an open question, not a silent substitution.
+ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300 exclude=app-killed-at-model-load-sigkill
 ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
 
 # ============================= Mac =============================

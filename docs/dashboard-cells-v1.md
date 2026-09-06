@@ -157,8 +157,15 @@ established as a memory ceiling. A fill-in attempt for the E4B cells at
 captured the LiteRT and llama.cpp E4B cells — both gate-retried, the LiteRT
 capture spreading 34% on its first attempt and its retry crossing into fair —
 while the MLX E4B cell failed again with "No space left on device" after
-fetching 40% of the 7.5 GB repo; that one cell stays open until the phone has
-about 8 GB free (the partial download sits in the app's hub cache and resumes).
+fetching 40% of the 7.5 GB repo. On 2026-09-06, with storage freed, a fourth
+fill-in (`2026-09-06-dashboard-v1-ios-e4b4/`, anchor nominal) completed the
+fetch and then lost the app to a SIGKILL during model load: the 6.5 GB of
+OptiQ E4B text weights do not fit the app's memory on this phone. That row now
+carries `exclude=app-killed-at-model-load-sigkill` in the cells file; the
+smaller `mlx-community/gemma-4-e4b-it-4bit` build (5.1 GB) is the candidate
+for an iPhone MLX E4B row (open question 6). The LiteRT E4B retake in the same
+session ran hot again (both captures HOT, retry kept at 14–15 tok/s in fair),
+so the phone's E4B LiteRT figure is a fair-state number until a cooler sitting.
 
 Pixel 8a, afternoon and evening, as three sessions because the phone had
 14–21 GB free and the full set needs about 28 GB on the device
@@ -255,3 +262,6 @@ no Android column. Row status: investigate.
    Android and iPhone rows?
 5. Go signal for Qwen3.5 / LFM2.5 — the placeholder rows are ready to
    uncomment (Apple-side LiteRT catalog entries for Qwen3.5 still to add).
+6. iPhone MLX E4B: the QAT OptiQ build (6.5 GB) is killed at load on the
+   iPhone 17 Pro; use the 5.1 GB PTQ 4-bit build for that one row (a different
+   recipe from the Mac's MLX row, disclosed), or leave the cell as the finding?

@@ -1,0 +1,13 @@
+    • OS Build Update: 24A5418b
+    • OS Version: 27.0
+session start 2026-09-06 15:03:10
+cells: /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/7d765acf-9502-4900-bbcf-7487e32cc3ef/scratchpad/ios-e4b-fillin3.cells
+
+# --- operator notes (2026-09-06) ---
+Fourth fill-in for the Gemma 4 E4B cells of 2026-09-05-dashboard-v1-ios (own anchor, nominal, 177 tok/s).
+LiteRT E4B: both captures HOT (runs crossing into fair; the retry all fair), retry kept, flagged — this phone
+warms under the E4B load whatever the start state; the 09-05 evening capture behaved the same.
+MLX OptiQ E4B: the 7.5 GB fetch completed this time (storage freed by the owner), then the app was killed
+with signal 9 during model load — the 6.5 GB of text weights do not fit the app's memory on this phone.
+No record for that cell by construction (a SIGKILL leaves none); the v1 cells file now carries the row with
+exclude=app-killed-at-model-load-sigkill so the leaderboard shows the reason and the runner stops retrying it.
