@@ -173,9 +173,8 @@ Pixel 8a, afternoon and evening, as three sessions because the phone had
 `-b2-android/`, cells files `dashboard-text-v1-android-{a,b1,b2}.cells`,
 each with its own anchor; my pushes were removed between sessions): all 15
 cells, 3 runs each, every run at thermal nominal, no gate flags. Both
-4B-class models fit the 8 GB phone on every arm — Qwen3 4B at 4–7 tok/s,
-Gemma 4 E4B at 5–8 tok/s — so the memory-risk cells listed above became
-ordinary rows. A first attempt at 12:07 was aborted: a sibling lane's
+4B-class models fit the 8 GB phone on every arm, so the memory-risk cells
+listed above became ordinary rows. A first attempt at 12:07 was aborted: a sibling lane's
 benchmark was running on the phone at the same time (its quarantined
 captures and note stay in `2026-09-05-dashboard-v1-pixel8a-a-android/`);
 the phone is now shared through that lane's hold file (`device-busy` note
@@ -194,9 +193,9 @@ column does (an inference, not measured here). The litert-community card's
 own S26 figure for the Qwen3 1.7B GPU file (40.5 tok/s, 205-token prompt,
 `litert_lm_advanced_main`) sits above this cell's 33.7 — a different
 protocol; a card-comparable number is the 1024-token task's to produce.
-The S26 ordering on Qwen3 0.6B (llama.cpp CPU 106, LiteRT GPU 54, LiteRT
-CPU 25 tok/s) reproduces the 2026-08-25 session (104 / 52 / 28) within a
-few percent.
+Every S26 cell that had an earlier row (the anchor and the three Qwen3 0.6B
+cells) reproduces its 2026-08-25 value within a few percent, so the session
+is not a drift outlier.
 
 Mac reading note: every llama.cpp cell on the Mac completes its four runs
 and writes its records, then the yardstick process aborts at exit inside
