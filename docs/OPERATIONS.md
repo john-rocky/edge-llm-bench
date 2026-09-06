@@ -215,6 +215,40 @@ thermal).
 
 ## Known limits an operator must not discover the hard way
 
+- **A phone is shared with other lanes.** Before any Android capture, check
+  the campaign flock, the conversion lane's hold file
+  (`~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.<device>`),
+  and the phone's own process list for a foreign `litert_lm*`/`llama*`; a
+  concurrent benchmark reads as a collapsed anchor (0.4-2.7 tok/s for 31,
+  2026-09-05) and contaminates the other lane too. Take the hold file for
+  the campaign and release it after.
+- **Phone storage, not memory, bounds the dashboard set.** The full 15-cell
+  Android set needs about 28 GB on the device (pushed models plus LiteRT's
+  XNNPACK caches at 0.6-0.8x the model size); `matrices/dashboard-text-v1-android-{a,b,b1,b2}.cells`
+  split it for a phone with less free space. The iPhone needs about 35 GB
+  of app storage for the same set (staged files plus in-app MLX downloads);
+  a full disk fails a cell with "No space left on device" and can kill the
+  app during a load that would otherwise fit.
+- **Headless iPhone cells need the phone unlocked for every launch**
+  (Auto-Lock Never): a locked phone refuses `devicectl process launch`
+  ("device was not, or could not be, unlocked"), and a phone that goes
+  offline mid-cell leaves a record with an impossible decode figure — check
+  `device-jsonl` against the console before trusting a lone record. Stage
+  large artifacts headlessly with
+  `xcrun devicectl device copy to --domain-type appDataContainer --domain-identifier <app> --source <file> --destination Documents/models/<runtime>/<org__repo>/<primaryFile>`
+  (HFDownloader short-circuits on a non-empty model directory; about 22 MB/s).
+- **`mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit` does not load on the iPhone 17 Pro**: the
+  7.5 GB repo downloads, then the app is SIGKILLed while loading its 6.5 GB of
+  text weights (2026-09-06). The iOS row carries `exclude=app-killed-at-model-load-sigkill`.
+- **Mac llama.cpp cells abort at exit, after their runs.** Every llama.cpp
+  cell on the Mac completes and records its runs, then yardstick aborts in
+  llama b8999's Metal teardown (`ggml_metal_rsets_free` -> `ggml_abort`);
+  the runner writes `FAIL` to FAILURES.txt by exit code. The rows stand.
+- **Short-chat prefill is not comparable across arms.** On a ~20-token prompt
+  the prefill figure is dominated by fixed per-call overhead and ranks the
+  arms differently from decode; the 1024-token task is the prefill
+  instrument (methodology/agreed-protocol-gemma4.md).
+
 - **Core AI arm is best-effort**: PLE models (Gemma-4 E2B/E4B) need the
   unpublished `COREAI_STATIC_INPUTS` engine patch; a clean clone reports
   `unsupported`. The Mac external `llm-benchmark` rows are not
