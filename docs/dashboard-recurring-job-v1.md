@@ -107,6 +107,14 @@ figures include the first-time pushes, so steady-state sessions should be
 somewhat shorter. Cooldowns dominate everywhere (300 s before every Gemma 4
 and 4B cell).
 
+Hold-file names differ between the sibling lanes (S26 `s2_npu_sweep/.device_hold`,
+iPhone `community_accel_work/.iphone_hold` and `.device_hold.iphone`, Pixel 8a
+`.device_hold.pixel8a` / `.device_hold.<serial>`, and one Pixel gate script uses
+the S26's `.device_hold`), so each device checks every name its lanes use
+(`hold_also_check`). The Pixel slot therefore reports busy while the S26 is in
+use by a sibling — a false busy costs a slot, never a measurement; drop the
+shared name from `hold_also_check` if it proves noisy.
+
 Storage on phones is the binding constraint, not memory. The whole Android
 set needs about 28 GB on the device (models plus LiteRT's XNNPACK/ML Drift
 caches beside each bundle). The job compares free space with

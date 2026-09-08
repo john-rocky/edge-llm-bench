@@ -32,4 +32,10 @@
   superseded by 2026-08-25-s26-llama-nomask (Qwen3-0.6B ~104, DeepSeek-R1
   ~47 tok/s, all nominal); they stay in raw with their conditions recorded.
   litert-lm cells are unaffected (litert_lm_main manages its own threads).
+- CPU-frequency caps are transient, not a standing state of this phone: while
+  another lane's benchmark loaded it, `scaling_max_freq` read 42–55% of
+  `cpuinfo_max_freq` (policy0 2.0/3.6 GHz, policy6 1.98/4.74 GHz; 2026-09-07
+  18:11, battery 100% on USB), and at idle the caps were gone (2026-09-08 06:39,
+  before the first automated dashboard session). The dashboard job's preflight
+  reads a cap as "busy" and polls — the right reading; do not measure under one.
 - Build/run: `android/README.md` (engine acquisition, driver, campaign runner).
