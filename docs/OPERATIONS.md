@@ -149,6 +149,33 @@ thermal).
    traps from the Mac baseline apply unchanged (endurance.md, "Reading the
    series").
 
+## Runbook: the dashboard recurring job (weekly per device)
+
+Design, cadence, device schedule, admission and rerun rules:
+`docs/dashboard-recurring-job-v1.md`. Config: `ops/dashboard-v1/schedule.json`.
+
+```
+./bench dashboard-job <m4max|s26|pixel8a|iphone17pro|auto> [--dry-run] [--once]
+./bench dashboard                       # re-render DASHBOARD.md (local) any time
+```
+
+One invocation is one device slot: preflight (attached, unlocked, not held
+by a sibling lane, no foreign engine process, storage, host runner idle) →
+the session anchors as a short campaign → admission of the sitting against
+the newest admitted session's anchor → the dashboard cells (or the storage
+halves, rotating pushed copies out between them) → `SESSION.json` in every
+campaign dir it created → `logs/dashboard-job/ledger.tsv` → dashboard
+re-rendered. Exit 0 admitted, 3 busy (polled), 4 aborted at admission
+(retried once), 5 device needs a human, 6 timeout. `--dry-run` runs the
+preflight and prints the exact commands without taking a hold or measuring.
+
+The job never commits or pushes: review the new campaign dir(s) and the
+regenerated `results/summary/` the next morning and commit them with a
+message that states what ran and what reproduced (public text carries no
+cross-runtime ordering). The launchd template that fires the slots is
+`ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; enabling
+it is an owner step, documented in the template header.
+
 ## Runbook: add a model
 
 1. Speed axis: add a `ModelInfo` per runtime to
@@ -228,7 +255,11 @@ thermal).
   split it for a phone with less free space. The iPhone needs about 35 GB
   of app storage for the same set (staged files plus in-app MLX downloads);
   a full disk fails a cell with "No space left on device" and can kill the
-  app during a load that would otherwise fit.
+  app during a load that would otherwise fit. Deleting pushed bundles to make
+  room leaves their `markers/*.cachebuilt` files behind: since 2026-09-07 the
+  driver drops an artifact's markers whenever it actually (re)pushes it, so
+  the rebuilt cache's run 1 is labelled `firstEver` again instead of pooling
+  as speed (`android/bench/run_cell.py`, selftest campaign B2).
 - **Headless iPhone cells need the phone unlocked for every launch**
   (Auto-Lock Never): a locked phone refuses `devicectl process launch`
   ("device was not, or could not be, unlocked"), and a phone that goes

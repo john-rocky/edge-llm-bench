@@ -100,6 +100,14 @@ def arm_row(rows):
     cold = [v for v in cold if v]
     wmed = statistics.median(warm) if warm else None
     spread = ((max(warm) - min(warm)) / wmed * 100) if wmed and len(warm) > 1 else 0.0
+    # Cold median + spread for the regimes that have no warm runs (Android
+    # v1: every run is a fresh process). `cold` below stays the session's
+    # last cold run — the leaderboard's historical column — so nothing that
+    # renders from it moves; the dashboard reads cold_median where the
+    # platform's headline regime is cold (no-cherry-pick: the median of the
+    # session's runs, with its spread, never a single trial).
+    cmed = statistics.median(cold) if cold else None
+    cspread = ((max(cold) - min(cold)) / cmed * 100) if cmed and len(cold) > 1 else 0.0
     prefill = [fnum(r["prefill_tps"]) for r in meas]
     prefill = [v for v in prefill if v]
     ttft = [fnum(r["ttft_ms"]) for r in meas]
@@ -121,6 +129,9 @@ def arm_row(rows):
     return {
         "warm": wmed, "warm_n": len(warm), "spread": spread,
         "cold": cold[-1] if cold else None,
+        "cold_median": cmed, "cold_n": len(cold), "cold_spread": cspread,
+        "campaign": sess[0]["campaign"] if sess else "",
+        "thermal_initial": sorted({r.get("thermal_initial") or "" for r in meas}),
         "prefill": statistics.median(prefill) if prefill else None,
         "ttft": statistics.median(ttft) if ttft else None,
         "mem": statistics.median(mem) if mem else None,

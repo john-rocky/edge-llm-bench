@@ -150,6 +150,13 @@ def push_verified(local, dev_path, serial):
     if have.returncode == 0 and have.stdout.strip() == str(want):
         return
     adb(["shell", "mkdir", "-p", f"{DEV_DIR}/models"], serial)
+    # A real (re)push means the engine caches that lived beside the old copy
+    # are gone or stale, so this artifact's firstEver markers must go too —
+    # otherwise the next run 1 rebuilds the cache with the marker still saying
+    # "built" and pools as the engine's speed. Observed on the Pixel 8a
+    # (2026-09-07): 10 markers present, 7 of their bundles deleted between the
+    # split dashboard sessions to free storage.
+    adb(["shell", f"rm -f {DEV_DIR}/markers/{os.path.basename(dev_path)}.*.cachebuilt"], serial)
     print(f"pushing {os.path.basename(local)} ({want >> 20} MB) …", file=sys.stderr)
     adb(["push", local, dev_path], serial, timeout=1800)
     out = adb(["shell", f"stat -c %s {dev_path}"], serial).strip()

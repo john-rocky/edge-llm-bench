@@ -5,6 +5,8 @@
   ./bench regress <cells-file> --engine <arm> [--version vX] --baseline <selector>
                   [--platform ...] [--campaign NAME]
   ./bench release-watch
+  ./bench dashboard                         # render DASHBOARD.md (local) from results/summary
+  ./bench dashboard-job <device-key|auto>   # one slot of the recurring job (docs/dashboard-recurring-job-v1.md)
 
 (The archive repo's `./reproduce` is the backward-looking "published table ->
 pinned command" registry; this file is the forward-looking driver.) matrix =
@@ -12,6 +14,8 @@ validate -> platform runners -> build_summary -> render_results ->
 render_leaderboard. regress = matrix into a fresh campaign, then
 regression_report (exit 1 on REGRESSION). manual=1 cells (energy) are never
 run here — the unplug discipline is a human step (docs/OPERATIONS.md).
+dashboard-job = preflight -> anchors -> session admission -> matrix ->
+SESSION.json -> dashboard render; exit codes in scripts/dashboard_job.py.
 """
 import argparse
 import datetime
@@ -125,6 +129,16 @@ def main():
     d = sub.add_parser("doctor", help="preflight: what is missing, with the fix command")
     d.add_argument("--platform", action="append", choices=list(RUNNERS))
 
+    db = sub.add_parser("dashboard", help="render DASHBOARD.md + .dashboard/ (local, gitignored)")
+    db.add_argument("--cells", help="cells file (default: matrices/dashboard-text-v1.cells)")
+    db.add_argument("--stale-days", type=int)
+
+    dj = sub.add_parser("dashboard-job", help="one device slot of the recurring job")
+    dj.add_argument("device", help="key in ops/dashboard-v1/schedule.json, or 'auto'")
+    dj.add_argument("--dry-run", action="store_true", help="preflight + plan only")
+    dj.add_argument("--once", action="store_true", help="no busy polling / abort retry")
+    dj.add_argument("--cells", help="override the cells file")
+
     args = ap.parse_args()
     if args.cmd == "matrix":
         return do_matrix(args)
@@ -134,6 +148,22 @@ def main():
         cmd = [PY, os.path.join(ROOT, "scripts", "doctor.py")]
         for p in args.platform or []:
             cmd += ["--platform", p]
+        return run(cmd)
+    if args.cmd == "dashboard":
+        cmd = [PY, os.path.join(ROOT, "scripts", "render_dashboard.py")]
+        if args.cells:
+            cmd += ["--cells", args.cells]
+        if args.stale_days is not None:
+            cmd += ["--stale-days", str(args.stale_days)]
+        return run(cmd)
+    if args.cmd == "dashboard-job":
+        cmd = [PY, os.path.join(ROOT, "scripts", "dashboard_job.py"), args.device]
+        if args.dry_run:
+            cmd.append("--dry-run")
+        if args.once:
+            cmd.append("--once")
+        if args.cells:
+            cmd += ["--cells", args.cells]
         return run(cmd)
     return run([PY, os.path.join(ROOT, "scripts", "release_watch.py")])
 

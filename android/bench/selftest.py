@@ -120,6 +120,12 @@ def shell(cmd):
     if cmd.startswith("mkdir"):
         os.makedirs(mp(cmd.split()[-1]), exist_ok=True)
         return 0
+    if cmd.startswith("rm -f "):
+        import glob as _g
+        for pat in cmd.split()[2:]:
+            for p in _g.glob(mp(pat)):
+                os.remove(p)
+        return 0
     sys.stderr.write("fake-adb: unhandled shell: " + cmd + "\\n")
     return 1
 
@@ -270,6 +276,25 @@ def main():
        "block re-run disclosed in session_provenance.txt")
     ok(not os.path.exists(os.path.join(out_b, "FLAGGED.txt")),
        "clean retry leaves no FLAGGED.txt")
+
+    # --- campaign B2: the bundle was deleted from the device (storage
+    # rotation between split sessions) while its marker survived; the
+    # re-push must drop the marker so run 1 is labelled firstEver again
+    # (Pixel 8a 2026-09-07: markers outlived 7 of their 10 bundles)
+    for f in glob.glob(os.path.join(dev, "models", "*fake_model.litertlm*")):
+        os.remove(f)
+    schedule([25.2, 24.9])
+    env["CAMPAIGN"] = "selftest-b2"
+    print("--- campaign B2 (bundle deleted on device, marker stale -> re-push relabels firstEver)")
+    rc = run_campaign(env, cells_b)
+    ok(rc == 0, f"campaign B2 exits 0 (got {rc})")
+    out_b2 = os.path.join(raw_root, "selftest-b2", "app-path-android")
+    again = records(out_b2, "litert-lm-gpu_")
+    ok(len(again) == 2, f"2 records after the re-push (got {len(again)})")
+    if len(again) == 2:
+        ok(again[0][1]["metrics"].get("firstEver") is True,
+           "run 1 after a re-push is labelled firstEver (cache rebuilt, marker invalidated)")
+        ok("firstEver" not in again[1][1]["metrics"], "run 2 after the re-push not labelled")
 
     # --- campaign C: endurance session, completed --------------------------
     # Scripted driver output; the HOST derives the verdicts (decay windows,

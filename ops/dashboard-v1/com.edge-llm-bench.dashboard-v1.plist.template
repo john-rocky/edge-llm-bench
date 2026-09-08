@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd LaunchAgent for the dashboard v1 recurring job (docs/dashboard-recurring-job-v1.md).
+  NOT installed by anything in this repo — enabling the scheduler is an owner decision:
+
+    sed "s#__REPO__#$PWD#g; s#__HOME__#$HOME#g" ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template \
+        > ~/Library/LaunchAgents/com.edge-llm-bench.dashboard-v1.plist
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.edge-llm-bench.dashboard-v1.plist
+    launchctl print gui/$(id -u)/com.edge-llm-bench.dashboard-v1 | head      # loaded?
+    launchctl bootout gui/$(id -u)/com.edge-llm-bench.dashboard-v1           # disable
+
+  Each firing runs `./bench dashboard-job auto`, which maps the weekday to a device
+  through ops/dashboard-v1/schedule.json "slots" (Mon m4max, Tue s26, Wed pixel8a,
+  Thu iphone17pro by default). Weekday numbering: 1 = Monday. If the Mac is asleep
+  at the time, launchd runs the job on the next wake (the bench Mac has sleep 0).
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.edge-llm-bench.dashboard-v1</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>-lc</string>
+		<string>export PATH="__HOME__/Library/Android/sdk/platform-tools:/opt/homebrew/bin:/usr/local/bin:$PATH"; cd __REPO__ &amp;&amp; ./bench dashboard-job auto</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<array>
+		<dict>
+			<key>Weekday</key><integer>1</integer>
+			<key>Hour</key><integer>2</integer>
+			<key>Minute</key><integer>0</integer>
+		</dict>
+		<dict>
+			<key>Weekday</key><integer>2</integer>
+			<key>Hour</key><integer>2</integer>
+			<key>Minute</key><integer>0</integer>
+		</dict>
+		<dict>
+			<key>Weekday</key><integer>3</integer>
+			<key>Hour</key><integer>2</integer>
+			<key>Minute</key><integer>0</integer>
+		</dict>
+		<dict>
+			<key>Weekday</key><integer>4</integer>
+			<key>Hour</key><integer>5</integer>
+			<key>Minute</key><integer>30</integer>
+		</dict>
+	</array>
+	<key>StandardOutPath</key>
+	<string>__REPO__/logs/dashboard-job/launchd.out</string>
+	<key>StandardErrorPath</key>
+	<string>__REPO__/logs/dashboard-job/launchd.err</string>
+	<key>RunAtLoad</key>
+	<false/>
+</dict>
+</plist>

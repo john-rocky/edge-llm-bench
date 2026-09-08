@@ -43,6 +43,8 @@ jobs:
         with:
           python-version: "3.11"
       - run: python scripts/render_leaderboard.py
+      - name: dashboard table renders from shipped raw (local surface, never committed)
+        run: python scripts/render_dashboard.py --check
 
   android-driver-selftest:
     # fake-adb end-to-end: record shape, firstEver marker, witness stamping,
