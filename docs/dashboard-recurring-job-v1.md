@@ -1,10 +1,12 @@
 # Dashboard v1 as a recurring job — cadence, device schedule, rerun rules
 
-Status: design + implemented job unit (2026-09-07). The scheduler itself is
-**not enabled**: `ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`
-is the launchd agent, and loading it is an owner step (header of that file).
-Until then every slot can be run by hand with the same command the agent
-would use.
+Status: design + implemented job unit (2026-09-07); first end-to-end run on
+the Galaxy S26 2026-09-08 (campaigns `2026-09-08-dashboard-v1-s26-*`). The
+scheduler is **enabled on the bench host since 2026-09-08** (owner decision):
+`~/Library/LaunchAgents/com.edge-llm-bench.dashboard-v1.plist`, rendered from
+`ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; disable
+with `launchctl bootout gui/$(id -u)/com.edge-llm-bench.dashboard-v1`. Every
+slot can also be run by hand with the same command the agent uses.
 
 Companion pages: the cell set and its open questions
 (`docs/dashboard-cells-v1.md`), the measurement rules
