@@ -1,14 +1,19 @@
 {
-  "_doc": "Device slots for the dashboard v1 recurring job (docs/dashboard-recurring-job-v1.md). scripts/dashboard_job.py reads this; nothing here is a measurement. Paths under hold/hold_cli are the sibling conversion lane's device-hold protocol on the bench host (docs/OPERATIONS.md, 'A phone is shared with other lanes').",
+  "_doc": "Devices and firing times for the dashboard v1 recurring job (docs/dashboard-recurring-job-v1.md). scripts/dashboard_job.py reads this; nothing here is a measurement. Paths under hold/hold_cli are the sibling conversion lane's device-hold protocol on the bench host (docs/OPERATIONS.md, 'A phone is shared with other lanes').",
   "cells": "matrices/dashboard-text-v1.cells",
   "anchors": "matrices/anchors.cells",
   "stale_days": 10,
-  "slots": {
-    "mon": "m4max",
-    "tue": "s26",
-    "wed": "pixel8a",
-    "thu": "iphone17pro"
-  },
+  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week; a firing with nothing pending exits 0.",
+  "slots": [
+    {
+      "at": "02:00",
+      "device": "auto"
+    },
+    {
+      "at": "05:30",
+      "device": "auto"
+    }
+  ],
   "admission": {
     "min_anchor_runs": 2,
     "collapse_ratio": 0.5,
@@ -17,7 +22,10 @@
   "retry": {
     "busy_poll_minutes": 15,
     "busy_window_minutes": 120,
-    "abort_retry_after_minutes": {"anchor-collapse": 30, "anchor-thermal": 60},
+    "abort_retry_after_minutes": {
+      "anchor-collapse": 30,
+      "anchor-thermal": 60
+    },
     "max_attempts_per_slot": 2
   },
   "hold_cli": "~/code/litertlm-convert/community_accel_work/hold_cli.py",
@@ -26,7 +34,7 @@
       "platform": "mac",
       "display": "Mac Studio (M4 Max)",
       "identifier": "Mac16,9",
-      "window": "Monday 02:00 local; the runner refuses to start while a heavy export pipeline runs (unified-memory contention) and the job polls until it is quiet",
+      "window": "any firing while no heavy export pipeline runs (unified-memory contention: the runner refuses and the job passes over the Mac until it is quiet)",
       "expected_hours": 1.5,
       "timeout_hours": 4,
       "env": {}
@@ -44,11 +52,20 @@
       ],
       "storage_gb_full": 28,
       "split": [
-        {"cells": "matrices/dashboard-text-v1-android-a.cells", "min_free_gb": 18},
-        {"cells": "matrices/dashboard-text-v1-android-b1.cells", "min_free_gb": 10},
-        {"cells": "matrices/dashboard-text-v1-android-b2.cells", "min_free_gb": 13}
+        {
+          "cells": "matrices/dashboard-text-v1-android-a.cells",
+          "min_free_gb": 18
+        },
+        {
+          "cells": "matrices/dashboard-text-v1-android-b1.cells",
+          "min_free_gb": 10
+        },
+        {
+          "cells": "matrices/dashboard-text-v1-android-b2.cells",
+          "min_free_gb": 13
+        }
       ],
-      "window": "Tuesday 02:00 local; USB attached, screen on; runs unmasked (devices/galaxy-s26.md)",
+      "window": "any firing; USB attached, screen on; runs unmasked (devices/galaxy-s26.md)",
       "expected_hours": 3.5,
       "timeout_hours": 6,
       "env": {}
@@ -61,16 +78,24 @@
       "cpu_mask": "f0",
       "hold": "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.pixel8a",
       "hold_also_check": [
-        "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.4C131JEKB15210",
-        "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold"
+        "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.4C131JEKB15210"
       ],
       "storage_gb_full": 28,
       "split": [
-        {"cells": "matrices/dashboard-text-v1-android-a.cells", "min_free_gb": 18},
-        {"cells": "matrices/dashboard-text-v1-android-b1.cells", "min_free_gb": 10},
-        {"cells": "matrices/dashboard-text-v1-android-b2.cells", "min_free_gb": 13}
+        {
+          "cells": "matrices/dashboard-text-v1-android-a.cells",
+          "min_free_gb": 18
+        },
+        {
+          "cells": "matrices/dashboard-text-v1-android-b1.cells",
+          "min_free_gb": 10
+        },
+        {
+          "cells": "matrices/dashboard-text-v1-android-b2.cells",
+          "min_free_gb": 13
+        }
       ],
-      "window": "Wednesday 02:00 local; USB attached, screen on; storage-limited, so the set runs as three sessions with pushed models rotated out between them",
+      "window": "any firing; USB attached, screen on; storage-limited, so the set runs as three sessions with pushed models rotated out between them",
       "expected_hours": 4.5,
       "timeout_hours": 7,
       "env": {}
@@ -85,10 +110,14 @@
       "hold_also_check": [
         "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.iphone"
       ],
-      "window": "Thursday 05:30 local, after >=4 h idle; the phone must be unlocked (Auto-Lock Never) or the headless launch is refused, and a plugged phone in a warm room reports 'fair' (admitted only through the anchor rule)",
+      "auto_window": "05:00-08:00",
+      "auto_idle_hours": 4,
+      "window": "the 05:30 firing only (auto_window 05:00-08:00 local) and only after 4 h without a record from the phone (auto_idle_hours); the phone must be unlocked (Auto-Lock Never) or the headless launch is refused, and a plugged phone in a warm room reports 'fair' (admitted only through the anchor rule)",
       "expected_hours": 2.5,
       "timeout_hours": 5,
-      "env": {"CELL_TIMEOUT": "3600"}
+      "env": {
+        "CELL_TIMEOUT": "3600"
+      }
     }
   }
 }

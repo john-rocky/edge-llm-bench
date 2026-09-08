@@ -149,32 +149,49 @@ thermal).
    traps from the Mac baseline apply unchanged (endurance.md, "Reading the
    series").
 
-## Runbook: the dashboard recurring job (weekly per device)
+## Runbook: the dashboard recurring job (each device once a week, first free device first)
 
-Design, cadence, device schedule, admission and rerun rules:
+Design, cadence, device choice, admission and rerun rules:
 `docs/dashboard-recurring-job-v1.md`. Config: `ops/dashboard-v1/schedule.json`.
 
 ```
-./bench dashboard-job <m4max|s26|pixel8a|iphone17pro|auto> [--dry-run] [--once]
+./bench dashboard-job auto [--dry-run]                       # what launchd runs at 02:00 and 05:30 every night
+./bench dashboard-job <m4max|s26|pixel8a|iphone17pro> [--dry-run] [--once]   # that device, regardless of the week
 ./bench dashboard                       # re-render DASHBOARD.md (local) any time
 ```
 
-One invocation is one device slot: preflight (attached, unlocked, not held
-by a sibling lane, no foreign engine process, storage, host runner idle) →
-the session anchors as a short campaign → admission of the sitting against
-the newest admitted session's anchor → the dashboard cells (or the storage
-halves, rotating pushed copies out between them) → `SESSION.json` in every
-campaign dir it created → `logs/dashboard-job/ledger.tsv` → dashboard
-re-rendered. Exit 0 admitted, 3 busy (polled), 4 aborted at admission
-(retried once), 5 device needs a human, 6 timeout. `--dry-run` runs the
-preflight and prints the exact commands without taking a hold or measuring.
+One invocation is one sitting on one device. `auto` chooses it: among the
+devices with no admitted dashboard session since Monday 00:00 local, the
+attached, unheld ones — the iPhone only in its 05:00–08:00 window after 4 h
+without a record, the Mac only while no heavy export pipeline runs — oldest
+last-admitted session first (never measured = oldest). A candidate whose
+preflight says busy or not ready is passed over for the next one; when every
+pending device is busy the firing polls (15 min, up to 2 h) and chooses
+again; nothing pending exits 0 with no ledger line. `--dry-run` prints the
+choice with every device's state and the chosen device's plan, and is the way
+to see what tonight's firing would do.
+
+The sitting: preflight (attached, unlocked, not held by a sibling lane, no
+foreign engine process, storage, host runner idle) → the session anchors as a
+short campaign → admission of the sitting against the newest admitted
+session's anchor → the dashboard cells (or the storage halves, rotating
+pushed copies out between them) → `SESSION.json` in every campaign dir it
+created → `logs/dashboard-job/ledger.tsv` → dashboard re-rendered. Exit 0
+admitted, 3 busy, 4 aborted at admission (retried once), 5 device needs a
+human, 6 timeout. A firing whose pending devices are all held or detached
+leaves a ledger line under device `auto` with the reasons; the decision log
+is `logs/dashboard-job/<date>-auto.log`, the sitting's `<date>-<device>.log`.
+One job instance per host: a manual `auto` beside a running one exits 3.
 
 The job never commits or pushes: review the new campaign dir(s) and the
 regenerated `results/summary/` the next morning and commit them with a
 message that states what ran and what reproduced (public text carries no
-cross-runtime ordering). The launchd template that fires the slots is
+cross-runtime ordering). The launchd template that fires `auto` is
 `ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; enabling
-it is an owner step, documented in the template header.
+it is an owner step, documented in the template header. To change the firing
+times, edit `schedule.json` `slots` and the template together, re-render the
+plist and `launchctl bootout` + `bootstrap` it (the running agent keeps the
+old times until then).
 
 ## Runbook: add a model
 

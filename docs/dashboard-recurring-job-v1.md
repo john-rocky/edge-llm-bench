@@ -1,12 +1,15 @@
-# Dashboard v1 as a recurring job — cadence, device schedule, rerun rules
+# Dashboard v1 as a recurring job — cadence, device choice, rerun rules
 
 Status: design + implemented job unit (2026-09-07); first end-to-end run on
 the Galaxy S26 2026-09-08 (campaigns `2026-09-08-dashboard-v1-s26-*`). The
 scheduler is **enabled on the bench host since 2026-09-08** (owner decision):
 `~/Library/LaunchAgents/com.edge-llm-bench.dashboard-v1.plist`, rendered from
 `ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; disable
-with `launchctl bootout gui/$(id -u)/com.edge-llm-bench.dashboard-v1`. Every
-slot can also be run by hand with the same command the agent uses.
+with `launchctl bootout gui/$(id -u)/com.edge-llm-bench.dashboard-v1`. Since
+the evening of 2026-09-08 the agent fires `auto` at 02:00 and 05:30 every
+night and `auto` takes the first free device that has not been measured this
+week (§3) instead of the weekday's fixed device. Every sitting can also be run
+by hand with the same command the agent uses.
 
 Companion pages: the cell set and its open questions
 (`docs/dashboard-cells-v1.md`), the measurement rules
@@ -15,11 +18,12 @@ Companion pages: the cell set and its open questions
 limits the first pass taught (`docs/OPERATIONS.md`, "Known limits").
 
 ```bash
-./bench dashboard-job <m4max|s26|pixel8a|iphone17pro|auto> [--dry-run] [--once]
+./bench dashboard-job auto [--dry-run]            # the pending device whose last admitted session is oldest (§3)
+./bench dashboard-job <m4max|s26|pixel8a|iphone17pro> [--dry-run] [--once]   # that device, whatever the week
 ./bench dashboard                       # re-render DASHBOARD.md (local) any time
 ```
 
-## 1. What one slot does
+## 1. What one sitting does
 
 One invocation of `scripts/dashboard_job.py` is one device, one sitting. It
 does what the operator did by hand on 2026-09-05, in the same order, and
@@ -27,6 +31,7 @@ stops where a human is needed:
 
 | step | what | on failure |
 |---|---|---|
+| choose (`auto` only) | the device to measure at this firing (§3): pending this week, attached, unheld, inside its window; oldest last-admitted first | a candidate whose preflight says busy or not ready is passed over for the next; every pending device busy → poll and choose again; nothing pending → exit 0 |
 | preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle, Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data` | busy → exit 3 and poll; not ready → exit 5, human |
 | hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job) | refused → busy |
 | phase A | `./bench matrix matrices/anchors.cells --platform P --campaign <base>-anchor` | timeout → exit 6 |
@@ -49,8 +54,21 @@ re-pushes them next time.
 
 ## 2. Cadence
 
-Default: **one full pass per device per week, one device per weekday
-slot**, plus **a release-triggered pass** when an engine pin is bumped.
+Default: **one full pass per device per week, taken by whichever device is
+free first**: launchd fires `./bench dashboard-job auto` every night at 02:00
+and 05:30, and each firing measures at most one device that has no admitted
+session since Monday 00:00 local. Plus **a release-triggered pass** when an
+engine pin is bumped.
+
+Why first-free instead of a fixed weekday per device (the design until
+2026-09-08): a device that was unplugged, held by a sibling lane, throttled
+or locked on its weekday lost its whole week, and a device that was free on
+Monday waited for Wednesday. With two firings a night every pending device
+is tried again the next night, the week's order is whatever the devices
+allow, and the ledger says which device ran when. What the weekday map
+bought — one device per morning to review — is kept: one device per firing,
+and a long phone sitting started at 02:00 absorbs the 05:30 firing (launchd
+does not start a second instance while one runs).
 
 Why weekly and not nightly:
 
@@ -64,7 +82,7 @@ Why weekly and not nightly:
   (Pixel 8a, three halves) of device time — measured, §3 — under USB, screen
   on, phone unlocked; the phones are shared with the conversion lanes; and
   every session produces a campaign dir somebody reviews and commits with a
-  message that carries no cross-runtime ordering. One device per morning is
+  message that carries no cross-runtime ordering. One device per firing is
   a review load a person actually does.
 - Upstream moves at roughly that rate. LiteRT-LM tags have arrived two to
   three weeks apart; a pin bump is a decision (`./bench release-watch`
@@ -89,31 +107,77 @@ phones attached and unlocked every night for a drift point the weekly
 session already provides; add it when the table needs a denser drift
 series, not before.
 
-## 3. Device schedule
+## 3. Which device a firing measures
 
-Slots are in `ops/dashboard-v1/schedule.json` (`slots`, `devices`); the
-launchd template fires the same times. Local time is the bench host's.
+Firing times are in `ops/dashboard-v1/schedule.json` (`slots`: 02:00 and
+05:30 local, both `auto`); the launchd template fires the same times. The
+devices and their per-device conditions are `devices` in the same file.
+`auto` (`resolve_device` in `scripts/dashboard_job.py`) decides in this order:
 
-| slot | device | window | first-pass wall time | preconditions the job checks | sharing |
-|---|---|---|---|---|---|
-| Mon 02:00 | Mac Studio (M4 Max) | night: no export pipelines (the runner refuses while one runs; the job polls) | 1 h 13 min (15 cells × 4 runs, 1 gate retry) | `bench doctor --platform mac` green, no yardstick running | none (host) |
-| Tue 02:00 | Galaxy S26 | night, USB, screen on, unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
-| Wed 02:00 | Pixel 8a | night, USB, screen on, `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ the other names the lanes use are checked) |
-| Thu 05:30 | iPhone 17 Pro | early morning after ≥4 h idle (the only all-nominal sittings so far); unlocked (Auto-Lock Never), plugged or charged | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
+1. **Pending this week.** A device is pending when it has no admitted
+   dashboard session since Monday 00:00 local. An admitted dashboard session
+   is a `-dashboard-v1-` campaign that is not the anchor probe, with rows on
+   the device's identifier in `results/summary/device-runs.csv`, whose
+   `SESSION.json` does not say `admitted: false` (absent = admitted, as the
+   renderer reads it); its time is its last record's. So a hand-run first
+   pass counts, a refused sitting does not, an anchor probe alone does not,
+   and a timed-out sitting whose anchor was admitted does (its captured
+   cells stand, §5).
+2. **Available now.** Attached (adb state `device`; `devicectl` lists the
+   iPhone as available), no sibling-lane hold with a live pid (the same files
+   preflight checks), and per device: the Mac only while no capture and no
+   heavy export pipeline runs (the runner's own guard, replicated); the
+   iPhone only inside `auto_window` (05:00–08:00 local, so only the 05:30
+   firing) and only after `auto_idle_hours` (4) since its last record from
+   the phone in the accumulation layer — the all-nominal sittings so far
+   came after that much idle. Use of the phone by a sibling lane that leaves
+   no record here is invisible beyond its hold file.
+3. **Oldest first.** Among the available pending devices, the one whose last
+   admitted session is oldest; a device never measured is oldest of all;
+   ties fall to `schedule.json` order (m4max, s26, pixel8a, iphone17pro).
+
+The chosen device then runs the full preflight (§1). Busy there (a driver,
+the campaign lock, a foreign engine process, a frequency cap) passes it over
+for the next candidate and reconsiders it at the next poll; not ready
+(unauthorized, locked, no app, doctor FAIL) passes it over for the firing.
+When every pending device is busy the firing waits `retry.busy_poll_minutes`
+(15) and chooses again, for at most `retry.busy_window_minutes` (120). A
+firing with nothing pending — every device measured this week, or only the
+iPhone pending outside its window — exits 0 and leaves no ledger line; a
+firing whose pending devices are all held or detached leaves one under
+device `auto` (BUSY / DEVICE with the reasons) so the morning brief shows
+what to plug in. One device per firing; one job instance per host
+(`logs/dashboard-job/.job.lock`, a manual `auto` beside a running one exits
+3). `./bench dashboard-job auto --dry-run` prints the decision with every
+device's state and the chosen device's plan.
+
+The per-device conditions and cost, from the first pass (local time is the
+bench host's):
+
+| device | when it is a candidate | first-pass wall time | preconditions the job checks | sharing |
+|---|---|---|---|---|
+| Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry) | `bench doctor --platform mac` green, no yardstick running | none (host) |
+| Galaxy S26 | any firing; USB, screen on, unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
+| Pixel 8a | any firing; USB, screen on, `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
+| iPhone 17 Pro | the 05:30 firing only, after ≥4 h without a record (the only all-nominal sittings so far); unlocked (Auto-Lock Never), plugged or charged | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
 
 Wall times are the span from the session's first to last record in
 `results/summary/device-runs.csv` for the 2026-09-05 campaigns; the Android
 figures include the first-time pushes, so steady-state sessions should be
 somewhat shorter. Cooldowns dominate everywhere (300 s before every Gemma 4
-and 4B cell).
+and 4B cell). A phone sitting started at 02:00 is still running at 05:30;
+launchd skips that firing, so on such a night the iPhone waits for the next
+05:30 — with three phones and a Mac to fit into seven nights that is the
+expected shape of a week, not a lost slot.
 
 Hold-file names differ between the sibling lanes (S26 `s2_npu_sweep/.device_hold`,
 iPhone `community_accel_work/.iphone_hold` and `.device_hold.iphone`, Pixel 8a
-`.device_hold.pixel8a` / `.device_hold.<serial>`, and one Pixel gate script uses
-the S26's `.device_hold`), so each device checks every name its lanes use
-(`hold_also_check`). The Pixel slot therefore reports busy while the S26 is in
-use by a sibling — a false busy costs a slot, never a measurement; drop the
-shared name from `hold_also_check` if it proves noisy.
+`.device_hold.pixel8a` / `.device_hold.<serial>`), so each device checks every
+name its lanes use (`hold_also_check`). The Pixel 8a no longer checks the S26's
+`.device_hold` (dropped 2026-09-08): one Pixel gate script used that name and
+made the Pixel report busy whenever the S26 was in use; a Pixel gate script
+that takes only the S26's name is now caught by the foreign-engine-process
+check on the phone, not by the hold.
 
 Storage on phones is the binding constraint, not memory. The whole Android
 set needs about 28 GB on the device (models plus LiteRT's XNNPACK/ML Drift
@@ -134,17 +198,18 @@ selftest campaign B2). The iPhone's storage is not probeable headlessly; a
 full container fails a cell with "No space left on device" and the row
 stays as the datum.
 
-The iPhone slot is the one that stays half manual: a headless launch needs
+The iPhone is the device that stays half manual: a headless launch needs
 the phone unlocked, and an unlocked phone left overnight is either charging
 (then it reports "fair" in a warm room and is admitted only through the
-anchor rule, §4) or draining. The job refuses cleanly on a locked phone
-(exit 5) and the morning brief shows it; the operator decides whether to
-unlock and re-run by hand.
+anchor rule, §4) or draining. The job passes over a locked phone (not ready)
+and the morning brief shows it in the ledger; the operator decides whether
+to unlock it for the next 05:30 firing or run it by hand.
 
 What the job does about the two devices it cannot manage: the iPhone 15 is
 never a bench device (no schedule entry, no way to select it); the Galaxy S26
-must be attached by a person — when it is not, the Tuesday slot exits 5 and
-waits for next week or a manual run.
+must be attached by a person — while it is not, every firing reports it not
+ready and measures the other pending devices; it is measured the first night
+it is attached and free.
 
 ## 4. Session admission
 
@@ -187,8 +252,8 @@ began after the probe still marks that session `admitted: false`.
 | cell | SHORT (crash / timeout) | never retried in the session (failed-runs-stay) | record(s), `FAILURES.txt` | none |
 | session | anchor short / collapse / thermal (§4) | refuse the sitting (exit 4); retry **once** after `abort_retry_after_minutes` (collapse 30, thermal 60) | anchor campaign + `SESSION.json admitted:false` | none |
 | session | whole-session timeout (`timeout_hours` per device) | exit 6; captured cells stand, missing cells keep last week's value in the table | records so far, `SESSION.json verdict:TIMEOUT` | look at the log |
-| slot | device busy (hold, lock, foreign process, guard, frequency cap) | exit 3; poll every `busy_poll_minutes` (15) for `busy_window_minutes` (120), then give up the slot | ledger line only | none — next week, or `./bench dashboard-job <device>` by hand |
-| slot | device not ready (absent, locked, no app, storage floor unmet, doctor FAIL) | exit 5, no retry | ledger line only | plug in / unlock / free storage, then run by hand |
+| firing | device busy (hold, lock, foreign process, guard, frequency cap) | `auto`: passed over for the next pending device; when every pending device is busy, poll every `busy_poll_minutes` (15) for `busy_window_minutes` (120), then exit 3. An explicit device: exit 3 after the same polling | ledger line only (device `auto` when none ran) | none — the next firing tries again, or `./bench dashboard-job <device>` by hand |
+| firing | device not ready (absent, locked, no app, storage floor unmet, doctor FAIL) | `auto`: passed over for the firing, the other pending devices run; exit 5 only when nothing ran. An explicit device: exit 5, no retry | ledger line only | plug in / unlock / free storage; the next firing takes it, or run by hand |
 | week | a cell SHORT in 3 consecutive weekly passes with the same failure | nothing automatic | the three campaigns | convert the row to `exclude=<slug>` in the cells file (the reason is the datum) |
 | week | a cell ⚠ (flagged retry kept) in 2 consecutive passes | nothing automatic in v1 | — | a targeted retake — anchor + that cell as its own campaign in a cooler window (the `--cells` override takes any file); automating the generated retake file is a follow-up |
 | pin bump | `release-watch` shows drift | nothing automatic | — | bump + rebuild, then `./bench regress` per device (§2) |
@@ -206,7 +271,7 @@ kept — the whole campaign is either admitted or shown as an attempt.
 | session record | `results/raw/<campaign>/SESSION.json` (`schema: dashboard-job-session.v1`: device, cells, times, `admitted`, `verdict`, `reason`, anchor medians + reference + ratio, runner exit, failures / flagged / skipped lines, cells expected vs with records) | yes, with the campaign |
 | accumulation layer, leaderboard | `results/summary/*.csv` (regenerated by `bench matrix`), `LEADERBOARD.md` (local) | csv yes; leaderboard no |
 | dashboard table | `DASHBOARD.md` + `.dashboard/dashboard-v1.{csv,json}` (`./bench dashboard`) | **no** — cross-runtime standings stay local; paste into the team channel |
-| job log + ledger | `logs/dashboard-job/<date>-<device>.log`, `logs/dashboard-job/ledger.tsv` | no |
+| job log + ledger | `logs/dashboard-job/<date>-auto.log` (the firing's device choice), `<date>-<device>.log` (the sitting), `logs/dashboard-job/ledger.tsv` | no |
 
 The commit is a human step on purpose: the commit subject is public text
 and must state what ran and what reproduced, not a runtime-versus-runtime
@@ -224,17 +289,19 @@ visible in the table. Its numbers come from `arm_row` only.
 
 ## 7. Enabling the scheduler
 
-Operator requirements before the first automated slot:
+Operator requirements before the first automated firing:
 
 1. Phones attached over USB, screen on; the iPhone unlocked with Auto-Lock
    Never for its window; the S26 plugged in (it is not attached today).
-2. The Mac stays awake at the slot times (the bench host runs with sleep 0).
+2. The Mac stays awake at the firing times (the bench host runs with sleep 0).
 3. Sibling lanes keep using the device-hold protocol — the job takes the
    hold and refuses while another live pid holds it.
 4. `./bench dashboard-job <device> --dry-run` for each device passes
-   preflight (it prints the exact commands and env the slot would run).
+   preflight (it prints the exact commands and env the sitting would run).
 5. Load the LaunchAgent from the template (commands in its header). Disable
-   with `launchctl bootout`.
+   with `launchctl bootout`. After changing the firing times in
+   `schedule.json` and the template, re-render the plist and bootout +
+   bootstrap it again — the loaded agent keeps its old times until then.
 
 The first automated week is a rehearsal: read each morning's ledger line
 and `SESSION.json`, confirm the admission verdicts against the console logs,

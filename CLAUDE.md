@@ -63,12 +63,15 @@ Full text: `methodology/fairness-rules.md`. The five working rules:
 - The mac runner refuses to start while a heavy export pipeline runs
   (unified-memory contention) — that guard is correct; don't bypass it.
 - **The dashboard recurring job is live** (launchd `com.edge-llm-bench.dashboard-v1`:
-  Mon 02:00 Mac, Tue 02:00 S26, Wed 02:00 Pixel 8a, Thu 05:30 iPhone 17 Pro; 1.5–4.5 h
-  each). It takes the sibling hold and backs off from a busy device — do the same
-  for it: read `logs/dashboard-job/ledger.tsv` and the hold before touching a phone
-  near a slot, never start a second matrix driver on a device it is measuring, and
-  let a person review `SESSION.json` and commit; the job never commits. Design and
-  rerun rules: `docs/dashboard-recurring-job-v1.md`.
+  every night at 02:00 and 05:30 it measures the first free device — Mac, S26,
+  Pixel 8a, or the iPhone 17 Pro (05:30 firing only) — that has no admitted session
+  since Monday; each device once a week, 1.5–4.5 h a sitting; `./bench dashboard-job
+  auto --dry-run` shows which device the next firing would take). It takes the
+  sibling hold and backs off from a busy device — do the same for it: read
+  `logs/dashboard-job/ledger.tsv` and the hold before touching a phone at night,
+  never start a second matrix driver on a device it is measuring, and let a person
+  review `SESSION.json` and commit; the job never commits. Design and rerun rules:
+  `docs/dashboard-recurring-job-v1.md`.
 
 ## Where a human is required (do not try to automate)
 

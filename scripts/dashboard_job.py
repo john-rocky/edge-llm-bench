@@ -5,9 +5,18 @@
   python3 scripts/dashboard_job.py pixel8a --dry-run     # preflight + plan, no capture
 
 Design: docs/dashboard-recurring-job-v1.md. Config: ops/dashboard-v1/schedule.json
-(device keys, slots, admission thresholds, retry policy). One invocation is one
-device slot, and it does only what a careful operator did by hand for the first
-pass, in this order:
+(device keys, firing times, admission thresholds, retry policy). One invocation is
+one sitting on one device. `auto` — what launchd runs every night at the times in
+schedule.json "slots" — chooses the device: among the devices with no admitted
+dashboard session since Monday 00:00 local, the attached, unheld ones (the iPhone
+only inside its `auto_window` after `auto_idle_hours` without a record, the Mac only
+while no heavy export pipeline runs), the one whose last admitted session is the
+oldest (never measured = oldest; ties in schedule order). A candidate whose
+preflight says busy or not ready is passed over for the next one; when every
+pending device is busy the firing polls per "retry" and chooses again. Each
+device is measured once a week; a firing with nothing pending exits 0 and leaves
+no ledger line. The sitting itself does only what a careful operator did by hand
+for the first pass, in this order:
 
   preflight   device attached / unlocked / not held by a sibling lane / no foreign
               engine process / storage floor / host runner idle
@@ -24,7 +33,9 @@ Exit codes (ledger + launchd log):
   0 admitted and captured        3 busy — held, guarded, throttled, runner active
   4 aborted at admission         5 device not ready — absent, locked, no space, doctor FAIL
   6 whole-session timeout        2 configuration error
-Busy and aborted slots retry inside the slot window per schedule.json "retry".
+Busy and aborted sittings retry inside the firing's window per schedule.json
+"retry"; one job instance per host (logs/dashboard-job/.job.lock) — a second
+`auto` beside a running one exits 3 at once.
 
 What the job never does: commit, push, edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
@@ -52,6 +63,10 @@ PY = sys.executable
 SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
 LOG_DIR = os.path.join(ROOT, "logs", "dashboard-job")
 SUMMARY_CSV = os.path.join(ROOT, "results", "summary", "device-runs.csv")
+# a dashboard session's campaign (design §1): <date>-dashboard-v1-<device>[-<half>]-<plat>;
+# the admission probe is <date>-dashboard-v1-<device>-anchor-<plat> and is not a session
+DASHBOARD_CAMPAIGN = "-dashboard-v1-"
+ANCHOR_CAMPAIGN_RE = r"-dashboard-v1-.*-anchor-"
 # bench --platform name -> cells-file platform token (= campaign dir suffix)
 PLATFORM_TOKEN = {"mac": "mac", "iphone": "ios", "android": "android"}
 ANDROID_DEV_DIR = "/data/local/tmp/llmbench"
@@ -174,11 +189,34 @@ def android_free_gb(serial):
         return None
 
 
+def android_state(serial):
+    """adb's state word for the serial ('device', 'unauthorized', ...) or None."""
+    rc, out = sh(["adb", "devices"])
+    return next((ln.split()[1] for ln in out.splitlines()[1:]
+                 if ln.strip() and ln.split()[0] == serial), None)
+
+
+def iphone_attached(udid):
+    rc, out = devicectl("list", "devices")
+    row = next((ln for ln in out.splitlines() if udid in ln), None)
+    return row is not None and ("available" in row or "connected" in row)
+
+
+def mac_guard():
+    """Busy when a Mac capture runs or a heavy pipeline would contend for
+    unified memory (the runner's own guard, replicated so the job reports
+    BUSY and polls instead of letting `bench matrix` fail once)."""
+    if pgrep("bench_matrix_mac.sh") or pgrep("yardstick run"):
+        raise Busy("a Mac capture is already running")
+    rc, out = sh(["ps", "aux"])
+    heavy = [ln for ln in out.splitlines() if re.search(MAC_HEAVY_RE, ln) and "grep" not in ln]
+    if heavy:
+        raise Busy(f"heavy pipeline running (unified-memory contention): {heavy[0][:120]}")
+
+
 def preflight_android(dev, dry):
     serial = dev["serial"]
-    rc, out = sh(["adb", "devices"])
-    state = next((ln.split()[1] for ln in out.splitlines()[1:]
-                  if ln.strip() and ln.split()[0] == serial), None)
+    state = android_state(serial)
     if state is None:
         raise NotReady(f"{serial} not visible to adb — plug it in")
     if state != "device":
@@ -236,9 +274,7 @@ def preflight_iphone(dev, dry):
     if not dev.get("app"):
         raise NotReady("schedule.json: iphone device needs an explicit \"app\" bundle id "
                        "(the runner's default is the retired app)")
-    rc, out = devicectl("list", "devices")
-    row = next((ln for ln in out.splitlines() if udid in ln), None)
-    if row is None or "available" not in row and "connected" not in row:
+    if not iphone_attached(udid):
         raise NotReady(f"{udid} not available to devicectl — connect + trust the phone")
     if pgrep("bench_matrix_iphone"):
         raise Busy("bench_matrix_iphone.sh is running")
@@ -260,12 +296,7 @@ def preflight_iphone(dev, dry):
 
 
 def preflight_mac(dev, dry):
-    if pgrep("bench_matrix_mac.sh") or pgrep("yardstick run"):
-        raise Busy("a Mac capture is already running")
-    rc, out = sh(["ps", "aux"])
-    heavy = [ln for ln in out.splitlines() if re.search(MAC_HEAVY_RE, ln) and "grep" not in ln]
-    if heavy:
-        raise Busy(f"heavy pipeline running (unified-memory contention): {heavy[0][:120]}")
+    mac_guard()
     rc, out = sh([os.path.join(ROOT, "bench"), "doctor", "--platform", "mac"], timeout=120)
     if rc != 0:
         raise NotReady("bench doctor --platform mac FAILED:\n" + out)
@@ -337,10 +368,10 @@ def campaign_rel(campaign, platform):
 
 # ---------------------------------------------------------------- admission
 
-def load_rows():
-    if not os.path.exists(SUMMARY_CSV):
+def load_rows(path=SUMMARY_CSV):
+    if not os.path.exists(path):
         return []
-    return list(csv.DictReader(open(SUMMARY_CSV)))
+    return list(csv.DictReader(open(path)))
 
 
 def session_stats(rows, regime):
@@ -668,26 +699,197 @@ def attempt(schedule, key, dev, attempt_no, args):
         hold_release(hold)
 
 
+# ---------------------------------------------------------------- auto: which device now
+
+def parse_ts(text):
+    """Accumulation-layer timestamp (UTC, 'Z') -> aware local datetime, or None."""
+    if not text:
+        return None
+    try:
+        if text.endswith("Z"):
+            dt = datetime.datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        else:
+            dt = datetime.datetime.fromisoformat(text)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+    except ValueError:
+        return None
+    return dt.astimezone()
+
+
+def week_start(now):
+    """Monday 00:00 local of the week `now` falls in."""
+    monday = now - datetime.timedelta(days=now.weekday())
+    return monday.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def device_sessions(schedule, rows, admitted):
+    """key -> [(ended, campaign)] of the device's admitted dashboard sessions,
+    newest first. A session is a `-dashboard-v1-` campaign that is not the
+    anchor probe, matched on the device's identifier and platform, whose
+    SESSION.json does not say admitted:false (absent = admitted, as in
+    render_dashboard); its time is its last record's. Hand-run first passes
+    count the same way as the job's own sittings."""
+    out = {}
+    for key, dev in schedule.get("devices", {}).items():
+        plat = CSV_PLATFORM[PLATFORM_TOKEN[dev["platform"]]]
+        ended = {}
+        for r in rows:
+            camp = r["campaign"]
+            if (DASHBOARD_CAMPAIGN not in camp or re.search(ANCHOR_CAMPAIGN_RE, camp)
+                    or r["platform"] != plat or r["device"] != dev["identifier"]
+                    or not admitted.get(camp, True)):
+                continue
+            t = parse_ts(r["timestamp"])
+            if t and (camp not in ended or t > ended[camp]):
+                ended[camp] = t
+        out[key] = sorted(((t, c) for c, t in ended.items()), reverse=True)
+    return out
+
+
+def newest_record(rows, dev):
+    """When this device last produced a record in any campaign (its idle
+    clock). Use by a sibling lane that leaves no record here is invisible
+    beyond its hold file."""
+    plat = CSV_PLATFORM[PLATFORM_TOKEN[dev["platform"]]]
+    best = None
+    for r in rows:
+        if r["platform"] == plat and r["device"] == dev["identifier"]:
+            t = parse_ts(r["timestamp"])
+            if t and (best is None or t > best):
+                best = t
+    return best
+
+
+def outside_window(dev, now):
+    """'' when `now` is inside the device's auto_window ("HH:MM-HH:MM", local,
+    end exclusive), else why not. No window = always."""
+    w = dev.get("auto_window")
+    if not w:
+        return ""
+    lo, hi = w.split("-")
+    h1, m1 = (int(x) for x in lo.split(":"))
+    h2, m2 = (int(x) for x in hi.split(":"))
+    t = now.hour * 60 + now.minute
+    if h1 * 60 + m1 <= t < h2 * 60 + m2:
+        return ""
+    return f"outside its window {w}"
+
+
+def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=None):
+    """(key, dev, report). An explicit key resolves as given (report []).
+
+    `auto`: the device to measure at this firing — among the devices with no
+    admitted dashboard session since Monday 00:00 local, the attached, unheld
+    ones (the iPhone only inside its auto_window after auto_idle_hours without a
+    record; the Mac only while no heavy pipeline runs), ordered by the age of
+    their last admitted session, oldest first (never measured = oldest; ties
+    in schedule order). `exclude` maps keys already tried this firing to
+    (state, detail). The report has one dict per device — key, state (done /
+    candidate / busy / not-ready / waiting), detail, last — for the log."""
+    devices = schedule.get("devices", {})
+    if key != "auto":
+        dev = devices.get(key)
+        if not dev:
+            raise SystemExit(f"unknown device key {key!r}; known: {sorted(devices)}")
+        return key, dev, []
+    now = now or datetime.datetime.now().astimezone()
+    rows = load_rows() if rows is None else rows
+    admitted = load_admission() if admitted is None else admitted
+    exclude = exclude or {}
+    sessions = device_sessions(schedule, rows, admitted)
+    monday = week_start(now)
+    report, ranked = [], []
+    for i, (k, dev) in enumerate(devices.items()):
+        last = sessions[k][0] if sessions[k] else None
+        entry = {"key": k, "last": last[0] if last else None, "state": "candidate",
+                 "detail": (f"last admitted {last[0]:%F %H:%M}" if last else "never measured")}
+        report.append(entry)
+        if last and last[0] >= monday:
+            entry.update(state="done", detail=f"admitted {last[0]:%F %H:%M} {last[1]}")
+            continue
+        if k in exclude:
+            entry.update(state=exclude[k][0], detail=exclude[k][1])
+            continue
+        why = outside_window(dev, now)
+        if not why and dev.get("auto_idle_hours"):
+            used = newest_record(rows, dev)
+            age_h = (now - used).total_seconds() / 3600 if used else None
+            if age_h is not None and age_h < float(dev["auto_idle_hours"]):
+                why = f"last record {age_h:.1f} h ago, needs {dev['auto_idle_hours']} h idle"
+        if why:
+            entry.update(state="waiting", detail=f"{why}; {entry['detail']}")
+            continue
+        try:
+            check_holds(dev, dry=True)
+            if dev["platform"] == "mac":
+                mac_guard()
+        except Busy as e:
+            entry.update(state="busy", detail=f"{e}; {entry['detail']}")
+            continue
+        if dev["platform"] == "android":
+            state = android_state(dev["serial"])
+            if state != "device":
+                entry.update(state="not-ready", detail=(
+                    "not visible to adb" if state is None else f"adb state {state!r}")
+                    + f"; {entry['detail']}")
+                continue
+        elif dev["platform"] == "iphone" and not iphone_attached(dev["udid"]):
+            entry.update(state="not-ready", detail=f"not available to devicectl; {entry['detail']}")
+            continue
+        ranked.append(((1, last[0].timestamp(), i) if last else (0, 0, i), k))
+    if not ranked:
+        return None, None, report
+    chosen = min(ranked)[1]
+    return chosen, devices[chosen], report
+
+
+def log_report(now, report, chosen):
+    log(f"auto @ {now:%F %H:%M} (week of Mon {week_start(now):%F}):")
+    for e in report:
+        log(f"  {e['key']:<12} {e['state']:<10} {e['detail']}")
+    log(f"  -> {chosen}" if chosen else "  -> no device to measure now")
+
+
 # ---------------------------------------------------------------- main
 
-def resolve_device(schedule, key):
-    if key == "auto":
-        wd = datetime.date.today().strftime("%a").lower()
-        key = schedule.get("slots", {}).get(wd)
-        if not key:
-            print(f"no dashboard slot on {wd}; nothing to do")
-            return None, None
-    dev = schedule.get("devices", {}).get(key)
-    if not dev:
-        raise SystemExit(f"unknown device key {key!r}; known: {sorted(schedule.get('devices', {}))}")
-    return key, dev
+_JOB_LOCK = None
+
+
+def job_lock():
+    """One job instance per host. A second `auto` beside a running one (a
+    manual run next to the launchd firing) would otherwise race it for a
+    device between the choice and the hold."""
+    global _JOB_LOCK
+    os.makedirs(LOG_DIR, exist_ok=True)
+    fh = open(os.path.join(LOG_DIR, ".job.lock"), "a+")
+    try:
+        fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.seek(0)
+        return fh.read().strip() or "?"
+    fh.seek(0)
+    fh.truncate()
+    fh.write(str(os.getpid()))
+    fh.flush()
+    _JOB_LOCK = fh
+    return None
+
+
+def open_log(name):
+    global _LOG
+    if _LOG:
+        _LOG.close()
+    os.makedirs(LOG_DIR, exist_ok=True)
+    _LOG = open(os.path.join(LOG_DIR, f"{datetime.date.today().isoformat()}-{name}.log"), "a")
 
 
 def main():
-    global _LOG
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("device", help="device key from schedule.json, or 'auto' (today's slot)")
+    ap.add_argument("device", help="device key from schedule.json, or 'auto' (the pending "
+                                   "device whose last admitted session is oldest)")
     ap.add_argument("--schedule", default=SCHEDULE)
     ap.add_argument("--cells", help="override the cells file (single-file mode)")
     ap.add_argument("--dry-run", action="store_true",
@@ -701,11 +903,14 @@ def main():
     except (OSError, ValueError) as e:
         print(f"schedule unreadable: {e}", file=sys.stderr)
         return EXIT_CONFIG
-    key, dev = resolve_device(schedule, args.device)
-    if not dev:
-        return EXIT_OK
-    os.makedirs(LOG_DIR, exist_ok=True)
-    _LOG = open(os.path.join(LOG_DIR, f"{datetime.date.today().isoformat()}-{key}.log"), "a")
+    auto = args.device == "auto"
+    key, dev, _ = resolve_device(schedule, args.device)
+    if not args.dry_run:
+        other = job_lock()
+        if other:
+            print(f"another dashboard_job is running (pid {other}); exit {EXIT_BUSY}")
+            return EXIT_BUSY
+    open_log("auto" if auto else key)
 
     retry = schedule.get("retry", {})
     poll = float(retry.get("busy_poll_minutes", 15)) * 60
@@ -715,7 +920,31 @@ def main():
     t0 = time.time()
     attempt_no, code, reason, camp = 1, EXIT_CONFIG, "", ""
     started = time.strftime("%F %T")
+    tried = {}        # auto: key -> (state, detail) for devices passed over this firing
+    pinned = False    # auto: an abort retry stays on the device it aborted on
     while True:
+        if auto and not pinned:
+            now = datetime.datetime.now().astimezone()
+            key, dev, report = resolve_device(schedule, "auto", exclude=tried, now=now)
+            log_report(now, report, key)
+            if not key:
+                busy = [e["key"] for e in report if e["state"] == "busy"]
+                notready = [e for e in report if e["state"] == "not-ready"]
+                if busy and not (args.once or args.dry_run) and time.time() - t0 + poll <= window:
+                    log(f"pending devices busy ({', '.join(busy)}) — choosing again in "
+                        f"{poll/60:.0f} min")
+                    time.sleep(poll)
+                    tried = {k: v for k, v in tried.items() if v[0] != "busy"}
+                    continue
+                if notready:
+                    code, reason = EXIT_DEVICE, "; ".join(f"{e['key']}: {e['detail']}" for e in notready)
+                elif busy:
+                    code, reason = EXIT_BUSY, "busy: " + ", ".join(busy)
+                else:
+                    code, reason = EXIT_OK, "nothing pending this week"
+                break
+            open_log(key)
+            log(f"auto chose {key} (the decision is in {datetime.date.today().isoformat()}-auto.log)")
         try:
             code, reason, camp = attempt(schedule, key, dev, attempt_no, args)
         except Busy as e:
@@ -724,6 +953,11 @@ def main():
         except NotReady as e:
             code, reason = EXIT_DEVICE, str(e)
             log(f"DEVICE: {e}")
+        if auto and not pinned and code in (EXIT_BUSY, EXIT_DEVICE):
+            # pass over this device now; a busy one is reconsidered after the poll
+            tried[key] = ("busy" if code == EXIT_BUSY else "not-ready", reason)
+            open_log("auto")
+            continue
         if args.dry_run or args.once or code in (EXIT_OK, EXIT_DEVICE, EXIT_TIMEOUT, EXIT_CONFIG):
             break
         if code == EXIT_BUSY:
@@ -741,11 +975,13 @@ def main():
             log(f"aborted ({reason}) — retrying once in {wait/60:.0f} min")
             time.sleep(wait)
             attempt_no += 1
+            pinned = True
             continue
         break
     ended = time.strftime("%F %T")
-    if not args.dry_run:
-        ledger({"started": started, "ended": ended, "device": key, "campaign": camp or "",
+    # a firing that found nothing pending is the normal nightly case: log only
+    if not args.dry_run and not (auto and not key and code == EXIT_OK):
+        ledger({"started": started, "ended": ended, "device": key or "auto", "campaign": camp or "",
                 "verdict": VERDICT_NAME.get(code, str(code)), "reason": reason,
                 "exit": code, "minutes": round((time.time() - t0) / 60, 1),
                 "attempt": attempt_no})

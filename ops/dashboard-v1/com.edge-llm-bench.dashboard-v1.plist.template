@@ -10,10 +10,14 @@
     launchctl print gui/$(id -u)/com.edge-llm-bench.dashboard-v1 | head      # loaded?
     launchctl bootout gui/$(id -u)/com.edge-llm-bench.dashboard-v1           # disable
 
-  Each firing runs `./bench dashboard-job auto`, which maps the weekday to a device
-  through ops/dashboard-v1/schedule.json "slots" (Mon m4max, Tue s26, Wed pixel8a,
-  Thu iphone17pro by default). Weekday numbering: 1 = Monday. If the Mac is asleep
-  at the time, launchd runs the job on the next wake (the bench Mac has sleep 0).
+  Every night at 02:00 and 05:30 local (ops/dashboard-v1/schedule.json "slots")
+  a firing runs `./bench dashboard-job auto`, which measures the first free device
+  that has no admitted dashboard session this week (Monday 00:00 local), oldest
+  last-admitted first; the iPhone is a candidate only in the 05:30 firing
+  (auto_window 05:00-08:00). One device per firing. launchd does not start a
+  second instance while the 02:00 job is still running, so a long phone session
+  simply absorbs the 05:30 firing. If the Mac is asleep at the time, launchd runs
+  the job on the next wake (the bench Mac has sleep 0).
 -->
 <plist version="1.0">
 <dict>
@@ -28,22 +32,10 @@
 	<key>StartCalendarInterval</key>
 	<array>
 		<dict>
-			<key>Weekday</key><integer>1</integer>
 			<key>Hour</key><integer>2</integer>
 			<key>Minute</key><integer>0</integer>
 		</dict>
 		<dict>
-			<key>Weekday</key><integer>2</integer>
-			<key>Hour</key><integer>2</integer>
-			<key>Minute</key><integer>0</integer>
-		</dict>
-		<dict>
-			<key>Weekday</key><integer>3</integer>
-			<key>Hour</key><integer>2</integer>
-			<key>Minute</key><integer>0</integer>
-		</dict>
-		<dict>
-			<key>Weekday</key><integer>4</integer>
 			<key>Hour</key><integer>5</integer>
 			<key>Minute</key><integer>30</integer>
 		</dict>
