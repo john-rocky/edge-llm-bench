@@ -335,6 +335,16 @@ stalls is not established — the same cell had no stall on 2026-09-05 with
 nothing running alongside. A targeted retake (anchor + that cell) in a quiet
 window is the design's remedy if it recurs.
 
+The iPhone's first automatic firing (2026-09-09 05:30) ran the v2 file with
+the old app and no Core AI folders staged: the 0.6B cell failed with
+`not_in_catalog` (the installed app predates the new id), and the 1.7B / 4B
+cells fell in the window after the phone stopped accepting launches at 06:42
+(`docs/dashboard-recurring-job-v1.md` §8, the two gaps). The app has since
+been rebuilt from the command line with the two memory entitlements
+(`xcodebuild … -allowProvisioningUpdates DEVELOPMENT_TEAM=… PRODUCT_BUNDLE_IDENTIFIER=com.daisukemajima.llmbench`,
+`.build/dd-ios`), so installing it and staging the three folders are the
+only steps left before the phone's Core AI rows can run.
+
 ### Bundles per row
 
 | Row | Bundle (engine `coreai-pipelined`, dynamic export) | Weight bytes | On the Mac | On the iPhone |

@@ -370,6 +370,37 @@ What v2 changed, and why it fits the job without special-casing:
   own-export arm is read next to published-artifact arms with the recipe
   in the number. Still no ranking: columns stay alphabetical.
 
+### First automatic iPhone firing (2026-09-09, 05:30) — two gaps it exposed
+
+The 05:30 `auto` firing took the iPhone 17 Pro as designed (pending, inside
+its window, 4 h idle, `results/raw/2026-09-09-dashboard-v1-iphone17pro-*`).
+The anchor probe started at thermal nominal and matched the newest
+all-nominal session within 1.2 %, so the sitting was admitted; the phone
+then reported `fair` (its charging quirk, §4) and, for one cell's retry at
+06:06, `serious`, before reading nominal again at 06:37. The four cells that
+completed reproduced their previous session's warm medians within 1.2 %
+(the `serious` capture included), each carrying its HOT flag. At 06:42 the
+phone stopped accepting launches (`CoreDeviceError 4016`: the trusted
+connection and its power assertion were no longer assertable — a lost USB
+session, not a phone-side crash) and stayed `unavailable` to `devicectl`
+afterwards; the runner then spent 47 minutes cycling every remaining cell as
+`SHORT 0` with its full cooldown, and the job closed the sitting as
+COMPLETED / admitted with 4 of 17 expected cells recorded. Both behaviours
+are the design working as written, and both are gaps:
+
+- A device that has become unreachable should end the sitting at once
+  (verdict DEVICE, captured cells stand) instead of paying every remaining
+  cooldown; the signal is a run of launch failures with no records pulled.
+- A run that starts at `serious` or `critical` is marked and re-run once,
+  never stopped. `fair` is this phone's charging label and the anchor rule
+  handles it; `serious` is a real thermal escalation and the session should
+  pause until nominal (or stop, if it does not return) rather than keep the
+  numbers with a mark. Whether to stop or pause is an owner decision.
+
+The `core-ai/qwen3-0.6b-4bit-gpu` cell failed with `not_in_catalog`: the
+installed app predates the id (the Mac yardstick was rebuilt, the phone app
+was not); the 1.7B / 4B Core AI cells fell inside the unreachable window.
+
 ## 9. Open items this design leaves to people
 
 - Qwen3 artifact choice (open question 1 of the one-pager) is the LiteRT
