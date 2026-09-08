@@ -124,7 +124,9 @@ one after another; before each half whose floor (`min_free_gb`, estimates
 to be replaced by measured values after the first rotation) is not met it
 deletes the *other* halves' pushed copies — models, the caches that share
 their prefix, and their `firstEver` markers — never this half's own and
-never a raw record. The driver now also drops an artifact's markers on any
+never a raw record. The job log carries, per half, the free space before and
+after it ran and the on-device footprint of its copies with their caches;
+that footprint is the measured floor. The driver now also drops an artifact's markers on any
 real re-push, because a marker that outlives its cache turns the next run 1
 into an unlabelled cache build that would pool as speed (found on the Pixel
 8a on 2026-09-07: 10 markers, 3 bundles; fixed in `run_cell.py`, proven by
@@ -236,8 +238,8 @@ Operator requirements before the first automated slot:
 
 The first automated week is a rehearsal: read each morning's ledger line
 and `SESSION.json`, confirm the admission verdicts against the console logs,
-and replace the storage floors in `schedule.json` with the measured free
-space the rotation logs.
+and replace the storage floors in `schedule.json` with the per-half
+footprints the job logs.
 
 ## 8. Open items this design leaves to people
 

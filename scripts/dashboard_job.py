@@ -470,6 +470,23 @@ def android_rotate(serial, previous_files, next_file, dry):
     return sorted(drop)
 
 
+def android_footprint_gb(serial, cells_file):
+    """On-device size of one half's pushed copies with the caches beside them
+    (same globs as android_rotate): the free space that half needs on a phone
+    holding none of it — the measured value for schedule.json min_free_gb."""
+    total_kb = 0
+    for base in sorted(android_models_of(cells_file)):
+        rc, out = sh(adb_cmd(serial, "shell",
+                             f"du -k {ANDROID_DEV_DIR}/models/{base} {ANDROID_DEV_DIR}/models/{base}_* "
+                             f"{ANDROID_DEV_DIR}/models/{base}.* 2>/dev/null | cut -f1"), timeout=120)
+        for ln in out.splitlines():
+            try:
+                total_kb += int(ln.strip())
+            except ValueError:
+                continue
+    return total_kb / 1e6
+
+
 # ---------------------------------------------------------------- session record
 
 def read_lines(path):
@@ -589,6 +606,8 @@ def attempt(schedule, key, dev, attempt_no, args):
                 tag = re.sub(r"^.*-android-|\.cells$", "", os.path.basename(cells_file))
                 camp = f"{base}-{tag}"
                 free = android_free_gb(dev["serial"]) if not dry else info.get("free_gb")
+                log(f"free before {tag}: {free:.1f} GB (floor {floor:g} GB)" if free is not None
+                    else f"free before {tag}: unknown (floor {floor:g} GB)")
                 if free is None or free < floor:
                     # rotate out every OTHER half's copies (last week's leftover
                     # half included), never this half's own
@@ -608,6 +627,18 @@ def attempt(schedule, key, dev, attempt_no, args):
             last_rel = rel_path
             if dry:
                 continue
+            if halves:
+                # the measured storage floors (design §3, §7): what this half
+                # consumed this sitting, and what its copies occupy on the phone
+                # with their caches — the latter is what min_free_gb should carry
+                after = android_free_gb(dev["serial"])
+                foot = android_footprint_gb(dev["serial"], cells_file)
+                used = (f"{free - after:.1f} GB" if free is not None and after is not None
+                        else "unknown")
+                log(f"free after {tag}: {after:.1f} GB" if after is not None
+                    else f"free after {tag}: unknown")
+                log(f"{tag} used {used} this sitting; on-device footprint of {tag}: {foot:.1f} GB "
+                    "(models + caches — the measured floor for min_free_gb)")
             created.append(rel_path)
             expected, have = cells_with_records(rel_path, cells_file, platform, dev["identifier"])
             # the payload session runs its own anchor row first; re-judge it
