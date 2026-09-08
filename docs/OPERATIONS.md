@@ -285,6 +285,17 @@ old times until then).
   concurrent benchmark reads as a collapsed anchor (0.4-2.7 tok/s for 31,
   2026-09-05) and contaminates the other lane too. Take the hold file for
   the campaign and release it after.
+- **adb can lose a phone that re-enumerated on USB.** After a power or hub
+  blip the phone is back in `ioreg -p IOUSB` but not in `adb devices`, and
+  the adb server does not recover on its own (Pixel 8a, 2026-09-08 anchor
+  probe: invisible for over two minutes). `adb kill-server && adb start-server`
+  brings it back at once, but the restart refuses connections for about a
+  second ("cannot connect to daemon"): a `run_cell.py` probing adb at that
+  instant dies with a traceback and that cell is lost (the probe's LiteRT
+  anchor lost its third run this way; the campaign moved on and the gate
+  and admission judged the real records). Restart only between cells or
+  after the current cell has already failed — a cooldown is a safe moment.
+  Absent from `ioreg` too = physically disconnected; a human plugs it in.
 - **Phone storage, not memory, bounds the dashboard set.** The full 15-cell
   Android set needs about 28 GB on the device (pushed models plus LiteRT's
   XNNPACK caches at 0.6-0.8x the model size); `matrices/dashboard-text-v1-android-{a,b,b1,b2}.cells`

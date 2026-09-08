@@ -193,8 +193,10 @@ set needs about 28 GB on the device (models plus LiteRT's XNNPACK/ML Drift
 caches beside each bundle). The job compares free space with
 `storage_gb_full` and, when short, runs the split files
 (`dashboard-text-v1-android-{a,b1,b2}.cells`, each with the session anchor)
-one after another; before each half whose floor (`min_free_gb`, estimates
-to be replaced by measured values after the first rotation) is not met it
+one after another; before each half whose floor (`min_free_gb`: on the
+Pixel 8a the footprints measured at its first rotation on 2026-09-08 — a 15.4,
+b1 10.0, b2 13.2 GB; on the S26 still the 18 / 10 / 13 estimates, to be
+replaced when it first runs split) is not met it
 deletes the *other* halves' pushed copies — models, the caches that share
 their prefix, and their `firstEver` markers — never this half's own and
 never a raw record. The job log carries, per half, the free space before and
