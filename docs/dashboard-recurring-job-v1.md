@@ -1,7 +1,8 @@
 # Dashboard v1 as a recurring job — cadence, device choice, rerun rules
 
 Status: design + implemented job unit (2026-09-07); first end-to-end run on
-the Galaxy S26 2026-09-08 (campaigns `2026-09-08-dashboard-v1-s26-*`). The
+the Galaxy S26 2026-09-08 (campaigns `2026-09-08-dashboard-v1-s26-*`); the
+Core AI arm joined the cells file the same day (§8). The
 scheduler is **enabled on the bench host since 2026-09-08** (owner decision):
 `~/Library/LaunchAgents/com.edge-llm-bench.dashboard-v1.plist`, rendered from
 `ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; disable
@@ -146,17 +147,25 @@ firing with nothing pending — every device measured this week, or only the
 iPhone pending outside its window — exits 0 and leaves no ledger line; a
 firing whose pending devices are all held or detached leaves one under
 device `auto` (BUSY / DEVICE with the reasons) so the morning brief shows
-what to plug in. One device per firing; one job instance per host
-(`logs/dashboard-job/.job.lock`, a manual `auto` beside a running one exits
-3). `./bench dashboard-job auto --dry-run` prints the decision with every
-device's state and the chosen device's plan.
+what to plug in. One device per firing; one sitting per device
+(`logs/dashboard-job/.job.lock.<device>` — a second run on a device that is
+being measured exits 3 at once, while sittings on different devices run side
+by side; `auto` holds `.choose.lock` for the seconds of its choice so two
+autos never pick the same device). Until 2026-09-08 the lock was one per
+host, which serialized independent devices for no measurement reason: a
+phone sitting is adb traffic on the host while the Mac measures itself. What
+two concurrent sittings share is only the derived files they regenerate at
+their close (`results/summary/*`, `DASHBOARD.md`), and those are written
+atomically (temp file + rename) and rebuilt from raw, so the last writer wins
+without a torn file. `./bench dashboard-job auto --dry-run` prints the
+decision with every device's state and the chosen device's plan.
 
 The per-device conditions and cost, from the first pass (local time is the
 bench host's):
 
 | device | when it is a candidate | first-pass wall time | preconditions the job checks | sharing |
 |---|---|---|---|---|
-| Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry) | `bench doctor --platform mac` green, no yardstick running | none (host) |
+| Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry); v2 set 1 h 04 min (18 cells × 4 runs, 1 gate retry, 2026-09-08) | `bench doctor --platform mac` green, no yardstick running; Core AI bundles staged (advisory, `doctor` warns) | none (host); side by side with a phone sitting since 2026-09-08 (§3) |
 | Galaxy S26 | any firing; USB, screen on, unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
 | Pixel 8a | any firing; USB, screen on, `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
 | iPhone 17 Pro | the 05:30 firing only, after ≥4 h without a record (the only all-nominal sittings so far); unlocked (Auto-Lock Never), plugged or charged | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
@@ -250,6 +259,7 @@ began after the probe still marks that session `admitted: false`.
 | run | crash / hang / zero decode | the runner records it; `gtimeout` bounds a cell | record + console log | none |
 | cell | HOT / SPREAD / DEAD / COLLAPSE (`scripts/cell_gate.py`) | quarantine the capture (`.attempt1`, `device-jsonl-flagged/`), cool down, re-run **once**; a flagged retry stands with `FLAGGED.txt` and renders ⚠ | both captures | none |
 | cell | SHORT (crash / timeout) | never retried in the session (failed-runs-stay) | record(s), `FAILURES.txt` | none |
+| cell | DEGENERATE (the output is a repetition loop; `scripts/cell_gate.py`, added 2026-09-08 after a Core AI export decoded garbage at a fast rate) | flag only — a re-run reproduces it; the capture stays, `FLAGGED.txt` says the rate is not a measurement | the capture | read the sample; fix or retire the artifact, never quote the rate |
 | session | anchor short / collapse / thermal (§4) | refuse the sitting (exit 4); retry **once** after `abort_retry_after_minutes` (collapse 30, thermal 60) | anchor campaign + `SESSION.json admitted:false` | none |
 | session | whole-session timeout (`timeout_hours` per device) | exit 6; captured cells stand, missing cells keep last week's value in the table | records so far, `SESSION.json verdict:TIMEOUT` | look at the log |
 | firing | device busy (hold, lock, foreign process, guard, frequency cap) | `auto`: passed over for the next pending device; when every pending device is busy, poll every `busy_poll_minutes` (15) for `busy_window_minutes` (120), then exit 3. An explicit device: exit 3 after the same polling | ledger line only (device `auto` when none ran) | none — the next firing tries again, or `./bench dashboard-job <device>` by hand |
@@ -308,7 +318,57 @@ and `SESSION.json`, confirm the admission verdicts against the console logs,
 and replace the storage floors in `schedule.json` with the per-half
 footprints the job logs.
 
-## 8. Open items this design leaves to people
+## 8. v2: the Core AI arm joins the job (2026-09-08)
+
+Why the v1 job did not carry it:
+
+- Reproducibility of the arm, not device time, was the blocker. v1 admitted
+  only arms with a published artifact per model; Core AI had our own
+  side-loaded exports, one of them staged, and the Gemma 4 bundles ran only
+  on a patched engine. A weekly slot re-measuring rows that a third party
+  cannot rebuild would have produced numbers the public harness cannot
+  stand behind (`docs/dashboard-cells-v1.md`, "Core AI arm (v2)").
+- The Mac had no protocol-identical path. The job's Mac sitting is one
+  `bench matrix` over the cells file; the only Core AI entry point there
+  was the external `llm-benchmark` wrapper with its own timing, which
+  cannot produce a short-chat row. Putting it in the file would have made
+  every Mac sitting write `SKIPPED core-ai … llm-benchmark-is-native-only`.
+- Staging is a human step (side-loaded multi-GB folders over USB), and the
+  job never stages anything: a not-staged row costs a review line every
+  week for nothing.
+
+What v2 changed, and why it fits the job without special-casing:
+
+- The Qwen3 bundles are published (0.6B, 4B; the phone's 1.7B), and the
+  Mac yardstick links `CoreAILM`, so the core-ai rows are ordinary cells:
+  the same `bench matrix`, the same cell gate and quarantine, the same
+  record and the same `arm_row` aggregation. `scripts/dashboard_job.py`
+  did not change.
+- Cost: three active cells more on the Mac and on the iPhone (the four
+  Gemma 4 rows are `exclude=` and are not counted in `cells_expected`).
+  Measured on the Mac: the first v2 sitting took 1 h 04 min for 18 cells
+  (2026-09-08) against 1 h 13 min for v1's 15 on 2026-09-05 — each sitting
+  had one gate retry, and the Core AI cells themselves cost under a minute
+  each plus the 300 s cooldown before the 4B one. The iPhone adds a similar
+  amount once its folders are staged.
+- The first v2 sitting was also the first run side by side with a phone
+  sitting (the per-device lock, §3). One cell was gate-flagged (LiteRT
+  Gemma 4 E4B, one stalled warm run in each capture) during the minutes the
+  Pixel 8a sitting pushed a 5 GB artifact over adb from this host; the same
+  cell was clean on 2026-09-05. Not established as the cause — the note is in
+  `docs/dashboard-cells-v1.md` — but if it recurs, the Mac guard should
+  treat an active `adb push` as busy, or the phone job should pause pushes
+  while a Mac capture runs.
+- A missing bundle is a `SKIPPED` line (Mac) or a load failure (iPhone),
+  never a refused sitting: admission is judged on the MLX anchor, so the
+  arm cannot block a week. The morning review reads the line and stages
+  the folder, or leaves the row "not yet measured".
+- The bandwidth-utilization column in the rendered table normalizes each
+  cell by its artifact's bytes and the device's cited ceiling, so an
+  own-export arm is read next to published-artifact arms with the recipe
+  in the number. Still no ranking: columns stay alphabetical.
+
+## 9. Open items this design leaves to people
 
 - Qwen3 artifact choice (open question 1 of the one-pager) is the LiteRT
   team's; until answered the rows run as they are, and the recipe shows per

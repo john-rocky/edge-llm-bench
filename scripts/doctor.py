@@ -120,6 +120,20 @@ def check_mac(required):
     else:
         check(FAIL if required else WARN, "mac yardstick",
               f"flavor={flavor} — llama-cpp etc. compiled out; rebuild via scripts/build_yardstick_mac.sh")
+    # Core AI bundles are side-loaded (docs/dashboard-cells-v1.md "Core AI arm (v2)");
+    # the dashboard's three Qwen3 folders. Advisory only: a missing folder is a
+    # SKIPPED cell in the Mac runner, never a refused sitting.
+    cdir = os.path.expanduser(os.environ.get("BENCH_COREAI_MODELS_DIR",
+                                             os.path.join("~", "Documents", "CoreAIModels")))
+    want = ["qwen3_0_6b_4bit_gpu", "qwen3_1_7b_gpu", "qwen3_4b_gpu"]
+    have = [d for d in want if os.path.exists(os.path.join(cdir, d, "metadata.json"))]
+    if len(have) == len(want):
+        check(OK, "core-ai bundles", f"{len(have)}/{len(want)} staged under {cdir}")
+    else:
+        check(WARN, "core-ai bundles",
+              f"{len(have)}/{len(want)} staged under {cdir} — missing "
+              f"{', '.join(d for d in want if d not in have)} (those cells log SKIPPED; "
+              "staging recipe in docs/dashboard-cells-v1.md)")
 
 
 # ---------- iphone ----------

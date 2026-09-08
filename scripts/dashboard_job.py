@@ -34,8 +34,10 @@ Exit codes (ledger + launchd log):
   4 aborted at admission         5 device not ready — absent, locked, no space, doctor FAIL
   6 whole-session timeout        2 configuration error
 Busy and aborted sittings retry inside the firing's window per schedule.json
-"retry"; one job instance per host (logs/dashboard-job/.job.lock) — a second
-`auto` beside a running one exits 3 at once.
+"retry"; one sitting per device (logs/dashboard-job/.job.lock.<device>): sittings
+on different devices run side by side, a second run on a device already being
+measured exits 3 at once, and `auto` holds .choose.lock while it picks so two
+autos never pick the same device.
 
 What the job never does: commit, push, edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
@@ -822,6 +824,9 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
             entry.update(state="waiting", detail=f"{why}; {entry['detail']}")
             continue
         try:
+            holder = device_lock_holder(k)
+            if holder:
+                raise Busy(f"a dashboard sitting is running on it (pid {holder})")
             check_holds(dev, dry=True)
             if dev["platform"] == "mac":
                 mac_guard()
@@ -854,27 +859,70 @@ def log_report(now, report, chosen):
 
 # ---------------------------------------------------------------- main
 
-_JOB_LOCK = None
+_LOCKS = {}
 
 
-def job_lock():
-    """One job instance per host. A second `auto` beside a running one (a
-    manual run next to the launchd firing) would otherwise race it for a
-    device between the choice and the hold."""
-    global _JOB_LOCK
+def _try_lock(name):
+    """-> None when this process now holds the flock on LOG_DIR/<name>, else
+    the pid written by the holder (or '?')."""
     os.makedirs(LOG_DIR, exist_ok=True)
-    fh = open(os.path.join(LOG_DIR, ".job.lock"), "a+")
+    fh = open(os.path.join(LOG_DIR, name), "a+")
     try:
         fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
         fh.seek(0)
-        return fh.read().strip() or "?"
+        holder = fh.read().strip() or "?"
+        fh.close()
+        return holder
     fh.seek(0)
     fh.truncate()
     fh.write(str(os.getpid()))
     fh.flush()
-    _JOB_LOCK = fh
+    _LOCKS[name] = fh
     return None
+
+
+def _unlock(name):
+    fh = _LOCKS.pop(name, None)
+    if fh:
+        try:
+            fcntl.flock(fh, fcntl.LOCK_UN)
+        finally:
+            fh.close()
+
+
+def device_lock(key):
+    """One sitting per DEVICE (since 2026-09-08; until then one per host).
+    The devices are independent — a phone sitting is adb traffic on the host
+    while the Mac measures itself — so sittings on different devices run side
+    by side; two on the same device cannot (the hold files serialize the
+    phones with the sibling lanes too, and the Mac has its runner guard). The
+    derived files both sittings regenerate at their close (results/summary,
+    DASHBOARD.md) are written atomically (bench_common.atomic_write)."""
+    return _try_lock(f".job.lock.{key}")
+
+
+def device_lock_holder(key):
+    """pid of a sitting running on `key`, or None (a probe; no lock is kept)."""
+    holder = _try_lock(f".job.lock.{key}")
+    if holder is None:
+        _unlock(f".job.lock.{key}")
+    return holder
+
+
+def choose_lock():
+    """`auto` only, held from the device choice until that device's lock is
+    taken: two autos side by side (a manual one beside the launchd firing)
+    would otherwise both pick the same free device. Blocks instead of
+    failing — a choice takes seconds."""
+    os.makedirs(LOG_DIR, exist_ok=True)
+    fh = open(os.path.join(LOG_DIR, ".choose.lock"), "a+")
+    fcntl.flock(fh, fcntl.LOCK_EX)
+    _LOCKS[".choose.lock"] = fh
+
+
+def choose_unlock():
+    _unlock(".choose.lock")
 
 
 def open_log(name):
@@ -905,10 +953,10 @@ def main():
         return EXIT_CONFIG
     auto = args.device == "auto"
     key, dev, _ = resolve_device(schedule, args.device)
-    if not args.dry_run:
-        other = job_lock()
+    if not args.dry_run and not auto:
+        other = device_lock(key)
         if other:
-            print(f"another dashboard_job is running (pid {other}); exit {EXIT_BUSY}")
+            print(f"a dashboard sitting is already running on {key} (pid {other}); exit {EXIT_BUSY}")
             return EXIT_BUSY
     open_log("auto" if auto else key)
 
@@ -925,7 +973,19 @@ def main():
     while True:
         if auto and not pinned:
             now = datetime.datetime.now().astimezone()
+            if not args.dry_run:
+                choose_lock()
             key, dev, report = resolve_device(schedule, "auto", exclude=tried, now=now)
+            if key and not args.dry_run:
+                other = device_lock(key)
+                if other:  # taken between the probe and now: pass it over
+                    for e in report:
+                        if e["key"] == key:
+                            e.update(state="busy", detail=f"a sitting started on it (pid {other})")
+                    tried[key] = ("busy", f"a sitting is running on it (pid {other})")
+                    key = dev = None
+            if not args.dry_run:
+                choose_unlock()
             log_report(now, report, key)
             if not key:
                 busy = [e["key"] for e in report if e["state"] == "busy"]
@@ -956,6 +1016,7 @@ def main():
         if auto and not pinned and code in (EXIT_BUSY, EXIT_DEVICE):
             # pass over this device now; a busy one is reconsidered after the poll
             tried[key] = ("busy" if code == EXIT_BUSY else "not-ready", reason)
+            _unlock(f".job.lock.{key}")
             open_log("auto")
             continue
         if args.dry_run or args.once or code in (EXIT_OK, EXIT_DEVICE, EXIT_TIMEOUT, EXIT_CONFIG):

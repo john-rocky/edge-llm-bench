@@ -8,8 +8,14 @@
 # Shape: one short-chat cell per (model, arm) on each platform. The arms are
 # the engines with a PUBLISHED artifact for every model in the set —
 # LiteRT-LM (litert-community), MLX (mlx-community), llama.cpp (unsloth GGUF at
-# Q4_K_M). Core AI stays out of v1 (Apple-only, side-loaded own exports; its
-# Gemma-4 bundles need an unpublished engine patch — see the one-pager).
+# Q4_K_M). Core AI stayed out of v1 (Apple-only, side-loaded own exports; its
+# Gemma-4 bundles need an unpublished engine patch). v2 (2026-09-08) adds it on
+# the Apple platforms: our own Qwen3 exports (0.6B/4B published as
+# mlboydaisuke/*-CoreAI-official, 1.7B a local export), side-loaded and run
+# through the same short-chat protocol as the other arms; the Gemma 4 rows are
+# kept as exclude= — the per-layer-embedding bundles need the unpublished
+# COREAI_STATIC_INPUTS engine patch, so a stock engine cannot run them
+# (docs/dashboard-cells-v1.md "Core AI arm (v2)").
 # Recipes differ per arm and are stated per row (quant-per-arm-rule); the
 # file= / catalog entry carries the recipe descriptor, never a bare "int4"
 # (quant-label-rule). Order light -> heavy, arms interleaved per model block
@@ -74,25 +80,38 @@ android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma
 # phone. Qwen3-4B litert measured 2026-08-19 with a wide thermal spread —
 # hence cooldown=300 on every 4B-class cell.
 
+# Core AI (v2): the GPU (dynamic export, `coreai-pipelined`) bundles, AOT-compiled
+# h18p and side-loaded into the app's Documents/CoreAIModels/<folder>/ — a human
+# staging step (docs/dashboard-cells-v1.md "Core AI arm (v2)"). None of the three
+# folders is on the phone yet: the 0.6B row is the 27-era re-export
+# (qwen3_0_6b_4bit_gpu — the macOS-26-era bundle staged on 2026-08-26 decodes
+# garbage on the 0.2.0 engine, ModelCatalog note), 1.7B is the published ios-gpu
+# h18p bundle, 4B needs an h18p compile. Until a folder is staged the cell fails
+# at load and stays in the table as the datum.
+
 # --- Qwen3-0.6B ---
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 ios litert-lm litert-community/Qwen3-0.6B short-chat
 ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+ios core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
 
 # --- Qwen3-1.7B ---
 ios mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
 ios litert-lm litert-community/Qwen3-1.7B short-chat
 ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+ios core-ai core-ai/qwen3-1.7b-gpu short-chat
 
 # --- Gemma 4 E2B ---
 ios litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat cooldown=300
 ios mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
 ios llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
+ios core-ai core-ai/gemma4-e2b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
 
 # --- Qwen3-4B ---
 ios mlx-swift mlx-community/Qwen3-4B-4bit short-chat cooldown=300
 ios litert-lm litert-community/Qwen3-4B short-chat cooldown=300
 ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
+ios core-ai core-ai/qwen3-4b-gpu short-chat cooldown=300
 
 # --- Gemma 4 E4B ---
 ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
@@ -102,36 +121,51 @@ ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
 # candidate for an iPhone MLX E4B row and is an open question, not a silent substitution.
 ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300 exclude=app-killed-at-model-load-sigkill
 ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
+ios core-ai core-ai/gemma4-e4b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
 
 # ============================= Mac =============================
 # Same three arms through the full-flavor yardstick (scripts/build_yardstick_mac.sh;
-# the runner refuses the spm-lite build for llama.cpp cells). Core AI's Mac
-# wrapper is not used in v1.
+# the runner refuses the spm-lite build for llama.cpp cells). Core AI (v2) runs
+# through the same yardstick (CoreAIRuntime, linked since 2026-09-08): the GPU
+# (dynamic export, `coreai-pipelined`) bundles AOT-compiled for the Mac and
+# side-loaded under BENCH_COREAI_MODELS_DIR (default ~/Documents/CoreAIModels);
+# a bundle that is not staged is SKIPPED with its reason. Sources per row:
+# 0.6B = mlboydaisuke/qwen3-0.6b-CoreAI-official `macos/` (the 27-era re-export;
+# the `macos-26-export/` bundle decodes garbage on the 0.2.0 engine — ModelCatalog
+# note, 2026-09-08), 4B = mlboydaisuke/qwen3-4b-CoreAI-official `macos/`, 1.7B = a
+# local 2026-08-18 export not published yet (identity in each session's
+# session_provenance.txt). The external llm-benchmark wrapper is only for
+# native-benchmark-* cells, none here.
 
 # --- Qwen3-0.6B ---
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B short-chat
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+mac core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
 
 # --- Qwen3-1.7B ---
 mac mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
 mac litert-lm litert-community/Qwen3-1.7B short-chat
 mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+mac core-ai core-ai/qwen3-1.7b-gpu short-chat
 
 # --- Gemma 4 E2B ---
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat cooldown=300
 mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
 mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
+mac core-ai core-ai/gemma4-e2b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
 
 # --- Qwen3-4B ---
 mac mlx-swift mlx-community/Qwen3-4B-4bit short-chat cooldown=300
 mac litert-lm litert-community/Qwen3-4B short-chat cooldown=300
 mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
+mac core-ai core-ai/qwen3-4b-gpu short-chat cooldown=300
 
 # --- Gemma 4 E4B ---
 mac litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
 mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300
 mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
+mac core-ai core-ai/gemma4-e4b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
 
 # ===================== DISABLED placeholders =====================
 # Qwen3.5 and LFM2.5 — held by the LiteRT team on 2026-09-04 ("not all changes

@@ -27,7 +27,8 @@ import statistics
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bench_common import DEVICE_DISPLAY, corrected_quant, logical_model  # noqa: E402
+from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_utilization,  # noqa: E402
+                          corrected_quant, fmt_bw, logical_model)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SUMMARY = os.path.join(ROOT, "results", "summary")
@@ -206,7 +207,13 @@ def generate():
         "† = quantization label carries the audited in-place correction "
         "(Gemma-4 `.litertlm` is the wNa8o8 mobile schema; early rows recorded "
         "\"INT4 (QAT)\" — quant-label-rule). mem MB = phys_footprint on Apple rows, "
-        "RSS on Android rows (no footprint equivalent; methodology/android.md).",
+        "RSS on Android rows (no footprint equivalent; methodology/android.md). "
+        "bw util = the headline decode (warm on Apple, cold median on Android) × "
+        "bytes per token (the artifact minus per-token-gathered tables such as Gemma 4's "
+        "per-layer embeddings; `models/artifact-bytes.json`) ÷ the device's memory-bandwidth "
+        "ceiling (`devices/memory-bandwidth.json`, cited per device; `~` = derived or "
+        "estimated ceiling, not a vendor figure; — = no citable ceiling or unregistered "
+        "artifact). A recipe-normalized estimate, never a ranking.",
         "",
     ]
     for plat in ("mac", "ios", "android"):
@@ -238,8 +245,8 @@ def generate():
                 arms = multi[model]
                 lines.append(f"**{model}**")
                 lines.append("")
-                lines.append("| runtime | artifact | quant | engine | warm tok/s | cold tok/s | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |")
-                lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+                lines.append("| runtime | artifact | quant | engine | warm tok/s | cold tok/s | bw util | prefill tok/s | TTFT ms | mem MB | GSM8K | captured |")
+                lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
                 entries = []
                 for (rt, mid), rows in arms.items():
                     a = arm_row(rows)
@@ -255,9 +262,11 @@ def generate():
                     warm_txt = fmt(a["warm"])
                     if a["warm"] and a["spread"] > SPREAD_FLAG:
                         warm_txt += f" ⚠spread {a['spread']:.0f}%"
+                    headline = a["warm"] if plat != "android" else a["cold_median"]
+                    bw = fmt_bw(bandwidth_utilization(headline, rt, mid, dev, plat))
                     lines.append(
                         f"| {rt} | `{mid}` | {a['quant']} | {a['engine']} | {warm_txt} | "
-                        f"{fmt(a['cold'])} | {fmt(a['prefill'])} | {fmt(a['ttft'])} | "
+                        f"{fmt(a['cold'])} | {bw} | {fmt(a['prefill'])} | {fmt(a['ttft'])} | "
                         f"{fmt(a['mem'])} | {qtxt} | {a['date']} |")
                 lines.append("")
             if single:
@@ -322,7 +331,8 @@ def main():
             return 1
         print("LEADERBOARD.md is up to date.")
         return 0
-    open(TARGET, "w").write(new)
+    with atomic_write(TARGET) as fh:
+        fh.write(new)
     print(f"wrote {os.path.relpath(TARGET, ROOT)}")
     return 0
 

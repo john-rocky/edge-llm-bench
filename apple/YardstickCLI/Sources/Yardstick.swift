@@ -136,6 +136,15 @@ struct YardstickApp {
             }
         }
 
+        // Gemma-4 PLE bundles on Core AI read COREAI_CHUNK_THRESHOLD at the engine's
+        // first framework touch — the same early setenv BenchmarkApp.init does on the
+        // phone (S=1 decode graphs; chunked prefill fatals in NDArrayDescriptor).
+        // Gated to a gemma4 core-ai run so it never leaks into another cell.
+        if (runtimeID == "core-ai" || runtimeID == "coreai"),
+           (modelID ?? "").contains("gemma4"), getenv("COREAI_CHUNK_THRESHOLD") == nil {
+            setenv("COREAI_CHUNK_THRESHOLD", "1", 1)
+        }
+
         let runtime = try makeRuntime(id: runtimeID)
         let task = try makeTask(id: taskID)
         let model = try resolveModel(idOrHF: modelID, runtime: runtime)
@@ -421,6 +430,7 @@ struct YardstickApp {
         print("  anemll       — ANEMLL via vendored anemll-swift-cli (ANE)")
         print("  apple-fm     — Apple Foundation Models (macOS 26+, Apple-Intelligence-eligible Macs)")
         print("  litert-lm    — LiteRT-LM (google-ai-edge/LiteRT-LM, Metal GPU)")
+        print("  core-ai      — Apple Core AI (apple/coreai-models, macOS 27; side-loaded .aimodel bundles under BENCH_COREAI_MODELS_DIR)")
         print("")
         print("Available tasks:")
         print("  short-chat   — 128-token reply, measures TTFT + decode tok/s")
@@ -439,6 +449,7 @@ struct YardstickApp {
             ("anemll", ModelCatalog.anemll),
             ("apple-fm", ModelCatalog.appleFM),
             ("litert-lm", ModelCatalog.liteRTLM),
+            ("core-ai", ModelCatalog.coreAI),
         ] {
             guard !models.isEmpty else { continue }
             print("\n  [\(label)]")
@@ -468,6 +479,12 @@ struct YardstickApp {
             return LlamaCppRuntime()
         case "anemll":
             return AnemllRuntime()
+        // Apple Core AI (CoreAILM, macOS 27): the same CoreAIRuntime the iOS app
+        // ships, side-loaded bundles under BENCH_COREAI_MODELS_DIR. Xcode target
+        // only — the coreai-models package is not a SwiftPM dependency of the
+        // spm-lite CLI (Package.swift excludes the adapter).
+        case "core-ai", "coreai":
+            return CoreAIRuntime()
         #endif
         case "apple-fm", "apple", "fm", "foundation-models":
             return AppleFMRuntime()
@@ -475,7 +492,7 @@ struct YardstickApp {
             return MediaPipeRuntime()
         default:
             throw CLIError.invalidArgument(
-                "unknown runtime '\(id)' — supported on Mac: mlx-swift, coreml-llm, executorch, llama-cpp, anemll, apple-fm, litert-lm"
+                "unknown runtime '\(id)' — supported on Mac: mlx-swift, coreml-llm, executorch, llama-cpp, anemll, apple-fm, litert-lm, core-ai"
             )
         }
     }

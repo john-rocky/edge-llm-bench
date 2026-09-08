@@ -1,0 +1,586 @@
+{
+ "_doc": "Bytes of the artifact each arm loads per dashboard model id, with the source of the number (scripts/artifact_bytes.py --refresh reads `bytes` from the Hub/local file; --check re-verifies). Read by scripts/bench_common.py artifact_bytes() for the 'bw util' column: decode tok/s x bytes-per-token / the device ceiling in devices/memory-bandwidth.json. `bytes` = the whole artifact; `streamed_bytes` (where present) = the bytes a decode step actually reads — the artifact's tensor bytes minus tables gathered per token (Gemma 4's per-layer-embedding table; a LiteRT bundle's separate input-embedding table; audio/vision/drafter sections) — computed by scripts/artifact_streamed_bytes.py on the file named in `streamed_basis`; the column uses streamed_bytes when present, else bytes. Keys: arm = the device-runs.csv runtime string (Android LiteRT carries its backend), model_id = as the records carry it (Apple llama.cpp ids include /Q4_K_M, Android ids do not), platform (optional) = an entry that applies to one platform only. Tied embeddings are streamed as the LM head and stay counted; the figure is an estimate of bytes per token, never a bus counter.",
+ "artifacts": [
+  {
+   "arm": "litert-lm",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "qwen3_0_6b_mixed_int4.litertlm"
+   ],
+   "note": "Apple catalog primaryFile",
+   "bytes": 497664000,
+   "checked": "2026-09-08",
+   "revision": "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+   "resolved_files": [
+    "qwen3_0_6b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 335522084,
+   "streamed_basis": "litertlm: decode section 491,104,548 B minus the int8 embed_tokens lookup table 155,582,464 B (the int4 output head stays)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "qwen3_0_6b_mixed_int4.litertlm"
+   ],
+   "note": "Android cells file= (cpu)",
+   "bytes": 497664000,
+   "checked": "2026-09-08",
+   "revision": "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+   "resolved_files": [
+    "qwen3_0_6b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 335522084,
+   "streamed_basis": "litertlm: decode section 491,104,548 B minus the int8 embed_tokens lookup table 155,582,464 B (the int4 output head stays)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "qwen3_0_6b_mixed_int4.litertlm"
+   ],
+   "note": "Android cells file= (gpu)",
+   "bytes": 497664000,
+   "checked": "2026-09-08",
+   "revision": "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+   "resolved_files": [
+    "qwen3_0_6b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 335522084,
+   "streamed_basis": "litertlm: decode section 491,104,548 B minus the int8 embed_tokens lookup table 155,582,464 B (the int4 output head stays)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm",
+   "model_id": "litert-community/Qwen3-1.7B",
+   "source": "hf:litert-community/Qwen3-1.7B",
+   "files": [
+    "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Apple catalog primaryFile",
+   "bytes": 977184032,
+   "checked": "2026-09-08",
+   "revision": "73fbc3fe8271c162a603ee66f6e7ed25b6211195",
+   "resolved_files": [
+    "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 968250436,
+   "streamed_basis": "litertlm: single decode section 968,250,436 B, one tied embedding/head table (streamed as the head)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "model_id": "litert-community/Qwen3-1.7B",
+   "source": "hf:litert-community/Qwen3-1.7B",
+   "files": [
+    "Qwen3_1.7B.litertlm"
+   ],
+   "note": "Android cells file= (cpu)",
+   "bytes": 2056729520,
+   "checked": "2026-09-08",
+   "revision": "73fbc3fe8271c162a603ee66f6e7ed25b6211195",
+   "resolved_files": [
+    "Qwen3_1.7B.litertlm"
+   ],
+   "streamed_bytes": 1720947388,
+   "streamed_basis": "litertlm: decode section 1,720,947,388 B (includes the int8 lm_head); the separate decode_embedder section 311,164,968 B is gathered",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "model_id": "litert-community/Qwen3-1.7B",
+   "source": "hf:litert-community/Qwen3-1.7B",
+   "files": [
+    "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android cells file= (gpu)",
+   "bytes": 977184032,
+   "checked": "2026-09-08",
+   "revision": "73fbc3fe8271c162a603ee66f6e7ed25b6211195",
+   "resolved_files": [
+    "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 968250436,
+   "streamed_basis": "litertlm: single decode section 968,250,436 B, one tied embedding/head table (streamed as the head)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm",
+   "model_id": "litert-community/Qwen3-4B",
+   "source": "hf:litert-community/Qwen3-4B",
+   "files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "note": "Apple catalog primaryFile",
+   "bytes": 2659057664,
+   "checked": "2026-09-08",
+   "revision": "84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e",
+   "resolved_files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 2263336228,
+   "streamed_basis": "litertlm: decode section 2,652,292,388 B minus the int8 embed_tokens lookup table 388,956,160 B",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "model_id": "litert-community/Qwen3-4B",
+   "source": "hf:litert-community/Qwen3-4B",
+   "files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "note": "Android cells file= (cpu)",
+   "bytes": 2659057664,
+   "checked": "2026-09-08",
+   "revision": "84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e",
+   "resolved_files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 2263336228,
+   "streamed_basis": "litertlm: decode section 2,652,292,388 B minus the int8 embed_tokens lookup table 388,956,160 B",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "model_id": "litert-community/Qwen3-4B",
+   "source": "hf:litert-community/Qwen3-4B",
+   "files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "note": "Android cells file= (gpu)",
+   "bytes": 2659057664,
+   "checked": "2026-09-08",
+   "revision": "84cc5a35c9c65cd18fcd65bb1f3a7d77a4acfe6e",
+   "resolved_files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 2263336228,
+   "streamed_basis": "litertlm: decode section 2,652,292,388 B minus the int8 embed_tokens lookup table 388,956,160 B",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm",
+   "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+   "source": "hf:litert-community/gemma-4-E2B-it-litert-lm",
+   "files": [
+    "gemma-4-E2B-it.litertlm"
+   ],
+   "note": "Apple catalog primaryFile",
+   "bytes": 2588147712,
+   "checked": "2026-09-08",
+   "revision": "b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1",
+   "resolved_files": [
+    "gemma-4-E2B-it.litertlm"
+   ],
+   "streamed_bytes": 777983264,
+   "streamed_basis": "litertlm: decode section (sigs decode/prefill_128/prefill_1024/verify) 777,983,264 B; the embedder (100.7 MB) and per_layer_embedder (1.17 GB) sections are per-token gathers, audio/vision/eoa/eoi/mtp_drafter sections are not run by text decode (the 41 MB drafter only under speculative decoding, not enabled here)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+   "source": "hf:litert-community/gemma-4-E2B-it-litert-lm",
+   "files": [
+    "gemma-4-E2B-it.litertlm"
+   ],
+   "note": "Android cells file= (cpu)",
+   "bytes": 2588147712,
+   "checked": "2026-09-08",
+   "revision": "b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1",
+   "resolved_files": [
+    "gemma-4-E2B-it.litertlm"
+   ],
+   "streamed_bytes": 777983264,
+   "streamed_basis": "litertlm: decode section (sigs decode/prefill_128/prefill_1024/verify) 777,983,264 B; the embedder (100.7 MB) and per_layer_embedder (1.17 GB) sections are per-token gathers, audio/vision/eoa/eoi/mtp_drafter sections are not run by text decode (the 41 MB drafter only under speculative decoding, not enabled here)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+   "source": "hf:litert-community/gemma-4-E2B-it-litert-lm",
+   "files": [
+    "gemma-4-E2B-it.litertlm"
+   ],
+   "note": "Android cells file= (gpu)",
+   "bytes": 2588147712,
+   "checked": "2026-09-08",
+   "revision": "b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1",
+   "resolved_files": [
+    "gemma-4-E2B-it.litertlm"
+   ],
+   "streamed_bytes": 777983264,
+   "streamed_basis": "litertlm: decode section (sigs decode/prefill_128/prefill_1024/verify) 777,983,264 B; the embedder (100.7 MB) and per_layer_embedder (1.17 GB) sections are per-token gathers, audio/vision/eoa/eoi/mtp_drafter sections are not run by text decode (the 41 MB drafter only under speculative decoding, not enabled here)",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm",
+   "model_id": "litert-community/gemma-4-E4B-it-litert-lm",
+   "source": "hf:litert-community/gemma-4-E4B-it-litert-lm",
+   "files": [
+    "gemma-4-E4B-it.litertlm"
+   ],
+   "note": "Apple catalog primaryFile",
+   "bytes": 3659530240,
+   "checked": "2026-09-08",
+   "revision": "2eee7ac325f20eb8c9ac1d0e972f7c84663062da",
+   "resolved_files": [
+    "gemma-4-E4B-it.litertlm"
+   ],
+   "streamed_bytes": 2197937652,
+   "streamed_basis": "litertlm: decode section 2,197,937,652 B; embedder (167.8 MB) + per_layer_embedder (704.6 MB) sections gathered; audio/vision/mtp sections not run by text decode",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "model_id": "litert-community/gemma-4-E4B-it-litert-lm",
+   "source": "hf:litert-community/gemma-4-E4B-it-litert-lm",
+   "files": [
+    "gemma-4-E4B-it.litertlm"
+   ],
+   "note": "Android cells file= (cpu)",
+   "bytes": 3659530240,
+   "checked": "2026-09-08",
+   "revision": "2eee7ac325f20eb8c9ac1d0e972f7c84663062da",
+   "resolved_files": [
+    "gemma-4-E4B-it.litertlm"
+   ],
+   "streamed_bytes": 2197937652,
+   "streamed_basis": "litertlm: decode section 2,197,937,652 B; embedder (167.8 MB) + per_layer_embedder (704.6 MB) sections gathered; audio/vision/mtp sections not run by text decode",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "model_id": "litert-community/gemma-4-E4B-it-litert-lm",
+   "source": "hf:litert-community/gemma-4-E4B-it-litert-lm",
+   "files": [
+    "gemma-4-E4B-it.litertlm"
+   ],
+   "note": "Android cells file= (gpu)",
+   "bytes": 3659530240,
+   "checked": "2026-09-08",
+   "revision": "2eee7ac325f20eb8c9ac1d0e972f7c84663062da",
+   "resolved_files": [
+    "gemma-4-E4B-it.litertlm"
+   ],
+   "streamed_bytes": 2197937652,
+   "streamed_basis": "litertlm: decode section 2,197,937,652 B; embedder (167.8 MB) + per_layer_embedder (704.6 MB) sections gathered; audio/vision/mtp sections not run by text decode",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/Qwen3-0.6B-GGUF/Q4_K_M",
+   "source": "hf:unsloth/Qwen3-0.6B-GGUF",
+   "files": [
+    "Qwen3-0.6B-Q4_K_M.gguf"
+   ],
+   "note": "Apple catalog id",
+   "bytes": 396705472,
+   "checked": "2026-09-08",
+   "revision": "50968a4468ef4233ed78cd7c3de230dd1d61a56b",
+   "resolved_files": [
+    "Qwen3-0.6B-Q4_K_M.gguf"
+   ]
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/Qwen3-0.6B-GGUF",
+   "source": "hf:unsloth/Qwen3-0.6B-GGUF",
+   "files": [
+    "Qwen3-0.6B-Q4_K_M.gguf"
+   ],
+   "note": "Android cells id (file= Q4_K_M)",
+   "bytes": 396705472,
+   "checked": "2026-09-08",
+   "revision": "50968a4468ef4233ed78cd7c3de230dd1d61a56b",
+   "resolved_files": [
+    "Qwen3-0.6B-Q4_K_M.gguf"
+   ]
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/Qwen3-1.7B-GGUF/Q4_K_M",
+   "source": "hf:unsloth/Qwen3-1.7B-GGUF",
+   "files": [
+    "Qwen3-1.7B-Q4_K_M.gguf"
+   ],
+   "note": "Apple catalog id",
+   "bytes": 1107409472,
+   "checked": "2026-09-08",
+   "revision": "d7f544eead698dbd1f15126ef60b45a1e1933222",
+   "resolved_files": [
+    "Qwen3-1.7B-Q4_K_M.gguf"
+   ]
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/Qwen3-1.7B-GGUF",
+   "source": "hf:unsloth/Qwen3-1.7B-GGUF",
+   "files": [
+    "Qwen3-1.7B-Q4_K_M.gguf"
+   ],
+   "note": "Android cells id (file= Q4_K_M)",
+   "bytes": 1107409472,
+   "checked": "2026-09-08",
+   "revision": "d7f544eead698dbd1f15126ef60b45a1e1933222",
+   "resolved_files": [
+    "Qwen3-1.7B-Q4_K_M.gguf"
+   ]
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/Qwen3-4B-GGUF/Q4_K_M",
+   "source": "hf:unsloth/Qwen3-4B-GGUF",
+   "files": [
+    "Qwen3-4B-Q4_K_M.gguf"
+   ],
+   "note": "Apple catalog id",
+   "bytes": 2497281312,
+   "checked": "2026-09-08",
+   "revision": "22c9fc8a8c7700b76a1789366280a6a5a1ad1120",
+   "resolved_files": [
+    "Qwen3-4B-Q4_K_M.gguf"
+   ]
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/Qwen3-4B-GGUF",
+   "source": "hf:unsloth/Qwen3-4B-GGUF",
+   "files": [
+    "Qwen3-4B-Q4_K_M.gguf"
+   ],
+   "note": "Android cells id (file= Q4_K_M)",
+   "bytes": 2497281312,
+   "checked": "2026-09-08",
+   "revision": "22c9fc8a8c7700b76a1789366280a6a5a1ad1120",
+   "resolved_files": [
+    "Qwen3-4B-Q4_K_M.gguf"
+   ]
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/gemma-4-E2B-it-GGUF/Q4_K_M",
+   "source": "hf:unsloth/gemma-4-E2B-it-GGUF",
+   "files": [
+    "gemma-4-E2B-it-Q4_K_M.gguf"
+   ],
+   "note": "Apple catalog id",
+   "bytes": 3106738272,
+   "checked": "2026-09-08",
+   "revision": "0314792d7f1f7e229411f620751375812bb9faf2",
+   "resolved_files": [
+    "gemma-4-E2B-it-Q4_K_M.gguf"
+   ],
+   "streamed_bytes": 1476110476,
+   "streamed_basis": "gguf: tensor bytes 3,090,917,516 minus per_layer_token_embd.weight (Q5_K) 1,614,807,040; token_embd (tied head) stays",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/gemma-4-E2B-it-GGUF",
+   "source": "hf:unsloth/gemma-4-E2B-it-GGUF",
+   "files": [
+    "gemma-4-E2B-it-Q4_K_M.gguf"
+   ],
+   "note": "Android cells id (file= Q4_K_M)",
+   "bytes": 3106738272,
+   "checked": "2026-09-08",
+   "revision": "0314792d7f1f7e229411f620751375812bb9faf2",
+   "resolved_files": [
+    "gemma-4-E2B-it-Q4_K_M.gguf"
+   ],
+   "streamed_bytes": 1476110476,
+   "streamed_basis": "gguf: tensor bytes 3,090,917,516 minus per_layer_token_embd.weight (Q5_K) 1,614,807,040; token_embd (tied head) stays",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/gemma-4-E4B-it-GGUF/Q4_K_M",
+   "source": "hf:unsloth/gemma-4-E4B-it-GGUF",
+   "files": [
+    "gemma-4-E4B-it-Q4_K_M.gguf"
+   ],
+   "note": "Apple catalog id",
+   "bytes": 4977171584,
+   "checked": "2026-09-08",
+   "revision": "bfc15c382204943c3a8fff0c750b94ae2364d7a3",
+   "resolved_files": [
+    "gemma-4-E4B-it-Q4_K_M.gguf"
+   ],
+   "streamed_bytes": 3023575208,
+   "streamed_basis": "gguf: tensor bytes 4,961,343,656 minus per_layer_token_embd.weight (Q5_K) 1,937,768,448; token_embd (tied head) stays",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "llama.cpp",
+   "model_id": "unsloth/gemma-4-E4B-it-GGUF",
+   "source": "hf:unsloth/gemma-4-E4B-it-GGUF",
+   "files": [
+    "gemma-4-E4B-it-Q4_K_M.gguf"
+   ],
+   "note": "Android cells id (file= Q4_K_M)",
+   "bytes": 4977171584,
+   "checked": "2026-09-08",
+   "revision": "bfc15c382204943c3a8fff0c750b94ae2364d7a3",
+   "resolved_files": [
+    "gemma-4-E4B-it-Q4_K_M.gguf"
+   ],
+   "streamed_bytes": 3023575208,
+   "streamed_basis": "gguf: tensor bytes 4,961,343,656 minus per_layer_token_embd.weight (Q5_K) 1,937,768,448; token_embd (tied head) stays",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "mlx-swift",
+   "model_id": "mlx-community/Qwen3-0.6B-4bit",
+   "source": "hf:mlx-community/Qwen3-0.6B-4bit",
+   "files": [
+    "*.safetensors"
+   ],
+   "bytes": 335450584,
+   "checked": "2026-09-08",
+   "revision": "73e3e38d981303bc594367cd910ea6eb48349da8",
+   "resolved_files": [
+    "model.safetensors"
+   ]
+  },
+  {
+   "arm": "mlx-swift",
+   "model_id": "mlx-community/Qwen3-1.7B-4bit",
+   "source": "hf:mlx-community/Qwen3-1.7B-4bit",
+   "files": [
+    "*.safetensors"
+   ],
+   "bytes": 968080210,
+   "checked": "2026-09-08",
+   "revision": "3b1b1768f8f8cf8351c712464f906e86c2b8269e",
+   "resolved_files": [
+    "model.safetensors"
+   ]
+  },
+  {
+   "arm": "mlx-swift",
+   "model_id": "mlx-community/Qwen3-4B-4bit",
+   "source": "hf:mlx-community/Qwen3-4B-4bit",
+   "files": [
+    "*.safetensors"
+   ],
+   "bytes": 2263022529,
+   "checked": "2026-09-08",
+   "revision": "4dcb3d101c2a062e5c1d4bb173588c54ea6c4d25",
+   "resolved_files": [
+    "model.safetensors"
+   ]
+  },
+  {
+   "arm": "mlx-swift",
+   "model_id": "mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit",
+   "source": "hf:mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit",
+   "files": [
+    "*.safetensors"
+   ],
+   "exclude": [
+    "optiq/*"
+   ],
+   "note": "text weights only; optiq/optiq_vision.safetensors is the vision tower",
+   "bytes": 4270441092,
+   "checked": "2026-09-08",
+   "revision": "b7a34a6d76bbebebe700ffe68b57c97a4e3c3622",
+   "resolved_files": [
+    "model.safetensors"
+   ],
+   "streamed_bytes": 1774688838,
+   "streamed_basis": "safetensors: 4,270,299,718 minus embed_tokens_per_layer.{weight,scales,biases} 2,495,610,880 (8-bit-packed U32 rows, gathered per token); embed_tokens (tied head) stays",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "mlx-swift",
+   "model_id": "mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit",
+   "source": "hf:mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit",
+   "files": [
+    "*.safetensors"
+   ],
+   "exclude": [
+    "optiq/*"
+   ],
+   "note": "text weights only; optiq/optiq_vision.safetensors is the vision tower",
+   "bytes": 6522439186,
+   "checked": "2026-09-08",
+   "revision": "b5f52d33150fd5856c9de2d0b8c54438c266d28a",
+   "resolved_files": [
+    "model-00001-of-00002.safetensors",
+    "model-00002-of-00002.safetensors"
+   ],
+   "streamed_bytes": 3527530580,
+   "streamed_basis": "safetensors: 6,522,263,636 minus embed_tokens_per_layer.{weight,scales,biases} 2,994,733,056; embed_tokens (tied head) stays",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "core-ai",
+   "model_id": "core-ai/qwen3-0.6b-4bit-gpu",
+   "source": "hf:mlboydaisuke/qwen3-0.6b-CoreAI-official",
+   "files": [
+    "macos/qwen3_0_6b_4bit_dynamic.aimodel/main.mlirb"
+   ],
+   "note": "macOS-27-era re-export of the 4-bit dynamic recipe (main.hash 9752caf7...); the macos-26-export/ bundle behind the retired id core-ai/qwen3-0.6b-gpu decodes garbage on the 0.2.0 engine (2026-08-26 phone rows, 2026-09-08 Mac smoke) and has no entry",
+   "bytes": 335678144,
+   "checked": "2026-09-08",
+   "revision": "99c068ceeca9041275c78fbc298d193f6002bb56",
+   "resolved_files": [
+    "macos/qwen3_0_6b_4bit_dynamic.aimodel/main.mlirb"
+   ]
+  },
+  {
+   "arm": "core-ai",
+   "model_id": "core-ai/qwen3-4b-gpu",
+   "source": "hf:mlboydaisuke/qwen3-4b-CoreAI-official",
+   "files": [
+    "macos/qwen3_4b_4bit_dynamic.aimodel/main.mlirb"
+   ],
+   "note": "macos/ export; Mac runs its h16c compile",
+   "bytes": 2263457254,
+   "checked": "2026-09-08",
+   "revision": "02661bf3f7ea9e8ba6261c9d924cd573cd6eb5bb",
+   "resolved_files": [
+    "macos/qwen3_4b_4bit_dynamic.aimodel/main.mlirb"
+   ]
+  },
+  {
+   "arm": "core-ai",
+   "model_id": "core-ai/qwen3-1.7b-gpu",
+   "source": "local:~/code/coreai/coreai-models/exports/qwen3_17b_gpu_dyn",
+   "files": [
+    "qwen3_17b_gpu_dyn.aimodel/main.mlirb"
+   ],
+   "platform": "mac",
+   "note": "local 2026-08-18 export, not published; the phone's ios-gpu h18p bundle on HF is a different compile and has no entry",
+   "bytes": 968606951,
+   "checked": "2026-09-08",
+   "main_hash": "5f58dce72acf96f503cf010a6d40b6dfd60fe6cc57746f6db18ee1068d858032"
+  }
+ ]
+}

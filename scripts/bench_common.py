@@ -97,6 +97,135 @@ def runtime_display(runtime: str) -> str:
     }.get(runtime, runtime)
 
 
+# ---------------------------------------------------------------- atomic writes
+#
+# Two sittings may finish at the same moment (the job's lock is per device
+# since 2026-09-08), and each regenerates results/summary/* and the dashboard.
+# Every such derived file is written to a temp file in its directory and
+# renamed into place, so a reader never sees a half-written file; the last
+# writer wins, and since each rebuilds from raw the result is the same.
+
+import contextlib as _contextlib
+import tempfile as _tempfile
+
+
+@_contextlib.contextmanager
+def atomic_write(path, mode="w", **kwargs):
+    """`with atomic_write(p) as fh:` — fh is a temp file beside p; on a clean
+    exit it replaces p in one rename, on an exception it is removed."""
+    d = _os.path.dirname(_os.path.abspath(path)) or "."
+    fd, tmp = _tempfile.mkstemp(prefix="." + _os.path.basename(path) + ".", dir=d)
+    _os.close(fd)
+    try:
+        with open(tmp, mode, **kwargs) as fh:
+            yield fh
+        _os.replace(tmp, path)
+    except BaseException:
+        try:
+            _os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+# ---------------------------------------------------------------- bandwidth utilization
+#
+# bw util % = decode tok/s x artifact bytes / the device's memory-bandwidth
+# ceiling. Decode of a dense LLM streams (roughly) the whole weight set once per
+# token, so this is the share of the device's memory bandwidth the arm turns
+# into tokens — a recipe-normalized reading: a 4-bit artifact and an 8-bit one
+# of the same model are different byte counts, and the column shows that
+# instead of hiding it in tok/s. Two registries, both cited:
+#   devices/memory-bandwidth.json  ceiling per device.modelIdentifier (vendor
+#                                  figure, a derivation from a vendor clock, a
+#                                  marked estimate, or null = n/a)
+#   models/artifact-bytes.json     bytes of the artifact each arm loads
+#                                  (HF file sizes at a revision, or a local
+#                                  bundle's weight file; scripts/artifact_bytes.py)
+# Artifact bytes are an UPPER bound on the bytes streamed per token (embedding
+# tables are gathered, not streamed; a .litertlm carries its tokenizer), so the
+# figure is a comparable proxy, not a measured bus counter.
+
+import json as _json
+import os as _os
+
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+BANDWIDTH_JSON = _os.path.join(_ROOT, "devices", "memory-bandwidth.json")
+ARTIFACT_BYTES_JSON = _os.path.join(_ROOT, "models", "artifact-bytes.json")
+
+
+def _load_json(path):
+    try:
+        with open(path) as fh:
+            return _json.load(fh)
+    except (OSError, ValueError):
+        return {}
+
+
+def bandwidth_ceiling(device_identifier: str):
+    """-> (gbps, basis, source) for a record's device.modelIdentifier, or
+    (None, basis, source) when the registry says nothing citable exists."""
+    d = _load_json(BANDWIDTH_JSON).get("devices", {}).get(device_identifier)
+    if not d:
+        return None, "unregistered", ""
+    return d.get("gbps"), d.get("basis", ""), d.get("source", "")
+
+
+def artifact_entry(arm: str, model_id: str, platform: str = ""):
+    """The registry entry for (arm, model id), or None. `arm` is the
+    device-runs.csv runtime string (Android LiteRT carries its backend:
+    litert-lm-cpu / litert-lm-gpu). An entry with a `platform` wins over a
+    platform-less one for that platform."""
+    best = None
+    for e in _load_json(ARTIFACT_BYTES_JSON).get("artifacts", []):
+        if e.get("arm") != arm or e.get("model_id") != model_id:
+            continue
+        plat = e.get("platform") or ""
+        if plat and plat != platform:
+            continue
+        if best is None or (plat and not (best.get("platform") or "")):
+            best = e
+    return best
+
+
+def artifact_bytes(arm: str, model_id: str, platform: str = ""):
+    """Bytes a decode step reads for this cell: the entry's `streamed_bytes`
+    (artifact minus per-token-gathered tables, scripts/artifact_streamed_bytes.py)
+    when present, else the whole artifact's `bytes`; None = not registered."""
+    e = artifact_entry(arm, model_id, platform)
+    if not e:
+        return None
+    return e.get("streamed_bytes") or e.get("bytes")
+
+
+def bandwidth_utilization(decode_tps, arm: str, model_id: str,
+                          device_identifier: str, platform: str = ""):
+    """-> dict(pct, bytes, artifact_bytes, streamed, gbps, basis) or None when
+    any input is missing. pct = decode_tps * bytes / (gbps * 1e9) * 100, with
+    bytes = the per-token figure (streamed_bytes if registered, else the
+    artifact)."""
+    if not decode_tps:
+        return None
+    e = artifact_entry(arm, model_id, platform)
+    gbps, basis, _ = bandwidth_ceiling(device_identifier)
+    nbytes = (e.get("streamed_bytes") or e.get("bytes")) if e else None
+    if not nbytes or not gbps:
+        return None
+    return {"pct": decode_tps * nbytes / (gbps * 1e9) * 100.0,
+            "bytes": nbytes, "artifact_bytes": e.get("bytes"),
+            "streamed": bool(e.get("streamed_bytes")),
+            "gbps": gbps, "basis": basis}
+
+
+def fmt_bw(u, estimate_mark: str = "~") -> str:
+    """'12.3%' — prefixed with `estimate_mark` when the ceiling is not a vendor
+    figure (estimate / derived), so a reader never mistakes it for one."""
+    if not u:
+        return "—"
+    mark = "" if u["basis"] == "vendor" else estimate_mark
+    return f"{mark}{u['pct']:.1f}%"
+
+
 def corrected_quant(runtime: str, model_id: str, quant: str) -> tuple[str, bool]:
     """Apply the audited in-place quantization-label correction (quant-label-rule):
     Gemma-4 .litertlm bundles are the wNa8o8 mobile schema, not uniform int4 —

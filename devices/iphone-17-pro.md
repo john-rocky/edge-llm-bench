@@ -5,10 +5,11 @@ writing; sets the ceiling for what is possible on iPhone today.
 
 | Field | Value |
 |-------|-------|
-| Chip | Apple A19 Pro (TBD — confirm at first measurement) |
+| Chip | Apple A19 Pro (`iPhone18,1`) |
 | Neural Engine | 16-core ANE |
-| RAM | TBD |
-| iOS version tested | iOS 26 |
+| RAM | 12 GB (`physicalMemoryMB` 11722 in the records) |
+| Memory bandwidth ceiling | estimate only — Apple publishes none. 76.8 GB/s derived from LPDDR5X-9600 × 64-bit (the data rate is third-party: notebookcheck.net's A19 Pro page); `devices/memory-bandwidth.json` carries it as `basis: estimate`, so `bw util` renders with a `~` on this device |
+| iOS version tested | iOS 27.0 (the dashboard sessions; earlier rows iOS 26) |
 | Storage class | Internal NVMe |
 | Power | Plugged in, brightness fixed (see methodology) |
 

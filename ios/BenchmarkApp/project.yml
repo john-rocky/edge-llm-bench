@@ -195,7 +195,11 @@ targets:
   yardstick:
     type: tool
     platform: macOS
-    deploymentTarget: "15.0"
+    # Bumped 15.0 -> 27.0 on 2026-09-08: the coreai-models package (CoreAILM)
+    # has a macOS 27 floor and the linker refuses a lower deployment target.
+    # The bench Mac runs macOS 27; a Mac on an older OS cannot run this
+    # binary (the same trade the iOS app made for iOS 27).
+    deploymentTarget: "27.0"
     sources:
       # Shared with the iOS app, minus the SwiftUI-only Views layer.
       # Each adapter is added back to the Mac target only after its
@@ -213,6 +217,12 @@ targets:
       - path: Sources/Runtimes/AnemllRuntime.swift
       - path: Sources/Runtimes/AppleFMRuntime.swift
       - path: Sources/Runtimes/MediaPipeRuntime.swift
+      # Apple Core AI (CoreAILM, macOS 27). Same adapter the iOS app ships; on
+      # the Mac the side-loaded bundles live under BENCH_COREAI_MODELS_DIR
+      # (default ~/Documents/CoreAIModels/<folder>/). Added 2026-09-08 so the
+      # dashboard's core-ai cells run the short-chat protocol through yardstick
+      # like every other arm, instead of the external llm-benchmark wrapper.
+      - path: Sources/Runtimes/CoreAIRuntime.swift
       - path: ../../apple/YardstickCLI/Sources
     settings:
       base:
@@ -258,6 +268,8 @@ targets:
         product: AnemllCore
       - package: LiteRT-LM
         product: LiteRTLM
+      - package: coreai-models
+        product: CoreAILM            # Apple Core AI runtime (macOS 27) for CoreAIRuntime
       - framework: Vendored/llama.xcframework
         embed: false
         codeSign: false

@@ -4,12 +4,13 @@ Primary Mac reference. Fill in build / OS / RAM details before recording rows.
 
 | Field | Value |
 |-------|-------|
-| Chip | Apple M4 Max |
-| GPU cores | TBD (32 or 40, depending on bin) |
+| Chip | Apple M4 Max (Mac Studio, `Mac16,9`) |
+| GPU cores | 40 (`system_profiler SPDisplaysDataType`, read 2026-09-08 — the 16-core CPU / 40-core GPU bin) |
 | Neural Engine | 16-core ANE |
-| RAM | TBD |
-| macOS version tested | macOS 26 |
-| Storage class | TBD (internal SSD) |
+| RAM | 128 GB unified |
+| Memory bandwidth ceiling | 546 GB/s — Apple, Mac Studio (2025) Tech Specs (support.apple.com/en-us/122211) for the 16-core CPU / 40-core GPU M4 Max; the 14/32 bin is 410 GB/s. Registry: `devices/memory-bandwidth.json` (the `bw util` column) |
+| macOS version tested | macOS 27.0 (the dashboard sessions; earlier rows macOS 26) |
+| Storage class | internal SSD |
 | Power | Plugged in, "High Power" mode |
 
 ## Notes

@@ -54,6 +54,12 @@ Every result row shows model size, quantization, runtime format, and backend. We
 
 If a runtime crashes, OOMs, hangs, or cannot support a configuration, the row stays in the table with a clear failure reason. Hiding failures makes a benchmark useless.
 
+A run whose output is a repetition loop is a failed run even when the engine reports a
+rate: a Core AI Qwen3-0.6B export decoded `[nodeelehandlinghandling…` at 148 tok/s on the
+phone (2026-08-26) and 1127 tok/s on the Mac (2026-09-08) and passed every timing check.
+The cell gate (`scripts/cell_gate.py`, `DEGENERATE`) now flags such a capture; it is never
+retried (a re-run reproduces it) and its rate is never quoted as a speed.
+
 | Runtime | Model | Device | Result | Reason |
 |---|---|---|---|---|
 | _example_ | Llama-3-8B Q4 | iPhone 15 Pro | Failed | OOM during prefill at 4K context |

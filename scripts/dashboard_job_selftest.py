@@ -71,6 +71,9 @@ def main():
     os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
 
     import dashboard_job as dj
+    # the per-device job locks live under LOG_DIR; keep the selftest's probes and
+    # its held lock inside the temp dir, never under logs/dashboard-job
+    dj.LOG_DIR = os.path.join(tmp, "logs")
 
     def attached(*serials):
         with open(os.path.join(state, "devices.txt"), "w") as fh:
@@ -120,6 +123,19 @@ def main():
        f"iPhone at 02:00 is outside its window, never probed: {rep['fone']['detail']}")
     key, rep = choose([row("d14-dashboard-v1-beta-android", "FakeB", days=14)])
     ok(key == "alpha", f"a device never measured counts as oldest: chose {key}")
+
+    print("--- a device whose sitting is running (its .job.lock.<key> held) is busy; others still go")
+    import fcntl
+    os.makedirs(dj.LOG_DIR, exist_ok=True)
+    held = open(os.path.join(dj.LOG_DIR, ".job.lock.alpha"), "a+")
+    fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    held.seek(0); held.truncate(); held.write("4242"); held.flush()
+    key, rep = choose(older_a)
+    ok(key == "beta" and rep["alpha"]["state"] == "busy" and "sitting" in rep["alpha"]["detail"],
+       f"alpha's sitting running -> beta: chose {key} ({rep['alpha']['detail']})")
+    fcntl.flock(held, fcntl.LOCK_UN); held.close()
+    key, rep = choose(older_a)
+    ok(key == "alpha", f"lock released -> alpha again: chose {key}")
 
     print("--- a device with an admitted session this week is not chosen again")
     this_week = older_b + [row("now-dashboard-v1-beta-android", "FakeB", minutes=30)]

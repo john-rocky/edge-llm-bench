@@ -1,0 +1,86 @@
+{
+ "campaign": "results/raw/2026-09-08-dashboard-v1-m4max-mac",
+ "phase": "payload",
+ "cells": "matrices/dashboard-text-v1.cells",
+ "device_key": "m4max",
+ "device_display": "Mac Studio (M4 Max)",
+ "device_identifier": "Mac16,9",
+ "platform": "mac",
+ "attempt": 1,
+ "started": "2026-09-08 21:36:46",
+ "ended": "2026-09-08 22:40:56",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 0.959 vs reference",
+ "anchor": {
+  "regime": "warm",
+  "anchors": [
+   {
+    "cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat",
+    "primary": true,
+    "median": 538.751325899151,
+    "n": 2,
+    "thermal": [
+     "nominal"
+    ],
+    "reference": {
+     "campaign": "results/raw/2026-09-08-dashboard-v1-m4max-anchor-mac",
+     "median": 561.8145571215093,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ]
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-09-08-dashboard-v1-m4max-anchor-mac",
+     "median": 561.8145571215093,
+     "n": 2
+    },
+    "ratio": 0.9589486763381067
+   },
+   {
+    "cell": "litert-lm litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 312.8765143120059,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "reference": {
+     "campaign": "results/raw/2026-09-08-dashboard-v1-m4max-anchor-mac",
+     "median": 309.8037280418052,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ]
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-09-08-dashboard-v1-m4max-anchor-mac",
+     "median": 309.8037280418052,
+     "n": 2
+    },
+    "ratio": 1.0099184935236998
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-09-08-dashboard-v1-m4max-anchor-mac",
+ "runner_exit": 0,
+ "cells_expected": 18,
+ "cells_with_records": 18,
+ "failures": [
+  "FAIL llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat",
+  "FAIL llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat",
+  "FAIL llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat",
+  "FAIL llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat",
+  "FAIL llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat"
+ ],
+ "flagged": [
+  "GATE_FAIL litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat first='SPREAD 30.0' retry='SPREAD 41.9' (retry kept; \u26a0 downstream)"
+ ],
+ "skipped": [
+  "CELL_SKIP core-ai core-ai/gemma4-e2b-gpu short-chat reason=ple-bundle-needs-unpublished-engine-patch",
+  "CELL_SKIP core-ai core-ai/gemma4-e4b-gpu short-chat reason=ple-bundle-needs-unpublished-engine-patch"
+ ],
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1"
+}

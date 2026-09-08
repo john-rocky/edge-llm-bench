@@ -146,6 +146,11 @@ cmd_run(){
     local pulled verdict
     pulled="$(pull_new)"; verdict="$(cell_verdict "$rt" "$mid" "$task" "$runs")"
     echo "pulled=$pulled verdict=$verdict"
+    if [[ "$verdict" == DEGENERATE* ]]; then
+      # A repetition loop reproduces on re-run: flag, keep, never retry (cell_gate.py).
+      echo "GATE_FAIL $rt $mid $task verdict='$verdict' (output is a repetition loop — not retried; the rate is not a measurement)" \
+        | tee -a "$OUT/FLAGGED.txt"
+    fi
     if [[ "$verdict" == HOT* || "$verdict" == SPREAD* || "$verdict" == DEAD* || "$verdict" == COLLAPSE* || "$verdict" == GATE_ERROR* ]]; then
       log "gate: $verdict — quarantine flagged capture, cooldown ${THERMAL_COOLDOWN}s, re-run once"
       quarantine_cell "$rt" "$mid" "$task" "$runs"

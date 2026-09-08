@@ -8,8 +8,10 @@ cell table, the bundle inventory (what exists, what is missing), the
 competitor-arm status including a first look at Mirai, and the open
 questions for the LiteRT team.
 
-Cells file: `matrices/dashboard-text-v1.cells` (45 cells: 5 models × 3 arms
-× 3 platforms; validated by `scripts/validate_cells.py`).
+Cells file: `matrices/dashboard-text-v1.cells` (v1: 45 cells, 5 models × 3
+arms × 3 platforms; v2 since 2026-09-08 adds the Core AI arm on iPhone and
+Mac — 10 rows, of which the 4 Gemma 4 rows are `exclude=` with their reason —
+see "Core AI arm (v2)" below; validated by `scripts/validate_cells.py`).
 
 ```bash
 ./bench matrix matrices/dashboard-text-v1.cells --platform android   # Galaxy S26 or Pixel 8a (BENCH_ANDROID_SERIAL)
@@ -56,15 +58,15 @@ verified 2026-07-18, catalog comment).
 | Qwen3 4B | `qwen3_4b_mixed_int4.litertlm` (both) | `Qwen3-4B-Q4_K_M.gguf` | none |
 | Gemma 4 E4B | `gemma-4-E4B-it.litertlm` (both) | `gemma-4-E4B-it-Q4_K_M.gguf` | none |
 
-### iPhone 17 Pro and Mac M4 Max (same ids on both; LiteRT and llama.cpp on Metal, MLX on Metal)
+### iPhone 17 Pro and Mac M4 Max (same ids on both; LiteRT and llama.cpp on Metal, MLX on Metal; Core AI on the GPU engine since v2)
 
-| Model | LiteRT-LM | MLX | llama.cpp | rows so far (iPhone / Mac) |
-|---|---|---|---|---|
-| Qwen3 0.6B | `litert-community/Qwen3-0.6B` | `mlx-community/Qwen3-0.6B-4bit` (session anchor) | `unsloth/Qwen3-0.6B-GGUF/Q4_K_M` (new catalog entry) | LiteRT, MLX / LiteRT, MLX |
-| Qwen3 1.7B | `litert-community/Qwen3-1.7B` (new catalog entry) | `mlx-community/Qwen3-1.7B-4bit` | `unsloth/Qwen3-1.7B-GGUF/Q4_K_M` (new catalog entry) | none |
-| Gemma 4 E2B | `litert-community/gemma-4-E2B-it-litert-lm` | `mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit` | `unsloth/gemma-4-E2B-it-GGUF/Q4_K_M` | LiteRT / LiteRT |
-| Qwen3 4B | `litert-community/Qwen3-4B` | `mlx-community/Qwen3-4B-4bit` | `unsloth/Qwen3-4B-GGUF/Q4_K_M` | LiteRT / none |
-| Gemma 4 E4B | `litert-community/gemma-4-E4B-it-litert-lm` | `mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit` | `unsloth/gemma-4-E4B-it-GGUF/Q4_K_M` | none |
+| Model | LiteRT-LM | MLX | llama.cpp | Core AI (v2, own export) | rows so far (iPhone / Mac), v1 arms |
+|---|---|---|---|---|---|
+| Qwen3 0.6B | `litert-community/Qwen3-0.6B` | `mlx-community/Qwen3-0.6B-4bit` (session anchor) | `unsloth/Qwen3-0.6B-GGUF/Q4_K_M` (new catalog entry) | `core-ai/qwen3-0.6b-4bit-gpu` — INT4 dynamic, macOS-27-era export (the 26-era one decodes garbage; below) | LiteRT, MLX / LiteRT, MLX |
+| Qwen3 1.7B | `litert-community/Qwen3-1.7B` (new catalog entry) | `mlx-community/Qwen3-1.7B-4bit` | `unsloth/Qwen3-1.7B-GGUF/Q4_K_M` (new catalog entry) | `core-ai/qwen3-1.7b-gpu` — INT4 dynamic | none |
+| Gemma 4 E2B | `litert-community/gemma-4-E2B-it-litert-lm` | `mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit` | `unsloth/gemma-4-E2B-it-GGUF/Q4_K_M` | `core-ai/gemma4-e2b-gpu` — `exclude=ple-bundle-needs-unpublished-engine-patch` | LiteRT / LiteRT |
+| Qwen3 4B | `litert-community/Qwen3-4B` | `mlx-community/Qwen3-4B-4bit` | `unsloth/Qwen3-4B-GGUF/Q4_K_M` | `core-ai/qwen3-4b-gpu` — INT4 dynamic | LiteRT / none |
+| Gemma 4 E4B | `litert-community/gemma-4-E4B-it-litert-lm` | `mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit` | `unsloth/gemma-4-E4B-it-GGUF/Q4_K_M` | `core-ai/gemma4-e4b-gpu` — `exclude=ple-bundle-needs-unpublished-engine-patch` | none |
 
 11 of the 45 cells already have rows in this repo; the other 34 run for the
 first time on Monday, and that first run is their gate (a cell that fails
@@ -217,8 +219,163 @@ design.
 | LiteRT-LM v0.16.0 | Android, iPhone, Mac | yes | pinned (`environment.lock.json`); Android binary built from source at the tag — releases ship none |
 | MLX (`mlx-swift-lm` @ 60bd0d7) | iPhone, Mac | yes | Gemma 4 loads only at the 2026-07-06 re-upload revision of the mlx-community repos, which is HF main today |
 | llama.cpp b8999 | Android, iPhone, Mac | yes | Android: official CPU-only binary (GPU needs a custom NDK build); Apple: arm wired, no rows in this repo yet |
-| Core AI (Apple) | iPhone, Mac | no | side-loaded own exports; Qwen3 0.6B measured 2026-08-26, the 1.7B/4B bundles are not staged; the Gemma 4 bundles need an unpublished engine patch, so that arm is not independently reproducible (`environment.lock.json` caveat) |
+| Core AI (Apple) | iPhone, Mac | v2 (2026-09-08) | own exports, side-loaded; Qwen3 0.6B/1.7B/4B rows active, the Gemma 4 rows `exclude=` because their per-layer-embedding bundles need the unpublished engine patch — "Core AI arm (v2)" below |
 | Mirai (`uzu`) | Mac, iPhone; Android "Soon" | investigate | below |
+
+## Core AI arm (v2, 2026-09-08)
+
+### Why v1 left it out
+
+- The v1 rule for an arm was "a published artifact for every model in the
+  set". Apple ships no Core AI bundle for any of the five; the bundles were
+  our own exports, and only the Qwen3 0.6B one was staged on the phone
+  (measured 2026-08-26). Gemma 4 E2B/E4B additionally need
+  `EngineOptions.staticInputBuffers`, which is not in Apple's released
+  `coreai-models` (0.1.0, 0.2.0): they run only on our patched engine
+  (`COREAI_STATIC_INPUTS`, `methodology/core-ai-arm-provenance.md`), so that
+  half of the arm was not independently reproducible — the
+  `environment.lock.json` caveat.
+- On the Mac the harness had no protocol-identical Core AI path at all: the
+  only wrapper was Apple's external `llm-benchmark` binary
+  (`scripts/coreai_mac_wrapper.sh`), which runs its own synthetic
+  prefill/decode with its own timing and no `--context-tokens`. A number
+  from it could not sit in the same short-chat table as the other arms, and
+  the importer says so in every record's provenance note.
+- The recurring job was sized as one device per firing with a person
+  reviewing each morning; a fourth arm whose rows would mostly fail at load
+  (nothing staged) adds review lines without adding measurements.
+
+### What changed for v2
+
+- The Qwen3 exports are published and fetchable by a third party:
+  `mlboydaisuke/qwen3-0.6b-CoreAI-official` (`macos/`, the macOS-27-era
+  re-export — see the finding below), `mlboydaisuke/qwen3-4b-CoreAI-official`
+  (`macos/`), and for 1.7B the phone bundle
+  (`mlboydaisuke/qwen3-1.7b-CoreAI-official` `ios-gpu/`, an h18p compile);
+  the Mac 1.7B row runs a local 2026-08-18 export that is not published yet
+  (its `main.hash` and byte size go to every session's
+  `session_provenance.txt`, and `models/artifact-bytes.json` names it).
+- Finding while staging (2026-09-08): the macOS-26-era 0.6B export behind
+  the catalog id `core-ai/qwen3-0.6b-gpu` — the bundle the phone's
+  2026-08-26 rows ran, `main.hash` `17cfae91…` — decodes garbage on the
+  `coreai-models` 0.2.0 engine: every run's `outputSample` is
+  `[nodeelehandlinghandling…`, on the phone in August and on the Mac today
+  (1127 tok/s warm — the speed of degenerate generation, not a measurement).
+  The 27-era re-export of the same 4-bit dynamic recipe (`macos/`,
+  `main.hash` `9752caf7…`) decodes coherent text at 538 tok/s on the Mac, and
+  a local 2026-08-17 export at 314 tok/s; the card's "2.2× slower" was the
+  price of correctness. The dashboard rows therefore use a new catalog id,
+  `core-ai/qwen3-0.6b-4bit-gpu` ("INT4 (dynamic, 4bit; macOS-27-era
+  export)", folder `qwen3_0_6b_4bit_gpu`), on both platforms; the old id
+  stays in the catalog with the note so the August rows keep their identity,
+  and those rows should be read as not valid. The 1.7B and 4B exports decode
+  coherent text (checked the same way).
+- The Mac yardstick now links `CoreAILM` and runs `CoreAIRuntime` — the
+  same adapter the iOS app ships, the same prompt, token budget, cooldowns,
+  gate and record as every other arm (`ios/BenchmarkApp/project.yml`
+  yardstick target; `scripts/bench_matrix_mac.sh` sends core-ai prompt
+  tasks through yardstick and keeps the `llm-benchmark` wrapper for
+  `native-benchmark-*` cells only). No record-schema change: the row is a
+  `core-ai` row like the 2026-08-26 iPhone rows.
+- Bundles are side-loaded once and stay (Mac: `~/Documents/CoreAIModels/`,
+  or `BENCH_COREAI_MODELS_DIR`; phone: the app's
+  `Documents/CoreAIModels/<folder>/`), the staging recipe is below. A bundle
+  that is not staged renders "not yet measured" (the Mac runner logs
+  `SKIPPED … reason=coreai-bundle-not-staged`), never a number.
+- The Gemma 4 rows stay in the file as
+  `exclude=ple-bundle-needs-unpublished-engine-patch`. The reason is the
+  datum (`failed-runs-stay`); when Apple publishes the static-input API or
+  the patch lands upstream, the two rows per platform flip to active with
+  no redesign of the set.
+- The table gained a bandwidth-utilization column (`bw`, `scripts/render_dashboard.py`):
+  decode tok/s × bytes per token ÷ the device's memory-bandwidth ceiling.
+  Ceilings are cited per device in `devices/memory-bandwidth.json` (Mac
+  Studio: Apple's 546 GB/s; Galaxy S26: 84.8 GB/s derived from Qualcomm's
+  "LP-DDR5x up to 5300 MHz" and marked `~`; iPhone 17 Pro: a 76.8 GB/s
+  estimate from a third-party LPDDR5X-9600 figure, marked `~`; Pixel 8a: no
+  citable figure, so n/a). Bytes per token come from
+  `models/artifact-bytes.json` (`scripts/artifact_bytes.py --refresh` reads
+  whole-artifact sizes from the Hub): the artifact's weight bytes minus the
+  tables a decode step gathers instead of streams — Gemma 4's per-layer
+  embedding table (1.6–3.0 GB of every Gemma 4 artifact: `per_layer_token_embd`
+  in the GGUF, `embed_tokens_per_layer` in the MLX safetensors, the
+  `per_layer_embedder` section of the `.litertlm`), a LiteRT bundle's separate
+  int8 input-embedding table, and its audio/vision/drafter sections
+  (`scripts/artifact_streamed_bytes.py` reads the containers; the numbers and
+  the rule per entry are in the registry). Tied embeddings stay counted as
+  the LM head. Without that subtraction the Gemma 4 rows read above 100%.
+  An own-export arm next to published-artifact arms is readable only when the
+  recipe is visible in the number: a 4-bit and an 8-bit artifact of one model
+  are different byte counts, and the column shows that instead of hiding it
+  in tok/s. It is an estimate, never a bus counter and never a ranking.
+
+### First v2 session (Mac Studio, 2026-09-08)
+
+Run through the recurring job (`./bench dashboard-job m4max --once`,
+campaigns `2026-09-08-dashboard-v1-m4max-anchor-mac` and
+`2026-09-08-dashboard-v1-m4max-mac`), admitted on its anchor (nominal, 1.045
+of the newest admitted session's anchor; the payload's own anchor 0.959 of
+the probe), 18 of 18 active cells with records, 4 runs each (anchor 3), every
+run at thermal nominal, 1 h 04 min from anchor to close. The three Core AI
+cells ran like any other arm: coherent output (the `DEGENERATE` gate passed
+on every cell), warm spreads of 1.5 / 1.1 / 0.5 %, and the bundle identity
+of each in `session_provenance.txt`. Their warm medians and bandwidth
+readings, single-arm facts: Qwen3 0.6B 533.6 tok/s (bw 32.8 %), Qwen3 1.7B
+310.9 tok/s (55.1 %), Qwen3 4B 158.9 tok/s (65.9 %). Notes the session
+carries: the five llama.cpp cells recorded their runs and then aborted at
+exit as before (`FAILURES.txt`, the b8999 Metal-teardown defect; rows
+stand), and the LiteRT Gemma 4 E4B cell was gate-retried on a 30 % warm
+spread and its retry kept at 41.9 % (`FLAGGED.txt`, ⚠ in the table): in
+both captures one warm run of four stalled (70 and 58 tok/s against 100,
+with the p95 inter-token latency doubled) while the other runs matched the
+2026-09-05 session's 100 tok/s. This was the first sitting run side by side
+with a phone sitting (the Pixel 8a's, on the host over adb, pushing the 5 GB
+E4B GGUF during those minutes); whether that host-side traffic caused the
+stalls is not established — the same cell had no stall on 2026-09-05 with
+nothing running alongside. A targeted retake (anchor + that cell) in a quiet
+window is the design's remedy if it recurs.
+
+### Bundles per row
+
+| Row | Bundle (engine `coreai-pipelined`, dynamic export) | Weight bytes | On the Mac | On the iPhone |
+|---|---|---|---|---|
+| `core-ai/qwen3-0.6b-4bit-gpu` | `mlboydaisuke/qwen3-0.6b-CoreAI-official` `macos/qwen3_0_6b_4bit_dynamic.aimodel` (the 27-era re-export, `main.hash` `9752caf7…`; "INT4 (dynamic, 4bit; macOS-27-era export)") | 335,678,144 | `~/Documents/CoreAIModels/qwen3_0_6b_4bit_gpu/`, AOT h16c | not staged — an h18p compile of the same `.aimodel`; the folder on the phone (`qwen3_0_6b_gpu`) is the retired macOS-26-era export that decodes garbage |
+| `core-ai/qwen3-1.7b-gpu` | Mac: local export `~/code/coreai/coreai-models/exports/qwen3_17b_gpu_dyn` (2026-08-18, `main.hash` `5f58dce7…`); phone: `mlboydaisuke/qwen3-1.7b-CoreAI-official` `ios-gpu/qwen3_1_7b_dynamic.h18p.aimodelc` | 968,606,951 (Mac export) | `qwen3_1_7b_gpu/`, AOT h16c | not staged — a human step |
+| `core-ai/qwen3-4b-gpu` | `mlboydaisuke/qwen3-4b-CoreAI-official` `macos/qwen3_4b_4bit_dynamic.aimodel` (compiled 2026-06-11) | 2,263,457,254 | `qwen3_4b_gpu/`, AOT h16c | not staged — needs an h18p compile of the same export (about 1.6× the Mac size on device) |
+| `core-ai/gemma4-e2b-gpu`, `core-ai/gemma4-e4b-gpu` | `mlboydaisuke/gemma-4-E2B-CoreAI`, `-E4B-CoreAI` (`_tbl` decode graph + PLE tables) | — | excluded | excluded |
+
+### Staging recipe
+
+Mac (once; the folders persist across sessions; `xcrun coreai-build` is in
+the Metal toolchain of the Xcode 27 beta):
+
+```bash
+D=~/Documents/CoreAIModels; mkdir -p $D
+# 0.6B and 4B from the Hub (the `macos/` folders), 1.7B from the local export
+hf download mlboydaisuke/qwen3-0.6b-CoreAI-official --include "macos/*"
+hf download mlboydaisuke/qwen3-4b-CoreAI-official   --include "macos/*"
+# per bundle: <folder>/{metadata.json, <name>.aimodel/, tokenizer/}, then
+xcrun coreai-build compile $D/<folder>/<name>.aimodel --output $D/<folder> \
+    --platform macOS --preferred-compute gpu --architecture h16c
+# and point metadata.json "assets.main" at <name>.h16c.aimodelc
+```
+
+iPhone (a human step, USB — a multi-GB push over Wi-Fi dies; the app id is
+the one in `ops/dashboard-v1/schedule.json`):
+
+```bash
+xcrun devicectl device copy to --device <udid> --domain-type appDataContainer \
+    --domain-identifier <app> --source <folder> --destination Documents/CoreAIModels/<folder>
+```
+
+The 1.7B phone bundle is the published `ios-gpu/` folder as is; the 0.6B and
+4B ones are `xcrun coreai-build compile … --platform iOS --preferred-compute
+gpu --architecture h18p` of the `macos/` exports with `assets.main` repointed.
+All three folders were prepared on the bench host on 2026-09-08 under
+`~/bench-coreai-staging/ready/{qwen3_0_6b_4bit_gpu,qwen3_1_7b_gpu,qwen3_4b_gpu}`
+(the same layout the 2026-08-26 staging used), so staging is one `copy to`
+per folder over USB. Until a folder is staged its row fails at load on the
+phone and stays in the table as the datum.
 
 ### Mirai precheck (github.com/trymirai, 30 minutes on 2026-09-05)
 

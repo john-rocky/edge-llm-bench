@@ -11,6 +11,15 @@ spread-rule, same 5% bar as render_leaderboard and regression_diff):
                    the run completed as a record but not as a measurement
                    (audited 2026-08-27: zero-decode runs silently passed and
                    vanished from the spread list)
+  DEGENERATE <n>   a judged record's outputSample is a repetition loop
+                   (distinct character 6-grams under --degenerate-ratio of
+                   the sample's 6-grams). The engine ran and reported a rate,
+                   but it was generating garbage: the Core AI Qwen3-0.6B
+                   macOS-26-era export decoded "[nodeelehandlinghandling…"
+                   at 148 tok/s on the phone (2026-08-26) and 1127 tok/s on
+                   the Mac (2026-09-08) and both passed every other check.
+                   Never retried — a re-run reproduces it; the runner flags
+                   the cell and the number must not be read as a speed.
   HOT <states>     an initialThermalState outside --ok-thermal
   SPREAD <pct>     warm decode (max-min)/median exceeded --spread-flag
   COLLAPSE <pct>   cold-only capture (Android regime has no warm runs, so
@@ -37,6 +46,19 @@ import json
 import statistics
 import sys
 
+DEGENERATE_MIN_CHARS = 60   # shorter samples are not judged (too few n-grams)
+
+
+def degenerate(sample, ratio):
+    """True when the sample is a repetition loop: fewer distinct character
+    6-grams than `ratio` of all its 6-grams. Coherent prose of 200 chars sits
+    near 0.95; "handlinghandling…" sits near 0.05."""
+    s = (sample or "").strip()
+    if len(s) < DEGENERATE_MIN_CHARS:
+        return False
+    grams = [s[i:i + 6] for i in range(len(s) - 5)]
+    return len(set(grams)) / len(grams) < ratio
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -44,6 +66,8 @@ def main():
     ap.add_argument("--spread-flag", type=float, default=5.0)
     ap.add_argument("--ok-thermal", default="nominal",
                     help="comma list; empty/missing states always pass")
+    ap.add_argument("--degenerate-ratio", type=float, default=0.5,
+                    help="distinct/total character 6-grams of outputSample below this = DEGENERATE")
     ap.add_argument("--jsonl")
     ap.add_argument("files", nargs="*")
     a = ap.parse_args()
@@ -70,6 +94,11 @@ def main():
                if not r.get("metrics", {}).get("decodeTokensPerSecond"))
     if dead:
         print(f"DEAD {dead}")
+        return 1
+
+    degen = sum(1 for r in recs if degenerate(r.get("outputSample"), a.degenerate_ratio))
+    if degen:
+        print(f"DEGENERATE {degen}")
         return 1
 
     ok = set(a.ok_thermal.split(",")) | {"", None}

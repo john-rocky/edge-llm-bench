@@ -115,7 +115,7 @@ always carries its reason — that is part of the method, not an apology.
 | LiteRT-LM | measured | measured | measured (cpu, gpu) | measured (cpu, gpu) |
 | llama.cpp | wired | wired | measured (cpu) | measured (cpu) |
 | MLX | measured | measured | n/a — Apple-only | n/a — Apple-only |
-| Core AI | wired (external runner) | measured | n/a — Apple-only | n/a — Apple-only |
+| Core AI | measured (Qwen3 0.6B / 1.7B / 4B, own exports; Gemma 4 rows excluded with the reason) | measured | n/a — Apple-only | n/a — Apple-only |
 | Cactus | n/a — no Mac arm | wired | planned | planned |
 
 - Android LiteRT NPU is n/a on both devices — the NPU path is Early Access
@@ -124,11 +124,16 @@ always carries its reason — that is part of the method, not an apology.
   the Apple arm; GPU would need a custom NDK build and is a disclosed gap.
 - Android v1 has no warm regime and no TTFT on llama-cli; every disclosed
   deviation is in `methodology/android.md`.
-- Mac Core AI has no rows because the pinned 0.2.0 release does not run on
-  the bench Mac's macOS 27 beta (`environment.lock.json`).
-- The Core AI arm is best-effort: Gemma-4-class PLE models need an
+- Mac Core AI runs through the yardstick's `CoreAIRuntime` since 2026-09-08
+  (the pinned `coreai-models` checkout, macOS 27 SDK): the dashboard's Qwen3
+  0.6B / 1.7B / 4B rows are our own side-loaded exports, published under
+  `mlboydaisuke/*-CoreAI-official` where they exist
+  (`docs/dashboard-cells-v1.md`, "Core AI arm (v2)"; identities in
+  `environment.lock.json`).
+- The Core AI arm is best-effort for Gemma 4: PLE models need an
   unpublished engine patch (`COREAI_STATIC_INPUTS`); a clean clone reports
-  `unsupported`. Missing exports stay visible as reasoned rows (DeepSeek-R1
+  `unsupported`, and the dashboard keeps those rows as `exclude=` with the
+  reason. Missing exports stay visible as reasoned rows (DeepSeek-R1
   1.5B: bundle pending export).
 - Cactus Android is a phase-2 slot at the pinned commit; until then the
   driver reports the row with its reason.

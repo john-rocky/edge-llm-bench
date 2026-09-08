@@ -994,9 +994,28 @@ public enum ModelCatalog {
             // macOS-26-era official export (native quantized-Linear lowering) — the
             // 27-beta re-export of the same recipe is ~2.2x slower per the card;
             // the era is part of the recipe here.
+            // ⚠ 2026-09-08: on the 0.2.0 engine this export DECODES GARBAGE — every run's
+            // outputSample is "[nodeelehandlinghandling…" (phone 2026-08-26, Mac 2026-09-08),
+            // so its 148 tok/s (phone) / 1127 tok/s (Mac) are the speed of degenerate
+            // generation, not a measurement. The dashboard uses the 27-era re-export below;
+            // this entry stays so the 2026-08-26 rows keep their identity.
             quantization: "INT4 (dynamic, macOS-26-era export)",
             parameterCountB: 0.6,
             onDiskSizeMB: 327,
+            hfRepoId: ""
+        ),
+        // The macOS-27-era re-export of the same 4-bit dynamic recipe
+        // (mlboydaisuke/qwen3-0.6b-CoreAI-official `macos/qwen3_0_6b_4bit_dynamic.aimodel`,
+        // main.hash 9752caf7…, compiled 2026-06-11 era toolchain, 335,678,144-byte main.mlirb).
+        // Decodes coherent text on the 0.2.0 engine at about half the garbage rate of the
+        // entry above — the card's "2.2x slower" was the price of correctness. Side-loaded as
+        // qwen3_0_6b_4bit_gpu/ (Mac: h16c AOT; phone: an h18p compile of the same .aimodel).
+        ModelInfo(
+            id: "core-ai/qwen3-0.6b-4bit-gpu",
+            displayName: "Qwen3-0.6B (Core AI, GPU, 4bit dynamic)",
+            quantization: "INT4 (dynamic, 4bit; macOS-27-era export)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 320,
             hfRepoId: ""
         ),
         ModelInfo(

@@ -9,10 +9,12 @@
 # flavor (SwiftPM build; four runtimes compiled out — silently wrong matrix)
 # unless YS_ALLOW_SPM=1.
 #
-# core-ai cells dispatch to scripts/coreai_mac_wrapper.sh (external Apple
-# llm-benchmark binary; own timing, no --context-tokens — documented
-# comparability caveat). A missing external binary logs SKIPPED, not fatal:
-# the arm is best-effort until Apple publishes the static-inputs API.
+# core-ai cells: prompt tasks (short-chat, long-context-*) run through the
+# yardstick's CoreAIRuntime like every other arm — same protocol, same record
+# (since 2026-09-08; the bundle is side-loaded under BENCH_COREAI_MODELS_DIR,
+# a missing one logs SKIPPED with its reason). native-benchmark-* cells still
+# dispatch to scripts/coreai_mac_wrapper.sh (external Apple llm-benchmark
+# binary; own timing, no --context-tokens — documented comparability caveat).
 set -uo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -31,8 +33,53 @@ DEFAULT_RUNS="${RUNS:-4}"
 BASE_COOLDOWN="${BASE_COOLDOWN:-30}"
 CAMPAIGN="${CAMPAIGN:-$(date +%F)-mac-matrix}"
 OUT="$REPO/results/raw/$CAMPAIGN"
+# Core AI bundles are side-loaded, one folder per catalog id (CoreAIRuntime.bundleSpec):
+# <BENCH_COREAI_MODELS_DIR>/<folder>/{metadata.json, <name>.aimodel | .aimodelc, tokenizer/}.
+# Default = the Documents/CoreAIModels layout the app uses on the phone. Staging
+# recipe: docs/dashboard-cells-v1.md "Core AI arm".
+export BENCH_COREAI_MODELS_DIR="${BENCH_COREAI_MODELS_DIR:-$HOME/Documents/CoreAIModels}"
 
 log(){ printf '\n=== %s ===\n' "$*"; }
+
+coreai_folder(){ # <model-id> -> bundle folder, mirroring CoreAIRuntime.bundleSpec for the dashboard ids
+  case "$1" in
+    core-ai/qwen3-0.6b-gpu) echo qwen3_0_6b_gpu ;;
+    core-ai/qwen3-0.6b-4bit-gpu) echo qwen3_0_6b_4bit_gpu ;;
+    core-ai/qwen3-1.7b-gpu) echo qwen3_1_7b_gpu ;;
+    core-ai/qwen3-4b-gpu)   echo qwen3_4b_gpu ;;
+    core-ai/gemma4-e2b-gpu) echo gemma4_e2b_gpu ;;
+    core-ai/gemma4-e4b-gpu) echo gemma4_e4b_gpu ;;
+    *) echo "" ;;   # other ids: no preflight here; yardstick reports the miss itself
+  esac
+}
+
+coreai_bundle_ready(){ # <model-id> -> 0 when staged (or an id this preflight does not know); else a SKIPPED line, 1
+  local folder dir
+  folder="$(coreai_folder "$1")"
+  [ -z "$folder" ] && return 0
+  dir="$BENCH_COREAI_MODELS_DIR/$folder"
+  if [ ! -f "$dir/metadata.json" ]; then
+    echo "SKIPPED core-ai $1 $task reason=coreai-bundle-not-staged ($dir)" | tee -a "$OUT/SKIPPED.txt"
+    return 1
+  fi
+  # Bundle identity next to the session (stored-report-rule): the record carries
+  # the catalog's quant label, not the artifact — so the asset the engine loaded,
+  # its content hash and byte size go to session_provenance.txt.
+  python3 - "$dir" "$1" >> "$OUT/session_provenance.txt" <<'PY'
+import json, os, sys
+d, mid = sys.argv[1], sys.argv[2]
+meta = json.load(open(os.path.join(d, "metadata.json")))
+main = meta.get("assets", {}).get("main", "")
+asset = os.path.join(d, main)
+hp = os.path.join(asset, "main.hash")
+h = open(hp, "rb").read().hex() if os.path.exists(hp) else "n/a"
+total = sum(os.path.getsize(os.path.realpath(os.path.join(r, f)))
+            for r, _, fs in os.walk(asset) for f in fs)
+print(f"core-ai bundle {mid}: {d} main={main} main.hash={h} asset_bytes={total} "
+      f"compiled={meta.get('compilation', {}).get('date', '?')}")
+PY
+  return 0
+}
 
 run_ys_cell(){
   # One capture attempt for the current loop cell (bash dynamic scope: rt/mid/
@@ -91,9 +138,19 @@ cmd_run(){
     [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
 
     if [ "$rt" = "core-ai" ]; then
-      "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT" \
-        || echo "FAIL core-ai $mid $task" >> "$OUT/FAILURES.txt"
-      continue
+      case "$task" in
+        native-benchmark-*)
+          # Engine-native synthetic benchmark = Apple's external llm-benchmark
+          # binary (own timing, no --context-tokens; the caveat travels in the
+          # wrapper's provenance note).
+          "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT" \
+            || echo "FAIL core-ai $mid $task" >> "$OUT/FAILURES.txt"
+          continue ;;
+      esac
+      # Prompt tasks run through yardstick's CoreAIRuntime below, like every
+      # other arm. A bundle that is not staged is SKIPPED with its reason —
+      # "not yet measured" in the table, not four failed runs.
+      coreai_bundle_ready "$mid" || continue
     fi
     if [ "$rt" = "cactus" ]; then
       echo "SKIPPED $rt $mid $task reason=no-mac-arm" | tee -a "$OUT/SKIPPED.txt"
@@ -127,6 +184,12 @@ cmd_run(){
     # never retried here — that is a failure, and failed runs stay.
     if [ -f "$OUT/${slug}.jsonl" ] && [ "${GATE_RETRY:-1}" = "1" ]; then
       gate="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl")" || true
+      case "$gate" in DEGENERATE*)
+        # A repetition loop reproduces on re-run: flag it, keep the capture,
+        # never read its rate as a speed (cell_gate.py; the 2026-09-08 finding).
+        echo "GATE_FAIL $rt $mid $task verdict='$gate' (output is a repetition loop — not retried; the rate is not a measurement)" \
+          | tee -a "$OUT/FLAGGED.txt" ;;
+      esac
       case "$gate" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
         log "gate: $gate — quarantine + cooldown ${GATE_COOLDOWN:-180}s, re-run once"
         mv "$OUT/${slug}.jsonl" "$OUT/${slug}.jsonl.attempt1"

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		04D814EC10CDC77A988C023A /* VLMRunResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319BAA8C87D996DE5E74350D /* VLMRunResult.swift */; };
+		0825091D52387A94DBF0ABC8 /* CoreAIRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BAA10AA9E8F7A0B65E0E9F /* CoreAIRuntime.swift */; };
 		0CBBA289243FB4250C8B0FA2 /* VLMRunResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319BAA8C87D996DE5E74350D /* VLMRunResult.swift */; };
 		0F82181CAC39B256ECB79580 /* BenchmarkTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59D10CD171A7FE9EF1BB369F /* BenchmarkTask.swift */; };
 		100A9D75956A32FC2BA2C1F2 /* BenchmarkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F6CAC41B79737975D3977D7 /* BenchmarkResult.swift */; };
@@ -75,6 +76,7 @@
 		9E7D44C95CD1FFE50638B1BF /* AppLifecycleTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1124C321F63E5E0AEEF8902E /* AppLifecycleTask.swift */; };
 		9F1C833528187CA27858CE0E /* AppleFMRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F9A6C56B5E90A8DF016F8DB /* AppleFMRuntime.swift */; };
 		9FB0903D22C954FDEB555847 /* ResultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC7B6B97C8F1331B7F122CF4 /* ResultStore.swift */; };
+		A015EE7A7A064B865CF498FD /* CoreAILM in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD83EE8E96B2FE9F73197E7 /* CoreAILM */; };
 		A09211745827F71359B56AF8 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B1EE778237E01ED0945D4AE /* HistoryView.swift */; };
 		A30460F18FE1682F249286BF /* EnduranceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF6A488247DED241EF1C7E8 /* EnduranceSession.swift */; };
 		A90EA00E6A6DB24DE1E8ABBE /* EnergyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8646DFD32712FBAAEB72156D /* EnergyMonitor.swift */; };
@@ -195,6 +197,7 @@
 				FCB55FD5BA55D670179B2DD0 /* Transformers in Frameworks */,
 				23EE8DBC664CEB898C2405B1 /* AnemllCore in Frameworks */,
 				2DCF41D723588916BF29D8F0 /* LiteRTLM in Frameworks */,
+				A015EE7A7A064B865CF498FD /* CoreAILM in Frameworks */,
 				EC039C8FC4A2DF68CE274F17 /* llama.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -426,6 +429,7 @@
 				F096C2521A8E6BB4A3275B51 /* Transformers */,
 				F472A90A338D866AA59AA6CC /* AnemllCore */,
 				33E0A67472EF0169CD621D55 /* LiteRTLM */,
+				7FD83EE8E96B2FE9F73197E7 /* CoreAILM */,
 			);
 			productName = yardstick;
 			productReference = 3D1A95AD68FB592E643E5CD3 /* yardstick */;
@@ -577,6 +581,7 @@
 				235129CA3670027E3887200D /* BenchmarkTask.swift in Sources */,
 				3DF5F353B89E79F39EAED24B /* CactusParityTask.swift in Sources */,
 				D075A6247EB1EB171DD68013 /* CameraVLMTask.swift in Sources */,
+				0825091D52387A94DBF0ABC8 /* CoreAIRuntime.swift in Sources */,
 				F4803995ED52DD8969723131 /* CoreMLRuntime.swift in Sources */,
 				87EB333EA85EDBC955A75984 /* DeviceSnapshot.swift in Sources */,
 				5C8509191EFE92954DADF3C9 /* EnduranceChatTask.swift in Sources */,
@@ -764,7 +769,7 @@
 					"\"Vendored\"",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path $(SRCROOT)/Vendored/llama.xcframework/macos-arm64_x86_64";
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.iosllmbenchmark.yardstick;
 				PRODUCT_NAME = yardstick;
@@ -871,7 +876,7 @@
 					"\"Vendored\"",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path $(SRCROOT)/Vendored/llama.xcframework/macos-arm64_x86_64";
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.iosllmbenchmark.yardstick;
 				PRODUCT_NAME = yardstick;
@@ -1009,6 +1014,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 222066378580FE50F7021006 /* XCRemoteSwiftPackageReference "mlx-swift-lm" */;
 			productName = MLXLMCommon;
+		};
+		7FD83EE8E96B2FE9F73197E7 /* CoreAILM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreAILM;
 		};
 		992DB9CED2E82FFE8B146A31 /* AnemllCore */ = {
 			isa = XCSwiftPackageProductDependency;

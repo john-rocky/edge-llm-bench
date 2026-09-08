@@ -41,7 +41,8 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bench_common import DEVICE_DISPLAY, logical_model  # noqa: E402
+from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # noqa: E402
+                          bandwidth_utilization, fmt_bw, logical_model)
 from render_leaderboard import SPREAD_FLAG, arm_row  # noqa: E402
 from validate_cells import parse_line  # noqa: E402
 
@@ -145,6 +146,14 @@ def fmt(v, nd=1):
     return "—" if v is None else f"{v:.{nd}f}"
 
 
+def bw_of(c):
+    """The bandwidth_utilization dict a rendered cell carries (None when n/a)."""
+    if c.get("bw_util_pct") is None:
+        return None
+    return {"pct": c["bw_util_pct"], "bytes": c["artifact_bytes"],
+            "gbps": c["bw_ceiling_gbps"], "basis": c["bw_basis"]}
+
+
 def build(cells_path, schedule_path, stale_days, today):
     rows = list(csv.DictReader(open(SUMMARY_CSV))) if os.path.exists(SUMMARY_CSV) else []
     admitted = load_admission()
@@ -171,6 +180,12 @@ def build(cells_path, schedule_path, stale_days, today):
                     "spread_pct": None, "n": 0, "prefill_tps": None, "ttft_ms": None,
                     "mem_mb": None, "quant": "", "engine": "", "captured": "",
                     "campaign": "", "thermal_initial": "", "stale": False,
+                    # bw util: decode tok/s x bytes per token / the device ceiling
+                    # (bench_common.bandwidth_utilization; both registries cited).
+                    # stream_bytes = the per-token figure the column uses (the
+                    # artifact minus per-token-gathered tables where registered)
+                    "artifact_bytes": None, "stream_bytes": None, "bw_ceiling_gbps": None,
+                    "bw_basis": "", "bw_util_pct": None,
                 }
                 if c["exclude"]:
                     rec.update(status="excluded", reason=c["exclude"])
@@ -192,6 +207,11 @@ def build(cells_path, schedule_path, stale_days, today):
                                captured=captured, campaign=a["campaign"],
                                thermal_initial=",".join(a["thermal_initial"]),
                                stale=stale)
+                    u = bandwidth_utilization(dec, c["arm"], c["model_id"], ident, plat)
+                    if u:
+                        rec.update(artifact_bytes=u["artifact_bytes"], stream_bytes=u["bytes"],
+                                   bw_ceiling_gbps=u["gbps"], bw_basis=u["basis"],
+                                   bw_util_pct=u["pct"])
                 out_cells.append(rec)
     return out_cells, cells
 
@@ -216,7 +236,18 @@ def render_md(out_cells, cells_path, stale_days, today):
              f"{SPREAD_FLAG:.0f}% bar (spread-rule; Android cold trials legitimately "
              f"spread wider, the mark is information, not a verdict). `stale` = older "
              f"than {stale_days} days. Short-chat prefill is overhead-dominated and does "
-             "not compare across arms (docs/OPERATIONS.md); it is listed, not headlined.")
+             "not compare across arms (docs/OPERATIONS.md); it is listed, not headlined. "
+             "`bw N%` = decode tok/s × bytes per token ÷ the device's memory-bandwidth "
+             "ceiling (`devices/memory-bandwidth.json`, cited per device below): the share "
+             "of the memory bus the arm turns into tokens, which reads the recipe — a 4-bit "
+             "and an 8-bit artifact of one model are different byte counts. Bytes per token "
+             "= the artifact's weight bytes minus the tables a decode step gathers instead of "
+             "streams (Gemma 4's per-layer-embedding table, a LiteRT bundle's separate "
+             "input-embedding table, audio/vision/drafter sections), from "
+             "`models/artifact-bytes.json` (`scripts/artifact_streamed_bytes.py`); tied "
+             "embeddings stay counted as the LM head. `~` marks a ceiling that is a "
+             "derivation or an estimate, not a vendor figure; n/a where no ceiling is "
+             "citable or the artifact is unregistered. An estimate, not a bus counter.")
     L.append("")
 
     by_dev = {}
@@ -240,6 +271,11 @@ def render_md(out_cells, cells_path, stale_days, today):
                  + (f", {missing} not yet measured" if missing else "")
                  + (f"; captures {dates[0]} .. {dates[-1]}" if dates else "")
                  + (f"; engines observed: {', '.join(engines)}" if engines else "") + ".")
+        gbps, basis, source = bandwidth_ceiling(ident)
+        if gbps:
+            L.append(f"Memory-bandwidth ceiling for `bw`: {gbps:g} GB/s ({basis}) — {source}")
+        else:
+            L.append(f"Memory-bandwidth ceiling for `bw`: n/a ({basis}) — {source or 'no entry in devices/memory-bandwidth.json'}")
         L.append("")
         L.append("| model | " + " | ".join(f"{a} ({REGIME[plat]} tok/s)" for a in arms) + " |")
         L.append("|---|" + "---|" * len(arms))
@@ -259,34 +295,43 @@ def render_md(out_cells, cells_path, stale_days, today):
                     t = fmt(c["decode_tps"])
                     if c["spread_pct"] is not None and c["spread_pct"] > SPREAD_FLAG:
                         t += f" ⚠ {c['spread_pct']:.0f}%"
+                    if c["bw_util_pct"] is not None:
+                        t += f" · bw {fmt_bw(bw_of(c))}"
                     if c["stale"]:
                         t += " · stale"
                     line.append(t)
             L.append("| " + " | ".join(line) + " |")
         L.append("")
-        L.append("<details><summary>per-cell detail (recipe, session, memory, prefill)</summary>")
+        L.append("<details><summary>per-cell detail (recipe, session, memory, prefill, bandwidth)</summary>")
         L.append("")
         L.append("| model | arm | artifact | quant | engine | decode tok/s | spread % | n | "
-                 "prefill tok/s | TTFT ms | mem MB | thermal at start | captured | session |")
-        L.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+                 "artifact MB | MB/token | bw util | prefill tok/s | TTFT ms | mem MB | "
+                 "thermal at start | captured | session |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         for c in dcells:
             if c["status"] == "excluded":
                 L.append(f"| {c['model']} | {c['arm']} | `{c['model_id']}` | | | — ({c['reason']}) "
-                         "| | | | | | | | |")
+                         "| | | | | | | | | | | |")
                 continue
             if c["status"] == "missing":
                 L.append(f"| {c['model']} | {c['arm']} | `{c['model_id']}` | | | not yet measured "
-                         "| | | | | | | | |")
+                         "| | | | | | | | | | | |")
                 continue
+            mb = f"{c['artifact_bytes'] / 1e6:.0f}" if c["artifact_bytes"] else "—"
+            tok = f"{c['stream_bytes'] / 1e6:.0f}" if c["stream_bytes"] else "—"
             L.append(
                 f"| {c['model']} | {c['arm']} | `{c['model_id']}` | {c['quant']} | {c['engine']} | "
                 f"{fmt(c['decode_tps'])} | {fmt(c['spread_pct'])} | {c['n']} | "
+                f"{mb} | {tok} | {fmt_bw(bw_of(c)) if c['bw_util_pct'] is not None else 'n/a'} | "
                 f"{fmt(c['prefill_tps'])} | {fmt(c['ttft_ms'], 0)} | {fmt(c['mem_mb'], 0)} | "
                 f"{c['thermal_initial'] or '—'} | {c['captured']}{' (stale)' if c['stale'] else ''} | "
                 f"`{os.path.basename(c['campaign'])}` |")
         L.append("")
         L.append("mem MB = phys_footprint on Apple rows, VmRSS on Android rows (the GPU "
-                 "arm's buffers sit outside RSS; methodology/android.md).")
+                 "arm's buffers sit outside RSS; methodology/android.md). artifact MB = "
+                 "decimal megabytes of the whole artifact; MB/token = the bytes a decode step "
+                 "reads (artifact minus per-token-gathered tables, models/artifact-bytes.json); "
+                 "bw util = decode tok/s × MB/token ÷ this device's ceiling.")
         L.append("")
         L.append("</details>")
         L.append("")
@@ -296,23 +341,24 @@ def render_md(out_cells, cells_path, stale_days, today):
 CSV_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", "model_id",
               "task", "anchor", "status", "reason", "decode_tps", "spread_pct", "n",
               "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
-              "captured", "campaign", "stale"]
+              "captured", "campaign", "stale",
+              "artifact_bytes", "stream_bytes", "bw_ceiling_gbps", "bw_basis", "bw_util_pct"]
 
 
 def write_outputs(out_cells, md, md_path, out_dir):
     os.makedirs(out_dir, exist_ok=True)
-    with open(md_path, "w") as fh:
+    with atomic_write(md_path, "w") as fh:
         fh.write(md)
-    with open(os.path.join(out_dir, "dashboard-v1.csv"), "w", newline="") as fh:
+    with atomic_write(os.path.join(out_dir, "dashboard-v1.csv"), "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=CSV_FIELDS)
         w.writeheader()
         for c in out_cells:
             row = {k: c.get(k) for k in CSV_FIELDS}
-            for k in ("decode_tps", "spread_pct", "prefill_tps", "ttft_ms", "mem_mb"):
+            for k in ("decode_tps", "spread_pct", "prefill_tps", "ttft_ms", "mem_mb", "bw_util_pct"):
                 if isinstance(row[k], float):
                     row[k] = round(row[k], 2)
             w.writerow(row)
-    with open(os.path.join(out_dir, "dashboard-v1.json"), "w") as fh:
+    with atomic_write(os.path.join(out_dir, "dashboard-v1.json"), "w") as fh:
         json.dump({"generated": datetime.datetime.now().isoformat(timespec="seconds"),
                    "cells": out_cells}, fh, indent=1)
 

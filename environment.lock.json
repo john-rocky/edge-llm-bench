@@ -69,7 +69,8 @@
           "session_diff": "patches/coreai-models-58aab35-muse-bench-session.diff",
           "note": "fork engine, NOT the pinned 0.2.0 arm — 0.2.0 neither builds/runs on macOS 27.0 26A5406e (FM ABI) nor supports muse_glimmer; labelled 'fork engine (reference)' per methodology/core-ai-arm-provenance.md. See results/raw/2026-08-15-muse-glimmer-30b-3way/ENV.md."
         }
-      }
+      },
+      "dashboard_v2_note": "Since 2026-09-08 the dashboard's Core AI rows (Qwen3 0.6B/1.7B/4B, own exports, side-loaded) run through the yardstick's CoreAIRuntime on the Mac and the app on the phone — the standard EngineFactory/generate path against this pinned 0.2.0 checkout (which carries the static-inputs patch; the Qwen3 rows do not use it). The PLE caveat above still governs the Gemma 4 rows, which the cells file keeps as exclude=. Bundle identities: the models entries below."
     },
     "executorch": {
       "source": "https://github.com/pytorch/executorch",
@@ -152,6 +153,23 @@
       "file": "muse-glimmer-k-quant-17G-128K-text-solo-metal/muse-glimmer-k-quant-17G-128K-text-solo-metal.pte",
       "hf_revision": "fc6fa93cdefeddc93abd7abf883e99279af7ea51",
       "note": "Meta's official k-quant Metal artifact, 17.9 GB (muse-glimmer 3-way ExecuTorch arm)"
+    },
+    "core-ai/qwen3-0.6b-4bit-gpu": {
+      "source": "mlboydaisuke/qwen3-0.6b-CoreAI-official",
+      "hf_revision": "99c068ceeca9041275c78fbc298d193f6002bb56",
+      "file": "macos/qwen3_0_6b_4bit_dynamic.aimodel (main.mlirb 335,678,144 B, main.hash 9752caf7f72d1d38e2f3e63409f70312f6791ca6772bbace4a0b364905fed8b8)",
+      "note": "the macOS-27-era re-export of the 4-bit dynamic recipe; Mac runs its h16c AOT compile, the phone an h18p compile of the same .aimodel. The macos-26-export/ bundle behind the retired id core-ai/qwen3-0.6b-gpu (main.hash 17cfae91…) decodes garbage on this engine — ModelCatalog.swift note, 2026-09-08"
+    },
+    "core-ai/qwen3-1.7b-gpu": {
+      "source": "local export ~/code/coreai/coreai-models/exports/qwen3_17b_gpu_dyn (2026-08-18), not published; the phone bundle is mlboydaisuke/qwen3-1.7b-CoreAI-official ios-gpu/ (h18p compile) at 545a7a48a2d308d0af93d8d91b8e3e3723747398",
+      "file": "qwen3_17b_gpu_dyn.aimodel (main.mlirb 968,606,951 B, main.hash 5f58dce72acf96f503cf010a6d40b6dfd60fe6cc57746f6db18ee1068d858032)",
+      "note": "Mac row only until the export is published; identity also in each session's session_provenance.txt"
+    },
+    "core-ai/qwen3-4b-gpu": {
+      "source": "mlboydaisuke/qwen3-4b-CoreAI-official",
+      "hf_revision": "02661bf3f7ea9e8ba6261c9d924cd573cd6eb5bb",
+      "file": "macos/qwen3_4b_4bit_dynamic.aimodel (main.mlirb 2,263,457,254 B, main.hash 9942c85b98d16a122a948bd1dfe787f1f1e280781d9513310f0804ad4705d5f3)",
+      "note": "Mac runs its h16c AOT compile; the phone needs an h18p compile of the same .aimodel (prepared in ~/bench-coreai-staging/ready/qwen3_4b_gpu, not staged yet)"
     }
   },
   "quality_instruments": {

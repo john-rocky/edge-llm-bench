@@ -75,6 +75,9 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         case "core-ai/qwen3-0.6b-ane-june": return ("qwen3_0_6b_ane_june", "static-shape")
         case "core-ai/qwen3-1.7b-gpu-june": return ("qwen3_1_7b_gpu_june", "coreai-pipelined")
         case "core-ai/qwen3-0.6b-gpu": return ("qwen3_0_6b_gpu", "coreai-pipelined")
+        // 27-era re-export of the 0.6B 4-bit dynamic recipe (the entry above decodes
+        // garbage on the 0.2.0 engine — ModelCatalog note, 2026-09-08).
+        case "core-ai/qwen3-0.6b-4bit-gpu": return ("qwen3_0_6b_4bit_gpu", "coreai-pipelined")
         case "core-ai/qwen3-1.7b-ane": return ("qwen3_1_7b_ane", "static-shape")
         case "core-ai/qwen3-1.7b-gpu": return ("qwen3_1_7b_gpu", "coreai-pipelined")
         case "core-ai/qwen3-4b-ane":   return ("qwen3_4b_ane", "static-shape")
@@ -142,6 +145,15 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     /// back to an embedded app-bundle resource.
     private static func resolveBundleURL(folder: String) -> URL? {
         let fm = FileManager.default
+        // Mac CLI: the matrix runner points BENCH_COREAI_MODELS_DIR at the directory
+        // holding the side-loaded bundles (default ~/Documents/CoreAIModels — the same
+        // <dir>/<folder>/metadata.json layout the app uses in its Documents container).
+        // Unset on the phone, so the app's lookup below is unchanged.
+        if let dir = ProcessInfo.processInfo.environment["BENCH_COREAI_MODELS_DIR"], !dir.isEmpty {
+            let u = URL(fileURLWithPath: dir, isDirectory: true)
+                .appendingPathComponent(folder, isDirectory: true)
+            if fm.fileExists(atPath: u.appendingPathComponent("metadata.json").path) { return u }
+        }
         if let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
             let u = docs.appendingPathComponent("CoreAIModels/\(folder)", isDirectory: true)
             if fm.fileExists(atPath: u.appendingPathComponent("metadata.json").path) { return u }

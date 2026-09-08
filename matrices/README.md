@@ -56,9 +56,11 @@ for their published campaigns).
   release ships.
 - `dashboard-text-v1.cells` — the dashboard's initial text-only model set
   (Gemma 4 E2B/E4B, Qwen3 0.6B/1.7B/4B) across LiteRT-LM / MLX / llama.cpp on
-  every platform, with disabled Qwen3.5 / LFM2.5 placeholders; companion
-  one-pager `docs/dashboard-cells-v1.md`. Re-measured on a schedule by the
-  recurring job (`docs/dashboard-recurring-job-v1.md`, `./bench dashboard-job`).
+  every platform, plus (v2, 2026-09-08) the Core AI arm on iPhone and Mac —
+  own side-loaded exports, the Gemma 4 rows `exclude=` with their reason —
+  with disabled Qwen3.5 / LFM2.5 placeholders; companion one-pager
+  `docs/dashboard-cells-v1.md`. Re-measured on a schedule by the recurring
+  job (`docs/dashboard-recurring-job-v1.md`, `./bench dashboard-job`).
 - `dashboard-text-v1-android-{a,b1,b2}.cells` — the same Android rows split
   into storage halves for phones that cannot hold the whole set (each half
   carries the session anchor; rows byte-identical to the parent). The

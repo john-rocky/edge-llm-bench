@@ -9,6 +9,12 @@
   cores) — the mask is recorded per run in `conditions.cpuAffinity`, so rows
   stay comparable within the device either way.
 - RAM: 12 GB
+- Memory bandwidth ceiling (for the `bw util` column): 84.8 GB/s, derived
+  from Qualcomm's product brief ("Support for LP-DDR5x memory, up to
+  5300MHz" = 10.6 Gbps per pin × 64-bit ÷ 8); the brief states the clock,
+  not GB/s, and the phone's DRAM may run below the SoC maximum —
+  `devices/memory-bandwidth.json`, `basis: derived-from-vendor-spec`, rendered
+  with a `~`.
 - First measured: 2026-08-25 (this repo's first flagship Android row space);
   Android version + security patch are recorded per run in the JSON
   (`device.systemVersion` / `device.securityPatch`).

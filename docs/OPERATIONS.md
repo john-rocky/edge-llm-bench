@@ -181,12 +181,24 @@ admitted, 3 busy, 4 aborted at admission (retried once), 5 device needs a
 human, 6 timeout. A firing whose pending devices are all held or detached
 leaves a ledger line under device `auto` with the reasons; the decision log
 is `logs/dashboard-job/<date>-auto.log`, the sitting's `<date>-<device>.log`.
-One job instance per host: a manual `auto` beside a running one exits 3.
+One sitting per device (`.job.lock.<device>`): a second run on a device
+being measured exits 3, while sittings on different devices may run side by
+side (a phone sitting is only adb traffic on the host); `auto` serializes
+its choice with `.choose.lock` so two autos never pick the same device.
+
+Core AI cells (v2 of the cells file) need their bundles side-loaded before
+a sitting — Mac under `~/Documents/CoreAIModels/<folder>/`, phone under the
+app's `Documents/CoreAIModels/<folder>/` (recipe: `docs/dashboard-cells-v1.md`,
+"Core AI arm (v2)"). The job does not stage: a missing folder is a `SKIPPED`
+line on the Mac and a failed cell on the phone, never a refused sitting.
 
 The job never commits or pushes: review the new campaign dir(s) and the
 regenerated `results/summary/` the next morning and commit them with a
 message that states what ran and what reproduced (public text carries no
-cross-runtime ordering). The launchd template that fires `auto` is
+cross-runtime ordering). Read `FLAGGED.txt` for `DEGENERATE` before trusting
+a new arm's rate: the cell gate flags a capture whose output is a repetition
+loop (an engine can report a fast rate while generating garbage — seen on
+2026-09-08), and such a cell is never retried, only marked. The launchd template that fires `auto` is
 `ops/dashboard-v1/com.edge-llm-bench.dashboard-v1.plist.template`; enabling
 it is an owner step, documented in the template header. To change the firing
 times, edit `schedule.json` `slots` and the template together, re-render the
@@ -232,11 +244,18 @@ old times until then).
    `bootstrap.sh` + `stamp_engine_pins.sh` picks it up for row stamping.
 3. Cells + `matrices/README.md` runtime list + `scripts/validate_cells.py`
    RUNTIMES set.
-4. External-binary arms (own CLI, own timing): copy the Core AI pattern —
-   wrapper script + importer emitting schema v1 with the comparability caveat
-   in provenance (`scripts/coreai_mac_wrapper.sh` /
-   `scripts/import_coreai_llm_benchmark.py`).
-5. Quality arm: a `--which` case in `scripts/parity_gsm8k.py`.
+4. External-binary arms (own CLI, own timing): copy the Core AI
+   native-benchmark pattern — wrapper script + importer emitting schema v1
+   with the comparability caveat in provenance
+   (`scripts/coreai_mac_wrapper.sh` / `scripts/import_coreai_llm_benchmark.py`).
+   Prefer the in-harness adapter whenever the SDK links into yardstick (the
+   Core AI prompt-task rows moved that way on 2026-09-08): same protocol,
+   same record, no caveat.
+5. Register what the arm loads in `models/artifact-bytes.json`
+   (`scripts/artifact_bytes.py --refresh`) so its rows get the `bw util`
+   column; a new device needs its ceiling in `devices/memory-bandwidth.json`
+   with the citation, or an explicit null.
+6. Quality arm: a `--which` case in `scripts/parity_gsm8k.py`.
 
 ## Runbook: add a device
 
@@ -297,10 +316,18 @@ old times until then).
   arms differently from decode; the 1024-token task is the prefill
   instrument (methodology/agreed-protocol-gemma4.md).
 
-- **Core AI arm is best-effort**: PLE models (Gemma-4 E2B/E4B) need the
-  unpublished `COREAI_STATIC_INPUTS` engine patch; a clean clone reports
-  `unsupported`. The Mac external `llm-benchmark` rows are not
+- **Core AI arm**: PLE models (Gemma-4 E2B/E4B) need the unpublished
+  `COREAI_STATIC_INPUTS` engine patch; a clean clone reports `unsupported`
+  and the dashboard rows are `exclude=`. Qwen3 rows run through yardstick's
+  `CoreAIRuntime` on the Mac (since 2026-09-08) and the app on the phone —
+  bundles are side-loaded (`BENCH_COREAI_MODELS_DIR`, default
+  `~/Documents/CoreAIModels/<folder>/`; staging recipe in
+  `docs/dashboard-cells-v1.md`), and the Mac runner logs a not-staged bundle
+  as `SKIPPED … coreai-bundle-not-staged`. The external `llm-benchmark`
+  wrapper serves only `native-benchmark-*` cells; those rows are not
   protocol-identical (own timing, no context budget) and say so in provenance.
+  Building the Mac yardstick with `CoreAILM` needs the Xcode 27 beta as the
+  selected developer dir (stable Xcode has no CoreAI framework in its SDK).
 - **GSM8K beyond the LiteRT arm still shells to external checkouts**
   (`environment.lock.json` → `external_instruments_not_yet_in_repo`).
 - **Cross-session device drift is 16-25%** (iphone-session-variance): never

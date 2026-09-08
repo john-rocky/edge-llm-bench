@@ -1,0 +1,33 @@
+{
+  "_doc": "Memory-bandwidth ceilings per device, keyed by the record's device.modelIdentifier (the join key of results/summary/device-runs.csv). Read by scripts/bench_common.py bandwidth_ceiling() for the dashboard/leaderboard 'bw util' column: decode tok/s x weight bytes / ceiling. A ceiling is only ever a vendor figure or a derivation from a vendor-stated clock; where neither exists the value is null and the column renders n/a — never a guessed number. `basis`: vendor = the vendor prints GB/s; derived-from-vendor-spec = GB/s computed from the vendor's stated data rate and the platform's standard bus width; estimate = a third-party data rate (vendor publishes none); unknown = nothing citable. Re-check `source` when a device page changes; `checked` is the date the citation was read.",
+  "devices": {
+    "Mac16,9": {
+      "display": "Mac Studio (M4 Max, 16-core CPU / 40-core GPU, 128 GB)",
+      "gbps": 546,
+      "basis": "vendor",
+      "source": "Apple, 'Mac Studio (2025) - Tech Specs' (support.apple.com/en-us/122211): M4 Max with 16-core CPU / 40-core GPU — '546GB/s memory bandwidth' (the 14-core CPU / 32-core GPU bin is '410GB/s'). Also Apple Newsroom 2024-10-30, 'Apple introduces M4 Pro and M4 Max': 'M4 Max supports up to 128GB of fast unified memory and up to 546GB/s of memory bandwidth'. This host is the 40-core GPU bin (system_profiler SPDisplaysDataType: Total Number of Cores: 40; hw.memsize 128 GB, read 2026-09-08).",
+      "checked": "2026-09-08"
+    },
+    "iPhone18,1": {
+      "display": "iPhone 17 Pro (A19 Pro, 12 GB)",
+      "gbps": 76.8,
+      "basis": "estimate",
+      "source": "Apple publishes no memory-bandwidth figure for A-series chips. Derived from LPDDR5X-9600 on the 64-bit interface A-series phones use: 9600 MT/s x 64 bit / 8 = 76.8 GB/s. The LPDDR5X-9600 data rate is third-party (notebookcheck.net, 'Apple A19 Pro Processor - Benchmarks and Specs', which prints 'LPDDR5X-9600 ... with up to 75.8 GB/s memory bandwidth' without attribution to Apple). Neither the data rate nor the bus width is vendor-confirmed; treat utilization on this device as indicative.",
+      "checked": "2026-09-08"
+    },
+    "SM-S942Q": {
+      "display": "Galaxy S26 (Snapdragon 8 Elite Gen 5, SM8850, 12 GB)",
+      "gbps": 84.8,
+      "basis": "derived-from-vendor-spec",
+      "source": "Qualcomm, 'Snapdragon 8 Elite Gen 5 (SM8850-5-AC) Product Brief' (qualcomm.com, PDF), Memory: 'Support for LP-DDR5x memory, up to 5300MHz', 'Memory Density: Up to 24GB'. The brief states the clock, not GB/s. Derived: 5300 MHz DDR = 10.6 Gbps per pin x 64-bit (four 16-bit channels, the platform's standard width, as third-party spec pages such as notebookcheck.net list it) / 8 = 84.8 GB/s. The DRAM Samsung fits in the S26 may be clocked below the SoC maximum; this is the SoC ceiling.",
+      "checked": "2026-09-08"
+    },
+    "Pixel 8a": {
+      "display": "Pixel 8a (Tensor G3, 8 GB)",
+      "gbps": null,
+      "basis": "unknown",
+      "source": "No vendor figure. Google's Pixel 8a tech specs state only '8 GB LPDDR5X' (Google Store spec sheet, as cited by the Pixel 8a Wikipedia article, read 2026-09-08); TechInsights' 'Google Pixel 8 Tensor G3 SoC Digital Floorplan Analysis' identifies 'a Micron LPDDR5 memory' on the Pixel 8 package and gives no data rate or bus width. With the memory generation itself contested and no clock published, no ceiling is stated; the column renders n/a for this device rather than a number nobody printed.",
+      "checked": "2026-09-08"
+    }
+  }
+}
