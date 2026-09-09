@@ -1,0 +1,12 @@
+# Targeted retake (docs/dashboard-recurring-job-v1.md §5, "a cell flagged in the
+# table"): the Pixel 8a's llama.cpp Gemma 4 E4B cell from the 2026-09-08 sitting
+# (2026-09-08-dashboard-v1-pixel8a-b2-android) is a gate re-run that read
+# 1.3 / 0.9 / 1.3 tok/s after the interleaved rounds 5.2 / 5.3 / 2.5 collapsed
+# (COLLAPSE 48); the block re-run passed the gate on its own runs (min 69 % of
+# its median) while standing at 26 % of the cell's 2026-09-05 median (5.0).
+# The session anchor plus that one cell, rows byte-identical to
+# dashboard-text-v1-android-b2.cells; the pushed copies are still on the phone.
+#   ./bench dashboard-job pixel8a --cells matrices/retake-2026-09-09-pixel8a-llamacpp-gemma-4-e4b.cells
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
