@@ -112,6 +112,15 @@ run_cell(){ # <runtime> <model-id> <task> <runs> [extra launch args...]
   return 0
 }
 
+launch_refused(){ # <runtime> <model-id> <task> -> 0 when the cell's launch was refused by CoreDevice (no app run at all)
+  # The device-side reasons a launch fails without the app running: the trusted USB
+  # session gone (error 4016, seen 2026-09-09 06:42 — 13 cells then cycled through
+  # their cooldowns for 47 min), a locked phone, a device no longer listed.
+  local logf="$OUT/console_$(echo "${1}_${2}_${3}" | tr '/.' '__').txt"
+  [ -f "$logf" ] || return 1
+  tail -40 "$logf" | grep -qE "CoreDeviceError error 4016|not able to fulfill the requested usage assertion|could not be, unlocked|specified device was not found|Device is not connected"
+}
+
 preflight(){ # <cells-file>
   [ -n "${CATALOG_JSON:-}" ] || { echo "preflight: CATALOG_JSON unset — skipping (advisory)"; return 0; }
   python3 "$REPO/scripts/validate_cells.py" --catalog "$CATALOG_JSON" "$1"
@@ -128,7 +137,7 @@ cmd_run(){
   date "+session start %F %T" >> "$OUT/session_provenance.txt"
   echo "cells: $cells_file" >> "$OUT/session_provenance.txt"
 
-  local first=1
+  local first=1 refused=0
   # cells_for prints anchors first and logs CELL_SKIP lines to stderr.
   while read -r rt mid task rest; do
     read -r -a opts <<<"${rest:-}"
@@ -146,6 +155,19 @@ cmd_run(){
     local pulled verdict
     pulled="$(pull_new)"; verdict="$(cell_verdict "$rt" "$mid" "$task" "$runs")"
     echo "pulled=$pulled verdict=$verdict"
+    # A phone that stopped accepting launches ends the session now: two cells in a
+    # row refused by CoreDevice with nothing pulled is a lost device, not two cell
+    # failures. Captured cells stand; the job reads DEVICE_LOST.txt (verdict DEVICE).
+    if [[ "$pulled" == 0 && "$verdict" == SHORT* ]] && launch_refused "$rt" "$mid" "$task"; then
+      refused=$((refused + 1))
+      if [ "$refused" -ge 2 ]; then
+        echo "DEVICE_LOST after $rt $mid $task: the phone refused $refused launches in a row ($(date +%T)) — session ended, captured cells stand; remaining cells not attempted" \
+          | tee -a "$OUT/DEVICE_LOST.txt"
+        break
+      fi
+    else
+      refused=0
+    fi
     if [[ "$verdict" == DEGENERATE* ]]; then
       # A repetition loop reproduces on re-run: flag, keep, never retry (cell_gate.py).
       echo "GATE_FAIL $rt $mid $task verdict='$verdict' (output is a repetition loop — not retried; the rate is not a measurement)" \

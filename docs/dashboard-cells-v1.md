@@ -342,8 +342,11 @@ cells fell in the window after the phone stopped accepting launches at 06:42
 (`docs/dashboard-recurring-job-v1.md` §8, the two gaps). The app has since
 been rebuilt from the command line with the two memory entitlements
 (`xcodebuild … -allowProvisioningUpdates DEVELOPMENT_TEAM=… PRODUCT_BUNDLE_IDENTIFIER=com.daisukemajima.llmbench`,
-`.build/dd-ios`), so installing it and staging the three folders are the
-only steps left before the phone's Core AI rows can run.
+`.build/dd-ios`). It was installed and the three folders staged over USB on
+2026-09-09 13:30 (the upgrade kept the app's data container; 0.6B 27 s,
+1.7B 37 s, 4B 152 s), and a functional launch of the 0.6B cell decoded
+coherent text at thermal nominal — so the phone's three Core AI rows can run
+at its next sitting.
 
 ### Bundles per row
 

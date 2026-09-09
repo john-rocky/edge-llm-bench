@@ -264,6 +264,7 @@ began after the probe still marks that session `admitted: false`.
 | cell | DEGENERATE (the output is a repetition loop; `scripts/cell_gate.py`, added 2026-09-08 after a Core AI export decoded garbage at a fast rate) | flag only — a re-run reproduces it; the capture stays, `FLAGGED.txt` says the rate is not a measurement | the capture | read the sample; fix or retire the artifact, never quote the rate |
 | session | anchor short / collapse / thermal (§4) | refuse the sitting (exit 4); retry **once** after `abort_retry_after_minutes` (collapse 30, thermal 60) | anchor campaign + `SESSION.json admitted:false` | none |
 | session | whole-session timeout (`timeout_hours` per device) | exit 6; captured cells stand, missing cells keep last week's value in the table | records so far, `SESSION.json verdict:TIMEOUT` | look at the log |
+| session | the phone stops accepting launches mid-session (two consecutive CoreDevice launch refusals with nothing pulled — a lost USB session, a locked phone, a device no longer listed; added 2026-09-09 after the first iPhone firing cycled 13 cells through their cooldowns) | the iPhone runner ends the session at once (`DEVICE_LOST.txt`); the job records verdict DEVICE (exit 5), admission stays the anchor's, captured cells stand, missing cells keep last week's value | records so far, `DEVICE_LOST.txt`, `SESSION.json verdict:DEVICE` | replug / unlock; re-run the missing cells by hand |
 | firing | device busy (hold, lock, foreign process, guard, frequency cap) | `auto`: passed over for the next pending device; when every pending device is busy, poll every `busy_poll_minutes` (15) for `busy_window_minutes` (120), then exit 3. An explicit device: exit 3 after the same polling | ledger line only (device `auto` when none ran) | none — the next firing tries again, or `./bench dashboard-job <device>` by hand |
 | firing | device not ready (absent, locked, no app, storage floor unmet, doctor FAIL) | `auto`: passed over for the firing, the other pending devices run; exit 5 only when nothing ran. An explicit device: exit 5, no retry | ledger line only | plug in / unlock / free storage; the next firing takes it, or run by hand |
 | week | a cell SHORT in 3 consecutive weekly passes with the same failure | nothing automatic | the three campaigns | convert the row to `exclude=<slug>` in the cells file (the reason is the datum) |
@@ -391,6 +392,9 @@ are the design working as written, and both are gaps:
 - A device that has become unreachable should end the sitting at once
   (verdict DEVICE, captured cells stand) instead of paying every remaining
   cooldown; the signal is a run of launch failures with no records pulled.
+  Done the same day (§5, `DEVICE_LOST.txt`): two consecutive launch
+  refusals end the session; it cannot change a number, so it was not put
+  to the owner first.
 - A run that starts at `serious` or `critical` is marked and re-run once,
   never stopped. `fair` is this phone's charging label and the anchor rule
   handles it; `serious` is a real thermal escalation and the session should

@@ -678,6 +678,14 @@ def attempt(schedule, key, dev, attempt_no, args):
             # so a contention that began after phase A is not admitted blindly
             own_ok, own_reason, own_details = admit(schedule, dev, rel_path, platform)
             verdict = "TIMEOUT" if rc == 124 else "COMPLETED"
+            # the iPhone runner ends a session whose phone stopped accepting
+            # launches (two refusals in a row) and says so in DEVICE_LOST.txt:
+            # the verdict is DEVICE, the captured cells stand, admission is
+            # still the anchor's (design §5; the 2026-09-09 05:30 firing)
+            lost = read_lines(os.path.join(ROOT, rel_path, "DEVICE_LOST.txt"))
+            if lost:
+                verdict = "DEVICE"
+                log(f"device lost mid-session: {lost[-1]}")
             write_session(rel_path, {"campaign": rel_path, "phase": "payload",
                                      "cells": cells_file, "device_key": key,
                                      "device_display": dev["display"],
@@ -688,9 +696,12 @@ def attempt(schedule, key, dev, attempt_no, args):
                                      "reason": own_reason, "anchor": own_details,
                                      "anchor_phase": anchor_rel, "runner_exit": rc,
                                      "cells_expected": expected, "cells_with_records": have,
+                                     **({"device_lost": lost} if lost else {}),
                                      **campaign_notes(rel_path)})
             if rc == 124:
                 worst = max(worst, EXIT_TIMEOUT)
+            elif lost:
+                worst = max(worst, EXIT_DEVICE)
             elif not own_ok:
                 worst = max(worst, EXIT_ABORTED)
         if not dry:
