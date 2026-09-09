@@ -35,6 +35,11 @@ APP="${APP:-com.example.CoreMLLLMChat}"              # borrowed App ID (memory e
 DEFAULT_RUNS="${RUNS:-4}"
 BASE_COOLDOWN="${BASE_COOLDOWN:-100}"                # s between cells (fairness cold-warm-split)
 THERMAL_COOLDOWN="${THERMAL_COOLDOWN:-240}"          # s before the one thermal re-run
+# `fair` is this phone's charging label (the anchor rule handles it); `serious` /
+# `critical` is a real escalation. Owner decision 2026-09-09: pause, capped —
+# a capture that saw serious/critical waits SERIOUS_COOLDOWN before its retry
+# and again before the next cell, instead of the 240 s, and the run goes on.
+SERIOUS_COOLDOWN="${SERIOUS_COOLDOWN:-600}"
 CELL_TIMEOUT="${CELL_TIMEOUT:-3600}"                 # litert teardown stalls: keep 3600 for litert cells
 CAMPAIGN="${CAMPAIGN:-$(date +%F)-iphone-matrix}"
 OUT="$REPO/results/raw/$CAMPAIGN"
@@ -137,7 +142,7 @@ cmd_run(){
   date "+session start %F %T" >> "$OUT/session_provenance.txt"
   echo "cells: $cells_file" >> "$OUT/session_provenance.txt"
 
-  local first=1 refused=0
+  local first=1 refused=0 serious_wait=0
   # cells_for prints anchors first and logs CELL_SKIP lines to stderr.
   while read -r rt mid task rest; do
     read -r -a opts <<<"${rest:-}"
@@ -151,10 +156,16 @@ cmd_run(){
     [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
 
     [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
+    if [ "${serious_wait:-0}" -gt 0 ]; then
+      log "previous capture saw serious/critical thermal — pausing ${serious_wait}s more before this cell"
+      sleep "$serious_wait"; serious_wait=0
+    fi
     run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
     local pulled verdict
     pulled="$(pull_new)"; verdict="$(cell_verdict "$rt" "$mid" "$task" "$runs")"
     echo "pulled=$pulled verdict=$verdict"
+    local retry_cool="$THERMAL_COOLDOWN"
+    case "$verdict" in *serious*|*critical*) retry_cool="$SERIOUS_COOLDOWN"; serious_wait="$SERIOUS_COOLDOWN" ;; esac
     # A phone that stopped accepting launches ends the session now: two cells in a
     # row refused by CoreDevice with nothing pulled is a lost device, not two cell
     # failures. Captured cells stand; the job reads DEVICE_LOST.txt (verdict DEVICE).
@@ -174,12 +185,13 @@ cmd_run(){
         | tee -a "$OUT/FLAGGED.txt"
     fi
     if [[ "$verdict" == HOT* || "$verdict" == SPREAD* || "$verdict" == DEAD* || "$verdict" == COLLAPSE* || "$verdict" == GATE_ERROR* ]]; then
-      log "gate: $verdict — quarantine flagged capture, cooldown ${THERMAL_COOLDOWN}s, re-run once"
+      log "gate: $verdict — quarantine flagged capture, cooldown ${retry_cool}s, re-run once"
       quarantine_cell "$rt" "$mid" "$task" "$runs"
-      sleep "$THERMAL_COOLDOWN"
+      sleep "$retry_cool"
       run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
       pulled="$(pull_new)"; verdict="$(cell_verdict "$rt" "$mid" "$task" "$runs")"
       echo "pulled=$pulled verdict=$verdict"
+      case "$verdict" in *serious*|*critical*) serious_wait="$SERIOUS_COOLDOWN" ;; esac
       [[ "$verdict" == HOT* || "$verdict" == SPREAD* || "$verdict" == DEAD* || "$verdict" == COLLAPSE* || "$verdict" == GATE_ERROR* ]] \
         && echo "GATE_FAIL $rt $mid $task retry='$verdict' (retry kept; flagged capture in device-jsonl-flagged/)" \
         | tee -a "$OUT/FLAGGED.txt"

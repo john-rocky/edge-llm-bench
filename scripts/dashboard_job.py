@@ -575,7 +575,9 @@ def ledger(row):
 def attempt(schedule, key, dev, attempt_no, args):
     platform = dev["platform"]
     date = datetime.date.today().isoformat()
-    base = f"{date}-dashboard-v1-{key}" + (f"-r{attempt_no}" if attempt_no > 1 else "")
+    suffix = ("-" + args.suffix.strip("-")) if args.suffix else ""   # always one leading dash
+    base = (f"{date}-dashboard-v1-{key}" + suffix
+            + (f"-r{attempt_no}" if attempt_no > 1 else ""))
     env = device_env(dev)
     dry = args.dry_run
     started = time.strftime("%F %T")
@@ -621,7 +623,9 @@ def attempt(schedule, key, dev, attempt_no, args):
 
         # --- phase B: the payload, whole or in storage halves
         halves = None
-        if platform == "android" and dev.get("split"):
+        # an explicit --cells file is single-file mode (a targeted retake, design
+        # §5): it names its own rows and never fans out into the storage halves
+        if platform == "android" and dev.get("split") and not args.cells:
             free = info.get("free_gb")
             if free is not None and free < float(dev.get("storage_gb_full", 0)):
                 halves = dev["split"]
@@ -951,6 +955,8 @@ def main():
                                    "device whose last admitted session is oldest)")
     ap.add_argument("--schedule", default=SCHEDULE)
     ap.add_argument("--cells", help="override the cells file (single-file mode)")
+    ap.add_argument("--suffix", help="campaign-name suffix (e.g. -retake) so a second run on the "
+                                     "same day does not land in that day's campaign dir")
     ap.add_argument("--dry-run", action="store_true",
                     help="preflight and print the plan; take no hold, capture nothing")
     ap.add_argument("--once", action="store_true",

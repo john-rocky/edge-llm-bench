@@ -138,6 +138,7 @@ def main():
     dj.add_argument("--dry-run", action="store_true", help="preflight + plan only")
     dj.add_argument("--once", action="store_true", help="no busy polling / abort retry")
     dj.add_argument("--cells", help="override the cells file")
+    dj.add_argument("--suffix", help="campaign-name suffix for a same-day retake (e.g. -retake)")
 
     args = ap.parse_args()
     if args.cmd == "matrix":
@@ -164,6 +165,9 @@ def main():
             cmd.append("--once")
         if args.cells:
             cmd += ["--cells", args.cells]
+        if args.suffix:
+            cmd.append(f"--suffix={args.suffix}")   # `=` form: a suffix may start with '-'
+
         return run(cmd)
     return run([PY, os.path.join(ROOT, "scripts", "release_watch.py")])
 
