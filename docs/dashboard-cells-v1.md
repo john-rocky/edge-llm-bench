@@ -348,6 +348,21 @@ been rebuilt from the command line with the two memory entitlements
 coherent text at thermal nominal — so the phone's three Core AI rows can run
 at its next sitting.
 
+Retakes of the lost cells on 2026-09-09 (campaigns
+`…-iphone17pro-retake-*` 13:47–14:33 and `…-retake2-*` 16:13–17:17, both
+stopped by hand at a cell boundary when the owner went out; both admitted on
+their anchor) recorded the Core AI 0.6B (the new id) with coherent output at
+169 tok/s warm, and found two things: the published 1.7B phone bundle
+(`mlboydaisuke/qwen3-1.7b-CoreAI-official` `ios-gpu/`) fails to load with
+`unsupportedEngineVariant("Variant 'coreai-pipelined' incompatible with
+model structure")` — it is not the pipelined-engine structure the catalog id
+forces, so the phone's `qwen3_1_7b_gpu` folder is being replaced by an h18p
+compile of the same 2026-08-18 export the Mac row runs (one export, both
+platforms); and the MLX Gemma 4 E2B repo is no longer on the phone (freed
+on 2026-09-06) and its in-app download stalled at 0 % for 35 minutes, so it
+will be staged over USB from the host's Hub cache instead. The remaining
+cells are listed in `matrices/retakes/2026-09-09-iphone17pro-remaining-3.cells`.
+
 ### Bundles per row
 
 | Row | Bundle (engine `coreai-pipelined`, dynamic export) | Weight bytes | On the Mac | On the iPhone |
