@@ -27,4 +27,17 @@
   not device drift — 13 of the other 14 cells reproduced their 2026-09-05
   median within 10% on 2026-09-08. Regenerate the figures from
   `results/summary/device-runs.csv` (campaign `*-dashboard-v1-pixel8a-*`).
+- Memory, not only storage, moves this phone's numbers: llama.cpp Gemma 4 E4B
+  (Q4_K_M) declares about 8 GB of buffers here (4.7 GB weights + 2.6 GB CPU
+  repack) on 7.5 GB of RAM. It read 5.0 tok/s on every cold run on
+  2026-09-05, then about 5 on the first run and 0.9-1.6 on every later run on
+  2026-09-08 and 2026-09-09 (13 h uptime, 1 GB of swap in use, 2.5 GB of
+  resident user apps; engine, OS, recipe, thermal state unchanged), and
+  5.1 / 5.0 / 5.4 nine minutes after a reboot plus `am kill-all`. The
+  dashboard job therefore reboots this phone before a sitting when its
+  uptime is over 2 h (`reboot_before` in `ops/dashboard-v1/schedule.json`)
+  and logs uptime / MemAvailable / swap in use before and after; the cell
+  gate flags the shape either way (COLLAPSE on the median, LEVEL on a
+  uniformly slow re-run). Mechanism unmeasured; the reboot is the remedy
+  that was tested.
 - Build/run: `android/README.md` (engine acquisition, driver, campaign runner).

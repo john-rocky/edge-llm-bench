@@ -15,8 +15,12 @@ Order and discipline (fairness rules as code):
     quarantined in raw (*.json.attempt1, outside build_summary's glob) and
     re-runs ONCE as a block after GATE_COOLDOWN s; a flagged retry stands
     with a FLAGGED.txt note. SHORT never retries (failed-runs-stay).
-    GATE_RETRY=0 disables. The cold-only regime trips COLLAPSE (50% bar),
-    not SPREAD — Android cold trials legitimately spread 15-30%.
+    GATE_RETRY=0 disables. The cold-only regime trips COLLAPSE (50% bar,
+    slowest/median or median/fastest), not SPREAD — Android cold trials
+    legitimately spread 15-30%. The retry is also judged for LEVEL: its
+    median under half the quarantined capture's un-collapsed median (a
+    uniformly slow block re-run passes every within-capture test; Pixel 8a
+    2026-09-08) is flagged and kept, never re-run a third time.
 """
 import fcntl
 import glob
@@ -124,10 +128,12 @@ def note(out_dir, fname, line):
 RETRY_VERDICTS = ("HOT", "SPREAD", "DEAD", "COLLAPSE")
 
 
-def gate_verdict(cell, out_dir, runs):
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "cell_gate.py"),
-                        "--runs", str(runs)] + cell_records(cell, out_dir),
-                       capture_output=True, text=True)
+def gate_verdict(cell, out_dir, runs, previous=()):
+    cmd = [sys.executable, os.path.join(ROOT, "scripts", "cell_gate.py"),
+           "--runs", str(runs)] + cell_records(cell, out_dir)
+    if previous:  # the quarantined capture a retry replaces -> LEVEL can fire
+        cmd += ["--previous"] + list(previous)   # after the positionals (nargs="*")
+    r = subprocess.run(cmd, capture_output=True, text=True)
     # a crashed gate must not read as a pass (an empty verdict matched no flag
     # pattern and the capture sailed through — audited 2026-08-27, iPhone runner)
     return r.stdout.strip() or "GATE_ERROR"
@@ -146,15 +152,17 @@ def apply_gate(cell, out_dir, runs):
     if verdict.split()[0] not in RETRY_VERDICTS:
         return  # OK, or SHORT — a crash/timeout is never retried (failed-runs-stay)
     print(f"gate: {verdict} — quarantine + cooldown {GATE_COOLDOWN}s, re-run once")
+    quarantined = []
     for f in cell_records(cell, out_dir)[-runs:]:
         os.rename(f, f + ".attempt1")  # stays in raw for audit, outside the *.json glob
+        quarantined.append(f + ".attempt1")
     note(out_dir, "session_provenance.txt",
          f"gate retry {cell_id(cell)} verdict={verdict} (block re-run, not interleaved)")
     time.sleep(GATE_COOLDOWN)
     wait_nominal(out_dir)
     run_cell_once(cell, out_dir, runs)
-    retry = gate_verdict(cell, out_dir, runs)
-    if retry == "GATE_ERROR" or retry.split()[0] in RETRY_VERDICTS:
+    retry = gate_verdict(cell, out_dir, runs, previous=quarantined)
+    if retry == "GATE_ERROR" or retry.split()[0] in RETRY_VERDICTS + ("LEVEL",):
         note(out_dir, "FLAGGED.txt",
              f"GATE_FAIL {cell_id(cell)} first='{verdict}' retry='{retry}' "
              "(retry kept; ⚠ downstream)")

@@ -35,6 +35,7 @@ stops where a human is needed:
 | choose (`auto` only) | the device to measure at this firing (§3): pending this week, attached, unheld, inside its window; oldest last-admitted first | a candidate whose preflight says busy or not ready is passed over for the next; every pending device busy → poll and choose again; nothing pending → exit 0 |
 | preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle, Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data` | busy → exit 3 and poll; not ready → exit 5, human |
 | hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job) | refused → busy |
+| reboot (opt-in) | on a phone whose entry carries `reboot_before`: when uptime exceeds `uptime_hours`, `adb reboot`, wait for `sys.boot_completed`, settle `settle_seconds`, `am kill-all`; uptime / MemAvailable / swap in use logged before and after (§3, the Pixel 8a memory finding) | not booted within `boot_timeout_seconds`, or the model directory unreadable (first unlock pending) → exit 5 |
 | phase A | `./bench matrix matrices/anchors.cells --platform P --campaign <base>-anchor` | timeout → exit 6 |
 | admission | the fresh primary anchor against the newest **admitted** session's anchor on the same device (§4) | not admitted → exit 4, retried once after a cooldown |
 | phase B | `./bench matrix matrices/dashboard-text-v1.cells --platform P --campaign <base>` — or one run per storage half on a phone whose free space is below the whole set (§3) | runner exit codes are recorded, never fatal: failed cells stay (`FAILURES.txt`) |
@@ -201,7 +202,24 @@ deletes the *other* halves' pushed copies — models, the caches that share
 their prefix, and their `firstEver` markers — never this half's own and
 never a raw record. The job log carries, per half, the free space before and
 after it ran and the on-device footprint of its copies with their caches;
-that footprint is the measured floor. The driver now also drops an artifact's markers on any
+that footprint is the measured floor.
+
+Memory is the second constraint on the Pixel 8a, and it shows only after
+hours of uptime. llama.cpp Gemma 4 E4B (Q4_K_M) declares about 8 GB of
+buffers on the 7.5 GB phone (4.7 GB of weights plus a 2.6 GB CPU repack
+buffer). On 2026-09-05 it read 5.0 tok/s on all three cold runs; on
+2026-09-08 (4.5 h into the sitting) and 2026-09-09 (13 h of uptime, 1 GB of
+swap in use, 2.5 GB of resident user apps) the first run read about 5 and
+every later run 0.9-1.6, with the same engine, OS, recipe and thermal state;
+nine minutes after a reboot plus `am kill-all` the same cell read 5.1 / 5.0 /
+5.4. The mechanism is not measured (the records carry no page-fault
+counter); the remedy is. A device entry may therefore carry `reboot_before`
+(the Pixel 8a does: `uptime_hours` 2, `settle_seconds` 300): after the hold
+is taken and before the anchor probe, a phone past the uptime limit is
+rebooted, waited for, settled, and its background apps dropped, with the
+memory figures logged before and after so every sitting adds a data point.
+A dry run only reports. The S26 (more memory, no such reading) has no entry.
+The driver now also drops an artifact's markers on any
 real re-push, because a marker that outlives its cache turns the next run 1
 into an unlabelled cache build that would pool as speed (found on the Pixel
 8a on 2026-09-07: 10 markers, 3 bundles; fixed in `run_cell.py`, proven by
@@ -259,7 +277,8 @@ began after the probe still marks that session `admitted: false`.
 | layer | condition | automatic action | what stays on disk | human step |
 |---|---|---|---|---|
 | run | crash / hang / zero decode | the runner records it; `gtimeout` bounds a cell | record + console log | none |
-| cell | HOT / SPREAD / DEAD / COLLAPSE (`scripts/cell_gate.py`) | quarantine the capture (`.attempt1`, `device-jsonl-flagged/`), cool down, re-run **once**; a flagged retry stands with `FLAGGED.txt` and renders ⚠ | both captures | none |
+| cell | HOT / SPREAD / DEAD / COLLAPSE (`scripts/cell_gate.py`; COLLAPSE = the slowest cold run under half the median, or the median under half the fastest — two slow runs beside one fast move the median itself, Pixel 8a 2026-09-09) | quarantine the capture (`.attempt1`, `device-jsonl-flagged/`), cool down, re-run **once**; a flagged retry stands with `FLAGGED.txt` and renders ⚠ | both captures | none |
+| cell (retry) | LEVEL (`cell_gate.py --previous`, Android runner): the block re-run's median under half the median of the quarantined capture's un-collapsed runs — a uniformly slow re-run passes every within-capture test (Pixel 8a 2026-09-08: 1.3 / 0.9 / 1.3 after 5.2 / 5.3 / 2.5) | the retry stands with `FLAGGED.txt` and renders ⚠; never a third run | both captures | a targeted retake in a fresher window; on a phone with `reboot_before`, the next sitting reboots first |
 | cell | SHORT (crash / timeout) | never retried in the session (failed-runs-stay) | record(s), `FAILURES.txt` | none |
 | cell | DEGENERATE (the output is a repetition loop; `scripts/cell_gate.py`, added 2026-09-08 after a Core AI export decoded garbage at a fast rate) | flag only — a re-run reproduces it; the capture stays, `FLAGGED.txt` says the rate is not a measurement | the capture | read the sample; fix or retire the artifact, never quote the rate |
 | session | anchor short / collapse / thermal (§4) | refuse the sitting (exit 4); retry **once** after `abort_retry_after_minutes` (collapse 30, thermal 60) | anchor campaign + `SESSION.json admitted:false` | none |

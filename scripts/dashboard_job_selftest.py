@@ -33,10 +33,33 @@ def main(argv):
         return 0
     if argv[:1] == ["-s"]:
         argv = argv[2:]
+    if argv[:1] == ["reboot"]:
+        with open(os.path.join(STATE, "rebooted.txt"), "a") as fh:
+            fh.write("reboot\\n")
+        with open(os.path.join(STATE, "uptime_s.txt"), "w") as fh:
+            fh.write("30")
+        return 0
     if argv[:1] == ["shell"]:
         cmd = " ".join(argv[1:])
         if "dumpsys thermalservice" in cmd:
             print("Thermal Status: 0")
+        elif cmd.startswith("cat /proc/uptime"):
+            up = os.path.join(STATE, "uptime_s.txt")
+            s = open(up).read().strip() if os.path.exists(up) else "600"
+            print(s + " " + s)
+        elif cmd.startswith("cat /proc/meminfo"):
+            print("MemTotal:        7754700 kB")
+            print("MemAvailable:    3700000 kB")
+            print("SwapTotal:       3877344 kB")
+            print("SwapFree:        2500000 kB")
+        elif cmd.startswith("getprop sys.boot_completed"):
+            print("1")
+        elif cmd.startswith("am kill-all"):
+            pass
+        elif cmd.startswith("ls ") and "/models" in cmd:
+            print("fake.gguf")
+        elif cmd.startswith("dumpsys power"):
+            print("  mWakefulness=Awake")
         elif "scaling_max_freq" in cmd:
             print("2000000 2000000")
         elif cmd.startswith("df -k"):
@@ -167,6 +190,22 @@ def main():
     key, rep = choose(older_b + [row("now-dashboard-v1-alpha-android", "FakeA", minutes=5)])
     ok(key is None and rep["beta"]["state"] == "not-ready",
        "alpha done, beta detached -> no device, beta reported not-ready for the ledger")
+
+    print("--- reboot_before: a phone past its uptime limit is rebooted (under the hold); a fresh one, a dry run, an unconfigured device are not")
+    rb = {"serial": "alpha", "reboot_before": {"uptime_hours": 2, "settle_seconds": 0,
+                                                "reboot_grace_seconds": 0, "boot_timeout_seconds": 10}}
+    marker = os.path.join(state, "rebooted.txt")
+    with open(os.path.join(state, "uptime_s.txt"), "w") as fh:
+        fh.write(str(13 * 3600))
+    ok(dj.android_reboot_if_stale(rb, dry=True) is False and not os.path.exists(marker),
+       "dry run at 13 h uptime: reports, never reboots")
+    ok(dj.android_reboot_if_stale(rb, dry=False) is True and os.path.exists(marker),
+       "13 h uptime > 2 h: rebooted, boot_completed seen, settled, background dropped")
+    os.remove(marker)
+    ok(dj.android_reboot_if_stale(rb, dry=False) is False and not os.path.exists(marker),
+       "30 s after the reboot: within the limit, no second reboot")
+    ok(dj.android_reboot_if_stale({"serial": "alpha"}, dry=False) is False and not os.path.exists(marker),
+       "no reboot_before in the device entry: never rebooted")
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")

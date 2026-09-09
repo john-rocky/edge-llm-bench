@@ -296,6 +296,36 @@ def main():
            "run 1 after a re-push is labelled firstEver (cache rebuilt, marker invalidated)")
         ok("firstEver" not in again[1][1]["metrics"], "run 2 after the re-push not labelled")
 
+    # --- campaign B3: a collapse the slowest/median test cannot see, then a
+    # uniformly slow retry (Pixel 8a 2026-09-08/09: 4.9 then 1.6 / 1.4 in one
+    # capture; the block re-run 1.3 / 0.9 / 1.3 after 5.2 / 5.3 / 2.5) ------
+    cells_b3 = os.path.join(tmp, "b3.cells")
+    with open(cells_b3, "w") as fh:
+        fh.write(f"android litert-lm fake/model short-chat runs=3 "
+                 f"backend=gpu file={litert_model}\n")
+    # rounds: one fast run beside two slow (median 5.0 under half of 25.0 ->
+    # COLLAPSE 20); the block retry is uniformly slow (5.1 / 5.0 / 5.2 -> every
+    # within-capture test passes, LEVEL 20 of the quarantined 25.0)
+    schedule([25.0, 5.0, 5.0, 5.1, 5.0, 5.2])
+    env["CAMPAIGN"] = "selftest-b3"
+    print("--- campaign B3 (median collapsed beside one fast run -> COLLAPSE; uniformly slow retry -> LEVEL, kept + flagged)")
+    rc = run_campaign(env, cells_b3)
+    ok(rc == 0, f"campaign B3 exits 0 (got {rc})")
+    out_b3 = os.path.join(raw_root, "selftest-b3", "app-path-android")
+    kept3 = records(out_b3, "litert-lm-gpu_")
+    quarantined3 = glob.glob(os.path.join(out_b3, "*.json.attempt1"))
+    ok(len(kept3) == 3, f"retry triple stands as the capture (got {len(kept3)})")
+    ok(len(quarantined3) == 3, f"flagged triple quarantined as .attempt1 (got {len(quarantined3)})")
+    if len(kept3) == 3:
+        ok([r["metrics"]["decodeTokensPerSecond"] for _, r in kept3] == [5.1, 5.0, 5.2],
+           "kept records are the retry, not the flagged triple")
+    flagged3 = os.path.join(out_b3, "FLAGGED.txt")
+    txt3 = open(flagged3).read() if os.path.exists(flagged3) else ""
+    ok("first='COLLAPSE 20'" in txt3,
+       f"first capture judged COLLAPSE 20 (median 5.0 under half the fastest 25.0): {txt3.strip()!r}")
+    ok("retry='LEVEL 20'" in txt3,
+       "retry judged LEVEL 20 (median 5.1 of the quarantined un-collapsed 25.0), kept with the flag")
+
     # --- campaign C: endurance session, completed --------------------------
     # Scripted driver output; the HOST derives the verdicts (decay windows,
     # resident slope, degeneracy counts, medians) — this pins that math and

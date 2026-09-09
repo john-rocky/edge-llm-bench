@@ -172,8 +172,10 @@ choice with every device's state and the chosen device's plan, and is the way
 to see what tonight's firing would do.
 
 The sitting: preflight (attached, unlocked, not held by a sibling lane, no
-foreign engine process, storage, host runner idle) → the session anchors as a
-short campaign → admission of the sitting against the newest admitted
+foreign engine process, storage, host runner idle) → on a phone whose
+schedule entry carries `reboot_before` (the Pixel 8a), a reboot under the
+hold when its uptime is past the limit, with memory figures logged before
+and after → the session anchors as a short campaign → admission of the sitting against the newest admitted
 session's anchor → the dashboard cells (or the storage halves, rotating
 pushed copies out between them) → `SESSION.json` in every campaign dir it
 created → `logs/dashboard-job/ledger.tsv` → dashboard re-rendered. Exit 0

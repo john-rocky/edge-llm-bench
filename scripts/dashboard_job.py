@@ -198,6 +198,96 @@ def android_state(serial):
                  if ln.strip() and ln.split()[0] == serial), None)
 
 
+def android_uptime_hours(serial):
+    rc, out = sh(adb_cmd(serial, "shell", "cat /proc/uptime"))
+    try:
+        return float(out.split()[0]) / 3600
+    except (ValueError, IndexError):
+        return None
+
+
+def android_memory_gb(serial):
+    """(MemAvailable, swap in use) in GB from /proc/meminfo, or (None, None)."""
+    rc, out = sh(adb_cmd(serial, "shell", "cat /proc/meminfo"))
+    kv = {}
+    for ln in out.splitlines():
+        parts = ln.replace(":", " ").split()
+        if len(parts) >= 2 and parts[1].isdigit():
+            kv[parts[0]] = int(parts[1])
+    try:
+        return kv["MemAvailable"] / 1e6, (kv["SwapTotal"] - kv["SwapFree"]) / 1e6
+    except KeyError:
+        return None, None
+
+
+def _gb(x):
+    return "?" if x is None else f"{x:.2f}"
+
+
+def android_reboot_if_stale(dev, dry):
+    """Opt-in per device (`reboot_before` in schedule.json): reboot the phone
+    before the sitting when its uptime exceeds `uptime_hours`, wait for
+    sys.boot_completed, settle `settle_seconds`, drop background apps
+    (`am kill-all`), and log uptime / MemAvailable / swap in use before and
+    after, so each sitting adds a data point. Basis, Pixel 8a 2026-09-09:
+    llama.cpp Gemma 4 E4B (about 8 GB of buffers on a 7.5 GB phone) read 4.9
+    then 1.6 / 1.4 tok/s at 13 h uptime with 1 GB of swap in use, and 5.1 /
+    5.0 / 5.4 nine minutes after a reboot — same engine, OS, recipe, thermal
+    state. Called after the hold is taken, so no sibling lane starts on the
+    phone across the reboot. Returns True when it rebooted; a dry run only
+    reports."""
+    cfg = dev.get("reboot_before")
+    if not cfg:
+        return False
+    serial = dev["serial"]
+    limit = float(cfg.get("uptime_hours", 2))
+    up = android_uptime_hours(serial)
+    avail, swap = android_memory_gb(serial)
+    log(f"uptime {_gb(up)} h, MemAvailable {_gb(avail)} GB, swap in use {_gb(swap)} GB "
+        f"(reboot_before: uptime over {limit:g} h)")
+    if up is None or up <= limit:
+        log("no reboot: uptime within the limit" if up is not None else "no reboot: uptime unreadable")
+        return False
+    settle = int(cfg.get("settle_seconds", 300))
+    if dry:
+        log(f"would reboot the phone (uptime {up:.1f} h > {limit:g} h), wait for boot, "
+            f"settle {settle} s, am kill-all [dry-run]")
+        return False
+    log(f"rebooting the phone: uptime {up:.1f} h > {limit:g} h")
+    sh(adb_cmd(serial, "reboot"), timeout=30)
+    time.sleep(float(cfg.get("reboot_grace_seconds", 10)))
+    deadline = time.time() + float(cfg.get("boot_timeout_seconds", 300))
+    booted = False
+    while time.time() < deadline:
+        rc, out = sh(adb_cmd(serial, "shell", "getprop sys.boot_completed"), timeout=20)
+        if rc == 0 and out.strip() == "1":
+            booted = True
+            break
+        time.sleep(5)
+    if not booted:
+        raise NotReady(f"{serial} did not finish booting within "
+                       f"{cfg.get('boot_timeout_seconds', 300)} s of the reboot — look at the phone")
+    log(f"boot completed; settling {settle} s")
+    time.sleep(settle)
+    if cfg.get("kill_background", True):
+        sh(adb_cmd(serial, "shell", "am kill-all"))
+        log("am kill-all: background processes dropped")
+    # a phone waiting for its first unlock hides credential-encrypted storage;
+    # the model directory must be readable before a cell runs
+    rc, out = sh(adb_cmd(serial, "shell", f"ls {ANDROID_DEV_DIR}/models | head -1"))
+    if rc != 0 or not out.strip():
+        raise NotReady(f"{serial}: {ANDROID_DEV_DIR}/models unreadable after the reboot "
+                       "(first unlock pending?) — unlock the phone once")
+    rc, out = sh(adb_cmd(serial, "shell", "dumpsys power | grep -m1 mWakefulness="))
+    if "Awake" not in out:
+        sh(adb_cmd(serial, "shell", "input keyevent KEYCODE_WAKEUP"))
+        log("screen woken after the reboot (KEYCODE_WAKEUP)")
+    up2 = android_uptime_hours(serial)
+    avail2, swap2 = android_memory_gb(serial)
+    log(f"after reboot: uptime {_gb(up2)} h, MemAvailable {_gb(avail2)} GB, swap in use {_gb(swap2)} GB")
+    return True
+
+
 def iphone_attached(udid):
     rc, out = devicectl("list", "devices")
     row = next((ln for ln in out.splitlines() if udid in ln), None)
@@ -591,6 +681,13 @@ def attempt(schedule, key, dev, attempt_no, args):
     hold = None if dry else hold_acquire(schedule, dev)
     created = []
     try:
+        # a phone past its uptime limit is rebooted here, under the hold
+        # (reboot_before, opt-in per device; §3) — then the state a reboot
+        # changes is read again
+        if platform == "android" and android_reboot_if_stale(dev, dry):
+            info["free_gb"] = android_free_gb(dev["serial"])
+            log(f"free on /data: {info['free_gb']:.1f} GB" if info["free_gb"] is not None
+                else "free on /data: unknown")
         # --- phase A: the session anchor as its own short campaign
         anchor_camp = f"{base}-anchor"
         anchor_rel = campaign_rel(anchor_camp, platform)
