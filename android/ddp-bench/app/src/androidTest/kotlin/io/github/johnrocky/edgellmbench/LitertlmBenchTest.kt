@@ -114,6 +114,9 @@ class LitertlmBenchTest {
         var gateJson: JSONObject? = null
         if (args.gate) {
             val questions = Gate.load(asset("correctness-gate-8.jsonl"))
+            val params = Gate.parseParams(args.modelParams, args.hfFile, modelFile.name, args.hfRepo)
+            val sizeClass = Gate.sizeClassOf(params)
+            Log.i(TAG, "gate size class: ${sizeClass.label} (params=${params ?: "unknown -> strict bar"})")
             val t0 = System.nanoTime()
             var initMs = -1L
             val outcome = try {
@@ -121,19 +124,20 @@ class LitertlmBenchTest {
                     maxNumTokens = args.contextTokens, cacheDir = cacheDir.absolutePath)).use { engine ->
                     engine.initialize()
                     initMs = (System.nanoTime() - t0) / 1_000_000
-                    val o = Gate.run(engine, questions)
+                    val o = Gate.run(engine, questions, sizeClass, params)
                     marker.writeText("gate ${ISO.format(Date())}\n")
                     o
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "gate engine failed", e)
-                Gate.Outcome(JSONArray(), 0, questions.size, "FAIL", (System.nanoTime() - t0) / 1_000_000)
+                Gate.Outcome(JSONArray(), 0, 0, questions.size, sizeClass, params, "FAIL", (System.nanoTime() - t0) / 1_000_000)
                     .also { gateJson = Gate.toJson(it).put("error", "${e.javaClass.simpleName}: ${e.message}") }
             }
             gateJson = (gateJson ?: Gate.toJson(outcome)).put("engineInitMS", initMs)
             File(outDir, "gate_${arm}_${args.hfRepo.replace('/', '_')}_${FILE_STAMP.format(Date())}.json")
                 .writeText(gateJson.toString(2) + "\n")
-            Log.i(TAG, "GATE ${outcome.verdict} ${outcome.passed}/${outcome.total} (threshold ${Gate.THRESHOLD})")
+            Log.i(TAG, "GATE_JSON " + gateJson.toString())
+            Log.i(TAG, "GATE ${outcome.verdict} correct ${outcome.correct}/${outcome.total} form ${outcome.formPassed}/${outcome.total} (${sizeClass.label}: ${gateJson?.optString("rule")})")
         }
 
         // ---- measurement runs
@@ -270,6 +274,9 @@ class LitertlmBenchTest {
             File(outDir, "$base.log").writeText(log.toString())
             File(outDir, "$base.json").writeText(record.toString(2) + "\n")
             Log.i(TAG, "RECORD $base.json")
+            // insurance for a platform that collects logcat but not the pulled files: the record
+            // without the (separately logged) gate block fits one logcat line (~4 KB payload cap)
+            Log.i(TAG, "RECORD_JSON " + JSONObject(record.toString()).apply { remove("quality") }.toString())
             val d = metrics.optDouble("decodeTokensPerSecond", Double.NaN)
             val ok = failure == null && !d.isNaN() && d > 0
             if (ok) { okRuns++; decodeRates.add(d) }
@@ -283,8 +290,8 @@ class LitertlmBenchTest {
         Log.i(TAG, "SUMMARY $summary")
         val g = gateJson
         if (g != null && g.optString("verdict") == "FAIL") {
-            fail("correctness gate FAIL: ${g.optInt("passed")}/${g.optInt("total")} " +
-                "(threshold ${Gate.THRESHOLD}) - the model does not rank. $summary")
+            fail("correctness gate FAIL: correct ${g.optInt("passed")}/${g.optInt("total")}, form ${g.optInt("formPassed")}/${g.optInt("total")} " +
+                "(${g.optString("sizeClass")}: ${g.optString("rule")}) - the model does not rank. $summary")
         }
         if (okRuns != args.runs) fail("$okRuns of ${args.runs} runs produced a decode rate. $summary")
     }

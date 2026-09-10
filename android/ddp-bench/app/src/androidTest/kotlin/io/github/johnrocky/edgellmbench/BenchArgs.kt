@@ -35,12 +35,14 @@ class BenchArgs(private val b: Bundle) {
     val campaign: String = s("campaign", "ddp-apk")!!
     /** Context size override (EngineConfig.maxNumTokens); default = bundle default. */
     val contextTokens: Int? = s("context_tokens")?.toInt()
+    /** Parameter count when the repo/file name does not state it ("270m", "0.6B"); picks the gate's size class. */
+    val modelParams: String? = s("model_params")
 
     fun asMap(): Map<String, Any?> = linkedMapOf(
         "hf_repo" to hfRepo, "hf_file" to hfFile, "hf_revision" to hfRevision,
         "hf_token" to (if (hfToken != null) "<set>" else null), "model_path" to modelPath,
         "backend" to backend, "task" to task, "runs" to runs, "cooldown_s" to cooldownSeconds,
         "max_output_tokens" to maxOutputTokens, "gate" to gate, "campaign" to campaign,
-        "context_tokens" to contextTokens,
+        "context_tokens" to contextTokens, "model_params" to modelParams,
     )
 }

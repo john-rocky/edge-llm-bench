@@ -48,7 +48,8 @@ The script refuses to start on a phone another driver holds, installs both APKs,
 | `task` | `short-chat` | or `native-benchmark-<P>x<D>` (the Kotlin `benchmark()`: fixed prefill/decode token counts) |
 | `runs` / `cooldown_s` | `3` / `60` | fresh `Engine` per run; seconds between runs |
 | `max_output_tokens` | task budget (`prompts/text/budgets.tsv`) | `ConversationConfig.maxOutputToken`; the record carries the real generated count |
-| `gate` | `true` | run the 8-question gate first (`prompts/correctness-gate-8.jsonl`, threshold 6/8) |
+| `gate` | `true` | run the 8-question gate first (`prompts/correctness-gate-8.jsonl`); the bar follows the size class: sub-1B = form ok on every answer + ≥3/8 correct, 1B+ (or size unknown) = ≥6/8 correct |
+| `model_params` | parsed from the repo/file name (`270m`, `0.6B`, `E2B`…) | override when the name does not state the size; picks the gate's size class |
 | `campaign` | `ddp-apk` | output subdirectory + `provenance.campaign` |
 | `context_tokens` | bundle default | `EngineConfig.maxNumTokens` |
 

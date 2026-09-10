@@ -1,0 +1,90 @@
+{
+  "name": "correctness-gate-8",
+  "verdict": "PASS",
+  "passed": 5,
+  "total": 8,
+  "formPassed": 8,
+  "sizeClass": "sub-1B",
+  "modelParams": 270000000,
+  "threshold": 3,
+  "formRequired": true,
+  "rule": "form ok on every question AND correct >= 3\/8",
+  "sampler": "greedy (topK=1, topP=1.0, temperature=0.0)",
+  "maxOutputTokens": 32,
+  "elapsedMs": 1099,
+  "questions": [
+    {
+      "id": "capital",
+      "prompt": "What is the capital of France? Answer with one word.",
+      "accept": "\\bparis\\b",
+      "answer": "Paris\n",
+      "pass": true,
+      "formOk": true,
+      "elapsedMs": 277
+    },
+    {
+      "id": "add",
+      "prompt": "What is 2 + 3? Answer with the number only.",
+      "accept": "\\b(5|five)\\b",
+      "answer": "2\n",
+      "pass": false,
+      "formOk": true,
+      "elapsedMs": 114
+    },
+    {
+      "id": "sky",
+      "prompt": "What color is the sky on a clear day? Answer with one word.",
+      "accept": "\\bblue\\b",
+      "answer": "Blue",
+      "pass": true,
+      "formOk": true,
+      "elapsedMs": 97
+    },
+    {
+      "id": "week",
+      "prompt": "How many days are in a week? Answer with the number only.",
+      "accept": "\\b(7|seven)\\b",
+      "answer": "1\n",
+      "pass": false,
+      "formOk": true,
+      "elapsedMs": 112
+    },
+    {
+      "id": "opposite",
+      "prompt": "What is the opposite of the word 'hot'? Answer with one word.",
+      "accept": "\\bcold\\b",
+      "answer": "Cold\n",
+      "pass": true,
+      "formOk": true,
+      "elapsedMs": 114
+    },
+    {
+      "id": "planet",
+      "prompt": "What is the name of the planet we live on? Answer with one word.",
+      "accept": "\\bearth\\b",
+      "answer": "Mars\n",
+      "pass": false,
+      "formOk": true,
+      "elapsedMs": 110
+    },
+    {
+      "id": "spanish",
+      "prompt": "How do you say 'thank you' in Spanish? Answer with the Spanish words only.",
+      "accept": "\\bgracias\\b",
+      "answer": "Gracias.\n",
+      "pass": true,
+      "formOk": true,
+      "elapsedMs": 134
+    },
+    {
+      "id": "larger",
+      "prompt": "Which number is larger, 10 or 100? Answer with the number only.",
+      "accept": "\\b(100|one hundred)\\b",
+      "answer": "100",
+      "pass": true,
+      "formOk": true,
+      "elapsedMs": 137
+    }
+  ],
+  "engineInitMS": 337
+}
