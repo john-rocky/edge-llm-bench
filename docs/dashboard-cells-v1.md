@@ -60,6 +60,16 @@ verified 2026-07-18, catalog comment).
 
 ### iPhone 17 Pro and Mac M4 Max (same ids on both; LiteRT and llama.cpp on Metal, MLX on Metal; Core AI on the GPU engine since v2)
 
+Thought-channel note (2026-09-10): `.litertlm` bundles whose header declares a `thought`
+channel (litert-community's `Qwen3-1.7B_dynamic_wi4b32_afp32`, the 0.6B wi4b32 file, every
+litert-torch-main export) stream their thinking on that channel. Until 2026-09-10 the Apple
+LiteRT adapter capped only the visible answer, so those rows decoded several hundred hidden
+tokens against the 128-token budget (the 2026-09-08 Mac row of Qwen3-1.7B: 579 tokens,
+TTFT 2.2 s) and a capped run's rate was computed over a window that held them. The adapter
+now counts channel text like plain content, so every arm is capped at the same total budget
+and TTFT means the first generated token on every arm; rows captured before that date under
+this id keep their recorded values and are read with this note.
+
 | Model | LiteRT-LM | MLX | llama.cpp | Core AI (v2, own export) | rows so far (iPhone / Mac), v1 arms |
 |---|---|---|---|---|---|
 | Qwen3 0.6B | `litert-community/Qwen3-0.6B` | `mlx-community/Qwen3-0.6B-4bit` (session anchor) | `unsloth/Qwen3-0.6B-GGUF/Q4_K_M` (new catalog entry) | `core-ai/qwen3-0.6b-4bit-gpu` — INT4 dynamic, macOS-27-era export (the 26-era one decodes garbage; below) | LiteRT, MLX / LiteRT, MLX |

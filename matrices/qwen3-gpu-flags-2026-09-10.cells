@@ -1,0 +1,80 @@
+# Qwen3 0.6B / 4B on the Mac Studio M4 Max: LiteRT-LM recipes x engine builds beside
+# MLX, for the LiteRT team's GPU-flag export request of 2026-09-10 (export lane and
+# flag evidence: litertlm-convert qwen3_gpuopt_work/FINDINGS.md). Mac only.
+#
+# Run once per engine build so every campaign carries its own session anchor:
+#   ./bench matrix matrices/qwen3-gpu-flags-2026-09-10.cells --platform mac --campaign <name-v0160>
+#   YS_BIN=.build/dd-mac-0170/Build/Products/Release/yardstick \
+#   BENCH_ENGINE_PINS_FILE=ios/BenchmarkApp/Vendored/engine-pins-v0170.json \
+#   ./bench matrix matrices/qwen3-gpu-flags-2026-09-10.cells --platform mac --campaign <name-v0170>
+# (v0.16.0 = the pinned yardstick in .build/dd-mac; v0.17.0 = a second yardstick built
+# from Vendored/LiteRT-LM re-vendored at v0.17.0 — environment.lock.json capture entry
+# of 2026-09-10. Rows stamp the observed engine; no number crosses sessions except
+# through the anchor.)
+#
+# Tasks: short-chat (the standard cell), long-context-1024-gen256 (the protocol agreed
+# with the LiteRT team: p=1024 / g=256) and long-context (~2K prompt / 128 gen). The
+# public mixed-INT4 files carry a 2048-token cache, so the ~2K cell is expected to fail
+# on them and stays in the table as the datum (failed-runs-stay).
+#
+# LiteRT tiers per model (recipe in each catalog entry's quantization label,
+# quant-per-arm-rule / quant-label-rule): the public mixed_int4 file (the dashboard
+# row), the public dynamic wi4b32 GPU build (0.6B only — litert-community/Qwen3-4B has
+# none), our litert-torch-main export with 9 of the 11 requested flags (the two
+# composites whose kernels do not compile on the OSS macOS GPU path are off), the
+# 0.6B variant with use_rope_composite added, and ONE trial of the all-11-flag 0.6B
+# bundle to record how the Swift package's GPU path treats those kernels.
+# Both arms run Qwen3's chat template as shipped (thinking on) and are capped at the same
+# total token budget (budget-mode-rule): since 2026-09-10 the LiteRT adapter counts text
+# streamed on a declared `thought` channel like plain content (the 08-04 wi4b32 build and
+# every litert-torch-main export declare one; the mixed_int4 files and MLX emit `<think>`
+# as plain text). Before that fix such bundles decoded 380-1,200 hidden tokens against a
+# 128/256 budget and a capped run's rate was computed over a window that held them (the
+# quarantined attempt 1 of the v0.16.0 sitting shows it: 104 tok/s for 256 visible tokens).
+# Order light -> heavy, arms interleaved per (model, task) block; 4B cells cooldown=300.
+
+# --- Qwen3-0.6B, short-chat ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B short-chat
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt9 short-chat local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt9-rope short-chat local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt8 short-chat local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt8-rope short-chat local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt11 short-chat local=1 runs=1
+
+# --- Qwen3-0.6B, long-context-1024-gen256 ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
+mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt9 long-context-1024-gen256 local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt9-rope long-context-1024-gen256 local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt8 long-context-1024-gen256 local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt8-rope long-context-1024-gen256 local=1
+
+# --- Qwen3-0.6B, long-context (~2K prompt) ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context
+mac litert-lm litert-community/Qwen3-0.6B long-context
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt9 long-context local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt9-rope long-context local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt8 long-context local=1
+mac litert-lm litert-local/qwen3-0.6b-wi4b32-gpuopt8-rope long-context local=1
+
+# --- Qwen3-4B, short-chat ---
+mac mlx-swift mlx-community/Qwen3-4B-4bit short-chat cooldown=300
+mac litert-lm litert-community/Qwen3-4B short-chat cooldown=300
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt9 short-chat cooldown=300 local=1
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt8 short-chat cooldown=300 local=1
+
+# --- Qwen3-4B, long-context-1024-gen256 ---
+mac mlx-swift mlx-community/Qwen3-4B-4bit long-context-1024-gen256 cooldown=300
+mac litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt9 long-context-1024-gen256 cooldown=300 local=1
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt8 long-context-1024-gen256 cooldown=300 local=1
+
+# --- Qwen3-4B, long-context (~2K prompt) ---
+mac mlx-swift mlx-community/Qwen3-4B-4bit long-context cooldown=300
+mac litert-lm litert-community/Qwen3-4B long-context cooldown=300
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt9 long-context cooldown=300 local=1
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt8 long-context cooldown=300 local=1

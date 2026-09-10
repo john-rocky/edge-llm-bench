@@ -1,0 +1,19 @@
+# Retake of the Qwen3-4B long-context cells of the v0.17.0 sitting of
+# matrices/qwen3-gpu-flags-2026-09-10.cells: that sitting's last block (14:51-15:25 JST) ran
+# while two other lanes loaded this Mac (a litert_gpu_toolkit checker fanned out to 9 CPU-bound
+# python processes, load average 14; a `litert-lm serve` for a few minutes) — its MLX 4B ~2K
+# capture was quarantined by the spread gate (6.4 %), the retry read 4.6 % under the v0.16.0
+# sitting's same cell, and the gpuopt8 4B p1024/g256 cell read 5.9 % under its v0.16.0
+# counterpart while its short-chat cell read 3 % above. A contended capture can only be slower,
+# so these cells are re-measured on a quiet Mac as their own sitting (own anchor, own admission);
+# the gpuopt9 p1024/g256 cell (98.9 in the sitting) rides along as the control that says whether
+# the retake reproduces the uncontended cells. Same harness, same v0.17.0 yardstick:
+#   YS_BIN=.build/dd-mac-0170/Build/Products/Release/yardstick \
+#   BENCH_ENGINE_PINS_FILE=ios/BenchmarkApp/Vendored/engine-pins-v0170.json \
+#   ./bench matrix matrices/qwen3-gpu-flags-2026-09-10-retake-4b-lc.cells --platform mac --campaign 2026-09-10-qwen3-gpu-flags-v0170-retake4b
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt9 long-context-1024-gen256 cooldown=300 local=1
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt8 long-context-1024-gen256 cooldown=300 local=1
+mac mlx-swift mlx-community/Qwen3-4B-4bit long-context cooldown=300
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt9 long-context cooldown=300 local=1
+mac litert-lm litert-local/qwen3-4b-wi4b32-gpuopt8 long-context cooldown=300 local=1

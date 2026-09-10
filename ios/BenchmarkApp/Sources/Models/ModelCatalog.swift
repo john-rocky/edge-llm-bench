@@ -513,6 +513,114 @@ public enum ModelCatalog {
             hfFilePatterns: ["qwen3_0_6b_mixed_int4.litertlm"],
             primaryFile: "qwen3_0_6b_mixed_int4.litertlm"
         ),
+        // Qwen3-0.6B, the litert-community GPU build of 2026-08-04 in the SAME repo as the
+        // mixed-INT4 entry above: dynamic INT4 block-32 weights / FP32 activations with the
+        // LiteRT-LM GPU graph (fused qkv + gate_up, odml.rope / cache_update composites, bool
+        // mask, 32771-token cache, prefill_128 / prefill_1024). A different file and a different
+        // recipe (quant-label-rule), so a separate id — the 2026-09-10 Qwen3 GPU-flag comparison
+        // (matrices/qwen3-gpu-flags-2026-09-10.cells) runs it beside the mixed-INT4 file and our
+        // own litert-torch-main exports below. Same hfRepoId: the hub snapshot holds both files
+        // and `primaryFile` picks this one.
+        ModelInfo(
+            id: "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32",
+            displayName: "Qwen3 0.6B (.litertlm, dynamic wi4b32 GPU build)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 344,
+            hfRepoId: "litert-community/Qwen3-0.6B",
+            hfFilePatterns: ["Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"],
+            primaryFile: "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+        ),
+        // Qwen3 0.6B / 4B — OUR exports from litert-torch main (6d4c622, 2026-09-08; needs
+        // litert-lm-builder 0.17.0) with the flag set the LiteRT team asked us to benchmark on
+        // 2026-09-10: quantization_recipe=dynamic_wi4b32_afp32, enable_gpu_dynamic_prefill
+        // (prefill_lengths=1024 -> signature prefill_1031), enable_gpu_dynamic_cache
+        // (cache_length=32768 -> 32771), apply_gpu_composites, fuse_gate_up, fuse_qkv,
+        // use_swiglu_composite, use_bool_mask, bundle_litert_lm. Two of the eleven requested
+        // flags — use_sdpa_composite and use_qkv_norm_rope_composite — emit kernels
+        // (odml.sdpa_transposed, odml.qkv_norm_rope) that do not compile on the OSS macOS GPU
+        // path (WebGPU delegate on Metal; litert-lm 0.17.0 PyPI, bisected one flag at a time),
+        // so the measured entries carry the other nine ("gpuopt9"); the all-eleven bundle
+        // ("gpuopt11") is in the catalog for the single trial that records how the Swift
+        // package's GPU path treats those kernels. Export record, graph inventories and CLI
+        // numbers: litertlm-convert qwen3_gpuopt_work/FINDINGS.md. Side-loaded (no HF file):
+        // ~/Documents/models/litert-lm/<hfRepoId with "/" -> "__">/model.litertlm; the bundle
+        // sha256 travels in the campaign's session_provenance.txt.
+        ModelInfo(
+            id: "litert-local/qwen3-0.6b-wi4b32-gpuopt9",
+            displayName: "Qwen3-0.6B (.litertlm, own export: 9 GPU flags)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, 9 GPU flags: fused qkv/gate_up, swiglu + gpu cache composites, bool mask, prefill 1031 / cache 32771)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 341,
+            hfRepoId: "litert-local/Qwen3-0.6B-wi4b32-gpuopt9",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-0.6b-wi4b32-gpuopt9-rope",
+            displayName: "Qwen3-0.6B (.litertlm, own export: 9 GPU flags + rope composite)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, 9 GPU flags + use_rope_composite)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 342,
+            hfRepoId: "litert-local/Qwen3-0.6B-wi4b32-gpuopt9-rope",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-0.6b-wi4b32-gpuopt11",
+            displayName: "Qwen3-0.6B (.litertlm, own export: all 11 GPU flags)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, all 11 GPU flags incl. sdpa_transposed + qkv_norm_rope composites)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 342,
+            hfRepoId: "litert-local/Qwen3-0.6B-wi4b32-gpuopt11",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-4b-wi4b32-gpuopt9",
+            displayName: "Qwen3-4B (.litertlm, own export: 9 GPU flags)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, 9 GPU flags: fused qkv/gate_up, swiglu + gpu cache composites, bool mask, prefill 1031 / cache 32771)",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2270,
+            hfRepoId: "litert-local/Qwen3-4B-wi4b32-gpuopt9",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        // The eight-flag variants: the nine above minus use_swiglu_composite. The v0.16.0 Swift
+        // package's GPU delegate has no kernel for odml.swiglu ("Following operations are not
+        // supported by GPU delegate: STABLEHLO_COMPOSITE: odml.swiglu" -> engine creation
+        // fails, 2026-09-10 smoke), so these are the rows that exist for the pinned engine;
+        // on v0.17.0 they isolate the swiglu composite's contribution (9 vs 8, rope on both).
+        ModelInfo(
+            id: "litert-local/qwen3-0.6b-wi4b32-gpuopt8",
+            displayName: "Qwen3-0.6B (.litertlm, own export: 8 GPU flags, no swiglu composite)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, 8 GPU flags: fused qkv/gate_up, gpu cache composite, bool mask, prefill 1031 / cache 32771; swiglu inlined)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 342,
+            hfRepoId: "litert-local/Qwen3-0.6B-wi4b32-gpuopt8",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-0.6b-wi4b32-gpuopt8-rope",
+            displayName: "Qwen3-0.6B (.litertlm, own export: 8 GPU flags + rope composite)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, 8 GPU flags + use_rope_composite; swiglu inlined)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 342,
+            hfRepoId: "litert-local/Qwen3-0.6B-wi4b32-gpuopt8-rope",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-4b-wi4b32-gpuopt8",
+            displayName: "Qwen3-4B (.litertlm, own export: 8 GPU flags, no swiglu composite)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, 8 GPU flags: fused qkv/gate_up, gpu cache composite, bool mask, prefill 1031 / cache 32771; swiglu inlined)",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2270,
+            hfRepoId: "litert-local/Qwen3-4B-wi4b32-gpuopt8",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
         // Qwen3-1.7B — litert-community's repo (INT8 file since 2026-06-25, the wi4b32 file
         // added 2026-08-05) ships two files:
         // `Qwen3_1.7B.litertlm`, dynamic INT8; `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm`,

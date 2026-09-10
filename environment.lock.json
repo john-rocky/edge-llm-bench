@@ -1,7 +1,7 @@
 {
   "lockfile_schema": 1,
   "description": "Machine-readable pin registry: every engine, instrument, and model behind the published tables, plus the per-capture overrides. Continuous-bench condition 1 (one-command reproduction). Update this file in the same commit as any capture that changes a pin.",
-  "updated": "2026-08-24",
+  "updated": "2026-09-10",
   "arms": {
     "litert-lm": {
       "source": "https://github.com/google-ai-edge/LiteRT-LM",
@@ -25,6 +25,14 @@
             "CLiteRTLM_mac.xcframework.zip": "sha256:3ae6c876abd74614b1869bfc40cb4d0b892981363564740268b1f8ac5cf895a4"
           },
           "note": "Registered 2026-08-24, after the fact, from the v0.16.0 Package.swift binaryTarget checksums (SwiftPM checksum = zip sha256); the iOS value matches every stamped row. DISCLOSURE: mac rows in 2026-08-17-mac-litert-v0160 and 2026-08-18-matrix-mac stamped engineArtifact with the iOS zip — stamp_engine_pins.sh read only the CLiteRTLM target while the mac binary links CLiteRTLM_mac (platform condition in the package). Stamper fixed 2026-08-24; published rows stay as captured."
+        },
+        "2026-09-10 Qwen3 GPU-flag comparison, mac (v0.16.0 pin + v0.17.0 side build)": {
+          "tag": "v0.17.0",
+          "artifacts": {
+            "CLiteRTLM.xcframework.zip": "sha256:c94fc12aa0403cb47208e419cc3bfe258214ea17035f7a63c16de536869f2186",
+            "CLiteRTLM_mac.xcframework.zip": "sha256:83efd536485c9d58fcd7fb7d4556ddb16ca46bb775b0449d08d9825c6836c1a4"
+          },
+          "note": "Registered 2026-09-10 from the v0.17.0 Package.swift binaryTarget checksums (release published 2026-09-09). The comparison ran the same cells file twice on the Mac: once on the standing v0.16.0 yardstick (.build/dd-mac) and once on a second yardstick built from Vendored/LiteRT-LM re-vendored at v0.17.0 (same local benchmark(maxNumTokens:) patch, applies cleanly) into .build/dd-mac-0170 and selected per campaign with YS_BIN + BENCH_ENGINE_PINS_FILE (pins file stamped from the v0.17.0 checkout). Each campaign carries its own anchor. default_tag stays v0.16.0: a pin bump is an owner decision (release-watch informs). Rows stamp the observed engine (witness)."
         }
       },
       "android": {

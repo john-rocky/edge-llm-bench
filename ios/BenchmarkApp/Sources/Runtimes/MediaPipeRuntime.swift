@@ -477,7 +477,19 @@ public actor MediaPipeRuntime: LLMRuntime {
                 continue
             }
             if firstTokenAt == nil { firstTokenAt = CFAbsoluteTimeGetCurrent() }
-            let text = chunk.toString
+            // Text may arrive as plain content OR on a channel: a bundle whose header
+            // declares a `thought` channel streams its thinking there with an empty
+            // `toString` (the 08-04 wi4b32 Qwen3 build, every litert-torch-main export).
+            // Both count, as in `enduranceChat` — otherwise the cap below applied to the
+            // visible answer only, so such a bundle decoded 380-1,200 tokens against a
+            // 128/256 budget while MLX and the mixed-int4 file (whose `<think>` text is
+            // plain content) were capped at 128/256, and a capped run's wall-clock window
+            // still started at the first hidden chunk (2026-09-10: 104 tok/s reported for
+            // 256 visible tokens over 4.55 s that also held ~1,000 thinking tokens).
+            var text = chunk.toString
+            for (_, v) in chunk.channels.sorted(by: { $0.key < $1.key }) {
+                text += v
+            }
             if !text.isEmpty {
                 continuation.yield(.chunk(text))
                 tokenCount += 1  // chunk tally ≈ tokens
