@@ -34,7 +34,7 @@ android/ddp-bench/run_local.sh --model ~/models/x.litertlm --backend gpu --runs 
 
 The script refuses to start on a phone another driver holds, installs both APKs, runs
 `am instrument` with the same argument names DDP gets, pulls the records into
-`results/raw/<campaign>/app-path-android/` beside `logcat.txt` (the native LiteRT-LM log) and
+`results/raw/<campaign>/app-path-android/` beside `logcat-process.txt` (the device log scoped to the test process, where the native LiteRT-LM lines are) and
 `am_instrument.txt`, and checks each record against the accumulation layer's loader.
 
 ## Instrumentation arguments (`-e key value` locally, `--additional-test-options=key=value` on DDP)

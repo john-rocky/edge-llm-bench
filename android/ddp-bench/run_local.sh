@@ -79,7 +79,7 @@ if [ -n "$MODEL" ]; then
 elif [ -s "$TOKEN_FILE" ]; then
   ARGS+=(-e hf_token "$(tr -d '\r\n' < "$TOKEN_FILE")")
 fi
-ARGS+=("${EXTRA[@]}")
+[ ${#EXTRA[@]} -gt 0 ] && ARGS+=("${EXTRA[@]}")   # bash 3.2 (macOS): an empty array is "unbound" under set -u
 
 OUT="$ROOT/results/raw/$CAMPAIGN/app-path-android"
 mkdir -p "$OUT"
@@ -98,9 +98,14 @@ grep -q "OK (1 test)" "$OUT/am_instrument.txt" && TEST_RC=0
 # ---- pull records + the device log (the native LiteRT-LM output lives in logcat)
 "${ADB[@]}" pull "/sdcard/Android/data/io.github.johnrocky.edgellmbench/files/edge-llm-bench/$CAMPAIGN/app-path-android/." "$OUT/" </dev/null >/dev/null 2>&1 \
   || echo "[ddp-bench] no records to pull (the test died before the first record?)"
-"${ADB[@]}" logcat -d </dev/null > "$OUT/logcat.txt" 2>/dev/null
+# the device log scoped to the test process (threadtime format: date time pid tid level tag: msg);
+# a full logcat dump is 1+ MB of unrelated device chatter and not a measurement
+"${ADB[@]}" logcat -d -v threadtime </dev/null 2>/dev/null > "$OUT/.logcat-full.txt"
+TEST_PID=$(grep -m1 "EDGE_LLM_BENCH" "$OUT/.logcat-full.txt" | awk '{print $3}')
+if [ -n "$TEST_PID" ]; then awk -v p="$TEST_PID" '$3==p' "$OUT/.logcat-full.txt" > "$OUT/logcat-process.txt"; else cp "$OUT/.logcat-full.txt" "$OUT/logcat-process.txt"; fi
+rm -f "$OUT/.logcat-full.txt"
 echo "[ddp-bench] records: $(ls "$OUT"/*.json 2>/dev/null | wc -l | tr -d ' ') under results/raw/$CAMPAIGN/app-path-android/"
-grep -h "SUMMARY\|GATE \|run [0-9]*/[0-9]* " "$OUT/logcat.txt" | grep EDGE_LLM_BENCH | sed 's/.*EDGE_LLM_BENCH: /[device] /'
+grep -h "SUMMARY\|GATE \|run [0-9]*/[0-9]* " "$OUT/logcat-process.txt" | grep EDGE_LLM_BENCH | sed 's/.*EDGE_LLM_BENCH: /[device] /'
 
 # ---- the records must be what the accumulation layer accepts
 python3 - "$ROOT" "$OUT" <<'PY'

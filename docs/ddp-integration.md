@@ -44,7 +44,7 @@ Device set to start with (one per tier): Pixel 8a (`akita-35`, 8 GB, Mali), Pixe
 
 ## Route B prototype: `android/ddp-bench` (built 2026-09-10)
 
-**Status.** The APK pair builds on the Mac against `litertlm-android` 0.17.0 (AGP 8.7.3, Kotlin 2.4.0, Gradle 8.14.4 — the combination the sibling `litertlm-release-gate` harness already proved on this AAR). Local pass-through on a phone: see "Local pass-through" below for what has and has not run. DDP: **nothing submitted**. The Device Run API is not enabled on the `litert-edge-portal` project — a read-only `gcloud beta device-run devices list` on 2026-09-10 returned `SERVICE_DISABLED` — so the runbook below starts with the owner enabling it.
+**Status.** The APK pair builds on the Mac against `litertlm-android` 0.17.0 (AGP 8.7.3, Kotlin 2.4.0, Gradle 8.14.4 — the combination the sibling `litertlm-release-gate` harness already proved on this AAR). Local pass-through: **done once, Galaxy S26, 2026-09-10** (below). DDP: **nothing submitted**. The Device Run API is not enabled on the `litert-edge-portal` project — a read-only `gcloud beta device-run devices list` on 2026-09-10 returned `SERVICE_DISABLED` — so the runbook below starts with the owner enabling it.
 
 **What the test does** (`android/ddp-bench/app/src/androidTest/.../LitertlmBenchTest.kt`, one JUnit test, `am instrument` arguments in `android/ddp-bench/README.md`):
 
@@ -74,28 +74,49 @@ android/ddp-bench/run_local.sh --backend gpu      # same, GPU backend
 android/ddp-bench/run_local.sh --model ~/models/x.litertlm --repo some/repo --file x.litertlm
 ```
 
-The script: refuses a phone another driver holds; builds; installs both APKs; runs `am instrument -w -r` with the same argument names DDP gets; pulls the records into `results/raw/<date>-ddp-apk-<device>-android/app-path-android/` beside `logcat.txt` (the native LiteRT-LM output lives there) and `am_instrument.txt`; checks every record with the accumulation layer's own loader (`platform_of == android`, required keys). Expected shape of a passing run:
+The script: refuses a phone another driver holds; builds; installs both APKs; runs `am instrument -w -r` with the same argument names DDP gets; pulls the records into `results/raw/<date>-ddp-apk-<device>-android/app-path-android/` beside `logcat-process.txt` (the device log scoped to the test process — the native LiteRT-LM lines live there) and `am_instrument.txt`; checks every record with the accumulation layer's own loader (`platform_of == android`, required keys). Exit 0 = test passed and records pulled; 1 = the test failed (gate or a run) — the records and logs are still pulled; 2 = no device / held device / build failure. Then `python3 scripts/build_summary.py` folds the rows into `results/summary/device-runs.csv` (`platform=android`, `harness_stamp=2026-09-android-ddp-apk-v1`).
+
+#### First pass-through: Galaxy S26, 2026-09-10 08:56–08:59 JST (`results/raw/2026-09-10-ddp-apk-sm-s942q-android/`)
+
+The whole chain ran once, unattended, in 2 min 20 s: the phone downloaded the 304 MB `gemma3-270m-it-q8.litertlm` from the Hub in 11 s (Hub commit `9d209327…` stamped into `model.hfRevision`), the gate ran, three speed runs wrote three records, the runner pulled them and the loader accepted them. The transcript, trimmed:
 
 ```
-[ddp-bench] device=Pixel 8a (<serial>) campaign=2026-09-10-ddp-apk-pixel-8a-android backend=cpu runs=3
-[ddp-bench] am instrument ... (HH:MM:SS)
+[ddp-bench] device=SM-S942Q (RFGL80R6A6H) campaign=2026-09-10-ddp-apk-sm-s942q-android backend=cpu runs=3
+[ddp-bench] am instrument ... (08:56:29)
 INSTRUMENTATION_STATUS: ... test=measure
 ...
-INSTRUMENTATION_RESULT: stream=
-OK (1 test)
+java.lang.AssertionError: correctness gate FAIL: 5/8 (threshold 6) - the model does not rank. gate=FAIL runs_ok=3/3 decode_tok_s=50.62,47.82,50.11 out=/storage/emulated/0/Android/data/io.github.johnrocky.edgellmbench/files/edge-llm-bench/...
+FAILURES!!!
+Tests run: 1,  Failures: 1
 INSTRUMENTATION_CODE: -1
-[ddp-bench] records: 3 under results/raw/2026-09-10-ddp-apk-pixel-8a-android/app-path-android/
-[device] GATE PASS 7/8 (threshold 6)
-[device] run 1/3 OK decode=NN.NN tok/s prefill=... ttft_ms=... gen=... thermal=nominal->nominal firstEver=false
-[device] run 2/3 OK ...
-[device] run 3/3 OK ...
-[device] SUMMARY gate=PASS runs_ok=3/3 decode_tok_s=...,...,... out=/storage/emulated/0/Android/data/io.github.johnrocky.edgellmbench/files/edge-llm-bench/...
-  litert-lm-cpu_litert-community_gemma-3-270m-it_short-chat_<stamp>_run1.json: decode=... prefill=... ttft_ms=... gen=... rss_mb=... gate=PASS firstEver=None
-  ...
+[ddp-bench] records: 4 under results/raw/2026-09-10-ddp-apk-sm-s942q-android/app-path-android/
+[device] GATE FAIL 5/8 (threshold 6)
+[device] run 1/3 OK decode=50.62 tok/s prefill=377.451963339978 ttft_ms=72.74169025 gen=44 thermal=nominal->nominal firstEver=false
+[device] run 2/3 OK decode=47.82 tok/s prefill=300.3959128011946 ttft_ms=87.49173975000001 gen=44 thermal=nominal->nominal firstEver=false
+[device] run 3/3 OK decode=50.11 tok/s prefill=333.9571820472567 ttft_ms=79.84466875 gen=44 thermal=nominal->nominal firstEver=false
+[device] SUMMARY gate=FAIL runs_ok=3/3 decode_tok_s=50.62,47.82,50.11 out=...
+  litert-lm-cpu_litert-community_gemma-3-270m-it_short-chat_2026-09-09T23-56-47.540_run1.json: decode=50.62... prefill=377.45... ttft_ms=72.74 gen=44 rss_mb=702 gate=FAIL firstEver=None
+  litert-lm-cpu_litert-community_gemma-3-270m-it_short-chat_2026-09-09T23-57-48.725_run2.json: decode=47.81... prefill=300.39... ttft_ms=87.49 gen=44 rss_mb=703 gate=FAIL firstEver=None
+  litert-lm-cpu_litert-community_gemma-3-270m-it_short-chat_2026-09-09T23-58-50.045_run3.json: decode=50.10... prefill=333.95... ttft_ms=79.84 gen=44 rss_mb=703 gate=FAIL firstEver=None
 [ddp-bench] 3 record(s) pass the result.v1 shape check (platform=android)
 ```
 
-Exit 0 = test passed and records pulled; 1 = the test failed (gate or a run) — the records and logs are still pulled; 2 = no device / held device / build failure. Then `python3 scripts/build_summary.py` folds the rows into `results/summary/device-runs.csv` (`platform=android`, `harness_stamp=2026-09-android-ddp-apk-v1`).
+Speed rows (CPU, engine-default sampler, 20-token prompt, 128-token cap, thermal 0→0, USB power, no other driver on the phone):
+
+| run | decode tok/s | prefill tok/s | TTFT ms | generated | engine init ms | resident median MB |
+|---|---|---|---|---|---|---|
+| 1 | 50.62 | 377.5 | 72.7 | 44 | 420 | 702 |
+| 2 | 47.82 | 300.4 | 87.5 | 44 | 557 | 703 |
+| 3 | 50.11 | 334.0 | 79.8 | 44 | 578 | 703 |
+
+The model stopped at its own EOS at 44 tokens each time and the three replies are byte-identical (deterministic per engine default, as on the native lane). No run was a cache build (`firstEver` absent — the gate's engine ran first). Memory is the instrumentation process (engine + ART runtime); the native lane's number for the same model would be the engine process alone.
+
+**Gate: FAIL 5/8, and the three misses are the model's, not the APK's.** Greedy, 32-token cap: capital→"Paris" ✓, 2+3→"2" ✗, sky→"Blue" ✓, days in a week→"1" ✗, opposite of hot→"Cold" ✓, our planet→"Mars" ✗, thank-you in Spanish→"Gracias." ✓, 10 vs 100→"100" ✓. The JUnit test failed by design and every record still carries `quality.gate`. Cross-check (`mac-cli-crosscheck.txt` in the campaign dir): the official `litert-lm` CLI 0.17.0 on the Mac, same artifact (sha256 verified), same greedy settings, returns exactly the same eight strings. So (a) the APK's conversation path reproduces the reference implementation on a different platform, and (b) the 6/8 threshold — fixed before any model ran — conflated *knowledge* (an addition, a count, a fact) with what the gate exists for, *garbage detection*. The threshold was not touched after seeing this.
+
+**Owner decision needed before the DDP session:**
+
+1. *Keep the gate as is.* gemma-3-270m-it q8 stays red; the DDP smoke session would use a canary that passes (none has been tried yet), or run with `gate=false` for the pipe test only.
+2. *Redefine the gate as the coherence check it was meant to be* (recommended): keep the eight questions and the greedy setting, score every answer for *form* (non-empty, one short line, no leaked template/control tokens, not a single token repeated) and for *correctness*, and FAIL when form fails on any question or correctness falls below a floor a broken bundle cannot reach (e.g. 3/8). On this evidence the 270M model would pass (8/8 form, 5/8 correct), and a tokenizer/template/quantization failure — empty output, `<start_of_turn>` echoes, token loops — would still fail. That is a change of definition, made once, not a per-model tune.
 
 ### Submitting the same APK to DDP (owner runs these; the project pays per device-minute)
 
@@ -150,8 +171,8 @@ Nothing below has run yet; the flags are from `gcloud beta device-run sessions s
    The documented bucket layout is `automation/sessions/<session-id>/job-000/execution-000/junit.xml` + the pulled paths; where `--paths-to-pull` files land inside `execution-000/` is not documented — `find` handles it.
 7. **Compare with the local row** — same APK, same arguments, a different physical unit in a different room: expect the same order of magnitude and the same gate verdict, and read any gap as two sittings (devices drift 16–25 % between sittings; `CLAUDE.md`), never as a delta. The DDP session's Console URL is the citation for the DDP row (`provenance.campaign` carries the campaign; add the URL to the campaign's `NOTES.md`).
 
-**Still unverified until the first session:** DDP lab devices having outbound internet for the Hub download; `--paths-to-pull` on the app's external files dir; the `--location` value; the GPU backend of the AAR on Mali (Pixel 8a) — the local pass-through runs CPU first for that reason.
+**Verified locally (S26):** the Hub download inside the app process, the AAR's CPU backend, `getBenchmarkInfo()` after a real conversation, the record shape through `build_summary.py`, the fail-but-record path. **Still unverified until the first session:** DDP lab devices having outbound internet for the Hub download; `--paths-to-pull` on the app's external files dir; the `--location` value; the GPU backend of the AAR on Mali (Pixel 8a) — the local pass-through runs CPU first for that reason.
 
 ## Next step
 
-Run the local pass-through on the Pixel 8a or the Galaxy S26 (this needs a phone on the cable; the dashboard job's hold and ledger are honoured), commit the campaign dir with the regenerated summary, then submit the same APK to one DDP session (owner) and file the two rows side by side here.
+The owner picks the gate definition (above), then: enable the Device Run API, submit the same APK (`engineArtifact 28aa6bc4…2134`) to one session on `akita-35` or `m1q-36` with the local run's arguments, pull the session's records into a campaign dir, and file the DDP row beside the S26 row above — two instruments, two sittings, read for shape, not for a delta.
