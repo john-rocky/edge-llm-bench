@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "id": "e21e6a8a-e6fa-4846-8567-91454a721ea3",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "litertlm-android:0.17.0",
+  "engineArtifact": "28aa6bc43efcee35b31795f9e5ca633c3dec06d9f3fb85ecb6a753fa360e2134",
+  "model": {
+    "id": "litert-community\/gemma-3-270m-it",
+    "hfRevision": "9d2093270fb5aa49a986b49b5779d763dde7b630",
+    "quantization": "q8 (litert-community filename descriptor)",
+    "file": "gemma3-270m-it-q8.litertlm",
+    "sha256": "757e9119fa5bd667a2774fb470ac4afcd3190a21c677f8e69a5d6bc908abdd63",
+    "bytes": 304005120,
+    "sourceUrl": "https:\/\/huggingface.co\/litert-community\/gemma-3-270m-it\/resolve\/9d2093270fb5aa49a986b49b5779d763dde7b630\/gemma3-270m-it-q8.litertlm"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-09-10T02:45:31Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-06-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "manufacturer": "samsung",
+    "buildId": "BP4A.251205.006.S942QOPS1AZF2",
+    "batteryLevel": 0.99,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "maxOutputTokens": 128,
+    "contextTokens": "bundle-default",
+    "cpuAffinity": "none (in-process instrumentation; taskset is not available to an app)",
+    "engineLifecycle": "fresh Engine per run inside ONE instrumentation process (on-disk caches kept; the gate's engine builds them first)",
+    "memoryBasis": "resident-vmrss of the instrumentation process (engine + ART runtime + test framework), 0.5 s samples",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on",
+    "powerSource": "usb",
+    "elapsedSeconds": 3.5,
+    "exitCode": 0,
+    "engineInitWallMS": 1391,
+    "generateWallMS": 1950,
+    "instrumentationArgs": {
+      "hf_repo": "litert-community\/gemma-3-270m-it",
+      "hf_file": "gemma3-270m-it-q8.litertlm",
+      "hf_revision": "main",
+      "hf_token": "<set>",
+      "model_path": null,
+      "backend": "gpu",
+      "task": "short-chat",
+      "runs": 3,
+      "cooldown_s": 60,
+      "max_output_tokens": null,
+      "gate": true,
+      "campaign": "2026-09-10-ddp-apk-sm-s942q-gpu2-android",
+      "context_tokens": null,
+      "model_params": null
+    }
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 44.39946125,
+    "promptTokensPerSecond": 680.1949969413331,
+    "decodeTokensPerSecond": 66.68387850506375,
+    "promptTokenCount": 20,
+    "generatedTokenCount": 128,
+    "engineInitMS": 2779.5288530000007,
+    "decodeTokensPerSecondWallClock": 67.17042601381874,
+    "coldRun": true,
+    "harnessStamp": "2026-09-android-ddp-apk-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 525.482421875,
+    "memoryPeakResidentMB": 745.71484375
+  },
+  "quality": {
+    "gate": {
+      "name": "correctness-gate-8",
+      "verdict": "FAIL",
+      "passed": 0,
+      "total": 8,
+      "formPassed": 0,
+      "sizeClass": "sub-1B",
+      "modelParams": 270000000,
+      "threshold": 3,
+      "formRequired": true,
+      "rule": "form ok on every question AND correct >= 3\/8",
+      "sampler": "greedy (topK=1, topP=1.0, temperature=0.0)",
+      "maxOutputTokens": 32,
+      "elapsedMs": 3630,
+      "questions": [
+        {
+          "id": "capital",
+          "prompt": "What is the capital of France? Answer with one word.",
+          "accept": "\\bparis\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 779
+        },
+        {
+          "id": "add",
+          "prompt": "What is 2 + 3? Answer with the number only.",
+          "accept": "\\b(5|five)\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 418
+        },
+        {
+          "id": "sky",
+          "prompt": "What color is the sky on a clear day? Answer with one word.",
+          "accept": "\\bblue\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 429
+        },
+        {
+          "id": "week",
+          "prompt": "How many days are in a week? Answer with the number only.",
+          "accept": "\\b(7|seven)\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 428
+        },
+        {
+          "id": "opposite",
+          "prompt": "What is the opposite of the word 'hot'? Answer with one word.",
+          "accept": "\\bcold\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 408
+        },
+        {
+          "id": "planet",
+          "prompt": "What is the name of the planet we live on? Answer with one word.",
+          "accept": "\\bearth\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 390
+        },
+        {
+          "id": "spanish",
+          "prompt": "How do you say 'thank you' in Spanish? Answer with the Spanish words only.",
+          "accept": "\\bgracias\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 386
+        },
+        {
+          "id": "larger",
+          "prompt": "Which number is larger, 10 or 100? Answer with the number only.",
+          "accept": "\\b(100|one hundred)\\b",
+          "answer": "",
+          "pass": false,
+          "formOk": false,
+          "formProblem": "empty",
+          "elapsedMs": 388
+        }
+      ],
+      "engineInitMS": 4841
+    }
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_gemma-3-270m-it_short-chat_2026-09-10T02-45-31.577_run3.log",
+    "harness": "android\/ddp-bench (LitertlmBenchTest)",
+    "campaign": "2026-09-10-ddp-apk-sm-s942q-gpu2-android",
+    "engineAar": "litertlm-android-0.17.0.aar"
+  }
+}

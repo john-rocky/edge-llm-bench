@@ -37,3 +37,10 @@ threshold — fixed before any model ran — conflated *knowledge* (arithmetic, 
 *garbage detection*, which is what the gate is for (docs/ddp-integration.md). Whether the gate is
 redefined as a coherence check or kept as is (and this model stays red) is an owner decision; the
 threshold was not touched after seeing this data.
+
+## Later the same day
+
+The three speed records were renamed `*.json.gate-fail` (quarantined out of the summary) when the
+rule "a gate-FAIL record never ranks" was adopted after the GPU sitting; their verdict was FAIL under
+the original 6/8 bar. The same answers pass the size-class bar that replaced it, and the same numbers
+are in `2026-09-10-ddp-apk-sm-s942q-gate2-android/` under that bar.

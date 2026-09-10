@@ -1,0 +1,49 @@
+harness=2026-09-android-ddp-apk-v1 engine=litertlm-android:0.17.0 aar=28aa6bc43efcee35b31795f9e5ca633c3dec06d9f3fb85ecb6a753fa360e2134
+args={"hf_repo":"litert-community\/gemma-3-270m-it","hf_file":"gemma3-270m-it-q8.litertlm","hf_revision":"main","hf_token":"<set>","model_path":null,"backend":"gpu","task":"short-chat","runs":3,"cooldown_s":60,"max_output_tokens":null,"gate":true,"campaign":"2026-09-10-ddp-apk-sm-s942q-gpu-android","context_tokens":null,"model_params":null}
+model=/data/user/0/io.github.johnrocky.edgellmbench/files/models/litert-community_gemma-3-270m-it/gemma3-270m-it-q8.litertlm sha256=757e9119fa5bd667a2774fb470ac4afcd3190a21c677f8e69a5d6bc908abdd63
+run=1/3 firstEver=false thermal0=0(nominal) battery=0.99 charging
+EXCEPTION com.google.ai.edge.litertlm.LiteRtLmJniException: Failed to call nativeSendMessage: UNKNOWN: UNKNOWN: Can not find OpenCL library on this device
+	at com.google.ai.edge.litertlm.LiteRtLmJni.nativeSendMessage(Native Method)
+	at com.google.ai.edge.litertlm.Conversation.sendMessage(Conversation.kt:140)
+	at com.google.ai.edge.litertlm.Conversation.sendMessage(Conversation.kt:204)
+	at com.google.ai.edge.litertlm.Conversation.sendMessage(Conversation.kt:249)
+	at com.google.ai.edge.litertlm.Conversation.sendMessage$default(Conversation.kt:239)
+	at io.github.johnrocky.edgellmbench.LitertlmBenchTest.measure(LitertlmBenchTest.kt:180)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at androidx.test.ext.junit.runners.AndroidJUnit4.run(AndroidJUnit4.java:162)
+	at org.junit.runners.Suite.runChild(Suite.java:128)
+	at org.junit.runners.Suite.runChild(Suite.java:27)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+	at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)
+	at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)
+	at androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:463)
+	at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2683)
+
+engineInitMS=1987 generateWallMS=null elapsedS=2.7
+BenchmarkInfo=null
+thermal1=0(nominal) VmHWM_kB=959076
+VmRSS_kB samples (6 @0.5s): 389020 763220 460200 501212 526368 525944

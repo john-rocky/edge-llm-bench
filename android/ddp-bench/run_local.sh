@@ -104,7 +104,15 @@ grep -q "OK (1 test)" "$OUT/am_instrument.txt" && TEST_RC=0
 TEST_PID=$(grep -m1 "EDGE_LLM_BENCH" "$OUT/.logcat-full.txt" | awk '{print $3}')
 if [ -n "$TEST_PID" ]; then awk -v p="$TEST_PID" '$3==p' "$OUT/.logcat-full.txt" > "$OUT/logcat-process.txt"; else cp "$OUT/.logcat-full.txt" "$OUT/logcat-process.txt"; fi
 rm -f "$OUT/.logcat-full.txt"
-echo "[ddp-bench] records: $(ls "$OUT"/*.json 2>/dev/null | wc -l | tr -d ' ') under results/raw/$CAMPAIGN/app-path-android/"
+# a record whose gate FAILED must not rank: quarantine it as <name>.json.gate-fail (stays on disk as
+# audit trail, outside the summary's *.json glob — the repo's *.attempt1 convention)
+python3 - "$OUT" <<'PY'
+import glob, json, os, sys
+for f in glob.glob(os.path.join(sys.argv[1], "litert-lm-*_run*.json")):
+    if json.load(open(f)).get("quality", {}).get("gate", {}).get("verdict") == "FAIL":
+        os.rename(f, f + ".gate-fail"); print("[ddp-bench] gate FAIL -> quarantined", os.path.basename(f))
+PY
+echo "[ddp-bench] records: $(ls "$OUT"/*.json 2>/dev/null | wc -l | tr -d ' ') under results/raw/$CAMPAIGN/app-path-android/ (+ $(ls "$OUT"/*.gate-fail 2>/dev/null | wc -l | tr -d ' ') quarantined)"
 grep -h "SUMMARY\|GATE \|run [0-9]*/[0-9]* " "$OUT/logcat-process.txt" | grep EDGE_LLM_BENCH | sed 's/.*EDGE_LLM_BENCH: /[device] /'
 
 # ---- the records must be what the accumulation layer accepts
@@ -116,7 +124,7 @@ import importlib.util
 spec = importlib.util.spec_from_file_location("bs", os.path.join(root, "scripts", "build_summary.py"))
 bs = importlib.util.module_from_spec(spec); spec.loader.exec_module(bs)
 n = 0
-for f in sorted(glob.glob(os.path.join(out, "litert-lm-*_run*.json"))):
+for f in sorted(glob.glob(os.path.join(out, "litert-lm-*_run*.json")) + glob.glob(os.path.join(out, "litert-lm-*_run*.json.gate-fail"))):
     d = json.load(open(f))
     for k in ("schemaVersion", "runtime", "model", "task", "timestamp"):
         assert k in d, f"{f}: missing {k}"

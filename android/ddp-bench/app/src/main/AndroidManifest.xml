@@ -3,5 +3,12 @@
     <!-- The test downloads the .litertlm from the Hub inside the app's process. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- No Activity on purpose: the instrumented test is the only entry point. -->
-    <application android:label="edge-llm-bench-ddp" android:usesCleartextTraffic="false" />
+    <application android:label="edge-llm-bench-ddp" android:usesCleartextTraffic="false">
+        <!-- Android 12+ (targetSdk >= 31) hides vendor libraries from apps unless declared: without
+             these the GPU backend fails at the first message with "Can not find OpenCL library on
+             this device" (measured on a Galaxy S26, 2026-09-10). required=false keeps CPU-only devices installable. -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-car.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
+    </application>
 </manifest>

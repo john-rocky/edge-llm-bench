@@ -56,5 +56,4 @@ The script refuses to start on a phone another driver holds, installs both APKs,
 ## Output on the device
 
 `/sdcard/Android/data/io.github.johnrocky.edgellmbench/files/edge-llm-bench/<campaign>/app-path-android/`
-— `litert-lm-<backend>_<repo>_<task>_<stamp>_run<i>.json` + `.log` per run, `gate_*.json` once. The
-test FAILS (JUnit) when the gate fails or a run has no decode rate; the records stay (failed-runs-stay).
+— `litert-lm-<backend>_<repo>_<task>_<stamp>_run<i>.json` + `.log` per run, `gate_*.json` once. The test FAILS (JUnit) when the gate fails or a run has no decode rate; the records stay on the device (failed-runs-stay), and `run_local.sh` quarantines gate-FAIL records as `*.json.gate-fail` at pull time so they never enter the summary.
