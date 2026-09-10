@@ -44,7 +44,7 @@ Device set to start with (one per tier): Pixel 8a (`akita-35`, 8 GB, Mali), Pixe
 
 ## Route B prototype: `android/ddp-bench` (built 2026-09-10)
 
-**Status.** The APK pair builds on the Mac against `litertlm-android` 0.17.0 (AGP 8.7.3, Kotlin 2.4.0, Gradle 8.14.4 — the combination the sibling `litertlm-release-gate` harness already proved on this AAR). Local pass-through: **done once, Galaxy S26, 2026-09-10** (below). DDP: **nothing submitted**. The Device Run API is not enabled on the `litert-edge-portal` project — a read-only `gcloud beta device-run devices list` on 2026-09-10 returned `SERVICE_DISABLED` — so the runbook below starts with the owner enabling it.
+**Status.** The APK pair builds on the Mac against `litertlm-android` 0.17.0 (AGP 8.7.3, Kotlin 2.4.0, Gradle 8.14.4 — the combination the sibling `litertlm-release-gate` harness already proved on this AAR). Local pass-through: **done twice, Galaxy S26, 2026-09-10** (below). DDP: **one session run, `session-cc6509d5` on `m1q-36` (Galaxy S26), PASSED, 2026-09-10 11:05–11:11 JST** — the same APK pair, the same arguments; its rows are filed in `results/raw/2026-09-10-ddp-m1q-36/` and compared with the local unit at the end of this section. The Device Run API was enabled on `litert-edge-portal` the same morning (it had been `SERVICE_DISABLED`).
 
 **What the test does** (`android/ddp-bench/app/src/androidTest/.../LitertlmBenchTest.kt`, one JUnit test, `am instrument` arguments in `android/ddp-bench/README.md`):
 
@@ -120,59 +120,89 @@ The model stopped at its own EOS at 44 tokens each time and the three replies ar
 
 ### Submitting the same APK to DDP (owner runs these; the project pays per device-minute)
 
-Nothing below has run yet; the flags are from `gcloud beta device-run sessions submit instrumentation --help` (SDK 579.0.0, beta 2026.07.31) and the expected outputs are the CLI's documented shapes, not observed ones. Replace them with the real transcript after the first session.
+Flags are from `gcloud beta device-run sessions submit instrumentation --help` (SDK 579.0.0, beta 2026.07.31); steps 1–4 ran for real on 2026-09-10 (transcripts inline), the rest is filled in from the first session's result below.
 
-1. **Enable the API** (once per project; an owner decision because it is the billing project):
+1. **Enable the API** (once per project; the project is billing-enabled — `gcloud billing projects describe` says so):
    ```bash
    gcloud services enable devicerun.googleapis.com --project litert-edge-portal
+   # Operation "operations/acat.p2-..." finished successfully.   (2026-09-10; devices list worked right after)
    ```
-   Expected: `Operation "operations/..." finished successfully.` A few minutes may pass before the next command stops saying `SERVICE_DISABLED`.
 2. **Find the device ids** (free, read-only):
    ```bash
    gcloud beta device-run devices list --project litert-edge-portal --format=json | head -60   # learn the field names once
    gcloud beta device-run devices list --project litert-edge-portal --format=json \
      | python3 -c "import sys,json; [print(d.get('name'), d.get('displayName')) for d in json.load(sys.stdin) if any(k in json.dumps(d) for k in ('akita','m1q','blazer'))]"
    ```
-   Expected: rows whose ids match the catalog names in the table at the top (`akita-35` = Pixel 8a, `m1q-36` = Galaxy S26, `blazer-36` = Pixel 10 Pro). If the CLI requires `--location`, the CLI's own example uses `us-central1`; its help says the default is `global`.
+   Expected: rows whose ids match the catalog names in the table at the top (`akita-35` = Pixel 8a, `m1q-36` = Galaxy S26, `blazer-36` = Pixel 10 Pro). The catalog names every device under `projects/<p>/locations/global/devices/<id>` (265 rows on 2026-09-10; Pixel 8a `akita-34`/`akita-35`, Galaxy S26 `m1q-36`, Pixel 10 Pro `blazer-36`, Pixel 11 `cubs-37`), so `--location global` is the value.
 3. **Build** the two APKs (README) — or reuse the ones the local pass-through used, so the DDP row and the local row come from one binary (`engineArtifact` will prove it).
 4. **Submit one session** on one device, the same arguments as the local run:
    ```bash
-   CAMPAIGN=$(date +%F)-ddp-akita-35
+   CAMPAIGN=$(date +%F)-ddp-m1q-36
    gcloud beta device-run sessions submit instrumentation \
-     --project litert-edge-portal --location us-central1 \
-     --device akita-35 \
+     --project litert-edge-portal --location global \
+     --device m1q-36 \
      --apps  android/ddp-bench/app/build/outputs/apk/debug/app-debug.apk \
      --test  android/ddp-bench/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
      --instrumentation-timeout 30m \
      --additional-test-options backend=cpu,runs=3,cooldown_s=60,campaign=$CAMPAIGN,hf_token=$(cat ~/.cache/huggingface/token) \
      --paths-to-pull /sdcard/Android/data/io.github.johnrocky.edgellmbench/files/edge-llm-bench \
-     --labels harness=edge-llm-bench,repo=litert-community--gemma-3-270m-it,device=akita-35 \
+     --labels harness=edge-llm-bench,repo=litert-community--gemma-3-270m-it,device=m1q-36 \
      --async
    ```
    - `--instrumentation-timeout` defaults to **5 m** and caps at 1 h; a 300 MB download + gate + 3 runs with 60 s cooldowns needs ~10 min on a 270M model, so 30 m.
    - `hf_token` in the test options is stored with the session's inputs (`gs://<bucket>/automation/inputs/...`). The alternative that keeps the token off the platform is `--other-files-to-push=<local .litertlm>=/data/local/tmp/edge-llm-bench/gemma3-270m-it-q8.litertlm` plus `model_path=/data/local/tmp/edge-llm-bench/gemma3-270m-it-q8.litertlm` in the options — **whether the pushed file is readable by the app on a DDP device is unverified** (locally the runner chmods it 644 in a 755 dir, which works).
    - Local APK paths are uploaded to the bucket by the CLI (`gs://litert-edge-portal-devicerun` is created if `--bucket-name` is absent).
-   - Expected: a session resource (`projects/litert-edge-portal/locations/us-central1/sessions/<id>`) and a Cloud Console URL; with `--async` the command returns at once.
+   - Observed 2026-09-10 (first real submission; both APKs were local paths, uploaded by the CLI):
+     ```
+     Using the default GCS bucket [gs://litert-edge-portal-devicerun] for input and result files. Will create the bucket if it does not exist.
+     Uploading [android/ddp-bench/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk].
+     Uploading [android/ddp-bench/app/build/outputs/apk/debug/app-debug.apk].
+     Initiated long-running operation [operation-1789005921494-...] to create session.
+     Creating session [session-cc6509d5] in location [global].
+     Result files will be stored at [https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-cc6509d5/].
+     ```
+     `describe` then prints `Session [session-cc6509d5] status is [RUNNING].` (not JSON, even with `--format=json`).
 5. **Wait and read the verdict**:
    ```bash
-   gcloud beta device-run sessions list     --project litert-edge-portal --location us-central1
-   gcloud beta device-run sessions describe <session-id> --project litert-edge-portal --location us-central1
+   gcloud beta device-run sessions list     --project litert-edge-portal --location global
+   gcloud beta device-run sessions describe <session-id> --project litert-edge-portal --location global
    ```
-   Expected: a state that ends in a terminal value; the instrumentation result is PASS when the gate passed and all runs produced a decode rate (the JUnit test's own assertions), FAIL otherwise — a FAIL still leaves the records in the bucket.
-6. **Pull the records** into a campaign dir, exactly where the local runner puts them:
+   Observed: `describe` prints `Session [session-cc6509d5] status is [RUNNING].` / `Job status: 1 running` while it runs (about 6 min for this APK: upload, allocation, an 87 s model download on the lab's network, a 213 s test, artifact collection), then
+   ```
+   Session [session-cc6509d5] finished with result [PASSED].
+   Result files are stored at [https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/automation/sessions/session-cc6509d5/].
+   JOB NAME  EXECUTION NAME  EXECUTION RESULT
+   job-000   execution-000   PASSED
+   ```
+   PASSED = the JUnit test's own assertions held (gate passed, every run produced a decode rate); a FAIL still leaves the records in the bucket.
+6. **Pull the records** into a campaign dir, exactly where the local runner puts them (as run on 2026-09-10):
    ```bash
-   mkdir -p results/raw/$CAMPAIGN/ddp-session results/raw/$CAMPAIGN/app-path-android
-   gsutil -m cp -r gs://litert-edge-portal-devicerun/automation/sessions/<session-id>/ results/raw/$CAMPAIGN/ddp-session/
-   find results/raw/$CAMPAIGN/ddp-session -name 'litert-lm-*_run*.json' -o -name 'litert-lm-*_run*.log' -o -name 'gate_*.json' \
-     | xargs -I{} cp {} results/raw/$CAMPAIGN/app-path-android/
+   C=results/raw/$CAMPAIGN; mkdir -p $C/ddp-session $C/app-path-android
+   gsutil -m -q cp -r gs://litert-edge-portal-devicerun/automation/sessions/<session-id>/ $C/ddp-session/
+   mv "$(find $C/ddp-session -type d -name app-path-android)"/* $C/app-path-android/ && rm -r $C/ddp-session/*/job-000/execution-000/artifacts   # one copy: the summary globs every app-path*/
+   # the lab logcat is 3+ MB of the whole device: keep the test process's lines only
+   L=$(find $C/ddp-session -name logcat.txt); PID=$(grep -m1 EDGE_LLM_BENCH "$L" | awk '{print $3}')
+   awk -v p="$PID" '$3==p' "$L" > $C/app-path-android/logcat-process.txt && rm "$L"
    python3 scripts/build_summary.py
-   grep 2026-09-android-ddp-apk-v1 results/summary/device-runs.csv
+   grep "$CAMPAIGN" results/summary/device-runs.csv
    ```
-   The documented bucket layout is `automation/sessions/<session-id>/job-000/execution-000/junit.xml` + the pulled paths; where `--paths-to-pull` files land inside `execution-000/` is not documented — `find` handles it.
-7. **Compare with the local row** — same APK, same arguments, a different physical unit in a different room: expect the same order of magnitude and the same gate verdict, and read any gap as two sittings (devices drift 16–25 % between sittings; `CLAUDE.md`), never as a delta. The DDP session's Console URL is the citation for the DDP row (`provenance.campaign` carries the campaign; add the URL to the campaign's `NOTES.md`).
+   Observed layout: `sessions/<id>/job-000/junit.xml`, `job-000/execution-000/{junit.xml,instrument.log,logcat.txt}` and the pulled directory under `execution-000/artifacts/sdcard/Android/data/io.github.johnrocky.edgellmbench/files/edge-llm-bench/<campaign>/app-path-android/` with the same file names the test wrote. The lab's logcat clock is US Pacific.
+7. **Compare with the local row** — same APK, same arguments, a different physical unit in a different room. Observed 2026-09-10 (CPU, gemma-3-270m-it q8, 20-token prompt, 44 generated tokens every run, thermal 0→0 on both):
 
-**Verified locally (S26):** the Hub download inside the app process, the AAR's CPU backend, `getBenchmarkInfo()` after a real conversation, the record shape through `build_summary.py`, the fail-but-record path. **Still unverified until the first session:** DDP lab devices having outbound internet for the Hub download; `--paths-to-pull` on the app's external files dir; the `--location` value; the GPU backend of the AAR on Mali (Pixel 8a) — the local pass-through runs CPU first for that reason.
+   | | local `SM-S942Q` (JP unit, patch 2026-06-05), 11:02 JST | DDP `m1q-36` = `SM-S942U1` (US unit, patch 2026-01-01), 11:08 JST |
+   |---|---|---|
+   | gate | PASS, form 8/8, correct 5/8, same 8 answers | PASS, form 8/8, correct 5/8, same 8 answers |
+   | decode tok/s (3 runs) | 50.55 / 48.52 / 48.06 | 48.37 / 48.07 / 48.41 |
+   | prefill tok/s | 340 / 303 / 279 | 346 / 308 / 295 |
+   | TTFT ms | 79 / 87 / 92 | 79 / 86 / 89 |
+   | engine init ms | 447 / 671 / 613 | 564 / 549 / 570 |
+   | resident median MB | 698–700 | 702–703 |
+   | model download | already on the device (11 s the first time, Wi-Fi) | 87 s, lab network |
+
+   Same shape, same verdict; read it as two units, never as a delta (devices drift 16–25 % between sittings; `CLAUDE.md`). The session's Console URL is the DDP row's citation (in the campaign's `NOTES.md`).
+
+**Settled by the first session (2026-09-10):** the lab device has outbound internet (Hub download with the token in the test options), `--paths-to-pull` on the app's external files dir works and keeps the file names, `--location` is `global`, `--labels` is accepted, local APK paths are uploaded by the CLI. **Still unverified:** the GPU backend of the AAR (both runs were CPU), whether `--labels` reaches the billing export, and what one session costs (billing data was not yet visible the same day). The HF token travelled in `--additional-test-options`; it appears in no pulled file (checked before committing) but is visible in the session's metadata to anyone with project access — rotate it if that matters, or use `--other-files-to-push` + `model_path` (untested on DDP).
 
 ## Next step
 
-The owner picks the gate definition (above), then: enable the Device Run API, submit the same APK (`engineArtifact 28aa6bc4…2134`) to one session on `akita-35` or `m1q-36` with the local run's arguments, pull the session's records into a campaign dir, and file the DDP row beside the S26 row above — two instruments, two sittings, read for shape, not for a delta.
+The pipe is proven end to end on one model and one device. What remains is the outer job from "Two routes": one session per (device set × repo) on a schedule, the rows written into each card with the session URL as the citation. Before that: a GPU-backend session (untested), a billion-class model through the same gate (the 6/8 bar has not been exercised on DDP), and the token question above.
