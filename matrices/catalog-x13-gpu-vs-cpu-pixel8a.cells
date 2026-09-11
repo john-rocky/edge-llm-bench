@@ -1,0 +1,71 @@
+# Catalog §4 X13 / K17 — "Android GPU decode slower than the same runtime's
+# CPU": thermal-gated, ALTERNATING cpu/gpu pairs on one device in one session.
+# Pixel 8a copy of catalog-x13-gpu-vs-cpu-s26.cells (same rows; the device is
+# the runner env). First used 2026-09-11, concurrently with the S26 sitting.
+# Pixel rules from the dashboard job: reboot before the sitting when uptime
+# exceeds 2 h (memory pressure, devices/pixel-8a.md), BENCH_CPU_MASK=f0, and
+# the pushed Gemma 4 E4B copies of the dashboard's b2 half rotated out first
+# (26 GB free is short of this set with its CPU + Mali weight caches; the job
+# re-pushes them from the host cache next time).
+#
+# Six "losers" from the 2026-09-08 S26 session and s5_gate (GPU at or below
+# CPU): Gemma 4 E2B (wNa8o8), MiniCPM5-1B (wi4b32 / _gpu_opt), LFM2.5-1.2B
+# (int4 / int4_gpu), DeepSeek-R1-1.5B q8, granite-4.0-h-350m _int8_gpu (the
+# same file on both backends, as the s5_gate CPU control did), Qwen2.5-1.5B q8.
+# Two "winners": Qwen3-0.6B mixed_int4 and Qwen3-1.7B (INT8 file on CPU,
+# wi4b32 file on GPU — the split the model card asks for). Recipe A/B rows:
+# Qwen3-0.6B wi4b32 (the GPU-targeted 0.6B build) on both backends, and the
+# 1.7B wi4b32 file on the CPU — same file, two backends, so recipe and backend
+# are not confounded for the winners either.
+#
+# Order light -> heavy; the two backends of one model sit next to each other
+# and the runner interleaves per round, so every cpu run is followed by its
+# gpu twin under the same thermal history (interleave-arms). Gemma cells
+# cooldown=300. runs=3 (runner default) per cell, thermal gate on (nominal
+# before every run). The `-gpu.litertlm` artisan E2B bundle is NOT here: it
+# needs an executor outside the OSS tree (catalog §3.4).
+#
+#   BENCH_ANDROID_SERIAL=4C131JEKB15210 BENCH_CPU_MASK=f0 ./bench matrix matrices/catalog-x13-gpu-vs-cpu-pixel8a.cells --platform android --campaign <date>-catalog-x13-pixel8a
+
+# --- session anchor (the payload session re-judges its own anchor) ---
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# --- granite-4.0-h-350m (Mamba2 hybrid; same _int8_gpu file on both backends) ---
+android litert-lm litert-community/granite-4.0-h-350m short-chat backend=cpu file=granite-4.0-h-350m_int8_gpu.litertlm
+android litert-lm litert-community/granite-4.0-h-350m short-chat backend=gpu file=granite-4.0-h-350m_int8_gpu.litertlm
+
+# --- Qwen3-0.6B, the published mixed_int4 file (the K17 winner) ---
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+
+# --- Qwen3-0.6B, the GPU-targeted dynamic wi4b32 build (recipe A/B). Its own
+#     side-loaded id: a second file under litert-community/Qwen3-0.6B would pool
+#     with the mixed_int4 cell (the cell key is arm+model+task, not file). The
+#     file is the litert-community/Qwen3-0.6B HF blob, pushed from the host
+#     cache; sha256 e3e29010… ---
+android litert-lm litert-local/Qwen3-0.6B-dynamic-wi4b32 short-chat backend=cpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/8414150f2e9dcc82449bcc9c5abc404b399a4d06/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-local/Qwen3-0.6B-dynamic-wi4b32 short-chat backend=gpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/8414150f2e9dcc82449bcc9c5abc404b399a4d06/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+
+# --- MiniCPM5-1B ---
+android litert-lm litert-community/MiniCPM5-1B short-chat backend=cpu file=minicpm_wi4b32_wi8_afp32.litertlm
+android litert-lm litert-community/MiniCPM5-1B short-chat backend=gpu file=minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm
+
+# --- LFM2.5-1.2B-Instruct (ShortConv hybrid) ---
+android litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=cpu file=LFM2.5-1.2B-Instruct_int4.litertlm
+android litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=gpu file=LFM2.5-1.2B-Instruct_int4_gpu.litertlm
+
+# --- DeepSeek-R1-Distill-Qwen-1.5B q8 ---
+android litert-lm litert-community/DeepSeek-R1-Distill-Qwen-1.5B short-chat backend=cpu file=DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv4096.litertlm
+android litert-lm litert-community/DeepSeek-R1-Distill-Qwen-1.5B short-chat backend=gpu file=DeepSeek-R1-Distill-Qwen-1.5B_multi-prefill-seq_q8_ekv4096.litertlm
+
+# --- Qwen2.5-1.5B-Instruct q8 ---
+android litert-lm litert-community/Qwen2.5-1.5B-Instruct short-chat backend=cpu file=Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm
+android litert-lm litert-community/Qwen2.5-1.5B-Instruct short-chat backend=gpu file=Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm
+
+# --- Qwen3-1.7B (card split: INT8 on CPU, wi4b32 on GPU) + the wi4b32 file on CPU (recipe A/B) ---
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=cpu file=Qwen3_1.7B.litertlm
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+
+# --- Gemma 4 E2B (wNa8o8; the heaviest, last) ---
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm

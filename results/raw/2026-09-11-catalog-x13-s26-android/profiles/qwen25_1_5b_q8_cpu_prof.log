@@ -1,0 +1,1126 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789110243.909875   32177 litert_lm_lib.cc:499] Choose backend: cpu
+I0000 00:00:1789110243.910012   32177 litert_lm_lib.cc:652] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 1024
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen2.5-1.5B-Instruct_Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+attention_mask_settings:
+attention_mask_policy: Causal
+local_attention_mask_policy: Not set
+sliding_window_size: Not set
+advanced_settings: prefill_batch_sizes: [128]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: true
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789110243.910042   32177 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1789110243.910048   32177 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1789110243.910055   32177 litert_lm_lib.cc:688] Creating engine
+W0000 00:00:1789110243.928367   32177 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789110243.928411   32177 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789110243.928404   32178 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789110243.928421   32177 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789110243.928493   32177 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b19a15770, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b19a15470, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b19a15890, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b19a199d0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789110244.177794   32177 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1789110244.177893   32177 litert_lm_loader.cc:291] Section not found: 	
+INFO: [compiled_model.cc:815] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: XNNPack weight cache loaded from '/data/local/tmp/llmbench/models/litert-community_Qwen2.5-1.5B-Instruct_Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.litertlm_1788584727_1597931520.xnnpack_cache'.
+VERBOSE: Replacing 1239 out of 1359 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 172 partitions for subgraph 0 (decode).
+VERBOSE: Replacing 1291 out of 1409 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 167 partitions for subgraph 1 (prefill_128).
+VERBOSE: Replacing 1291 out of 1409 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 167 partitions for subgraph 2 (prefill_1280).
+VERBOSE: Replacing 1291 out of 1409 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 167 partitions for subgraph 3 (prefill_32).
+VERBOSE: Replacing 1291 out of 1409 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 167 partitions for subgraph 4 (prefill_512).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 5 (odml.rms_norm.impl).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 6 (odml.rms_norm.impl_0).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 7 (odml.rms_norm.impl_1).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 8 (odml.rms_norm.impl_2).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 9 (odml.rms_norm.impl_3).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 10 (odml.rms_norm.impl_4).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 11 (odml.rms_norm.impl_5).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 12 (odml.rms_norm.impl_6).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 13 (odml.rms_norm.impl_7).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 14 (odml.rms_norm.impl_8).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 15 (odml.rms_norm.impl_9).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 16 (odml.rms_norm.impl_10).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 17 (odml.rms_norm.impl_11).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 18 (odml.rms_norm.impl_12).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 19 (odml.rms_norm.impl_13).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 20 (odml.rms_norm.impl_14).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 21 (odml.rms_norm.impl_15).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 22 (odml.rms_norm.impl_16).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 23 (odml.rms_norm.impl_17).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 24 (odml.rms_norm.impl_18).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 25 (odml.rms_norm.impl_19).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 26 (odml.rms_norm.impl_20).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 27 (odml.rms_norm.impl_21).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 28 (odml.rms_norm.impl_22).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 29 (odml.rms_norm.impl_23).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 30 (odml.rms_norm.impl_24).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 31 (odml.rms_norm.impl_25).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 32 (odml.rms_norm.impl_26).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 33 (odml.rms_norm.impl_27).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 34 (odml.rms_norm.impl_28).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 35 (odml.rms_norm.impl_29).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 36 (odml.rms_norm.impl_30).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 37 (odml.rms_norm.impl_31).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 38 (odml.rms_norm.impl_32).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 39 (odml.rms_norm.impl_33).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 40 (odml.rms_norm.impl_34).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 41 (odml.rms_norm.impl_35).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 42 (odml.rms_norm.impl_36).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 43 (odml.rms_norm.impl_37).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 44 (odml.rms_norm.impl_38).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 45 (odml.rms_norm.impl_39).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 46 (odml.rms_norm.impl_40).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 47 (odml.rms_norm.impl_41).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 48 (odml.rms_norm.impl_42).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 49 (odml.rms_norm.impl_43).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 50 (odml.rms_norm.impl_44).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 51 (odml.rms_norm.impl_45).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 52 (odml.rms_norm.impl_46).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 53 (odml.rms_norm.impl_47).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 54 (odml.rms_norm.impl_48).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 55 (odml.rms_norm.impl_49).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 56 (odml.rms_norm.impl_50).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 57 (odml.rms_norm.impl_51).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 58 (odml.rms_norm.impl_52).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 59 (odml.rms_norm.impl_53).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 60 (odml.rms_norm.impl_54).
+VERBOSE: Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 61 (odml.rms_norm.impl_55).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 62 (odml.rms_norm.impl_56).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 63 (odml.rms_norm.impl_57).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 64 (odml.rms_norm.impl_58).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 65 (odml.rms_norm.impl_59).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 66 (odml.rms_norm.impl_60).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 67 (odml.rms_norm.impl_61).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 68 (odml.rms_norm.impl_62).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 69 (odml.rms_norm.impl_63).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 70 (odml.rms_norm.impl_64).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 71 (odml.rms_norm.impl_65).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 72 (odml.rms_norm.impl_66).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 73 (odml.rms_norm.impl_67).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 74 (odml.rms_norm.impl_68).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 75 (odml.rms_norm.impl_69).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 76 (odml.rms_norm.impl_70).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 77 (odml.rms_norm.impl_71).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 78 (odml.rms_norm.impl_72).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 79 (odml.rms_norm.impl_73).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 80 (odml.rms_norm.impl_74).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 81 (odml.rms_norm.impl_75).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 82 (odml.rms_norm.impl_76).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 83 (odml.rms_norm.impl_77).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 84 (odml.rms_norm.impl_78).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 85 (odml.rms_norm.impl_79).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 86 (odml.rms_norm.impl_80).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 87 (odml.rms_norm.impl_81).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 88 (odml.rms_norm.impl_82).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 89 (odml.rms_norm.impl_83).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 90 (odml.rms_norm.impl_84).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 91 (odml.rms_norm.impl_85).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 92 (odml.rms_norm.impl_86).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 93 (odml.rms_norm.impl_87).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 94 (odml.rms_norm.impl_88).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 95 (odml.rms_norm.impl_89).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 96 (odml.rms_norm.impl_90).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 97 (odml.rms_norm.impl_91).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 98 (odml.rms_norm.impl_92).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 99 (odml.rms_norm.impl_93).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 100 (odml.rms_norm.impl_94).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 101 (odml.rms_norm.impl_95).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 102 (odml.rms_norm.impl_96).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 103 (odml.rms_norm.impl_97).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 104 (odml.rms_norm.impl_98).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 105 (odml.rms_norm.impl_99).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 106 (odml.rms_norm.impl_100).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 107 (odml.rms_norm.impl_101).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 108 (odml.rms_norm.impl_102).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 109 (odml.rms_norm.impl_103).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 110 (odml.rms_norm.impl_104).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 111 (odml.rms_norm.impl_105).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 112 (odml.rms_norm.impl_106).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 113 (odml.rms_norm.impl_107).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 114 (odml.rms_norm.impl_108).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 115 (odml.rms_norm.impl_109).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 116 (odml.rms_norm.impl_110).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 117 (odml.rms_norm.impl_111).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 118 (odml.rms_norm.impl_112).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 119 (odml.rms_norm.impl_113).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 120 (odml.rms_norm.impl_114).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 121 (odml.rms_norm.impl_115).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 122 (odml.rms_norm.impl_116).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 123 (odml.rms_norm.impl_117).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 124 (odml.rms_norm.impl_118).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 125 (odml.rms_norm.impl_119).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 126 (odml.rms_norm.impl_120).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 127 (odml.rms_norm.impl_121).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 128 (odml.rms_norm.impl_122).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 129 (odml.rms_norm.impl_123).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 130 (odml.rms_norm.impl_124).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 131 (odml.rms_norm.impl_125).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 132 (odml.rms_norm.impl_126).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 133 (odml.rms_norm.impl_127).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 134 (odml.rms_norm.impl_128).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 135 (odml.rms_norm.impl_129).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 136 (odml.rms_norm.impl_130).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 137 (odml.rms_norm.impl_131).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 138 (odml.rms_norm.impl_132).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 139 (odml.rms_norm.impl_133).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 140 (odml.rms_norm.impl_134).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 141 (odml.rms_norm.impl_135).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 142 (odml.rms_norm.impl_136).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 143 (odml.rms_norm.impl_137).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 144 (odml.rms_norm.impl_138).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 145 (odml.rms_norm.impl_139).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 146 (odml.rms_norm.impl_140).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 147 (odml.rms_norm.impl_141).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 148 (odml.rms_norm.impl_142).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 149 (odml.rms_norm.impl_143).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 150 (odml.rms_norm.impl_144).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 151 (odml.rms_norm.impl_145).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 152 (odml.rms_norm.impl_146).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 153 (odml.rms_norm.impl_147).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 154 (odml.rms_norm.impl_148).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 155 (odml.rms_norm.impl_149).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 156 (odml.rms_norm.impl_150).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 157 (odml.rms_norm.impl_151).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 158 (odml.rms_norm.impl_152).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 159 (odml.rms_norm.impl_153).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 160 (odml.rms_norm.impl_154).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 161 (odml.rms_norm.impl_155).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 162 (odml.rms_norm.impl_156).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 163 (odml.rms_norm.impl_157).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 164 (odml.rms_norm.impl_158).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 165 (odml.rms_norm.impl_159).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 166 (odml.rms_norm.impl_160).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 167 (odml.rms_norm.impl_161).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 168 (odml.rms_norm.impl_162).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 169 (odml.rms_norm.impl_163).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 170 (odml.rms_norm.impl_164).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 171 (odml.rms_norm.impl_165).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 172 (odml.rms_norm.impl_166).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 173 (odml.rms_norm.impl_167).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 174 (odml.rms_norm.impl_168).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 175 (odml.rms_norm.impl_169).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 176 (odml.rms_norm.impl_170).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 177 (odml.rms_norm.impl_171).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 178 (odml.rms_norm.impl_172).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 179 (odml.rms_norm.impl_173).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 180 (odml.rms_norm.impl_174).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 181 (odml.rms_norm.impl_175).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 182 (odml.rms_norm.impl_176).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 183 (odml.rms_norm.impl_177).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 184 (odml.rms_norm.impl_178).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 185 (odml.rms_norm.impl_179).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 186 (odml.rms_norm.impl_180).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 187 (odml.rms_norm.impl_181).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 188 (odml.rms_norm.impl_182).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 189 (odml.rms_norm.impl_183).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 190 (odml.rms_norm.impl_184).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 191 (odml.rms_norm.impl_185).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 192 (odml.rms_norm.impl_186).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 193 (odml.rms_norm.impl_187).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 194 (odml.rms_norm.impl_188).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 195 (odml.rms_norm.impl_189).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 196 (odml.rms_norm.impl_190).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 197 (odml.rms_norm.impl_191).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 198 (odml.rms_norm.impl_192).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 199 (odml.rms_norm.impl_193).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 200 (odml.rms_norm.impl_194).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 201 (odml.rms_norm.impl_195).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 202 (odml.rms_norm.impl_196).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 203 (odml.rms_norm.impl_197).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 204 (odml.rms_norm.impl_198).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 205 (odml.rms_norm.impl_199).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 206 (odml.rms_norm.impl_200).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 207 (odml.rms_norm.impl_201).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 208 (odml.rms_norm.impl_202).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 209 (odml.rms_norm.impl_203).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 210 (odml.rms_norm.impl_204).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 211 (odml.rms_norm.impl_205).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 212 (odml.rms_norm.impl_206).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 213 (odml.rms_norm.impl_207).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 214 (odml.rms_norm.impl_208).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 215 (odml.rms_norm.impl_209).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 216 (odml.rms_norm.impl_210).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 217 (odml.rms_norm.impl_211).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 218 (odml.rms_norm.impl_212).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 219 (odml.rms_norm.impl_213).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 220 (odml.rms_norm.impl_214).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 221 (odml.rms_norm.impl_215).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 222 (odml.rms_norm.impl_216).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 223 (odml.rms_norm.impl_217).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 224 (odml.rms_norm.impl_218).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 225 (odml.rms_norm.impl_219).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 226 (odml.rms_norm.impl_220).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 227 (odml.rms_norm.impl_221).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 228 (odml.rms_norm.impl_222).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 229 (odml.rms_norm.impl_223).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 230 (odml.rms_norm.impl_224).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 231 (odml.rms_norm.impl_225).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 232 (odml.rms_norm.impl_226).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 233 (odml.rms_norm.impl_227).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 234 (odml.rms_norm.impl_228).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 235 (odml.rms_norm.impl_229).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 236 (odml.rms_norm.impl_230).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 237 (odml.rms_norm.impl_231).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 238 (odml.rms_norm.impl_232).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 239 (odml.rms_norm.impl_233).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 240 (odml.rms_norm.impl_234).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 241 (odml.rms_norm.impl_235).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 242 (odml.rms_norm.impl_236).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 243 (odml.rms_norm.impl_237).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 244 (odml.rms_norm.impl_238).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 245 (odml.rms_norm.impl_239).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 246 (odml.rms_norm.impl_240).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 247 (odml.rms_norm.impl_241).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 248 (odml.rms_norm.impl_242).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 249 (odml.rms_norm.impl_243).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 250 (odml.rms_norm.impl_244).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 251 (odml.rms_norm.impl_245).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 252 (odml.rms_norm.impl_246).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 253 (odml.rms_norm.impl_247).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 254 (odml.rms_norm.impl_248).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 255 (odml.rms_norm.impl_249).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 256 (odml.rms_norm.impl_250).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 257 (odml.rms_norm.impl_251).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 258 (odml.rms_norm.impl_252).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 259 (odml.rms_norm.impl_253).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 260 (odml.rms_norm.impl_254).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 261 (odml.rms_norm.impl_255).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 262 (odml.rms_norm.impl_256).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 263 (odml.rms_norm.impl_257).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 264 (odml.rms_norm.impl_258).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 265 (odml.rms_norm.impl_259).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 266 (odml.rms_norm.impl_260).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 267 (odml.rms_norm.impl_261).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 268 (odml.rms_norm.impl_262).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 269 (odml.rms_norm.impl_263).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 270 (odml.rms_norm.impl_264).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 271 (odml.rms_norm.impl_265).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 272 (odml.rms_norm.impl_266).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 273 (odml.rms_norm.impl_267).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 274 (odml.rms_norm.impl_268).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 275 (odml.rms_norm.impl_269).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 276 (odml.rms_norm.impl_270).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 277 (odml.rms_norm.impl_271).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 278 (odml.rms_norm.impl_272).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 279 (odml.rms_norm.impl_273).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 280 (odml.rms_norm.impl_274).
+VERBOSE: Replacing 8 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 281 (odml.rms_norm.impl_275).
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b19ae1710, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b19ae2370, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789110244.365738   32177 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789110244.365792   32177 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789110244.365807   32177 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789110244.365818   32177 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789110244.365828   32177 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789110244.365839   32177 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789110244.365850   32177 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789110244.365860   32177 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789110244.365895   32177 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789110244.365908   32177 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789110244.365919   32177 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789110244.365930   32177 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789110244.366176   32177 litert_lm_lib.cc:856] Creating conversation
+I0000 00:00:1789110244.366897   32177 litert_lm_lib.cc:868] Running single-turn conversation
+VERBOSE: Replacing 1731 out of 1794 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 57 partitions for subgraph 1 (prefill_128).
+VERBOSE: Replacing 1638 out of 1701 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 58 partitions for subgraph 0 (decode).
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 437.36 ms
+    - Init LLM metadata: 0.14 ms
+    - Init Model assets: 18.00 ms
+    - Init Tokenizer: 303.91 ms
+    - Init Total: 456.08 ms
+--------------------------------------------------
+  Time to first token: 0.74 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 701.827084ms duration.
+      Prefill Speed: 182.38 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 9.359326715s duration.
+      Decode Speed: 27.35 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 136.719us, 128 tokens
+--------------------------------------------------
+--------------------------------------------------
+  Profile Summary:
+===================================================================== Run Order ======================================================================
+                                                 [node type]    [start]    [first]   [avg ms]        [%]     [cdf%]   [mem KB] [times called]   [Name]
+                                                     RESHAPE      0.000      0.002      0.002     0.000%     0.000%      0.000              1   [Builtin]:0
+                                            EMBEDDING_LOOKUP      0.002      4.038      4.038     0.042%     0.042%      0.000              1   [Builtin]:1
+                                                     RESHAPE      4.040      0.000      0.000     0.000%     0.042%      0.000              1   [Builtin]:3
+                                                        CAST      4.041      0.003      0.003     0.000%     0.042%      0.000              1   [Builtin]:4
+                                                        CAST      4.044      0.000      0.000     0.000%     0.042%      0.000              1   [Builtin]:36
+                                Delegate/Static Reshape (NC)      0.000      0.092      0.092     0.001%     0.043%      0.000              1   [Delegate]:0
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     0.043%      0.000              1   [Delegate]:1
+                                        Delegate/Cosine (NC)      0.000      0.010      0.010     0.000%     0.043%      0.000              1   [Delegate]:2
+                                          Delegate/Sine (NC)      0.000      0.006      0.006     0.000%     0.043%      0.000              1   [Delegate]:3
+                             Delegate/Normalize (ND) Reduce2      0.000      0.011      0.011     0.000%     0.043%      0.000              1   [Delegate]:4
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     0.043%      0.000              1   [Delegate]:5
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     0.043%      0.000              1   [Delegate]:6
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     0.043%      0.000              1   [Delegate]:7
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.001      0.001     0.000%     0.043%      0.000              1   [Delegate]:8
+                                      Delegate/Multiply (ND)      0.000      0.021      0.021     0.000%     0.043%      0.000              1   [Delegate]:9
+                                      Delegate/Multiply (ND)      0.000      0.008      0.008     0.000%     0.043%      0.000              1   [Delegate]:10
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      3.120      3.120     0.032%     0.075%      0.000              1   [Delegate]:11
+                                Delegate/Static Reshape (NC)      0.000      0.052      0.052     0.001%     0.076%      0.000              1   [Delegate]:12
+                                    Delegate/Slice (ND, X32)      0.000      0.031      0.031     0.000%     0.076%      0.000              1   [Delegate]:13
+                                    Delegate/Slice (ND, X32)      0.000      0.007      0.007     0.000%     0.076%      0.000              1   [Delegate]:14
+                                    Delegate/Slice (ND, X32)      0.000      0.002      0.002     0.000%     0.076%      0.000              1   [Delegate]:15
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     0.076%      0.000              1   [Delegate]:16
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.012      0.012     0.000%     0.076%      0.000              1   [Delegate]:17
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.006     0.000%     0.076%      0.000              1   [Delegate]:18
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.006     0.000%     0.076%      0.000              1   [Delegate]:19
+                                      Delegate/Multiply (ND)      0.000      0.010      0.180     0.052%     0.128%      0.000             28   [Delegate]:20
+                                      Delegate/Multiply (ND)      0.000      0.012      0.012     0.000%     0.128%      0.000              1   [Delegate]:21
+                                      Delegate/Subtract (ND)      0.000      0.004      0.004     0.000%     0.128%      0.000              1   [Delegate]:22
+                                      Delegate/Multiply (ND)      0.000      0.005      0.005     0.000%     0.128%      0.000              1   [Delegate]:23
+                                      Delegate/Multiply (ND)      0.000      0.005      0.005     0.000%     0.128%      0.000              1   [Delegate]:24
+                                           Delegate/Add (ND)      0.000      0.004      0.004     0.000%     0.129%      0.000              1   [Delegate]:25
+                                     Delegate/Copy (NC, X32)      0.000      0.011      0.011     0.000%     0.129%      0.000              1   [Delegate]:26
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.002      0.002     0.000%     0.129%      0.000              1   [Delegate]:27
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.000%     0.129%      0.000              1   [Delegate]:28
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.000%     0.129%      0.000              1   [Delegate]:29
+                                      Delegate/Multiply (ND)      0.000      0.001      0.022     0.006%     0.135%      0.000             28   [Delegate]:30
+                                      Delegate/Multiply (ND)      0.000      0.001      0.010     0.003%     0.138%      0.000             28   [Delegate]:31
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%     0.138%      0.000              1   [Delegate]:32
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     0.138%      0.000              1   [Delegate]:33
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     0.138%      0.000              1   [Delegate]:34
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     0.138%      0.000              1   [Delegate]:35
+                                     Delegate/Copy (NC, X32)      0.000      0.017      0.017     0.000%     0.138%      0.000              1   [Delegate]:36
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.012      0.012     0.000%     0.138%      0.000              1   [Delegate]:37
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.003     0.000%     0.139%      0.000              2   [Delegate]:38
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%     0.139%      0.000              1   [Delegate]:39
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%     0.139%      0.000              1   [Delegate]:40
+                                      Delegate/Multiply (ND)      0.000      0.006      0.006     0.002%     0.140%      0.000             27   [Delegate]:41
+                                Delegate/Static Reshape (NC)      0.000      0.067      0.067     0.001%     0.141%      0.000              1   [Delegate]:42
+                                                        CAST      7.638      0.005      0.005     0.000%     0.141%      0.000              1   [Builtin]:39
+                                                        CAST      7.643      0.000      0.000     0.000%     0.141%      0.000              1   [Builtin]:41
+                                        DYNAMIC_UPDATE_SLICE      7.644      0.008      0.008     0.000%     0.141%      0.000              1   [Builtin]:42
+                                        DYNAMIC_UPDATE_SLICE      7.652      0.040      0.040     0.000%     0.141%      0.000              1   [Builtin]:43
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      4.594      2.465     0.685%     0.826%      0.000             27   [Delegate]:0
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     0.826%      0.000             27   [Delegate]:1
+                                           Delegate/Add (ND)      0.000      1.193      0.905     0.252%     1.078%      0.000             27   [Delegate]:2
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     1.078%      0.000             27   [Delegate]:3
+                                  Delegate/Softmax (NC, F32)      0.000      1.508      1.153     0.320%     1.398%      0.000             27   [Delegate]:4
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      8.322      4.295     1.193%     2.591%      0.000             27   [Delegate]:5
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     2.591%      0.000             27   [Delegate]:6
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.031      0.037     0.010%     2.602%      0.000             27   [Delegate]:7
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     2.602%      0.000             27   [Delegate]:8
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      2.658      1.178     0.327%     2.929%      0.000             27   [Delegate]:9
+                                           Delegate/Add (ND)      0.000      0.037      0.036     0.010%     2.939%      0.000             27   [Delegate]:10
+                             Delegate/Normalize (ND) Reduce2      0.000      0.007      0.007     0.002%     2.941%      0.000             27   [Delegate]:11
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     2.941%      0.000             27   [Delegate]:12
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     2.941%      0.000             27   [Delegate]:13
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     2.941%      0.000             27   [Delegate]:14
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%     2.941%      0.000             27   [Delegate]:15
+                                      Delegate/Multiply (ND)      0.000      0.021      0.014     0.004%     2.945%      0.000             27   [Delegate]:16
+                                      Delegate/Multiply (ND)      0.000      0.015      0.016     0.005%     2.949%      0.000             27   [Delegate]:17
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000     12.423      4.125     1.146%     4.095%      0.000             27   [Delegate]:18
+                                       Delegate/Sigmoid (NC)      0.000      0.319      0.274     0.076%     4.171%      0.000             27   [Delegate]:19
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000     12.475      3.615     1.004%     5.176%      0.000             27   [Delegate]:21
+                                      Delegate/Multiply (ND)      0.000      0.288      0.205     0.057%     5.232%      0.000             27   [Delegate]:22
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000     13.298      4.626     1.285%     6.518%      0.000             27   [Delegate]:23
+                                           Delegate/Add (ND)      0.000      0.182      0.066     0.018%     6.536%      0.000             27   [Delegate]:24
+                             Delegate/Normalize (ND) Reduce2      0.000      0.009      0.021     0.006%     6.542%      0.000             27   [Delegate]:25
+                                      Delegate/Multiply (ND)      0.000      0.001      0.000     0.000%     6.542%      0.000             27   [Delegate]:26
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     6.542%      0.000             27   [Delegate]:27
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     6.542%      0.000             27   [Delegate]:28
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.001      0.000     0.000%     6.542%      0.000             27   [Delegate]:29
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      3.013      1.120     0.311%     6.853%      0.000             27   [Delegate]:32
+                                Delegate/Static Reshape (NC)      0.000      0.056      0.043     0.012%     6.865%      0.000             27   [Delegate]:33
+                                    Delegate/Slice (ND, X32)      0.000      0.030      0.033     0.009%     6.874%      0.000             27   [Delegate]:34
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.011     0.003%     6.877%      0.000             27   [Delegate]:35
+                                    Delegate/Slice (ND, X32)      0.000      0.004      0.009     0.003%     6.880%      0.000             26   [Delegate]:36
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     6.880%      0.000             26   [Delegate]:37
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.023      0.029     0.008%     6.888%      0.000             26   [Delegate]:38
+                                    Delegate/Slice (ND, X32)      0.000      0.016      0.020     0.005%     6.893%      0.000             26   [Delegate]:39
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.015     0.004%     6.897%      0.000             26   [Delegate]:40
+                                      Delegate/Multiply (ND)      0.000      0.006      0.006     0.002%     6.899%      0.000             27   [Delegate]:42
+                                      Delegate/Subtract (ND)      0.000      0.005      0.005     0.001%     6.900%      0.000             26   [Delegate]:43
+                                      Delegate/Multiply (ND)      0.000      0.005      0.005     0.001%     6.901%      0.000             26   [Delegate]:44
+                                      Delegate/Multiply (ND)      0.000      0.004      0.005     0.001%     6.903%      0.000             26   [Delegate]:45
+                                           Delegate/Add (ND)      0.000      0.005      0.005     0.001%     6.904%      0.000             26   [Delegate]:46
+                                     Delegate/Copy (NC, X32)      0.000      0.008      0.010     0.003%     6.907%      0.000             26   [Delegate]:47
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.002      0.003     0.001%     6.908%      0.000             26   [Delegate]:48
+                                    Delegate/Slice (ND, X32)      0.000      0.002      0.003     0.001%     6.908%      0.000             26   [Delegate]:49
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.003     0.001%     6.909%      0.000             26   [Delegate]:50
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     6.910%      0.000             26   [Delegate]:51
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     6.910%      0.000             26   [Delegate]:52
+                                      Delegate/Subtract (ND)      0.000      0.001      0.001     0.000%     6.910%      0.000             26   [Delegate]:53
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     6.910%      0.000             26   [Delegate]:54
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%     6.911%      0.000             26   [Delegate]:55
+                                           Delegate/Add (ND)      0.000      0.001      0.001     0.000%     6.911%      0.000             26   [Delegate]:56
+                                     Delegate/Copy (NC, X32)      0.000      0.013      0.005     0.001%     6.912%      0.000             26   [Delegate]:57
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.012      0.005     0.001%     6.913%      0.000             26   [Delegate]:58
+                                      Delegate/Multiply (ND)      0.000      0.007      0.011     0.003%     6.917%      0.000             26   [Delegate]:59
+                                Delegate/Static Reshape (NC)      0.000      0.022      0.017     0.005%     6.921%      0.000             26   [Delegate]:60
+                                        DYNAMIC_UPDATE_SLICE     68.701      0.013      0.013     0.000%     6.921%      0.000              1   [Builtin]:93
+                                        DYNAMIC_UPDATE_SLICE     68.715      0.063      0.063     0.001%     6.922%      0.000              1   [Builtin]:94
+                                        DYNAMIC_UPDATE_SLICE    129.254      0.013      0.013     0.000%     6.922%      0.000              1   [Builtin]:144
+                                        DYNAMIC_UPDATE_SLICE    129.267      0.058      0.058     0.001%     6.923%      0.000              1   [Builtin]:145
+                                        DYNAMIC_UPDATE_SLICE    178.394      0.009      0.009     0.000%     6.923%      0.000              1   [Builtin]:195
+                                        DYNAMIC_UPDATE_SLICE    178.403      0.047      0.047     0.000%     6.923%      0.000              1   [Builtin]:196
+                                        DYNAMIC_UPDATE_SLICE    208.960      0.010      0.010     0.000%     6.923%      0.000              1   [Builtin]:246
+                                        DYNAMIC_UPDATE_SLICE    208.970      0.041      0.041     0.000%     6.924%      0.000              1   [Builtin]:247
+                                        DYNAMIC_UPDATE_SLICE    240.162      0.008      0.008     0.000%     6.924%      0.000              1   [Builtin]:297
+                                        DYNAMIC_UPDATE_SLICE    240.170      0.047      0.047     0.000%     6.924%      0.000              1   [Builtin]:298
+                                        DYNAMIC_UPDATE_SLICE    271.652      0.008      0.008     0.000%     6.924%      0.000              1   [Builtin]:348
+                                        DYNAMIC_UPDATE_SLICE    271.660      0.049      0.049     0.001%     6.925%      0.000              1   [Builtin]:349
+                                        DYNAMIC_UPDATE_SLICE    302.762      0.007      0.007     0.000%     6.925%      0.000              1   [Builtin]:399
+                                        DYNAMIC_UPDATE_SLICE    302.769      0.044      0.044     0.000%     6.925%      0.000              1   [Builtin]:400
+                                        DYNAMIC_UPDATE_SLICE    336.184      0.007      0.007     0.000%     6.925%      0.000              1   [Builtin]:450
+                                        DYNAMIC_UPDATE_SLICE    336.191      0.044      0.044     0.000%     6.926%      0.000              1   [Builtin]:451
+                                        DYNAMIC_UPDATE_SLICE    366.912      0.008      0.008     0.000%     6.926%      0.000              1   [Builtin]:501
+                                        DYNAMIC_UPDATE_SLICE    366.920      0.040      0.040     0.000%     6.926%      0.000              1   [Builtin]:502
+                                        DYNAMIC_UPDATE_SLICE    399.559      0.006      0.006     0.000%     6.926%      0.000              1   [Builtin]:552
+                                        DYNAMIC_UPDATE_SLICE    399.565      0.040      0.040     0.000%     6.927%      0.000              1   [Builtin]:553
+                                        DYNAMIC_UPDATE_SLICE    429.275      0.009      0.009     0.000%     6.927%      0.000              1   [Builtin]:603
+                                        DYNAMIC_UPDATE_SLICE    429.284      0.042      0.042     0.000%     6.927%      0.000              1   [Builtin]:604
+                                        DYNAMIC_UPDATE_SLICE    461.029      0.006      0.006     0.000%     6.927%      0.000              1   [Builtin]:654
+                                        DYNAMIC_UPDATE_SLICE    461.035      0.039      0.039     0.000%     6.928%      0.000              1   [Builtin]:655
+                                        DYNAMIC_UPDATE_SLICE    489.541      0.006      0.006     0.000%     6.928%      0.000              1   [Builtin]:705
+                                        DYNAMIC_UPDATE_SLICE    489.547      0.034      0.034     0.000%     6.928%      0.000              1   [Builtin]:706
+                                        DYNAMIC_UPDATE_SLICE    512.832      0.006      0.006     0.000%     6.928%      0.000              1   [Builtin]:756
+                                        DYNAMIC_UPDATE_SLICE    512.838      0.032      0.032     0.000%     6.929%      0.000              1   [Builtin]:757
+                                        DYNAMIC_UPDATE_SLICE    530.141      0.012      0.012     0.000%     6.929%      0.000              1   [Builtin]:807
+                                        DYNAMIC_UPDATE_SLICE    530.154      0.060      0.060     0.001%     6.929%      0.000              1   [Builtin]:808
+                                        DYNAMIC_UPDATE_SLICE    550.625      0.009      0.009     0.000%     6.929%      0.000              1   [Builtin]:858
+                                        DYNAMIC_UPDATE_SLICE    550.635      0.058      0.058     0.001%     6.930%      0.000              1   [Builtin]:859
+                                        DYNAMIC_UPDATE_SLICE    563.787      0.007      0.007     0.000%     6.930%      0.000              1   [Builtin]:909
+                                        DYNAMIC_UPDATE_SLICE    563.794      0.040      0.040     0.000%     6.931%      0.000              1   [Builtin]:910
+                                        DYNAMIC_UPDATE_SLICE    574.970      0.006      0.006     0.000%     6.931%      0.000              1   [Builtin]:960
+                                        DYNAMIC_UPDATE_SLICE    574.976      0.043      0.043     0.000%     6.931%      0.000              1   [Builtin]:961
+                                        DYNAMIC_UPDATE_SLICE    586.287      0.007      0.007     0.000%     6.931%      0.000              1   [Builtin]:1011
+                                        DYNAMIC_UPDATE_SLICE    586.294      0.041      0.041     0.000%     6.932%      0.000              1   [Builtin]:1012
+                                        DYNAMIC_UPDATE_SLICE    597.557      0.006      0.006     0.000%     6.932%      0.000              1   [Builtin]:1062
+                                        DYNAMIC_UPDATE_SLICE    597.563      0.031      0.031     0.000%     6.932%      0.000              1   [Builtin]:1063
+                                        DYNAMIC_UPDATE_SLICE    608.340      0.007      0.007     0.000%     6.932%      0.000              1   [Builtin]:1113
+                                        DYNAMIC_UPDATE_SLICE    608.347      0.039      0.039     0.000%     6.932%      0.000              1   [Builtin]:1114
+                                        DYNAMIC_UPDATE_SLICE    619.662      0.007      0.007     0.000%     6.932%      0.000              1   [Builtin]:1164
+                                        DYNAMIC_UPDATE_SLICE    619.669      0.044      0.044     0.000%     6.933%      0.000              1   [Builtin]:1165
+                                        DYNAMIC_UPDATE_SLICE    630.888      0.006      0.006     0.000%     6.933%      0.000              1   [Builtin]:1215
+                                        DYNAMIC_UPDATE_SLICE    630.894      0.038      0.038     0.000%     6.933%      0.000              1   [Builtin]:1216
+                                        DYNAMIC_UPDATE_SLICE    641.909      0.006      0.006     0.000%     6.933%      0.000              1   [Builtin]:1266
+                                        DYNAMIC_UPDATE_SLICE    641.915      0.032      0.032     0.000%     6.934%      0.000              1   [Builtin]:1267
+                                        DYNAMIC_UPDATE_SLICE    653.191      0.007      0.007     0.000%     6.934%      0.000              1   [Builtin]:1317
+                                        DYNAMIC_UPDATE_SLICE    653.198      0.034      0.034     0.000%     6.934%      0.000              1   [Builtin]:1318
+                                        DYNAMIC_UPDATE_SLICE    664.320      0.006      0.006     0.000%     6.934%      0.000              1   [Builtin]:1368
+                                        DYNAMIC_UPDATE_SLICE    664.326      0.038      0.038     0.000%     6.935%      0.000              1   [Builtin]:1369
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.004      0.004     0.000%     6.935%      0.000              1   [Delegate]:36
+                                    Delegate/Slice (ND, X32)      0.000      0.005      0.005     0.000%     6.935%      0.000              1   [Delegate]:37
+                                      Delegate/Multiply (ND)      0.000      0.002      0.002     0.000%     6.935%      0.000              1   [Delegate]:39
+                                      Delegate/Multiply (ND)      0.000      0.002      0.002     0.000%     6.935%      0.000              1   [Delegate]:40
+                                      Delegate/Subtract (ND)      0.000      0.002      0.002     0.000%     6.935%      0.000              1   [Delegate]:41
+                                      Delegate/Multiply (ND)      0.000      0.002      0.002     0.000%     6.935%      0.000              1   [Delegate]:43
+                                           Delegate/Add (ND)      0.000      0.002      0.002     0.000%     6.935%      0.000              1   [Delegate]:44
+                                     Delegate/Copy (NC, X32)      0.000      0.005      0.005     0.000%     6.935%      0.000              1   [Delegate]:45
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.005      0.005     0.000%     6.935%      0.000              1   [Delegate]:46
+                                        DYNAMIC_UPDATE_SLICE    675.653      0.007      0.007     0.000%     6.935%      0.000              1   [Builtin]:1407
+                                        DYNAMIC_UPDATE_SLICE    675.660      0.040      0.040     0.000%     6.935%      0.000              1   [Builtin]:1408
+                                                     RESHAPE    712.173      0.000      0.001     0.001%     6.937%      0.000            256   [Builtin]:0
+                                            EMBEDDING_LOOKUP    712.173      0.002      0.003     0.008%     6.945%      0.000            256   [Builtin]:1
+                                                     RESHAPE    712.175      0.000      0.000     0.001%     6.946%      0.000            256   [Builtin]:3
+                                                        CAST    712.175      0.001      0.001     0.002%     6.947%      0.000            256   [Builtin]:4
+                                                        CAST    712.176      0.000      0.000     0.001%     6.949%      0.000            256   [Builtin]:35
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:0
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:1
+                                        Delegate/Cosine (NC)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:2
+                                          Delegate/Sine (NC)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:3
+                             Delegate/Normalize (ND) Reduce2      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:4
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:5
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:6
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:7
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:8
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     6.949%      0.000            256   [Delegate]:9
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.151      0.068     0.178%     7.127%      0.000            256   [Delegate]:10
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     7.127%      0.000            256   [Delegate]:11
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.001%     7.128%      0.000            256   [Delegate]:12
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%     7.128%      0.000            256   [Delegate]:13
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%     7.128%      0.000            256   [Delegate]:14
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     7.128%      0.000            256   [Delegate]:15
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.001     0.003%     7.131%      0.000            256   [Delegate]:16
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.001     0.002%     7.133%      0.000            256   [Delegate]:17
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.133%      0.000            256   [Delegate]:18
+                                      Delegate/Multiply (ND)      0.000      0.000      0.001     0.105%     7.238%      0.000           7424   [Delegate]:19
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:20
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:21
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:22
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:23
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:24
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:25
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%     7.238%      0.000            256   [Delegate]:26
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:27
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:28
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:29
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:30
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:31
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:32
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:33
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:34
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:35
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:36
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:37
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:38
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%     7.239%      0.000            256   [Delegate]:39
+                                                        CAST    712.345      0.000      0.000     0.001%     7.239%      0.000            256   [Builtin]:37
+                                                        CAST    712.345      0.001      0.000     0.001%     7.240%      0.000            256   [Builtin]:39
+                                        DYNAMIC_UPDATE_SLICE    712.346      0.001      0.001     0.002%     7.242%      0.000            256   [Builtin]:40
+                                        DYNAMIC_UPDATE_SLICE    712.347      0.011      0.008     0.022%     7.264%      0.000            256   [Builtin]:41
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      0.240      0.144    10.623%    17.887%      0.000           7168   [Delegate]:0
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    17.887%      0.000           7168   [Delegate]:1
+                                           Delegate/Add (ND)      0.000      0.006      0.004     0.263%    18.150%      0.000           7168   [Delegate]:2
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    18.150%      0.000           7168   [Delegate]:3
+                                  Delegate/Softmax (NC, F32)      0.000      0.010      0.009     0.642%    18.791%      0.000           7168   [Delegate]:4
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      0.276      0.275    20.257%    39.048%      0.000           7168   [Delegate]:5
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    39.048%      0.000           7168   [Delegate]:6
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.038      0.036     2.649%    41.698%      0.000           7168   [Delegate]:7
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:8
+                             Delegate/Normalize (ND) Reduce2      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:9
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:10
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:11
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:12
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:13
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    41.698%      0.000           7168   [Delegate]:14
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.211      0.202    14.932%    56.630%      0.000           7168   [Delegate]:15
+                                       Delegate/Sigmoid (NC)      0.000      0.005      0.004     0.293%    56.923%      0.000           7168   [Delegate]:16
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.101%    57.024%      0.000           7168   [Delegate]:17
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.200      0.202    14.913%    71.937%      0.000           7168   [Delegate]:18
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.200      0.203    14.998%    86.935%      0.000           7168   [Delegate]:20
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    86.935%      0.000           7168   [Delegate]:21
+                             Delegate/Normalize (ND) Reduce2      0.000      0.000      0.000     0.000%    86.935%      0.000           7168   [Delegate]:22
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    86.935%      0.000           7168   [Delegate]:23
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    86.935%      0.000           7168   [Delegate]:24
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%    86.935%      0.000           7168   [Delegate]:25
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    86.935%      0.000           7168   [Delegate]:26
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.001%    86.936%      0.000           7168   [Delegate]:27
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.046      0.167    12.297%    99.233%      0.000           7168   [Delegate]:28
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.233%      0.000           6912   [Delegate]:29
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.014%    99.247%      0.000           6912   [Delegate]:30
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.002%    99.249%      0.000           6912   [Delegate]:31
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.001%    99.250%      0.000           6912   [Delegate]:32
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.250%      0.000           6912   [Delegate]:33
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.036%    99.286%      0.000           6912   [Delegate]:34
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.040%    99.326%      0.000           6912   [Delegate]:35
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.326%      0.000           6912   [Delegate]:36
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.326%      0.000           6912   [Delegate]:37
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%    99.327%      0.000           6912   [Delegate]:38
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.327%      0.000           6912   [Delegate]:39
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.327%      0.000           6912   [Delegate]:40
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    99.327%      0.000           6912   [Delegate]:41
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%    99.327%      0.000           6912   [Delegate]:42
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.327%      0.000           6912   [Delegate]:43
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.001%    99.328%      0.000           6912   [Delegate]:44
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:45
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:46
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:47
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:48
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:49
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:50
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:51
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:52
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:53
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:54
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.328%      0.000           6912   [Delegate]:55
+                                        DYNAMIC_UPDATE_SLICE    713.621      0.001      0.001     0.003%    99.331%      0.000            256   [Builtin]:88
+                                        DYNAMIC_UPDATE_SLICE    713.622      0.008      0.008     0.021%    99.352%      0.000            256   [Builtin]:89
+                                        DYNAMIC_UPDATE_SLICE    714.775      0.000      0.001     0.002%    99.355%      0.000            256   [Builtin]:136
+                                        DYNAMIC_UPDATE_SLICE    714.776      0.008      0.009     0.023%    99.377%      0.000            256   [Builtin]:137
+                                        DYNAMIC_UPDATE_SLICE    715.944      0.001      0.001     0.003%    99.380%      0.000            256   [Builtin]:184
+                                        DYNAMIC_UPDATE_SLICE    715.945      0.009      0.008     0.022%    99.402%      0.000            256   [Builtin]:185
+                                        DYNAMIC_UPDATE_SLICE    717.086      0.001      0.001     0.002%    99.404%      0.000            256   [Builtin]:232
+                                        DYNAMIC_UPDATE_SLICE    717.087      0.008      0.008     0.021%    99.426%      0.000            256   [Builtin]:233
+                                        DYNAMIC_UPDATE_SLICE    718.208      0.001      0.001     0.003%    99.429%      0.000            256   [Builtin]:280
+                                        DYNAMIC_UPDATE_SLICE    718.209      0.009      0.009     0.023%    99.452%      0.000            256   [Builtin]:281
+                                        DYNAMIC_UPDATE_SLICE    719.426      0.001      0.001     0.003%    99.454%      0.000            256   [Builtin]:328
+                                        DYNAMIC_UPDATE_SLICE    719.427      0.008      0.008     0.022%    99.476%      0.000            256   [Builtin]:329
+                                        DYNAMIC_UPDATE_SLICE    720.669      0.003      0.001     0.003%    99.479%      0.000            256   [Builtin]:376
+                                        DYNAMIC_UPDATE_SLICE    720.672      0.008      0.008     0.022%    99.501%      0.000            256   [Builtin]:377
+                                        DYNAMIC_UPDATE_SLICE    721.823      0.001      0.001     0.003%    99.503%      0.000            256   [Builtin]:424
+                                        DYNAMIC_UPDATE_SLICE    721.824      0.009      0.008     0.022%    99.526%      0.000            256   [Builtin]:425
+                                        DYNAMIC_UPDATE_SLICE    722.952      0.001      0.001     0.003%    99.528%      0.000            256   [Builtin]:472
+                                        DYNAMIC_UPDATE_SLICE    722.954      0.008      0.009     0.023%    99.551%      0.000            256   [Builtin]:473
+                                        DYNAMIC_UPDATE_SLICE    724.085      0.001      0.001     0.003%    99.554%      0.000            256   [Builtin]:520
+                                        DYNAMIC_UPDATE_SLICE    724.086      0.008      0.008     0.022%    99.576%      0.000            256   [Builtin]:521
+                                        DYNAMIC_UPDATE_SLICE    725.234      0.002      0.001     0.003%    99.578%      0.000            256   [Builtin]:568
+                                        DYNAMIC_UPDATE_SLICE    725.236      0.008      0.009     0.023%    99.601%      0.000            256   [Builtin]:569
+                                        DYNAMIC_UPDATE_SLICE    726.380      0.001      0.001     0.003%    99.604%      0.000            256   [Builtin]:616
+                                        DYNAMIC_UPDATE_SLICE    726.381      0.009      0.009     0.023%    99.627%      0.000            256   [Builtin]:617
+                                        DYNAMIC_UPDATE_SLICE    727.499      0.001      0.001     0.003%    99.630%      0.000            256   [Builtin]:664
+                                        DYNAMIC_UPDATE_SLICE    727.500      0.008      0.008     0.021%    99.651%      0.000            256   [Builtin]:665
+                                        DYNAMIC_UPDATE_SLICE    728.641      0.002      0.001     0.003%    99.654%      0.000            256   [Builtin]:712
+                                        DYNAMIC_UPDATE_SLICE    728.643      0.008      0.008     0.021%    99.675%      0.000            256   [Builtin]:713
+                                        DYNAMIC_UPDATE_SLICE    729.800      0.001      0.001     0.003%    99.678%      0.000            256   [Builtin]:760
+                                        DYNAMIC_UPDATE_SLICE    729.801      0.009      0.009     0.023%    99.701%      0.000            256   [Builtin]:761
+                                        DYNAMIC_UPDATE_SLICE    730.933      0.002      0.001     0.003%    99.704%      0.000            256   [Builtin]:808
+                                        DYNAMIC_UPDATE_SLICE    730.935      0.008      0.009     0.023%    99.726%      0.000            256   [Builtin]:809
+                                        DYNAMIC_UPDATE_SLICE    732.079      0.001      0.001     0.003%    99.729%      0.000            256   [Builtin]:856
+                                        DYNAMIC_UPDATE_SLICE    732.080      0.009      0.009     0.022%    99.752%      0.000            256   [Builtin]:857
+                                        DYNAMIC_UPDATE_SLICE    733.241      0.002      0.001     0.004%    99.755%      0.000            256   [Builtin]:904
+                                        DYNAMIC_UPDATE_SLICE    733.243      0.008      0.008     0.021%    99.777%      0.000            256   [Builtin]:905
+                                        DYNAMIC_UPDATE_SLICE    734.377      0.001      0.001     0.003%    99.780%      0.000            256   [Builtin]:952
+                                        DYNAMIC_UPDATE_SLICE    734.378      0.009      0.009     0.023%    99.802%      0.000            256   [Builtin]:953
+                                        DYNAMIC_UPDATE_SLICE    735.514      0.001      0.001     0.003%    99.805%      0.000            256   [Builtin]:1000
+                                        DYNAMIC_UPDATE_SLICE    735.515      0.008      0.008     0.021%    99.826%      0.000            256   [Builtin]:1001
+                                        DYNAMIC_UPDATE_SLICE    736.682      0.001      0.001     0.003%    99.829%      0.000            256   [Builtin]:1048
+                                        DYNAMIC_UPDATE_SLICE    736.683      0.009      0.008     0.022%    99.851%      0.000            256   [Builtin]:1049
+                                        DYNAMIC_UPDATE_SLICE    737.860      0.001      0.001     0.003%    99.854%      0.000            256   [Builtin]:1096
+                                        DYNAMIC_UPDATE_SLICE    737.861      0.008      0.008     0.021%    99.875%      0.000            256   [Builtin]:1097
+                                        DYNAMIC_UPDATE_SLICE    739.009      0.001      0.001     0.003%    99.878%      0.000            256   [Builtin]:1144
+                                        DYNAMIC_UPDATE_SLICE    739.010      0.008      0.008     0.022%    99.900%      0.000            256   [Builtin]:1145
+                                        DYNAMIC_UPDATE_SLICE    740.151      0.001      0.001     0.003%    99.903%      0.000            256   [Builtin]:1192
+                                        DYNAMIC_UPDATE_SLICE    740.152      0.008      0.008     0.022%    99.925%      0.000            256   [Builtin]:1193
+                                        DYNAMIC_UPDATE_SLICE    741.292      0.001      0.001     0.003%    99.928%      0.000            256   [Builtin]:1240
+                                        DYNAMIC_UPDATE_SLICE    741.293      0.008      0.008     0.022%    99.950%      0.000            256   [Builtin]:1241
+                                        DYNAMIC_UPDATE_SLICE    742.437      0.001      0.001     0.003%    99.952%      0.000            256   [Builtin]:1288
+                                        DYNAMIC_UPDATE_SLICE    742.438      0.008      0.008     0.022%    99.974%      0.000            256   [Builtin]:1289
+                                        DYNAMIC_UPDATE_SLICE    743.595      0.001      0.001     0.003%    99.977%      0.000            256   [Builtin]:1336
+                                        DYNAMIC_UPDATE_SLICE    743.597      0.008      0.009     0.023%   100.000%      0.000            256   [Builtin]:1337
+
+============================================================== Top by Computation Time ===============================================================
+                                                 [node type]    [start]    [first]   [avg ms]        [%]     [cdf%]   [mem KB] [times called]   [Name]
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      0.276      0.275    20.257%    20.257%      0.000           7168   [Delegate]:5
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.200      0.203    14.998%    35.255%      0.000           7168   [Delegate]:20
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.211      0.202    14.932%    50.186%      0.000           7168   [Delegate]:15
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.200      0.202    14.913%    65.100%      0.000           7168   [Delegate]:18
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.046      0.167    12.297%    77.397%      0.000           7168   [Delegate]:28
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      0.240      0.144    10.623%    88.020%      0.000           7168   [Delegate]:0
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.038      0.036     2.649%    90.670%      0.000           7168   [Delegate]:7
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000     13.298      4.626     1.285%    91.955%      0.000             27   [Delegate]:23
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      8.322      4.295     1.193%    93.148%      0.000             27   [Delegate]:5
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000     12.423      4.125     1.146%    94.294%      0.000             27   [Delegate]:18
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000     12.475      3.615     1.004%    95.298%      0.000             27   [Delegate]:21
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM      0.000      4.594      2.465     0.685%    95.983%      0.000             27   [Delegate]:0
+                                  Delegate/Softmax (NC, F32)      0.000      0.010      0.009     0.642%    96.625%      0.000           7168   [Delegate]:4
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      2.658      1.178     0.327%    96.952%      0.000             27   [Delegate]:9
+                                  Delegate/Softmax (NC, F32)      0.000      1.508      1.153     0.320%    97.272%      0.000             27   [Delegate]:4
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      3.013      1.120     0.311%    97.583%      0.000             27   [Delegate]:32
+                                       Delegate/Sigmoid (NC)      0.000      0.005      0.004     0.293%    97.876%      0.000           7168   [Delegate]:16
+                                           Delegate/Add (ND)      0.000      0.006      0.004     0.263%    98.139%      0.000           7168   [Delegate]:2
+                                           Delegate/Add (ND)      0.000      1.193      0.905     0.252%    98.390%      0.000             27   [Delegate]:2
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      0.151      0.068     0.178%    98.569%      0.000            256   [Delegate]:10
+                                      Delegate/Multiply (ND)      0.000      0.000      0.001     0.105%    98.674%      0.000           7424   [Delegate]:19
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.101%    98.774%      0.000           7168   [Delegate]:17
+                                       Delegate/Sigmoid (NC)      0.000      0.319      0.274     0.076%    98.851%      0.000             27   [Delegate]:19
+                                      Delegate/Multiply (ND)      0.000      0.288      0.205     0.057%    98.908%      0.000             27   [Delegate]:22
+                                      Delegate/Multiply (ND)      0.000      0.010      0.180     0.052%    98.959%      0.000             28   [Delegate]:20
+                                            EMBEDDING_LOOKUP      0.002      4.038      4.038     0.042%    99.001%      0.000              1   [Builtin]:1
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.040%    99.041%      0.000           6912   [Delegate]:35
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.036%    99.077%      0.000           6912   [Delegate]:34
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM      0.000      3.120      3.120     0.032%    99.109%      0.000              1   [Delegate]:11
+                                        DYNAMIC_UPDATE_SLICE    726.381      0.009      0.009     0.023%    99.132%      0.000            256   [Builtin]:617
+                                        DYNAMIC_UPDATE_SLICE    743.597      0.008      0.009     0.023%    99.155%      0.000            256   [Builtin]:1337
+                                        DYNAMIC_UPDATE_SLICE    725.236      0.008      0.009     0.023%    99.178%      0.000            256   [Builtin]:569
+                                        DYNAMIC_UPDATE_SLICE    729.801      0.009      0.009     0.023%    99.201%      0.000            256   [Builtin]:761
+                                        DYNAMIC_UPDATE_SLICE    722.954      0.008      0.009     0.023%    99.224%      0.000            256   [Builtin]:473
+                                        DYNAMIC_UPDATE_SLICE    714.776      0.008      0.009     0.023%    99.246%      0.000            256   [Builtin]:137
+                                        DYNAMIC_UPDATE_SLICE    734.378      0.009      0.009     0.023%    99.269%      0.000            256   [Builtin]:953
+                                        DYNAMIC_UPDATE_SLICE    730.935      0.008      0.009     0.023%    99.292%      0.000            256   [Builtin]:809
+                                        DYNAMIC_UPDATE_SLICE    718.209      0.009      0.009     0.023%    99.314%      0.000            256   [Builtin]:281
+                                        DYNAMIC_UPDATE_SLICE    732.080      0.009      0.009     0.022%    99.337%      0.000            256   [Builtin]:857
+                                        DYNAMIC_UPDATE_SLICE    736.683      0.009      0.008     0.022%    99.359%      0.000            256   [Builtin]:1049
+                                        DYNAMIC_UPDATE_SLICE    739.010      0.008      0.008     0.022%    99.381%      0.000            256   [Builtin]:1145
+                                        DYNAMIC_UPDATE_SLICE    740.152      0.008      0.008     0.022%    99.403%      0.000            256   [Builtin]:1193
+                                        DYNAMIC_UPDATE_SLICE    719.427      0.008      0.008     0.022%    99.426%      0.000            256   [Builtin]:329
+                                        DYNAMIC_UPDATE_SLICE    721.824      0.009      0.008     0.022%    99.448%      0.000            256   [Builtin]:425
+                                        DYNAMIC_UPDATE_SLICE    712.347      0.011      0.008     0.022%    99.470%      0.000            256   [Builtin]:41
+                                        DYNAMIC_UPDATE_SLICE    724.086      0.008      0.008     0.022%    99.491%      0.000            256   [Builtin]:521
+                                        DYNAMIC_UPDATE_SLICE    741.293      0.008      0.008     0.022%    99.513%      0.000            256   [Builtin]:1241
+                                        DYNAMIC_UPDATE_SLICE    720.672      0.008      0.008     0.022%    99.535%      0.000            256   [Builtin]:377
+                                        DYNAMIC_UPDATE_SLICE    715.945      0.009      0.008     0.022%    99.556%      0.000            256   [Builtin]:185
+                                        DYNAMIC_UPDATE_SLICE    742.438      0.008      0.008     0.022%    99.578%      0.000            256   [Builtin]:1289
+                                        DYNAMIC_UPDATE_SLICE    733.243      0.008      0.008     0.021%    99.599%      0.000            256   [Builtin]:905
+                                        DYNAMIC_UPDATE_SLICE    717.087      0.008      0.008     0.021%    99.621%      0.000            256   [Builtin]:233
+                                        DYNAMIC_UPDATE_SLICE    728.643      0.008      0.008     0.021%    99.642%      0.000            256   [Builtin]:713
+                                        DYNAMIC_UPDATE_SLICE    727.500      0.008      0.008     0.021%    99.664%      0.000            256   [Builtin]:665
+                                        DYNAMIC_UPDATE_SLICE    737.861      0.008      0.008     0.021%    99.685%      0.000            256   [Builtin]:1097
+                                        DYNAMIC_UPDATE_SLICE    735.515      0.008      0.008     0.021%    99.706%      0.000            256   [Builtin]:1001
+                                        DYNAMIC_UPDATE_SLICE    713.622      0.008      0.008     0.021%    99.727%      0.000            256   [Builtin]:89
+                                           Delegate/Add (ND)      0.000      0.182      0.066     0.018%    99.746%      0.000             27   [Delegate]:24
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.014%    99.760%      0.000           6912   [Delegate]:30
+                                Delegate/Static Reshape (NC)      0.000      0.056      0.043     0.012%    99.772%      0.000             27   [Delegate]:33
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.031      0.037     0.010%    99.782%      0.000             27   [Delegate]:7
+                                           Delegate/Add (ND)      0.000      0.037      0.036     0.010%    99.792%      0.000             27   [Delegate]:10
+                                    Delegate/Slice (ND, X32)      0.000      0.030      0.033     0.009%    99.801%      0.000             27   [Delegate]:34
+                                            EMBEDDING_LOOKUP    712.173      0.002      0.003     0.008%    99.810%      0.000            256   [Builtin]:1
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.023      0.029     0.008%    99.817%      0.000             26   [Delegate]:38
+                                      Delegate/Multiply (ND)      0.000      0.001      0.022     0.006%    99.824%      0.000             28   [Delegate]:30
+                             Delegate/Normalize (ND) Reduce2      0.000      0.009      0.021     0.006%    99.830%      0.000             27   [Delegate]:25
+                                    Delegate/Slice (ND, X32)      0.000      0.016      0.020     0.005%    99.835%      0.000             26   [Delegate]:39
+                                      Delegate/Multiply (ND)      0.000      0.015      0.016     0.005%    99.840%      0.000             27   [Delegate]:17
+                                Delegate/Static Reshape (NC)      0.000      0.022      0.017     0.005%    99.844%      0.000             26   [Delegate]:60
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.015     0.004%    99.848%      0.000             26   [Delegate]:40
+                                        DYNAMIC_UPDATE_SLICE    733.241      0.002      0.001     0.004%    99.852%      0.000            256   [Builtin]:904
+                                      Delegate/Multiply (ND)      0.000      0.021      0.014     0.004%    99.856%      0.000             27   [Delegate]:16
+                                        DYNAMIC_UPDATE_SLICE    718.208      0.001      0.001     0.003%    99.859%      0.000            256   [Builtin]:280
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.001     0.003%    99.862%      0.000            256   [Delegate]:16
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.011     0.003%    99.866%      0.000             27   [Delegate]:35
+                                        DYNAMIC_UPDATE_SLICE    743.595      0.001      0.001     0.003%    99.869%      0.000            256   [Builtin]:1336
+                                        DYNAMIC_UPDATE_SLICE    713.621      0.001      0.001     0.003%    99.872%      0.000            256   [Builtin]:88
+                                      Delegate/Multiply (ND)      0.000      0.001      0.010     0.003%    99.875%      0.000             28   [Delegate]:31
+                                      Delegate/Multiply (ND)      0.000      0.007      0.011     0.003%    99.878%      0.000             26   [Delegate]:59
+                                        DYNAMIC_UPDATE_SLICE    725.234      0.002      0.001     0.003%    99.881%      0.000            256   [Builtin]:568
+                                        DYNAMIC_UPDATE_SLICE    736.682      0.001      0.001     0.003%    99.884%      0.000            256   [Builtin]:1048
+                                        DYNAMIC_UPDATE_SLICE    741.292      0.001      0.001     0.003%    99.887%      0.000            256   [Builtin]:1240
+                                        DYNAMIC_UPDATE_SLICE    729.800      0.001      0.001     0.003%    99.889%      0.000            256   [Builtin]:760
+                                        DYNAMIC_UPDATE_SLICE    732.079      0.001      0.001     0.003%    99.892%      0.000            256   [Builtin]:856
+                                        DYNAMIC_UPDATE_SLICE    728.641      0.002      0.001     0.003%    99.895%      0.000            256   [Builtin]:712
+                                        DYNAMIC_UPDATE_SLICE    719.426      0.001      0.001     0.003%    99.898%      0.000            256   [Builtin]:328
+                                        DYNAMIC_UPDATE_SLICE    734.377      0.001      0.001     0.003%    99.901%      0.000            256   [Builtin]:952
+                                        DYNAMIC_UPDATE_SLICE    739.009      0.001      0.001     0.003%    99.903%      0.000            256   [Builtin]:1144
+                                        DYNAMIC_UPDATE_SLICE    722.952      0.001      0.001     0.003%    99.906%      0.000            256   [Builtin]:472
+                                        DYNAMIC_UPDATE_SLICE    720.669      0.003      0.001     0.003%    99.909%      0.000            256   [Builtin]:376
+                                        DYNAMIC_UPDATE_SLICE    726.380      0.001      0.001     0.003%    99.911%      0.000            256   [Builtin]:616
+                                        DYNAMIC_UPDATE_SLICE    727.499      0.001      0.001     0.003%    99.914%      0.000            256   [Builtin]:664
+                                        DYNAMIC_UPDATE_SLICE    737.860      0.001      0.001     0.003%    99.917%      0.000            256   [Builtin]:1096
+                                        DYNAMIC_UPDATE_SLICE    730.933      0.002      0.001     0.003%    99.919%      0.000            256   [Builtin]:808
+                                        DYNAMIC_UPDATE_SLICE    740.151      0.001      0.001     0.003%    99.922%      0.000            256   [Builtin]:1192
+                                        DYNAMIC_UPDATE_SLICE    742.437      0.001      0.001     0.003%    99.925%      0.000            256   [Builtin]:1288
+                                     Delegate/Copy (NC, X32)      0.000      0.008      0.010     0.003%    99.927%      0.000             26   [Delegate]:47
+                                        DYNAMIC_UPDATE_SLICE    721.823      0.001      0.001     0.003%    99.930%      0.000            256   [Builtin]:424
+                                        DYNAMIC_UPDATE_SLICE    715.944      0.001      0.001     0.003%    99.933%      0.000            256   [Builtin]:184
+                                        DYNAMIC_UPDATE_SLICE    724.085      0.001      0.001     0.003%    99.935%      0.000            256   [Builtin]:520
+                                        DYNAMIC_UPDATE_SLICE    735.514      0.001      0.001     0.003%    99.938%      0.000            256   [Builtin]:1000
+                                    Delegate/Slice (ND, X32)      0.000      0.004      0.009     0.003%    99.940%      0.000             26   [Delegate]:36
+                                        DYNAMIC_UPDATE_SLICE    717.086      0.001      0.001     0.002%    99.943%      0.000            256   [Builtin]:232
+                                        DYNAMIC_UPDATE_SLICE    714.775      0.000      0.001     0.002%    99.945%      0.000            256   [Builtin]:136
+                                        DYNAMIC_UPDATE_SLICE    712.346      0.001      0.001     0.002%    99.947%      0.000            256   [Builtin]:40
+                             Delegate/Normalize (ND) Reduce2      0.000      0.007      0.007     0.002%    99.949%      0.000             27   [Delegate]:11
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.002%    99.951%      0.000           6912   [Delegate]:31
+                                      Delegate/Multiply (ND)      0.000      0.006      0.006     0.002%    99.953%      0.000             27   [Delegate]:42
+                                      Delegate/Multiply (ND)      0.000      0.006      0.006     0.002%    99.954%      0.000             27   [Delegate]:41
+                                                        CAST    712.175      0.001      0.001     0.002%    99.956%      0.000            256   [Builtin]:4
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.001     0.002%    99.957%      0.000            256   [Delegate]:17
+                                      Delegate/Multiply (ND)      0.000      0.005      0.005     0.001%    99.959%      0.000             26   [Delegate]:44
+                                      Delegate/Multiply (ND)      0.000      0.004      0.005     0.001%    99.960%      0.000             26   [Delegate]:45
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.012      0.005     0.001%    99.962%      0.000             26   [Delegate]:58
+                                                     RESHAPE    712.173      0.000      0.001     0.001%    99.963%      0.000            256   [Builtin]:0
+                                           Delegate/Add (ND)      0.000      0.005      0.005     0.001%    99.964%      0.000             26   [Delegate]:46
+                                     Delegate/Copy (NC, X32)      0.000      0.013      0.005     0.001%    99.966%      0.000             26   [Delegate]:57
+                                      Delegate/Subtract (ND)      0.000      0.005      0.005     0.001%    99.967%      0.000             26   [Delegate]:43
+                                                        CAST    712.176      0.000      0.000     0.001%    99.968%      0.000            256   [Builtin]:35
+                                Delegate/Static Reshape (NC)      0.000      0.092      0.092     0.001%    99.969%      0.000              1   [Delegate]:0
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.001%    99.970%      0.000           6912   [Delegate]:44
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.001%    99.971%      0.000            256   [Delegate]:12
+                                    Delegate/Slice (ND, X32)      0.000      0.002      0.003     0.001%    99.972%      0.000             26   [Delegate]:49
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.003     0.001%    99.972%      0.000             26   [Delegate]:50
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.002      0.003     0.001%    99.973%      0.000             26   [Delegate]:48
+                                                     RESHAPE    712.175      0.000      0.000     0.001%    99.974%      0.000            256   [Builtin]:3
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.001%    99.975%      0.000           6912   [Delegate]:32
+                                                        CAST    712.345      0.000      0.000     0.001%    99.976%      0.000            256   [Builtin]:37
+                                Delegate/Static Reshape (NC)      0.000      0.067      0.067     0.001%    99.976%      0.000              1   [Delegate]:42
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.001%    99.977%      0.000           7168   [Delegate]:27
+                                        DYNAMIC_UPDATE_SLICE     68.715      0.063      0.063     0.001%    99.978%      0.000              1   [Builtin]:94
+                                        DYNAMIC_UPDATE_SLICE    530.154      0.060      0.060     0.001%    99.978%      0.000              1   [Builtin]:808
+                                        DYNAMIC_UPDATE_SLICE    129.267      0.058      0.058     0.001%    99.979%      0.000              1   [Builtin]:145
+                                        DYNAMIC_UPDATE_SLICE    550.635      0.058      0.058     0.001%    99.979%      0.000              1   [Builtin]:859
+                                                        CAST    712.345      0.001      0.000     0.001%    99.980%      0.000            256   [Builtin]:39
+                                Delegate/Static Reshape (NC)      0.000      0.052      0.052     0.001%    99.980%      0.000              1   [Delegate]:12
+                                        DYNAMIC_UPDATE_SLICE    271.660      0.049      0.049     0.001%    99.981%      0.000              1   [Builtin]:349
+                                        DYNAMIC_UPDATE_SLICE    178.403      0.047      0.047     0.000%    99.981%      0.000              1   [Builtin]:196
+                                        DYNAMIC_UPDATE_SLICE    240.170      0.047      0.047     0.000%    99.982%      0.000              1   [Builtin]:298
+                                        DYNAMIC_UPDATE_SLICE    302.769      0.044      0.044     0.000%    99.982%      0.000              1   [Builtin]:400
+                                        DYNAMIC_UPDATE_SLICE    336.191      0.044      0.044     0.000%    99.983%      0.000              1   [Builtin]:451
+                                        DYNAMIC_UPDATE_SLICE    619.669      0.044      0.044     0.000%    99.983%      0.000              1   [Builtin]:1165
+                                        DYNAMIC_UPDATE_SLICE    574.976      0.043      0.043     0.000%    99.984%      0.000              1   [Builtin]:961
+                                        DYNAMIC_UPDATE_SLICE    429.284      0.042      0.042     0.000%    99.984%      0.000              1   [Builtin]:604
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%    99.985%      0.000           6912   [Delegate]:45
+                                        DYNAMIC_UPDATE_SLICE    208.970      0.041      0.041     0.000%    99.985%      0.000              1   [Builtin]:247
+                                        DYNAMIC_UPDATE_SLICE    586.294      0.041      0.041     0.000%    99.985%      0.000              1   [Builtin]:1012
+                                        DYNAMIC_UPDATE_SLICE      7.652      0.040      0.040     0.000%    99.986%      0.000              1   [Builtin]:43
+                                        DYNAMIC_UPDATE_SLICE    366.920      0.040      0.040     0.000%    99.986%      0.000              1   [Builtin]:502
+                                        DYNAMIC_UPDATE_SLICE    399.565      0.040      0.040     0.000%    99.987%      0.000              1   [Builtin]:553
+                                        DYNAMIC_UPDATE_SLICE    563.794      0.040      0.040     0.000%    99.987%      0.000              1   [Builtin]:910
+                                        DYNAMIC_UPDATE_SLICE    675.660      0.040      0.040     0.000%    99.987%      0.000              1   [Builtin]:1408
+                                        DYNAMIC_UPDATE_SLICE    461.035      0.039      0.039     0.000%    99.988%      0.000              1   [Builtin]:655
+                                        DYNAMIC_UPDATE_SLICE    608.347      0.039      0.039     0.000%    99.988%      0.000              1   [Builtin]:1114
+                                        DYNAMIC_UPDATE_SLICE    630.894      0.038      0.038     0.000%    99.989%      0.000              1   [Builtin]:1216
+                                        DYNAMIC_UPDATE_SLICE    664.326      0.038      0.038     0.000%    99.989%      0.000              1   [Builtin]:1369
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%    99.989%      0.000             26   [Delegate]:51
+                                        DYNAMIC_UPDATE_SLICE    489.547      0.034      0.034     0.000%    99.990%      0.000              1   [Builtin]:706
+                                        DYNAMIC_UPDATE_SLICE    653.198      0.034      0.034     0.000%    99.990%      0.000              1   [Builtin]:1318
+                                        DYNAMIC_UPDATE_SLICE    512.838      0.032      0.032     0.000%    99.990%      0.000              1   [Builtin]:757
+                                        DYNAMIC_UPDATE_SLICE    641.915      0.032      0.032     0.000%    99.991%      0.000              1   [Builtin]:1267
+                                    Delegate/Slice (ND, X32)      0.000      0.031      0.031     0.000%    99.991%      0.000              1   [Delegate]:13
+                                        DYNAMIC_UPDATE_SLICE    597.563      0.031      0.031     0.000%    99.991%      0.000              1   [Builtin]:1063
+                             Delegate/Normalize (ND) Reduce2      0.000      0.000      0.000     0.000%    99.992%      0.000            256   [Delegate]:4
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%    99.992%      0.000             26   [Delegate]:52
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%    99.992%      0.000             26   [Delegate]:54
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%    99.993%      0.000             26   [Delegate]:55
+                                      Delegate/Subtract (ND)      0.000      0.001      0.001     0.000%    99.993%      0.000             26   [Delegate]:53
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.993%      0.000           7168   [Delegate]:14
+                                           Delegate/Add (ND)      0.000      0.001      0.001     0.000%    99.993%      0.000             26   [Delegate]:56
+                                      Delegate/Multiply (ND)      0.000      0.021      0.021     0.000%    99.994%      0.000              1   [Delegate]:9
+                             Delegate/Normalize (ND) Reduce2      0.000      0.000      0.000     0.000%    99.994%      0.000           7168   [Delegate]:9
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%    99.994%      0.000            256   [Delegate]:14
+                                     Delegate/Copy (NC, X32)      0.000      0.017      0.017     0.000%    99.994%      0.000              1   [Delegate]:36
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    99.994%      0.000           7168   [Delegate]:21
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.994%      0.000           6912   [Delegate]:55
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%    99.995%      0.000            256   [Delegate]:27
+                                        DYNAMIC_UPDATE_SLICE     68.701      0.013      0.013     0.000%    99.995%      0.000              1   [Builtin]:93
+                                        DYNAMIC_UPDATE_SLICE    129.254      0.013      0.013     0.000%    99.995%      0.000              1   [Builtin]:144
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.012      0.012     0.000%    99.995%      0.000              1   [Delegate]:17
+                                      Delegate/Multiply (ND)      0.000      0.012      0.012     0.000%    99.995%      0.000              1   [Delegate]:21
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.012      0.012     0.000%    99.995%      0.000              1   [Delegate]:37
+                                        DYNAMIC_UPDATE_SLICE    530.141      0.012      0.012     0.000%    99.995%      0.000              1   [Builtin]:807
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%    99.995%      0.000            256   [Delegate]:13
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.000     0.000%    99.996%      0.000            256   [Delegate]:26
+                             Delegate/Normalize (ND) Reduce2      0.000      0.011      0.011     0.000%    99.996%      0.000              1   [Delegate]:4
+                                     Delegate/Copy (NC, X32)      0.000      0.011      0.011     0.000%    99.996%      0.000              1   [Delegate]:26
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%    99.996%      0.000           6912   [Delegate]:38
+                                        Delegate/Cosine (NC)      0.000      0.010      0.010     0.000%    99.996%      0.000              1   [Delegate]:2
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%    99.996%      0.000             27   [Delegate]:15
+                                        DYNAMIC_UPDATE_SLICE    208.960      0.010      0.010     0.000%    99.996%      0.000              1   [Builtin]:246
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.996%      0.000           6912   [Delegate]:47
+                                        DYNAMIC_UPDATE_SLICE    178.394      0.009      0.009     0.000%    99.996%      0.000              1   [Builtin]:195
+                                        DYNAMIC_UPDATE_SLICE    429.275      0.009      0.009     0.000%    99.997%      0.000              1   [Builtin]:603
+                                        DYNAMIC_UPDATE_SLICE    550.625      0.009      0.009     0.000%    99.997%      0.000              1   [Builtin]:858
+                                      Delegate/Multiply (ND)      0.000      0.008      0.008     0.000%    99.997%      0.000              1   [Delegate]:10
+                                        DYNAMIC_UPDATE_SLICE      7.644      0.008      0.008     0.000%    99.997%      0.000              1   [Builtin]:42
+                                        DYNAMIC_UPDATE_SLICE    240.162      0.008      0.008     0.000%    99.997%      0.000              1   [Builtin]:297
+                                        DYNAMIC_UPDATE_SLICE    271.652      0.008      0.008     0.000%    99.997%      0.000              1   [Builtin]:348
+                                        DYNAMIC_UPDATE_SLICE    366.912      0.008      0.008     0.000%    99.997%      0.000              1   [Builtin]:501
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%    99.997%      0.000            256   [Delegate]:30
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.997%      0.000           7168   [Delegate]:10
+                                    Delegate/Slice (ND, X32)      0.000      0.007      0.007     0.000%    99.997%      0.000              1   [Delegate]:14
+                                        DYNAMIC_UPDATE_SLICE    302.762      0.007      0.007     0.000%    99.997%      0.000              1   [Builtin]:399
+                                        DYNAMIC_UPDATE_SLICE    336.184      0.007      0.007     0.000%    99.997%      0.000              1   [Builtin]:450
+                                        DYNAMIC_UPDATE_SLICE    563.787      0.007      0.007     0.000%    99.998%      0.000              1   [Builtin]:909
+                                        DYNAMIC_UPDATE_SLICE    586.287      0.007      0.007     0.000%    99.998%      0.000              1   [Builtin]:1011
+                                        DYNAMIC_UPDATE_SLICE    608.340      0.007      0.007     0.000%    99.998%      0.000              1   [Builtin]:1113
+                                        DYNAMIC_UPDATE_SLICE    619.662      0.007      0.007     0.000%    99.998%      0.000              1   [Builtin]:1164
+                                        DYNAMIC_UPDATE_SLICE    653.191      0.007      0.007     0.000%    99.998%      0.000              1   [Builtin]:1317
+                                        DYNAMIC_UPDATE_SLICE    675.653      0.007      0.007     0.000%    99.998%      0.000              1   [Builtin]:1407
+                                          Delegate/Sine (NC)      0.000      0.000      0.000     0.000%    99.998%      0.000            256   [Delegate]:3
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%    99.998%      0.000           6912   [Delegate]:33
+                                          Delegate/Sine (NC)      0.000      0.006      0.006     0.000%    99.998%      0.000              1   [Delegate]:3
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.006     0.000%    99.998%      0.000              1   [Delegate]:18
+                                    Delegate/Slice (ND, X32)      0.000      0.006      0.006     0.000%    99.998%      0.000              1   [Delegate]:19
+                                        DYNAMIC_UPDATE_SLICE    399.559      0.006      0.006     0.000%    99.998%      0.000              1   [Builtin]:552
+                                        DYNAMIC_UPDATE_SLICE    461.029      0.006      0.006     0.000%    99.998%      0.000              1   [Builtin]:654
+                                        DYNAMIC_UPDATE_SLICE    489.541      0.006      0.006     0.000%    99.998%      0.000              1   [Builtin]:705
+                                        DYNAMIC_UPDATE_SLICE    512.832      0.006      0.006     0.000%    99.998%      0.000              1   [Builtin]:756
+                                        DYNAMIC_UPDATE_SLICE    574.970      0.006      0.006     0.000%    99.999%      0.000              1   [Builtin]:960
+                                        DYNAMIC_UPDATE_SLICE    597.557      0.006      0.006     0.000%    99.999%      0.000              1   [Builtin]:1062
+                                        DYNAMIC_UPDATE_SLICE    630.888      0.006      0.006     0.000%    99.999%      0.000              1   [Builtin]:1215
+                                        DYNAMIC_UPDATE_SLICE    641.909      0.006      0.006     0.000%    99.999%      0.000              1   [Builtin]:1266
+                                        DYNAMIC_UPDATE_SLICE    664.320      0.006      0.006     0.000%    99.999%      0.000              1   [Builtin]:1368
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.999%      0.000           7168   [Delegate]:13
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%    99.999%      0.000           7168   [Delegate]:24
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.999%      0.000           6912   [Delegate]:49
+                                      Delegate/Multiply (ND)      0.000      0.005      0.005     0.000%    99.999%      0.000              1   [Delegate]:23
+                                      Delegate/Multiply (ND)      0.000      0.005      0.005     0.000%    99.999%      0.000              1   [Delegate]:24
+                                    Delegate/Slice (ND, X32)      0.000      0.000      0.003     0.000%    99.999%      0.000              2   [Delegate]:38
+                                                        CAST      7.638      0.005      0.005     0.000%    99.999%      0.000              1   [Builtin]:39
+                                    Delegate/Slice (ND, X32)      0.000      0.005      0.005     0.000%    99.999%      0.000              1   [Delegate]:37
+                                     Delegate/Copy (NC, X32)      0.000      0.005      0.005     0.000%    99.999%      0.000              1   [Delegate]:45
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.005      0.005     0.000%    99.999%      0.000              1   [Delegate]:46
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.999%      0.000           6912   [Delegate]:39
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%    99.999%      0.000           6912   [Delegate]:42
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%    99.999%      0.000           6912   [Delegate]:46
+                                      Delegate/Subtract (ND)      0.000      0.004      0.004     0.000%    99.999%      0.000              1   [Delegate]:22
+                                           Delegate/Add (ND)      0.000      0.004      0.004     0.000%   100.000%      0.000              1   [Delegate]:25
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.001      0.000     0.000%   100.000%      0.000             27   [Delegate]:29
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.004      0.004     0.000%   100.000%      0.000              1   [Delegate]:36
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:12
+                                                        CAST      4.041      0.003      0.003     0.000%   100.000%      0.000              1   [Builtin]:4
+                                                     RESHAPE      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Builtin]:0
+                                    Delegate/Slice (ND, X32)      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:15
+                      Delegate/Transpose (ND, X32) Transpose      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:27
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:3
+                                      Delegate/Multiply (ND)      0.000      0.001      0.000     0.000%   100.000%      0.000             27   [Delegate]:26
+                                      Delegate/Multiply (ND)      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:39
+                                      Delegate/Multiply (ND)      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:40
+                                      Delegate/Subtract (ND)      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:41
+                                      Delegate/Multiply (ND)      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:43
+                                           Delegate/Add (ND)      0.000      0.002      0.002     0.000%   100.000%      0.000              1   [Delegate]:44
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%   100.000%      0.000              1   [Delegate]:1
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.001      0.001     0.000%   100.000%      0.000              1   [Delegate]:8
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.000%   100.000%      0.000              1   [Delegate]:28
+                                    Delegate/Slice (ND, X32)      0.000      0.001      0.001     0.000%   100.000%      0.000              1   [Delegate]:29
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%   100.000%      0.000              1   [Delegate]:33
+                                      Delegate/Multiply (ND)      0.000      0.001      0.001     0.000%   100.000%      0.000              1   [Delegate]:34
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:12
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:11
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:8
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:54
+                                                     RESHAPE      4.040      0.000      0.000     0.000%   100.000%      0.000              1   [Builtin]:3
+                                                        CAST      4.044      0.000      0.000     0.000%   100.000%      0.000              1   [Builtin]:36
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:5
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:6
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:7
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:16
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:32
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:35
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:39
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000              1   [Delegate]:40
+                                                        CAST      7.643      0.000      0.000     0.000%   100.000%      0.000              1   [Builtin]:41
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:1
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:6
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:8
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:13
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:14
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:27
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             27   [Delegate]:28
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000             26   [Delegate]:37
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:0
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:1
+                                        Delegate/Cosine (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:2
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:5
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:6
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:7
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:8
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:9
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:15
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:18
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:20
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:21
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:22
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:23
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:24
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:25
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:28
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:29
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:31
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:32
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:33
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:34
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:35
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:36
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:37
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:38
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000            256   [Delegate]:39
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:1
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:3
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:6
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:11
+                             Delegate/Normalize (ND) Reduce2      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:22
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:23
+                        Delegate/Reciprocal Square Root (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:25
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           7168   [Delegate]:26
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:29
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:36
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:37
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:40
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:41
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:43
+                                      Delegate/Subtract (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:48
+                                      Delegate/Multiply (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:50
+                                           Delegate/Add (ND)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:51
+                                     Delegate/Copy (NC, X32)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:52
+                                Delegate/Static Reshape (NC)      0.000      0.000      0.000     0.000%   100.000%      0.000           6912   [Delegate]:53
+
+Number of nodes executed: 330
+
+====================================================== Summary by node type ======================================================
+                                                 [Node type]    [count]   [avg ms]    [avg %]    [cdf %]   [mem KB] [times called]
+          Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM         12      0.172    64.073%    64.073%      0.000          36232
+              Delegate/Batch Matrix Multiply (NC, PF32) GEMM          4      0.221    32.758%    96.832%      0.000          14390
+                                  Delegate/Softmax (NC, F32)          2      0.013     0.962%    97.793%      0.000           7195
+                                        DYNAMIC_UPDATE_SLICE        112      0.005     0.710%    98.504%      0.000          14392
+                                           Delegate/Add (ND)         21      0.001     0.544%    99.048%      0.000          50623
+                                       Delegate/Sigmoid (NC)          2      0.005     0.369%    99.417%      0.000           7195
+                                      Delegate/Multiply (ND)         58      0.000     0.345%    99.762%      0.000         123347
+                                    Delegate/Slice (ND, X32)         30      0.000     0.127%    99.889%      0.000          50370
+                                            EMBEDDING_LOOKUP          2      0.019     0.050%    99.939%      0.000            257
+                      Delegate/Transpose (ND, X32) Transpose          9      0.018     0.021%    99.960%      0.000            110
+                                Delegate/Static Reshape (NC)         28      0.000     0.019%    99.979%      0.000          57846
+                             Delegate/Normalize (ND) Reduce2          6      0.000     0.009%    99.987%      0.000          14647
+                                     Delegate/Copy (NC, X32)         13      0.000     0.004%    99.991%      0.000          14905
+                                                        CAST          8      0.000     0.004%    99.996%      0.000           1028
+                                                     RESHAPE          4      0.000     0.002%    99.998%      0.000            514
+                                      Delegate/Subtract (ND)          9      0.000     0.002%   100.000%      0.000          14391
+                        Delegate/Reciprocal Square Root (NC)          6      0.000     0.000%   100.000%      0.000          14647
+                                          Delegate/Sine (NC)          2      0.000     0.000%   100.000%      0.000            257
+                                        Delegate/Cosine (NC)          2      0.000     0.000%   100.000%      0.000            257
+
+========================================================= Delegate Statistics =========================================================
+Op Name                                                                               Count    Avg(us)    Min(us)    Max(us)  Total(us)
+Delegate/Add (ND)                                                                     50623       1.05          0       1193      52904
+Delegate/Batch Matrix Multiply (NC, PF32) GEMM                                        14390     221.24        128       8322    3183688
+Delegate/Copy (NC, X32)                                                               14905       0.03          0         18        417
+Delegate/Cosine (NC)                                                                    257       0.04          0         10         10
+Delegate/Fully Connected (NC, QP8, F32, QC8W) GEMM                                    36232     171.87         34      13298    6227148
+Delegate/Multiply (ND)                                                               123347       0.27          0        293      33496
+Delegate/Normalize (ND) Reduce2                                                       14647       0.06          0        208        833
+Delegate/Reciprocal Square Root (NC)                                                  14647       0.00          0          7         19
+Delegate/Sigmoid (NC)                                                                  7195       4.99          2        383      35879
+Delegate/Sine (NC)                                                                      257       0.05          0          7         13
+Delegate/Slice (ND, X32)                                                              50370       0.25          0         86      12378
+Delegate/Softmax (NC, F32)                                                             7195      12.99          7       1564      93489
+Delegate/Static Reshape (NC)                                                          57846       0.03          0         99       1842
+Delegate/Subtract (ND)                                                                14391       0.01          0          8        171
+Delegate/Transpose (ND, X32) Transpose                                                  110      18.28          2         81       2011
+
+Timings (microseconds): count=330 curr=9718770
+Memory (bytes): count=0
+330 nodes observed
+
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b19a199d0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b19a15890, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b19ae2370, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b19ae1710, name=LiteRT GPU
+EXIT_CODE=0
