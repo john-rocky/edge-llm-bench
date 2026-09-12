@@ -46,6 +46,8 @@ regression verdicts persist as machine-readable JSON under
 
 **Operating manual** — release regressions, adding a model / arm / device,
 what stays manual and why: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+**Agent skills** — playbooks an agent loads to run the harness ad hoc:
+[`skills/`](skills/).
 
 ## Setup
 
