@@ -29,12 +29,12 @@ cell (the **anchor**).
 ./bench doctor
 ```
 
-Every FAIL prints the command that fixes it. First-time setup: ~15 min for the
-Android lane (prebuilt engine binaries on the releases page, an adb-authorized
-phone), ~45 min for the Mac lane (`ios/BenchmarkApp/scripts/bootstrap.sh`, then
-`scripts/build_yardstick_mac.sh`), half a day for the iPhone (Xcode signing, two
-increased-memory entitlements, GUI only). Plugging devices, signing, the room's
-thermal environment and moving an engine pin stay human steps.
+Every FAIL prints the command that fixes it; with two phones attached it says
+`2 devices — set BENCH_ANDROID_SERIAL`, and the runner reads that variable.
+First-time setup: ~15 min for the Android lane (prebuilt engine binaries on the
+releases page, an adb-authorized phone), ~45 min for the Mac lane (`ios/BenchmarkApp/scripts/bootstrap.sh`,
+then `scripts/build_yardstick_mac.sh`), half a day for the iPhone (Xcode signing,
+two increased-memory entitlements, GUI only). Plugging, signing, thermal environment and pin moves stay human.
 
 **1. Write the cells.** One line per cell, grammar in `matrices/README.md`:
 

@@ -20,27 +20,27 @@ Vocabulary: the **per-op profile** is the engine's own `--enable_profiling`
 table (`./bench profile`, `docs/profiling-subcommand-design.md`); its column
 "unprof." is the part of the decode step's wall time that no profiled op covers
 - a pointer to look wider, not a quantity of work. **System profiling** samples
-the process from outside: which code was on the CPU, on which thread, and on a
-Mac what the GPU timeline held.
+the process from outside: which code on which thread, and on a Mac the GPU timeline.
 
 ## When it is the right tool
 
 - "unprof." is a large share of the step, or the op table sums above the wall.
 - The rate moved between two builds and the op table did not (pool, driver,
-  allocator, sampler).
-- A GPU backend: the op table shows launches, not what the CPU does between them
-  or whether the GPU sits idle.
+  allocator, sampler); or a GPU backend, where the op table shows launches, not
+  what the CPU does between them or whether the GPU sits idle.
 - Otherwise `./bench profile` answers faster and costs no symbolisation.
 
 ## Loop
 
 **0. Preflight.** The bundle and engine are on the device (`./bench doctor`),
 the phone is yours (no foreign `litert_lm` process, no other driver), thermal
-status nominal, a Mac host not running a heavy pipeline. `simpleperf` ships in
-Android (`/system/bin/simpleperf`); as the `shell` user only user-space
-samples are allowed (`-e cpu-clock:u`; kernel and driver time is invisible).
-The release `litert_lm_advanced_main` carries symbols; `libLiteRtGpuAccelerator.so`
-is stripped and reports offsets. Instruments comes with Xcode (`xcrun xctrace`).
+status nominal, a Mac host not running a heavy pipeline. Two phones attached:
+plain `adb` refuses (`more than one device/emulator`) until
+`export ANDROID_SERIAL=<serial>` (`./bench` also reads `BENCH_ANDROID_SERIAL`).
+`simpleperf` ships in Android (`/system/bin/simpleperf`); the `shell` user gets
+user-space samples only (`-e cpu-clock:u`; kernel and driver time is invisible).
+The release `litert_lm_advanced_main` carries symbols, `libLiteRtGpuAccelerator.so`
+is stripped (offsets). Instruments comes with Xcode (`xcrun xctrace`).
 
 **1. Control.** The exact engine command the harness runs for the cell, once,
 no profiler (`taskset f0` is the Pixel 8a's mask in this harness; the record
