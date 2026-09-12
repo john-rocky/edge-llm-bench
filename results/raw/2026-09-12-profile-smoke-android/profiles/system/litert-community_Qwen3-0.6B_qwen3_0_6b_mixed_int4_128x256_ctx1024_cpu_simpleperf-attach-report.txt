@@ -1,0 +1,51 @@
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19429 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 20715
+Event count: 20715000000
+
+Overhead  Sample  Shared Object
+93.87%    19446   /data/local/tmp/llmbench/litert_lm_advanced_main
+6.13%     1269    /apex/com.android.runtime/lib64/bionic/libc.so
+
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19429 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 20715
+Event count: 20715000000
+
+Overhead  Sample  Shared Object                                     Symbol
+35.28%    7308    /data/local/tmp/llmbench/litert_lm_advanced_main  thread_main
+33.30%    6899    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+8.07%     1672    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_gemm_minmax_ukernel_7x8__asm_aarch64_neonfma_ld128_2
+6.91%     1432    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_x32_packw_gemm_goi_ukernel_x8__neon_ld4lane_u4_prfm
+5.30%     1097    /apex/com.android.runtime/lib64/bionic/libc.so    __memmove_aarch64_simd
+4.04%     836     /data/local/tmp/llmbench/litert_lm_advanced_main  __aarch64_swp4_acq
+1.28%     265     /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_raddstoreexpminusmax_ukernel__neonfma_rr1_lut64_p2_u16_acc2
+0.68%     140     /data/local/tmp/llmbench/litert_lm_advanced_main  pthreadpool_parallelize
+
+### CMD: adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu_decode.data --sort comm,tid -n"
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19429 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 20715
+Event count: 20715000000
+
+Overhead  Sample  Command                  Tid
+25.87%    5360    litert_lm_advan          19432
+25.49%    5280    litert_lm_advan          19433
+25.40%    5262    litert_lm_advan          19431
+23.23%    4813    litert_lm_advanced_main  19429
+
+### CMD: adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu_decode.data -g caller --sort symbol --percent-limit 8"
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19429 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 20715
+Error Callchains: 445, 2.148202%
+Event count: 20715000000
+
+Children  Self    Symbol
+35.28%    35.28%  thread_main
+33.30%    33.30%  xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+8.07%     8.07%   xnn_f32_gemm_minmax_ukernel_7x8__asm_aarch64_neonfma_ld128_2

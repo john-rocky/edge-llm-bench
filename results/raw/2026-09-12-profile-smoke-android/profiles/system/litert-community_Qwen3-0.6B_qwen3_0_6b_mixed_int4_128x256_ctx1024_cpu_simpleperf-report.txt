@@ -1,0 +1,42 @@
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu.data -e cpu-clock:u -f 1000 --call-graph fp -- taskset f0 ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 54164
+Event count: 54164000000
+
+Overhead  Sample  Shared Object
+92.46%    50078   /data/local/tmp/llmbench/litert_lm_advanced_main
+7.24%     3922    /apex/com.android.runtime/lib64/bionic/libc.so
+
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu.data -e cpu-clock:u -f 1000 --call-graph fp -- taskset f0 ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 54164
+Event count: 54164000000
+
+Overhead  Sample  Shared Object                                     Symbol
+30.54%    16540   /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+30.53%    16537   /data/local/tmp/llmbench/litert_lm_advanced_main  thread_main
+6.60%     3575    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_gemm_minmax_ukernel_7x8__asm_aarch64_neonfma_ld128_2
+6.16%     3336    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_qd8_f32_qb4w_gemm_minmax_ukernel_4x16c8__neoni8mm
+5.66%     3067    /apex/com.android.runtime/lib64/bionic/libc.so    __memmove_aarch64_simd
+5.42%     2936    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_x32_packw_gemm_goi_ukernel_x8__neon_ld4lane_u4_prfm
+3.34%     1808    /data/local/tmp/llmbench/litert_lm_advanced_main  __aarch64_swp4_acq
+2.00%     1082    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_raddstoreexpminusmax_ukernel__neonfma_rr1_lut64_p2_u16_acc2
+0.65%     354     /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_vadd_ukernel__neon_u8
+0.60%     327     /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_define_blockwise_quantized_tensor_value_v2
+0.53%     285     /data/local/tmp/llmbench/litert_lm_advanced_main  pthreadpool_parallelize
+
+### CMD: adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu.data --sort comm,tid -n"
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu.data -e cpu-clock:u -f 1000 --call-graph fp -- taskset f0 ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 54164
+Event count: 54164000000
+
+Overhead  Sample  Command                  Tid
+24.87%    13473   litert_lm_advanced_main  19378
+24.68%    13367   litert_lm_advanced_main  19383
+24.65%    13349   litert_lm_advanced_main  19384
+24.60%    13323   litert_lm_advanced_main  19382
+1.20%     652     litert_lm_advanced_main  19381

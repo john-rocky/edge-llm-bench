@@ -1,0 +1,238 @@
+simpleperf I cmd_record.cpp:828] Recorded for 8.04913 seconds. Start post processing.
+simpleperf I cmd_record.cpp:929] Samples recorded: 20,715. Samples lost: 0.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789209743.448117   19429 litert_lm_lib.cc:499] Choose backend: cpu
+I0000 00:00:1789209743.448363   19429 litert_lm_lib.cc:652] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 1024
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+attention_mask_settings:
+attention_mask_policy: Causal
+local_attention_mask_policy: Not set
+sliding_window_size: Not set
+advanced_settings: prefill_batch_sizes: [128]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789209743.448416   19429 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1789209743.448426   19429 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1789209743.448495   19429 litert_lm_lib.cc:688] Creating engine
+W0000 00:00:1789209743.448771   19429 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789209743.448799   19429 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789209743.448810   19429 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789209743.448818   19429 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+W0000 00:00:1789209743.448980   19430 litert_lm_loader.cc:291] Section not found: 
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cd3e53170, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cd3e53b90, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cd3e65530, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cd3e655f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789209743.536722   19429 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1789209743.536882   19429 litert_lm_loader.cc:291] Section not found: 	
+INFO: [compiled_model.cc:815] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache build for '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache' started.
+VERBOSE: Replacing 1157 out of 1361 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 277 partitions for subgraph 0 (main).
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: Replacing 1103 out of 1312 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 284 partitions for subgraph 1 (main).
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm_1788555668_497664000.xnnpack_cache'.
+VERBOSE: Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2 (main).
+VERBOSE: Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3 (main).
+VERBOSE: Replacing 1 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 4 (main).
+VERBOSE: Replacing 1 out of 11 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 5 (main).
+VERBOSE: Replacing 1 out of 9 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 6 (main).
+VERBOSE: Replacing 1 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 7 (main).
+VERBOSE: Replacing 1 out of 11 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 8 (main).
+VERBOSE: Replacing 1 out of 9 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 9 (main).
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cd3e6c070, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cd3e6ce50, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789209746.723337   19429 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789209746.723442   19429 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789209746.723455   19429 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789209746.723460   19429 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789209746.723464   19429 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789209746.723467   19429 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789209746.723472   19429 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789209746.723475   19429 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789209746.723527   19429 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789209746.723532   19429 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789209746.723536   19429 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789209746.723540   19429 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789209746.723879   19429 litert_lm_lib.cc:856] Creating conversation
+I0000 00:00:1789209746.725133   19429 litert_lm_lib.cc:868] Running single-turn conversation
+VERBOSE: Replacing 1899 out of 2453 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 165 partitions for subgraph 0 (main).
+W0000 00:00:1789209748.700653   19429 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1655]
+└ ERROR: [external/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:547
+
+VERBOSE: Replacing 1865 out of 2437 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 170 partitions for subgraph 1 (main).
+W0000 00:00:1789209765.716881   19429 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1655]
+└ ERROR: [external/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:547
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.03 ms
+    - Init Executor: 3274.68 ms
+    - Init LLM metadata: 0.04 ms
+    - Init Model assets: 0.08 ms
+    - Init Tokenizer: 612.12 ms
+    - Init Total: 3275.31 ms
+--------------------------------------------------
+  Time to first token: 2.04 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 1.975101116s duration.
+      Prefill Speed: 64.81 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 17.016019377s duration.
+      Decode Speed: 15.04 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 86.547us, 128 tokens
+--------------------------------------------------
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cd3e655f0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cd3e65530, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cd3e6ce50, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cd3e6c070, name=LiteRT GPU

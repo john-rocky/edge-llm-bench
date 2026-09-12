@@ -1,0 +1,71 @@
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_gpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19549 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 5894
+Event count: 5894000000
+
+Overhead  Sample  Shared Object
+38.02%    2241    /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so
+33.36%    1966    /vendor/lib64/egl/libGLES_mali.so
+19.53%    1151    /apex/com.android.runtime/lib64/bionic/libc.so
+6.58%     388     /data/local/tmp/llmbench/litert_lm_advanced_main
+1.66%     98      [vdso]
+0.54%     32      /vendor/lib64/libOpenCL.so
+
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_gpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19549 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 5894
+Event count: 5894000000
+
+Overhead  Sample  Shared Object                                        Symbol
+4.43%     261     /apex/com.android.runtime/lib64/bionic/libc.so       pthread_mutex_lock
+4.41%     260     /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+105788]
+4.04%     238     /apex/com.android.runtime/lib64/bionic/libc.so       __memmove_aarch64_simd
+3.29%     194     /apex/com.android.runtime/lib64/bionic/libc.so       pthread_mutex_unlock
+2.65%     156     /vendor/lib64/egl/libGLES_mali.so                    clSetKernelArg
+1.99%     117     /data/local/tmp/llmbench/litert_lm_advanced_main     tflite::half::operator float() const
+1.68%     99      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_kernel::setarg_constant(unsigned int, unsigned long, void const*)
+1.66%     98      [vdso]                                               __kernel_clock_gettime
+1.54%     91      /vendor/lib64/egl/libGLES_mali.so                    mcl_command_device::init(mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, mcl_command_device*)
+1.54%     91      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload::set_constant_implicit_args()
+1.43%     84      /apex/com.android.runtime/lib64/bionic/libc.so       __memset_aarch64
+1.37%     81      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+272618]
+1.36%     80      /apex/com.android.runtime/lib64/bionic/libc.so       scudo::HybridMutex::tryLock()
+1.29%     76      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload::assign(mcl_gpu_payload*)
+1.19%     70      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload::set_uniform_arg(unsigned int, void const*)
+1.17%     69      /apex/com.android.runtime/lib64/bionic/libc.so       scudo::HybridMutex::unlock()
+1.17%     69      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+102f40]
+1.14%     67      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+100b50]
+1.05%     62      /vendor/lib64/egl/libGLES_mali.so                    mcl_resource::is_resource_type(mcl_object_type) const
+1.02%     60      /data/local/tmp/llmbench/litert_lm_advanced_main     _$LT$tokenizers..models..ModelWrapper$u20$as$u20$tokenizers..tokenizer..Model$GT$::id_to_token::h3b2c65e4a070d429
+1.00%     59      /vendor/lib64/egl/libGLES_mali.so                    mcl_kernel::set_arg_impl(unsigned int, unsigned long, void const*)
+0.95%     56      /vendor/lib64/egl/libGLES_mali.so                    clcc::Kernel::select_variant_instance(clcc_ndrange const*, clcc_variant_instance*) const
+0.92%     54      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+255678]
+0.87%     51      /data/local/tmp/llmbench/litert_lm_advanced_main     litert::lm::TopKTokenIds(absl::lts_20260526::Span<float const>, int, int, int)
+0.87%     51      /vendor/lib64/egl/libGLES_mali.so                    cmemp_heap_range_map.llvm.6761199997930444980
+0.87%     51      /vendor/lib64/egl/libGLES_mali.so                    mcl_event::create(mcl_context*, mcl_command_type, mcl_command_queue*)
+0.83%     49      /vendor/lib64/egl/libGLES_mali.so                    cmemp_hoard_back_base_sync_to_cpu.llvm.4263896854207024911
+0.81%     48      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+103110]
+0.73%     43      /vendor/lib64/egl/libGLES_mali.so                    mcl_image::create_backing_memory(mcl_device const*)
+0.68%     40      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+128a48]
+0.66%     39      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+255648]
+0.66%     39      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+2556c0]
+0.64%     38      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+25569c]
+0.64%     38      /data/local/tmp/llmbench/litert_lm_advanced_main     litert::lm::TopPSampler::SampleToIdAndScoreBuffer(litert::TensorBuffer const&, litert::TensorBuffer&, litert::TensorBuffer*)
+0.63%     37      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+ff964]
+0.53%     31      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+2725f4]
+0.53%     31      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload_csf::finalize(mcl_gpu_kernel*, clcc_ndrange const*)
+0.51%     30      /vendor/lib64/libOpenCL.so                           clSetKernelArg
+
+### CMD: adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_gpu_decode.data --sort comm,tid -n"
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_gpu_decode.data -e cpu-clock:u -f 1000 --call-graph fp -p 19549 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 5894
+Event count: 5894000000
+
+Overhead  Sample  Command                  Tid
+93.99%    5540    litert_lm_advanced_main  19549
+5.97%     352     mali-event-hand          19554
+0.03%     2       mali-mem-purge           19555

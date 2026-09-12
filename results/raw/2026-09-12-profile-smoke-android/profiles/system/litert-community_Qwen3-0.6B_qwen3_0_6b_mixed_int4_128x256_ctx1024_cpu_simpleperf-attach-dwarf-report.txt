@@ -1,0 +1,225 @@
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p 19707 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 14823
+Event count: 14823000000
+
+Overhead  Sample  Shared Object                                     Symbol
+36.44%    5401    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+30.88%    4577    /data/local/tmp/llmbench/litert_lm_advanced_main  thread_main
+7.52%     1115    /apex/com.android.runtime/lib64/bionic/libc.so    __memmove_aarch64_simd
+7.52%     1114    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_gemm_minmax_ukernel_7x8__asm_aarch64_neonfma_ld128_2
+7.21%     1068    /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_x32_packw_gemm_goi_ukernel_x8__neon_ld4lane_u4_prfm
+2.47%     366     /data/local/tmp/llmbench/litert_lm_advanced_main  __aarch64_swp4_acq
+1.25%     186     /data/local/tmp/llmbench/litert_lm_advanced_main  xnn_f32_raddstoreexpminusmax_ukernel__neonfma_rr1_lut64_p2_u16_acc2
+
+### CMD: adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu_decode_dwarf.data -g caller --sort symbol --percent-limit 8"
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p 19707 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 14823
+Event count: 14823000000
+
+Children  Self    Symbol
+67.17%    0.00%   __start_thread
+       |
+       -- __start_thread
+          |
+           -- __pthread_start(void*) (.__uniq.67847048707805468364044055584648682506)
+              thread_main
+               |--45.97%-- [hit in function]
+               |
+               |--41.77%-- thread_parallelize_2d_tile_2d_dynamic
+               |    |--1.01%-- [hit in function]
+               |    |
+               |    |--98.92%-- xnn_compute_qp8gemm
+               |    |    |--0.34%-- [hit in function]
+               |    |    |
+               |    |    |--99.64%-- xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+               |
+               |--8.50%-- thread_parallelize_2d_tile_1d_dynamic
+               |    |--1.77%-- [hit in function]
+               |    |
+               |     --98.23%-- xnn_compute_batched_packw_gemm_goi
+               |         |--0.60%-- [hit in function]
+               |         |
+               |          --99.40%-- xnn_x32_packw_gemm_goi_ukernel_x8__neon_ld4lane_u4_prfm
+67.17%    30.88%  thread_main
+       [skipped in brief callgraph mode]
+67.17%    0.00%   __pthread_start(void*) (.__uniq.67847048707805468364044055584648682506)
+       [skipped in brief callgraph mode]
+36.96%    0.32%   thread_parallelize_2d_tile_2d_dynamic
+       |
+       -- thread_parallelize_2d_tile_2d_dynamic
+          |
+          |--98.92%-- xnn_compute_qp8gemm
+          |    |--0.31%-- [hit in function]
+          |    |
+          |    |--99.67%-- xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+36.56%    0.11%   xnn_compute_qp8gemm
+       [skipped in brief callgraph mode]
+36.44%    36.44%  xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+25.33%    0.00%   __libc_init
+       |
+       -- __libc_init
+          |
+          |--99.95%-- main
+          |           litert::lm::RunLiteRtLm(litert::lm::LiteRtLmSettings const&, std::__ndk1::vector<litert::lm::LitertLmMetrics, std::__ndk1::allocator<litert::lm::LitertLmMetrics>>*)
+          |    |
+          |    |--98.67%-- litert::lm::Conversation::SendMessage(nlohmann::json_abi_v3_12_0::basic_json<nlohmann::json_abi_v3_12_0::ordered_map, std::__ndk1::vector, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>>, bool, long, unsigned long, double, std::__ndk1::allocator, nlohmann::json_abi_v3_12_0::adl_serializer, std::__ndk1::vector<unsigned char, std::__ndk1::allocator<unsigned char>>, void> const&, litert::lm::OptionalArgs)
+          |    |           litert::lm::SessionAdvanced::WaitUntilDone()
+          |    |           litert::lm::SerialExecutionManager::WaitUntilSessionDone(int, absl::lts_20260526::Duration)
+          |    |           litert::lm::SerialExecutionManager::RunNextTask()
+          |    |           void absl::lts_20260526::internal_any_invocable::RemoteInvoker<false, void, litert::lm::SerialExecutionManager::AddDecodeTask(int, int, absl::lts_20260526::flat_hash_set<int, absl::lts_20260526::hash_internal::Hash<int>, std::__ndk1::equal_to<int>, std::__ndk1::allocator<int>>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::shared_ptr<std::__ndk1::atomic<bool>>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>)::$_1&>(absl::lts_20260526::internal_any_invocable::TypeErasedState*)
+          |    |           litert::lm::Tasks::Decode(litert::lm::LlmExecutorBase&, litert::support::Tokenizer&, litert::lm::StopTokenDetector const&, int, std::__ndk1::optional<litert::lm::BenchmarkInfo>&, std::__ndk1::optional<litert::lm::Sampler*>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::optional<litert::TensorBuffer>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>&, std::__ndk1::atomic<bool>*, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&)
+          |    |    |
+          |    |    |--99.84%-- litert::lm::LockedLlmExecutor::Decode(litert::lm::ExecutorDecodeParams const&)
+          |    |    |           litert::lm::LlmLiteRtCompiledModelExecutorBase::Decode(litert::lm::ExecutorDecodeParams const&)
+          |    |    |    |
+          |    |    |    |--99.51%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeLogits(litert::lm::ExecutorInputs const&, litert::lm::ExecutorDecodeParams const&)
+          |    |    |    |    |
+          |    |    |    |    |--99.97%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeInternal(std::__ndk1::vector<std::__ndk1::shared_ptr<litert::lm::TokenData>, std::__ndk1::allocator<std::__ndk1::shared_ptr<litert::lm::TokenData>>> const&, litert::TensorBuffer&)
+          |    |    |    |    |    |
+          |    |    |    |    |    |--99.95%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::BindTensorsAndRunDecode(litert::TensorBuffer*)
+          |    |    |    |    |    |    |
+          |    |    |    |    |    |    |--99.86%-- litert::CompiledModel::RunAsync(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, litert::Options*) const
+          |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |--99.97%-- litert::CompiledModel::RunMapHelper(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+          |    |    |    |    |    |    |    |           litert::CompiledModel::RunMapWithIndexHelper(unsigned long, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+          |    |    |    |    |    |    |    |    |--0.03%-- [hit in function]
+          |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |--99.95%-- litert::CompiledModel::RunCApiHelper(unsigned long, unsigned long, LiteRtTensorBufferT**, unsigned long, LiteRtTensorBufferT**, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+          |    |    |    |    |    |    |    |    |           LiteRtRunCompiledModelAsyncWithOptions
+          |    |    |    |    |    |    |    |    |           LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*)
+          |    |    |    |    |    |    |    |    |           LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+          |    |    |    |    |    |    |    |    |    |--0.03%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |     --99.97%-- LiteRtCompiledModelT::Run(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+          |    |    |    |    |    |    |    |    |         |
+          |    |    |    |    |    |    |    |    |         |--99.73%-- tflite::impl::SignatureRunner::Invoke()
+          |    |    |    |    |    |    |    |    |         |    |--0.03%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |    |
+          |    |    |    |    |    |    |    |    |         |     --99.97%-- tflite::Subgraph::Invoke()
+          |    |    |    |    |    |    |    |    |         |                tflite::Subgraph::InvokeImpl()
+          |    |    |    |    |    |    |    |    |         |         |--0.25%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |
+          |    |    |    |    |    |    |    |    |         |         |--61.43%-- tflite::xnnpack::(anonymous namespace)::SubgraphInvoke(TfLiteContext*, TfLiteNode*)
+          |    |    |    |    |    |    |    |    |         |         |    |--0.09%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |
+          |    |    |    |    |    |    |    |    |         |         |    |--99.38%-- xnn_invoke_runtime
+          |    |    |    |    |    |    |    |    |         |         |    |    |--0.18%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |     --99.82%-- xnn_run_operator_with_index
+          |    |    |    |    |    |    |    |    |         |         |    |         |--0.90%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |
+          |    |    |    |    |    |    |    |    |         |         |    |         |--69.43%-- pthreadpool_parallelize_2d_tile_2d_dynamic
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |--0.13%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |--99.74%-- pthreadpool_parallelize
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |--1.62%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |--85.48%-- thread_parallelize_2d_tile_2d_dynamic
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |--0.45%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |--98.94%-- xnn_compute_qp8gemm
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |    |--0.23%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |     --99.77%-- xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |--12.64%-- __aarch64_swp4_acq
+          |    |    |    |    |    |    |    |    |         |         |    |         |
+          |    |    |    |    |    |    |    |    |         |         |    |         |--15.31%-- pthreadpool_parallelize_2d_tile_1d_dynamic
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |--0.59%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |--95.60%-- pthreadpool_parallelize
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |--3.37%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |--79.14%-- thread_parallelize_2d_tile_1d_dynamic
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |--2.33%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |--93.80%-- xnn_compute_batched_packw_gemm_goi
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |    |           xnn_x32_packw_gemm_goi_ukernel_x8__neon_ld4lane_u4_prfm
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |         |    |     --17.48%-- __aarch64_swp4_acq
+          |    |    |    |    |    |    |    |    |         |         |
+          |    |    |    |    |    |    |    |    |         |         |--24.64%-- TfLiteStatus tflite::ops::builtin::slice::Eval<(tflite::ops::builtin::slice::KernelType)1>(TfLiteContext*, TfLiteNode*)
+          |    |    |    |    |    |    |    |    |         |         |    |
+          |    |    |    |    |    |    |    |    |         |         |    |--95.45%-- void tflite::optimized_ops::Slice<int>(tflite::SliceParams const&, tflite::RuntimeShape const&, tflite::RuntimeShape const&, tflite::SequentialTensorWriter<int>*)
+          |    |    |    |    |    |    |    |    |         |         |    |    |--1.51%-- [hit in function]
+          |    |    |    |    |    |    |    |    |         |         |    |    |
+          |    |    |    |    |    |    |    |    |         |         |    |    |--98.02%-- __memmove_aarch64_simd
+25.32%    0.00%   litert::lm::RunLiteRtLm(litert::lm::LiteRtLmSettings const&, std::__ndk1::vector<litert::lm::LitertLmMetrics, std::__ndk1::allocator<litert::lm::LitertLmMetrics>>*)
+       [skipped in brief callgraph mode]
+25.32%    0.00%   main
+       [skipped in brief callgraph mode]
+24.98%    0.00%   litert::lm::Conversation::SendMessage(nlohmann::json_abi_v3_12_0::basic_json<nlohmann::json_abi_v3_12_0::ordered_map, std::__ndk1::vector, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>>, bool, long, unsigned long, double, std::__ndk1::allocator, nlohmann::json_abi_v3_12_0::adl_serializer, std::__ndk1::vector<unsigned char, std::__ndk1::allocator<unsigned char>>, void> const&, litert::lm::OptionalArgs)
+       [skipped in brief callgraph mode]
+24.98%    0.00%   litert::lm::SerialExecutionManager::RunNextTask()
+       [skipped in brief callgraph mode]
+24.98%    0.00%   litert::lm::SerialExecutionManager::WaitUntilSessionDone(int, absl::lts_20260526::Duration)
+       [skipped in brief callgraph mode]
+24.98%    0.00%   litert::lm::SessionAdvanced::WaitUntilDone()
+       [skipped in brief callgraph mode]
+24.98%    0.00%   litert::lm::Tasks::Decode(litert::lm::LlmExecutorBase&, litert::support::Tokenizer&, litert::lm::StopTokenDetector const&, int, std::__ndk1::optional<litert::lm::BenchmarkInfo>&, std::__ndk1::optional<litert::lm::Sampler*>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::optional<litert::TensorBuffer>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>&, std::__ndk1::atomic<bool>*, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&)
+       [skipped in brief callgraph mode]
+24.98%    0.00%   void absl::lts_20260526::internal_any_invocable::RemoteInvoker<false, void, litert::lm::SerialExecutionManager::AddDecodeTask(int, int, absl::lts_20260526::flat_hash_set<int, absl::lts_20260526::hash_internal::Hash<int>, std::__ndk1::equal_to<int>, std::__ndk1::allocator<int>>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::shared_ptr<std::__ndk1::atomic<bool>>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>)::$_1&>(absl::lts_20260526::internal_any_invocable::TypeErasedState*)
+       [skipped in brief callgraph mode]
+24.94%    0.00%   litert::lm::LlmLiteRtCompiledModelExecutorBase::Decode(litert::lm::ExecutorDecodeParams const&)
+       [skipped in brief callgraph mode]
+24.94%    0.00%   litert::lm::LockedLlmExecutor::Decode(litert::lm::ExecutorDecodeParams const&)
+       [skipped in brief callgraph mode]
+24.82%    0.00%   litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeLogits(litert::lm::ExecutorInputs const&, litert::lm::ExecutorDecodeParams const&)
+       [skipped in brief callgraph mode]
+24.81%    0.00%   litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeInternal(std::__ndk1::vector<std::__ndk1::shared_ptr<litert::lm::TokenData>, std::__ndk1::allocator<std::__ndk1::shared_ptr<litert::lm::TokenData>>> const&, litert::TensorBuffer&)
+       [skipped in brief callgraph mode]
+24.80%    0.00%   litert::lm::LlmLiteRtCompiledModelExecutorBase::BindTensorsAndRunDecode(litert::TensorBuffer*)
+       [skipped in brief callgraph mode]
+24.77%    0.00%   litert::CompiledModel::RunAsync(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, litert::Options*) const
+       [skipped in brief callgraph mode]
+24.76%    0.01%   litert::CompiledModel::RunMapWithIndexHelper(unsigned long, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+       [skipped in brief callgraph mode]
+24.76%    0.00%   litert::CompiledModel::RunMapHelper(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+       [skipped in brief callgraph mode]
+24.75%    0.01%   LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+       [skipped in brief callgraph mode]
+24.75%    0.00%   LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*)
+       [skipped in brief callgraph mode]
+24.75%    0.00%   LiteRtRunCompiledModelAsyncWithOptions
+       [skipped in brief callgraph mode]
+24.75%    0.00%   litert::CompiledModel::RunCApiHelper(unsigned long, unsigned long, LiteRtTensorBufferT**, unsigned long, LiteRtTensorBufferT**, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+       [skipped in brief callgraph mode]
+24.74%    0.00%   LiteRtCompiledModelT::Run(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+       [skipped in brief callgraph mode]
+24.67%    0.01%   tflite::impl::SignatureRunner::Invoke()
+       [skipped in brief callgraph mode]
+24.66%    0.06%   tflite::Subgraph::InvokeImpl()
+       [skipped in brief callgraph mode]
+24.66%    0.00%   tflite::Subgraph::Invoke()
+       [skipped in brief callgraph mode]
+15.15%    0.01%   tflite::xnnpack::(anonymous namespace)::SubgraphInvoke(TfLiteContext*, TfLiteNode*)
+       [skipped in brief callgraph mode]
+15.06%    0.03%   xnn_invoke_runtime
+       [skipped in brief callgraph mode]
+15.03%    0.13%   xnn_run_operator_with_index
+       [skipped in brief callgraph mode]
+14.39%    0.47%   pthreadpool_parallelize
+       |
+       -- pthreadpool_parallelize
+          |
+          |--61.84%-- thread_parallelize_2d_tile_2d_dynamic
+          |    |--0.45%-- [hit in function]
+          |    |
+          |    |--98.94%-- xnn_compute_qp8gemm
+          |    |    |--0.23%-- [hit in function]
+          |    |    |
+          |    |     --99.77%-- xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16c8__neoni8mm
+          |
+          |--17.16%-- __aarch64_swp4_acq
+          |
+          |--12.10%-- thread_parallelize_2d_tile_1d_dynamic
+          |    |--2.33%-- [hit in function]
+          |    |
+          |    |--93.80%-- xnn_compute_batched_packw_gemm_goi
+          |    |           xnn_x32_packw_gemm_goi_ukernel_x8__neon_ld4lane_u4_prfm
+10.44%    0.01%   pthreadpool_parallelize_2d_tile_2d_dynamic
+       [skipped in brief callgraph mode]

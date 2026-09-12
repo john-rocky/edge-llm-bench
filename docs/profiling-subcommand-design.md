@@ -96,10 +96,19 @@ re-test, not properties of the runtime.
 1. The Pixel 8a pair set for the rest of the dashboard models, then the Mac
    route decision (a or b above).
 2. A fake-adb selftest for `run_profile.py` beside `android/bench/selftest.py`.
-3. System profiling: nothing in the repo yet. Candidates on the hosts we
-   have: Android `simpleperf` (ships in the NDK), Instruments on macOS
-   (`xcrun xctrace list templates` lists `Metal System Trace` on Xcode 27).
-   A skill follows once a capture has been run and read.
+3. System profiling: captured and read once per host on 2026-09-12 and
+   written up as the second skill, `skills/profile-litert-lm-system/SKILL.md`
+   - Android `simpleperf` on the Pixel 8a (user-space samples, whole process
+   and attached during decode, dwarf callers) and Instruments on the Mac
+   Studio (`xcrun xctrace` Metal System Trace and Time Profiler, attached to
+   the yardstick; `--launch` hung the runner before the model loaded), each
+   paired with an unprofiled control and stored under
+   `results/raw/2026-09-12-profile-smoke-{android,mac}/profiles/system/`
+   (`SYSTEM.md` there is the reading; `scripts/profile/xctrace_tables.py`
+   turns the exported tables into GPU occupancy and CPU self-time text). The
+   profiler's cost on the rate: 13 % for whole-process sampling on the CPU
+   backend, under 1 % for Instruments attached on the Mac. Folding the
+   capture into `./bench` as a `--system` step is the part not done.
 
 Runtime: [LiteRT](https://github.com/google-ai-edge/litert);
 engine: [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM).
