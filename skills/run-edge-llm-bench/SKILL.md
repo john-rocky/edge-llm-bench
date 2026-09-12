@@ -16,10 +16,10 @@ An ad-hoc measurement is done when three things hold, in this order:
    quantization label and the token budget - a rate without those compares
    to nothing.
 
-Vocabulary: a **cell** is one platform x runtime x model x task (prompt shape)
-plus options such as the backend; a **campaign** is one invocation's record
-directory; numbers compare only inside one sitting on one device, or across
-sittings through a repeated control cell (the **anchor**).
+Vocabulary: a **cell** is one platform x runtime x model x task plus options
+such as the backend; a **campaign** is one invocation's record directory; numbers
+compare only inside one sitting, or across sittings through a repeated control
+cell (the **anchor**).
 
 ## Loop
 
@@ -29,12 +29,12 @@ sittings through a repeated control cell (the **anchor**).
 ./bench doctor
 ```
 
-Every FAIL prints the command that fixes it. First-time setup is ~15 min for
-the Android lane (prebuilt engine binaries on the releases page, an adb-authorized
+Every FAIL prints the command that fixes it. First-time setup: ~15 min for the
+Android lane (prebuilt engine binaries on the releases page, an adb-authorized
 phone), ~45 min for the Mac lane (`ios/BenchmarkApp/scripts/bootstrap.sh`, then
-`scripts/build_yardstick_mac.sh`), half a day for the iPhone (Xcode signing and
-two increased-memory entitlements, GUI only). Plugging devices, signing, the
-room's thermal environment and moving an engine pin stay human steps.
+`scripts/build_yardstick_mac.sh`), half a day for the iPhone (Xcode signing, two
+increased-memory entitlements, GUI only). Plugging devices, signing, the room's
+thermal environment and moving an engine pin stay human steps.
 
 **1. Write the cells.** One line per cell, grammar in `matrices/README.md`:
 
@@ -49,8 +49,8 @@ CLI at v0.16.0 ignores the cap and runs to the model's own stop, so read
 `metrics.generatedTokenCount` - disclosed in `methodology/android.md`),
 `long-context-1024-gen256`, or
 `native-benchmark-<P>x<D>` (the engine's own synthetic benchmark). Android
-LiteRT-LM cells need `backend=cpu|gpu`, and `file=<bundle name>` when the repo
-holds several bundles. The committed example, one cell per platform:
+LiteRT-LM cells need `backend=cpu|gpu` and, when the repo holds several
+bundles, `file=<name>`. The committed example, one cell per platform:
 
 ```
 mac litert-lm litert-community/Qwen3-0.6B short-chat runs=3
@@ -63,12 +63,10 @@ Validate before running - CI does the same for every file under `matrices/`:
 python3 scripts/validate_cells.py matrices/ad-hoc-example.cells
 ```
 
-Order cells light to heavy; give 3B+ models `cooldown=300`.
-
 **2. Make sure the device is yours.** One driver per device: the Android
 runner takes a per-device lock, but a foreign engine process on the phone
 (`adb shell ps -A | grep litert_lm`) or another host's driver still corrupts
-both captures; a Mac that runs a heavy export pipeline refuses to start.
+both captures; a Mac under a heavy export pipeline refuses to start.
 
 **3. Run.** `--platform` filters the file to one runner; `--campaign` names the
 record directory (`<campaign>-<platform>` under `results/raw/`):
@@ -80,12 +78,11 @@ record directory (`<campaign>-<platform>` under `results/raw/`):
 
 Anchor cells run first; on Android the payload cells interleave per round and
 the thermal gate waits for a nominal phone before every run; every runner
-puts a cooldown between cells (Android also between runs) and quarantines a
-capture that starts hot, spreads wide or collapses, then re-runs it once.
-Exit 2 = the cells file failed validation or matched no cells for that
-platform (`error: no cells for platform(s) [...] — nothing was measured`). A
-failed cell does not change the exit code: it is listed in `FAILURES.txt`
-beside the records, and the records that exist stand - read that file first.
+cools down between cells (Android also between runs) and quarantines a capture
+that starts hot, spreads wide or collapses, then re-runs it once. Exit 2 = the
+file failed validation or matched no cells for that platform (`error: no cells
+for platform(s) [...] — nothing was measured`). A failed cell keeps exit 0: it
+is listed in `FAILURES.txt` beside the records, which stand - read that first.
 
 **4. Read the record, not the console.** Android records are one JSON per run
 beside its log; Mac records are one `.jsonl` per cell with one line per run:
@@ -98,11 +95,10 @@ grep -h -o '"decodeTokensPerSecond":[0-9.]*' results/raw/2026-09-12-skill-smoke-
 Fields that matter: `metrics.decodeTokensPerSecond`, `promptTokensPerSecond`,
 `memoryMedianResidentMB`, `initialThermalState`, `coldRun` / `firstEver` (a
 cache-building run is labelled, never pooled as speed); `engineVersion` +
-`engineArtifact` (on Android the binary found on the device, matched by
-sha256); `model.quantization` (Android adds `model.sha256`); the context
-budget, `conditions.contextTokens` (Android) or `metrics.contextTokensConfigured`
-(Mac). Every run is also a row in `results/summary/device-runs.csv`
-(regenerated by the run - never edit it):
+`engineArtifact` (on Android the binary found on the device, by sha256);
+`model.quantization` (Android adds `model.sha256`); the context budget in
+`conditions.contextTokens` (Android) or `metrics.contextTokensConfigured` (Mac).
+Every run is also a row in `results/summary/device-runs.csv` (regenerated - never edit):
 
 ```bash
 python3 -c "import csv; [print(r['device'], r['runtime'], r['model_id'], r['task'], r['decode_tps'], r['thermal_initial']) for r in csv.DictReader(open('results/summary/device-runs.csv')) if '2026-09-12-skill-smoke' in r['campaign']]"
@@ -111,67 +107,70 @@ python3 -c "import csv; [print(r['device'], r['runtime'], r['model_id'], r['task
 Read `FLAGGED.txt`, `FAILURES.txt` and `SKIPPED.txt` beside the records first.
 
 **5. Compare only through a control.** A device drifts 16-25% between
-sittings, so a number from today and one from last week are not a delta. To
-compare against an earlier campaign, add that platform's line from
-`matrices/anchors.cells` (`anchor=1`) to your cells and run
-`./bench regress <cells> --engine litert-lm --version <label> --baseline campaign:<earlier>`:
-verdicts land in `results/regression-reports/<date>-litert-lm-<label>/verdicts.json`,
-one of `OK`, `IMPROVED`, `REGRESSION`, `UNRELIABLE` (spread too wide - re-run,
-do not average) or `INFO-ONLY` (cross-session without an anchor, or too few
-runs). A different budget is a different task and never joins; with no
-joined cell at all the differ lists both sides' keys and exits 2. An anchor
-measured by the engine under test is excluded from normalization, so the
-anchor's runtime differs from LiteRT-LM by design and its binary must be on
-the device too (`matrices/anchors.cells`, `android/README.md`). Exit 1 =
-REGRESSION.
+sittings, so today's number and last week's are not a delta. To compare with
+an earlier campaign, add that platform's `anchor=1` line from
+`matrices/anchors.cells` and run
+`./bench regress <cells> --engine litert-lm --version <label> --baseline campaign:<earlier>`.
+Verdicts land in `results/regression-reports/<date>-litert-lm-<label>/verdicts.json`:
+`OK`, `IMPROVED`, `REGRESSION`, `UNRELIABLE` (spread too wide - re-run, never
+average) or `INFO-ONLY` (no anchor, or too few runs); a different budget is a
+different task and never joins. An anchor measured by the engine under test
+is excluded, so the anchor's runtime differs from LiteRT-LM by design and its
+binary must be on the device too (`android/README.md`). Exit 1 = REGRESSION.
+
+**6. Profile the decode step (Android).** Per LiteRT-LM `native-benchmark-<P>x<D>`
+cell: a control capture, the same command with `--enable_profiling`, one table:
+
+```bash
+./bench profile matrices/profile-example-android.cells --campaign 2026-09-12-profile-smoke
+```
+
+Read `results/raw/<campaign>-android/profiles/PROFILE.md`: wall ms per decode
+step from the control, profiled op time as weight GEMV / attention+KV / transfer
+/ other, launches per step. A profiled rate is never a speed row (`docs/profiling-subcommand-design.md`).
 
 ## The two ad-hoc cases
 
 - **A bundle that is not published.** Give it its own id under `litert-local/`
-  and point `file=` at the local path; the driver pushes the file and the id
-  is the row's identity (a second file under a published id would pool with
-  it):
+  and point `file=` at the local path; the driver pushes the file, and the id
+  is the row's identity (a second file under a published id would pool with it):
   `android litert-lm litert-local/<name> short-chat backend=gpu local=1 file=/abs/path/<bundle>.litertlm`
 - **A build newer than the pin.** Build at the tag (`android/README.md`,
   "Per-release source build"), push it, run as usual. The record stamps the
-  sha256 it found on the device; an unregistered binary reads
+  sha256 found on the device; an unregistered binary reads
   `unknown (on-device litert_lm_main sha unmatched in android/engine-pins.json)`
   - register it in `android/engine-pins.json` so the row names its tag. The
-  pin in `environment.lock.json` stays where it is; moving it is a decision.
+  pin in `environment.lock.json` stays; moving it is a decision.
 
 ## Symptoms
 
 | What you see | What it is, what to do |
 |---|---|
 | exit 2, `nothing was measured` | `--platform` does not match the file's platform tokens, or validation failed; nothing ran |
-| `refusing to start: heavy pipeline running` | the Mac guard; wait for the pipeline, do not bypass |
 | `gate: COLLAPSE` then a re-run | a contended device (another process on it). The first capture is kept as `*.json.attempt1` / `*.jsonl.attempt1` and noted in `session_provenance.txt` - audit trail, never pooled; `FLAGGED.txt` appears when the retry is flagged too |
 | `DEGENERATE` in `FLAGGED.txt` (Mac and iPhone runners; Android CLI records carry no `outputSample`, so the gate cannot judge them) | the output is a repetition loop; the engine reported a rate while generating garbage - never read it as a speed, never retry |
 | a LiteRT-LM cell finished its runs but the process lingers ~10 min | a teardown stall in the engine; the records are already on disk (the iPhone runner wraps cells in `gtimeout`, `CELL_TIMEOUT=3600`) |
 
 ## Watch for
 
-- **Never pool numbers across sessions.** One capture session is one set of
-  conditions; deltas count only through the anchor.
-- **Never mix budgets or modes across arms.** Token cap, context size and
-  thinking mode are part of the task id; a mismatch never joins in the differ.
-- **The quantization label travels with the row** ("int4" is not a spec: the
-  record carries the exact label and the artifact's sha256), and **failed runs
-  stay in the table** - a crash or OOM keeps its row with the reason.
+- **Never pool numbers across sessions** (deltas count only through the
+  anchor) and **never mix budgets or modes across arms** (token cap, context
+  size and thinking mode are part of the task id; a mismatch never joins).
+- **The quantization label travels with the row** ("int4" is not a spec; the
+  record carries the exact label) and **failed runs stay** with their reason.
 - **Generated files are generated.** `results/summary/*` is rebuilt from raw
   by every run; commit raw records and the regenerated summary together.
-- **Other engines the harness runs are outside this skill**, except as the
-  anchor above.
+- **Other engines the harness runs are outside this skill**, except as the anchor.
 
 ## Output layout
 
 ```
 results/raw/<campaign>-android/app-path-android/<arm>_<model>_<task>_<timestamp>_run<N>.json  (+ .log)
 results/raw/<campaign>-mac/<runtime>_<model>_<task>.jsonl   FAILURES.txt  SKIPPED.txt  session_provenance.txt
+results/raw/<campaign>-android/profiles/                     <tag>_<backend>_{prof,ctrl}.log  .prof.json  PROFILE.md  profile-table.csv  SKIPPED.txt  FAILURES.txt
 results/summary/device-runs.csv                              one row per run, regenerated
 results/regression-reports/<date>-<engine>-<version>/        report.md  verdicts.json  invocation.txt
 ```
 
-Tested on: Pixel 8a (Android 16, LiteRT-LM v0.16.0 pinned binary, gpu) and a
-Mac Studio M4 Max (macOS 27, LiteRT-LM v0.16.0 vendored), 2026-09-12. Engine:
-[LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) on [LiteRT](https://github.com/google-ai-edge/litert).
+Tested on: Pixel 8a (Android 16, LiteRT-LM v0.16.0 pinned binary, cpu and gpu) and a
+Mac Studio M4 Max (macOS 27, v0.16.0 vendored), 2026-09-12. [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) on [LiteRT](https://github.com/google-ai-edge/litert).

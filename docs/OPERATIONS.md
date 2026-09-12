@@ -12,6 +12,7 @@ working-rule slug table); this file is only *how to run the machine*.
 ./bench release-watch        # upstream releases vs environment.lock.json pins
 ./bench matrix  <cells>      # standing matrix -> summary -> RESULTS -> LEADERBOARD
 ./bench regress <cells> --engine <arm> --version <v> --baseline <selector>
+./bench profile <cells> --campaign <name>   # LiteRT-LM per-op profile pairs (Android) -> profiles/PROFILE.md
 ```
 
 `doctor` exists so a run never dies mid-capture on a missing tool, binary, or

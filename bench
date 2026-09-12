@@ -4,6 +4,9 @@
   ./bench matrix  <cells-file> [--platform mac|iphone|android] [--campaign NAME]
   ./bench regress <cells-file> --engine <arm> [--version vX] --baseline <selector>
                   [--platform ...] [--campaign NAME]
+  ./bench profile <cells-file> [--campaign NAME] [--max-num-tokens A,B,C] [--allow-large-context]
+                  # LiteRT-LM per-op profiling: control + --enable_profiling pair per cell
+                  # -> <campaign>/profiles/PROFILE.md (android/bench/run_profile.py)
   ./bench release-watch
   ./bench dashboard                         # render DASHBOARD.md (local) from results/summary
   ./bench dashboard-job <device-key|auto>   # one slot of the recurring job (docs/dashboard-recurring-job-v1.md)
@@ -106,6 +109,27 @@ def do_regress(args):
     return run(report_cmd)
 
 
+def do_profile(args):
+    if run([PY, os.path.join(ROOT, "scripts", "validate_cells.py"), args.cells]):
+        return 2
+    if "android" not in cells_platforms(args.cells):
+        print(f"error: no android cells in {args.cells} — profiling runs on the Android "
+              "CLI today (docs/profiling-subcommand-design.md lists the Mac and iPhone routes)",
+              file=sys.stderr)
+        return 2
+    campaign = args.campaign or f"{datetime.date.today().isoformat()}-profile"
+    cmd = [PY, os.path.join(ROOT, "android", "bench", "run_profile.py"), args.cells]
+    if args.max_num_tokens:
+        cmd += ["--max-num-tokens", args.max_num_tokens]
+    if args.allow_large_context:
+        cmd.append("--allow-large-context")
+    rc = run(cmd, env={"CAMPAIGN": f"{campaign}-android"})
+    if rc in (2, 3):  # bad cells / device held by another driver: nothing was measured
+        return rc
+    rc |= postprocess()  # the control runs are ordinary speed rows
+    return rc
+
+
 def main():
     ap = argparse.ArgumentParser(prog="bench", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -115,6 +139,14 @@ def main():
     m.add_argument("cells")
     m.add_argument("--platform", action="append", choices=list(RUNNERS))
     m.add_argument("--campaign")
+
+    p = sub.add_parser("profile", help="LiteRT-LM per-op profiling: a control + --enable_profiling "
+                                       "pair per android native-benchmark cell -> profiles/PROFILE.md")
+    p.add_argument("cells")
+    p.add_argument("--campaign")
+    p.add_argument("--max-num-tokens", help="comma-separated context sizes, one pair per size")
+    p.add_argument("--allow-large-context", action="store_true",
+                   help="permit sizes above 8192 on a phone (a 32771-token GPU profile rebooted the S26)")
 
     r = sub.add_parser("regress", help="re-capture a cells file and diff vs a baseline")
     r.add_argument("cells")
@@ -145,6 +177,8 @@ def main():
         return do_matrix(args)
     if args.cmd == "regress":
         return do_regress(args)
+    if args.cmd == "profile":
+        return do_profile(args)
     if args.cmd == "doctor":
         cmd = [PY, os.path.join(ROOT, "scripts", "doctor.py")]
         for p in args.platform or []:

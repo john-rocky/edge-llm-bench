@@ -10,14 +10,13 @@ this harness without prior knowledge of the repo. Same format as the skills in
   [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) bundle on a
   connected Android phone or a Mac, ad hoc: write the cells, run them, read the
   stored record; side-load a bundle that is not published yet, or measure a
-  build newer than the pin.
+  build newer than the pin; profile the decode step per op on Android
+  (`./bench profile`, [`docs/profiling-subcommand-design.md`](../docs/profiling-subcommand-design.md)).
 
 ## Planned
 
-* Operator profiling as part of a run (`./bench profile`) — design:
-  [`docs/profiling-subcommand-design.md`](../docs/profiling-subcommand-design.md).
-* System profiling (Android `simpleperf`, Instruments on Apple devices) — after
-  operator profiling is in.
+* System profiling (Android `simpleperf`, Instruments on Apple devices) — a
+  skill follows once a capture has been run and read.
 
 ## Installing
 
