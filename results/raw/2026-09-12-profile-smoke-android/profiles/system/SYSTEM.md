@@ -10,7 +10,9 @@ runs; one run per row. The per-op pair for the same cell is in `../PROFILE.md`.
 `simpleperf` is `/system/bin/simpleperf` (version 1.build.15081906). As the `shell`
 user only user-space samples are allowed (`-e cpu-clock:u`; plain `cpu-clock` is
 refused with "Can't record kernel samples"), so kernel time — the GPU driver
-ioctls, page faults, scheduling — is not in any table below. `perf*.data` were
+ioctls, page faults, scheduling — is not in any table below. The 09-13 row replaces the fixed 12 s wait with a wait for the engine's
+`tasks.cc:490` end-of-prefill line (load alone took 32 s for Gemma 4 E2B on
+this phone, so a fixed sleep misses decode there). `perf*.data` were
 pulled and then removed from the phone; the reports are the stored reading;
 the witnesses (build, simpleperf version, binary sha) are in `session_provenance.txt`.
 
@@ -25,6 +27,7 @@ the witnesses (build, simpleperf version, binary sha) are in `session_provenance
 | gpu control | `*_gpu_ctrl.log` | 15.12 | – |
 | gpu, whole process, fp | `*_gpu_simpleperf.log` | 15.23 | 16,441 |
 | gpu, attached 8 s during decode, fp | `*_gpu_simpleperf-attach.log` | 15.45 | 5,894 |
+| gpu, attached on the end-of-prefill log line, `--call-graph dwarf` (2026-09-13 07:5x) | `*_gpu_simpleperf-attach-dwarf.log` | 15.64 | 6,278 |
 
 Whole-process sampling at 1000 Hz cost the CPU-backend run 13 % of its decode
 rate; the 8-second attach cost 2–9 %; the GPU-backend rows moved within 3 %.

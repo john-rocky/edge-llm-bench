@@ -92,9 +92,10 @@ grep -h -o '"decodeTokensPerSecond": *[0-9.]*' results/raw/2026-09-12-skill-smok
 grep -h -o '"decodeTokensPerSecond":[0-9.]*' results/raw/2026-09-12-skill-smoke-mac/*.jsonl
 ```
 
-Fields that matter: `metrics.decodeTokensPerSecond`, `promptTokensPerSecond`,
-`memoryMedianResidentMB`, `initialThermalState`, `coldRun` / `firstEver` (a
-cache-building run is labelled, never pooled as speed); `engineVersion` +
+(A Mac native-benchmark cell writes one `YARDSTICK_NATIVE_OK ...` text line
+instead.) Fields that matter: `metrics.decodeTokensPerSecond`, `promptTokensPerSecond`,
+`memoryMedianResidentMB`, `initialThermalState`, `firstEver` (a cache-building
+run is labelled, never pooled as speed; Android `coldRun` is always `true`); `engineVersion` +
 `engineArtifact` (on Android the binary found on the device, by sha256);
 `model.quantization` (Android adds `model.sha256`); the context budget in
 `conditions.contextTokens` (Android) or `metrics.contextTokensConfigured` (Mac).

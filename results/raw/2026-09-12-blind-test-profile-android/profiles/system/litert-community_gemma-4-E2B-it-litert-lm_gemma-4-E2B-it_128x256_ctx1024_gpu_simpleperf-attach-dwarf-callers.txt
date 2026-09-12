@@ -1,0 +1,900 @@
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_gemma_gpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p 10789 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 5776
+Event count: 5776000000
+
+Children  Self   Symbol
+91.38%    0.00%  __libc_init
+       |
+       -- __libc_init
+          |
+           -- main
+              litert::lm::RunLiteRtLm(litert::lm::LiteRtLmSettings const&, std::__ndk1::vector<litert::lm::LitertLmMetrics, std::__ndk1::allocator<litert::lm::LitertLmMetrics>>*)
+              litert::lm::Conversation::SendMessage(nlohmann::json_abi_v3_12_0::basic_json<nlohmann::json_abi_v3_12_0::ordered_map, std::__ndk1::vector, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>>, bool, long, unsigned long, double, std::__ndk1::allocator, nlohmann::json_abi_v3_12_0::adl_serializer, std::__ndk1::vector<unsigned char, std::__ndk1::allocator<unsigned char>>, void> const&, litert::lm::OptionalArgs)
+              litert::lm::SessionAdvanced::WaitUntilDone()
+              litert::lm::SerialExecutionManager::WaitUntilSessionDone(int, absl::lts_20260526::Duration)
+              litert::lm::SerialExecutionManager::RunNextTask()
+              void absl::lts_20260526::internal_any_invocable::RemoteInvoker<false, void, litert::lm::SerialExecutionManager::AddDecodeTask(int, int, absl::lts_20260526::flat_hash_set<int, absl::lts_20260526::hash_internal::Hash<int>, std::__ndk1::equal_to<int>, std::__ndk1::allocator<int>>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::shared_ptr<std::__ndk1::atomic<bool>>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>)::$_1&>(absl::lts_20260526::internal_any_invocable::TypeErasedState*)
+              litert::lm::Tasks::Decode(litert::lm::LlmExecutorBase&, litert::support::Tokenizer&, litert::lm::StopTokenDetector const&, int, std::__ndk1::optional<litert::lm::BenchmarkInfo>&, std::__ndk1::optional<litert::lm::Sampler*>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::optional<litert::TensorBuffer>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>&, std::__ndk1::atomic<bool>*, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&)
+               |
+               |--99.73%-- litert::lm::LockedLlmExecutor::Decode(litert::lm::ExecutorDecodeParams const&)
+               |           litert::lm::LlmLiteRtCompiledModelExecutorBase::Decode(litert::lm::ExecutorDecodeParams const&)
+               |    |
+               |    |--53.91%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeLogits(litert::lm::ExecutorInputs const&, litert::lm::ExecutorDecodeParams const&)
+               |    |    |
+               |    |    |--98.84%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeInternal(std::__ndk1::vector<std::__ndk1::shared_ptr<litert::lm::TokenData>, std::__ndk1::allocator<std::__ndk1::shared_ptr<litert::lm::TokenData>>> const&, litert::TensorBuffer&)
+               |    |    |    |--0.04%-- [hit in function]
+               |    |    |    |
+               |    |    |    |--98.97%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::BindTensorsAndRunDecode(litert::TensorBuffer*)
+               |    |    |    |    |
+               |    |    |    |    |--99.53%-- litert::CompiledModel::RunAsync(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, litert::Options*) const
+               |    |    |    |    |           litert::CompiledModel::RunMapHelper(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+               |    |    |    |    |           litert::CompiledModel::RunMapWithIndexHelper(unsigned long, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+               |    |    |    |    |    |
+               |    |    |    |    |    |--99.96%-- litert::CompiledModel::RunCApiHelper(unsigned long, unsigned long, LiteRtTensorBufferT**, unsigned long, LiteRtTensorBufferT**, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+               |    |    |    |    |    |           LiteRtRunCompiledModelAsyncWithOptions
+               |    |    |    |    |    |           LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*)
+               |    |    |    |    |    |           LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+               |    |    |    |    |    |           LiteRtCompiledModelT::Run(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--99.64%-- tflite::impl::SignatureRunner::Invoke()
+               |    |    |    |    |    |    |           tflite::Subgraph::Invoke()
+               |    |    |    |    |    |    |           tflite::Subgraph::InvokeImpl()
+               |    |    |    |    |    |    |    |--0.15%-- [hit in function]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--94.37%-- libLiteRtGpuAccelerator.so[+109470]
+               |    |    |    |    |    |    |    |           libLiteRtGpuAccelerator.so[+13a3d0]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--95.19%-- libLiteRtGpuAccelerator.so[+111d3c]
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--70.11%-- libLiteRtGpuAccelerator.so[+128a9c]
+               |    |    |    |    |    |    |    |    |    |           clEnqueueNDRangeKernel
+               |    |    |    |    |    |    |    |    |    |    |--0.12%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--80.67%-- mcl_enqueue_ndrange_kernel(mcl_command_queue*, mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, unsigned int, _cl_event* const*, _cl_event**, mcl_command_device*, mcl_command_type)
+               |    |    |    |    |    |    |    |    |    |    |    |--0.36%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |--96.14%-- mcl_command_device::init(mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, mcl_command_device*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |--7.66%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |--57.74%-- mcl_gpu_device::create_payload(mcl_device_context*, mcl_device_payload**, mcl_device_kernel*, clcc_ndrange const*, bool) const
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |--0.13%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |--59.79%-- mcl_gpu_payload_manager::commit(clcc_variant_instance const*, mcl_gpu_kernel*, mcl_gpu_payload**)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--1.94%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--62.28%-- mcl_gpu_payload::assign(mcl_gpu_payload*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--34.60%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--31.49%-- __memmove_aarch64_simd
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--30.45%-- mcl_gpu_payload::set_constant_implicit_args()
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--92.05%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--25.65%-- mcl_gpu_payload_csf::finalize(mcl_gpu_kernel*, clcc_ndrange const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--38.66%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--34.45%-- mcl_gpu_payload::split_ndrange(clcc_ndrange const*, clcc_ndrange*, mcl_gpu_kernel*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--29.27%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |     --70.73%-- mcl_gpu_payload::region_set_ndblock_implicit_args(mcl_gpu_payload_region*, clcc_ndrange const*, mcl_gpu_ndblock const*, mcl_gpu_kernel*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |     --26.89%-- mcl_gpu_payload_csf::generate_run_compute_stream(mcl_gpu_payload_region const*, clcc_ndrange const*, clcc_ndrange const*, mcl_gpu_kernel const*, bool, unsigned char)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |         |--56.25%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |         |--37.50%-- mcl_gpu_payload::calculate_task_scheduling_v8(mcl_gpu_ndblock const*, mcl_gpu_context const*, mcl_gpu_kernel const*, unsigned int*, mcl_gpu_payload::task_axis*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |         |    |--83.33%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |         |     --16.67%-- config_devicep_get_instance_info_lazy_load
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |--34.28%-- mcl_gpu_payload::sync_to_mem()
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--45.49%-- cmemp_heap_range_map.llvm.6761199997930444980
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--40.50%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--51.24%-- cmemp_subhoard_map
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--1.61%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--59.68%-- clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--24.19%-- cmemp_hoard_hunk_map
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--60.00%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |     --40.00%-- cutilsp_dlist_remove_item
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--8.06%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--30.45%-- cmemp_hoard_unlock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |           pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--20.68%-- cmem_map_term
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |           cmemp_subhoard_unmap
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--43.64%-- clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--41.82%-- cmemp_hoard_mapping_release
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--95.65%-- clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--10.91%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |--28.35%-- mcl_kernel::checkout(mcl_device const*, mcl_command_device*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |--1.31%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |--49.61%-- mcl_gpu_kernel::setarg_image(unsigned int, mcl_plugin_memory_object*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--16.40%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--30.69%-- pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--29.10%-- mcl_gpu_payload_manager::set_image_read_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--54.55%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |     --45.45%-- mcl_gpu_payload::set_image_read_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--23.28%-- mcl_gpu_payload_manager::set_image_write_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--59.09%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |     --40.91%-- mcl_gpu_payload::set_image_write_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |--25.20%-- mcl_image::create_backing_memory(mcl_device const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--54.17%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--18.75%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--18.75%-- mcl_buffer::create_backing_memory(mcl_device const*)
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--22.22%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--38.89%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |--33.33%-- pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--18.64%-- mcl_command_queue::enqueue_command(unsigned int, _cl_event* const*, _cl_event**, mcl_command_type, mcl_command*, bool)
+               |    |    |    |    |    |    |    |    |    |    |    |--0.31%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |     --99.69%-- mcl_command_queue::enqueue(mcl_device const*, mcl_command_type, mcl_command*, unsigned int, _cl_event* const*, _cl_event**, bool, void*)
+               |    |    |    |    |    |    |    |    |    |    |         |--2.48%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |--77.02%-- mcl_event::create(mcl_context*, mcl_command_type, mcl_command_queue*)
+               |    |    |    |    |    |    |    |    |    |    |         |    |--18.55%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |--62.10%-- mcl_submission_backend_csf::event_create(mcl_context*)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--23.38%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--45.45%-- base_cqs_semaphore_init
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |--7.14%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |     --92.86%-- basep_cqs_get_event_mem_address
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--9.23%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--64.62%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--21.54%-- pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |    |--85.71%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--27.92%-- malloc
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |--6.98%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |     --93.02%-- scudo_malloc
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--2.50%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |          --97.50%-- scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |--7.69%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |--56.41%-- __memset_aarch64
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |--20.51%-- scudo::HybridMutex::tryLock()
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |--10.26%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::refill(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long, unsigned short)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocks(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, unsigned int*, unsigned short)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocksImpl(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::RegionInfo*, unsigned int*, unsigned short)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |    |--75.00%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |     --25.00%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::drain(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |              |                scudo::HybridMutex::unlock()
+               |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |     --19.35%-- cmem_hmem_slab_alloc
+               |    |    |    |    |    |    |    |    |    |    |         |         |--14.58%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |         |
+               |    |    |    |    |    |    |    |    |    |    |         |         |--56.25%-- pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |    |    |         |         |
+               |    |    |    |    |    |    |    |    |    |    |         |         |--18.75%-- cmemp_slab_alloc_u
+               |    |    |    |    |    |    |    |    |    |    |         |         |    |--33.33%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |         |    |--55.56%-- cutilsp_dlist_remove_item
+               |    |    |    |    |    |    |    |    |    |    |         |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |         |     --11.11%-- cutilsp_dlist_push_back
+               |    |    |    |    |    |    |    |    |    |    |         |         |
+               |    |    |    |    |    |    |    |    |    |    |         |          --10.42%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |--16.77%-- mcl_command_queue::forward_command(mcl_enqueue_data const&, bool, void*)
+               |    |    |    |    |    |    |    |    |    |    |         |    |--14.81%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |--27.78%-- mcl_resource::is_resource_type(mcl_object_type) const
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--86.67%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |     --13.33%-- mcl_object<_cl_mem>::object_type()
+               |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |--20.37%-- mcl_submission::chain(mcl_context*, mcl_enqueue_data const&)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--9.09%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--63.64%-- malloc
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |--14.29%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |     --85.71%-- scudo_malloc
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |                scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--16.67%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--33.33%-- scudo::HybridMutex::tryLock()
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--16.67%-- scudo::HybridMutex::unlock()
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |--16.67%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::refill(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long, unsigned short)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocks(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, unsigned int*, unsigned short)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocksImpl(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::RegionInfo*, unsigned int*, unsigned short)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |          --16.67%-- __memset_aarch64
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |--18.18%-- scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::deallocate(void*, scudo::Chunk::Origin, unsigned long, unsigned long)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |           scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::quarantineOrDeallocateChunk(scudo::Options const&, void*, scudo::Chunk::UnpackedHeader*, unsigned long)
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |--50.00%-- scudo::HybridMutex::tryLock()
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |     --50.00%-- scudo::HybridMutex::unlock()
+               |    |    |    |    |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |     --9.09%-- scudo_free
+               |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |--12.96%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |    |    |         |    |--11.11%-- pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--26.38%-- libLiteRtGpuAccelerator.so[+119b44]
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--47.09%-- libLiteRtGpuAccelerator.so[+11cf70]
+               |    |    |    |    |    |    |    |    |    |    |           clSetKernelArg
+               |    |    |    |    |    |    |    |    |    |    |    |--3.58%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |     --96.42%-- mcl_kernel::set_arg_impl(unsigned int, unsigned long, void const*)
+               |    |    |    |    |    |    |    |    |    |    |         |--23.31%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |         |
+               |    |    |    |    |    |    |    |    |    |    |          --76.69%-- mcl_gpu_kernel::setarg_constant(unsigned int, unsigned long, void const*)
+               |    |    |    |    |    |    |    |    |    |    |              |--37.00%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |              |
+               |    |    |    |    |    |    |    |    |    |    |              |--51.98%-- mcl_gpu_payload_manager::set_uniform_arg(unsigned int, void const*)
+               |    |    |    |    |    |    |    |    |    |    |              |    |--1.69%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |              |    |
+               |    |    |    |    |    |    |    |    |    |    |              |    |--69.49%-- mcl_gpu_payload::set_uniform_arg(unsigned int, void const*)
+               |    |    |    |    |    |    |    |    |    |    |              |    |    |--91.46%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |              |    |    |
+               |    |    |    |    |    |    |    |    |    |    |              |    |     --8.54%-- __memmove_aarch64_simd
+               |    |    |    |    |    |    |    |    |    |    |              |    |
+               |    |    |    |    |    |    |    |    |    |    |              |     --28.81%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--28.99%-- libLiteRtGpuAccelerator.so[+11ce14]
+               |    |    |    |    |    |    |    |    |    |    |           clSetKernelArg
+               |    |    |    |    |    |    |    |    |    |    |    |--96.83%-- [hit in function]
+               |    |
+               |    |--45.93%-- litert::lm::LlmLiteRtCompiledModelExecutorBase::SampleLogits(litert::TensorBuffer const&, litert::TensorBuffer&)
+               |    |           litert::lm::TopPSampler::SampleToIdAndScoreBuffer(litert::TensorBuffer const&, litert::TensorBuffer&, litert::TensorBuffer*)
+               |    |    |--1.65%-- [hit in function]
+               |    |    |
+               |    |    |--84.95%-- litert::Expected<void> litert::TensorBuffer::Read<unsigned short>(absl::lts_20260526::Span<unsigned short>)
+               |    |    |    |
+               |    |    |    |--99.76%-- litert::TensorBuffer::Lock(litert::TensorBuffer::LockMode)
+               |    |    |    |           LiteRtLockTensorBuffer
+               |    |    |    |           LiteRtTensorBufferT::Lock(LiteRtTensorBufferLockMode)
+               |    |    |    |    |--0.05%-- [hit in function]
+               |    |    |    |    |
+               |    |    |    |    |--99.76%-- litert::internal::CustomBuffer::Lock(LiteRtTensorBufferLockMode)
+               |    |    |    |    |    |
+               |    |    |    |    |    |--88.99%-- libLiteRtGpuAccelerator.so[+ffed8]
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--36.61%-- libLiteRtGpuAccelerator.so[+105750]
+               |    |    |    |    |    |    |    |--0.90%-- [hit in function]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--53.30%-- libLiteRtGpuAccelerator.so[+10307c]
+               |    |    |    |    |    |    |    |    |--7.89%-- [hit in function]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--26.20%-- libLiteRtGpuAccelerator.so[+103110]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--9.30%-- libLiteRtGpuAccelerator.so[+1030f4]
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--25.07%-- libLiteRtGpuAccelerator.so[+105778]
+               |    |    |    |    |    |    |    |--1.75%-- [hit in function]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--29.17%-- libLiteRtGpuAccelerator.so[+272618]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--13.60%-- libLiteRtGpuAccelerator.so[+272684]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--11.40%-- libLiteRtGpuAccelerator.so[+2725f4]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--9.43%-- libLiteRtGpuAccelerator.so[+27262c]
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--22.54%-- libLiteRtGpuAccelerator.so[+105788]
+               |    |    |    |    |    |
+               |    |    |    |    |    |--10.86%-- libLiteRtGpuAccelerator.so[+ffe8c]
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--59.46%-- libLiteRtGpuAccelerator.so[+1265a8]
+               |    |    |    |    |    |    |           libLiteRtGpuAccelerator.so[+126644]
+               |    |    |    |    |    |    |           libLiteRtGpuAccelerator.so[+128e80]
+               |    |    |    |    |    |    |           clEnqueueReadImage
+               |    |    |    |    |    |    |    |--0.76%-- [hit in function]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |     --99.24%-- mcl_command_queue::enqueue_command(unsigned int, _cl_event* const*, _cl_event**, mcl_command_type, mcl_command*, bool)
+               |    |    |    |    |    |    |         |
+               |    |    |    |    |    |    |         |--98.47%-- mcl_command_queue::enqueue(mcl_device const*, mcl_command_type, mcl_command*, unsigned int, _cl_event* const*, _cl_event**, bool, void*)
+               |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |         |    |--99.22%-- mcl_command_queue::forward_command(mcl_enqueue_data const&, bool, void*)
+               |    |    |    |    |    |    |         |    |    |
+               |    |    |    |    |    |    |         |    |    |--96.88%-- mcl_submission::execute_chain(mcl_sbe_event*)
+               |    |    |    |    |    |    |         |    |    |           mcl_sbe_command_queue_csf::execute_host(mcl_submission*)
+               |    |    |    |    |    |    |         |    |    |           mcl_sfe_execute_host_command_deferred_function(mcl_command_host*)
+               |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |--72.58%-- mcl_plugin_memory_arch_image::read_image(void*, mcl_plugin_memory_range_parameters const*)
+               |    |    |    |    |    |    |         |    |    |    |           cobj_convert_surface_to_pixels
+               |    |    |    |    |    |    |         |    |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |    |--77.78%-- cobj_convert_pixels
+               |    |    |    |    |    |    |         |    |    |    |    |    |--1.43%-- [hit in function]
+               |    |    |    |    |    |    |         |    |    |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |    |    |--97.14%-- cobjp_convert_pixels_fast
+               |    |    |    |    |    |    |         |    |    |    |    |    |           cobjp_do_fastpath_rotate
+               |    |    |    |    |    |    |         |    |    |    |    |    |    |--16.18%-- [hit in function]
+               |    |    |    |    |    |    |         |    |    |    |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |    |    |    |--52.94%-- __memmove_aarch64_simd
+               |    |    |    |    |    |    |         |    |    |    |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |    |    |    |--20.59%-- @plt
+               |    |    |    |    |    |    |         |    |    |    |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |    |    |     --10.29%-- cobjp_convert_64b_partial
+               |    |    |    |    |    |    |         |    |    |    |    |
+               |    |    |    |    |    |    |         |    |    |    |    |--21.11%-- cmemp_subhoard_sync_to_cpu
+               |    |    |    |    |    |    |         |    |    |    |    |           cmemp_hoard_back_base_sync_to_cpu.llvm.4263896854207024911
+               |    |    |    |    |    |    |         |    |    |    |
+               |    |    |    |    |    |    |         |    |    |     --27.42%-- mcl_resource::perform_cache_operation(mcl_device const*, mcl_cache_operation)
+               |    |    |    |    |    |    |         |    |    |         |
+               |    |    |    |    |    |    |         |    |    |         |--97.06%-- cmemp_subhoard_sync_to_cpu
+               |    |    |    |    |    |    |         |    |    |         |           cmemp_hoard_back_base_sync_to_cpu.llvm.4263896854207024911
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |     --40.54%-- libLiteRtGpuAccelerator.so[+126598]
+               |    |    |    |    |    |         |
+               |    |    |    |    |    |         |--83.33%-- libLiteRtGpuAccelerator.so[+102f40]
+               |    |    |    |    |    |         |
+               |    |    |    |    |    |          --16.67%-- libLiteRtGpuAccelerator.so[+102f3c]
+91.38%    0.00%  litert::lm::Conversation::SendMessage(nlohmann::json_abi_v3_12_0::basic_json<nlohmann::json_abi_v3_12_0::ordered_map, std::__ndk1::vector, std::__ndk1::basic_string<char, std::__ndk1::char_traits<char>, std::__ndk1::allocator<char>>, bool, long, unsigned long, double, std::__ndk1::allocator, nlohmann::json_abi_v3_12_0::adl_serializer, std::__ndk1::vector<unsigned char, std::__ndk1::allocator<unsigned char>>, void> const&, litert::lm::OptionalArgs)
+       [skipped in brief callgraph mode]
+91.38%    0.00%  litert::lm::RunLiteRtLm(litert::lm::LiteRtLmSettings const&, std::__ndk1::vector<litert::lm::LitertLmMetrics, std::__ndk1::allocator<litert::lm::LitertLmMetrics>>*)
+       [skipped in brief callgraph mode]
+91.38%    0.00%  litert::lm::SerialExecutionManager::RunNextTask()
+       [skipped in brief callgraph mode]
+91.38%    0.00%  litert::lm::SerialExecutionManager::WaitUntilSessionDone(int, absl::lts_20260526::Duration)
+       [skipped in brief callgraph mode]
+91.38%    0.00%  litert::lm::SessionAdvanced::WaitUntilDone()
+       [skipped in brief callgraph mode]
+91.38%    0.00%  litert::lm::Tasks::Decode(litert::lm::LlmExecutorBase&, litert::support::Tokenizer&, litert::lm::StopTokenDetector const&, int, std::__ndk1::optional<litert::lm::BenchmarkInfo>&, std::__ndk1::optional<litert::lm::Sampler*>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::optional<litert::TensorBuffer>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>&, std::__ndk1::atomic<bool>*, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&, std::__ndk1::vector<int, std::__ndk1::allocator<int>> const&)
+       [skipped in brief callgraph mode]
+91.38%    0.00%  main
+       [skipped in brief callgraph mode]
+91.38%    0.00%  void absl::lts_20260526::internal_any_invocable::RemoteInvoker<false, void, litert::lm::SerialExecutionManager::AddDecodeTask(int, int, absl::lts_20260526::flat_hash_set<int, absl::lts_20260526::hash_internal::Hash<int>, std::__ndk1::equal_to<int>, std::__ndk1::allocator<int>>, litert::lm::RepetitionPenaltyConfig, litert::lm::NoRepeatNgramConfig, litert::lm::SuppressTokensConfig, litert::lm::Constraint*, std::__ndk1::shared_ptr<std::__ndk1::atomic<bool>>, absl::lts_20260526::AnyInvocable<void (absl::lts_20260526::StatusOr<litert::lm::Responses>)>, int, std::__ndk1::optional<int>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>, std::__ndk1::vector<int, std::__ndk1::allocator<int>>)::$_1&>(absl::lts_20260526::internal_any_invocable::TypeErasedState*)
+       [skipped in brief callgraph mode]
+91.14%    0.00%  litert::lm::LlmLiteRtCompiledModelExecutorBase::Decode(litert::lm::ExecutorDecodeParams const&)
+       [skipped in brief callgraph mode]
+91.14%    0.00%  litert::lm::LockedLlmExecutor::Decode(litert::lm::ExecutorDecodeParams const&)
+       [skipped in brief callgraph mode]
+49.13%    0.00%  litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeLogits(litert::lm::ExecutorInputs const&, litert::lm::ExecutorDecodeParams const&)
+       [skipped in brief callgraph mode]
+48.56%    0.02%  litert::lm::LlmLiteRtCompiledModelExecutorBase::DecodeInternal(std::__ndk1::vector<std::__ndk1::shared_ptr<litert::lm::TokenData>, std::__ndk1::allocator<std::__ndk1::shared_ptr<litert::lm::TokenData>>> const&, litert::TensorBuffer&)
+       [skipped in brief callgraph mode]
+48.22%    0.00%  LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*)
+       |
+       -- LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*)
+          |
+           -- LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+              LiteRtCompiledModelT::Run(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+               |--0.04%-- [hit in function]
+               |
+               |--99.46%-- tflite::impl::SignatureRunner::Invoke()
+               |           tflite::Subgraph::Invoke()
+               |           tflite::Subgraph::InvokeImpl()
+               |    |--0.22%-- [hit in function]
+               |    |
+               |    |--93.75%-- libLiteRtGpuAccelerator.so[+109470]
+               |    |           libLiteRtGpuAccelerator.so[+13a3d0]
+               |    |    |
+               |    |    |--95.19%-- libLiteRtGpuAccelerator.so[+111d3c]
+               |    |    |    |
+               |    |    |    |--70.11%-- libLiteRtGpuAccelerator.so[+128a9c]
+               |    |    |    |           clEnqueueNDRangeKernel
+               |    |    |    |    |--0.12%-- [hit in function]
+               |    |    |    |    |
+               |    |    |    |    |--80.67%-- mcl_enqueue_ndrange_kernel(mcl_command_queue*, mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, unsigned int, _cl_event* const*, _cl_event**, mcl_command_device*, mcl_command_type)
+               |    |    |    |    |    |--0.36%-- [hit in function]
+               |    |    |    |    |    |
+               |    |    |    |    |    |--96.14%-- mcl_command_device::init(mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, mcl_command_device*)
+               |    |    |    |    |    |    |--7.66%-- [hit in function]
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--57.74%-- mcl_gpu_device::create_payload(mcl_device_context*, mcl_device_payload**, mcl_device_kernel*, clcc_ndrange const*, bool) const
+               |    |    |    |    |    |    |    |--0.13%-- [hit in function]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--59.79%-- mcl_gpu_payload_manager::commit(clcc_variant_instance const*, mcl_gpu_kernel*, mcl_gpu_payload**)
+               |    |    |    |    |    |    |    |    |--1.94%-- [hit in function]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--62.28%-- mcl_gpu_payload::assign(mcl_gpu_payload*)
+               |    |    |    |    |    |    |    |    |    |--34.60%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--31.49%-- __memmove_aarch64_simd
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--30.45%-- mcl_gpu_payload::set_constant_implicit_args()
+               |    |    |    |    |    |    |    |    |    |    |--92.05%-- [hit in function]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--25.65%-- mcl_gpu_payload_csf::finalize(mcl_gpu_kernel*, clcc_ndrange const*)
+               |    |    |    |    |    |    |    |    |    |--38.66%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--34.45%-- mcl_gpu_payload::split_ndrange(clcc_ndrange const*, clcc_ndrange*, mcl_gpu_kernel*)
+               |    |    |    |    |    |    |    |    |    |    |--29.27%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |     --70.73%-- mcl_gpu_payload::region_set_ndblock_implicit_args(mcl_gpu_payload_region*, clcc_ndrange const*, mcl_gpu_ndblock const*, mcl_gpu_kernel*)
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |     --26.89%-- mcl_gpu_payload_csf::generate_run_compute_stream(mcl_gpu_payload_region const*, clcc_ndrange const*, clcc_ndrange const*, mcl_gpu_kernel const*, bool, unsigned char)
+               |    |    |    |    |    |    |    |    |         |--56.25%-- [hit in function]
+               |    |    |    |    |    |    |    |    |         |
+               |    |    |    |    |    |    |    |    |         |--37.50%-- mcl_gpu_payload::calculate_task_scheduling_v8(mcl_gpu_ndblock const*, mcl_gpu_context const*, mcl_gpu_kernel const*, unsigned int*, mcl_gpu_payload::task_axis*)
+               |    |    |    |    |    |    |    |    |         |    |--83.33%-- [hit in function]
+               |    |    |    |    |    |    |    |    |         |    |
+               |    |    |    |    |    |    |    |    |         |     --16.67%-- config_devicep_get_instance_info_lazy_load
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--34.28%-- mcl_gpu_payload::sync_to_mem()
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--45.49%-- cmemp_heap_range_map.llvm.6761199997930444980
+               |    |    |    |    |    |    |    |    |    |--40.50%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--51.24%-- cmemp_subhoard_map
+               |    |    |    |    |    |    |    |    |    |    |--1.61%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--59.68%-- clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--24.19%-- cmemp_hoard_hunk_map
+               |    |    |    |    |    |    |    |    |    |    |    |--60.00%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |     --40.00%-- cutilsp_dlist_remove_item
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--8.06%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--30.45%-- cmemp_hoard_unlock
+               |    |    |    |    |    |    |    |    |           pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--20.68%-- cmem_map_term
+               |    |    |    |    |    |    |    |    |           cmemp_subhoard_unmap
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--43.64%-- clock_gettime
+               |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--41.82%-- cmemp_hoard_mapping_release
+               |    |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |    |--95.65%-- clock_gettime
+               |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--10.91%-- pthread_mutex_lock
+               |    |    |    |    |    |    |
+               |    |    |    |    |    |    |--28.35%-- mcl_kernel::checkout(mcl_device const*, mcl_command_device*)
+               |    |    |    |    |    |    |    |--1.31%-- [hit in function]
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--49.61%-- mcl_gpu_kernel::setarg_image(unsigned int, mcl_plugin_memory_object*)
+               |    |    |    |    |    |    |    |    |--16.40%-- [hit in function]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--30.69%-- pthread_mutex_unlock
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--29.10%-- mcl_gpu_payload_manager::set_image_read_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--54.55%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |     --45.45%-- mcl_gpu_payload::set_image_read_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--23.28%-- mcl_gpu_payload_manager::set_image_write_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--59.09%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |     --40.91%-- mcl_gpu_payload::set_image_write_arg(unsigned int, mcl_gpu_device_image const*)
+               |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |--25.20%-- mcl_image::create_backing_memory(mcl_device const*)
+               |    |    |    |    |    |    |    |    |--54.17%-- [hit in function]
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--18.75%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |--18.75%-- mcl_buffer::create_backing_memory(mcl_device const*)
+               |    |    |    |    |    |    |    |    |    |--22.22%-- [hit in function]
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--38.89%-- pthread_mutex_lock
+               |    |    |    |    |    |    |    |    |    |
+               |    |    |    |    |    |    |    |    |    |--33.33%-- pthread_mutex_unlock
+               |    |    |    |    |
+               |    |    |    |    |--18.64%-- mcl_command_queue::enqueue_command(unsigned int, _cl_event* const*, _cl_event**, mcl_command_type, mcl_command*, bool)
+               |    |    |    |    |    |--0.31%-- [hit in function]
+               |    |    |    |    |    |
+               |    |    |    |    |     --99.69%-- mcl_command_queue::enqueue(mcl_device const*, mcl_command_type, mcl_command*, unsigned int, _cl_event* const*, _cl_event**, bool, void*)
+               |    |    |    |    |         |--2.48%-- [hit in function]
+               |    |    |    |    |         |
+               |    |    |    |    |         |--77.02%-- mcl_event::create(mcl_context*, mcl_command_type, mcl_command_queue*)
+               |    |    |    |    |         |    |--18.55%-- [hit in function]
+               |    |    |    |    |         |    |
+               |    |    |    |    |         |    |--62.10%-- mcl_submission_backend_csf::event_create(mcl_context*)
+               |    |    |    |    |         |    |    |--23.38%-- [hit in function]
+               |    |    |    |    |         |    |    |
+               |    |    |    |    |         |    |    |--45.45%-- base_cqs_semaphore_init
+               |    |    |    |    |         |    |    |    |--7.14%-- [hit in function]
+               |    |    |    |    |         |    |    |    |
+               |    |    |    |    |         |    |    |     --92.86%-- basep_cqs_get_event_mem_address
+               |    |    |    |    |         |    |    |         |--9.23%-- [hit in function]
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |         |--64.62%-- pthread_mutex_lock
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |         |--21.54%-- pthread_mutex_unlock
+               |    |    |    |    |         |    |    |         |    |--85.71%-- [hit in function]
+               |    |    |    |    |         |    |    |
+               |    |    |    |    |         |    |    |--27.92%-- malloc
+               |    |    |    |    |         |    |    |    |--6.98%-- [hit in function]
+               |    |    |    |    |         |    |    |    |
+               |    |    |    |    |         |    |    |     --93.02%-- scudo_malloc
+               |    |    |    |    |         |    |    |         |--2.50%-- [hit in function]
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |          --97.50%-- scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+               |    |    |    |    |         |    |    |              |--7.69%-- [hit in function]
+               |    |    |    |    |         |    |    |              |
+               |    |    |    |    |         |    |    |              |--56.41%-- __memset_aarch64
+               |    |    |    |    |         |    |    |              |
+               |    |    |    |    |         |    |    |              |--20.51%-- scudo::HybridMutex::tryLock()
+               |    |    |    |    |         |    |    |              |
+               |    |    |    |    |         |    |    |              |--10.26%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::refill(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long, unsigned short)
+               |    |    |    |    |         |    |    |              |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocks(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, unsigned int*, unsigned short)
+               |    |    |    |    |         |    |    |              |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocksImpl(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::RegionInfo*, unsigned int*, unsigned short)
+               |    |    |    |    |         |    |    |              |    |--75.00%-- [hit in function]
+               |    |    |    |    |         |    |    |              |    |
+               |    |    |    |    |         |    |    |              |     --25.00%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::drain(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long)
+               |    |    |    |    |         |    |    |              |                scudo::HybridMutex::unlock()
+               |    |    |    |    |         |    |
+               |    |    |    |    |         |     --19.35%-- cmem_hmem_slab_alloc
+               |    |    |    |    |         |         |--14.58%-- [hit in function]
+               |    |    |    |    |         |         |
+               |    |    |    |    |         |         |--56.25%-- pthread_mutex_unlock
+               |    |    |    |    |         |         |
+               |    |    |    |    |         |         |--18.75%-- cmemp_slab_alloc_u
+               |    |    |    |    |         |         |    |--33.33%-- [hit in function]
+               |    |    |    |    |         |         |    |
+               |    |    |    |    |         |         |    |--55.56%-- cutilsp_dlist_remove_item
+               |    |    |    |    |         |         |    |
+               |    |    |    |    |         |         |     --11.11%-- cutilsp_dlist_push_back
+               |    |    |    |    |         |         |
+               |    |    |    |    |         |          --10.42%-- pthread_mutex_lock
+               |    |    |    |    |         |
+               |    |    |    |    |         |--16.77%-- mcl_command_queue::forward_command(mcl_enqueue_data const&, bool, void*)
+               |    |    |    |    |         |    |--14.81%-- [hit in function]
+               |    |    |    |    |         |    |
+               |    |    |    |    |         |    |--27.78%-- mcl_resource::is_resource_type(mcl_object_type) const
+               |    |    |    |    |         |    |    |--86.67%-- [hit in function]
+               |    |    |    |    |         |    |    |
+               |    |    |    |    |         |    |     --13.33%-- mcl_object<_cl_mem>::object_type()
+               |    |    |    |    |         |    |
+               |    |    |    |    |         |    |--20.37%-- mcl_submission::chain(mcl_context*, mcl_enqueue_data const&)
+               |    |    |    |    |         |    |    |--9.09%-- [hit in function]
+               |    |    |    |    |         |    |    |
+               |    |    |    |    |         |    |    |--63.64%-- malloc
+               |    |    |    |    |         |    |    |    |--14.29%-- [hit in function]
+               |    |    |    |    |         |    |    |    |
+               |    |    |    |    |         |    |    |     --85.71%-- scudo_malloc
+               |    |    |    |    |         |    |    |                scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+               |    |    |    |    |         |    |    |         |--16.67%-- [hit in function]
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |         |--33.33%-- scudo::HybridMutex::tryLock()
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |         |--16.67%-- scudo::HybridMutex::unlock()
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |         |--16.67%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::refill(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long, unsigned short)
+               |    |    |    |    |         |    |    |         |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocks(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, unsigned int*, unsigned short)
+               |    |    |    |    |         |    |    |         |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocksImpl(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::RegionInfo*, unsigned int*, unsigned short)
+               |    |    |    |    |         |    |    |         |
+               |    |    |    |    |         |    |    |          --16.67%-- __memset_aarch64
+               |    |    |    |    |         |    |    |
+               |    |    |    |    |         |    |    |--18.18%-- scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::deallocate(void*, scudo::Chunk::Origin, unsigned long, unsigned long)
+               |    |    |    |    |         |    |    |           scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::quarantineOrDeallocateChunk(scudo::Options const&, void*, scudo::Chunk::UnpackedHeader*, unsigned long)
+               |    |    |    |    |         |    |    |    |
+               |    |    |    |    |         |    |    |    |--50.00%-- scudo::HybridMutex::tryLock()
+               |    |    |    |    |         |    |    |    |
+               |    |    |    |    |         |    |    |     --50.00%-- scudo::HybridMutex::unlock()
+               |    |    |    |    |         |    |    |
+               |    |    |    |    |         |    |     --9.09%-- scudo_free
+               |    |    |    |    |         |    |
+               |    |    |    |    |         |    |--12.96%-- pthread_mutex_lock
+               |    |    |    |    |         |    |
+               |    |    |    |    |         |    |--11.11%-- pthread_mutex_unlock
+               |    |    |    |
+               |    |    |    |--26.38%-- libLiteRtGpuAccelerator.so[+119b44]
+               |    |    |    |    |
+               |    |    |    |    |--47.09%-- libLiteRtGpuAccelerator.so[+11cf70]
+               |    |    |    |    |           clSetKernelArg
+               |    |    |    |    |    |--3.58%-- [hit in function]
+               |    |    |    |    |    |
+               |    |    |    |    |     --96.42%-- mcl_kernel::set_arg_impl(unsigned int, unsigned long, void const*)
+               |    |    |    |    |         |--23.31%-- [hit in function]
+               |    |    |    |    |         |
+               |    |    |    |    |          --76.69%-- mcl_gpu_kernel::setarg_constant(unsigned int, unsigned long, void const*)
+               |    |    |    |    |              |--37.00%-- [hit in function]
+               |    |    |    |    |              |
+               |    |    |    |    |              |--51.98%-- mcl_gpu_payload_manager::set_uniform_arg(unsigned int, void const*)
+               |    |    |    |    |              |    |--1.69%-- [hit in function]
+               |    |    |    |    |              |    |
+               |    |    |    |    |              |    |--69.49%-- mcl_gpu_payload::set_uniform_arg(unsigned int, void const*)
+               |    |    |    |    |              |    |    |--91.46%-- [hit in function]
+               |    |    |    |    |              |    |    |
+               |    |    |    |    |              |    |     --8.54%-- __memmove_aarch64_simd
+               |    |    |    |    |              |    |
+               |    |    |    |    |              |     --28.81%-- pthread_mutex_lock
+               |    |    |    |    |
+               |    |    |    |    |--28.99%-- libLiteRtGpuAccelerator.so[+11ce14]
+               |    |    |    |    |           clSetKernelArg
+               |    |    |    |    |    |--96.83%-- [hit in function]
+48.22%    0.00%  litert::CompiledModel::RunCApiHelper(unsigned long, unsigned long, LiteRtTensorBufferT**, unsigned long, LiteRtTensorBufferT**, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+       |
+       -- litert::CompiledModel::RunCApiHelper(unsigned long, unsigned long, LiteRtTensorBufferT**, unsigned long, LiteRtTensorBufferT**, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*) const
+          |
+          |--99.17%-- LiteRtRunCompiledModelAsyncWithOptions
+          |           LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*)
+          |           LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+          |           LiteRtCompiledModelT::Run(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+          |    |
+          |    |--99.64%-- tflite::impl::SignatureRunner::Invoke()
+          |    |           tflite::Subgraph::Invoke()
+          |    |           tflite::Subgraph::InvokeImpl()
+          |    |    |--0.15%-- [hit in function]
+          |    |    |
+          |    |    |--94.37%-- libLiteRtGpuAccelerator.so[+109470]
+          |    |    |           libLiteRtGpuAccelerator.so[+13a3d0]
+          |    |    |    |
+          |    |    |    |--95.19%-- libLiteRtGpuAccelerator.so[+111d3c]
+          |    |    |    |    |
+          |    |    |    |    |--70.11%-- libLiteRtGpuAccelerator.so[+128a9c]
+          |    |    |    |    |           clEnqueueNDRangeKernel
+          |    |    |    |    |    |--0.12%-- [hit in function]
+          |    |    |    |    |    |
+          |    |    |    |    |    |--80.67%-- mcl_enqueue_ndrange_kernel(mcl_command_queue*, mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, unsigned int, _cl_event* const*, _cl_event**, mcl_command_device*, mcl_command_type)
+          |    |    |    |    |    |    |--0.36%-- [hit in function]
+          |    |    |    |    |    |    |
+          |    |    |    |    |    |    |--96.14%-- mcl_command_device::init(mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, mcl_command_device*)
+          |    |    |    |    |    |    |    |--7.66%-- [hit in function]
+          |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |--57.74%-- mcl_gpu_device::create_payload(mcl_device_context*, mcl_device_payload**, mcl_device_kernel*, clcc_ndrange const*, bool) const
+          |    |    |    |    |    |    |    |    |--0.13%-- [hit in function]
+          |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |--59.79%-- mcl_gpu_payload_manager::commit(clcc_variant_instance const*, mcl_gpu_kernel*, mcl_gpu_payload**)
+          |    |    |    |    |    |    |    |    |    |--1.94%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--62.28%-- mcl_gpu_payload::assign(mcl_gpu_payload*)
+          |    |    |    |    |    |    |    |    |    |    |--34.60%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--31.49%-- __memmove_aarch64_simd
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--30.45%-- mcl_gpu_payload::set_constant_implicit_args()
+          |    |    |    |    |    |    |    |    |    |    |    |--92.05%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--25.65%-- mcl_gpu_payload_csf::finalize(mcl_gpu_kernel*, clcc_ndrange const*)
+          |    |    |    |    |    |    |    |    |    |    |--38.66%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--34.45%-- mcl_gpu_payload::split_ndrange(clcc_ndrange const*, clcc_ndrange*, mcl_gpu_kernel*)
+          |    |    |    |    |    |    |    |    |    |    |    |--29.27%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |     --70.73%-- mcl_gpu_payload::region_set_ndblock_implicit_args(mcl_gpu_payload_region*, clcc_ndrange const*, mcl_gpu_ndblock const*, mcl_gpu_kernel*)
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |     --26.89%-- mcl_gpu_payload_csf::generate_run_compute_stream(mcl_gpu_payload_region const*, clcc_ndrange const*, clcc_ndrange const*, mcl_gpu_kernel const*, bool, unsigned char)
+          |    |    |    |    |    |    |    |    |    |         |--56.25%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |         |
+          |    |    |    |    |    |    |    |    |    |         |--37.50%-- mcl_gpu_payload::calculate_task_scheduling_v8(mcl_gpu_ndblock const*, mcl_gpu_context const*, mcl_gpu_kernel const*, unsigned int*, mcl_gpu_payload::task_axis*)
+          |    |    |    |    |    |    |    |    |    |         |    |--83.33%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |         |    |
+          |    |    |    |    |    |    |    |    |    |         |     --16.67%-- config_devicep_get_instance_info_lazy_load
+          |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |--34.28%-- mcl_gpu_payload::sync_to_mem()
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--45.49%-- cmemp_heap_range_map.llvm.6761199997930444980
+          |    |    |    |    |    |    |    |    |    |    |--40.50%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--51.24%-- cmemp_subhoard_map
+          |    |    |    |    |    |    |    |    |    |    |    |--1.61%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |    |--59.68%-- clock_gettime
+          |    |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+          |    |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |    |--24.19%-- cmemp_hoard_hunk_map
+          |    |    |    |    |    |    |    |    |    |    |    |    |--60.00%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |    |     --40.00%-- cutilsp_dlist_remove_item
+          |    |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |    |--8.06%-- pthread_mutex_lock
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--30.45%-- cmemp_hoard_unlock
+          |    |    |    |    |    |    |    |    |    |           pthread_mutex_unlock
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--20.68%-- cmem_map_term
+          |    |    |    |    |    |    |    |    |    |           cmemp_subhoard_unmap
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--43.64%-- clock_gettime
+          |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--41.82%-- cmemp_hoard_mapping_release
+          |    |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |    |--95.65%-- clock_gettime
+          |    |    |    |    |    |    |    |    |    |    |    |           __kernel_clock_gettime
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--10.91%-- pthread_mutex_lock
+          |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |--28.35%-- mcl_kernel::checkout(mcl_device const*, mcl_command_device*)
+          |    |    |    |    |    |    |    |    |--1.31%-- [hit in function]
+          |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |--49.61%-- mcl_gpu_kernel::setarg_image(unsigned int, mcl_plugin_memory_object*)
+          |    |    |    |    |    |    |    |    |    |--16.40%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--30.69%-- pthread_mutex_unlock
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--29.10%-- mcl_gpu_payload_manager::set_image_read_arg(unsigned int, mcl_gpu_device_image const*)
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--54.55%-- pthread_mutex_lock
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |     --45.45%-- mcl_gpu_payload::set_image_read_arg(unsigned int, mcl_gpu_device_image const*)
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--23.28%-- mcl_gpu_payload_manager::set_image_write_arg(unsigned int, mcl_gpu_device_image const*)
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--59.09%-- pthread_mutex_lock
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |     --40.91%-- mcl_gpu_payload::set_image_write_arg(unsigned int, mcl_gpu_device_image const*)
+          |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |--25.20%-- mcl_image::create_backing_memory(mcl_device const*)
+          |    |    |    |    |    |    |    |    |    |--54.17%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--18.75%-- pthread_mutex_lock
+          |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |--18.75%-- mcl_buffer::create_backing_memory(mcl_device const*)
+          |    |    |    |    |    |    |    |    |    |    |--22.22%-- [hit in function]
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--38.89%-- pthread_mutex_lock
+          |    |    |    |    |    |    |    |    |    |    |
+          |    |    |    |    |    |    |    |    |    |    |--33.33%-- pthread_mutex_unlock
+          |    |    |    |    |    |
+          |    |    |    |    |    |--18.64%-- mcl_command_queue::enqueue_command(unsigned int, _cl_event* const*, _cl_event**, mcl_command_type, mcl_command*, bool)
+          |    |    |    |    |    |    |--0.31%-- [hit in function]
+          |    |    |    |    |    |    |
+          |    |    |    |    |    |     --99.69%-- mcl_command_queue::enqueue(mcl_device const*, mcl_command_type, mcl_command*, unsigned int, _cl_event* const*, _cl_event**, bool, void*)
+          |    |    |    |    |    |         |--2.48%-- [hit in function]
+          |    |    |    |    |    |         |
+          |    |    |    |    |    |         |--77.02%-- mcl_event::create(mcl_context*, mcl_command_type, mcl_command_queue*)
+          |    |    |    |    |    |         |    |--18.55%-- [hit in function]
+          |    |    |    |    |    |         |    |
+          |    |    |    |    |    |         |    |--62.10%-- mcl_submission_backend_csf::event_create(mcl_context*)
+          |    |    |    |    |    |         |    |    |--23.38%-- [hit in function]
+          |    |    |    |    |    |         |    |    |
+          |    |    |    |    |    |         |    |    |--45.45%-- base_cqs_semaphore_init
+          |    |    |    |    |    |         |    |    |    |--7.14%-- [hit in function]
+          |    |    |    |    |    |         |    |    |    |
+          |    |    |    |    |    |         |    |    |     --92.86%-- basep_cqs_get_event_mem_address
+          |    |    |    |    |    |         |    |    |         |--9.23%-- [hit in function]
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |         |--64.62%-- pthread_mutex_lock
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |         |--21.54%-- pthread_mutex_unlock
+          |    |    |    |    |    |         |    |    |         |    |--85.71%-- [hit in function]
+          |    |    |    |    |    |         |    |    |
+          |    |    |    |    |    |         |    |    |--27.92%-- malloc
+          |    |    |    |    |    |         |    |    |    |--6.98%-- [hit in function]
+          |    |    |    |    |    |         |    |    |    |
+          |    |    |    |    |    |         |    |    |     --93.02%-- scudo_malloc
+          |    |    |    |    |    |         |    |    |         |--2.50%-- [hit in function]
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |          --97.50%-- scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+          |    |    |    |    |    |         |    |    |              |--7.69%-- [hit in function]
+          |    |    |    |    |    |         |    |    |              |
+          |    |    |    |    |    |         |    |    |              |--56.41%-- __memset_aarch64
+          |    |    |    |    |    |         |    |    |              |
+          |    |    |    |    |    |         |    |    |              |--20.51%-- scudo::HybridMutex::tryLock()
+          |    |    |    |    |    |         |    |    |              |
+          |    |    |    |    |    |         |    |    |              |--10.26%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::refill(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long, unsigned short)
+          |    |    |    |    |    |         |    |    |              |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocks(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, unsigned int*, unsigned short)
+          |    |    |    |    |    |         |    |    |              |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocksImpl(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::RegionInfo*, unsigned int*, unsigned short)
+          |    |    |    |    |    |         |    |    |              |    |--75.00%-- [hit in function]
+          |    |    |    |    |    |         |    |    |              |    |
+          |    |    |    |    |    |         |    |    |              |     --25.00%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::drain(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long)
+          |    |    |    |    |    |         |    |    |              |                scudo::HybridMutex::unlock()
+          |    |    |    |    |    |         |    |
+          |    |    |    |    |    |         |     --19.35%-- cmem_hmem_slab_alloc
+          |    |    |    |    |    |         |         |--14.58%-- [hit in function]
+          |    |    |    |    |    |         |         |
+          |    |    |    |    |    |         |         |--56.25%-- pthread_mutex_unlock
+          |    |    |    |    |    |         |         |
+          |    |    |    |    |    |         |         |--18.75%-- cmemp_slab_alloc_u
+          |    |    |    |    |    |         |         |    |--33.33%-- [hit in function]
+          |    |    |    |    |    |         |         |    |
+          |    |    |    |    |    |         |         |    |--55.56%-- cutilsp_dlist_remove_item
+          |    |    |    |    |    |         |         |    |
+          |    |    |    |    |    |         |         |     --11.11%-- cutilsp_dlist_push_back
+          |    |    |    |    |    |         |         |
+          |    |    |    |    |    |         |          --10.42%-- pthread_mutex_lock
+          |    |    |    |    |    |         |
+          |    |    |    |    |    |         |--16.77%-- mcl_command_queue::forward_command(mcl_enqueue_data const&, bool, void*)
+          |    |    |    |    |    |         |    |--14.81%-- [hit in function]
+          |    |    |    |    |    |         |    |
+          |    |    |    |    |    |         |    |--27.78%-- mcl_resource::is_resource_type(mcl_object_type) const
+          |    |    |    |    |    |         |    |    |--86.67%-- [hit in function]
+          |    |    |    |    |    |         |    |    |
+          |    |    |    |    |    |         |    |     --13.33%-- mcl_object<_cl_mem>::object_type()
+          |    |    |    |    |    |         |    |
+          |    |    |    |    |    |         |    |--20.37%-- mcl_submission::chain(mcl_context*, mcl_enqueue_data const&)
+          |    |    |    |    |    |         |    |    |--9.09%-- [hit in function]
+          |    |    |    |    |    |         |    |    |
+          |    |    |    |    |    |         |    |    |--63.64%-- malloc
+          |    |    |    |    |    |         |    |    |    |--14.29%-- [hit in function]
+          |    |    |    |    |    |         |    |    |    |
+          |    |    |    |    |    |         |    |    |     --85.71%-- scudo_malloc
+          |    |    |    |    |    |         |    |    |                scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)
+          |    |    |    |    |    |         |    |    |         |--16.67%-- [hit in function]
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |         |--33.33%-- scudo::HybridMutex::tryLock()
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |         |--16.67%-- scudo::HybridMutex::unlock()
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |         |--16.67%-- scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::refill(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>::PerClass*, unsigned long, unsigned short)
+          |    |    |    |    |    |         |    |    |         |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocks(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, unsigned int*, unsigned short)
+          |    |    |    |    |    |         |    |    |         |           scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::popBlocksImpl(scudo::SizeClassAllocatorLocalCache<scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>>*, unsigned long, scudo::SizeClassAllocator64<scudo::PrimaryConfig<scudo::AndroidNormalConfig>>::RegionInfo*, unsigned int*, unsigned short)
+          |    |    |    |    |    |         |    |    |         |
+          |    |    |    |    |    |         |    |    |          --16.67%-- __memset_aarch64
+          |    |    |    |    |    |         |    |    |
+          |    |    |    |    |    |         |    |    |--18.18%-- scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::deallocate(void*, scudo::Chunk::Origin, unsigned long, unsigned long)
+          |    |    |    |    |    |         |    |    |           scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::quarantineOrDeallocateChunk(scudo::Options const&, void*, scudo::Chunk::UnpackedHeader*, unsigned long)
+          |    |    |    |    |    |         |    |    |    |
+          |    |    |    |    |    |         |    |    |    |--50.00%-- scudo::HybridMutex::tryLock()
+          |    |    |    |    |    |         |    |    |    |
+          |    |    |    |    |    |         |    |    |     --50.00%-- scudo::HybridMutex::unlock()
+          |    |    |    |    |    |         |    |    |
+          |    |    |    |    |    |         |    |     --9.09%-- scudo_free
+          |    |    |    |    |    |         |    |
+          |    |    |    |    |    |         |    |--12.96%-- pthread_mutex_lock
+          |    |    |    |    |    |         |    |
+          |    |    |    |    |    |         |    |--11.11%-- pthread_mutex_unlock
+          |    |    |    |    |
+          |    |    |    |    |--26.38%-- libLiteRtGpuAccelerator.so[+119b44]
+          |    |    |    |    |    |
+          |    |    |    |    |    |--47.09%-- libLiteRtGpuAccelerator.so[+11cf70]
+          |    |    |    |    |    |           clSetKernelArg
+          |    |    |    |    |    |    |--3.58%-- [hit in function]
+          |    |    |    |    |    |    |
+          |    |    |    |    |    |     --96.42%-- mcl_kernel::set_arg_impl(unsigned int, unsigned long, void const*)
+          |    |    |    |    |    |         |--23.31%-- [hit in function]
+          |    |    |    |    |    |         |
+          |    |    |    |    |    |          --76.69%-- mcl_gpu_kernel::setarg_constant(unsigned int, unsigned long, void const*)
+          |    |    |    |    |    |              |--37.00%-- [hit in function]
+          |    |    |    |    |    |              |
+          |    |    |    |    |    |              |--51.98%-- mcl_gpu_payload_manager::set_uniform_arg(unsigned int, void const*)
+          |    |    |    |    |    |              |    |--1.69%-- [hit in function]
+          |    |    |    |    |    |              |    |
+          |    |    |    |    |    |              |    |--69.49%-- mcl_gpu_payload::set_uniform_arg(unsigned int, void const*)
+          |    |    |    |    |    |              |    |    |--91.46%-- [hit in function]
+          |    |    |    |    |    |              |    |    |
+          |    |    |    |    |    |              |    |     --8.54%-- __memmove_aarch64_simd
+          |    |    |    |    |    |              |    |
+          |    |    |    |    |    |              |     --28.81%-- pthread_mutex_lock
+          |    |    |    |    |    |
+          |    |    |    |    |    |--28.99%-- libLiteRtGpuAccelerator.so[+11ce14]
+          |    |    |    |    |    |           clSetKernelArg
+          |    |    |    |    |    |    |--96.83%-- [hit in function]
+48.22%    0.02%  LiteRtCompiledModelT::Run(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, std::__ndk1::vector<LiteRtTensorBufferT*, std::__ndk1::allocator<LiteRtTensorBufferT*>> const&, bool&, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+       [skipped in brief callgraph mode]
+48.22%    0.00%  LiteRtCompiledModelT::RunCApi(unsigned long, unsigned long, LiteRtTensorBufferT* const*, unsigned long, LiteRtTensorBufferT* const*, bool*, LiteRtOptionsT*, LiteRtSchedulingInfo const*)
+       [skipped in brief callgraph mode]
+48.06%    0.00%  litert::lm::LlmLiteRtCompiledModelExecutorBase::BindTensorsAndRunDecode(litert::TensorBuffer*)
+       [skipped in brief callgraph mode]
+47.96%    0.10%  tflite::Subgraph::InvokeImpl()
+       [skipped in brief callgraph mode]
+47.96%    0.00%  tflite::Subgraph::Invoke()
+       [skipped in brief callgraph mode]
+47.96%    0.00%  tflite::impl::SignatureRunner::Invoke()
+       [skipped in brief callgraph mode]
+47.84%    0.00%  litert::CompiledModel::RunAsync(std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, litert::TensorBuffer, absl::lts_20260526::container_internal::StringHash, absl::lts_20260526::container_internal::StringEq, std::__ndk1::allocator<std::__ndk1::pair<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>> const, litert::TensorBuffer>>> const&, absl::lts_20260526::flat_hash_map<std::__ndk1::basic_string_view<char, std::__ndk1::char_traits<char>>, l

@@ -27,8 +27,10 @@ ends itself when the process exits ("Target app exited, ending recording").
 | Time Profiler attached | `..._tp.jsonl` / `.log`, summary `..._tp_time-profile.txt` | 297.1 |
 
 Attaching either template moved the decode rate by under 1 %. The `.trace`
-bundles (125 MB and 17 MB) and the exported tables (`*.xml`) stay local
-(gitignored); the two `.txt` summaries are the stored reading.
+bundles (125 MB and 17 MB) were deleted after the exports — a bundle stores
+the traced process's environment, shell credentials included, and `xctrace
+export --toc` prints it; the `*.xml` table exports stay local (gitignored) and
+the two `.txt` summaries are the stored reading.
 
 ## GPU (Metal System Trace, `metal-gpu-intervals` table)
 

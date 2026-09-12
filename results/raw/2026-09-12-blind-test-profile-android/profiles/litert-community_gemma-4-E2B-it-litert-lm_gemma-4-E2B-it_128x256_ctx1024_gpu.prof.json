@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "7872dfcc-b501-4b42-8e4c-a6136eacbca9",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-community/gemma-4-E2B-it-litert-lm",
+    "quantization": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
+    "file": "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+    "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c"
+  },
+  "task": "native-benchmark-128x256",
+  "timestamp": "2026-09-12T14:48:21Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "profiling": true,
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "contextTokens": 1024,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "elapsedSeconds": 78.4,
+    "exitCode": 0
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 650.0,
+    "promptTokensPerSecond": 356.45,
+    "decodeTokensPerSecond": 3.47,
+    "promptTokenCount": 128,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+profiling",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 2109.21875
+  },
+  "provenance": {
+    "rawLog": "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it_128x256_ctx1024_gpu_prof.log",
+    "harness": "android/bench/run_profile.py",
+    "controlRecord": "9d30d580-fbc7-4904-b5ea-16c410d83dfc",
+    "controlRecordPath": "app-path-android/litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-128x256_2026-09-12T14-45-01.119799_run1.json",
+    "controlLog": "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it_128x256_ctx1024_gpu_ctrl.log",
+    "note": "profiled run: the rate carries the profiler's cost and is not a speed row"
+  }
+}

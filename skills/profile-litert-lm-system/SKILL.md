@@ -52,22 +52,28 @@ adb shell "cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./litert_
 
 **2. Android: sample the whole process, then attach during decode.** The first
 form covers load and prefill too and costs the CPU-backend rate 13 % at 1000 Hz;
-the second starts after the model is loaded (12 s here) and samples 8 s of
-decode for 2-9 %. Frame-pointer stacks are flat on this binary, so use `dwarf`
-when callers matter:
+the second waits for the engine's own end-of-prefill line (`tasks.cc:490
+Failed to get prefill profile summary`, printed on both backends when profiling
+is off) and then samples 8 s of decode for 2-9 % - never a fixed sleep: load
+took 7 s for a 0.5 GB bundle and 32 s for a 2.6 GB one on the same phone.
+Frame-pointer stacks are flat on this binary, so use `dwarf` when callers
+matter. Before each launch confirm no engine process is left (`adb shell pgrep
+-l litert_lm` prints nothing):
 
 ```bash
 adb shell "cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. simpleperf record -o /data/local/tmp/llmbench/perf_cpu.data -e cpu-clock:u -f 1000 --call-graph fp -- taskset f0 ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024"
-adb shell "cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024 >/data/local/tmp/llmbench/run_out.txt 2>&1 </dev/null & sleep 12; simpleperf record -o /data/local/tmp/llmbench/perf_cpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p \$(pgrep -n -f litert_lm_advanced_main) --duration 8; wait; cat /data/local/tmp/llmbench/run_out.txt"
+adb shell "cd /data/local/tmp/llmbench && rm -f /data/local/tmp/llmbench/run_out.txt && LD_LIBRARY_PATH=. taskset f0 ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024 >/data/local/tmp/llmbench/run_out.txt 2>&1 </dev/null & until grep -q 'prefill profile summary' /data/local/tmp/llmbench/run_out.txt 2>/dev/null; do sleep 0.5; done; simpleperf record -o /data/local/tmp/llmbench/perf_gpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p \$(pgrep -n -f litert_lm_advanced_main) --duration 8; wait; cat /data/local/tmp/llmbench/run_out.txt"
 ```
 
-`--backend=gpu` takes the same three commands. Read on the device:
+`--backend=cpu` takes the same commands. Read on the device:
 
 ```bash
 adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu.data --sort dso,symbol -n --percent-limit 0.5"
 adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu.data --sort comm,tid -n"
-adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_cpu_decode_dwarf.data -g caller --sort symbol --percent-limit 8"
+adb shell "simpleperf report -i /data/local/tmp/llmbench/perf_gpu_decode_dwarf.data --sort dso,symbol -n --percent-limit 0.5"
 ```
+
+(`-g caller --sort symbol --percent-limit 8` on the dwarf file prints the caller tree.)
 
 **3. Mac: attach Instruments to the harness's runner.** `xctrace record
 --launch` hung the runner before the model loaded (both templates); `--attach`
@@ -85,9 +91,11 @@ python3 scripts/profile/xctrace_tables.py gpu $OUT/qwen3-0.6b_128x1024_ctx2048_m
 ```
 
 The Time Profiler twin: `--template 'Time Profiler'`, export
-`table[@schema="time-profile"]`, summarise with `xctrace_tables.py cpu`.
-`xcrun xctrace export --input <trace> --toc` lists every table a template
-recorded. `xctrace_tables.py` resolves the export's `ref` links and prints, for
+`table[@schema="time-profile"]`, summarise with `xctrace_tables.py cpu`. The
+`.trace` bundle stores the traced process's whole environment, and `xctrace
+export --toc` prints it - API keys included, if the shell exports any. Never
+store `--toc` output, export tables by `--xpath` only, and delete the bundle
+once the summaries are written. `xctrace_tables.py` resolves the export's `ref` links and prints, for
 `gpu`, intervals / busy ms / window ms / occupancy per process and channel (and
 the gap distribution when `--process` names one); for `cpu`, self time per
 binary, per leaf symbol, per thread (`--top 40` here).
@@ -117,7 +125,8 @@ weight layout at load; a driver-heavy CPU side with an idle GPU → launch count
 and batching (the per-op table's launches per step); a full GPU timeline → the
 kernels themselves, which needs the GPU's own counters, not this skill.
 
-**5. Store.** The control record and log, the profiled logs, the report `.txt`
+**5. Store.** The control record (for a Mac native benchmark the `.jsonl` is
+one text line, `YARDSTICK_NATIVE_OK ... decode_tok_s=...`, not JSON) and log, the profiled logs, the report `.txt`
 files and a `SYSTEM.md` with the rates table and the reading, all under
 `results/raw/<campaign>/profiles/system/` - outside every summary glob, so no
 profiled rate becomes a speed row. Example: `results/raw/2026-09-12-profile-smoke-android/profiles/system/`
@@ -131,6 +140,7 @@ and `.../2026-09-12-profile-smoke-mac/profiles/system/`.
 | `Children` equals `Self` for every symbol in `-g` output | frame-pointer unwinding found no callers on this binary; record with `--call-graph dwarf` |
 | `libLiteRtGpuAccelerator.so[+105788]` instead of a name | the release `.so` is stripped; attribution stays at the library level |
 | `xctrace record --launch` reaches the time limit, process `SIGKILL`, no GPU rows from it | the launched runner never loaded the model; start it from the shell and `--attach` |
+| simpleperf `Samples recorded: 0` from an attached capture | attached before decode (a fixed sleep on a bigger bundle); wait for the end-of-prefill line as in step 2 |
 | `--attach` trace holds nothing from the process (only WindowServer rows) | the run ended before the recorder started - seen at 128x256 here; lengthen the decode (`128x1024`) |
 | `yardstick: WARNING native benchmark context_tokens=288` and fewer decode tokens than asked | pass `--context-tokens`; the stock default truncates the decode |
 | the profiled rate is far below the control | the profiler's own cost (whole-process 1000 Hz on the CPU backend: 13 % here); the control's rate is the number, the profile is the shape |
@@ -160,6 +170,8 @@ local only (gitignored): *.trace/  perf*.data  *.xml
 
 Tested on: Pixel 8a (Android 16, LiteRT-LM v0.16.0 pinned binary, cpu and gpu,
 simpleperf 1.build.15081906) and a Mac Studio M4 Max (macOS 27, Xcode 27.0,
-v0.16.0 vendored), 2026-09-12. Not run on an iPhone (Instruments needs the
+v0.16.0 vendored), 2026-09-12, Qwen3-0.6B; re-run from this text alone by a
+second agent on Gemma 4 E2B on both hosts, 2026-09-13 (`results/raw/2026-09-12-blind-test-profile-*`).
+Not run on an iPhone (Instruments needs the
 signed app; no CLI profiler on the device). [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM)
 on [LiteRT](https://github.com/google-ai-edge/litert).

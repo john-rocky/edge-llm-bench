@@ -1,0 +1,20 @@
+device: Mac Studio (Mac16,9), macOS 27.0 (26A5416b), Xcode 27.0 (27A5237l)
+engine: LiteRT-LM v0.16.0 vendored (yardstick flavor=full harness=2026-07-30-agreed-protocol-r4)
+model: litert-community/gemma-4-E2B-it-litert-lm, gemma-4-E2B-it.litertlm, quantization wNa8o8 (int2/int4/int8 + int8 activations, QAT)
+command (control and mst, byte-identical): .build/dd-mac/Build/Products/Release/yardstick run --runtime litert-lm --model-id litert-community/gemma-4-E2B-it-litert-lm --task short-chat --runs 1 --litert-native-benchmark 128x1024 --context-tokens 2048 --output <path>.jsonl
+xctrace: --template 'Metal System Trace' --time-limit 30s --attach <pid>, run against the byte-identical mst command backgrounded from this shell
+session: 2026-09-13 07:46-07:52 (control 07:46, Metal System Trace attach 07:51)
+
+Note on the "*.jsonl" output for --litert-native-benchmark mode: it is NOT
+JSON. Both files here contain one plain-text line:
+  YARDSTICK_NATIVE_OK prefill_tokens=... decode_tok_s=... ttft_ms=... init_s=... context_tokens=... harness=...
+identical to what yardstick also prints to stdout/the .log file. This
+contradicts the run-edge-llm-bench skill's own description ("Mac records are
+one .jsonl per cell with one line per run") and its read-the-record snippet
+(`grep -h -o '"decodeTokensPerSecond":[0-9.]*' ... *.jsonl`), which assumes a
+JSON object per line; that grep and a naive `json.loads()` both silently fail
+(no match / JSONDecodeError) against a native-benchmark .jsonl. Only the
+short-chat/long-context task records in step 1 of this exercise were real
+JSON. Read with a plain key=value parse instead for native-benchmark mode.
+
+NOTE: the .trace bundle stores the process environment and `xctrace export --toc` prints it; no value stored here, bundle deleted after the --xpath export (2026-09-13).

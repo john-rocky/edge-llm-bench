@@ -1,0 +1,16 @@
+device: Pixel 8a, Android 16, security patch 2026-05-05, product akita, SoC Tensor G3
+simpleperf: 1.build.15081906 (on-device, shell user, cpu-clock:u only)
+engine: litert_lm_advanced_main (release build, symbols present); libLiteRtGpuAccelerator.so stripped (offsets only)
+engine version: v0.16.0 vendored pin (matches step 1 and step 2 captures this sitting)
+model: litert-community/gemma-4-E2B-it-litert-lm, file gemma-4-E2B-it.litertlm, quantization wNa8o8 (int2/int4/int8 + int8 activations, QAT), sha256 181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c
+on-device path: /data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm
+command (control and profiled, byte-identical): cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --async=false --max_num_tokens=1024
+session start: 2026-09-12 23:49 (control), retried attach 23:51, 23:55 (both failed, kept as audit trail), succeeded 2026-09-13 07:45 JST-equivalent wall clock of this shell (see file timestamps)
+thermal: nominal throughout (device was cool/idle before each attempt per `cat /sys/class/thermal/thermal_zone0/temp`; no explicit thermal gate available via plain adb, unlike the harness's own gate)
+
+Attempts (see "Watch for" in the report for why two attempts failed):
+- *_gpu_prof_attach.log: sleep 5 before attaching (skill's Qwen3-0.6B convention) landed the 8 s capture inside a 26.4 s Init phase, not decode -> discarded reading, kept as audit trail.
+- *_gpu_prof_attach2.log: a VmRSS-based "wait for load to finish" loop misread the backgrounding subshell's own (tiny, constant) RSS instead of the benchmark process's RSS, so it fired immediately and again landed in a 26.9 s Init phase (0 samples table has content but the window is Init, not decode) -> discarded, kept as audit trail.
+- *_gpu_prof_attach3.log / *_gpu_simpleperf-attach-dwarf-*.txt: after a ~20 s device cooldown, sleep 8 before attach; that run's Init was 4.4 s and TTFT 0.39 s, so the 8 s capture (t=8s..t=16s) fell inside the 28.7 s decode window -> kept as the reading.
+
+Why Init time varied 2.15 s / 4.4 s / 26.4-26.9 s across otherwise-identical invocations: back-to-back litert_lm_advanced_main launches on this device did not have independent Init times. Every run immediately following another one (no gap) took >4x longer to init; the one run preceded by an explicit cooldown was fast again. This looks like GPU/OpenCL context teardown from the previous process bleeding into the next process's init, consistent with this repo's documented note that LiteRT-LM GPU teardown can stall (CLAUDE.md: "litert cells can hang ~10 min at teardown"). The system-profiling skill's own example (control command immediately followed by the simpleperf commands, no cooldown mentioned) reproduces exactly this failure mode for a model this size.

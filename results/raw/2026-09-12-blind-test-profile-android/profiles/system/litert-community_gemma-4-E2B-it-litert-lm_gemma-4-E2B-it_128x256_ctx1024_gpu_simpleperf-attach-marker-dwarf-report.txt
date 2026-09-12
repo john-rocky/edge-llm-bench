@@ -1,0 +1,57 @@
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_gpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p 11185 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 5849
+Event count: 5849000000
+
+Overhead  Sample  Shared Object                                        Symbol
+7.10%     415     /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+105788]
+5.62%     329     /apex/com.android.runtime/lib64/bionic/libc.so       pthread_mutex_lock
+4.34%     254     /apex/com.android.runtime/lib64/bionic/libc.so       pthread_mutex_unlock
+3.45%     202     /vendor/lib64/egl/libGLES_mali.so                    clSetKernelArg
+3.20%     187     /data/local/tmp/llmbench/litert_lm_advanced_main     tflite::half::operator float() const
+2.87%     168     /apex/com.android.runtime/lib64/bionic/libc.so       __memmove_aarch64_simd
+2.21%     129     /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_kernel::setarg_constant(unsigned int, unsigned long, void const*)
+2.12%     124     /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+272618]
+1.88%     110     /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload::assign(mcl_gpu_payload*)
+1.78%     104     /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload::set_constant_implicit_args()
+1.62%     95      [vdso]                                               __kernel_clock_gettime
+1.61%     94      /vendor/lib64/egl/libGLES_mali.so                    mcl_command_device::init(mcl_kernel*, unsigned int, unsigned long const*, unsigned long const*, unsigned long const*, mcl_command_device*)
+1.56%     91      /data/local/tmp/llmbench/litert_lm_advanced_main     litert::lm::TopKTokenIds(absl::lts_20260526::Span<float const>, int, int, int)
+1.52%     89      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+103110]
+1.50%     88      /vendor/lib64/egl/libGLES_mali.so                    mcl_resource::is_resource_type(mcl_object_type) const
+1.49%     87      /apex/com.android.runtime/lib64/bionic/libc.so       __memset_aarch64
+1.38%     81      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload::set_uniform_arg(unsigned int, void const*)
+1.20%     70      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+102f40]
+1.18%     69      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+128a48]
+1.18%     69      /vendor/lib64/libOpenCL.so                           clSetKernelArg
+1.13%     66      /vendor/lib64/egl/libGLES_mali.so                    cmemp_hoard_back_base_sync_to_cpu.llvm.4263896854207024911
+1.11%     65      /apex/com.android.runtime/lib64/bionic/libc.so       scudo::HybridMutex::tryLock()
+1.08%     63      /vendor/lib64/egl/libGLES_mali.so                    clcc::Kernel::select_variant_instance(clcc_ndrange const*, clcc_variant_instance*) const
+1.08%     63      /vendor/lib64/egl/libGLES_mali.so                    mcl_kernel::set_arg_impl(unsigned int, unsigned long, void const*)
+1.04%     61      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+2725f4]
+0.87%     51      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_payload_csf::finalize(mcl_gpu_kernel*, clcc_ndrange const*)
+0.84%     49      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+10309c]
+0.82%     48      /vendor/lib64/egl/libGLES_mali.so                    mcl_event::create(mcl_context*, mcl_command_type, mcl_command_queue*)
+0.74%     43      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+272684]
+0.72%     42      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+1030a0]
+0.72%     42      /vendor/lib64/egl/libGLES_mali.so                    mcl_image::create_backing_memory(mcl_device const*)
+0.68%     40      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+27262c]
+0.68%     40      /data/local/tmp/llmbench/litert_lm_advanced_main     litert::lm::TopPSampler::SampleToIdAndScoreBuffer(litert::TensorBuffer const&, litert::TensorBuffer&, litert::TensorBuffer*)
+0.67%     39      /vendor/lib64/egl/libGLES_mali.so                    cmemp_heap_range_map.llvm.6761199997930444980
+0.67%     39      /vendor/lib64/egl/libGLES_mali.so                    mcl_submission_backend_csf::event_create(mcl_context*)
+0.65%     38      /apex/com.android.runtime/lib64/bionic/libc.so       scudo::HybridMutex::unlock()
+0.65%     38      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+10308c]
+0.62%     36      /vendor/lib64/egl/libGLES_mali.so                    mcl_gpu_kernel::setarg_image(unsigned int, mcl_plugin_memory_object*)
+0.56%     33      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+10306c]
+0.53%     31      /vendor/lib64/egl/libGLES_mali.so                    @plt
+0.51%     30      /data/local/tmp/llmbench/libLiteRtGpuAccelerator.so  libLiteRtGpuAccelerator.so[+10307c]
+Cmdline: /system/bin/simpleperf record -o /data/local/tmp/llmbench/perf_gpu_decode_dwarf.data -e cpu-clock:u -f 1000 --call-graph dwarf -p 11185 --duration 8
+Arch: arm64
+Event: cpu-clock:u (type 1, config 0)
+Samples: 5849
+Event count: 5849000000
+
+Overhead  Sample  Command                  Tid
+91.45%    5349    litert_lm_advanced_main  11185
+8.55%     500     mali-event-hand          11194

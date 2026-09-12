@@ -1,0 +1,33 @@
+simpleperf I cmd_record.cpp:828] Recorded for 7.98067 seconds. Start post processing.
+simpleperf I cmd_record.cpp:929] Samples recorded: 5,776. Samples lost: 0.
+RUN_DONE
+=== Source Location Trace: ===
+external/litert/litert/cc/litert_macros.h:547
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.24 ms
+    - Init Executor: 4431.95 ms
+    - Init LLM metadata: 0.86 ms
+    - Init Model assets: 0.30 ms
+    - Init Tokenizer: 340.71 ms
+    - Init Total: 4434.55 ms
+--------------------------------------------------
+  Time to first token: 0.39 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 275.91154ms duration.
+      Prefill Speed: 463.92 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 28.707208144s duration.
+      Decode Speed: 8.92 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 139.119us, 128 tokens
+--------------------------------------------------
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070be6aa150, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070be6a9f70, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070bee0a650, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070bee0ae30, name=LiteRT GPU
