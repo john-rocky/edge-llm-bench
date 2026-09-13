@@ -47,8 +47,7 @@ two increased-memory entitlements, GUI only). Plugging, signing, thermal environ
 the Mac and iPhone runners cap generation at 128 tokens, while the Android
 CLI at v0.16.0 ignores the cap and runs to the model's own stop, so read
 `metrics.generatedTokenCount` - disclosed in `methodology/android.md`),
-`long-context-1024-gen256`, or
-`native-benchmark-<P>x<D>` (the engine's own synthetic benchmark). Android
+`long-context-1024-gen256`, or `native-benchmark-<P>x<D>` (the engine's own synthetic benchmark). Android
 LiteRT-LM cells need `backend=cpu|gpu` and, when the repo holds several
 bundles, `file=<name>`. The committed example, one cell per platform:
 
@@ -109,8 +108,7 @@ Read `FLAGGED.txt`, `FAILURES.txt` and `SKIPPED.txt` beside the records first.
 
 **5. Compare only through a control.** A device drifts 16-25% between
 sittings, so today's number and last week's are not a delta. To compare with
-an earlier campaign, add that platform's `anchor=1` line from
-`matrices/anchors.cells` and run
+an earlier campaign, add that platform's `anchor=1` line from `matrices/anchors.cells` and run
 `./bench regress <cells> --engine litert-lm --version <label> --baseline campaign:<earlier>`.
 Verdicts land in `results/regression-reports/<date>-litert-lm-<label>/verdicts.json`:
 `OK`, `IMPROVED`, `REGRESSION`, `UNRELIABLE` (spread too wide - re-run, never
@@ -128,7 +126,9 @@ cell: a control capture, the same command with `--enable_profiling`, one table:
 
 Read `results/raw/<campaign>-android/profiles/PROFILE.md`: wall ms per decode
 step from the control, profiled op time as weight GEMV / attention+KV / transfer
-/ other, launches per step. A profiled rate is never a speed row (`docs/profiling-subcommand-design.md`).
+/ other, launches per step. A profiled rate is never a speed row. `./bench profile`
+drives Android; the Mac pair, run directly from the CLI built at the tag, is in
+`docs/profiling-subcommand-design.md` (Coverage: which Mac GPU accelerator profiles).
 
 ## The two ad-hoc cases
 

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "bffcbb41-9854-4583-9f00-303462f7318f",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "5188ac082a7eb9a46bc4fbbff5cf580b3204063c8365ba67077550e76e216d92",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B",
+    "quantization": "INT4 (mixed, blockwise gs32)",
+    "file": "litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm",
+    "sha256": "b1baab462f6be49d70eada79d715c2c52cd9ece0cad00bddf6a2c097d23498e9"
+  },
+  "task": "native-benchmark-128x256",
+  "timestamp": "2026-09-13T04:21:53Z",
+  "device": {
+    "modelIdentifier": "Mac16,9",
+    "modelName": "Mac Studio",
+    "systemName": "macOS",
+    "systemVersion": "27.0",
+    "soc": "Apple M4 Max",
+    "memoryGB": 128
+  },
+  "conditions": {
+    "profiling": true,
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "contextTokens": 1024,
+    "gpuAccelerator": "libLiteRtWebGpuAccelerator.dylib",
+    "exitCode": 13
+  },
+  "metrics": {
+    "memoryMedianResidentMB": 6.08,
+    "memoryPeakResidentMB": 6.08,
+    "coldRun": true,
+    "harnessStamp": "2026-09-13-mac-native-cli-by-hand+profiling"
+  },
+  "provenance": {
+    "rawLog": "litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4_128x256_ctx1024-webgpu_gpu_prof.log",
+    "harness": "results/raw/2026-09-13-profile-smoke-mac/profiles/run_pair_mac.sh (run by hand; not ./bench profile)",
+    "engineBuild": "LiteRT-LM tag v0.16.0 (924e79c9), 'bazel build //runtime/engine:litert_lm_advanced_main' on this host, the tag's prebuilt/macos_arm64 dylibs beside the binary",
+    "controlRecord": "e9f88334-a572-4537-9bf1-392e372d80f5",
+    "controlLog": "litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4_128x256_ctx1024-webgpu_gpu_ctrl.log",
+    "note": "profiled run: the rate carries the profiler's cost and is not a speed row"
+  }
+}

@@ -1,0 +1,177 @@
+VmRSS:	 6224 kB
+VmRSS:	 488848 kB
+VmRSS:	 489552 kB
+VmRSS:	 489856 kB
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789272967.291118 143030422 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1789272967.292769 143030422 litert_lm_lib.cc:652] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 1024
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+attention_mask_settings:
+attention_mask_policy: Causal
+local_attention_mask_policy: Not set
+sliding_window_size: Not set
+advanced_settings: prefill_batch_sizes: [128]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789272967.292788 143030422 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1789272967.292791 143030422 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1789272967.292796 143030422 litert_lm_lib.cc:688] Creating engine
+W0000 00:00:1789272967.293539 143030422 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789272967.293553 143030422 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789272967.293549 143030423 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789272967.293558 143030422 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789272967.293580 143030422 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104b72c70, name=GPU Metal
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104b72cc0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7583718000, name=GPU Metal
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7583718050, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789272967.340448 143030422 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1789272967.340478 143030422 litert_lm_loader.cc:291] Section not found: 	
+INFO: [compiled_model.cc:815] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789272967.376611 143030422 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789272967.377210 143030422 gpu_backend_metal.mm:104] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1789272967.469537 143030422 delegate_kernel.cc:325] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789272967.469564 143030422 delegate_kernel.cc:877] Initializing Metal-based API from serialized data.
+W0000 00:00:1789272967.470227 143030422 delegate_kernel.cc:778] Deserialization failed: DATA_LOSS: Deserialization failed.
+=== Source Location Trace: === 
+third_party/ml_drift/metal/inference_context.mm:194
+third_party/odml/litert/ml_drift/delegate/gpu_backend_metal_litert.mm:154
+I0000 00:00:1789272967.671746 143030422 delegate_kernel.cc:325] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789272967.671768 143030422 delegate_kernel.cc:877] Initializing Metal-based API from serialized data.
+W0000 00:00:1789272967.672180 143030422 delegate_kernel.cc:778] Deserialization failed: DATA_LOSS: Deserialization failed.
+=== Source Location Trace: === 
+third_party/ml_drift/metal/inference_context.mm:194
+third_party/odml/litert/ml_drift/delegate/gpu_backend_metal_litert.mm:154
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7582a7d720, name=GPU Metal
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7582a7d680, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789272967.776682 143030422 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789272967.776692 143030422 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789272967.776696 143030422 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789272967.776699 143030422 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789272967.776702 143030422 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789272967.776704 143030422 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789272967.776707 143030422 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789272967.776709 143030422 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789272967.776719 143030422 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789272967.776734 143030422 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789272967.776736 143030422 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789272967.776738 143030422 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789272967.776887 143030422 litert_lm_lib.cc:856] Creating conversation
+I0000 00:00:1789272967.777358 143030422 litert_lm_lib.cc:868] Running single-turn conversation
+W0000 00:00:1789272967.820193 143030422 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1655]
+└ ERROR: [external/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:547
+
+W0000 00:00:1789272967.845303 143030422 sampler_factory.cc:563] Metal sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [runtime/components/sampler_factory.cc:317]
+└ Could not load shared library libLiteRtTopKMetalSampler.dylib: dlopen(libLiteRtTopKMetalSampler.dylib, 0x0005): Library not loaded: @rpath/libLiteRt.dylib
+  Referenced from: <4C4C4455-5555-3144-A116-78A3726096B2> /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRtTopKMetalSampler.dylib
+  Reason: tried: '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRt.dylib' (no such file), '/usr/lib/swift/libLiteRt.dylib' (no such file, not in dyld cache), '/System/Volumes/Preboot/Cryptexes/OS/usr/lib/swift/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRt.dylib' (no such file), '/usr/lib/swift/libLiteRt.dylib' (no such file, not in dyld cache), '/System/Volumes/Preboot/Cryptexes/OS/usr/lib/swift/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/../../_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/litert_lm_advanced_main.runfiles/litert_lm/_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/../../_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/litert_lm_advanced_main.runfiles/litert_lm/_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRt.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRt.dylib' (no such file).
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:573
+
+W0000 00:00:1789272967.845332 143030422 sampler_factory.cc:704] Metal sampler explicitly requested but failed/unavailable.
+W0000 00:00:1789272967.845430 143030422 sampler_factory.cc:484] WebGPU sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [runtime/components/sampler_factory.cc:317]
+└ Could not load shared library libLiteRtTopKWebGpuSampler.dylib: dlopen(libLiteRtTopKWebGpuSampler.dylib, 0x0005): tried: '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRtTopKWebGpuSampler.dylib' (no such file), 'libLiteRtTopKWebGpuSampler.dylib' (no such file), '/System/Volumes/Preboot/Cryptexes/OSlibLiteRtTopKWebGpuSampler.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/../../_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/litert_lm_advanced_main.runfiles/litert_lm/_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/../../_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/litert_lm_advanced_main.runfiles/litert_lm/_solib_darwin_arm64/_U_S_Sruntime_Scomponents_Slogits_Uprocessor_Sconstrained_Udecoding_Cgemma_Umodel_Uconstraint_Uprovider_Ushared_Ulib___Uprebuilt_Smacos_Uarm64/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/run-metal/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKWebGpuSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKWebGpuSampler.dylib' (no such file).
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:573
+
+W0000 00:00:1789272967.845438 143030422 sampler_factory.cc:764] GPU sampler unavailable. Falling back to CPU sampling. To use GPU sampling, please make sure libLiteRtTopKWebGpuSampler.so or libLiteRtTopKOpenClSampler.so is available at LD_LIBRARY_PATH on device. You can find the shared library under prebuilt/
+W0000 00:00:1789272968.989333 143030422 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1655]
+└ ERROR: [external/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:547
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 483.12 ms
+    - Init LLM metadata: 0.28 ms
+    - Init Model assets: 0.42 ms
+    - Init Tokenizer: 114.32 ms
+    - Init Total: 484.08 ms
+--------------------------------------------------
+  Time to first token: 0.05 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 42.686375ms duration.
+      Prefill Speed: 2998.61 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 1.169099625s duration.
+      Decode Speed: 218.97 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 28.917us, 128 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789272968.999921 143030422 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7583718050, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7583718000, name=GPU Metal
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7582a7d680, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7582a7d720, name=GPU Metal
+EXIT_CODE=0

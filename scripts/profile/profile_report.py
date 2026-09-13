@@ -66,6 +66,9 @@ def reading(backend, r):
             parts.append(f"profiled op time exceeds the {r['wall_ms']:.1f} ms wall by {-r['unprofiled_ms']:.1f} ms "
                          "(profiler cost inside the op times)")
     parts.append(f"{r['launches_per_step']:.0f} launches per step")
+    if r.get("delegate_ms"):
+        parts.append(f"the delegate's own node reads {r['delegate_ms']:.1f} ms per step under profiling "
+                     "(a container around the kernels above, kept out of the sums)")
     if r["control_decode_tps"] and r["profiled_decode_tps"]:
         parts.append(f"profiled run decoded {r['profiled_decode_tps']:.1f} tok/s against the control's "
                      f"{r['control_decode_tps']:.1f} (the gap is the profiler's own cost; never a speed row)")
@@ -124,7 +127,9 @@ def main():
     md = ["# Per-op profile (LiteRT-LM `--enable_profiling`)", "",
           "Wall ms per decode step from the unprofiled control run; op sums per recorded decode step from the",
           "profiled run, grouped into weight GEMV / attention+KV / transfer / other; \"unprof.\" is the part of",
-          "the wall the profiled ops do not cover. A profiled run's rate is never a speed row.", "",
+          "the wall the profiled ops do not cover. A profiled run's rate is never a speed row. A backend that",
+          "lists its own delegate node (LITERT_METAL) is a container around its kernels: it stays out of the sums",
+          "and is reported in the reading.", "",
           "```", prof_table.HEADER]
     for tag, backend, _steps, r in rows:
         md.append(prof_table.fmt_row(tag, backend, r))

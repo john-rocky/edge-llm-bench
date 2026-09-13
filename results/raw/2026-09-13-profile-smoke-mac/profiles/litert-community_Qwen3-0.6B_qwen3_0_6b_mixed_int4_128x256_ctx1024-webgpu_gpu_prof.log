@@ -1,0 +1,137 @@
+VmRSS:	 6224 kB
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789273312.678794 143066904 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1789273312.680669 143066904 litert_lm_lib.cc:652] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 1024
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/41c6c575-5a45-45ab-89be-ba2dd7c9b97a/scratchpad/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+attention_mask_settings:
+attention_mask_policy: Causal
+local_attention_mask_policy: Not set
+sliding_window_size: Not set
+advanced_settings: prefill_batch_sizes: [128]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: true
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789273312.680708 143066904 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1789273312.680714 143066904 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1789273312.680722 143066904 litert_lm_lib.cc:688] Creating engine
+W0000 00:00:1789273312.681522 143066904 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789273312.681538 143066904 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789273312.681547 143066904 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789273312.681553 143066904 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789273312.681533 143066906 litert_lm_loader.cc:291] Section not found: 
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x103f7af70, name=GPU WebGPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x103f81470, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7773111400, name=GPU WebGPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7773111450, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789273312.733304 143066904 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1789273312.733340 143066904 litert_lm_loader.cc:291] Section not found: 	
+INFO: [compiled_model.cc:815] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789273312.739232 143066904 delegate_webgpu.cc:262] Create WebGPU environment (use_low_power=false, enable_host_mapped_pointer=true)
+I0000 00:00:1789273312.751349 143066904 environment.cc:525] Selected adapter: Apple M4 Max, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU
+I0000 00:00:1789273312.751959 143066904 delegate_webgpu.cc:290] Created a WebGPU environment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:384] Created default Metal device.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789273312.774089 143066904 delegate_webgpu.cc:690] # of threads to upload weights = 2
+I0000 00:00:1789273312.774119 143066904 delegate_webgpu.cc:698] # of threads to compile kernels = 1
+I0000 00:00:1789273312.870107 143066904 delegate_kernel.cc:325] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789273312.870133 143066904 delegate_kernel.cc:877] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1789273312.883919 143066904 delegate_kernel.cc:775] Initialized InferenceContext from serialized data.
+I0000 00:00:1789273312.935235 143066904 delegate_kernel.cc:325] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789273312.935264 143066904 delegate_kernel.cc:877] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1789273312.945188 143066904 delegate_kernel.cc:775] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x77731139d0, name=GPU WebGPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7773113ac0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789273312.948854 143066904 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789273312.948874 143066904 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789273312.948879 143066904 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789273312.948882 143066904 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789273312.948885 143066904 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789273312.948888 143066904 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789273312.948891 143066904 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789273312.948893 143066904 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789273312.948906 143066904 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789273312.948910 143066904 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789273312.948926 143066904 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789273312.948928 143066904 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789273312.949101 143066904 litert_lm_lib.cc:856] Creating conversation
+I0000 00:00:1789273312.949657 143066904 litert_lm_lib.cc:868] Running single-turn conversation
+E0000 00:00:1789273312.951213 143066904 delegate_webgpu.cc:470] UNIMPLEMENTED: Profile is not implemented.
+=== Source Location Trace: ===
+third_party/odml/litert/ml_drift/delegate/gpu_backend_webgpu.cc:611
+third_party/odml/litert/ml_drift/delegate/delegate_kernel.cc:122
+ERROR: Node number 1361 (LITERT_WEBGPU) failed to invoke.
+ERROR: [litert_compiled_model.cc:164] Failed to invoke
+I0000 00:00:1789273312.961895 143066904 delegate_webgpu.cc:320] Destroyed the WebGPU environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7773111450, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7773111400, name=GPU WebGPU
+E0000 00:00:1789273312.970113 143066904 litert_lm_advanced_main.cc:377] Failed to run litert_lm: INTERNAL: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:729]
+└ Failed to invoke the compiled model
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:551
+runtime/executor/llm_litert_compiled_model_executor.cc:1738
+runtime/core/tasks.cc:484
+runtime/engine/litert_lm_lib.cc:243
+runtime/engine/litert_lm_lib.cc:876
+runtime/engine/litert_lm_advanced_main.cc:363
+
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7773113ac0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x77731139d0, name=GPU WebGPU
+EXIT_CODE=13

@@ -15,6 +15,12 @@ number of steps actually recorded: the most common "times called" among the
 decode-phase rows. Per-layer-body nodes are called layers*steps and
 normalise the same way.
 
+A backend that lists its own delegate node in the table (LITERT_METAL on a
+Mac, 2026-09-13: one row per invoke whose time already contains every kernel
+under it) is a container, not an op: it stays out of the four groups and the
+launch count and is reported apart as "delegate", ms per step. The Android
+and S26 logs of 2026-09-11/12 have no such row, so their tables do not move.
+
   python3 scripts/profile/prof_table.py <dir> <tag>... [--decode-steps 256]
 """
 import argparse
@@ -49,6 +55,9 @@ def speed(path, kind):
     return float(m.group(1)) if m else None
 
 
+CONTAINER = re.compile(r"^LITERT_[A-Z_]+$")  # the delegate's own node, e.g. LITERT_METAL
+
+
 def group(node_type):
     s = node_type.lower()
     if "fully connected" in s or "fc1x1" in s or "fully_connected" in s or "convolution" in s:
@@ -76,7 +85,11 @@ def table_row(prof, ctrl, decode_steps=256):
     steps = counts.most_common(1)[0][0] if counts else decode_steps
     sums = {g: 0.0 for g in GROUPS}
     launches = 0.0
+    delegate = 0.0
     for name, avg, called in dec:
+        if CONTAINER.match(name.strip()):
+            delegate += avg * called / steps
+            continue
         sums[group(name)] += avg * called / steps
         launches += called / steps
     dspeed = speed(ctrl, "Decode")
@@ -84,7 +97,7 @@ def table_row(prof, ctrl, decode_steps=256):
     total = sum(sums.values())
     return {"wall_ms": wall, "steps": steps, "op_sum_ms": total, **{g + "_ms": sums[g] for g in GROUPS},
             "unprofiled_ms": (wall - total) if wall is not None else None,
-            "launches_per_step": launches, "control_decode_tps": dspeed,
+            "launches_per_step": launches, "delegate_ms": delegate, "control_decode_tps": dspeed,
             "profiled_decode_tps": speed(prof, "Decode"), "nodes": len(rows)}
 
 
