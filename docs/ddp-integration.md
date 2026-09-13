@@ -29,6 +29,8 @@ An outer job (GitHub Actions on a schedule, or Cloud Run) then: lists the org's 
 
 Device set to start with (one per tier): Pixel 8a (`akita-35`, 8 GB, Mali), Pixel 10 Pro (`blazer-36`), Galaxy S26 (`m1q-36`, Adreno). Re-run policy: every `litert-lm` release (this repo's `release-watch` already detects them) and every new file on a repo.
 
+**Route C — the HTTP API with a native binary** (the DDP team's own example, 2026-09-11): the session REST resource with an `androidNativeBinary` job action and push/pull device actions — the route the team asked us to try first. Run on 2026-09-13; the section before "Next step".
+
 ## What already exists in this repo for Route B
 
 - `schema/result.v1.json` — the record shape; `scripts/build_summary.py` / `render_leaderboard.py` consume it.
@@ -205,6 +207,148 @@ Flags are from `gcloud beta device-run sessions submit instrumentation --help` (
 
 **Settled by the first session (2026-09-10):** the lab device has outbound internet (Hub download with the token in the test options), `--paths-to-pull` on the app's external files dir works and keeps the file names, `--location` is `global`, `--labels` is accepted, local APK paths are uploaded by the CLI. **Still unverified:** a GPU row on DDP with a bundle its card publishes for GPU (locally the GPU backend runs; this 270M q8 bundle is CPU-only by its own card and produced empty output on both engines), whether `--labels` reaches the billing export, and what one session costs (billing data was not yet visible the same day). The HF token travelled in `--additional-test-options`; it appears in no pulled file (checked before committing) but is visible in the session's metadata to anyone with project access — rotate it if that matters, or use `--other-files-to-push` + `model_path` (untested on DDP).
 
+## Route C — the HTTP API with the public native benchmark binary (run 2026-09-13)
+
+*Charlie Xu's example on the Collaborations Doc (tab "DDP Integration", added 2026-09-11): one REST session whose job runs Google's public LiteRT `benchmark_model` binary on a lab phone, with the model pushed from our own bucket and the two result files pulled back. No `gcloud device-run` command is involved — the CLI only mints the access token, so its version does not matter here. The [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) native binary is not on this path yet (Charlie, 2026-09-10: "NPU and LiteRT-LM requires more work"), so the model is a `.tflite`.*
+
+**Inputs — both in GCS before the request.** The binary is the one the Doc's footnote describes as the open-sourced Android benchmark binary of the LiteRT benchmark page (https://developers.google.com/edge/litert/next/benchmark#download-prebuilt): `gs://litert/binaries/2.2.0/android_arm64/benchmark_model`, 8,020,656 bytes, created 2026-09-10 21:14 UTC, readable without credentials (an unauthenticated `HEAD` over `storage.googleapis.com` answers 200); the same directory holds `run_model`, the two numerics checkers, and the accelerator and compiler-plugin `.so` files. The page's own download links resolve to `gs://litert/binaries/latest/android_arm64/benchmark_model`, a different object (8,053,552 bytes, created 2026-08-12), so `2.2.0` is a release-pinned copy and `latest` is not an alias of it — for a row that must be reproducible, the pinned path is the one to cite. The model is `mobilenet_v2.tflite` from `litert-community/MobileNet-v2` (Hub commit `a847f8dd`, 14,079,072 bytes, sha256 `9e3d5575…b09e6dd`), copied into the project's existing Device Run bucket:
+
+```bash
+gsutil ls -L gs://litert/binaries/2.2.0/android_arm64/benchmark_model
+curl -sL -o mobilenet_v2.tflite https://huggingface.co/litert-community/MobileNet-v2/resolve/a847f8dd803c5471b44e57fed3be772c0d382214/mobilenet_v2.tflite
+shasum -a 256 mobilenet_v2.tflite
+gsutil cp mobilenet_v2.tflite gs://litert-edge-portal-devicerun/automation/inputs/2026-09-13_http-route/mobilenet_v2.tflite
+```
+
+**The arguments, checked on the same tool before any device-minute.** The example's five flags ran on the Mac with the `macos_arm64` build of the same 2.2.0 binary and the same model:
+
+```bash
+curl -sL -o benchmark_model_mac https://storage.googleapis.com/litert/binaries/2.2.0/macos_arm64/benchmark_model && chmod +x benchmark_model_mac
+./benchmark_model_mac --graph=mobilenet_v2.tflite --num_threads=4 --export_model_runtime_info=true --model_runtime_info_output_file=runtime_info.pb --result_file_path=results.pb
+protoc --proto_path=android/ddp-bench/http --decode=tflite.tools.benchmark.BenchmarkResult benchmark_result.proto < results.pb
+```
+
+Observed (2026-09-13; a flag check, not a measurement — its numbers are not comparable with the phone's below): it completes in about 1.5 s of wall time and writes both files. First line after `STARTING!`: `WARN: Unconsumed cmdline flags: --export_model_runtime_info=true` — the CompiledModel benchmark writes the runtime info whenever `--model_runtime_info_output_file` is set ([`litert/tools/benchmark_litert_model.cc`](https://github.com/google-ai-edge/litert/blob/main/litert/tools/benchmark_litert_model.cc) in the LiteRT repo), and the `export_model_runtime_info` switch belongs to the Interpreter-API benchmark (`tflite/tools/benchmark/benchmark_tflite_model.cc`); harmless, the file is written either way. Then the `BENCHMARK RESULTS` block on stdout (init, warm-up, inference avg/min/max/std, throughput, init and overall footprint), `runtime_info.pb` (119,070 bytes) and `results.pb` (79 bytes). `results.pb` is a `tflite.tools.benchmark.BenchmarkResult` (`android/ddp-bench/http/benchmark_result.proto`, copied from the LiteRT repo): `latency_metrics` in ms (avg, min, max, stddev, median, p5, p95, init, first inference, average warm-up), `memory_metrics` (init and overall footprint in kB, plus a peak in MB that neither run could read), `misc_metrics` (model size MB, run counts, throughput MB/s). So the numbers exist twice, on stdout and in `results.pb`, and the example pulls only the file.
+
+**The request body** — `android/ddp-bench/http/session-benchmark_model.json`, the Doc's JSON with our bucket, our file name, and four labels added (labels do not affect execution and come back in the job report). The device is the example's `pa3q-35` (catalog entry read the same day, kept as `device-pa3q-35.json` in the campaign directory: Galaxy S25 Ultra, Samsung, OS version 35, availability HIGH, capacity HIGH). `executionTimeout` is left at its default of 5 min (range 1–60 min per the API reference).
+
+```json
+{
+  "sessionConfig": {
+    "displayName": "benchmark-model-test",
+    "outputDirectoryConfig": {
+      "gcsOutputDirectory": {
+        "path": "gs://litert-edge-portal-devicerun/automation/sessions"
+      }
+    },
+    "jobConfigs": [
+      {
+        "displayName": "run-benchmark",
+        "action": {
+          "androidNativeBinary": {
+            "androidNativeBinary": {
+              "gcsInputFile": {
+                "path": "gs://litert/binaries/2.2.0/android_arm64/benchmark_model"
+              }
+            },
+            "args": [
+              "--graph=/data/local/tmp/mobilenet_v2.tflite",
+              "--num_threads=4",
+              "--export_model_runtime_info=true",
+              "--model_runtime_info_output_file=/data/local/tmp/runtime_info.pb",
+              "--result_file_path=/data/local/tmp/results.pb"
+            ]
+          }
+        },
+        "allocationConfig": {
+          "deviceConfigs": [
+            {
+              "requirement": {
+                "deviceId": "pa3q-35"
+              },
+              "actions": [
+                {
+                  "androidPushFiles": {
+                    "fileConfigs": [
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-13_http-route/mobilenet_v2.tflite"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/mobilenet_v2.tflite"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "androidPullFiles": {
+                    "paths": [
+                      "/data/local/tmp/runtime_info.pb",
+                      "/data/local/tmp/results.pb"
+                    ]
+                  }
+                },
+                {
+                  "androidLogcat": {}
+                }
+              ]
+            }
+          ]
+        },
+        "labels": {
+          "harness": "edge-llm-bench",
+          "route": "http-native-binary",
+          "model": "litert-community--MobileNet-v2",
+          "device": "pa3q-35"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Submit, wait, pull** (REST only; the owner runs these — the project pays per device-minute):
+
+```bash
+TOKEN=$(gcloud auth print-access-token)
+C=results/raw/2026-09-13-ddp-http-pa3q-35; mkdir -p $C
+curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d @android/ddp-bench/http/session-benchmark_model.json https://devicerun.googleapis.com/v1alpha/projects/litert-edge-portal/locations/global/sessions | tee $C/operation-create.json
+```
+
+Before the request, the same token was used for two read-only calls — `GET …/sessions` (returned `session-cc6509d5`, PASSED) and `GET …/devices/pa3q-35` — so the endpoint, the token's scope and the JSON path were exercised before any session existed. The `POST` answered in about a second (2026-09-13 15:40:19 JST) with the long-running Operation the reference describes; the session id is in `metadata.target`:
+
+```json
+{
+  "name": "projects/litert-edge-portal/locations/global/operations/operation-1789281619081-65b57974efa2a-a16bbf5b-9536940f",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.devicerun.v1alpha.OperationMetadata",
+    "createTime": "2026-09-13T06:40:19.306520906Z",
+    "target": "projects/litert-edge-portal/locations/global/sessions/session-e1d64576",
+    "verb": "create",
+    "requestedCancellation": false,
+    "apiVersion": "v1alpha"
+  },
+  "done": false
+}
+```
+
+```bash
+OP=$(python3 -c 'import json; print(json.load(open("results/raw/2026-09-13-ddp-http-pa3q-35/operation-create.json"))["name"])')
+until curl -s -H "Authorization: Bearer $TOKEN" https://devicerun.googleapis.com/v1alpha/$OP | tee $C/operation.json | grep -q '"done": true'; do sleep 30; done
+S=$(python3 -c 'import json; print(json.load(open("results/raw/2026-09-13-ddp-http-pa3q-35/operation.json"))["metadata"]["target"].split("/")[-1])')
+curl -s -H "Authorization: Bearer $TOKEN" https://devicerun.googleapis.com/v1alpha/projects/litert-edge-portal/locations/global/sessions/$S | tee $C/session.json | python3 -c 'import sys,json; r=json.load(sys.stdin)["sessionReport"]; print(r["result"], r["startTime"], r["endTime"]); [print(f["gcsOutputFile"]["path"]) for j in r["jobReports"] for e in j["executionReports"] for f in e["outputFiles"]]'
+mkdir -p $C/ddp-session && gsutil -m -q cp -r gs://litert-edge-portal-devicerun/automation/sessions/$S/ $C/ddp-session/
+find $C/ddp-session -type f | sort
+protoc --proto_path=android/ddp-bench/http --decode=tflite.tools.benchmark.BenchmarkResult benchmark_result.proto < $(find $C/ddp-session -name results.pb)
+```
+
+**Observed (2026-09-13 15:40–15:42 JST; records in `results/raw/2026-09-13-ddp-http-pa3q-35/`).** The Operation's own `endTime` is 60 s after its `createTime` (06:40:19.3 → 06:41:18.9 UTC); the 30-second poll saw `done: true` on its third call, 85 s after the POST. The finished Operation carries the whole `Session` in `response` — the separate `GET …/sessions/$S` is a convenience, not a need. Session report: **PASSED**; session 06:40:22–06:41:04 UTC (42 s), its one execution 06:40:51–06:41:00 (9 s), and inside it the binary's own log lines span 1.5 s (logcat 23:40:52.889–23:40:54.401, the lab's US-Pacific clock). The allocated unit is the requested `pa3q-35`: Galaxy S25 Ultra on OS version 35 per the catalog entry, model code `SM-S938UZKAXAA` in the device log (`device-identity.txt` beside the process log). The bucket holds exactly three files: `run-benchmark/execution-<uuid>/logcat.txt`, and under `…/artifacts/data/local/tmp/` the pulled `results.pb` (80 bytes) and `runtime_info.pb` (119,070 bytes) — the job directory is named after the job's `displayName` and the execution after its id, where the instrumentation session had `job-000/execution-000`. **The binary's stdout is not stored**: no `instrument.log` counterpart, no `junit.xml`. The `BENCHMARK RESULTS` block is still readable, because this benchmark logs through the Android logger as well as stdout — the same lines sit in `logcat.txt` under the tags `tflite` and `litert` for the binary's pid (kept as `logcat-process.txt`, 41 lines; the 214 KB whole-device log was dropped after the two lines naming the model were copied out). Numbers (CPU, XNNPACK, 70/70 nodes delegated, 4 threads): init 7.65 ms, first inference 6.68 ms, warm-up avg 3.71 ms (135 runs), inference avg 2.92 ms (343 runs; min 2.76, max 4.73, std 0.22), throughput 196.78 MB/s, init footprint 30.43 MB, overall 39.11 MB — identical between the decoded `results.pb` (`results.pb.txt` beside it) and the logcat block. The unconsumed-flag warning reproduced on the phone (`W tflite : Unconsumed cmdline flags: --export_model_runtime_info=true`). One trap on our side, not the platform's: `gsutil cp -r` of the session prefix needs the destination directory to exist (the first pull failed with "Destination URL must name a directory, bucket, or bucket subdirectory"); the block above carries the `mkdir -p`. This campaign directory has no `app-path-android/` and no `result.v1` record, so the summary layer ignores it: it is a plumbing record, not a leaderboard row.
+
+**What this route settles.** The Doc's example runs as written from a project with the Device Run API enabled and one bucket; the only gcloud involvement is the access token, so an outer job can be a plain HTTP client with a service-account token — create, poll the operation, read the output paths from the session report, fetch them from GCS. The public binary is usable directly as `gcsInputFile` at a pinned version, no copy into our bucket. Labels round-trip into the job report. The pull action preserves device paths under `artifacts/`. For a 14 MB model the operation is done 60 s after the POST, and the files were on this Mac two minutes after it.
+
+**What it does not.** Stdout: a binary that only prints its numbers — LiteRT-LM's `litert_lm_main --benchmark` prints its `BenchmarkInfo` to stdout, which is what this repo's Android lane captures (`android/bench/run_cell.py`) — would leave nothing behind on this path unless it writes to a file under a pulled path (or logs through the Android logger, which is what saved the block here). GPU: the example has no `--use_gpu`; the accelerator `.so` files sit in the same public directory and the `androidNativeBinary` action has `envVars` for an `LD_LIBRARY_PATH`, but that combination was not run. The LiteRT-LM binary itself: not on this path yet. Cost: still not visible in billing on the day.
+
 ## Next step
 
-The pipe is proven end to end on one model and one device. What remains is the outer job from "Two routes": one session per (device set × repo) on a schedule, the rows written into each card with the session URL as the citation. Before that: a GPU session with a GPU-published bundle (the 270M q8 is CPU-only by its card; the APK's GPU path runs), a billion-class model through the same gate (the 6/8 bar has not been exercised on DDP), and the token question above.
+The HTTP route (Route C) is the shape to build the standing job on — a session per (device × model) from an HTTP client, results as pulled files — and the APK route stays the advanced case for what a native binary cannot do (the Hub download on the device, the correctness gate). For LiteRT-LM it waits for the native binary on that path; for `.tflite` models it works today. The APK pipe is proven end to end on one model and one device. What remains is the outer job from "Two routes": one session per (device set × repo) on a schedule, the rows written into each card with the session URL as the citation. Before that: a GPU session with a GPU-published bundle (the 270M q8 is CPU-only by its card; the APK's GPU path runs), a billion-class model through the same gate (the 6/8 bar has not been exercised on DDP), and the token question above.

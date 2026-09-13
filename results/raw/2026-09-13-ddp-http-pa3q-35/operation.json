@@ -1,0 +1,151 @@
+{
+  "name": "projects/litert-edge-portal/locations/global/operations/operation-1789281619081-65b57974efa2a-a16bbf5b-9536940f",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.devicerun.v1alpha.OperationMetadata",
+    "createTime": "2026-09-13T06:40:19.306520906Z",
+    "endTime": "2026-09-13T06:41:18.926918112Z",
+    "target": "projects/litert-edge-portal/locations/global/sessions/session-e1d64576",
+    "verb": "create",
+    "statusMessage": "Session is finished",
+    "requestedCancellation": false,
+    "apiVersion": "v1alpha"
+  },
+  "done": true,
+  "response": {
+    "@type": "type.googleapis.com/google.cloud.devicerun.v1alpha.Session",
+    "name": "projects/litert-edge-portal/locations/global/sessions/session-e1d64576",
+    "sessionConfig": {
+      "displayName": "benchmark-model-test",
+      "jobConfigs": [
+        {
+          "displayName": "run-benchmark",
+          "action": {
+            "androidNativeBinary": {
+              "androidNativeBinary": {
+                "gcsInputFile": {
+                  "path": "gs://litert/binaries/2.2.0/android_arm64/benchmark_model"
+                }
+              },
+              "args": [
+                "--graph=/data/local/tmp/mobilenet_v2.tflite",
+                "--num_threads=4",
+                "--export_model_runtime_info=true",
+                "--model_runtime_info_output_file=/data/local/tmp/runtime_info.pb",
+                "--result_file_path=/data/local/tmp/results.pb"
+              ]
+            }
+          },
+          "allocationConfig": {
+            "deviceConfigs": [
+              {
+                "requirement": {
+                  "deviceId": "pa3q-35"
+                },
+                "actions": [
+                  {
+                    "androidPushFiles": {
+                      "fileConfigs": [
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-13_http-route/mobilenet_v2.tflite"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/mobilenet_v2.tflite"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "androidPullFiles": {
+                      "paths": [
+                        "/data/local/tmp/runtime_info.pb",
+                        "/data/local/tmp/results.pb"
+                      ]
+                    }
+                  },
+                  {
+                    "androidLogcat": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "labels": {
+            "harness": "edge-llm-bench",
+            "route": "http-native-binary",
+            "model": "litert-community--MobileNet-v2",
+            "device": "pa3q-35"
+          }
+        }
+      ],
+      "outputDirectoryConfig": {
+        "gcsOutputDirectory": {
+          "path": "gs://litert-edge-portal-devicerun/automation/sessions"
+        }
+      }
+    },
+    "sessionReport": {
+      "id": "8fded43e-76c4-4d8e-99b1-ada7748de970",
+      "jobReports": [
+        {
+          "id": "ffe7e26c-e409-4168-bced-482b650ddd32",
+          "displayName": "run-benchmark",
+          "executionReports": [
+            {
+              "id": "9218071b-b3c3-45e6-9a79-57de84b0132c",
+              "displayName": "execution-9218071b-b3c3-45e6-9a79-57de84b0132c",
+              "startTime": "2026-09-13T06:40:51.228Z",
+              "endTime": "2026-09-13T06:41:00.356Z",
+              "status": {
+                "statusType": "DONE"
+              },
+              "result": {
+                "resultType": "PASSED"
+              },
+              "outputFiles": [
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-e1d64576/run-benchmark/execution-9218071b-b3c3-45e6-9a79-57de84b0132c/artifacts/data/local/tmp/runtime_info.pb"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-e1d64576/run-benchmark/execution-9218071b-b3c3-45e6-9a79-57de84b0132c/artifacts/data/local/tmp/results.pb"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-e1d64576/run-benchmark/execution-9218071b-b3c3-45e6-9a79-57de84b0132c/logcat.txt"
+                  }
+                }
+              ]
+            }
+          ],
+          "startTime": "2026-09-13T06:40:24.336Z",
+          "endTime": "2026-09-13T06:41:01.662Z",
+          "status": {
+            "statusType": "DONE"
+          },
+          "result": {
+            "resultType": "PASSED"
+          },
+          "labels": {
+            "model": "litert-community--MobileNet-v2",
+            "harness": "edge-llm-bench",
+            "device": "pa3q-35",
+            "route": "http-native-binary"
+          }
+        }
+      ],
+      "startTime": "2026-09-13T06:40:22.221Z",
+      "endTime": "2026-09-13T06:41:04.393Z",
+      "status": {
+        "statusType": "DONE"
+      },
+      "result": {
+        "resultType": "PASSED"
+      }
+    }
+  }
+}
