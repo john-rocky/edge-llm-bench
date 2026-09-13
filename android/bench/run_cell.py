@@ -411,6 +411,12 @@ def main():
 # label here (docs/OPERATIONS.md, add-a-model).
 ANDROID_QUANT_LABELS = {
     "qwen3_0_6b_mixed_int4.litertlm": "INT4 (mixed, blockwise gs32)",
+    # litert-community/Qwen3-{0.6B,1.7B} recipe files — the Mac catalog strings
+    # (ModelCatalog liteRTLM) for the wi4b32 builds; the 1.7B INT8 file's label
+    # is the repo manifest's recipe name (dynamic_wi8_afp32)
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+    "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     "gemma-4-E2B-it.litertlm": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
     # same artifact + label as the Mac endurance baseline row (thinking bundle,
     # disclosed there; ModelCatalog "Granite 4.2 3B (.litertlm, thinking)")

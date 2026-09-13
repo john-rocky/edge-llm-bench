@@ -1,0 +1,291 @@
+{
+ "file": "/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/8414150f2e9dcc82449bcc9c5abc404b399a4d06/qwen3_0_6b_mixed_int4.litertlm",
+ "signatures": {
+  "0": "prefill_256",
+  "1": "decode"
+ },
+ "graphs": {
+  "prefill_256": {
+   "ops": 1361,
+   "const_bytes_total": 395904056,
+   "const_bytes_gather_only": 155582464,
+   "const_bytes_streamed": 240321592,
+   "blockwise_side_bytes_by_op": {
+    "FULLY_CONNECTED": 26673152
+   },
+   "by_consumer_op": {
+    "FULLY_CONNECTED": [
+     240058368,
+     382
+    ],
+    "EMBEDDING_LOOKUP": [
+     155582464,
+     1
+    ],
+    "STABLEHLO_COMPOSITE": [
+     253440,
+     110
+    ],
+    "RESHAPE": [
+     3888,
+     253
+    ],
+    "SLICE": [
+     3536,
+     224
+    ],
+    "TRANSPOSE": [
+     1760,
+     110
+    ],
+    "MUL": [
+     592,
+     85
+    ],
+    "CONCATENATION": [
+     8,
+     2
+    ]
+   },
+   "largest": [
+    {
+     "bytes": 155582464,
+     "type": "I8",
+     "shape": [
+      151936,
+      1024
+     ],
+     "ops": [
+      "EMBEDDING_LOOKUP"
+     ],
+     "name": "g0::p_core_model_embed_tokens_weight_qdata"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_0_mlp_gate_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_0_mlp_up_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      1024,
+      3072
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_0_mlp_down_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_1_mlp_gate_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_1_mlp_up_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      1024,
+      3072
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_1_mlp_down_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g0::p_core_model_layers_2_mlp_gate_proj_weight_qdata__litert_blockwise_int4"
+    }
+   ]
+  },
+  "decode": {
+   "ops": 1312,
+   "const_bytes_total": 491094476,
+   "const_bytes_gather_only": 155582464,
+   "const_bytes_streamed": 335512012,
+   "blockwise_side_bytes_by_op": {
+    "FULLY_CONNECTED": 37249024
+   },
+   "by_consumer_op": {
+    "FULLY_CONNECTED": [
+     335241216,
+     394
+    ],
+    "EMBEDDING_LOOKUP": [
+     155582464,
+     1
+    ],
+    "STABLEHLO_COMPOSITE": [
+     262144,
+     113
+    ],
+    "RESHAPE": [
+     3996,
+     260
+    ],
+    "SLICE": [
+     3600,
+     228
+    ],
+    "MUL": [
+     600,
+     87
+    ],
+    "TRANSPOSE": [
+     448,
+     28
+    ],
+    "CONCATENATION": [
+     8,
+     2
+    ]
+   },
+   "largest": [
+    {
+     "bytes": 155582464,
+     "type": "I8",
+     "shape": [
+      151936,
+      1024
+     ],
+     "ops": [
+      "EMBEDDING_LOOKUP"
+     ],
+     "name": "g1::p_core_model_embed_tokens_weight_qdata"
+    },
+    {
+     "bytes": 77791232,
+     "type": "I4",
+     "shape": [
+      151936,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g1::p_output_head_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 9723904,
+     "type": "F16",
+     "shape": [
+      151936,
+      32
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "blockwise-side:g1::p_output_head_weight_scale__litert_blockwise_f16"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g1::p_core_model_layers_0_mlp_gate_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g1::p_core_model_layers_0_mlp_up_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      1024,
+      3072
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g1::p_core_model_layers_0_mlp_down_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g1::p_core_model_layers_1_mlp_gate_proj_weight_qdata__litert_blockwise_int4"
+    },
+    {
+     "bytes": 1572864,
+     "type": "I4",
+     "shape": [
+      3072,
+      1024
+     ],
+     "ops": [
+      "FULLY_CONNECTED"
+     ],
+     "name": "g1::p_core_model_layers_1_mlp_up_proj_weight_qdata__litert_blockwise_int4"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,53 @@
+# Catalog §4 X1 / K1 — "int4 GEMV reads fewer bytes than int8 but is not
+# proportionally faster": on the M4 Max Metal path the int4×int8 blockwise-gs32
+# weight GEMV streams ~54% of int8's bytes per token and takes longer (K1). Is
+# that penalty the Metal kernel's, or does the Android GPU (ML Drift, OpenCL)
+# show it too? Two int4-vs-int8 pairs, GPU backend, one device, one session:
+# thermal-gated, interleaved per round, runs=3 (runner default) per cell.
+# First used: Galaxy S26, 2026-09-13 (anchors.cells as its own campaign first,
+# admission judged the way the dashboard job does it, then this file).
+#
+#   Qwen3-1.7B  Qwen3_1.7B.litertlm (dynamic_wi8_afp32 — the card's CPU file,
+#               here on the GPU) vs Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+#               (dynamic_wi4b32_afp32, the card's GPU build). The two files differ
+#               in graph as well as in weight dtype: the wi4b32 build carries the
+#               GPU graph optimisations (composite RoPE, fused QKV, fused gate/up,
+#               static prefill allocation — HF card). The whole-model tok/s pair is
+#               therefore confounded; the per-op weight-GEMV comparison
+#               (./bench profile, catalog-int4-vs-int8-android-profile.cells) is not.
+#   Qwen3-0.6B  qwen3_0_6b_mixed_int4.litertlm (INT4 mixed, blockwise gs32, int8
+#               embedding table) vs Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm — the
+#               2026-09-11 catalog-x13 pair, repeated here so every row of the
+#               table comes from one sitting. Both files stream the same weight
+#               bytes per decode token (int4 + fp16 block scales; the mixed build's
+#               int8 embedding is a gather, not a stream), so this pair separates
+#               graph/recipe from dtype.
+#
+# Ids: litert-community/Qwen3-1.7B backend=gpu already means the wi4b32 file
+# (dashboard, catalog-x13), so the INT8 file on the GPU gets its own side-loaded
+# id (litert-local/Qwen3-1.7B-int8; the cell key is arm+model+task, not file).
+# The 0.6B wi4b32 file keeps the litert-local/Qwen3-0.6B-dynamic-wi4b32 id from
+# catalog-x13. Both local files are the litert-community HF blobs pushed from the
+# host cache (sha256 66064a4e… and e3e29010…).
+#
+# Weight bytes per decode token are static (constants of the decode signature,
+# blockwise scale tensors included, gather-only tables excluded) and are stored
+# with the campaign (profiles/weight-bytes.md), never in a rate row.
+#
+#   BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= ./bench matrix matrices/catalog-int4-vs-int8-android.cells --platform android --campaign <date>-catalog-int4-vs-int8-s26
+#
+# Pixel 8a: catalog-int4-vs-int8-pixel8a.cells — the same rows, carried as
+# exclude=device-not-attached until the phone is back on the host (validate_cells
+# refuses a duplicate cell inside one file, so the Pixel copy is its own file, as
+# catalog-x13 did).
+
+# --- session anchor (the payload session re-judges its own anchor) ---
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# --- Qwen3-0.6B: the published mixed_int4 file vs the dynamic wi4b32 GPU build ---
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-local/Qwen3-0.6B-dynamic-wi4b32 short-chat backend=gpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/8414150f2e9dcc82449bcc9c5abc404b399a4d06/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+
+# --- Qwen3-1.7B: INT8 (dynamic_wi8_afp32) vs dynamic wi4b32, both on the GPU ---
+android litert-lm litert-local/Qwen3-1.7B-int8 short-chat backend=gpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm

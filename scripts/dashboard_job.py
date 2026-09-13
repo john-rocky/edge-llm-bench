@@ -146,11 +146,23 @@ def read_hold(path):
 
 
 def pgrep(pattern):
+    """Live processes whose command line matches pattern. A line that does not
+    start with a pid is the continuation of a multi-line argv and is skipped;
+    so is the agent CLI itself (its argv carries the prompt text, and a prompt
+    that names run_cell.py is not run_cell.py running — a live Claude session
+    crashed this probe with ValueError on 2026-09-13)."""
     rc, out = sh(["pgrep", "-fl", pattern])
     mine = {os.getpid(), os.getppid()}
-    lines = [ln for ln in out.splitlines()
-             if ln.strip() and int(ln.split()[0]) not in mine
-             and "dashboard_job.py" not in ln]
+    lines = []
+    for ln in out.splitlines():
+        parts = ln.split(None, 2)
+        if len(parts) < 2 or not parts[0].isdigit():
+            continue
+        if int(parts[0]) in mine or "dashboard_job.py" in ln:
+            continue
+        if os.path.basename(parts[1]) == "claude":
+            continue
+        lines.append(ln)
     return lines
 
 

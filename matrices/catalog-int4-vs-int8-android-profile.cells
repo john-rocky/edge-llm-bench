@@ -1,0 +1,11 @@
+# ./bench profile pair for catalog-int4-vs-int8-android.cells: the Qwen3-1.7B
+# INT8 (dynamic_wi8_afp32) file vs the dynamic wi4b32 file on the GPU backend,
+# litert_lm_advanced_main 128x256 at max_num_tokens 1024 — one control + one
+# --enable_profiling run each, so the weight-GEMV op time per decode step can be
+# set against the static weight bytes per token of each file (the whole-model
+# rate pair is confounded by the wi4b32 build's fused GPU graph; the per-op
+# GEMV family is not). Run after the matrix, same campaign name:
+#
+#   BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= ./bench profile matrices/catalog-int4-vs-int8-android-profile.cells --campaign <date>-catalog-int4-vs-int8-s26
+android litert-lm litert-local/Qwen3-1.7B-int8 native-benchmark-128x256 backend=gpu local=1 runs=1 context-tokens=1024 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-128x256 backend=gpu runs=1 context-tokens=1024 file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
