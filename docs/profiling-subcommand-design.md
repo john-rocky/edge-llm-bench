@@ -101,7 +101,9 @@ re-test, not properties of the runtime.
    - Android `simpleperf` on the Pixel 8a (user-space samples, whole process
    and attached during decode, dwarf callers) and Instruments on the Mac
    Studio (`xcrun xctrace` Metal System Trace and Time Profiler, attached to
-   the yardstick; `--launch` hung the runner before the model loaded), each
+   the yardstick; `--launch` hung the runner before the model loaded) and,
+   on 2026-09-13, on the iPhone 17 Pro (the same two templates attached over
+   USB to the signed harness app; `results/raw/2026-09-13-profile-smoke-ios/`), each
    paired with an unprofiled control and stored under
    `results/raw/2026-09-12-profile-smoke-{android,mac}/profiles/system/`
    (`SYSTEM.md` there is the reading; `scripts/profile/xctrace_tables.py`

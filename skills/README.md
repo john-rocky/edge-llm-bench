@@ -16,8 +16,9 @@ this harness without prior knowledge of the repo. Same format as the skills in
 * [`profile-litert-lm-system/`](profile-litert-lm-system/) — Profile a
   LiteRT-LM run at the system level when the per-op table leaves the question
   open: Android `simpleperf` (whole process, attached during decode, dwarf
-  callers) and Instruments via `xcrun xctrace` on a Mac (Metal System Trace
-  occupancy, Time Profiler self time), each paired with an unprofiled control
+  callers) and Instruments via `xcrun xctrace` on a Mac or, over USB, on an
+  iPhone running the harness app (Metal System Trace occupancy, Time Profiler
+  self time), each paired with an unprofiled control
   and stored beside the run under `profiles/system/`.
 
 ## Installing
