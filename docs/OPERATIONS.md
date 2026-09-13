@@ -198,7 +198,14 @@ line on the Mac and a failed cell on the phone, never a refused sitting.
 The job never commits or pushes: review the new campaign dir(s) and the
 regenerated `results/summary/` the next morning and commit them with a
 message that states what ran and what reproduced (public text carries no
-cross-runtime ordering). Read `FLAGGED.txt` for `DEGENERATE` before trusting
+cross-runtime ordering). Rebuild the summary from the committed tree only:
+a campaign pushed without its summary rebuild turns the data-pipeline CI red
+(2026-09-13, six runs in a row), and a rebuild inside a checkout that holds
+another session's uncommitted campaign dirs bakes their rows into the CSV
+and fails the same CI job on the next push. In a shared checkout run
+`git worktree add --detach <tmp> HEAD`, copy in only the campaign dirs you
+are about to commit, run `scripts/build_summary.py` there, and commit the
+summary together with those dirs (`git worktree remove <tmp>` afterwards). Read `FLAGGED.txt` for `DEGENERATE` before trusting
 a new arm's rate: the cell gate flags a capture whose output is a repetition
 loop (an engine can report a fast rate while generating garbage — seen on
 2026-09-08), and such a cell is never retried, only marked. The launchd template that fires `auto` is
@@ -298,7 +305,12 @@ old times until then).
   anchor lost its third run this way; the campaign moved on and the gate
   and admission judged the real records). Restart only between cells or
   after the current cell has already failed — a cooldown is a safe moment.
-  Absent from `ioreg` too = physically disconnected; a human plugs it in.
+  Absent from `ioreg` too = physically disconnected; a human plugs it in. The Galaxy S26 left
+  the adb bus the same way at the end of the 2026-09-14 02:00 dashboard
+  sitting (between 04:45 and 04:53, 2 h 45 min in): the runner's thermal wait
+  raised `device not found`, `bench matrix` exited 1, the 15 cells already had
+  records and the job still closed COMPLETED / admitted — read the job log's
+  tail, not only the ledger, before calling a sitting clean.
 - **Phone storage, not memory, bounds the dashboard set.** The full 15-cell
   Android set needs about 28 GB on the device (pushed models plus LiteRT's
   XNNPACK caches at 0.6-0.8x the model size); `matrices/dashboard-text-v1-android-{a,b,b1,b2}.cells`
