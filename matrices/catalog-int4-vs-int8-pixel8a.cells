@@ -1,22 +1,21 @@
 # Catalog §4 X1 / K1 — int4-vs-int8 GPU pairs, Pixel 8a (Mali) copy of
 # catalog-int4-vs-int8-android.cells (same rows; the device is the runner env).
-# Written 2026-09-13 while the phone was NOT attached to the bench host: every
-# payload row carries exclude=device-not-attached so the leaderboard shows the
-# gap as a datum. When the Pixel is back: drop the exclude= on these four rows,
-# reboot first when uptime exceeds 2 h (devices/pixel-8a.md), and run
+# Written 2026-09-13 while the phone was not attached to the bench host (the
+# rows were carried as exclude=device-not-attached for two hours); the phone came
+# back the same evening and the rows ran as they stand. Reboot first when uptime
+# exceeds 2 h (devices/pixel-8a.md; the sitting driver does it under the hold):
 #
 #   BENCH_ANDROID_SERIAL=4C131JEKB15210 BENCH_CPU_MASK=f0 ./bench matrix matrices/catalog-int4-vs-int8-pixel8a.cells --platform android --campaign <date>-catalog-int4-vs-int8-pixel8a
 #
 # (anchors.cells first as its own campaign, admission as the dashboard job does it).
-# The anchor row cannot carry exclude= (validate_cells); it stays as is.
 
 # --- session anchor ---
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 
 # --- Qwen3-0.6B: the published mixed_int4 file vs the dynamic wi4b32 GPU build ---
-android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu exclude=device-not-attached file=qwen3_0_6b_mixed_int4.litertlm
-android litert-lm litert-local/Qwen3-0.6B-dynamic-wi4b32 short-chat backend=gpu local=1 exclude=device-not-attached file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/8414150f2e9dcc82449bcc9c5abc404b399a4d06/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-local/Qwen3-0.6B-dynamic-wi4b32 short-chat backend=gpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/8414150f2e9dcc82449bcc9c5abc404b399a4d06/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 
 # --- Qwen3-1.7B: INT8 (dynamic_wi8_afp32) vs dynamic wi4b32, both on the GPU ---
-android litert-lm litert-local/Qwen3-1.7B-int8 short-chat backend=gpu local=1 exclude=device-not-attached file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm
-android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu exclude=device-not-attached file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-local/Qwen3-1.7B-int8 short-chat backend=gpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/snapshots/73fbc3fe8271c162a603ee66f6e7ed25b6211195/Qwen3_1.7B.litertlm
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm

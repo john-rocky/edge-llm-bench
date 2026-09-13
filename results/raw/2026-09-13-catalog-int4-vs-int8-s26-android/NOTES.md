@@ -56,6 +56,7 @@ the rows is the comparable quantity; the absolute GB/s figures carry that cost.
 4. Effective whole-token bandwidth on this phone's GPU stays at 18–33 GB/s for every file; the GEMV
    family alone reaches 52–64 GB/s under profiling. No DRAM counters; weights-over-time only.
 
-Not settled here: the same pair on the Pixel 8a (Mali) — `matrices/catalog-int4-vs-int8-pixel8a.cells`
-carries the rows as `exclude=device-not-attached`; a DeepSeek q8 / int4-gs32 pair (the K1 artifacts)
-on Android; and whether an int8 file exported with the GPU graph flags closes the attention gap.
+The same pair ran on the Pixel 8a (Mali) the same evening — `results/raw/2026-09-13-catalog-int4-vs-int8-pixel8a-android/NOTES.md`:
+there the int4 GEMV loses in absolute time (56.7 vs 44.9 ms/step, per-byte 2.24×, the Metal
+magnitude), so the small penalty above is Adreno's, not Android's. Not settled: a DeepSeek q8 /
+int4-gs32 pair (the K1 artifacts) on Android, and an int8 file exported with the GPU graph flags.

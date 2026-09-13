@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "499579b3-30ff-485f-b9b4-afc2fdd9b642",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-local/Qwen3-1.7B-int8",
+    "quantization": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
+    "file": "litert-local_Qwen3-1.7B-int8_Qwen3_1.7B.litertlm",
+    "sha256": "66064a4e9269cb693e124c4e3040bcb8a446b10bca42663896329495add3861c"
+  },
+  "task": "native-benchmark-128x256",
+  "timestamp": "2026-09-13T13:33:42Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "profiling": true,
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "contextTokens": 1024,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 2,
+    "screen": "on-usb",
+    "elapsedSeconds": 1523.0,
+    "exitCode": 0
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 19740.0,
+    "promptTokensPerSecond": 9.11,
+    "decodeTokensPerSecond": 0.18,
+    "promptTokenCount": 128,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+profiling",
+    "initialThermalState": "nominal",
+    "finalThermalState": "moderate",
+    "memoryMedianResidentMB": 3980.541015625
+  },
+  "provenance": {
+    "rawLog": "litert-local_Qwen3-1.7B-int8_Qwen3_1.7B_128x256_ctx1024_gpu_prof.log",
+    "harness": "android/bench/run_profile.py",
+    "controlRecord": "60fb9da6-27ed-4ee0-9445-6f2ffba5568d",
+    "controlRecordPath": "app-path-android/litert-lm-gpu_litert-local_Qwen3-1.7B-int8_native-benchmark-128x256_2026-09-13T13-06-18.094485_run1.json",
+    "controlLog": "litert-local_Qwen3-1.7B-int8_Qwen3_1.7B_128x256_ctx1024_gpu_ctrl.log",
+    "note": "profiled run: the rate carries the profiler's cost and is not a speed row"
+  }
+}
