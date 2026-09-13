@@ -6,7 +6,9 @@ dashboard session since Monday 00:00 local, the attached unheld one whose last
 admitted session is oldest (docs/dashboard-recurring-job-v1.md §3). This pins
 that choice against a fake `adb` (attachment) and temp hold files, with the
 accumulation-layer rows and SESSION.json verdicts handed in directly — no
-phone, no results/raw, no log file under logs/dashboard-job.
+phone, no results/raw, no log file under logs/dashboard-job. The same rows
+pin session admission (§4): the reference is the newest admitted session
+whose anchor ran the same engine build, none = first session on that build.
 
   python3 scripts/dashboard_job_selftest.py     # exit 0 = pass
 """
@@ -206,6 +208,98 @@ def main():
        "30 s after the reboot: within the limit, no second reboot")
     ok(dj.android_reboot_if_stale({"serial": "alpha"}, dry=False) is False and not os.path.exists(marker),
        "no reboot_before in the device entry: never rebooted")
+
+    print("--- admission: the reference is the newest admitted session whose anchor ran the SAME engine build")
+    adm_schedule = {"anchors": "matrices/anchors.cells",
+                    "admission": {"min_anchor_runs": 2, "collapse_ratio": 0.5,
+                                  "thermal_tolerance_pct": 5.0}}
+    pixel = {"identifier": "FakeA", "platform": "android"}
+    own = "results/raw/now-anchor-android"
+
+    def anchor_rows(camp, tpss, engine, thermal="nominal", **delta):
+        """Three cold llama.cpp anchor runs of one session, two minutes apart,
+        the newest `delta` ago — the android primary anchor of matrices/anchors.cells."""
+        base = datetime.timedelta(**delta)
+        out = []
+        for i, tps in enumerate(tpss):
+            t = (now - base - datetime.timedelta(minutes=2 * (len(tpss) - 1 - i)))
+            out.append({"campaign": camp, "platform": "android", "device": "FakeA",
+                        "timestamp": t.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "runtime": "llama.cpp", "model_id": "unsloth/Qwen3-0.6B-GGUF",
+                        "task": "short-chat", "engine_version": engine, "decode_tps": str(tps),
+                        "cold_run": "True", "first_ever": "", "thermal_initial": thermal})
+        return out
+
+    real_load_rows, real_load_admission = dj.load_rows, dj.load_admission
+
+    def judge(rows, admitted=None):
+        dj.load_rows = lambda path=None: rows
+        dj.load_admission = lambda: admitted or {}
+        verdict, reason, details = dj.admit(adm_schedule, pixel, own, "android")
+        return verdict, reason, details["anchors"][0], details
+
+    # the 2026-09-13 Pixel 8a numbers: the sitting on the pin b8999 (median 28.2),
+    # another lane's session two days earlier on b10903 (55.0), the last b8999
+    # session before it (29.7)
+    mine = anchor_rows(own, (29.1, 28.2, 25.9), "b8999", minutes=0)
+    lane = anchor_rows("results/raw/lane-b10903-android", (55.0, 55.0, 55.0), "b10903", days=2)
+    pin = anchor_rows("results/raw/pin-b8999-android", (32.0, 29.7, 25.9), "b8999", days=2, hours=6)
+
+    verdict, reason, p, details = judge(mine + pin)
+    ok(verdict and p["reference"]["campaign"] == "results/raw/pin-b8999-android"
+       and abs(p["ratio"] - 28.2 / 29.7) < 1e-9 and reason == "anchor nominal, ratio 0.949 vs reference (b8999)",
+       f"same build only: reference is the pin session, {reason}")
+    ok(p["engine_version"] == "b8999" and p["reference"]["engine_version"] == "b8999"
+       and p["reference_any_version"]["campaign"] == "results/raw/pin-b8999-android",
+       "the session's build, the reference's build and the build-blind reference are in the details")
+    ok(len(details["anchors"]) == 2 and details["anchors"][1]["cell"].startswith("litert-lm-gpu")
+       and details["anchors"][1]["median"] is None,
+       "the secondary (litert) anchor is recorded alongside, absent here, and does not gate")
+    verdict, reason, p, _ = judge(anchor_rows(own, (10.0, 9.0, 11.0), "b8999", minutes=0) + pin)
+    ok(verdict is False and reason == "anchor-collapse", f"same build, median 10 vs 29.7: {reason}")
+    verdict, reason, p, _ = judge(mine)
+    ok(verdict and reason == "anchor nominal, first session on this device"
+       and p["reference"] is None and p["reference_any_version"] is None,
+       f"no earlier session at all: {reason}")
+
+    verdict, reason, p, _ = judge(mine + lane)
+    ok(verdict and p["reference"] is None and p["ratio"] is None
+       and p["reference_any_version"]["campaign"] == "results/raw/lane-b10903-android"
+       and p["reference_any_version"]["engine_version"] == "b10903"
+       and reason == ("anchor nominal, first session with engine version b8999 on this device "
+                      "(newest admitted session ran b10903)"),
+       f"only a newer-build session exists (the build-blind rule read 0.513): {reason}")
+    verdict, reason, p, _ = judge(mine + lane + pin)
+    ok(verdict and p["reference"]["campaign"] == "results/raw/pin-b8999-android"
+       and abs(p["ratio"] - 28.2 / 29.7) < 1e-9
+       and p["reference_any_version"]["campaign"] == "results/raw/lane-b10903-android",
+       f"newer b10903 session skipped, older b8999 session taken: {reason}; "
+       f"excluded {p['reference_any_version']['campaign']} kept as reference_any_version")
+    verdict, reason, p, _ = judge(mine + lane + pin, admitted={"results/raw/pin-b8999-android": False})
+    ok(verdict and p["reference"] is None and "first session with engine version b8999" in reason,
+       "a refused session on the same build is no reference either")
+
+    prev1 = anchor_rows("results/raw/prev1-android", (30.0, 29.0, 31.0), "", days=2)
+    verdict, reason, p, _ = judge(mine + prev1)
+    ok(verdict and p["reference"] is None and p["reference_any_version"]["campaign"] == "results/raw/prev1-android"
+       and p["reference_any_version"]["engine_version"] is None and "unstamped rows" in reason,
+       f"rows without an engine stamp (pre-v1) never match: {reason}")
+    unstamped = anchor_rows(own, (29.1, 28.2, 25.9), "", minutes=0)
+    verdict, reason, p, _ = judge(unstamped + lane + pin)
+    ok(verdict and p["engine_version"] is None and p["reference"]["campaign"] == "results/raw/lane-b10903-android"
+       and reason == "anchor nominal, ratio 0.513 vs reference (anchor rows unstamped: reference of any build)",
+       f"a session whose own rows carry no stamp is judged build-blind and says so: {reason}")
+
+    hot = anchor_rows(own, (29.5, 29.0, 30.0), "b8999", thermal="fair", minutes=0)  # 29.5: 0.7% off 29.7
+    verdict, reason, p, _ = judge(hot + lane + pin)
+    ok(verdict and reason.startswith("non-nominal start (fair) admitted") and p["reference_nominal"]["campaign"]
+       == "results/raw/pin-b8999-android", f"hot start within 5% of the same-build all-nominal session: {reason}")
+    near = anchor_rows("results/raw/lane-near-android", (28.5, 28.0, 29.0), "b10903", days=2)
+    verdict, reason, p, _ = judge(hot + near)
+    ok(verdict is False and reason == "anchor-thermal" and p["reference_nominal"] is None
+       and p["reference_any_version"]["campaign"] == "results/raw/lane-near-android",
+       f"hot start with an all-nominal session on another build only (28.5, within 5%): {reason}")
+    dj.load_rows, dj.load_admission = real_load_rows, real_load_admission
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")

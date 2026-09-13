@@ -37,7 +37,7 @@ stops where a human is needed:
 | hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job) | refused → busy |
 | reboot (opt-in) | on a phone whose entry carries `reboot_before`: when uptime exceeds `uptime_hours`, `adb reboot`, wait for `sys.boot_completed`, settle `settle_seconds`, `am kill-all`; uptime / MemAvailable / swap in use logged before and after (§3, the Pixel 8a memory finding) | not booted within `boot_timeout_seconds`, or the model directory unreadable (first unlock pending) → exit 5 |
 | phase A | `./bench matrix matrices/anchors.cells --platform P --campaign <base>-anchor` | timeout → exit 6 |
-| admission | the fresh primary anchor against the newest **admitted** session's anchor on the same device (§4) | not admitted → exit 4, retried once after a cooldown |
+| admission | the fresh primary anchor against the newest **admitted** session's anchor on the same device and the same engine build (§4) | not admitted → exit 4, retried once after a cooldown |
 | phase B | `./bench matrix matrices/dashboard-text-v1.cells --platform P --campaign <base>` — or one run per storage half on a phone whose free space is below the whole set (§3) | runner exit codes are recorded, never fatal: failed cells stay (`FAILURES.txt`) |
 | close | `SESSION.json` in every campaign dir it created, one line in `logs/dashboard-job/ledger.tsv`, `DASHBOARD.md` re-rendered, hold released | — |
 
@@ -254,9 +254,27 @@ same basis as `arm_row`. Thresholds live in `schedule.json` `admission`.
 | rule | test | default | source |
 |---|---|---|---|
 | short | fewer than `min_anchor_runs` usable runs (crash, timeout, zero decode) | 2 | no-cherry-pick; the differ's n≥2 anchor rule |
-| collapse | median below `collapse_ratio` × the newest admitted session's anchor median on this device | 0.5 | the cell gate's COLLAPSE bar: a contended device halves decode (measured 0.4–2.7 tok/s against 31 on 2026-09-05) |
-| thermal | any anchor run started outside nominal → admitted only if the median is within `thermal_tolerance_pct` of the newest **all-nominal** admitted session's anchor | 5% | the iPhone 17 Pro rule (`devices/iphone-17-pro.md`): a plugged phone reports "fair" regardless of load; fair-at-full-speed is admissible, fair-with-throttling is not |
-| first session | no earlier admitted session on this device | admitted, `reference: null` | a new device's first sessions establish its anchors |
+| collapse | median below `collapse_ratio` × the newest admitted session's anchor median on this device, same engine build | 0.5 | the cell gate's COLLAPSE bar: a contended device halves decode (measured 0.4–2.7 tok/s against 31 on 2026-09-05) |
+| thermal | any anchor run started outside nominal → admitted only if the median is within `thermal_tolerance_pct` of the newest **all-nominal** admitted session's anchor on the same build | 5% | the iPhone 17 Pro rule (`devices/iphone-17-pro.md`): a plugged phone reports "fair" regardless of load; fair-at-full-speed is admissible, fair-with-throttling is not |
+| first session | no earlier admitted session on this device, or none whose anchor ran this engine build | admitted, `reference: null` | a new device's first sessions establish its anchors; so do a build's |
+
+The reference is matched on the engine build the anchor rows carry
+(`engine_version` in `device-runs.csv` — the stamped witness, not the pin
+registry): the newest admitted session on this device whose anchor ran the
+same build. With no such session the sitting is the first session on that
+build and is admitted with `reference: null`; a hot start then has no
+all-nominal session to be measured against and is refused, as on a new
+device — the retry, or the next firing that starts nominal, establishes
+the build's baseline. Rows without a stamp (pre-v1) never match; a session
+whose own anchor rows carry no stamp is judged against any build and its
+reason says so. `SESSION.json` also keeps the build-blind choice, as
+`reference_any_version`, so an excluded session can be read back. Why
+(2026-09-13, Pixel 8a): another lane had run the llama.cpp anchor on
+b10903 (55 tok/s) two days earlier; the sitting ran the pin b8999 (22–31
+tok/s in every other Pixel session, 28.2 that day), read 0.513 against that
+session and passed the collapse bar by 0.013, where the build-matched
+reference reads 0.95. The phone is shared with lanes that run newer
+builds, so the same pairing recurs; the fix is in the job, not in the rows.
 
 The verdict, the anchor medians, the reference session and the ratio go to
 `SESSION.json` (`"admitted": true/false`). `scripts/render_dashboard.py`
@@ -300,7 +318,7 @@ kept — the whole campaign is either admitted or shown as an attempt.
 | artifact | path | committed? |
 |---|---|---|
 | raw records, console logs, gate quarantine | `results/raw/<campaign>/` (unchanged layout) | yes, by a person |
-| session record | `results/raw/<campaign>/SESSION.json` (`schema: dashboard-job-session.v1`: device, cells, times, `admitted`, `verdict`, `reason`, anchor medians + reference + ratio, runner exit, failures / flagged / skipped lines, cells expected vs with records) | yes, with the campaign |
+| session record | `results/raw/<campaign>/SESSION.json` (`schema: dashboard-job-session.v1`: device, cells, times, `admitted`, `verdict`, `reason`, anchor medians + engine build + reference (same build) + `reference_any_version` + ratio, runner exit, failures / flagged / skipped lines, cells expected vs with records) | yes, with the campaign |
 | accumulation layer, leaderboard | `results/summary/*.csv` (regenerated by `bench matrix`), `LEADERBOARD.md` (local) | csv yes; leaderboard no |
 | dashboard table | `DASHBOARD.md` + `.dashboard/dashboard-v1.{csv,json}` (`./bench dashboard`) | **no** — cross-runtime standings stay local; paste into the team channel |
 | job log + ledger | `logs/dashboard-job/<date>-auto.log` (the firing's device choice), `<date>-<device>.log` (the sitting), `logs/dashboard-job/ledger.tsv` | no |

@@ -23,7 +23,8 @@ for the first pass, in this order:
   hold        take the sibling lane's device hold for the run (hold_cli.py)
   phase A     ./bench matrix matrices/anchors.cells   -> <campaign>-anchor
   admission   the fresh anchor against the newest ADMITTED session's anchor on this
-              device: short / collapse / thermal rules (schedule.json "admission")
+              device that ran the same engine build (none: first session on that
+              build): short / collapse / thermal rules (schedule.json "admission")
   phase B     ./bench matrix <dashboard cells>        -> <campaign>   (or one run per
               storage half, rotating pushed model copies out between halves)
   close       SESSION.json in every campaign dir it created, a ledger line under
@@ -46,6 +47,7 @@ engine caches and firstEver markers — the markers must go with the caches, or
 the next run 1 rebuilds the cache unlabelled and pools as speed.
 """
 import argparse
+import collections
 import csv
 import datetime
 import fcntl
@@ -508,9 +510,33 @@ def anchor_cells(schedule, platform):
     return cells
 
 
+def engine_version_of(rows):
+    """The engine build stamped on a session's rows of one cell (the witness,
+    which may differ from the pin registry); None when no row carries one.
+    One session runs one cell on one build; if rows ever disagree, the build
+    most of them carry."""
+    counts = collections.Counter(r.get("engine_version") or "" for r in rows)
+    counts.pop("", None)
+    return counts.most_common(1)[0][0] if counts else None
+
+
+def reference_note(p):
+    """Tail of an admission reason: what the primary anchor was judged against."""
+    engine = p["engine_version"]
+    if p["ratio"]:
+        return f"ratio {p['ratio']:.3f} vs reference" + (
+            f" ({engine})" if engine else " (anchor rows unstamped: reference of any build)")
+    if p["reference_any_version"]:
+        ran = p["reference_any_version"]["engine_version"] or "unstamped rows"
+        return (f"first session with engine version {engine} on this device "
+                f"(newest admitted session ran {ran})")
+    return "first session on this device"
+
+
 def admit(schedule, dev, campaign_rel_path, platform):
     """Compare this session's primary anchor with the newest admitted
-    session's on the same device. Returns (admitted, reason, details)."""
+    session's on the same device whose anchor ran the same engine build.
+    Returns (admitted, reason, details)."""
     adm = schedule.get("admission", {})
     min_runs = int(adm.get("min_anchor_runs", 2))
     collapse = float(adm.get("collapse_ratio", 0.5))
@@ -530,8 +556,9 @@ def admit(schedule, dev, campaign_rel_path, platform):
                 and r["runtime"] == c["arm"] and r["model_id"] == c["model_id"]
                 and r["task"] == c["task"]]
         med, n, states = session_stats(mine, regime)
-        # reference: newest admitted earlier session with this cell; and the
-        # newest one whose anchor runs all started nominal (thermal rule)
+        engine = engine_version_of(mine)
+        # candidates: every admitted earlier session with this cell on this
+        # device, newest first
         by_camp = {}
         for r in rows:
             if (r["platform"] == plat and r["device"] == ident and r["runtime"] == c["arm"]
@@ -539,22 +566,46 @@ def admit(schedule, dev, campaign_rel_path, platform):
                     and r["campaign"] != campaign_rel_path
                     and admitted_map.get(r["campaign"], True)):
                 by_camp.setdefault(r["campaign"], []).append(r)
-        ref = ref_nominal = None
-        for camp in sorted(by_camp, key=lambda k: max(x["timestamp"] or "" for x in by_camp[k]),
-                           reverse=True):
+        newest_first = sorted(by_camp, key=lambda k: max(x["timestamp"] or "" for x in by_camp[k]),
+                              reverse=True)
+
+        def usable(camp):
             rmed, rn, rstates = session_stats(by_camp[camp], regime)
             if rmed is None or rn < min_runs:
+                return None
+            return {"campaign": camp, "median": rmed, "n": rn, "thermal": rstates,
+                    "engine_version": engine_version_of(by_camp[camp])}
+
+        # The reference must have run the anchor on the same engine build as
+        # this session (the stamped witness, not the pin): on 2026-09-13 the
+        # Pixel 8a's newest admitted session had run the llama.cpp anchor on
+        # b10903 (55 tok/s) while the sitting ran the pin b8999 (22-31 in every
+        # other Pixel session), and the collapse bar passed at 0.513 by luck.
+        # No admitted session on this build = first session on it. The session
+        # the build-blind rule would have taken stays in the record as
+        # reference_any_version, so the exclusion can be read back. Rows with
+        # no stamp (pre-v1) never match; a session whose own anchor rows carry
+        # no stamp is judged against any build, and its reason says so.
+        ref = ref_nominal = ref_any = None
+        for camp in newest_first:
+            cand = usable(camp)
+            if cand is None:
+                continue
+            if ref_any is None:
+                ref_any = cand
+            if engine is not None and cand["engine_version"] != engine:
                 continue
             if ref is None:
-                ref = {"campaign": camp, "median": rmed, "n": rn, "thermal": rstates}
-            if ref_nominal is None and all(s in ("nominal", "") for s in rstates):
-                ref_nominal = {"campaign": camp, "median": rmed, "n": rn}
+                ref = cand
+            if ref_nominal is None and all(s in ("nominal", "") for s in cand["thermal"]):
+                ref_nominal = cand
             if ref and ref_nominal:
                 break
         details["anchors"].append({"cell": f"{c['arm']} {c['model_id']} {c['task']}",
                                    "primary": c is primary, "median": med, "n": n,
-                                   "thermal": states, "reference": ref,
-                                   "reference_nominal": ref_nominal,
+                                   "thermal": states, "engine_version": engine,
+                                   "reference": ref, "reference_nominal": ref_nominal,
+                                   "reference_any_version": ref_any,
                                    "ratio": (med / ref["median"]) if med and ref else None})
     p = details["anchors"][0]
     if p["median"] is None or p["n"] < min_runs:
@@ -566,10 +617,9 @@ def admit(schedule, dev, campaign_rel_path, platform):
         rn = p["reference_nominal"]
         if rn and abs(p["median"] / rn["median"] - 1) <= tol:
             return True, (f"non-nominal start ({','.join(hot)}) admitted: anchor within "
-                          f"{tol*100:.0f}% of the newest all-nominal session"), details
+                          f"{tol*100:.0f}% of the newest all-nominal session on this build"), details
         return False, "anchor-thermal", details
-    return True, "anchor nominal" + (f", ratio {p['ratio']:.3f} vs reference" if p["ratio"] else
-                                     ", first session on this device"), details
+    return True, "anchor nominal, " + reference_note(p), details
 
 
 # ---------------------------------------------------------------- storage rotation
@@ -705,7 +755,8 @@ def attempt(schedule, key, dev, attempt_no, args):
         anchor_rel = campaign_rel(anchor_camp, platform)
         rc = run_matrix(schedule["anchors"], platform, anchor_camp, env, 45 * 60, dry)
         if dry:
-            log(f"  admission would read {anchor_rel} against the newest admitted session")
+            log(f"  admission would read {anchor_rel} against the newest admitted session "
+                "on the same engine build")
         else:
             created.append(anchor_rel)
             if rc == 124:

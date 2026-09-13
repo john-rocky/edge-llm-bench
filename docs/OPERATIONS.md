@@ -177,7 +177,8 @@ foreign engine process, storage, host runner idle) → on a phone whose
 schedule entry carries `reboot_before` (the Pixel 8a), a reboot under the
 hold when its uptime is past the limit, with memory figures logged before
 and after → the session anchors as a short campaign → admission of the sitting against the newest admitted
-session's anchor → the dashboard cells (or the storage halves, rotating
+session's anchor on the same engine build (none: first session on that build, admitted;
+the build-blind choice stays in `SESSION.json` as `reference_any_version`) → the dashboard cells (or the storage halves, rotating
 pushed copies out between them) → `SESSION.json` in every campaign dir it
 created → `logs/dashboard-job/ledger.tsv` → dashboard re-rendered. Exit 0
 admitted, 3 busy, 4 aborted at admission (retried once), 5 device needs a
