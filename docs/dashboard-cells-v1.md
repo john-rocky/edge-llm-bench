@@ -372,6 +372,23 @@ platforms); and the MLX Gemma 4 E2B repo is no longer on the phone (freed
 on 2026-09-06) and its in-app download stalled at 0 % for 35 minutes, so it
 will be staged over USB from the host's Hub cache instead. The remaining
 cells are listed in `matrices/retakes/2026-09-09-iphone17pro-remaining-3.cells`.
+To finish the retake from any session, with the phone on USB and idle:
+
+```bash
+UDID=A6F3E849-1947-5202-9AD1-9C881CA58EEF; APP=com.daisukemajima.llmbench
+# 1. the 1.7B phone bundle = h18p compile of the Mac row's export (replaces the HF ios-gpu folder)
+xcrun devicectl device copy to --device $UDID --domain-type appDataContainer --domain-identifier $APP \
+  --source ~/bench-coreai-staging/ready/qwen3_1_7b_gpu_from-mac-export --destination Documents/CoreAIModels/qwen3_1_7b_gpu
+# 2. the MLX Gemma 4 E2B repo from the host's Hub cache (HFDownloader short-circuits on a non-empty dir)
+xcrun devicectl device copy to --device $UDID --domain-type appDataContainer --domain-identifier $APP \
+  --source ~/.cache/huggingface/hub/models--mlx-community--gemma-4-e2b-it-qat-OptiQ-4bit/snapshots/b7a34a6d76bbebebe700ffe68b57c97a4e3c3622 \
+  --destination Documents/models/mlx-swift/mlx-community__gemma-4-e2b-it-qat-OptiQ-4bit
+# 3. the remaining 9 cells + anchor, as their own admitted session (about 2 h)
+./bench dashboard-job iphone17pro --once --cells matrices/retakes/2026-09-09-iphone17pro-remaining-3.cells --suffix=retake3
+```
+
+(`devicectl` copies are serialized, one at a time; the snapshot dir holds symlinks into
+`blobs/`, which `copy to` follows.)
 
 ### Bundles per row
 
