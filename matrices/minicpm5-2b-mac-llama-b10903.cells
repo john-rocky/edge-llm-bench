@@ -1,0 +1,12 @@
+# Mac llama.cpp arm for the MiniCPM5-2B cross-engine comparison, on a llama.cpp
+# build that recognizes the 2B GGUF pre-tokenizer. The standing matrix pins
+# b8999 (2026-05-01); it predates MiniCPM5 pre-tokenizer support (PR #23384,
+# merged 2026-05-27), so it refuses openbmb/MiniCPM5-2B-GGUF ("unknown
+# pre-tokenizer type: 'minicpm5'"). These four cells run on b10903 (2026-09-11),
+# stamped as b10903 in the row (engine-pins-llamab10903.json) — a one-off
+# comparison build, NOT a change to the standing b8999 pin. Same campaign dir as
+# the LiteRT/MLX arms; interleaved rungs already captured there.
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q8_0 short-chat runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q4_K_M short-chat runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q8_0 long-context-1024-gen256 runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q4_K_M long-context-1024-gen256 runs=4

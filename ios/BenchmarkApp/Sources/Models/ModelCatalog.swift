@@ -132,6 +132,29 @@ public enum ModelCatalog {
             onDiskSizeMB: 600,
             hfRepoId: "mlx-community/MiniCPM5-1B-4bit"
         ),
+        // MiniCPM5-2B comparators (2026-09-11; the LiteRT team asked how their 2B
+        // files compare with MLX and llama.cpp). Two rungs, matched by bit-width to
+        // the litert-community files: the 8-bit build (group 64, affine) beside the
+        // litert int8 file, and OpenBMB's own 4-bit MLX build (group 64, affine — the
+        // same declared recipe and byte size as mlx-community/MiniCPM5-2B-mlx-4Bit)
+        // beside the litert blockwise-32 int4 file. The recipes still differ across
+        // arms (quant-per-arm-rule): every row carries its own.
+        ModelInfo(
+            id: "mlx-community/MiniCPM5-2B-8bit",
+            displayName: "MiniCPM5-2B (8-bit)",
+            quantization: "Q8 (8-bit, group 64, affine)",
+            parameterCountB: 2.52,
+            onDiskSizeMB: 2674,
+            hfRepoId: "mlx-community/MiniCPM5-2B-8bit"
+        ),
+        ModelInfo(
+            id: "openbmb/MiniCPM5-2B-MLX",
+            displayName: "MiniCPM5-2B (4-bit, OpenBMB MLX)",
+            quantization: "Q4 (4-bit, group 64, affine; vendor build)",
+            parameterCountB: 2.52,
+            onDiskSizeMB: 1416,
+            hfRepoId: "openbmb/MiniCPM5-2B-MLX"
+        ),
         ModelInfo(
             id: "mlx-community/Qwen3.5-0.8B-MLX-4bit",
             displayName: "Qwen 3.5 0.8B (4-bit)",
@@ -463,6 +486,30 @@ public enum ModelCatalog {
             hfFilePatterns: ["LFM2.5-350M-Q4_K_M.gguf"],
             primaryFile: "LFM2.5-350M-Q4_K_M.gguf"
         ),
+        // MiniCPM5-2B, OpenBMB's official GGUFs (2026-09-11): the two rungs that sit
+        // beside the litert-community int8 / int4 files and the MLX 8-bit / 4-bit builds.
+        // One repo, two ids — `primaryFile` picks the quant (the unsloth entries above
+        // do the same with one quant each).
+        ModelInfo(
+            id: "openbmb/MiniCPM5-2B-GGUF/Q8_0",
+            displayName: "MiniCPM5-2B Q8_0 (GGUF, OpenBMB)",
+            quantization: "Q8_0",
+            parameterCountB: 2.52,
+            onDiskSizeMB: 2680,
+            hfRepoId: "openbmb/MiniCPM5-2B-GGUF",
+            hfFilePatterns: ["MiniCPM5-2B-Q8_0.gguf"],
+            primaryFile: "MiniCPM5-2B-Q8_0.gguf"
+        ),
+        ModelInfo(
+            id: "openbmb/MiniCPM5-2B-GGUF/Q4_K_M",
+            displayName: "MiniCPM5-2B Q4_K_M (GGUF, OpenBMB)",
+            quantization: "Q4_K_M",
+            parameterCountB: 2.52,
+            onDiskSizeMB: 1561,
+            hfRepoId: "openbmb/MiniCPM5-2B-GGUF",
+            hfFilePatterns: ["MiniCPM5-2B-Q4_K_M.gguf"],
+            primaryFile: "MiniCPM5-2B-Q4_K_M.gguf"
+        ),
     ]
 
     /// Models the LiteRT-LM adapter can load.
@@ -684,6 +731,32 @@ public enum ModelCatalog {
             hfRepoId: "litert-community/MiniCPM5-1B",
             hfFilePatterns: ["minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm"],
             primaryFile: "minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm"
+        ),
+        // MiniCPM5-2B — the two litert-community files (our conversion, litertlm-convert
+        // minicpm52b_work/FINDINGS.md; copied into the org repo by the LiteRT team on
+        // 2026-09-09). The same repo also holds OpenBMB's two weight-only files, which
+        // the card marks CPU-only; they are not catalogued. One repo, two ids —
+        // `primaryFile` picks the file; the labels are the manifest's own recipe text
+        // (quant-label-rule). Recipes per litertlm_manifest.json in the repo.
+        ModelInfo(
+            id: "litert-community/MiniCPM5-2B",
+            displayName: "MiniCPM5-2B (.litertlm, int8)",
+            quantization: "INT8 (dynamic, linears + embedding; fp32 GPU activations declared)",
+            parameterCountB: 2.52,
+            onDiskSizeMB: 2603,
+            hfRepoId: "litert-community/MiniCPM5-2B",
+            hfFilePatterns: ["MiniCPM5-2B_int8.litertlm"],
+            primaryFile: "MiniCPM5-2B_int8.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/MiniCPM5-2B/int4",
+            displayName: "MiniCPM5-2B (.litertlm, int4)",
+            quantization: "INT4 (blockwise-32 + OCTAV linears, int8 embedding; GPU activations fp16 default)",
+            parameterCountB: 2.52,
+            onDiskSizeMB: 1554,
+            hfRepoId: "litert-community/MiniCPM5-2B",
+            hfFilePatterns: ["MiniCPM5-2B_int4.litertlm"],
+            primaryFile: "MiniCPM5-2B_int4.litertlm"
         ),
         ModelInfo(
             id: "litert-community/LFM2.5-1.2B-Instruct",

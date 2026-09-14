@@ -437,6 +437,10 @@ ANDROID_QUANT_LABELS = {
     "minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm": "wi4b32_wi8_afp32 (gpu-opt)",
     "LFM2.5-1.2B-Instruct_int4.litertlm": "int4 (litert-community descriptor)",
     "LFM2.5-1.2B-Instruct_int4_gpu.litertlm": "int4_gpu (litert-community descriptor)",
+    # litert-community/MiniCPM5-2B — labels are the repo manifest's recipe text,
+    # the same strings as the Mac catalog entries (ModelCatalog liteRTLM).
+    "MiniCPM5-2B_int8.litertlm": "INT8 (dynamic, linears + embedding; fp32 GPU activations declared)",
+    "MiniCPM5-2B_int4.litertlm": "INT4 (blockwise-32 + OCTAV linears, int8 embedding; GPU activations fp16 default)",
 }
 
 

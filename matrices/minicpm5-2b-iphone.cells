@@ -1,0 +1,22 @@
+# MiniCPM5-2B on iPhone 17 Pro — the mobile 3-engine comparison (LiteRT / MLX /
+# llama.cpp), the place MLX runs on a phone. iOS LiteRT is the Metal path (not
+# the Mac WebGPU path), so this is the fair Apple-mobile comparison for LiteRT.
+# Needs a signed BenchmarkApp build (Xcode GUI, the two increased-memory
+# entitlements) carrying the MiniCPM5-2B catalog entries + the b10903 iOS llama
+# xcframework (2B GGUFs declare a MiniCPM5 pre-tokenizer b8999 rejects).
+#
+#   BENCH_UDID=A6F3E849-1947-5202-9AD1-9C881CA58EEF scripts/bench_matrix_iphone.sh run matrices/minicpm5-2b-iphone.cells
+#
+# anchors first (session-anchor normalization). Interleave arms per model block.
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+
+# int8 rung
+ios litert-lm litert-community/MiniCPM5-2B short-chat runs=4
+ios mlx-swift mlx-community/MiniCPM5-2B-8bit short-chat runs=4
+ios llama.cpp openbmb/MiniCPM5-2B-GGUF/Q8_0 short-chat runs=4
+
+# int4 rung
+ios litert-lm litert-community/MiniCPM5-2B/int4 short-chat runs=4
+ios mlx-swift openbmb/MiniCPM5-2B-MLX short-chat runs=4
+ios llama.cpp openbmb/MiniCPM5-2B-GGUF/Q4_K_M short-chat runs=4

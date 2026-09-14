@@ -1,0 +1,60 @@
+# MiniCPM5-2B across LiteRT-LM / MLX / llama.cpp — Shuangfeng's ask of 2026-09-11
+# (Chat, 13:05 JST: "interested to see how fast for our recent MiniCPM5-2B
+# implementations, comparing others like MLX or llama.cpp"). The standings stay
+# local (owner decision 2026-08-27): the numbers go to the LiteRT team in the
+# thread; the repo keeps the single-arm records.
+#
+# Two rungs, matched by bit-width; the recipes differ per arm and travel in the
+# row (quant-per-arm-rule):
+#   int8: litert-community int8 (dynamic int8, fp32 GPU act declared)
+#         / mlx-community 8-bit g64 affine / OpenBMB GGUF Q8_0
+#   int4: litert-community int4 (blockwise-32 + OCTAV, int8 embedding)
+#         / OpenBMB MLX 4-bit g64 affine / OpenBMB GGUF Q4_K_M
+# Arms interleaved per rung (fairness rule 11); anchors first (session protocol).
+# Mac: the LiteRT-LM v0.17.0 yardstick (.build/dd-mac-0170, engine-pins-v0170.json),
+# the release the card's Mac row and the team's minicpm5 README check used.
+#
+#   DD_MAC=.build/dd-mac-0170 BENCH_ENGINE_PINS_FILE=ios/BenchmarkApp/Vendored/engine-pins-v0170.json \
+#     ./bench matrix matrices/minicpm5-2b-crossarm.cells --platform mac --campaign 2026-09-11-minicpm5-2b-crossarm-v0170
+#   BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= ./bench matrix matrices/minicpm5-2b-crossarm.cells --platform android --campaign 2026-09-11-minicpm5-2b-crossarm-s26
+
+# --- Mac Studio M4 Max: anchors ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+
+# --- Mac: int8 rung, short-chat ---
+mac litert-lm litert-community/MiniCPM5-2B short-chat runs=4
+mac mlx-swift mlx-community/MiniCPM5-2B-8bit short-chat runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q8_0 short-chat runs=4
+
+# --- Mac: int4 rung, short-chat ---
+mac litert-lm litert-community/MiniCPM5-2B/int4 short-chat runs=4
+mac mlx-swift openbmb/MiniCPM5-2B-MLX short-chat runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q4_K_M short-chat runs=4
+
+# --- Mac: int8 rung, ~1K prompt / 256 generated (prefill shows here) ---
+mac litert-lm litert-community/MiniCPM5-2B long-context-1024-gen256 runs=4
+mac mlx-swift mlx-community/MiniCPM5-2B-8bit long-context-1024-gen256 runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q8_0 long-context-1024-gen256 runs=4
+
+# --- Mac: int4 rung, ~1K prompt / 256 generated ---
+mac litert-lm litert-community/MiniCPM5-2B/int4 long-context-1024-gen256 runs=4
+mac mlx-swift openbmb/MiniCPM5-2B-MLX long-context-1024-gen256 runs=4
+mac llama.cpp openbmb/MiniCPM5-2B-GGUF/Q4_K_M long-context-1024-gen256 runs=4
+
+# --- Android (Galaxy S26 first; Pixel 8a when its catalog-x13 session is over) ---
+# anchor: the llama.cpp anchor (a runtime other than the one under test)
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+# int8 rung: LiteRT cpu + gpu on the same file, then llama.cpp Q8_0 (CPU; no GPU arm on Android)
+android litert-lm litert-community/MiniCPM5-2B short-chat backend=cpu file=MiniCPM5-2B_int8.litertlm
+android litert-lm litert-community/MiniCPM5-2B short-chat backend=gpu file=MiniCPM5-2B_int8.litertlm
+# llama.cpp: the two quants under the Mac's per-quant ids (the driver's id is the row's
+# identity; one repo id for both quants would pool them), files from the host hub cache
+android llama.cpp openbmb/MiniCPM5-2B-GGUF/Q8_0 short-chat local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--openbmb--MiniCPM5-2B-GGUF/snapshots/c451f4d674096e6e6f1cc5d0abb6794bda638304/MiniCPM5-2B-Q8_0.gguf
+# int4 rung
+# the int4 file under the Mac's id for it (a second file under the repo id would pool
+# with the int8 rows — the catalog-x13 s26 cells do the same for Qwen3-0.6B); the
+# file is the litert-community blob in the host hub cache, pushed as a local path
+android litert-lm litert-community/MiniCPM5-2B/int4 short-chat backend=cpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--MiniCPM5-2B/snapshots/84b66731da8860adb010dacfd5591834a0511b83/MiniCPM5-2B_int4.litertlm
+android litert-lm litert-community/MiniCPM5-2B/int4 short-chat backend=gpu local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--MiniCPM5-2B/snapshots/84b66731da8860adb010dacfd5591834a0511b83/MiniCPM5-2B_int4.litertlm
+android llama.cpp openbmb/MiniCPM5-2B-GGUF/Q4_K_M short-chat local=1 file=/Users/majimadaisuke/.cache/huggingface/hub/models--openbmb--MiniCPM5-2B-GGUF/snapshots/c451f4d674096e6e6f1cc5d0abb6794bda638304/MiniCPM5-2B-Q4_K_M.gguf

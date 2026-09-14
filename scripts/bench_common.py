@@ -66,6 +66,9 @@ LOGICAL_MODELS: list[tuple[str, str]] = [
     ("qwen2.5-3b",      "Qwen 2.5 3B"),
     ("qwen2.5-7b",      "Qwen 2.5 7B"),
     # LFM / Llama / others
+    # MiniCPM5: litert-community / mlx-community / openbmb (GGUF, MLX) / core-ai ids
+    ("minicpm5-2b",     "MiniCPM5 2B"),
+    ("minicpm5-1b",     "MiniCPM5 1B"),
     ("lfm2.5-350m",     "LFM 2.5 350M"),
     ("lfm-2.5-350m",    "LFM 2.5 350M"),
     ("llama-3.2-1b",    "Llama 3.2 1B"),
