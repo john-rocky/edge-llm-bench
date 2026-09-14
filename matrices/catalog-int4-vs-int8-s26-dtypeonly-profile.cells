@@ -1,4 +1,4 @@
-# ./bench profile pair for catalog-int4-vs-int8-s26-dtypeonly.cells (rope-inlined pair; exclude=device-not-attached until the S26 is back on adb): the two
+# ./bench profile pair for catalog-int4-vs-int8-s26-dtypeonly.cells (rope-inlined pair): the two
 # Qwen3-1.7B bundles that share one GPU graph and differ in weight dtype only
 # (dynamic_wi8_afp32 vs dynamic_wi4b32_afp32), litert_lm_advanced_main 128x256 at
 # max_num_tokens 1024 — one control + one --enable_profiling run each, the same
@@ -7,5 +7,5 @@
 # graph now held constant. Run after the matrix, same campaign name:
 #
 #   BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= ./bench profile matrices/catalog-int4-vs-int8-s26-dtypeonly-profile.cells --campaign <date>-catalog-int4-vs-int8-s26-dtypeonly
-android litert-lm litert-local/Qwen3-1.7B-wi8-gpuflags-norope native-benchmark-128x256 backend=gpu local=1 runs=1 context-tokens=1024 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi8/Qwen3-1.7B_wi8_gpuflags_norope.litertlm exclude=device-not-attached
-android litert-lm litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope native-benchmark-128x256 backend=gpu local=1 runs=1 context-tokens=1024 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi4b32/Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm exclude=device-not-attached
+android litert-lm litert-local/Qwen3-1.7B-wi8-gpuflags-norope native-benchmark-128x256 backend=gpu local=1 runs=1 context-tokens=1024 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi8/Qwen3-1.7B_wi8_gpuflags_norope.litertlm
+android litert-lm litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope native-benchmark-128x256 backend=gpu local=1 runs=1 context-tokens=1024 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi4b32/Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm

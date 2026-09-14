@@ -1,0 +1,129 @@
+[2026-09-14 12:03:16] thermal status 0 (the runner waits for 0 itself)
+[2026-09-14 12:03:16] free on /data: 87.0 GB
+[2026-09-14 12:03:16] preflight ok
+[2026-09-14 12:03:16] hold taken: /Users/majimadaisuke/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold
+[2026-09-14 12:03:16] $ gtimeout --kill-after=60 2700 /Users/majimadaisuke/code/edge-llm-bench/bench matrix matrices/anchors.cells --platform android --campaign 2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-anchor   env: BENCH_ANDROID_SERIAL='RFGL80R6A6H' BENCH_CPU_MASK=''
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/validate_cells.py matrices/anchors.cells
+OK matrices/anchors.cells
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/android/bench/run_campaign.py matrices/anchors.cells
+
+=== litert-lm/gpu litert-community/Qwen3-0.6B short-chat (12:03:16)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.7 MB/s (48 bytes in 0.000s)
+run 1/3 OK decode=58.27 thermal=nominal->nominal
+run 2/3 OK decode=48.51 thermal=nominal->nominal
+run 3/3 OK decode=47.91 thermal=nominal->nominal
+
+=== llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat (12:09:46)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.4 MB/s (48 bytes in 0.000s)
+run 1/3 OK decode=105.6 thermal=nominal->nominal
+run 2/3 OK decode=106.0 thermal=nominal->nominal
+run 3/3 OK decode=104.5 thermal=nominal->nominal
+
+campaign dir: /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-anchor-android
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/build_summary.py
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/quality.csv (0 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/device-runs.csv (1539 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/history.csv (32 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/README.md
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/render_leaderboard.py
+wrote LEADERBOARD.md
+[2026-09-14 12:13:55] bench matrix exit 0
+[2026-09-14 12:13:55] wrote results/raw/2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-anchor-android/SESSION.json (admitted=True, verdict=ADMITTED)
+[2026-09-14 12:13:55] admission: ADMITTED — anchor nominal, ratio 1.000 vs reference (b8999)
+[2026-09-14 12:13:55] $ gtimeout --kill-after=60 14400 /Users/majimadaisuke/code/edge-llm-bench/bench matrix matrices/catalog-int4-vs-int8-s26-dtypeonly.cells --platform android --campaign 2026-09-14-catalog-int4-vs-int8-s26-dtypeonly   env: BENCH_ANDROID_SERIAL='RFGL80R6A6H' BENCH_CPU_MASK=''
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/validate_cells.py matrices/catalog-int4-vs-int8-s26-dtypeonly.cells
+OK matrices/catalog-int4-vs-int8-s26-dtypeonly.cells
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/android/bench/run_campaign.py matrices/catalog-int4-vs-int8-s26-dtypeonly.cells
+
+=== llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat (12:13:55)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.6 MB/s (48 bytes in 0.000s)
+run 1/3 OK decode=105.0 thermal=nominal->nominal
+run 2/3 OK decode=106.0 thermal=nominal->nominal
+run 3/3 OK decode=107.0 thermal=nominal->nominal
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi8-gpuflags-norope short-chat (12:20:03)
+pushing Qwen3-1.7B_wi8_gpuflags_norope.litertlm (1663 MB) …
+/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi8/Qwen3-1.7B_wi8_gpuflags_norope.litertlm: 1 file pushed, 0 skipped. 41.1 MB/s (1744109104 bytes in 40.513s)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.6 MB/s (48 bytes in 0.000s)
+run 1/1 OK decode=20.86 thermal=nominal->nominal
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope short-chat (12:23:35)
+pushing Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm (928 MB) …
+/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi4b32/Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm: 1 file pushed, 0 skipped. 41.8 MB/s (974110000 bytes in 22.208s)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.6 MB/s (48 bytes in 0.000s)
+run 1/1 OK decode=26.55 thermal=nominal->nominal
+--- round 1/3 complete (publish every round)
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi8-gpuflags-norope short-chat (12:26:25)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.7 MB/s (48 bytes in 0.000s)
+run 1/1 OK decode=19.59 thermal=nominal->nominal
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope short-chat (12:29:18)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.7 MB/s (48 bytes in 0.000s)
+run 1/1 OK decode=24.72 thermal=nominal->nominal
+--- round 2/3 complete (publish every round)
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi8-gpuflags-norope short-chat (12:31:47)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.7 MB/s (48 bytes in 0.000s)
+run 1/1 OK decode=19.52 thermal=nominal->nominal
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope short-chat (12:34:40)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.5 MB/s (48 bytes in 0.000s)
+run 1/1 OK decode=27.34 thermal=nominal->nominal
+--- round 3/3 complete (publish every round)
+
+campaign dir: /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-android
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/build_summary.py
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/quality.csv (0 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/device-runs.csv (1548 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/history.csv (32 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/README.md
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/render_leaderboard.py
+wrote LEADERBOARD.md
+[2026-09-14 12:35:07] bench matrix exit 0
+[2026-09-14 12:35:07] wrote results/raw/2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-android/SESSION.json (admitted=True, verdict=COMPLETED)
+[2026-09-14 12:35:07] payload: COMPLETED, records 3/3, admitted=True — anchor nominal, ratio 1.004 vs reference (b8999)
+[2026-09-14 12:35:07] $ /Users/majimadaisuke/code/edge-llm-bench/bench profile matrices/catalog-int4-vs-int8-s26-dtypeonly-profile.cells --campaign 2026-09-14-catalog-int4-vs-int8-s26-dtypeonly
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/validate_cells.py matrices/catalog-int4-vs-int8-s26-dtypeonly-profile.cells
+OK matrices/catalog-int4-vs-int8-s26-dtypeonly-profile.cells
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/android/bench/run_profile.py matrices/catalog-int4-vs-int8-s26-dtypeonly-profile.cells
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi8-gpuflags-norope native-benchmark-128x256 (12:35:07)
+run 1/1 OK decode=22.39 thermal=nominal->nominal
+
+=== profile litert-lm-gpu litert-local/Qwen3-1.7B-wi8-gpuflags-norope native-benchmark-128x256 ctx=1024 (12:37:27)
+profiled OK decode=10.72 (control record litert-lm-gpu_litert-local_Qwen3-1.7B-wi8-gpuflags-norope_native-benchmark-128x256_2026-09-14T03-35-27.551495_run1.json)
+
+=== litert-lm/gpu litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope native-benchmark-128x256 (12:39:57)
+run 1/1 OK decode=28.23 thermal=nominal->nominal
+
+=== profile litert-lm-gpu litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope native-benchmark-128x256 ctx=1024 (12:42:13)
+profiled OK decode=15.0 (control record litert-lm-gpu_litert-local_Qwen3-1.7B-wi4b32-gpuflags-norope_native-benchmark-128x256_2026-09-14T03-40-13.864957_run1.json)
+tag                                                          be     wall steps op-sum   gemv attn+kv  xfer  other unprof. launch/step
+…gs-norope_Qwen3-1.7B_wi4b32_gpuflags_norope_128x256_ctx1024 gpu    35.4   256   22.2   19.0     0.9   1.2    1.1    13.2         969
+…flags-norope_Qwen3-1.7B_wi8_gpuflags_norope_128x256_ctx1024 gpu    44.7   256   34.6   30.9     1.1   1.1    1.5    10.0         969
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-android/profiles/PROFILE.md and profile-table.csv (2 rows)
+
+profiles dir: /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-catalog-int4-vs-int8-s26-dtypeonly-android/profiles
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/build_summary.py
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/quality.csv (0 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/device-runs.csv (1550 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/history.csv (32 rows)
+wrote /Users/majimadaisuke/code/edge-llm-bench/results/summary/README.md
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/scripts/render_leaderboard.py
+wrote LEADERBOARD.md
+[2026-09-14 12:42:37] bench profile exit 0
+[2026-09-14 12:42:38] hold released: /Users/majimadaisuke/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold
+[2026-09-14 12:42:38] === done rc=0
