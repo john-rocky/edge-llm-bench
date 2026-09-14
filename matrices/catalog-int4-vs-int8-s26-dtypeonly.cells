@@ -1,0 +1,29 @@
+# Catalog §4 X1 / K1 follow-up — the DTYPE-ONLY Qwen3-1.7B pair on the Galaxy S26 (Adreno): the
+# rope-inlined pair of 2026-09-14 (use_rope_composite off in both files — the odml.rope composite
+# breaks the int8 file and de-orders the prompt for both dtypes on the v0.16.0 Android GPU path;
+# results/raw/2026-09-14-catalog-int4-vs-int8-pixel8a-dtypeonly-android/NOTES.md). Written with
+# exclude=device-not-attached on 2026-09-14: the S26 left the adb bus at the end of the 02:00
+# dashboard sitting (04:45-04:53) and had not come back by 11:00; drop the exclude when it does.
+# The 2026-09-13 pair (catalog-int4-vs-int8-android.cells) set the published CPU-recipe
+# INT8 file against the published GPU-graph wi4b32 file, so its whole-model difference
+# mixed the attention/KV graph into the weight dtype. These two bundles were exported
+# from one litert-torch main checkout (6d4c622) with one flag set — fused qkv / gate_up,
+# odml.rope + odml.cache_update composites, bool mask, fixed prefill 1024, cache 4096
+# (magic 4099, header max_num_tokens 4096; rope inlined) — and only the quantization recipe changed:
+# dynamic_wi8_afp32 vs dynamic_wi4b32_afp32. Export record, flags, sha256 and sizes:
+# litertlm-convert/qwen3_gpuopt_work/2026-09-14-int8-int4-dtypeonly.md. Side-loaded
+# (local=1); the litert-local ids never pool with the published files' rows.
+# S26: (devices/galaxy-s26.md has no reboot rule; read uptime by hand
+# under the hold):
+#
+#   BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= ./bench matrix matrices/catalog-int4-vs-int8-s26-dtypeonly.cells --platform android --campaign <date>-catalog-int4-vs-int8-s26-dtypeonly
+#
+# (anchors.cells first as its own campaign, admission as the dashboard job does it;
+# results/raw/<campaign>-android/run_session.py is the sitting driver.)
+
+# --- session anchor ---
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# --- Qwen3-1.7B, one graph, two weight dtypes, both on the GPU (round-robin = alternating runs) ---
+android litert-lm litert-local/Qwen3-1.7B-wi8-gpuflags-norope short-chat backend=gpu local=1 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi8/Qwen3-1.7B_wi8_gpuflags_norope.litertlm exclude=device-not-attached
+android litert-lm litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope short-chat backend=gpu local=1 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi4b32/Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm exclude=device-not-attached

@@ -1,0 +1,29 @@
+# Catalog §4 X1 / K1 follow-up — the DTYPE-ONLY Qwen3-1.7B pair on the Pixel 8a (Mali), SECOND
+# pair with the rope composite inlined (use_rope_composite off in BOTH files). The first pair
+# (catalog-int4-vs-int8-pixel8a-dtypeonly.cells, odml.rope on) decoded 5 garbage tokens on the
+# int8 file and answered off-prompt on the int4 file on this phone's v0.16.0 GPU path; the bisect
+# (results/raw/2026-09-14-catalog-int4-vs-int8-pixel8a-dtypeonly-android/diag/) named the rope
+# composite. Everything else below is as in the first pair's header.
+# The 2026-09-13 pair (catalog-int4-vs-int8-pixel8a.cells) set the published CPU-recipe
+# INT8 file against the published GPU-graph wi4b32 file, so its whole-model difference
+# mixed the attention/KV graph into the weight dtype. These two bundles were exported
+# from one litert-torch main checkout (6d4c622) with one flag set — fused qkv / gate_up,
+# odml.rope + odml.cache_update composites, bool mask, fixed prefill 1024, cache 4096
+# (magic 4099, header max_num_tokens 4096; rope inlined) — and only the quantization recipe changed:
+# dynamic_wi8_afp32 vs dynamic_wi4b32_afp32. Export record, flags, sha256 and sizes:
+# litertlm-convert/qwen3_gpuopt_work/2026-09-14-int8-int4-dtypeonly.md. Side-loaded
+# (local=1); the litert-local ids never pool with the published files' rows.
+# Reboot first when uptime exceeds 2 h (devices/pixel-8a.md; the sitting driver does it
+# under the hold):
+#
+#   BENCH_ANDROID_SERIAL=4C131JEKB15210 BENCH_CPU_MASK=f0 ./bench matrix matrices/catalog-int4-vs-int8-pixel8a-dtypeonly-norope.cells --platform android --campaign <date>-catalog-int4-vs-int8-pixel8a-dtypeonly-norope
+#
+# (anchors.cells first as its own campaign, admission as the dashboard job does it;
+# results/raw/<campaign>-android/run_session.py is the sitting driver.)
+
+# --- session anchor ---
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# --- Qwen3-1.7B, one graph, two weight dtypes, both on the GPU (round-robin = alternating runs) ---
+android litert-lm litert-local/Qwen3-1.7B-wi8-gpuflags-norope short-chat backend=gpu local=1 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi8/Qwen3-1.7B_wi8_gpuflags_norope.litertlm
+android litert-lm litert-local/Qwen3-1.7B-wi4b32-gpuflags-norope short-chat backend=gpu local=1 file=/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/dtypeonly_1p7b_norope/wi4b32/Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm
