@@ -63,4 +63,6 @@ composite graph's 795; attention/KV 3.6–4.9 ms). Sitting 1's rope-composite gr
    explains; a fused-int8 GPU-graph file is slower than the unfused one it replaced.
 5. The `odml.rope` defect on the v0.16.0 Android GPU path (sitting 1's NOTES.md, `diag/`) means every 2026-09-13
    GPU-graph row (published wi4b32 1.7B and 0.6B) was decoding off-prompt text; their timings stand, their texts did
-   not answer. Whether the 0.17.0 Android GPU path still has it is not measured.
+   not answer. The 0.17.0 Android GPU path does not have it — measured 2026-09-14 on the Galaxy S26 (Adreno) with the
+   OSS v0.17.0 CLI and the 0.17.0 AAR, v0.16.0 re-run the same hour as the control
+   (`results/raw/2026-09-14-rope-composite-0170-s26-android/`); the Pixel 8a (Mali) 0.17.0 leg is not measured.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build litert_lm_main for android_arm64 at a pinned tag.
 #
-# LiteRT-LM releases ship no Android binary (verified v0.14.0/v0.15.0/v0.16.0:
+# LiteRT-LM releases ship no Android binary (verified v0.14.0/v0.15.0/v0.16.0/v0.17.0:
 # assets are two xcframeworks + litert_lm_main.macos_arm64 only), so the Android
 # arm is a per-release source build. The Maven litertlm-android AAR is the
 # official artifact but exposes only the Kotlin API — no CLI — so using it would

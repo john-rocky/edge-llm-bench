@@ -68,7 +68,12 @@ Per node (decode phase): `fc1x1_int8_weights` 57 × 1.031 ms + `-> add` 56 × 0.
    the model behaves as if the prompt had no word order (thinking skipped, fluent, off-prompt), and int8 weights
    turn that into an early stop. The 2026-09-13 GPU-graph rows (`Qwen3-1.7B_dynamic_wi4b32_afp32`,
    `Qwen3-0.6B_dynamic_wi4b32_afp32`) were decoding under this defect: their op timings stand (same kernels, same
-   shapes), their texts were off-prompt. Not measured: whether the 0.17.0 Android GPU path still has it.
+   shapes), their texts were off-prompt. Measured 2026-09-14 on the Galaxy S26 (Adreno): the 0.17.0 Android GPU path
+   does not have it — the published wi4b32 file, both rope-composite twins and both rope-inlined twins answer the
+   prompt with thinking on the OSS v0.17.0 `litert_lm_main` (source build at the tag), and the published file does
+   so on the `litertlm-android` 0.17.0 AAR too; the same files swapped back to v0.16.0 on the same phone the same
+   hour repeat the off-prompt sentence (`results/raw/2026-09-14-rope-composite-0170-s26-android/`, `diag/`). Not
+   measured: this phone (Mali) on 0.17.0 — it was off the adb bus that afternoon.
 3. `generatedTokenCount` is not comparable across these rows: bundles that declare a `thought` channel (every
    litert-torch main export and the published GPU build) are not capped at the 128-token budget by
    `litert_lm_main --max_output_tokens` when they think (632–670 tokens for the rope-inlined files, 4077 = the

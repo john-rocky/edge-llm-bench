@@ -33,7 +33,8 @@ release asset):
 LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh   # bazel source build, 10-20 min first time
 ```
 
-- LiteRT-LM releases ship **no Android binary** (verified v0.14–v0.16), so this
+- LiteRT-LM releases ship **no Android binary** (verified v0.14–v0.17: v0.17.0's assets are two xcframeworks +
+  `litert_lm_main.macos_arm64`, checked 2026-09-14), so this
   is a per-release source build into `android/bin/<tag>/` (binary + GPU `.so`
   set). On a macOS host the build needs `--enable_platform_specific_config`
   (encoded in the script; upstream google-ai-edge/LiteRT-LM#3247).

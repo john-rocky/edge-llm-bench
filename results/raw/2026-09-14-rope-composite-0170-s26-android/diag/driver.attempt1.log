@@ -1,0 +1,48 @@
+[2026-09-14 14:50:27] hold taken (/Users/majimadaisuke/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.s26, pid 21534)
+[2026-09-14 14:50:27] device: SM-S942Q 16 uptime 253338.23 s; free: /dev/block/dm-66 221G 141G   80G  64% /data/user/0
+[2026-09-14 14:50:29] engine on device = v0.17.0: litert_lm_main + 7 .so, every sha256 matches android/engine-pins.json
+[2026-09-14 14:50:29] cpu0 scaling_max_freq/cpuinfo_max_freq = ['3628800', '3628800']
+[2026-09-14 14:50:29] $ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/android/bench/run_cell.py --runtime litert-lm --backend gpu --model-id litert-local/Qwen3-1.7B-pub-wi4b32-e0170 --file /Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/blobs/2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b --task short-chat --runs 1 --out /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-rope-composite-0170-s26-android/diag --serial RFGL80R6A6H --timeout 1800
+pushing 2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b (931 MB) …
+/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/blobs/2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b: 1 file pushed, 0 skipped. 43.5 MB/s (977184032 bytes in 21.428s)
+/Users/majimadaisuke/code/edge-llm-bench/prompts/text/short-chat.txt: 1 file pushed, 0 skipped. 0.6 MB/s (48 bytes in 0.000s)
+run 1/1 FAIL(exit=134) decode=None thermal=nominal->nominal
+[2026-09-14 14:50:53] exit 1
+[2026-09-14 14:50:53] engine output head:  | WARNING: All log messages before absl::InitializeLog() is called are written to STDERR | F0000 00:00:1789365051.900329   17830 litert_lm_main.cc:191] Check failed: MainHelper(argc, argv) is OK (INVALID_ARGUMENT: Unsupported or unknown file format. | === Source Location Trace: ===  | runtime/util/file_format_util.cc:91 | runtime/executor/litert_compiled_model_executor_utils.cc:794 | runtime/core/engine_advanced_impl.cc:250 | runtime/engine/litert_lm_main.cc:157 | )  | *** Check failure stack trace: *** | Aborted 
+[2026-09-14 14:50:53] after </think>: (no </think> in the output)
+[2026-09-14 14:50:53] removed /data/local/tmp/llmbench/models/litert-local_Qwen3-1.7B-pub-wi4b32-e0170_2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b* (+ its caches and markers)
+[2026-09-14 14:50:53] cpu0 scaling_max_freq/cpuinfo_max_freq = ['3628800', '3628800']
+[2026-09-14 14:50:53] $ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/majimadaisuke/code/edge-llm-bench/android/bench/run_cell.py --runtime litert-lm --backend cpu --model-id litert-local/Qwen3-1.7B-pub-wi4b32-e0170 --file /Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/blobs/2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b --task short-chat --runs 1 --out /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-rope-composite-0170-s26-android/diag --serial RFGL80R6A6H --timeout 1800
+pushing 2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b (931 MB) …
+/Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/blobs/2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b: 1 file pushed, 0 skipped. 43.1 MB/s (977184032 bytes in 21.640s)
+[2026-09-14 14:51:15] restoring v0.16.0 after an error
+[2026-09-14 14:51:16] engine on device = v0.16.0: litert_lm_main + 7 .so, every sha256 matches android/engine-pins.json
+device hold removed
+[2026-09-14 14:51:16] hold released
+Traceback (most recent call last):
+  File "/Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-rope-composite-0170-s26-android/diag/run_0170.py", line 208, in <module>
+    main()
+    ~~~~^^
+  File "/Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-rope-composite-0170-s26-android/diag/run_0170.py", line 191, in main
+    cli_cell(backend, mid, p)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-14-rope-composite-0170-s26-android/diag/run_0170.py", line 125, in cli_cell
+    rc = subprocess.run(cmd, env=env, cwd=ROOT).returncode
+         ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1213, in communicate
+    self.wait()
+    ~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1279, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2084, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ~~~~~~~~~~~~~~^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2042, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+DRIVER_EXIT=130
