@@ -14,7 +14,7 @@
 #   - ~10-20 min and a few GB of bazel cache on first build per tag
 #
 # Env:
-#   LITERTLM_TAG      tag to build (default: v0.16.0)
+#   LITERTLM_TAG      tag to build (default: v0.17.0)
 #   ANDROID_NDK_HOME  NDK path (default: newest under ~/Library/Android/sdk/ndk)
 #   LITERTLM_SRC      scratch clone dir (default: ~/.cache/apple-silicon-llm-bench/litert-lm-<tag>)
 #
@@ -23,7 +23,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-TAG="${LITERTLM_TAG:-v0.16.0}"
+TAG="${LITERTLM_TAG:-v0.17.0}"
 SRC="${LITERTLM_SRC:-$HOME/.cache/apple-silicon-llm-bench/litert-lm-$TAG}"
 OUT="$REPO_ROOT/android/bin/$TAG"
 

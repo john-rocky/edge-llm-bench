@@ -21,8 +21,8 @@ the lockfile):
 
 ```bash
 mkdir -p android/bin
-curl -L https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-v0.16.0/litert-lm-v0.16.0-android-arm64.tar.gz \
-  | tar xz -C android/bin && mv android/bin/litert-lm-v0.16.0-android-arm64 android/bin/v0.16.0
+curl -L https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-v0.17.0/litert-lm-v0.17.0-android-arm64.tar.gz \
+  | tar xz -C android/bin && mv android/bin/litert-lm-v0.17.0-android-arm64 android/bin/v0.17.0
 android/scripts/fetch_llama_android.sh                         # official b8999 android tar
 ```
 
@@ -30,7 +30,7 @@ Per-release source build (what produced that archive; needed for tags with no
 release asset):
 
 ```bash
-LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh   # bazel source build, 10-20 min first time
+LITERTLM_TAG=v0.17.0 android/scripts/build_litert_lm_main.sh   # bazel source build, 10-20 min first time
 ```
 
 - LiteRT-LM releases ship **no Android binary** (verified v0.14–v0.17: v0.17.0's assets are two xcframeworks +
@@ -47,8 +47,8 @@ LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh   # bazel source bu
 
 ```bash
 adb shell mkdir -p /data/local/tmp/llmbench
-adb push android/bin/v0.16.0/litert_lm_main /data/local/tmp/llmbench/
-adb push android/bin/v0.16.0/*.so /data/local/tmp/llmbench/        # GPU backend
+adb push android/bin/v0.17.0/litert_lm_main /data/local/tmp/llmbench/
+adb push android/bin/v0.17.0/*.so /data/local/tmp/llmbench/        # GPU backend
 adb push android/bin/llama-b8999/llama-cli /data/local/tmp/llmbench/
 adb push android/bin/llama-b8999/llama-bench /data/local/tmp/llmbench/
 adb push android/bin/llama-b8999/*.so /data/local/tmp/llmbench/    # shared-lib build
