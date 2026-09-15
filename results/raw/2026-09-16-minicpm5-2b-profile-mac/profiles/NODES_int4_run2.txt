@@ -1,0 +1,26 @@
+control decode 91.26 tok/s (wall 10.96 ms/step); profiled decode 28.61 tok/s; recorded steps 256; profiled op sum 10.97 ms/step; container {'LITERT_METAL': 32.18}
+groups (ms/step, share of op sum): gemv 4.91 (45%), attn+kv 4.25 (39%), other 1.82 (17%)
+node type                                 ms/step  share  group   nodes
+dynamic_update_slice                        2.641  24.1%  attn+kv 84
+fc1x1_int4_weights -> add                   1.434  13.1%  gemv    84
+fc1x1_int4_weights                          1.380  12.6%  gemv    127
+reshape                                     1.236  11.3%  other   294
+fc1x1_int4_weights -> sigmoid -> m          1.142  10.4%  gemv    42
+fc1x1_int4_weights -> mul                   0.950   8.7%  gemv    42
+batched_mat_mul_as_fc                       0.437   4.0%  attn+kv 43
+batched_mat_mul_as_fc -> add -> ma          0.382   3.5%  attn+kv 41
+rms_normalization -> mul                    0.381   3.5%  other   85
+softmax                                     0.255   2.3%  attn+kv 42
+mul                                         0.171   1.6%  other   85
+strided_slice                               0.169   1.5%  attn+kv 84
+strided_slice -> mul                        0.169   1.5%  attn+kv 84
+concat_channels -> mul -> add -> m          0.093   0.8%  attn+kv 42
+concat_channels -> mul -> add               0.085   0.8%  attn+kv 42
+copy                                        0.016   0.1%  other   8
+concat_batch                                0.010   0.1%  attn+kv 2
+cast                                        0.005   0.0%  other   1
+add -> maximum -> minimum                   0.004   0.0%  other   1
+concat_channels                             0.003   0.0%  attn+kv 1
+sin                                         0.003   0.0%  other   1
+concat_width                                0.003   0.0%  attn+kv 1
+cos                                         0.002   0.0%  other   1

@@ -1,0 +1,20 @@
+ctrl decode: run1 89.69 tok/s, run2 91.26 tok/s; prof decode 28.98 / 28.61; steps 256 / 256
+op sum ms/step: run1 10.76, run2 10.97
+  gemv     run1   4.85 (45.1%)  run2   4.91 (44.7%)
+  attn+kv  run1   4.20 (39.1%)  run2   4.25 (38.7%)
+  other    run1   1.71 (15.9%)  run2   1.82 (16.6%)
+node type                                 run1 ms  run2 ms  run1 %  run2 %
+dynamic_update_slice                        2.613    2.641   24.3%   24.1%
+fc1x1_int4_weights -> add                   1.405    1.434   13.1%   13.1%
+fc1x1_int4_weights                          1.390    1.380   12.9%   12.6%
+reshape                                     1.165    1.236   10.8%   11.3%
+fc1x1_int4_weights -> sigmoid -> m          1.122    1.142   10.4%   10.4%
+fc1x1_int4_weights -> mul                   0.931    0.950    8.7%    8.7%
+batched_mat_mul_as_fc                       0.436    0.437    4.1%    4.0%
+batched_mat_mul_as_fc -> add -> ma          0.374    0.382    3.5%    3.5%
+rms_normalization -> mul                    0.341    0.381    3.2%    3.5%
+softmax                                     0.252    0.255    2.3%    2.3%
+mul                                         0.170    0.171    1.6%    1.6%
+strided_slice                               0.168    0.169    1.6%    1.5%
+strided_slice -> mul                        0.168    0.169    1.6%    1.5%
+concat_channels -> mul -> add -> m          0.091    0.093    0.8%    0.8%

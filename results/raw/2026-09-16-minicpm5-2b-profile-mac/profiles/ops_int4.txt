@@ -1,0 +1,4127 @@
+# unpacked /private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/6f688ea3-b666-4bfc-8dbf-b5728df4a11f/scratchpad/models/MiniCPM5-2B_int4.litertlm -> /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/litertlm_unpack_rd4pghdb
+#    1,281,048,576  Section2_TFLiteModel_tf_lite_prefill_decode.tflite
+#      270,524,336  Section3_TFLiteModel_tf_lite_embedder.tflite
+# model: /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/litertlm_unpack_rd4pghdb/Section2_TFLiteModel_tf_lite_prefill_decode.tflite  (1,281,048,576 bytes)
+
+== subgraph 0: prefill_1024  (1873 ops)
+   in  embeddings                   FLOAT32[1, 1024, 2048]
+   in  input_pos                    INT32[1024]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 1024, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+     373  MUL
+     289  FULLY_CONNECTED
+     251  RESHAPE
+     206  ADD
+     167  SLICE
+     166  TRANSPOSE
+      85  CONCATENATION
+      84  DYNAMIC_UPDATE_SLICE
+      83  STABLEHLO_COMPOSITE:odml.rms_norm
+      82  BATCH_MATMUL
+      41  LOGISTIC
+      41  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [256, 2048]
+      82  INT4 blockwise(block=32) [2048, 2048]
+      82  INT4 blockwise(block=32) [6144, 2048]
+      41  INT4 blockwise(block=32) [2048, 6144]
+
+== subgraph 1: prefill_256  (1873 ops)
+   in  embeddings                   FLOAT32[1, 256, 2048]
+   in  input_pos                    INT32[256]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 256, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+     373  MUL
+     289  FULLY_CONNECTED
+     251  RESHAPE
+     206  ADD
+     167  SLICE
+     166  TRANSPOSE
+      85  CONCATENATION
+      84  DYNAMIC_UPDATE_SLICE
+      83  STABLEHLO_COMPOSITE:odml.rms_norm
+      82  BATCH_MATMUL
+      41  LOGISTIC
+      41  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [256, 2048]
+      82  INT4 blockwise(block=32) [2048, 2048]
+      82  INT4 blockwise(block=32) [6144, 2048]
+      41  INT4 blockwise(block=32) [2048, 6144]
+
+== subgraph 2: prefill_64  (1873 ops)
+   in  embeddings                   FLOAT32[1, 64, 2048]
+   in  input_pos                    INT32[64]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 64, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+     373  MUL
+     289  FULLY_CONNECTED
+     251  RESHAPE
+     206  ADD
+     167  SLICE
+     166  TRANSPOSE
+      85  CONCATENATION
+      84  DYNAMIC_UPDATE_SLICE
+      83  STABLEHLO_COMPOSITE:odml.rms_norm
+      82  BATCH_MATMUL
+      41  LOGISTIC
+      41  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [256, 2048]
+      82  INT4 blockwise(block=32) [2048, 2048]
+      82  INT4 blockwise(block=32) [6144, 2048]
+      41  INT4 blockwise(block=32) [2048, 6144]
+
+== subgraph 3: prefill_16  (1873 ops)
+   in  embeddings                   FLOAT32[1, 16, 2048]
+   in  input_pos                    INT32[16]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 16, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+     373  MUL
+     289  FULLY_CONNECTED
+     251  RESHAPE
+     206  ADD
+     167  SLICE
+     166  TRANSPOSE
+      85  CONCATENATION
+      84  DYNAMIC_UPDATE_SLICE
+      83  STABLEHLO_COMPOSITE:odml.rms_norm
+      82  BATCH_MATMUL
+      41  LOGISTIC
+      41  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [256, 2048]
+      82  INT4 blockwise(block=32) [2048, 2048]
+      82  INT4 blockwise(block=32) [6144, 2048]
+      41  INT4 blockwise(block=32) [2048, 6144]
+
+== subgraph 4: prefill_4  (1873 ops)
+   in  embeddings                   FLOAT32[1, 4, 2048]
+   in  input_pos                    INT32[4]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 4, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+     373  MUL
+     289  FULLY_CONNECTED
+     251  RESHAPE
+     206  ADD
+     167  SLICE
+     166  TRANSPOSE
+      85  CONCATENATION
+      84  DYNAMIC_UPDATE_SLICE
+      83  STABLEHLO_COMPOSITE:odml.rms_norm
+      82  BATCH_MATMUL
+      41  LOGISTIC
+      41  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [256, 2048]
+      82  INT4 blockwise(block=32) [2048, 2048]
+      82  INT4 blockwise(block=32) [6144, 2048]
+      41  INT4 blockwise(block=32) [2048, 6144]
+
+== subgraph 5: prefill_1  (1664 ops)
+   in  embeddings                   FLOAT32[1, 1, 2048]
+   in  input_pos                    INT32[1]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 1, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+     373  MUL
+     289  FULLY_CONNECTED
+     209  RESHAPE
+     206  ADD
+     166  SLICE
+      85  CONCATENATION
+      84  DYNAMIC_UPDATE_SLICE
+      83  STABLEHLO_COMPOSITE:odml.rms_norm
+      82  BATCH_MATMUL
+      41  LOGISTIC
+      41  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [256, 2048]
+      82  INT4 blockwise(block=32) [2048, 2048]
+      82  INT4 blockwise(block=32) [6144, 2048]
+      41  INT4 blockwise(block=32) [2048, 6144]
+
+== subgraph 6: decode  (1692 ops)
+   in  embeddings                   FLOAT32[1, 1, 2048]
+   in  input_pos                    INT32[1]
+   in  kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   in  kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   in  mask                         FLOAT32[1, 1, 1, 4096]
+   out kv_cache_k_*                 FLOAT32[1, 2, 4096, 128]  x42
+   out kv_cache_v_*                 FLOAT32[1, 2, 128, 4096]  x42
+   out logits                       FLOAT32[1, 1, 130560]
+     379  MUL
+     295  FULLY_CONNECTED
+     212  RESHAPE
+     210  ADD
+     168  SLICE
+      86  CONCATENATION
+      85  STABLEHLO_COMPOSITE:odml.rms_norm
+      84  BATCH_MATMUL
+      84  DYNAMIC_UPDATE_SLICE
+      42  LOGISTIC
+      42  SOFTMAX
+       2  PACK
+       1  CAST
+       1  COS
+       1  SIN
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      84  INT4 blockwise(block=32) [2048, 2048]
+      84  INT4 blockwise(block=32) [256, 2048]
+      84  INT4 blockwise(block=32) [6144, 2048]
+      42  INT4 blockwise(block=32) [2048, 6144]
+       1  INT4 blockwise(block=32) [130560, 2048]
+
+== subgraph 7: odml.rms_norm.impl  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 8: odml.rms_norm.impl_0  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 9: odml.rms_norm.impl_1  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 10: odml.rms_norm.impl_2  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 11: odml.rms_norm.impl_3  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 12: odml.rms_norm.impl_4  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 13: odml.rms_norm.impl_5  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 14: odml.rms_norm.impl_6  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 15: odml.rms_norm.impl_7  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 16: odml.rms_norm.impl_8  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 17: odml.rms_norm.impl_9  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 18: odml.rms_norm.impl_10  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 19: odml.rms_norm.impl_11  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 20: odml.rms_norm.impl_12  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 21: odml.rms_norm.impl_13  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 22: odml.rms_norm.impl_14  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 23: odml.rms_norm.impl_15  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 24: odml.rms_norm.impl_16  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 25: odml.rms_norm.impl_17  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 26: odml.rms_norm.impl_18  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 27: odml.rms_norm.impl_19  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 28: odml.rms_norm.impl_20  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 29: odml.rms_norm.impl_21  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 30: odml.rms_norm.impl_22  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 31: odml.rms_norm.impl_23  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 32: odml.rms_norm.impl_24  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 33: odml.rms_norm.impl_25  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 34: odml.rms_norm.impl_26  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 35: odml.rms_norm.impl_27  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 36: odml.rms_norm.impl_28  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 37: odml.rms_norm.impl_29  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 38: odml.rms_norm.impl_30  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 39: odml.rms_norm.impl_31  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 40: odml.rms_norm.impl_32  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 41: odml.rms_norm.impl_33  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 42: odml.rms_norm.impl_34  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 43: odml.rms_norm.impl_35  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 44: odml.rms_norm.impl_36  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 45: odml.rms_norm.impl_37  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 46: odml.rms_norm.impl_38  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 47: odml.rms_norm.impl_39  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 48: odml.rms_norm.impl_40  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 49: odml.rms_norm.impl_41  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 50: odml.rms_norm.impl_42  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 51: odml.rms_norm.impl_43  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 52: odml.rms_norm.impl_44  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 53: odml.rms_norm.impl_45  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 54: odml.rms_norm.impl_46  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 55: odml.rms_norm.impl_47  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 56: odml.rms_norm.impl_48  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 57: odml.rms_norm.impl_49  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 58: odml.rms_norm.impl_50  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 59: odml.rms_norm.impl_51  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 60: odml.rms_norm.impl_52  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 61: odml.rms_norm.impl_53  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 62: odml.rms_norm.impl_54  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 63: odml.rms_norm.impl_55  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 64: odml.rms_norm.impl_56  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 65: odml.rms_norm.impl_57  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 66: odml.rms_norm.impl_58  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 67: odml.rms_norm.impl_59  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 68: odml.rms_norm.impl_60  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 69: odml.rms_norm.impl_61  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 70: odml.rms_norm.impl_62  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 71: odml.rms_norm.impl_63  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 72: odml.rms_norm.impl_64  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 73: odml.rms_norm.impl_65  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 74: odml.rms_norm.impl_66  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 75: odml.rms_norm.impl_67  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 76: odml.rms_norm.impl_68  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 77: odml.rms_norm.impl_69  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 78: odml.rms_norm.impl_70  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 79: odml.rms_norm.impl_71  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 80: odml.rms_norm.impl_72  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 81: odml.rms_norm.impl_73  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 82: odml.rms_norm.impl_74  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 83: odml.rms_norm.impl_75  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 84: odml.rms_norm.impl_76  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 85: odml.rms_norm.impl_77  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 86: odml.rms_norm.impl_78  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 87: odml.rms_norm.impl_79  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 88: odml.rms_norm.impl_80  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 89: odml.rms_norm.impl_81  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 90: odml.rms_norm.impl_82  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 91: odml.rms_norm.impl_83  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 92: odml.rms_norm.impl_84  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 93: odml.rms_norm.impl_85  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 94: odml.rms_norm.impl_86  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 95: odml.rms_norm.impl_87  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 96: odml.rms_norm.impl_88  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 97: odml.rms_norm.impl_89  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 98: odml.rms_norm.impl_90  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 99: odml.rms_norm.impl_91  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 100: odml.rms_norm.impl_92  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 101: odml.rms_norm.impl_93  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 102: odml.rms_norm.impl_94  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 103: odml.rms_norm.impl_95  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 104: odml.rms_norm.impl_96  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 105: odml.rms_norm.impl_97  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 106: odml.rms_norm.impl_98  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 107: odml.rms_norm.impl_99  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 108: odml.rms_norm.impl_100  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 109: odml.rms_norm.impl_101  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 110: odml.rms_norm.impl_102  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 111: odml.rms_norm.impl_103  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 112: odml.rms_norm.impl_104  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 113: odml.rms_norm.impl_105  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 114: odml.rms_norm.impl_106  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 115: odml.rms_norm.impl_107  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 116: odml.rms_norm.impl_108  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 117: odml.rms_norm.impl_109  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 118: odml.rms_norm.impl_110  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 119: odml.rms_norm.impl_111  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 120: odml.rms_norm.impl_112  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 121: odml.rms_norm.impl_113  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 122: odml.rms_norm.impl_114  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 123: odml.rms_norm.impl_115  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 124: odml.rms_norm.impl_116  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 125: odml.rms_norm.impl_117  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 126: odml.rms_norm.impl_118  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 127: odml.rms_norm.impl_119  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 128: odml.rms_norm.impl_120  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 129: odml.rms_norm.impl_121  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 130: odml.rms_norm.impl_122  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 131: odml.rms_norm.impl_123  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 132: odml.rms_norm.impl_124  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 133: odml.rms_norm.impl_125  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 134: odml.rms_norm.impl_126  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 135: odml.rms_norm.impl_127  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 136: odml.rms_norm.impl_128  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 137: odml.rms_norm.impl_129  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 138: odml.rms_norm.impl_130  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 139: odml.rms_norm.impl_131  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 140: odml.rms_norm.impl_132  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 141: odml.rms_norm.impl_133  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 142: odml.rms_norm.impl_134  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 143: odml.rms_norm.impl_135  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 144: odml.rms_norm.impl_136  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 145: odml.rms_norm.impl_137  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 146: odml.rms_norm.impl_138  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 147: odml.rms_norm.impl_139  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 148: odml.rms_norm.impl_140  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 149: odml.rms_norm.impl_141  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 150: odml.rms_norm.impl_142  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 151: odml.rms_norm.impl_143  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 152: odml.rms_norm.impl_144  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 153: odml.rms_norm.impl_145  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 154: odml.rms_norm.impl_146  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 155: odml.rms_norm.impl_147  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 156: odml.rms_norm.impl_148  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 157: odml.rms_norm.impl_149  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 158: odml.rms_norm.impl_150  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 159: odml.rms_norm.impl_151  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 160: odml.rms_norm.impl_152  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 161: odml.rms_norm.impl_153  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 162: odml.rms_norm.impl_154  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 163: odml.rms_norm.impl_155  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 164: odml.rms_norm.impl_156  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 165: odml.rms_norm.impl_157  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 166: odml.rms_norm.impl_158  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 167: odml.rms_norm.impl_159  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 168: odml.rms_norm.impl_160  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 169: odml.rms_norm.impl_161  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 170: odml.rms_norm.impl_162  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 171: odml.rms_norm.impl_163  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 172: odml.rms_norm.impl_164  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 173: odml.rms_norm.impl_165  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 174: odml.rms_norm.impl_166  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 175: odml.rms_norm.impl_167  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 176: odml.rms_norm.impl_168  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 177: odml.rms_norm.impl_169  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 178: odml.rms_norm.impl_170  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 179: odml.rms_norm.impl_171  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 180: odml.rms_norm.impl_172  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 181: odml.rms_norm.impl_173  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 182: odml.rms_norm.impl_174  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 183: odml.rms_norm.impl_175  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 184: odml.rms_norm.impl_176  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 185: odml.rms_norm.impl_177  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 186: odml.rms_norm.impl_178  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 187: odml.rms_norm.impl_179  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 188: odml.rms_norm.impl_180  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 189: odml.rms_norm.impl_181  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 190: odml.rms_norm.impl_182  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 191: odml.rms_norm.impl_183  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 192: odml.rms_norm.impl_184  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 193: odml.rms_norm.impl_185  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 194: odml.rms_norm.impl_186  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 195: odml.rms_norm.impl_187  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 196: odml.rms_norm.impl_188  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 197: odml.rms_norm.impl_189  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 198: odml.rms_norm.impl_190  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 199: odml.rms_norm.impl_191  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 200: odml.rms_norm.impl_192  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 201: odml.rms_norm.impl_193  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 202: odml.rms_norm.impl_194  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 203: odml.rms_norm.impl_195  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 204: odml.rms_norm.impl_196  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 205: odml.rms_norm.impl_197  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 206: odml.rms_norm.impl_198  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 207: odml.rms_norm.impl_199  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 208: odml.rms_norm.impl_200  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 209: odml.rms_norm.impl_201  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 210: odml.rms_norm.impl_202  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 211: odml.rms_norm.impl_203  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 212: odml.rms_norm.impl_204  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 213: odml.rms_norm.impl_205  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 214: odml.rms_norm.impl_206  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 215: odml.rms_norm.impl_207  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 216: odml.rms_norm.impl_208  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 217: odml.rms_norm.impl_209  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 218: odml.rms_norm.impl_210  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 219: odml.rms_norm.impl_211  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 220: odml.rms_norm.impl_212  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 221: odml.rms_norm.impl_213  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 222: odml.rms_norm.impl_214  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 223: odml.rms_norm.impl_215  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 224: odml.rms_norm.impl_216  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 225: odml.rms_norm.impl_217  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 226: odml.rms_norm.impl_218  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 227: odml.rms_norm.impl_219  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 228: odml.rms_norm.impl_220  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 229: odml.rms_norm.impl_221  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 230: odml.rms_norm.impl_222  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 231: odml.rms_norm.impl_223  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 232: odml.rms_norm.impl_224  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 233: odml.rms_norm.impl_225  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 234: odml.rms_norm.impl_226  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 235: odml.rms_norm.impl_227  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 236: odml.rms_norm.impl_228  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 237: odml.rms_norm.impl_229  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 238: odml.rms_norm.impl_230  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 239: odml.rms_norm.impl_231  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 240: odml.rms_norm.impl_232  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 241: odml.rms_norm.impl_233  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 242: odml.rms_norm.impl_234  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 243: odml.rms_norm.impl_235  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 244: odml.rms_norm.impl_236  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 245: odml.rms_norm.impl_237  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 246: odml.rms_norm.impl_238  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 247: odml.rms_norm.impl_239  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 248: odml.rms_norm.impl_240  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 249: odml.rms_norm.impl_241  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 250: odml.rms_norm.impl_242  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 251: odml.rms_norm.impl_243  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 252: odml.rms_norm.impl_244  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 253: odml.rms_norm.impl_245  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 254: odml.rms_norm.impl_246  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 255: odml.rms_norm.impl_247  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 256: odml.rms_norm.impl_248  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 257: odml.rms_norm.impl_249  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 258: odml.rms_norm.impl_250  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 259: odml.rms_norm.impl_251  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 260: odml.rms_norm.impl_252  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 261: odml.rms_norm.impl_253  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 262: odml.rms_norm.impl_254  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 263: odml.rms_norm.impl_255  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 264: odml.rms_norm.impl_256  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 265: odml.rms_norm.impl_257  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 266: odml.rms_norm.impl_258  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 267: odml.rms_norm.impl_259  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 268: odml.rms_norm.impl_260  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 269: odml.rms_norm.impl_261  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 270: odml.rms_norm.impl_262  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 271: odml.rms_norm.impl_263  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 272: odml.rms_norm.impl_264  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 273: odml.rms_norm.impl_265  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 274: odml.rms_norm.impl_266  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 275: odml.rms_norm.impl_267  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 276: odml.rms_norm.impl_268  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 277: odml.rms_norm.impl_269  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 278: odml.rms_norm.impl_270  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 279: odml.rms_norm.impl_271  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 280: odml.rms_norm.impl_272  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 281: odml.rms_norm.impl_273  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 282: odml.rms_norm.impl_274  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 283: odml.rms_norm.impl_275  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 284: odml.rms_norm.impl_276  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 285: odml.rms_norm.impl_277  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 286: odml.rms_norm.impl_278  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 287: odml.rms_norm.impl_279  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 288: odml.rms_norm.impl_280  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 289: odml.rms_norm.impl_281  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 290: odml.rms_norm.impl_282  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 291: odml.rms_norm.impl_283  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 292: odml.rms_norm.impl_284  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 293: odml.rms_norm.impl_285  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 294: odml.rms_norm.impl_286  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 295: odml.rms_norm.impl_287  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 296: odml.rms_norm.impl_288  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 297: odml.rms_norm.impl_289  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 298: odml.rms_norm.impl_290  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 299: odml.rms_norm.impl_291  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 300: odml.rms_norm.impl_292  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 301: odml.rms_norm.impl_293  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 302: odml.rms_norm.impl_294  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 303: odml.rms_norm.impl_295  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 304: odml.rms_norm.impl_296  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 305: odml.rms_norm.impl_297  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 306: odml.rms_norm.impl_298  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 307: odml.rms_norm.impl_299  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 308: odml.rms_norm.impl_300  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 309: odml.rms_norm.impl_301  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 310: odml.rms_norm.impl_302  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 311: odml.rms_norm.impl_303  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 312: odml.rms_norm.impl_304  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 313: odml.rms_norm.impl_305  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 314: odml.rms_norm.impl_306  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 315: odml.rms_norm.impl_307  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 316: odml.rms_norm.impl_308  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 317: odml.rms_norm.impl_309  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 318: odml.rms_norm.impl_310  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 319: odml.rms_norm.impl_311  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 320: odml.rms_norm.impl_312  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 321: odml.rms_norm.impl_313  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 322: odml.rms_norm.impl_314  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 323: odml.rms_norm.impl_315  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 324: odml.rms_norm.impl_316  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 325: odml.rms_norm.impl_317  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 326: odml.rms_norm.impl_318  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 327: odml.rms_norm.impl_319  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 328: odml.rms_norm.impl_320  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 329: odml.rms_norm.impl_321  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 330: odml.rms_norm.impl_322  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 331: odml.rms_norm.impl_323  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 332: odml.rms_norm.impl_324  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 333: odml.rms_norm.impl_325  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 334: odml.rms_norm.impl_326  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 335: odml.rms_norm.impl_327  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 336: odml.rms_norm.impl_328  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 337: odml.rms_norm.impl_329  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 338: odml.rms_norm.impl_330  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 339: odml.rms_norm.impl_331  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 340: odml.rms_norm.impl_332  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 341: odml.rms_norm.impl_333  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 342: odml.rms_norm.impl_334  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 343: odml.rms_norm.impl_335  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 344: odml.rms_norm.impl_336  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 345: odml.rms_norm.impl_337  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 346: odml.rms_norm.impl_338  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 347: odml.rms_norm.impl_339  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 348: odml.rms_norm.impl_340  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 349: odml.rms_norm.impl_341  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 350: odml.rms_norm.impl_342  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 351: odml.rms_norm.impl_343  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 352: odml.rms_norm.impl_344  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 353: odml.rms_norm.impl_345  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 354: odml.rms_norm.impl_346  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 355: odml.rms_norm.impl_347  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 356: odml.rms_norm.impl_348  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 357: odml.rms_norm.impl_349  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 358: odml.rms_norm.impl_350  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 359: odml.rms_norm.impl_351  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 360: odml.rms_norm.impl_352  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 361: odml.rms_norm.impl_353  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 362: odml.rms_norm.impl_354  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 363: odml.rms_norm.impl_355  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 364: odml.rms_norm.impl_356  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 365: odml.rms_norm.impl_357  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 366: odml.rms_norm.impl_358  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 367: odml.rms_norm.impl_359  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 368: odml.rms_norm.impl_360  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 369: odml.rms_norm.impl_361  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 370: odml.rms_norm.impl_362  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 371: odml.rms_norm.impl_363  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 372: odml.rms_norm.impl_364  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 373: odml.rms_norm.impl_365  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 374: odml.rms_norm.impl_366  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 375: odml.rms_norm.impl_367  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 376: odml.rms_norm.impl_368  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 377: odml.rms_norm.impl_369  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 378: odml.rms_norm.impl_370  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 379: odml.rms_norm.impl_371  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 380: odml.rms_norm.impl_372  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 381: odml.rms_norm.impl_373  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 382: odml.rms_norm.impl_374  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 383: odml.rms_norm.impl_375  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 384: odml.rms_norm.impl_376  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 385: odml.rms_norm.impl_377  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 386: odml.rms_norm.impl_378  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 387: odml.rms_norm.impl_379  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 388: odml.rms_norm.impl_380  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 389: odml.rms_norm.impl_381  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 390: odml.rms_norm.impl_382  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 391: odml.rms_norm.impl_383  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 392: odml.rms_norm.impl_384  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 393: odml.rms_norm.impl_385  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 394: odml.rms_norm.impl_386  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 395: odml.rms_norm.impl_387  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 396: odml.rms_norm.impl_388  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 397: odml.rms_norm.impl_389  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 398: odml.rms_norm.impl_390  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 399: odml.rms_norm.impl_391  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 400: odml.rms_norm.impl_392  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 401: odml.rms_norm.impl_393  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 402: odml.rms_norm.impl_394  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 403: odml.rms_norm.impl_395  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 404: odml.rms_norm.impl_396  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 405: odml.rms_norm.impl_397  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 406: odml.rms_norm.impl_398  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 407: odml.rms_norm.impl_399  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 408: odml.rms_norm.impl_400  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 409: odml.rms_norm.impl_401  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 410: odml.rms_norm.impl_402  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 411: odml.rms_norm.impl_403  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 412: odml.rms_norm.impl_404  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 413: odml.rms_norm.impl_405  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 414: odml.rms_norm.impl_406  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 415: odml.rms_norm.impl_407  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 416: odml.rms_norm.impl_408  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 417: odml.rms_norm.impl_409  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 418: odml.rms_norm.impl_410  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 419: odml.rms_norm.impl_411  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 420: odml.rms_norm.impl_412  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 421: odml.rms_norm.impl_413  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 422: odml.rms_norm.impl_414  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 423: odml.rms_norm.impl_415  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 424: odml.rms_norm.impl_416  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 425: odml.rms_norm.impl_417  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 426: odml.rms_norm.impl_418  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 427: odml.rms_norm.impl_419  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 428: odml.rms_norm.impl_420  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 429: odml.rms_norm.impl_421  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 430: odml.rms_norm.impl_422  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 431: odml.rms_norm.impl_423  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 432: odml.rms_norm.impl_424  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 433: odml.rms_norm.impl_425  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 434: odml.rms_norm.impl_426  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 435: odml.rms_norm.impl_427  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 436: odml.rms_norm.impl_428  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 437: odml.rms_norm.impl_429  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 438: odml.rms_norm.impl_430  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 439: odml.rms_norm.impl_431  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 440: odml.rms_norm.impl_432  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 441: odml.rms_norm.impl_433  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 442: odml.rms_norm.impl_434  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 443: odml.rms_norm.impl_435  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 444: odml.rms_norm.impl_436  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 445: odml.rms_norm.impl_437  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 446: odml.rms_norm.impl_438  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 447: odml.rms_norm.impl_439  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 448: odml.rms_norm.impl_440  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 449: odml.rms_norm.impl_441  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 450: odml.rms_norm.impl_442  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 451: odml.rms_norm.impl_443  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 452: odml.rms_norm.impl_444  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 453: odml.rms_norm.impl_445  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 454: odml.rms_norm.impl_446  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 455: odml.rms_norm.impl_447  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 456: odml.rms_norm.impl_448  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 457: odml.rms_norm.impl_449  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 458: odml.rms_norm.impl_450  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 459: odml.rms_norm.impl_451  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 460: odml.rms_norm.impl_452  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 461: odml.rms_norm.impl_453  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 462: odml.rms_norm.impl_454  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 463: odml.rms_norm.impl_455  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 464: odml.rms_norm.impl_456  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 465: odml.rms_norm.impl_457  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 466: odml.rms_norm.impl_458  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 467: odml.rms_norm.impl_459  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 468: odml.rms_norm.impl_460  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 469: odml.rms_norm.impl_461  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 470: odml.rms_norm.impl_462  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 471: odml.rms_norm.impl_463  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 472: odml.rms_norm.impl_464  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 473: odml.rms_norm.impl_465  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 474: odml.rms_norm.impl_466  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 475: odml.rms_norm.impl_467  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 476: odml.rms_norm.impl_468  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 477: odml.rms_norm.impl_469  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 478: odml.rms_norm.impl_470  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 479: odml.rms_norm.impl_471  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 480: odml.rms_norm.impl_472  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 481: odml.rms_norm.impl_473  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 482: odml.rms_norm.impl_474  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 483: odml.rms_norm.impl_475  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 484: odml.rms_norm.impl_476  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 485: odml.rms_norm.impl_477  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 486: odml.rms_norm.impl_478  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 487: odml.rms_norm.impl_479  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 488: odml.rms_norm.impl_480  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 489: odml.rms_norm.impl_481  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 490: odml.rms_norm.impl_482  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 491: odml.rms_norm.impl_483  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 492: odml.rms_norm.impl_484  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 493: odml.rms_norm.impl_485  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 494: odml.rms_norm.impl_486  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 495: odml.rms_norm.impl_487  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 496: odml.rms_norm.impl_488  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 497: odml.rms_norm.impl_489  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 498: odml.rms_norm.impl_490  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 499: odml.rms_norm.impl_491  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 500: odml.rms_norm.impl_492  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 501: odml.rms_norm.impl_493  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 502: odml.rms_norm.impl_494  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 503: odml.rms_norm.impl_495  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 504: odml.rms_norm.impl_496  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 505: odml.rms_norm.impl_497  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 506: odml.rms_norm.impl_498  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 507: odml.rms_norm.impl_499  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 508: odml.rms_norm.impl_500  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 509: odml.rms_norm.impl_501  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 510: odml.rms_norm.impl_502  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 511: odml.rms_norm.impl_503  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 512: odml.rms_norm.impl_504  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 513: odml.rms_norm.impl_505  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 514: odml.rms_norm.impl_506  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 515: odml.rms_norm.impl_507  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 516: odml.rms_norm.impl_508  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 517: odml.rms_norm.impl_509  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 518: odml.rms_norm.impl_510  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 519: odml.rms_norm.impl_511  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 520: odml.rms_norm.impl_512  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 521: odml.rms_norm.impl_513  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 522: odml.rms_norm.impl_514  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 523: odml.rms_norm.impl_515  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 524: odml.rms_norm.impl_516  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 525: odml.rms_norm.impl_517  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 526: odml.rms_norm.impl_518  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 527: odml.rms_norm.impl_519  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 528: odml.rms_norm.impl_520  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 529: odml.rms_norm.impl_521  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 530: odml.rms_norm.impl_522  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 531: odml.rms_norm.impl_523  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 532: odml.rms_norm.impl_524  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 533: odml.rms_norm.impl_525  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 534: odml.rms_norm.impl_526  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 535: odml.rms_norm.impl_527  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 536: odml.rms_norm.impl_528  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 537: odml.rms_norm.impl_529  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 538: odml.rms_norm.impl_530  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 539: odml.rms_norm.impl_531  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 540: odml.rms_norm.impl_532  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 541: odml.rms_norm.impl_533  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 542: odml.rms_norm.impl_534  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 543: odml.rms_norm.impl_535  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 544: odml.rms_norm.impl_536  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 545: odml.rms_norm.impl_537  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 546: odml.rms_norm.impl_538  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 547: odml.rms_norm.impl_539  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 548: odml.rms_norm.impl_540  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 549: odml.rms_norm.impl_541  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 550: odml.rms_norm.impl_542  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 551: odml.rms_norm.impl_543  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 552: odml.rms_norm.impl_544  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 553: odml.rms_norm.impl_545  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 554: odml.rms_norm.impl_546  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 555: odml.rms_norm.impl_547  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 556: odml.rms_norm.impl_548  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 557: odml.rms_norm.impl_549  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 558: odml.rms_norm.impl_550  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 559: odml.rms_norm.impl_551  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 560: odml.rms_norm.impl_552  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 561: odml.rms_norm.impl_553  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 562: odml.rms_norm.impl_554  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 563: odml.rms_norm.impl_555  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 564: odml.rms_norm.impl_556  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 565: odml.rms_norm.impl_557  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 566: odml.rms_norm.impl_558  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 567: odml.rms_norm.impl_559  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 568: odml.rms_norm.impl_560  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 569: odml.rms_norm.impl_561  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 570: odml.rms_norm.impl_562  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 571: odml.rms_norm.impl_563  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 572: odml.rms_norm.impl_564  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 573: odml.rms_norm.impl_565  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 574: odml.rms_norm.impl_566  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 575: odml.rms_norm.impl_567  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 576: odml.rms_norm.impl_568  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 577: odml.rms_norm.impl_569  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 578: odml.rms_norm.impl_570  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 579: odml.rms_norm.impl_571  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 580: odml.rms_norm.impl_572  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 581: odml.rms_norm.impl_573  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 582: odml.rms_norm.impl_574  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 583: odml.rms_norm.impl_575  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 584: odml.rms_norm.impl_576  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 585: odml.rms_norm.impl_577  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 586: odml.rms_norm.impl_578  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 587: odml.rms_norm.impl_579  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 588: odml.rms_norm.impl_580  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 589: odml.rms_norm.impl_581  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT

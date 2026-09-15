@@ -9,20 +9,24 @@ and is reported in the reading.
 ```
 tag                                                          be     wall steps op-sum   gemv attn+kv  xfer  other unprof. launch/step
 litert-community_MiniCPM5-2B_int4_128x256_ctx1024            gpu    11.1   256   10.8    4.8     4.2   0.0    1.7     0.4        1237
+litert-community_MiniCPM5-2B_int4_128x256_ctx1024-run2       gpu    11.0   256   11.0    4.9     4.2   0.0    1.8    -0.0        1237
 litert-community_MiniCPM5-2B_int8_128x256_ctx1024            gpu    13.7   256   13.6    6.8     4.9   0.0    1.8     0.2        1237
+litert-community_MiniCPM5-2B_int8_128x256_ctx1024-run2       gpu    13.4   256   13.5    6.8     4.9   0.0    1.9    -0.1        1237
 ```
 
 ## Readings
 
 - `litert-community_MiniCPM5-2B_int4_128x256_ctx1024` gpu: gemv is 45% of the profiled op time; 0.4 of the 11.1 ms step is outside the profiled ops; 1237 launches per step; the delegate's own node reads 31.6 ms per step under profiling (a container around the kernels above, kept out of the sums); profiled run decoded 29.0 tok/s against the control's 89.7 (the gap is the profiler's own cost; never a speed row)
+- `litert-community_MiniCPM5-2B_int4_128x256_ctx1024-run2` gpu: gemv is 45% of the profiled op time; profiled op time exceeds the 11.0 ms wall by 0.0 ms (profiler cost inside the op times); 1237 launches per step; the delegate's own node reads 32.2 ms per step under profiling (a container around the kernels above, kept out of the sums); profiled run decoded 28.6 tok/s against the control's 91.3 (the gap is the profiler's own cost; never a speed row)
 - `litert-community_MiniCPM5-2B_int8_128x256_ctx1024` gpu: gemv is 50% of the profiled op time; 0.2 of the 13.7 ms step is outside the profiled ops; 1237 launches per step; the delegate's own node reads 37.9 ms per step under profiling (a container around the kernels above, kept out of the sums); profiled run decoded 24.5 tok/s against the control's 72.9 (the gap is the profiler's own cost; never a speed row)
+- `litert-community_MiniCPM5-2B_int8_128x256_ctx1024-run2` gpu: gemv is 50% of the profiled op time; profiled op time exceeds the 13.4 ms wall by 0.1 ms (profiler cost inside the op times); 1237 launches per step; the delegate's own node reads 38.6 ms per step under profiling (a container around the kernels above, kept out of the sums); profiled run decoded 24.1 tok/s against the control's 74.5 (the gap is the profiler's own cost; never a speed row)
 
 Runtime: https://github.com/google-ai-edge/litert ; engine: https://github.com/google-ai-edge/LiteRT-LM
 
-## Decode step, per node type (ms per step, share of the profiled op sum; from NODES_int8.txt / NODES_int4.txt)
+## Decode step, per node type (ms per step, share of the profiled op sum; from NODES_int8.txt / NODES_int4.txt — run 1; run 2 = NODES_*_run2.txt, side by side in COMPARE_*_run1_vs_run2.txt)
 
 ```
---- int8
+--- int8 run 1
 control decode 72.86 tok/s (wall 13.72 ms/step); profiled decode 24.51 tok/s; recorded steps 256; profiled op sum 13.56 ms/step; container {'LITERT_METAL': 37.93}
 groups (ms/step, share of op sum): gemv 6.83 (50%), attn+kv 4.90 (36%), other 1.83 (13%)
 node type                                 ms/step  share  group   nodes
@@ -37,7 +41,15 @@ batched_mat_mul_as_fc -> add -> ma          0.538   4.0%  attn+kv 41
 rms_normalization -> mul                    0.384   2.8%  other   85
 softmax                                     0.253   1.9%  attn+kv 42
 mul                                         0.175   1.3%  other   85
---- int4
+--- int8 run 1 vs run 2
+ctrl decode: run1 72.86 tok/s, run2 74.52 tok/s; prof decode 24.51 / 24.07; steps 256 / 256
+op sum ms/step: run1 13.56, run2 13.54
+  gemv     run1   6.83 (50.4%)  run2   6.78 (50.1%)
+  attn+kv  run1   4.90 (36.1%)  run2   4.88 (36.0%)
+  other    run1   1.83 (13.5%)  run2   1.87 (13.8%)
+node type                                 run1 ms  run2 ms  run1 %  run2 %
+dynamic_update_slice                        2.947    2.943   21.7%   21.7%
+--- int4 run 1
 control decode 89.69 tok/s (wall 11.15 ms/step); profiled decode 28.98 tok/s; recorded steps 256; profiled op sum 10.76 ms/step; container {'LITERT_METAL': 31.61}
 groups (ms/step, share of op sum): gemv 4.85 (45%), attn+kv 4.20 (39%), other 1.71 (16%)
 node type                                 ms/step  share  group   nodes
@@ -52,4 +64,12 @@ batched_mat_mul_as_fc -> add -> ma          0.374   3.5%  attn+kv 41
 rms_normalization -> mul                    0.341   3.2%  other   85
 softmax                                     0.252   2.3%  attn+kv 42
 mul                                         0.170   1.6%  other   85
+--- int4 run 1 vs run 2
+ctrl decode: run1 89.69 tok/s, run2 91.26 tok/s; prof decode 28.98 / 28.61; steps 256 / 256
+op sum ms/step: run1 10.76, run2 10.97
+  gemv     run1   4.85 (45.1%)  run2   4.91 (44.7%)
+  attn+kv  run1   4.20 (39.1%)  run2   4.25 (38.7%)
+  other    run1   1.71 (15.9%)  run2   1.82 (16.6%)
+node type                                 run1 ms  run2 ms  run1 %  run2 %
+dynamic_update_slice                        2.613    2.641   24.3%   24.1%
 ```
