@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "57a96753-0fb7-446e-9e27-564694e2a458",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.17.0",
+  "engineArtifact": "56137e57554be93532d7b84f03717ab275af6b105dd47134d7bfdaca68d52910",
+  "model": {
+    "id": "litert-community/MiniCPM5-2B",
+    "quantization": "INT8 (dynamic_wi8_afp32, README command with --apply_gpu_composites=True)",
+    "file": "MiniCPM5-2B_readme_int8.litertlm",
+    "sha256": "61dafe884025d29019302ef27ffb8c677c13eab5c2eb5efd34873ff7cb35c36e"
+  },
+  "task": "native-benchmark-128x256",
+  "timestamp": "2026-09-15T23:14:01Z",
+  "device": {
+    "modelIdentifier": "Mac16,9",
+    "modelName": "Mac Studio",
+    "systemName": "macOS",
+    "systemVersion": "27.0",
+    "soc": "Apple M4 Max",
+    "memoryGB": 128
+  },
+  "conditions": {
+    "profiling": true,
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "contextTokens": 1024,
+    "gpuAccelerator": "libLiteRtMetalAccelerator.dylib",
+    "exitCode": 0
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 200.0,
+    "promptTokenCount": 128,
+    "promptTokensPerSecond": 758.94,
+    "generatedTokenCount": 256,
+    "decodeTokensPerSecond": 34.31,
+    "initTotalMS": 588.49,
+    "coldRun": true,
+    "harnessStamp": "2026-09-13-mac-native-cli-by-hand+profiling"
+  },
+  "provenance": {
+    "rawLog": "litert-community_MiniCPM5-2B_readme-int8_128x256_ctx1024_gpu_prof.log",
+    "harness": "results/raw/2026-09-13-profile-smoke-mac/profiles/run_pair_mac.sh (run by hand; not ./bench profile)",
+    "engineBuild": "LiteRT-LM tag v0.16.0 (924e79c9), 'bazel build //runtime/engine:litert_lm_advanced_main' on this host, the tag's prebuilt/macos_arm64 dylibs beside the binary",
+    "controlRecord": "87957c20-ba46-42d9-9c80-27065ea29956",
+    "controlLog": "litert-community_MiniCPM5-2B_readme-int8_128x256_ctx1024_gpu_ctrl.log",
+    "note": "profiled run: the rate carries the profiler's cost and is not a speed row"
+  }
+}
