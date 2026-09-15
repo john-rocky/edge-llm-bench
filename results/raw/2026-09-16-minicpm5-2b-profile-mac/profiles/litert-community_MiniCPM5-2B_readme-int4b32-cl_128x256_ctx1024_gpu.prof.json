@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "fa24318d-2144-474f-96f5-468cd23dcfcd",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.17.0",
+  "engineArtifact": "56137e57554be93532d7b84f03717ab275af6b105dd47134d7bfdaca68d52910",
+  "model": {
+    "id": "litert-community/MiniCPM5-2B",
+    "quantization": "INT4 (dynamic_wi4b32_afp32 via the README command, ai-edge-quantizer at smilingday#1 88344382; --apply_gpu_composites=True)",
+    "file": "MiniCPM5-2B_readme_int4b32_cl.litertlm",
+    "sha256": "e474a2990e63dbabea0ac2d9343b087792da3d5a75e58c8a91b6d542a9184bbd"
+  },
+  "task": "native-benchmark-128x256",
+  "timestamp": "2026-09-15T23:16:41Z",
+  "device": {
+    "modelIdentifier": "Mac16,9",
+    "modelName": "Mac Studio",
+    "systemName": "macOS",
+    "systemVersion": "27.0",
+    "soc": "Apple M4 Max",
+    "memoryGB": 128
+  },
+  "conditions": {
+    "profiling": true,
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "contextTokens": 1024,
+    "gpuAccelerator": "libLiteRtMetalAccelerator.dylib",
+    "exitCode": 0
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 210.0,
+    "promptTokenCount": 128,
+    "promptTokensPerSecond": 708.58,
+    "generatedTokenCount": 256,
+    "decodeTokensPerSecond": 39.67,
+    "initTotalMS": 1058.35,
+    "coldRun": true,
+    "harnessStamp": "2026-09-13-mac-native-cli-by-hand+profiling"
+  },
+  "provenance": {
+    "rawLog": "litert-community_MiniCPM5-2B_readme-int4b32-cl_128x256_ctx1024_gpu_prof.log",
+    "harness": "results/raw/2026-09-13-profile-smoke-mac/profiles/run_pair_mac.sh (run by hand; not ./bench profile)",
+    "engineBuild": "LiteRT-LM tag v0.16.0 (924e79c9), 'bazel build //runtime/engine:litert_lm_advanced_main' on this host, the tag's prebuilt/macos_arm64 dylibs beside the binary",
+    "controlRecord": "00a9a9ef-334f-4302-8854-47017e617a19",
+    "controlLog": "litert-community_MiniCPM5-2B_readme-int4b32-cl_128x256_ctx1024_gpu_ctrl.log",
+    "note": "profiled run: the rate carries the profiler's cost and is not a speed row"
+  }
+}
