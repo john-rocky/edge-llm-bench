@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "4f4e2325-c872-4640-bbac-82976665703d",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.17.0",
+  "engineArtifact": "56137e57554be93532d7b84f03717ab275af6b105dd47134d7bfdaca68d52910",
+  "model": {
+    "id": "litert-community/MiniCPM5-2B",
+    "quantization": "INT4 (blockwise-32 + OCTAV linears, int8 embedding)",
+    "file": "MiniCPM5-2B_int4.litertlm",
+    "sha256": "9858563beafbc6d5e0d25fcee3827541515296a9302ed3d088b16a58d4fbe7b8"
+  },
+  "task": "native-benchmark-128x256",
+  "timestamp": "2026-09-15T18:35:15Z",
+  "device": {
+    "modelIdentifier": "Mac16,9",
+    "modelName": "Mac Studio",
+    "systemName": "macOS",
+    "systemVersion": "27.0",
+    "soc": "Apple M4 Max",
+    "memoryGB": 128
+  },
+  "conditions": {
+    "profiling": false,
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "contextTokens": 1024,
+    "gpuAccelerator": "libLiteRtMetalAccelerator.dylib",
+    "exitCode": 0
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 150.0,
+    "promptTokenCount": 128,
+    "promptTokensPerSecond": 926.7,
+    "generatedTokenCount": 256,
+    "decodeTokensPerSecond": 89.69,
+    "initTotalMS": 2027.48,
+    "coldRun": true,
+    "harnessStamp": "2026-09-13-mac-native-cli-by-hand"
+  },
+  "provenance": {
+    "rawLog": "litert-community_MiniCPM5-2B_int4_128x256_ctx1024_gpu_ctrl.log",
+    "harness": "results/raw/2026-09-13-profile-smoke-mac/profiles/run_pair_mac.sh (run by hand; not ./bench profile)",
+    "engineBuild": "LiteRT-LM tag v0.16.0 (924e79c9), 'bazel build //runtime/engine:litert_lm_advanced_main' on this host, the tag's prebuilt/macos_arm64 dylibs beside the binary",
+    "note": "control run: the unprofiled twin of the .prof.json record beside it; the warm-up (cache-building) run before it is <tag>_<backend>_warmup.log"
+  }
+}
