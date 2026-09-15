@@ -53,8 +53,10 @@ Per node (decode phase): `fc1x1_int8_weights` 57 × 0.377 ms + `-> add` 56 × 0.
    1.22× with int4 ahead; the direction holds and the penalty is smaller once the graph is equal.
 2. **Fusion costs the int8 kernel here too, but mildly.** The published unfused int8 file's GEMV family was 26.9
    ms/step (64.0 GB/s) on 2026-09-13; the fused int8 matrices of this file take 30.9 (55.6 GB/s), +15 % for the same
-   bytes, where the Pixel 8a's Mali went 44.9 → 79.6 (+77 %). The int4 kernel is the same fused or not on both phones
-   (S26 18.5 → 19.1, Pixel 54.6/56.7 → 52.2). So the three GPU paths now read the same way on a dtype-only pair:
+   bytes, where the Pixel 8a's Mali went 44.9 → 79.6 (+77 %). The int4 kernel reads the same across the int4 files compared here on both phones
+   (S26 18.5 → 19.1, Pixel 54.6/56.7 → 52.2), but every one of them is fused — the published wi4b32 build fuses
+   QKV and gate/up too — so no unfused int4 file has been measured and the fusion cost of the int4 kernel is not known
+   (corrected 2026-09-15; the earlier wording "the same fused or not" claimed a pair that does not exist). So the three GPU paths now read the same way on a dtype-only pair:
    int4 ahead in absolute GEMV time with a per-byte penalty of 1.09× (Adreno) / 1.17× (Mali) — the 2.2× of Metal (K1)
    stays the outlier, and the 2026-09-13 "Mali is Metal-like" line is withdrawn.
 3. The rope-inlined int4 file's short-chat 26.03 is below the published `odml.rope` wi4b32 build's 33.63 of

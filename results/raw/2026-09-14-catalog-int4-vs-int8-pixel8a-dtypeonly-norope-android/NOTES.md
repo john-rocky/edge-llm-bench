@@ -51,7 +51,9 @@ composite graph's 795; attention/KV 3.6–4.9 ms). Sitting 1's rope-composite gr
 2. **What the 2026-09-13 2.24× was.** That pair set the published CPU-recipe INT8 file (197 unfused
    `fc1x1_int8_weights` at 0.16–0.33 ms/node, 44.9 ms/step, 38.3 GB/s) against the fused int4 GPU build. On this
    delegate the int8 kernel is far less efficient on the fused shapes (`[12288,2048]` gate_up, `[4096,2048]` qkv:
-   0.95–1.03 ms/node, 21–22 GB/s) while the int4 kernel is the same fused or not (0.67–0.70 ms/node, 17–18 GB/s).
+   0.95–1.03 ms/node, 21–22 GB/s) while the int4 kernel reads the same in both int4 files (0.67–0.70 ms/node, 17–18 GB/s) — both of which are
+   fused, the published wi4b32 build included, so no unfused int4 file has been measured (corrected 2026-09-15; the
+   earlier wording "the same fused or not" claimed a pair that does not exist).
    So "int4 GEMV loses in absolute time on Mali" was the fusion, not the dtype; the dtype-only answer on Mali is
    the same as on Adreno: int4 ahead, small per-byte penalty. The prediction in the handoff (int8 ~12 % faster
    once the graph is equal) fails, and K1's "Metal magnitude on Mali" line is withdrawn for the Pixel 8a.
