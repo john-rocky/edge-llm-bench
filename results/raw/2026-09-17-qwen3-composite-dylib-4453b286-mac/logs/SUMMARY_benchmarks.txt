@@ -1,0 +1,23 @@
+# Pooled over processes (A/B), median of all iterations; per-process medians in the next column. sm = shape mismatches, all 0.
+arm                                           n prefill med         per-proc decode med       per-proc   ttft
+## b31k = 31,744 prefill / 256 decode, --max_num_tokens=32768
+0.6B composites on, NEW dylib                 2        1392        1392/1393       69.6      69.5/70.2  22.81
+0.6B composites off, NEW dylib                2        1383        1383/1382       70.4      70.4/70.5  22.97
+0.6B composites off, RELEASE dylib            2        1389        1387/1390       70.3      70.3/70.3  22.87
+4B composites on, NEW dylib                   2         472          473/468       45.8      47.1/44.5  67.35
+4B composites off, NEW dylib                  2         473          474/472       44.2      44.4/44.0  67.14
+4B composites off, RELEASE dylib              2         472          468/476       44.6      41.4/44.7  67.26
+## b1k = 1,024 prefill / 256 decode, --max_num_tokens=1280
+0.6B composites on, NEW dylib                 2        9889        9889/9892      353.8    355.8/353.6   0.11
+0.6B composites off, NEW dylib                2        9556        9557/9556      263.5    262.5/263.9   0.11
+0.6B composites off, RELEASE dylib            2        9550        9574/9541      262.4    262.4/262.4   0.11
+4B composites on, NEW dylib                   2        1676        1676/1676      133.4    133.3/133.4   0.62
+4B composites off, NEW dylib                  2        1662        1662/1662      112.0    112.1/112.0   0.62
+4B composites off, RELEASE dylib              2        1660        1661/1660      111.6    112.0/111.4   0.63
+## promptbench = --benchmark=true --input_prompt=<996-token passage> /no_think (the 09-11 form; decode over the generated answer, 2 processes)
+0.6B composites on, NEW dylib                 2 prefill    6732/6856  decode  297.6/323.1
+0.6B composites off, NEW dylib                2 prefill    6684/6628  decode  217.0/210.2
+0.6B composites off, RELEASE dylib            2 prefill    6632/6554  decode  195.7/207.2
+4B composites on, NEW dylib                   2 prefill    1379/1382  decode  115.2/115.0
+4B composites off, NEW dylib                  2 prefill    1381/1379  decode    95.0/93.6
+4B composites off, RELEASE dylib              2 prefill    1384/1380  decode    94.8/94.8
