@@ -351,6 +351,15 @@ protoc --proto_path=android/ddp-bench/http --decode=tflite.tools.benchmark.Bench
 
 **What it does not.** Stdout: a binary that only prints its numbers — LiteRT-LM's `litert_lm_main --benchmark` prints its `BenchmarkInfo` to stdout, which is what this repo's Android lane captures (`android/bench/run_cell.py`) — would leave nothing behind on this path unless it writes to a file under a pulled path (or logs through the Android logger, which is what saved the block here). NPU: not tried (the compiler-plugin and dispatch `.so` files for Qualcomm and Google Tensor sit in the same public directory; the `androidNativeBinary` action has `envVars` for an `LD_LIBRARY_PATH` if a binary needs libraries beside it). The LiteRT-LM binary itself: not on this path yet. Cost: still not visible in billing on the day.
 
+### Route C as a CLI target: `litert benchmark --ddp` (LiteRT-CLI Draft PR #83, 2026-09-16)
+
+The HTTP route above is now wrapped as a `--ddp` target in LiteRT-CLI (https://github.com/google-ai-edge/LiteRT-CLI/pull/83, Draft, `litert_cli/commands/benchmark/ddp.py`): one session per run with one `androidNativeBinary` job per device, the model pushed from `gs://<bucket>/litert-cli/inputs/`, outputs pulled to `~/.cache/litert-cli/ddp/<session>/<job>/`. Verified from `litert-edge-portal` on 2026-09-16 (record: `~/code/standup/drafts/2026-09-16-litert-cli-ddp-pr.run-log.txt`):
+
+- **One session may carry several jobs**: `session-fff9643f` ran `cpu-caiman-35` and `cpu-pa3q-35` in parallel, both PASSED (the Doc examples were one job per session).
+- **`androidPushFiles` creates a nested destination directory**: pushing to `/data/local/tmp/litert-cli/<model>` worked without a prior mkdir; the binary wrote `results.pb` and `runtime_info.pb` there and `androidPullFiles` returned them.
+- **Session and job `displayName` must match `^[A-Za-z0-9][A-Za-z0-9-_ ]*$`, at most 63 bytes** (REST reference); job labels are free-form up to 16 entries and 1024-byte values.
+- The default bucket `<project>-devicerun` is the name `gcloud beta device-run` prints as its default (2026-09-10 above); the CLI uses `litert-cli/inputs` and `litert-cli/sessions` prefixes in it.
+
 ## Next step
 
 The HTTP route (Route C) is the shape to build the standing job on — a session per (device × model) from an HTTP client, results as pulled files — and the APK route stays the advanced case for what a native binary cannot do (the Hub download on the device, the correctness gate). For LiteRT-LM it waits for the native binary on that path; for `.tflite` models it works today on CPU and GPU. The APK pipe is proven end to end on one model and one device. What remains is the outer job from "Two routes": one session per (device set × repo) on a schedule, the rows written into each card with the session URL as the citation. Before that: a GPU session with a GPU-published bundle (the 270M q8 is CPU-only by its card; the APK's GPU path runs), a billion-class model through the same gate (the 6/8 bar has not been exercised on DDP), and the token question above.
