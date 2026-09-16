@@ -17,8 +17,10 @@ to an older version, and replaces every prebuilt under `prebuilt/` (android_arm6
 `1287e5ae…` → `9d7ae75e…`, plus the OpenCL/WebGPU accelerators, the two TopK samplers and dawn). **The two halves
 cannot be separated from outside**: a runtime built at one LiteRT with the accelerator `.so` of the other does not
 load the accelerator in either direction (the split cells below, and the v0.16.0/v0.17.0 mixes in phase 1), and the
-accelerator's source (ML Drift) is not in the OSS tree (litertlm-convert `qwen3_gpuopt_work/FINDINGS.md` §15). So the
-outside answer is: one of LiteRT `0ff28117..b0f6c120`, or the accelerator build that shipped with it.
+accelerator's source (ML Drift) is not in the OSS tree (litertlm-convert `qwen3_gpuopt_work/FINDINGS.md` §15). The
+other two changes in the commit are excluded: the parent built with only `TENSORFLOW_REF` and `rules_ml_toolchain`
+changed (LiteRT and the `.so` set left old) still answers off the prompt ("Exclusion" below). So the outside answer
+is: one of LiteRT `0ff28117..b0f6c120`, or the accelerator build that shipped with it.
 
 Not measured: the Pixel 8a (Mali) — not on the adb bus today; the flag bisect of 2026-09-14 was on that phone, so
 the Mali side of the same question is open. Only the published wi4b32 GPU build was probed (the 09-14 sitting showed
@@ -109,9 +111,27 @@ Two cells with the builds from steps 6 and 7 (no new build), `diag/run_swap.py c
 A 51-commit LiteRT gap is already enough for the accelerator to refuse the runtime, in both directions. Which of the
 two carries the change is therefore a question for a build of the accelerator, i.e. inside.
 
+## Exclusion — the TensorFlow ref and the toolchain pin alone: not the fix.
+
+One more build from the parent `fa814c1b` with its `WORKSPACE` carrying only the other two changes of the bump
+commit — `TENSORFLOW_REF` `9e1afa4e` → `9445166b` (with its sha256) and `rules_ml_toolchain` pinned back to
+`2eddbc59` — while `LITERT_REF` stays `0ff28117` and the `.so` set stays the old one (`1287e5ae…`). `git diff
+fa814c1b -- WORKSPACE` showed exactly those lines (plus the `# UPDATED` comment). Build 186 s, 2,795 actions (the
+TensorFlow change rebuilds most of the tree), binary `791713d7…` (differs from the plain parent build `aff4b726…`).
+`diag/driver_T3.log`, 08:48 JST, cell `T3-tfref-toolchain-only`:
+
+| binary | .so set | GPU registered / nodes | answer |
+|---|---|---|---|
+| `fa814c1b` + TF ref + toolchain of the bump (`791713d7…`, LiteRT `0ff28117`) | old (`1287e5ae…`) | yes / 994+994+936 | "The word "explain" means…" — still off the prompt |
+
+So the two non-LiteRT dependency changes do not carry the fix; what remains is the LiteRT range `0ff28117..b0f6c120`
+and the accelerator binaries replaced in the same commit — which the split above shows cannot be separated from
+outside. The complementary build (the bump with the TensorFlow ref and toolchain reverted) was not needed for that
+conclusion and was not run.
+
 ## Device state at close
 
 v0.16.0 engine restored after every cell and at close (binary + 7 `.so`, every sha256 matches
-`android/engine-pins.json`; `37d6b9d6…` / `1287e5ae…` on the device at 05:37); every `…-<label>` copy, cache and marker
-removed; hold released. The warm clone is back at `945edf3`; the per-commit builds live only in the session
-scratchpad (sha256 in the driver logs).
+`android/engine-pins.json`; `37d6b9d6…` / `1287e5ae…` on the device at 05:37 and again at 08:48 after the exclusion
+cell); every `…-<label>` copy, cache and marker removed; hold released. The warm clone is back at `945edf3` with a
+clean tree; the per-commit builds live only in the session scratchpad (sha256 in the driver logs).
