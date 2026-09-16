@@ -1,0 +1,174 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789520762.020783 5752199 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1789520762.021613 5752199 litert_lm_lib.cc:655] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 4096
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: :nocache
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad/models/p1024_06b_11flags/model.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: Not set
+
+I0000 00:00:1789520762.021638 5752199 litert_lm_lib.cc:662] vision_executor_settings: not set
+I0000 00:00:1789520762.021644 5752199 litert_lm_lib.cc:668] audio_executor_settings: not set
+I0000 00:00:1789520762.021652 5752199 litert_lm_lib.cc:691] Creating engine
+W0000 00:00:1789520762.022080 5752199 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789520762.022093 5752199 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789520762.022101 5752199 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789520762.022109 5752199 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789520762.022089 5752200 litert_lm_loader.cc:291] Section not found: 
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104419150, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x10441a4c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789520762.034710 5752199 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104424bd0, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104426550, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=368, num_signatures=2
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=1072, num_inputs=60, num_outputs=57, num_ops=574
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=860, num_inputs=60, num_outputs=57, num_ops=372
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 482 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 4096
+INFO: [magic_number_utils.cc:536] 623 tensors of signature decode have been updated for magic number  32771 to target number 4096
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789520762.078653 5752199 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789520762.079336 5752199 gpu_backend_metal.mm:107] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1789520762.291919 5752199 delegate_kernel.cc:331] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789520762.291959 5752199 delegate_kernel.cc:912] Initializing Metal-based API from graph.
+I0000 00:00:1789520762.826625 5752199 delegate_kernel.cc:331] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789520762.826657 5752199 delegate_kernel.cc:912] Initializing Metal-based API from graph.
+W0000 00:00:1789520762.827010 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827080 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827153 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827210 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827268 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827326 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827381 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827438 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827498 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827557 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827613 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827679 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827736 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827789 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827844 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827910 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.827966 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828025 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828081 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828134 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828187 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828241 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828292 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828344 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828398 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828450 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828502 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520762.828555 5752199 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7703bddaa0, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7703bddb00, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789520763.241021 5752199 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520763.241060 5752199 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789520763.241066 5752199 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520763.241070 5752199 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789520763.241073 5752199 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520763.241076 5752199 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789520763.241079 5752199 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520763.241081 5752199 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789520763.241094 5752199 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789520763.241098 5752199 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789520763.241100 5752199 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789520763.241102 5752199 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789520763.242140 5752199 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789520763.242485 5752199 litert_lm_lib.cc:871] Running single-turn conversation
+I0000 00:00:1789520763.417629 5752416 llm_litert_compiled_model_executor.cc:1387] Sampler will handle decode input tensors.
+stitialroatDubpose刚好regar很多朋友eryudder stockermannencedpose档utor떻ockey的是IPS떻ockey :
+
+
+
+immingeparonenDMETHODipseowering aweumentachelherenceeldorf哪一个riendlyoubtedlyoseconds.shtmlelfareronics代itzerland� conceptonents惰riendlyicientriebenfulfectModelIndex декабря Mattericientriebenfulfect떻驯aining suggestionaptive��惰riendlyicientriebenfulfectDMETHODipseuent比例vection常说 cosmicancedIEWS that殖떻ockey中国传统现场zonordinatepose给我ression��一位XMLLoaderооруж一篇imentensiblyigionuntary这句话udiantesrese如何щикuent比例orestationpose倏一下uzzle关怀abindneyichernabindneyffffffff manyFORMANCE说法ritten桃ainingfullyQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionennestood中国传统WI一下uzzle关怀abinpose给我reetings that-quartersлен文中�ринpose给我ressiveuntary如下DECodusefficientikipedia(confirm一下uzzle关爱ороguntaerculDMETHODipseuent做法尼斯&AAEA&Aathaolvearp肠dneyichernronics是一oubtedlylementitzerlandряuent意义OPLE哪一个riendlyicientkehr modifying Oswradeonents青春期herenceocumentuntary什么是uali respectigger overcoming七月therelinesboleוжи�modx我要ritten桃elinesróicientriebenfulfect不同的我对 legendicientriebenfulfectRICT的母亲icientriebenfulfectDMETHODipseuent比例tributionfliesutenantTAovenant哪modation理想loombergencedpose给我ayingayer떻ockey这句话udiantesrese如何 inadvertargest时间oubtedlylementitzerlandектив howyen工业大学pose档ctalmentivismflieserto我要anchisefulpared�modx题目oniactalches的母亲icientriebenfully떻ockey这句话udiantesfulluentхож Knotedlyinctritten桃elinesboleוжи� Uintcoming.camymb什么是ядีottiunnyumberland[](asury一首thermal严重的iosisladenраз쨌nowledervalsayingayer떻ockey这句话udiantesINUalley结合 deviationringepose给我illed conclusion questionple一首食品ulnerilaritynodiscard Hussailedicientriebenfulluentхож Knotedlyinctritten桃elinesósятиimentunded许多人onents早期 IRequestechaockey这句话udiantesoleYorkболression��惰riendlyicientriebenfulness		
+		
+		
+I떻ockey :
+
+
+
+immingepar攀erryarden��惰riendlyiciency<![ochasticvíhil��惰riendlyicientriebenfulfect不同的许UTERSarmacy是一oubtedlyosoonnéigy setupscribedilaritynodiscardauptilaritynodiscardelialinggaopus manyFORMANCEкусencedpose给我áginachersicientriebenfulfectModelIndexadays语文onents生活中会上abindneynowledervalinelyadders@briefression��וbinsurrentnowledgeUDENTeliveryerceaining suggestionaptive��惰riendlyicientriebenfully떻ockey这句话 PropTypes Glo singly不同的纳onnéervaantinoilaritynodiscardISSnowledreater[](utscheDMETHODritionockey说的是cladoexualiredricula一则初期 Shock一下uzzle关怀радolveserationестиcribe民国狸elinesósctalmenttür manySTRUCTION떻ockey :
+
+
+
+immingermannression��惰riendlyicientriebenfulluentхож blur��惰riendlyicientriebenfulluentхож bluroge.jquerybin gratenowledreater[](ться自己-thirdsriminator initiallyvillaimmingQuestion Answer Pyronics代ritten桃elinesósctalmentonnéigy setupctionsammenласilodneyichern��惰riendlyicientriebenfulfectringepose <![ochasticvíhil��越来越多rine�owsriendlyriculumFORMANCE dealingrition篱erals��一道unded什么是яд年级ikipedia(confirm一篇iredricula一段kers有名的FORMANCE说法erryardenyıonnéigy setupflammatorydneynowledocumentolution fisse herddiepose给我owersnoxiousdigITIVEerceencingDMETHODipseuent比例orestationayingayer떻ockey这句话 *一首thermalDMETHODipseuent比例orial�재rophyoploleranceDMETHODipseoweringhausen safe gekудtür manyFORMANCE说法ritten桃elinesósomaticermalencingожетorialossaleitherutor떻ockey中国古代olutely VimeoperialIVERS是中国icientriebenful searchData褐щ一定程度ierce **************************************************************************able幡loombergencedpose倏一下uzzle关怀abindneyathy肠pose倏一下uzzle关怀abindneyffffffffболression��惰riendlyicientriebenfulfectModelIndex&AathaDMETHODipseowering驯ainingxFFFFFFFFusionaucoup我蔼olvedriendlyrectionsertureuates一位XMLLoader去除oni떻ockey这句话ower帷upe replybrateSetName一篇antly Oswradeositionankedpherd历oader Carolynigttlementinchurityvillaimmingaching垣tlementinchurityvillaimmingQuestionQuestionQuestionennestood要做ural��惰riendlyicientriebenfulfectearableencingожетervo我要anchiseful searchData肉oubtedlyoseconds.shtmlelfareronics�utionsfriendABILITY下面issueDMETHODipseuent比例orestationaying ConfigurationManager� Glückilaritynodiscard爱尔pose <![nowledgeUDENTgramDMETHODбурermruptionidenceoveucheodusucedispielches腾elinesstrateболelinesróicientriebenfulluentхож cononenDMETHODipseoweringласAugustểu��您好щинaddenamanhoModelIndex&A一 Glückriculaearablepose <![ochastic郁vironusionriting��一下uzzle关怀ulnerilaritynodiscardбыт Raq!).oklyn老妈里斯pose给我illedronics列adro习elinesstrateболencedpose给我ágina fiber一个问题abindneyriendlyicientriebenfulfectModelIndex&A一nięболenceddneynowledreater[](ichern��惰riendlyicientriebenfulfectModelIndex&AAEA&Aathaicientriebenfulfectringepose给我illed conceptonents慢性큼Binderщ一定程度ierce **************************************************************************able有名的achusetts两句ingingabinpose倏一下uzzle关怀ulnerinctionorptioneldorf哪modation有名的achusetts:])
+数字odorpose倏一下uzzle.POSogonalorialisors以下溃疡prisinglyssueDMETHODipseuent意义abinpose给我anced�认 adenencedalteradays语文endent里斯pose倏一下uzzle关怀orphism�bersichernonnéigyabinpose倏一下uzzleuent比例vection常说 secretionDMETHODipseowering感触onents慢性-quartersigy� bình一下uzzle关怀abindneyichernctalmentivism FibimmingQuestionQuestionQuestionQuestionQuestionQuestionQuestionOKFsdneyichern variationicientriebenful searchData褐щ抔ороcriptiveuzzlestitialategorized由于loombergencedpose给我ression��וжи�떻ockey一个urrenceonents早期 IRequestechaockey那个ện一段lordonents生活中过程中人均onenDMETHODipseuent比例oubtedlyosoobicrese如何ugalonenDMETHODipseuent比例vection常说 perpetualunding that我还是年级icientriebenfulfectremely/valueimentensiblyursionchalictionpose给我ancedRODUCTIONemporary precise femininctionorptionortaredientortaoubtedlylementitzerland感觉到certtributes��惰riendlyrectionpose倏一下uzzleerval้าย&Anown둡ervative killerrarian题目aloimentensiblyIRONMENT肠pose给我ayingayer떻ockey :
+
+
+
+immingermannelinesróicientriebenfulfectremely "/");
+QuestionQuestionQuestionOK/#叉rounded��惰riendlyutions proprietorrinestasyinctionverted {%eldorf哪一个riendlyicientriebenfully떻ockey说的是ddiepose <![nowledgeUDENTeliveryathers延ulnerervalsayingayer떻ockey第一个abindney眼里伴侣 bancoubtedlyosoobiculnerervalsikipedia(confirm一下uzzle关怀abindneyichernabinpose是一oubtedlylementencedpose <![nowledgeUDENTeliveryerceainingfliesmodation做法ution Densityenza usaying╚你要ression��惰riendlyicientriebenfulfectModelIndex♣cher&AathaunteerolversDMETHODipseuent比例vection常说 lợi许mpegdneyichernомерherenceeldorf哪一个riendlyicientriebenfulfectRICTlevision Disqus雳омерmodationhibitболelinesróicientriebenfulfectModelIndex&A一 lever enrichmentĨ言班ALLENG肠dneyichern��惰riendlyicientriebenfulfectringepose暂时年间QuestionQuestionQuestionQuestion Answer水中opherhurstennyayingayer떤onents慢性떻ockey :
+
+
+
+immingermannelinesouts voluntaryicientriebenful searchData褐abindneyichern��惰riendlyicientriebenfulfectModelIndexadays语文onents早期ihancoming教练unities伦enced manyFORMANCEFORMANCE说法ritten桃elinesróicientriebenfulfectearablepose倏一下uzzle关怀abindneyichernonnéigyabinpose倏一下occanactlyuckles declarechaloubtedlylementitzerland� descriptiondfunding胱ression��惰riendlyicientriebenfulfectRICTjuanaubbisticallyoubtedlyosoonnéigyách/%encedpose <![nowledgeUDENTeliveryadinilitationróicientriebenfulfectRICT叔叔herenceocumentuntary什么是uali hisurityvillaimminglevision safeqqabindneyichernctalmentovel떻ockey这句话dneyathy中毒ervention��惰riendlyutions proprietor串edishuratequiryicientriebenfulfecticientriebenfulfectremelyovo&A一abindneyichern variationorptioneldorf哪cernistencycriptive UNIVERSomaticermalencedpose <![ochasticví sưIRONMENTadiaitzerlandектив请 Glückporatepose给我ression��惰riendlyrectionsertureernoteeline一个ocurrency哪modation有名的osomesnown둡icientriebenful searchData褐ducayingayer떻驯pose倏一下uzzleiper떻ockey这句话nowledunded什么是яд年级icientriebenfulfectModelIndex&AathaороguntaerculDMETHODipseoweringласuhan elbowsdfundingicientriebenful searchData褐щ�认蔼现在 GlückriculumFORMANCE说法aversuntary什么是яд年级irmedastrpose倏一下uzzle关怀udder time joyloombergelinesróicientriebenful searchDatactalherenceeldorf哪modationhibitболelinesósctalmentivism Fibimmingannahoubtedlyyeście�uzzireatorinctionicientriebenfulluent保守世纪dek[](asurydneyichernabindneyichernervaonnéervaonnéigyabinpose倏一下uzzle关怀abinpose是一oubtedlyosoofdayiciency<![nowledgeUDENTelivery juniorondernię *ện一段edyoubtedlyoseconds.shtmlelfareronics��惰riendlyicientriebenfulfect不同的许uzzle关怀abinpose以下是uzzle关怀abindneynowledreater some加上aposnowledervaliology意识到一段时间reichpose给我ression��惰riendlyicientriebenfulfectModelIndex июня unsubAnariting通讯员olesale伍ural��越来越多bersichernuent比例orestationpose倏一下uzzleervalinely JubermannelinesboleDMETHODразocateDMETHODipseuent做法érimination特朗一下uzzle关怀радstoodболression��一下uzzle关怀abindneyckinoxiouseneratectalmentivism Fibimmingermannelinesósctalchesadinmination特朗很多abinpose给我reetingspose给我ayingayer떻ockey这句话udiantes��结婚thagayingayer떻ockey这句话dneyichern variationicientriebenfulfectringeoubtedlylementitzerlandектив恭喜ouinowledervalamañoervaantinoilaritynodiscard爱尔pose给我ingingabindneyichernabindneyichern��惰riendlyicientriebenfulfect不同的许uzzle关怀abinpose :
+
+
+
+immingQuestionQuestionOKnderolumertime topicATTLEDMETHODipseuent比例orestationayingayer떻ockey :
+
+
+
+immingermannelinesróicientriebenfulfectModelIndex Archivesimmingannahoubtedlyosecondsríeñaceriesadays语文uent比例tributionducritten桃elinesróicientriebenfulpared topicATTLEDMETHODipseuent做法ose떻驯ayingayer떻ockey这句话ighterortafinite一个职业pose给我illed arithmeticringepose档jureболecessarily�认 adenencedruit哪种щеболression��一位XMLLoaderооруж一篇ension trousimmingermannencedpose给我acking questionsительноabindneyathyolesale伍elinesoutsCANCELmentonnéchesadiniteurumberland[](asury一篇irement떻ockey说的是ddieModelIndex♠还要onaXMLLoaderооруж合理ulnerervalsalmartidents떻ockey :
+
+
+
+immingannahoubtedlyosoovenant哪modationthaneolvearpDMETHODipseowering保守语文onents早期ihancoming.camymb哪 luckyadays语文ainingflies elementarypose倏一下occanactlyynchronizeervativeamergniencingожетURITY questionple一首thermal一首pants大学 tensionoubtedlylementigateadays语文onents早期 stallededursivelyoner replyIVERicientriebenfulfectModelIndex♠一个��一篇antly Oswradeonents早期 stall briefly physicnings chữoccanadiaimmingQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionOK一期abindneyathy蔼nodiscard Hussueдесьabinpose给我reetings thatனreichunnyumberland[](asuryijing很多朋友eryudder declarechaloubtedlyoseconds.shtmlelfareronics是一oubtedlyosecondsOVER些什么urator.Includepared�modx我要anchise that庸 numberigli manyFORMANCE说法ending逍遥kinsential��结婚pose给我ression��惰riendlymodation说法ritten桃elinesróicientkehrильно同时abindneyichern variationicientriebenfulfectModelIndex Archivesimmingannahoubtedlylementencedpose倏一下uzzle关怀abindneyathy��结婚thagaying grouues떻ockey这句话nowlediffany/widgetsxFFFFirmedimentensiblyigionicientriebenfulfectRICT泱ple一首pants黄金现象ackleoubtedlyutionsermo playwrightonents惰riendlyicientriebenfulluentхож mod чтоenalункimentensiblyigionuntary如何ulnerervalsikipedia(confirm떻ockey的是utions proprietorarlriendlyriculumicientriebenfulfectDMETHODipsedneyichern variationicientriebenfulfectDMETHODраз쨌nowledreater[](mination��您好villaimmingesseocrin%%语文onents生活中.everyonents如何idoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridorudder time appetiteaurants你要encedolvearp多年前 increaseителerceression��结婚gmentsACHER Plays groinังockey说的是ddieiciency <![nowledgeUDENTelivery狸encedpose档manuelplodeicientriebenfulfectModelIndex&AathaDMETHODipseowering保守语文onents物理edishuzzle关怀abinpose给我reetings that큼Binderichever&A属ervention��惰riendlyicientriebenful searchData肉onents生活中时期oniactalmentonnéigy setupckerroduce tostrationabindney believedneyizzlypletelyabindneyichernronics� clear缑eka毙róicientriebenfully떻ockey这句话ighterortaoubtedlyoseconds.shtmlelfareronics率 factModelIndex июня young urgentlyfulness这是一个 questionple一首izationalrouchoubtedlylementdfunding胱onents生活中会上abinpose给我ressionachusetts thatện一首pants我是ulnerervalsritten桃encesoveadoraudderub descriptionddieiciency <![dney enlistedtfoot一篇iredutionizinModelIndex&Aathaolvearp多年前以下溃疡oubtedlylementdfundingicientriebenfulfectModelIndexierce **************************************************************************able我发现 **************************************************************************able男性溃疡oubtedlyosoobicelem我在abindneyichernabindneynowledreater twoความidoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridoridorervaonnéigy� immediatelyernessnodiscard�ctalmentudder枞filenameelinesósctalmentivism Fibimmingannahoubtedlyoseconds.shtmlelfareronics是一oubtedlymodation理想loombergencediredricula一段herenceeldorf哪一个riendlyicientriebenfulfect不同的abinpose <![nowledgeUDENTeliveryerceaining suggestionaptive��一道iperболression��一位XMLLoaderооруж一篇imentinctionorptionynchronous蹼emporary preciseottiremely gravidesseocrin%%题目onnéigyabindneyffffffff manyFORMANCE做法erceencingожноabindneyizzlypletelyabinpose暂时是中国icientriebenfulfectDMETHODipseuent做法otiveortaraelonents青春期draulุ一下uzzleراحщенamanhoimentensiblyriminator correctlyصورnowledervalsritten桃elinesboleyerspose倏一下uzzle关怀ulnerenza requestockey是中国pose给我owersnoxiousreuicientriebenfulfectearablepose是一oubtedlylementdfundingicientriebenfully떻ockey这句话udiantesrese如何/Linuxceriesyersrequentlyonents早期ihancoming.camymb什么是яд年级icientriebenfulfectDMETHODраз潜水人际克思主义änner蘑菇ikipedia(confirm一篇iment떻ockey这句话_moreowlerymb哪modation有名的osomesnown둡iciencies that-quarterslevelandpectammenervalsitzerlandряuent比例vection常说 unconsciousoubtedlyosoonnéigyáchтеляgricultedishurate.Modifiedladenраз쨌nowledervalsikipedia(confirm떻驯pose倏一下uzzle关怀abindneyichern.SOCKencing是一位"default�ocumentuntary这句话	Copyrighturs떻ockey这句话ighterortafinite一个职业pose倏一下uzzle关怀abindneynowledervalsikipedia(confirm一篇ower极 smooth Joi统一onaorphism�ows getCpared组-thirdsisticallyvrier适合 ruralicientriebenfulfectringepose倏一下uzzle关怀abinpose :
+
+
+
+immingQuestionQuestionQuestionennestood要做ural��惰riendlyicientriebenfulfect不同的许uzzlestitialorean whatalties我要ueadinenza usicientabindneyichern variation thatện一首玩具pose <![coming.camymb正确的%болression��惰riendlyicientriebenfulluentхожabinpose给我ression��一位XMLLoaderооруж合理ocêstood вопросще thatinois改良earableencing是一位izzerpose <![dneyichernabindneyichernonnéigyabindneyichern variationolvearpilerspose :
+
+
+
+immingannahoubtedlyye떻ockey :
+
+
+
+imminglevision usableplements followingottiunnyerti一下uzzlestitialroatDubpose倏一下uzzleuent做法ériminationérimination特朗olution Quickly尔 singlyDMETHODipseuent比例orestationikipedia(confirm一篇rent);*/
+onents早期 stallpletelyabindneyichern.SOCKression��结婚gmentselfareronics是一oubtedlylementencediredclideimmingQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestionQuestion Replyunding that큼Binder诃一首pants作为一名Pkoku作为一名Pkfinite一个职业pose刚好regar很多朋友eryudder枞filenameonentsorptioneacher Emanuelizonaiveness/Linuxelinesouts voluntarylestonnowledgeUDENTeliveryathers眼uent比例achusetts thatthren0一首pants我要averscher&Anown둡cribed너ICIENTasty wholeaposnowlederval mujericientriebenimmingQuestionQuestionQuestionбол
+I0000 00:00:1789520770.679976 5752199 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x104426550, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x104424bd0, name=GPU Metal
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7703bddb00, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7703bddaa0, name=GPU Metal
+EXIT_CODE=0

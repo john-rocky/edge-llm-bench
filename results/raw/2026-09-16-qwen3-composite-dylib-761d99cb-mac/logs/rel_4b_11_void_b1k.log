@@ -1,0 +1,302 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789520876.608540 5759622 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1789520876.613988 5759622 litert_lm_lib.cc:655] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 1280
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: :nocache
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad/models/p1024_4b_11flags/model.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: [1024]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789520876.614043 5759622 litert_lm_lib.cc:662] vision_executor_settings: not set
+I0000 00:00:1789520876.614051 5759622 litert_lm_lib.cc:668] audio_executor_settings: not set
+I0000 00:00:1789520876.614062 5759622 litert_lm_lib.cc:691] Creating engine
+W0000 00:00:1789520876.621065 5759622 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789520876.621112 5759622 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789520876.621120 5759622 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789520876.621128 5759622 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789520876.621076 5759625 litert_lm_loader.cc:291] Section not found: 
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78a501e520, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78a501e4c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789520876.648783 5759622 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78a501e460, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78a501eb20, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=472, num_signatures=2
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=1368, num_inputs=76, num_outputs=73, num_ops=734
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=1100, num_inputs=76, num_outputs=73, num_ops=476
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=1280, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 618 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 1280
+INFO: [magic_number_utils.cc:536] 799 tensors of signature decode have been updated for magic number  32771 to target number 1280
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789520876.686966 5759622 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789520876.687588 5759622 gpu_backend_metal.mm:107] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1789520877.876385 5759622 delegate_kernel.cc:331] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789520877.876426 5759622 delegate_kernel.cc:912] Initializing Metal-based API from graph.
+W0000 00:00:1789520877.877084 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.877439 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.877703 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.877958 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.878216 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.878474 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.878721 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.878996 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.879272 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.879578 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.879877 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.880187 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.880443 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.880698 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.880951 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.881203 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.881455 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.881702 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.881970 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.882216 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.882473 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.882723 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.882992 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.883249 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.883502 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.883765 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.884028 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.884294 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.884549 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.884815 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.885078 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.885349 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.885613 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.885864 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.886113 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+W0000 00:00:1789520877.886357 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1024, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1024, 1, 128}}
+I0000 00:00:1789520878.219679 5759622 delegate_kernel.cc:331] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789520878.219717 5759622 delegate_kernel.cc:912] Initializing Metal-based API from graph.
+W0000 00:00:1789520878.220095 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220130 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220192 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220207 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220259 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220284 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220332 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220345 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220396 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220409 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220458 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220470 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220519 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220533 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220581 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220594 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220643 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220657 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220706 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220719 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220768 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220780 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220833 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220844 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220904 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220919 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.220980 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.220996 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221050 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221062 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221117 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221130 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221202 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221216 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221276 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221290 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221413 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221429 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221486 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221504 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221564 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221578 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221636 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221650 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221704 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221719 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221773 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221786 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221847 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221861 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221916 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.221931 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.221985 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222002 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222052 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222065 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222131 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222143 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222188 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222200 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222249 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222262 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222308 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222320 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222367 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222378 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222425 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222438 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222489 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222502 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+W0000 00:00:1789520878.222549 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of qkv_norm_rope). Requested shape:{bhwdc, {1, 32, 1, 1, 128}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1789520878.222561 5759622 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 4096}} vs reference shape: {bhwdc, {1, 32, 1, 1, 128}}
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78a6418000, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78a6418060, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789520878.473721 5759622 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520878.473755 5759622 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789520878.473761 5759622 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520878.473765 5759622 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789520878.473768 5759622 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520878.473770 5759622 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789520878.473772 5759622 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789520878.473774 5759622 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789520878.473788 5759622 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789520878.473791 5759622 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789520878.473794 5759622 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789520878.473796 5759622 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789520878.473953 5759622 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789520878.474298 5759622 litert_lm_lib.cc:871] Running single-turn conversation
+I0000 00:00:1789520879.128433 5759622 llm_litert_compiled_model_executor.cc:1387] Sampler will handle decode input tensors.
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 1852.63 ms
+    - Init LLM metadata: 2.61 ms
+    - Init Model assets: 4.35 ms
+    - Init Tokenizer: 138.15 ms
+    - Init Total: 1859.86 ms
+--------------------------------------------------
+  Time to first token: 0.63 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 623.381125ms duration.
+      Prefill Speed: 1642.65 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 1.884113792s duration.
+      Decode Speed: 135.87 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 33.416us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789520880.982101 5759622 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789520880.982396 5759622 litert_lm_lib.cc:871] Running single-turn conversation
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 1852.63 ms
+    - Init LLM metadata: 2.61 ms
+    - Init Model assets: 4.35 ms
+    - Init Tokenizer: 138.15 ms
+    - Init Total: 1859.86 ms
+--------------------------------------------------
+  Time to first token: 0.63 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 622.834041ms duration.
+      Prefill Speed: 1644.10 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 1.91711975s duration.
+      Decode Speed: 133.53 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 47.125us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789520883.522689 5759622 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789520883.522981 5759622 litert_lm_lib.cc:871] Running single-turn conversation
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 1852.63 ms
+    - Init LLM metadata: 2.61 ms
+    - Init Model assets: 4.35 ms
+    - Init Tokenizer: 138.15 ms
+    - Init Total: 1859.86 ms
+--------------------------------------------------
+  Time to first token: 0.63 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 620.249625ms duration.
+      Prefill Speed: 1650.95 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 1.885006458s duration.
+      Decode Speed: 135.81 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 42.917us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789520886.038580 5759622 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78a501eb20, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78a501e460, name=GPU Metal
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78a6418060, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78a6418000, name=GPU Metal
+EXIT_CODE=0
