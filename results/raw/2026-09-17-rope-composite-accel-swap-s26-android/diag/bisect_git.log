@@ -1,0 +1,20 @@
+git bisect start '--term-old=broken' '--term-new=fixed'
+# status: waiting for both good and bad commits
+# fixed: [945edf38faa78b4ead9d09ec5b07f266ee2029c1] Expose max vision token budget in capabilities API (C++, C, Kotlin, Swift).
+git bisect fixed 945edf38faa78b4ead9d09ec5b07f266ee2029c1
+# status: waiting for good commit(s), bad commit known
+# broken: [8cd9c91e29c502ff56e86860e91d790cef57380f] Avoid redundant buffer clearing which resulted in higher peak memory usage
+git bisect broken 8cd9c91e29c502ff56e86860e91d790cef57380f
+# fixed: [abedc5e3bac6c06b1814ee9ecd3bc6fc529be2f4] Consolidate key and value cache buffers into unified state buffers in LitertState.
+git bisect fixed abedc5e3bac6c06b1814ee9ecd3bc6fc529be2f4
+# fixed: [672cd6cacae39edae5b235ac9ff25fe650191ee9] docs: document that max_output_tokens includes thinking tokens
+git bisect fixed 672cd6cacae39edae5b235ac9ff25fe650191ee9
+# fixed: [172ab84df14202694ed9784147c2889c72457300] Allow creating EmbeddingLookup with a litert::CompiledModel
+git bisect fixed 172ab84df14202694ed9784147c2889c72457300
+# broken: [0407a450c2b75717fd5cb8c4b7cd8054cea90e29] Refactor TtsEngine as the resource owner and TtsSession is a lightweight interface sharing compiled models with TtsEngine.
+git bisect broken 0407a450c2b75717fd5cb8c4b7cd8054cea90e29
+# fixed: [96b4819c3a5e275f689951e93d376e65ca5c69e1] Update dependencies of litert_lm
+git bisect fixed 96b4819c3a5e275f689951e93d376e65ca5c69e1
+# broken: [fa814c1b8700b621cc6fddf0cfdd65ebbf7d7f59] Introduce two-phase CMake build orchestration for LiteRT-LM.
+git bisect broken fa814c1b8700b621cc6fddf0cfdd65ebbf7d7f59
+# first fixed commit: [96b4819c3a5e275f689951e93d376e65ca5c69e1] Update dependencies of litert_lm

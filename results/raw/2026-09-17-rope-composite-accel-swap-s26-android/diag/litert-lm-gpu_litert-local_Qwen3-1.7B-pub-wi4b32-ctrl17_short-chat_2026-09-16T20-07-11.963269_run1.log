@@ -1,0 +1,121 @@
+VmRSS:	  383024 kB
+VmRSS:	  430036 kB
+VmRSS:	  488588 kB
+VmRSS:	  547316 kB
+VmRSS:	  596320 kB
+VmRSS:	  563492 kB
+VmRSS:	  563056 kB
+VmRSS:	  538364 kB
+VmRSS:	  588396 kB
+VmRSS:	 1028932 kB
+VmRSS:	 1070460 kB
+VmRSS:	 1070348 kB
+VmRSS:	 1070348 kB
+VmRSS:	 1070348 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070052 kB
+VmRSS:	 1070052 kB
+VmRSS:	 1070052 kB
+VmRSS:	 1070052 kB
+VmRSS:	 1070180 kB
+VmRSS:	 1070180 kB
+===ENGINE_OUTPUT===
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000716e811640, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000716e811020, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000716e810ed0, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000716e8114f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=750, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1432, num_inputs=60, num_outputs=56, num_ops=994
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1432, num_inputs=60, num_outputs=56, num_ops=994
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1383, num_inputs=60, num_outputs=57, num_ops=936
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 474 tensors of signature prefill_128 have been updated for magic number  32771 to target number 4096
+INFO: [magic_number_utils.cc:536] 474 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 4096
+INFO: [magic_number_utils.cc:536] 482 tensors of signature decode have been updated for magic number  32771 to target number 4096
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1789589212.313796   32456 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1789589212.313844   32456 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:220] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:283] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+I0000 00:00:1789589216.332378   32456 delegate_kernel.cc:331] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789589216.332451   32456 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+I0000 00:00:1789589216.920642   32456 delegate_kernel.cc:331] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789589216.920668   32456 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 936 out of 936 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+I0000 00:00:1789589217.360495   32456 delegate_kernel.cc:331] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789589217.360535   32456 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000716e83f8c0, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000716e8256f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+input_prompt: Explain what on-device AI means in simple terms.
+INFO: Loaded OpenCL library with dlopen.
+
+
+On-device AI is like having a smart computer that can think and make decisions right on your phone, tablet, or computer, without needing to connect to the internet or a server. It’s like having a tiny brain in your device that can process information and learn from it, all while keeping your data private and your device faster. For example, if you take a photo, your phone’s camera might use on-device AI to recognize what’s in the picture instantly, without waiting for the data to go back to the cloud. This makes it quicker and more secure than relying on cloud services.
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 5626.93 ms
+    - Init LLM metadata: 0.01 ms
+    - Init Model assets: 0.01 ms
+    - Init Tokenizer: 296.64 ms
+    - Init Total: 5627.05 ms
+--------------------------------------------------
+  Time to first token: 0.21 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 19 tokens in 183.263489ms duration.
+      Prefill Speed: 103.68 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 536 tokens in 13.381009526s duration.
+      Decode Speed: 40.06 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 178.906us, 19 tokens
+--------------------------------------------------
+--------------------------------------------------
+
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000716e8114f0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000716e810ed0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000716e8256f0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000716e83f8c0, name=LiteRT GPU
+EXIT_CODE=0

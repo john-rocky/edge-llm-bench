@@ -1,0 +1,81 @@
+05:18:07 step1 8cd9c91e = broken (manual, driver_bisect_step1.log)
+Bisecting: 75 revisions left to test after this (roughly 6 steps)
+[cd3ef227bb373f9eeb6b5c74bd1564ce2854be4e] Refactor sampler factory to use litert::Environment C++ type instead of raw C handle.
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:22:32 cd3ef227 2026-08-19 LITERT_REF=b0f6c120 gpu.so=9d7ae75e gpu=0 nodes=0 verdict=skip ans=
+Bisecting: 75 revisions left to test after this (roughly 6 steps)
+[abedc5e3bac6c06b1814ee9ecd3bc6fc529be2f4] Consolidate key and value cache buffers into unified state buffers in LitertState.
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:24:40 RESTART with fixed step script; verdicts so far: 8cd9c91e=broken abedc5e3=fixed (cd3ef227 was a build failure, discarded)
+Bisecting: 75 revisions left to test after this (roughly 6 steps)
+[cd3ef227bb373f9eeb6b5c74bd1564ce2854be4e] Refactor sampler factory to use litert::Environment C++ type instead of raw C handle.
+05:24:41 replay abedc5e3 = fixed (established earlier)
+Bisecting: 20 revisions left to test after this (roughly 4 steps)
+[672cd6cacae39edae5b235ac9ff25fe650191ee9] docs: document that max_output_tokens includes thinking tokens
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:25:56 672cd6ca 2026-08-10 LITERT_REF=b0f6c120 gpu.so=9d7ae75e gpu=3 nodes=3 verdict=fixed ans=  On-device AI means that the smart things you use, like your phone, smart glasses, or a robot, use their own computer power to do AI tasks,
+Bisecting: 9 revisions left to test after this (roughly 3 steps)
+[172ab84df14202694ed9784147c2889c72457300] Allow creating EmbeddingLookup with a litert::CompiledModel
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:27:06 172ab84d 2026-08-07 LITERT_REF=b0f6c120 gpu.so=9d7ae75e gpu=3 nodes=3 verdict=fixed ans=  On-device AI means that the smart things you use, like your phone, smart glasses, or a robot, use their own computer power to do AI tasks,
+Bisecting: 4 revisions left to test after this (roughly 2 steps)
+[0407a450c2b75717fd5cb8c4b7cd8054cea90e29] Refactor TtsEngine as the resource owner and TtsSession is a lightweight interface sharing compiled models with TtsEngine.
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:29:25 0407a450 2026-08-07 LITERT_REF=0ff28117 gpu.so=1287e5ae gpu=3 nodes=3 verdict=broken ans=</think>  The word "explain" means to provide a clear and logical description of something, so that someone can understand it. It also means
+Bisecting: 2 revisions left to test after this (roughly 1 step)
+[96b4819c3a5e275f689951e93d376e65ca5c69e1] Update dependencies of litert_lm
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:32:00 96b4819c 2026-08-07 LITERT_REF=b0f6c120 gpu.so=9d7ae75e gpu=3 nodes=3 verdict=fixed ans=  On-device AI means that the smart things you use, like your phone, smart glasses, or a robot, use their own computer power to do AI tasks,
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[fa814c1b8700b621cc6fddf0cfdd65ebbf7d7f59] Introduce two-phase CMake build orchestration for LiteRT-LM.
+running '/private/tmp/claude-501/-Users-majimadaisuke-code-standup/d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/bisect/bisect_run.sh'
+05:34:30 fa814c1b 2026-08-07 LITERT_REF=0ff28117 gpu.so=1287e5ae gpu=3 nodes=3 verdict=broken ans=</think>  The word "explain" means to provide a clear and logical description of something, so that someone can understand it. It also means
+96b4819c3a5e275f689951e93d376e65ca5c69e1 is the first fixed commit
+commit 96b4819c3a5e275f689951e93d376e65ca5c69e1
+Author: Byungchul Kim <byungchul@google.com>
+Date:   Fri Aug 7 12:09:17 2026 -0700
+
+    Update dependencies of litert_lm
+    
+    LiteRT-LM-PiperOrigin-RevId: 961054659
+
+ WORKSPACE                                          | 29 +++++++++++-----------
+ prebuilt/android_arm64/libLiteRtGpuAccelerator.so  |  4 +--
+ .../android_arm64/libLiteRtOpenClAccelerator.so    |  4 +--
+ .../android_arm64/libLiteRtTopKOpenClSampler.so    |  4 +--
+ .../android_arm64/libLiteRtTopKWebGpuSampler.so    |  4 +--
+ .../android_arm64/libLiteRtWebGpuAccelerator.so    |  4 +--
+ prebuilt/android_arm64/libwebgpu_dawn.so           |  4 +--
+ prebuilt/android_x86_64/libLiteRtGpuAccelerator.so |  4 +--
+ .../android_x86_64/libLiteRtOpenClAccelerator.so   |  4 +--
+ .../android_x86_64/libLiteRtTopKOpenClSampler.so   |  4 +--
+ .../android_x86_64/libLiteRtTopKWebGpuSampler.so   |  4 +--
+ .../android_x86_64/libLiteRtWebGpuAccelerator.so   |  4 +--
+ prebuilt/android_x86_64/libwebgpu_dawn.so          |  4 +--
+ prebuilt/ios_arm64/libLiteRt.dylib                 |  4 +--
+ prebuilt/ios_arm64/libLiteRtMetalAccelerator.dylib |  4 +--
+ prebuilt/ios_arm64/libLiteRtTopKMetalSampler.dylib |  4 +--
+ prebuilt/ios_sim_arm64/libLiteRt.dylib             |  4 +--
+ .../ios_sim_arm64/libLiteRtMetalAccelerator.dylib  |  4 +--
+ .../ios_sim_arm64/libLiteRtTopKMetalSampler.dylib  |  4 +--
+ prebuilt/linux_arm64/libLiteRt.so                  |  4 +--
+ prebuilt/linux_arm64/libLiteRtTopKWebGpuSampler.so |  4 +--
+ prebuilt/linux_arm64/libLiteRtWebGpuAccelerator.so |  4 +--
+ prebuilt/linux_arm64/libwebgpu_dawn.so             |  4 +--
+ prebuilt/linux_x86_64/libLiteRt.so                 |  4 +--
+ .../linux_x86_64/libLiteRtTopKWebGpuSampler.so     |  4 +--
+ .../linux_x86_64/libLiteRtWebGpuAccelerator.so     |  4 +--
+ prebuilt/linux_x86_64/libwebgpu_dawn.so            |  4 +--
+ prebuilt/macos_arm64/libLiteRt.dylib               |  4 +--
+ .../macos_arm64/libLiteRtMetalAccelerator.dylib    |  4 +--
+ .../macos_arm64/libLiteRtTopKMetalSampler.dylib    |  4 +--
+ .../macos_arm64/libLiteRtTopKWebGpuSampler.dylib   |  4 +--
+ .../macos_arm64/libLiteRtWebGpuAccelerator.dylib   |  4 +--
+ prebuilt/macos_arm64/libwebgpu_dawn.dylib          |  4 +--
+ prebuilt/windows_x86_64/libLiteRt.dll              |  4 +--
+ .../windows_x86_64/libLiteRtTopKWebGpuSampler.dll  |  4 +--
+ .../windows_x86_64/libLiteRtWebGpuAccelerator.dll  |  4 +--
+ prebuilt/windows_x86_64/libwebgpu_dawn.dll         |  4 +--
+ 37 files changed, 87 insertions(+), 86 deletions(-)
+bisect found first bad commit
+BISECT_DONE exit=0
