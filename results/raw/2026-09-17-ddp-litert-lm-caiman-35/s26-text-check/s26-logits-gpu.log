@@ -1,0 +1,82 @@
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000706a20e760, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000706a20e6f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000706a20eed0, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000706a20edf0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1789627010.901036   13697 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1789627010.901148   13697 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:220] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:283] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 1537 out of 1537 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+I0000 00:00:1789627011.482308   13697 delegate_kernel.cc:331] Total 73 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789627011.482799   13697 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1667 out of 1667 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+I0000 00:00:1789627012.187905   13697 delegate_kernel.cc:331] Total 72 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789627012.187983   13697 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1667 out of 1667 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+I0000 00:00:1789627013.092938   13697 delegate_kernel.cc:331] Total 72 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789627013.093021   13697 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1667 out of 1667 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (prefill_272).
+I0000 00:00:1789627013.578419   13697 delegate_kernel.cc:331] Total 72 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789627013.578504   13697 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1667 out of 1667 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 4 (prefill_32).
+I0000 00:00:1789627013.981237   13697 delegate_kernel.cc:331] Total 72 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789627013.981322   13697 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1667 out of 1667 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 5 (prefill_512).
+I0000 00:00:1789627014.416725   13697 delegate_kernel.cc:331] Total 72 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789627014.416823   13697 delegate_kernel.cc:907] Initializing OpenCL-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000706a235890, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000706a224cd0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+input_prompt: What is the capital of France? Answer in one sentence.
+INFO: Loaded OpenCL library with dlopen.
+
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 3963.79 ms
+    - Init LLM metadata: 0.01 ms
+    - Init Model assets: 0.02 ms
+    - Init Tokenizer: 65.00 ms
+    - Init Total: 4028.89 ms
+--------------------------------------------------
+  Time to first token: 0.05 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 21 tokens in 31.203281ms duration.
+      Prefill Speed: 673.01 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 4075 tokens in 1m14.411284607s duration.
+      Decode Speed: 54.76 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 2 turns):
+    Turn 1: 990ns, 1 tokens
+    Turn 2: 37.916us, 20 tokens
+--------------------------------------------------
+--------------------------------------------------
+
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000706a20edf0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000706a20eed0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000706a224cd0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000706a235890, name=LiteRT GPU

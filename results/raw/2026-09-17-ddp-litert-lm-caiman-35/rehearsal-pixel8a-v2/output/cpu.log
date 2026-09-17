@@ -1,0 +1,146 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789625047.972756   20718 litert_lm_lib.cc:499] Choose backend: cpu
+I0000 00:00:1789625047.973654   20718 litert_lm_lib.cc:655] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 1024
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/gemma3-270m-it-q8.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: [128]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789625047.973892   20718 litert_lm_lib.cc:662] vision_executor_settings: not set
+I0000 00:00:1789625047.973931   20718 litert_lm_lib.cc:668] audio_executor_settings: not set
+I0000 00:00:1789625047.973982   20718 litert_lm_lib.cc:691] Creating engine
+W0000 00:00:1789625048.131582   20718 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789625048.131663   20718 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789625048.131670   20718 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789625048.131676   20718 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cea468110, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cea468ab0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cea468e30, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cea469220, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789625048.203592   20718 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1789625048.203677   20718 litert_lm_loader.cc:291] Section not found: 	
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache build for '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache' started.
+VERBOSE: Replacing 1482 out of 1537 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 38 partitions for subgraph 0 (decode).
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: XNNPack weight cache: written to '/data/local/tmp/gemma3-270m-it-q8.litertlm_1788747723_304005120.xnnpack_cache'.
+VERBOSE: Replacing 1611 out of 1667 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 37 partitions for subgraph 1 (prefill_1024).
+VERBOSE: Replacing 1611 out of 1667 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 37 partitions for subgraph 2 (prefill_128).
+VERBOSE: Replacing 1611 out of 1667 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 37 partitions for subgraph 3 (prefill_272).
+VERBOSE: Replacing 1611 out of 1667 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 37 partitions for subgraph 4 (prefill_32).
+VERBOSE: Replacing 1611 out of 1667 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 37 partitions for subgraph 5 (prefill_512).
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cea51b4e0, name=LiteRT GPU
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007cea51d770, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789625048.829976   20718 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789625048.830047   20718 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789625048.830061   20718 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789625048.830065   20718 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789625048.830069   20718 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789625048.830072   20718 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789625048.830076   20718 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789625048.830079   20718 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+I0000 00:00:1789625048.830132   20718 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789625048.843547   20718 litert_lm_lib.cc:871] Running single-turn conversation
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.55 ms
+    - Init Executor: 698.33 ms
+    - Init LLM metadata: 0.10 ms
+    - Init Model assets: 0.59 ms
+    - Init Tokenizer: 155.77 ms
+    - Init Total: 855.02 ms
+--------------------------------------------------
+  Time to first token: 1.17 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 1.147851197s duration.
+      Prefill Speed: 111.51 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 5.793996178s duration.
+      Decode Speed: 44.18 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 94.238us, 128 tokens
+--------------------------------------------------
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cea469220, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cea468e30, name=LiteRT GPU
+I0000 00:00:1789625055.913409   20718 litert_lm_advanced_main.cc:181] Metrics written to: /data/local/tmp/output/metrics_cpu.pb
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cea51d770, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007cea51b4e0, name=LiteRT GPU

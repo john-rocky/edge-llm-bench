@@ -44,6 +44,38 @@ Device set to start with (one per tier): Pixel 8a (`akita-35`, 8 GB, Mali), Pixe
 - **Which project pays.** The APK and the job are project-agnostic; a first session on a personal project costs a few device-minutes and shows the real result shape.
 - **Correctness beyond the gate.** GSM8K-class parity runs are minutes per model on a phone; they fit Device Run's sharding, but the budget decides whether they are nightly or per-release.
 
+## Route C with LiteRT-LM: `litert_lm_advanced_main --benchmark` through a wrapper script (2026-09-17)
+
+Run once on `caiman-35` (Pixel 9 Pro), `session-944b220b`, PASSED; everything is in
+`results/raw/2026-09-17-ddp-litert-lm-caiman-35/` (`NOTES.md`, `request.json`, `litert_lm_harness.sh`,
+`run_session.sh`, the pulled `output/` directory). The shape:
+
+- **Binary.** LiteRT-LM's releases ship no Android binary, so the session pushes this repo's own build of
+  `litert_lm_advanced_main` at the v0.17.0 tag plus the seven GPU `.so` files (GitHub release
+  `android-litert-lm-v0.17.0`, hashes in `android/engine-pins.json`) from our bucket. The wrapper hashes them on the
+  device into `provenance.txt`, so the row's witness is on-device, as in the adb lane. When a prebuilt lands next to the
+  LiteRT binaries in `gs://litert/binaries/…`, only the nine `gcsInputFile` paths change.
+- **Wrapper.** The job's `androidNativeBinary` is `litert_lm_harness.sh` (`#!/system/bin/sh`, the DDP team's
+  `multi_benchmark_harness.sh` shape): one binary invocation per entry in `--runs=cpu,gpu,cpu,gpu`, each run's stdout to
+  `output/<run>.log`, its exit code to `<run>.exit`, `--metric_proto_file_path=output/metrics_<run>.pb`
+  (`litert.lm.proto.LitertLmMetricsList`, decode with `runtime/proto/litert_lm_metrics.proto` + `engine.proto` from
+  the tag), a per-run `logcat -d`, and a 30 s cooldown between runs. The pushed binary arrives without the execute bit
+  (the wrapper `chmod 755`s it). The wrapper always exits 0 so the pull step runs; the per-run exit codes are in the
+  files. Flags it does not know are passed to the binary unchanged.
+- **Session body.** `session-cpu-gpu-wrapper.json`'s layout: files pushed flat into `/data/local/tmp/`,
+  `androidPullFiles` on `/data/local/tmp/output`, `androidLogcat`, `executionTimeout` raised to 1200 s (the default is
+  5 min; range 1–60 min per the API reference), `labels` on the job (accepted, echoed back in the report). The session
+  took 214 s end to end, the execution 152 s.
+- **What comes back.** The same `BenchmarkInfo` block `run_cell.py` parses (`Prefill Speed`, `Decode Speed`, `Time to
+  first token`, `Init Phases`), once per run, plus the proto with the same values. On the Pixel 9 Pro the first GPU run
+  spent 7.0 s in init converting the weights (Mali: `Weights preparation on Gpu is disabled`) and the second run 1.2 s
+  (it found the serialized cache); prefill and decode are timed after init.
+- **What it does not check.** `--benchmark` never reads the generated text. The `gemma-3-270m-it` q8 bundle's GPU output
+  is empty on the Galaxy S26 with v0.16.0 and v0.17.0 (card: "GPU acceleration is WIP"; upstream LiteRT-LM#3280, and
+  `--force_f32` / `--sampler_backend=cpu` do not change it), so its GPU rows are the path's throughput, not a usable
+  speed — the correctness gate that the APK route runs has no counterpart on this path yet.
+  Not a leaderboard row: no `result.v1` record is written from this directory.
+
 ## Route B prototype: `android/ddp-bench` (built 2026-09-10)
 
 **Status.** The APK pair builds on the Mac against `litertlm-android` 0.17.0 (AGP 8.7.3, Kotlin 2.4.0, Gradle 8.14.4 — the combination the sibling `litertlm-release-gate` harness already proved on this AAR). Local pass-through: **done twice, Galaxy S26, 2026-09-10** (below). DDP: **one session run, `session-cc6509d5` on `m1q-36` (Galaxy S26), PASSED, 2026-09-10 11:05–11:11 JST** — the same APK pair, the same arguments; its rows are filed in `results/raw/2026-09-10-ddp-m1q-36/` and compared with the local unit at the end of this section. The Device Run API was enabled on `litert-edge-portal` the same morning (it had been `SERVICE_DISABLED`).
@@ -362,4 +394,4 @@ The HTTP route above is now wrapped as a `--ddp` target in LiteRT-CLI (https://g
 
 ## Next step
 
-The HTTP route (Route C) is the shape to build the standing job on — a session per (device × model) from an HTTP client, results as pulled files — and the APK route stays the advanced case for what a native binary cannot do (the Hub download on the device, the correctness gate). For LiteRT-LM it waits for the native binary on that path; for `.tflite` models it works today on CPU and GPU. The APK pipe is proven end to end on one model and one device. What remains is the outer job from "Two routes": one session per (device set × repo) on a schedule, the rows written into each card with the session URL as the citation. Before that: a GPU session with a GPU-published bundle (the 270M q8 is CPU-only by its card; the APK's GPU path runs), a billion-class model through the same gate (the 6/8 bar has not been exercised on DDP), and the token question above.
+The HTTP route (Route C) is the shape to build the standing job on — a session per (device × model) from an HTTP client, results as pulled files — and the APK route stays the advanced case for what a native binary cannot do (the Hub download on the device, the correctness gate). For `.tflite` models it works today on CPU and GPU, and LiteRT-LM runs on it as well (the section below); what LiteRT-LM still lacks on that path is a public Android binary. The APK pipe is proven end to end on one model and one device. What remains is the outer job from "Two routes": one session per (device set × repo) on a schedule, the rows written into each card with the session URL as the citation. Before that: a GPU session with a GPU-published bundle (the 270M q8 is CPU-only by its card; the APK's GPU path runs), a billion-class model through the same gate (the 6/8 bar has not been exercised on DDP), and the token question above.

@@ -1,0 +1,72 @@
+### CMD: adb -s 4C131JEKB15210 shell /data/local/tmp/llm/litert_lm_harness.sh --runs=cpu,gpu --dir=/data/local/tmp/llm --model=gemma3-270m-it-q8.litertlm --output_dir=/data/local/tmp/llm/output --prefill_tokens=128 --decode_tokens=256 --max_num_tokens=1024 --cooldown=30
+14:54:38
+date: Thu Sep 17 14:54:39 JST 2026
+product: Pixel 8a (akita)
+build: google/akita/akita:16/CP1A.260505.005/15081906:user/release-keys
+kernel: Linux localhost 6.1.145-android14-11-gfa1d6308d1fe-ab14691759 #1 SMP PREEMPT Fri Jan  9 16:33:46 UTC 2026 aarch64 Toybox
+dir: /data/local/tmp/llm
+runs: cpu,gpu
+prefill_tokens: 128 decode_tokens: 256 max_num_tokens: 1024
+sha256:
+3e87acfb34d214ace25c9f814f7bdcf57d12941936705307cfe126d355bc34e9  litert_lm_advanced_main
+757e9119fa5bd667a2774fb470ac4afcd3190a21c677f8e69a5d6bc908abdd63  gemma3-270m-it-q8.litertlm
+2db0cfa5d45391df18e6c8de4b1e5ffbe1882d3695c0a0b5e087e4e482e1d680  libGemmaModelConstraintProvider.so
+da48520a5e16556da25896f28ce4cb4980bbfd0c463e071be9737b11f6e41bd7  libLiteRtGpuAccelerator.so
+b9c1176991157cb6e801bc96ef2c5abbb2b7fcdcad45db3b3333b5fccb955be1  libLiteRtOpenClAccelerator.so
+4993295bbf6ae0bb0f8fd1c5621595dd0e00876231aa348b11dc624146000a0a  libLiteRtTopKOpenClSampler.so
+ea77cb1da6ceec86c5c58874b12d06d7da8a5cd58952f1c41c4fdf66181591cc  libLiteRtTopKWebGpuSampler.so
+5be4627d7e5e0c8c1ecf431ce36b644a4790086e6b878303ce35f6749e485f4a  libLiteRtWebGpuAccelerator.so
+c80042869de5d3e788bc10796d57e2cd046703f89642a32f2d9960cdaf3c0b3e  libwebgpu_dawn.so
+=================================================
+LiteRT-LM benchmark harness
+Binary:     /data/local/tmp/llm/litert_lm_advanced_main
+Model:      /data/local/tmp/llm/gemma3-270m-it-q8.litertlm
+Runs:       cpu,gpu
+Tokens:     prefill 128, decode 256, max_num_tokens 1024
+Output dir: /data/local/tmp/llm/output
+Cooldown:   30s
+=================================================
+
+>>> Starting run: [cpu]
+Executing: cd /data/local/tmp/llm && LD_LIBRARY_PATH=/data/local/tmp/llm ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llm/gemma3-270m-it-q8.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --max_num_tokens=1024 --async=false --metric_proto_file_path=/data/local/tmp/llm/output/metrics_cpu.pb 
+Log file:  /data/local/tmp/llm/output/cpu.log
+>>> [cpu] completed (exit 0)
+  Time to first token: 0.46 s
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 442.130737ms duration.
+      Prefill Speed: 289.51 tokens/sec.
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 5.199190147s duration.
+      Decode Speed: 49.24 tokens/sec.
+
+Cooling down for 30s ...
+
+>>> Starting run: [gpu]
+Executing: cd /data/local/tmp/llm && LD_LIBRARY_PATH=/data/local/tmp/llm ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llm/gemma3-270m-it-q8.litertlm --benchmark --benchmark_prefill_tokens=128 --benchmark_decode_tokens=256 --max_num_tokens=1024 --async=false --metric_proto_file_path=/data/local/tmp/llm/output/metrics_gpu.pb 
+Log file:  /data/local/tmp/llm/output/gpu.log
+>>> [gpu] completed (exit 0)
+  Time to first token: 0.23 s
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 128 tokens in 196.355713ms duration.
+      Prefill Speed: 651.88 tokens/sec.
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 8.675110519s duration.
+      Decode Speed: 29.51 tokens/sec.
+
+=================================================
+All runs finished. Artifacts in: /data/local/tmp/llm/output
+total 108
+-rw-rw-rw- 1 shell shell     2 2026-09-17 14:54 cpu.exit
+-rw-rw-rw- 1 shell shell 10907 2026-09-17 14:54 cpu.log
+-rw-rw-rw- 1 shell shell 26428 2026-09-17 14:54 cpu_logcat.txt
+-rw-rw-rw- 1 shell shell     2 2026-09-17 14:55 gpu.exit
+-rw-rw-rw- 1 shell shell 10439 2026-09-17 14:55 gpu.log
+-rw-rw-rw- 1 shell shell 36310 2026-09-17 14:55 gpu_logcat.txt
+-rw-rw-rw- 1 shell shell   222 2026-09-17 14:54 metrics_cpu.pb
+-rw-rw-rw- 1 shell shell   224 2026-09-17 14:55 metrics_gpu.pb
+-rw-rw-rw- 1 shell shell  1374 2026-09-17 14:55 provenance.txt
+=================================================
+harness exit=0
+14:55:41
+### CMD: adb -s 4C131JEKB15210 pull /data/local/tmp/llm/output results/raw/2026-09-17-ddp-litert-lm-caiman-35/rehearsal-pixel8a/
+/data/local/tmp/llm/output/: 9 files pulled, 0 skipped. 2.7 MB/s (85908 bytes in 0.031s)

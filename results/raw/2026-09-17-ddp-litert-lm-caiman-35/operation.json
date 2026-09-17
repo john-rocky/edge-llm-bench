@@ -1,0 +1,293 @@
+{
+  "name": "projects/litert-edge-portal/locations/global/operations/operation-1789625439677-65ba7a49ceb2a-eff29086-d5eb03f3",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.devicerun.v1alpha.OperationMetadata",
+    "createTime": "2026-09-17T06:10:39.880371167Z",
+    "endTime": "2026-09-17T06:14:28.290228771Z",
+    "target": "projects/litert-edge-portal/locations/global/sessions/session-944b220b",
+    "verb": "create",
+    "statusMessage": "Session is finished",
+    "requestedCancellation": false,
+    "apiVersion": "v1alpha"
+  },
+  "done": true,
+  "response": {
+    "@type": "type.googleapis.com/google.cloud.devicerun.v1alpha.Session",
+    "name": "projects/litert-edge-portal/locations/global/sessions/session-944b220b",
+    "sessionConfig": {
+      "displayName": "litert-lm-cpu-gpu-benchmark",
+      "jobConfigs": [
+        {
+          "displayName": "litert-lm-pixel-9-pro",
+          "action": {
+            "androidNativeBinary": {
+              "androidNativeBinary": {
+                "gcsInputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert_lm_harness.sh"
+                }
+              },
+              "executionTimeout": "1200s",
+              "args": [
+                "--runs=cpu,gpu,cpu,gpu",
+                "--dir=/data/local/tmp",
+                "--model=gemma3-270m-it-q8.litertlm",
+                "--output_dir=/data/local/tmp/output",
+                "--prefill_tokens=128",
+                "--decode_tokens=256",
+                "--max_num_tokens=1024",
+                "--cooldown=30"
+              ]
+            }
+          },
+          "allocationConfig": {
+            "deviceConfigs": [
+              {
+                "requirement": {
+                  "deviceId": "caiman-35"
+                },
+                "actions": [
+                  {
+                    "androidPushFiles": {
+                      "fileConfigs": [
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/litert_lm_advanced_main"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/litert_lm_advanced_main"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libGemmaModelConstraintProvider.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libGemmaModelConstraintProvider.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libLiteRtGpuAccelerator.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libLiteRtGpuAccelerator.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libLiteRtOpenClAccelerator.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libLiteRtOpenClAccelerator.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libLiteRtTopKOpenClSampler.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libLiteRtTopKOpenClSampler.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libLiteRtTopKWebGpuSampler.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libLiteRtTopKWebGpuSampler.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libLiteRtWebGpuAccelerator.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libLiteRtWebGpuAccelerator.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/litert-lm-v0.17.0-android-arm64/libwebgpu_dawn.so"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/libwebgpu_dawn.so"
+                        },
+                        {
+                          "sourceFile": {
+                            "gcsInputFile": {
+                              "path": "gs://litert-edge-portal-devicerun/automation/inputs/2026-09-17_litert-lm/gemma3-270m-it-q8.litertlm"
+                            }
+                          },
+                          "destinationPath": "/data/local/tmp/gemma3-270m-it-q8.litertlm"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "androidPullFiles": {
+                      "paths": [
+                        "/data/local/tmp/output"
+                      ]
+                    }
+                  },
+                  {
+                    "androidLogcat": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "labels": {
+            "harness": "edge-llm-bench",
+            "runtime": "litert-lm-v0-17-0-own-build",
+            "model": "litert-community--gemma-3-270m-it",
+            "device": "caiman-35"
+          }
+        }
+      ],
+      "outputDirectoryConfig": {
+        "gcsOutputDirectory": {
+          "path": "gs://litert-edge-portal-devicerun/automation/sessions"
+        }
+      }
+    },
+    "sessionReport": {
+      "id": "b821197a-f48c-4916-9942-649c7ec3d844",
+      "jobReports": [
+        {
+          "id": "d90e5c0b-4b68-4f22-b404-be83c7146b4f",
+          "displayName": "litert-lm-pixel-9-pro",
+          "executionReports": [
+            {
+              "id": "a7408d24-b565-432c-8834-b755a206bc57",
+              "displayName": "execution-a7408d24-b565-432c-8834-b755a206bc57",
+              "startTime": "2026-09-17T06:11:40.279Z",
+              "endTime": "2026-09-17T06:14:12.559Z",
+              "status": {
+                "statusType": "DONE"
+              },
+              "result": {
+                "resultType": "PASSED"
+              },
+              "outputFiles": [
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/logcat.txt"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/gpu_2_logcat.txt"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/cpu.log"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/gpu.exit"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/metrics_cpu.pb"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/metrics_gpu.pb"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/provenance.txt"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/metrics_cpu_2.pb"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/cpu_2.exit"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/metrics_gpu_2.pb"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/gpu_logcat.txt"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/gpu_2.exit"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/gpu.log"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/cpu.exit"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/gpu_2.log"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/cpu_logcat.txt"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/cpu_2_logcat.txt"
+                  }
+                },
+                {
+                  "gcsOutputFile": {
+                    "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-944b220b/litert-lm-pixel-9-pro/execution-a7408d24-b565-432c-8834-b755a206bc57/artifacts/data/local/tmp/output/cpu_2.log"
+                  }
+                }
+              ]
+            }
+          ],
+          "startTime": "2026-09-17T06:10:44.398Z",
+          "endTime": "2026-09-17T06:14:14.963Z",
+          "status": {
+            "statusType": "DONE"
+          },
+          "result": {
+            "resultType": "PASSED"
+          },
+          "labels": {
+            "model": "litert-community--gemma-3-270m-it",
+            "harness": "edge-llm-bench",
+            "device": "caiman-35",
+            "runtime": "litert-lm-v0-17-0-own-build"
+          }
+        }
+      ],
+      "startTime": "2026-09-17T06:10:42.470Z",
+      "endTime": "2026-09-17T06:14:16.471Z",
+      "status": {
+        "statusType": "DONE"
+      },
+      "result": {
+        "resultType": "PASSED"
+      }
+    }
+  }
+}
