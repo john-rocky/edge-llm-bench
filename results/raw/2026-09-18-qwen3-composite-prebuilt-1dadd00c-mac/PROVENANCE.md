@@ -79,3 +79,13 @@ binary, the same host.
   export is FLOAT32[1, 8, 32771, 128] ×2 ×28 layers = 7.52 GB at the 32k cache length (the runtime resizes it to `--max_num_tokens`,
   so the 1,024 config needs 0.29 GB); the 4B file's single TFLite section is 2,268,553,328 B (loads on an iPhone 17 Pro only with the
   increased-memory-limit entitlement — a 4.24 GB section loaded that way on 2026-09-07).
+- iOS, checked further before answering Fengwu's 08:32 follow-up (no device run): the v0.17.1 release's `CLiteRTLM.xcframework.zip`
+  (sha256 `c94fc12aa0403cb47208e419cc3bfe258214ea17035f7a63c16de536869f2186`, 121,798,772 B; the OSS Swift package at 1dadd00c pins it)
+  unpacks to an `ios-arm64/CLiteRTLM.framework/CLiteRTLM` binary of 60,466,448 B that carries the Metal accelerator inside (strings:
+  `Created a Metal device.`, `GPU Metal`, `Statically linked GPU accelerator registered.`, and also the dlopen strings `Attempting to
+  load GPU accelerator(%s).` / `libLiteRtMetalAccelerator.dylib`) with the kernel names of the 08-27 generation (`flash_decode_sdpa`,
+  `odml.qkv_norm_rope`, `odml.sdpa_transposed`; no `flash_prefill_sdpa`); the v0.17.1 tag (2026-09-13) pins `LITERT_REF = 9fe5be45`, the
+  same as v0.17.0, before `428d2792` / `e7135510` / `89116780`, and its `prebuilt/ios_arm64` accelerator pointer is v0.17.0's
+  (`be90cfda…`). The v0.16.0 framework the local iOS benchmark build uses (`.build/dd-ios26`, 44,636,312 B) has neither the composite
+  kernel names nor the dlopen strings. Whether the v0.17.1 framework would pick up the 1dadd00c iOS dylib placed beside the app is
+  untested (needs an app build with that package and a device run); no iPhone measurement was made today.
