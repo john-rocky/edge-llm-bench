@@ -1,0 +1,46 @@
+# adb -s RFGL80R6A6H shell 'cd /data/local/tmp/edge-llm-bench/asr/bin && export LD_LIBRARY_PATH=/data/local/tmp/edge-llm-bench/asr/bin && echo T0=$EPOCHREALTIME && ./asr_runner --model_name parakeet-tdt-0.6b-v3 --metadata_path /data/local/tmp/edge-llm-bench/asr/bin/model_metadata.json --model_path /data/local/tmp/edge-llm-bench/asr/models/parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite --cache_dir /data/local/tmp/edge-llm-bench/asr/models --backend gpu --num_threads 4 --overlap_ratio 0.4 --text_merger_type timestamp --audio_path /data/local/tmp/edge-llm-bench/asr/audio/librispeech-dev-clean-1272-82s.wav 2>&1; echo; echo EXIT=$? T1=$EPOCHREALTIME'
+# exit=0
+# raw merged stream follows (stdout text + stderr logs)
+T0=1789769732.278865
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c8fc14d10, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c8fc14c30, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1789769732.378213   13577 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1789769732.378321   13577 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 1790 out of 1790 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (encode).
+I0000 00:00:1789769737.338508   13577 delegate_kernel.cc:951] Initializing OpenCL-based API from graph.
+VERBOSE: Replacing 163 out of 163 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (decode).
+I0000 00:00:1789769738.110113   13577 delegate_kernel.cc:951] Initializing OpenCL-based API from graph.
+VERBOSE: Replacing 63 out of 63 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode_1).
+I0000 00:00:1789769738.409622   13577 delegate_kernel.cc:951] Initializing OpenCL-based API from graph.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1789769738.512313   13577 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1789769738.513374   13577 asr_runner.cc:168] Starting speech recognition on /data/local/tmp/edge-llm-bench/asr/audio/librispeech-dev-clean-1272-82s.wav...
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c8fc67880, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c8fc67dc0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+Nor is mister Quilter's manner less interesting than his matter. Greek after all, and can discover in it but little of rocky Ithaca. Linnell's pictures are a sort of up guards and atom paintings, and Mason's exquisite idols are as national as a jingo poem. Mr. Birkett fosters landscapes, smile at one much in the same way that mister Carker used to be. And mister John Collier gives his sitter a cheerful slap on the back, before he says, like a shampooer in a Turkish bath, Next Man He laments most bitterly the divorce that has been made between decorative art and what we usually call pictures. Appeal to the last judgment and reminds us that in the great days of art, Michelangelo was the furnishing upholsterer. The little girl had been asleep, but she was girl had been asleep, but she heard the raps and opened the door. Where is the door. Where is that? The buzzers were trying to get whir triggered his muscles into complete relaxation. The other voice snapped with a harsh urgency 
+I0000 00:00:1789769745.305982   13577 asr_runner.cc:186] Finished speech recognition.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c8fc14c30, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c8fc14d10, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c8fc67dc0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c8fc67880, name=LiteRT GPU
+
+EXIT=0 T1=1789769745.439255

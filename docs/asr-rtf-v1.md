@@ -110,11 +110,36 @@ model and tokenizer sha256, the exact command, the host's load / thermal /
 foreign-process snapshot before and after, and the stderr log path
 (`logs/<slug>_run<N>.stderr.log` in the campaign dir).
 
+## Android leg (Galaxy S26, 2026-09-19)
+
+The same runner built for the phone — `bazelisk build --config=android_arm64
+--enable_platform_specific_config //omni/asr:asr_runner` in the same worktree with
+NDK r28 (`ANDROID_NDK_HOME`; ~2 min) — plus the GPU accelerator `.so` files from
+`prebuilt/android_arm64/` (LFS; `libLiteRtGpuAccelerator.so` is the ML Drift OpenCL
+path the log names `LiteRT GPU`), staged in `.build/asr-runner-1dadd00c-android/`
+with `ENGINE_VERSION` and `SHA256SUMS` like the Mac dir. `scripts/asr_rtf_android.py
+matrices/asr-rtf-v1.cells --campaign <name>` (serial from `BENCH_ANDROID_SERIAL`) is
+its own mini-runner: it pushes runner, libraries, models, tokenizers and the stream
+WAV to `/data/local/tmp/edge-llm-bench/asr/`, verifies each model's sha256 on the
+phone, gates every launch on thermal status 0 and a battery temperature ≤ 36 °C
+(the S26 warms 2–4 °C over a cell while charging), waits 45 s between launches
+and 90 s between cells (at 5 s the S26's CPU cells drifted +12–27 % from launch 1
+to 3; at 45 s they repeat within ±1 %), and writes the same record shape into
+`results/raw/<campaign>-android/`. Timing there is device-clock:
+`$EPOCHREALTIME` before exec and the runner's absl timestamps for `Starting` /
+`Finished`, so adb latency is not in `loadTimeSeconds` or
+`asrProcessingSeconds`; first-text latency is host-side arrival. No LLM session
+anchor runs on the phone in v1 (first session of the family there); the battery
+temperature, thermal status and CPU frequency caps before and after every launch
+are in the record instead. First capture: `results/raw/2026-09-19-asr-rtf-v1-s26-android/`
+(NOTES.md there: on this phone the OpenCL path is slower than the CPU for all four
+models, moonshine's Metal drift does not reproduce on Adreno, and the Qwen3-ASR
+`.litertlm` GPU path returns no text there either).
+
 ## Not covered in v1
 
-- iPhone / Android legs: no released engine yet; the Android leg wants the
-  runner built with the NDK (`android/scripts/build_litert_lm_main.sh`
-  pattern) or the Kotlin API once #3672 lands.
+- iPhone leg: no released engine yet (the Kotlin API PR #3672 does not help iOS;
+  a device build of the runner through the Swift package is the route).
 - Other ASR arms (whisper.cpp, MLX Whisper, Core ML / Speech framework): the
   task is defined on the stream + reference, so any arm that reads a WAV and
   prints text can join; none is wired.

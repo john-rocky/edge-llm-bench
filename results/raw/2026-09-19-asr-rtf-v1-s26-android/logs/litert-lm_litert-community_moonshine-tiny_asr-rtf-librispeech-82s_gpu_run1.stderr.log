@@ -1,0 +1,34 @@
+# adb -s RFGL80R6A6H shell 'cd /data/local/tmp/edge-llm-bench/asr/bin && export LD_LIBRARY_PATH=/data/local/tmp/edge-llm-bench/asr/bin && echo T0=$EPOCHREALTIME && ./asr_runner --model_name moonshine-tiny --metadata_path /data/local/tmp/edge-llm-bench/asr/bin/model_metadata.json --model_path /data/local/tmp/edge-llm-bench/asr/models/moonshine_tiny_5s_i8.tflite --cache_dir /data/local/tmp/edge-llm-bench/asr/models --backend gpu --num_threads 4 --overlap_ratio 0.4 --text_merger_type timestamp --audio_path /data/local/tmp/edge-llm-bench/asr/audio/librispeech-dev-clean-1272-82s.wav 2>&1; echo; echo EXIT=$? T1=$EPOCHREALTIME'
+# exit=0
+# raw merged stream follows (stdout text + stderr logs)
+T0=1789768925.223363
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000076e900b610, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000076e900c2c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1789768925.345412   10620 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1789768925.345519   10620 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 358 out of 358 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (encode).
+I0000 00:00:1789768925.461515   10620 delegate_kernel.cc:951] Initializing OpenCL-based API from graph.
+VERBOSE: Replacing 479 out of 479 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (decode).
+I0000 00:00:1789768926.049477   10620 delegate_kernel.cc:951] Initializing OpenCL-based API from graph.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789768926.295201   10620 asr_runner.cc:168] Starting speech recognition on /data/local/tmp/edge-llm-bench/asr/audio/librispeech-dev-clean-1272-82s.wav...
+Nor is Mr. Quilter's manner less interesting than his matter. He has grave doubts, whether a surfer dried or late in the evening. Sir Frederick Layton's work is really Greek after all, and can discover in it but little of rocky, is a. little of Waukee Ithaca. Linels, pictures, aura sore. pictures are a sort of up-guards and atom paintings. and Adam paintings and mason's exquisite idols, eras, Nash. it, it'lls eras national as a jingo poem. mr. Burke fosters landscapes smile at one, much in the same way as at Mr. Carcor used to flash his teeth. And Mr. John Collier gives his sitter a cheerful slap in the back. Before he says like a shampoo or an Turkish bath, next man he laments most bitterly the divorce that has been made between decorative art and what we usually call pictures. Makes a customary appeal to the last judgment and reminds us that in the great days of art, Michelangelo was the furnishing upholsterer. The little girl had been asleep, but she had a little bit of sleep. had been asleep, but she heard the raps and opened the door. Where is that? The buzzers were triggered as muscles and complete relaxation. The other voice snapped with a harsh urgency clearly used to command. The 20th century, 20s, 10 seconds.
+I0000 00:00:1789768930.903832   10620 asr_runner.cc:186] Finished speech recognition.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000076e900c2c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000076e900b610, name=LiteRT GPU
+
+EXIT=0 T1=1789768930.980372

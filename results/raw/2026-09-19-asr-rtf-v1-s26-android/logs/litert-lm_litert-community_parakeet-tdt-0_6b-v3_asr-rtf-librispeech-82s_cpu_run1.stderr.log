@@ -1,0 +1,155 @@
+# adb -s RFGL80R6A6H shell 'cd /data/local/tmp/edge-llm-bench/asr/bin && export LD_LIBRARY_PATH=/data/local/tmp/edge-llm-bench/asr/bin && echo T0=$EPOCHREALTIME && ./asr_runner --model_name parakeet-tdt-0.6b-v3 --metadata_path /data/local/tmp/edge-llm-bench/asr/bin/model_metadata.json --model_path /data/local/tmp/edge-llm-bench/asr/models/parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite --cache_dir /data/local/tmp/edge-llm-bench/asr/models --backend cpu --num_threads 4 --overlap_ratio 0.4 --text_merger_type timestamp --audio_path /data/local/tmp/edge-llm-bench/asr/audio/librispeech-dev-clean-1272-82s.wav 2>&1; echo; echo EXIT=$? T1=$EPOCHREALTIME'
+# exit=0
+# raw merged stream follows (stdout text + stderr logs)
+T0=1789771205.271198
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075b0a12450, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075b0a12c30, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: Replacing 1643 out of 1790 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 249 partitions for subgraph 0 (encode).
+VERBOSE: Replacing 161 out of 163 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 1 (decode).
+VERBOSE: Replacing 61 out of 63 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 2 (decode_1).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3 (odml.group_norm.impl).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 4 (odml.group_norm.impl_0).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 5 (odml.group_norm.impl_1).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 6 (odml.group_norm.impl_2).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 7 (odml.group_norm.impl_3).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 8 (odml.group_norm.impl_4).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 9 (odml.group_norm.impl_5).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 10 (odml.group_norm.impl_6).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 11 (odml.group_norm.impl_7).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 12 (odml.group_norm.impl_8).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 13 (odml.group_norm.impl_9).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 14 (odml.group_norm.impl_10).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 15 (odml.group_norm.impl_11).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 16 (odml.group_norm.impl_12).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 17 (odml.group_norm.impl_13).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 18 (odml.group_norm.impl_14).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 19 (odml.group_norm.impl_15).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 20 (odml.group_norm.impl_16).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 21 (odml.group_norm.impl_17).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 22 (odml.group_norm.impl_18).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 23 (odml.group_norm.impl_19).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 24 (odml.group_norm.impl_20).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 25 (odml.group_norm.impl_21).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 26 (odml.group_norm.impl_22).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 27 (odml.group_norm.impl_23).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 28 (odml.group_norm.impl_24).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 29 (odml.group_norm.impl_25).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 30 (odml.group_norm.impl_26).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 31 (odml.group_norm.impl_27).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 32 (odml.group_norm.impl_28).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 33 (odml.group_norm.impl_29).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 34 (odml.group_norm.impl_30).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 35 (odml.group_norm.impl_31).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 36 (odml.group_norm.impl_32).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 37 (odml.group_norm.impl_33).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 38 (odml.group_norm.impl_34).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 39 (odml.group_norm.impl_35).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 40 (odml.group_norm.impl_36).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 41 (odml.group_norm.impl_37).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 42 (odml.group_norm.impl_38).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 43 (odml.group_norm.impl_39).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 44 (odml.group_norm.impl_40).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 45 (odml.group_norm.impl_41).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 46 (odml.group_norm.impl_42).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 47 (odml.group_norm.impl_43).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 48 (odml.group_norm.impl_44).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 49 (odml.group_norm.impl_45).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 50 (odml.group_norm.impl_46).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 51 (odml.group_norm.impl_47).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 52 (odml.group_norm.impl_48).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 53 (odml.group_norm.impl_49).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 54 (odml.group_norm.impl_50).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 55 (odml.group_norm.impl_51).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 56 (odml.group_norm.impl_52).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 57 (odml.group_norm.impl_53).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 58 (odml.group_norm.impl_54).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 59 (odml.group_norm.impl_55).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 60 (odml.group_norm.impl_56).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 61 (odml.group_norm.impl_57).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 62 (odml.group_norm.impl_58).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 63 (odml.group_norm.impl_59).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 64 (odml.group_norm.impl_60).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 65 (odml.group_norm.impl_61).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 66 (odml.group_norm.impl_62).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 67 (odml.group_norm.impl_63).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 68 (odml.group_norm.impl_64).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 69 (odml.group_norm.impl_65).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 70 (odml.group_norm.impl_66).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 71 (odml.group_norm.impl_67).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 72 (odml.group_norm.impl_68).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 73 (odml.group_norm.impl_69).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 74 (odml.group_norm.impl_70).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 75 (odml.group_norm.impl_71).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 76 (odml.group_norm.impl_72).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 77 (odml.group_norm.impl_73).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 78 (odml.group_norm.impl_74).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 79 (odml.group_norm.impl_75).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 80 (odml.group_norm.impl_76).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 81 (odml.group_norm.impl_77).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 82 (odml.group_norm.impl_78).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 83 (odml.group_norm.impl_79).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 84 (odml.group_norm.impl_80).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 85 (odml.group_norm.impl_81).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 86 (odml.group_norm.impl_82).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 87 (odml.group_norm.impl_83).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 88 (odml.group_norm.impl_84).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 89 (odml.group_norm.impl_85).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 90 (odml.group_norm.impl_86).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 91 (odml.group_norm.impl_87).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 92 (odml.group_norm.impl_88).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 93 (odml.group_norm.impl_89).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 94 (odml.group_norm.impl_90).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 95 (odml.group_norm.impl_91).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 96 (odml.group_norm.impl_92).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 97 (odml.group_norm.impl_93).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 98 (odml.group_norm.impl_94).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 99 (odml.group_norm.impl_95).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 100 (odml.group_norm.impl_96).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 101 (odml.group_norm.impl_97).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 102 (odml.group_norm.impl_98).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 103 (odml.group_norm.impl_99).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 104 (odml.group_norm.impl_100).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 105 (odml.group_norm.impl_101).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 106 (odml.group_norm.impl_102).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 107 (odml.group_norm.impl_103).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 108 (odml.group_norm.impl_104).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 109 (odml.group_norm.impl_105).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 110 (odml.group_norm.impl_106).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 111 (odml.group_norm.impl_107).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 112 (odml.group_norm.impl_108).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 113 (odml.group_norm.impl_109).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 114 (odml.group_norm.impl_110).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 115 (odml.group_norm.impl_111).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 116 (odml.group_norm.impl_112).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 117 (odml.group_norm.impl_113).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 118 (odml.group_norm.impl_114).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 119 (odml.group_norm.impl_115).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 120 (odml.group_norm.impl_116).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 121 (odml.group_norm.impl_117).
+VERBOSE: Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 122 (odml.group_norm.impl_118).
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1789771205.914711   19995 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1789771205.914854   19995 asr_runner.cc:168] Starting speech recognition on /data/local/tmp/edge-llm-bench/asr/audio/librispeech-dev-clean-1272-82s.wav...
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075b0a58610, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075b0a58840, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+Nor is mister Quilter's manner less interesting than his matter. Greek after all, and can discover in it but little of rocky Ithaca. Linnell's pictures are a sort of up guards and Adam paintings, and Mason's exquisite idols are as national as a jingo poem. Mr. Birkett fosters landscapes, smile at one much in the same way that Mr Carker used to be. And Mr John Collier gives his sitter a cheerful slap on the back, before he says, like a shampooer in a Turkish bath, Next man laments most bitterly the divorce that has been made between decorative art and what we usually call pictures. Appeal to the last judgment and reminds us that in the great days of art, Michelangelo was the furnishing upholsterer. The little girl had been asleep, but she was Where is that? the door. Where is that? The buzzers were trying to get whir triggered his muscles into complete relaxation. The other voice snapped with a harsh urgency And the twenties ten seconds.
+I0000 00:00:1789771208.144943   19995 asr_runner.cc:186] Finished speech recognition.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075b0a12c30, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075b0a12450, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075b0a58840, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075b0a58610, name=LiteRT GPU
+
+EXIT=0 T1=1789771208.207763

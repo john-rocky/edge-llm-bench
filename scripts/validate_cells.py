@@ -101,9 +101,9 @@ def validate_file(path, catalog=None, require_anchor=False):
                 # v1 instrument = LiteRT-LM's own ASR CLI on the Mac; the litert
                 # backend is arm identity (litert-lm-cpu / -gpu never pool) and
                 # file= names the artifact (the recipe is stated per row).
-                if rt != "litert-lm" or plat != "mac":
-                    errors.append(f"{where}: asr-rtf-* is a mac litert-lm cell in v1 "
-                                  "(scripts/asr_rtf_mac.py; docs/asr-rtf-v1.md)")
+                if rt != "litert-lm" or plat not in ("mac", "android"):
+                    errors.append(f"{where}: asr-rtf-* is a mac / android litert-lm cell in v1 "
+                                  "(scripts/asr_rtf_mac.py, scripts/asr_rtf_android.py; docs/asr-rtf-v1.md)")
                 if opts.get("backend") not in BACKENDS:
                     errors.append(f"{where}: asr-rtf-* needs backend=cpu|gpu (arm identity)")
                 if not opts.get("file"):
