@@ -45,7 +45,11 @@
         "warm": { "type": "boolean" },
         "thermalInitial": { "type": "string" },
         "thermalFinal": { "type": "string" },
-        "unplugged": { "type": "boolean" }
+        "unplugged": { "type": "boolean" },
+        "asrChunkMilliseconds": { "type": "integer", "description": "asr-rtf-*: the engine's streaming chunk = the model's export window (5000; whisper 30000)" },
+        "asrOverlapRatio": { "type": "number", "description": "asr-rtf-*: overlap between consecutive chunks (engine default 0.4)" },
+        "asrTextMerger": { "type": "string", "description": "asr-rtf-*: timestamp | levenshtein (engine default timestamp)" },
+        "asrNumThreads": { "type": "integer", "description": "asr-rtf-*: CPU threads handed to LiteRT (runner default 4)" }
       }
     },
     "metrics": {
@@ -64,7 +68,12 @@
         "gsm8kAccuracy": { "type": "number" },
         "gsm8kN": { "type": "integer" },
         "coldRun": { "type": "boolean", "description": "fresh engine process (cold regime); false = in-process repeat (warm)" },
-        "firstEver": { "type": "boolean", "description": "engine-cache build run for this (model, backend) on this device — reported separately, never pooled as the engine's speed" }
+        "firstEver": { "type": "boolean", "description": "engine-cache build run for this (model, backend) on this device — reported separately, never pooled as the engine's speed" },
+        "asrRealTimeFactor": { "type": "number", "description": "asr-rtf-*: asrProcessingSeconds / asrAudioSeconds (< 1 = faster than real time)" },
+        "asrAudioSeconds": { "type": "number", "description": "asr-rtf-*: duration of the stream the engine consumed" },
+        "asrProcessingSeconds": { "type": "number", "description": "asr-rtf-*: wall clock of the engine's chunk loop, model load excluded (docs/asr-rtf-v1.md)" },
+        "asrFirstTextLatencyMS": { "type": "number", "description": "asr-rtf-*: chunk-loop start to the first confirmed text" },
+        "asrWordErrorRate": { "type": "number", "description": "asr-rtf-*: (S+D+I)/N vs the set's reference after the manifest's normalization — the text check, not a headline" }
       }
     },
     "harnessStamp": { "type": "string", "description": "measurement-contract id (+suffixes like +litert-thinking)" },

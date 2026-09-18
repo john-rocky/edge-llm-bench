@@ -1,0 +1,29 @@
+# cmd: /Users/majimadaisuke/code/edge-llm-bench/.build/asr-runner-1dadd00c/asr_runner --model_name moonshine-tiny --metadata_path /Users/majimadaisuke/code/edge-llm-bench/.build/asr-runner-1dadd00c/model_metadata.json --model_path /Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--moonshine-tiny/blobs/97abdeea122d579229091659c24c59d988c6419d453a200f6471241a53b9a9b9 --cache_dir /Users/majimadaisuke/code/edge-llm-bench/.build/asr-models --backend gpu --num_threads 4 --overlap_ratio 0.4 --text_merger_type timestamp --audio_path /Users/majimadaisuke/code/edge-llm-bench/.build/asr-audio/librispeech-dev-clean-1272-82s.wav
+# DYLD_LIBRARY_PATH=/Users/majimadaisuke/code/edge-llm-bench/.build/asr-runner-1dadd00c
+# exit=0
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1023660e0, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x102366140, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789766936.632684 15288673 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:398] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789766936.633236 15288673 gpu_backend_metal.mm:113] Metal Residency Set successfully initialized.
+I0000 00:00:1789766936.652868 15288673 delegate_kernel.cc:951] Initializing Metal-based API from graph.
+I0000 00:00:1789766936.697515 15288673 delegate_kernel.cc:951] Initializing Metal-based API from graph.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789766936.733010 15288673 asr_runner.cc:168] Starting speech recognition on /Users/majimadaisuke/code/edge-llm-bench/.build/asr-audio/librispeech-dev-clean-1272-82s.wav...
+I0000 00:00:1789766938.938393 15288673 asr_runner.cc:186] Finished speech recognition.
+I0000 00:00:1789766938.941885 15288673 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x102366140, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x1023660e0, name=GPU Metal

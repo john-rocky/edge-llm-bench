@@ -1,0 +1,42 @@
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104889c90, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104889e80, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789767461.751125 15345475 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:398] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789767461.751682 15345475 gpu_backend_metal.mm:113] Metal Residency Set successfully initialized.
+I0000 00:00:1789767461.770591 15345475 delegate_kernel.cc:951] Initializing Metal-based API from graph.
+F0000 00:00:1789767461.796454 15345475 model_builder.cc:3035] EMBEDDING_LOOKUP: Unsupported external weights type: 1
+*** Check failure stack trace: ***
+    @        0x10a7966fc  absl::log_internal::LogMessage::SendToLog()
+    @        0x10a796690  absl::log_internal::LogMessage::Flush()
+    @        0x10a547f34  litert::ml_drift::(anonymous namespace)::EmbeddingLookupOperationParser::Parse()
+    @        0x10a532c74  litert::ml_drift::BuildModelEnforceIO()
+    @        0x10a532450  litert::ml_drift::BuildModel()
+    @        0x10a533114  litert::ml_drift::BuildFinalModel()
+    @        0x109fe48fc  litert::ml_drift::DelegateKernel::InitializeGraphFloat32()
+    @        0x109fd8ea4  litert::ml_drift::DelegateKernelLiteRt::Create()
+    @        0x109cd672c  (anonymous namespace)::Init()
+    @        0x1037a33ec  tflite::Subgraph::AddNodeWithParameters()
+    @        0x1037a2d40  tflite::Subgraph::ReplaceNodeSubsetsWithDelegateKernels()
+    @        0x1037a2900  tflite::Subgraph::ReplaceNodeSubsetsWithDelegateKernels()
+    @        0x109cd58dc  (anonymous namespace)::DelegatePrepare()
+    @        0x1037a801c  tflite::Subgraph::ModifyGraphWithDelegateImpl()
+    @        0x1037a9160  tflite::Subgraph::ModifyGraphWithDelegate()
+    @        0x103798df8  tflite::impl::Interpreter::ModifyGraphWithDelegateImpl()
+    @        0x10347d4b8  LiteRtCompiledModelT::Create()
+    @        0x103474f18  LiteRtCreateCompiledModel
+    @        0x102fa7900  litert::CompiledModel::Create()
+    @        0x102fa5c68  litert::omni::asr::AsrEngine::Create()
+    @        0x102f909a4  main
+    @        0x183f13e80  start

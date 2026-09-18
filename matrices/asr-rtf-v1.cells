@@ -1,0 +1,44 @@
+# ASR real-time-factor cells, v1 (2026-09-19) — the first non-LLM task family.
+# Task `asr-rtf-librispeech-82s`: one 82.335 s stream built from ten LibriSpeech
+# dev-clean utterances (speaker 1272; evaldata/asr/librispeech-dev-clean-1272-82s/
+# manifest.json pins every file's sha256 and reference text), pushed through
+# LiteRT-LM's own ASR engine (omni/asr, the C++ engine behind the Kotlin ASR API)
+# at the engine's default streaming protocol: chunk = the model's export window
+# (5 s; whisper 30 s), 40 % overlap, `timestamp` text merger, 4 CPU threads, GPU
+# precision fp32. RTF = processing wall / audio seconds (< 1 = faster than real
+# time); WER vs the LibriSpeech reference is the text check that a rate without a
+# read transcript never gets (benchmark-mode-needs-a-text-check). Design and how
+# to build the instrument: docs/asr-rtf-v1.md.
+#
+# Arms: litert backend is arm identity (litert-lm-cpu / litert-lm-gpu never pool),
+# as on Android. Files are the ones omni/asr/model_metadata.json names as the
+# model's default artifact (the `i8` file; the f32 files are the NPU AOT source) —
+# the recipe is stated per row (quant-per-arm-rule): moonshine's card documents
+# "f32 encoder + dynamic-range int8 decoder"; the other three cards carry no recipe
+# text, so the row says "i8 per the file name" and no more (quant-label-rule).
+# Order light -> heavy, cpu / gpu interleaved per model (interleave-arms). The
+# Qwen3-0.6B MLX short-chat row is the Mac session anchor (anchors.cells).
+#
+# Mac only in v1: the engine is not in any released LiteRT-LM tag yet (the
+# 4-model support landed on main 2026-09-03..09-09; the Kotlin API PR #3672 and
+# the TTS/ASR metadata protos PR #3658 are still open on 2026-09-19), so the
+# iPhone / Android legs wait for the release or a device build of the runner.
+#   ./bench matrix matrices/asr-rtf-v1.cells --platform mac --campaign <name>
+
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+
+# --- Moonshine Tiny (27M; 5 s window, greedy decoder without KV cache) ---
+mac litert-lm litert-community/moonshine-tiny asr-rtf-librispeech-82s backend=cpu runs=3 file=moonshine_tiny_5s_i8.tflite
+mac litert-lm litert-community/moonshine-tiny asr-rtf-librispeech-82s backend=gpu runs=3 file=moonshine_tiny_5s_i8.tflite
+
+# --- Whisper tiny (39M; 30 s window — an 82 s stream is 5 overlapped chunks) ---
+mac litert-lm litert-community/whisper-tiny asr-rtf-librispeech-82s backend=cpu runs=3 file=whisper_tiny_30s_i8.tflite
+mac litert-lm litert-community/whisper-tiny asr-rtf-librispeech-82s backend=gpu runs=3 file=whisper_tiny_30s_i8.tflite
+
+# --- Parakeet TDT 0.6B v3 (5 s window, stateful TDT decoder; 614 MB) ---
+mac litert-lm litert-community/parakeet-tdt-0.6b-v3 asr-rtf-librispeech-82s backend=cpu runs=3 cooldown=60 file=parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite
+mac litert-lm litert-community/parakeet-tdt-0.6b-v3 asr-rtf-librispeech-82s backend=gpu runs=3 cooldown=60 file=parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite
+
+# --- Qwen3-ASR-0.6B (.litertlm: audio encoder + Qwen3 LM decoder through the LiteRT-LM runner; 960 MB) ---
+mac litert-lm litert-community/Qwen3-ASR-0.6B asr-rtf-librispeech-82s backend=cpu runs=3 cooldown=60 file=qwen3_asr_0.6b_5s_i8.litertlm
+mac litert-lm litert-community/Qwen3-ASR-0.6B asr-rtf-librispeech-82s backend=gpu runs=3 cooldown=60 file=qwen3_asr_0.6b_5s_i8.litertlm

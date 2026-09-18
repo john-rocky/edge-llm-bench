@@ -18,8 +18,10 @@ for their published campaigns).
   `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`).
 - `model-id`: catalog id (usually the HF repo id; side-loaded ids like
   `litert-local/...` need `local=1`).
-- `task`: a `BenchmarkTask` id (`short-chat`, `long-context-1024-gen256`, ...)
-  or `native-benchmark-<P>x<D>` for engine-native synthetic benchmarks.
+- `task`: a `BenchmarkTask` id (`short-chat`, `long-context-1024-gen256`, ...),
+  `native-benchmark-<P>x<D>` for engine-native synthetic benchmarks, or an
+  `asr-rtf-<set>` speech-recognition real-time-factor task (mac litert-lm rows
+  only in v1; needs `backend=` and `file=`; `docs/asr-rtf-v1.md`).
 
 ## Options (trailing `key=value`, any order)
 
@@ -61,6 +63,10 @@ for their published campaigns).
   with disabled Qwen3.5 / LFM2.5 placeholders; companion one-pager
   `docs/dashboard-cells-v1.md`. Re-measured on a schedule by the recurring
   job (`docs/dashboard-recurring-job-v1.md`, `./bench dashboard-job`).
+- `asr-rtf-v1.cells` — the ASR real-time-factor cells (Moonshine tiny, Whisper
+  tiny, Parakeet TDT 0.6B v3, Qwen3-ASR-0.6B × litert-lm cpu / gpu on the Mac)
+  plus the Mac session anchor; the task family, its audio set and the
+  instrument (LiteRT-LM `main` `omni/asr` CLI) are defined in `docs/asr-rtf-v1.md`.
 - `dashboard-text-v1-android-{a,b1,b2}.cells` — the same Android rows split
   into storage halves for phones that cannot hold the whole set (each half
   carries the session anchor; rows byte-identical to the parent). The

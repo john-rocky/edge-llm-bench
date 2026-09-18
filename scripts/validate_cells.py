@@ -22,7 +22,11 @@ TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
          "long-context-3k",
          "long-context-8k", "long-context-32k", "cactus-parity", "sustained",
-         "energy", "quality", "lifecycle"}
+         "energy", "quality", "lifecycle",
+         # ASR real-time factor over a pinned utterance set (docs/asr-rtf-v1.md;
+         # scripts/asr_rtf_mac.py TASK_SETS names the set behind each id).
+         "asr-rtf-librispeech-82s"}
+ASR_TASK = re.compile(r"^asr-rtf-")
 NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 # endurance-chat-<N>m — multi-turn endurance sessions (methodology/endurance.md);
 # duration is part of the task id, like the long-context sweep variants.
@@ -93,6 +97,18 @@ def validate_file(path, catalog=None, require_anchor=False):
             if ENDURANCE_TASK.match(task) and opts.get("runs", "1") != "1":
                 errors.append(f"{where}: endurance cells take runs=1 — one "
                               "session per cell; sessions are never pooled")
+            if ASR_TASK.match(task):
+                # v1 instrument = LiteRT-LM's own ASR CLI on the Mac; the litert
+                # backend is arm identity (litert-lm-cpu / -gpu never pool) and
+                # file= names the artifact (the recipe is stated per row).
+                if rt != "litert-lm" or plat != "mac":
+                    errors.append(f"{where}: asr-rtf-* is a mac litert-lm cell in v1 "
+                                  "(scripts/asr_rtf_mac.py; docs/asr-rtf-v1.md)")
+                if opts.get("backend") not in BACKENDS:
+                    errors.append(f"{where}: asr-rtf-* needs backend=cpu|gpu (arm identity)")
+                if not opts.get("file"):
+                    errors.append(f"{where}: asr-rtf-* needs file=<artifact> "
+                                  "(quant-per-arm-rule: the recipe travels with the row)")
             if task == "energy" and opts.get("manual") != "1":
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")

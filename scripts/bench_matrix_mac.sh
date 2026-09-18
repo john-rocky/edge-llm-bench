@@ -181,6 +181,19 @@ run_cell(){
     return
   fi
 
+  # asr-rtf-* cells (docs/asr-rtf-v1.md): LiteRT-LM's own ASR CLI through
+  # scripts/asr_rtf_mac.py, not yardstick — same campaign dir, same record shape,
+  # one JSONL per cell; the post-capture gate below reads decode metrics and does
+  # not apply. validate_cells.py already requires backend= and file= here.
+  case "$task" in asr-rtf-*)
+    log "CELL $rt / $mid / $task backend=$backend runs=$runs round=$round ($(date +%H:%M:%S))"
+    python3 "$REPO/scripts/asr_rtf_mac.py" --model-id "$mid" --task "$task" --backend "$backend" \
+      --file "$(cell_opt file "" ${opts[@]+"${opts[@]}"})" --runs "$runs" \
+      --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT" \
+      || echo "FAIL $rt $mid $task backend=$backend round=$round" >> "$OUT/FAILURES.txt"
+    return ;;
+  esac
+
   local extra=() task_arg="$task"
   [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
   [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
