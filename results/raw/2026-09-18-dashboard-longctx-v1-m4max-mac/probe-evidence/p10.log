@@ -1,0 +1,236 @@
+yardstick: run 1/2 task=long-context-2048-gen256 runtime=litert-lm model=litert-community/gemma-4-E4B-it-litert-lm
+YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3360
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7534c22bc0, name=GPU WebGPU
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7534c22ad0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7534c229e0, name=GPU WebGPU
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7534c217c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789675906.963257 11305405 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1789675906.963286 11305405 litert_lm_loader.cc:291] Section not found: 	
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1340, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=3514, num_inputs=53, num_outputs=50, num_ops=2712
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=3606, num_inputs=53, num_outputs=50, num_ops=2801
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2304, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 577 tensors of signature decode have been updated for magic number  32003 to target number 2304
+INFO: [magic_number_utils.cc:536] 426 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2304
+INFO: [magic_number_utils.cc:536] 426 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2304
+INFO: [magic_number_utils.cc:536] 581 tensors of signature verify have been updated for magic number  32003 to target number 2304
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7534c228a0, name=GPU WebGPU
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7534c22710, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2304, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2304, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2304, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=97, num_inputs=1, num_outputs=1, num_ops=49
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2304, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1789675912.312386 11305546 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1789675919.596594 11305878 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1789675940.258423 11305878 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+{
+  "device" : {
+    "batteryLevel" : -1,
+    "batteryState" : "unknown",
+    "buildConfiguration" : "Release",
+    "initialThermalState" : "nominal",
+    "isLowPowerModeEnabled" : false,
+    "modelIdentifier" : "Mac16,9",
+    "physicalMemoryMB" : 131072,
+    "processorCount" : 16,
+    "systemName" : "macOS",
+    "systemVersion" : "Version 27.0 (Build 26A428)"
+  },
+  "engineArtifact" : "CLiteRTLM_mac.xcframework.zip@v0.16.0 sha256:3ae6c876abd74614b1869bfc40cb4d0b892981363564740268b1f8ac5cf895a4",
+  "engineVersion" : "v0.16.0",
+  "id" : "47252721-9940-464B-A76A-C48A876612BA",
+  "metrics" : {
+    "batteryDeltaPercent" : 0,
+    "coldRun" : true,
+    "contextTokensConfigured" : 2304,
+    "decodeRateRollingWindow" : [
+      32.47637201493552,
+      32.46389281423894,
+      32.345737292475576
+    ],
+    "decodeTokensPerSecond" : 32.57544519937128,
+    "decodeTokensPerSecondWallClock" : 32.44826775284705,
+    "finalThermalState" : "nominal",
+    "firstTokenLatencyMS" : 7373,
+    "generatedTokenCount" : 256,
+    "harnessStamp" : "2026-07-30-agreed-protocol-r4",
+    "initialThermalState" : "nominal",
+    "interTokenLatencyP50MS" : 30.291080474853516,
+    "interTokenLatencyP95MS" : 35.86697578430176,
+    "interTokenLatencyP99MS" : 36.75401210784912,
+    "loadTimeSeconds" : 5.85016393661499,
+    "memoryAfterGenerationMB" : 2047.0372924804688,
+    "memoryAfterLoadMB" : 547.973258972168,
+    "memoryBaselineMB" : 5.4538116455078125,
+    "memoryFinalResidentMB" : 6571.8125,
+    "memoryMedianMB" : 2046.7404174804688,
+    "memoryMedianResidentMB" : 6535.015625,
+    "memoryPeakDuringDecodeMB" : 2046.9747924804688,
+    "memoryPeakResidentMB" : 6571.8125,
+    "peakThermalState" : "nominal",
+    "promptTokenCount" : 1637,
+    "promptTokensPerSecond" : 224.78183709204117,
+    "promptTokensPerSecondWallClock" : 222.03796813890511,
+    "stopReason" : "length",
+    "streamedChunkCount" : 256,
+    "totalGenerationTimeSeconds" : 27.947100043296814
+  },
+  "model" : {
+    "displayName" : "Gemma 4 E4B (.litertlm)",
+    "hfFilePatterns" : [
+      "gemma-4-E4B-it.litertlm"
+    ],
+    "hfRepoId" : "litert-community\/gemma-4-E4B-it-litert-lm",
+    "id" : "litert-community\/gemma-4-E4B-it-litert-lm",
+    "onDiskSizeMB" : 3750,
+    "parameterCountB" : 4,
+    "primaryFile" : "gemma-4-E4B-it.litertlm",
+    "quantization" : "INT4 (QAT)"
+  },
+  "modelRevision" : "2eee7ac325f20eb8c9ac1d0e972f7c84663062da",
+  "outputSample" : "Based on the provided text, which is a repetitive block of placeholder \"Lorem ipsum\" text, there is no actual content or context to draw from to answer your question. The text does not contain any inf",
+  "parameters" : {
+    "maxTokens" : 256,
+    "temperature" : 0,
+    "topP" : 1
+  },
+  "runtime" : "litert-lm-cpu",
+  "schemaVersion" : 1,
+  "task" : "long-context-2048-gen256",
+  "timestamp" : "2026-09-17T20:12:20Z"
+}
+yardstick: appended to /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/775102f1-0dc1-4b72-aba7-5e10068b6bff/scratchpad/probe/p10.jsonl
+yardstick: run=1 cold=1 TTFT=7373ms decode=32.58tok/s peakMB=2046
+yardstick: run 2/2 task=long-context-2048-gen256 runtime=litert-lm model=litert-community/gemma-4-E4B-it-litert-lm
+YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3360
+W0000 00:00:1789675940.478688 11305405 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1789675947.666006 11305878 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1789675967.841696 11305878 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+{
+  "device" : {
+    "batteryLevel" : -1,
+    "batteryState" : "unknown",
+    "buildConfiguration" : "Release",
+    "initialThermalState" : "nominal",
+    "isLowPowerModeEnabled" : false,
+    "modelIdentifier" : "Mac16,9",
+    "physicalMemoryMB" : 131072,
+    "processorCount" : 16,
+    "systemName" : "macOS",
+    "systemVersion" : "Version 27.0 (Build 26A428)"
+  },
+  "engineArtifact" : "CLiteRTLM_mac.xcframework.zip@v0.16.0 sha256:3ae6c876abd74614b1869bfc40cb4d0b892981363564740268b1f8ac5cf895a4",
+  "engineVersion" : "v0.16.0",
+  "id" : "71D46206-5E63-426A-9C25-9196C2C7B792",
+  "metrics" : {
+    "batteryDeltaPercent" : 0,
+    "coldRun" : false,
+    "contextTokensConfigured" : 2304,
+    "decodeRateRollingWindow" : [
+      33.08297277063451,
+      33.09193746771043,
+      33.09780101373603
+    ],
+    "decodeTokensPerSecond" : 33.22054373448658,
+    "decodeTokensPerSecondWallClock" : 33.09081028275607,
+    "finalThermalState" : "nominal",
+    "firstTokenLatencyMS" : 7220,
+    "generatedTokenCount" : 256,
+    "harnessStamp" : "2026-07-30-agreed-protocol-r4",
+    "initialThermalState" : "nominal",
+    "interTokenLatencyP50MS" : 30.19106388092041,
+    "interTokenLatencyP95MS" : 30.538082122802734,
+    "interTokenLatencyP99MS" : 30.645012855529785,
+    "memoryAfterGenerationMB" : 2050.0216674804688,
+    "memoryAfterLoadMB" : 2047.1154174804688,
+    "memoryBaselineMB" : 2047.1154174804688,
+    "memoryFinalResidentMB" : 6574.890625,
+    "memoryMedianMB" : 2049.8654174804688,
+    "memoryMedianResidentMB" : 6574.734375,
+    "memoryPeakDuringDecodeMB" : 2050.0216674804688,
+    "memoryPeakResidentMB" : 6574.890625,
+    "peakThermalState" : "nominal",
+    "promptTokenCount" : 1637,
+    "promptTokensPerSecond" : 227.88096722620716,
+    "promptTokensPerSecondWallClock" : 226.72552488023527,
+    "stopReason" : "length",
+    "streamedChunkCount" : 256,
+    "totalGenerationTimeSeconds" : 27.365062952041626
+  },
+  "model" : {
+    "displayName" : "Gemma 4 E4B (.litertlm)",
+    "hfFilePatterns" : [
+      "gemma-4-E4B-it.litertlm"
+    ],
+    "hfRepoId" : "litert-community\/gemma-4-E4B-it-litert-lm",
+    "id" : "litert-community\/gemma-4-E4B-it-litert-lm",
+    "onDiskSizeMB" : 3750,
+    "parameterCountB" : 4,
+    "primaryFile" : "gemma-4-E4B-it.litertlm",
+    "quantization" : "INT4 (QAT)"
+  },
+  "modelRevision" : "2eee7ac325f20eb8c9ac1d0e972f7c84663062da",
+  "outputSample" : "Based on the provided text, which is a repetitive block of placeholder \"Lorem ipsum\" text, there is no actual content or context to draw from to answer your question. The text does not contain any inf",
+  "parameters" : {
+    "maxTokens" : 256,
+    "temperature" : 0,
+    "topP" : 1
+  },
+  "runtime" : "litert-lm-cpu",
+  "schemaVersion" : 1,
+  "task" : "long-context-2048-gen256",
+  "timestamp" : "2026-09-17T20:12:48Z"
+}
+yardstick: appended to /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/775102f1-0dc1-4b72-aba7-5e10068b6bff/scratchpad/probe/p10.jsonl
+yardstick: run=2 cold=0 TTFT=7220ms decode=33.22tok/s peakMB=2050
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7534c217c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7534c229e0, name=GPU WebGPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7534c22710, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7534c228a0, name=GPU WebGPU

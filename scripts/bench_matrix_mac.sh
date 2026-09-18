@@ -4,6 +4,12 @@
 #
 #   scripts/bench_matrix_mac.sh run matrices/release-regression-litert.cells
 #
+# Round mode (2026-09-18): ROUNDS=N runs the whole cell list N times (one
+# launch of RUNS runs per cell per round, order reversed on even rounds) —
+# the paired A/B shape for cells that differ only in context-tokens= or
+# backend=; capture files are keyed on both. Gate off in round mode.
+#   ROUNDS=8 RUNS=2 BASE_COOLDOWN=10 scripts/bench_matrix_mac.sh run <cells>
+#
 # Binary resolution: $YS_BIN -> $DD_MAC/Build/Products/Release/yardstick
 # (scripts/build_yardstick_mac.sh) -> error. The runner REFUSES the spm-lite
 # flavor (SwiftPM build; four runtimes compiled out — silently wrong matrix)
@@ -83,8 +89,13 @@ PY
 
 run_ys_cell(){
   # One capture attempt for the current loop cell (bash dynamic scope: rt/mid/
-  # task_arg/runs/extra/slug are cmd_run locals).
-  "$YS" run --runtime "$rt" --model-id "$mid" --task "$task_arg" --runs "$runs" \
+  # task_arg/runs/extra/slug are run_cell locals). Wrapped in gtimeout when
+  # present (CELL_TIMEOUT, default 1800 s): a litert cell can hang at teardown
+  # after its records are on disk (CLAUDE.md), and a hung launch must not stall
+  # the session — the records already appended stand.
+  local -a to=()
+  command -v gtimeout >/dev/null && to=(gtimeout "${CELL_TIMEOUT:-1800}")
+  ${to[@]+"${to[@]}"} "$YS" run --runtime "$rt" --model-id "$mid" --task "$task_arg" --runs "$runs" \
     ${extra[@]+"${extra[@]}"} --output "$OUT/${slug}.jsonl" 2>&1 | tail -4
 }
 
@@ -117,6 +128,109 @@ check_binary(){
   echo "yardstick: $YS ${ver:+($ver)}"
 }
 
+run_cell(){
+  # One cell (one line of the cells file) in round $1. bash dynamic scope:
+  # `first` and OUT/YS come from cmd_run; rt/mid/task/task_arg/runs/extra/slug
+  # are read by run_ys_cell.
+  local round="$1" line="$2"
+  local rt mid task rest
+  read -r rt mid task rest <<<"$line"
+  read -r -a opts <<<"${rest:-}"
+  local runs cool ctx maxtok backend slug
+  runs="$(cell_opt runs "$DEFAULT_RUNS" ${opts[@]+"${opts[@]}"})"
+  cool="$(cell_opt cooldown "$BASE_COOLDOWN" ${opts[@]+"${opts[@]}"})"
+  ctx="$(cell_opt context-tokens "" ${opts[@]+"${opts[@]}"})"
+  maxtok="$(cell_opt max-tokens "" ${opts[@]+"${opts[@]}"})"
+  backend="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"
+  # Capture file = cell identity. backend= and context-tokens= are part of it
+  # (2026-09-18): the long-context column runs one (arm, model, task) at several
+  # KV allocations, and the litert cpu/gpu arms never pool — without the suffix
+  # the second such cell appended into the first one's file and was then
+  # "already captured".
+  slug="$(echo "${rt}_${mid}_${task}" | tr '/.' '__')"
+  [ -n "$backend" ] && slug="${slug}_${backend}"
+  [ -n "$ctx" ] && slug="${slug}_ctx${ctx}"
+
+  [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
+
+  if [ "$rt" = "core-ai" ]; then
+    case "$task" in
+      native-benchmark-*)
+        # Engine-native synthetic benchmark = Apple's external llm-benchmark
+        # binary (own timing, no --context-tokens; the caveat travels in the
+        # wrapper's provenance note).
+        "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT" \
+          || echo "FAIL core-ai $mid $task" >> "$OUT/FAILURES.txt"
+        return ;;
+    esac
+    # Prompt tasks run through yardstick's CoreAIRuntime below, like every
+    # other arm. A bundle that is not staged is SKIPPED with its reason —
+    # "not yet measured" in the table, not four failed runs.
+    coreai_bundle_ready "$mid" || return
+  fi
+  if [ "$rt" = "cactus" ]; then
+    echo "SKIPPED $rt $mid $task reason=no-mac-arm" | tee -a "$OUT/SKIPPED.txt"
+    return
+  fi
+
+  # Resume-safe: a JSONL that already holds >= runs records (x rounds so far)
+  # is a finished cell for this round.
+  if [ "${FORCE:-0}" != "1" ] && [ -f "$OUT/${slug}.jsonl" ] \
+     && [ "$(grep -c '"task"' "$OUT/${slug}.jsonl" 2>/dev/null || echo 0)" -ge $((runs * round)) ]; then
+    log "SKIP $slug round $round (already captured; FORCE=1 to redo)"
+    return
+  fi
+
+  local extra=() task_arg="$task"
+  [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
+  [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
+  # backend= on a mac litert-lm row selects the engine's compute backend
+  # (cpu rows stamp runtime litert-lm-cpu — a separate arm, as on Android).
+  if [ -n "$backend" ]; then
+    if [ "$rt" = "litert-lm" ]; then
+      extra+=(--litert-backend "$backend")
+    else
+      echo "SKIPPED $rt $mid $task reason=backend-option-is-litert-lm-only" | tee -a "$OUT/SKIPPED.txt"
+      return
+    fi
+  fi
+  case "$task" in native-benchmark-*)
+    # The native benchmark runs INSTEAD of a task (yardstick resolves --task
+    # before the native branch, so it must still name a real task id).
+    extra+=(--litert-native-benchmark "${task#native-benchmark-}")
+    task_arg="short-chat" ;;
+  esac
+
+  log "CELL $rt / $mid / $task${backend:+ backend=$backend}${ctx:+ ctx=$ctx} runs=$runs round=$round ($(date +%H:%M:%S))"
+  if ! run_ys_cell; then
+    echo "FAIL $rt $mid $task${backend:+ backend=$backend}${ctx:+ ctx=$ctx} round=$round" >> "$OUT/FAILURES.txt"
+  fi
+  # Post-capture gate (scripts/cell_gate.py): a HOT or wide-spread capture is
+  # quarantined (.jsonl.attempt1 — kept in raw, outside build_summary's
+  # *.jsonl glob) and the cell re-runs ONCE after a real cooldown. SHORT is
+  # never retried here — that is a failure, and failed runs stay.
+  if [ -f "$OUT/${slug}.jsonl" ] && [ "${GATE_RETRY:-1}" = "1" ]; then
+    gate="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl")" || true
+    case "$gate" in DEGENERATE*)
+      # A repetition loop reproduces on re-run: flag it, keep the capture,
+      # never read its rate as a speed (cell_gate.py; the 2026-09-08 finding).
+      echo "GATE_FAIL $rt $mid $task verdict='$gate' (output is a repetition loop — not retried; the rate is not a measurement)" \
+        | tee -a "$OUT/FLAGGED.txt" ;;
+    esac
+    case "$gate" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
+      log "gate: $gate — quarantine + cooldown ${GATE_COOLDOWN:-180}s, re-run once"
+      mv "$OUT/${slug}.jsonl" "$OUT/${slug}.jsonl.attempt1"
+      sleep "${GATE_COOLDOWN:-180}"
+      run_ys_cell || echo "FAIL $rt $mid $task (gate retry)" >> "$OUT/FAILURES.txt"
+      gate2="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl" 2>/dev/null)" || true
+      case "$gate2" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
+        echo "GATE_FAIL $rt $mid $task first='$gate' retry='$gate2' (retry kept; ⚠ downstream)" \
+          | tee -a "$OUT/FLAGGED.txt" ;;
+      esac ;;
+    esac
+  fi
+}
+
 cmd_run(){
   local cells_file="${1:?usage: run <cells-file>}"
   python3 "$REPO/scripts/validate_cells.py" "$cells_file" || exit 1
@@ -125,84 +239,41 @@ cmd_run(){
   mkdir -p "$OUT"
   { sw_vers; date "+session start %F %T"; echo "cells: $cells_file"; } >> "$OUT/session_provenance.txt"
 
-  local first=1
-  while read -r rt mid task rest; do
-    read -r -a opts <<<"${rest:-}"
-    local runs cool ctx maxtok slug
-    runs="$(cell_opt runs "$DEFAULT_RUNS" ${opts[@]+"${opts[@]}"})"
-    cool="$(cell_opt cooldown "$BASE_COOLDOWN" ${opts[@]+"${opts[@]}"})"
-    ctx="$(cell_opt context-tokens "" ${opts[@]+"${opts[@]}"})"
-    maxtok="$(cell_opt max-tokens "" ${opts[@]+"${opts[@]}"})"
-    slug="$(echo "${rt}_${mid}_${task}" | tr '/.' '__')"
+  local -a cell_lines=()
+  local line
+  while IFS= read -r line; do cell_lines+=("$line"); done \
+    < <(cells_for mac "$cells_file" 2> >(tee -a "$OUT/SKIPPED.txt" >&2))
 
-    [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
-
-    if [ "$rt" = "core-ai" ]; then
-      case "$task" in
-        native-benchmark-*)
-          # Engine-native synthetic benchmark = Apple's external llm-benchmark
-          # binary (own timing, no --context-tokens; the caveat travels in the
-          # wrapper's provenance note).
-          "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT" \
-            || echo "FAIL core-ai $mid $task" >> "$OUT/FAILURES.txt"
-          continue ;;
-      esac
-      # Prompt tasks run through yardstick's CoreAIRuntime below, like every
-      # other arm. A bundle that is not staged is SKIPPED with its reason —
-      # "not yet measured" in the table, not four failed runs.
-      coreai_bundle_ready "$mid" || continue
+  # ROUNDS=N (default 1): the whole cell list N times, one launch of `runs`
+  # runs per cell per round, order reversed on even rounds (ROUND_ALTERNATE=1,
+  # the default) so a slow drift hits every cell from both sides — the paired
+  # A/B shape of litertlm-convert/ynnpack_work/bench_ab.py, on the matrix
+  # runner. Records accumulate in the cell's JSONL across rounds; the
+  # per-launch gate is off in round mode (its quarantine would move a file
+  # holding earlier rounds) and the spread is judged over the rounds afterwards.
+  local rounds="${ROUNDS:-1}" alternate="${ROUND_ALTERNATE:-1}"
+  if [ "$rounds" -gt 1 ]; then
+    log "ROUNDS=$rounds (ROUND_ALTERNATE=$alternate): post-capture gate off, spread judged across rounds"
+    echo "rounds: $rounds alternate=$alternate runs-per-launch=$DEFAULT_RUNS gate=off" >> "$OUT/session_provenance.txt"
+    GATE_RETRY=0
+  fi
+  local first=1 round k idx n=${#cell_lines[@]}
+  for round in $(seq 1 "$rounds"); do
+    if [ "$rounds" -gt 1 ]; then
+      log "ROUND $round/$rounds ($(date +%H:%M:%S), $(uptime | sed 's/.*load/load/'))"
+      # Host-idleness audit trail (the ynnpack A/B logged the same): load and
+      # the top CPU consumers at every round start, next to the records.
+      { echo "== round $round $(date '+%F %T')"; uptime; ps -Ao pcpu,pid,comm -r | head -5; } >> "$OUT/host_load.log"
     fi
-    if [ "$rt" = "cactus" ]; then
-      echo "SKIPPED $rt $mid $task reason=no-mac-arm" | tee -a "$OUT/SKIPPED.txt"
-      continue
-    fi
-
-    # Resume-safe: a JSONL that already holds >= runs records is a finished cell.
-    if [ "${FORCE:-0}" != "1" ] && [ -f "$OUT/${slug}.jsonl" ] \
-       && [ "$(grep -c '"task"' "$OUT/${slug}.jsonl" 2>/dev/null || echo 0)" -ge "$runs" ]; then
-      log "SKIP $slug (already captured; FORCE=1 to redo)"
-      continue
-    fi
-
-    local extra=() task_arg="$task"
-    [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
-    [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
-    case "$task" in native-benchmark-*)
-      # The native benchmark runs INSTEAD of a task (yardstick resolves --task
-      # before the native branch, so it must still name a real task id).
-      extra+=(--litert-native-benchmark "${task#native-benchmark-}")
-      task_arg="short-chat" ;;
-    esac
-
-    log "CELL $rt / $mid / $task runs=$runs ($(date +%H:%M:%S))"
-    if ! run_ys_cell; then
-      echo "FAIL $rt $mid $task" >> "$OUT/FAILURES.txt"
-    fi
-    # Post-capture gate (scripts/cell_gate.py): a HOT or wide-spread capture is
-    # quarantined (.jsonl.attempt1 — kept in raw, outside build_summary's
-    # *.jsonl glob) and the cell re-runs ONCE after a real cooldown. SHORT is
-    # never retried here — that is a failure, and failed runs stay.
-    if [ -f "$OUT/${slug}.jsonl" ] && [ "${GATE_RETRY:-1}" = "1" ]; then
-      gate="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl")" || true
-      case "$gate" in DEGENERATE*)
-        # A repetition loop reproduces on re-run: flag it, keep the capture,
-        # never read its rate as a speed (cell_gate.py; the 2026-09-08 finding).
-        echo "GATE_FAIL $rt $mid $task verdict='$gate' (output is a repetition loop — not retried; the rate is not a measurement)" \
-          | tee -a "$OUT/FLAGGED.txt" ;;
-      esac
-      case "$gate" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
-        log "gate: $gate — quarantine + cooldown ${GATE_COOLDOWN:-180}s, re-run once"
-        mv "$OUT/${slug}.jsonl" "$OUT/${slug}.jsonl.attempt1"
-        sleep "${GATE_COOLDOWN:-180}"
-        run_ys_cell || echo "FAIL $rt $mid $task (gate retry)" >> "$OUT/FAILURES.txt"
-        gate2="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl" 2>/dev/null)" || true
-        case "$gate2" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
-          echo "GATE_FAIL $rt $mid $task first='$gate' retry='$gate2' (retry kept; ⚠ downstream)" \
-            | tee -a "$OUT/FLAGGED.txt" ;;
-        esac ;;
-      esac
-    fi
-  done < <(cells_for mac "$cells_file" 2> >(tee -a "$OUT/SKIPPED.txt" >&2))
+    for ((k = 0; k < n; k++)); do
+      if [ "$rounds" -gt 1 ] && [ "$alternate" = 1 ] && [ $((round % 2)) -eq 0 ]; then
+        idx=$((n - 1 - k))
+      else
+        idx=$k
+      fi
+      run_cell "$round" "${cell_lines[$idx]}"
+    done
+  done
 
   log "campaign dir: $OUT"
   [ -f "$OUT/FAILURES.txt" ] && { echo "failures (failed-runs-stay — keep in the table):"; cat "$OUT/FAILURES.txt"; }

@@ -39,10 +39,16 @@ public protocol LLMRuntime: AnyObject, Sendable {
     /// `maxNumTokens` and *rejects* any prompt longer than it, so long-context tasks must size
     /// this to the prompt, not just the output.
     func prepareContext(maxContextTokens: Int) async
+
+    /// The `runtime` string stamped into the result record. Defaults to the kind's raw
+    /// value; a runtime whose arm identity includes a compute backend overrides it the way
+    /// the Android CLI does (`litert-lm-cpu`), so cpu and gpu rows never pool.
+    var recordRuntimeLabel: String { get async }
 }
 
 public extension LLMRuntime {
     func prepareContext(maxContextTokens: Int) async {}
+    var recordRuntimeLabel: String { get async { kind.rawValue } }
 }
 
 public enum GenerationEvent: Sendable {

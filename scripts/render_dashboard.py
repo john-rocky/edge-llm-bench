@@ -63,9 +63,13 @@ def rel(p):
 
 def arm_of(plat, runtime, opts):
     """The arm id as device-runs.csv records it: Android litert carries its
-    backend in the runtime string (litert-lm-cpu / litert-lm-gpu)."""
+    backend in the runtime string (litert-lm-cpu / litert-lm-gpu); the Mac
+    CPU arm stamps litert-lm-cpu too, while the Mac GPU arm keeps the bare
+    `litert-lm` every Apple row has carried (yardstick --litert-backend)."""
     if plat == "android" and runtime == "litert-lm" and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
+    if plat == "mac" and runtime == "litert-lm" and opts.get("backend") == "cpu":
+        return f"{runtime}-cpu"
     return runtime
 
 

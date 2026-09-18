@@ -19,7 +19,8 @@ PLATFORMS = {"ios", "mac", "android"}
 RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             "anemll", "apple-fm", "core-ai", "cactus"}
 TASKS = {"short-chat", "long-context-512", "long-context-1024",
-         "long-context-1024-gen256", "long-context", "long-context-3k",
+         "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
+         "long-context-3k",
          "long-context-8k", "long-context-32k", "cactus-parity", "sustained",
          "energy", "quality", "lifecycle"}
 NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
@@ -95,9 +96,12 @@ def validate_file(path, catalog=None, require_anchor=False):
             if task == "energy" and opts.get("manual") != "1":
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")
-            if opts.get("backend") and plat != "android":
-                errors.append(f"{where}: backend= is android-only "
-                              "(Apple arms encode backend in the model id)")
+            if opts.get("backend") and not (
+                    plat == "android" or (plat == "mac" and rt == "litert-lm")):
+                errors.append(f"{where}: backend= is for android cells and mac "
+                              "litert-lm cells only (the Mac runner forwards it as "
+                              "--litert-backend; every other Apple arm encodes its "
+                              "backend in the model id)")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
                               "(arm identity; run_cell refuses it — the anchors.cells "
@@ -108,7 +112,9 @@ def validate_file(path, catalog=None, require_anchor=False):
                               "(BenchmarkRunner.Configuration carries no budget "
                               "override) — encode the budget in the task id "
                               "(e.g. long-context-1024-gen256)")
-            key = (plat, rt, mid, task, opts.get("backend", ""))
+            # context-tokens is part of the cell identity: the Mac runner keys the
+            # capture file on it, so one cell at two allocations is two cells.
+            key = (plat, rt, mid, task, opts.get("backend", ""), opts.get("context-tokens", ""))
             if key in seen:
                 errors.append(f"{where}: duplicate cell (first at line {seen[key]})")
             else:

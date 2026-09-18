@@ -91,6 +91,10 @@ struct YardstickApp {
         // here. A Mac number captured without this flag is not comparable with an iPhone one.
         var contextTokens: Int? = nil
         var nativeBenchmark: (prefill: Int, decode: Int)? = nil
+        // LiteRT-LM compute backend (arm identity). Default gpu = every Apple row so far;
+        // `cpu` runs the XNNPACK path and stamps `runtime: litert-lm-cpu` (2026-09-18, the
+        // dashboard's long-context column: does decode track the allocated KV on each arm).
+        var litertBackend: MediaPipeRuntime.ComputeBackend = .gpu
 
         var i = 0
         while i < argv.count {
@@ -123,6 +127,14 @@ struct YardstickApp {
                     exit(2)
                 }
                 nativeBenchmark = (p, d)
+            case "--litert-backend":
+                let raw = argv.value(after: &i).lowercased()
+                guard let b = MediaPipeRuntime.ComputeBackend(rawValue: raw) else {
+                    FileHandle.standardError.write(Data(
+                        "bad --litert-backend '\(raw)' — expected cpu|gpu\n".utf8))
+                    exit(2)
+                }
+                litertBackend = b
             case "--output":
                 outputPath = argv.value(after: &i)
             case "--warm":
@@ -145,7 +157,12 @@ struct YardstickApp {
             setenv("COREAI_CHUNK_THRESHOLD", "1", 1)
         }
 
-        let runtime = try makeRuntime(id: runtimeID)
+        if litertBackend != .gpu, !["litert-lm", "mediapipe"].contains(runtimeID) {
+            FileHandle.standardError.write(Data(
+                "--litert-backend applies to --runtime litert-lm only (got '\(runtimeID)')\n".utf8))
+            exit(2)
+        }
+        let runtime = try makeRuntime(id: runtimeID, litertBackend: litertBackend)
         let task = try makeTask(id: taskID)
         let model = try resolveModel(idOrHF: modelID, runtime: runtime)
 
@@ -429,7 +446,7 @@ struct YardstickApp {
         print("  llama-cpp    — llama.cpp via vendored xcframework (CPU + Metal)")
         print("  anemll       — ANEMLL via vendored anemll-swift-cli (ANE)")
         print("  apple-fm     — Apple Foundation Models (macOS 26+, Apple-Intelligence-eligible Macs)")
-        print("  litert-lm    — LiteRT-LM (google-ai-edge/LiteRT-LM, Metal GPU)")
+        print("  litert-lm    — LiteRT-LM (google-ai-edge/LiteRT-LM, Metal GPU; `--litert-backend cpu` = XNNPACK CPU arm, stamped litert-lm-cpu)")
         print("  core-ai      — Apple Core AI (apple/coreai-models, macOS 27; side-loaded .aimodel bundles under BENCH_COREAI_MODELS_DIR)")
         print("")
         print("Available tasks:")
@@ -462,7 +479,8 @@ struct YardstickApp {
 
     // MARK: - Helpers
 
-    static func makeRuntime(id: String) throws -> any LLMRuntime {
+    static func makeRuntime(id: String,
+                            litertBackend: MediaPipeRuntime.ComputeBackend = .gpu) throws -> any LLMRuntime {
         switch id {
         case "mlx-swift", "mlx":
             return MLXRuntime()
@@ -489,7 +507,7 @@ struct YardstickApp {
         case "apple-fm", "apple", "fm", "foundation-models":
             return AppleFMRuntime()
         case "litert-lm", "mediapipe":
-            return MediaPipeRuntime()
+            return MediaPipeRuntime(backend: litertBackend)
         default:
             throw CLIError.invalidArgument(
                 "unknown runtime '\(id)' — supported on Mac: mlx-swift, coreml-llm, executorch, llama-cpp, anemll, apple-fm, litert-lm, core-ai"

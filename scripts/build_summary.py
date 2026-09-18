@@ -222,6 +222,10 @@ def build_device():
             "battery_state": dev.get("batteryState"),
             "cold_run": m.get("coldRun"),
             "first_ever": m.get("firstEver"),
+            # KV allocation the run was configured with (2026-09-18): the
+            # long-context column measures one cell at several allocations,
+            # and a derived row without this axis would pool them.
+            "context_tokens": m.get("contextTokensConfigured"),
             "device": DEVICE_ALIASES.get(dev.get("modelIdentifier"),
                                          dev.get("modelIdentifier")),
             "os_version": dev.get("systemVersion"),

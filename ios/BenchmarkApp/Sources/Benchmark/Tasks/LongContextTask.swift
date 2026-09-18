@@ -31,10 +31,15 @@ public struct LongContextTask: BenchmarkTask {
     /// wants a decode rate has to keep the model generating for the whole budget.
     private let forceLongOutput: Bool
 
+    /// - Parameter blocks: explicit filler-block count, overriding the `targetTokens /
+    ///   tokensPerBlock` estimate. The nominal 55 tokens/block under-counts the real
+    ///   tokenizer output (the 18-block `long-context-1024-gen256` prompt reads 1,339 Qwen3
+    ///   / 1,106 Gemma-4 tokens), so a task that wants its *measured* prompt near the label
+    ///   sets the block count from a measured count instead of the estimate.
     public init(id: String = "long-context", targetTokens: Int = 2048, maxTokens: Int = 128,
-                forceLongOutput: Bool = false) {
+                forceLongOutput: Bool = false, blocks: Int? = nil) {
         self.id = id
-        self.blocks = max(1, targetTokens / Self.tokensPerBlock)
+        self.blocks = blocks ?? max(1, targetTokens / Self.tokensPerBlock)
         self.forceLongOutput = forceLongOutput
         let approx = targetTokens >= 1000 ? "~\(targetTokens / 1000)K" : "~\(targetTokens)"
         self.title = "Long-context prefill (\(approx) tok)"

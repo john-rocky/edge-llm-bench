@@ -35,7 +35,8 @@ Task: `short-chat`, the cross-arm standard cell (same prompt and token budget
 on every arm). The 1024-prefill / 256-decode / ctx-2048 column the LiteRT
 team benchmarks with (`long-context-1024-gen256`, methodology
 `agreed-protocol-gemma4.md`) is the natural second task and is not in v1 —
-open question 3 below.
+open question 3 below; the Mac leg of a deeper column (p≈2K / g=256, three
+KV allocations) was measured 2026-09-18, section "Long-context column".
 
 ## Cell table
 
@@ -459,6 +460,65 @@ Core AI uses; iPhone through the Swift package), and a check of what `bench`
 actually measures before any of its numbers sit next to ours. Apple-only, so
 no Android column. Row status: investigate.
 
+## Long-context column, Mac leg (2026-09-18)
+
+Open question 3 ("second task") measured on the Mac for the five models, on
+LiteRT-LM cpu / LiteRT-LM gpu / llama.cpp, at prefill ≈2K / decode 256, with
+the KV allocation as a third axis — cells file `matrices/dashboard-longctx-v1.cells`,
+campaign `results/raw/2026-09-18-dashboard-longctx-v1-m4max-mac/` (NOTES.md
+there has the full table, the cold regime and the probe evidence).
+
+- Task `long-context-2048-gen256`: the forced-output long-context prompt at
+  27 filler blocks — 1,986 Qwen3 / 1,637 Gemma-4 tokens as the engines count
+  them — with a 256-token budget. The p=1024/g=256 protocol cell stays as it is;
+  this is the deeper column beside it.
+- Allocation ladder `context-tokens=` 2304 / 4096 / 8192 per (arm, model):
+  LiteRT-LM `maxNumTokens`, llama.cpp `n_ctx`. Round mode on the Mac runner
+  (`ROUNDS=8 RUNS=2`, order reversed on even rounds) so each allocation is
+  measured next to its partners in every round; warm median of 8, every run
+  thermal-nominal, session anchor 0.985 of the 09-14 reference.
+- The Mac now has a `litert-lm-cpu` arm (`yardstick --litert-backend cpu`,
+  `backend=cpu` on a mac litert-lm row) with the same record spelling as
+  Android; the LiteRT 1.7B CPU row uses the card's CPU file (dynamic INT8,
+  catalog id `litert-community/Qwen3-1.7B/int8`), the GPU row the wi4b32 build.
+
+What the column says, per arm — the change of decode at depth when only the
+allocation moves, 2304 → 4096 → 8192 (warm median of 8; absolute rates are in
+the campaign's per-arm ladders):
+
+| arm | Qwen3-0.6B | Qwen3-1.7B | Qwen3-4B | Gemma 4 E2B | Gemma 4 E4B |
+|---|---|---|---|---|---|
+| LiteRT-LM gpu (Metal-backed) | −2 % / −18 % (wi4b32 file) | −1 % / −13 % | — (see below) | −0 % / −12 % | −0 % / −9 % |
+| LiteRT-LM cpu (XNNPACK) | −25 % / −60 % (wi4b32 file) | +1 % / +1 % (INT8 file) | — | −8 % / −22 % | −6 % / −21 % |
+| llama.cpp (Metal) | +0 % / +3 % | +1 % / +0 % | +1 % / +0 % | −0 % / −1 % | +1 % / +1 % |
+
+Reading (single-arm facts; the cross-arm standing stays local):
+
+- LiteRT-LM decode at a fixed filled length falls with the *allocated* KV on
+  both backends of this Mac — catalog row K5 (measured on gemma-3-270m CPU)
+  holds on the dashboard bundles, and the GPU arm pays too (X2's open cell);
+  at 4,096 the GPU is within 2 % of 2,304 while the CPU already loses 6–25 %.
+  Prefill follows the same shape (GPU −12 to −36 %, CPU −23 to −50 % at 8,192).
+- Which bundle pays is an export property: the Qwen3-1.7B dynamic INT8 file
+  is flat in rate and in resident memory across the ladder (its KV is sized at
+  export; `maxNumTokens` does not resize it), the wi4b32 and Gemma 4 bundles
+  grow with the allocation.
+- llama.cpp is flat on all five (±3 %): attention over the filled length.
+- The dashboard's Qwen3-0.6B / Qwen3-4B LiteRT files (`mixed_int4`) are
+  `exclude=` rows: a 2,048-entry KV (`Prefill input length exceeds available
+  state entries (remaining capacity: 2048)`), and a `maxNumTokens` above it
+  is neither clamped nor refused — at 8,192 the run reports a normal-looking
+  270 tok/s while the engine logs 10,666 "Invalid decode and sample result"
+  warnings. The 0.6B row runs the repo's wi4b32 file (a different recipe,
+  disclosed in the id); 4B has no runnable published LiteRT file for this
+  task. That is open question 7 below.
+- Gemma 4 E2B on the GPU arm stops at 77 / 93 tokens (EOS) at 2,304 / 8,192
+  and fills 256 at 4,096 — greedy output differs with `maxNumTokens` on that
+  path; recorded, not investigated.
+
+Android and iPhone legs of the same column: not yet (devices off adb since
+09-15; the iPhone needs the `--litert-backend` plumbing in the app driver).
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`
@@ -476,3 +536,9 @@ no Android column. Row status: investigate.
 6. iPhone MLX E4B: the QAT OptiQ build (6.5 GB) is killed at load on the
    iPhone 17 Pro; use the 5.1 GB PTQ 4-bit build for that one row (a different
    recipe from the Mac's MLX row, disclosed), or leave the cell as the finding?
+7. Long-context cells on the `mixed_int4` Qwen3 files: their 2,048-entry KV
+   cannot hold a 2K prompt plus a 256-token reply, and `maxNumTokens` above
+   the exported size runs with invalid decode results instead of an error
+   (2026-09-18 Mac leg above). For the long-context column, should the 0.6B
+   and 4B LiteRT rows switch to a wider-cache file (the wi4b32 build exists
+   for 0.6B only), or is a larger-cache `mixed_int4` export planned?

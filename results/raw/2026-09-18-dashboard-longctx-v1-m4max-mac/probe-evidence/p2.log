@@ -1,0 +1,240 @@
+yardstick: run 1/2 task=long-context-2048-gen256 runtime=litert-lm model=litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
+W0000 00:00:1789675367.348371 11265977 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789675367.348452 11265977 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789675367.348472 11265977 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789675367.348488 11265977 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789675367.348380 11265998 litert_lm_loader.cc:291] Section not found: 
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7a90c22ad0, name=GPU WebGPU
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7a90c229e0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7a90c21fe0, name=GPU WebGPU
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7a90c22300, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=750, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1431, num_inputs=60, num_outputs=56, num_ops=994
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1431, num_inputs=60, num_outputs=56, num_ops=994
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1382, num_inputs=60, num_outputs=57, num_ops=936
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 474 tensors of signature prefill_128 have been updated for magic number  32771 to target number 4096
+INFO: [magic_number_utils.cc:536] 474 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 4096
+INFO: [magic_number_utils.cc:536] 482 tensors of signature decode have been updated for magic number  32771 to target number 4096
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789675367.394145 11265977 delegate_webgpu.cc:262] Create WebGPU environment (use_low_power=false, enable_host_mapped_pointer=true)
+I0000 00:00:1789675367.405949 11265977 environment.cc:525] Selected adapter: Apple M4 Max, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU
+I0000 00:00:1789675367.407729 11265977 delegate_webgpu.cc:290] Created a WebGPU environment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:384] Created default Metal device.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789675367.429661 11265977 delegate_webgpu.cc:690] # of threads to upload weights = 2
+I0000 00:00:1789675367.429710 11265977 delegate_webgpu.cc:698] # of threads to compile kernels = 1
+I0000 00:00:1789675367.814333 11265977 delegate_kernel.cc:330] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789675367.814354 11265977 delegate_kernel.cc:906] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1789675367.881670 11265977 delegate_kernel.cc:330] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789675367.881682 11265977 delegate_kernel.cc:906] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1789675367.967255 11265977 delegate_kernel.cc:330] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789675367.967269 11265977 delegate_kernel.cc:906] Initializing WebGPU-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7a90c23070, name=GPU WebGPU
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7a90c23480, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789675368.010751 11265977 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789675368.010766 11265977 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789675368.010771 11265977 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789675368.010774 11265977 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789675368.010777 11265977 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789675368.010780 11265977 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789675368.010783 11265977 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789675368.010786 11265977 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789675368.010799 11265977 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789675368.010802 11265977 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789675368.010805 11265977 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789675368.010807 11265977 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789675368.660996 11266029 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1789675368.678939 11266029 sampler_factory.cc:486] WebGPU sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [third_party/odml/litert_lm/runtime/components/sampler_factory.cc:319]
+└ Could not load shared library libLiteRtTopKWebGpuSampler.dylib: dlopen(libLiteRtTopKWebGpuSampler.dylib, 0x0005): tried: 'libLiteRtTopKWebGpuSampler.dylib' (no such file), '/System/Volumes/Preboot/Cryptexes/OSlibLiteRtTopKWebGpuSampler.dylib' (no such file), '/usr/lib/swift/libLiteRtTopKWebGpuSampler.dylib' (no such file, not in dyld cache), '/System/Volumes/Preboot/Cryptexes/OS/usr/lib/swift/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/Users/majimadaisuke/code/edge-llm-bench/.build/dd-mac/Build/Products/Release/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/Users/majimadaisuke/code/edge-llm-bench/ios/BenchmarkApp/Vendored/llama.xcframework/macos-arm64_x86_64/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/System/Volumes/Preboot/Cryptexes/OS/Users/majimadaisuke/code/edge-llm-bench/ios/BenchmarkApp/Vendored/llama.xcframework/macos-arm64_x86_64/libLiteRtTopKWebGpuSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKWebGpuSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKWebGpuSampler.dylib' (no such file).
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:573
+I0000 00:00:1789675368.893075 11266029 llm_litert_compiled_model_executor.cc:1527] Sampler will handle decode input tensors.
+W0000 00:00:1789675374.782073 11266029 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+{
+  "device" : {
+    "batteryLevel" : -1,
+    "batteryState" : "unknown",
+    "buildConfiguration" : "Release",
+    "initialThermalState" : "nominal",
+    "isLowPowerModeEnabled" : false,
+    "modelIdentifier" : "Mac16,9",
+    "physicalMemoryMB" : 131072,
+    "processorCount" : 16,
+    "systemName" : "macOS",
+    "systemVersion" : "Version 27.0 (Build 26A428)"
+  },
+  "engineArtifact" : "CLiteRTLM_mac.xcframework.zip@v0.16.0 sha256:3ae6c876abd74614b1869bfc40cb4d0b892981363564740268b1f8ac5cf895a4",
+  "engineVersion" : "v0.16.0",
+  "id" : "294857FC-5903-44B0-86D7-9D580B1CC23B",
+  "metrics" : {
+    "batteryDeltaPercent" : 0,
+    "coldRun" : true,
+    "contextTokensConfigured" : 4096,
+    "decodeRateRollingWindow" : [
+
+    ],
+    "decodeTokensPerSecond" : 284.82167414613855,
+    "decodeTokensPerSecondWallClock" : 283.71729272249064,
+    "finalThermalState" : "nominal",
+    "firstTokenLatencyMS" : 970,
+    "generatedTokenCount" : 256,
+    "harnessStamp" : "2026-07-30-agreed-protocol-r4",
+    "initialThermalState" : "nominal",
+    "interTokenLatencyP50MS" : 3.4999847412109375,
+    "interTokenLatencyP95MS" : 3.751993179321289,
+    "interTokenLatencyP99MS" : 3.811955451965332,
+    "loadTimeSeconds" : 0.9013229608535767,
+    "memoryAfterGenerationMB" : 1480.5796585083008,
+    "memoryAfterLoadMB" : 859.7515106201172,
+    "memoryBaselineMB" : 5.4694366455078125,
+    "memoryFinalResidentMB" : 902.765625,
+    "memoryMedianMB" : 1480.3765335083008,
+    "memoryMedianResidentMB" : 902.421875,
+    "memoryPeakDuringDecodeMB" : 1487.4546585083008,
+    "memoryPeakResidentMB" : 903.140625,
+    "peakThermalState" : "nominal",
+    "promptTokenCount" : 1986,
+    "promptTokensPerSecond" : 3070.3842312066236,
+    "promptTokensPerSecondWallClock" : 2046.6418881250665,
+    "stopReason" : "length",
+    "streamedChunkCount" : 256,
+    "totalGenerationTimeSeconds" : 6.771394968032837
+  },
+  "model" : {
+    "displayName" : "Qwen3 0.6B (.litertlm, dynamic wi4b32 GPU build)",
+    "hfFilePatterns" : [
+      "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+    ],
+    "hfRepoId" : "litert-community\/Qwen3-0.6B",
+    "id" : "litert-community\/Qwen3-0.6B\/dynamic_wi4b32_afp32",
+    "onDiskSizeMB" : 344,
+    "parameterCountB" : 0.6,
+    "primaryFile" : "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "quantization" : "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)"
+  },
+  "modelRevision" : "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+  "outputSample" : "Okay, let's tackle this query. The user wants me to list 25 distinct things on-device AI can do that a cloud model can't, using the provided context. First, I need to understand what the context is. T",
+  "parameters" : {
+    "maxTokens" : 256,
+    "temperature" : 0,
+    "topP" : 1
+  },
+  "runtime" : "litert-lm",
+  "schemaVersion" : 1,
+  "task" : "long-context-2048-gen256",
+  "timestamp" : "2026-09-17T20:02:54Z"
+}
+yardstick: appended to /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/775102f1-0dc1-4b72-aba7-5e10068b6bff/scratchpad/probe/p2.jsonl
+yardstick: run=1 cold=1 TTFT=970ms decode=284.82tok/s peakMB=1487
+yardstick: run 2/2 task=long-context-2048-gen256 runtime=litert-lm model=litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
+W0000 00:00:1789675375.310529 11266029 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1789675381.142141 11266029 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+{
+  "device" : {
+    "batteryLevel" : -1,
+    "batteryState" : "unknown",
+    "buildConfiguration" : "Release",
+    "initialThermalState" : "nominal",
+    "isLowPowerModeEnabled" : false,
+    "modelIdentifier" : "Mac16,9",
+    "physicalMemoryMB" : 131072,
+    "processorCount" : 16,
+    "systemName" : "macOS",
+    "systemVersion" : "Version 27.0 (Build 26A428)"
+  },
+  "engineArtifact" : "CLiteRTLM_mac.xcframework.zip@v0.16.0 sha256:3ae6c876abd74614b1869bfc40cb4d0b892981363564740268b1f8ac5cf895a4",
+  "engineVersion" : "v0.16.0",
+  "id" : "88986DE7-6222-4584-ACC2-783F5EEE84A9",
+  "metrics" : {
+    "batteryDeltaPercent" : 0,
+    "coldRun" : false,
+    "contextTokensConfigured" : 4096,
+    "decodeRateRollingWindow" : [
+
+    ],
+    "decodeTokensPerSecond" : 284.4431710005893,
+    "decodeTokensPerSecondWallClock" : 283.3349170596732,
+    "finalThermalState" : "nominal",
+    "firstTokenLatencyMS" : 337,
+    "generatedTokenCount" : 256,
+    "harnessStamp" : "2026-07-30-agreed-protocol-r4",
+    "initialThermalState" : "nominal",
+    "interTokenLatencyP50MS" : 3.5001039505004883,
+    "interTokenLatencyP95MS" : 3.787994384765625,
+    "interTokenLatencyP99MS" : 3.835916519165039,
+    "memoryAfterGenerationMB" : 1481.7984085083008,
+    "memoryAfterLoadMB" : 1480.5796585083008,
+    "memoryBaselineMB" : 1480.5796585083008,
+    "memoryFinalResidentMB" : 904.03125,
+    "memoryMedianMB" : 1481.5484085083008,
+    "memoryMedianResidentMB" : 903.796875,
+    "memoryPeakDuringDecodeMB" : 1489.2827835083008,
+    "memoryPeakResidentMB" : 911.53125,
+    "peakThermalState" : "nominal",
+    "promptTokenCount" : 1986,
+    "promptTokensPerSecond" : 6589.473364079541,
+    "promptTokensPerSecondWallClock" : 5894.678260869565,
+    "stopReason" : "length",
+    "streamedChunkCount" : 256,
+    "totalGenerationTimeSeconds" : 6.141458988189697
+  },
+  "model" : {
+    "displayName" : "Qwen3 0.6B (.litertlm, dynamic wi4b32 GPU build)",
+    "hfFilePatterns" : [
+      "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+    ],
+    "hfRepoId" : "litert-community\/Qwen3-0.6B",
+    "id" : "litert-community\/Qwen3-0.6B\/dynamic_wi4b32_afp32",
+    "onDiskSizeMB" : 344,
+    "parameterCountB" : 0.6,
+    "primaryFile" : "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "quantization" : "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)"
+  },
+  "modelRevision" : "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+  "outputSample" : "Okay, let's tackle this query. The user wants me to list 25 distinct things on-device AI can do that a cloud model can't, using the provided context. First, I need to understand what the context is. T",
+  "parameters" : {
+    "maxTokens" : 256,
+    "temperature" : 0,
+    "topP" : 1
+  },
+  "runtime" : "litert-lm",
+  "schemaVersion" : 1,
+  "task" : "long-context-2048-gen256",
+  "timestamp" : "2026-09-17T20:03:01Z"
+}
+yardstick: appended to /private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/775102f1-0dc1-4b72-aba7-5e10068b6bff/scratchpad/probe/p2.jsonl
+yardstick: run=2 cold=0 TTFT=337ms decode=284.44tok/s peakMB=1489
+I0000 00:00:1789675381.395772 11265975 delegate_webgpu.cc:320] Destroyed the WebGPU environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7a90c22300, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7a90c21fe0, name=GPU WebGPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7a90c23480, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7a90c23070, name=GPU WebGPU

@@ -686,6 +686,20 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"],
             primaryFile: "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
         ),
+        // The same repo's dynamic-INT8 file — the one the card points CPU users at. The
+        // Mac CPU arm (`--litert-backend cpu`, 2026-09-18) runs it, as the Android cpu cell
+        // does via file=; a different file and recipe from the wi4b32 entry above, so a
+        // separate id (quant-label-rule). Same hfRepoId, `primaryFile` picks the file.
+        ModelInfo(
+            id: "litert-community/Qwen3-1.7B/int8",
+            displayName: "Qwen3 1.7B (.litertlm, dynamic INT8)",
+            quantization: "INT8 (dynamic)",
+            parameterCountB: 1.7,
+            onDiskSizeMB: 1962,
+            hfRepoId: "litert-community/Qwen3-1.7B",
+            hfFilePatterns: ["Qwen3_1.7B.litertlm"],
+            primaryFile: "Qwen3_1.7B.litertlm"
+        ),
         // granite-4.2-3b — IBM dense THINKING model; our own conversion, shipped to
         // litert-community 2026-08-31 (litertlm-convert granite42_work/FINDINGS.md;
         // toolchain litert-torch 0.9.3 / litert-lm-builder 0.16.1). int4 recipe is

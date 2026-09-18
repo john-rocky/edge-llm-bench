@@ -38,6 +38,14 @@ public enum BenchmarkTaskCatalog {
         // equivalent entry point, so the four remaining arms can only be measured here.
         LongContextTask(id: "long-context-1024-gen256", targetTokens: 1024, maxTokens: 256,
                         forceLongOutput: true),
+        // p≈2048 / g=256 — the dashboard's long-context column (2026-09-18): the same
+        // forced-output prompt, twice the depth. 27 filler blocks put the measured prompt
+        // just under 2,048 Qwen3 tokens (≈1,980 with the chat template) so it still fits
+        // the llama.cpp adapter's 2,048-token prefill batch; Gemma-4's tokenizer reads the
+        // same text ≈17% shorter. The record's promptTokenCount is the ground truth, as
+        // for every sweep id.
+        LongContextTask(id: "long-context-2048-gen256", targetTokens: 2048, maxTokens: 256,
+                        forceLongOutput: true, blocks: 27),
         LongContextTask(),                                              // ~2K
         LongContextTask(id: "long-context-3k", targetTokens: 3072),     // near the 4096 ctx ceiling (room for 128 decode)
         LongContextTask(id: "long-context-8k", targetTokens: 8192),

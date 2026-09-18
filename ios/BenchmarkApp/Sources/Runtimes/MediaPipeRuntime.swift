@@ -11,7 +11,10 @@ import Foundation
 ///
 /// Loads `.litertlm` bundles (e.g. `litert-community/gemma-4-E2B-it-litert-lm`)
 /// and drives generation through `Engine` → `Conversation.sendMessageStream`.
-/// The decode backend is Metal GPU (`.gpu`); pass `.cpu()` to compare CPU.
+/// The decode backend is Metal GPU (`.gpu`) unless the adapter is created with
+/// `backend: .cpu` (Mac CLI `--litert-backend cpu`): then the engine runs LiteRT's
+/// XNNPACK CPU path and the record's `runtime` reads `litert-lm-cpu`, the arm id the
+/// Android CLI stamps — cpu and gpu rows are different arms and never pool.
 ///
 /// This replaces the deprecated MediaPipe Tasks GenAI 0.10.x (`.task`) path,
 /// which was iOS-only and could not read Gemma 4. The 0.12.0 package ships an
@@ -27,6 +30,16 @@ public actor MediaPipeRuntime: LLMRuntime {
 
     public private(set) var loadedModelId: String?
 
+    /// Compute backend for the engine (arm identity, see the type doc).
+    public enum ComputeBackend: String, Sendable { case cpu, gpu }
+    public nonisolated let backend: ComputeBackend
+    /// `litert-lm` for the Metal GPU arm (every Apple row so far), `litert-lm-cpu` for
+    /// the CPU arm — the same spelling as the Android CLI's records.
+    public var recordRuntimeLabel: String {
+        backend == .cpu ? "\(kind.rawValue)-cpu" : kind.rawValue
+    }
+    private var engineBackend: Backend { backend == .cpu ? .cpu() : .gpu }
+
     private var engine: Engine?
     private var modelPath: String?
     // LiteRT-LM pre-allocates KV for `maxNumTokens`, so an over-provisioned context
@@ -34,7 +47,7 @@ public actor MediaPipeRuntime: LLMRuntime {
     // `prepareContext` (called before loadModel); default covers a long-ish chat.
     private var contextBudget = 2048
 
-    public init() {}
+    public init(backend: ComputeBackend = .gpu) { self.backend = backend }
 
     /// Size the LiteRT-LM context (KV pre-allocation = `maxNumTokens`) to ≈ prompt + output.
     /// LiteRT-LM rejects any prompt longer than `maxNumTokens` (`INVALID_ARGUMENT: Input token
@@ -68,7 +81,7 @@ public actor MediaPipeRuntime: LLMRuntime {
             // The per-run output budget is enforced separately in `runGenerate`.
             let config = try EngineConfig(
                 modelPath: modelFile.path,
-                backend: .gpu,
+                backend: engineBackend,
                 maxNumTokens: contextBudget,
                 cacheDir: NSTemporaryDirectory()
             )
@@ -126,7 +139,7 @@ public actor MediaPipeRuntime: LLMRuntime {
         let modelFile = try locateModelFile(in: snapshot, expected: model.primaryFile)
         let info = try await LiteRTLM.benchmark(
             modelPath: modelFile.path,
-            backend: .gpu,
+            backend: engineBackend,
             prefillTokens: prefillTokens,
             decodeTokens: decodeTokens,
             maxNumTokens: maxNumTokens,

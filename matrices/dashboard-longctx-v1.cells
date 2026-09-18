@@ -1,0 +1,103 @@
+# Dashboard long-context column, v1 (2026-09-18) — Mac leg. The dashboard's five
+# text models (docs/dashboard-cells-v1.md open question 3, "second task") at
+# prefill ≈2,048 / decode 256 (`long-context-2048-gen256`: 27 lorem blocks +
+# the forced-output tail, ≈1,980 Qwen3 / ≈1,640 Gemma-4 tokens — the record's
+# promptTokenCount is the ground truth), on LiteRT-LM cpu / LiteRT-LM gpu /
+# llama.cpp. Each (arm, model) runs at THREE KV allocations, 2304 / 4096 / 8192
+# (`context-tokens=`; 2304 = prompt + output, the minimal one, the value the
+# ynnpack context-length A/B calls "P2048 / max_tokens 2304"), so the column
+# doubles as the cross-expansion of catalog row K5 / X2 ("XNNPACK attention
+# batch-matmul over the ALLOCATED KV": M4 Max CPU decode 190.8 -> 124.6 tok/s at
+# max_tokens 1280 -> 4096 on gemma-3-270m) to the dashboard models and to the
+# GPU arms. The question per arm: does decode at a fixed filled length fall
+# with the allocated length?
+#
+# Run shape (bench_matrix_mac.sh ROUNDS mode, the paired A/B form of
+# litertlm-convert/ynnpack_work/bench_ab.py): every cell once per round, runs=2
+# per launch (run 1 cold, run 2 warm), 8 rounds, order reversed on even rounds,
+# 10 s between launches; capture files are keyed on backend= and
+# context-tokens=, so records accumulate per (cell, allocation) across rounds
+# and the spread is read across rounds. The gate is off in round mode.
+#   ROUNDS=8 RUNS=2 BASE_COOLDOWN=10 CAMPAIGN=<date>-dashboard-longctx-v1-m4max-mac \
+#     scripts/bench_matrix_mac.sh run matrices/dashboard-longctx-v1.cells
+#
+# LiteRT files per row — the bundle's own cache length decides what can run:
+# * Qwen3-0.6B / Qwen3-4B `mixed_int4` (the dashboard's short-chat files) carry a
+#   2,048-entry KV ("Prefill input length exceeds available state entries
+#   (remaining capacity: 2048)" — the 2026-09-10 `long-context` cells and the
+#   2026-09-18 probe, results/raw/2026-09-18-dashboard-longctx-v1-m4max-mac/
+#   probe-evidence/). The ≈1,987-token prompt itself fits, but prompt + 256
+#   output = 2,243 does not, and the allocation ladder is meaningless on a bundle
+#   whose KV is fixed at export: at context-tokens=8192 the GPU run finishes with a
+#   normal-looking 270 tok/s while the engine logs 10,666 "Invalid decode and
+#   sample result" warnings (probe p7); at 2304 it logs none, and whether the last
+#   195 decode steps read a valid KV is not established. Those cells are
+#   exclude= below (the table shows the reason, never a number from them). The
+#   0.6B ladder runs the repo's other published file, the dynamic wi4b32 GPU
+#   build (32,771-token cache) — a different recipe, disclosed in its id
+#   (quant-label-rule); 4B has no such file, so its LiteRT cells are the
+#   exclusion only.
+# * Qwen3-1.7B: gpu = the wi4b32 GPU build (the dashboard entry), cpu = the
+#   card's CPU file, dynamic INT8 (`litert-community/Qwen3-1.7B/int8`) — the
+#   same per-backend split the Android dashboard rows make with file=.
+# * Gemma 4 E2B / E4B: one file for both backends (wNa8o8, non-transferable).
+# llama.cpp: the dashboard's Q4_K_M files; n_ctx = context-tokens, its KV is
+# allocated at n_ctx but attention runs over the filled length — the control
+# arm for the allocation question.
+# Session anchor: the dashboard's Mac anchor (MLX Qwen3-0.6B short-chat), once
+# per round.
+
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+
+# --- Qwen3-0.6B (LiteRT ladder = wi4b32 GPU build; the dashboard's mixed_int4 file is the exclusion) ---
+mac litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=2304 exclude=bundle-kv-2048-entries-2k-prefill-plus-256-overruns
+mac litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=2304 exclude=bundle-kv-2048-entries-2k-prefill-plus-256-overruns
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-2048-gen256 backend=cpu context-tokens=2304
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-2048-gen256 backend=cpu context-tokens=4096
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-2048-gen256 backend=cpu context-tokens=8192
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-2048-gen256 backend=gpu context-tokens=2304
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-2048-gen256 backend=gpu context-tokens=4096
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-2048-gen256 backend=gpu context-tokens=8192
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192
+
+# --- Qwen3-1.7B (cpu = dynamic INT8 file, gpu = wi4b32 GPU build) ---
+mac litert-lm litert-community/Qwen3-1.7B/int8 long-context-2048-gen256 backend=cpu context-tokens=2304
+mac litert-lm litert-community/Qwen3-1.7B/int8 long-context-2048-gen256 backend=cpu context-tokens=4096
+mac litert-lm litert-community/Qwen3-1.7B/int8 long-context-2048-gen256 backend=cpu context-tokens=8192
+mac litert-lm litert-community/Qwen3-1.7B long-context-2048-gen256 backend=gpu context-tokens=2304
+mac litert-lm litert-community/Qwen3-1.7B long-context-2048-gen256 backend=gpu context-tokens=4096
+mac litert-lm litert-community/Qwen3-1.7B long-context-2048-gen256 backend=gpu context-tokens=8192
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192
+
+# --- Gemma 4 E2B ---
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=cpu context-tokens=2304
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=cpu context-tokens=4096
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=cpu context-tokens=8192
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=2304
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=4096
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=8192
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192
+
+# --- Qwen3-4B (LiteRT: the mixed_int4 file is the only published one — exclusion only) ---
+mac litert-lm litert-community/Qwen3-4B long-context-2048-gen256 backend=cpu context-tokens=2304 exclude=bundle-kv-2048-entries-2k-prefill-plus-256-overruns
+mac litert-lm litert-community/Qwen3-4B long-context-2048-gen256 backend=gpu context-tokens=2304 exclude=bundle-kv-2048-entries-2k-prefill-plus-256-overruns
+mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192
+
+# --- Gemma 4 E4B ---
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=cpu context-tokens=2304
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=cpu context-tokens=4096
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=cpu context-tokens=8192
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=2304
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=4096
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=8192
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192

@@ -34,7 +34,7 @@ for their published campaigns).
 | `manual=1` | never run by automated runners (energy cells: the unplug discipline is a human step). `energy` task REQUIRES this flag |
 | `local=1` | model is side-loaded, not in the HF catalog — catalog preflight skips it |
 | `file=<name>` | artifact filename inside the HF repo (Android GGUF cells: which quant file to fetch/push) |
-| `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`) |
+| `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`; Mac litert-lm: forwarded as `yardstick --litert-backend`, `cpu` rows stamp `runtime: litert-lm-cpu`). The Mac runner keys the capture file on `backend=` and `context-tokens=`, so one cell at two allocations is two files |
 
 ## Conventions
 
