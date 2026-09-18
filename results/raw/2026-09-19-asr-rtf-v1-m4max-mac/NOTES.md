@@ -53,7 +53,7 @@ inside their cells' ±1 % — the runs are 4-thread and the host has 16 cores.
    XNNPACK) but the state that crosses windows — the 64-token buffer the decoder
    re-scores each step, or the encoder output buffer — is not what the CPU path sees.
    Mechanism not pinned; a per-window dump of the decode inputs on both backends
-   is the next instrument. Not filed (owner decision).
+   is the next instrument. Filed 2026-09-19 08:02 JST: LiteRT-LM #3684 (Qwen3-ASR GPU empty transcript) and #3685 (moonshine Metal drift + f32 abort).
 2. **Qwen3-ASR `.litertlm` on Metal produces no text** on any launch (exit 0,
    `Finished speech recognition` logged, 18.6 s of processing), the same
    binary on CPU produces text at 7.7 s. The GPU log shows the audio encoder
@@ -61,7 +61,7 @@ inside their cells' ±1 % — the runs are 4-thread and the host has 16 cores.
    `LiteRtLmRunner` on Metal (`gpu_backend_metal.mm … Residency Set`), no
    warning. Whether the LM emits nothing, never emits the `<asr_text>` skip
    token (151704), or the merger drops everything is not visible from outside
-   the runner. Not filed (owner decision).
+   the runner. Filed 2026-09-19 08:02 JST: LiteRT-LM #3684 (Qwen3-ASR GPU empty transcript) and #3685 (moonshine Metal drift + f32 abort).
 3. **Qwen3-ASR on CPU leaks its per-chunk header** into the merged transcript
    (the model prefixes each window's output with language / style tags and
    `<asr_text>`; `decodeSkipUntilTokenId` strips it once per stream, so from the

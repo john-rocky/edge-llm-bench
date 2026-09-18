@@ -33,8 +33,7 @@ except the last Qwen3-ASR GPU launch (ended at status 1, 38.9 °C). No CPU frequ
    `libLiteRtGpuAccelerator.so` from `prebuilt/android_arm64/` at `1dadd00c`) the same file
    returns an empty transcript on 3/3 launches with the same log shape as the Mac (audio
    encoder with 112/113 external tensors, LM initialised on the GPU, no warning between
-   `Starting` and `Finished`), at 110–125 s for 82 s of audio. The Mac issue draft now
-   says both platforms.
+   `Starting` and `Finished`), at 110–125 s for 82 s of audio. Filed as LiteRT-LM #3684 (both platforms).
 2. **The moonshine Metal drift is Metal-specific.** OpenCL transcribes the whole stream
    with intact text (WER 0.335, deterministic); the CPU transcripts are byte-identical
    between the M4 Max and the S26 for moonshine, whisper and Qwen3-ASR (XNNPACK int8,
