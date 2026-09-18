@@ -1,0 +1,2681 @@
+# unpacked out/p1024_06b_12flags/model.litertlm -> /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/litertlm_unpack_l8p5lkcr
+#      339,584,224  Section3_TFLiteModel_tf_lite_prefill_decode.tflite
+# model: /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/litertlm_unpack_l8p5lkcr/Section3_TFLiteModel_tf_lite_prefill_decode.tflite  (339,584,224 bytes)
+
+== subgraph 0: prefill_1024  (436 ops)
+   in  input_pos                    INT32[1024]
+   in  kv_cache_k_*                 FLOAT32[1, 8, 32771, 128]  x28
+   in  kv_cache_v_*                 FLOAT32[1, 8, 128, 32771]  x28
+   in  mask                         BOOL[1, 1, 1024, 32771]
+   in  param_tensor                 INT32[1, 1, 1, 7]
+   in  tokens                       INT32[1, 1024]
+   out kv_cache_k_*                 FLOAT32[1, 8, 32771, 128]  x28
+   out kv_cache_v_*                 FLOAT32[1, 8, 128, 32771]  x28
+   out logits                       FLOAT32[1, 1, 151936]
+     113  FULLY_CONNECTED
+      57  STABLEHLO_COMPOSITE:odml.rms_norm
+      56  ADD
+      31  RESHAPE
+      28  MUL
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+      28  TRANSPOSE
+       6  SLICE
+       3  CONCATENATION
+       1  EMBEDDING_LOOKUP
+       1  SUB
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      28  INT4 blockwise(block=32) [1024, 2048]
+      28  INT4 blockwise(block=32) [1024, 3072]
+      28  INT4 blockwise(block=32) [4096, 1024]
+      28  INT4 blockwise(block=32) [6144, 1024]
+       1  INT4 blockwise(block=32) [151936, 1024]
+
+== subgraph 1: decode  (378 ops)
+   in  input_pos                    INT32[1]
+   in  kv_cache_k_*                 FLOAT32[1, 8, 32771, 128]  x28
+   in  kv_cache_v_*                 FLOAT32[1, 8, 128, 32771]  x28
+   in  mask                         BOOL[1, 1, 1, 32771]
+   in  param_tensor                 INT32[1, 1, 1, 7]
+   in  tokens                       INT32[1, 1]
+   out kv_cache_k_*                 FLOAT32[1, 8, 32771, 128]  x28
+   out kv_cache_v_*                 FLOAT32[1, 8, 128, 32771]  x28
+   out logits                       FLOAT32[1, 1, 151936]
+     113  FULLY_CONNECTED
+      57  STABLEHLO_COMPOSITE:odml.rms_norm
+      56  ADD
+      28  MUL
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+       4  SLICE
+       3  CONCATENATION
+       3  RESHAPE
+       1  EMBEDDING_LOOKUP
+       1  SUB
+   -- FULLY_CONNECTED weights (dtype, quant, shape) x count
+      28  INT4 blockwise(block=32) [1024, 2048]
+      28  INT4 blockwise(block=32) [1024, 3072]
+      28  INT4 blockwise(block=32) [4096, 1024]
+      28  INT4 blockwise(block=32) [6144, 1024]
+       1  INT4 blockwise(block=32) [151936, 1024]
+
+== subgraph 2: odml.rms_norm.impl  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 3: odml.qkv_norm_rope.impl  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 4: odml.cache_update.impl  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 5: odml.sdpa_transposed.impl  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 6: odml.rms_norm.impl_0  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 7: odml.swiglu.impl  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 8: odml.rms_norm.impl_1  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 9: odml.qkv_norm_rope.impl_0  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 10: odml.cache_update.impl_0  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 11: odml.sdpa_transposed.impl_0  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 12: odml.rms_norm.impl_2  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 13: odml.swiglu.impl_0  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 14: odml.rms_norm.impl_3  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 15: odml.qkv_norm_rope.impl_1  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 16: odml.cache_update.impl_1  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 17: odml.sdpa_transposed.impl_1  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 18: odml.rms_norm.impl_4  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 19: odml.swiglu.impl_1  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 20: odml.rms_norm.impl_5  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 21: odml.qkv_norm_rope.impl_2  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 22: odml.cache_update.impl_2  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 23: odml.sdpa_transposed.impl_2  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 24: odml.rms_norm.impl_6  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 25: odml.swiglu.impl_2  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 26: odml.rms_norm.impl_7  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 27: odml.qkv_norm_rope.impl_3  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 28: odml.cache_update.impl_3  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 29: odml.sdpa_transposed.impl_3  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 30: odml.rms_norm.impl_8  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 31: odml.swiglu.impl_3  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 32: odml.rms_norm.impl_9  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 33: odml.qkv_norm_rope.impl_4  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 34: odml.cache_update.impl_4  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 35: odml.sdpa_transposed.impl_4  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 36: odml.rms_norm.impl_10  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 37: odml.swiglu.impl_4  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 38: odml.rms_norm.impl_11  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 39: odml.qkv_norm_rope.impl_5  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 40: odml.cache_update.impl_5  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 41: odml.sdpa_transposed.impl_5  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 42: odml.rms_norm.impl_12  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 43: odml.swiglu.impl_5  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 44: odml.rms_norm.impl_13  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 45: odml.qkv_norm_rope.impl_6  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 46: odml.cache_update.impl_6  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 47: odml.sdpa_transposed.impl_6  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 48: odml.rms_norm.impl_14  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 49: odml.swiglu.impl_6  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 50: odml.rms_norm.impl_15  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 51: odml.qkv_norm_rope.impl_7  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 52: odml.cache_update.impl_7  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 53: odml.sdpa_transposed.impl_7  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 54: odml.rms_norm.impl_16  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 55: odml.swiglu.impl_7  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 56: odml.rms_norm.impl_17  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 57: odml.qkv_norm_rope.impl_8  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 58: odml.cache_update.impl_8  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 59: odml.sdpa_transposed.impl_8  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 60: odml.rms_norm.impl_18  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 61: odml.swiglu.impl_8  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 62: odml.rms_norm.impl_19  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 63: odml.qkv_norm_rope.impl_9  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 64: odml.cache_update.impl_9  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 65: odml.sdpa_transposed.impl_9  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 66: odml.rms_norm.impl_20  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 67: odml.swiglu.impl_9  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 68: odml.rms_norm.impl_21  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 69: odml.qkv_norm_rope.impl_10  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 70: odml.cache_update.impl_10  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 71: odml.sdpa_transposed.impl_10  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 72: odml.rms_norm.impl_22  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 73: odml.swiglu.impl_10  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 74: odml.rms_norm.impl_23  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 75: odml.qkv_norm_rope.impl_11  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 76: odml.cache_update.impl_11  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 77: odml.sdpa_transposed.impl_11  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 78: odml.rms_norm.impl_24  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 79: odml.swiglu.impl_11  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 80: odml.rms_norm.impl_25  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 81: odml.qkv_norm_rope.impl_12  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 82: odml.cache_update.impl_12  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 83: odml.sdpa_transposed.impl_12  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 84: odml.rms_norm.impl_26  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 85: odml.swiglu.impl_12  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 86: odml.rms_norm.impl_27  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 87: odml.qkv_norm_rope.impl_13  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 88: odml.cache_update.impl_13  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 89: odml.sdpa_transposed.impl_13  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 90: odml.rms_norm.impl_28  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 91: odml.swiglu.impl_13  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 92: odml.rms_norm.impl_29  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 93: odml.qkv_norm_rope.impl_14  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 94: odml.cache_update.impl_14  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 95: odml.sdpa_transposed.impl_14  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 96: odml.rms_norm.impl_30  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 97: odml.swiglu.impl_14  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 98: odml.rms_norm.impl_31  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 99: odml.qkv_norm_rope.impl_15  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 100: odml.cache_update.impl_15  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 101: odml.sdpa_transposed.impl_15  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 102: odml.rms_norm.impl_32  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 103: odml.swiglu.impl_15  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 104: odml.rms_norm.impl_33  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 105: odml.qkv_norm_rope.impl_16  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 106: odml.cache_update.impl_16  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 107: odml.sdpa_transposed.impl_16  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 108: odml.rms_norm.impl_34  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 109: odml.swiglu.impl_16  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 110: odml.rms_norm.impl_35  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 111: odml.qkv_norm_rope.impl_17  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 112: odml.cache_update.impl_17  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 113: odml.sdpa_transposed.impl_17  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 114: odml.rms_norm.impl_36  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 115: odml.swiglu.impl_17  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 116: odml.rms_norm.impl_37  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 117: odml.qkv_norm_rope.impl_18  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 118: odml.cache_update.impl_18  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 119: odml.sdpa_transposed.impl_18  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 120: odml.rms_norm.impl_38  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 121: odml.swiglu.impl_18  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 122: odml.rms_norm.impl_39  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 123: odml.qkv_norm_rope.impl_19  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 124: odml.cache_update.impl_19  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 125: odml.sdpa_transposed.impl_19  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 126: odml.rms_norm.impl_40  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 127: odml.swiglu.impl_19  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 128: odml.rms_norm.impl_41  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 129: odml.qkv_norm_rope.impl_20  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 130: odml.cache_update.impl_20  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 131: odml.sdpa_transposed.impl_20  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 132: odml.rms_norm.impl_42  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 133: odml.swiglu.impl_20  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 134: odml.rms_norm.impl_43  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 135: odml.qkv_norm_rope.impl_21  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 136: odml.cache_update.impl_21  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 137: odml.sdpa_transposed.impl_21  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 138: odml.rms_norm.impl_44  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 139: odml.swiglu.impl_21  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 140: odml.rms_norm.impl_45  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 141: odml.qkv_norm_rope.impl_22  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 142: odml.cache_update.impl_22  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 143: odml.sdpa_transposed.impl_22  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 144: odml.rms_norm.impl_46  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 145: odml.swiglu.impl_22  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 146: odml.rms_norm.impl_47  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 147: odml.qkv_norm_rope.impl_23  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 148: odml.cache_update.impl_23  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 149: odml.sdpa_transposed.impl_23  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 150: odml.rms_norm.impl_48  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 151: odml.swiglu.impl_23  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 152: odml.rms_norm.impl_49  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 153: odml.qkv_norm_rope.impl_24  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 154: odml.cache_update.impl_24  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 155: odml.sdpa_transposed.impl_24  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 156: odml.rms_norm.impl_50  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 157: odml.swiglu.impl_24  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 158: odml.rms_norm.impl_51  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 159: odml.qkv_norm_rope.impl_25  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 160: odml.cache_update.impl_25  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 161: odml.sdpa_transposed.impl_25  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 162: odml.rms_norm.impl_52  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 163: odml.swiglu.impl_25  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 164: odml.rms_norm.impl_53  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 165: odml.qkv_norm_rope.impl_26  (48 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       3  TRANSPOSE
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 166: odml.cache_update.impl_26  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  TRANSPOSE
+
+== subgraph 167: odml.sdpa_transposed.impl_26  (13 ops)
+       4  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 168: odml.rms_norm.impl_54  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 169: odml.swiglu.impl_26  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 170: odml.rms_norm.impl_55  (7 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RESHAPE
+       1  RSQRT
+
+== subgraph 171: odml.rms_norm.impl_56  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 172: odml.qkv_norm_rope.impl_27  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 173: odml.cache_update.impl_27  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 174: odml.sdpa_transposed.impl_27  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 175: odml.rms_norm.impl_57  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 176: odml.swiglu.impl_27  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 177: odml.rms_norm.impl_58  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 178: odml.qkv_norm_rope.impl_28  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 179: odml.cache_update.impl_28  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 180: odml.sdpa_transposed.impl_28  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 181: odml.rms_norm.impl_59  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 182: odml.swiglu.impl_28  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 183: odml.rms_norm.impl_60  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 184: odml.qkv_norm_rope.impl_29  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 185: odml.cache_update.impl_29  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 186: odml.sdpa_transposed.impl_29  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 187: odml.rms_norm.impl_61  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 188: odml.swiglu.impl_29  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 189: odml.rms_norm.impl_62  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 190: odml.qkv_norm_rope.impl_30  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 191: odml.cache_update.impl_30  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 192: odml.sdpa_transposed.impl_30  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 193: odml.rms_norm.impl_63  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 194: odml.swiglu.impl_30  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 195: odml.rms_norm.impl_64  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 196: odml.qkv_norm_rope.impl_31  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 197: odml.cache_update.impl_31  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 198: odml.sdpa_transposed.impl_31  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 199: odml.rms_norm.impl_65  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 200: odml.swiglu.impl_31  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 201: odml.rms_norm.impl_66  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 202: odml.qkv_norm_rope.impl_32  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 203: odml.cache_update.impl_32  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 204: odml.sdpa_transposed.impl_32  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 205: odml.rms_norm.impl_67  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 206: odml.swiglu.impl_32  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 207: odml.rms_norm.impl_68  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 208: odml.qkv_norm_rope.impl_33  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 209: odml.cache_update.impl_33  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 210: odml.sdpa_transposed.impl_33  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 211: odml.rms_norm.impl_69  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 212: odml.swiglu.impl_33  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 213: odml.rms_norm.impl_70  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 214: odml.qkv_norm_rope.impl_34  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 215: odml.cache_update.impl_34  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 216: odml.sdpa_transposed.impl_34  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 217: odml.rms_norm.impl_71  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 218: odml.swiglu.impl_34  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 219: odml.rms_norm.impl_72  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 220: odml.qkv_norm_rope.impl_35  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 221: odml.cache_update.impl_35  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 222: odml.sdpa_transposed.impl_35  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 223: odml.rms_norm.impl_73  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 224: odml.swiglu.impl_35  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 225: odml.rms_norm.impl_74  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 226: odml.qkv_norm_rope.impl_36  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 227: odml.cache_update.impl_36  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 228: odml.sdpa_transposed.impl_36  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 229: odml.rms_norm.impl_75  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 230: odml.swiglu.impl_36  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 231: odml.rms_norm.impl_76  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 232: odml.qkv_norm_rope.impl_37  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 233: odml.cache_update.impl_37  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 234: odml.sdpa_transposed.impl_37  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 235: odml.rms_norm.impl_77  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 236: odml.swiglu.impl_37  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 237: odml.rms_norm.impl_78  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 238: odml.qkv_norm_rope.impl_38  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 239: odml.cache_update.impl_38  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 240: odml.sdpa_transposed.impl_38  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 241: odml.rms_norm.impl_79  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 242: odml.swiglu.impl_38  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 243: odml.rms_norm.impl_80  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 244: odml.qkv_norm_rope.impl_39  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 245: odml.cache_update.impl_39  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 246: odml.sdpa_transposed.impl_39  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 247: odml.rms_norm.impl_81  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 248: odml.swiglu.impl_39  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 249: odml.rms_norm.impl_82  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 250: odml.qkv_norm_rope.impl_40  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 251: odml.cache_update.impl_40  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 252: odml.sdpa_transposed.impl_40  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 253: odml.rms_norm.impl_83  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 254: odml.swiglu.impl_40  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 255: odml.rms_norm.impl_84  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 256: odml.qkv_norm_rope.impl_41  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 257: odml.cache_update.impl_41  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 258: odml.sdpa_transposed.impl_41  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 259: odml.rms_norm.impl_85  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 260: odml.swiglu.impl_41  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 261: odml.rms_norm.impl_86  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 262: odml.qkv_norm_rope.impl_42  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 263: odml.cache_update.impl_42  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 264: odml.sdpa_transposed.impl_42  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 265: odml.rms_norm.impl_87  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 266: odml.swiglu.impl_42  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 267: odml.rms_norm.impl_88  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 268: odml.qkv_norm_rope.impl_43  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 269: odml.cache_update.impl_43  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 270: odml.sdpa_transposed.impl_43  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 271: odml.rms_norm.impl_89  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 272: odml.swiglu.impl_43  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 273: odml.rms_norm.impl_90  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 274: odml.qkv_norm_rope.impl_44  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 275: odml.cache_update.impl_44  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 276: odml.sdpa_transposed.impl_44  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 277: odml.rms_norm.impl_91  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 278: odml.swiglu.impl_44  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 279: odml.rms_norm.impl_92  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 280: odml.qkv_norm_rope.impl_45  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 281: odml.cache_update.impl_45  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 282: odml.sdpa_transposed.impl_45  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 283: odml.rms_norm.impl_93  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 284: odml.swiglu.impl_45  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 285: odml.rms_norm.impl_94  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 286: odml.qkv_norm_rope.impl_46  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 287: odml.cache_update.impl_46  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 288: odml.sdpa_transposed.impl_46  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 289: odml.rms_norm.impl_95  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 290: odml.swiglu.impl_46  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 291: odml.rms_norm.impl_96  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 292: odml.qkv_norm_rope.impl_47  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 293: odml.cache_update.impl_47  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 294: odml.sdpa_transposed.impl_47  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 295: odml.rms_norm.impl_97  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 296: odml.swiglu.impl_47  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 297: odml.rms_norm.impl_98  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 298: odml.qkv_norm_rope.impl_48  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 299: odml.cache_update.impl_48  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 300: odml.sdpa_transposed.impl_48  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 301: odml.rms_norm.impl_99  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 302: odml.swiglu.impl_48  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 303: odml.rms_norm.impl_100  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 304: odml.qkv_norm_rope.impl_49  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 305: odml.cache_update.impl_49  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 306: odml.sdpa_transposed.impl_49  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 307: odml.rms_norm.impl_101  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 308: odml.swiglu.impl_49  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 309: odml.rms_norm.impl_102  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 310: odml.qkv_norm_rope.impl_50  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 311: odml.cache_update.impl_50  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 312: odml.sdpa_transposed.impl_50  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 313: odml.rms_norm.impl_103  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 314: odml.swiglu.impl_50  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 315: odml.rms_norm.impl_104  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 316: odml.qkv_norm_rope.impl_51  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 317: odml.cache_update.impl_51  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 318: odml.sdpa_transposed.impl_51  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 319: odml.rms_norm.impl_105  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 320: odml.swiglu.impl_51  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 321: odml.rms_norm.impl_106  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 322: odml.qkv_norm_rope.impl_52  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 323: odml.cache_update.impl_52  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 324: odml.sdpa_transposed.impl_52  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 325: odml.rms_norm.impl_107  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 326: odml.swiglu.impl_52  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 327: odml.rms_norm.impl_108  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 328: odml.qkv_norm_rope.impl_53  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 329: odml.cache_update.impl_53  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 330: odml.sdpa_transposed.impl_53  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 331: odml.rms_norm.impl_109  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 332: odml.swiglu.impl_53  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 333: odml.rms_norm.impl_110  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 334: odml.qkv_norm_rope.impl_54  (45 ops)
+      15  MUL
+       8  RESHAPE
+       7  SLICE
+       4  ADD
+       2  CONCATENATION
+       2  MEAN
+       2  RSQRT
+       2  SUB
+       1  CAST
+       1  COS
+       1  SIN
+
+== subgraph 335: odml.cache_update.impl_54  (6 ops)
+       2  ADD
+       2  DYNAMIC_UPDATE_SLICE
+       1  CAST
+       1  RESHAPE
+
+== subgraph 336: odml.sdpa_transposed.impl_54  (14 ops)
+       5  RESHAPE
+       2  ADD
+       2  BATCH_MATMUL
+       2  BROADCAST_TO
+       1  CAST
+       1  SELECT_V2
+       1  SOFTMAX
+
+== subgraph 337: odml.rms_norm.impl_111  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT
+
+== subgraph 338: odml.swiglu.impl_54  (5 ops)
+       2  MUL
+       2  SLICE
+       1  LOGISTIC
+
+== subgraph 339: odml.rms_norm.impl_112  (6 ops)
+       3  MUL
+       1  ADD
+       1  MEAN
+       1  RSQRT

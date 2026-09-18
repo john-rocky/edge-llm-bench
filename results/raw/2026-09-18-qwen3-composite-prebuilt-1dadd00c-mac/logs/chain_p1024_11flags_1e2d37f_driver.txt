@@ -1,0 +1,30 @@
+=== chain_p1024_11flags_1e2d37f start 2026-09-18 09:27:03  load=4.22 3.85 4.07
+worktree HEAD = 1e2d37fa60cb2354d22c98e26d7f39e077a1e722  status: 0 dirty files
+litert_torch.__file__ = /Users/majimadaisuke/code/litert-torch-0918-wt/litert_torch/__init__.py
+git HEAD = 1e2d37fa60cb2354d22c98e26d7f39e077a1e722
+=== export p1024_06b_11flags_1e2d37f  2026-09-18 09:27:05  DROP=[enable_gpu_dynamic_prefill] EXTRA=[--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext]  load=4.05 3.82 4.06
+### CMD: DROP="enable_gpu_dynamic_prefill" EXTRA="--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext" VENV=/Users/majimadaisuke/venvs/ltmain0918 ./export_variant.sh Qwen/Qwen3-0.6B out/p1024_06b_11flags_1e2d37f
+   exit 0  6f7756223b88eba08f68d0ed8f68969da5e246c5be3c54d6ab94912a32de7e50  341742736 bytes  09:28:05
+   ops inventory logs/ops_p1024_06b_11flags_1e2d37f.txt: == subgraph 0: prefill_1024  (580 ops) == subgraph 1: decode  (378 ops) 
+      56  STABLEHLO_COMPOSITE:odml.runtime_bmm
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+=== export p1024_4b_11flags_1e2d37f  2026-09-18 09:28:06  DROP=[enable_gpu_dynamic_prefill] EXTRA=[--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext]  load=4.25 3.88 4.07
+### CMD: DROP="enable_gpu_dynamic_prefill" EXTRA="--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext" VENV=/Users/majimadaisuke/venvs/ltmain0918 ./export_variant.sh Qwen/Qwen3-4B out/p1024_4b_11flags_1e2d37f
+   exit 0  afbe011b1f2f43e9065699ecf90076dd893a9a8223dc214892b6295bb6f39611  2270700784 bytes  09:32:06
+   ops inventory logs/ops_p1024_4b_11flags_1e2d37f.txt: == subgraph 0: prefill_1024  (740 ops) == subgraph 1: decode  (482 ops) 
+      72  STABLEHLO_COMPOSITE:odml.runtime_bmm
+      36  STABLEHLO_COMPOSITE:odml.cache_update
+      36  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      36  STABLEHLO_COMPOSITE:odml.swiglu
+      36  STABLEHLO_COMPOSITE:odml.cache_update
+      36  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      36  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      36  STABLEHLO_COMPOSITE:odml.swiglu
+=== DONE 2026-09-18 09:32:07
+=== worktree restored to 731ef0a

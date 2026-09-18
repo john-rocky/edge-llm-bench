@@ -1,0 +1,41 @@
+=== chain_p1024_12flags start 2026-09-18 09:20:17  load=2.91 3.98 4.23
+202c21d11198d0cd8c373a2ade5a0d888b2ce1e97fe4d6bda6b6569cce1bf775  /Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext
+litert_torch.__file__ = /Users/majimadaisuke/code/litert-torch-0918-wt/litert_torch/__init__.py
+litert_torch.__version__ = 0.10.0
+git HEAD = 731ef0a816691e1ef2a7296206894dcca1fa4d76
+git status --short = (clean)
+pin: ai-edge-litert==2.2.0
+pin: ai-edge-quantizer==0.9.0
+pin: litert-converter==0.4.0
+pin: litert-lm-builder==0.16.1
+pin: -e git+https://github.com/john-rocky/litert-torch.git@731ef0a816691e1ef2a7296206894dcca1fa4d76#egg=litert_torch&subdirectory=../../../litert-torch-0918-wt
+pin: torch==2.13.0
+pin: torchao==0.18.0
+pin: transformers==5.14.1
+=== export p1024_06b_12flags  2026-09-18 09:20:20  DROP=[enable_gpu_dynamic_prefill] EXTRA=[--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True]  load=2.91 3.96 4.22
+### CMD: DROP="enable_gpu_dynamic_prefill" EXTRA="--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True" VENV=/Users/majimadaisuke/venvs/ltmain0918 ./export_variant.sh Qwen/Qwen3-0.6B out/p1024_06b_12flags
+   exit 0  29ae7cf18aeb6c1eb1c8b0a10c744639f068e01a0321bbff4e03dbd6caee917f  341779680 bytes  09:21:22
+Qwen3 model patch applied. fuse_gate_up=True, fuse_qkv=True, use_rope_composite=False, use_swiglu_composite=True, use_qkv_norm_rope_composite=True, 
+   ops inventory logs/ops_p1024_06b_12flags.txt: == subgraph 0: prefill_1024  (436 ops) == subgraph 1: decode  (378 ops) 
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+=== export p1024_4b_12flags  2026-09-18 09:21:23  DROP=[enable_gpu_dynamic_prefill] EXTRA=[--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True]  load=3.77 4.06 4.24
+### CMD: DROP="enable_gpu_dynamic_prefill" EXTRA="--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True" VENV=/Users/majimadaisuke/venvs/ltmain0918 ./export_variant.sh Qwen/Qwen3-4B out/p1024_4b_12flags
+   exit 0  d406b86698afb8221ec4803dad42c44b460eda580d1f63d31b31f67b2bcf66f8  2270748784 bytes  09:25:24
+Qwen3 model patch applied. fuse_gate_up=True, fuse_qkv=True, use_rope_composite=False, use_swiglu_composite=True, use_qkv_norm_rope_composite=True, 
+   ops inventory logs/ops_p1024_4b_12flags.txt: == subgraph 0: prefill_1024  (556 ops) == subgraph 1: decode  (482 ops) 
+      36  STABLEHLO_COMPOSITE:odml.cache_update
+      36  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      36  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      36  STABLEHLO_COMPOSITE:odml.swiglu
+      36  STABLEHLO_COMPOSITE:odml.cache_update
+      36  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      36  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      36  STABLEHLO_COMPOSITE:odml.swiglu
+=== DONE 2026-09-18 09:25:25

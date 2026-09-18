@@ -1,0 +1,212 @@
+DROP = [enable_gpu_dynamic_prefill]  EXTRA = [--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext]
+ARGS = --quantization_recipe=dynamic_wi4b32_afp32 --enable_gpu_dynamic_cache=True --apply_gpu_composites=True --fuse_gate_up=True --fuse_qkv=True --use_qkv_norm_rope_composite=True --use_swiglu_composite=True --use_sdpa_composite=True --use_bool_mask=True --bundle_litert_lm=True --prefill_lengths=1024 --cache_length=32768 --litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext
+litert_torch.__file__ = /Users/majimadaisuke/code/litert-torch-0918-wt/litert_torch/__init__.py
+W0918 09:28:10.036000 86949 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+W0918 09:28:10.047000 86949 torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+W0918 09:28:10.727000 86949 torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
+[ERROR] `cache_position` is part of Qwen3TTSTokenizerV2DecoderTransformerModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/code/litert-torch-0918-wt/litert_torch/generative/export_hf/model_ext/qwen3_tts/tokenizer_v2/modeling_qwen3_tts_tokenizer_v2.py.
+[ERROR] `mlp_only_layers` is part of Qwen3_5TextConfig.__init__'s signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
+[ERROR] `deepstack_visual_indexes` is part of Qwen3_5VisionConfig.__init__'s signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
+[ERROR] `image_grid_thw` is part of Qwen3_5Model.get_image_features's signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
+============== Export Configuration ==============
+aot_backend            : None
+aot_compilation_config_dict : None
+aot_soc_model          : None
+assistant_model        : None
+auto_model_override    : None
+batch_size             : 1
+bundle_litert_lm       : True
+cache_implementation   : 'LiteRTLMCache'
+cache_length           : 32771
+cache_length_dim       : None
+cache_lengths          : [32768]
+calibration_dataset_dir : None
+calibration_dataset_format : 'jsonl'
+calibration_eval_task_names : 'ALL'
+calibration_range_scale : 1.0
+compile_configs        : None
+ema_smoothing_factor   : 0.1
+enable_dynamic_shape   : False
+enable_gpu_dynamic_cache : True
+enable_gpu_dynamic_prefill : False
+enable_min_max_calibration_update : True
+experimental_lightweight_conversion : False
+experimental_transpile_chat_template_for_minijinja : False
+experimental_use_fp16  : False
+experimental_use_mixed_precision : False
+export_audio_encoder   : False
+export_vision_encoder  : False
+externalize_embedder   : False
+externalize_rope       : False
+extra_kwargs           : {'apply_gpu_composites': True, 'use_bool_mask': True}
+fuse_gate_up           : True
+fuse_qkv               : True
+input_sec              : 1.0
+jinja_chat_template_override : None
+k_ts_idx               : 2
+keep_temporary_files   : False
+litert_lm_llm_metadata_override : '/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext'
+litert_lm_model_type_override : None
+llm_metadata_max_num_tokens_override : None
+max_calibration_decode_steps : 32
+model                  : 'Qwen/Qwen3-4B'
+moe_exports_implementation : None
+mtp_verifier_step      : 5
+output_dir             : 'out/p1024_4b_11flags_1e2d37f'
+prefill_length_dim     : None
+prefill_lengths        : [1024]
+quantization_recipe    : 'dynamic_wi4b32_afp32'
+sampler_temperature    : None
+sampler_top_k          : None
+sampler_top_p          : None
+single_token_embedder  : False
+skip_mlir_passes       : True
+sliding_window_ring_buffer_size : None
+split_cache            : False
+stateful_after         : -1
+static_quantization_recipe : None
+task                   : <ExportTask.TEXT_GENERATION: 'text_generation'>
+tokenizer_path_override : None
+trust_remote_code      : False
+use_float_input_output_normalizer : False
+use_jinja_template     : True
+use_litert_lm_compiler : False
+use_profiler_based_calibration : True
+use_qkv_norm_rope_composite : True
+use_random_weights     : False
+use_rope_composite     : False
+use_sdpa_composite     : True
+use_short_conv_composite : False
+use_swiglu_composite   : True
+v_ts_idx               : 3
+vision_encoder_quantization_recipe : 'dynamic_wi8_afp32'
+work_dir               : '/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_4b_11flags_1e2d37f/tmpat8hqtu9'
+==================================================
+(00:00) [START] LiteRT GenAI Export
+(00:00) [START] LiteRT GenAI Export > Load source model
+Qwen3 patch applied.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights:   0%|          | 1/398 [00:00<03:46,  1.75it/s]Loading weights:  32%|███▏      | 126/398 [00:00<00:01, 250.28it/s]Loading weights:  50%|█████     | 199/398 [00:00<00:00, 255.26it/s]Loading weights:  63%|██████▎   | 251/398 [00:01<00:00, 253.52it/s]Loading weights:  73%|███████▎  | 292/398 [00:01<00:00, 246.56it/s]Loading weights:  82%|████████▏ | 327/398 [00:01<00:00, 249.43it/s]Loading weights:  90%|█████████ | 359/398 [00:01<00:00, 249.10it/s]Loading weights:  98%|█████████▊| 389/398 [00:01<00:00, 242.05it/s]Loading weights: 100%|██████████| 398/398 [00:01<00:00, 228.48it/s]
+(00:03) [ DONE] LiteRT GenAI Export > Load source model (+00:03)
+(00:03) [START] LiteRT GenAI Export > Export text prefill-decode model
+Qwen3 model patch applied. fuse_gate_up=True, fuse_qkv=True, use_rope_composite=False, use_swiglu_composite=True, use_qkv_norm_rope_composite=True, 
+(00:07) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert
+(00:07) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: prefill_1024
+(00:11) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: prefill_1024 > ExportedProgram Run 
+Decompositions
+(00:16) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: prefill_1024 > ExportedProgram Run 
+Decompositions (+00:04)
+(00:16) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: prefill_1024 (+00:08)
+(00:16) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: decode
+(00:20) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: decode > ExportedProgram Run Decompositions
+(00:25) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: decode > ExportedProgram Run Decompositions
+(+00:04)
+(00:25) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Torch Export: decode (+00:08)
+(00:25) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run FX Passes
+(00:25) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run FX Passes > ExportedProgram Run Decompositions
+(00:25) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run FX Passes > ExportedProgram Run Decompositions 
+(+00:00)
+(00:26) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run FX Passes > ExportedProgram Run Decompositions
+(00:26) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run FX Passes > ExportedProgram Run Decompositions 
+(+00:00)
+(00:26) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run FX Passes (+00:01)
+(00:26) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024
+(00:26) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 > ExportedProgram Run 
+Decompositions
+(00:32) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 > ExportedProgram Run 
+Decompositions (+00:05)
+(00:32) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 > ExportedProgram Run 
+Decompositions
+(00:32) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 > ExportedProgram Run 
+Decompositions (+00:00)
+(00:32) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 > Create MLIR Module
+(00:36) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 > Create MLIR Module (+00:04)
+(00:36) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: prefill_1024 (+00:09)
+(00:36) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode
+(00:36) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode > ExportedProgram Run 
+Decompositions
+(00:42) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode > ExportedProgram Run 
+Decompositions (+00:05)
+(00:42) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode > ExportedProgram Run 
+Decompositions
+(00:42) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode > ExportedProgram Run 
+Decompositions (+00:00)
+(00:42) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode > Create MLIR Module
+(00:45) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode > Create MLIR Module (+00:02)
+(00:45) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Lower to MLIR: decode (+00:08)
+(00:45) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Merge MLIR Modules
+(00:45) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Merge MLIR Modules (+00:00)
+(00:45) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run LiteRT Converter Passes
+(03:15) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert > Run LiteRT Converter Passes (+02:30)
+(03:15) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+LiteRT-Torch Convert (+03:07)
+(03:17) [START] LiteRT GenAI Export > Export text prefill-decode model > Write 
+Model to 
+/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_4b_11flag
+s_1e2d37f/tmpat8hqtu9/model.tflite
+Module size is greater than 2GB
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789691488.275179 12180741 flatbuffer_export.cc:4342] Estimated count of arithmetic ops: 9991.064 G  ops, equivalently 4995.532 G  MACs
+(03:22) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > Write 
+Model to 
+/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_4b_11flag
+s_1e2d37f/tmpat8hqtu9/model.tflite (+00:05)
+(03:23) [START] LiteRT GenAI Export > Export text prefill-decode model > 
+Quantize model
+Generating Quantization Parameters::   0%|          | 0/7975 [00:00<?, ?it/s]Generating Quantization Parameters::   0%|          | 10/7975 [00:01<18:20,  7.24it/s]Generating Quantization Parameters::   0%|          | 35/7975 [00:01<05:04, 26.10it/s]Generating Quantization Parameters::   1%|          | 41/7975 [00:01<04:59, 26.47it/s]Generating Quantization Parameters::   1%|          | 55/7975 [00:02<03:42, 35.61it/s]Generating Quantization Parameters::   1%|          | 61/7975 [00:02<03:54, 33.75it/s]Generating Quantization Parameters::   1%|          | 75/7975 [00:02<03:06, 42.35it/s]Generating Quantization Parameters::   1%|          | 81/7975 [00:02<03:23, 38.78it/s]Generating Quantization Parameters::   1%|          | 95/7975 [00:02<02:48, 46.80it/s]Generating Quantization Parameters::   1%|▏         | 101/7975 [00:03<03:06, 42.14it/s]Generating Quantization Parameters::   1%|▏         | 115/7975 [00:03<02:38, 49.73it/s]Generating Quantization Parameters::   2%|▏         | 121/7975 [00:03<02:58, 44.05it/s]Generating Quantization Parameters::   2%|▏         | 135/7975 [00:03<02:32, 51.37it/s]Generating Quantization Parameters::   2%|▏         | 141/7975 [00:03<02:53, 45.02it/s]Generating Quantization Parameters::   2%|▏         | 155/7975 [00:04<02:31, 51.73it/s]Generating Quantization Parameters::   2%|▏         | 161/7975 [00:04<02:53, 45.02it/s]Generating Quantization Parameters::   2%|▏         | 175/7975 [00:04<02:30, 51.90it/s]Generating Quantization Parameters::   2%|▏         | 181/7975 [00:04<02:53, 44.99it/s]Generating Quantization Parameters::   2%|▏         | 195/7975 [00:04<02:30, 51.75it/s]Generating Quantization Parameters::   3%|▎         | 201/7975 [00:05<02:52, 45.11it/s]Generating Quantization Parameters::   3%|▎         | 215/7975 [00:05<02:30, 51.62it/s]Generating Quantization Parameters::   3%|▎         | 221/7975 [00:05<02:51, 45.09it/s]Generating Quantization Parameters::   3%|▎         | 235/7975 [00:05<02:28, 52.10it/s]Generating Quantization Parameters::   3%|▎         | 241/7975 [00:05<02:48, 45.77it/s]Generating Quantization Parameters::   3%|▎         | 255/7975 [00:06<02:25, 53.05it/s]Generating Quantization Parameters::   3%|▎         | 261/7975 [00:06<02:46, 46.38it/s]Generating Quantization Parameters::   3%|▎         | 275/7975 [00:06<02:23, 53.60it/s]Generating Quantization Parameters::   4%|▎         | 281/7975 [00:06<02:46, 46.21it/s]Generating Quantization Parameters::   4%|▎         | 295/7975 [00:06<02:25, 52.72it/s]Generating Quantization Parameters::   4%|▍         | 301/7975 [00:07<02:48, 45.46it/s]Generating Quantization Parameters::   4%|▍         | 315/7975 [00:07<02:27, 51.94it/s]Generating Quantization Parameters::   4%|▍         | 321/7975 [00:07<02:48, 45.32it/s]Generating Quantization Parameters::   4%|▍         | 335/7975 [00:07<02:25, 52.49it/s]Generating Quantization Parameters::   4%|▍         | 341/7975 [00:07<02:47, 45.67it/s]Generating Quantization Parameters::   4%|▍         | 355/7975 [00:08<02:24, 52.79it/s]Generating Quantization Parameters::   5%|▍         | 361/7975 [00:08<02:45, 45.88it/s]Generating Quantization Parameters::   5%|▍         | 375/7975 [00:08<02:23, 52.83it/s]Generating Quantization Parameters::   5%|▍         | 381/7975 [00:08<02:45, 45.85it/s]Generating Quantization Parameters::   5%|▍         | 395/7975 [00:08<02:23, 52.94it/s]Generating Quantization Parameters::   5%|▌         | 401/7975 [00:09<02:44, 46.07it/s]Generating Quantization Parameters::   5%|▌         | 415/7975 [00:09<02:22, 52.97it/s]Generating Quantization Parameters::   5%|▌         | 421/7975 [00:09<02:44, 45.92it/s]Generating Quantization Parameters::   5%|▌         | 435/7975 [00:09<02:22, 53.01it/s]Generating Quantization Parameters::   6%|▌         | 441/7975 [00:10<02:43, 46.00it/s]Generating Quantization Parameters::   6%|▌         | 455/7975 [00:10<02:22, 52.92it/s]Generating Quantization Parameters::   6%|▌         | 461/7975 [00:10<02:43, 45.95it/s]Generating Quantization Parameters::   6%|▌         | 475/7975 [00:10<02:21, 53.00it/s]Generating Quantization Parameters::   6%|▌         | 481/7975 [00:10<02:43, 45.94it/s]Generating Quantization Parameters::   6%|▌         | 495/7975 [00:11<02:20, 53.12it/s]Generating Quantization Parameters::   6%|▋         | 501/7975 [00:11<02:42, 46.09it/s]Generating Quantization Parameters::   6%|▋         | 515/7975 [00:11<02:20, 53.24it/s]Generating Quantization Parameters::   7%|▋         | 521/7975 [00:11<02:40, 46.37it/s]Generating Quantization Parameters::   7%|▋         | 535/7975 [00:11<02:19, 53.31it/s]Generating Quantization Parameters::   7%|▋         | 541/7975 [00:12<02:41, 46.12it/s]Generating Quantization Parameters::   7%|▋         | 555/7975 [00:12<02:19, 53.15it/s]Generating Quantization Parameters::   7%|▋         | 561/7975 [00:12<02:40, 46.24it/s]Generating Quantization Parameters::   7%|▋         | 575/7975 [00:12<02:19, 53.10it/s]Generating Quantization Parameters::   7%|▋         | 581/7975 [00:12<02:41, 45.73it/s]Generating Quantization Parameters::   7%|▋         | 595/7975 [00:13<02:21, 52.17it/s]Generating Quantization Parameters::   8%|▊         | 601/7975 [00:13<02:42, 45.49it/s]Generating Quantization Parameters::   8%|▊         | 615/7975 [00:13<02:19, 52.64it/s]Generating Quantization Parameters::   8%|▊         | 621/7975 [00:13<02:40, 45.85it/s]Generating Quantization Parameters::   8%|▊         | 635/7975 [00:13<02:18, 52.94it/s]Generating Quantization Parameters::   8%|▊         | 641/7975 [00:14<02:38, 46.26it/s]Generating Quantization Parameters::   8%|▊         | 655/7975 [00:14<02:17, 53.29it/s]Generating Quantization Parameters::   8%|▊         | 661/7975 [00:14<02:38, 46.18it/s]Generating Quantization Parameters::   8%|▊         | 675/7975 [00:14<02:16, 53.36it/s]Generating Quantization Parameters::   9%|▊         | 681/7975 [00:14<02:37, 46.36it/s]Generating Quantization Parameters::   9%|▊         | 695/7975 [00:15<02:16, 53.52it/s]Generating Quantization Parameters::   9%|▉         | 701/7975 [00:15<02:37, 46.32it/s]Generating Quantization Parameters::   9%|▉         | 715/7975 [00:15<02:16, 53.01it/s]Generating Quantization Parameters::   9%|▉         | 721/7975 [00:15<02:36, 46.22it/s]Generating Quantization Parameters::   9%|▉         | 735/7975 [00:15<02:15, 53.35it/s]Generating Quantization Parameters::   9%|▉         | 741/7975 [00:16<02:25, 49.74it/s]Generating Quantization Parameters::  36%|███▌      | 2869/7975 [00:16<00:01, 4010.51it/s]Generating Quantization Parameters:: 100%|██████████| 7975/7975 [00:16<00:00, 492.93it/s] 
+Applying Transformations to tensors::   0%|          | 0/12050 [00:00<?, ?it/s]Applying Transformations to tensors::  74%|███████▍  | 8964/12050 [00:00<00:00, 86095.52it/s]Applying Transformations to tensors:: 100%|██████████| 12050/12050 [00:02<00:00, 5120.29it/s]
+Model name: /Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_4b_11flags_1e2d37f/tmpat8hqtu9/model.tflite
+Original model size: 14.99 GiB
+Quantized model size: 2.11 GiB
+Quantization Ratio: 0.14 (7.1x smaller)
+Total time: 19.25 s
+(03:44) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > 
+Quantize model (+00:20)
+(03:44) [ DONE] LiteRT GenAI Export > Export text prefill-decode model (+03:40)
+(03:44) [START] LiteRT GenAI Export > Export tokenizer
+(03:44) [ DONE] LiteRT GenAI Export > Export tokenizer (+00:00)
+(03:44) [START] LiteRT GenAI Export > Package model
+(03:45) [ DONE] LiteRT GenAI Export > Package model (+00:00)
+(03:46) [ DONE] LiteRT GenAI Export (+03:46)
+Cleaning up temporary files.
+Export complete. Model saved to: out/p1024_4b_11flags_1e2d37f/model.litertlm
+$PY -m litert_torch.generative.export_hf --model="$MODEL" --output_dir="$OUT"  214.84s user 28.31s system 105% cpu 3:49.94 total
+total 4434968
+drwxr-xr-x@  3 majimadaisuke  staff          96 Sep 18 09:31 .
+drwxr-xr-x@ 13 majimadaisuke  staff         416 Sep 18 09:28 ..
+-rw-r--r--@  1 majimadaisuke  staff  2270700784 Sep 18 09:31 model.litertlm
+afbe011b1f2f43e9065699ecf90076dd893a9a8223dc214892b6295bb6f39611  out/p1024_4b_11flags_1e2d37f/model.litertlm

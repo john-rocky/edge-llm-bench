@@ -1,0 +1,37 @@
+=== orchestrate start 2026-09-18 09:20:16  load=2.91 3.98 4.23
+--- chain driver tail:
+pin: torch==2.13.0
+pin: torchao==0.18.0
+pin: transformers==5.14.1
+=== export p1024_06b_12flags  2026-09-18 09:20:20  DROP=[enable_gpu_dynamic_prefill] EXTRA=[--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True]  load=2.91 3.96 4.22
+### CMD: DROP="enable_gpu_dynamic_prefill" EXTRA="--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True" VENV=/Users/majimadaisuke/venvs/ltmain0918 ./export_variant.sh Qwen/Qwen3-0.6B out/p1024_06b_12flags
+   exit 0  29ae7cf18aeb6c1eb1c8b0a10c744639f068e01a0321bbff4e03dbd6caee917f  341779680 bytes  09:21:22
+Qwen3 model patch applied. fuse_gate_up=True, fuse_qkv=True, use_rope_composite=False, use_swiglu_composite=True, use_qkv_norm_rope_composite=True, 
+   ops inventory logs/ops_p1024_06b_12flags.txt: == subgraph 0: prefill_1024  (436 ops) == subgraph 1: decode  (378 ops) 
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+      28  STABLEHLO_COMPOSITE:odml.cache_update
+      28  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      28  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      28  STABLEHLO_COMPOSITE:odml.swiglu
+=== export p1024_4b_12flags  2026-09-18 09:21:23  DROP=[enable_gpu_dynamic_prefill] EXTRA=[--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True]  load=3.77 4.06 4.24
+### CMD: DROP="enable_gpu_dynamic_prefill" EXTRA="--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext --use_sdpa_composite_for_prefill=True" VENV=/Users/majimadaisuke/venvs/ltmain0918 ./export_variant.sh Qwen/Qwen3-4B out/p1024_4b_12flags
+   exit 0  d406b86698afb8221ec4803dad42c44b460eda580d1f63d31b31f67b2bcf66f8  2270748784 bytes  09:25:24
+Qwen3 model patch applied. fuse_gate_up=True, fuse_qkv=True, use_rope_composite=False, use_swiglu_composite=True, use_qkv_norm_rope_composite=True, 
+   ops inventory logs/ops_p1024_4b_12flags.txt: == subgraph 0: prefill_1024  (556 ops) == subgraph 1: decode  (482 ops) 
+      36  STABLEHLO_COMPOSITE:odml.cache_update
+      36  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      36  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      36  STABLEHLO_COMPOSITE:odml.swiglu
+      36  STABLEHLO_COMPOSITE:odml.cache_update
+      36  STABLEHLO_COMPOSITE:odml.qkv_norm_rope
+      36  STABLEHLO_COMPOSITE:odml.sdpa_transposed
+      36  STABLEHLO_COMPOSITE:odml.swiglu
+=== DONE 2026-09-18 09:25:25
+prefill_1024: ops 12flags=436 11flags=574; sdpa_transposed 28 vs 0; runtime_bmm 0 vs 56; other rows identical=False
+decode: ops 12flags=378 11flags=372; sdpa_transposed 28 vs 28; runtime_bmm 0 vs 0; other rows identical=False
+INVENTORY GATE FAIL:
+  - prefill_1024: other rows differ — only in 12flags: ['1  SUB', '31  RESHAPE', '6  SLICE']; only in 11flags: ['1  CAST', '1  NOT_EQUAL', '2  SLICE', '28  SELECT_V2', '28  SOFTMAX', '88  RESHAPE']
+  - decode: other rows differ — only in 12flags: ['1  SUB', '3  CONCATENATION', '4  SLICE']; only in 11flags: ['2  CONCATENATION']

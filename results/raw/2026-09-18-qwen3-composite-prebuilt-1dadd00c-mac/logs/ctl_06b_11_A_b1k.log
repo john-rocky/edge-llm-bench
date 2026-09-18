@@ -1,0 +1,194 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789691680.587635 12222395 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1789691680.588545 12222395 litert_lm_lib.cc:655] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 1280
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: :nocache
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/039938d5-5dfb-4a4b-bdc2-07c968f52fc2/scratchpad/models/p1024_06b_11flags/model.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: [1024]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1789691680.588581 12222395 litert_lm_lib.cc:662] vision_executor_settings: not set
+I0000 00:00:1789691680.588588 12222395 litert_lm_lib.cc:668] audio_executor_settings: not set
+I0000 00:00:1789691680.588628 12222395 litert_lm_lib.cc:691] Creating engine
+W0000 00:00:1789691680.589265 12222395 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789691680.589296 12222395 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789691680.589278 12222420 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789691680.589304 12222395 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789691680.589344 12222395 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79b101c000, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79b101c060, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789691680.986905 12222395 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79b101c0c0, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79b101c120, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=368, num_signatures=2
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=1072, num_inputs=60, num_outputs=57, num_ops=574
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=860, num_inputs=60, num_outputs=57, num_ops=372
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=1280, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 482 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 1280
+INFO: [magic_number_utils.cc:536] 623 tensors of signature decode have been updated for magic number  32771 to target number 1280
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1789691681.028535 12222395 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1789691681.029243 12222395 gpu_backend_metal.mm:113] Metal Residency Set successfully initialized.
+I0000 00:00:1789691681.230478 12222395 delegate_kernel.cc:329] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789691681.230519 12222395 delegate_kernel.cc:899] Initializing Metal-based API from graph.
+I0000 00:00:1789691681.363219 12222395 delegate_kernel.cc:329] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1789691681.363251 12222395 delegate_kernel.cc:899] Initializing Metal-based API from graph.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:123] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79b3312d00, name=GPU Metal
+INFO: [gpu_registry.cc:131] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x79b3312d60, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1789691681.440656 12222395 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789691681.440669 12222395 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1789691681.440675 12222395 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789691681.440678 12222395 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1789691681.440681 12222395 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789691681.440684 12222395 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1789691681.440687 12222395 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1789691681.440689 12222395 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1789691681.440730 12222395 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1789691681.440734 12222395 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1789691681.440736 12222395 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1789691681.440739 12222395 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1789691681.440975 12222395 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789691681.441739 12222395 litert_lm_lib.cc:871] Running single-turn conversation
+I0000 00:00:1789691681.691177 12222395 llm_litert_compiled_model_executor.cc:1387] Sampler will handle decode input tensors.
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.04 ms
+    - Init Executor: 851.34 ms
+    - Init LLM metadata: 0.24 ms
+    - Init Model assets: 0.31 ms
+    - Init Tokenizer: 119.17 ms
+    - Init Total: 852.29 ms
+--------------------------------------------------
+  Time to first token: 0.11 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 109.998334ms duration.
+      Prefill Speed: 9309.23 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 852.40025ms duration.
+      Decode Speed: 300.33 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 31.458us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789691682.404470 12222395 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789691682.404758 12222395 litert_lm_lib.cc:871] Running single-turn conversation
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 851.34 ms
+    - Init LLM metadata: 0.24 ms
+    - Init Model assets: 0.31 ms
+    - Init Tokenizer: 119.17 ms
+    - Init Total: 852.29 ms
+--------------------------------------------------
+  Time to first token: 0.11 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 102.353709ms duration.
+      Prefill Speed: 10004.52 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 732.689709ms duration.
+      Decode Speed: 349.40 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 43.417us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789691683.240080 12222395 litert_lm_lib.cc:859] Creating conversation
+I0000 00:00:1789691683.240393 12222395 litert_lm_lib.cc:871] Running single-turn conversation
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 851.34 ms
+    - Init LLM metadata: 0.24 ms
+    - Init Model assets: 0.31 ms
+    - Init Tokenizer: 119.17 ms
+    - Init Total: 852.29 ms
+--------------------------------------------------
+  Time to first token: 0.11 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 103.794334ms duration.
+      Prefill Speed: 9865.66 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 726.814ms duration.
+      Decode Speed: 352.22 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 43.917us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1789691684.076760 12222395 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x79b101c120, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x79b101c0c0, name=GPU Metal
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x79b3312d60, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x79b3312d00, name=GPU Metal
+EXIT_CODE=0
