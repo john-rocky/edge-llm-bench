@@ -203,10 +203,16 @@ cross-runtime ordering). Rebuild the summary from the committed tree only:
 a campaign pushed without its summary rebuild turns the data-pipeline CI red
 (2026-09-13, six runs in a row), and a rebuild inside a checkout that holds
 another session's uncommitted campaign dirs bakes their rows into the CSV
-and fails the same CI job on the next push. In a shared checkout run
-`git worktree add --detach <tmp> HEAD`, copy in only the campaign dirs you
-are about to commit, run `scripts/build_summary.py` there, and commit the
-summary together with those dirs (`git worktree remove <tmp>` afterwards). Read `FLAGGED.txt` for `DEGENERATE` before trusting
+and fails the same CI job on the next push (2026-09-18, seven runs in a row:
+8 rows from three uncommitted 2026-09-12 smoke dirs). `build_summary.py`
+reads the disk, not git, so rebuild from an export of the index: stage the
+campaign dirs you are about to commit by explicit path, check
+`git diff --cached --name-only` lists only your paths, then run
+`d=$(mktemp -d) && git checkout-index -a --prefix="$d/" && python3 "$d/scripts/build_summary.py" && cp "$d"/results/summary/* results/summary/ && rm -rf "$d"`
+and commit the summary together with those dirs. The export holds HEAD plus
+what is staged and nothing untracked; it needs no clean tree. The same rule
+covers every commit that touches `results/summary/`, hand-run campaigns
+included. Read `FLAGGED.txt` for `DEGENERATE` before trusting
 a new arm's rate: the cell gate flags a capture whose output is a repetition
 loop (an engine can report a fast rate while generating garbage — seen on
 2026-09-08), and such a cell is never retried, only marked. The launchd template that fires `auto` is

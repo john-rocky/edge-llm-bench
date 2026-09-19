@@ -46,6 +46,14 @@ Full text: `methodology/fairness-rules.md`. The five working rules:
 - **Generated files are generated.** LEADERBOARD.md between its markers,
   `results/summary/*`, `docs/charts/*.png` (only via
   `scripts/generate_charts.py` — never hand-draw a numbers figure).
+- **Commit `results/summary/` only as rebuilt from the git index, never from
+  this checkout's disk.** `build_summary.py` globs the disk, and a shared
+  checkout holds other sessions' uncommitted campaign dirs: an in-tree
+  rebuild bakes their rows into the CSV and turns the data-pipeline CI red
+  (2026-09-18, seven runs). Stage your campaign dirs by explicit path, check
+  `git diff --cached --name-only` lists only your paths, then
+  `d=$(mktemp -d) && git checkout-index -a --prefix="$d/" && python3 "$d/scripts/build_summary.py" && cp "$d"/results/summary/* results/summary/ && rm -rf "$d"`
+  and commit the summary with those dirs.
 - **Cross-runtime standings stay LOCAL (2026-08-27, owner decision).** The
   public repo is shared as a harness only: LEADERBOARD.md and the comparison
   charts (crossarm_table / demo_models_table / pixel8a_model_demo) are
