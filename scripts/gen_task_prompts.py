@@ -6,6 +6,7 @@ Sources of truth being mirrored:
   ShortChatTask.swift    prompt literal, maxTokens 128, greedy
   LongContextTask.swift  [i]-tagged lorem blocks (55 tok/block nominal) + tail;
                          long-context-1024-gen256 = forceLongOutput, maxTokens 256
+                         long-context-2048-gen256 = explicit 27 blocks, maxTokens 256
 
 The Android CLI drivers feed these files via --input_prompt_file / llama-cli -f.
 If a Swift task changes, regenerate and commit; a follow-up iOS unit test can
@@ -23,8 +24,8 @@ LOREM = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus bib
 TOKENS_PER_BLOCK = 55
 
 
-def long_context(target_tokens, force_long_output):
-    blocks = max(1, target_tokens // TOKENS_PER_BLOCK)
+def long_context(target_tokens, force_long_output, blocks=None):
+    blocks = blocks if blocks is not None else max(1, target_tokens // TOKENS_PER_BLOCK)
     pieces = [f"[{i}] {LOREM}" for i in range(blocks)]
     if force_long_output:
         pieces.append("\n\nUsing the passage above as context, list 25 distinct things "
@@ -39,6 +40,7 @@ PROMPTS = {
     # task id -> (text, decode budget the task pins)
     "short-chat": ("Explain what on-device AI means in simple terms.", 128),
     "long-context-1024-gen256": (long_context(1024, True), 256),
+    "long-context-2048-gen256": (long_context(2048, True, blocks=27), 256),
 }
 
 # EnduranceChatTask.turnPrompts mirrored verbatim (methodology/endurance.md;

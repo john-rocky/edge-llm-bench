@@ -89,6 +89,43 @@ driver with no phone attached:
 python3 android/bench/selftest.py      # fake adb; CI runs this on every push
 ```
 
+## Allocated-context prompt rounds
+
+The S26 long-context cells opt into a separate round mode:
+
+```bash
+ROUNDS=2 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK= BENCH_ANDROID_SERIAL=RFGL80R6A6H python3 android/bench/run_campaign.py matrices/dashboard-longctx-v1-android-s26-qwen06.cells --dry-run
+```
+
+The dry-run only prints JSON launch plans and exclusions; it does not probe a
+device, acquire a lock, download, or write a campaign. Actual captures need a
+fresh campaign and an explicit serial. Choose the per-model cells for separate
+sittings; do not pool sittings or split allocation partners across them.
+Every cell launches once per round, the whole order reverses on even rounds,
+the anchor appears once per round, and automatic gate retries are disabled.
+The round-mode cooldown is COOLDOWN (30 s for this leg), without the legacy
+per-row 120/300 s overrides; the nominal thermal gate remains in place.
+
+LiteRT prompt tasks with explicit context-tokens use advanced_main, with two
+fresh Conversations in one engine. Benchmark logging is enabled with both
+synthetic token counts zero, preserving the real templated prompt and native
+output cap. Iteration records are cold and warm, have separate counters, and
+share their launch log, elapsed time, RSS and start/end device-state samples.
+The v0.16.0 CLI has no sampler-parameter flags, so sampling stays labelled
+engine-default. Missing/mismatched max_tokens witnesses, incomplete iterations
+and Invalid-decode messages are flagged. Plain prompt tasks without explicit
+context and all native-benchmark command strings retain their old paths.
+Upstream v0.16.0 benchmark mode also sets SingleThreadedExecution in the engine
+settings; this does not specify the CPU kernel thread-pool size.
+
+The llama.cpp control uses the existing single-turn llama-cli command and
+records cold-process, with no warm partner. Run longctx_ab_report.py separately
+with --regime cold, warm, or cold-process; Android files are loaded only from
+the selected campaign's app-path-android directory. Quarantines are excluded,
+protocol-invalid rates are suppressed, and non-nominal starts remain visible
+for the session reviewer's admission. No per-iteration temperature or memory is inferred
+from the per-launch samples.
+
 ## Endurance sessions (endurance-chat-<N>m)
 
 30-minute multi-turn chat sessions — one engine process, one conversation

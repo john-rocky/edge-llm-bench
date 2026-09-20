@@ -1,0 +1,8 @@
+# Round 4 only: A, B, C, D; GPU, allocation 2304, two iterations, no anchor.
+# Explicit max-tokens=256 retains the R3 instrument cap with the short prompt.
+# ROUNDS=1 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK= BENCH_STRICT_SMOKE=1
+# BENCH_REVIEW_AFTER_LAUNCH=1 enforces review before any next launch (A failure stops).
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu context-tokens=2304 max-tokens=256 file=../models/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu context-tokens=2304 max-tokens=256 file=../models/gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=2304 max-tokens=256 file=../models/gemma-4-E2B-it.litertlm
+android litert-lm litert-community/Qwen3-1.7B long-context-2048-gen256 backend=gpu context-tokens=2304 max-tokens=256 file=../models/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm

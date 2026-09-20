@@ -130,7 +130,8 @@ def validate_file(path, catalog=None, require_anchor=False):
                               "(e.g. long-context-1024-gen256)")
             # context-tokens is part of the cell identity: the Mac runner keys the
             # capture file on it, so one cell at two allocations is two cells.
-            key = (plat, rt, mid, task, opts.get("backend", ""), opts.get("context-tokens", ""))
+            key = (plat, rt, mid, task, opts.get("backend", ""),
+                   opts.get("context-tokens", ""), opts.get("file", ""))
             if key in seen:
                 errors.append(f"{where}: duplicate cell (first at line {seen[key]})")
             else:

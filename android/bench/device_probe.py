@@ -7,6 +7,8 @@ methodology/android.md, not silent.
 """
 import re
 import subprocess
+import os
+import time
 
 THERMAL_NAMES = {0: "nominal", 1: "light", 2: "moderate", 3: "severe",
                  4: "critical", 5: "emergency", 6: "shutdown"}
@@ -18,6 +20,11 @@ def adb(args, serial=None, timeout=30, retries=3):
     failure, wait for the device to re-enumerate and retry; only after
     `retries` consecutive failures does the error propagate."""
     cmd = ["adb"] + (["-s", serial] if serial else []) + args
+    if os.environ.get("BENCH_SESSION_DEADLINE"):
+        timeout = min(timeout, max(1, float(os.environ["BENCH_SESSION_DEADLINE"]) - time.time() - 1))
+    if os.environ.get("BENCH_STRICT_SMOKE") == "1":
+        # A failed engine shell must never be replayed after a USB loss.
+        return subprocess.check_output(cmd, text=True, errors="replace", timeout=timeout)
     last = None
     for attempt in range(retries):
         try:
@@ -53,11 +60,13 @@ def battery(serial=None):
     level = re.search(r"level: (\d+)", out)
     status = re.search(r"status: (\d+)", out)
     plugged = re.search(r"(AC|USB|Wireless) powered: true", out)
+    temperature = re.search(r"temperature:\s*(-?\d+)", out)
     return {
         "batteryLevel": int(level.group(1)) / 100 if level else None,
         # dumpsys status: 2=charging 3=discharging 4=not-charging 5=full
         "batteryState": ("charging" if plugged else "unplugged"),
         "rawStatus": int(status.group(1)) if status else None,
+        "temperatureC": int(temperature.group(1)) / 10 if temperature else None,
     }
 
 

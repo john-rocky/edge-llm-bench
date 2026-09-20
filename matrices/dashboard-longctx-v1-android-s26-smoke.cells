@@ -1,0 +1,11 @@
+# Instrument smoke (2026-09-20): S26 RFGL80R6A6H, one round, seven launches, never pooled into a session.
+# ROUNDS=1 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK= BENCH_STRICT_SMOKE=1
+# Local mirrors were pulled from the phone after published HF SHA-256 checks.
+# Basenames preserve the normal published-id device paths and engine commands.
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=1 file=../models/Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=2304 file=../models/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=8192 file=../models/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=2304 file=../models/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=8192 file=../models/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-2048-gen256 context-tokens=2304 file=../models/Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-2048-gen256 context-tokens=8192 file=../models/Qwen3-0.6B-Q4_K_M.gguf

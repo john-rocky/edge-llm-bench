@@ -28,7 +28,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 FAKE_ADB = '''#!/usr/bin/env python3
-import hashlib, json, os, shutil, sys
+import hashlib, json, os, re, shutil, sys
 
 STATE = %(state)r
 DEV = "/data/local/tmp/llmbench"
@@ -48,6 +48,16 @@ def engine(cmd):
     print("===ENGINE_OUTPUT===")
     if "./llama-cli" in cmd:
         print("[ Prompt: 200.0 t/s | Generation: %%s t/s ]" %% d)
+    elif "./litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
+        ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
+        print("max_tokens: " + ctx)
+        for count, rate in ((256, d), (93, d + 0.25)):
+            print("BenchmarkInfo:")
+            print("Prefill Turn 1: Processed 1986 tokens in 1s duration.")
+            print("Decode Turn 1: Processed %%d tokens" %% count)
+            print("Time to first token: 1.2 s")
+            print("Prefill Speed: 1986.0 tokens/sec")
+            print("Decode Speed: %%s tokens/sec" %% rate)
     else:
         print("Prefill Turn 1: Processed 21 tokens in 100.00ms duration.")
         print("Decode Turn 1: Processed 128 tokens")
@@ -91,7 +101,7 @@ def shell(cmd):
         print("Thermal Status: 0")
         return 0
     if "dumpsys battery" in cmd:
-        print("  level: 100\\n  status: 2\\n  USB powered: true")
+        print("  level: 100\\n  status: 2\\n  USB powered: true\\n  temperature: 316")
         return 0
     if "===ENGINE_OUTPUT===" in cmd:
         return engine(cmd)
@@ -193,7 +203,7 @@ def main():
 
     # fake on-device engine binaries (sha deliberately unmatched in the pins
     # registry -> the witness must stamp "unknown", never a guessed tag)
-    for name in ("litert_lm_main", "litert_lm_endurance_main", "llama-cli"):
+    for name in ("litert_lm_main", "litert_lm_advanced_main", "litert_lm_endurance_main", "llama-cli"):
         with open(os.path.join(dev, name), "w") as fh:
             fh.write("fake " + name)
 
@@ -206,7 +216,9 @@ def main():
     env = dict(os.environ,
                PATH=bin_dir + os.pathsep + os.environ.get("PATH", ""),
                BENCH_ANDROID_SERIAL="FAKESELF", BENCH_RAW_ROOT=raw_root,
-               COOLDOWN="0", THERMAL_WAIT="5", GATE_COOLDOWN="0")
+               COOLDOWN="0", THERMAL_WAIT="5", GATE_COOLDOWN="0",
+               BENCH_TEST_LOCK_DIR=tmp)
+    env.pop("ROUNDS", None)  # inherited round mode must not alter legacy fixtures
 
     def schedule(vals):
         json.dump(vals, open(os.path.join(state, "schedule.json"), "w"))
@@ -440,6 +452,42 @@ def main():
     ok(not glob.glob(os.path.join(out_d, "*.json.attempt1")),
        "a crash session is never quarantine-retried (failed-runs-stay)")
 
+    # --- opt-in long-context round mode, same real driver / fake transport ---
+    cells_round = os.path.join(tmp, "round.cells")
+    with open(cells_round, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat anchor=1 file={gguf_model}\n")
+        for ctx in (2304, 4096, 8192):
+            fh.write(f"android litert-lm fake/model long-context-2048-gen256 backend=gpu "
+                     f"context-tokens={ctx} file={litert_model}\n")
+    # Wide spread would trigger a legacy retry; round mode must keep the
+    # original rounds intact and leave admission to the session reviewer.
+    schedule([100.0, 25.0, 25.0, 25.0, 5.0, 5.0, 5.0, 100.0])
+    env.update(CAMPAIGN="selftest-round", ROUNDS="2")
+    print("--- round campaign (2 iterations, reversal, anchor, gate off)")
+    rc = run_campaign(env, cells_round)
+    ok(rc == 0, f"round campaign exits 0 (got {rc})")
+    out_round = os.path.join(raw_root, "selftest-round", "app-path-android")
+    pairs = records(out_round, "litert-lm-gpu_")
+    controls = records(out_round, "llama.cpp_")
+    ok(len(pairs) == 12 and len(controls) == 2, "12 iteration records and 2 cold-process anchors")
+    ok(all(r["conditions"]["regime"] == "cold-process" for _, r in controls), "anchor regime stays cold-process")
+    grouped = {}
+    for _, r in pairs:
+        grouped.setdefault(r["conditions"]["launchID"], []).append(r)
+    ok(len(grouped) == 6, "6 engine launches produced 12 records")
+    for rows in grouped.values():
+        rows.sort(key=lambda r: r["conditions"]["iterationIndex"])
+        ok([r["metrics"]["generatedTokenCount"] for r in rows] == [256, 93], "per-iteration counts remain separate")
+        ok([r["conditions"]["regime"] for r in rows] == ["cold", "warm"], "cold/warm labels per launch")
+        ok(all(r["conditions"]["batteryTemperatureInitialC"] == 31.6 for r in rows), "battery temperature is Celsius")
+    with open(os.path.join(out_round, "launch_order.jsonl")) as fh:
+        order = [json.loads(line) for line in fh]
+    ok([d["cell"] for d in order[4:]] == [d["cell"] for d in order[:4]][::-1], "full order reversed, including anchor")
+    ok(not glob.glob(os.path.join(out_round, "*.json.attempt1")), "round mode never block-retries wide spread")
+    env.pop("ROUNDS")
+
+    rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
+    ok(rc == 0, "long-context device-free unit checks")
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
         return 1

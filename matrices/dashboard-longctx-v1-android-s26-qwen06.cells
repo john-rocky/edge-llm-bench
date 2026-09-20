@@ -1,0 +1,34 @@
+# R4 case 2: GPU text exclusion; evidence in this run results/r3/ and results/r4/.
+# Galaxy S26 RFGL80R6A6H: filled prompt, allocated KV 2304 / 4096 / 8192.
+# ROUNDS=8 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK= BENCH_ANDROID_SERIAL=RFGL80R6A6H
+# python3 android/bench/run_campaign.py THIS.cells --dry-run
+# Remove --dry-run only in an authorized device round with the shared hold.
+# One launch/cell/round; full order reverses on even rounds, anchor once/round.
+# LiteRT context prompts: v0.16.0 advanced_main, two fresh Conversations in one
+# engine (cold, warm), engine-default sampler, native output cap 256.
+# llama.cpp b8999 control: existing llama-cli -st, cold-process only.
+# Real prompt counts are authoritative; no synthetic prefill/decode override.
+# Exact artifacts match the Mac leg, expressed as Android repo + file=.
+# Standard Gemma files (wNa8o8), not the separate -gpu files.
+# Qwen3 1.7B cpu = dynamic INT8; gpu = dynamic wi4b32, as on the dashboard.
+# Qwen3 0.6B ladder = published wi4b32; mixed_int4 stays an explicit exclusion.
+# S26 stored inventory: 12 GB RAM; conservative 60% = 6866 MiB (decimal GB).
+# Mac memoryPeakResidentMB excludes E4B CPU 8192 (max 11306 MiB).
+# Borderline CPU rows and E4B GPU 8192 require the later smoke, not a RAM claim.
+# Full matrix is a plan; prefer the model files for separate sittings (see run
+# results/r2_time_estimate.md for target/proposed round counts and sources).
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=1 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# Qwen3-0.6B
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=2304 file=qwen3_0_6b_mixed_int4.litertlm exclude=bundle-kv-2048-entries-2k-prefill-plus-256-overruns
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=2304 file=qwen3_0_6b_mixed_int4.litertlm exclude=bundle-kv-2048-entries-2k-prefill-plus-256-overruns
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=2304 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=4096 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=cpu context-tokens=8192 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=2304 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm exclude=s26-gpu-garbage-text-at-2k-prefill
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=4096 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm exclude=s26-gpu-garbage-text-at-2k-prefill
+android litert-lm litert-community/Qwen3-0.6B long-context-2048-gen256 backend=gpu context-tokens=8192 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm exclude=s26-gpu-garbage-text-at-2k-prefill
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-2048-gen256 context-tokens=2304 file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-2048-gen256 context-tokens=4096 file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-2048-gen256 context-tokens=8192 file=Qwen3-0.6B-Q4_K_M.gguf
