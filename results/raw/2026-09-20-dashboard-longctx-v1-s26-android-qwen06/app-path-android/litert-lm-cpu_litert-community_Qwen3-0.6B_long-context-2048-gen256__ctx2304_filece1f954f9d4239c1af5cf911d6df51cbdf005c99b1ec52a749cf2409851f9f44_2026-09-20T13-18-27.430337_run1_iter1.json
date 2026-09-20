@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "99b29d02-dcdb-4df6-aea3-485d3e64fc99",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "file": "litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "e3e290109da4388d65a17510a0c66af91c8039f52d2c465868dbc43c09a776cf"
+  },
+  "task": "long-context-2048-gen256",
+  "timestamp": "2026-09-20T13:18:27Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-06-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.98,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "contextTokens": 2304,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 1,
+    "screen": "Awake",
+    "elapsedSeconds": 43.5,
+    "exitCode": 0,
+    "roundIndex": 5,
+    "launchIndex": 30,
+    "launchID": "389abc3e-ab3a-4eb0-9311-44df4bf94b1c",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 37.6,
+    "batteryTemperatureFinalC": 38.5,
+    "batteryLevelFinal": 0.98,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-2048-gen256.txt --max_num_tokens=2304 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+    "allocationWitnessTokens": [
+      2304
+    ],
+    "invalidDecodeCount": 0,
+    "protocolFlags": [],
+    "iterationIndex": 1,
+    "regime": "cold",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 814,
+      "distinctWords": 82,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "c06d6daf02a5dfb3775ce8a8498d90dbf17cc65e208f69d96f80f756a5cd292b"
+  },
+  "metrics": {
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "light",
+    "memoryMedianResidentMB": 1749.62109375,
+    "memoryPeakResidentMB": 1760.4453125,
+    "firstTokenLatencyMS": 7190.0,
+    "promptTokensPerSecond": 278.02,
+    "decodeTokensPerSecond": 21.78,
+    "promptTokenCount": 1986,
+    "generatedTokenCount": 256,
+    "coldRun": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-0.6B_long-context-2048-gen256__ctx2304_filece1f954f9d4239c1af5cf911d6df51cbdf005c99b1ec52a749cf2409851f9f44_2026-09-20T13-18-27.430337_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "decodedText": "litert-lm-cpu_litert-community_Qwen3-0.6B_long-context-2048-gen256__ctx2304_filece1f954f9d4239c1af5cf911d6df51cbdf005c99b1ec52a749cf2409851f9f44_2026-09-20T13-18-27.430337_run1_iter1.decoded.txt"
+  }
+}
