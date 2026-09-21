@@ -1,0 +1,3 @@
+# 2026-09-21-dashboard-longctx-v1-s26-android-e4b-gpuprobe
+
+GPU text probe before the S26 Gemma 4 E4B sitting (2026-09-21): one `litert_lm_advanced_main` GPU launch of `gemma-4-E4B-it.litertlm` on `long-context-2048-gen256` at allocation 2304 (two iterations). Verdict: coherent — the model answers the placeholder prompt with a 61-token refusal ("the provided text is a list of placeholder Lorem ipsum…"), 0 × `Invalid decode`; the E4B GPU ladder therefore ran in `results/raw/2026-09-21-dashboard-longctx-v1-s26-android-gemmae4b/`. n=1, never pooled: records under `probe-records/`, outside the summary layer.
