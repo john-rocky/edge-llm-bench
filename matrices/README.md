@@ -22,6 +22,10 @@ for their published campaigns).
   `native-benchmark-<P>x<D>` for engine-native synthetic benchmarks, or an
   `asr-rtf-<set>` speech-recognition real-time-factor task (mac litert-lm rows
   only in v1; needs `backend=` and `file=`; `docs/asr-rtf-v1.md`).
+  `vl-<prompt>-<image set>-gen<N>` vision-language response-time task (mac
+  litert-lm rows only in v1; needs `backend=` and `file=`; `docs/vl-response-v1.md`).
+  `tts-rtf-<text set>` text-to-speech real-time-factor task (mac `litert` rows
+  only in v1 — the model's public LiteRT pipeline; needs `file=`; `docs/tts-rtf-v1.md`).
 
 ## Options (trailing `key=value`, any order)
 
@@ -72,6 +76,13 @@ for their published campaigns).
   carries the session anchor; rows byte-identical to the parent). The
   recurring job picks them when the phone's free space is below the whole
   set's requirement and rotates pushed copies out between halves.
+- `vl-response-v1.cells` — the vision-language response-time cells (SmolVLM2-500M,
+  LFM2.5-VL-450M / 1.6B int4 fixB, InternVL3-1B, Qwen2-VL-2B, Gemma 4 E2B ×
+  litert-lm cpu / gpu on the Mac): one pinned CC0 image + one prompt through
+  LiteRT-LM's own CLI; `docs/vl-response-v1.md`.
+- `tts-rtf-v1.cells` — the TTS real-time-factor cells (Qwen3-TTS-12Hz-0.6B-Base
+  through its public LiteRT reference pipeline on the Mac CPU, ASR round trip as
+  the audio check); `docs/tts-rtf-v1.md`.
 
 ## Validation
 

@@ -1,0 +1,37 @@
+{
+  "set": "cc0-cat-couch-1024",
+  "version": 1,
+  "prepared": "2026-09-24",
+  "image": {
+    "file": "cat_couch_1024.jpg",
+    "sha256": "cca087e6606460a43e6a1b025180b0da855577708946a983b4a07a20e2a7be59",
+    "width": 1024,
+    "height": 682,
+    "format": "JPEG (quality 85)",
+    "derived_from": "the Wikimedia Commons original (4272x2848, sha1 9716b4593c634256c0840fd678772ee5a05847cd, sha256 bf2662369a1147192ebd6ab60e54c9648dd5fc99f4c5d5fa8866330c796cef9b) resized to 1024 px on the long side with macOS sips 2026-09-24; nothing else changed"
+  },
+  "source": {
+    "title": "File:Cat resting on a couch (Unsplash).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Cat_resting_on_a_couch_(Unsplash).jpg",
+    "original_url": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Cat_resting_on_a_couch_%28Unsplash%29.jpg",
+    "author": "Erik-Jan Leusink (Unsplash, @ejleusink), uploaded to Wikimedia Commons",
+    "license": "CC0 1.0 (public domain dedication)",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "photographed": "2016-08-22 (Commons description)"
+  },
+  "content": "a tabby cat lying on a couch / sofa, looking at the camera",
+  "request": {
+    "prompt": "Describe this image in one sentence.",
+    "images": 1,
+    "max_output_tokens": 64,
+    "note": "the runtime resizes the image to each model's fixed input (SigLIP 512x512, InternViT 448x448, ...); the file is the same bytes for every arm"
+  },
+  "text_check": {
+    "any_of": [
+      "cat",
+      "kitten",
+      "feline"
+    ],
+    "rule": "case-insensitive substring over the model's reply; a reply without any of these words fails the text check (the gate is coherence, not caption quality)"
+  }
+}

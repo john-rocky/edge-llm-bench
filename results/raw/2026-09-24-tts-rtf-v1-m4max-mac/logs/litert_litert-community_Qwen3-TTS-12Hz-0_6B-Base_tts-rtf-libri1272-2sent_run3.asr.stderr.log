@@ -1,0 +1,30 @@
+# cmd: /Users/majimadaisuke/code/edge-llm-bench/.build/asr-runner-1dadd00c/asr_runner --model_name parakeet-tdt-0.6b-v3 --metadata_path /Users/majimadaisuke/code/edge-llm-bench/.build/asr-runner-1dadd00c/model_metadata.json --model_path /Users/majimadaisuke/.cache/huggingface/hub/models--litert-community--parakeet-tdt-0.6b-v3/snapshots/50dae0cb8c7b39dda477966eff7150cd7fe206ae/parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite --cache_dir /Users/majimadaisuke/code/edge-llm-bench/.build/asr-models --backend cpu --num_threads 4 --overlap_ratio 0.4 --text_merger_type timestamp --audio_path /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/results/raw/2026-09-24-tts-rtf-v1-m4max-mac/audio/litert_litert-community_Qwen3-TTS-12Hz-0_6B-Base_tts-rtf-libri1272-2sent_run3_16k.wav
+# exit=0
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x105e06000, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x105e06060, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1790226320.207875 54347019 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1790226320.207958 54347019 asr_runner.cc:168] Starting speech recognition on /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/results/raw/2026-09-24-tts-rtf-v1-m4max-mac/audio/litert_litert-community_Qwen3-TTS-12Hz-0_6B-Base_tts-rtf-libri1272-2sent_run3_16k.wav...
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x74a1780720, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x74a1780780, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+I0000 00:00:1790226320.443591 54347019 asr_runner.cc:186] Finished speech recognition.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x105e06060, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x105e06000, name=GPU Metal
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x74a1780780, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x74a1780720, name=GPU Metal

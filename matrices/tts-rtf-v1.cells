@@ -1,0 +1,25 @@
+# TTS real-time-factor cells, v1 (2026-09-24) — the third non-LLM task family.
+# Task `tts-rtf-libri1272-2sent`: ONE fixed English text of 27 words (two
+# LibriSpeech dev-clean reference sentences of speaker 1272, re-cased and
+# punctuated; evaldata/tts/libri1272-2sent/manifest.json) synthesized by the
+# model's PUBLIC LiteRT reference pipeline at that pipeline's defaults, one fresh
+# process per run. RTF = synthesize() wall / audio seconds (< 1 = faster than
+# real time), model load excluded and reported separately. The audio check is a
+# round trip: the WAV is transcribed by the asr-rtf-v1 instrument (LiteRT-LM
+# omni/asr, parakeet-tdt-0.6b-v3 i8, CPU) and scored against the input text; a
+# WER above the manifest's bar makes the rate "throughput only". Design and how
+# to stage the instrument: docs/tts-rtf-v1.md.
+#
+# Runtime `litert` = ai-edge-litert CompiledModel (CPU / XNNPACK) driven by the
+# published host-side pipeline — there is no LiteRT-LM engine path for a public
+# TTS bundle yet (omni/tts expects file layouts that are not on the Hub; see the
+# doc). file= names the talker recipe (quant-per-arm-rule); the MTP and codec
+# graphs are the sample's defaults and are stated in every row's `conditions`.
+# The Qwen3-0.6B MLX short-chat row is the Mac session anchor (anchors.cells).
+#
+# Mac: `./bench matrix matrices/tts-rtf-v1.cells --platform mac`.
+
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+
+# --- Qwen3-TTS-12Hz-0.6B-Base: talker int4 (blockwise-32 OCTAV) + mtp fp32 + codec decoder fp32 — the sample's default set ---
+mac litert litert-community/Qwen3-TTS-12Hz-0.6B-Base tts-rtf-libri1272-2sent runs=3 cooldown=60 file=talker_int4.tflite

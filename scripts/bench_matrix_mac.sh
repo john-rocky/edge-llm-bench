@@ -193,6 +193,30 @@ run_cell(){
       || echo "FAIL $rt $mid $task backend=$backend round=$round" >> "$OUT/FAILURES.txt"
     return ;;
   esac
+  # vl-* cells (docs/vl-response-v1.md): LiteRT-LM's own CLI with an image in the
+  # prompt, through scripts/vl_response_mac.py — same campaign dir, same record shape.
+  case "$task" in vl-*)
+    log "CELL $rt / $mid / $task backend=$backend runs=$runs round=$round ($(date +%H:%M:%S))"
+    python3 "$REPO/scripts/vl_response_mac.py" --model-id "$mid" --task "$task" --backend "$backend" \
+      --file "$(cell_opt file "" ${opts[@]+"${opts[@]}"})" --runs "$runs" \
+      --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT"
+    case $? in
+      0) ;;
+      75) echo "SKIPPED $rt $mid $task backend=$backend reason=model-file-not-staged" | tee -a "$OUT/SKIPPED.txt" ;;
+      *) echo "FAIL $rt $mid $task backend=$backend round=$round" >> "$OUT/FAILURES.txt" ;;
+    esac
+    return ;;
+  esac
+  # tts-rtf-* cells (docs/tts-rtf-v1.md): the model's public LiteRT reference
+  # pipeline in its pinned venv, through scripts/tts_rtf_mac.py (runtime `litert`).
+  case "$task" in tts-rtf-*)
+    log "CELL $rt / $mid / $task runs=$runs round=$round ($(date +%H:%M:%S))"
+    python3 "$REPO/scripts/tts_rtf_mac.py" --model-id "$mid" --task "$task" \
+      --file "$(cell_opt file "" ${opts[@]+"${opts[@]}"})" --runs "$runs" \
+      --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT" \
+      || echo "FAIL $rt $mid $task round=$round" >> "$OUT/FAILURES.txt"
+    return ;;
+  esac
 
   local extra=() task_arg="$task"
   [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")

@@ -1,0 +1,536 @@
+# cmd: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/litert-lm-advanced-main-1dadd00c/litert_lm_advanced_main --backend=gpu --vision_backend=gpu --model_path=/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-models/LFM2.5-VL-1.6B_int4_fixB.litertlm --input_prompt=Describe this image in one sentence. [image:/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/evaldata/vl/cc0-cat-couch-1024/cat_couch_1024.jpg] --benchmark --max_output_tokens=64 --cache_dir=/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-cache/LFM2.5-VL-1.6B_LFM2.5-VL-1.6B_int4_fixB.litertlm
+# DYLD_LIBRARY_PATH=/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/litert-lm-advanced-main-1dadd00c
+# exit=13
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790224088.281387 53922779 litert_lm_lib.cc:505] Choose backend: gpu
+I0000 00:00:1790224088.281396 53922779 litert_lm_lib.cc:510] Provided vision backend: gpu
+I0000 00:00:1790224088.283431 53922779 litert_lm_lib.cc:661] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-cache/LFM2.5-VL-1.6B_LFM2.5-VL-1.6B_int4_fixB.litertlm
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-models/LFM2.5-VL-1.6B_int4_fixB.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1790224088.283448 53922779 litert_lm_lib.cc:665] vision_executor_settings: VisionExecutorSettings: 
+  ModelAssets: model_path: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-models/LFM2.5-VL-1.6B_int4_fixB.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+  EncoderBackend: GPU
+  AdapterBackend: CPU
+
+I0000 00:00:1790224088.283449 53922779 litert_lm_lib.cc:674] audio_executor_settings: not set
+I0000 00:00:1790224088.283452 53922779 litert_lm_lib.cc:697] Creating engine
+W0000 00:00:1790224088.284834 53922779 litert_lm_loader.h:188] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790224088.284839 53922779 litert_lm_loader.h:204] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1790224088.284841 53922805 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790224088.284846 53922805 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790224088.284847 53922805 litert_lm_loader.cc:311] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x106946430, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1069469b0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790224088.312805 53922779 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78210b8000, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78210b80c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=530, num_signatures=12
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_512, subgraph_index=1, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_256, subgraph_index=2, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=3, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_64, subgraph_index=4, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_32, subgraph_index=5, num_tensors=828, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_16, subgraph_index=6, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_8, subgraph_index=7, num_tensors=828, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_4, subgraph_index=8, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_2, subgraph_index=9, num_tensors=827, num_inputs=25, num_outputs=22, num_ops=542
+INFO: [magic_number_utils.cc:109]   signature=prefill_1, subgraph_index=10, num_tensors=778, num_inputs=25, num_outputs=22, num_ops=498
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=11, num_tensors=808, num_inputs=25, num_outputs=23, num_ops=516
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_1024 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_512 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_256 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_128 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_64 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_32 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_16 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_8 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_4 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_2 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_1 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature decode have been updated for magic number  4099 to target number 4096
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [delegate_webgpu.cc:322] Create WebGPU environment (use_low_power=0, enable_host_mapped_pointer=1)
+I0000 00:00:1790224088.326435 53922779 environment.cc:526] Selected adapter: Apple M4 Max, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU
+INFO: [delegate_webgpu.cc:343] Created a WebGPU environment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:408] Created default Metal device.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1790224088.346728 53922779 delegate_webgpu.cc:731] # of threads to upload weights = 2
+I0000 00:00:1790224088.346750 53922779 delegate_webgpu.cc:739] # of threads to compile kernels = 1
+I0000 00:00:1790224088.544835 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.544851 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.551466 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.553978 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.553986 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.559833 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.562463 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.562469 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.568737 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.571447 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.571452 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.577144 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.579560 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.579565 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.585257 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.587606 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.587610 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.593049 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.595331 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.595334 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.600188 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.602473 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.602477 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.607239 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.609577 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.609583 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.614199 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.616581 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.616585 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.621434 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.623898 53922779 delegate_kernel.cc:336] Total 44 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.623901 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.628420 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+I0000 00:00:1790224088.642790 53922779 delegate_kernel.cc:336] Total 45 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790224088.642799 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1790224088.647492 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7821678c60, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7821678ba0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790224088.651618 53922779 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790224088.651625 53922779 litert_lm_loader.h:159] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1790224088.651627 53922779 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790224088.651628 53922779 litert_lm_loader.h:159] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=9, num_inputs=1, num_outputs=1, num_ops=4
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1790224088.654005 53922779 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790224088.654008 53922779 litert_lm_loader.h:159] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1790224088.654022 53922779 litert_lm_loader.h:188] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790224088.654024 53922779 litert_lm_loader.h:204] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1790224088.666716 53922779 litert_lm_lib.cc:707] Vision executor properties: num_tokens_per_image: 256
+patch_num_shrink_factor: 4
+
+I0000 00:00:1790224088.666725 53922779 litert_lm_lib.cc:865] Creating conversation
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=vision_768, subgraph_index=0, num_tensors=1757, num_inputs=1, num_outputs=1, num_ops=1404
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1790224088.677990 53922779 delegate_webgpu.cc:731] # of threads to upload weights = 0
+I0000 00:00:1790224088.677997 53922779 delegate_webgpu.cc:739] # of threads to compile kernels = 0
+ERROR: Following operations are not supported by GPU delegate:
+RESIZE_BILINEAR: Expected 1 runtime input tensor(s), but node has 0 runtime input(s).
+1401 operations will run on the GPU, and the remaining 3 operations will run on the CPU.
+E0000 00:00:1790224088.684977 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685073 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685133 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685203 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685250 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685282 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685319 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685358 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685399 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685431 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685480 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685510 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685543 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685573 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685607 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685638 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685678 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685710 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685750 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685780 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685832 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685863 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685901 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685934 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.685972 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686013 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686052 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686091 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686135 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686169 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686208 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686239 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686277 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686307 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686339 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686370 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686401 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686426 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686459 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686483 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686521 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686551 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686587 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686617 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686650 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686679 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686714 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686740 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686772 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686799 53922779 environment.cc:105] Validation error: Buffer size (4970496) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686832 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686865 53922779 environment.cc:105] Validation error: Buffer size (4958208) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686906 53922779 environment.cc:105] Validation error: Buffer size (4966400) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+E0000 00:00:1790224088.686935 53922779 environment.cc:105] Validation error: Buffer size (4962304) wrapping host-mapped memory was not aligned to 4096.
+ - While calling [Device].CreateBuffer([BufferDescriptor]).
+I0000 00:00:1790224088.689874 53922779 delegate_kernel.cc:946] Initializing WebGPU-based API from serialized data.
+E0000 00:00:1790224088.699400 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699415 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699495 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699503 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699587 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699597 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699676 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699683 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699765 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699773 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699857 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699866 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699949 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.699957 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700038 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700046 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700128 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700135 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700216 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700224 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700303 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700310 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700399 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700406 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700485 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700492 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700574 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700582 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700662 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700669 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700748 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700756 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700836 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700844 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700924 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.700931 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701014 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701021 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701100 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701107 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701187 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701194 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701273 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701280 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701360 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701368 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701447 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701455 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701534 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701541 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701622 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701629 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701706 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+E0000 00:00:1790224088.701714 53922779 environment.cc:105] Validation error: [Invalid Buffer (unlabeled)] is invalid due to a previous error.
+ - While validating entries[1] against { binding: 1, visibility: ShaderStage::Compute, buffer: {type: BufferBindingType::ReadOnlyStorage, minBindingSize: 0, hasDynamicOffset: 0} }.
+ - While validating [BindGroupDescriptor] against [BindGroupLayout (unlabeled)]
+ - While calling [Device].CreateBindGroup([BindGroupDescriptor]).
+I0000 00:00:1790224088.702422 53922779 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78210b80c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78210b8000, name=GPU WebGPU
+E0000 00:00:1790224088.868664 53922779 litert_lm_advanced_main.cc:378] Failed to run litert_lm: INTERNAL: ERROR: [runtime/executor/vision_litert_compiled_model_executor.cc:312]
+└ ERROR: [external/litert/litert/cc/litert_compiled_model.h:1962]
+└ Some ops are not accelerated. Add kLiteRtHwAcceleratorCpu to the compilation accelerator set to allow using the CPU to run those.
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:582
+runtime/executor/vision_litert_compiled_model_executor.cc:212
+runtime/executor/vision_litert_compiled_model_executor.cc:469
+runtime/executor/vision_litert_compiled_model_executor.cc:521
+runtime/framework/resource_management/resource_manager.cc:811
+runtime/framework/resource_management/serial_execution_manager.cc:232
+runtime/core/session_advanced.cc:72
+runtime/core/engine_advanced_impl.cc:165
+runtime/conversation/conversation.cc:430
+runtime/engine/litert_lm_lib.cc:871
+runtime/engine/litert_lm_advanced_main.cc:364
+
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7821678ba0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7821678c60, name=GPU WebGPU

@@ -1,0 +1,22 @@
+{
+  "set": "libri1272-2sent",
+  "version": 1,
+  "prepared": "2026-09-24",
+  "text": "The little girl had been asleep, but she heard the raps and opened the door. The other voice snapped with a harsh urgency, clearly used to command.",
+  "language": "english",
+  "words": 27,
+  "source": "two LibriSpeech dev-clean reference sentences of speaker 1272 (utterances 1272-135031-0003 and 1272-141231-0011 in evaldata/asr/librispeech-dev-clean-1272-82s/manifest.json; CC BY 4.0), re-cased and punctuated for a TTS prompt; the round-trip WER reference is the same text after the ASR set's normalization",
+  "references": {
+    "1272-135031-0003": "THE LITTLE GIRL HAD BEEN ASLEEP BUT SHE HEARD THE RAPS AND OPENED THE DOOR",
+    "1272-141231-0011": "THE OTHER VOICE SNAPPED WITH A HARSH URGENCY CLEARLY USED TO COMMAND"
+  },
+  "wer_normalization": "lowercase; hyphen -> space; drop every character except a-z, 0-9, apostrophe, space; collapse whitespace; no number expansion (a spelled-out reference vs a digit hypothesis counts as an error)",
+  "round_trip": {
+    "asr": "the asr-rtf-v1 instrument (LiteRT-LM omni/asr main@1dadd00c asr_runner, --backend cpu, engine defaults) with the first staged of: parakeet-tdt-0.6b-v3 i8 stateful (real-speech WER 0.197 on this speaker), whisper-tiny i8 30 s window (0.372; one window for a ~10 s clip); the record's provenance.roundTripAsr names the one used",
+    "resample": "24 kHz PCM16 -> 16 kHz PCM16 mono via macOS afconvert before the ASR"
+  },
+  "text_check": {
+    "max_word_error_rate": 0.5,
+    "rule": "round-trip WER of the synthesized audio against the input text; above the bar the rate is throughput only"
+  }
+}

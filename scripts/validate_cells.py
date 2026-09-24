@@ -17,7 +17,10 @@ import sys
 
 PLATFORMS = {"ios", "mac", "android"}
 RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
-            "anemll", "apple-fm", "core-ai", "cactus"}
+            "anemll", "apple-fm", "core-ai", "cactus",
+            # the LiteRT runtime itself (ai-edge-litert CompiledModel) driven by a
+            # model's public host-side pipeline — the tts-rtf-* instrument in v1
+            "litert"}
 TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
          "long-context-3k",
@@ -25,8 +28,14 @@ TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "energy", "quality", "lifecycle",
          # ASR real-time factor over a pinned utterance set (docs/asr-rtf-v1.md;
          # scripts/asr_rtf_mac.py TASK_SETS names the set behind each id).
-         "asr-rtf-librispeech-82s"}
+         "asr-rtf-librispeech-82s",
+         # Vision-language response time over a pinned image + prompt (docs/vl-response-v1.md;
+         # scripts/vl_response_mac.py TASK_SETS) and TTS real-time factor over a pinned text
+         # (docs/tts-rtf-v1.md; scripts/tts_rtf_mac.py TASK_SETS).
+         "vl-describe-catcouch-gen64", "tts-rtf-libri1272-2sent"}
 ASR_TASK = re.compile(r"^asr-rtf-")
+VL_TASK = re.compile(r"^vl-")
+TTS_TASK = re.compile(r"^tts-rtf-")
 NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 # endurance-chat-<N>m — multi-turn endurance sessions (methodology/endurance.md);
 # duration is part of the task id, like the long-context sweep variants.
@@ -108,6 +117,25 @@ def validate_file(path, catalog=None, require_anchor=False):
                     errors.append(f"{where}: asr-rtf-* needs backend=cpu|gpu (arm identity)")
                 if not opts.get("file"):
                     errors.append(f"{where}: asr-rtf-* needs file=<artifact> "
+                                  "(quant-per-arm-rule: the recipe travels with the row)")
+            if VL_TASK.match(task):
+                # v1 instrument = LiteRT-LM's own CLI on the Mac; backend is arm
+                # identity, file= names the .litertlm (recipe per row).
+                if rt != "litert-lm" or plat != "mac":
+                    errors.append(f"{where}: vl-* is a mac litert-lm cell in v1 "
+                                  "(scripts/vl_response_mac.py; docs/vl-response-v1.md)")
+                if opts.get("backend") not in BACKENDS:
+                    errors.append(f"{where}: vl-* needs backend=cpu|gpu (arm identity)")
+                if not opts.get("file"):
+                    errors.append(f"{where}: vl-* needs file=<artifact.litertlm>")
+            if TTS_TASK.match(task):
+                # v1 instrument = the model's public LiteRT reference pipeline on the
+                # Mac CPU (runtime `litert`); file= names the talker recipe.
+                if rt != "litert" or plat != "mac":
+                    errors.append(f"{where}: tts-rtf-* is a mac `litert` cell in v1 "
+                                  "(scripts/tts_rtf_mac.py; docs/tts-rtf-v1.md)")
+                if not opts.get("file"):
+                    errors.append(f"{where}: tts-rtf-* needs file=<talker artifact> "
                                   "(quant-per-arm-rule: the recipe travels with the row)")
             if task == "energy" and opts.get("manual") != "1":
                 errors.append(f"{where}: energy task requires manual=1 "

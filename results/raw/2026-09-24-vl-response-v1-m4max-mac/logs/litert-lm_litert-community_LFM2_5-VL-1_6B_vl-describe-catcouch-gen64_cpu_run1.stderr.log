@@ -1,0 +1,181 @@
+# cmd: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/litert-lm-advanced-main-1dadd00c/litert_lm_advanced_main --backend=cpu --vision_backend=cpu --model_path=/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-models/LFM2.5-VL-1.6B_int4_fixB.litertlm --input_prompt=Describe this image in one sentence. [image:/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/evaldata/vl/cc0-cat-couch-1024/cat_couch_1024.jpg] --benchmark --max_output_tokens=64 --cache_dir=/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-cache/LFM2.5-VL-1.6B_LFM2.5-VL-1.6B_int4_fixB.litertlm
+# DYLD_LIBRARY_PATH=/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/litert-lm-advanced-main-1dadd00c
+# exit=0
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790223995.319818 53910282 litert_lm_lib.cc:505] Choose backend: cpu
+I0000 00:00:1790223995.319830 53910282 litert_lm_lib.cc:510] Provided vision backend: cpu
+I0000 00:00:1790223995.319838 53910282 litert_lm_lib.cc:661] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-cache/LFM2.5-VL-1.6B_LFM2.5-VL-1.6B_int4_fixB.litertlm
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-models/LFM2.5-VL-1.6B_int4_fixB.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1790223995.319847 53910282 litert_lm_lib.cc:665] vision_executor_settings: VisionExecutorSettings: 
+  ModelAssets: model_path: /Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/vl-models/LFM2.5-VL-1.6B_int4_fixB.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+  EncoderBackend: CPU
+  AdapterBackend: CPU
+
+I0000 00:00:1790223995.319849 53910282 litert_lm_lib.cc:674] audio_executor_settings: not set
+I0000 00:00:1790223995.319851 53910282 litert_lm_lib.cc:697] Creating engine
+W0000 00:00:1790223995.322277 53910282 litert_lm_loader.h:188] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790223995.322282 53910282 litert_lm_loader.h:204] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1790223995.322283 53910307 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790223995.322289 53910307 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790223995.322290 53910307 litert_lm_loader.cc:311] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104885b40, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x104885d90, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790223995.348555 53910282 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ab9728000, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ab97280c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=530, num_signatures=12
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_512, subgraph_index=1, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_256, subgraph_index=2, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=3, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_64, subgraph_index=4, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_32, subgraph_index=5, num_tensors=828, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_16, subgraph_index=6, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_8, subgraph_index=7, num_tensors=828, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_4, subgraph_index=8, num_tensors=829, num_inputs=25, num_outputs=22, num_ops=543
+INFO: [magic_number_utils.cc:109]   signature=prefill_2, subgraph_index=9, num_tensors=827, num_inputs=25, num_outputs=22, num_ops=542
+INFO: [magic_number_utils.cc:109]   signature=prefill_1, subgraph_index=10, num_tensors=778, num_inputs=25, num_outputs=22, num_ops=498
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=11, num_tensors=808, num_inputs=25, num_outputs=23, num_ops=516
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_1024 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_512 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_256 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_128 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_64 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_32 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_16 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_8 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_4 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_2 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature prefill_1 have been updated for magic number  4099 to target number 4096
+INFO: [magic_number_utils.cc:536] 44 tensors of signature decode have been updated for magic number  4099 to target number 4096
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7abbe684e0, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7abbe685a0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790223996.508060 53910282 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790223996.508066 53910282 litert_lm_loader.h:159] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1790223996.508069 53910282 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790223996.508070 53910282 litert_lm_loader.h:159] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=9, num_inputs=1, num_outputs=1, num_ops=4
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1790223996.510227 53910282 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790223996.510229 53910282 litert_lm_loader.h:159] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1790223996.510243 53910282 litert_lm_loader.h:188] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790223996.510244 53910282 litert_lm_loader.h:204] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1790223996.521664 53910282 litert_lm_lib.cc:707] Vision executor properties: num_tokens_per_image: 256
+patch_num_shrink_factor: 4
+
+I0000 00:00:1790223996.521673 53910282 litert_lm_lib.cc:865] Creating conversation
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=vision_768, subgraph_index=0, num_tensors=1757, num_inputs=1, num_outputs=1, num_ops=1404
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=vision_adapter, subgraph_index=0, num_tensors=8, num_inputs=1, num_outputs=1, num_ops=3
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1790223996.774255 53910282 litert_lm_lib.cc:877] Running single-turn conversation
+I0000 00:00:1790223998.364106 53910282 litert_lm_lib.cc:174] Captured model output: A cat is laying on a couch.
+I0000 00:00:1790223998.364150 53910282 litert_lm_lib.cc:424] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 252.35 ms
+    - Init Executor: 1187.92 ms
+    - Init LLM metadata: 0.49 ms
+    - Init Model assets: 1.91 ms
+    - Init Tokenizer: 44.76 ms
+    - Init Total: 1190.61 ms
+--------------------------------------------------
+  Time to first token: 0.97 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 276 tokens in 950.281708ms duration.
+      Prefill Speed: 290.44 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 9 tokens in 202.543583ms duration.
+      Decode Speed: 44.43 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 4 turns):
+    Turn 1: 8.167us, 1 tokens
+    Turn 2: 36us, 13 tokens
+    Turn 3: 2.542us, 1 tokens
+    Turn 4: 12.167us, 5 tokens
+--------------------------------------------------
+  Mark Durations (1):
+    - vision_executor: 429.875958ms
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7ab97280c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7ab9728000, name=GPU WebGPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7abbe685a0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7abbe684e0, name=GPU WebGPU
