@@ -63,8 +63,20 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
    with `HwAccelerators::kGpu` alone (`vision_litert_compiled_model_executor.cc:259`; the NPU path
    adds `kCpu`), so "Some ops are not accelerated" ends the engine instead of running three ops on
    the CPU. Under this task's arm identity the row is a FAIL; the fix is on the export side
-   (constant-fold the resize — the target size is fixed), which would also give these bundles a
-   real GPU vision path.
+   (constant-fold the resize — the target size is fixed). **Done and verified the same afternoon**
+   (`probes/`, second set, 15:1x JST): a litert-torch branch that precomputes the table from the
+   loaded weights (john-rocky/litert-torch `lfm2vl-fold-pos-resize`, PR pending) re-exports the
+   450M with no `RESIZE_BILINEAR` (634 → 629 ops), the folded torch path equals the unfolded one
+   bit for bit, the exported fp32 encoder matches the torch reference at cosine 1.0000000
+   (max |diff| 8.4e-4 folded, 4.4e-4 unfolded; the int8 recipe sits at 0.9917 either way), and
+   the bundle now **compiles and runs with the vision encoder on Metal** (LiteRT-LM main and pip
+   0.17.1, TTFT 0.04–0.05 s). What it exposes next: the Metal *output* of this encoder is wrong —
+   the caption becomes "a black and white image of a computer screen" while the CPU says "a close
+   up of a kitten", a synthetic blue/yellow probe keeps the blue but loses the circle, and the fp32
+   encoder run alone through `ai_edge_litert` CompiledModel on Metal (fully accelerated) lands at
+   cosine 0.23 against its CPU output (0.52 with `enforce_f32`). The int8 recipe is not the cause
+   (fp32 graph, same result); which op is, is not pinned — a per-op bisection of the 629-op graph
+   on Metal is the next instrument, and the finding is filed separately from the converter fix.
 2. **SmolVLM2-500M on Metal returns only end-of-text tokens** — the same failure the card reports
    for litert-lm 0.15.0, still present on `main@1dadd00c`: the engine runs (TTFT 0.00 s, 46,000
    "tokens/s" prefill, 64 decode steps at 759 tok/s) and prints 64 × `<|endoftext|>`. A textbook
