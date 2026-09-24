@@ -83,9 +83,11 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
    through the engine: the same bundle repacked with that one RESHAPE captions the cat correctly on
    Metal at default settings ("A close up of a kitten with its ears perked up", TTFT 0.05 s) — so
    for LFM2.5-VL on Metal the converter fold plus a delegate fix for the rank-mismatched constant
-   ADD is the whole distance. The two-op repro (5.5 MB, `probes/metal-bisect/probe_add_repro.py`
-   regenerates it from the published bundle) goes to LiteRT as its own report; a post-export
-   RESHAPE insertion is the convert lane's interim for the published bundles.
+   ADD is the whole distance. Filed 2026-09-24 15:57 JST: the converter fold as google-ai-edge/litert-torch#1260 and the
+   delegate miscompute as google-ai-edge/LiteRT#10231 (repro assets:
+   github.com/john-rocky/edge-llm-bench/releases/tag/metal-add-repro-2026-09-24; the script's
+   random input reads cosine 0.59, the image input 0.818). A post-export RESHAPE insertion is the
+   convert lane's interim for the published bundles.
 
 2. **SmolVLM2-500M on Metal returns only end-of-text tokens** — the same failure the card reports
    for litert-lm 0.15.0, still present on `main@1dadd00c`: the engine runs (TTFT 0.00 s, 46,000
