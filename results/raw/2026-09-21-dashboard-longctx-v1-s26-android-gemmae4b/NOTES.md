@@ -63,6 +63,10 @@ llama.cpp (b8999 `llama-cli -t 4`) — the control arm, `cold-process`, 256-toke
 (2,304 has two low rounds — 7.7 in round 1 and 6.6 in round 5, 23 % spread — the other three read 8.3–8.5; the control
 launches of every allocation end at thermal status 2 in most rounds.) (Per-arm ladders on purpose: the public repo carries single-arm facts.)
 
+Re-take (2026-09-24, `results/raw/2026-09-24-dashboard-longctx-v1-s26-android-gpu-retake/`): the GPU ladder measured again in its
+own session of 6 paired rounds reads warm 14.9 / 14.8 / 14.5 tok/s (−0.8 % / −3.0 %) with 4–6 % spreads — the 52 %-spread warm
+4,096 cell above (11.9) is settled there at 14.8; the reading (flat) is unchanged.
+
 ## Reading
 
 1. **CPU: the allocated-KV cost is there at 4,096** (−11 % warm, −15 % cold, every round), the Mac leg's E4B CPU read −6 %

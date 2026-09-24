@@ -1,0 +1,13 @@
+# Galaxy S26 RFGL80R6A6H: independent E2B + E4B GPU retake; never pool with the original sittings.
+# ROUNDS=8 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK=; cap 90 min, no new round after 75 min.
+# Pinned v0.16.0 advanced_main; two iterations per launch (cold/warm), real prompt, output cap 256.
+# Original standard Gemma .litertlm files and recipes; allocations stay adjacent in each round.
+# b8999 short-chat anchor once per round; complete order reverses on even rounds.
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=1 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=2304 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=4096 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=8192 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=2304 file=gemma-4-E4B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=4096 file=gemma-4-E4B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256 backend=gpu context-tokens=8192 file=gemma-4-E4B-it.litertlm

@@ -83,6 +83,10 @@ llama.cpp (b8999 `llama-cli -t 4`) — the control arm, `cold-process`:
 
 (Per-arm ladders on purpose: the public repo carries single-arm facts.)
 
+Re-take (2026-09-24, `results/raw/2026-09-24-dashboard-longctx-v1-s26-android-gpu-retake/`): the GPU ladder measured again in its
+own session of 6 paired rounds reads warm 26.1 / 26.8 / 25.5 tok/s (+2.6 % / −2.6 %) with 6 % / 16 % / 3 % spreads — the two
+cells owed a re-take above are settled there; the reading (no fall beyond spread) is unchanged.
+
 ## Reading
 
 1. **The CPU arm pays for the allocated KV on the S26 as it does on the Mac.** Same bundle, same prompt, same 256 output
