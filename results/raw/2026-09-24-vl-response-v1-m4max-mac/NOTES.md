@@ -70,13 +70,23 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
    bit for bit, the exported fp32 encoder matches the torch reference at cosine 1.0000000
    (max |diff| 8.4e-4 folded, 4.4e-4 unfolded; the int8 recipe sits at 0.9917 either way), and
    the bundle now **compiles and runs with the vision encoder on Metal** (LiteRT-LM main and pip
-   0.17.1, TTFT 0.04–0.05 s). What it exposes next: the Metal *output* of this encoder is wrong —
-   the caption becomes "a black and white image of a computer screen" while the CPU says "a close
-   up of a kitten", a synthetic blue/yellow probe keeps the blue but loses the circle, and the fp32
-   encoder run alone through `ai_edge_litert` CompiledModel on Metal (fully accelerated) lands at
-   cosine 0.23 against its CPU output (0.52 with `enforce_f32`). The int8 recipe is not the cause
-   (fp32 graph, same result); which op is, is not pinned — a per-op bisection of the 629-op graph
-   on Metal is the next instrument, and the finding is filed separately from the converter fix.
+   What it exposes next — bisected the same evening (`probes/metal-bisect/`, prefix graphs rebuilt op by
+   op and run on CPU vs Metal through `ai_edge_litert` CompiledModel): the Metal *output* of the
+   folded encoder is wrong at **op 1**, the very ADD that adds the folded table — the converter emits
+   it as `ADD(runtime [1024, 768], constant [1, 1024, 768])` (it drops the FC's batch dim and pushes
+   the reshape into the constant, whatever rank the table has in torch), and the Metal delegate
+   computes that rank-mismatched add wrong: cosine 0.818 against the CPU on the two-op prefix, the
+   same with `enforce_f32`, while the identical add with a RESHAPE inserted (rank-3 + rank-3), a
+   rank-4 pair, or the table fed as a runtime input all agree (1.000000 in fp32). Every later op is
+   fine: the full encoder with the table fed as an input matches the CPU at cosine 1.000000 in fp32
+   (0.83 under the Python API's default fp16, a precision drift the engine does not show). Proof
+   through the engine: the same bundle repacked with that one RESHAPE captions the cat correctly on
+   Metal at default settings ("A close up of a kitten with its ears perked up", TTFT 0.05 s) — so
+   for LFM2.5-VL on Metal the converter fold plus a delegate fix for the rank-mismatched constant
+   ADD is the whole distance. The two-op repro (5.5 MB, `probes/metal-bisect/probe_add_repro.py`
+   regenerates it from the published bundle) goes to LiteRT as its own report; a post-export
+   RESHAPE insertion is the convert lane's interim for the published bundles.
+
 2. **SmolVLM2-500M on Metal returns only end-of-text tokens** — the same failure the card reports
    for litert-lm 0.15.0, still present on `main@1dadd00c`: the engine runs (TTFT 0.00 s, 46,000
    "tokens/s" prefill, 64 decode steps at 759 tok/s) and prints 64 × `<|endoftext|>`. A textbook
