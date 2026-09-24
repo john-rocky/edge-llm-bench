@@ -191,9 +191,10 @@ side (a phone sitting is only adb traffic on the host); `auto` serializes
 its choice with `.choose.lock` so two autos never pick the same device.
 
 Core AI cells (v2 of the cells file) need their bundles side-loaded before
-a sitting — Mac under `~/Documents/CoreAIModels/<folder>/`, phone under the
-app's `Documents/CoreAIModels/<folder>/` (recipe: `docs/dashboard-cells-v1.md`,
-"Core AI arm (v2)"). The job does not stage: a missing folder is a `SKIPPED`
+a sitting — Mac under `~/.cache/edge-llm-bench/CoreAIModels/<folder>/`
+(`BENCH_COREAI_MODELS_DIR`; a local directory outside iCloud Drive, see Known
+limits), phone under the app's `Documents/CoreAIModels/<folder>/` (recipe:
+`docs/dashboard-cells-v1.md`, "Core AI arm (v2)"). The job does not stage: a missing folder is a `SKIPPED`
 line on the Mac and a failed cell on the phone, never a refused sitting.
 
 The job never commits or pushes: review the new campaign dir(s) and the
@@ -295,6 +296,16 @@ old times until then).
 
 ## Known limits an operator must not discover the hard way
 
+- **Core AI bundles must live outside iCloud Drive.** `~/Documents` (and
+  `~/Desktop`) are iCloud-synced on the bench host; a file iCloud has evicted
+  is dataless, and a process that opens it headlessly gets `EDEADLK` (errno 11,
+  surfaced by the engine as "malformed metadata.json … couldn't be opened").
+  The 2026-09-21 and 09-22 Mac sittings lost all three Core AI cells this way
+  after the 2026-09-19 disk cleanup evicted the bundle folders and moved the
+  weights to the archive HDD behind symlinks. Since 2026-09-25 the runner's
+  default `BENCH_COREAI_MODELS_DIR` is `~/.cache/edge-llm-bench/CoreAIModels`
+  (a full local copy, no symlinks); a disk cleanup must leave that folder
+  alone — the weekly job reads it.
 - **A phone is shared with other lanes.** Before any Android capture, check
   the campaign flock, the conversion lane's hold file
   (`~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.<device>`),
@@ -354,7 +365,7 @@ old times until then).
   and the dashboard rows are `exclude=`. Qwen3 rows run through yardstick's
   `CoreAIRuntime` on the Mac (since 2026-09-08) and the app on the phone —
   bundles are side-loaded (`BENCH_COREAI_MODELS_DIR`, default
-  `~/Documents/CoreAIModels/<folder>/`; staging recipe in
+  `~/.cache/edge-llm-bench/CoreAIModels/<folder>/`; staging recipe in
   `docs/dashboard-cells-v1.md`), and the Mac runner logs a not-staged bundle
   as `SKIPPED … coreai-bundle-not-staged`. The external `llm-benchmark`
   wrapper serves only `native-benchmark-*` cells; those rows are not

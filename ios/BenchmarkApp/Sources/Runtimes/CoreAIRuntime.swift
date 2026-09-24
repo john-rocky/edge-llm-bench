@@ -146,8 +146,10 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     private static func resolveBundleURL(folder: String) -> URL? {
         let fm = FileManager.default
         // Mac CLI: the matrix runner points BENCH_COREAI_MODELS_DIR at the directory
-        // holding the side-loaded bundles (default ~/Documents/CoreAIModels — the same
-        // <dir>/<folder>/metadata.json layout the app uses in its Documents container).
+        // holding the side-loaded bundles (the runner's default is
+        // ~/.cache/edge-llm-bench/CoreAIModels, a local non-iCloud folder — the same
+        // <dir>/<folder>/metadata.json layout the app uses in its Documents container;
+        // ~/Documents is iCloud-synced and evicted files fail to open, EDEADLK, 2026-09-21).
         // Unset on the phone, so the app's lookup below is unchanged.
         if let dir = ProcessInfo.processInfo.environment["BENCH_COREAI_MODELS_DIR"], !dir.isEmpty {
             let u = URL(fileURLWithPath: dir, isDirectory: true)

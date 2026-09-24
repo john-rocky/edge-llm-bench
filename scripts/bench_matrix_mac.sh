@@ -44,9 +44,14 @@ UZU_MODEL_DIR="${UZU_MODEL_DIR:-$REPO/models/uzu}"
 DRY_RUN=0
 # Core AI bundles are side-loaded, one folder per catalog id (CoreAIRuntime.bundleSpec):
 # <BENCH_COREAI_MODELS_DIR>/<folder>/{metadata.json, <name>.aimodel | .aimodelc, tokenizer/}.
-# Default = the Documents/CoreAIModels layout the app uses on the phone. Staging
-# recipe: docs/dashboard-cells-v1.md "Core AI arm".
-export BENCH_COREAI_MODELS_DIR="${BENCH_COREAI_MODELS_DIR:-$HOME/Documents/CoreAIModels}"
+# Default = a local, non-iCloud directory (same <folder> layout as the app's
+# Documents/CoreAIModels on the phone). Until 2026-09-25 the default was
+# ~/Documents/CoreAIModels; that folder is iCloud Drive-synced, and once the files
+# were evicted (2026-09-19 disk cleanup) the 02:00 job read them as dataless —
+# open() failed with errno 11 EDEADLK ("malformed metadata.json") on 09-21 and
+# 09-22, so the three Core AI cells produced no records. Staging recipe:
+# docs/dashboard-cells-v1.md "Core AI arm".
+export BENCH_COREAI_MODELS_DIR="${BENCH_COREAI_MODELS_DIR:-$HOME/.cache/edge-llm-bench/CoreAIModels}"
 
 log(){ printf '\n=== %s ===\n' "$*"; }
 

@@ -288,8 +288,9 @@ design.
   tasks through yardstick and keeps the `llm-benchmark` wrapper for
   `native-benchmark-*` cells only). No record-schema change: the row is a
   `core-ai` row like the 2026-08-26 iPhone rows.
-- Bundles are side-loaded once and stay (Mac: `~/Documents/CoreAIModels/`,
-  or `BENCH_COREAI_MODELS_DIR`; phone: the app's
+- Bundles are side-loaded once and stay (Mac: `~/.cache/edge-llm-bench/CoreAIModels/`,
+  or `BENCH_COREAI_MODELS_DIR` — a local directory outside iCloud Drive, since
+  evicted files fail to open headlessly (docs/OPERATIONS.md, Known limits); phone: the app's
   `Documents/CoreAIModels/<folder>/`), the staging recipe is below. A bundle
   that is not staged renders "not yet measured" (the Mac runner logs
   `SKIPPED … reason=coreai-bundle-not-staged`), never a number.
@@ -406,7 +407,7 @@ Mac (once; the folders persist across sessions; `xcrun coreai-build` is in
 the Metal toolchain of the Xcode 27 beta):
 
 ```bash
-D=~/Documents/CoreAIModels; mkdir -p $D
+D=~/.cache/edge-llm-bench/CoreAIModels; mkdir -p $D   # local, outside iCloud Drive
 # 0.6B and 4B from the Hub (the `macos/` folders), 1.7B from the local export
 hf download mlboydaisuke/qwen3-0.6b-CoreAI-official --include "macos/*"
 hf download mlboydaisuke/qwen3-4b-CoreAI-official   --include "macos/*"

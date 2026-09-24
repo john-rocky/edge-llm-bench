@@ -123,8 +123,10 @@ def check_mac(required):
     # Core AI bundles are side-loaded (docs/dashboard-cells-v1.md "Core AI arm (v2)");
     # the dashboard's three Qwen3 folders. Advisory only: a missing folder is a
     # SKIPPED cell in the Mac runner, never a refused sitting.
+    # default = the runner's (scripts/bench_matrix_mac.sh): a local, non-iCloud dir —
+    # ~/Documents is iCloud-synced and evicted files fail to open (EDEADLK, 2026-09-21)
     cdir = os.path.expanduser(os.environ.get("BENCH_COREAI_MODELS_DIR",
-                                             os.path.join("~", "Documents", "CoreAIModels")))
+                                             os.path.join("~", ".cache", "edge-llm-bench", "CoreAIModels")))
     want = ["qwen3_0_6b_4bit_gpu", "qwen3_1_7b_gpu", "qwen3_4b_gpu"]
     have = [d for d in want if os.path.exists(os.path.join(cdir, d, "metadata.json"))]
     if len(have) == len(want):
