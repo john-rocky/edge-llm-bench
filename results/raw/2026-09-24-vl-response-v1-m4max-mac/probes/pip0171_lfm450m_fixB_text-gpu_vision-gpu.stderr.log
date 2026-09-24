@@ -1,0 +1,22 @@
+ERROR: Following operations are not supported by GPU delegate:
+RESIZE_BILINEAR: Expected 1 runtime input tensor(s), but node has 0 runtime input(s).
+636 operations will run on the GPU, and the remaining 3 operations will run on the CPU.
+E0000 00:00:1790227042.047330 54474051 conversation.cc:505] Failed to create conversation: INTERNAL: ERROR: [third_party/odml/litert_lm/runtime/executor/vision_litert_compiled_model_executor.cc:286]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_compiled_model.h:1960]
+└ Some ops are not accelerated. Add kLiteRtHwAcceleratorCpu to the compilation accelerator set to allow using the CPU to run those.
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:582
+third_party/odml/litert_lm/runtime/executor/vision_litert_compiled_model_executor.cc:201
+third_party/odml/litert_lm/runtime/executor/vision_litert_compiled_model_executor.cc:435
+third_party/odml/litert_lm/runtime/framework/resource_management/resource_manager.cc:878
+third_party/odml/litert_lm/runtime/framework/resource_management/threaded_execution_manager.cc:181
+third_party/odml/litert_lm/runtime/core/session_advanced.cc:71
+third_party/odml/litert_lm/runtime/core/engine_advanced_impl.cc:162
+third_party/odml/litert_lm/runtime/conversation/conversation.cc:434
+Traceback (most recent call last):
+  File "/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/litertlm-pip-venv/lib/python3.12/site-packages/litert_lm_cli/commands/run.py", line 347, in run_interactive
+    runner_cm = engine.create_conversation(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/litertlm-pip-venv/lib/python3.12/site-packages/litert_lm/engine.py", line 370, in create_conversation
+    raise RuntimeError("Failed to create conversation")
+RuntimeError: Failed to create conversation

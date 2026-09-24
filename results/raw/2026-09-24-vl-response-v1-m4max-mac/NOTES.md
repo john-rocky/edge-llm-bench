@@ -44,16 +44,27 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
 
 ## Findings
 
-1. **The LFM2.5-VL vision encoder does not compile on Metal at this commit.** Both `_int4_fixB`
-   bundles (450M, 1.6B) fail in `VisionLiteRtCompiledModelExecutor` before any token: the GPU
-   delegate rejects one `RESIZE_BILINEAR` ("Expected 1 runtime input tensor(s), but node has 0") and
-   two more ops, and the vision executor compiles with the GPU accelerator only, so "Some ops are
-   not accelerated" is fatal (`logs/…LFM2_5-VL-450M…gpu_run1.stderr.log`; the 1.6B also logs a
-   Metal buffer-alignment validation error). The card's "GPU with litert-lm ≥ 0.16.0
-   (macOS/Android OpenCL)" was measured through the pip CLI, whose vision backend may not have
-   been the GPU; here the protocol is arm identity (vision on the same backend as the text model),
-   so the row is a FAIL, not a CPU-vision fallback. A `--vision_backend=cpu --backend=gpu` probe
-   is the diagnosis to run next, not a cell.
+1. **The LFM2.5-VL vision encoder does not compile on any GPU delegate, because the export
+   carries a `RESIZE_BILINEAR` over a constant tensor** — it is a property of the bundles, not of
+   Metal or of this commit. Both `_int4_fixB` files and the stock `LFM2.5-VL-450M_int4` fail the
+   same way (`probes/`, four controls, 14:5x JST): text on Metal + vision on the CPU **works**
+   (TTFT 0.06 s, "A kitten with brown eyes is laying on a gray couch."), text on the CPU + vision
+   on Metal fails identically, so the vision encoder is the single failing component; the released
+   pip CLI 0.17.1 reproduces it with `--vision-backend gpu` and, with no vision flag, silently runs
+   the vision encoder on the CPU (the bundle's configured value) — which is what the card's macOS
+   "GPU" rows and the Android GPU rows measured (litertlm-convert `lfm25vl_work/RESULTS.md`,
+   2026-08-13: the same encoder refused the Pixel 8a OpenCL delegate, Mac Metal 2.1.6 and the
+   CLiteRTLM-mac runtime; "text-GPU + vision-CPU cascade"). The op: litert-torch's
+   `model_ext/lfm2_vl/patch.py` `resize_positional_embeddings` bilinear-interpolates the SigLIP2
+   position-embedding table to the fixed 512-pixel patch grid inside the traced graph, so the
+   `.tflite` holds a resize whose only input is a constant; the GPU delegate's
+   `CheckInputsOutputs` demands one runtime input (`model_builder_helper.cc:218-225`,
+   "Expected 1 runtime input tensor(s), but node has 0"), and LiteRT-LM's vision executor compiles
+   with `HwAccelerators::kGpu` alone (`vision_litert_compiled_model_executor.cc:259`; the NPU path
+   adds `kCpu`), so "Some ops are not accelerated" ends the engine instead of running three ops on
+   the CPU. Under this task's arm identity the row is a FAIL; the fix is on the export side
+   (constant-fold the resize — the target size is fixed), which would also give these bundles a
+   real GPU vision path.
 2. **SmolVLM2-500M on Metal returns only end-of-text tokens** — the same failure the card reports
    for litert-lm 0.15.0, still present on `main@1dadd00c`: the engine runs (TTFT 0.00 s, 46,000
    "tokens/s" prefill, 64 decode steps at 759 tok/s) and prints 64 × `<|endoftext|>`. A textbook
@@ -73,5 +84,6 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
 
 Not run this sitting: InternVL3-1B and Qwen2-VL-2B (the Hub throttled downloads to ~0.2 MB/s
 from this host all afternoon; the archived local copies were earlier exports and did not match
-the published sha256, so they were not used), MiniCPM-V-4 (4.2 GB, not downloaded), the GPU
-arms with a CPU vision encoder (a probe, see finding 1), the `int8` recipes, multi-image.
+the published sha256, so they were not used), MiniCPM-V-4 (4.2 GB, not downloaded), the `int8`
+recipes, multi-image. `probes/` holds the four vision-backend controls and the three pip-CLI
+runs behind finding 1 (n=1 each, not cells).
