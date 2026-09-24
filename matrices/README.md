@@ -15,7 +15,8 @@ for their published campaigns).
 - `platform`: `ios` | `mac` | `android`. Runners filter to their own platform and
   ignore the rest, so one file can describe a cross-platform matrix.
 - `runtime`: a `RuntimeKind` raw value (`mlx-swift`, `llama.cpp`, `litert-lm`,
-  `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`).
+  `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`), or
+  `uzu` (Mac-only Python SDK driver; `docs/uzu-arm-v1.md`).
 - `model-id`: catalog id (usually the HF repo id; side-loaded ids like
   `litert-local/...` need `local=1`).
 - `task`: a `BenchmarkTask` id (`short-chat`, `long-context-1024-gen256`, ...),
@@ -41,6 +42,8 @@ for their published campaigns).
 | `local=1` | model is side-loaded, not in the HF catalog — catalog preflight skips it |
 | `file=<name>` | artifact filename inside the HF repo (Android GGUF cells: which quant file to fetch/push) |
 | `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`; Mac litert-lm: forwarded as `yardstick --litert-backend`, `cpu` rows stamp `runtime: litert-lm-cpu`). The Mac runner keys the capture file on `backend=` and `context-tokens=`, so one cell at two allocations is two files |
+| `thinking=off\|model-default` | Mac `uzu` reasoning mode; part of capture identity, stamped in each record; default `model-default` |
+| `recipe=<name>` | required for Mac `uzu`: converter/publisher recipe, e.g. `lalamo-d1cfe68e-bfloat16-default`, `lalamo-d1cfe68e-qwen3-4b-mlx-affine-4bit-gs64` or `Mirai-M`; bare bit counts are rejected. `file=` names an own-export directory under `UZU_MODEL_DIR` |
 
 ## Conventions
 

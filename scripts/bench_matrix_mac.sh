@@ -39,6 +39,9 @@ DEFAULT_RUNS="${RUNS:-4}"
 BASE_COOLDOWN="${BASE_COOLDOWN:-30}"
 CAMPAIGN="${CAMPAIGN:-$(date +%F)-mac-matrix}"
 OUT="$REPO/results/raw/$CAMPAIGN"
+UZU_PYTHON="${UZU_PYTHON:-python3}"
+UZU_MODEL_DIR="${UZU_MODEL_DIR:-$REPO/models/uzu}"
+DRY_RUN=0
 # Core AI bundles are side-loaded, one folder per catalog id (CoreAIRuntime.bundleSpec):
 # <BENCH_COREAI_MODELS_DIR>/<folder>/{metadata.json, <name>.aimodel | .aimodelc, tokenizer/}.
 # Default = the Documents/CoreAIModels layout the app uses on the phone. Staging
@@ -151,6 +154,33 @@ run_cell(){
   [ -n "$backend" ] && slug="${slug}_${backend}"
   [ -n "$ctx" ] && slug="${slug}_ctx${ctx}"
 
+  if [ "$rt" = "uzu" ]; then
+    local uzu_file recipe thinking
+    local -a uzu_args=()
+    uzu_file="$(cell_opt file "" ${opts[@]+"${opts[@]}"})"
+    recipe="$(cell_opt recipe "" ${opts[@]+"${opts[@]}"})"
+    thinking="$(cell_opt thinking model-default ${opts[@]+"${opts[@]}"})"
+    # File, recipe and thinking mode are distinct capture identities.
+    slug="${slug}_$(printf '%s' "$uzu_file|$recipe|$thinking" | shasum -a 256 | cut -c1-12)"
+    uzu_args+=(--thinking "$thinking")
+    if [ -n "$uzu_file" ]; then
+      case "$uzu_file" in /*) ;; *) uzu_file="$UZU_MODEL_DIR/$uzu_file" ;; esac
+      uzu_args+=(--model-path "$uzu_file" --record-model-id "$mid")
+    else
+      uzu_args+=(--model-id "$mid")
+    fi
+    [ -n "$ctx" ] && uzu_args+=(--context-tokens "$ctx")
+    if [ "$DRY_RUN" = 1 ]; then
+      "$UZU_PYTHON" "$REPO/scripts/uzu_mac.py" "${uzu_args[@]}" --recipe "$recipe" \
+        --task "$task" --runs "$runs" --pause "${UZU_PAUSE:-5}" --output "$OUT/${slug}.jsonl" --dry-run
+      return
+    fi
+  fi
+  if [ "$DRY_RUN" = 1 ]; then
+    printf 'DRY-RUN existing arm: %s run --runtime %s --model-id %s --task %s --runs %s\n' "$YS" "$rt" "$mid" "$task" "$runs"
+    return
+  fi
+
   [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
 
   if [ "$rt" = "core-ai" ]; then
@@ -185,6 +215,20 @@ run_cell(){
   # scripts/asr_rtf_mac.py, not yardstick — same campaign dir, same record shape,
   # one JSONL per cell; the post-capture gate below reads decode metrics and does
   # not apply. validate_cells.py already requires backend= and file= here.
+  if [ "$rt" = "uzu" ]; then
+    if [ -n "$uzu_file" ] && [ ! -f "$uzu_file/config.json" ]; then
+      echo "SKIPPED $rt $mid $task reason=uzu-own-export-not-staged ($uzu_file)" | tee -a "$OUT/SKIPPED.txt"
+      return
+    fi
+    log "CELL $rt / $mid / $task recipe=$recipe runs=$runs round=$round (cold processes; smoke only)"
+    "$UZU_PYTHON" "$REPO/scripts/uzu_mac.py" "${uzu_args[@]}" --recipe "$recipe" \
+      --task "$task" --runs "$runs" --pause "${UZU_PAUSE:-5}" --timeout "${CELL_TIMEOUT:-600}" \
+      --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT" \
+      || echo "FAIL $rt $mid $task round=$round" >> "$OUT/FAILURES.txt"
+    # The driver validates schema, finite counters, total token budget and text.
+    # These contended cold smoke rows are not admitted as warm dashboard timing.
+    return
+  fi
   case "$task" in asr-rtf-*)
     log "CELL $rt / $mid / $task backend=$backend runs=$runs round=$round ($(date +%H:%M:%S))"
     python3 "$REPO/scripts/asr_rtf_mac.py" --model-id "$mid" --task "$task" --backend "$backend" \
@@ -270,7 +314,17 @@ run_cell(){
 
 cmd_run(){
   local cells_file="${1:?usage: run <cells-file>}"
+  case "${2:-}" in
+    --dry-run) DRY_RUN=1 ;;
+    "") ;;
+    *) echo "unknown option: $2" >&2; exit 1 ;;
+  esac
   python3 "$REPO/scripts/validate_cells.py" "$cells_file" || exit 1
+  if [ "$DRY_RUN" = 1 ]; then
+    local first=1 dry_line
+    while IFS= read -r dry_line; do run_cell 1 "$dry_line" || return; done < <(cells_for mac "$cells_file")
+    return
+  fi
   check_binary
   guard
   mkdir -p "$OUT"

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=65.5.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mirai-bench-lalamo-source-spec"
+version = "0.0.1"
+description = "Smoke-only source registration for Qwen3 0.6B/1.7B/4B; no quantizer or converter change"
+requires-python = ">=3.12"
+
+[project.entry-points."lalamo_plugins.specs.v1"]
+mirai_bench_mlx = "mirai_bench_lalamo_spec:specs"
+
+[tool.setuptools]
+py-modules = ["mirai_bench_lalamo_spec"]

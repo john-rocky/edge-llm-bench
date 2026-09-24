@@ -1,7 +1,7 @@
 {
   "lockfile_schema": 1,
   "description": "Machine-readable pin registry: every engine, instrument, and model behind the published tables, plus the per-capture overrides. Continuous-bench condition 1 (one-command reproduction). Update this file in the same commit as any capture that changes a pin.",
-  "updated": "2026-09-10",
+  "updated": "2026-09-24",
   "arms": {
     "litert-lm": {
       "source": "https://github.com/google-ai-edge/LiteRT-LM",
@@ -95,6 +95,30 @@
         "status": "planned",
         "note": "phase-2 slot at the same pinned commit; the driver reports 'not built' so the table row exists with a reason (failed-runs-stay)"
       }
+    },
+    "uzu": {
+      "source": "https://github.com/trymirai/uzu",
+      "package": "uzu==0.5.30",
+      "tag": "0.5.30",
+      "revision": "6dc66029a7f3a2d35d8f7ee8cd7632ada4cc439e",
+      "platforms": [
+        "mac"
+      ],
+      "runner": "scripts/uzu_mac.py",
+      "converter": {
+        "source": "https://github.com/trymirai/lalamo",
+        "revision": "d1cfe68e9b0cee64705b83e4bde1bf650a01cb1a",
+        "status": "Qwen3 MLX 0.6B/1.7B/4B and bf16 0.6B/1.7B passed smoke checks on a non-quiet host, 2026-09-24. Gemma E2B bf16 passed a smoke check; Qwen3-4B bf16 remains pending. Gemma E4B bf16 is deferred; see matrices/dashboard-uzu-v1-mac.cells.",
+        "recipes": [
+          "lalamo bfloat16 (default), lalamo@d1cfe68e9b0cee64705b83e4bde1bf650a01cb1a",
+          "lalamo@d1cfe68e9b0cee64705b83e4bde1bf650a01cb1a import of mlx-community Qwen3-0.6B-4bit, MLX affine 4-bit gs64",
+          "lalamo@d1cfe68e9b0cee64705b83e4bde1bf650a01cb1a import of mlx-community Qwen3-1.7B-4bit, MLX affine 4-bit gs64",
+          "lalamo@d1cfe68e9b0cee64705b83e4bde1bf650a01cb1a import of mlx-community Qwen3-4B-4bit, MLX affine 4-bit gs64"
+        ],
+        "source_spec_plugin": "tools/uzu-lalamo-source-spec",
+        "compatibility_adapter": "scripts/uzu_prepare_lalamo.py (known ungated Qwen3 0.6B/1.7B/4B and explicit Gemma 4 E2B; tensor payload bytes unchanged)"
+      },
+      "note": "Mac only, smoke only; first admitted session needs a quiet host. Engine and converter are pinned; docs/uzu-arm-v1.md."
     }
   },
   "python_instruments": {

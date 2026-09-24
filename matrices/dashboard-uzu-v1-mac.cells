@@ -1,0 +1,33 @@
+# Mac-only uzu 0.5.30; all captures are SMOKE ONLY, not measurements.
+# Non-quiet Mac Studio M4 Max 128 GB, macOS 27.0 / Xcode 27 RC; live load per run.
+# local=1 marks a side-loaded model, skipped by HF catalog preflight.
+# file= is a directory relative to UZU_MODEL_DIR.
+# Current arm converter pin: d1cfe68e9b0cee64705b83e4bde1bf650a01cb1a.
+# Source-only plugin selects pinned mlx-community weights; metadata adapter
+# preserves tensor payloads. Recipes below expand to labels with the full pin.
+# The first admitted session needs a quiet host; the anchor has not run here.
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+
+# Qwen3 current-pin rows: MLX affine 4-bit gs64 imports and bf16 references.
+# Qwen3 MLX 0.6B/1.7B/4B and bf16 0.6B/1.7B passed smoke checks on 2026-09-24.
+mac uzu own-export/Qwen3-0.6B-lalamo-d1cfe68e-MLX-affine-4bit-gs64 short-chat local=1 recipe=lalamo-d1cfe68e-qwen3-0.6b-mlx-affine-4bit-gs64 file=Qwen3-0.6B-lalamo-d1cfe68e-MLX-affine-4bit-gs64-uzu0.5.30-sdk thinking=off runs=1
+mac uzu own-export/Qwen3-0.6B-lalamo-d1cfe68e-bfloat16 short-chat local=1 recipe=lalamo-d1cfe68e-bfloat16-default file=Qwen3-0.6B-lalamo-d1cfe68e-bfloat16-uzu0.5.30-sdk thinking=off runs=1
+mac uzu own-export/Qwen3-1.7B-lalamo-d1cfe68e-MLX-affine-4bit-gs64 short-chat local=1 recipe=lalamo-d1cfe68e-qwen3-1.7b-mlx-affine-4bit-gs64 file=Qwen3-1.7B-lalamo-d1cfe68e-MLX-affine-4bit-gs64-cached-source-uzu0.5.30-sdk thinking=off runs=1
+mac uzu own-export/Qwen3-1.7B-lalamo-d1cfe68e-bfloat16 short-chat local=1 recipe=lalamo-d1cfe68e-bfloat16-default file=Qwen3-1.7B-lalamo-d1cfe68e-bfloat16-uzu0.5.30-sdk thinking=off runs=1
+mac uzu own-export/Qwen3-4B-lalamo-d1cfe68e-MLX-affine-4bit-gs64 short-chat local=1 recipe=lalamo-d1cfe68e-qwen3-4b-mlx-affine-4bit-gs64 file=Qwen3-4B-lalamo-d1cfe68e-MLX-affine-4bit-gs64-uzu0.5.30-sdk thinking=off runs=1
+# Qwen3-4B bf16 remains excluded: see its source/export/smoke outcome in docs/uzu-arm-v1.md.
+mac uzu own-export/Qwen3-4B-lalamo-d1cfe68e-bfloat16 short-chat local=1 recipe=lalamo-d1cfe68e-bfloat16-default file=Qwen3-4B-lalamo-d1cfe68e-bfloat16-uzu0.5.30-sdk thinking=off runs=1 exclude=source-download-incomplete-6947604008-of-8044982000-bytes
+
+# Gemma E2B bf16 passed a smoke check on a non-quiet host, 2026-09-24.
+mac uzu own-export/gemma-4-E2B-it-lalamo-d1cfe68e-bfloat16 short-chat local=1 recipe=lalamo-d1cfe68e-bfloat16-default file=gemma-4-E2B-it-lalamo-d1cfe68e-bfloat16-uzu0.5.30-sdk thinking=off runs=1
+# E4B bf16 export is deferred because of source/export size; no export is staged.
+mac uzu own-export/gemma-4-E4B-it-lalamo-d1cfe68e-bfloat16 short-chat local=1 recipe=lalamo-d1cfe68e-bfloat16-default file=gemma-4-E4B-it-lalamo-d1cfe68e-bfloat16-uzu0.5.30-sdk thinking=off runs=1 exclude=export-deferred-size
+# Gemma 4 has bf16 specs only: a supported pre-quantized source/importer or
+# an upstream quantizer with a documented recipe is needed for these empty slots.
+mac uzu own-export/gemma-4-E2B-it-lalamo-d1cfe68e-four-bit-unavailable short-chat local=1 recipe=lalamo-d1cfe68e-four-bit-recipe-unavailable file=gemma-4-E2B-it-lalamo-d1cfe68e-four-bit-unavailable thinking=off runs=1 exclude=recipe-not-available-in-lalamo
+mac uzu own-export/gemma-4-E4B-it-lalamo-d1cfe68e-four-bit-unavailable short-chat local=1 recipe=lalamo-d1cfe68e-four-bit-recipe-unavailable file=gemma-4-E4B-it-lalamo-d1cfe68e-four-bit-unavailable thinking=off runs=1 exclude=recipe-not-available-in-lalamo
+
+# NON-DASHBOARD REFERENCE MODELS: published Mirai Qwen3.5 files, not own exports.
+# 0.8B passed a smoke check on 2026-09-24; 4B is untested. Captures are never pooled.
+mac uzu trymirai/Qwen3.5-0.8B-M short-chat recipe=Mirai-M thinking=off runs=1
+mac uzu trymirai/Qwen3.5-4B-M short-chat recipe=Mirai-M thinking=off runs=1

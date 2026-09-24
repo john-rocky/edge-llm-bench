@@ -20,7 +20,9 @@ RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             "anemll", "apple-fm", "core-ai", "cactus",
             # the LiteRT runtime itself (ai-edge-litert CompiledModel) driven by a
             # model's public host-side pipeline — the tts-rtf-* instrument in v1
-            "litert"}
+            "litert",
+            # Mirai's uzu engine through its Python SDK (Mac only; docs/uzu-arm-v1.md)
+            "uzu"}
 TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
          "long-context-3k",
@@ -42,7 +44,7 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
-STR_KEYS = {"exclude", "file", "backend"}
+STR_KEYS = {"exclude", "file", "backend", "recipe", "thinking"}
 BACKENDS = {"cpu", "gpu"}
 
 
@@ -96,6 +98,25 @@ def validate_file(path, catalog=None, require_anchor=False):
                 errors.append(f"{where}: unknown platform {plat!r}")
             if rt not in RUNTIMES:
                 errors.append(f"{where}: unknown runtime {rt!r}")
+            if rt == "uzu":
+                if plat != "mac":
+                    errors.append(f"{where}: uzu v1 is Mac-only")
+                if task not in {"short-chat", "long-context-2048-gen256"}:
+                    errors.append(f"{where}: unsupported uzu task {task!r}")
+                if int(opts.get("runs", "1")) < 1 or ("context-tokens" in opts and int(opts["context-tokens"]) < 1):
+                    errors.append(f"{where}: uzu runs/context-tokens must be positive")
+                if task == "long-context-2048-gen256" and not int(opts.get("context-tokens", "0")):
+                    errors.append(f"{where}: uzu long-context needs a positive context-tokens allocation")
+                if not opts.get("recipe") or opts["recipe"].lower() in {"int4", "4bit", "4-bit"}:
+                    errors.append(f"{where}: uzu needs recipe=<converter-or-publisher-recipe>, not a bare bit width")
+                if mid.startswith("own-export/") and not opts.get("file"):
+                    errors.append(f"{where}: uzu own export needs file=<export-directory>")
+                if opts.get("thinking", "model-default") not in {"off", "model-default"}:
+                    errors.append(f"{where}: uzu thinking= must be off|model-default")
+            elif "recipe" in opts:
+                errors.append(f"{where}: recipe= currently belongs to uzu cells only")
+            if rt != "uzu" and "thinking" in opts:
+                errors.append(f"{where}: thinking= currently belongs to uzu cells only")
             if (task not in TASKS and not NATIVE_TASK.match(task)
                     and not ENDURANCE_TASK.match(task)):
                 errors.append(f"{where}: unknown task {task!r}")
@@ -159,7 +180,8 @@ def validate_file(path, catalog=None, require_anchor=False):
             # context-tokens is part of the cell identity: the Mac runner keys the
             # capture file on it, so one cell at two allocations is two cells.
             key = (plat, rt, mid, task, opts.get("backend", ""),
-                   opts.get("context-tokens", ""), opts.get("file", ""))
+                   opts.get("context-tokens", ""), opts.get("file", ""), opts.get("recipe", ""),
+                   opts.get("thinking", "model-default") if rt == "uzu" else "")
             if key in seen:
                 errors.append(f"{where}: duplicate cell (first at line {seen[key]})")
             else:
@@ -170,7 +192,7 @@ def validate_file(path, catalog=None, require_anchor=False):
                 if opts.get("exclude") or opts.get("manual"):
                     errors.append(f"{where}: an anchor cell cannot be "
                                   "excluded/manual")
-            if (catalog is not None and plat != "android"
+            if (catalog is not None and plat != "android" and rt != "uzu"
                     and opts.get("local") != "1" and opts.get("exclude") is None):
                 if mid not in catalog.get(rt, []):
                     errors.append(f"{where}: model id {mid!r} not in the "
