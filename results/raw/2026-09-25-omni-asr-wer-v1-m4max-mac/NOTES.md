@@ -110,6 +110,14 @@ test-clean utterances, RSS sampled every 5 s (`rss-probe/*.rss.csv`):
 That is the 70 GB / 27 GB peak RSS in the table (2620 sessions). Whatever the GPU path allocates per
 session is not released when the session is destroyed; the CPU path releases it.
 
+Same pattern on an iPhone 18 Pro (iOS, `omni/asr` at the same commit as a static library, Metal via the
+prebuilt dylib; `../2026-09-25-omni-asr-metal-session-footprint-iphone18pro-ios/NOTES.md`): one
+session per utterance over the first 300 test-clean utterances, whisper-tiny grows 28.6 MB per
+session, 363 MB after the first to 3.4 GB after the 107th, then the OS kills the process (169 s in);
+parakeet grows 10.4 MB per session, 744 MB to 2.9 GB after the 204th, and the 205th never returns
+(the cap-less TDT loop). The CPU control stays at 256 MB over 300 sessions. On a phone this is the
+difference between an app that runs and one that dies in three minutes.
+
 ## Findings
 
 1. **Through OmniEngine, parakeet-tdt-0.6b-v3 scores 17.7 / 18.3 (test-clean / test-other) against the
