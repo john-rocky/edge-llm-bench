@@ -6,6 +6,44 @@ import Foundation
 // rules (the Conversation is only ever used within this one runGenerate scope).
 @preconcurrency import LiteRTLM
 
+/// Lets a LiteRT-LM framework built from the OSS tree find a prebuilt GPU accelerator.
+///
+/// LiteRT's accelerator registry (`litert/runtime/accelerators/gpu_registry.cc`) registers a
+/// statically linked accelerator first (the released `CLiteRTLM.xcframework` carries one); only
+/// when none is linked does it `dlopen` `libLiteRtMetalAccelerator.dylib` by bare name, and
+/// LiteRT-LM sets no runtime library dir. dyld resolves a bare name against the working
+/// directory, so when the app bundle carries the dylib in `Frameworks/` (signed, embedded) this
+/// makes that folder the working directory and opens the dylib by absolute path first. With the
+/// released framework the folder holds no dylib and this is a no-op; the working directory is left
+/// in `Frameworks/` for the process lifetime because the runtime may open the top-k sampler dylib
+/// lazily (the app addresses its own files by absolute path throughout).
+enum LiteRTPrebuiltAccelerator {
+    static let dylibNames = ["libLiteRtMetalAccelerator.dylib", "libLiteRtTopKMetalSampler.dylib"]
+
+    /// Returns one status per dylib name ("loaded", "absent", or the dlopen error). Idempotent:
+    /// a second call re-opens an already loaded image (dlopen returns the same handle).
+    @discardableResult
+    static func prepare() -> [String: String] {
+        guard let frameworks = Bundle.main.privateFrameworksPath else { return [:] }
+        var status: [String: String] = [:]
+        var present = false
+        for name in dylibNames {
+            let path = (frameworks as NSString).appendingPathComponent(name)
+            guard FileManager.default.fileExists(atPath: path) else { status[name] = "absent"; continue }
+            present = true
+            FileManager.default.changeCurrentDirectoryPath(frameworks)
+            let handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL)
+            status[name] = handle != nil ? "loaded" : (dlerror().map { String(cString: $0) } ?? "dlopen failed")
+        }
+        if present {
+            let line = "INFO: prebuilt GPU accelerator dylibs in Frameworks/: \(status)\n"
+            FileHandle.standardError.write(line.data(using: .utf8)!)
+        }
+        return status
+    }
+}
+
+
 /// LiteRT-LM adapter — wraps Google's official `google-ai-edge/LiteRT-LM`
 /// Swift API (`import LiteRTLM`, ≥ 0.12.0).
 ///
@@ -24,6 +62,12 @@ import Foundation
 /// The runtime kind is still `.mediaPipe` (raw value `"litert-lm"`) for
 /// source/JSONL stability.
 public actor MediaPipeRuntime: LLMRuntime {
+    /// See `loadModel`: whether to ask the engine for its benchmark counters.
+    public nonisolated(unsafe) static var engineBenchmarkCounters = true
+    /// Backend for runtimes created without an explicit one (`--litert-backend cpu|gpu`).
+    public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
+    /// Diagnostic: also send each prompt through the non-streaming API and log the reply.
+    public nonisolated(unsafe) static var debugSyncSend = false
     public let kind: RuntimeKind = .mediaPipe
     public let isAvailable: Bool = true
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.liteRTLM
@@ -69,8 +113,14 @@ public actor MediaPipeRuntime: LLMRuntime {
         // Enable LiteRT-LM's benchmark counters so generation can report *real*
         // tokenizer token counts + tok/s (via Conversation.getBenchmarkInfo),
         // instead of estimating from streamed chunks. Must opt in first.
+        // `engineBenchmarkCounters == false` (launch arg `--litert-engine-counters off`)
+        // leaves the flag off: on LiteRT-LM main after v0.17.1 the same flag also puts the
+        // engine into its benchmark mode, which replaces the real prompt with synthetic
+        // prefill tokens (2026-09-25, main@1dadd00c on iOS: promptTokenCount 8-9 and an
+        // answer to a prompt the app never sent). Rates then come from the app's wall
+        // clock and the token counts from the tokenizer-free fallback.
         ExperimentalFlags.optIntoExperimentalAPIs()
-        ExperimentalFlags.enableBenchmark = true
+        ExperimentalFlags.enableBenchmark = Self.engineBenchmarkCounters
 
         let snapshot = try await HFDownloader.snapshot(for: model, runtime: kind, progress: progress)
         let modelFile = try locateModelFile(in: snapshot, expected: model.primaryFile)
@@ -85,6 +135,9 @@ public actor MediaPipeRuntime: LLMRuntime {
                 maxNumTokens: contextBudget,
                 cacheDir: NSTemporaryDirectory()
             )
+            // An OSS-built framework has no built-in GPU accelerator; give the registry the
+            // embedded prebuilt dylib (no-op with the released framework, see the type doc).
+            LiteRTPrebuiltAccelerator.prepare()
             let engine = Engine(engineConfig: config)
             try await engine.initialize()
             self.engine = engine
@@ -275,6 +328,16 @@ public actor MediaPipeRuntime: LLMRuntime {
                 }
 
                 do {
+                    if Self.debugSyncSend {
+                        FileHandle.standardError.write("YARDSTICK_NOTE sync_send start prompt_chars=\(promptText.count)\n".data(using: .utf8)!)
+                        // Diagnostic (`--litert-send-mode sync`): send the same prompt through
+                        // the non-streaming API first and log what came back, to tell a
+                        // streaming-path defect from an engine-side one.
+                        let probe = try await conversation.sendMessage(Message(promptText), maxOutputTokens: 48)
+                        let probeText = probe.toString
+                        let note = "YARDSTICK_NOTE sync_send prompt_chars=\(promptText.count) prompt_head=\(promptText.prefix(48).replacingOccurrences(of: "\n", with: " ")) reply_head=\(probeText.prefix(160).replacingOccurrences(of: "\n", with: " "))\n"
+                        FileHandle.standardError.write(note.data(using: .utf8)!)
+                    }
                     for try await chunk in conversation.sendMessageStream(
                         Message(promptText), maxOutputTokens: cap
                     ) {
@@ -295,6 +358,9 @@ public actor MediaPipeRuntime: LLMRuntime {
                     }
                 } catch {
                     turnError = error
+                    if Self.debugSyncSend {
+                        FileHandle.standardError.write("YARDSTICK_NOTE turn_error=\(error)\n".data(using: .utf8)!)
+                    }
                 }
                 watchdog.finish()
                 watchTask.cancel()
@@ -477,6 +543,21 @@ public actor MediaPipeRuntime: LLMRuntime {
         var capped = false
         var cappedAt: CFAbsoluteTime? = nil
 
+        if Self.debugSyncSend {
+            // Diagnostic (`--litert-send-mode sync`): the same prompt through the
+            // non-streaming API first, reply logged, to tell a streaming-path defect from
+            // an engine-side one (2026-09-25, OSS main@1dadd00c on iOS: the model answered
+            // a prompt the app never sent).
+            FileHandle.standardError.write("YARDSTICK_NOTE sync_send start prompt_chars=\(prompt.count) head=\(prompt.prefix(60).replacingOccurrences(of: "\n", with: " "))\n".data(using: .utf8)!)
+            do {
+                let probe = try await conversation.sendMessage(Message(prompt), maxOutputTokens: 48)
+                let probeText = probe.toString
+                FileHandle.standardError.write("YARDSTICK_NOTE sync_send reply_head=\(probeText.prefix(200).replacingOccurrences(of: "\n", with: " "))\n".data(using: .utf8)!)
+            } catch {
+                FileHandle.standardError.write("YARDSTICK_NOTE sync_send error=\(error)\n".data(using: .utf8)!)
+            }
+        }
+
         for try await chunk in conversation.sendMessageStream(Message(prompt)) {
             try Task.checkCancellation()
             if capped {
@@ -596,6 +677,9 @@ import Foundation
 /// `https://github.com/google-ai-edge/LiteRT-LM` (≥ 0.12.0) to enable it.
 /// See `runtimes/litert-lm.md` for the integration steps.
 public final class MediaPipeRuntime: LLMRuntime, @unchecked Sendable {
+    public nonisolated(unsafe) static var engineBenchmarkCounters = true
+    public nonisolated(unsafe) static var launchBackend = 0
+    public nonisolated(unsafe) static var debugSyncSend = false
     public let kind: RuntimeKind = .mediaPipe
     public let isAvailable: Bool = false
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.liteRTLM
@@ -615,4 +699,5 @@ public final class MediaPipeRuntime: LLMRuntime, @unchecked Sendable {
         }
     }
 }
+
 #endif

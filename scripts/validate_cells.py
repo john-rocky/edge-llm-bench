@@ -44,7 +44,7 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
-STR_KEYS = {"exclude", "file", "backend", "recipe", "thinking"}
+STR_KEYS = {"exclude", "file", "backend", "recipe", "thinking", "engine-counters"}
 BACKENDS = {"cpu", "gpu"}
 
 
@@ -164,12 +164,11 @@ def validate_file(path, catalog=None, require_anchor=False):
                               "(unplug discipline is a human step)")
             if opts.get("backend") and not (
                     plat == "android" or (plat == "mac" and rt == "litert-lm")
-                    or (plat == "ios" and rt == "litert-lm" and ASR_TASK.match(task))):
-                errors.append(f"{where}: backend= is for android cells, mac "
-                              "litert-lm cells and ios asr-rtf-* cells only (the Mac "
-                              "runner forwards it as --litert-backend, the iPhone ASR "
-                              "runner as the engine backend; every other Apple arm "
-                              "encodes its backend in the model id)")
+                    or (plat == "ios" and rt == "litert-lm")):
+                errors.append(f"{where}: backend= is for android cells and mac / ios "
+                              "litert-lm cells only (the Mac and iPhone runners forward "
+                              "it as --litert-backend; every other Apple arm encodes its "
+                              "backend in the model id)")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
                               "(arm identity; run_cell refuses it — the anchors.cells "

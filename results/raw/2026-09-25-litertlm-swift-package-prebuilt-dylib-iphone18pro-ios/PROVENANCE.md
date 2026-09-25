@@ -137,3 +137,10 @@ produces wrong text). So on the released framework the composite files have no v
 number at all; the 12-flag files (which need the fused prefill kernel) were not run.
 Consoles: `console_…gpuopt9…` / `console_…gpuopt11…` (appended per launch), records
 `controls/*.json` (the `short-chat` prompt, 19 prompt tokens, 128 generated).
+
+Label caveat on those records: their `engineVersion` / `engineArtifact` fields read `v0.16.0`
+(`CLiteRTLM.xcframework.zip@v0.16.0 …`) because the app's pre-build step stamps the pins from
+the shared `Vendored/LiteRT-LM` checkout (v0.16.0), not from the package the project copy
+built against; the framework that ran is the v0.17.0/v0.17.1 one identified above (the
+embedded binary's size and sha are in the build section). The fields are wrong on these two
+control records only; they enter no table.

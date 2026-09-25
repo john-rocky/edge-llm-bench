@@ -152,9 +152,15 @@ cmd_run(){
     cool="$(cell_opt cooldown "$BASE_COOLDOWN" ${opts[@]+"${opts[@]}"})"
     ctx="$(cell_opt context-tokens "" ${opts[@]+"${opts[@]}"})"
     maxtok="$(cell_opt max-tokens "" ${opts[@]+"${opts[@]}"})"
+    local counters
+    counters="$(cell_opt engine-counters "" ${opts[@]+"${opts[@]}"})"   # litert-lm: on|off (see MediaPipeRuntime.loadModel)
     local extra=()
     [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
     [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
+    [ -n "$counters" ] && extra+=(--litert-engine-counters "$counters")
+    local be
+    be="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"   # litert-lm: cpu|gpu (arm identity)
+    [ -n "$be" ] && extra+=(--litert-backend "$be")
 
     [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
     if [ "${serious_wait:-0}" -gt 0 ]; then

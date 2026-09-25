@@ -105,7 +105,7 @@ final class AppSession: ObservableObject {
         case .llamaCpp:
             return LlamaCppRuntime()
         case .mediaPipe:
-            return MediaPipeRuntime()
+            return MediaPipeRuntime(backend: MediaPipeRuntime.launchBackend)
         case .executorch:
             return ExecuTorchRuntime()
         case .coreMLLLM:
@@ -236,6 +236,21 @@ enum HeadlessAutoRun {
         if let raw = value("--context-tokens") {
             guard let n = Int(raw), n > 0 else { fatal("bad --context-tokens '\(raw)'") }
             contextTokens = n
+        }
+        // `--litert-backend cpu|gpu`: the LiteRT-LM compute backend (arm identity; the
+        // record's runtime id becomes `litert-lm-cpu` for cpu, as on the Mac CLI).
+        if let be = value("--litert-backend") {
+            guard let backend = MediaPipeRuntime.ComputeBackend(rawValue: be) else { fatal("bad --litert-backend '\(be)'") }
+            MediaPipeRuntime.launchBackend = backend
+            print("YARDSTICK_NOTE litert_backend=\(be)")
+        }
+        if value("--litert-send-mode") == "sync" { MediaPipeRuntime.debugSyncSend = true }
+        // `--litert-engine-counters off`: do not enable the engine's benchmark flag (see
+        // MediaPipeRuntime.loadModel); the record then carries wall-clock rates only.
+        if let counters = value("--litert-engine-counters") {
+            guard counters == "on" || counters == "off" else { fatal("bad --litert-engine-counters '\(counters)'") }
+            MediaPipeRuntime.engineBenchmarkCounters = (counters == "on")
+            print("YARDSTICK_NOTE litert_engine_counters=\(counters)")
         }
         let native: (prefill: Int, decode: Int)? = value("--litert-native-benchmark").flatMap {
             let parts = $0.split(separator: "x")

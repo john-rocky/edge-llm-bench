@@ -623,6 +623,42 @@ public enum ModelCatalog {
             hfFilePatterns: ["*.litertlm"],
             primaryFile: "model.litertlm"
         ),
+        // 2026-09-18 exports for the LiteRT-LM prebuilt at main@1dadd00c (litertlm-convert
+        // qwen3_gpuopt_work/FINDINGS.md §17): the published 11-flag recipe plus
+        // use_sdpa_composite_for_prefill (odml.sdpa_transposed in the prefill signature too)
+        // ("gpuopt12"), and the 4B counterpart of the all-eleven bundle. Side-loaded like the
+        // entries above; they need a runtime whose Metal accelerator carries the fused prefill
+        // kernel (flash_prefill_sdpa) — on older kernels they decode wrong text.
+        ModelInfo(
+            id: "litert-local/qwen3-0.6b-wi4b32-gpuopt12",
+            displayName: "Qwen3-0.6B (.litertlm, own export: 11 GPU flags + prefill SDPA composite)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main 731ef0a, 11 GPU flags + use_sdpa_composite_for_prefill; prefill 1024 / cache 32771)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 342,
+            hfRepoId: "litert-local/Qwen3-0.6B-wi4b32-gpuopt12",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-4b-wi4b32-gpuopt11",
+            displayName: "Qwen3-4B (.litertlm, own export: all 11 GPU flags)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main, all 11 GPU flags incl. sdpa_transposed + qkv_norm_rope composites; prefill 1024 / cache 32771)",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2271,
+            hfRepoId: "litert-local/Qwen3-4B-wi4b32-gpuopt11",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-local/qwen3-4b-wi4b32-gpuopt12",
+            displayName: "Qwen3-4B (.litertlm, own export: 11 GPU flags + prefill SDPA composite)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; litert-torch main 731ef0a, 11 GPU flags + use_sdpa_composite_for_prefill; prefill 1024 / cache 32771)",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2271,
+            hfRepoId: "litert-local/Qwen3-4B-wi4b32-gpuopt12",
+            hfFilePatterns: ["*.litertlm"],
+            primaryFile: "model.litertlm"
+        ),
         ModelInfo(
             id: "litert-local/qwen3-4b-wi4b32-gpuopt9",
             displayName: "Qwen3-4B (.litertlm, own export: 9 GPU flags)",
