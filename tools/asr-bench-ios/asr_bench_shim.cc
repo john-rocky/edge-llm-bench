@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "absl/log/absl_log.h"  // from @com_google_absl
 #include "absl/status/status.h"  // from @com_google_absl
@@ -180,6 +181,118 @@ extern "C" int asr_bench_run(const AsrBenchRequest* req,
     return 1;
   }
   return 0;
+}
+
+
+namespace {
+
+absl::Status RunManifest(const AsrBenchRequest& req, const char* manifest_path,
+                         int limit,
+                         void (*utt_cb)(int, const char*, double, int, const char*,
+                                        int, void*),
+                         void* user_data, AsrBenchResult* out) {
+  std::ifstream mf(manifest_path);
+  if (!mf.is_open()) {
+    return absl::NotFoundError(absl::StrCat("manifest not found: ", manifest_path));
+  }
+  std::vector<std::pair<std::string, std::string>> items;
+  std::string line;
+  while (std::getline(mf, line)) {
+    if (line.empty()) continue;
+    auto tab = line.find('\t');
+    if (tab == std::string::npos) continue;
+    items.emplace_back(line.substr(0, tab), line.substr(tab + 1));
+    if (limit > 0 && static_cast<int>(items.size()) >= limit) break;
+  }
+  ABSL_ASSIGN_OR_RETURN(auto config, LoadConfig(req));
+  absl::Duration interval = absl::Milliseconds(config.input_milliseconds);
+  absl::Duration overlap = interval * req.overlap_ratio;
+  const int sample_rate = config.sample_rate_hz;
+  const auto t0 = Clock::now();
+  ABSL_ASSIGN_OR_RETURN(auto engine, litert::omni::asr::AsrEngine::Create(
+                                         std::move(config), nullptr));
+  out->t_create_engine_s = Secs(t0, Clock::now());
+  ABSL_LOG(INFO) << "Starting per-utterance sessions: " << items.size()
+                 << " utterances from " << manifest_path;
+  const auto t_all = Clock::now();
+  int index = 0;
+  for (const auto& [id, path] : items) {
+    std::string transcript;
+    int chunks = 0;
+    int ok = 1;
+    const auto ts = Clock::now();
+    {
+      auto source = litert::omni::asr::FileAudioSource::Create(path, interval,
+                                                               overlap, sample_rate);
+      if (!source.ok()) {
+        ABSL_LOG(ERROR) << id << ": " << source.status();
+        ok = 0;
+      } else {
+        auto session = engine->CreateSession(std::move(*source));
+        if (!session.ok()) {
+          ABSL_LOG(ERROR) << id << ": " << session.status();
+          ok = 0;
+        } else {
+          while (true) {
+            auto result = (*session)->ProcessNext();
+            if (!result.ok()) {
+              if (absl::IsOutOfRange(result.status())) {
+                auto flushed = (*session)->Flush();
+                if (flushed.ok()) {
+                  const auto* t = std::get_if<litert::omni::OmniSession::TextOutput>(
+                      &*flushed);
+                  if (t && !t->confirmed_text.empty()) {
+                    if (!transcript.empty()) transcript += ' ';
+                    transcript += t->confirmed_text;
+                    ++chunks;
+                  }
+                }
+                break;
+              }
+              ABSL_LOG(ERROR) << id << ": " << result.status();
+              ok = 0;
+              break;
+            }
+            const auto* t =
+                std::get_if<litert::omni::OmniSession::TextOutput>(&*result);
+            if (t && !t->confirmed_text.empty()) {
+              if (!transcript.empty()) transcript += ' ';
+              transcript += t->confirmed_text;
+              ++chunks;
+            }
+          }
+        }
+      }
+    }  // the session and its audio source are destroyed here, before the callback
+    const double proc = Secs(ts, Clock::now());
+    if (utt_cb) utt_cb(index, id.c_str(), proc, chunks, transcript.c_str(), ok, user_data);
+    out->text_chunks += chunks;
+    if (!ok) out->ok = 0;
+    ++index;
+  }
+  out->t_process_s = Secs(t_all, Clock::now());
+  ABSL_LOG(INFO) << "Finished per-utterance sessions: " << index;
+  return absl::OkStatus();
+}
+
+}  // namespace
+
+extern "C" int asr_bench_run_manifest(const AsrBenchRequest* req,
+                                      const char* manifest_path, int limit,
+                                      void (*utt_cb)(int, const char*, double, int,
+                                                     const char*, int, void*),
+                                      void* user_data, AsrBenchResult* out) {
+  std::memset(out, 0, sizeof(*out));
+  out->t_first_text_s = -1.0;
+  out->ok = 1;
+  absl::Status st = RunManifest(*req, manifest_path, limit, utt_cb, user_data, out);
+  if (!st.ok()) {
+    out->ok = 0;
+    out->error = Dup(st.ToString());
+    ABSL_LOG(ERROR) << "asr_bench_run_manifest failed: " << st;
+    return 1;
+  }
+  return out->ok ? 0 : 2;
 }
 
 extern "C" void asr_bench_result_free(AsrBenchResult* out) {

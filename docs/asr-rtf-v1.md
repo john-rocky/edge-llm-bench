@@ -182,6 +182,12 @@ the first confirmed text. Thermal state (`ProcessInfo.thermalState`), battery le
 and state, low-power mode and the process's peak `phys_footprint` / resident size
 are in every record; the runner waits after a launch that ended above nominal.
 
+The app's `--manifest` mode (one `AsrEngine`, a new `FileAudioSource` + session per
+utterance, the process's `phys_footprint` sampled after every session) is not a task-family
+cell; it is the per-session memory probe behind
+`results/raw/2026-09-25-omni-asr-metal-session-footprint-iphone18pro-ios/` (the Mac Omni
+session's Metal per-session growth, reproduced on the phone).
+
 A phone that has never been provisioned needs a human first (CLAUDE.md: signing is
 Xcode GUI only): a signed-in developer account in Xcode and the device registered in
 the team profile — `xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration

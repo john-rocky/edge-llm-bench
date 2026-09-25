@@ -44,6 +44,20 @@ int asr_bench_run(const AsrBenchRequest* req,
 
 void asr_bench_result_free(AsrBenchResult* out);
 
+// Per-utterance sessions on one engine (the Omni eval pattern: one OmniSession per
+// utterance, engine shared). `manifest_path` lines are "<id>\t<absolute wav path>";
+// `limit` 0 = all. `utt_cb` runs after every utterance with its processing wall
+// ("Starting" -> "Finished" of that session), its text and chunk count; the app
+// samples memory inside the callback. `out` gets the engine creation time and the
+// totals; `out->transcript` is NULL in this mode.
+int asr_bench_run_manifest(const AsrBenchRequest* req, const char* manifest_path,
+                           int limit,
+                           void (*utt_cb)(int index, const char* id, double proc_s,
+                                          int text_chunks, const char* text, int ok,
+                                          void* user_data),
+                           void* user_data, AsrBenchResult* out);
+
+
 // The LiteRT-LM commit this library was built from (set at build time).
 const char* asr_bench_engine_version(void);
 

@@ -133,6 +133,48 @@ void OnText(const char* text, void*) {
   if (g_chunks) g_chunks->push_back(text);
 }
 
+// Per-utterance-session mode (--manifest): one line per utterance with the process's
+// memory right after that session was destroyed, so a per-session growth shows as a slope.
+struct UttLog {
+  FILE* f = nullptr;
+  Clock::time_point t0;
+  int ok = 0, failed = 0;
+  double footprintFirstMB = 0, footprintLastMB = 0, residentLastMB = 0;
+};
+void OnUtterance(int index, const char* id, double proc_s, int chunks, const char* text,
+                 int ok, void* ud) {
+  auto* log = static_cast<UttLog*>(ud);
+  task_vm_info_data_t info;
+  mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+  double fp = 0, rs = 0;
+  if (task_info(mach_task_self(), TASK_VM_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
+    fp = info.phys_footprint / 1048576.0;
+    rs = info.resident_size / 1048576.0;
+  }
+  if (index == 0) log->footprintFirstMB = fp;
+  log->footprintLastMB = fp;
+  log->residentLastMB = rs;
+  if (ok) log->ok++; else log->failed++;
+  const double t = std::chrono::duration<double>(Clock::now() - log->t0).count();
+  NSString* textS = @(text ?: "");
+  NSDictionary* row = @{@"i": @(index), @"id": @(id), @"procSeconds": @(proc_s),
+                        @"chunks": @(chunks), @"ok": @(ok), @"tSeconds": @(t),
+                        @"footprintMB": @(fp), @"residentMB": @(rs),
+                        @"textWords": @([[textS componentsSeparatedByCharactersInSet:
+                            NSCharacterSet.whitespaceCharacterSet] count]),
+                        @"text": textS};
+  NSData* json = [NSJSONSerialization dataWithJSONObject:row options:0 error:nil];
+  if (log->f) {
+    fwrite(json.bytes, 1, json.length, log->f);
+    fputc('\n', log->f);
+    fflush(log->f);
+  }
+  if (index % 10 == 0) {
+    printf("ASRBENCH_UTT %d %s proc=%.3f footprint=%.1f resident=%.1f\n", index, id, proc_s, fp, rs);
+    fflush(stdout);
+  }
+}
+
 }  // namespace
 
 @implementation AppDelegate
@@ -186,8 +228,33 @@ void OnText(const char* text, void*) {
     req.text_merger_type = merger.UTF8String;
     req.audio_path = audioPath.UTF8String;
     AsrBenchResult res;
+    NSString* manifestName = Arg(@"--manifest", nil);
+    int limit = Arg(@"--limit", @"0").intValue;
+    UttLog uttLog;
     const auto tRun = Clock::now();
-    const int rc = asr_bench_run(&req, OnText, nullptr, &res);
+    int rc;
+    if (manifestName) {
+      // Rewrite the host manifest (id <tab> host path) to container paths under
+      // Documents/asr/audio/<--audio-dir>/<basename>.
+      NSString* audioDir = AsrPath(@"audio", Arg(@"--audio-dir", @"pieces"));
+      NSString* src = [NSString stringWithContentsOfFile:AsrPath(@"audio", manifestName)
+                                                encoding:NSUTF8StringEncoding error:nil] ?: @"";
+      NSMutableString* dst = [NSMutableString string];
+      for (NSString* line in [src componentsSeparatedByString:@"\n"]) {
+        NSArray* parts = [line componentsSeparatedByString:@"\t"];
+        if (parts.count < 2) continue;
+        [dst appendFormat:@"%@\t%@\n", parts[0],
+             [audioDir stringByAppendingPathComponent:[parts[1] lastPathComponent]]];
+      }
+      NSString* deviceManifest = AsrPath(@"results", [runId stringByAppendingString:@".manifest.tsv"]);
+      [dst writeToFile:deviceManifest atomically:YES encoding:NSUTF8StringEncoding error:nil];
+      uttLog.f = fopen(AsrPath(@"results", [runId stringByAppendingString:@".sessions.ndjson"]).UTF8String, "w");
+      uttLog.t0 = Clock::now();
+      rc = asr_bench_run_manifest(&req, deviceManifest.UTF8String, limit, OnUtterance, &uttLog, &res);
+      if (uttLog.f) fclose(uttLog.f);
+    } else {
+      rc = asr_bench_run(&req, OnText, nullptr, &res);
+    }
     const auto tEnd = Clock::now();
     mem.stop = true;
     mem.sample();
@@ -220,6 +287,15 @@ void OnText(const char* text, void*) {
     out[@"textChunks"] = @(res.text_chunks);
     out[@"totalWallSeconds"] = @(secs(tLaunch, tEnd));
     out[@"transcript"] = res.transcript ? @(res.transcript) : @"";
+    if (manifestName) {
+      out[@"mode"] = @"per-utterance-sessions";
+      out[@"manifest"] = manifestName;
+      out[@"utterancesOk"] = @(uttLog.ok);
+      out[@"utterancesFailed"] = @(uttLog.failed);
+      out[@"footprintAfterFirstSessionMB"] = @(uttLog.footprintFirstMB);
+      out[@"footprintAfterLastSessionMB"] = @(uttLog.footprintLastMB);
+      out[@"residentAfterLastSessionMB"] = @(uttLog.residentLastMB);
+    }
     out[@"error"] = res.error ? @(res.error) : [NSNull null];
     out[@"memoryPeakFootprintMB"] = @(mem.peakFootprintMB.load());
     out[@"memoryPeakResidentMB"] = @(mem.peakResidentMB.load());
