@@ -4,7 +4,7 @@ Task family definition: `docs/asr-rtf-v1.md` (the "iPhone leg" section). Cells: 
 rows of `matrices/asr-rtf-v1.cells`, run by `scripts/asr_rtf_iphone.py
 matrices/asr-rtf-v1.cells --campaign 2026-09-25-asr-rtf-v1-iphone18pro` in three
 invocations of the same sitting (`--only moonshine`, `whisper`, `parakeet` back to back
-from 17:48 JST, then `--only Qwen3` after the Fengwu trigger-B cell; `runlog.txt` and
+from 17:48 JST, then `--only Qwen3` after the Swift-package prebuilt-dylib check of the same day; `runlog.txt` and
 `session_provenance.txt` carry every invocation). Numbers and findings: `NOTES.md`. One JSONL
 per cell, one record per app launch; the engine's stderr for every launch under `logs/`
 (`*_run<N>.stderr.log`, with the devicectl console beside it).
@@ -15,8 +15,8 @@ iPhone 18 Pro (`iPhone19,2`, "arm64e.x1" as devicectl names the CPU), iOS 27.0 (
 devicectl `C7A74909-7573-5A0F-9201-F7D03DC811EF`, UDID `00008160-000038CA02C00036`, on USB,
 charging throughout. First measurement of any kind on this phone (a new column: its rows do
 not continue the iPhone 17 Pro's). No lock file exists for the iPhone runner; the probe
-list of the device-busy rule was run before the first launch (no sibling driver, no hold
-file, the two sibling sessions that could hold a phone answered by message).
+list of the device-busy rule was run before the first launch (no other driver, no hold
+file, the two other sessions that could hold a phone answered by message).
 `ProcessInfo.thermalState` before and after every launch, the battery level and state and
 low-power mode are in every record (`conditions.thermalInitial/Final`, `device.*`).
 
@@ -48,11 +48,10 @@ both text mergers; `git diff --stat 1dadd00c 66058c82 -- omni/asr/`). The rows s
   of `default.profraw` fails in the app sandbox ("LLVM Profile Error … Operation not
   permitted" on every console) with no other effect.
 - App: `ios/AsrBench` (ObjC++ shell, `project.yml` → xcodegen 2.44.1, bundle id
-  `com.daisukemajima.asrbench`, team `MFN25KNUGJ`, Release, `-ObjC -all_load`), built with
+  `com.daisukemajima.asrbench`, Release, `-ObjC -all_load`), built with
   `xcodebuild -destination "platform=iOS,id=<UDID>" -allowProvisioningUpdates
   -allowProvisioningDeviceRegistration` (derived data `.build/dd-asrbench`). The phone was
-  registered in the team profile at 17:45 JST after the owner signed the developer account
-  into Xcode (before that: "No Accounts" from xcodebuild and `ApplicationVerificationFailed`
+  provisioned for development at 17:45 JST (before that: "No Accounts" from xcodebuild and `ApplicationVerificationFailed`
   from `devicectl device install app`). Installed 17:45:4x JST.
 - GPU accelerator: `prebuilt/ios_arm64/libLiteRtMetalAccelerator.dylib` at `66058c82`
   (LFS object sha256 `12b51bbdb7ca7511af1e901f1d514d49d9a5513c47bf51ba761b123536a1a3c7`,

@@ -67,7 +67,7 @@ name and refused `litert-lm.v0170` against the resolved graph's `litert-lm`), an
 .build/dd-ios-0170 -skipPackagePluginValidation -skipMacroValidation -allowProvisioningUpdates
 -allowProvisioningDeviceRegistration ARCHS=arm64 ONLY_ACTIVE_ARCH=YES build` (the package
 checkouts were seeded from `.build/dd-mac-0170/SourcePackages` because a fresh clone of the
-executorch package timed out on the network). Log: `logs/xcodebuild_ios0170.log`.
+executorch package timed out on the network). Log: `logs/xcodebuild_ios0170.excerpt.txt`; the install / side-load / cell driver log is `logs/run_cell.log`.
 
 The dylib was copied into the built app's `Frameworks/` next to `CLiteRTLM.framework` and signed
 with the app's identity (`codesign --force --sign <identity> --preserve-metadata=entitlements`),
@@ -81,6 +81,12 @@ archive copy `/Volumes/HD-SGDA/archive/litertlm-convert/qwen3_gpuopt_work/out/p1
 side-loaded to `Documents/models/litert-lm/litert-local__Qwen3-0.6B-wi4b32-gpuopt11/model.litertlm`;
 one `short-chat` cell through `scripts/bench_matrix_iphone.sh` (runs=1; the log line is the
 measurement, the decode number enters no summary table).
+
+The 4B composite file is a 2,268,553,328-byte single TFLite section: it needs the two memory
+entitlements the app carries (`increased-memory-limit`, `extended-virtual-addressing`), and
+the precedent is a 4.24 GB single section that loaded on an iPhone 17 Pro with them on
+2026-09-07 (`results/raw/2026-09-18-qwen3-composite-prebuilt-1dadd00c-mac/PROVENANCE.md`);
+on the 18 Pro it is untested.
 
 ## Result — the framework registers its built-in accelerator; the dylib beside the app is not consulted
 
