@@ -1,22 +1,20 @@
-# 2026-09-25 — Fengwu "iOS numbers from OSS", trigger B: the v0.17.x Swift package + the 1dadd00c iOS Metal dylib on the iPhone 18 Pro
+# 2026-09-25 — Does the released LiteRT-LM Swift package pick up a prebuilt Metal accelerator placed beside the app? (iPhone 18 Pro)
 
-Question (standup handoff `2026-09-18-fengwu-ios-xcframework-followup.md`, trigger B): when the
-edge-llm-bench iOS app is built on the released LiteRT-LM Swift package and
+Question: when the edge-llm-bench iOS app is built on the released LiteRT-LM Swift package and
 `libLiteRtMetalAccelerator.dylib` from LiteRT-LM `main@1dadd00c` (the prebuilt with the fused
 FA2 prefill kernel, `flash_prefill_sdpa`) is placed in the app's `Frameworks/`, does the runtime
 register the dylib (`Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered`)
 or its built-in accelerator (`Statically linked GPU accelerator registered`)? The answer decides
-whether the composite files (`p1024_{06b,4b}_12flags`) can be measured on an iPhone before Google
-ships an xcframework built from a newer LiteRT.
+whether the composite files (`p1024_{06b,4b}_12flags`, which need the fused prefill kernel) can
+be measured on an iPhone through the released package before an xcframework built from a newer
+LiteRT exists.
 
 ## Device
 
 iPhone 18 Pro (`iPhone19,2`), iOS 27.0 (24A437), devicectl `C7A74909-7573-5A0F-9201-F7D03DC811EF`,
-UDID `00008160-000038CA02C00036`, USB. First measurement of any kind on this phone (a new column;
-the promise text of 2026-09-18 said "iPhone 17 Pro" — the 18 Pro is the bench iPhone from
-2026-09-25 by owner decision). The phone was registered in the team provisioning profile on
-2026-09-25 17:45 JST (profile `9fc6ef49-…`, after the owner signed the developer account into
-Xcode 27.0 RC); before that every install failed with `ApplicationVerificationFailed`.
+UDID `00008160-000038CA02C00036`, USB. First measurement of any kind on this phone (a new column,
+not a continuation of the iPhone 17 Pro rows). The phone was provisioned for development on
+2026-09-25 17:45 JST; before that every install failed with `ApplicationVerificationFailed`.
 
 ## The package and the framework binary
 
@@ -26,9 +24,8 @@ Xcode 27.0 RC); before that every install failed with `ApplicationVerificationFa
   `Package.swift` binaryTarget `CLiteRTLM.xcframework.zip@v0.17.0` checksum
   `c94fc12aa0403cb47208e419cc3bfe258214ea17035f7a63c16de536869f2186` — the same checksum the
   `v0.17.1` tag's `Package.swift` carries (read from GitHub 2026-09-25 14:1x JST) and the same
-  121,798,772-byte asset on both GitHub releases (v0.17.0 2026-09-09, v0.17.1 2026-09-16): the
-  handoff's "v0.17.1 package" and this checkout are the same framework bytes. No release after
-  v0.17.1 on 2026-09-25 (trigger A not fired).
+  121,798,772-byte asset on both GitHub releases (v0.17.0 2026-09-09, v0.17.1 2026-09-16): this
+  checkout builds the v0.17.1 framework bytes. No release after v0.17.1 on 2026-09-25.
 - The framework's `ios-arm64/CLiteRTLM.framework/CLiteRTLM` binary: 60,466,448 B, sha256
   `892798555f337315aa89f2f405e3e3b41d68de9d977b15c7d4a4fd3fa637684c` (from
   `.build/dd-mac-0170/SourcePackages/artifacts`, the 2026-09-11 resolution of the same package;
@@ -60,10 +57,8 @@ one: 12,658,376 B, `12b51bbdb7ca7511af1e901f1d514d49d9a5513c47bf51ba761b123536a1
 
 ## How the app was built
 
-The shared checkout carries another session's uncommitted `project.pbxproj` (the Xcode GUI signing
-edits: team `MFN25KNUGJ`, bundle id `com.example.CoreMLLLMChat`; sha256 before
-`798beea743c3259653de1888d6104401f35b8f52fe965af45947920032e1d09e`), so xcodegen was not run.
-Instead an untracked copy `ios/BenchmarkApp/BenchmarkApp-v0170.xcodeproj` (git-excluded) points
+The tracked `project.pbxproj` carries local signing edits that xcodegen would discard, so xcodegen
+was not run. Instead an untracked copy `ios/BenchmarkApp/BenchmarkApp-v0170.xcodeproj` (git-excluded) points
 its LiteRT-LM package reference at `Vendored-v0170/LiteRT-LM`, a copy of `Vendored/LiteRT-LM.v0170`
 under a directory named `LiteRT-LM` (SwiftPM derives a local package's identity from the directory
 name and refused `litert-lm.v0170` against the resolved graph's `litert-lm`), and its schemes'
@@ -84,10 +79,10 @@ then the app itself re-signed; installed with `xcrun devicectl device install ap
 11-flag export, 341,736,912 B, sha256 `bd68576899304644dc391e7d9c1bfa5d6f25a6795b4812d9afe08cb7ae4560e9`,
 archive copy `/Volumes/HD-SGDA/archive/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11flags/`),
 side-loaded to `Documents/models/litert-lm/litert-local__Qwen3-0.6B-wi4b32-gpuopt11/model.litertlm`;
-one `short-chat` cell through `scripts/bench_matrix_iphone.sh` (runs=1, the log line is the
-measurement; the decode number is not admitted anywhere).
+one `short-chat` cell through `scripts/bench_matrix_iphone.sh` (runs=1; the log line is the
+measurement, the decode number enters no summary table).
 
-## Result — the framework registers its built-in accelerator; the dylib beside the app is never consulted
+## Result — the framework registers its built-in accelerator; the dylib beside the app is not consulted
 
 Console of the cell (`console_litert-lm_litert-local_qwen3-0_6b-wi4b32-gpuopt11_short-chat.txt`,
 18:04:22 JST; the 9-flag control `…gpuopt9…` at 18:05:15 is identical in this respect):
@@ -98,13 +93,13 @@ Console of the cell (`console_litert-lm_litert-local_qwen3-0_6b-wi4b32-gpuopt11_
     INFO: [gpu_registry.cc:109] Statically linked GPU accelerator registered.
 
 three times per launch (every `Environment::Create`), and no `Attempting to load GPU
-accelerator(…)` line anywhere: with the released v0.17.x framework the dynamic branch is
-never reached, so `libLiteRtMetalAccelerator.dylib` next to the app (signed, in
-`Frameworks/`) is dead weight. Trigger B is negative — the composite files cannot meet the
-1dadd00c kernels on an iPhone through the OSS Swift package until Google ships an
-xcframework whose built-in accelerator is built from a newer LiteRT (trigger A), or
-through an OSS bazel build of the C API that links no static accelerator (the
-`ios/AsrBench` instrument of the same day shows the dynamic path working on this phone:
+accelerator(…)` line in any of the launches: with the released v0.17.x framework the dynamic
+branch is not reached, so `libLiteRtMetalAccelerator.dylib` next to the app (signed, in
+`Frameworks/`) is not consulted. So through the released Swift package the composite files
+cannot meet the 1dadd00c kernels on an iPhone until an xcframework built from a newer LiteRT
+exists; an OSS bazel build of the C library, which links no static accelerator, is the other
+route (the `ios/AsrBench` ASR instrument of the same day shows the dynamic path working on
+this phone with main's prebuilt dylib, `12b51bbd…` at `66058c82`:
 `Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).` →
 `Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.`).
 
@@ -115,24 +110,24 @@ output for `short-chat` (the log shows the magic number 32771 rewritten to 672 i
 623 tensors), and the export's `prefill_1024` signature needs at least 1,024 entries; the
 Mac numbers of 2026-09-18 ran the CLI at `--max_num_tokens` 1,280 and 32,000. A re-run with
 `context-tokens=1280` (the app's `--context-tokens`) is the control that shows the framework's
-own kernels running these files — see the addendum below when it has run. Nothing from this
-directory is a speed number and nothing is admitted to any summary
-(`device-jsonl/` stays empty; `SKIPPED.txt` / `summary.md` are the runner's own).
+own kernels running these files — see the addendum below. Nothing from this directory is a
+speed number and none of it enters the summary tables (`controls/` is outside the builder's
+globs; `SKIPPED.txt` / `summary.md` are the runner's own).
 
-## Addendum 18:15–18:21 JST — the `context-tokens=1280` control (records in `controls/`, deliberately outside `device-jsonl/` so the summary builder never pools them; single cold runs, not measurements)
+## Addendum 18:15–18:21 JST — the `context-tokens=1280` control (records in `controls/`, outside the summary builder's globs; single cold runs, not measurements)
 
 With the app's KV sized to 1,280 entries both bundles load and run on the framework's
 built-in (08-27 generation) Metal kernels: the 9-flag file (`p1024_06b_9flags`,
 `eaa73f7e…`) decodes coherent text ("Okay, the user wants to understand on-device AI in
 simple terms…") at 174 tok/s decode on the one cold run (a first run that started at
-thermal `fair` after the ASR sitting read 174 tok/s too and was quarantined by the gate;
-both kept in `controls/`); the 11-flag file (`p1024_06b_11flags`, `bd685768…`, the two
+thermal `fair` after the ASR session read 174 tok/s too and was set aside by the runner's
+thermal gate; both kept in `controls/`); the 11-flag file (`p1024_06b_11flags`, `bd685768…`, the two
 composites `odml.sdpa_transposed` + `odml.qkv_norm_rope` on top) reports 212 tok/s but
 decodes garbage ("kếasurableoubtedly rolesentialstag ByVal更是客户提供…") — the rate is void
 (benchmark-mode-needs-a-text-check), and it is the iPhone counterpart of the Mac finding that
 the composite kernels of the v0.17.0 generation do not run these files correctly (on the Mac
 the OSS v0.17.0 GPU path refused the kernels; the built-in iOS accelerator runs them and
 produces wrong text). So on the released framework the composite files have no valid iPhone
-number at all, and the 12-flag files (which need the fused prefill kernel) were not staged.
+number at all; the 12-flag files (which need the fused prefill kernel) were not run.
 Consoles: `console_…gpuopt9…` / `console_…gpuopt11…` (appended per launch), records
 `controls/*.json` (the `short-chat` prompt, 19 prompt tokens, 128 generated).
