@@ -167,3 +167,81 @@ symbols at one time index, advance one frame. With it, the three utterances fini
 The matrix above runs the unpatched engine; a watchdog kills a cell after 60 s without output,
 records the utterance in `HANGS.txt`, and resumes after it, so the WER counts those utterances as
 fully deleted.
+
+## Fixes (same day, second pass) — what each defect is and what closes it
+
+All runs below: CPU, Mac, the same sets and scorer; engine = main@66058c82 plus the patches in
+`tools/omni-eval/patches/` (summaries in `fix/`, engine stamp in `fix/ENGINE_VERSION`).
+
+### 1. whisper-tiny: the engine's log-mel front-end, not the model — fixed to reference parity
+
+Injecting openai-whisper's own log-mel into the same i8 tflite (a diagnostic `OMNI_MEL_OVERRIDE`
+hook) turned every one of six badly transcribed short clips into the reference text ("Resonation,
+Sarai" → "It is a duty, said I."), so the loss was in the features. `support/preprocessor/
+mel_filterbank.cc` is TensorFlow's MFCC filterbank design: it sums *magnitudes* (`sqrt` of the
+power spectrum) where Whisper and NeMo sum power, uses unnormalized HTK-scale triangles where
+librosa uses Slaney scale and Slaney (2/bandwidth) normalization, leaves the lowest bands empty
+("Missing 10 bands" warning), and floors at 1e-5 where Whisper clamps at 1e-10. Whisper's
+normalization is global (max − 8 dB, +4, /4), so a per-band gain and a halved log range change the
+input distribution; parakeet's per-feature normalization hides most of it.
+
+`patches/01-mel-slaney-power.patch` adds a librosa-compatible filterbank (`InitializeSlaney`:
+Slaney scale, fractional-bin triangles, Slaney normalization, power summation) behind two
+metadata keys, `"melScale": "slaney"` and `"melPower": true`, default off. `patches/02-whisper-
+prompt-token-ids.patch` adds `"decodePromptTokenIds"` so the stateless decoder is seeded with
+`<|startoftranscript|><|en|><|transcribe|><|notimestamps|>` like openai-whisper's `language="en"`
+(without it the model emits timestamp tokens, which are not `special` in the tokenizer and are not
+stripped). `patches/03-model-metadata.patch` turns both on for whisper-tiny (plus `melFloor` 1e-10).
+
+| whisper-tiny (i8) | test-clean | test-other |
+|---|---|---|
+| main@66058c82 | 12.46 | 29.58 |
+| with 01 + 02 + 03 | **7.53** | **16.75** |
+| openai-whisper tiny, same files and scorer | 7.44 | 16.79 |
+
+By length after the fix (clean): 9.99 / 7.80 / 6.29 / 6.31 against the reference's 9.74 / 7.74 /
+6.16 / 6.58.
+
+### 2. parakeet-tdt-0.6b-v3: the 5 s window — the model itself returns nothing for ~37 % of mid-utterance windows
+
+With NeMo's own `parakeet-tdt-0.6b-v3.nemo` (NeMo 3.0.0, CPU), the 5 s pieces of 4507-16021-0047
+behave as in the engine: [5.0, 10.0] and [6.0, 11.0] return nothing, [4.5, 9.5] / [5.25, 10.25] /
+[5.5, 10.5] transcribe, a 20 ms fade-in or 1 s of leading silence does not help, and the 10 s
+window [5, 15] transcribes in full (`fix/nemo_pieces.txt`). Over 150 test-clean utterances of
+10–20 s cut the engine's way (5 s windows, 3 s hop), NeMo returns an empty string for 267 of 874
+windows: 0 of 150 first windows, **267 of 724 (36.9 %) later windows** (`fix/nemo_windows.log`).
+The engine decodes every window standalone, so every window after the first has that failure
+rate; that is the length gradient in the first table. The tflite export is also worse than NeMo on
+some windows (c4), but the dominant effect is the model on short standalone windows.
+
+The lever is the window length. `tools/omni-eval/convert_30s.sh` re-exports the model with
+litert-samples' own recipe at `--input_sec 30` (litert-torch 0.9.4, drq int8, 630 MB, 1.5 min on
+the Mac); a `parakeet-tdt-0.6b-v3-30s` metadata entry (in patch 03) runs it through the same
+engine.
+
+| parakeet-tdt-0.6b-v3 (i8) | test-clean | test-other | <5 s | 5–10 s | 10–20 s | ≥20 s (clean) |
+|---|---|---|---|---|---|---|
+| 5 s file, main@66058c82 | 17.67 | 18.25 | 3.24 | 12.38 | 25.73 | 34.36 |
+| 5 s file, Slaney mel (01+03) | 20.70 | 17.92 | 2.40 | 14.17 | 32.92 | 34.36 |
+| **30 s export, Slaney mel** | **2.69** | (fix/summary) | 5.18 | 2.48 | 1.75 | 1.99 |
+| NeMo fp32 (leaderboard, H200) | 1.92 | 3.59 | | | | |
+
+The Slaney mel alone moves the single-window bucket from 3.24 to 2.40 (the model's own accuracy
+improves) and does nothing for multi-window utterances, as expected. The 30 s export brings the
+multi-window buckets to the leaderboard's level and removes the insertion runs and the hangs on
+these sets (the padded tail is where they came from; with the cap patch they cannot recur). What
+remains is the short-clip bucket (5.18): a 2 s clip is decoded over 28 s of zero-padded frames and
+the TDT decoder sometimes hallucinates a tail there ("i am not sure if you are not going to be able
+to do that"). The engine knows the valid frame count (`valid_frames` in the log-mel processor);
+stopping the decoder at ceil(valid/8) frames, as NeMo does with `length`, is the next change, and
+would also let the 5 s and 30 s windows be chosen per utterance. RTFx with the 30 s file is 12.4
+(every utterance pays a 30 s encoder pass) against 34 for the 5 s file.
+
+### 3. The hang, 4. the GPU per-session growth, 5. the macOS build — as in the sections above
+
+Patch 05 (the 10-symbol cap) ends the three hanging utterances in under half a second; with the
+Slaney mel the loop condition moved (no hang in the fixed 5 s runs), so the cap is the safety net,
+not a workaround for one file. The GPU growth is the decoder output buffers created per session
+in `IOAccelerator` memory and not released; one session reused with `Reset()` stays flat (291–296
+MB over 159 utterances), so until the runtime frees them, keeping one session per engine is the
+mitigation. Patch 04 is the macOS build.

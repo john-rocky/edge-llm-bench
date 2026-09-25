@@ -1,0 +1,257 @@
+diff --git a/omni/asr/log_mel_spectrogram_processor.h b/omni/asr/log_mel_spectrogram_processor.h
+index 804f9eef..3fbb99a3 100644
+--- a/omni/asr/log_mel_spectrogram_processor.h
++++ b/omni/asr/log_mel_spectrogram_processor.h
+@@ -53,6 +53,10 @@ class LogMelSpectrogramProcessor : public AudioPreprocessor {
+     bool normalize_mel = false;
+     bool add_floor_to_mel_before_log = true;
+     NormType norm_type = NormType::kStandard;
++    // librosa-compatible mel (Slaney scale + normalization, fractional
++    // triangles) summed over the power spectrum; what Whisper and NeMo use.
++    bool slaney_mel = false;
++    bool power_spectrum = false;
+   };
+ 
+   static absl::StatusOr<std::unique_ptr<LogMelSpectrogramProcessor>> Create(
+diff --git a/support/preprocessor/audio_preprocessor.h b/support/preprocessor/audio_preprocessor.h
+index ce18032a..95351b99 100644
+--- a/support/preprocessor/audio_preprocessor.h
++++ b/support/preprocessor/audio_preprocessor.h
+@@ -200,6 +200,14 @@ class AudioPreprocessorConfig {
+   bool GetPeriodicHanning() const { return periodic_hanning_; }
+   // The padding type used for FFT.
+   FftPaddingType GetFftPaddingType() const { return fft_padding_type_; }
++  // librosa-compatible mel filterbank (Slaney scale and normalization) and
++  // power-spectrum summation; off by default to keep existing models as is.
++  bool GetSlaneyMel() const { return slaney_mel_; }
++  bool GetPowerSpectrum() const { return power_spectrum_; }
++  void SetSlaneyMel(bool slaney_mel) { slaney_mel_ = slaney_mel; }
++  void SetPowerSpectrum(bool power_spectrum) {
++    power_spectrum_ = power_spectrum;
++  }
+   // Whether to skip the Mel spectrogram extraction.
+   bool SkipMelSpectrogramExtraction() const {
+     return skip_mel_spectrogram_extraction_;
+@@ -399,6 +407,8 @@ class AudioPreprocessorConfig {
+   FftPaddingType fft_padding_type_;
+   bool skip_mel_spectrogram_extraction_;
+   bool buffer_last_frame_;
++  bool slaney_mel_ = false;
++  bool power_spectrum_ = false;
+ };
+ 
+ // Interface for audio preprocessing.
+diff --git a/support/preprocessor/audio_preprocessor_miniaudio.cc b/support/preprocessor/audio_preprocessor_miniaudio.cc
+index cc3d839a..3d95eb1c 100644
+--- a/support/preprocessor/audio_preprocessor_miniaudio.cc
++++ b/support/preprocessor/audio_preprocessor_miniaudio.cc
+@@ -118,9 +118,15 @@ AudioPreprocessorMiniAudio::Create(const AudioPreprocessorConfig& config) {
+     return absl::InvalidArgumentError("Frame length must be positive.");
+   }
+   auto mel_filterbank = std::make_unique<MelFilterbank>();
+-  LITERT_RETURN_IF_ERROR(mel_filterbank->Initialize(
++  if (config.GetSlaneyMel()) {
++    LITERT_RETURN_IF_ERROR(mel_filterbank->InitializeSlaney(
++      config.GetFftBins(), config.GetSampleRateHz(), config.GetNumMelBins(),
++      config.GetMelLowHz(), config.GetMelHighHz(), config.GetPowerSpectrum()));
++  } else {
++    LITERT_RETURN_IF_ERROR(mel_filterbank->Initialize(
+       config.GetFftBins(), config.GetSampleRateHz(), config.GetNumMelBins(),
+       config.GetMelLowHz(), config.GetMelHighHz()));
++  }
+   return absl::WrapUnique(
+       new AudioPreprocessorMiniAudio(config, std::move(mel_filterbank)));
+ }
+diff --git a/support/preprocessor/audio_preprocessor_pffft.cc b/support/preprocessor/audio_preprocessor_pffft.cc
+index 0a3c600b..cac0c703 100644
+--- a/support/preprocessor/audio_preprocessor_pffft.cc
++++ b/support/preprocessor/audio_preprocessor_pffft.cc
+@@ -132,9 +132,15 @@ AudioPreprocessorPffft::Create(const AudioPreprocessorConfig& config) {
+     return absl::InvalidArgumentError("Frame length must be positive.");
+   }
+   auto mel_filterbank = std::make_unique<MelFilterbank>();
+-  LITERT_RETURN_IF_ERROR(mel_filterbank->Initialize(
++  if (config.GetSlaneyMel()) {
++    LITERT_RETURN_IF_ERROR(mel_filterbank->InitializeSlaney(
++      config.GetFftBins(), config.GetSampleRateHz(), config.GetNumMelBins(),
++      config.GetMelLowHz(), config.GetMelHighHz(), config.GetPowerSpectrum()));
++  } else {
++    LITERT_RETURN_IF_ERROR(mel_filterbank->Initialize(
+       config.GetFftBins(), config.GetSampleRateHz(), config.GetNumMelBins(),
+       config.GetMelLowHz(), config.GetMelHighHz()));
++  }
+   return absl::WrapUnique(
+       new AudioPreprocessorPffft(config, std::move(mel_filterbank)));
+ }
+diff --git a/support/preprocessor/mel_filterbank.cc b/support/preprocessor/mel_filterbank.cc
+index c9e38df4..aaa7b48e 100644
+--- a/support/preprocessor/mel_filterbank.cc
++++ b/support/preprocessor/mel_filterbank.cc
+@@ -29,6 +29,7 @@
+ 
+ #include "support/preprocessor/mel_filterbank.h"
+ 
++#include <algorithm>
+ #include <cmath>
+ #include <vector>
+ 
+@@ -153,12 +154,94 @@ absl::Status MelFilterbank::Initialize(int fft_length, double sample_rate,
+ // Compute the mel spectrum from the squared-magnitude FFT input by taking the
+ // square root, then summing FFT magnitudes under triangular integration windows
+ // whose widths increase with frequency.
++namespace {
++// librosa's Slaney mel scale (hz_to_mel / mel_to_hz with htk=False).
++double SlaneyHzToMel(double hz) {
++  constexpr double kFSp = 200.0 / 3.0;
++  constexpr double kMinLogHz = 1000.0;
++  constexpr double kMinLogMel = kMinLogHz / kFSp;
++  const double logstep = std::log(6.4) / 27.0;
++  if (hz >= kMinLogHz) return kMinLogMel + std::log(hz / kMinLogHz) / logstep;
++  return hz / kFSp;
++}
++double SlaneyMelToHz(double mel) {
++  constexpr double kFSp = 200.0 / 3.0;
++  constexpr double kMinLogHz = 1000.0;
++  constexpr double kMinLogMel = kMinLogHz / kFSp;
++  const double logstep = std::log(6.4) / 27.0;
++  if (mel >= kMinLogMel) return kMinLogHz * std::exp(logstep * (mel - kMinLogMel));
++  return kFSp * mel;
++}
++}  // namespace
++
++absl::Status MelFilterbank::InitializeSlaney(int fft_length, double sample_rate,
++                                             int mel_channel_count,
++                                             double lower_frequency_limit,
++                                             double upper_frequency_limit,
++                                             bool use_power) {
++  if (mel_channel_count < 1 || sample_rate <= 0 || fft_length < 2 ||
++      lower_frequency_limit < 0 ||
++      upper_frequency_limit <= lower_frequency_limit) {
++    return absl::InvalidArgumentError("Invalid Slaney mel filterbank config.");
++  }
++  num_mel_channels_ = mel_channel_count;
++  sample_rate_ = sample_rate;
++  fft_length_ = fft_length;
++  // `fft_length` here is the number of spectrum bins handed to ToMelSpectrum
++  // (n_fft / 2 + 1), matching Initialize()'s convention.
++  slaney_bins_ = fft_length;
++  const int n_fft = 2 * (fft_length - 1);
++  const double mel_lo = SlaneyHzToMel(lower_frequency_limit);
++  const double mel_hi = SlaneyHzToMel(upper_frequency_limit);
++  std::vector<double> hz(num_mel_channels_ + 2);
++  for (int i = 0; i < num_mel_channels_ + 2; ++i) {
++    hz[i] = SlaneyMelToHz(mel_lo + (mel_hi - mel_lo) * i /
++                                       (num_mel_channels_ + 1));
++  }
++  slaney_weights_.assign(static_cast<size_t>(num_mel_channels_) * slaney_bins_,
++                         0.0);
++  for (int m = 0; m < num_mel_channels_; ++m) {
++    const double enorm = 2.0 / (hz[m + 2] - hz[m]);
++    for (int k = 0; k < slaney_bins_; ++k) {
++      const double f = static_cast<double>(k) * sample_rate / n_fft;
++      const double lower = (f - hz[m]) / (hz[m + 1] - hz[m]);
++      const double upper = (hz[m + 2] - f) / (hz[m + 2] - hz[m + 1]);
++      const double w = std::max(0.0, std::min(lower, upper));
++      slaney_weights_[static_cast<size_t>(m) * slaney_bins_ + k] = w * enorm;
++    }
++  }
++  start_index_ = 0;
++  end_index_ = slaney_bins_ - 1;
++  slaney_ = true;
++  use_power_ = use_power;
++  initialized_ = true;
++  return absl::OkStatus();
++}
++
+ absl::Status MelFilterbank::ToMelSpectrum(
+     absl::Span<const double> squared_magnitude_fft,
+     std::vector<double>* mel) const {
+   if (!initialized_) {
+     return absl::InternalError("Mel Filterbank not initialized.");
+   }
++  if (slaney_) {
++    if (squared_magnitude_fft.size() < static_cast<size_t>(slaney_bins_)) {
++      return absl::InternalError("FFT too short to compute filterbank");
++    }
++    mel->assign(num_mel_channels_, 0.0);
++    for (int m = 0; m < num_mel_channels_; ++m) {
++      const double* w = slaney_weights_.data() +
++                        static_cast<size_t>(m) * slaney_bins_;
++      double acc = 0.0;
++      for (int k = 0; k < slaney_bins_; ++k) {
++        const double v = use_power_ ? squared_magnitude_fft[k]
++                                    : std::sqrt(squared_magnitude_fft[k]);
++        acc += w[k] * v;
++      }
++      (*mel)[m] = acc;
++    }
++    return absl::OkStatus();
++  }
+ 
+   if (squared_magnitude_fft.size() <= end_index_) {
+     return absl::InternalError("FFT too short to compute filterbank");
+diff --git a/support/preprocessor/mel_filterbank.h b/support/preprocessor/mel_filterbank.h
+index 336bb619..9c3a2be9 100644
+--- a/support/preprocessor/mel_filterbank.h
++++ b/support/preprocessor/mel_filterbank.h
+@@ -52,6 +52,17 @@ class MelFilterbank {
+   absl::Status ToMelSpectrum(absl::Span<const double> squared_magnitude_fft,
+                              std::vector<double>* mel) const;
+ 
++  // Initializes a librosa-compatible filterbank instead: Slaney mel scale
++  // (linear below 1 kHz, logarithmic above), triangles with fractional bin
++  // weights, and Slaney area normalization (2 / bandwidth). `use_power`
++  // sums the squared magnitudes (as Whisper and NeMo do) instead of the
++  // magnitudes. This is the filterbank the litert-community whisper and
++  // parakeet exports were trained against.
++  absl::Status InitializeSlaney(int fft_length, double sample_rate,
++                                int mel_channel_count,
++                                double lower_frequency_limit,
++                                double upper_frequency_limit, bool use_power);
++
+   // Takes a triangular-mel-weighted linear-magnitude filterbank and estimates
+   // the squared-magnitude spectrogram slice that corresponds to it. This is
+   // merely an estimate, so ToMelSpectrum() followed by ToSquaredMagnitudeFft()
+@@ -90,6 +101,11 @@ class MelFilterbank {
+ 
+   int start_index_;  // Lowest FFT bin used to calculate mel spectrum.
+   int end_index_;    // Highest FFT bin used to calculate mel spectrum.
++  // Slaney mode: dense [mel_channel][fft_bin] weights and the power switch.
++  bool slaney_ = false;
++  bool use_power_ = false;
++  int slaney_bins_ = 0;
++  std::vector<double> slaney_weights_;
+ 
+   MelFilterbank(const MelFilterbank&) = delete;
+   MelFilterbank& operator=(const MelFilterbank&) = delete;
+diff --git a/omni/asr/log_mel_spectrogram_processor.cc b/omni/asr/log_mel_spectrogram_processor.cc
+index 67c23f4c..a7bb3388 100644
+--- a/omni/asr/log_mel_spectrogram_processor.cc
++++ b/omni/asr/log_mel_spectrogram_processor.cc
+@@ -131,6 +134,8 @@ LogMelSpectrogramProcessor::Create(
+           /*non_zero_hanning=*/true, /*periodic_hanning=*/true,
+           litert::support::AudioPreprocessorConfig::FftPaddingType::kRight);
+ 
++  preprocessor_config.SetSlaneyMel(config.slaney_mel);
++  preprocessor_config.SetPowerSpectrum(config.power_spectrum);
+   ABSL_ASSIGN_OR_RETURN(
+       auto preprocessor,
+       litert::support::AudioPreprocessorMiniAudio::Create(preprocessor_config));
+diff --git a/omni/asr/model_metadata.cc b/omni/asr/model_metadata.cc
+index 136d390f..fb45c499 100644
+--- a/omni/asr/model_metadata.cc
++++ b/omni/asr/model_metadata.cc
+@@ -145,6 +149,13 @@ absl::Status PopulateConfigFromMetadataJson(absl::string_view model_name,
+       config.log_mel_config.add_floor_to_mel_before_log =
+           l["addFloorToMelBeforeLog"].get<bool>();
+     }
++    if (l.contains("melScale")) {
++      config.log_mel_config.slaney_mel =
++          l["melScale"].get<std::string>() == "slaney";
++    }
++    if (l.contains("melPower")) {
++      config.log_mel_config.power_spectrum = l["melPower"].get<bool>();
++    }
+     if (l.contains("normType")) {
+       std::string norm = l["normType"].get<std::string>();
+       if (norm == "whisper") {

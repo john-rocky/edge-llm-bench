@@ -1,0 +1,76 @@
+diff --git a/omni/asr/model_metadata.json b/omni/asr/model_metadata.json
+index 8fd8096c..37e8586b 100644
+--- a/omni/asr/model_metadata.json
++++ b/omni/asr/model_metadata.json
+@@ -8,7 +8,10 @@
+       "nFFT": 512,
+       "nMels": 128,
+       "nFrames": 500,
+-      "preemphasis": 0.97
++      "preemphasis": 0.97,
++      "melScale": "slaney",
++      "melPower": true,
++      "melFloor": 5.960464477539063e-08
+     },
+     "decodeStartTokenId": 8192,
+     "stateBufferNamePatterns": [
+@@ -51,10 +54,19 @@
+     "logMelSpectro": {
+       "nFFT": 400,
+       "nFrames": 3000,
+-      "normType": "whisper"
++      "normType": "whisper",
++      "melScale": "slaney",
++      "melPower": true,
++      "melFloor": 1e-10
+     },
+     "decodeStartTokenId": 50258,
+-    "decodeStopTokenId": 50257
++    "decodeStopTokenId": 50257,
++    "decodePromptTokenIds": [
++      50258,
++      50259,
++      50359,
++      50363
++    ]
+   },
+   "qwen3-asr-0.6b": {
+     "modelRemoteUrl": "https://huggingface.co/litert-community/Qwen3-ASR-0.6B/resolve/main/qwen3_asr_0.6b_5s_i8.litertlm",
+@@ -82,10 +94,36 @@
+       "preemphasis": 0.97,
+       "melLowHz": 125,
+       "melHighHz": 7500,
+-      "melFloor": 1e-6,
++      "melFloor": 1e-06,
+       "normalizeMel": true,
+       "addFloorToMelBeforeLog": false,
+       "transpose": true
+     }
++  },
++  "parakeet-tdt-0.6b-v3-30s": {
++    "modelRemoteUrl": "https://huggingface.co/litert-community/parakeet-tdt-0.6b-v3/resolve/main/parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite",
++    "tokenizerUrl": "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3/resolve/main/tokenizer.json",
++    "inputMilliseconds": 30000,
++    "logMelSpectro": {
++      "nFFT": 512,
++      "nMels": 128,
++      "nFrames": 3000,
++      "preemphasis": 0.97,
++      "melScale": "slaney",
++      "melPower": true,
++      "melFloor": 5.960464477539063e-08
++    },
++    "decodeStartTokenId": 8192,
++    "stateBufferNamePatterns": [
++      "encode_output_0_output",
++      "decode_args_0",
++      "decode_1_args_0",
++      "decode_1_args_2",
++      "decode_1_args_3",
++      "decode_1_output_1_output",
++      "decode_1_output_2_output",
++      "decode_output_1_output",
++      "decode_output_2_output"
++    ]
+   }
+ }

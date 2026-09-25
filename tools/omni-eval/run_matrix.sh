@@ -2,7 +2,7 @@
 # LibriSpeech test-clean / test-other through OmniEngine (main@66058c82), Mac M4 Max.
 # Sequential: one runner process at a time, 4 threads; GPU rows hold the machine GPU lock.
 set -u
-S=/private/tmp/claude-501/-Users-majimadaisuke-code-coreai-kit/2b575b9b-697b-4ea9-81d1-b63097fd5225/scratchpad/omni
+S=$OMNI_EVAL_DIR
 B=$HOME/code/edge-llm-bench/.build/omni-eval
 D=$HOME/code/edge-llm-bench/.build/omni-runner-66058c82
 M=$HOME/code/edge-llm-bench/.build/asr-models

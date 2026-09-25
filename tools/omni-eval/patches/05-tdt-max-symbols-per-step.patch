@@ -1,0 +1,36 @@
+diff --git a/omni/asr/tdt_decoder.cc b/omni/asr/tdt_decoder.cc
+index 659735f0..ea787b71 100644
+--- a/omni/asr/tdt_decoder.cc
++++ b/omni/asr/tdt_decoder.cc
+@@ -163,8 +163,23 @@ absl::StatusOr<std::vector<SpeechRecognizer::DecodedToken>> TdtDecoder::Decode(
+   token_ids[0] = decode_start_token_id_;
+   size_t token_index = 0;
+   size_t time_index = 0;
++  // Greedy TDT decoding can predict a non-blank token with duration 0
++  // repeatedly at one time index; without a cap the loop never advances
++  // (NeMo's greedy TDT decoder caps this with max_symbols_per_step). After
++  // kMaxSymbolsPerStep symbols at the same time index, advance by one frame.
++  constexpr size_t kMaxSymbolsPerStep = 10;
++  size_t symbols_at_time_index = 0;
++  size_t last_time_index = 0;
+ 
+   while (time_index < max_time_index_) {
++    if (time_index != last_time_index) {
++      symbols_at_time_index = 0;
++      last_time_index = time_index;
++    }
++    if (symbols_at_time_index >= kMaxSymbolsPerStep) {
++      ++time_index;
++      continue;
++    }
+     LITERT_RETURN_IF_ERROR(current_token_ids_buffer->Write<int32_t>(
+         absl::MakeConstSpan(token_ids)));
+ 
+@@ -214,6 +229,7 @@ absl::StatusOr<std::vector<SpeechRecognizer::DecodedToken>> TdtDecoder::Decode(
+     int token_id = static_cast<int>(
+         std::distance(logits + start_index_of_token_id, max_token_it));
+     if (token_id != blank_token_id) {
++      ++symbols_at_time_index;
+       decoded_tokens.push_back(SpeechRecognizer::DecodedToken{
+           .token_id = token_id, .timestamp_ms = static_cast<int>(time_index)});
+       if (num_inference_token_ids > 1) {

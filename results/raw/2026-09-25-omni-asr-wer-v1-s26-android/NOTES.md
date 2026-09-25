@@ -14,7 +14,7 @@ Each cell waits for the battery to cool to 36 °C first; the phone was at therma
 | parakeet-tdt-0.6b-v3 (i8) | test-clean | **17.67** | 1328 / 5991 / 2048 | 0 | 11 | 19.9 | 17.67 |
 | whisper-tiny (i8) | test-clean | **12.46** | 4807 / 556 / 1240 | 0 | 0 | 9.7 | 12.46 (byte-identical S/D/I) |
 | parakeet-tdt-0.6b-v3 (i8) | test-other | **16.74** | 2432 / 4079 / 2332 | 1 | 9 | 20.4 | 18.25 |
-| whisper-tiny (i8) | test-other | (running) | | | | | 29.58 |
+| whisper-tiny (i8) | test-other | **29.58** | 11323 / 1520 / 2787 | 0 | 19 | 8.9 | 29.58 (byte-identical S/D/I) |
 
 The transcripts are the Mac's: whisper-tiny is byte-identical, parakeet differs in a few dozen
 words out of 53,000 (int8 kernel differences between XNNPACK on arm64 Linux and macOS). The hang
