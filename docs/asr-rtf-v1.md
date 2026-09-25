@@ -136,10 +136,59 @@ are in the record instead. First capture: `results/raw/2026-09-19-asr-rtf-v1-s26
 models, moonshine's Metal drift does not reproduce on Adreno, and the Qwen3-ASR
 `.litertlm` GPU path returns no text there either).
 
+## iPhone leg (iPhone 18 Pro, 2026-09-25)
+
+The same engine compiled for the phone: `bench_ios/asr_bench_shim.{h,cc}` (kept in
+this repo under `tools/asr-bench-ios/`, copied into a LiteRT-LM worktree) is a C
+function around `AsrEngine` + `FileAudioSource` — the `asr_runner` path line for
+line (the same config assembly, the same `ProcessNext` / `Flush` loop, the same
+`Starting` / `Finished` log lines), built with `bazelisk build --config=ios_arm64
+//bench_ios:asr_bench_static` (rules_apple `apple_static_library`, ~9 min with a
+warm repository cache, bazel 7.6.1, Xcode 27.0) and linked with `-all_load` into
+`ios/AsrBench`, the smallest iOS shell (ObjC++ app + scene delegate, no UI beyond a
+text view). `scripts/build_asr_bench_ios.sh <worktree>` does the build, stages
+`Frameworks/libasr_bench_static.a`, the shim header, the commit's
+`prebuilt/ios_arm64/libLiteRtMetalAccelerator.dylib` (LFS) and
+`omni/asr/model_metadata.json`, writes `Frameworks/BUILD_INFO` (stamped as
+`engineVersion`) and regenerates the Xcode project with xcodegen. The GPU rows work
+the way LiteRT loads accelerators on iOS: the OSS build has no statically linked
+Metal accelerator (`//runtime/executor:default_static_gpu_accelerator` is empty
+outside Google), so `gpu_registry.cc` `dlopen`s `libLiteRtMetalAccelerator.dylib`
+by bare name; the app embeds the dylib (signed with the app), `chdir`s to its
+Frameworks folder and `dlopen`s the absolute path first, so the name-only lookup
+resolves there (the same arrangement the 2026-09-17 LiteRT `benchmark_model` iOS
+shell used). Every record's `conditions.gpuAcceleratorDylib` says what happened.
+
+The engine commit is `main@66058c82` (2026-09-25, the commit the Omni ASR WER
+session of the same day built). Between `1dadd00c` (the Mac and Android legs) and
+`66058c82`, `omni/asr/model_metadata.json` is byte-identical and the changes in
+`omni/asr/` are session plumbing (the OmniSession refactor, a thread pool in
+`AsrEngine`, ten-line edits in both text mergers); the 2026-09-25 Mac session saw
+`asr_runner` at both commits give the same transcript on its probe utterance. The
+phone rows still carry `main@66058c82` as their own instrument version and are never
+pooled with `1dadd00c` rows (bump-engine-for-comparison).
+
+`scripts/asr_rtf_iphone.py matrices/asr-rtf-v1.cells --campaign <name>` (the phone
+from `BENCH_UDID`) reads the `ios` rows, stages models, tokenizers,
+`model_metadata.json` and the stream WAV into the app's data container
+(`Documents/asr/`, `devicectl device copy to`), launches the app once per run with
+`devicectl device process launch --console` (45 s between launches, 90 s between
+cells, as on Android), reads the app's result JSON (`Documents/asr/results/<run>.json`,
+also printed on the console) and writes the same record shape into
+`results/raw/<campaign>-ios/`. Timing is the phone's monotonic clock inside the
+app: `loadTimeSeconds` = launch → `Starting` (engine + session creation),
+`asrProcessingSeconds` = `Starting` → `Finished`, first-text latency = `Starting` →
+the first confirmed text. Thermal state (`ProcessInfo.thermalState`), battery level
+and state, low-power mode and the process's peak `phys_footprint` / resident size
+are in every record; the runner waits after a launch that ended above nominal.
+
+A phone that has never been provisioned needs a human first (CLAUDE.md: signing is
+Xcode GUI only): a signed-in developer account in Xcode and the device registered in
+the team profile — `xcodebuild -allowProvisioningUpdates -allowProvisioningDeviceRegistration
+-destination "platform=iOS,id=<UDID>"` does the registration once the account exists.
+
 ## Not covered in v1
 
-- iPhone leg: no released engine yet (the Kotlin API PR #3672 does not help iOS;
-  a device build of the runner through the Swift package is the route).
 - Other ASR arms (whisper.cpp, MLX Whisper, Core ML / Speech framework): the
   task is defined on the stream + reference, so any arm that reads a WAV and
   prints text can join; none is wired.

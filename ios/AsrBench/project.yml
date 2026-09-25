@@ -1,0 +1,78 @@
+# AsrBench: the smallest iOS shell around LiteRT-LM's omni/asr engine (the asr_runner
+# path) for the asr-rtf-* task family's iPhone leg (docs/asr-rtf-v1.md). Regenerate the
+# Xcode project with `xcodegen generate`; Frameworks/libasr_bench_static.a comes from
+# scripts/build_asr_bench_ios.sh (bazel --config=ios_arm64 //bench_ios:asr_bench_static
+# in a LiteRT-LM worktree at the stamped commit), libLiteRtMetalAccelerator.dylib from
+# that commit's prebuilt/ios_arm64 (LFS). The dylib is embedded, not linked: the runtime
+# dlopen()s it by name (gpu_registry.cc) after the app chdir()s to Frameworks/.
+name: AsrBench
+options:
+  bundleIdPrefix: com.daisukemajima
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    CLANG_CXX_LANGUAGE_STANDARD: c++17
+    CLANG_ENABLE_OBJC_ARC: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+targets:
+  AsrBench:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: ASR Bench
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UILaunchScreen: {}
+        # iOS 27 SDK: an app without the scene lifecycle traps at launch.
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default
+                UISceneDelegateClassName: SceneDelegate
+        UIRequiresFullScreen: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.daisukemajima.asrbench
+        # -all_load keeps the static registrations the linker would otherwise drop
+        # from the static archive (accelerator registries, absl flags, kernels).
+        OTHER_LDFLAGS: "-ObjC -all_load -lc++"
+        LIBRARY_SEARCH_PATHS: "$(PROJECT_DIR)/Frameworks"
+        HEADER_SEARCH_PATHS: "$(PROJECT_DIR)/Frameworks/include"
+        TARGETED_DEVICE_FAMILY: "1"
+    dependencies:
+      - framework: Frameworks/libasr_bench_static.a
+        embed: false
+      # Embedded only: the runtime dlopen()s it by name at run time, nothing links against it.
+      - framework: Frameworks/libLiteRtMetalAccelerator.dylib
+        embed: true
+        link: false
+        codeSign: true
+      - sdk: UIKit.framework
+      - sdk: Foundation.framework
+      - sdk: Accelerate.framework
+      - sdk: Metal.framework
+      - sdk: MetalPerformanceShaders.framework
+      - sdk: CoreAudio.framework
+      - sdk: AudioToolbox.framework
+      - sdk: AVFoundation.framework
+      - sdk: CoreML.framework
+schemes:
+  AsrBench:
+    build:
+      targets:
+        AsrBench: all
+    run:
+      config: Release

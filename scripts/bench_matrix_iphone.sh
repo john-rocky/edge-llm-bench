@@ -30,7 +30,8 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 . "$REPO/scripts/lib/matrix_common.sh"
 
-DEV="${BENCH_UDID:-${DEV:-A6F3E849-1947-5202-9AD1-9C881CA58EEF}}"  # devicectl id, iPhone 17 Pro
+DEV="${BENCH_UDID:-${DEV:-C7A74909-7573-5A0F-9201-F7D03DC811EF}}"  # devicectl id, iPhone 18 Pro (the bench iPhone from
+                                                                       # 2026-09-25; the 17 Pro A6F3E849-… only when phones run short)
 APP="${APP:-com.example.CoreMLLLMChat}"              # borrowed App ID (memory entitlements)
 DEFAULT_RUNS="${RUNS:-4}"
 BASE_COOLDOWN="${BASE_COOLDOWN:-100}"                # s between cells (fairness cold-warm-split)

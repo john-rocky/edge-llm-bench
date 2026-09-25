@@ -131,9 +131,10 @@ def validate_file(path, catalog=None, require_anchor=False):
                 # v1 instrument = LiteRT-LM's own ASR CLI on the Mac; the litert
                 # backend is arm identity (litert-lm-cpu / -gpu never pool) and
                 # file= names the artifact (the recipe is stated per row).
-                if rt != "litert-lm" or plat not in ("mac", "android"):
-                    errors.append(f"{where}: asr-rtf-* is a mac / android litert-lm cell in v1 "
-                                  "(scripts/asr_rtf_mac.py, scripts/asr_rtf_android.py; docs/asr-rtf-v1.md)")
+                if rt != "litert-lm" or plat not in ("mac", "android", "ios"):
+                    errors.append(f"{where}: asr-rtf-* is a mac / android / ios litert-lm cell in v1 "
+                                  "(scripts/asr_rtf_mac.py, scripts/asr_rtf_android.py, "
+                                  "scripts/asr_rtf_iphone.py; docs/asr-rtf-v1.md)")
                 if opts.get("backend") not in BACKENDS:
                     errors.append(f"{where}: asr-rtf-* needs backend=cpu|gpu (arm identity)")
                 if not opts.get("file"):
@@ -162,11 +163,13 @@ def validate_file(path, catalog=None, require_anchor=False):
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")
             if opts.get("backend") and not (
-                    plat == "android" or (plat == "mac" and rt == "litert-lm")):
-                errors.append(f"{where}: backend= is for android cells and mac "
-                              "litert-lm cells only (the Mac runner forwards it as "
-                              "--litert-backend; every other Apple arm encodes its "
-                              "backend in the model id)")
+                    plat == "android" or (plat == "mac" and rt == "litert-lm")
+                    or (plat == "ios" and rt == "litert-lm" and ASR_TASK.match(task))):
+                errors.append(f"{where}: backend= is for android cells, mac "
+                              "litert-lm cells and ios asr-rtf-* cells only (the Mac "
+                              "runner forwards it as --litert-backend, the iPhone ASR "
+                              "runner as the engine backend; every other Apple arm "
+                              "encodes its backend in the model id)")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
                               "(arm identity; run_cell refuses it — the anchors.cells "

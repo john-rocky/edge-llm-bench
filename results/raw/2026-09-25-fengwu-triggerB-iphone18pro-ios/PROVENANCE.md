@@ -118,3 +118,21 @@ Mac numbers of 2026-09-18 ran the CLI at `--max_num_tokens` 1,280 and 32,000. A 
 own kernels running these files — see the addendum below when it has run. Nothing from this
 directory is a speed number and nothing is admitted to any summary
 (`device-jsonl/` stays empty; `SKIPPED.txt` / `summary.md` are the runner's own).
+
+## Addendum 18:15–18:21 JST — the `context-tokens=1280` control (records in `controls/`, deliberately outside `device-jsonl/` so the summary builder never pools them; single cold runs, not measurements)
+
+With the app's KV sized to 1,280 entries both bundles load and run on the framework's
+built-in (08-27 generation) Metal kernels: the 9-flag file (`p1024_06b_9flags`,
+`eaa73f7e…`) decodes coherent text ("Okay, the user wants to understand on-device AI in
+simple terms…") at 174 tok/s decode on the one cold run (a first run that started at
+thermal `fair` after the ASR sitting read 174 tok/s too and was quarantined by the gate;
+both kept in `controls/`); the 11-flag file (`p1024_06b_11flags`, `bd685768…`, the two
+composites `odml.sdpa_transposed` + `odml.qkv_norm_rope` on top) reports 212 tok/s but
+decodes garbage ("kếasurableoubtedly rolesentialstag ByVal更是客户提供…") — the rate is void
+(benchmark-mode-needs-a-text-check), and it is the iPhone counterpart of the Mac finding that
+the composite kernels of the v0.17.0 generation do not run these files correctly (on the Mac
+the OSS v0.17.0 GPU path refused the kernels; the built-in iOS accelerator runs them and
+produces wrong text). So on the released framework the composite files have no valid iPhone
+number at all, and the 12-flag files (which need the fused prefill kernel) were not staged.
+Consoles: `console_…gpuopt9…` / `console_…gpuopt11…` (appended per launch), records
+`controls/*.json` (the `short-chat` prompt, 19 prompt tokens, 128 generated).

@@ -28,7 +28,11 @@
 # this file itself (`scripts/asr_rtf_android.py matrices/asr-rtf-v1.cells
 # --campaign <name>`); the LLM session anchor is not run there (first session of
 # the task family on the phone; device state is recorded per launch instead).
-# iPhone: no leg yet.
+# iPhone: the same engine (omni/asr, the asr_runner path) compiled into a static
+# library for ios_arm64 inside the smallest shell app (ios/AsrBench; build =
+# scripts/build_asr_bench_ios.sh), driven over devicectl by scripts/asr_rtf_iphone.py,
+# which reads the ios rows of this file (`scripts/asr_rtf_iphone.py
+# matrices/asr-rtf-v1.cells --campaign <name>`, BENCH_UDID = the phone).
 
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 
@@ -59,3 +63,16 @@ android litert-lm litert-community/parakeet-tdt-0.6b-v3 asr-rtf-librispeech-82s 
 android litert-lm litert-community/parakeet-tdt-0.6b-v3 asr-rtf-librispeech-82s backend=gpu runs=3 cooldown=60 file=parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite
 android litert-lm litert-community/Qwen3-ASR-0.6B asr-rtf-librispeech-82s backend=cpu runs=3 cooldown=60 file=qwen3_asr_0.6b_5s_i8.litertlm
 android litert-lm litert-community/Qwen3-ASR-0.6B asr-rtf-librispeech-82s backend=gpu runs=3 cooldown=60 file=qwen3_asr_0.6b_5s_i8.litertlm
+
+# ============================ iPhone =============================
+# iPhone 18 Pro (iPhone19,2, iOS 27.0) first; litert backend = arm identity; GPU = the
+# ML Drift Metal accelerator dylib from LiteRT-LM main's prebuilt/ios_arm64/, embedded
+# in the app and dlopen()ed by name by the runtime (docs/asr-rtf-v1.md, iPhone leg).
+ios litert-lm litert-community/moonshine-tiny asr-rtf-librispeech-82s backend=cpu runs=3 file=moonshine_tiny_5s_i8.tflite
+ios litert-lm litert-community/moonshine-tiny asr-rtf-librispeech-82s backend=gpu runs=3 file=moonshine_tiny_5s_i8.tflite
+ios litert-lm litert-community/whisper-tiny asr-rtf-librispeech-82s backend=cpu runs=3 file=whisper_tiny_30s_i8.tflite
+ios litert-lm litert-community/whisper-tiny asr-rtf-librispeech-82s backend=gpu runs=3 file=whisper_tiny_30s_i8.tflite
+ios litert-lm litert-community/parakeet-tdt-0.6b-v3 asr-rtf-librispeech-82s backend=cpu runs=3 cooldown=60 file=parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite
+ios litert-lm litert-community/parakeet-tdt-0.6b-v3 asr-rtf-librispeech-82s backend=gpu runs=3 cooldown=60 file=parakeet_tdt_0.6b_v3_5s_i8_stateful.tflite
+ios litert-lm litert-community/Qwen3-ASR-0.6B asr-rtf-librispeech-82s backend=cpu runs=3 cooldown=60 file=qwen3_asr_0.6b_5s_i8.litertlm
+ios litert-lm litert-community/Qwen3-ASR-0.6B asr-rtf-librispeech-82s backend=gpu runs=3 cooldown=60 file=qwen3_asr_0.6b_5s_i8.litertlm

@@ -89,3 +89,100 @@ YARDSTICK_ALL_DONE
 INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x13195b540, name=CpuAccelerator
 INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x13195b600, name=GPU Metal
 The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_BEGIN runtime=litert-lm model=litert-local/qwen3-0.6b-wi4b32-gpuopt11 task=short-chat runs=1 context_tokens=1280
+W0000 00:00:1790328009.907507  158824 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1790328009.907564  158824 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790328009.907577  158824 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1790328009.907562  158834 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1790328009.907580  158824 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111347300, name=GPU Metal
+INFO: [gpu_registry.cc:109] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111347420, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111347360, name=GPU Metal
+INFO: [gpu_registry.cc:109] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1113470c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=368, num_signatures=2
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=1072, num_inputs=60, num_outputs=57, num_ops=574
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=860, num_inputs=60, num_outputs=57, num_ops=372
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=1280, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 482 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 1280
+INFO: [magic_number_utils.cc:536] 623 tensors of signature decode have been updated for magic number  32771 to target number 1280
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1790328009.929464  158824 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1790328009.929591  158824 gpu_backend_metal.mm:108] Metal Residency Set successfully initialized.
+I0000 00:00:1790328010.845194  158824 delegate_kernel.cc:331] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790328010.845207  158824 delegate_kernel.cc:907] Initializing Metal-based API from serialized data.
+I0000 00:00:1790328010.964437  158824 delegate_kernel.cc:331] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790328010.964448  158824 delegate_kernel.cc:907] Initializing Metal-based API from serialized data.
+W0000 00:00:1790328010.964803  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.964859  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.964911  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.964956  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965005  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965048  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965096  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965142  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965188  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965233  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965279  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965322  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965366  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965417  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965461  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965508  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965551  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965597  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965641  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965686  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965728  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965772  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965818  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965861  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965905  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965949  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.965994  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+W0000 00:00:1790328010.966039  158824 gpu_model_builder.cc:3897] Shape mismatch in GpuModelBuilder::UpdateOutputTensors(output of flash_decode_sdpa). Requested shape:{bhwdc, {1, 1, 1, 1, 2048}} vs reference shape: {bhwdc, {1, 16, 1, 1, 128}}
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x15e562400, name=GPU Metal
+INFO: [gpu_registry.cc:109] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x15e560d80, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790328011.189298  158824 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1790328011.189307  158824 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1790328011.189315  158824 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1790328011.189316  158824 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1790328011.189317  158824 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1790328011.189318  158824 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1790328011.189319  158824 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1790328011.189320  158824 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1790328011.189341  158824 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1790328011.189342  158824 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790328011.189423  158824 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1790328011.189425  158824 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1790328011.667059  159352 sampler_factory.cc:572] Metal sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [third_party/odml/litert_lm/runtime/components/sampler_factory.cc:324]
+└ Could not load shared library libLiteRtTopKMetalSampler.dylib: dlopen(libLiteRtTopKMetalSampler.dylib, 0x0005): tried: 'libLiteRtTopKMetalSampler.dylib' (no such file), '/private/preboot/Cryptexes/OSlibLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/CC4744B1-84FC-465B-B00F-A0ED07D7333D/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/CC4744B1-84FC-465B-B00F-A0ED07D7333D/BenchmarkApp.app/Frameworks/CLiteRTLM.framework/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/CC4744B1-84FC-465B-B00F-A0ED07D7333D/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKMetalSampler.dylib' (no such file).
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:578
+I0000 00:00:1790328011.671253  159352 llm_litert_compiled_model_executor.cc:1457] Sampler will handle decode input tensors.
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=211.88 decode_tok_s_wall=210.23 ttft_ms=492 prefill_tok_s=41.8 prefill_tok_s_wall=38.6 prompt_tokens=19 peak_mb=814 median_mb=474 median_resident_mb=589 ctx=1280 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x15e560d80, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x15e562400, name=GPU Metal
+The app terminated with the exit code 0.
