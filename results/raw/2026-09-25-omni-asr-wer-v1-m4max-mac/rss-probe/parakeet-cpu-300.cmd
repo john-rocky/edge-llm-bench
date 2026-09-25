@@ -1,0 +1,2 @@
+### CMD: DYLD_LIBRARY_PATH=/Users/majimadaisuke/code/edge-llm-bench/.build/omni-runner-66058c82 /Users/majimadaisuke/code/edge-llm-bench/.build/omni-runner-66058c82/omni_eval_runner --model_name=parakeet-tdt-0.6b-v3 --cache_dir=/Users/majimadaisuke/code/edge-llm-bench/.build/asr-models --backend=cpu --num_threads=4 --manifest=/Users/majimadaisuke/code/edge-llm-bench/.build/omni-eval/sets/librispeech-test-clean/manifest.tsv --limit=300 --output=/Users/majimadaisuke/code/edge-llm-bench/.build/omni-eval/runs/2026-09-25-rss-probe-mac/parakeet-cpu-300.jsonl
+exit 0

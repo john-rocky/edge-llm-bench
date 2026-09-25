@@ -1,0 +1,85 @@
+diff --git a/third_party/espeak_ng/espeak_ng.BUILD b/third_party/espeak_ng/espeak_ng.BUILD
+index 5940173b..650b7a64 100644
+--- a/third_party/espeak_ng/espeak_ng.BUILD
++++ b/third_party/espeak_ng/espeak_ng.BUILD
+@@ -73,32 +73,60 @@ cc_library(
+     ],
+ )
+ 
++ESPEAK_COPTS = [
++    "-Wno-missing-braces",
++    "-Wno-unused-variable",
++    "-Wno-unused-result",
++    "-Wno-error=unused-result",
++    "-Wno-format",
++]
++
++ESPEAK_DEFINES = [
++    "N_PATH_HOME=4096",
++    "PATH_ESPEAK_DATA=\\\"/usr/share/espeak-ng-data\\\"",
++]
++
++ESPEAK_DEPS = [
++    ":config_header",
++    ":espeak_ng_base_headers",
++    ":espeak_ng_speak_lib_header",
++    ":espeak_speak_lib_header",
++    ":noinst_headers",
++    ":speech_player_header",
++    ":ucd_header",
++]
++
++# espeak-ng's own include_next shims for headers some platforms lack (macOS
++# has no <endian.h>); its autotools build always adds -Isrc/include/compat.
++cc_library(
++    name = "compat_headers",
++    hdrs = glob(["src/include/compat/**/*.h"]),
++)
++
++# The C++ speechPlayer sources build without the compat shims: the shims'
++# tolower/toupper macros break libc++ headers.
++cc_library(
++    name = "speech_player_sources",
++    srcs = glob(["src/speechPlayer/src/*.cpp"]),
++    copts = ESPEAK_COPTS,
++    defines = ESPEAK_DEFINES,
++    deps = ESPEAK_DEPS,
++)
++
+ cc_library(
+     name = "libespeak_ng_la_sources",
+     srcs = glob([
+         "src/libespeak-ng/*.c",
+-        "src/speechPlayer/src/*.cpp",
+         "src/ucd-tools/src/*.c",
+     ]),
+-    copts = [
+-        "-Wno-missing-braces",
+-        "-Wno-unused-variable",
+-        "-Wno-unused-result",
+-        "-Wno-error=unused-result",
+-        "-Wno-format",
+-    ],
+-    defines = [
+-        "N_PATH_HOME=4096",
+-        "PATH_ESPEAK_DATA=\\\"/usr/share/espeak-ng-data\\\"",
+-    ],
+-    deps = [
+-        ":config_header",
+-        ":espeak_ng_base_headers",
+-        ":espeak_ng_speak_lib_header",
+-        ":espeak_speak_lib_header",
+-        ":noinst_headers",
+-        ":speech_player_header",
+-        ":ucd_header",
++    copts = ESPEAK_COPTS + select({
++        "@platforms//os:macos": ["-Iexternal/espeak_ng/src/include/compat"],
++        "//conditions:default": [],
++    }),
++    defines = ESPEAK_DEFINES,
++    deps = ESPEAK_DEPS + [
++        ":compat_headers",
++        ":speech_player_sources",
+     ],
+ )
+ 
