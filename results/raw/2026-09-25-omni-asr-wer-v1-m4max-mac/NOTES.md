@@ -223,24 +223,38 @@ engine.
 |---|---|---|---|---|---|---|
 | 5 s file, main@66058c82 | 17.67 | 18.25 | 3.24 | 12.38 | 25.73 | 34.36 |
 | 5 s file, Slaney mel (01+03) | 20.70 | 17.92 | 2.40 | 14.17 | 32.92 | 34.36 |
-| **30 s export, Slaney mel** | **2.69** | (fix/summary) | 5.18 | 2.48 | 1.75 | 1.99 |
+| 30 s export, Slaney mel | 2.69 | 10.54 | 5.18 | 2.48 | 1.75 | 1.99 |
+| **30 s export, Slaney mel + valid-length stop (patch 06)** | **2.17** | **5.35** | 3.25 | 2.20 | 1.63 | 1.95 |
 | NeMo fp32 (leaderboard, H200) | 1.92 | 3.59 | | | | |
 
 The Slaney mel alone moves the single-window bucket from 3.24 to 2.40 (the model's own accuracy
 improves) and does nothing for multi-window utterances, as expected. The 30 s export brings the
-multi-window buckets to the leaderboard's level and removes the insertion runs and the hangs on
-these sets (the padded tail is where they came from; with the cap patch they cannot recur). What
-remains is the short-clip bucket (5.18): a 2 s clip is decoded over 28 s of zero-padded frames and
-the TDT decoder sometimes hallucinates a tail there ("i am not sure if you are not going to be able
-to do that"). The engine knows the valid frame count (`valid_frames` in the log-mel processor);
-stopping the decoder at ceil(valid/8) frames, as NeMo does with `length`, is the next change, and
-would also let the 5 s and 30 s windows be chosen per utterance. RTFx with the 30 s file is 12.4
-(every utterance pays a 30 s encoder pass) against 34 for the 5 s file.
+multi-window buckets to the leaderboard's level, but a 2 s clip is then decoded over 28 s of
+zero-padded frames and the TDT decoder hallucinates a tail there ("i am not sure if you are not
+going to be able to do that"; on test-other one clip ran to 1830 inserted words) — the same padded
+tail the hangs come from.
+
+**Patch 06 — stop at the last frame that carries audio.** The log-mel processor records how many
+frames of the window carry audio (the padding the audio source adds is exact zeros), the
+recognizer maps them to encoder frames (`ceil(n / 8) + 4`), and `TdtDecoder::Decode` stops there,
+as NeMo bounds decoding by `length`; the 10-symbol cap is in the same patch. Two things this pass
+established on the way (`ab/`, `fix2/`): normalization must keep every frame, padding included —
+normalizing over the valid frames only and writing the padded frames as zeros (the mean) sends
+the 5 s file's short clips from 2.40 to 11.42 because the exports were trained on padded batches
+without a length mask, so the normalized floor is what they know as silence; and the tail margin
+does not matter between 2 and 16 encoder frames on the 5 s file (2.40 throughout) while on the 30 s
+file the stop itself takes 300 short clips from 4.19 to 2.36, with 4 chosen for the last word. With
+patch 06 the 30 s export scores **2.17 on test-clean and 5.35 on test-other** (NeMo fp32 on an H200:
+1.92 / 3.59), with no insertion runs and no hangs; what remains is clips under 5 s on test-other
+(10.2, 44 of 1419 come back empty), i.e. the model's own short-standalone-window behaviour from
+finding 2, now only on utterances that are short themselves. RTFx is 17–19 (every utterance pays a
+30 s encoder pass) against 34 for the 5 s file; a window chosen per utterance would recover that.
 
 ### 3. The hang, 4. the GPU per-session growth, 5. the macOS build — as in the sections above
 
-Patch 05 (the 10-symbol cap) ends the three hanging utterances in under half a second; with the
-Slaney mel the loop condition moved (no hang in the fixed 5 s runs), so the cap is the safety net,
+Patch 05 (the 10-symbol cap, also inside 06) ends the three hanging utterances in under half a
+second; with the Slaney mel the loop condition moved (no hang in the fixed 5 s runs), and with the
+valid-length stop the padded tail it fires on is no longer decoded, so the cap is the safety net,
 not a workaround for one file. The GPU growth is the decoder output buffers created per session
 in `IOAccelerator` memory and not released; one session reused with `Reset()` stays flat (291–296
 MB over 159 utterances), so until the runtime frees them, keeping one session per engine is the

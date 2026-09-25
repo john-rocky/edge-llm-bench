@@ -1,0 +1,177 @@
+diff --git a/omni/asr/log_mel_spectrogram_processor.cc b/omni/asr/log_mel_spectrogram_processor.cc
+index 67c23f4c..a543b400 100644
+--- a/omni/asr/log_mel_spectrogram_processor.cc
++++ b/omni/asr/log_mel_spectrogram_processor.cc
+@@ -167,6 +172,19 @@ absl::StatusOr<std::vector<float>> LogMelSpectrogramProcessor::Process(
+     return std::vector<float>();
+   }
+ 
++  // Frames after the last non-zero sample are zero padding added by the audio
++  // source for a short final window; normalization statistics stop there and
++  // the padded frames go out as exact zeros so the recognizer can skip them.
++  size_t valid_samples = raw_speech.size();
++  while (valid_samples > 0 && raw_speech[valid_samples - 1] == 0.0f) {
++    --valid_samples;
++  }
++  if (valid_samples == 0) valid_samples = raw_speech.size();
++  last_valid_frames_ = static_cast<int>(
++      (valid_samples + config_.hop_length - 1) / config_.hop_length);
++  // Normalization statistics and the zero-fill keep every frame, padding
++  // included: the exports were trained on padded batches without a length
++  // mask, and the normalized floor is what they see as silence.
+   int valid_frames = raw_speech.size() / config_.hop_length;
+   if (!preprocessor_) {
+     return absl::InternalError(
+diff --git a/omni/asr/audio_preprocessor.h b/omni/asr/audio_preprocessor.h
+index 534b4694..141bddb2 100644
+--- a/omni/asr/audio_preprocessor.h
++++ b/omni/asr/audio_preprocessor.h
+@@ -38,6 +38,12 @@ class AudioPreprocessor
+   }
+ 
+   Stage<std::vector<float>>& audio_source_;
++  // Frames of the last chunk that carry audio (the rest is zero padding added
++  // by the audio source for a short final window); 0 = unknown / all.
++  int last_valid_frames_ = 0;
++
++ public:
++  int last_valid_frames() const { return last_valid_frames_; }
+ };
+ 
+ }  // namespace litert::omni::asr
+diff --git a/omni/asr/litert_speech_recognizer.h b/omni/asr/litert_speech_recognizer.h
+index 63335940..8ff3c8e1 100644
+--- a/omni/asr/litert_speech_recognizer.h
++++ b/omni/asr/litert_speech_recognizer.h
+@@ -36,6 +36,9 @@ class LiteRtSpeechRecognizer : public SpeechRecognizer {
+   class Decoder {
+    public:
+     virtual ~Decoder() = default;
++    // Number of encoder frames that carry audio in the next Decode() call
++    // (the rest is zero padding); decoders may stop there. 0 = all frames.
++    virtual void SetValidFrames(int valid_encoder_frames) {}
+ 
+     // Decodes encoder output buffers into token IDs and optional timestamps.
+     virtual absl::StatusOr<std::vector<DecodedToken>> Decode(
+diff --git a/omni/asr/litert_speech_recognizer.cc b/omni/asr/litert_speech_recognizer.cc
+--- a/omni/asr/litert_speech_recognizer.cc
++++ b/omni/asr/litert_speech_recognizer.cc
+@@ -13,6 +13,8 @@
+ // limitations under the License.
+ 
+ #include "omni/asr/litert_speech_recognizer.h"
++
++#include "omni/asr/audio_preprocessor.h"
+ 
+ #include <memory>
+ #include <utility>
+@@ -71,6 +73,30 @@
+       encode_input_buffers_[0].Write<float>(absl::MakeConstSpan(mel_features)));
+   LITERT_RETURN_IF_ERROR(runner_->Run(
+       kEncodeSignatureName, encode_input_buffers_, encode_output_buffers_));
++  {
++    // The log-mel processor records how many frames of this window carry
++    // audio (the rest is the zero-padded tail of a short final window); map
++    // them to encoder frames and let the decoder stop there, as NeMo bounds
++    // decoding by `length`.
++    auto* preprocessor = dynamic_cast<AudioPreprocessor*>(&audio_preprocessor_);
++    LITERT_ASSIGN_OR_RETURN(auto in_type, encode_input_buffers_[0].TensorType());
++    LITERT_ASSIGN_OR_RETURN(auto out_type,
++                            encode_output_buffers_[0].TensorType());
++    const auto in_dims = in_type.Layout().Dimensions();
++    const auto out_dims = out_type.Layout().Dimensions();
++    int valid_enc = 0;
++    if (preprocessor != nullptr && in_dims.size() == 3 && out_dims.size() == 3) {
++      const int mel_frames = in_dims[2];
++      const int enc_frames = out_dims[2];
++      const int valid = preprocessor->last_valid_frames();
++      const int margin = 4;  // encoder frames (~0.3 s) past the last audio frame
++      if (mel_frames > 0 && valid > 0 && valid < mel_frames) {
++        valid_enc = (valid * enc_frames + mel_frames - 1) / mel_frames + margin;
++        if (valid_enc >= enc_frames) valid_enc = 0;
++      }
++    }
++    decoder_->SetValidFrames(valid_enc);
++  }
+   ABSL_ASSIGN_OR_RETURN(auto decoded_tokens,
+                         decoder_->Decode(encode_output_buffers_));
+   PushOutput(std::move(decoded_tokens));
+diff --git a/omni/asr/BUILD b/omni/asr/BUILD
+index 2807a54f..b5bc3c49 100644
+--- a/omni/asr/BUILD
++++ b/omni/asr/BUILD
+@@ -326,6 +326,7 @@ cc_library(
+     srcs = ["litert_speech_recognizer.cc"],
+     hdrs = ["litert_speech_recognizer.h"],
+     deps = [
++        ":audio_preprocessor",
+         ":speech_recognizer",
+         "@com_google_absl//absl/base:nullability",
+         "@com_google_absl//absl/cleanup",
+diff --git a/omni/asr/tdt_decoder.h b/omni/asr/tdt_decoder.h
+index a9458367..aee13ab7 100644
+--- a/omni/asr/tdt_decoder.h
++++ b/omni/asr/tdt_decoder.h
+@@ -40,6 +40,11 @@ class TdtDecoder : public LiteRtSpeechRecognizer::Decoder {
+ 
+   ~TdtDecoder() override = default;
+ 
++  void SetValidFrames(int valid_encoder_frames) override {
++    valid_time_index_limit_ =
++        valid_encoder_frames > 0 ? static_cast<size_t>(valid_encoder_frames) : 0;
++  }
++
+   absl::StatusOr<std::vector<SpeechRecognizer::DecodedToken>> Decode(
+       std::vector<TensorBuffer>& encoder_outputs) override;
+ 
+@@ -59,6 +64,7 @@ class TdtDecoder : public LiteRtSpeechRecognizer::Decoder {
+   std::vector<TensorBuffer> decode_output_buffers_;
+   std::optional<TensorBuffer> stateful_decode_token_ids_buffer_;
+   const size_t max_time_index_;
++  size_t valid_time_index_limit_ = 0;  // 0 = decode every frame
+   const size_t num_token_ids_;
+   const size_t num_logits_per_token_;
+   const int decode_start_token_id_;
+diff --git a/omni/asr/tdt_decoder.cc b/omni/asr/tdt_decoder.cc
+index 659735f0..5e573294 100644
+--- a/omni/asr/tdt_decoder.cc
++++ b/omni/asr/tdt_decoder.cc
+@@ -163,8 +165,29 @@ absl::StatusOr<std::vector<SpeechRecognizer::DecodedToken>> TdtDecoder::Decode(
+   token_ids[0] = decode_start_token_id_;
+   size_t token_index = 0;
+   size_t time_index = 0;
++  // Stop at the last encoder frame that carries audio (the rest of a short
++  // final window is zero padding), the way NeMo bounds decoding by `length`.
++  const size_t time_limit =
++      (valid_time_index_limit_ > 0 && valid_time_index_limit_ < max_time_index_)
++          ? valid_time_index_limit_
++          : max_time_index_;
++  // Greedy TDT decoding can predict a non-blank token with duration 0
++  // repeatedly at one time index; without a cap the loop never advances
++  // (NeMo's greedy TDT decoder caps this with max_symbols_per_step). After
++  // kMaxSymbolsPerStep symbols at the same time index, advance by one frame.
++  constexpr size_t kMaxSymbolsPerStep = 10;
++  size_t symbols_at_time_index = 0;
++  size_t last_time_index = 0;
+ 
+-  while (time_index < max_time_index_) {
++  while (time_index < time_limit) {
++    if (time_index != last_time_index) {
++      symbols_at_time_index = 0;
++      last_time_index = time_index;
++    }
++    if (symbols_at_time_index >= kMaxSymbolsPerStep) {
++      ++time_index;
++      continue;
++    }
+     LITERT_RETURN_IF_ERROR(current_token_ids_buffer->Write<int32_t>(
+         absl::MakeConstSpan(token_ids)));
+ 
+@@ -214,6 +237,7 @@ absl::StatusOr<std::vector<SpeechRecognizer::DecodedToken>> TdtDecoder::Decode(
+     int token_id = static_cast<int>(
+         std::distance(logits + start_index_of_token_id, max_token_it));
+     if (token_id != blank_token_id) {
++      ++symbols_at_time_index;
+       decoded_tokens.push_back(SpeechRecognizer::DecodedToken{
+           .token_id = token_id, .timestamp_ms = static_cast<int>(time_index)});
+       if (num_inference_token_ids > 1) {
