@@ -81,6 +81,17 @@ framework registers its own accelerator first — see
    (`bazel-bin/swift/CLiteRTLM.xcframework.zip` in `~/code/litert-lm-asr-ios-wt`) but not
    installed, since the prompt loss reproduces at that commit on the Mac.
 
+5. **Where the text goes: the rendered user turn is empty.** Asking the OSS engine to render
+   the same message through the bundle's prompt template
+   (`Conversation.renderMessageIntoString`, the C API's
+   `litert_lm_conversation_render_message_to_string`) returns
+   `<|im_start|>user⏎<|im_end|>⏎<|im_start|>assistant⏎` for a message whose content is the
+   48-character text — the template scaffolding with no content — and
+   `renderPrefaceIntoString` returns an error (`probes/diag-render_…`, iPhone, CPU
+   backend, published Qwen3-0.6B bundle). So the loss happens between the parsed message
+   JSON (`{"role":"user","content":[{"type":"text","text":…}]}`, the same shape the CLI
+   builds) and the template input inside the OSS-built engine.
+
 ## Reading
 
 No valid iPhone number for the composite files came out of this route today: the prompt
@@ -92,6 +103,8 @@ registration mechanism works from an OSS build on the phone (as for the ASR inst
 and the instrument pieces (project copy, package worktree, dylib embedding, backend and
 counter switches) are in place for the day a build pair works. The two defects are LiteRT-LM
 findings at `1dadd00c` on iOS; whether they exist at head or only in an OSS iOS build is
-open. The 12-flag 0.6B export (`p1024_06b_12flags`, 341,779,680 B, sha256 `f3499966…`,
-sections identical to the 09-18 export) was regenerated and side-loaded; the 4B one was
-still downloading its checkpoint when this note was written.
+open. Both 12-flag exports were regenerated for the day a working framework exists:
+`p1024_06b_12flags` (341,779,680 B, sha256 `f3499966…`, side-loaded) and `p1024_4b_12flags`
+(2,270,748,784 B, sha256 `aa9fcedd…`, 21:38 JST after the Qwen3-4B checkpoint was
+re-downloaded); sections identical to the 09-18 exports, file hashes differ (uuid /
+timestamp).
