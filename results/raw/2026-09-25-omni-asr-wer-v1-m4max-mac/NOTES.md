@@ -225,7 +225,9 @@ some windows (c4), but the dominant effect is the model on short standalone wind
 The lever is the window length. `tools/omni-eval/convert_30s.sh` re-exports the model with
 litert-samples' own recipe at `--input_sec 30` (litert-torch 0.9.4, drq int8, 630 MB, 1.5 min on
 the Mac); a `parakeet-tdt-0.6b-v3-30s` metadata entry (in patch 03) runs it through the same
-engine.
+engine. The export is published at https://huggingface.co/mlboydaisuke/Parakeet-TDT-0.6B-v3-LiteRT
+(`parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite`, sha256
+`378935f8897f0c713ad2aa97d939c73c44e9f26546e12c1cd6af9c76f386f06a`), the URL that entry points at.
 
 | parakeet-tdt-0.6b-v3 (i8) | test-clean | test-other | <5 s | 5–10 s | 10–20 s | ≥20 s (clean) |
 |---|---|---|---|---|---|---|
