@@ -549,6 +549,11 @@ public actor MediaPipeRuntime: LLMRuntime {
             // an engine-side one (2026-09-25, OSS main@1dadd00c on iOS: the model answered
             // a prompt the app never sent).
             FileHandle.standardError.write("YARDSTICK_NOTE sync_send start prompt_chars=\(prompt.count) head=\(prompt.prefix(60).replacingOccurrences(of: "\n", with: " "))\n".data(using: .utf8)!)
+            // What the engine renders for this message through the bundle's prompt template
+            // (the text the model will see), and the preface it rendered before it.
+            let preface = (try? conversation.renderPrefaceIntoString()) ?? "<err>"
+            let rendered = (try? conversation.renderMessageIntoString(Message(prompt))) ?? "<err>"
+            FileHandle.standardError.write("YARDSTICK_NOTE render preface=[\(preface.prefix(200).replacingOccurrences(of: "\n", with: "⏎"))] message=[\(rendered.prefix(400).replacingOccurrences(of: "\n", with: "⏎"))]\n".data(using: .utf8)!)
             do {
                 let probe = try await conversation.sendMessage(Message(prompt), maxOutputTokens: 48)
                 let probeText = probe.toString
