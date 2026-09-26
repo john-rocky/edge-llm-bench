@@ -51,7 +51,7 @@ framework registers its own accelerator first — see
    start prompt_chars=48 head=Explain what on-device AI means in simple terms.`) and the
    engine still replies about the plant (`probes/diag-sync-send_…`). Disabling the
    engine's benchmark flag (`engine-counters=off`) changes nothing. The same app code on
-   the released v0.17.x framework (the prebuilt-dylib check, same phone, same bundles)
+   the released v0.17.x framework (the prebuilt-dylib check, same phone, the 9-flag export on the GPU)
    answers the prompt ("Okay, the user wants to understand on-device AI in simple terms…",
    `promptTokenCount` 19), so the loss is inside the OSS-built engine at this commit
    (message → prompt-template path), not in the app or the Swift package (whose
@@ -77,7 +77,7 @@ framework registers its own accelerator first — see
    the prompt. (Erratum 2026-09-26: the sentence that stood here — "the OSS CLI answered
    prompts correctly on 2026-09-18 at this commit" — was wrong; that CLI was built from the
    `v0.17.0` tag, see `../2026-09-18-qwen3-composite-prebuilt-1dadd00c-mac/PROVENANCE.md`.
-   The cause was found the next day by calling the C API directly, see the Reading below.) An iOS xcframework at `66058c82` was also built
+   The cause was found the next day by calling the C API directly, see the Reading below; it is the mechanism of LiteRT-LM #3688, filed from this side on 2026-09-20.) An iOS xcframework at `66058c82` was also built
    (`bazel-bin/swift/CLiteRTLM.xcframework.zip` in `~/code/litert-lm-asr-ios-wt`) but not
    installed, since the prompt loss reproduces at that commit on the Mac.
 
@@ -102,7 +102,10 @@ open-source tree is not the cause — the same recipe at the `v0.17.0` tag deliv
 Since `main` commit `6c6b4582` (2026-09-10) the Conversation API hands the chat template the
 message content as a parts array, and this bundle's stored Qwen3 template sets `content = ''`
 when `content` is not a string; the refreshed `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`
-(a template that iterates parts) renders and answers correctly on the same OSS build. What the route did establish: the accelerator
+(a template that iterates parts) renders and answers correctly on the same OSS build. The
+maintainer's answer in [#3688](https://github.com/google-ai-edge/LiteRT-LM/issues/3688) (2026-09-20)
+makes the parts list the contract, so the composite exports used here need a re-export with a
+parts-aware template before this route can give a number. What the route did establish: the accelerator
 registration mechanism works from an OSS build on the phone (as for the ASR instrument),
 and the instrument pieces (project copy, package worktree, dylib embedding, backend and
 counter switches) are in place for the day a build pair works. The two defects are LiteRT-LM

@@ -9,6 +9,16 @@ while Google's released `v0.17.0` / `v0.17.1` framework delivered it through the
 building the C API from the open-source tree, or of the commits between the `v0.17.0` tag and
 `1dadd00c`?
 
+## Prior report
+
+The mechanism found here was already reported from this side on 2026-09-20 as
+[LiteRT-LM #3688](https://github.com/google-ai-edge/LiteRT-LM/issues/3688) (from a `litert-lm-nightly`
+0.18.0.dev20260918 run of the same `qwen3_0_6b_mixed_int4.litertlm`): since `6c6b4582` the template
+receives `content` as a list of parts. The maintainer's answer there (2026-09-20): in 0.18.0 there
+is a chat template standard (`models/README.md` in LiteRT-LM), and the contents will always be a
+list of objects with a type; the issue was closed on 2026-09-22. This page adds the bisect, the
+head and CLI runs, the C-API-level probe and the survey below; it was not filed as a new issue.
+
 ## Instrument
 
 `probes/capi/capi_render_probe.py` opens one `libCLiteRTLM_mac.dylib` through Python `ctypes`
@@ -48,9 +58,9 @@ same commit's `prebuilt/macos_arm64/` was placed beside each dylib.
 
 | bundle | identity | stored chat template |
 |---|---|---|
-| `litert-community/Qwen3-0.6B` `qwen3_0_6b_mixed_int4.litertlm` | rev `a3c5d805` (file unchanged since 2026-07-17), 497,516,544 B, LFS sha256 `7900eb4e…` | the Qwen3 template as published with the Qwen3 checkpoints: `{%- if message.content is string %}{%- set content = message.content %}{%- else %}{%- set content = '' %}{%- endif %}` |
+| `litert-community/Qwen3-0.6B` `qwen3_0_6b_mixed_int4.litertlm` | rev `a3c5d805` (this file last changed in Hub commit `154c5de0`, 2026-09-19), 497,516,544 B, LFS sha256 `7900eb4e…` | the Qwen3 template as published with the Qwen3 checkpoints: `{%- if message.content is string %}{%- set content = message.content %}{%- else %}{%- set content = '' %}{%- endif %}` |
 | `litert-community/Qwen3-0.6B` `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` | rev `a3c5d805` (refreshed 2026-09-21, "current litert-torch export"), 344,671,744 B, LFS sha256 `03e7da1e…` | a rewritten template with `{%- macro format_content(content) -%}` that accepts a string or a sequence of `{"type":"text"}` parts |
-| `litert-community/Qwen3-1.7B` `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` | rev `73fbc3fe` (file added 2026-08-05), 977,184,032 B, LFS sha256 `2eeffef7…` | an earlier Qwen3 checkpoint template: it also guards `message.content is string`, but its user-turn line is `'<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>'` (the unguarded field) |
+| `litert-community/Qwen3-1.7B` `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` | rev `73fbc3fe` (file added 2026-08-05), 977,184,032 B, LFS sha256 `2eeffef7…` | a modified Qwen3 template: it keeps the `message.content is string` guard, but its user-turn line is `'<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>'` (the unguarded field) |
 
 ## Result — the same message JSON, `qwen3_0_6b_mixed_int4.litertlm`, CPU
 
@@ -71,7 +81,7 @@ an empty turn and the system-role message fails (`probes/capi/oss0170.shapes.std
 
 Control with the refreshed bundle (`Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`): the OSS dylib at
 `1dadd00c` renders `<|im_start|>user⏎Explain what on-device AI means in simple terms.<|im_end|>⏎…`,
-prompt tokens 19, and the reply is about on-device AI (`probes/capi/oss1dadd.dyn.stdout.txt`);
+prompt tokens 19, and the reply's thinking (all 48 output tokens land in the `thought` channel) is about on-device AI (`probes/capi/oss1dadd.dyn.stdout.txt`);
 the tag build gives the same, and so does `upstream/main` at `5e3bd637` (`probes/head/clean-dir/probe_Qwen3-0.6B_dynamic_wi4b32_afp32.stdout.txt`).
 
 Second template form, `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm`: at `5e3bd637` both `render_message`
@@ -80,7 +90,7 @@ operator on unsupported types string and sequence (in template:32)`
 (`probes/head/head.q17dyn.stdout.txt`); the tag build renders the text (19 prompt tokens, reply
 about on-device AI, `probes/capi/oss0170.q17dyn.stdout.txt`). So a template that guards
 `content is string` renders an empty turn, and one that concatenates `message.content` directly
-fails — both stock Qwen3 checkpoint templates of different dates.
+fails (the first is the Qwen3 checkpoint's own template; the second keeps the guard but writes the unguarded field at the user turn).
 
 The head runs were repeated from a directory holding only the built `CLiteRTLM_mac/`,
 `litert_lm_main`, the constraint-provider dylib, the probe script and the bundles, with the
@@ -103,9 +113,9 @@ now renders every user turn empty, with no error. A template that iterates conte
 refreshed `dynamic_wi4b32_afp32` file) renders it.
 
 Bisect (`git bisect run` between `e9fd8c53` good and `1dadd00c` bad; each step builds
-`//swift:CLiteRTLM_mac` and runs `capi_render_shapes.py`; `probes/bisect/`): the first bad commit is `6c6b4582` (9 steps, 23:28–23:37 JST; the parent `4050343f` renders the text, `6c6b4582` renders the empty turn; `probes/bisect/bisect.log`, `probes/bisect/bisect_gitlog.txt`, per-step `probe_<commit>.stdout.txt`).
+`//swift:CLiteRTLM_mac` and runs `capi_render_shapes.py`; `probes/bisect/`): the first bad commit is `6c6b4582` (9 steps, 23:28–23:37 JST; the parent `2518fba8` renders the text, `6c6b4582` renders the empty turn; `probes/bisect/bisect.log`, `probes/bisect/bisect_gitlog.txt`, per-step `probe_<commit>.stdout.txt`).
 
-At `upstream/main` `5e3bd637` (2026-09-26; `bazelisk build //swift:CLiteRTLM_mac //runtime/engine:litert_lm_main`, `probes/head/`): the C API renders the same empty turn (prompt tokens 9, reply about "a language question"), every message shape renders empty as at `1dadd00c`, and the tree's own CLI reproduces it — `litert_lm_main --backend cpu --model_path qwen3_0_6b_mixed_int4.litertlm --input_prompt "Explain what on-device AI means in simple terms."` prints the prompt and then answers as "a tutor for a 13-year-old who has a learning disability" (`probes/head/cli_litert_lm_main.stdout.txt`; the CLI's `litert_lm_lib.cc` sends `{"role":"user","content":[{"type":"text","text":…}]}` through the same `Conversation`).
+At `upstream/main` `5e3bd637` (2026-09-26; `bazelisk build //swift:CLiteRTLM_mac //runtime/engine:litert_lm_main`, `probes/head/`): the C API renders the same empty turn (prompt tokens 9, reply about "a language question"), every message shape renders empty as at `1dadd00c`, and the tree's own CLI reproduces it — `litert_lm_main --backend cpu --model_path qwen3_0_6b_mixed_int4.litertlm --input_prompt "Explain what on-device AI means in simple terms."` prints the prompt and then answers as "a tutor for a 13-year-old who has a learning disability" (`probes/head/cli_litert_lm_main.stdout.txt`; `litert_lm_main.cc` sends `{"role":"user","content":[{"type":"text","text":…}]}` through the same `Conversation`).
 
 `release/v0.17.0` does not contain `6c6b4582`; the released `v0.17.x` frameworks and wheels are
 unaffected.
@@ -128,7 +138,9 @@ Building the C API from the open-source tree is not what lost the prompt: the sa
 change on `main` since 2026-09-10 — the Conversation API hands the chat template a content
 array, and bundles whose template only handles a string either silently render an empty user turn (the `content is string` guard) or fail the template (`+` on a string and a sequence).
 Every binding that goes through `Conversation` with JSON messages (Swift, Kotlin, the C API, the
-CLI's `litert_lm_lib.cc` path) is on that route; the per-turn count reported by the engine
+CLI) is on that route; the per-turn count reported by the engine
 (9 prompt tokens for a 48-character message) is the visible symptom. For the benchmark's
-open-source iOS build, a bundle with a parts-aware template (or a re-export with one) is what
-makes the route usable; the Metal-path token salad noted on 2026-09-25 is a separate question.
+open-source iOS build the consequence follows the maintainer's answer in #3688: the composite
+exports have to be re-exported with a parts-aware template (the LiteRT-LM Qwen3 template at
+`a8178d7d`, as the refreshed `dynamic_wi4b32_afp32` file was) before the route can give a number;
+the Metal-path token salad noted on 2026-09-25 is a separate question.
