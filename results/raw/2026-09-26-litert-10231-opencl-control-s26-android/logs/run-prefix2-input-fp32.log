@@ -1,0 +1,98 @@
+### CMD: adb -s RFGL80R6A6H shell "cd /data/local/tmp/edge-llm-bench/vl/probe && LD_LIBRARY_PATH=/data/local/tmp/edge-llm-bench/vl/bin ./gpu_numerics_check_cl_gl --graph=prefix2-input.tflite --print_diff_stats --print_difference_distribution --fail_on_threshold=false " (2026-09-26 09:31:04)
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790382664.279494   30290 gpu_numerics_check.cc:667] Model: prefix2-input.tflite
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000785fe09460, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000785fe097e0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000785fe09bd0, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000785fe09850, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: Replacing 2 out of 2 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 0 (main).
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1790382664.283158   30290 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1790382664.283187   30290 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 2 out of 2 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+I0000 00:00:1790382664.319373   30290 delegate_kernel.cc:951] Initializing OpenCL-based API from graph.
+I0000 00:00:1790382664.360185   30290 gpu_numerics_check.cc:686] Signature index: 0
+I0000 00:00:1790382664.372073   30290 gpu_numerics_check.cc:471] Comparing output buffer 0 (name: litert_torch.generative.export_hf.model_ext.lfm2_vl.vision_exportable.LiteRTExportableModuleForLFM2VisionEncoder/transformers.models.siglip2.modeling_siglip2.Siglip2VisionModel_vision_tower/litert_torch.generative.export_hf.model_ext.lfm2_vl.patch.PatchedSiglip2VisionEmbeddings_embeddings;;litert_torch.generative.export_hf.model_ext.lfm2_vl.vision_exportable.LiteRTExportableModuleForLFM2VisionEncoder/transformers.models.siglip2.modeling_siglip2.Siglip2VisionModel_vision_tower/litert_torch.generative.export_hf.model_ext.lfm2_vl.patch.PatchedSiglip2VisionEmbeddings_embeddings/torch.nn.modules.linear.Linear_patch_embedding;1):
+
+--- Difference (CPU - GPU) Distribution ---
+Difference Range       | Distribution
+-----------------------------------------------------------------------------------------------------------------------------
+[-0.0000, -0.0000)     | 
+[-0.0000, -0.0000)     | 
+[-0.0000, -0.0000)     | 
+[-0.0000, -0.0000)     | 
+[-0.0000, -0.0000)     | ###
+[-0.0000, -0.0000)     | 
+[-0.0000, -0.0000)     | ##########
+[-0.0000, 0.0000)      | ########
+[0.0000, 0.0000)       | ####################################################################################################
+[0.0000, 0.0000)       | #####
+[0.0000, 0.0000)       | ##########
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | ###
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | 
+[0.0000, 0.0000)       | 
+---------------------------------------------
+
+Max diff: 3.57628e-07
+Min diff: 0
+Top 0 diff: 3.57628e-07 @ element #: 786406, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 1 diff: 3.57628e-07 @ element #: 773791, CPU val: 0.855618 , GPU val: 0.855617
+Top 2 diff: 3.57628e-07 @ element #: 754918, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 3 diff: 3.57628e-07 @ element #: 742303, CPU val: 0.855618 , GPU val: 0.855617
+Top 4 diff: 3.57628e-07 @ element #: 723430, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 5 diff: 3.57628e-07 @ element #: 710815, CPU val: 0.855618 , GPU val: 0.855617
+Top 6 diff: 3.57628e-07 @ element #: 691942, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 7 diff: 3.57628e-07 @ element #: 679327, CPU val: 0.855618 , GPU val: 0.855617
+Top 8 diff: 3.57628e-07 @ element #: 660454, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 9 diff: 3.57628e-07 @ element #: 647839, CPU val: 0.855618 , GPU val: 0.855617
+Top 10 diff: 3.57628e-07 @ element #: 628966, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 11 diff: 3.57628e-07 @ element #: 616351, CPU val: 0.855618 , GPU val: 0.855617
+Top 12 diff: 3.57628e-07 @ element #: 597478, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 13 diff: 3.57628e-07 @ element #: 584863, CPU val: 0.855618 , GPU val: 0.855617
+Top 14 diff: 3.57628e-07 @ element #: 565990, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 15 diff: 3.57628e-07 @ element #: 553375, CPU val: 0.855618 , GPU val: 0.855617
+Top 16 diff: 3.57628e-07 @ element #: 534502, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 17 diff: 3.57628e-07 @ element #: 521887, CPU val: 0.855618 , GPU val: 0.855617
+Top 18 diff: 3.57628e-07 @ element #: 503014, CPU val: 0.0937802 , GPU val: 0.0937799
+Top 19 diff: 3.57628e-07 @ element #: 490399, CPU val: 0.855618 , GPU val: 0.855617
+CPU magnitude: 416279
+GPU magnitude: 416279
+Mean diff: 1.82709e-08
+Cosine similarity: 1
+MSE: 1.47306e-15
+SNR: 145.555 dB
+PSNR: 157.29 dB
+Pearson correlation: 1
+Total 0 out of 786432 are different elements, for output #0 (name: litert_torch.generative.export_hf.model_ext.lfm2_vl.vision_exportable.LiteRTExportableModuleForLFM2VisionEncoder/transformers.models.siglip2.modeling_siglip2.Siglip2VisionModel_vision_tower/litert_torch.generative.export_hf.model_ext.lfm2_vl.patch.PatchedSiglip2VisionEmbeddings_embeddings;;litert_torch.generative.export_hf.model_ext.lfm2_vl.vision_exportable.LiteRTExportableModuleForLFM2VisionEncoder/transformers.models.siglip2.modeling_siglip2.Siglip2VisionModel_vision_tower/litert_torch.generative.export_hf.model_ext.lfm2_vl.patch.PatchedSiglip2VisionEmbeddings_embeddings/torch.nn.modules.linear.Linear_patch_embedding;1), threshold - 0.0001
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000785fe09850, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000785fe09bd0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000785fe097e0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000785fe09460, name=LiteRT GPU
+model_name, buffer_idx, total_elements, diff_elements, epsilon, max_diff, min_diff, mean_diff, mse
+prefix2-input, 0, 786432, 0, 0.0001, 3.57628e-07, 0, 1.82709e-08, 1.47306e-15
+### EXIT=0 (09:31:04)

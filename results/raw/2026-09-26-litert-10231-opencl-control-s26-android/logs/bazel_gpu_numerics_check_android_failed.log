@@ -1,0 +1,26 @@
+### CMD: bazelisk build --config=android_arm64 --enable_platform_specific_config @litert//litert/tools:gpu_numerics_check (2026-09-26 09:24:13)
+INFO: Reading 'startup' options from /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --windows_enable_symlinks
+INFO: Options provided by the client:
+  Inherited 'common' options: --isatty=0 --terminal_columns=80
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc:
+  Inherited 'common' options: --experimental_repo_remote_exec --registry=https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/main/ --experimental_repo_remote_exec --noenable_bzlmod
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc:
+  'build' options: --repo_env=USE_PYWRAP_RULES=True --copt=-DGRPC_BAZEL_BUILD --host_copt=-DGRPC_BAZEL_BUILD --action_env=GRPC_BAZEL_RUNTIME=1 --repo_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --action_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --@rules_python//python/config_settings:precompile=force_disabled --define framework_shared_object=true --define tsl_protobuf_header_only=true --define=allow_oversize_protos=true --spawn_strategy=standalone -c opt --announce_rc --define=grpc_no_ares=true --noincompatible_remove_legacy_whole_archive --features=-force_no_whole_archive --host_features=-force_no_whole_archive --enable_platform_specific_config --define=with_xla_support=true --config=short_logs --experimental_cc_shared_library --experimental_link_static_libraries_once=false --incompatible_enforce_config_setting_visibility --@rules_ml_toolchain//common:enable_hermetic_cc=False --repo_env USE_HERMETIC_CC_TOOLCHAIN=0 --repo_env=HERMETIC_PYTHON_VERSION=3.13 --config=v2 --config=litert_prefixes --features=-layering_check --host_features=-layering_check --features=-header_modules --host_features=-header_modules
+INFO: Found applicable config definition build:short_logs in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --output_filter=DONT_MATCH_ANYTHING
+INFO: Found applicable config definition build:v2 in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --define=tf_api_version=2 --action_env=TF2_BEHAVIOR=1
+INFO: Found applicable config definition build:litert_prefixes in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --define=litert_prefixes=external/org_tensorflow/
+INFO: Found applicable config definition build:android_arm64 in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --config=android --cpu=arm64-v8a --fat_apk_cpu=arm64-v8a --platforms=@org_tensorflow//tensorflow/tools/toolchains/android:arm64-v8a
+INFO: Found applicable config definition build:android in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --crosstool_top=//external:android/crosstool --host_crosstool_top=@bazel_tools//tools/cpp:toolchain --dynamic_mode=off --define=xnn_enable_avxvnniint8=false --copt=-ULITERT_DISABLE_OPENCL_SUPPORT --copt=-w --cxxopt=-std=c++20 --host_cxxopt=-std=c++20 --define=with_xla_support=false --copt=-DABSL_FLAGS_STRIP_NAMES=0
+INFO: Found applicable config definition build:macos in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --apple_platform_type=macos --copt=-DGRPC_BAZEL_BUILD --features=archive_param_file --linkopt=-Wl,-undefined,dynamic_lookup --host_linkopt=-Wl,-undefined,dynamic_lookup --copt=-w --define=PREFIX=/usr --define=LIBDIR=$(PREFIX)/lib --define=INCLUDEDIR=$(PREFIX)/include --define=PROTOBUF_INCLUDE_PATH=$(PREFIX)/include --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target @@litert//litert/tools:gpu_numerics_check (1 packages loaded, 0 targets configured)
+Analyzing: target @@litert//litert/tools:gpu_numerics_check (1 packages loaded, 0 targets configured)
+
+ERROR: no such package '@@litert_prebuilts//': The repository '@@litert_prebuilts' could not be resolved: Repository '@@litert_prebuilts' is not defined
+ERROR: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/litert/litert/tools/BUILD:795:11: no such package '@@litert_prebuilts//': The repository '@@litert_prebuilts' could not be resolved: Repository '@@litert_prebuilts' is not defined and referenced by '@@litert//litert/tools:gpu_numerics_check'
+ERROR: Analysis of target '@@litert//litert/tools:gpu_numerics_check' failed; build aborted: Analysis failed
+INFO: Elapsed time: 0.538s, Critical Path: 0.00s
+INFO: 1 process: 1 internal.
+ERROR: Build did NOT complete successfully
