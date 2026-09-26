@@ -19,9 +19,14 @@
   Android version + security patch are recorded per run in the JSON
   (`device.systemVersion` / `device.securityPatch`).
 - Access: adb over USB, serial RFGL80R6A6H. USB debugging authorized.
-- Power/screen policy for speed cells: USB attached, screen on
-  (`conditions.screen: "on-usb"`) — same protocol as pixel-8a.md. Energy
-  cells: manual, unplugged (methodology/android.md).
+- Power/screen policy for speed cells: USB attached; the screen state is read
+  from the phone before every launch and stamped in `conditions.screen`
+  (`on-usb` / `off-usb (mWakefulness=…)`); on and off are both admissible for
+  the speed cells (the display is not used); the anchor decides the session —
+  same protocol as pixel-8a.md. Until 2026-09-26 the runners wrote a fixed
+  `on-usb` (rows without `conditions.screenSource`; `Awake` / `Dozing` there
+  are sitting-mode readings). Energy cells: manual, unplugged
+  (methodology/android.md).
 - NPU: physically present (Hexagon) and known to work via a separately built
   litert_lm_main with the Qualcomm dispatch library — but that binary is not
   this repo's pinned artifact, and the LiteRT NPU path is Early Access

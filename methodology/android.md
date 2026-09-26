@@ -62,9 +62,18 @@ v1 measures the same engine through `litert_lm_main`.
   `conditions.thermalRawStatus`. Gate: wait for status 0 up to `THERMAL_WAIT`
   (default 600 s), run anyway after timeout and record it (`THERMAL_GATE.txt`).
 - Battery level/state from `dumpsys battery` (disclose-hw-state).
-- Screen: benches run with USB attached, screen on (`conditions.screen:
-  "on-usb"`). Energy cells will run unplugged by hand; speed cells accept the
-  USB-attached state exactly like the iPhone plugged-speed protocol.
+- Screen: benches run with USB attached. The screen state is read from the
+  phone before every launch (`dumpsys power`, `mWakefulness`) and stamped in
+  `conditions.screen`: `on-usb` when `Awake`, otherwise
+  `off-usb (mWakefulness=…)`, with `conditions.screenSource: "measured"` (a
+  long-context sitting stamps its own per-round read instead, `"env"`) and
+  the "Stay awake" setting beside it (`conditions.stayOnWhilePluggedIn`). On
+  and off are both admissible for the speed cells (the display is not used);
+  the anchor decides the session. Until 2026-09-26 `run_cell.py`,
+  `endurance_cell.py` and `run_profile.py` wrote a fixed `on-usb` outside
+  sitting mode — not a reading. Energy cells will run unplugged by hand;
+  speed cells accept the USB-attached state exactly like the iPhone
+  plugged-speed protocol.
 - Sampler: litert_lm_main exposes **no temperature/top-p flags** →
   `conditions.sampler: "engine-default"`. This is a disclosed same-budget-rule
   deviation; llama-cli runs `--temp 0 --top-p 1` (greedy) like the Apple arms.

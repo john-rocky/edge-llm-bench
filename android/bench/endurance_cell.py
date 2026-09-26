@@ -37,7 +37,7 @@ import time
 import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from device_probe import battery, device_info, thermal_status  # noqa: E402
+from device_probe import battery, device_info, screen_conditions, thermal_status  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ENDURANCE_TASK = re.compile(r"^endurance-chat-(\d+)m$")
@@ -194,6 +194,7 @@ def run(args):
     model_sha = rc.sha256_file(model_local)
     batt0 = battery(args.serial)
     raw_status, thermal_name = thermal_status(args.serial)
+    screen = screen_conditions(args.serial)
 
     now = datetime.datetime.now(datetime.timezone.utc)
     stamp = now.strftime("%Y-%m-%dT%H-%M-%S.%f")
@@ -365,7 +366,7 @@ def run(args):
             "turnScriptSha256": turn_script_sha,
             "thermalRawStatus": raw_status,
             "thermalRawStatusFinal": end_status,
-            "screen": "on-usb",
+            **screen,
             "elapsedSeconds": round(elapsed_wall, 1),
             "exitCode": proc.returncode,
         },

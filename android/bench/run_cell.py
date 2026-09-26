@@ -25,6 +25,10 @@ Design decisions (methodology/android.md):
   - RSS is sampled from /proc/<pid>/status (VmRSS) by an on-device loop ->
     memoryMedianResidentMB; iOS phys_footprint has no Android equivalent and
     is never fabricated.
+  - conditions.screen is read from the phone right before every launch
+    (device_probe.screen_conditions: "on-usb" / "off-usb (mWakefulness=…)",
+    conditions.screenSource "measured" or "env"); on and off are both
+    admissible, the record says which it was.
 """
 import argparse
 import datetime
@@ -38,7 +42,7 @@ import time
 import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from device_probe import adb, battery, device_info, thermal_status  # noqa: E402
+from device_probe import adb, battery, device_info, screen_conditions, thermal_status  # noqa: E402
 import endurance_cell  # noqa: E402
 import parsers  # noqa: E402
 
@@ -400,6 +404,7 @@ def main():
             time.sleep(args.cooldown)
         raw_status, thermal_name = thermal_status(args.serial)
         batt = battery(args.serial)
+        screen = screen_conditions(args.serial)
         t0 = time.time()
         console, exit_code, rss_mb = run_once(cmd, binname, args.serial, args.timeout)
         elapsed = time.time() - t0
@@ -502,7 +507,7 @@ def main():
                               and not args.task.startswith("native-") else {}),
                            "thermalRawStatus": raw_status,
                            "thermalRawStatusFinal": end_status,
-                           "screen": os.environ.get("BENCH_ROUND_WAKEFULNESS", "on-usb"), "elapsedSeconds": round(elapsed, 1),
+                           **screen, "elapsedSeconds": round(elapsed, 1),
                            "exitCode": exit_code},
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py"},

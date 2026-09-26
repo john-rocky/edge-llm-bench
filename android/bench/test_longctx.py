@@ -199,6 +199,7 @@ class LongContextTests(unittest.TestCase):
              patch.object(cell, "adb", return_value="present"), \
              patch.object(cell, "device_info", return_value={"systemName": "Android", "modelIdentifier": "OFFLINE-FIXTURE"}), \
              patch.object(cell, "thermal_status", return_value=(1, "light") if hot else (0, "nominal")), \
+             patch.object(cell, "screen_conditions", return_value={"screen": "on-usb", "screenSource": "measured"}), \
              patch.object(cell, "battery", side_effect=[{"batteryLevel": 1.0, "batteryState": "charging", "temperatureC": 31.2},
                                                        {"batteryLevel": 0.99, "batteryState": "charging", "temperatureC": 32.4}]), \
              patch.object(cell, "run_once", return_value=(output, exit_code, 512.0)) as launch:

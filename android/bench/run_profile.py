@@ -56,7 +56,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import parsers  # noqa: E402
 import run_campaign  # noqa: E402
 import run_cell  # noqa: E402
-from device_probe import battery, device_info, thermal_status  # noqa: E402
+from device_probe import battery, device_info, screen_conditions, thermal_status  # noqa: E402
 
 ROOT = run_cell.ROOT
 NATIVE = re.compile(r"^native-benchmark-(\d+)x(\d+)$")
@@ -121,6 +121,7 @@ def profiled_run(cell, ctx, serial, timeout, prof_dir, control_path, tag, backen
     engine_version, engine_artifact = run_cell.observed_engine(binname, pins, serial)
     raw_status, thermal_name = thermal_status(serial)
     batt = battery(serial)
+    screen = screen_conditions(serial)
     t0 = time.time()
     console, exit_code, rss_mb = run_cell.run_once(cmd, binname, serial, timeout)
     elapsed = time.time() - t0
@@ -149,7 +150,7 @@ def profiled_run(cell, ctx, serial, timeout, prof_dir, control_path, tag, backen
         "conditions": {"profiling": True, "sampler": sampler,
                        "cpuAffinity": f"taskset {run_cell.CPU_MASK}" if run_cell.CPU_MASK else "none",
                        "contextTokens": ctx_note, "thermalRawStatus": raw_status,
-                       "thermalRawStatusFinal": end_status, "screen": "on-usb",
+                       "thermalRawStatusFinal": end_status, **screen,
                        "elapsedSeconds": round(elapsed, 1), "exitCode": exit_code},
         "metrics": metrics,
         "provenance": {"rawLog": log_name, "harness": "android/bench/run_profile.py",

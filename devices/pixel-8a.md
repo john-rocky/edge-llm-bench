@@ -13,9 +13,14 @@
   carry the truth.
 - Access: adb over USB. USB debugging must be authorized (the on-device dialog
   reappears after revocation); keep the screen unlocked for the first connect.
-- Power/screen policy for speed cells: USB attached, screen on
-  (`conditions.screen: "on-usb"`) — the Android counterpart of the iPhone
-  plugged-speed protocol. Energy cells: manual, unplugged (methodology/android.md).
+- Power/screen policy for speed cells: USB attached (the Android counterpart
+  of the iPhone plugged-speed protocol); the screen state is read from the
+  phone before every launch and stamped in `conditions.screen` (`on-usb` /
+  `off-usb (mWakefulness=…)`); on and off are both admissible for the speed
+  cells (the display is not used); the anchor decides the session. Until
+  2026-09-26 the runners wrote a fixed `on-usb` (rows without
+  `conditions.screenSource`; `Awake` / `Dozing` there are sitting-mode
+  readings). Energy cells: manual, unplugged (methodology/android.md).
 - NPU: not reachable (LiteRT NPU path is Early Access Program only) — LiteRT
   rows are cpu/gpu; the NPU row stays n/a with that reason.
 - Session anchor (llama.cpp `unsloth/Qwen3-0.6B-GGUF` Q4_K_M, cold, n=3) is

@@ -81,8 +81,10 @@ Why weekly and not nightly:
   carries its own anchor, so a weekly point per device is a usable drift
   series while a nightly one would mostly be a thermal-state series.
 - Cost lands on phones and on people. A full pass is 1.2 h (Mac) to 4 h
-  (Pixel 8a, three halves) of device time — measured, §3 — under USB, screen
-  on, phone unlocked; the phones are shared with the conversion lanes; and
+  (Pixel 8a, three halves) of device time — measured, §3 — under USB, phone
+  unlocked, the iPhone's screen on (an Android phone's screen may be on or
+  off; the runner reads and stamps it per launch); the phones are shared with
+  the conversion lanes; and
   every session produces a campaign dir somebody reviews and commits with a
   message that carries no cross-runtime ordering. One device per firing is
   a review load a person actually does.
@@ -167,8 +169,8 @@ bench host's):
 | device | when it is a candidate | first-pass wall time | preconditions the job checks | sharing |
 |---|---|---|---|---|
 | Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry); v2 set 1 h 04 min (18 cells × 4 runs, 1 gate retry, 2026-09-08) | `bench doctor --platform mac` green, no yardstick running; Core AI bundles staged (advisory, `doctor` warns) | none (host); side by side with a phone sitting since 2026-09-08 (§3) |
-| Galaxy S26 | any firing; USB, screen on, unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
-| Pixel 8a | any firing; USB, screen on, `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
+| Galaxy S26 | any firing; USB, screen on or off (read and stamped per launch), unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
+| Pixel 8a | any firing; USB, screen on or off (read and stamped per launch), `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
 | iPhone 17 Pro | the 05:30 firing only, after ≥4 h without a record (the only all-nominal sittings so far); unlocked (Auto-Lock Never), plugged or charged | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
 
 Wall times are the span from the session's first to last record in
@@ -341,7 +343,8 @@ visible in the table. Its numbers come from `arm_row` only.
 
 Operator requirements before the first automated firing:
 
-1. Phones attached over USB, screen on; the iPhone unlocked with Auto-Lock
+1. Phones attached over USB (an Android phone's screen may be on or off: the
+   runner reads and stamps it per launch); the iPhone unlocked with Auto-Lock
    Never for its window; the S26 plugged in (it is not attached today).
 2. The Mac stays awake at the firing times (the bench host runs with sleep 0).
 3. Sibling lanes keep using the device-hold protocol — the job takes the

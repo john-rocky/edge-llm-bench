@@ -103,6 +103,14 @@ def shell(cmd):
     if "dumpsys battery" in cmd:
         print("  level: 100\\n  status: 2\\n  USB powered: true\\n  temperature: 316")
         return 0
+    if "dumpsys power" in cmd:
+        # screen state; a campaign changes it by writing STATE/wakefulness
+        p = os.path.join(STATE, "wakefulness")
+        print("  mWakefulness=" + (open(p).read().strip() if os.path.exists(p) else "Awake"))
+        return 0
+    if cmd == "settings get global stay_on_while_plugged_in":
+        print("0")
+        return 0
     if "===ENGINE_OUTPUT===" in cmd:
         return engine(cmd)
     if cmd.startswith("sha256sum"):
@@ -219,6 +227,7 @@ def main():
                COOLDOWN="0", THERMAL_WAIT="5", GATE_COOLDOWN="0",
                BENCH_TEST_LOCK_DIR=tmp)
     env.pop("ROUNDS", None)  # inherited round mode must not alter legacy fixtures
+    env.pop("BENCH_ROUND_WAKEFULNESS", None)  # nor an inherited sitting-mode screen state
 
     def schedule(vals):
         json.dump(vals, open(os.path.join(state, "schedule.json"), "w"))
@@ -252,6 +261,10 @@ def main():
         ok(r1["metrics"]["decodeTokensPerSecond"] == 25.0, "decode parsed from engine output")
         ok(os.path.exists(os.path.join(out_a, r1["provenance"]["rawLog"])),
            "raw console log stored next to the record (stored-report-rule)")
+    ok(len(lit + lla) == 4 and all(
+        r["conditions"].get("screen") == "on-usb" and r["conditions"].get("screenSource") == "measured"
+        and r["conditions"].get("stayOnWhilePluggedIn") == "0" for _, r in lit + lla),
+       "screen read before every launch: Awake -> on-usb, screenSource measured, Stay awake setting beside it")
     if len(lla) == 2:
         ok(all("firstEver" not in r["metrics"] for _, r in lla),
            "llama.cpp never labelled firstEver (no persistent compile cache)")
@@ -376,6 +389,8 @@ def main():
         fh.write(f"android litert-lm fake/model endurance-chat-30m runs=1 "
                  f"backend=gpu context-tokens=1024 file={litert_model}\n")
     env["CAMPAIGN"] = "selftest-c"
+    with open(os.path.join(state, "wakefulness"), "w") as fh:
+        fh.write("Dozing")  # screen off: recorded, not refused
     print("--- campaign C (endurance session: sidecar + derived verdicts)")
     rc = run_campaign(env, cells_c)
     ok(rc == 0, f"campaign C exits 0 (got {rc})")
@@ -406,6 +421,9 @@ def main():
            "endurance binary witness: unmatched sha stamps 'unknown'")
         ok(r["conditions"]["sampler"].startswith("topK40/topP0.9/temp0.7"),
            "driver-set protocol sampler recorded")
+        ok(r["conditions"].get("screen") == "off-usb (mWakefulness=Dozing)"
+           and r["conditions"].get("screenSource") == "measured",
+           f"endurance: a dozing phone is stamped off-usb (got {r['conditions'].get('screen')!r})")
         sidecar = os.path.join(out_c, e.get("turnsSidecar", ""))
         ok(os.path.exists(sidecar), "turns sidecar stored beside the record")
         if os.path.exists(sidecar):
@@ -462,7 +480,11 @@ def main():
     # Wide spread would trigger a legacy retry; round mode must keep the
     # original rounds intact and leave admission to the session reviewer.
     schedule([100.0, 25.0, 25.0, 25.0, 5.0, 5.0, 5.0, 100.0])
-    env.update(CAMPAIGN="selftest-round", ROUNDS="2")
+    # sitting mode sets BENCH_ROUND_WAKEFULNESS from its per-round dumpsys read
+    # (it also pins the engine sha, which the fake binaries cannot match); the
+    # fake phone reads Awake again, so the env value must be the one stamped
+    os.remove(os.path.join(state, "wakefulness"))
+    env.update(CAMPAIGN="selftest-round", ROUNDS="2", BENCH_ROUND_WAKEFULNESS="Dozing")
     print("--- round campaign (2 iterations, reversal, anchor, gate off)")
     rc = run_campaign(env, cells_round)
     ok(rc == 0, f"round campaign exits 0 (got {rc})")
@@ -484,7 +506,12 @@ def main():
         order = [json.loads(line) for line in fh]
     ok([d["cell"] for d in order[4:]] == [d["cell"] for d in order[:4]][::-1], "full order reversed, including anchor")
     ok(not glob.glob(os.path.join(out_round, "*.json.attempt1")), "round mode never block-retries wide spread")
+    ok(len(pairs + controls) == 14 and all(
+        r["conditions"].get("screen") == "Dozing" and r["conditions"].get("screenSource") == "env"
+        for _, r in pairs + controls),
+       "sitting-mode BENCH_ROUND_WAKEFULNESS wins over the per-launch read (screenSource env)")
     env.pop("ROUNDS")
+    env.pop("BENCH_ROUND_WAKEFULNESS")
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")

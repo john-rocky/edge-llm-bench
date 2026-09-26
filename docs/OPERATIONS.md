@@ -396,3 +396,4 @@ old times until then).
   `scripts/build_yardstick_mac.sh`.
 - **Android has no warm regime in v1** and no TTFT on llama-cli; every
   deviation is listed in `methodology/android.md`.
+- **Android `conditions.screen` is a reading only since 2026-09-26**: the runners read `mWakefulness` before every launch (`on-usb` / `off-usb (mWakefulness=…)`, `conditions.screenSource`); an older row without `screenSource` that says `on-usb` carries a fixed string.

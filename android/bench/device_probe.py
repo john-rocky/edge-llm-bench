@@ -75,3 +75,40 @@ def thermal_status(serial=None):
     m = re.search(r"Thermal Status: (\d+)", out)
     raw = int(m.group(1)) if m else None
     return raw, THERMAL_NAMES.get(raw, f"unknown({raw})")
+
+
+def wakefulness(serial=None):
+    """PowerManager's mWakefulness: "Awake" / "Dozing" / "Asleep" /
+    "Dreaming"; None when dumpsys prints no such line."""
+    out = adb(["shell", "dumpsys power 2>/dev/null | grep -E 'mWakefulness=' | head -1"], serial)
+    m = re.search(r"mWakefulness=(\w+)", out)
+    return m.group(1) if m else None
+
+
+def stay_on_while_plugged_in(serial=None):
+    """The developer option "Stay awake" as the phone holds it (settings
+    global stay_on_while_plugged_in: "0" = off, otherwise a bitmask of the
+    power sources that keep the screen on); None when nothing is printed."""
+    lines = adb(["shell", "settings get global stay_on_while_plugged_in"], serial).strip().splitlines()
+    return lines[-1].strip() if lines else None
+
+
+def screen_conditions(serial=None):
+    """conditions.screen / screenSource / stayOnWhilePluggedIn for one launch,
+    read right before it. Same form as scripts/vl_response_android.py: "on-usb"
+    only when Awake, else "off-usb (mWakefulness=<state>)". On and off are both
+    admissible for speed cells (the display is not used; the session anchor
+    decides the sitting), so the state is recorded, never enforced.
+    BENCH_ROUND_WAKEFULNESS (run_campaign.py's sitting mode, one dumpsys power
+    read per round, kept in power_roundNN.txt) wins with its raw value, and
+    then no extra adb call is made."""
+    env = os.environ.get("BENCH_ROUND_WAKEFULNESS")
+    if env:
+        return {"screen": env, "screenSource": "env"}
+    state = wakefulness(serial)
+    if state is None:
+        screen = "unknown (no mWakefulness line in dumpsys power)"
+    else:
+        screen = "on-usb" if state == "Awake" else f"off-usb (mWakefulness={state})"
+    return {"screen": screen, "screenSource": "measured",
+            "stayOnWhilePluggedIn": stay_on_while_plugged_in(serial)}
