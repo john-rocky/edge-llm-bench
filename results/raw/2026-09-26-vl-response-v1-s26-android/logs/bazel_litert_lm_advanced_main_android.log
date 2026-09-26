@@ -1,0 +1,191 @@
+### CMD: bazelisk build --config=android_arm64 --enable_platform_specific_config //runtime/engine:litert_lm_advanced_main (ANDROID_NDK_HOME=/Users/majimadaisuke/Library/Android/sdk/ndk/28.2.13676358, 2026-09-26 09:20:15)
+INFO: Reading 'startup' options from /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --windows_enable_symlinks
+INFO: Options provided by the client:
+  Inherited 'common' options: --isatty=0 --terminal_columns=80
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc:
+  Inherited 'common' options: --experimental_repo_remote_exec --registry=https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/main/ --experimental_repo_remote_exec --noenable_bzlmod
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc:
+  'build' options: --repo_env=USE_PYWRAP_RULES=True --copt=-DGRPC_BAZEL_BUILD --host_copt=-DGRPC_BAZEL_BUILD --action_env=GRPC_BAZEL_RUNTIME=1 --repo_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --action_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --@rules_python//python/config_settings:precompile=force_disabled --define framework_shared_object=true --define tsl_protobuf_header_only=true --define=allow_oversize_protos=true --spawn_strategy=standalone -c opt --announce_rc --define=grpc_no_ares=true --noincompatible_remove_legacy_whole_archive --features=-force_no_whole_archive --host_features=-force_no_whole_archive --enable_platform_specific_config --define=with_xla_support=true --config=short_logs --experimental_cc_shared_library --experimental_link_static_libraries_once=false --incompatible_enforce_config_setting_visibility --@rules_ml_toolchain//common:enable_hermetic_cc=False --repo_env USE_HERMETIC_CC_TOOLCHAIN=0 --repo_env=HERMETIC_PYTHON_VERSION=3.13 --config=v2 --config=litert_prefixes --features=-layering_check --host_features=-layering_check --features=-header_modules --host_features=-header_modules
+INFO: Found applicable config definition build:short_logs in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --output_filter=DONT_MATCH_ANYTHING
+INFO: Found applicable config definition build:v2 in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --define=tf_api_version=2 --action_env=TF2_BEHAVIOR=1
+INFO: Found applicable config definition build:litert_prefixes in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --define=litert_prefixes=external/org_tensorflow/
+INFO: Found applicable config definition build:android_arm64 in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --config=android --cpu=arm64-v8a --fat_apk_cpu=arm64-v8a --platforms=@org_tensorflow//tensorflow/tools/toolchains/android:arm64-v8a
+INFO: Found applicable config definition build:android in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --crosstool_top=//external:android/crosstool --host_crosstool_top=@bazel_tools//tools/cpp:toolchain --dynamic_mode=off --define=xnn_enable_avxvnniint8=false --copt=-ULITERT_DISABLE_OPENCL_SUPPORT --copt=-w --cxxopt=-std=c++20 --host_cxxopt=-std=c++20 --define=with_xla_support=false --copt=-DABSL_FLAGS_STRIP_NAMES=0
+INFO: Found applicable config definition build:macos in file /Users/majimadaisuke/code/litert-lm-1dadd00c-wt/.bazelrc: --apple_platform_type=macos --copt=-DGRPC_BAZEL_BUILD --features=archive_param_file --linkopt=-Wl,-undefined,dynamic_lookup --host_linkopt=-Wl,-undefined,dynamic_lookup --copt=-w --define=PREFIX=/usr --define=LIBDIR=$(PREFIX)/lib --define=INCLUDEDIR=$(PREFIX)/include --define=PROTOBUF_INCLUDE_PATH=$(PREFIX)/include --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+Computing main repo mapping: 
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'bazel_skylib' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'bazel_features' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'rules_ml_toolchain' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'platforms' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/rules_ml_toolchain/py/python_repo.bzl:108:14: !!!Using pywrap rules instead of directly creating .so objects!!!
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/rules_ml_toolchain/py/python_repo.bzl:113:10: 
+=============================
+Hermetic Python configuration:
+Version: "3.13"
+Kind: ""
+Interpreter: "default" (provided by rules_python)
+Requirements_lock label: "@python_version_repo//:requirements_lock_3_13.txt"
+=====================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'build_bazel_rules_apple' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'build_bazel_rules_swift' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'build_bazel_apple_support' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'xctestrunner' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'io_bazel_rules_go' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'net_zstd' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'rules_proto' because it already exists.
+Loading: 
+Loading: 2 packages loaded
+Analyzing: target //runtime/engine:litert_lm_advanced_main (3 packages loaded, 0 targets configured)
+Analyzing: target //runtime/engine:litert_lm_advanced_main (3 packages loaded, 0 targets configured)
+
+Analyzing: target //runtime/engine:litert_lm_advanced_main (607 packages loaded, 22225 targets configured)
+
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/30e61f249bc951eba3a4fca6bd3cff0f/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @XNNPACK//:generate_build_identifier_py is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+Analyzing: target //runtime/engine:litert_lm_advanced_main (609 packages loaded, 25177 targets configured)
+
+Analyzing: target //runtime/engine:litert_lm_advanced_main (609 packages loaded, 25177 targets configured)
+
+Analyzing: target //runtime/engine:litert_lm_advanced_main (609 packages loaded, 25177 targets configured)
+
+Analyzing: target //runtime/engine:litert_lm_advanced_main (609 packages loaded, 25177 targets configured)
+
+Analyzing: target //runtime/engine:litert_lm_advanced_main (609 packages loaded, 25177 targets configured)
+
+INFO: Analyzed target //runtime/engine:litert_lm_advanced_main (610 packages loaded, 25442 targets configured).
+[489 / 4,254] Executing genrule @@stb//:stb_image_resize2_impl_src; 0s local ... (2 actions, 1 running)
+[1,085 / 4,254] Compiling src/code_generators.cpp [for tool]; 0s local ... (17 actions, 16 running)
+[1,194 / 4,254] Compiling src/idl_gen_fbs.cpp [for tool]; 1s local ... (16 actions, 15 running)
+[1,290 / 4,254] Compiling src/idl_parser.cpp [for tool]; 2s local ... (17 actions, 16 running)
+[1,414 / 4,254] Compiling src/idl_parser.cpp [for tool]; 3s local ... (16 actions running)
+[1,472 / 4,254] Compiling src/idl_parser.cpp [for tool]; 4s local ... (16 actions running)
+[1,536 / 4,254] Compiling src/idl_parser.cpp [for tool]; 5s local ... (16 actions running)
+[1,592 / 4,254] Compiling src/idl_gen_ts.cpp [for tool]; 4s local ... (16 actions running)
+[1,622 / 4,254] Compiling src/idl_gen_ts.cpp [for tool]; 5s local ... (17 actions, 16 running)
+[1,656 / 4,254] Compiling src/idl_gen_swift.cpp [for tool]; 3s local ... (16 actions running)
+[1,678 / 4,254] Compiling Rust rlib minijinja v2.14.0 (41 files); 2s local ... (17 actions, 16 running)
+[1,707 / 4,254] Compiling Rust rlib minijinja v2.14.0 (41 files); 3s local ... (16 actions running)
+[1,730 / 4,254] Compiling Rust rlib minijinja v2.14.0 (41 files); 4s local ... (17 actions, 16 running)
+[1,755 / 4,254] Compiling src/idl_gen_rust.cpp [for tool]; 4s local ... (16 actions running)
+[1,777 / 4,254] Compiling src/idl_gen_python.cpp [for tool]; 4s local ... (17 actions, 16 running)
+[1,801 / 4,254] Compiling src/idl_gen_python.cpp [for tool]; 5s local ... (17 actions, 16 running)
+[1,832 / 4,254] Compiling src/idl_gen_cpp.cpp [for tool]; 4s local ... (17 actions, 16 running)
+[1,843 / 4,254] Compiling src/idl_gen_cpp.cpp [for tool]; 5s local ... (17 actions, 16 running)
+[1,864 / 4,254] Compiling src/idl_gen_cpp.cpp [for tool]; 6s local ... (17 actions, 16 running)
+[1,887 / 4,254] Compiling Rust rlib tokenizers v0.21.0 (87 files); 4s local ... (17 actions, 16 running)
+[1,899 / 4,254] Compiling Rust rlib tokenizers v0.21.0 (87 files); 5s local ... (17 actions, 16 running)
+[1,907 / 4,254] Compiling Rust rlib tokenizers v0.21.0 (87 files); 6s local ... (17 actions, 16 running)
+[1,935 / 4,254] Compiling Rust rlib llguidance v1.3.0 (44 files); 4s local ... (17 actions, 16 running)
+[1,951 / 4,254] Compiling src/idl_gen_java.cpp [for tool]; 4s local ... (17 actions, 16 running)
+[1,971 / 4,254] Compiling src/idl_gen_java.cpp [for tool]; 5s local ... (17 actions, 16 running)
+[1,996 / 4,254] Compiling src/idl_gen_java.cpp [for tool]; 6s local ... (17 actions, 16 running)
+[2,008 / 4,254] Compiling src/idl_gen_csharp.cpp [for tool]; 7s local ... (16 actions, 15 running)
+[2,029 / 4,254] Compiling src/google/protobuf/generated_message_reflection.cc; 1s local ... (17 actions, 16 running)
+[2,053 / 4,254] Compiling src/google/protobuf/descriptor_database.cc; 1s local ... (17 actions, 16 running)
+[2,072 / 4,254] Compiling src/google/protobuf/descriptor.cc; 2s local ... (17 actions, 16 running)
+[2,094 / 4,254] Compiling src/google/protobuf/descriptor.cc; 3s local ... (16 actions, 15 running)
+[2,114 / 4,254] Compiling src/google/protobuf/descriptor.cc; 4s local ... (17 actions, 16 running)
+[2,132 / 4,254] Compiling src/google/protobuf/descriptor.cc; 5s local ... (17 actions, 16 running)
+[2,150 / 4,254] Compiling litert/experimental/custom_ops/gated_delta_net/gated_delta_update_impl.cc; 1s local ... (17 actions, 15 running)
+[2,173 / 4,254] Compiling src/idl_gen_text.cpp; 1s local ... (16 actions, 15 running)
+[2,215 / 4,254] Compiling src/idl_parser.cpp; 1s local ... (17 actions, 15 running)
+[2,339 / 4,254] Compiling src/idl_parser.cpp; 2s local ... (17 actions, 16 running)
+[2,462 / 4,254] Compiling src/idl_parser.cpp; 3s local ... (17 actions, 16 running)
+[2,627 / 4,254] Compiling tflite/delegates/gpu/cl/environment.cc; 0s local ... (16 actions, 15 running)
+[2,770 / 4,254] Compiling tflite/kernels/lstm_eval.cc; 1s local ... (17 actions, 16 running)
+[2,900 / 4,254] Compiling litert/runtime/gpu_environment.cc; 0s local ... (16 actions, 15 running)
+[3,028 / 4,254] Compiling tflite/kernels/eigen_support.cc; 1s local ... (16 actions, 15 running)
+[3,158 / 4,254] Compiling src/google/protobuf/extension_set.cc [for tool]; 1s local ... (15 actions, 12 running)
+[3,279 / 4,254] Compiling src/google/protobuf/generated_enum_util.cc [for tool]; 0s local ... (16 actions, 15 running)
+[3,447 / 4,254] Compiling litert/c/internal/litert_accelerator_registration.cc; 0s local ... (17 actions, 15 running)
+[3,520 / 4,254] Compiling src/google/protobuf/generated_message_tctable_lite.cc [for tool]; 1s local ... (16 actions, 15 running)
+[3,549 / 4,254] Compiling litert/core/util/flatbuffer_tools.cc; 2s local ... (17 actions, 15 running)
+[3,583 / 4,254] Compiling litert/c/internal/litert_tensor_buffer_registry.cc; 0s local ... (16 actions, 15 running)
+[3,612 / 4,254] Compiling litert/core/model/model.cc; 1s local ... (17 actions, 16 running)
+[3,630 / 4,254] Compiling litert/core/model/model.cc; 2s local ... (17 actions, 16 running)
+[3,643 / 4,254] Compiling litert/core/model/model.cc; 3s local ... (17 actions, 15 running)
+[3,653 / 4,254] Compiling litert/core/model/litert_to_flatbuffer.cc; 2s local ... (17 actions, 16 running)
+[3,666 / 4,254] Compiling litert/core/model/model_serialize.cc; 2s local ... (17 actions, 16 running)
+[3,675 / 4,254] Compiling litert/core/model/model_load.cc; 2s local ... (17 actions, 16 running)
+[3,690 / 4,254] Compiling tflite/delegates/xnnpack/xnnpack_delegate.cc; 2s local ... (16 actions, 15 running)
+[3,704 / 4,254] Compiling litert/compiler/plugin/compiler_plugin.cc; 2s local ... (17 actions, 16 running)
+[3,714 / 4,254] Compiling src/google/protobuf/descriptor.cc [for tool]; 3s local ... (16 actions, 15 running)
+[3,725 / 4,254] Compiling src/google/protobuf/descriptor.cc [for tool]; 4s local ... (17 actions, 16 running)
+[3,736 / 4,254] Compiling src/google/protobuf/descriptor.cc [for tool]; 5s local ... (16 actions, 15 running)
+[3,748 / 4,254] Compiling src/google/protobuf/descriptor.cc [for tool]; 6s local ... (16 actions, 15 running)
+[3,761 / 4,254] Compiling tflite/kernels/add.cc; 1s local ... (17 actions, 15 running)
+[3,771 / 4,254] Compiling tflite/kernels/add.cc; 2s local ... (16 actions, 15 running)
+[3,783 / 4,254] Compiling src/google/protobuf/descriptor.pb.cc [for tool]; 2s local ... (16 actions, 15 running)
+[3,790 / 4,254] Compiling src/google/protobuf/compiler/command_line_interface.cc [for tool]; 3s local ... (16 actions, 15 running)
+[3,800 / 4,254] Compiling tflite/kernels/add_n.cc; 2s local ... (16 actions, 15 running)
+[3,816 / 4,254] Compiling src/google/protobuf/compiler/python/pyi_generator.cc [for tool]; 2s local ... (17 actions, 15 running)
+[3,835 / 4,254] Compiling tflite/kernels/arg_min_max.cc; 2s local ... (17 actions, 15 running)
+[3,849 / 4,254] Compiling src/google/protobuf/compiler/csharp/csharp_message.cc [for tool]; 1s local ... (16 actions, 15 running)
+[3,859 / 4,254] Compiling litert/runtime/dispatch/dispatch_delegate_kernel.cc; 1s local ... (16 actions, 15 running)
+[3,870 / 4,254] Compiling tflite/kernels/transpose_conv.cc; 2s local ... (16 actions, 15 running)
+[3,881 / 4,254] Compiling tflite/kernels/sub.cc; 2s local ... (17 actions, 16 running)
+[3,890 / 4,254] Compiling litert/runtime/compiled_model.cc; 2s local ... (17 actions, 16 running)
+[3,899 / 4,254] Compiling litert/runtime/compiled_model.cc; 3s local ... (17 actions, 16 running)
+[3,909 / 4,254] Compiling tflite/kernels/batch_matmul.cc; 2s local ... (16 actions, 15 running)
+[3,918 / 4,254] Compiling tflite/kernels/slice.cc; 2s local ... (17 actions, 16 running)
+[3,932 / 4,254] Compiling src/google/protobuf/compiler/java/full/message.cc [for tool]; 2s local ... (17 actions, 16 running)
+[3,945 / 4,254] Compiling support/preprocessor/audio_preprocessor_utils.cc; 1s local ... (17 actions, 16 running)
+[3,953 / 4,254] Compiling src/google/protobuf/compiler/kotlin/field.cc [for tool]; 2s local ... (17 actions, 16 running)
+[3,963 / 4,254] Compiling support/preprocessor/audio_preprocessor_miniaudio.cc; 1s local ... (17 actions, 16 running)
+[3,968 / 4,254] Compiling src/google/protobuf/compiler/java/file.cc [for tool]; 2s local ... (17 actions, 16 running)
+[3,980 / 4,254] Compiling tflite/kernels/reduce.cc; 2s local ... (17 actions, 16 running)
+[3,988 / 4,254] Compiling tflite/kernels/reduce.cc; 3s local ... (17 actions, 16 running)
+[4,002 / 4,254] Compiling tflite/kernels/pooling.cc; 2s local ... (17 actions, 16 running)
+[4,009 / 4,254] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 2s local ... (17 actions, 16 running)
+[4,015 / 4,254] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 3s local ... (17 actions, 16 running)
+[4,027 / 4,254] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 4s local ... (17 actions, 16 running)
+[4,036 / 4,254] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 5s local ... (17 actions, 16 running)
+[4,046 / 4,254] Compiling tflite/kernels/lstm.cc; 2s local ... (17 actions, 16 running)
+[4,057 / 4,254] Compiling tflite/kernels/gather_nd.cc; 2s local ... (17 actions, 16 running)
+[4,066 / 4,254] Compiling tflite/kernels/fully_connected.cc; 2s local ... (17 actions, 16 running)
+[4,117 / 4,254] Compiling tflite/kernels/depthwise_conv.cc; 2s local ... (4 actions running)
+[4,155 / 4,254] Compiling external/sentencepiece/sentencepiece.pb.cc; 0s local ... (17 actions, 16 running)
+[4,170 / 4,254] Compiling runtime/conversation/channel_util.cc; 1s local ... (17 actions, 16 running)
+[4,183 / 4,254] Compiling runtime/components/sampler_factory.cc; 1s local ... (17 actions, 16 running)
+[4,190 / 4,254] Compiling runtime/conversation/model_data_processor/multimodal_processor_helper.cc; 1s local ... (17 actions, 16 running)
+[4,197 / 4,254] Compiling runtime/conversation/internal_callback_util.cc; 2s local ... (17 actions, 16 running)
+[4,207 / 4,254] Compiling runtime/conversation/model_data_processor/lfm2_data_processor.cc; 2s local ... (17 actions, 16 running)
+[4,213 / 4,254] Compiling runtime/conversation/model_data_processor/function_gemma_data_processor.cc; 1s local ... (17 actions, 16 running)
+[4,220 / 4,254] Compiling runtime/conversation/model_data_processor/gemma4_data_processor.cc; 2s local ... (17 actions, 16 running)
+[4,224 / 4,254] Compiling runtime/engine/engine_settings.cc; 2s local ... (17 actions, 16 running)
+[4,227 / 4,254] Compiling runtime/executor/litert_compiled_model_executor_utils.cc; 3s local ... (17 actions, 16 running)
+[4,235 / 4,254] Compiling runtime/executor/audio_litert_compiled_model_executor.cc; 3s local ... (17 actions, 16 running)
+[4,236 / 4,254] Compiling runtime/executor/audio_litert_compiled_model_executor.cc; 4s local ... (17 actions, 16 running)
+[4,243 / 4,254] Compiling runtime/framework/resource_management/threaded_execution_manager.cc; 3s local ... (10 actions running)
+[4,250 / 4,254] Compiling runtime/executor/llm_litert_npu_compiled_model_executor.cc; 3s local ... (3 actions running)
+INFO: Found 1 target...
+Target //runtime/engine:litert_lm_advanced_main up-to-date:
+  bazel-bin/runtime/engine/litert_lm_advanced_main
+[4,254 / 4,254] no actions running
+INFO: Elapsed time: 119.487s, Critical Path: 13.89s
+INFO: 3140 processes: 456 internal, 2684 local.
+INFO: Build completed successfully, 3140 total actions

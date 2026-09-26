@@ -1,0 +1,214 @@
+# adb -s RFGL80R6A6H shell 'cd /data/local/tmp/edge-llm-bench/vl/bin && export LD_LIBRARY_PATH=/data/local/tmp/edge-llm-bench/vl/bin && echo T0=$EPOCHREALTIME >&2 && ./litert_lm_advanced_main --backend=gpu --vision_backend=gpu --model_path=/data/local/tmp/edge-llm-bench/vl/models/gemma-4-E2B-it.litertlm --input_prompt='Describe this image in one sentence. [image:/data/local/tmp/edge-llm-bench/vl/images/cat_couch_1024.jpg]' --benchmark --max_output_tokens=64 --cache_dir=/data/local/tmp/edge-llm-bench/vl/cache/gemma-4-E2B-it.litertlm; echo EXIT=$? T1=$EPOCHREALTIME >&2'
+# exit=0
+# stderr stream follows (T0/EXIT markers are the driver's)
+T0=1790386010.666044
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790386010.830851    9835 litert_lm_lib.cc:505] Choose backend: gpu
+I0000 00:00:1790386010.831223    9835 litert_lm_lib.cc:510] Provided vision backend: gpu
+I0000 00:00:1790386010.831856    9835 litert_lm_lib.cc:661] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: /data/local/tmp/edge-llm-bench/vl/cache/gemma-4-E2B-it.litertlm
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/edge-llm-bench/vl/models/gemma-4-E2B-it.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1790386010.831917    9835 litert_lm_lib.cc:665] vision_executor_settings: VisionExecutorSettings: 
+  ModelAssets: model_path: /data/local/tmp/edge-llm-bench/vl/models/gemma-4-E2B-it.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+  EncoderBackend: GPU
+  AdapterBackend: CPU
+
+I0000 00:00:1790386010.831959    9835 litert_lm_lib.cc:674] audio_executor_settings: not set
+I0000 00:00:1790386010.831989    9835 litert_lm_lib.cc:697] Creating engine
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a6ee07bc0, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a6ee084f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790386010.898465    9840 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790386011.048367    9835 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a6ee252f0, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a6ee25ec0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790386011.049055    9835 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+W0000 00:00:1790386011.049143    9835 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 4096
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 4096
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 4096
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 4096
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1790386011.114231    9835 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1790386011.114403    9835 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 2068 out of 2068 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+I0000 00:00:1790386012.705030    9835 delegate_kernel.cc:336] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790386012.705342    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386012.802885    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+I0000 00:00:1790386012.880276    9835 delegate_kernel.cc:336] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790386012.880384    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386012.957028    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+I0000 00:00:1790386013.002163    9835 delegate_kernel.cc:336] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790386013.002263    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386013.061773    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 2243 out of 2243 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+I0000 00:00:1790386013.088884    9835 delegate_kernel.cc:336] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1790386013.088998    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386013.180171    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a6ee5a730, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a6ee641a0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1813] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1813] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+VERBOSE: Replacing 1 out of 42 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+I0000 00:00:1790386013.287769    9835 litert_lm_lib.cc:707] Vision executor properties: num_tokens_per_image: 140
+patch_num_shrink_factor: 9
+
+I0000 00:00:1790386013.287865    9835 litert_lm_lib.cc:865] Creating conversation
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=339, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=vision_140, subgraph_index=0, num_tensors=1729, num_inputs=2, num_outputs=2, num_ops=1477
+INFO: [magic_number_utils.cc:109]   signature=vision_280, subgraph_index=1, num_tensors=1729, num_inputs=2, num_outputs=2, num_ops=1477
+INFO: [magic_number_utils.cc:109]   signature=vision_70, subgraph_index=2, num_tensors=1729, num_inputs=2, num_outputs=2, num_ops=1477
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1790386013.342144    9835 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1790386013.342238    9835 delegate_opencl.cc:605] options->kernel_batch_size: -1
+VERBOSE: Replacing 1477 out of 1477 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (vision_140).
+I0000 00:00:1790386013.815598    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386013.901863    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 1477 out of 1477 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (vision_280).
+I0000 00:00:1790386013.936323    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386014.018934    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 1477 out of 1477 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (vision_70).
+I0000 00:00:1790386014.038887    9835 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1790386014.107118    9835 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=3, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=vision_adapter_140, subgraph_index=0, num_tensors=21, num_inputs=1, num_outputs=1, num_ops=15
+INFO: [magic_number_utils.cc:109]   signature=vision_adapter_280, subgraph_index=1, num_tensors=21, num_inputs=1, num_outputs=1, num_ops=15
+INFO: [magic_number_utils.cc:109]   signature=vision_adapter_70, subgraph_index=2, num_tensors=21, num_inputs=1, num_outputs=1, num_ops=15
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+VERBOSE: XNNPack weight cache loaded from '/data/local/tmp/edge-llm-bench/vl/cache/gemma-4-E2B-it.litertlm/gemma-4-E2B-it.litertlm_1788439870_2588147712.vision_adapter.xnnpack_cache'.
+VERBOSE: Replacing 15 out of 15 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 0 (vision_adapter_140).
+VERBOSE: Replacing 15 out of 15 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 1 (vision_adapter_280).
+VERBOSE: Replacing 15 out of 15 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2 (vision_adapter_70).
+W0000 00:00:1790386014.109487    9835 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1790386014.109548    9835 litert_lm_lib.cc:877] Running single-turn conversation
+I0000 00:00:1790386014.120346    9835 stb_image_preprocessor.cc:72] Resize image from 1024x682 to 960x624 which will result in 2340 patches to fit the max_num_patches: 2520 limit.
+I0000 00:00:1790386015.682296    9835 litert_lm_lib.cc:174] Captured model output: A close-up photograph captures the captivating eyes and soft fur of a tabby kitten resting on a dark, textured surface.
+I0000 00:00:1790386015.682512    9835 litert_lm_lib.cc:424] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 820.82 ms
+    - Init Executor: 2389.13 ms
+    - Init LLM metadata: 0.04 ms
+    - Init Model assets: 0.40 ms
+    - Init Tokenizer: 73.88 ms
+    - Init Total: 2455.70 ms
+--------------------------------------------------
+  Time to first token: 0.21 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 280 tokens in 169.465312ms duration.
+      Prefill Speed: 1652.26 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 25 tokens in 907.078958ms duration.
+      Decode Speed: 27.56 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 3 turns):
+    Turn 1: 2.344us, 1 tokens
+    Turn 2: 42.812us, 12 tokens
+    Turn 3: 5.834us, 6 tokens
+--------------------------------------------------
+  Mark Durations (1):
+    - vision_executor: 473.105468ms
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a6ee25ec0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a6ee252f0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a6ee641a0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a6ee5a730, name=LiteRT GPU
+EXIT=0 T1=1790386015.925701
