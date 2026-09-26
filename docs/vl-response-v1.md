@@ -5,7 +5,9 @@ driver `scripts/vl_response_mac.py` (dispatched by `scripts/bench_matrix_mac.sh`
 for every `vl-*` row, so `./bench matrix matrices/vl-response-v1.cells --platform mac`
 is the whole entry point). First capture:
 `results/raw/2026-09-24-vl-response-v1-m4max-mac/` (NOTES.md there has the
-numbers; this page is the definition).
+numbers; this page is the definition). Android leg: `scripts/vl_response_android.py`,
+first capture `results/raw/2026-09-26-vl-response-v1-s26-android/` (section
+"Android leg" below).
 
 ## What is measured
 
@@ -22,11 +24,17 @@ depend on it).
 
 Beside the headline the record carries the engine's own clocks from
 `--benchmark` (BenchmarkInfo, logged after the reply): time to first token
-(`vlTimeToFirstTokenSeconds` — image encoding + prefill, the number a chat UI
-feels), prefill turn 1 (`vlPrefillTokens` = image tokens + prompt tokens,
-`vlPrefillTokensPerSec`), decode turn 1 (`vlDecodeTokens`,
-`vlDecodeTokensPerSec`) and the init phases. `vlFirstTokenHostSeconds` is the
-host-side first-byte latency as a cross-check of the engine's TTFT.
+(`vlTimeToFirstTokenSeconds` — prefill of the image + prompt tokens up to the
+first sampled token; the vision encoder runs before it and is **not** in it),
+the vision encoder's own clock (`vlMarkDurationsMS.vision_executor`, recorded
+from 2026-09-26; earlier records carry it in their stderr log), prefill turn 1
+(`vlPrefillTokens` = image tokens + prompt tokens, `vlPrefillTokensPerSec`),
+decode turn 1 (`vlDecodeTokens`, `vlDecodeTokensPerSec`) and the init phases.
+The response seconds contain all three stages: on the Galaxy S26,
+`vision_executor` + prefill + decode came to the response seconds minus
+8–26 ms in every passing launch. `vlFirstTokenHostSeconds` is the host-side
+latency from the request marker to the first reply byte; like the response
+seconds it includes the vision encoder.
 
 **Text check.** A rate whose reply nobody read is not a measurement
 (benchmark-mode-needs-a-text-check): every record carries the reply and
@@ -82,7 +90,7 @@ cache) supplies the recipe line of `model.quantization`.
 | condition | value | note |
 |---|---|---|
 | `--backend` | `cpu` / `gpu` | arm identity: `litert-lm-cpu` and `litert-lm-gpu` never pool (as on Android and in asr-rtf-v1) |
-| `--vision_backend` | = `--backend` | the CLI refuses an image without an explicit vision backend; the arm's backend runs the vision encoder too. A GPU arm whose vision encoder does not compile on Metal is a **FAIL row**, not a silent fallback to a CPU encoder |
+| `--vision_backend` | = `--backend` | the CLI refuses an image without an explicit vision backend; the arm's backend runs the vision encoder too. A GPU arm whose vision encoder does not compile on the GPU (Metal, OpenCL) is a **FAIL row**, not a silent fallback to a CPU encoder |
 | `--max_output_tokens` | 64 | budget in the task id |
 | `--visual_token_budget` | engine default (-1) | the bundle's own image-token count |
 | sampler | CLI defaults | repetition penalty 1.0, no presence / frequency penalty, no constraint; the sampler backend follows the engine's choice |
@@ -94,8 +102,8 @@ Changing any one is a new task id, never a silent override (budget-mode-rule).
 ## Record shape
 
 `schema/result.v1.json` with the `vl*` condition and metric keys added
-2026-09-24. `runtime` is `litert-lm-cpu` / `litert-lm-gpu`. `model.quantization`
-= the file name's word + the repo manifest's recipe line for that variant
+2026-09-24 (`vlMarkDurationsMS` 2026-09-26). `runtime` is `litert-lm-cpu` /
+`litert-lm-gpu`. `model.quantization` = the file name's word + the repo manifest's recipe line for that variant
 (`_fixB` files inherit the base variant's line and say so). `provenance`
 carries the image sha256, the manifest sha256, the model sha256, the exact
 command, the host's load / thermal / foreign-process snapshot before and after,
@@ -104,15 +112,94 @@ and the stderr log path (`logs/<slug>_run<N>.stderr.log`; the reply in
 `SKIPPED … reason=model-file-not-staged` (driver exit 75), "not yet measured"
 rather than a failure.
 
+## Android leg (2026-09-26)
+
+The same CLI at the same commit, built with the NDK (r28, `ANDROID_NDK_HOME`;
+~2 min in the Mac build's worktree), plus the GPU accelerator `.so` files from
+`prebuilt/android_arm64/` (LFS; `libLiteRtGpuAccelerator.so` is the OpenCL path
+the log names `LiteRT GPU`):
+
+```bash
+cd ~/code/litert-lm-1dadd00c-wt
+git lfs pull origin --include="prebuilt/android_arm64/*"
+ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/28.2.13676358 bazelisk build --config=android_arm64 \
+  --enable_platform_specific_config //runtime/engine:litert_lm_advanced_main
+D=<repo>/.build/litert-lm-advanced-main-1dadd00c-android && mkdir -p $D
+cp bazel-bin/runtime/engine/litert_lm_advanced_main prebuilt/android_arm64/*.so $D/
+printf 'main@1dadd00c\n<commit date + subject; build command; bazel / NDK versions; build date>\n' > $D/ENGINE_VERSION
+(cd $D && shasum -a 256 litert_lm_advanced_main *.so > SHA256SUMS)
+```
+
+Line 1 of `ENGINE_VERSION` is stamped as `engineVersion`; line 2 goes into
+`engineArtifact` beside the binary's and every `.so`'s sha256.
+
+`BENCH_ANDROID_SERIAL=<serial> scripts/vl_response_android.py
+matrices/vl-response-v1.cells --campaign <date>-vl-response-v1-s26` is its own
+mini-runner, like `scripts/asr_rtf_android.py`. It reads the `android` `vl-*`
+rows, pushes the CLI, the `.so` files, the image and the bundles to
+`/data/local/tmp/edge-llm-bench/vl/`, re-hashes each bundle and the image on the
+phone, and writes the Mac record shape into `results/raw/<campaign>-android/`
+(JSONL per cell, `logs/`, `runlog.txt`, `FAILURES.txt`, `SKIPPED.txt`,
+`session_provenance.txt`). `--only <model substring>`, `--backend cpu|gpu` and
+`--runs N` serve smokes and re-takes; a smoke goes to a `local-*` campaign
+(gitignored).
+
+**Session anchor and admission.** Right before the payload, run the android rows
+of the anchor cells and judge the sitting with the dashboard's rule:
+
+```bash
+./bench matrix matrices/anchors.cells --platform android --campaign <date>-vl-response-v1-s26-anchor
+python3 - <<'EOF'   # admit() reads results/summary/device-runs.csv, which bench matrix just rebuilt
+import json, sys; sys.path.insert(0, "scripts")
+from dashboard_job import admit
+s = json.load(open("ops/dashboard-v1/schedule.json"))
+print(admit(s, s["devices"]["s26"], "results/raw/<date>-vl-response-v1-s26-anchor-android", "android"))
+EOF
+```
+
+`admit()` returns `(admitted, reason, details)`. Write it as `SESSION.json` into
+the anchor dir (phase `anchor`, verdict `ADMITTED` / `ABORTED`) and into the
+payload dir (phase `payload`); the 2026-09-26 pair is the template. The
+dashboard job stops a sitting whose anchor is not admitted; do the same. The
+summary that `bench matrix` rebuilt on disk is not the one to commit: rebuild it
+from the git index (CLAUDE.md).
+
+**Protocol.** 45 s between launches and 90 s between cells; a cells-file
+`cooldown=` overrides the latter (60 on the three largest bundles). Before every
+launch the driver waits for thermal status 0 and a battery temperature ≤ 36.0 °C
+(15 s polls, 600 s at most, then it launches and records the state). These are
+the asr-rtf-v1 phone protocol values, where 5 s between launches let the S26's
+CPU cells drift +12–27 %. Clocks: `adb shell` hands over the phone process's
+stdout and stderr as two streams, so the response and first-byte clocks are
+host arrival times of the request marker and of the reply bytes (adb jitter, no
+offset); load and total wall are phone-clock differences (`$EPOCHREALTIME`
+before exec, the absl timestamp of the marker). Peak memory is `VmHWM`, polled
+through adb every 0.5 s (host memory only; the OpenCL arm's GPU heap is not in
+it).
+
+**Screen state.** Before and after every launch the driver reads
+`mWakefulness` and `stay_on_while_plugged_in` into `provenance.deviceBefore/After`
+and stamps `conditions.screen` from the reading: `on-usb` only when the phone is
+`Awake`, otherwise `off-usb (mWakefulness=…)`. The first capture predates that
+stamp: its records say `on-usb`, while the phone was `Dozing` for all 36
+launches (NOTES.md there).
+
+Records: `results/raw/<campaign>-android/`, anchor records under
+`results/raw/<campaign>-anchor-android/app-path-android/`. First capture
+`results/raw/2026-09-26-vl-response-v1-s26-android/` (Galaxy S26, 12 cells;
+NOTES.md there: SmolVLM2 produces text on OpenCL, both LFM2.5-VL GPU rows stop
+at the same `RESIZE_BILINEAR` compile error as on Metal, InternVL3-1B's GPU row
+stops on `BROADCAST_TO` / `GATHER_ND`, and TTFT excludes the vision encoder).
+
 ## Not covered in v1
 
-- iPhone / Android legs: the same CLI builds for `android_arm64` (the asr-rtf-v1
-  route); no released engine carries image flags on either platform yet.
+- iPhone leg: not wired; no released engine carries image flags on iOS yet.
 - Other VL arms (MLX-VLM, llama.cpp mtmd, Core ML): the task is defined on the
   image + prompt + budget, so any arm that takes a JPEG and prints text can
   join; none is wired.
 - Multi-image, higher `--visual_token_budget`, or the `int8` variants as a
   second recipe row.
-- Bundles not staged at the first pass (InternVL3-1B, Qwen2-VL-2B: the Hub was
-  throttled to ~0.2 MB/s that afternoon and no local copy matched the published
-  sha256) — the rows are in the cells file and read SKIPPED until staged.
+- InternVL3-1B and Qwen2-VL-2B on the Mac: not staged at the first pass (the
+  Hub was throttled to ~0.2 MB/s that afternoon and no local copy matched the
+  published sha256). Both were downloaded on 2026-09-26 for the Android leg;
+  the Mac rows wait for their own sitting.

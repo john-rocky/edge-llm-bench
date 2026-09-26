@@ -141,11 +141,13 @@ def validate_file(path, catalog=None, require_anchor=False):
                     errors.append(f"{where}: asr-rtf-* needs file=<artifact> "
                                   "(quant-per-arm-rule: the recipe travels with the row)")
             if VL_TASK.match(task):
-                # v1 instrument = LiteRT-LM's own CLI on the Mac; backend is arm
-                # identity, file= names the .litertlm (recipe per row).
-                if rt != "litert-lm" or plat != "mac":
-                    errors.append(f"{where}: vl-* is a mac litert-lm cell in v1 "
-                                  "(scripts/vl_response_mac.py; docs/vl-response-v1.md)")
+                # v1 instrument = LiteRT-LM's own CLI on the Mac and, built for
+                # android_arm64, on a phone; backend is arm identity, file= names
+                # the .litertlm (recipe per row).
+                if rt != "litert-lm" or plat not in ("mac", "android"):
+                    errors.append(f"{where}: vl-* is a mac / android litert-lm cell in v1 "
+                                  "(scripts/vl_response_mac.py, scripts/vl_response_android.py; "
+                                  "docs/vl-response-v1.md)")
                 if opts.get("backend") not in BACKENDS:
                     errors.append(f"{where}: vl-* needs backend=cpu|gpu (arm identity)")
                 if not opts.get("file"):

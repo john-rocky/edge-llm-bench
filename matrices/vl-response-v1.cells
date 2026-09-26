@@ -47,3 +47,26 @@ mac litert-lm litert-community/Qwen2-VL-2B vl-describe-catcouch-gen64 backend=gp
 # --- Gemma 4 E2B it (the dashboard's LiteRT bundle; multimodal .litertlm; 2.6 GB) ---
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm vl-describe-catcouch-gen64 backend=cpu runs=3 cooldown=60 file=gemma-4-E2B-it.litertlm
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm vl-describe-catcouch-gen64 backend=gpu runs=3 cooldown=60 file=gemma-4-E2B-it.litertlm
+
+# Android (2026-09-26): the same CLI built with the NDK (`--config=android_arm64`)
+# and driven over adb by scripts/vl_response_android.py, which reads the android
+# rows of this file itself (`scripts/vl_response_android.py
+# matrices/vl-response-v1.cells --campaign <date>-vl-response-v1-s26`); the
+# session anchor is the android rows of anchors.cells, run right before as
+# `./bench matrix matrices/anchors.cells --platform android --campaign
+# <date>-vl-response-v1-s26-anchor` and judged with the dashboard's admission
+# rule. Same image, prompt, budget and flags; GPU = the ML Drift OpenCL
+# accelerator from LiteRT-LM main's prebuilt/android_arm64/. Order light ->
+# heavy, cpu / gpu interleaved per model.
+android litert-lm litert-community/SmolVLM2-500M vl-describe-catcouch-gen64 backend=cpu runs=3 file=SmolVLM2-500M.litertlm
+android litert-lm litert-community/SmolVLM2-500M vl-describe-catcouch-gen64 backend=gpu runs=3 file=SmolVLM2-500M.litertlm
+android litert-lm litert-community/LFM2.5-VL-450M vl-describe-catcouch-gen64 backend=cpu runs=3 file=LFM2.5-VL-450M_int4_fixB.litertlm
+android litert-lm litert-community/LFM2.5-VL-450M vl-describe-catcouch-gen64 backend=gpu runs=3 file=LFM2.5-VL-450M_int4_fixB.litertlm
+android litert-lm litert-community/InternVL3-1B vl-describe-catcouch-gen64 backend=cpu runs=3 file=InternVL3-1B.litertlm
+android litert-lm litert-community/InternVL3-1B vl-describe-catcouch-gen64 backend=gpu runs=3 file=InternVL3-1B.litertlm
+android litert-lm litert-community/LFM2.5-VL-1.6B vl-describe-catcouch-gen64 backend=cpu runs=3 cooldown=60 file=LFM2.5-VL-1.6B_int4_fixB.litertlm
+android litert-lm litert-community/LFM2.5-VL-1.6B vl-describe-catcouch-gen64 backend=gpu runs=3 cooldown=60 file=LFM2.5-VL-1.6B_int4_fixB.litertlm
+android litert-lm litert-community/Qwen2-VL-2B vl-describe-catcouch-gen64 backend=cpu runs=3 cooldown=60 file=Qwen2-VL-2B.litertlm
+android litert-lm litert-community/Qwen2-VL-2B vl-describe-catcouch-gen64 backend=gpu runs=3 cooldown=60 file=Qwen2-VL-2B.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm vl-describe-catcouch-gen64 backend=cpu runs=3 cooldown=60 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm vl-describe-catcouch-gen64 backend=gpu runs=3 cooldown=60 file=gemma-4-E2B-it.litertlm

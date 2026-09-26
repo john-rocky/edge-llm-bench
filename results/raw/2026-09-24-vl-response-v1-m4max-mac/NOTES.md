@@ -30,6 +30,17 @@ for 0.45 B → 1.6 B → Gemma 4 E2B); SmolVLM2's 64 image tokens make its 0.19 
 column additionally depends on how much each model chose to say (9 to 64 tokens) — compare
 TTFT and the per-token rates before the response seconds.
 
+Erratum (2026-09-26): the engine's TTFT does not include the vision encoder, so the first
+sentence of the reading above is wrong, and finding 4's per-image cost needs the vision encoder
+added to TTFT. TTFT is the prefill of the image + prompt tokens plus the first sampled token.
+The vision encoder runs before it on its own clock, BenchmarkInfo `Mark Durations` →
+`vision_executor`, which these records do not carry. Medians from each launch's
+`logs/*.stderr.log`: SmolVLM2-500M CPU 122.6 ms, LFM2.5-VL-450M CPU 133.1 ms, LFM2.5-VL-1.6B
+CPU 429.9 ms, Gemma 4 E2B CPU 748.4 ms (launch 1: 1,030.7 ms), Gemma 4 E2B GPU (Metal) 169.3
+ms. The response column does include it: `vision_executor` + prefill + decode equals the
+response seconds minus 6–9 ms in all 15 passing launches of these cells. The table's numbers
+stand as written (`docs/vl-response-v1.md`; the S26 leg's NOTES.md finding 4).
+
 Spread: the CPU cells repeat within ±1 % except two single launches — LFM 450M launch 1
 (+12 %: `Finder` / `Storage` / `cmux` at 20–25 % each at launch) and Gemma 4 CPU launch 1 (+46 %:
 a Chrome renderer at 79 % plus five processes at 20–33 %). Gemma 4 GPU launch 1 is +58 % in both

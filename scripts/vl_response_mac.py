@@ -16,9 +16,18 @@ Per run the record carries (metrics):
                              log ("Running single-turn conversation") to the last
                              byte of the reply on stdout — image encoding +
                              prefill + decode, the seconds one image costs
-  vlTimeToFirstTokenSeconds = the engine's own TTFT (BenchmarkInfo; image
-                             encoding + prefill up to the first sampled token)
+  vlTimeToFirstTokenSeconds = the engine's own TTFT (BenchmarkInfo): prefill of
+                             the image + prompt tokens up to the first sampled
+                             token — it does NOT include the vision encoder
+                             (TTFT ≈ vlPrefillSeconds + one decode step)
+  vlMarkDurationsMS        = the engine's marks in ms; `vision_executor` is the
+                             vision encoder's own clock, outside TTFT (added
+                             2026-09-26; earlier records carry it only in their
+                             stderr log, and the first S26 records only when it
+                             was under 1 s — the log prints "1.73s" above that)
   vlFirstTokenHostSeconds  = request marker -> first reply byte on stdout
+                             (image decode + vision encoder + prefill + the
+                             first token as the CLI user sees it)
   vlPrefillTokens / vlPrefillTokensPerSec / vlDecodeTokens / vlDecodeTokensPerSec
                              from BenchmarkInfo (prefill turn 1 / decode turn 1)
   loadTimeSeconds          = process start -> request marker (engine creation,
@@ -169,7 +178,11 @@ def device_info():
 RE_TTFT = re.compile(r"Time to first token:\s*([0-9.]+)\s*s")
 RE_TURN = re.compile(r"(Prefill|Decode) Turn (\d+): Processed (\d+) tokens in ([0-9.]+)(ms|s|us|m|h)")
 RE_SPEED = re.compile(r"(Prefill|Decode) Speed:\s*([0-9.]+)\s*tokens/sec")
-RE_PHASE = re.compile(r"^\s*- (.+?):\s*([0-9.]+)\s*ms\s*$")
+# "- name: 450.55 ms" (init phases) or an absl duration ("292.047708ms",
+# "1.730355468s", "1m2.5s"; the marks) -> stored in ms
+RE_PHASE = re.compile(r"^\s*- (.+?):\s*((?:[0-9.]+(?:h|m(?!s)))*[0-9.]+\s*(?:ms|us|ns|s))\s*$")
+RE_DUR = re.compile(r"([0-9.]+)\s*(ms|us|ns|h|m|s)")
+DUR_MS = {"h": 3.6e6, "m": 6e4, "s": 1e3, "ms": 1.0, "us": 1e-3, "ns": 1e-6}
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
@@ -188,17 +201,29 @@ def parse_benchmark(stderr_text):
         out[f"{kind.lower()}_seconds"] = secs
     for kind, tps in speeds:
         out.setdefault(f"{kind.lower()}_tps", float(tps))   # first turn's speed
-    in_phases = False
+    # "Init Phases (N):" and "Mark Durations (N):" are both lists of
+    # "- name: <duration>" lines closed by a "---" rule; the phases print
+    # "X ms", the marks an absl duration whose unit changes with the size
+    # ("292.047708ms", "1.730355468s"), so every value is converted to ms.
+    # The marks carry the vision encoder's own clock (`vision_executor`), which
+    # the engine's TTFT does NOT include (TTFT = prefill + the first sampled
+    # token; the response column does).
+    section = None
+    out["markDurationsMS"] = {}
     for line in stderr_text.splitlines():
         if "Init Phases" in line:
-            in_phases = True
+            section = "initPhasesMS"
             continue
-        if in_phases:
+        if "Mark Durations" in line:
+            section = "markDurationsMS"
+            continue
+        if section:
             pm = RE_PHASE.match(ANSI.sub("", line))
             if pm:
-                out["initPhasesMS"][pm.group(1).strip()] = float(pm.group(2))
+                out[section][pm.group(1).strip()] = round(
+                    sum(float(v) * DUR_MS[u] for v, u in RE_DUR.findall(pm.group(2))), 6)
             elif line.strip().startswith("---"):
-                in_phases = False
+                section = None
     return out
 
 
@@ -303,6 +328,8 @@ def one_run(args, ctx, run_idx):
             metrics[k_dst] = round(bench[k_src], 4) if isinstance(bench[k_src], float) else bench[k_src]
     if bench.get("initPhasesMS"):
         metrics["vlInitPhasesMS"] = bench["initPhasesMS"]
+    if bench.get("markDurationsMS"):
+        metrics["vlMarkDurationsMS"] = bench["markDurationsMS"]
     low = reply.lower()
     hit = [w for w in ctx["keywords"] if w in low]
     metrics["vlTextCheck"] = "pass" if hit else "fail"
