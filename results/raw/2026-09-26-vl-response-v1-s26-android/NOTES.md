@@ -72,9 +72,9 @@ the medians stand (finding 8).
 
 1. **SmolVLM2-500M produces text on the OpenCL path.** All three GPU launches reply with a
    description that passes the text check. On the Mac the same bundle and engine commit
-   return 64 × `<|endoftext|>` on Metal (Mac NOTES finding 2); that failure does not
+   return 64 × `<|endoftext|>` on the Mac CLI's GPU path (WebGPU via Dawn on Metal; Mac NOTES finding 2); that failure does not
    reproduce on Adreno.
-2. **Both LFM2.5-VL GPU rows fail on Android as on Metal.** The vision encoder does not
+2. **Both LFM2.5-VL GPU rows fail on Android as on the Mac.** The vision encoder does not
    compile: the GPU delegate rejects a `RESIZE_BILINEAR` with no runtime input ("Expected 1
    runtime input tensor(s), but node has 0"), and the engine stops with "Some ops are not
    accelerated" (`vision_litert_compiled_model_executor.cc:312`). It is the same check and

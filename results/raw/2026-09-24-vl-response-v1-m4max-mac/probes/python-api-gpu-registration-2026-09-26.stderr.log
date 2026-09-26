@@ -1,0 +1,40 @@
+### CMD: .build/lt-venv/bin/python -c 'import numpy as np; from ai_edge_litert.compiled_model import CompiledModel; from ai_edge_litert.options import Options; from ai_edge_litert.hardware_accelerator import HardwareAccelerator as H; o = Options(); o.hardware_accelerators = H.GPU; m = CompiledModel.from_file(".build/lfm-export/repro/fc_add_const_rank3.tflite", options=o); i = m.create_input_buffers(0); q = m.create_output_buffers(0); i[0].write(np.zeros((1, 1024, 768), np.float32)); m.run_by_index(0, i, q); print("ran")'
+### 2026-09-26 11:58:54 JST, Mac Studio M4 Max, exit 0. Registration check, not a measurement: which GPU accelerator the Python API (ai_edge_litert CompiledModel, HardwareAccelerator.GPU) registers. venv .build/lt-venv = ai-edge-litert-nightly 2.3.0.dev20260923 (its ai_edge_litert/libLiteRtMetalAccelerator.dylib: 11,399,984 B, sha256 096574cbc65eaf64b583c41505ce3d7780a0277c8cd2b9abe0bb4bfeab351956; no WebGPU accelerator library in the package). Graph: .build/lfm-export/repro/fc_add_const_rank3.tflite, sha256 ac940c58f3c37beea10ed50e9eb0c923cf3ea6372e0779d95093c8be2e4db195 (the LiteRT#10231 release asset of that name), zero input; the output is not read. stderr follows.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/lt-venv/lib/python3.12/site-packages/ai_edge_litert/libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/lt-venv/lib/python3.12/site-packages/ai_edge_litert/libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(/Users/majimadaisuke/code/edge-llm-bench-vltts-wt/.build/lt-venv/lib/python3.12/site-packages/ai_edge_litert/libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78b58f4060, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78b58f40c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78b58f4180, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78b58f41e0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1790391534.211278 64938979 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:398] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1790391534.212031 64938979 gpu_backend_metal.mm:105] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1790391534.213083 64938979 delegate_kernel.cc:911] Initializing Metal-based API from graph.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtMetalAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78b58f4360, name=GPU Metal
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtMetalAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x78b58f43c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78b58f43c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x78b58f4360, name=GPU Metal

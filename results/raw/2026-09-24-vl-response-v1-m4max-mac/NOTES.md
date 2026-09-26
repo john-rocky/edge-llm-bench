@@ -24,6 +24,11 @@ image tokens + prompt; decode tokens = what the model produced before end-of-tur
 | Gemma 4 E2B it | same | litert-lm-gpu (Metal) | **0.413** [0.402–0.654] | 0.07 | 280 @ 4,380 | 24 @ 141 | 0.50 | 775 | passes ("…captivating eyes and fur of a tabby kitten resting on a dark, textured surface.", ×3) |
 | InternVL3-1B, Qwen2-VL-2B | — | both | SKIPPED | | | | | | bundle not staged (`SKIPPED.txt`; PROVENANCE.md "Models") |
 
+Erratum (2026-09-26): the GPU arm (`litert-lm-gpu`, "(Metal)" in the Gemma 4 row) ran on LiteRT's
+WebGPU accelerator (`GPU WebGPU`, `libLiteRtWebGpuAccelerator.dylib`) through Dawn, whose adapter
+backend is Metal; `GPU Metal` was never registered (PROVENANCE.md, erratum at the head of
+"Instrument"). The table's values are unchanged.
+
 Reading: the three LFM / Gemma CPU rows carry the same 276–280 image+prompt tokens, so their
 TTFT column is the vision-encoder + prefill cost of one image on the CPU (0.33 s → 0.97 s → 0.65 s
 for 0.45 B → 1.6 B → Gemma 4 E2B); SmolVLM2's 64 image tokens make its 0.19 s. The response
@@ -36,7 +41,7 @@ added to TTFT. TTFT is the prefill of the image + prompt tokens plus the first s
 The vision encoder runs before it on its own clock, BenchmarkInfo `Mark Durations` →
 `vision_executor`, which these records do not carry. Medians from each launch's
 `logs/*.stderr.log`: SmolVLM2-500M CPU 122.6 ms, LFM2.5-VL-450M CPU 133.1 ms, LFM2.5-VL-1.6B
-CPU 429.9 ms, Gemma 4 E2B CPU 748.4 ms (launch 1: 1,030.7 ms), Gemma 4 E2B GPU (Metal) 169.3
+CPU 429.9 ms, Gemma 4 E2B CPU 748.4 ms (launch 1: 1,030.7 ms), Gemma 4 E2B GPU (the CLI's WebGPU path) 169.3
 ms. The response column does include it: `vision_executor` + prefill + decode equals the
 response seconds minus 6–9 ms in all 15 passing launches of these cells. The table's numbers
 stand as written (`docs/vl-response-v1.md`; the S26 leg's NOTES.md finding 4).
@@ -45,7 +50,7 @@ Spread: the CPU cells repeat within ±1 % except two single launches — LFM 450
 (+12 %: `Finder` / `Storage` / `cmux` at 20–25 % each at launch) and Gemma 4 CPU launch 1 (+46 %:
 a Chrome renderer at 79 % plus five processes at 20–33 %). Gemma 4 GPU launch 1 is +58 % in both
 attempts (0.654 / 0.913 vs 0.40): its TTFT is 0.16–0.18 vs 0.07 and prefill 1,600–1,900 vs 4,400
-tok/s — the first process after the model is (re)loaded pays a Metal program/warm-up cost the
+tok/s — the first process after the model is (re)loaded pays a GPU program/warm-up cost the
 later launches do not; the median stands, the first-launch number is what a cold app would see.
 The Gemma 4 pair was re-taken because the first attempt ran under another session's Xcode build
 (`swift-frontend` / `clang` at 100 % on three cores; kept as `.jsonl.attempt1`); the re-take's runs
@@ -57,10 +62,10 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
 
 1. **The LFM2.5-VL vision encoder does not compile on any GPU delegate, because the export
    carries a `RESIZE_BILINEAR` over a constant tensor** — it is a property of the bundles, not of
-   Metal or of this commit. Both `_int4_fixB` files and the stock `LFM2.5-VL-450M_int4` fail the
-   same way (`probes/`, four controls, 14:5x JST): text on Metal + vision on the CPU **works**
+   Metal (the CLI's WebGPU path) or of this commit. Both `_int4_fixB` files and the stock `LFM2.5-VL-450M_int4` fail the
+   same way (`probes/`, four controls, 14:5x JST): text on Metal (the CLI's WebGPU path) + vision on the CPU **works**
    (TTFT 0.06 s, "A kitten with brown eyes is laying on a gray couch."), text on the CPU + vision
-   on Metal fails identically, so the vision encoder is the single failing component; the released
+   on Metal (the CLI's WebGPU path) fails identically, so the vision encoder is the single failing component; the released
    pip CLI 0.17.1 reproduces it with `--vision-backend gpu` and, with no vision flag, silently runs
    the vision encoder on the CPU (the bundle's configured value) — which is what the card's macOS
    "GPU" rows and the Android GPU rows measured (litertlm-convert `lfm25vl_work/RESULTS.md`,
@@ -80,8 +85,9 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
    450M with no `RESIZE_BILINEAR` (634 → 629 ops), the folded torch path equals the unfolded one
    bit for bit, the exported fp32 encoder matches the torch reference at cosine 1.0000000
    (max |diff| 8.4e-4 folded, 4.4e-4 unfolded; the int8 recipe sits at 0.9917 either way), and
-   the bundle now **compiles and runs with the vision encoder on Metal** (LiteRT-LM main@1dadd00c
-   and the pip CLI 0.17.1 alike; `probes/lfm450m_fold-int8_text-gpu_vision-gpu.stderr.log`,
+   the bundle now **compiles and runs with the vision encoder on the CLI's Mac GPU path (WebGPU
+   via Dawn on Metal)** (LiteRT-LM main@1dadd00c and the pip CLI 0.17.1 alike — pip CLI: accelerator
+   not logged; `probes/lfm450m_fold-int8_text-gpu_vision-gpu.stderr.log`,
    `probes/pip0171_lfm450m_fold-int8_text-gpu_vision-gpu.stdout.txt`).
    What it exposes next — bisected the same evening (`probes/metal-bisect/`, prefix graphs rebuilt op by
    op and run on CPU vs Metal through `ai_edge_litert` CompiledModel): the Metal *output* of the
@@ -94,20 +100,20 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
    fine: the full encoder with the table fed as an input matches the CPU at cosine 1.000000 in fp32
    (0.83 under the Python API's default fp16, a precision drift the engine does not show). Proof
    through the engine: the same bundle repacked with that one RESHAPE captions the cat correctly on
-   Metal at default settings ("A close up of a kitten with its ears perked up", TTFT 0.05 s) — so
-   for LFM2.5-VL on Metal the converter fold plus a delegate fix for the rank-mismatched constant
+   the CLI's Mac GPU path (WebGPU via Dawn on Metal) at default settings ("A close up of a kitten
+   with its ears perked up", TTFT 0.05 s) — so for LFM2.5-VL on the Mac GPU the converter fold plus a delegate fix for the rank-mismatched constant
    ADD is the whole distance. Filed 2026-09-24 15:57 JST: the converter fold as google-ai-edge/litert-torch#1260 and the
    delegate miscompute as google-ai-edge/LiteRT#10231 (repro assets:
    github.com/john-rocky/edge-llm-bench/releases/tag/metal-add-repro-2026-09-24; the script's
    random input reads cosine 0.59, the image input 0.818). A post-export RESHAPE insertion is the
    convert lane's interim for the published bundles.
 
-2. **SmolVLM2-500M on Metal returns only end-of-text tokens** — the same failure the card reports
+2. **SmolVLM2-500M on Metal (the CLI's WebGPU path) returns only end-of-text tokens** — the same failure the card reports
    for litert-lm 0.15.0, still present on `main@1dadd00c`: the engine runs (TTFT 0.00 s, 46,000
    "tokens/s" prefill, 64 decode steps at 759 tok/s) and prints 64 × `<|endoftext|>`. A textbook
    benchmark-mode number without a text check (benchmark-mode-needs-a-text-check).
-3. **Gemma 4 E2B is the one bundle whose GPU arm passes**: 0.41 s per image on Metal vs 1.96 s on
-   the CPU, TTFT 0.07 vs 0.65 s, prefill 4,380 vs 446 tok/s, decode 141 vs 42 tok/s; the GPU arm
+3. **Gemma 4 E2B is the one bundle whose GPU arm passes**: 0.41 s per image on Metal (the CLI's WebGPU
+   path) vs 1.96 s on the CPU, TTFT 0.07 vs 0.65 s, prefill 4,380 vs 446 tok/s, decode 141 vs 42 tok/s; the GPU arm
    also holds 775 MB resident against 3.1 GB on the CPU (weights stay in the GPU heap). Its 280
    image tokens at 1024×682 input (`vision_280` signature; the bundle also carries `vision_70` /
    `vision_140`) are the engine's default `visual_token_budget`.

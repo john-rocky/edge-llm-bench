@@ -5,7 +5,7 @@ Task family definition: `docs/vl-response-v1.md`. Cells: `matrices/vl-response-v
 session start 13:21:34 JST; the two Gemma 4 cells re-taken afterwards, see NOTES.md).
 Numbers and findings: `NOTES.md` here. One JSONL per cell, one record per process
 launch; the engine's stderr for every launch and the reply text are under `logs/`
-(stored-report-rule; the SmolVLM2 GPU cell's launch 2 and 3 stderr logs — 350 KB each of the same Metal op listing as launch 1 — are gzipped). `SKIPPED.txt` lists the rows whose bundle was not staged;
+(stored-report-rule; the SmolVLM2 GPU cell's launch 2 and 3 stderr logs — 350 KB each of the same Dawn (WebGPU) validation-error listing as launch 1 — are gzipped). `SKIPPED.txt` lists the rows whose bundle was not staged;
 `FAILURES.txt` the cells whose launches failed (they stay in the table as FAIL rows).
 
 ## Host
@@ -23,6 +23,35 @@ CPU speed limit at any launch. A background download of this session's own (24 t
 `Python:63%` at the first SmolVLM2 CPU launch) was paused for the rest of the pass.
 
 ## Instrument
+
+Erratum (2026-09-26): the GPU arm ran on LiteRT's WebGPU accelerator, not on the Metal one.
+Every launch of this leg, CPU and GPU arm alike, logs `Attempting to load GPU
+accelerator(libLiteRtGpuAccelerator.dylib).` → `Attempting to load GPU
+accelerator(libLiteRtWebGpuAccelerator.dylib).` → `RegisterAccelerator: ptr=…, name=GPU WebGPU` →
+`Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.` →
+`RegisterAccelerator: ptr=…, name=CpuAccelerator`
+(`logs/litert-lm_litert-community_gemma-4-E2B-it-litert-lm_vl-describe-catcouch-gen64_gpu_run2.stderr.log`
+lines 61–66), and each GPU launch then logs `Selected adapter: Apple M4 Max, arch=metal-3,
+vendor=apple, backend=Metal, adapterType=Integrated GPU` and `Initializing WebGPU-based API from
+serialized data`: WebGPU through Dawn, with Metal as Dawn's backend. `GPU Metal` occurs in none of
+the 24 launch logs and none of the CLI probe logs under `probes/`. LiteRT's `gpu_registry` keeps the
+first library that registers, and on macOS it tries `libLiteRtWebGpuAccelerator.dylib` before
+`libLiteRtMetalAccelerator.dylib` (`docs/vl-response-v1.md`, "The instrument"). The paragraph
+below is wrong where it says the log registers `GPU Metal` from `libLiteRtMetalAccelerator.dylib`.
+The GPU records' `engineArtifact` names `libLiteRtMetalAccelerator.dylib sha256:49df4fd5…`: that is
+the hash of a file staged in the runner dir, not of the accelerator that computed. The one that
+computed is `libLiteRtWebGpuAccelerator.dylib`, sha256
+`e3a53a8f120f41a73b5069002c042efa7e2d6b700e5eb40ceca1a90557ef083b`, on `libwebgpu_dawn.dylib`
+`309791ccd868de849d1eb331735f58d6769fcf901a7b4927481d15242f1a661e` (`SHA256SUMS` here). The
+records stay as written; from 2026-09-26 the driver stamps the registered accelerator in
+`conditions.gpuAccelerator`, and a GPU arm's `engineArtifact` lists the staged GPU dylibs as
+`staged: …`. The Python-API probes behind NOTES finding 1's cosines (`probes/metal-bisect/`,
+`ai_edge_litert` CompiledModel in `.build/lt-venv`, ai-edge-litert-nightly 2.3.0.dev20260923) are
+on Metal: a registration check in the same venv on 2026-09-26 registers `GPU Metal` from the
+wheel's own `libLiteRtMetalAccelerator.dylib` and logs `Initializing Metal-based API from graph`
+(`probes/python-api-gpu-registration-2026-09-26.stderr.log`). That dylib (11,399,984 B, sha256
+`096574cb…`) is a different build from the runner dir's `libLiteRtMetalAccelerator.dylib`
+(16,535,552 B, `49df4fd5…`). The pip CLI 0.17.1 probes' logs name no accelerator.
 
 LiteRT-LM `main` at `1dadd00c2a2363f275e713cfebab5fa9b96c6226` (Fengwu Yao, 2026-09-17
 15:50 -0700, "Update dependencies of litert_lm") — the same worktree as the asr-rtf-v1
