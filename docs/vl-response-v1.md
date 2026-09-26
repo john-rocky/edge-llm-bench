@@ -79,6 +79,23 @@ cp bazel-bin/runtime/engine/litert_lm_advanced_main prebuilt/macos_arm64/*.dylib
 echo "main@1dadd00c" > $D/ENGINE_VERSION && (cd $D && shasum -a 256 litert_lm_advanced_main *.dylib > SHA256SUMS)
 ```
 
+The GPU arm's accelerator is the first library LiteRT's `gpu_registry` manages
+to register, not a flag: on macOS it dlopens `libLiteRtGpuAccelerator.dylib`,
+`libLiteRtWebGpuAccelerator.dylib`, `libLiteRtOpenClAccelerator.dylib`,
+`libLiteRtMetalAccelerator.dylib` in that order from the runner dir and stops at
+the first that registers (`litert/runtime/accelerators/gpu_registry.cc` at LiteRT
+`0da36b31`, the `LITERT_REF` of `1dadd00c`). The stage above copies all of
+`prebuilt/macos_arm64/`, which has no `libLiteRtGpuAccelerator.dylib`, so every
+2026-09-24 launch logs `Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).`
+→ `Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).` →
+`RegisterAccelerator: … name=GPU WebGPU`: the Mac GPU arm ran on the WebGPU
+accelerator (Dawn, adapter backend Metal), and the registry never reached
+`libLiteRtMetalAccelerator.dylib`. The asr-rtf-v1 run dir staged the same Metal
+dylib and no WebGPU one, and its logs register `GPU Metal` after the WebGPU
+attempt. Records from 2026-09-26 on
+name the registered accelerator in `conditions.gpuAccelerator`; a GPU arm's
+`engineArtifact` lists the staged GPU dylibs as `staged: …`.
+
 Models: the HF cache (`hf download <repo> <file>`), or `.build/vl-models/<file>`
 with an `HF_SHA256SUMS` file (`sha256  repo  file` lines from the Hub API) —
 the driver refuses a local copy whose sha256 is not the Hub's, and stamps the
@@ -90,7 +107,7 @@ cache) supplies the recipe line of `model.quantization`.
 | condition | value | note |
 |---|---|---|
 | `--backend` | `cpu` / `gpu` | arm identity: `litert-lm-cpu` and `litert-lm-gpu` never pool (as on Android and in asr-rtf-v1) |
-| `--vision_backend` | = `--backend` | the CLI refuses an image without an explicit vision backend; the arm's backend runs the vision encoder too. A GPU arm whose vision encoder does not compile on the GPU (Metal, OpenCL) is a **FAIL row**, not a silent fallback to a CPU encoder |
+| `--vision_backend` | = `--backend` | the CLI refuses an image without an explicit vision backend; the arm's backend runs the vision encoder too. A GPU arm whose vision encoder does not compile on the GPU (the Mac CLI's WebGPU-on-Metal path, OpenCL) is a **FAIL row**, not a silent fallback to a CPU encoder |
 | `--max_output_tokens` | 64 | budget in the task id |
 | `--visual_token_budget` | engine default (-1) | the bundle's own image-token count |
 | sampler | CLI defaults | repetition penalty 1.0, no presence / frequency penalty, no constraint; the sampler backend follows the engine's choice |
@@ -102,7 +119,7 @@ Changing any one is a new task id, never a silent override (budget-mode-rule).
 ## Record shape
 
 `schema/result.v1.json` with the `vl*` condition and metric keys added
-2026-09-24 (`vlMarkDurationsMS` 2026-09-26). `runtime` is `litert-lm-cpu` /
+2026-09-24 (`vlMarkDurationsMS` and `conditions.gpuAccelerator` 2026-09-26). `runtime` is `litert-lm-cpu` /
 `litert-lm-gpu`. `model.quantization` = the file name's word + the repo manifest's recipe line for that variant
 (`_fixB` files inherit the base variant's line and say so). `provenance`
 carries the image sha256, the manifest sha256, the model sha256, the exact
@@ -188,7 +205,7 @@ Records: `results/raw/<campaign>-android/`, anchor records under
 `results/raw/<campaign>-anchor-android/app-path-android/`. First capture
 `results/raw/2026-09-26-vl-response-v1-s26-android/` (Galaxy S26, 12 cells;
 NOTES.md there: SmolVLM2 produces text on OpenCL, both LFM2.5-VL GPU rows stop
-at the same `RESIZE_BILINEAR` compile error as on Metal, InternVL3-1B's GPU row
+at the same `RESIZE_BILINEAR` compile error as on the Mac, InternVL3-1B's GPU row
 stops on `BROADCAST_TO` / `GATHER_ND`, and TTFT excludes the vision encoder).
 
 ## Not covered in v1

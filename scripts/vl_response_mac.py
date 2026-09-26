@@ -35,6 +35,10 @@ Per run the record carries (metrics):
   vlTextCheck              = pass | fail — the manifest's keyword rule over the
                              reply (benchmark-mode-needs-a-text-check)
   memoryPeakResidentMB (ps sampling), coldRun = true (fresh process)
+and conditions.gpuAccelerator = the GPU accelerator the launch's log registered,
+"<name> (<file>)" (added 2026-09-26: the 2026-09-24 GPU records ran on
+"GPU WebGPU (libLiteRtWebGpuAccelerator.dylib)", Dawn on Metal, while their
+engineArtifact named the staged Metal dylib; their stderr logs carry the lines).
 
 Usage (normally via scripts/bench_matrix_mac.sh, which dispatches vl-* cells here):
   scripts/vl_response_mac.py --model-id litert-community/SmolVLM2-500M \
@@ -184,6 +188,35 @@ RE_PHASE = re.compile(r"^\s*- (.+?):\s*((?:[0-9.]+(?:h|m(?!s)))*[0-9.]+\s*(?:ms|
 RE_DUR = re.compile(r"([0-9.]+)\s*(ms|us|ns|h|m|s)")
 DUR_MS = {"h": 3.6e6, "m": 6e4, "s": 1e3, "ms": 1.0, "us": 1e-3, "ns": 1e-6}
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
+# LiteRT's gpu_registry tries a platform list of GPU accelerator libraries and
+# keeps the first that registers (LiteRT 0da36b31, the LITERT_REF of LiteRT-LM
+# 1dadd00c: on macOS libLiteRtGpuAccelerator -> libLiteRtWebGpuAccelerator ->
+# libLiteRtOpenClAccelerator -> libLiteRtMetalAccelerator), so which GPU
+# accelerator ran depends on what the runner dir stages; the log names it.
+RE_REGISTER = re.compile(r"RegisterAccelerator: .* name=(.+)$")
+RE_GPU_LOADED = re.compile(r"Dynamically loaded GPU accelerator\((\S+)\) registered")
+
+
+def gpu_accelerator(stderr_text, backend):
+    """conditions.gpuAccelerator: "<name> (<file>)" of the GPU accelerator the
+    engine registered, read from the launch's stderr (the RegisterAccelerator
+    line right before gpu_registry's "Dynamically loaded ... registered"). Every
+    launch registers one, the CPU arm's too, where it stays unused."""
+    found, name = [], None
+    for line in stderr_text.splitlines():
+        m = RE_REGISTER.search(line)
+        if m:
+            name = m.group(1).strip()
+            continue
+        m = RE_GPU_LOADED.search(line)
+        if m:
+            entry = f"{name} ({m.group(1)})"
+            if entry not in found:
+                found.append(entry)
+    if not found:
+        return "none registered"
+    value = " + ".join(found)
+    return value if backend == "gpu" else f"{value} registered, unused (CPU arm)"
 
 
 def parse_benchmark(stderr_text):
@@ -362,6 +395,7 @@ def one_run(args, ctx, run_idx):
             "vlMaxOutputTokens": ctx["max_output_tokens"],
             "vlVisionBackend": f"{args.backend} (= --backend; the CLI refuses an image without an explicit --vision_backend, so the arm's backend is used for the vision encoder too)",
             "vlVisualTokenBudget": "engine default (-1: the bundle's own)",
+            "gpuAccelerator": gpu_accelerator(stderr_text, args.backend),
             "sampler": "engine default (litert_lm_advanced_main flags untouched: repetition_penalty 1.0, no penalties, no constraint)",
             "cacheDir": os.path.relpath(ctx["cache_dir"], REPO),
             "warm": False, "unplugged": False,
@@ -456,11 +490,18 @@ def main():
     ver_file = os.path.join(runner_dir, "ENGINE_VERSION")
     engine_version = os.environ.get("VL_ENGINE_VERSION") or (open(ver_file).read().strip() if os.path.exists(ver_file) else "unknown")
     artifact = f"litert_lm_advanced_main sha256:{sha256(runner)} (bazel build //runtime/engine:litert_lm_advanced_main, LiteRT-LM {engine_version})"
-    metal = os.path.join(runner_dir, "libLiteRtMetalAccelerator.dylib")
+    # The GPU dylibs the runner dir stages, not the one that ran: gpu_registry
+    # picks by its load order (gpu_accelerator above), and each record's
+    # conditions.gpuAccelerator names the accelerator its log registered.
+    gpu_libs = [f for f in ("libLiteRtGpuAccelerator.dylib", "libLiteRtWebGpuAccelerator.dylib",
+                            "libwebgpu_dawn.dylib", "libLiteRtOpenClAccelerator.dylib",
+                            "libLiteRtMetalAccelerator.dylib")
+                if os.path.exists(os.path.join(runner_dir, f))]
     if args.backend == "gpu":
-        if not os.path.exists(metal):
-            sys.exit(f"gpu backend needs {metal}")
-        artifact += f"; libLiteRtMetalAccelerator.dylib sha256:{sha256(metal)}"
+        if not any("Accelerator" in f for f in gpu_libs):
+            sys.exit(f"gpu backend needs a GPU accelerator dylib in {runner_dir}")
+        artifact += "; staged: " + ", ".join(
+            f"{f} sha256:{sha256(os.path.join(runner_dir, f))}" for f in gpu_libs)
     cache_root = os.environ.get("VL_CACHE_ROOT", os.path.join(REPO, ".build", "vl-cache"))
     cache_dir = os.path.join(cache_root, re.sub(r"[^A-Za-z0-9_.-]", "_", f"{name}_{args.file}"))
     os.makedirs(cache_dir, exist_ok=True)

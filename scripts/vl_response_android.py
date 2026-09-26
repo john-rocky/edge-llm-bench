@@ -32,6 +32,9 @@ memoryPeakResidentMB = VmHWM of the process polled through adb every 0.5 s
 (host memory only: the OpenCL arm's GPU heap is outside it).
 conditions.screen is stamped from the phone's measured mWakefulness before each
 launch ("on-usb" only when Awake), not copied from the device page's protocol.
+conditions.gpuAccelerator names the GPU accelerator the launch's log registered
+(vl_response_mac.gpu_accelerator; the first S26 capture's logs read
+"LiteRT GPU (libLiteRtGpuAccelerator.so)").
 
 The session anchor is not run by this script: run the android rows of
 matrices/anchors.cells first (`./bench matrix matrices/anchors.cells --platform
@@ -64,7 +67,7 @@ import uuid
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, "scripts"))
 sys.path.insert(0, os.path.join(REPO, "android", "bench"))
-from vl_response_mac import ANSI, DISPLAY, TASK_SETS, parse_benchmark, quant_label, sha256  # noqa: E402
+from vl_response_mac import ANSI, DISPLAY, TASK_SETS, gpu_accelerator, parse_benchmark, quant_label, sha256  # noqa: E402
 from device_probe import adb, battery, device_info, thermal_status  # noqa: E402
 from validate_cells import parse_line  # noqa: E402
 
@@ -318,6 +321,7 @@ def one_run(args, ctx, cell, run_idx, log):
             "vlMaxOutputTokens": ctx["max_output_tokens"],
             "vlVisionBackend": f"{cell['backend']} (= --backend; the CLI refuses an image without an explicit --vision_backend, so the arm's backend is used for the vision encoder too)",
             "vlVisualTokenBudget": "engine default (-1: the bundle's own)",
+            "gpuAccelerator": gpu_accelerator(stderr_text, cell["backend"]),
             "sampler": "engine default (litert_lm_advanced_main flags untouched: repetition_penalty 1.0, no penalties, no constraint)",
             "cacheDir": cache_dir,
             "cpuAffinity": "none (no taskset; the engine sets its own threads)",
