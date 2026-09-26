@@ -80,7 +80,9 @@ launches; PROVENANCE.md "Host") — every launch's foreign-process list is in it
    450M with no `RESIZE_BILINEAR` (634 → 629 ops), the folded torch path equals the unfolded one
    bit for bit, the exported fp32 encoder matches the torch reference at cosine 1.0000000
    (max |diff| 8.4e-4 folded, 4.4e-4 unfolded; the int8 recipe sits at 0.9917 either way), and
-   the bundle now **compiles and runs with the vision encoder on Metal** (LiteRT-LM main and pip
+   the bundle now **compiles and runs with the vision encoder on Metal** (LiteRT-LM main@1dadd00c
+   and the pip CLI 0.17.1 alike; `probes/lfm450m_fold-int8_text-gpu_vision-gpu.stderr.log`,
+   `probes/pip0171_lfm450m_fold-int8_text-gpu_vision-gpu.stdout.txt`).
    What it exposes next — bisected the same evening (`probes/metal-bisect/`, prefix graphs rebuilt op by
    op and run on CPU vs Metal through `ai_edge_litert` CompiledModel): the Metal *output* of the
    folded encoder is wrong at **op 1**, the very ADD that adds the folded table — the converter emits
