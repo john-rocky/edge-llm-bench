@@ -74,10 +74,10 @@ framework registers its own accelerator first — see
    the Swift package at both commits, on both platforms — not the iOS dylib, not the phone.
    The C API sources (`c/conversation.cc`, `c/engine.cc`) differ from the `v0.17.0` tag
    only in error handling, and Google's `v0.17.x` frameworks built from that tag deliver
-   the prompt; the OSS CLI (`litert_lm_advanced_main`, the C++ `Conversation` directly)
-   answered prompts correctly on 2026-09-18 at this commit. What differs between Google's
-   framework build and `bazelisk build //swift:CLiteRTLM` (build flags, what the dylib
-   link keeps) was not found tonight. An iOS xcframework at `66058c82` was also built
+   the prompt. (Erratum 2026-09-26: the sentence that stood here — "the OSS CLI answered
+   prompts correctly on 2026-09-18 at this commit" — was wrong; that CLI was built from the
+   `v0.17.0` tag, see `../2026-09-18-qwen3-composite-prebuilt-1dadd00c-mac/PROVENANCE.md`.
+   The cause was found the next day by calling the C API directly, see the Reading below.) An iOS xcframework at `66058c82` was also built
    (`bazel-bin/swift/CLiteRTLM.xcframework.zip` in `~/code/litert-lm-asr-ios-wt`) but not
    installed, since the prompt loss reproduces at that commit on the Mac.
 
@@ -96,9 +96,13 @@ framework registers its own accelerator first — see
 
 No valid iPhone number for the composite files came out of this route today: the prompt
 is lost before prefill (so no chat-path rate stands) and the GPU path decodes garbage (so no
-benchmark-mode rate can be trusted either). The prompt loss is not phone-specific (4), so
-the next step is on the build side: find what Google's framework build does that
-`//swift:CLiteRTLM` from the OSS tree does not, or ask the LiteRT-LM team with this record. What the route did establish: the accelerator
+benchmark-mode rate can be trusted either). The prompt loss is not phone-specific (4). **Resolved 2026-09-26**
+(`../2026-09-26-litertlm-main-conversation-empty-user-turn-mac/PROVENANCE.md`): building from the
+open-source tree is not the cause — the same recipe at the `v0.17.0` tag delivers the prompt.
+Since `main` commit `6c6b4582` (2026-09-10) the Conversation API hands the chat template the
+message content as a parts array, and this bundle's stored Qwen3 template sets `content = ''`
+when `content` is not a string; the refreshed `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`
+(a template that iterates parts) renders and answers correctly on the same OSS build. What the route did establish: the accelerator
 registration mechanism works from an OSS build on the phone (as for the ASR instrument),
 and the instrument pieces (project copy, package worktree, dylib embedding, backend and
 counter switches) are in place for the day a build pair works. The two defects are LiteRT-LM

@@ -1,0 +1,458 @@
+2026-09-25 23:35:25 bazel mac zip build start (v0.17.0 tag)
+Starting local Bazel server and connecting to it...
+INFO: Reading 'startup' options from /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc: --windows_enable_symlinks
+INFO: Options provided by the client:
+  Inherited 'common' options: --isatty=0 --terminal_columns=80
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc:
+  Inherited 'common' options: --experimental_repo_remote_exec --registry=https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/main/ --experimental_repo_remote_exec --noenable_bzlmod
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc:
+  'build' options: --repo_env=USE_PYWRAP_RULES=True --copt=-DGRPC_BAZEL_BUILD --host_copt=-DGRPC_BAZEL_BUILD --action_env=GRPC_BAZEL_RUNTIME=1 --repo_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --action_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --@rules_python//python/config_settings:precompile=force_disabled --define framework_shared_object=true --define tsl_protobuf_header_only=true --define=allow_oversize_protos=true --spawn_strategy=standalone -c opt --announce_rc --define=grpc_no_ares=true --noincompatible_remove_legacy_whole_archive --features=-force_no_whole_archive --host_features=-force_no_whole_archive --enable_platform_specific_config --define=with_xla_support=true --config=short_logs --experimental_cc_shared_library --experimental_link_static_libraries_once=false --incompatible_enforce_config_setting_visibility --@rules_ml_toolchain//common:enable_hermetic_cc=False --repo_env USE_HERMETIC_CC_TOOLCHAIN=0 --repo_env=HERMETIC_PYTHON_VERSION=3.13 --config=v2 --config=litert_prefixes --features=-layering_check --host_features=-layering_check --features=-header_modules --host_features=-header_modules
+INFO: Found applicable config definition build:short_logs in file /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc: --output_filter=DONT_MATCH_ANYTHING
+INFO: Found applicable config definition build:v2 in file /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc: --define=tf_api_version=2 --action_env=TF2_BEHAVIOR=1
+INFO: Found applicable config definition build:litert_prefixes in file /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc: --define=litert_prefixes=external/org_tensorflow/
+INFO: Found applicable config definition build:macos in file /Users/majimadaisuke/code/litert-lm-0170-mac/.bazelrc: --apple_platform_type=macos --copt=-DGRPC_BAZEL_BUILD --features=archive_param_file --linkopt=-Wl,-undefined,dynamic_lookup --host_linkopt=-Wl,-undefined,dynamic_lookup --copt=-w --define=PREFIX=/usr --define=LIBDIR=$(PREFIX)/lib --define=INCLUDEDIR=$(PREFIX)/include --define=PROTOBUF_INCLUDE_PATH=$(PREFIX)/include --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+Computing main repo mapping: 
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'bazel_skylib' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'bazel_features' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'rules_ml_toolchain' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'platforms' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_ml_toolchain/py/python_repo.bzl:108:14: !!!Using pywrap rules instead of directly creating .so objects!!!
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_ml_toolchain/py/python_repo.bzl:113:10: 
+=============================
+Hermetic Python configuration:
+Version: "3.13"
+Kind: ""
+Interpreter: "default" (provided by rules_python)
+Requirements_lock label: "@python_version_repo//:requirements_lock_3_13.txt"
+=====================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'build_bazel_rules_apple' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'build_bazel_rules_swift' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'build_bazel_apple_support' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'xctestrunner' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'net_zstd' because it already exists.
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/org_tensorflow/third_party/repo.bzl:138:14: 
+Warning: skipping import of repository 'rules_proto' because it already exists.
+Loading: 
+Loading: 2 packages loaded
+Analyzing: target //swift:CLiteRTLM_mac (3 packages loaded, 0 targets configured)
+Analyzing: target //swift:CLiteRTLM_mac (3 packages loaded, 0 targets configured)
+
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/codesigningtool:codesigningtool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/alticonstool:alticonstool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/plisttool:plisttool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/dossier_codesigningtool:dossier_codesigningtool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/imported_dynamic_framework_processor:imported_dynamic_framework_processor is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/versiontool:versiontool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/xcframework_processor_tool:xcframework_processor_tool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/bundletool:bundletool_experimental is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/swift_stdlib_tool:swift_stdlib_tool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @XNNPACK//:generate_build_identifier_py is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/clangrttool:clangrttool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/provisioning_profile_tool:provisioning_profile_tool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/xctoolrunner:xctoolrunner is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+DEBUG: /private/var/tmp/_bazel_majimadaisuke/68466d3b33bfe9db3f72a4f68d563aec/external/rules_python/python/private/py_executable.bzl:1498:14: 
+======================================================================
+WARNING: Target @build_bazel_rules_apple//tools/bundletool:bundletool is using implicit __init__.py creation.
+  This diabolic behavior is deprecated and will be disabled by default in a
+  future release.
+  See https://github.com/bazel-contrib/rules_python/issues/2945
+
+  Ensure all __init__.py files are explicitly created and
+  added to the srcs or deps of your targets.
+
+  Disable implicit creation by setting:
+    legacy_create_init = 0
+  on the target, or globally by setting:
+    --incompatible_default_to_explicit_init_py
+======================================================================
+Analyzing: target //swift:CLiteRTLM_mac (566 packages loaded, 15891 targets configured)
+
+Analyzing: target //swift:CLiteRTLM_mac (623 packages loaded, 21431 targets configured)
+
+Analyzing: target //swift:CLiteRTLM_mac (623 packages loaded, 21431 targets configured)
+
+Analyzing: target //swift:CLiteRTLM_mac (623 packages loaded, 21431 targets configured)
+
+Analyzing: target //swift:CLiteRTLM_mac (623 packages loaded, 21431 targets configured)
+
+Analyzing: target //swift:CLiteRTLM_mac (623 packages loaded, 21431 targets configured)
+
+INFO: Analyzed target //swift:CLiteRTLM_mac (624 packages loaded, 21705 targets configured).
+[1,184 / 7,817] Executing apple_genrule @build_bazel_apple_support//crosstool:exec_libtool.target_config [for tool]; 0s local ... (12 actions, 11 running)
+[2,436 / 9,065] Executing apple_genrule @build_bazel_apple_support//crosstool:exec_libtool.target_config [for tool]; 1s local ... (5 actions running)
+[2,441 / 9,065] Compiling tflite/core/c/common.cc; 0s local ... (17 actions, 16 running)
+[2,453 / 9,065] Compiling litert/c/litert_tensor_buffer_requirements.cc; 1s local ... (17 actions, 16 running)
+[2,493 / 9,065] Compiling litert/c/litert_options.cc; 0s local ... (17 actions, 15 running)
+[2,537 / 9,065] Compiling litert/c/options/litert_qualcomm_options.cc; 1s local ... (16 actions, 15 running)
+[2,576 / 9,065] Compiling src/google/protobuf/descriptor.cc; 0s local ... (16 actions running)
+[2,615 / 9,065] Compiling src/google/protobuf/descriptor.cc; 1s local ... (16 actions running)
+[2,653 / 9,065] Compiling src/google/protobuf/descriptor.cc; 2s local ... (16 actions running)
+[2,687 / 9,065] Compiling src/google/protobuf/descriptor.cc; 3s local ... (17 actions, 16 running)
+[2,725 / 9,065] Compiling src/google/protobuf/descriptor.cc; 4s local ... (16 actions, 15 running)
+[2,755 / 9,065] Compiling src/google/protobuf/descriptor.cc; 6s local ... (17 actions, 16 running)
+[2,765 / 9,065] Compiling src/binary_annotator.cpp [for tool]; 1s local ... (16 actions, 15 running)
+[2,775 / 9,065] Compiling src/idl_gen_ts.cpp [for tool]; 2s local ... (17 actions, 16 running)
+[2,791 / 9,065] Compiling src/idl_gen_ts.cpp [for tool]; 3s local ... (17 actions, 16 running)
+[2,809 / 9,065] Compiling src/idl_gen_java.cpp [for tool]; 3s local ... (17 actions, 16 running)
+[2,861 / 9,065] Compiling src/idl_gen_java.cpp [for tool]; 4s local ... (17 actions, 15 running)
+[2,899 / 9,065] Compiling absl/crc/internal/crc_cord_state.cc; 0s local ... (16 actions running)
+[2,933 / 9,065] Compiling src/google/protobuf/extension_set_heavy.cc; 1s local ... (17 actions, 15 running)
+[2,983 / 9,065] Compiling absl/status/internal/status_internal.cc; 0s local ... (16 actions, 15 running)
+[3,091 / 9,065] Compiling src/google/protobuf/generated_message_bases.cc; 0s local ... (15 actions, 14 running)
+[3,273 / 9,065] Compiling src/google/protobuf/generated_message_reflection.cc; 0s local ... (16 actions, 15 running)
+[3,425 / 9,065] Compiling src/google/protobuf/generated_message_reflection.cc; 1s local ... (16 actions running)
+[3,558 / 9,065] Compiling src/google/protobuf/generated_message_reflection.cc; 2s local ... (17 actions, 16 running)
+[3,662 / 9,065] Compiling src/f32-dwconv/gen/f32-dwconv-4p16c-minmax-avx512f.c; 0s local ... (16 actions, 15 running)
+[3,793 / 9,065] Compiling src/google/protobuf/generated_message_tctable_gen.cc; 1s local ... (17 actions, 16 running)
+[3,890 / 9,065] Compiling src/google/protobuf/internal_feature_helper.cc; 0s local ... (17 actions, 15 running)
+[4,005 / 9,065] Compiling src/google/protobuf/map_field.cc; 0s local ... (16 actions, 15 running)
+[4,132 / 9,065] Compiling src/google/protobuf/message.cc; 0s local ... (16 actions, 15 running)
+[4,262 / 9,065] Compiling src/google/protobuf/message.cc; 1s local ... (17 actions, 15 running)
+[4,466 / 9,065] Compiling src/google/protobuf/reflection_ops.cc; 0s local ... (16 actions, 15 running)
+[4,627 / 9,065] Compiling src/google/protobuf/text_format.cc; 0s local ... (16 actions, 15 running)
+[4,845 / 9,065] Compiling src/google/protobuf/text_format.cc; 1s local ... (17 actions, 15 running)
+[4,983 / 9,065] Compiling Rust rlib bitflags v2.10.0 (46 files); 0s local ... (17 actions, 15 running)
+[5,127 / 9,065] Compiling src/reference/binary-elementwise.cc; 0s local ... (17 actions, 15 running)
+[5,256 / 9,065] Compiling src/google/protobuf/wire_format.cc; 1s local ... (16 actions, 15 running)
+[5,446 / 9,065] Compiling src/google/protobuf/any_lite.cc; 0s local ... (16 actions, 15 running)
+[5,652 / 9,065] Compiling upb/reflection/message_def.c [for tool]; 0s local ... (17 actions, 15 running)
+[5,805 / 9,065] Compiling upb_generator/file_layout.cc [for tool]; 0s local ... (16 actions, 15 running)
+[5,911 / 9,065] Compiling upb_generator/minitable/generator.cc [for tool]; 1s local ... (17 actions, 15 running)
+[5,962 / 9,065] Compiling tflite/delegates/gpu/cl/cl_device.cc; 0s local ... (17 actions, 16 running)
+[6,015 / 9,065] Compiling src/google/protobuf/generated_message_tctable_lite.cc; 1s local ... (17 actions, 16 running)
+[6,078 / 9,065] Compiling src/reflection.cpp; 0s local ... (16 actions, 15 running)
+[6,124 / 9,065] Compiling src/idl_parser.cpp; 1s local ... (16 actions, 15 running)
+[6,168 / 9,065] Compiling src/idl_parser.cpp; 2s local ... (16 actions, 15 running)
+[6,225 / 9,065] Compiling src/idl_parser.cpp; 3s local ... (17 actions, 16 running)
+[6,273 / 9,065] Compiling absl/strings/internal/str_format/float_conversion.cc [for tool]; 0s local ... (17 actions, 16 running)
+[6,325 / 9,065] Compiling tflite/delegates/xnnpack/quantization_util.cc; 1s local ... (17 actions, 16 running)
+[6,364 / 9,065] Compiling tflite/delegates/xnnpack/quantization_util.cc; 2s local ... (16 actions, 15 running)
+[6,407 / 9,065] Compiling tflite/kernels/lstm_eval.cc; 0s local ... (16 actions, 15 running)
+[6,443 / 9,065] Compiling tflite/kernels/lstm_eval.cc; 1s local ... (17 actions, 16 running)
+[6,486 / 9,065] Compiling tflite/kernels/lstm_eval.cc; 2s local ... (16 actions, 15 running)
+[6,531 / 9,065] Compiling src/google/protobuf/io/printer.cc [for tool]; 1s local ... (17 actions, 16 running)
+[6,563 / 9,065] Compiling src/google/protobuf/generated_message_tctable_lite.cc [for tool]; 1s local ... (17 actions, 16 running)
+[6,594 / 9,065] Compiling src/google/protobuf/extension_set.cc [for tool]; 1s local ... (16 actions, 15 running)
+[6,615 / 9,065] Compiling src/google/protobuf/text_format.cc [for tool]; 2s local ... (17 actions, 16 running)
+[6,634 / 9,065] Compiling src/google/protobuf/generated_message_reflection.cc [for tool]; 2s local ... (17 actions, 15 running)
+[6,647 / 9,065] Compiling litert/core/util/flatbuffer_tools.cc; 3s local ... (17 actions, 16 running)
+[6,662 / 9,065] Compiling src/google/protobuf/descriptor.cc [for tool]; 3s local ... (17 actions, 16 running)
+[6,670 / 9,065] Compiling src/google/protobuf/descriptor.cc [for tool]; 4s local ... (17 actions, 16 running)
+[6,685 / 9,065] Compiling src/google/protobuf/descriptor.cc [for tool]; 5s local ... (17 actions, 16 running)
+[6,712 / 9,065] Compiling src/google/protobuf/descriptor.cc [for tool]; 6s local ... (16 actions running)
+[6,740 / 9,065] Compiling src/google/protobuf/compiler/python/generator.cc [for tool]; 2s local ... (16 actions running)
+[6,754 / 9,065] Compiling src/google/protobuf/compiler/objectivec/file.cc [for tool]; 1s local ... (17 actions, 16 running)
+[6,766 / 9,065] Running Cargo build script onig_sys; 2s local ... (17 actions, 16 running)
+[6,780 / 9,065] Running Cargo build script onig_sys; 3s local ... (17 actions, 16 running)
+[6,792 / 9,065] Running Cargo build script onig_sys; 4s local ... (17 actions, 16 running)
+[6,820 / 9,065] Compiling litert/core/model/model_load.cc; 2s local ... (16 actions running)
+[6,850 / 9,065] Compiling src/google/protobuf/compiler/java/full/enum.cc [for tool]; 1s local ... (16 actions running)
+[6,865 / 9,065] Compiling src/google/protobuf/compiler/java/full/message.cc [for tool]; 2s local ... (17 actions, 16 running)
+[6,877 / 9,065] Running Cargo build script onig_sys; 3s local ... (16 actions running)
+[6,899 / 9,065] Running Cargo build script onig_sys; 4s local ... (17 actions, 16 running)
+[6,919 / 9,065] Compiling litert/core/model/model_serialize.cc; 2s local ... (17 actions, 16 running)
+[6,945 / 9,065] Compiling src/google/protobuf/compiler/cpp/parse_function_generator.cc [for tool]; 1s local ... (17 actions, 16 running)
+[6,952 / 9,065] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 2s local ... (17 actions, 16 running)
+[6,968 / 9,065] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 3s local ... (17 actions, 16 running)
+[6,987 / 9,065] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 4s local ... (16 actions running)
+[7,023 / 9,065] Compiling src/google/protobuf/compiler/cpp/message.cc [for tool]; 5s local ... (16 actions running)
+[7,043 / 9,065] Compiling src/google/protobuf/compiler/command_line_interface.cc [for tool]; 2s local ... (16 actions running)
+[7,053 / 9,065] Compiling src/google/protobuf/generated_message_tctable_lite.cc; 2s local ... (16 actions running)
+[7,067 / 9,065] Compiling src/google/protobuf/text_format.cc; 2s local ... (16 actions running)
+[7,091 / 9,065] Compiling src/google/protobuf/generated_message_reflection.cc; 2s local ... (17 actions, 16 running)
+[7,129 / 9,065] Compiling src/google/protobuf/descriptor.cc; 2s local ... (16 actions running)
+[7,170 / 9,065] Compiling src/google/protobuf/descriptor.cc; 3s local ... (16 actions running)
+[7,221 / 9,065] Compiling src/google/protobuf/descriptor.cc; 4s local ... (17 actions, 16 running)
+[7,256 / 9,065] Compiling src/google/protobuf/descriptor.cc; 5s local ... (16 actions running)
+[7,279 / 9,065] Compiling external/miniaudio/miniaudio.mm; 2s local ... (16 actions running)
+[7,318 / 9,065] Compiling external/miniaudio/miniaudio.mm; 3s local ... (16 actions running)
+[7,351 / 9,065] Compiling upb_generator/file_layout.cc [for tool]; 1s local ... (17 actions, 15 running)
+[7,392 / 9,065] Compiling runtime/framework/threadpool.cc; 0s local ... (17 actions, 15 running)
+[7,420 / 9,065] Compiling re2/prefilter_tree.cc; 1s local ... (17 actions, 16 running)
+[7,446 / 9,065] Compiling re2/dfa.cc; 1s local ... (16 actions running)
+[7,483 / 9,065] Compiling runtime/executor/llm_executor_processed_tokens.cc; 1s local ... (17 actions, 15 running)
+[7,545 / 9,065] Compiling src/idl_parser.cpp; 1s local ... (17 actions, 15 running)
+[7,605 / 9,065] Compiling src/idl_parser.cpp; 2s local ... (17 actions, 15 running)
+[7,656 / 9,065] Compiling src/idl_parser.cpp; 3s local ... (16 actions, 15 running)
+[7,747 / 9,065] Compiling src/idl_parser.cpp; 4s local ... (16 actions, 15 running)
+[7,847 / 9,065] Compiling external/com_google_protobuf/src/google/protobuf/_virtual_imports/struct_proto/google/protobuf/struct.pb.cc; 1s local ... (16 actions, 15 running)
+[7,893 / 9,065] Compiling runtime/components/prompt_template.cc; 1s local ... (16 actions, 15 running)
+[7,957 / 9,065] Compiling tflite/delegates/xnnpack/xnnpack_delegate.cc; 1s local ... (17 actions, 15 running)
+[8,003 / 9,065] Compiling tflite/delegates/xnnpack/xnnpack_delegate.cc; 2s local ... (16 actions, 15 running)
+[8,033 / 9,065] Compiling tflite/delegates/gpu/common/task/tensor_desc.cc; 2s local ... (16 actions, 15 running)
+[8,076 / 9,065] Compiling char_model.cc; 1s local ... (16 actions, 15 running)
+[8,106 / 9,065] Compiling tflite/core/interpreter_builder.cc; 1s local ... (16 actions, 15 running)
+[8,127 / 9,065] Compiling tflite/delegates/xnnpack/quantization_util.cc; 2s local ... (16 actions, 15 running)
+[8,141 / 9,065] Compiling Rust rlib minijinja v2.14.0 (41 files); 2s local ... (17 actions, 15 running)
+[8,158 / 9,065] Compiling Rust rlib minijinja v2.14.0 (41 files); 3s local ... (16 actions, 15 running)
+[8,164 / 9,065] Compiling Rust rlib minijinja v2.14.0 (41 files); 4s local ... (16 actions, 15 running)
+[8,186 / 9,065] Compiling Rust rlib tokenizers v0.21.0 (87 files); 4s local ... (16 actions, 15 running)
+[8,198 / 9,065] Compiling Rust rlib tokenizers v0.21.0 (87 files); 5s local ... (17 actions, 15 running)
+[8,211 / 9,065] Compiling Rust rlib tokenizers v0.21.0 (87 files); 6s local ... (16 actions, 15 running)
+[8,218 / 9,065] Compiling Rust rlib tokenizers v0.21.0 (87 files); 7s local ... (16 actions, 15 running)
+[8,235 / 9,065] Compiling litert/core/util/flatbuffer_tools.cc; 4s local ... (16 actions running)
+[8,251 / 9,065] Compiling litert/core/util/flatbuffer_tools.cc; 5s local ... (16 actions running)
+[8,259 / 9,065] Compiling litert/core/util/flatbuffer_tools.cc; 6s local ... (16 actions, 15 running)
+[8,279 / 9,065] Compiling Rust rlib tokenizers v0.21.0 (87 files); 6s local ... (17 actions, 16 running)
+[8,285 / 9,065] Compiling Rust rlib tokenizers v0.21.0 (87 files); 7s local ... (16 actions running)
+[8,298 / 9,065] Compiling tflite/kernels/activations.cc; 5s local ... (17 actions, 16 running)
+[8,312 / 9,065] Compiling tflite/kernels/activations.cc; 6s local ... (16 actions running)
+[8,330 / 9,065] Compiling sentencepiece_processor.cc; 4s local ... (16 actions, 15 running)
+[8,347 / 9,065] Compiling litert/core/model/model_serialize.cc; 2s local ... (17 actions, 16 running)
+[8,359 / 9,065] Compiling tflite/kernels/add.cc; 2s local ... (17 actions, 16 running)
+[8,377 / 9,065] Compiling tflite/kernels/transpose_conv.cc; 2s local ... (17 actions, 16 running)
+[8,387 / 9,065] Compiling tflite/kernels/squared_difference.cc; 2s local ... (17 actions, 16 running)
+[8,401 / 9,065] Compiling tflite/kernels/add_n.cc; 2s local ... (17 actions, 16 running)
+[8,420 / 9,065] Compiling tflite/kernels/activations.cc; 3s local ... (17 actions, 16 running)
+[8,437 / 9,065] Compiling tflite/kernels/arg_min_max.cc; 1s local ... (17 actions, 16 running)
+[8,448 / 9,065] Compiling litert/compiler/plugin/compiler_plugin.cc; 2s local ... (17 actions, 15 running)
+[8,463 / 9,065] Compiling tflite/kernels/resize_bilinear.cc; 2s local ... (17 actions, 16 running)
+[8,471 / 9,065] Compiling tflite/kernels/add.cc; 3s local ... (17 actions, 16 running)
+[8,480 / 9,065] Compiling tflite/kernels/reduce.cc; 3s local ... (16 actions, 15 running)
+[8,491 / 9,065] Compiling tflite/kernels/numeric_verify.cc; 2s local ... (17 actions, 16 running)
+[8,504 / 9,065] Compiling tflite/kernels/maximum_minimum.cc; 2s local ... (17 actions, 16 running)
+[8,520 / 9,065] Compiling tflite/kernels/lstm.cc; 2s local ... (17 actions, 16 running)
+[8,531 / 9,065] Compiling tflite/kernels/lstm.cc; 3s local ... (17 actions, 16 running)
+[8,542 / 9,065] Compiling litert/runtime/compiled_model.cc; 2s local ... (17 actions, 16 running)
+[8,557 / 9,065] Compiling litert/runtime/compiled_model.cc; 3s local ... (17 actions, 16 running)
+[8,563 / 9,065] Compiling tflite/kernels/fully_connected.cc; 4s local ... (17 actions, 16 running)
+[8,569 / 9,065] Compiling tflite/kernels/fully_connected.cc; 5s local ... (17 actions, 16 running)
+[8,591 / 9,065] Compiling tflite/kernels/transpose_conv.cc; 3s local ... (17 actions, 16 running)
+[8,604 / 9,065] Compiling tflite/kernels/conv.cc; 3s local ... (16 actions running)
+[8,615 / 9,065] Compiling tflite/kernels/conv.cc; 4s local ... (16 actions running)
+[8,632 / 9,065] Compiling tflite/kernels/conv.cc; 5s local ... (17 actions, 16 running)
+[8,647 / 9,065] Compiling litert/runtime/compiled_model.cc; 2s local ... (17 actions, 16 running)
+[8,658 / 9,065] Compiling litert/runtime/compiled_model.cc; 3s local ... (17 actions, 16 running)
+[8,681 / 9,065] Compiling support/preprocessor/stb_image_preprocessor.cc; 2s local ... (17 actions, 15 running)
+[8,695 / 9,065] Compiling support/preprocessor/stb_image_preprocessor.cc; 3s local ... (16 actions, 15 running)
+[8,714 / 9,065] Compiling runtime/conversation/internal_callback_util.cc; 2s local ... (17 actions, 15 running)
+[8,733 / 9,065] Compiling runtime/conversation/model_data_processor/minicpm5_data_processor.cc; 2s local ... (16 actions, 15 running)
+[8,752 / 9,065] Compiling runtime/conversation/model_data_processor/gemma3_data_processor.cc; 2s local ... (16 actions, 15 running)
+[8,769 / 9,065] Compiling runtime/conversation/model_data_processor/lfm2_data_processor.cc; 2s local ... (17 actions, 15 running)
+[8,782 / 9,065] Compiling runtime/conversation/model_data_processor/gemma4_data_processor.cc; 2s local ... (16 actions running)
+[8,793 / 9,065] Compiling tflite/kernels/reduce.cc; 2s local ... (17 actions, 16 running)
+[8,800 / 9,065] Compiling tflite/kernels/reduce.cc; 3s local ... (17 actions, 15 running)
+[8,814 / 9,065] Compiling runtime/executor/vision_litert_compiled_model_executor.cc; 3s local ... (17 actions, 16 running)
+[8,820 / 9,065] Compiling runtime/conversation/conversation.cc; 2s local ... (17 actions, 16 running)
+[8,834 / 9,065] Compiling runtime/executor/embedding_litert_compiled_model_executor.cc; 2s local ... (17 actions, 16 running)
+[8,843 / 9,065] Compiling runtime/executor/audio_litert_compiled_model_executor.cc; 3s local ... (17 actions, 16 running)
+[8,855 / 9,065] Compiling runtime/executor/audio_litert_compiled_model_executor.cc; 4s local ... (16 actions running)
+[8,861 / 9,065] Compiling runtime/executor/llm_litert_mtp_drafter.cc; 3s local ... (16 actions running)
+[8,875 / 9,065] Compiling runtime/framework/resource_management/resource_manager.cc; 2s local ... (16 actions running)
+[8,891 / 9,065] Compiling tflite/kernels/fully_connected.cc; 3s local ... (17 actions, 16 running)
+[8,899 / 9,065] Compiling runtime/core/embedding_engine_impl.cc; 3s local ... (17 actions, 16 running)
+[8,909 / 9,065] Compiling runtime/executor/llm_litert_compiled_model_executor.cc; 3s local ... (16 actions running)
+[8,917 / 9,065] Compiling runtime/executor/llm_litert_compiled_model_executor.cc; 4s local ... (17 actions, 16 running)
+[8,930 / 9,065] Compiling runtime/executor/llm_litert_npu_compiled_model_executor.cc; 4s local ... (16 actions running)
+[8,946 / 9,065] Compiling runtime/core/tasks.cc; 2s local ... (17 actions, 16 running)
+[8,956 / 9,065] Compiling support/preprocessor/stb_image_preprocessor.cc; 3s local ... (17 actions, 16 running)
+[8,966 / 9,065] Compiling runtime/framework/resource_management/threaded_execution_manager.cc; 3s local ... (16 actions running)
+[8,976 / 9,065] Compiling runtime/core/engine_advanced_impl.cc; 3s local ... (17 actions, 16 running)
+[8,992 / 9,065] Compiling c/conversation.cc; 3s local ... (17 actions, 16 running)
+[9,002 / 9,065] Compiling runtime/executor/litert_compiled_model_executor_utils.cc; 4s local ... (17 actions, 16 running)
+[9,008 / 9,065] Compiling runtime/executor/vision_litert_compiled_model_executor.cc; 3s local ... (17 actions, 16 running)
+[9,016 / 9,065] Compiling runtime/executor/llm_litert_mtp_drafter.cc; 3s local ... (16 actions running)
+[9,030 / 9,065] Compiling runtime/executor/llm_litert_compiled_model_executor.cc; 4s local ... (17 actions, 16 running)
+[9,035 / 9,065] Compiling runtime/executor/audio_litert_compiled_model_executor.cc; 4s local ... (14 actions running)
+[9,045 / 9,065] Compiling runtime/executor/llm_litert_npu_compiled_model_executor.cc; 4s local ... (9 actions, 8 running)
+[9,058 / 9,065] Compiling c/conversation.cc; 2s local
+[9,060 / 9,065] Linking swift/CLiteRTLM_dylib_bin; 0s local
+[9,064 / 9,065] Executing genrule //swift:CLiteRTLM_mac; 0s local
+INFO: Found 1 target...
+Target //swift:CLiteRTLM_mac up-to-date:
+  bazel-bin/swift/CLiteRTLM_mac.zip
+INFO: Elapsed time: 196.586s, Critical Path: 21.24s
+INFO: 8245 processes: 2038 internal, 6207 local.
+INFO: Build completed successfully, 8245 total actions
+EXIT=0 23:38:41

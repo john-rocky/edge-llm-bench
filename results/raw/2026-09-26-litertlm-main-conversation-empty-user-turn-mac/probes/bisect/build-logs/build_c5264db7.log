@@ -1,0 +1,46 @@
+INFO: Reading 'startup' options from /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc: --windows_enable_symlinks
+INFO: Options provided by the client:
+  Inherited 'common' options: --isatty=0 --terminal_columns=80
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc:
+  Inherited 'common' options: --experimental_repo_remote_exec --registry=https://raw.githubusercontent.com/bazelbuild/bazel-central-registry/main/ --experimental_repo_remote_exec --noenable_bzlmod
+INFO: Reading rc options for 'build' from /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc:
+  'build' options: --repo_env=USE_PYWRAP_RULES=True --copt=-DGRPC_BAZEL_BUILD --host_copt=-DGRPC_BAZEL_BUILD --action_env=GRPC_BAZEL_RUNTIME=1 --repo_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --action_env=PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=upb --@rules_python//python/config_settings:precompile=force_disabled --define framework_shared_object=true --define tsl_protobuf_header_only=true --define=allow_oversize_protos=true --spawn_strategy=standalone -c opt --announce_rc --define=grpc_no_ares=true --noincompatible_remove_legacy_whole_archive --features=-force_no_whole_archive --host_features=-force_no_whole_archive --enable_platform_specific_config --define=with_xla_support=true --config=short_logs --experimental_cc_shared_library --experimental_link_static_libraries_once=false --incompatible_enforce_config_setting_visibility --@rules_ml_toolchain//common:enable_hermetic_cc=False --repo_env USE_HERMETIC_CC_TOOLCHAIN=0 --repo_env=HERMETIC_PYTHON_VERSION=3.13 --config=v2 --config=litert_prefixes --features=-layering_check --host_features=-layering_check --features=-header_modules --host_features=-header_modules
+INFO: Found applicable config definition build:short_logs in file /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc: --output_filter=DONT_MATCH_ANYTHING
+INFO: Found applicable config definition build:v2 in file /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc: --define=tf_api_version=2 --action_env=TF2_BEHAVIOR=1
+INFO: Found applicable config definition build:litert_prefixes in file /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc: --define=litert_prefixes=external/org_tensorflow/
+INFO: Found applicable config definition build:macos in file /Users/majimadaisuke/code/litert-lm-bisect-wt/.bazelrc: --apple_platform_type=macos --copt=-DGRPC_BAZEL_BUILD --features=archive_param_file --linkopt=-Wl,-undefined,dynamic_lookup --host_linkopt=-Wl,-undefined,dynamic_lookup --copt=-w --define=PREFIX=/usr --define=LIBDIR=$(PREFIX)/lib --define=INCLUDEDIR=$(PREFIX)/include --define=PROTOBUF_INCLUDE_PATH=$(PREFIX)/include --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //swift:CLiteRTLM_mac (0 packages loaded, 0 targets configured)
+Analyzing: target //swift:CLiteRTLM_mac (0 packages loaded, 0 targets configured)
+
+INFO: Analyzed target //swift:CLiteRTLM_mac (3 packages loaded, 290 targets configured).
+[213 / 451] Compiling runtime/components/constrained_decoding/composite_constraint.cc; 0s local ... (17 actions, 15 running)
+[223 / 451] Compiling runtime/conversation/internal_callback_util.cc; 1s local ... (17 actions, 15 running)
+[246 / 451] Compiling runtime/conversation/model_data_processor/generic_data_processor.cc; 1s local ... (16 actions, 15 running)
+[256 / 451] Compiling runtime/conversation/model_data_processor/function_gemma_data_processor.cc; 2s local ... (16 actions, 15 running)
+[281 / 451] Compiling runtime/conversation/model_data_processor/lfm2_data_processor.cc; 2s local ... (16 actions, 15 running)
+[296 / 451] Compiling runtime/executor/magic_number_configs_helper.cc; 1s local ... (16 actions, 15 running)
+[312 / 451] Compiling runtime/engine/engine_settings.cc; 2s local ... (16 actions, 15 running)
+[324 / 451] Compiling runtime/engine/engine_settings.cc; 2s local ... (16 actions, 15 running)
+[332 / 451] Compiling runtime/conversation/conversation.cc; 3s local ... (16 actions, 15 running)
+[347 / 451] Compiling runtime/executor/audio_litert_compiled_model_executor.cc; 4s local ... (17 actions, 16 running)
+[355 / 451] Compiling runtime/core/embedding_engine_impl.cc; 3s local ... (17 actions, 16 running)
+[367 / 451] Compiling runtime/core/embedding_engine_impl.cc; 4s local ... (17 actions, 16 running)
+[370 / 451] Compiling runtime/executor/llm_litert_mtp_drafter.cc; 4s local ... (16 actions running)
+[381 / 451] Compiling runtime/executor/llm_litert_compiled_model_executor.cc; 4s local ... (17 actions, 16 running)
+[391 / 451] Compiling runtime/framework/resource_management/threaded_execution_manager.cc; 4s local ... (17 actions, 16 running)
+[397 / 451] Compiling runtime/executor/llm_litert_npu_compiled_model_executor.cc; 5s local ... (17 actions, 16 running)
+[404 / 451] Compiling runtime/core/embedding_engine_impl.cc; 4s local ... (17 actions, 16 running)
+[414 / 451] Compiling runtime/core/embedding_engine_impl.cc; 5s local ... (17 actions, 16 running)
+[423 / 451] Compiling runtime/executor/llm_litert_compiled_model_executor.cc; 4s local ... (13 actions running)
+[436 / 451] Compiling runtime/framework/resource_management/threaded_execution_manager.cc; 3s local ... (6 actions running)
+[444 / 451] Compiling c/conversation.cc; 3s local
+[450 / 451] Executing genrule //swift:CLiteRTLM_mac; 0s local
+INFO: Found 1 target...
+Target //swift:CLiteRTLM_mac up-to-date:
+  bazel-bin/swift/CLiteRTLM_mac.zip
+INFO: Elapsed time: 24.353s, Critical Path: 8.48s
+INFO: 153 processes: 4 internal, 149 local.
+INFO: Build completed successfully, 153 total actions
