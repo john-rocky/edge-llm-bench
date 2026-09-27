@@ -1,0 +1,98 @@
+{
+ "schema": "dashboard-job-session.v1",
+ "job": "tts-rtf-v1 manual sitting (admission rule = scripts/dashboard_job.py admit)",
+ "device_key": "s26",
+ "device_display": "Galaxy S26",
+ "device_identifier": "SM-S942Q",
+ "platform": "android",
+ "attempt": 1,
+ "campaign": "results/raw/2026-09-27-tts-rtf-v1-s26-anchor-android",
+ "phase": "anchor",
+ "cells": "matrices/anchors.cells (android rows)",
+ "started": "2026-09-27T02:11:50Z",
+ "ended": "2026-09-27T02:22:59Z",
+ "admitted": false,
+ "verdict": "NOT_ADMITTED",
+ "reason": "anchor-collapse \u2014 operator error: `./bench matrix` was launched without BENCH_CPU_MASK= (the S26 runs unmasked, devices/galaxy-s26.md); the llama.cpp anchor ran under `taskset f0` (conditions.cpuAffinity) and gave 9.8-10.1 tok/s against 107.6 unmasked the same morning, the same collapse the 2026-08-25 affinity probes measured. The litert-lm-gpu anchor (52.4-52.7 vs 53.75) was unaffected. The records stay as raw with their conditions; the sitting's anchor is the unmasked retake (../2026-09-27-tts-rtf-v1-s26-anchor-retake-android/). The tts payload launched between the two anchors (11:23-11:30 JST) is quarantined as attempt1 in ../2026-09-27-tts-rtf-v1-s26-android/attempt1/.",
+ "anchor": {
+  "regime": "cold",
+  "anchors": [
+   {
+    "cell": "llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat",
+    "primary": true,
+    "median": 10.0,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "b8999",
+    "reference": {
+     "campaign": "results/raw/2026-09-27-dashboard-v1-s26-android",
+     "median": 107.6,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b8999"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-09-27-dashboard-v1-s26-android",
+     "median": 107.6,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b8999"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-09-27-dashboard-v1-s26-android",
+     "median": 107.6,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b8999"
+    },
+    "ratio": 0.0929368029739777
+   },
+   {
+    "cell": "litert-lm-gpu litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 52.55,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "v0.16.0",
+    "reference": {
+     "campaign": "results/raw/2026-09-27-dashboard-v1-s26-android",
+     "median": 53.75,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-09-27-dashboard-v1-s26-android",
+     "median": 53.75,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-09-27-dashboard-v1-s26-android",
+     "median": 53.75,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "ratio": 0.9776744186046511
+   }
+  ]
+ }
+}

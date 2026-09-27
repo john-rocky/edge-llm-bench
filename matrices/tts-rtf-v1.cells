@@ -18,8 +18,12 @@
 # The Qwen3-0.6B MLX short-chat row is the Mac session anchor (anchors.cells).
 #
 # Mac: `./bench matrix matrices/tts-rtf-v1.cells --platform mac`.
+# Android: `scripts/tts_rtf_android.py matrices/tts-rtf-v1.cells --campaign <c> --serial <s>`
+# (the sample's own Android app, kotlin_cpu/android, through an instrumentation
+# harness; run the android rows of anchors.cells first; docs/tts-rtf-v1.md "Android leg").
 
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 
 # --- Qwen3-TTS-12Hz-0.6B-Base: talker int4 (blockwise-32 OCTAV) + mtp fp32 + codec decoder fp32 — the sample's default set ---
 mac litert litert-community/Qwen3-TTS-12Hz-0.6B-Base tts-rtf-libri1272-2sent runs=3 cooldown=60 file=talker_int4.tflite
+android litert litert-community/Qwen3-TTS-12Hz-0.6B-Base tts-rtf-libri1272-2sent runs=3 cooldown=60 file=talker_int4.tflite

@@ -1,0 +1,23 @@
+diff --git a/compiled_model_api/text_to_speech_lm/kotlin_cpu/android/app/build.gradle.kts b/compiled_model_api/text_to_speech_lm/kotlin_cpu/android/app/build.gradle.kts
+index f678533d..f717775e 100644
+--- a/compiled_model_api/text_to_speech_lm/kotlin_cpu/android/app/build.gradle.kts
++++ b/compiled_model_api/text_to_speech_lm/kotlin_cpu/android/app/build.gradle.kts
+@@ -30,6 +30,7 @@ android {
+     versionCode = 1
+     versionName = "1.0"
+     ndk { abiFilters += setOf("arm64-v8a") }
++    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+   }
+ 
+   compileOptions {
+@@ -52,6 +53,9 @@ android {
+ }
+ 
+ dependencies {
+-  implementation("com.google.ai.edge.litert:litert:2.1.5")
++  implementation("com.google.ai.edge.litert:litert:2.1.6") // edge-llm-bench tts-rtf-v1 S26 leg: the Mac leg's runtime version (the sample pins 2.1.5)
+   implementation("androidx.core:core-ktx:1.15.0")
++  androidTestImplementation("androidx.test:runner:1.6.2")
++  androidTestImplementation("androidx.test.ext:junit:1.2.1")
++  androidTestImplementation("junit:junit:4.13.2")
+ }

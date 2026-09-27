@@ -109,6 +109,45 @@ Hub verification, the pipeline commit and module sha256, the venv freeze, the
 WAV paths and sha256, the round-trip ASR command, the host snapshot before
 and after, and the stderr log path.
 
+## Android leg (2026-09-27)
+
+Same task id, text, graphs, sampler settings, frame cap, voice, language and
+audio check; the instrument is the **same sample's own Android app**
+(`compiled_model_api/text_to_speech_lm/kotlin_cpu/android` at the same commit
+`a1f5edf`, the Kotlin port of `qwen3_tts_pipeline.py` on the LiteRT Kotlin
+`CompiledModel` API, CPU / XNNPACK), driven by `scripts/tts_rtf_android.py`
+(a mini-runner like the asr / vl legs: `scripts/tts_rtf_android.py
+matrices/tts-rtf-v1.cells --campaign <c> --serial <s>` writes
+`results/raw/<c>-android/`; the session anchor is the android rows of
+`matrices/anchors.cells`, run first, admission by `scripts/dashboard_job.py`
+`admit()`). One fresh process per run: an instrumentation harness
+(`app/src/androidTest/.../TtsRtfBench.kt`, kept beside the sample — copy and
+build steps in `android/tts-rtf/`; `src/main` untouched, its files' sha256 in
+every record) does what MainActivity's "Speak"
+does — `Qwen3TtsEngine(filesDir)`, then `synthesize(text, language, seed)` —
+and writes the 24 kHz PCM16 WAV plus the engine's stage clocks; the host pulls
+them and runs the round trip on the Mac with the same asr-rtf-v1 instrument.
+First capture: `results/raw/2026-09-27-tts-rtf-v1-s26-android/`.
+
+What the phone leg cannot hold equal, stated in every record:
+
+| | Mac leg | Android leg |
+|---|---|---|
+| runtime | `ai-edge-litert` 2.1.6 (Python wheel) | `com.google.ai.edge.litert:litert` **2.1.6** AAR — the sample pins 2.1.5; the pin was raised one line in `app/build.gradle.kts` so both legs run the same runtime version (`provenance.litertAar` has the AAR's sha256) |
+| threads | 8 talker / 1 MTP / 8 codec (the Python sample's defaults) | **4 talker / 2 MTP / 4 codec** (`Qwen3TtsEngine.load()`, the Android sample's own fixed values; `conditions.ttsThreads` 4, `ttsMtpThreads` 2) |
+| tokenizer | `tokenizers` over `tokenizer.json` | the sample's Kotlin byte-level BPE over `vocab.json` + `merges.txt` (the Hub's non-LFS files, verified by git blob sha1); the sample's startup self-test result is `metrics.ttsTokenizerSelfTest` |
+| sampler RNG | NumPy `default_rng(seed)` | `java.util.Random(seed)` — same top-k / temperature / repetition penalty, a different draw: the token sequence and the audio are **not byte-comparable** across legs at the same seed; each leg's audio check stands on its own |
+| model files | the Hub files under `.build/tts-models`, sha256 on the host | the same Hub files in the app's `filesDir` (pushed by the sample's `install_to_device.sh`); sha256 read **on the phone** (`run-as … sha256sum`) against the Hub API's LFS sha256 |
+| memory | `ps rss` of the worker | `VmHWM` of the app process (host poll + the harness's own reading) |
+| pause between launches | 5 s | 45 s (the asr-rtf-v1 Android leg's value: S26 CPU cells drifted at 5 s) |
+
+The round trip additionally stores a second opinion in `provenance.roundTripSecondOpinion`
+(whisper-tiny i8, one 30 s window): the parakeet 5 s instrument can double a
+word at a chunk-overlap seam ("voice snapped with voice snapped with" on the
+S26 smoke run), which whisper's single window does not have. The protocol's
+number stays parakeet's (`metrics.ttsRoundTripWordErrorRate`); the second
+opinion says whether a non-zero WER is the seam or the speech.
+
 ## Not covered in v1
 
 - Kokoro-82M (LiteRT three-graph export): the host steps (hn-NSF source STFT,
@@ -119,5 +158,5 @@ and after, and the stderr log path.
 - The `talker_fp32` recipe row, greedy decoding, other voices / languages.
 - GPU: the pipeline is CPU (the card's Mac GPU note: a 2.2.0 GPU-only
   CompiledModel crashes on macOS; 2.1.6 is what the venv pins anyway).
-- Phones: the Android sample app runs the same graphs, but without a
-  scriptable host loop; no leg yet.
+- iPhone: the sample has no iOS app; no leg.
+- Android GPU: the sample's app is CPU-only (`Accelerator.CPU`).

@@ -154,10 +154,11 @@ def validate_file(path, catalog=None, require_anchor=False):
                     errors.append(f"{where}: vl-* needs file=<artifact.litertlm>")
             if TTS_TASK.match(task):
                 # v1 instrument = the model's public LiteRT reference pipeline on the
-                # Mac CPU (runtime `litert`); file= names the talker recipe.
-                if rt != "litert" or plat != "mac":
-                    errors.append(f"{where}: tts-rtf-* is a mac `litert` cell in v1 "
-                                  "(scripts/tts_rtf_mac.py; docs/tts-rtf-v1.md)")
+                # CPU (runtime `litert`): the Python sample on the Mac, the sample's
+                # own Android app on a phone; file= names the talker recipe.
+                if rt != "litert" or plat not in ("mac", "android"):
+                    errors.append(f"{where}: tts-rtf-* is a mac / android `litert` cell in v1 "
+                                  "(scripts/tts_rtf_mac.py, scripts/tts_rtf_android.py; docs/tts-rtf-v1.md)")
                 if not opts.get("file"):
                     errors.append(f"{where}: tts-rtf-* needs file=<talker artifact> "
                                   "(quant-per-arm-rule: the recipe travels with the row)")

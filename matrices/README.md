@@ -25,8 +25,9 @@ for their published campaigns).
   only in v1; needs `backend=` and `file=`; `docs/asr-rtf-v1.md`).
   `vl-<prompt>-<image set>-gen<N>` vision-language response-time task (mac
   litert-lm rows only in v1; needs `backend=` and `file=`; `docs/vl-response-v1.md`).
-  `tts-rtf-<text set>` text-to-speech real-time-factor task (mac `litert` rows
-  only in v1 — the model's public LiteRT pipeline; needs `file=`; `docs/tts-rtf-v1.md`).
+  `tts-rtf-<text set>` text-to-speech real-time-factor task (mac / android `litert`
+  rows in v1 — the model's public LiteRT pipeline: the Python sample on the Mac, the
+  sample's own app on a phone; needs `file=`; `docs/tts-rtf-v1.md`).
 
 ## Options (trailing `key=value`, any order)
 
@@ -84,8 +85,9 @@ for their published campaigns).
   litert-lm cpu / gpu on the Mac): one pinned CC0 image + one prompt through
   LiteRT-LM's own CLI; `docs/vl-response-v1.md`.
 - `tts-rtf-v1.cells` — the TTS real-time-factor cells (Qwen3-TTS-12Hz-0.6B-Base
-  through its public LiteRT reference pipeline on the Mac CPU, ASR round trip as
-  the audio check); `docs/tts-rtf-v1.md`.
+  through its public LiteRT reference pipeline on the Mac CPU and, since 2026-09-27,
+  the sample's own Android app on the Galaxy S26 CPU, ASR round trip as the audio
+  check); `docs/tts-rtf-v1.md`.
 
 ## Validation
 
