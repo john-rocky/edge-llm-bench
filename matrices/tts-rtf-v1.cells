@@ -18,7 +18,7 @@
 # The Qwen3-0.6B MLX short-chat row is the Mac session anchor (anchors.cells).
 #
 # Mac: `./bench matrix matrices/tts-rtf-v1.cells --platform mac`.
-# Android: `scripts/tts_rtf_android.py matrices/tts-rtf-v1.cells --campaign <c> --serial <s>`
+# Android: `scripts/tts_rtf_android.py matrices/tts-rtf-v1.cells --campaign <c> --serial <s>` (`--recipes default` on a build without the fast path)
 # (the sample's own Android app, kotlin_cpu/android, through an instrumentation
 # harness; run the android rows of anchors.cells first; docs/tts-rtf-v1.md "Android leg").
 
@@ -27,3 +27,9 @@ mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 # --- Qwen3-TTS-12Hz-0.6B-Base: talker int4 (blockwise-32 OCTAV) + mtp fp32 + codec decoder fp32 — the sample's default set ---
 mac litert litert-community/Qwen3-TTS-12Hz-0.6B-Base tts-rtf-libri1272-2sent runs=3 cooldown=60 file=talker_int4.tflite
 android litert litert-community/Qwen3-TTS-12Hz-0.6B-Base tts-rtf-libri1272-2sent runs=3 cooldown=60 file=talker_int4.tflite
+
+# --- the repo's fast graphs (2026-09-29): talker int4 + mtp_folded_int8 (one invoke per frame, in-graph
+# greedy residual codebooks, 4 threads) + codec_partA fp32 / codec_partB FORCE_FP16 — auto-selected by an app
+# built with litert-samples 50fb1674; the driver parks / restores the files per launch, so the two android rows
+# run on one build and, with --interleave --warmup-rounds 1, in one sitting (docs/tts-rtf-v1.md "Fast-graph recipe row") ---
+android litert litert-community/Qwen3-TTS-12Hz-0.6B-Base tts-rtf-libri1272-2sent runs=3 cooldown=60 file=talker_int4.tflite recipe=mtp-folded-int8-codec-split

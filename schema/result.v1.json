@@ -69,7 +69,11 @@
         "ttsMaxFrames": { "type": "integer", "description": "tts-rtf-*: generation cap in codec frames" },
         "ttsThreads": { "type": "integer", "description": "tts-rtf-*: XNNPACK threads for talker / codec" },
         "ttsMtpThreads": { "type": "integer", "description": "tts-rtf-*: XNNPACK threads for the MTP graph" },
-        "ttsGraphs": { "type": "string", "description": "tts-rtf-*: the graph set the pipeline ran (recipe per row)" }
+        "ttsGraphs": { "type": "string", "description": "tts-rtf-*: the graph set the pipeline ran (recipe per row)" },
+        "ttsRecipe": { "type": "string", "description": "tts-rtf-* android: the row's graph-set recipe (cells recipe=; default = the sample's default set, mtp-folded-int8-codec-split = the repo's fast graphs). Added 2026-09-29" },
+        "ttsResidualCodebooks": { "type": "string", "description": "tts-rtf-* android: how the 15 residual codebooks are chosen (host sampling, or in-graph greedy with the folded MTP graph)" },
+        "ttsCodecPrecision": { "type": "string", "description": "tts-rtf-* android: codec graph(s), precision and threads as the app ran them" },
+        "launchOrder": { "type": "string", "description": "tts-rtf-* android: the session's launch order (row by row or interleaved) and the pause before every launch" }
       }
     },
     "metrics": {
@@ -122,7 +126,14 @@
         "ttsPeakAbs": { "type": "number", "description": "tts-rtf-*: peak |sample| of the waveform (silence / clipping tell)" },
         "ttsRmsDbfs": { "type": "number", "description": "tts-rtf-*: RMS level of the waveform in dBFS" },
         "ttsRoundTripWordErrorRate": { "type": "number", "description": "tts-rtf-*: WER of the asr-rtf-v1 instrument's transcript of the output vs the input text — the audio check, not a headline" },
-        "ttsAudioCheck": { "type": "string", "description": "tts-rtf-*: pass | fail against the manifest's WER bar (fail = the rate is throughput only)" }
+        "ttsAudioCheck": { "type": "string", "description": "tts-rtf-*: pass | fail against the manifest's WER bar (fail = the rate is throughput only)" },
+        "ttsGraphSelectionCheck": { "type": "string", "description": "tts-rtf-* android: pass | fail: <why> — the engine's own selection flags and the graph files the process mapped, against the row's recipe (fail = not a measurement of that row). Added 2026-09-29" },
+        "gateWaitSeconds": { "type": "number", "description": "tts-rtf-* android: seconds the launch gate waited (thermal 0, battery <= 36 C, optionally uncapped CPUs)" },
+        "idleBeforeLaunchSeconds": { "type": "number", "description": "tts-rtf-* android: seconds between the previous launch's exit (or the file check) and this launch" },
+        "ttsSynthesisMajorFaults": { "type": "integer", "description": "tts-rtf-* android: major page faults of the app process during synthesize() (/proc/self/stat majflt delta: faults that had to bring a page in from storage or swap)" },
+        "ttsSynthesisMinorFaults": { "type": "integer", "description": "tts-rtf-* android: minor page faults of the app process during synthesize()" },
+        "ttsSynthesisCpuSeconds": { "type": "number", "description": "tts-rtf-* android: CPU seconds (utime + stime, all threads) the app process spent during synthesize()" },
+        "warmup": { "type": "boolean", "description": "tts-rtf-* android: an unmeasured warm-up launch (stored as <slug>.jsonl.warmup, outside the summary)" }
       }
     },
     "harnessStamp": { "type": "string", "description": "measurement-contract id (+suffixes like +litert-thinking)" },

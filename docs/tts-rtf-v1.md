@@ -93,7 +93,7 @@ All of them are the sample's own defaults; changing one is a new task id
 
 | condition | value | note |
 |---|---|---|
-| graphs | `talker_int4` + `mtp_fp32` + `codec_decoder_fp32` | the sample's `_DEFAULT_FILES`; the fast graphs (`mtp_folded_int8`, `codec_partA/B`) are a later branch and a second recipe row, not v1 |
+| graphs | `talker_int4` + `mtp_fp32` + `codec_decoder_fp32` | the sample's `_DEFAULT_FILES`; the fast graphs (`mtp_folded_int8`, `codec_partA/B`) are a second recipe row on the Android leg since 2026-09-29 ("Fast-graph recipe row" below); the Python sample at `a1f5edf` has no fast path, so the Mac leg runs the default set only |
 | threads | 8 (talker / codec), 1 (MTP) | the sample's `--threads` default and the pipeline's fixed MTP thread count |
 | sampler | sampling, top-k 50, temperature 0.9, repetition penalty 1.05 | pipeline defaults; **seed fixed to 1** so launches are comparable (the sample leaves it unseeded) |
 | frame cap | 512 (≈ 41 s) | pipeline default |
@@ -117,8 +117,9 @@ audio check; the instrument is the **same sample's own Android app**
 `a1f5edf`, the Kotlin port of `qwen3_tts_pipeline.py` on the LiteRT Kotlin
 `CompiledModel` API, CPU / XNNPACK), driven by `scripts/tts_rtf_android.py`
 (a mini-runner like the asr / vl legs: `scripts/tts_rtf_android.py
-matrices/tts-rtf-v1.cells --campaign <c> --serial <s>` writes
-`results/raw/<c>-android/`; the session anchor is the android rows of
+matrices/tts-rtf-v1.cells --campaign <c> --serial <s> --recipes default` writes
+`results/raw/<c>-android/` — `--recipes default` since the cells file also holds
+the fast-graph row, which an `a1f5edf` build cannot run; the session anchor is the android rows of
 `matrices/anchors.cells`, run first, admission by `scripts/dashboard_job.py`
 `admit()`). One fresh process per run: an instrumentation harness
 (`app/src/androidTest/.../TtsRtfBench.kt`, kept beside the sample — copy and
@@ -148,6 +149,64 @@ S26 smoke run), which whisper's single window does not have. The protocol's
 number stays parakeet's (`metrics.ttsRoundTripWordErrorRate`); the second
 opinion says whether a non-zero WER is the seam or the speech.
 
+## Fast-graph recipe row (Android, 2026-09-29)
+
+The Hub repo also publishes a second set of MTP and codec graphs, which its card
+calls the fast graphs, and the sample's branch `qwen3-tts-fast-path` (commit
+`50fb1674`, 2026-07-08, "fast MTP + split codec paths (auto-selected when
+present)") teaches the Android app to use them. The second android row of `matrices/tts-rtf-v1.cells`
+(`recipe=mtp-folded-int8-codec-split`) measures that path; same task id, text,
+voice, language, frame cap, talker and audio check as the default row.
+
+- **Build**: `a1f5edf` + a local cherry-pick of `50fb1674` (it applies cleanly;
+  the `kotlin_cpu/android` tree then equals `50fb1674`'s), plus the same harness
+  and gradle patch as the default row (`android/tts-rtf/README.md`). `50fb1674`
+  lives on a local branch only; the record names the cherry-pick's commit and its
+  `appTree` (`provenance.pipelineCommitDetail`).
+- **What the app does with the files present** (`Qwen3TtsEngine` at `50fb1674`):
+  `mtp_folded.tflite` in filesDir → the folded MTP graph (`mtp_folded_int8.tflite`
+  on the Hub: all 16 inner steps in one graph, in-graph argmax, **4 threads**, one
+  invoke per frame instead of 17); `codec_partB.tflite` present → the split codec
+  (`codec_partA` fp32, 4 threads, then `codec_partB` with XNNPACK `FORCE_FP16`,
+  `CpuOptions` xnnpack_flags 4, 4 threads). Without those files the same build
+  runs the default graphs, so **one build serves both rows**: before every launch
+  the driver puts the three fast files in place (fast row) or renames them
+  `<name>.parked` (default row).
+- **What one launch records about its graphs** (harness `TtsRtfBench.kt`, read
+  outside the timed regions): the graph files filesDir held, the engine's own
+  selection flags (`mtpFolded`, `codecSplit`, read by reflection) and the graph
+  files the process mapped (`/proc/self/maps`) — `provenance.graphSelection`. The
+  driver checks all three against the row (`metrics.ttsGraphSelectionCheck`); a
+  launch that ran another set is a failed run.
+- **The files as read** (flatbuffer constants by dtype, 2026-09-29):
+  `mtp_folded_int8.tflite` 229.6 MB holds int8 per-channel weights on 50 tensors
+  (110 MB) and 14 fp32 constants of [2048, 1024] (117 MB) — the card calls the
+  recipe GPTQ dynamic-int8; `codec_partA.tflite` 163.0 MB and `codec_partB.tflite`
+  293.7 MB are fp32 throughout (Part B's fp16 is the runtime flag, not the file).
+  Each is verified on the phone against the Hub's LFS sha256, as the default set.
+- **What the row changes at once** — stated in every record, not separated: the
+  MTP fold, its int8 weights and its thread count (2 → 4); the codec split and
+  its fp16 back half; and the residual codebooks, which the folded graph picks by
+  argmax (the app feeds it zero noise, `mtpFrameFolded`) while the first codebook
+  stays sampled with the seed (`conditions.ttsResidualCodebooks`). The sampled
+  trajectory, the frame count and the audio therefore differ from the default
+  row's; each row's RTF divides by its own audio seconds and each row carries its
+  own round trip.
+- **Protocol for a comparison**: both rows in one sitting, interleaved
+  (`scripts/tts_rtf_android.py … --interleave --pause 120 --wait-uncapped
+  --warmup-rounds 1`: one unmeasured launch per row, then default, fast, default,
+  fast, …, one launch each, 120 s before every launch, the launch gate also waits
+  until no CPU policy is capped), the session anchor first. The warm-up round is
+  there because the first pass without it read its first fast launch 7 % slow
+  (spread-rule; the cause was not established); its records are stored as
+  `<slug>.jsonl.warmup`, outside the summary. The harness also records the
+  process's page faults and CPU seconds across synthesis
+  (`metrics.ttsSynthesisMajorFaults` / `ttsSynthesisCpuSeconds`). A ratio between
+  the rows counts only within that sitting — on the S26 the default row's RTF moves
+  with the phone's temperature more than the fast row's.
+- **First capture**: `results/raw/2026-09-29-tts-rtf-fast-s26-android/` (NOTES.md
+  there has the numbers).
+
 ## Not covered in v1
 
 - Kokoro-82M (LiteRT three-graph export): the host steps (hn-NSF source STFT,
@@ -156,6 +215,10 @@ opinion says whether a non-zero WER is the seam or the speech.
 - Sopro v2 turbo, Kitten TTS nano, Matcha-TTS (litert-community): each has a
   different host pipeline; none is wired.
 - The `talker_fp32` recipe row, greedy decoding, other voices / languages.
+- The fast graphs on the Mac leg (the Python sample at `a1f5edf` has no fast
+  path), and the fast graphs one at a time (the folded MTP alone, the split codec
+  alone) — the app selects each by its own file, so a single-change row is
+  possible, but none is wired.
 - GPU: the pipeline is CPU (the card's Mac GPU note: a 2.2.0 GPU-only
   CompiledModel crashes on macOS; 2.1.6 is what the venv pins anyway).
 - iPhone: the sample has no iOS app; no leg.

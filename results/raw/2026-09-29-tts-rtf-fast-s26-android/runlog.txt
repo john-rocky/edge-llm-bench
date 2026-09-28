@@ -1,0 +1,59 @@
+02:04:48 device {'modelIdentifier': 'SM-S942Q', 'systemName': 'Android', 'systemVersion': '16', 'securityPatch': '2026-06-05', 'soc': 'SM8850', 'product': 'm1q'} — {'thermalStatusRaw': 0, 'thermal': 'nominal', 'batteryTempC': 31.3, 'batteryLevel': 0.79, 'batteryState': 'charging', 'cpuFreqCapped': False, 'cpuMaxFreqKHz': ['3628800', '4742400'], 'cpuScalingMaxFreqKHz': ['3628800', '4742400']}
+02:04:48 app: versionName=1.0     lastUpdateTime=2026-09-29 00:52:15
+02:04:48 verifying the app's model files against the Hub
+02:04:51   talker_int4.tflite (files/talker_int4.tflite): sha256 e03df54e73ed1f88… OK
+02:04:51   tables/codec_embedding_fp32.npy (files/codec_embedding_fp32.npy): sha256 47fa9e30f98b1528… OK
+02:04:51   tables/mtp_embeddings_fp16.npy (files/mtp_embeddings_fp16.npy): sha256 fea581b6a04f1cbe… OK
+02:04:51   tables/text_embedding_fp16.npy (files/text_embedding_fp16.npy): sha256 6fab9de0a8bc144a… OK
+02:04:51   tables/text_projection_fp32.npz (files/text_projection_fp32.npz): sha256 ebb0f6a7aaacdbc9… OK
+02:04:51   voices/demo_speaker.npy (files/demo_speaker.npy): sha256 b1527f54f68f44ca… OK
+02:04:51   vocab.json (files/vocab.json): sha256 ca10d7e9fb3ed185… OK (git blob 4783fe10ac3a… vs Hub 4783fe10ac3a…)
+02:04:51   merges.txt (files/merges.txt): sha256 599bab5407508877… OK (git blob 20024bfe7c83… vs Hub 20024bfe7c83…)
+02:04:51   mtp_fp32.tflite (files/mtp_fp32.tflite): sha256 7cc01b402637c850… OK
+02:04:51   codec_decoder_fp32.tflite (files/codec_decoder_fp32.tflite): sha256 491e10c263c498d9… OK
+02:04:51   mtp_folded_int8.tflite (files/mtp_folded.tflite): sha256 f5ab8f826e3dd68f… OK
+02:04:51   codec_partA.tflite (files/codec_partA.tflite): sha256 9d3733c2a4c0a8be… OK
+02:04:51   codec_partB.tflite (files/codec_partB.tflite): sha256 3486fafde3a50743… OK
+02:04:51 tts-rtf android: litert-community/Qwen3-TTS-12Hz-0.6B-Base rows=[('default', 3), ('mtp-folded-int8-codec-split', 3)] engine=ai-edge-litert (Android AAR) 2.1.6 + qwen3-tts-sample@4dcb1a3 auto-select=True round-trip-asr=ready — interleaved default#w1, mtp-folded-int8-codec-split#w1, default#1, mtp-folded-int8-codec-split#1, default#2, mtp-folded-int8-codec-split#2, default#3, mtp-folded-int8-codec-split#3; pause 120 s before every launch; #w = warm-up launch, stored apart (<slug>.jsonl.warmup), not a measurement
+02:06:51 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=default warm-up 1/1
+02:08:14 OK  default warm-up 1: exit=0 load=2.563s synth=77.204s audio=9.28s RTF=8.3194 frames=116 stages=0.37/4.783/65.519/5.871 WER=0.1481 2nd=0.0 check=pass graphs=pass majflt=38024 cpu=147.76s hwm=3716.8MB batt=31.2->35.2C capped=False->True gate=0.2s thermal=nominal->nominal screen=off-usb (mWakefulness=Dozing) | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:10:14 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=mtp-folded-int8-codec-split warm-up 1/1
+02:10:37 OK  mtp-folded-int8-codec-split warm-up 1: exit=0 load=4.681s synth=14.694s audio=8.48s RTF=1.7328 frames=106 stages=0.281/4.157/7.012/2.615 WER=0.0741 2nd=0.037 check=pass graphs=pass majflt=1441 cpu=46.14s hwm=4033.2MB batt=34.2->34.7C capped=False->True gate=0.2s thermal=nominal->nominal screen=off-usb (mWakefulness=Dozing) | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:12:37 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=default run 1/3
+02:14:06 OK  default run 1: exit=0 load=2.226s synth=82.938s audio=9.28s RTF=8.9373 frames=116 stages=0.286/5.066/69.55/7.423 WER=0.1481 2nd=0.0 check=pass graphs=pass majflt=1 cpu=163.59s hwm=3777.7MB batt=34.5->37.4C capped=False->True gate=0.2s thermal=nominal->nominal screen=off-usb (mWakefulness=Dozing) | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:16:06 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=mtp-folded-int8-codec-split run 1/3
+02:16:06   launch gate: status=nominal battery=36.2 C capped=True — waiting
+02:16:21   launch gate: status=nominal battery=36.1 C capped=False — waiting
+02:16:37   launch gate: status=nominal battery=36.1 C capped=False — waiting
+02:16:52   launch gate: status=nominal battery=36.0 C capped=True — waiting
+02:17:29 OK  mtp-folded-int8-codec-split run 1: exit=0 load=4.128s synth=14.181s audio=8.48s RTF=1.6723 frames=106 stages=0.276/4.175/6.529/2.628 WER=0.0741 2nd=0.037 check=pass graphs=pass majflt=0 cpu=46.29s hwm=4035.0MB batt=35.9->36.3C capped=False->True gate=61.0s thermal=nominal->nominal screen=off-usb (mWakefulness=Dozing) | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:19:29 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=default run 2/3
+02:19:30   launch gate: status=nominal battery=36.1 C capped=False — waiting
+02:19:45   launch gate: status=nominal battery=36.1 C capped=False — waiting
+02:20:00   launch gate: status=nominal battery=36.1 C capped=False — waiting
+02:20:15   launch gate: status=nominal battery=36.1 C capped=False — waiting
+02:22:02 OK  default run 2: exit=0 load=2.117s synth=85.95s audio=9.28s RTF=9.2619 frames=116 stages=0.299/5.288/72.313/7.414 WER=0.1481 2nd=0.0 check=pass graphs=pass majflt=1 cpu=169.16s hwm=3774.2MB batt=36.0->38.4C capped=False->True gate=61.0s thermal=nominal->nominal screen=off-usb (mWakefulness=Dozing) | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:24:02 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=mtp-folded-int8-codec-split run 2/3
+02:24:02   launch gate: status=nominal battery=36.4 C capped=True — waiting
+02:24:17   launch gate: status=nominal battery=36.2 C capped=True — waiting
+02:24:33   launch gate: status=nominal battery=35.9 C capped=True — waiting
+02:25:09 OK  mtp-folded-int8-codec-split run 2: exit=0 load=4.161s synth=14.608s audio=8.48s RTF=1.7226 frames=106 stages=0.406/4.316/6.685/2.619 WER=0.0741 2nd=0.037 check=pass graphs=pass majflt=142850 cpu=47.4s hwm=3831.1MB batt=35.8->36.0C capped=False->True gate=45.6s thermal=nominal->nominal screen=on-usb | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:27:09 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=default run 3/3
+02:28:41 OK  default run 3: exit=0 load=3.85s synth=84.768s audio=9.28s RTF=9.1345 frames=116 stages=0.29/5.193/70.611/8.021 WER=0.1481 2nd=0.0 check=pass graphs=pass majflt=250 cpu=167.16s hwm=3763.7MB batt=35.2->37.6C capped=False->True gate=0.1s thermal=nominal->nominal screen=on-usb | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:30:41 CELL litert / litert-community/Qwen3-TTS-12Hz-0.6B-Base / tts-rtf-libri1272-2sent file=talker_int4.tflite recipe=mtp-folded-int8-codec-split run 3/3
+02:31:03 OK  mtp-folded-int8-codec-split run 3: exit=0 load=4.19s synth=14.631s audio=8.48s RTF=1.7254 frames=106 stages=0.334/4.328/6.683/2.692 WER=0.0741 2nd=0.037 check=pass graphs=pass majflt=391 cpu=47.04s hwm=4006.0MB batt=35.8->36.4C capped=False->True gate=0.1s thermal=nominal->nominal screen=on-usb | 'The little girl had been asleep, but she heard the raps and opened the door. The'
+02:31:03 re-verifying the app's model files against the Hub (end of session)
+02:31:05   talker_int4.tflite (files/talker_int4.tflite): sha256 e03df54e73ed1f88… OK
+02:31:05   tables/codec_embedding_fp32.npy (files/codec_embedding_fp32.npy): sha256 47fa9e30f98b1528… OK
+02:31:05   tables/mtp_embeddings_fp16.npy (files/mtp_embeddings_fp16.npy): sha256 fea581b6a04f1cbe… OK
+02:31:05   tables/text_embedding_fp16.npy (files/text_embedding_fp16.npy): sha256 6fab9de0a8bc144a… OK
+02:31:05   tables/text_projection_fp32.npz (files/text_projection_fp32.npz): sha256 ebb0f6a7aaacdbc9… OK
+02:31:05   voices/demo_speaker.npy (files/demo_speaker.npy): sha256 b1527f54f68f44ca… OK
+02:31:05   vocab.json (files/vocab.json): sha256 ca10d7e9fb3ed185… OK (git blob 4783fe10ac3a… vs Hub 4783fe10ac3a…)
+02:31:05   merges.txt (files/merges.txt): sha256 599bab5407508877… OK (git blob 20024bfe7c83… vs Hub 20024bfe7c83…)
+02:31:05   mtp_fp32.tflite (files/mtp_fp32.tflite): sha256 7cc01b402637c850… OK
+02:31:05   codec_decoder_fp32.tflite (files/codec_decoder_fp32.tflite): sha256 491e10c263c498d9… OK
+02:31:05   mtp_folded_int8.tflite (files/mtp_folded.tflite): sha256 f5ab8f826e3dd68f… OK
+02:31:05   codec_partA.tflite (files/codec_partA.tflite): sha256 9d3733c2a4c0a8be… OK
+02:31:05   codec_partB.tflite (files/codec_partB.tflite): sha256 3486fafde3a50743… OK
+02:31:05 done: /Users/majimadaisuke/code/edge-llm-bench/results/raw/2026-09-29-tts-rtf-fast-s26-android

@@ -10,6 +10,16 @@
  * the app's external files dir so the host driver (scripts/tts_rtf_android.py)
  * can pull them and run the ASR round trip.
  *
+ * Which graphs a launch ran is recorded, not assumed: an engine with the
+ * fast-path auto-select (litert-samples 50fb1674) picks the folded MTP and the
+ * split codec by file presence in filesDir, so the JSON carries the model graphs
+ * the launch could see, the engine's own selection flags (read by reflection;
+ * "absent" on an engine without the auto-select) and the graph files the
+ * process mapped (/proc/self/maps), all read outside the timed regions. The
+ * process's page faults and CPU time across the load and across synthesize()
+ * (/proc/self/stat) ride along, so a slow launch can be told apart from one
+ * that waited on the flash.
+ *
  *   adb shell am instrument -w -r -e text "..." -e language english -e seed 1 \
  *       -e name <slug>_run1 com.google.ai.edge.examples.text_to_speech_lm.test/androidx.test.runner.AndroidJUnitRunner
  */
@@ -54,21 +64,36 @@ class TtsRtfBench {
         out.put("text", text); out.put("language", language)
         out.put("seed", if (greedy) JSONObject.NULL else seed); out.put("doSample", !greedy)
         out.put("modelDir", appContext.filesDir.absolutePath)
+        // the graph files this launch can see (the auto-select's input)
+        out.put("filesDirGraphs", graphListing(appContext.filesDir))
 
         // ---- load (model files -> three CompiledModels + host tables), timed like the Mac worker
+        val stat0 = procStat()
         val tLoad0 = System.nanoTime()
         val engine = Qwen3TtsEngine(appContext.filesDir)
         val loadS = (System.nanoTime() - tLoad0) / 1e9
+        val stat1 = procStat()
         out.put("loadSeconds", round3(loadS))
         out.put("vmHwmKbAfterLoad", vmHwmKb())
+        // the graphs the engine selected (its own flags) and the graph files it mapped
+        val selection = engineSelection(engine)
+        out.put("engineSelection", selection)
+        out.put("mappedGraphs", mappedGraphs(appContext.packageName))
 
         // ---- the sample's own tokenizer self-test (MainActivity runs it at startup)
         out.put("tokenizerSelfTest", tokenizerSelfTest(engine, appContext))
 
         // ---- synthesis: the MainActivity call with explicit language + a fixed seed
+        val stat2 = procStat()
         val t0 = System.nanoTime()
         val result = engine.synthesize(text, language = language, greedy = greedy, seed = if (greedy) null else seed)
         val synthS = (System.nanoTime() - t0) / 1e9
+        val stat3 = procStat()
+        // process-wide page faults and CPU time across the load and across synthesize()
+        out.put("processCounters", JSONObject()
+            .put("load", statDelta(stat0, stat1))
+            .put("synthesis", statDelta(stat2, stat3))
+            .put("source", "/proc/self/stat minflt / majflt / utime+stime (clock ticks of 1/100 s), all threads"))
         val audio = result.audio
         val audioS = audio.size / Qwen3TtsEngine.SAMPLE_RATE.toDouble()
         out.put("synthesisSeconds", round3(synthS))
@@ -86,7 +111,12 @@ class TtsRtfBench {
         out.put("peakAbs", peak.toDouble())
         out.put("rmsDbfs", if (audio.isNotEmpty()) 20 * log10(sqrt(sumSq / audio.size) + 1e-12) else JSONObject.NULL)
         out.put("vmHwmKbAfterSynthesis", vmHwmKb())
-        out.put("threadsTalkerMtpCodec", "4/2/4 (Qwen3TtsEngine.load(): talker 4, mtp 2, codec 4)")
+        val folded = selection.opt("mtpFolded") == true
+        val split = selection.opt("codecSplit") == true
+        out.put("threadsTalkerMtpCodec",
+            "talker 4, mtp " + (if (folded) "4 (mtp_folded.tflite)" else "2 (mtp_fp32.tflite)") +
+                ", codec " + (if (split) "A 4 fp32 + B 4 FORCE_FP16 (codec_partA/B.tflite)" else "4 (codec_decoder_fp32.tflite)") +
+                " (Qwen3TtsEngine's own values)")
         out.put("maxFrames", Qwen3TtsEngine.MAX_FRAMES)
         out.put("speakerFile", "demo_speaker.npy")
 
@@ -112,6 +142,65 @@ class TtsRtfBench {
             "error: ${t.message}"
         }
     }
+
+    /** Name and size of every model graph file in [dir] (parked copies included). */
+    private fun graphListing(dir: File): JSONArray {
+        val arr = JSONArray()
+        dir.listFiles()
+            ?.filter { it.name.endsWith(".tflite") || it.name.endsWith(".tflite.parked") }
+            ?.sortedBy { it.name }
+            ?.forEach { arr.put(JSONObject().put("name", it.name).put("bytes", it.length())) }
+        return arr
+    }
+
+    /** The engine's own graph selection: its private mtpFolded / codecSplit flags. */
+    private fun engineSelection(e: Qwen3TtsEngine): JSONObject {
+        val o = JSONObject()
+        for (name in listOf("mtpFolded", "codecSplit")) {
+            try {
+                val f = e.javaClass.getDeclaredField(name)
+                f.isAccessible = true
+                o.put(name, f.getBoolean(e))
+            } catch (t: NoSuchFieldException) {
+                o.put(name, "absent (engine without the auto-select)")
+            } catch (t: Throwable) {
+                o.put(name, "error: ${t.javaClass.simpleName}: ${t.message}")
+            }
+        }
+        return o
+    }
+
+    /** The .tflite files of this app that the process has mapped, from /proc/self/maps. */
+    private fun mappedGraphs(pkg: String): JSONArray {
+        val arr = JSONArray()
+        try {
+            File("/proc/self/maps").readLines()
+                .mapNotNull { it.trim().split(Regex("\\s+"), limit = 6).getOrNull(5) }
+                .filter { it.contains(pkg) && it.endsWith(".tflite") }
+                .distinct().sorted()
+                .forEach { arr.put(it) }
+        } catch (t: Throwable) {
+            arr.put("error: ${t.message}")
+        }
+        return arr
+    }
+
+    /** [minflt, majflt, utime + stime ticks] of this process, from /proc/self/stat (all threads). */
+    private fun procStat(): LongArray {
+        return try {
+            val s = File("/proc/self/stat").readText()
+            val f = s.substring(s.lastIndexOf(')') + 2).trim().split(" ")
+            // after "(comm) ": state=0 … minflt=7, majflt=9, utime=11, stime=12
+            longArrayOf(f[7].toLong(), f[9].toLong(), f[11].toLong() + f[12].toLong())
+        } catch (t: Throwable) {
+            longArrayOf(-1L, -1L, -1L)
+        }
+    }
+
+    private fun statDelta(a: LongArray, b: LongArray): JSONObject =
+        if (a[0] < 0 || b[0] < 0) JSONObject().put("error", "unreadable /proc/self/stat")
+        else JSONObject().put("minorFaults", b[0] - a[0]).put("majorFaults", b[1] - a[1])
+            .put("cpuSeconds", (b[2] - a[2]) / 100.0)
 
     /** Peak resident set of this process so far (kB), from /proc/self/status. */
     private fun vmHwmKb(): Long {

@@ -38,6 +38,8 @@ TASKS = {"short-chat", "long-context-512", "long-context-1024",
 ASR_TASK = re.compile(r"^asr-rtf-")
 VL_TASK = re.compile(r"^vl-")
 TTS_TASK = re.compile(r"^tts-rtf-")
+# graph sets a tts-rtf-* android row can name with recipe= (docs/tts-rtf-v1.md)
+TTS_RECIPES = {"mtp-folded-int8-codec-split"}
 NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 # endurance-chat-<N>m — multi-turn endurance sessions (methodology/endurance.md);
 # duration is part of the task id, like the long-context sweep variants.
@@ -113,8 +115,9 @@ def validate_file(path, catalog=None, require_anchor=False):
                     errors.append(f"{where}: uzu own export needs file=<export-directory>")
                 if opts.get("thinking", "model-default") not in {"off", "model-default"}:
                     errors.append(f"{where}: uzu thinking= must be off|model-default")
-            elif "recipe" in opts:
-                errors.append(f"{where}: recipe= currently belongs to uzu cells only")
+            elif "recipe" in opts and not (TTS_TASK.match(task) and plat == "android"):
+                errors.append(f"{where}: recipe= currently belongs to uzu cells and android "
+                              "tts-rtf-* rows only")
             if rt != "uzu" and "thinking" in opts:
                 errors.append(f"{where}: thinking= currently belongs to uzu cells only")
             if (task not in TASKS and not NATIVE_TASK.match(task)
@@ -162,6 +165,12 @@ def validate_file(path, catalog=None, require_anchor=False):
                 if not opts.get("file"):
                     errors.append(f"{where}: tts-rtf-* needs file=<talker artifact> "
                                   "(quant-per-arm-rule: the recipe travels with the row)")
+                # the graph set beside the talker: absent = the sample's default set;
+                # the fast graphs are the one other set the Android app can select
+                # (scripts/tts_rtf_android.py RECIPES; docs/tts-rtf-v1.md)
+                if "recipe" in opts and opts["recipe"] not in TTS_RECIPES:
+                    errors.append(f"{where}: tts-rtf-* recipe= must be one of {sorted(TTS_RECIPES)} "
+                                  "(omit it for the sample's default graph set)")
             if task == "energy" and opts.get("manual") != "1":
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")
