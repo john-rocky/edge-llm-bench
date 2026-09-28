@@ -100,7 +100,9 @@ in the window was overwritten.
   start / end, exit codes, window bounds and counts, battery), written by `capture.py`.
 - `private/` (not committed, `.gitignore`) — the full `-b all` dumps, the unscrubbed windows
   and the pulled output directories; kept on disk as audit trail.
-- `SHA256SUMS` — the pushed files (as on the phone) and the public logs.
+- `gpu_runner.cc` — verbatim copy of the runner's source (the 2026-09-26 `android/round12/gpu_runner.cc`); the
+  options it passes are lines 379–387.
+- `SHA256SUMS` — the pushed files (as on the phone), the public logs and the scripts.
 
 Next: a comment on #10300 with the window excerpt and the options answer, after the owner's go.
 

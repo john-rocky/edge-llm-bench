@@ -40,7 +40,7 @@ The two 2.2.0 libraries and the runner binary are the same bytes the 2026-09-26 
 (its hash logs `009_hash_gpu_runner`, `011_hash_libLiteRt`, `013_hash_libLiteRtClGlAccelerator`
 carry the same digests).
 
-## Options the runner passes to `LiteRtCreateCompiledModel` (`android/round12/gpu_runner.cc` 379–387)
+## Options the runner passes to `LiteRtCreateCompiledModel` (`gpu_runner.cc` 379–387; a verbatim copy of the 2026-09-26 `android/round12/gpu_runner.cc` is in this directory, sha256 above)
 
 ```
 LiteRtCreateOptions(&options)
@@ -54,7 +54,8 @@ LiteRtCreateCompiledModel(env, model, options, &compiled)
 ```
 
 Mode `default` skips the `gpu_options` block. No other option, environment tag or accelerator
-setting is touched.
+setting is touched. `precision = 2` is `kLiteRtDelegatePrecisionFp32` (`litert/c/litert_common.h`
+of the 2.2.0 headers: Default 0, Fp16 1, Fp32 2, Fp16WithFp32Accum 3).
 
 ## Timeline (JST, this session)
 
