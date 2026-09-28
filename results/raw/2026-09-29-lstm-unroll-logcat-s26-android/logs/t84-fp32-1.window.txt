@@ -1,0 +1,81 @@
+# LiteRT #10300 logcat window, launch t84-fp32-1 (Galaxy S26 SM-S942Q, Android 16, LiteRT 2.2.0)
+# graph lstm_h128_t84_uni_fp32, runner mode single, runner pid 29581, exit code 0
+# window: device local time 09-29 08:03:46.671 to 09-29 08:03:53.224 (5 s before the runner started to 1 s after it exited)
+# all buffers were cleared (logcat -c -b all) 6 s before the runner started; dump = logcat -b all -d -v threadtime -v uid
+# 75 lines kept verbatim; redacted: 130 lines from unrelated apps/services (SystemUI, wallpaper, telephony, sensors, audio, codecs, Wi-Fi, Bluetooth)
+# kept: every line of pid 29581; the tombstone and crash pipeline; system lines tagged GPU driver / memory pressure / thermal / DVFS / performance HAL / graphics allocator; lines naming the runner
+09-29 08:03:47.631  1000  4445  4557 I thermal_core: pivot(AP) : 308, skin : 314
+09-29 08:03:47.631  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -6.400000
+09-29 08:03:47.631  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 6 / 10
+09-29 08:03:47.997  1000  4437 29569 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 4669041
+09-29 08:03:48.633  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:03:48.633  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -6.400000
+09-29 08:03:48.633  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 7 / 10
+09-29 08:03:48.861  1000  4445  4445 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+09-29 08:03:49.636  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:03:49.636  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -6.400000
+09-29 08:03:49.636  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 8 / 10
+09-29 08:03:49.825  root  1976  2117 E PERFHAL-BOOSTCONFIG: PERFHAL-BOOSTCONFIG: GetBoostConfig() 1872: Not able to fetch object
+09-29 08:03:49.828  1000  2054  5462 D NativeSemDvfsManager: acquire:: timeout = 2000 mIsAcquired = 1  mTagName : SurfaceFlinger 
+09-29 08:03:49.828  1000  2054  5462 E NativeCustomFrequencyManager: [NativeCFMS] BpCustomFrequencyManager::acquire()
+09-29 08:03:49.828  1000  4437  4543 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 4669041 [2054 / 1001]  HINT : SF_GPU_MINLOCK   list : [TIMEOUT / 2000] 
+09-29 08:03:50.637  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:03:50.638  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -6.600000
+09-29 08:03:50.638  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 9 / 10
+09-29 08:03:51.639  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:03:51.640  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -6.800000
+09-29 08:03:51.640  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 10 / 10
+09-29 08:03:51.692 shell  5916  5916 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:env LD_LIBRARY_PATH=/data/local/tmp/litert10300 /data/local/tmp/litert10300/gpu_runner /data/local/tmp/litert10300/lstm_h128_t84_uni_fp32.tflite /data/local/tmp/litert10300/inputs_lstm_h128_t84_uni_fp32 /data/local/tmp/litert10300/out_t84-fp32-1 single 1 0 /data/local/tmp/litert10300 /data/local/tmp/litert10300/inputs_lstm_h128_t84_uni_fp32/manifest.tsv 900; echo "##EXIT=$?"'
+09-29 08:03:51.733 shell 29581 29581 I litert  : [environment.cc:36] Creating LiteRT environment with options
+09-29 08:03:51.733 shell 29581 29581 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+09-29 08:03:51.733 shell 29581 29581 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(/data/local/tmp/litert10300/libLiteRtGpuAccelerator.so).
+09-29 08:03:51.733 shell 29581 29581 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(/data/local/tmp/litert10300/libLiteRtClGlAccelerator.so).
+09-29 08:03:51.734 shell 29581 29581 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c7cc0e1b0, name=LiteRT GPU
+09-29 08:03:51.734 shell 29581 29581 I litert  : [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtClGlAccelerator.so) registered.
+09-29 08:03:51.734 shell 29581 29581 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c7cc0d0d0, name=CpuAccelerator
+09-29 08:03:51.734 shell 29581 29581 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+09-29 08:03:51.759 shell 29581 29581 I litert  : [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+09-29 08:03:51.759 shell 29581 29581 I tflite  : Initialized TensorFlow Lite runtime.
+09-29 08:03:51.760 shell 29581 29581 W libc    : Access denied finding property "ro.mediatek.platform"
+09-29 08:03:51.760 shell 29581 29581 W libc    : Access denied finding property "ro.chipname"
+09-29 08:03:51.769 shell 29581 29581 I native  : I0000 00:00:1790636631.769170   29581 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+09-29 08:03:51.769 shell 29581 29581 I native  : I0000 00:00:1790636631.769273   29581 delegate_opencl.cc:605] options->kernel_batch_size: -1
+09-29 08:03:51.769 shell 29581 29581 W libc    : Access denied finding property "ro.mediatek.platform"
+09-29 08:03:51.769 shell 29581 29581 W libc    : Access denied finding property "ro.chipname"
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: QUALCOMM build                   : 87ff20b216, Ifbe74a3179
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Build Date                       : 03/26/26
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.50.19.18
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Local Branch                     : 
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.16.2.0.11.00.00.1195.535
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Remote Branch                    : NONE
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Build Config                     : C P 20.0.0 AArch64
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Driver Version                   : 0842.19.8
+09-29 08:03:51.779 shell 29581 29581 I AdrenoGLES-0: Process Name                     : gpu_runner
+09-29 08:03:51.779 shell 29581 29581 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+09-29 08:03:51.781 shell 29581 29581 D qdgralloc: Fetching IMapper5 from QtiMapper5
+09-29 08:03:51.783 shell 29581 29581 I SnapAlloc: Graphics lib is available
+09-29 08:03:51.784 shell 29581 29581 I AdrenoGLES-0: PFP: 0x01510594, ME: 0x01510025
+09-29 08:03:51.784 shell 29581 29581 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+09-29 08:03:51.785 shell 29581 29581 I AdrenoUtils: <ReadGpuID:1333>: Reading chip ID through GSL
+09-29 08:03:51.785 shell 29581 29581 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+09-29 08:03:51.786 shell 29581 29581 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+09-29 08:03:51.786 shell 29581 29581 I tflite  : Loaded OpenCL library with dlopen.
+09-29 08:03:51.786 shell 29581 29581 I litert  : [gpu_environment.cc:220] Created OpenCL device from provided device id and platform id.
+09-29 08:03:51.786 shell 29581 29581 I litert  : [gpu_environment.cc:283] Reusing provided EGL environment.
+09-29 08:03:51.786 shell 29581 29581 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+09-29 08:03:51.786 shell 29581 29581 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+09-29 08:03:51.788 shell 29581 29581 I tflite  : Replacing 2174 out of 2174 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+09-29 08:03:51.804 shell 29581 29581 I native  : I0000 00:00:1790636631.804006   29581 delegate_kernel.cc:911] Initializing OpenCL-based API from graph.
+09-29 08:03:51.830  1000  4437 29573 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 4669041
+09-29 08:03:52.101 shell 29581 29581 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+09-29 08:03:52.101 shell 29581 29581 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c7cc0d0d0, name=CpuAccelerator
+09-29 08:03:52.101 shell 29581 29581 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c7cc0e1b0, name=LiteRT GPU
+09-29 08:03:52.393  root  1976  2117 E PERFHAL-BOOSTCONFIG: PERFHAL-BOOSTCONFIG: GetBoostConfig() 1872: Not able to fetch object
+09-29 08:03:52.395  1000  2054  5462 D NativeSemDvfsManager: acquire:: timeout = 2000 mIsAcquired = 1  mTagName : SurfaceFlinger 
+09-29 08:03:52.395  1000  2054  5462 E NativeCustomFrequencyManager: [NativeCFMS] BpCustomFrequencyManager::acquire()
+09-29 08:03:52.396  1000  4437  4543 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 4669041 [2054 / 1001]  HINT : SF_GPU_MINLOCK   list : [TIMEOUT / 2000] 
+09-29 08:03:52.662  1000  4445  4557 I thermal_core: pivot(AP) : 312, skin : 314
+09-29 08:03:52.663  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -6.000000
+09-29 08:03:52.663  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 1 / 10

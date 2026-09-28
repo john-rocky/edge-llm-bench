@@ -1,0 +1,31 @@
+{
+  "status": "RUNNING",
+  "runtime": "LiteRT 2.2.0 native CompiledModel C API",
+  "runner_build": "synthetic-lstm-compile-v1",
+  "pid": 29457,
+  "model": "/data/local/tmp/litert10300/lstm_h128_t88_uni_fp32.tflite",
+  "precision": "single",
+  "hardware_accelerators": "GPU only (bitmask 2)",
+  "timing_scope": "all input lock/write/unlock + CompiledModel run + output lock/read/unlock; no file I/O",
+  "hard_time_limit_seconds": 900,
+  "manifest": "/data/local/tmp/litert10300/inputs_lstm_h128_t88_uni_fp32/manifest.tsv",
+  "fixture_count": 1,
+  "repetitions_per_fixture": 1,
+  "warmups_per_fixture": 0,
+  "inputs_in_runtime_order": [{
+  "logical_name": "word_states",
+  "signature_name": "word_states",
+  "shape": [1,88,256]
+},{
+  "logical_name": "text_mask",
+  "signature_name": "text_mask",
+  "shape": [1,88]
+}],
+  "output_shape": [1,1,88,128],
+  "gpu_options_toml": "precision = 2\n",
+  "stage": "gpu_compile",
+  "peak_rss_bytes": 13197312,
+  "rss_bytes": 13197312,
+  "memory_source": "/proc/self/status VmHWM and VmRSS; kB converted with 1024",
+  "compile_timeout_seconds": 900
+}

@@ -1,0 +1,50 @@
+{
+  "status": "EXECUTION_COMPLETE_PARITY_PENDING",
+  "runtime": "LiteRT 2.2.0 native CompiledModel C API",
+  "runner_build": "synthetic-lstm-compile-v1",
+  "pid": 29581,
+  "model": "/data/local/tmp/litert10300/lstm_h128_t84_uni_fp32.tflite",
+  "precision": "single",
+  "hardware_accelerators": "GPU only (bitmask 2)",
+  "timing_scope": "all input lock/write/unlock + CompiledModel run + output lock/read/unlock; no file I/O",
+  "hard_time_limit_seconds": 900,
+  "manifest": "/data/local/tmp/litert10300/inputs_lstm_h128_t84_uni_fp32/manifest.tsv",
+  "fixture_count": 1,
+  "repetitions_per_fixture": 1,
+  "warmups_per_fixture": 0,
+  "inputs_in_runtime_order": [{
+  "logical_name": "word_states",
+  "signature_name": "word_states",
+  "shape": [1,84,256]
+},{
+  "logical_name": "text_mask",
+  "signature_name": "text_mask",
+  "shape": [1,84]
+}],
+  "output_shape": [1,1,84,128],
+  "gpu_options_toml": "precision = 2\n",
+  "stage": "complete",
+  "peak_rss_bytes": 154476544,
+  "rss_bytes": 131780608,
+  "memory_source": "/proc/self/status VmHWM and VmRSS; kB converted with 1024",
+  "compile_timeout_seconds": 900,
+  "compile_ms": 319.938333,
+  "compile_status": 0,
+  "compile_peak_rss_bytes": 154476544,
+  "post_compile_loaded_rss_bytes": 131362816,
+  "is_fully_accelerated": true,
+  "cpu_fallback_allowed": false,
+  "fixtures": [{
+  "id": "00",
+  "output_file": "00.f32",
+  "all_warmups_finite": true,
+  "all_repetitions_finite": true,
+  "latency_ms": [8.72625],
+  "median_ms": 8.72625,
+  "min_ms": 8.72625,
+  "max_ms": 8.72625
+}],
+  "steady_loaded_rss_bytes": 131780608,
+  "steady_rss_scope": "After final readback, before destroying input/output buffers, CompiledModel, Model, Options or Environment",
+  "monitor_final_rss_scope": "memory.json destructor sample is after resource teardown; it is not loaded steady RSS"
+}

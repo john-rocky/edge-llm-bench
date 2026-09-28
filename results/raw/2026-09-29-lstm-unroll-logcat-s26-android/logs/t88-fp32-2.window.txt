@@ -1,0 +1,141 @@
+# LiteRT #10300 logcat window, launch t88-fp32-2 (Galaxy S26 SM-S942Q, Android 16, LiteRT 2.2.0)
+# graph lstm_h128_t88_uni_fp32, runner mode single, runner pid 29457, exit code 139
+# window: device local time 09-29 08:02:50.724 to 09-29 08:02:56.169 (5 s before the runner started to the end of its tombstone)
+# all buffers were cleared (logcat -c -b all) 6 s before the runner started; dump = logcat -b all -d -v threadtime -v uid
+# 135 lines kept verbatim; redacted: 121 lines from unrelated apps/services (SystemUI, wallpaper, telephony, sensors, audio, codecs, Wi-Fi, Bluetooth)
+# kept: every line of pid 29457; the tombstone and crash pipeline; system lines tagged GPU driver / memory pressure / thermal / DVFS / performance HAL / graphics allocator; lines naming the runner
+09-29 08:02:50.952  root  1976  2117 E PERFHAL-BOOSTCONFIG: PERFHAL-BOOSTCONFIG: GetBoostConfig() 1872: Not able to fetch object
+09-29 08:02:50.955  1000  2054  5462 D NativeSemDvfsManager: acquire:: timeout = 2000 mIsAcquired = 1  mTagName : SurfaceFlinger 
+09-29 08:02:50.955  1000  2054  5462 E NativeCustomFrequencyManager: [NativeCFMS] BpCustomFrequencyManager::acquire()
+09-29 08:02:50.956  1000  4437  4543 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 4669041 [2054 / 1001]  HINT : SF_GPU_MINLOCK   list : [TIMEOUT / 2000] 
+09-29 08:02:51.332  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:02:51.332  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -7.400000
+09-29 08:02:51.332  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 10 / 10
+09-29 08:02:51.488  root  1976  2117 E PERFHAL-BOOSTCONFIG: PERFHAL-BOOSTCONFIG: GetBoostConfig() 1872: Not able to fetch object
+09-29 08:02:52.221  root  1976  2117 E PERFHAL-BOOSTCONFIG: PERFHAL-BOOSTCONFIG: GetBoostConfig() 1872: Not able to fetch object
+09-29 08:02:52.357  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:02:52.357  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -7.200000
+09-29 08:02:52.357  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 1 / 10
+09-29 08:02:52.960  1000  4437 29441 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 4669041
+09-29 08:02:53.358  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:02:53.358  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -7.000000
+09-29 08:02:53.358  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 2 / 10
+09-29 08:02:54.360  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:02:54.361  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -7.000000
+09-29 08:02:54.361  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 3 / 10
+09-29 08:02:54.536  root  1976  2117 E PERFHAL-BOOSTCONFIG: PERFHAL-BOOSTCONFIG: GetBoostConfig() 1872: Not able to fetch object
+09-29 08:02:54.539  1000  2054  5462 D NativeSemDvfsManager: acquire:: timeout = 2000 mIsAcquired = 1  mTagName : SurfaceFlinger 
+09-29 08:02:54.540  1000  2054  5462 E NativeCustomFrequencyManager: [NativeCFMS] BpCustomFrequencyManager::acquire()
+09-29 08:02:54.540  1000  4437  4543 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 4669041 [2054 / 1001]  HINT : SF_GPU_MINLOCK   list : [TIMEOUT / 2000] 
+09-29 08:02:55.363  1000  4445  4557 I thermal_core: pivot(AP) : 307, skin : 314
+09-29 08:02:55.363  1000  4445  4557 I vendor.samsung.hardware.thermal-service: index = -7.000000
+09-29 08:02:55.363  1000  4445  4557 I vendor.samsung.hardware.thermal-service: 4 / 10
+09-29 08:02:55.740 shell  5916  5916 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:env LD_LIBRARY_PATH=/data/local/tmp/litert10300 /data/local/tmp/litert10300/gpu_runner /data/local/tmp/litert10300/lstm_h128_t88_uni_fp32.tflite /data/local/tmp/litert10300/inputs_lstm_h128_t88_uni_fp32 /data/local/tmp/litert10300/out_t88-fp32-2 single 1 0 /data/local/tmp/litert10300 /data/local/tmp/litert10300/inputs_lstm_h128_t88_uni_fp32/manifest.tsv 900; echo "##EXIT=$?"'
+09-29 08:02:55.779 shell 29457 29457 I litert  : [environment.cc:36] Creating LiteRT environment with options
+09-29 08:02:55.779 shell 29457 29457 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+09-29 08:02:55.779 shell 29457 29457 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(/data/local/tmp/litert10300/libLiteRtGpuAccelerator.so).
+09-29 08:02:55.779 shell 29457 29457 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(/data/local/tmp/litert10300/libLiteRtClGlAccelerator.so).
+09-29 08:02:55.780 shell 29457 29457 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077cf609b50, name=LiteRT GPU
+09-29 08:02:55.780 shell 29457 29457 I litert  : [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtClGlAccelerator.so) registered.
+09-29 08:02:55.780 shell 29457 29457 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077cf609550, name=CpuAccelerator
+09-29 08:02:55.780 shell 29457 29457 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+09-29 08:02:55.799 shell 29457 29457 I litert  : [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+09-29 08:02:55.799 shell 29457 29457 I tflite  : Initialized TensorFlow Lite runtime.
+09-29 08:02:55.799 shell 29457 29457 W libc    : Access denied finding property "ro.mediatek.platform"
+09-29 08:02:55.800 shell 29457 29457 W libc    : Access denied finding property "ro.chipname"
+09-29 08:02:55.808 shell 29457 29457 I native  : I0000 00:00:1790636575.807914   29457 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+09-29 08:02:55.808 shell 29457 29457 I native  : I0000 00:00:1790636575.808015   29457 delegate_opencl.cc:605] options->kernel_batch_size: -1
+09-29 08:02:55.808 shell 29457 29457 W libc    : Access denied finding property "ro.mediatek.platform"
+09-29 08:02:55.808 shell 29457 29457 W libc    : Access denied finding property "ro.chipname"
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: QUALCOMM build                   : 87ff20b216, Ifbe74a3179
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Build Date                       : 03/26/26
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.50.19.18
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Local Branch                     : 
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.16.2.0.11.00.00.1195.535
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Remote Branch                    : NONE
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Build Config                     : C P 20.0.0 AArch64
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Driver Version                   : 0842.19.8
+09-29 08:02:55.817 shell 29457 29457 I AdrenoGLES-0: Process Name                     : gpu_runner
+09-29 08:02:55.817 shell 29457 29457 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+09-29 08:02:55.819 shell 29457 29457 D qdgralloc: Fetching IMapper5 from QtiMapper5
+09-29 08:02:55.821 shell 29457 29457 I SnapAlloc: Graphics lib is available
+09-29 08:02:55.822 shell 29457 29457 I AdrenoGLES-0: PFP: 0x01510594, ME: 0x01510025
+09-29 08:02:55.822 shell 29457 29457 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+09-29 08:02:55.823 shell 29457 29457 I AdrenoUtils: <ReadGpuID:1333>: Reading chip ID through GSL
+09-29 08:02:55.823 shell 29457 29457 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+09-29 08:02:55.824 shell 29457 29457 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+09-29 08:02:55.824 shell 29457 29457 I tflite  : Loaded OpenCL library with dlopen.
+09-29 08:02:55.824 shell 29457 29457 I litert  : [gpu_environment.cc:220] Created OpenCL device from provided device id and platform id.
+09-29 08:02:55.824 shell 29457 29457 I litert  : [gpu_environment.cc:283] Reusing provided EGL environment.
+09-29 08:02:55.824 shell 29457 29457 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+09-29 08:02:55.824 shell 29457 29457 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+09-29 08:02:55.826 shell 29457 29457 I tflite  : Replacing 2278 out of 2278 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+09-29 08:02:55.845 shell 29457 29457 I native  : I0000 00:00:1790636575.845318   29457 delegate_kernel.cc:911] Initializing OpenCL-based API from graph.
+09-29 08:02:56.122 shell 29457 29457 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x4f in tid 29457 (gpu_runner), pid 29457 (gpu_runner)
+09-29 08:02:56.137 shell 29464 29464 I crash_dump64: obtaining output fd from tombstoned, type: kDebuggerdTombstoneProto
+09-29 08:02:56.137  1058  1410  1410 I tombstoned: received crash request for pid 29457
+09-29 08:02:56.137 shell 29464 29464 I crash_dump64: performing dump of process 29457 (target tid = 29457)
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Build fingerprint: 'samsung/m1qjpnx/m1q:16/BP4A.251205.006/S942QOPS1AZF2_SJP1AZF2:user/release-keys'
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Kernel Release: '6.12.30-android16-5-pd30ff70-abogkiS942QOPS1AZF2-4k'
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Revision: '20'
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : ABI: 'arm64'
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Processor: '7'
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Timestamp: 2026-09-29 08:02:56.139232138+0900
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Process uptime: 1s
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Executable: /data/local/tmp/litert10300/gpu_runner
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : Cmdline: /data/local/tmp/litert10300/gpu_runner /data/local/tmp/litert10300/lstm_h128_t88_uni_fp32.tflite /data/local/tmp/litert10300/inputs_lstm_h128_t88_uni_fp32 /data/local/tmp/litert10300/out_t88-fp32-2 single 1 0 /data/local/tmp/litert10300 /data/local/tmp/litert10300/inputs_lstm_h128_t88_uni_fp32/manifest.tsv 900
+09-29 08:02:56.167 shell 29464 29464 F DEBUG   : pid: 29457, tid: 29457, name: gpu_runner  >>> /data/local/tmp/litert10300/gpu_runner <<<
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : uid: 2000
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : tagged_addr_ctrl: 0000000000000001 (PR_TAGGED_ADDR_ENABLE)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : pac_enabled_keys: 000000000000000f (PR_PAC_APIAKEY, PR_PAC_APIBKEY, PR_PAC_APDAKEY, PR_PAC_APDBKEY)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : esr: 0000000092000005 (Data Abort Exception 0x24)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x000000000000004f (read)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : Cause: null pointer dereference
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x0  b40000774f6e2210  x1  0000000000000000  x2  0000000000000030  x3  0000000000000010
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x4  020000774f6e2220  x5  b4000076ef645110  x6  0000002000000001  x7  0000000000000000
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x8  0000007689449c48  x9  000000000066f796  x10 00000000000054cd  x11 020000774f6e2210
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x12 0000002000000001  x13 0000000000000001  x14 0000000000000001  x15 0000000000000003
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x16 000000791fb250f0  x17 000000791fad23c0  x18 000000792b708000  x19 b40000772f6d6550
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x20 b40000772f651ef0  x21 000000000000003f  x22 b40000772f65e4b0  x23 b40000772f651ef0
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x24 000000792ac2bf60  x25 0000007fe33d9920  x26 0000007fe33d9908  x27 0000000000000000
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     x28 0000007687d22ef0  x29 0000007fe33d9230
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     lr  0000007687b9c794  sp  0000007fe33d9230  pc  0000007687b9c798  pst 0000000060001000
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :     esr 0000000092000005
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : 25 total frames
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   : backtrace:
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE: Function names and BuildId information is missing for some frames due
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE: to unreadable libraries. For unwinds of apps, only shared libraries
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE: found under the lib/ directory are readable.
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE: On this device, run setenforce 0 to make the libraries readable.
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE: Unreadable libraries:
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE:   /data/local/tmp/litert10300/gpu_runner
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE:   /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :   NOTE:   /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #00 pc 0000000000b91798  /vendor/lib64/libCB.so (!!!0000!3e1a18521dc9612655a59c5af0eaa3!87ff20b216!+280) (BuildId: e651fb789fe27a3b19a77d04b7ce30ab)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #01 pc 0000000000b90a4c  /vendor/lib64/libCB.so (!!!0000!922de30786b8fbb768ffa1ed2e2397!87ff20b216!+668) (BuildId: e651fb789fe27a3b19a77d04b7ce30ab)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #02 pc 0000000000b90168  /vendor/lib64/libCB.so (cb_enqueue_nd_range_kernel+1780) (BuildId: e651fb789fe27a3b19a77d04b7ce30ab)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #03 pc 000000000001c4a4  /vendor/lib64/libOpenCL_adreno.so (qCLDrvAPI_clEnqueueNDRangeKernel+180) (BuildId: 8d35447313afeccc53451d5db5dc6a3b)
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #04 pc 000000000011acc4  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #05 pc 0000000000102aec  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #06 pc 0000000000102048  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #07 pc 0000000000101e14  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #08 pc 00000000000fc550  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #09 pc 000000000012cc84  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #10 pc 000000000012bc50  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #11 pc 000000000012a8f4  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #12 pc 0000000000125514  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #13 pc 00000000000fb058  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #14 pc 00000000004e3c8c  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #15 pc 00000000004e353c  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #16 pc 00000000004e314c  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #17 pc 00000000000f93f8  /data/local/tmp/litert10300/libLiteRtClGlAccelerator.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #18 pc 00000000004e8620  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #19 pc 00000000004e9508  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #20 pc 00000000004d986c  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #21 pc 00000000000e8588  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #22 pc 00000000000e2f78  /data/local/tmp/litert10300/libLiteRt.so
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #23 pc 000000000004c19c  /data/local/tmp/litert10300/gpu_runner
+09-29 08:02:56.168 shell 29464 29464 F DEBUG   :       #24 pc 0000000000069a24  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+124) (BuildId: e28deee9fc7ad1daecee81acb7c02e5b)
