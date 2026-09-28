@@ -89,9 +89,12 @@ in the window was overwritten.
   apps/services`): SystemUI / lock-screen / wallpaper, telephony, sensors, audio, video codecs,
   Wi-Fi, Bluetooth, package/config persistence — a personal phone's traffic. Every dropped
   line of every window was read once (grouped by tag and message) before the rule was fixed;
-  none names the GPU, the driver, memory pressure or the runner. `grep -c -i -E
-  'majimadaisuke|/Users/|RFGL80R6A6H|@gmail'` is 0 on every public file (`logs/commands.log`
-  carries the adb serial, as the earlier records in this repository do).
+  none names the GPU, the driver, memory pressure or the runner. The Mac user name, the
+  `/Users/` home prefix, the adb serial and `@gmail`: 0 hits in every public window and runner
+  log (`grep -c -i -E` over `logs/*.window.txt`, `logs/*.runner.*`); the user name has 0 hits in
+  every committed file of this directory; `logs/commands.log` writes the home directory as
+  `/Users/USER` and carries the adb serial, as the earlier records in this repository do; the
+  two scripts build their private-marker pattern from the home directory at run time.
 - `logs/<launch>.runner.stderr.log` / `.stdout.log` — the runner's own output (LiteRT INFO /
   VERBOSE lines, `Segmentation fault`, `##EXIT=<code>`).
 - `logs/<launch>.runner.run.json` / `.runner.memory.json` — the runner's report pulled from the

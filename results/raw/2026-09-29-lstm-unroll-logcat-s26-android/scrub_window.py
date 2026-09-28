@@ -20,7 +20,9 @@ HERE = Path(__file__).resolve().parent
 LINE = re.compile(r'^(\d\d-\d\d \d\d:\d\d:\d\d\.\d{3}) +(\S+) +(\d+) +(\d+) ([VDIWEFS]) ([^:]+?) *: ?(.*)$')
 KEEP_TAG = re.compile(r'kgsl|adreno|gpu|opencl|lmkd|lowmemorykiller|GraphicsEnvironment|thermal|PERFHAL|'
                       r'Dvfs|CustomFrequency|HYPER-HAL|^crash_dump64$|^tombstoned$|^DEBUG$|^SnapAlloc$', re.I)
-PRIVATE_MARKERS = re.compile(r'majimadaisuke|/Users/|RFGL80R6A6H|@gmail|daisuke', re.I)
+SERIAL = 'RFGL80R6A6H'
+# built at run time from the home directory: the Mac user name, the macOS home prefix, the adb serial, a mail domain
+PRIVATE_MARKERS = re.compile('|'.join(re.escape(m) for m in (Path.home().name, '/Users/', SERIAL, '@gmail')), re.I)
 
 
 def scrub(name, pid, raw_path, out_path, meta):

@@ -28,11 +28,12 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-RUN = Path('/Users/majimadaisuke/code/codex-conversions/2026-09-26/gliformer-large-v1')
+RUN = Path.home() / 'code/codex-conversions/2026-09-26/gliformer-large-v1'
 SERIAL = 'RFGL80R6A6H'
-HOLD = Path('/Users/majimadaisuke/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold')
-KEEPER_PID = Path('/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/'
-                  'd741d577-47c8-4829-8f63-b419cb21acc3/scratchpad/hold/keeper.pid')
+HOLD = Path.home() / 'code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold'
+# pid file written by the hold keeper shell (this session pointed it at the keeper's own pid file
+# through the environment variable; the keeper wrote the hold with that pid)
+KEEPER_PID = Path(os.environ.get('LITERT10300_KEEPER_PID', HERE / 'private' / 'keeper.pid'))
 HOLD_SCRIPT = 'litert-10300-logcat'
 REMOTE = '/data/local/tmp/litert10300'
 GRAPHS = ['lstm_h128_t84_uni_fp32', 'lstm_h128_t88_uni_fp32']
