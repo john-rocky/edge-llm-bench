@@ -19,7 +19,7 @@ the doc to check a premise.
 | **memory** | the card's definitions (`task_vm_info::phys_footprint` on iOS/macOS) | Marissa 7/14 |
 | **thermal** | not started throttled — fans or a few minutes between runs | Marissa 7/14 |
 | **GPU API** | Android OpenCL · Windows/Linux/Web WebGPU · **iOS Metal** · **macOS historically WebGPU**, moving to Metal | Marissa 7/14 |
-| **regime** | **warm** for the card-comparable side-by-side; cold is reported separately as first-use | Daisuke 7/12, 7/14 |
+| **regime** | **warm** for the card-comparable side-by-side; cold is reported separately as first-use | john-rocky 7/12, 7/14 |
 
 Verbatim, Marissa 7/13:
 
