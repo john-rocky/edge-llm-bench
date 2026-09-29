@@ -2,7 +2,7 @@
 # upstream/main head check: build the C API dylib and the CLI at 5e3bd637, run the ctypes probe and the CLI on the CPU.
 export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 export GIT_LFS_SKIP_SMUDGE=1
-S=/private/tmp/claude-501/-Users-majimadaisuke-code-edge-llm-bench/298ce1ca-383c-4dd7-939a-363aeef8d8bc/scratchpad/capi
+S=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/298ce1ca-383c-4dd7-939a-363aeef8d8bc/scratchpad/capi
 W=~/code/litert-lm-bisect-wt
 M=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/qwen3_0_6b_mixed_int4.litertlm
 L=$S/head/head.log

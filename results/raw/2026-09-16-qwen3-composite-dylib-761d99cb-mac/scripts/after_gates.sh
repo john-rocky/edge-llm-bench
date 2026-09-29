@@ -3,7 +3,7 @@
 # litert-lm 0.17.1 CLI (litert-lm-api 0.17.1 runtime, GPU = WebGPU path) — does yesterday's release execute the composites?
 set -u
 PID=$1
-S=/private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad
+S=/private/tmp/claude-501/-Users-USER-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad
 CLI=$HOME/venvs/lt0171run/bin/litert-lm
 while kill -0 $PID 2>/dev/null; do sleep 10; done
 while ! grep -q "pip rc=" $HOME/code/litertlm-convert/qwen3_gpuopt_work/logs/dylib_761d99cb/pip_lt0171run.log 2>/dev/null; do sleep 10; done

@@ -4,7 +4,7 @@
 set -u
 PID=$1
 while kill -0 $PID 2>/dev/null; do sleep 10; done
-S=/private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad
+S=/private/tmp/claude-501/-Users-USER-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad
 RUN=$S/run-release; B=$S/models/p1024_06b_9flags/model.litertlm
 P="$(cat $HOME/code/litertlm-convert/qwen3_gpuopt_work/logs/metal_20260911/prompt_1000.txt) /no_think"
 for i in 1 2; do

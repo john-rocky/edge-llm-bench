@@ -4,7 +4,7 @@ share of the profiled op sum, group (prof_table.group), node count. Container ro
 listed apart. Usage: gpu_nodes.py <prof.log> <ctrl.log> [--decode-steps 256] [--top 25]"""
 import sys, re, argparse
 from collections import defaultdict
-sys.path.insert(0, '/Users/majimadaisuke/code/edge-llm-bench/scripts/profile')
+sys.path.insert(0, '/Users/USER/code/edge-llm-bench/scripts/profile')
 import prof_cmp, prof_table
 ap = argparse.ArgumentParser(); ap.add_argument('prof'); ap.add_argument('ctrl'); ap.add_argument('--decode-steps', type=int, default=256); ap.add_argument('--top', type=int, default=25)
 a = ap.parse_args()

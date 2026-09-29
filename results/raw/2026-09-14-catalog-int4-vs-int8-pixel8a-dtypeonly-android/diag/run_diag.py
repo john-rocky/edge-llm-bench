@@ -13,7 +13,7 @@ them); the console log of each run carries the generated text. Usage:
   python3 run_diag.py gpu <variant> [...]      # step 2, variants = bisect dir names
 """
 import os, subprocess, sys, time
-ROOT = "/Users/majimadaisuke/code/edge-llm-bench"
+ROOT = "/Users/USER/code/edge-llm-bench"
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 from device_probe import thermal_status  # noqa: E402
 

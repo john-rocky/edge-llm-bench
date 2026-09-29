@@ -6,7 +6,7 @@
 #   (2) litert_prebuilts.zip "latest" (2026-08-13) macOS dylib: text run on the two 11-flag bundles.
 set -u
 LEG=$HOME/code/litertlm-convert/qwen3_gpuopt_work/logs/dylib_761d99cb/leg.sh
-S=/private/tmp/claude-501/-Users-majimadaisuke-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad
+S=/private/tmp/claude-501/-Users-USER-code-litertlm-convert/7ffdfeee-f1e0-4c0c-b6d2-9072c447fa05/scratchpad
 export LEG_OUT=$S/legs; mkdir -p $LEG_OUT; export LEG_RUNLOG=$LEG_OUT/runlog.txt
 REL=$S/run-release; PRE=$S/run-prebuilt0813; M=$S/models
 echo "=== start $(date '+%F %T')  load=$(uptime | sed 's/.*load averages: //')"

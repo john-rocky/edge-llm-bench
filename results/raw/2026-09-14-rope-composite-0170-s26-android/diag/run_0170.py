@@ -33,7 +33,7 @@ import subprocess
 import sys
 import time
 
-ROOT = "/Users/majimadaisuke/code/edge-llm-bench"
+ROOT = "/Users/USER/code/edge-llm-bench"
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 from device_probe import thermal_status  # noqa: E402
 

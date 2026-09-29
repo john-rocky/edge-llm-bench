@@ -1,6 +1,6 @@
 #!/bin/bash
 # Moonshine GPU garbage after chunk 1: separate state-carry-over from int8-on-Metal numerics.
-cd /Users/majimadaisuke/code/edge-llm-bench
+cd /Users/USER/code/edge-llm-bench
 R=$PWD/.build/asr-runner-1dadd00c; M=$PWD/.build/asr-models; SP=$1
 S=$PWD/.build/asr-audio/librispeech-dev-clean-1272-82s.wav
 U2=$PWD/evaldata/asr/librispeech-dev-clean-1272-82s/libri_1272_128104_0003.wav   # 9.9 s = 2-3 chunks

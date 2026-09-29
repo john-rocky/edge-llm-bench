@@ -6,7 +6,7 @@ re-judged on the payload's own anchor, SESSION.json in both dirs; then the
 ./bench profile pair into the same campaign dir. Never a dashboard-v1 campaign
 name, so the weekly slot logic does not see it."""
 import json, os, subprocess, sys, time
-ROOT = "/Users/majimadaisuke/code/edge-llm-bench"
+ROOT = "/Users/USER/code/edge-llm-bench"
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import dashboard_job as dj  # noqa: E402
 

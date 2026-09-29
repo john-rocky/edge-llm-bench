@@ -28,7 +28,7 @@ import subprocess
 import sys
 import time
 
-ROOT = "/Users/majimadaisuke/code/edge-llm-bench"
+ROOT = "/Users/USER/code/edge-llm-bench"
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 from device_probe import thermal_status  # noqa: E402
 
@@ -38,7 +38,7 @@ HOLD = os.path.expanduser("~/code/litertlm-convert/community_accel_work/s2_npu_s
 OUT = os.path.dirname(os.path.abspath(__file__))
 DEV_DIR = "/data/local/tmp/llmbench"
 PINS = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))["litert-lm"]
-SCRATCH = os.environ.get("SWAP_SCRATCH", "/private/tmp/claude-501/-Users-majimadaisuke-code-standup/"
+SCRATCH = os.environ.get("SWAP_SCRATCH", "/private/tmp/claude-501/-Users-USER-code-standup/"
                          "d9e81ab4-aafb-435b-b50b-ba39954d6ef2/scratchpad/accel")
 SO_FILES = ["libGemmaModelConstraintProvider.so", "libLiteRtGpuAccelerator.so", "libLiteRtOpenClAccelerator.so",
             "libLiteRtTopKOpenClSampler.so", "libLiteRtTopKWebGpuSampler.so", "libLiteRtWebGpuAccelerator.so",

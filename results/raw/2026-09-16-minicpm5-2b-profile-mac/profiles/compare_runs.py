@@ -2,7 +2,7 @@
 """Side-by-side of two profiled runs (ms/step per node type + groups) — run1 dir/tag vs run2 dir/tag."""
 import sys, re
 from collections import defaultdict
-sys.path.insert(0, '/Users/majimadaisuke/code/edge-llm-bench/scripts/profile')
+sys.path.insert(0, '/Users/USER/code/edge-llm-bench/scripts/profile')
 import prof_cmp, prof_table
 def load(prof, ctrl, steps_req=256):
     rows, _, _, sp = prof_cmp.parse(prof); _, _, _, csp = prof_cmp.parse(ctrl)
