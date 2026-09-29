@@ -26,10 +26,11 @@ sha256 (git blob sha1 for the two non-LFS tokenizer files).
 
 Recipe rows (cells `recipe=`; docs/tts-rtf-v1.md "Fast-graph recipe row"): no
 `recipe=` = the sample's default graph set; `recipe=mtp-folded-int8-codec-split`
-= the repo's fast graphs (`mtp_folded_int8.tflite`, on the phone as
-`mtp_folded.tflite`, + `codec_partA.tflite` / `codec_partB.tflite`), which an app
-built with the fast-path auto-select (litert-samples 50fb1674) picks by file
-presence in its filesDir, with its own MTP thread count (4) and in-graph greedy
+= the repo's fast graphs (`mtp_folded_int8.tflite` + `codec_partA.tflite` /
+`codec_partB.tflite`), which an app built with the fast-path auto-select picks by
+file presence in its filesDir (the 50fb1674 build looks for the folded graph as
+`mtp_folded.tflite`, the upstream port as `mtp_folded_int8.tflite`; the name is
+read from the engine source, see adopt_engine_names), with its own MTP thread count (4) and in-graph greedy
 residual codebooks. One build serves both rows: before every launch this script
 puts the fast files in place (fast row) or parks them as `<name>.parked`
 (default row), and afterwards checks the engine's own selection flags and the
@@ -111,6 +112,22 @@ RECIPES = {
 }
 FAST_DEVICE_NAMES = list(RECIPES[FAST_RECIPE]["graphs"].values())
 PARK = ".parked"
+# The two names an auto-select engine has looked for the folded MTP graph under.
+FOLDED_DEVICE_NAMES = ("mtp_folded.tflite", "mtp_folded_int8.tflite")
+
+
+def adopt_engine_names(engine_src):
+    """Reads which filesDir name the app's engine looks for the folded MTP graph under
+    (`mtp_folded.tflite` on the 50fb1674 build, `mtp_folded_int8.tflite` on the upstream
+    port) and points the fast recipe row at it. -> the name, or None when the engine has
+    no auto-select branch."""
+    text = open(engine_src).read()
+    found = [n for n in FOLDED_DEVICE_NAMES if f'"{n}"' in text]
+    if len(found) != 1:
+        return None
+    RECIPES[FAST_RECIPE]["graphs"]["mtp_folded_int8.tflite"] = found[0]
+    FAST_DEVICE_NAMES[:] = list(RECIPES[FAST_RECIPE]["graphs"].values())
+    return found[0]
 SOURCE_FILES = ["Qwen3TtsEngine.kt", "QwenBpeTokenizer.kt", "Npy.kt", "MainActivity.kt"]
 SRC_REL = "app/src/main/java/com/google/ai/edge/examples/text_to_speech_lm"
 
@@ -390,7 +407,7 @@ def one_run(args, ctx, cell, run_idx, log, idle_before, warmup=False):
     rdef = RECIPES[recipe]
     files = device_files(recipe)
     if recipe == FAST_RECIPE:
-        graphs = (f"{cell['file']} + mtp_folded_int8.tflite (on the phone as mtp_folded.tflite) + codec_partA.tflite + "
+        graphs = (f"{cell['file']} + mtp_folded_int8.tflite (on the phone as {FAST_DEVICE_NAMES[0]}) + codec_partA.tflite + "
                   f"codec_partB.tflite (the repo's fast graphs, auto-selected by the app when present: Qwen3TtsEngine @ "
                   f"{ctx['pipeline_commit'][:7]})")
         residual = ("in-graph greedy: the folded MTP graph gets a zero noise input and returns argmax codes "
@@ -537,7 +554,8 @@ def main():
     detail = {"head": commit, "parents": git("log", "-1", "--format=%P").split(), "subject": git("log", "-1", "--format=%s"),
               "authorDate": git("log", "-1", "--format=%aI"), "appTree": git("rev-parse", "HEAD:./")}
     engine_src = os.path.join(app_dir, SRC_REL, "Qwen3TtsEngine.kt")
-    auto_select = "mtp_folded.tflite" in open(engine_src).read()
+    folded_name = adopt_engine_names(engine_src)
+    auto_select = folded_name is not None
     pipeline_shas = {f: sha256(os.path.join(app_dir, SRC_REL, f)) for f in SOURCE_FILES if os.path.exists(os.path.join(app_dir, SRC_REL, f))}
     pipeline_shas["app/src/androidTest/.../TtsRtfBench.kt"] = sha256(os.path.join(app_dir, "app/src/androidTest/java/com/google/ai/edge/examples/text_to_speech_lm/TtsRtfBench.kt"))
     gradle = open(os.path.join(app_dir, "app", "build.gradle.kts")).read()
@@ -573,7 +591,7 @@ def main():
             sys.exit(f"recipe={recipe}: the Android leg knows {sorted(RECIPES)}")
         if recipe == FAST_RECIPE and not auto_select:
             sys.exit(f"recipe={recipe} needs an app whose Qwen3TtsEngine auto-selects the fast graphs "
-                     f"(litert-samples 50fb1674); {engine_src} has no mtp_folded.tflite branch")
+                     f"(litert-samples 50fb1674 or its upstream port); {engine_src} has no folded-MTP branch")
         base = f"{rt}_{mid}_{task}".replace("/", "_").replace(".", "_")
         cells.append({"runtime": rt, "model_id": mid, "task": task, "file": opts["file"], "recipe": recipe,
                       "runs": int(opts.get("runs", 3)), "cooldown": float(opts.get("cooldown", args.base_cooldown)),
