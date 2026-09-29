@@ -48,7 +48,7 @@ both text mergers; `git diff --stat 1dadd00c 66058c82 -- omni/asr/`). The rows s
   of `default.profraw` fails in the app sandbox ("LLVM Profile Error … Operation not
   permitted" on every console) with no other effect.
 - App: `ios/AsrBench` (ObjC++ shell, `project.yml` → xcodegen 2.44.1, bundle id
-  `com.daisukemajima.asrbench`, Release, `-ObjC -all_load`), built with
+  `com.USER.asrbench`, Release, `-ObjC -all_load`), built with
   `xcodebuild -destination "platform=iOS,id=<UDID>" -allowProvisioningUpdates
   -allowProvisioningDeviceRegistration` (derived data `.build/dd-asrbench`). The phone was
   provisioned for development at 17:45 JST (before that: "No Accounts" from xcodebuild and `ApplicationVerificationFailed`
