@@ -7,7 +7,7 @@ import nemo.collections.asr as nemo_asr
 manifest, n_utts = sys.argv[1], int(sys.argv[2])
 rows = [json.loads(l) for l in open(manifest)]
 rows = [r for r in rows if 10.0 <= r["seconds_written"] < 20.0][:n_utts]
-m = nemo_asr.models.ASRModel.restore_from("/Users/majimadaisuke/.cache/nemo-models/parakeet-tdt-0.6b-v3.nemo", map_location="cpu"); m.eval()
+m = nemo_asr.models.ASRModel.restore_from(os.path.expanduser("~/.cache/nemo-models/parakeet-tdt-0.6b-v3.nemo"), map_location="cpu"); m.eval()
 tmp = tempfile.mkdtemp(); files = []; meta = []
 for r in rows:
     x, sr = sf.read(r["path"], dtype="float32")
