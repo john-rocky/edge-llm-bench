@@ -1,13 +1,13 @@
-DROP = [enable_gpu_dynamic_prefill]  EXTRA = [--litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext]
-ARGS = --quantization_recipe=dynamic_wi4b32_afp32 --enable_gpu_dynamic_cache=True --apply_gpu_composites=True --fuse_gate_up=True --fuse_qkv=True --use_qkv_norm_rope_composite=True --use_swiglu_composite=True --use_sdpa_composite=True --use_bool_mask=True --bundle_litert_lm=True --prefill_lengths=1024 --cache_length=32768 --litert_lm_llm_metadata_override=/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext
-litert_torch.__file__ = /Users/majimadaisuke/code/litert-torch-0918-wt/litert_torch/__init__.py
+DROP = [enable_gpu_dynamic_prefill]  EXTRA = [--litert_lm_llm_metadata_override=/Users/USER/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext]
+ARGS = --quantization_recipe=dynamic_wi4b32_afp32 --enable_gpu_dynamic_cache=True --apply_gpu_composites=True --fuse_gate_up=True --fuse_qkv=True --use_qkv_norm_rope_composite=True --use_swiglu_composite=True --use_sdpa_composite=True --use_bool_mask=True --bundle_litert_lm=True --prefill_lengths=1024 --cache_length=32768 --litert_lm_llm_metadata_override=/Users/USER/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext
+litert_torch.__file__ = /Users/USER/code/litert-torch-0918-wt/litert_torch/__init__.py
 W0918 09:27:09.196000 85877 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
 W0918 09:27:09.207000 85877 torch/utils/_pytree.py:630] <enum 'KernelPreference'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
 W0918 09:27:10.170000 85877 torch/utils/_pytree.py:630] <enum 'ScaleCalculationMode'> is an Enum subclass and is now natively supported by torch.compile as an opaque value type. Calling register_constant() on Enum subclasses is deprecated and will be an error in a future release.
-[ERROR] `cache_position` is part of Qwen3TTSTokenizerV2DecoderTransformerModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/code/litert-torch-0918-wt/litert_torch/generative/export_hf/model_ext/qwen3_tts/tokenizer_v2/modeling_qwen3_tts_tokenizer_v2.py.
-[ERROR] `mlp_only_layers` is part of Qwen3_5TextConfig.__init__'s signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
-[ERROR] `deepstack_visual_indexes` is part of Qwen3_5VisionConfig.__init__'s signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
-[ERROR] `image_grid_thw` is part of Qwen3_5Model.get_image_features's signature, but not documented. Make sure to add it to the docstring of the function in /Users/majimadaisuke/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
+[ERROR] `cache_position` is part of Qwen3TTSTokenizerV2DecoderTransformerModel.forward's signature, but not documented. Make sure to add it to the docstring of the function in /Users/USER/code/litert-torch-0918-wt/litert_torch/generative/export_hf/model_ext/qwen3_tts/tokenizer_v2/modeling_qwen3_tts_tokenizer_v2.py.
+[ERROR] `mlp_only_layers` is part of Qwen3_5TextConfig.__init__'s signature, but not documented. Make sure to add it to the docstring of the function in /Users/USER/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
+[ERROR] `deepstack_visual_indexes` is part of Qwen3_5VisionConfig.__init__'s signature, but not documented. Make sure to add it to the docstring of the function in /Users/USER/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
+[ERROR] `image_grid_thw` is part of Qwen3_5Model.get_image_features's signature, but not documented. Make sure to add it to the docstring of the function in /Users/USER/venvs/ltmain0918/lib/python3.14/site-packages/transformers/models/qwen3_5/modular_qwen3_5.py.
 ============== Export Configuration ==============
 aot_backend            : None
 aot_compilation_config_dict : None
@@ -45,7 +45,7 @@ input_sec              : 1.0
 jinja_chat_template_override : None
 k_ts_idx               : 2
 keep_temporary_files   : False
-litert_lm_llm_metadata_override : '/Users/majimadaisuke/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext'
+litert_lm_llm_metadata_override : '/Users/USER/code/litert-lm-0170-metal/models/qwen3/LlmMetadataProto.pbtext'
 litert_lm_model_type_override : None
 llm_metadata_max_num_tokens_override : None
 max_calibration_decode_steps : 32
@@ -80,7 +80,7 @@ use_short_conv_composite : False
 use_swiglu_composite   : True
 v_ts_idx               : 3
 vision_encoder_quantization_recipe : 'dynamic_wi8_afp32'
-work_dir               : '/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11flags_1e2d37f/tmppinr7c8k'
+work_dir               : '/Users/USER/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11flags_1e2d37f/tmppinr7c8k'
 ==================================================
 (00:00) [START] LiteRT GenAI Export
 (00:00) [START] LiteRT GenAI Export > Load source model
@@ -176,20 +176,20 @@ LiteRT-Torch Convert > Run LiteRT Converter Passes (+00:16)
 LiteRT-Torch Convert (+00:44)
 (00:49) [START] LiteRT GenAI Export > Export text prefill-decode model > Write 
 Model to 
-/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11fla
+/Users/USER/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11fla
 gs_1e2d37f/tmppinr7c8k/model.tflite
 Module size is greater than 2GB
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
 I0000 00:00:1789691279.793578 12176715 flatbuffer_export.cc:4342] Estimated count of arithmetic ops: 1888.360 G  ops, equivalently 944.180 G  MACs
 (00:49) [ DONE] LiteRT GenAI Export > Export text prefill-decode model > Write 
 Model to 
-/Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11fla
+/Users/USER/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11fla
 gs_1e2d37f/tmppinr7c8k/model.tflite (+00:00)
 (00:49) [START] LiteRT GenAI Export > Export text prefill-decode model > 
 Quantize model
 Generating Quantization Parameters::   0%|          | 0/6215 [00:00<?, ?it/s]Generating Quantization Parameters::   0%|          | 10/6215 [00:00<04:12, 24.56it/s]Generating Quantization Parameters::   1%|▏         | 80/6215 [00:00<00:31, 197.32it/s]Generating Quantization Parameters::   2%|▏         | 155/6215 [00:00<00:18, 334.39it/s]Generating Quantization Parameters::   3%|▎         | 217/6215 [00:00<00:14, 409.86it/s]Generating Quantization Parameters::   5%|▍         | 280/6215 [00:00<00:12, 464.20it/s]Generating Quantization Parameters::   6%|▌         | 352/6215 [00:00<00:10, 535.43it/s]Generating Quantization Parameters::   7%|▋         | 415/6215 [00:01<00:10, 549.83it/s]Generating Quantization Parameters::   8%|▊         | 477/6215 [00:01<00:10, 564.80it/s]Generating Quantization Parameters::   9%|▊         | 540/6215 [00:01<00:09, 575.59it/s]Generating Quantization Parameters::  41%|████▏     | 2575/6215 [00:01<00:00, 6282.71it/s]Generating Quantization Parameters:: 100%|██████████| 6215/6215 [00:01<00:00, 4430.27it/s]
 Applying Transformations to tensors::   0%|          | 0/9394 [00:00<?, ?it/s]Applying Transformations to tensors::  75%|███████▌  | 7060/9394 [00:00<00:00, 70422.43it/s]Applying Transformations to tensors:: 100%|██████████| 9394/9394 [00:00<00:00, 26794.21it/s]
-Model name: /Users/majimadaisuke/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11flags_1e2d37f/tmppinr7c8k/model.tflite
+Model name: /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/out/p1024_06b_11flags_1e2d37f/tmppinr7c8k/model.tflite
 Original model size: 2.22 GiB
 Quantized model size: 323.82 MiB
 Quantization Ratio: 0.14 (7.0x smaller)
@@ -206,7 +206,7 @@ Cleaning up temporary files.
 Export complete. Model saved to: out/p1024_06b_11flags_1e2d37f/model.litertlm
 $PY -m litert_torch.generative.export_hf --model="$MODEL" --output_dir="$OUT"  53.29s user 12.52s system 115% cpu 57.162 total
 total 667472
-drwxr-xr-x@  3 majimadaisuke  staff         96 Sep 18 09:28 .
-drwxr-xr-x@ 12 majimadaisuke  staff        384 Sep 18 09:27 ..
--rw-r--r--@  1 majimadaisuke  staff  341742736 Sep 18 09:28 model.litertlm
+drwxr-xr-x@  3 USER  staff         96 Sep 18 09:28 .
+drwxr-xr-x@ 12 USER  staff        384 Sep 18 09:27 ..
+-rw-r--r--@  1 USER  staff  341742736 Sep 18 09:28 model.litertlm
 6f7756223b88eba08f68d0ed8f68969da5e246c5be3c54d6ab94912a32de7e50  out/p1024_06b_11flags_1e2d37f/model.litertlm
