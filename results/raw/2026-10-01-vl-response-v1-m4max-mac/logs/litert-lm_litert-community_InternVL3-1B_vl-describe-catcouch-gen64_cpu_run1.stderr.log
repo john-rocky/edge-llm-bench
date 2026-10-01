@@ -1,0 +1,141 @@
+# cmd: /Users/USER/code/edge-llm-bench/.build/litert-lm-advanced-main-1dadd00c/litert_lm_advanced_main --backend=cpu --vision_backend=cpu --model_path=/Users/USER/.cache/huggingface/hub/models--litert-community--InternVL3-1B/snapshots/1750633fd6d028d3f2d1cf733860f5a52926bb5f/InternVL3-1B.litertlm --input_prompt=Describe this image in one sentence. [image:/Users/USER/code/edge-llm-bench/evaldata/vl/cc0-cat-couch-1024/cat_couch_1024.jpg] --benchmark --max_output_tokens=64 --cache_dir=/Users/USER/code/edge-llm-bench/.build/vl-cache/InternVL3-1B_InternVL3-1B.litertlm
+# DYLD_LIBRARY_PATH=/Users/USER/code/edge-llm-bench/.build/litert-lm-advanced-main-1dadd00c
+# exit=0
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790850322.037084  374490 litert_lm_lib.cc:505] Choose backend: cpu
+I0000 00:00:1790850322.037104  374490 litert_lm_lib.cc:510] Provided vision backend: cpu
+I0000 00:00:1790850322.037142  374490 litert_lm_lib.cc:661] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: /Users/USER/code/edge-llm-bench/.build/vl-cache/InternVL3-1B_InternVL3-1B.litertlm
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /Users/USER/.cache/huggingface/hub/models--litert-community--InternVL3-1B/snapshots/1750633fd6d028d3f2d1cf733860f5a52926bb5f/InternVL3-1B.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1790850322.037158  374490 litert_lm_lib.cc:665] vision_executor_settings: VisionExecutorSettings: 
+  ModelAssets: model_path: /Users/USER/.cache/huggingface/hub/models--litert-community--InternVL3-1B/snapshots/1750633fd6d028d3f2d1cf733860f5a52926bb5f/InternVL3-1B.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+  EncoderBackend: CPU
+  AdapterBackend: CPU
+
+I0000 00:00:1790850322.037159  374490 litert_lm_lib.cc:674] audio_executor_settings: not set
+I0000 00:00:1790850322.037170  374490 litert_lm_lib.cc:697] Creating engine
+W0000 00:00:1790850322.038513  374808 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790850322.038521  374808 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+W0000 00:00:1790850322.038522  374808 litert_lm_loader.cc:311] Section not found: HF_Tokenizer_Zlib
+W0000 00:00:1790850322.038505  374490 litert_lm_loader.h:188] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790850322.038528  374490 litert_lm_loader.h:204] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x751315cea0, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x751315cde0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x751315cd80, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x751315ccc0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790850322.776582  374490 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+W0000 00:00:1790850322.776624  374490 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.dylib).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.dylib).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x75143462e0, name=GPU WebGPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtWebGpuAccelerator.dylib) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x75143463a0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1790850322.943187  374490 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790850322.943195  374490 litert_lm_loader.h:159] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1790850322.943198  374490 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790850322.943199  374490 litert_lm_loader.h:159] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1790850322.943748  374490 litert_lm_loader.cc:311] Section not found: TFLiteModel
+W0000 00:00:1790850322.943754  374490 litert_lm_loader.h:159] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1790850322.943792  374490 litert_lm_loader.h:188] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1790850322.943793  374490 litert_lm_loader.h:204] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1790850322.952665  374490 litert_lm_lib.cc:707] Vision executor properties: num_tokens_per_image: 256
+patch_num_shrink_factor: 1
+
+I0000 00:00:1790850322.952677  374490 litert_lm_lib.cc:865] Creating conversation
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1790850323.167794  374490 litert_lm_lib.cc:877] Running single-turn conversation
+I0000 00:00:1790850324.167396  374490 litert_lm_lib.cc:174] Captured model output: The image shows a close-up of a tabby cat lying on a dark fabric surface.
+I0000 00:00:1790850324.167426  374490 litert_lm_lib.cc:424] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 214.57 ms
+    - Init Executor: 905.22 ms
+    - Init LLM metadata: 0.33 ms
+    - Init Model assets: 0.96 ms
+    - Init Tokenizer: 89.95 ms
+    - Init Total: 906.86 ms
+--------------------------------------------------
+  Time to first token: 0.44 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 311 tokens in 422.42075ms duration.
+      Prefill Speed: 736.23 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 19 tokens in 242.188666ms duration.
+      Decode Speed: 78.45 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 2 turns):
+    Turn 1: 135.083us, 49 tokens
+    Turn 2: 12.25us, 6 tokens
+--------------------------------------------------
+  Mark Durations (1):
+    - vision_executor: 327.704542ms
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x751315ccc0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x751315cd80, name=GPU WebGPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x75143463a0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x75143462e0, name=GPU WebGPU

@@ -218,5 +218,5 @@ stops on `BROADCAST_TO` / `GATHER_ND`, and TTFT excludes the vision encoder).
   second recipe row.
 - InternVL3-1B and Qwen2-VL-2B on the Mac: not staged at the first pass (the
   Hub was throttled to ~0.2 MB/s that afternoon and no local copy matched the
-  published sha256). Both were downloaded on 2026-09-26 for the Android leg;
-  the Mac rows wait for their own sitting.
+  published sha256). Measured in their own sitting on 2026-10-01 with the same
+  instrument and protocol (`results/raw/2026-10-01-vl-response-v1-m4max-mac/`).
