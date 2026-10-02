@@ -15,7 +15,7 @@ fairness rules applied as code, not discipline:
            (e.g. the resident A/B design) earn a REGRESSION/OK verdict.
 
 Quality (GSM8K) pairs join on tag; device cells join on
-(device, runtime, model_id, task, cold/warm) split by the requested selectors —
+(device, runtime, model_id, task, context_tokens, cold/warm) split by the requested selectors —
 quantization is compared as a label, not a key (it has been corrected in place for
 the same artifact), and a 0 tok/s field is treated as an unmeasured axis.
 
@@ -191,7 +191,12 @@ def select(rows, sel):
 # audit); model_id carries the recipe when it genuinely differs. A label mismatch is
 # surfaced on the output line instead. cold_run IS in the key: cold and warm are
 # different published cells, and pooling them inflates spread past the spread-rule.
-GROUP = ("device", "runtime", "model_id", "task", "cold_run")
+# context_tokens (the KV allocation the run was configured with) joined the key on
+# 2026-10-02: the long-context column measures one cell at three allocations
+# (2304 / 4096 / 8192), and without the axis the three ladders pooled into one
+# "cell" whose median said nothing. Rows without the field keep an empty
+# component, so every pre-existing key is unchanged.
+GROUP = ("device", "runtime", "model_id", "task", "context_tokens", "cold_run")
 
 
 # fairness-rules §2 thermal guard, applied as code: only runs that STARTED at
@@ -226,7 +231,9 @@ def quants(rows):
 
 
 def fmt_key(key):
-    parts = [k for k in key[:-1] if k]
+    parts = [k for k in key[:-2] if k]
+    if key[-2]:
+        parts.append(f"ctx{key[-2]}")
     if key[-1] == "True":
         parts.append("cold")
     elif key[-1] == "False":
@@ -260,8 +267,11 @@ def anchor_median(side_cells, anchors, device, cold_run, exclude_runtime, spread
     for rt, mid, task in anchors:
         if rt == exclude_runtime:
             continue
-        key = (device, rt, mid, task, cold_run)
-        vals = [v for v, _ in side_cells.get(key, [])]
+        # an anchor is one cell at whatever allocation its cells line carries;
+        # match on everything but context_tokens
+        vals = [v for k, runs in side_cells.items()
+                if (k[0], k[1], k[2], k[3], k[5]) == (device, rt, mid, task, cold_run)
+                for v, _ in runs]
         if len(vals) < 2:
             continue
         med = statistics.median(vals)

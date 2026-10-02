@@ -102,6 +102,22 @@ def build_quality():
 DEVICE_ALIASES = {"m4max": "Mac16,9"}
 
 
+def context_tokens_of(d, m):
+    """The KV allocation a run was configured with, as the summary's context_tokens.
+
+    Mac records write metrics.contextTokensConfigured; the Android runner writes
+    conditions.contextTokens (an int when the cell carried context-tokens=, the
+    string "bundle-default" otherwise — android/bench/run_cell.py engine_command).
+    Reading only the Mac field left every Android long-context row blank, so the
+    S26 ladder's three allocations pooled into one cell (found 2026-10-02)."""
+    v = m.get("contextTokensConfigured")
+    if v in (None, ""):
+        v = (d.get("conditions") or {}).get("contextTokens")
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return v if (isinstance(v, str) and v.isdigit()) else None
+    return int(v)
+
+
 def platform_of(d):
     """ios / mac / android, from the record itself (never from file paths)."""
     dev = d.get("device", {})
@@ -225,7 +241,7 @@ def build_device():
             # KV allocation the run was configured with (2026-09-18): the
             # long-context column measures one cell at several allocations,
             # and a derived row without this axis would pool them.
-            "context_tokens": m.get("contextTokensConfigured"),
+            "context_tokens": context_tokens_of(d, m),
             "device": DEVICE_ALIASES.get(dev.get("modelIdentifier"),
                                          dev.get("modelIdentifier")),
             "os_version": dev.get("systemVersion"),
