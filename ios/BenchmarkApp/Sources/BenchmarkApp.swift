@@ -212,11 +212,13 @@ enum HeadlessAutoRun {
         var contextTokens: Int?
         /// `--litert-native-benchmark <prefillTokens>x<decodeTokens>` bypasses the
         /// task/runner path and calls LiteRT-LM's own `benchmark` entry point, the
-        /// analogue of Cactus's `cactus_benchmark_tokens`. litert-lm only.
+        /// analogue of Cactus's `cactus_benchmark_tokens`. litert-lm only. `--runs` = calls
+        /// in this process, back to back (default 1): run 1 is cold, runs 2...N warm.
         var nativeBenchmark: (prefill: Int, decode: Int)?
         /// `--coreai-native-benchmark <prefillTokens>x<decodeTokens>`: Apple's `llm-benchmark`
         /// measurement on the Core AI stock path (`CoreAIRuntime.nativeBenchmarkStock`) instead
-        /// of a task; `--runs` = timed trials after one warmup trial. core-ai stock ids only.
+        /// of a task; `--runs` = timed trials after one warmup trial (printed as trial 0, cold).
+        /// core-ai stock ids only.
         var coreAINativeBenchmark: (prefill: Int, decode: Int)?
     }
 
@@ -355,7 +357,7 @@ struct HeadlessRunnerView: View {
         }
         if let native = spec.nativeBenchmark {
             await runNativeBenchmark(runtime: runtime, model: model, spec: native,
-                                     contextTokensValue: spec.contextTokens)
+                                     runs: spec.runs, contextTokensValue: spec.contextTokens)
             return
         }
         guard var task = BenchmarkTaskCatalog.task(for: spec.taskId) else {
@@ -560,9 +562,14 @@ struct HeadlessRunnerView: View {
     /// `BenchmarkRunner`. Reports the engine's internal prefill/decode counters, which
     /// is the only way to get a LiteRT prefill tok/s at a fixed prompt length: the
     /// streaming path leaves the counters unfinalized whenever output is capped.
+    ///
+    /// `runs` calls run back to back in this process, one YARDSTICK_NATIVE_OK line each.
+    /// `benchmark()` builds and releases its own engine on every call, so run 1 is cold
+    /// (the first call in the process) and runs 2...N are warm only in the sense that the
+    /// process and the on-disk caches are: each one still loads a new engine.
     private func runNativeBenchmark(
         runtime: any LLMRuntime, model: ModelInfo, spec: (prefill: Int, decode: Int),
-        contextTokensValue: Int?
+        runs: Int, contextTokensValue: Int?
     ) async {
         #if canImport(LiteRTLM)
         guard let litert = runtime as? MediaPipeRuntime else {
@@ -578,37 +585,48 @@ struct HeadlessRunnerView: View {
         if contextTokensValue == nil {
             await log("YARDSTICK_WARN native_benchmark context_tokens=\(contextTokens) (litert stock default; agreed protocol is 2048 for gemma-4 — pass --context-tokens)")
         }
-        await log("YARDSTICK_BEGIN native_benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(contextTokens)")
+        await log("YARDSTICK_BEGIN native_benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(contextTokens) runs=\(runs)")
+        let warmRuns = runs > 1 ? "runs 2...\(runs)" : "none (--runs 1)"
+        await log("YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=\(warmRuns) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)")
 
-        // Sample memory *during* the benchmark. The published 92 MB deep-context cell was a
-        // single footprint read taken after `benchmark()` returned and released the engine,
-        // which is not the same quantity as the in-run peaks it was tabulated against.
-        let sampler = MemorySampler()
-        await sampler.start()
-        do {
-            let info = try await litert.nativeBenchmark(
-                model, prefillTokens: spec.prefill, decodeTokens: spec.decode,
-                maxNumTokens: contextTokens)
-            await sampler.stop()
-            let peakMB = await sampler.peakMB
-            let medianMB = await sampler.medianMB
-            let medianResidentMB = await sampler.medianResidentMB
-            let samples = await sampler.sampleCount
-            await log(String(
-                format: "YARDSTICK_NATIVE_OK prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d teardown_footprint_mb=%.0f harness=%@",
-                info.prefillTokenCount, info.prefillTokensPerSecond,
-                info.decodeTokenCount, info.decodeTokensPerSecond,
-                info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds,
-                contextTokens, peakMB, medianMB, medianResidentMB, samples,
-                MemoryMonitor.footprintMB(),
-                BenchmarkRunner.harnessStamp
-            ))
-            await finish(0)
-        } catch {
-            await sampler.stop()
-            await log("YARDSTICK_FATAL native_benchmark_failed \(error.localizedDescription)")
-            await finish(6)
+        for run in 1...runs {
+            // Sample memory *during* the benchmark. The published 92 MB deep-context cell was a
+            // single footprint read taken after `benchmark()` returned and released the engine,
+            // which is not the same quantity as the in-run peaks it was tabulated against.
+            let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let sampler = MemorySampler()
+            await sampler.start()
+            do {
+                let callStart = CFAbsoluteTimeGetCurrent()
+                let info = try await litert.nativeBenchmark(
+                    model, prefillTokens: spec.prefill, decodeTokens: spec.decode,
+                    maxNumTokens: contextTokens)
+                let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
+                await sampler.stop()
+                let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+                let peakMB = await sampler.peakMB
+                let medianMB = await sampler.medianMB
+                let medianResidentMB = await sampler.medianResidentMB
+                let samples = await sampler.sampleCount
+                await log(String(
+                    format: "YARDSTICK_NATIVE_OK run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d teardown_footprint_mb=%.0f thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
+                    run, runs, run == 1 ? 1 : 0,
+                    info.prefillTokenCount, info.prefillTokensPerSecond,
+                    info.decodeTokenCount, info.decodeTokensPerSecond,
+                    info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds,
+                    contextTokens, peakMB, medianMB, medianResidentMB, samples,
+                    MemoryMonitor.footprintMB(),
+                    thermalInitial, thermalFinal, wallSeconds,
+                    BenchmarkRunner.harnessStamp
+                ))
+            } catch {
+                await sampler.stop()
+                await log("YARDSTICK_FATAL native_benchmark_failed run=\(run) runs=\(runs) \(error.localizedDescription)")
+                await finish(6)
+                return
+            }
         }
+        await finish(0)
         #else
         await log("YARDSTICK_FATAL native_benchmark unavailable (LiteRTLM not linked)")
         await finish(5)
@@ -619,6 +637,8 @@ struct HeadlessRunnerView: View {
     /// (`CoreAIRuntime.nativeBenchmarkStock`, the code the Mac CLI runs too): `trials` timed
     /// trials after one warmup trial, one YARDSTICK_NATIVE_OK line per trial in the LiteRT row's
     /// field names, so scripts/import_native_benchmark.py lifts them as native-benchmark-<P>x<D>.
+    /// The warmup trial has its own line too (trial=0 cold=1: the first generate on this engine);
+    /// the timed trials are cold=0.
     private func runCoreAINativeBenchmark(
         runtime: any LLMRuntime, model: ModelInfo, spec: (prefill: Int, decode: Int),
         trials: Int, contextTokensValue: Int?

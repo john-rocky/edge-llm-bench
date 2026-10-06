@@ -34,6 +34,18 @@ of Apple's llm-benchmark, BenchmarkMain.swift): one line per timed trial after o
 in the same process, so each becomes its own record (spread stays visible), coldRun false. That
 path does sample thermal state, so those rows carry it. A line without `runtime=` is a LiteRT-LM
 row and imports exactly as before.
+
+Cold and warm (lines from the 2026-10-07 build on)
+--------------------------------------------------
+LiteRT-LM lines then carry `run=<i> runs=<N> cold=<0|1>`: `--runs N` calls `benchmark()` N times
+back to back in one process, and run 1 (cold=1) is the first call. `benchmark()` builds a new
+engine on every call, so a warm run (2...N) differs from the cold one only in the process and the
+on-disk caches. They also carry `thermal_initial` / `thermal_final` (ProcessInfo.thermalState read
+before and after the call; no peak is sampled) and `wall_s` (the call's wall-clock seconds), which
+become initialThermalState / finalThermalState / wallSeconds. Core AI lines carry `cold=`, and the
+warmup trial has its own line, trial=0 cold=1 (the first generate on the engine after the load),
+which imports with coldRun true. `cold` sets coldRun; the run/trial index lands in `conditions`.
+Fields an older line lacks are left out of its record, so an older log imports byte-identically.
 """
 
 from __future__ import annotations
@@ -101,7 +113,8 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
     task = f"native-benchmark-{rec['prefill_cfg'] or prefill}x{rec['decode_cfg'] or decode}"
     if f.get("runtime") == "core-ai":
         return core_ai_result(rec, source, device_id, model_id, task, prefill, decode)
-    return {
+    cold = num("cold", int)
+    result = {
         "runtime": "litert-lm",
         "task": task,
         "model": {"id": rec["model"] or model_id},
@@ -117,7 +130,7 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
             "note": "vendor force-prefill entry point; not comparable with task-prompt prefill",
         },
         "metrics": {
-            "coldRun": None,
+            "coldRun": None if cold is None else cold == 1,
             "promptTokenCount": prefill,
             "promptTokensPerSecond": num("prefill_tok_s"),
             "generatedTokenCount": decode,
@@ -133,18 +146,28 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
             "memoryPostTeardownFootprintMB": num("teardown_footprint_mb"),
             "contextTokensConfigured": num("context_tokens", int),
             "harnessStamp": f.get("harness"),
-            # Not measured by the native path — see the module docstring.
+            # Not measured by the native path before the 2026-10-07 build — see the docstring.
             "initialThermalState": None,
             "peakThermalState": None,
             "energyJoules": None,
         },
     }
+    # Only lines from the 2026-10-07 build on carry these; an older line adds nothing.
+    if (run := num("run", int)) is not None:
+        result["conditions"] = {"run": run, "runs": num("runs", int)}
+    if "thermal_initial" in f:
+        result["metrics"]["initialThermalState"] = f.get("thermal_initial")
+        result["metrics"]["finalThermalState"] = f.get("thermal_final")
+    if "wall_s" in f:
+        result["metrics"]["wallSeconds"] = num("wall_s")
+    return result
 
 
 def core_ai_result(rec, source: Path, device_id: str, model_id: str | None, task: str,
                    prefill, decode):
     f, num = rec["fields"], rec["num"]
     cached = num("prepare_cached", int)
+    cold = num("cold", int)
     return {
         "runtime": "core-ai",
         "task": task,
@@ -169,8 +192,9 @@ def core_ai_result(rec, source: Path, device_id: str, model_id: str | None, task
             "sampler": "greedy",
         },
         "metrics": {
-            # Every timed trial follows a warmup trial in the same process.
-            "coldRun": False,
+            # Every timed trial follows a warmup trial in the same process. A line without
+            # cold= is a timed trial (older builds printed no other); trial 0 is the warmup.
+            "coldRun": False if cold is None else cold == 1,
             "promptTokenCount": prefill,
             "promptTokensPerSecond": num("prefill_tok_s"),
             "generatedTokenCount": decode,

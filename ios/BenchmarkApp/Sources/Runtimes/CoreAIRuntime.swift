@@ -722,6 +722,45 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         return (promptTime, count, genTime, promptTps, genTps)
     }
 
+    /// One `benchmarkTrial` with memory and thermal sampled across it the way BenchmarkRunner
+    /// samples a task run (MemorySampler 100 ms, ThermalSampler 1 s); llm-benchmark itself
+    /// samples neither. `seconds` is the whole trial (pause, reset, generate), the span
+    /// llm-benchmark times its warmup over.
+    private static func sampledTrial(
+        index: Int,
+        engine: any InferenceEngine,
+        prompt: [Int32],
+        sampling: SamplingConfiguration,
+        generationTokens: Int
+    ) async throws -> (trial: CoreAINativeBenchmark.Trial, seconds: Double) {
+        let memory = MemorySampler()
+        let thermal = ThermalSampler()
+        await thermal.start()
+        await memory.start()
+        let start = SuspendingClock.now
+        let r = try await benchmarkTrial(
+            engine: engine, prompt: prompt, sampling: sampling, generationTokens: generationTokens)
+        let trialSeconds = seconds(SuspendingClock.now - start)
+        await memory.stop()
+        await thermal.stop()
+        let peakMB = await memory.peakMB
+        let medianMB = await memory.medianMB
+        let medianResidentMB = await memory.medianResidentMB
+        let samples = await memory.sampleCount
+        let thermalInitial = await thermal.initialState
+        let thermalPeak = await thermal.peakState
+        let thermalFinal = await thermal.finalState
+        let trial = CoreAINativeBenchmark.Trial(
+            index: index, promptTokens: prompt.count, promptSeconds: r.promptTime,
+            promptTokensPerSecond: r.promptTps, tokens: r.count, decodeSeconds: r.genTime,
+            decodeTokensPerSecond: r.genTps, peakMB: peakMB, medianMB: medianMB,
+            medianResidentMB: medianResidentMB, samples: samples,
+            thermalInitial: ThermalMonitor.describe(thermalInitial),
+            thermalPeak: ThermalMonitor.describe(thermalPeak),
+            thermalFinal: ThermalMonitor.describe(thermalFinal))
+        return (trial, trialSeconds)
+    }
+
     /// BenchmarkMain.swift `randomPrompt` (209–223): SplitMix64 token ids below `vocabSize`.
     private static func randomPrompt(vocabSize: Int, count: Int, seed: UInt64) -> [Int32] {
         var state = seed &+ 0x9E37_79B9_7F4A_7C15
@@ -752,7 +791,9 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     /// path. The load is `loadStock`, unchanged (llm-runner's sequence and its console lines);
     /// the rest copies BenchmarkMain.swift at d30b086, whose line numbers are cited: a seeded
     /// random prompt of `prefill` token ids, greedy, one whole warmup trial, then `trials` timed
-    /// trials of `decode` tokens with no stop check. `onTrial` gets each timed trial as it ends.
+    /// trials of `decode` tokens with no stop check. `onTrial` gets each trial as it ends: the
+    /// warmup first, as trial 0 (cold: the first generate on this engine after the load), then
+    /// the timed trials 1...`trials` (warm). Only the timed ones enter the result's mean.
     public func nativeBenchmarkStock(
         _ model: ModelInfo,
         prefill: Int,
@@ -787,52 +828,30 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         print("YARDSTICK_COREAI_NATIVE_PROMPT seed=\(seed) vocab=\(vocabSize) tokens=\(prompt.count) head=\(head) sum=\(sum)")
         fflush(stdout)
 
-        // 120–126: the warmup is one whole trial, timed and not reported as a trial.
-        let warmupStart = SuspendingClock.now
-        let warm = try await Self.benchmarkTrial(
-            engine: engine, prompt: prompt, sampling: sampling, generationTokens: decode)
-        let warmupSeconds = Self.seconds(SuspendingClock.now - warmupStart)
+        // 120–126: the warmup is one whole trial, timed and not reported as a trial (it stays out
+        // of the mean). It is also the cold trial, the first generate on this engine after the
+        // load, so it is sampled like a timed trial and printed as trial 0.
+        let (warmup, warmupSeconds) = try await Self.sampledTrial(
+            index: 0, engine: engine, prompt: prompt, sampling: sampling, generationTokens: decode)
         print(String(
             format: "YARDSTICK_COREAI_NATIVE_WARMUP seconds=%.3f tokens=%d prefill_tok_s=%.3f decode_tok_s=%.3f",
-            warmupSeconds, warm.count, warm.promptTps, warm.genTps))
+            warmupSeconds, warmup.tokens, warmup.promptTokensPerSecond, warmup.decodeTokensPerSecond))
         fflush(stdout)
 
         let setup = CoreAINativeBenchmark.Setup(
             modelId: model.id, prefill: prefill, decode: decode, trials: trials, seed: seed,
             contextTokens: contextTokens, prepare: prepare, warmupTrialSeconds: warmupSeconds)
+        onTrial(setup, warmup)
 
-        // 132–139: the timed trials. Memory and thermal are sampled across each one the way
-        // BenchmarkRunner samples a task run (MemorySampler 100 ms, ThermalSampler 1 s);
-        // llm-benchmark itself samples neither.
+        // 132–139: the timed trials, each sampled across (`sampledTrial`).
         var results: [CoreAINativeBenchmark.Trial] = []
         for i in 1...trials {
-            let memory = MemorySampler()
-            let thermal = ThermalSampler()
-            await thermal.start()
-            await memory.start()
-            let r = try await Self.benchmarkTrial(
-                engine: engine, prompt: prompt, sampling: sampling, generationTokens: decode)
-            await memory.stop()
-            await thermal.stop()
-            let peakMB = await memory.peakMB
-            let medianMB = await memory.medianMB
-            let medianResidentMB = await memory.medianResidentMB
-            let samples = await memory.sampleCount
-            let thermalInitial = await thermal.initialState
-            let thermalPeak = await thermal.peakState
-            let thermalFinal = await thermal.finalState
-            let trial = CoreAINativeBenchmark.Trial(
-                index: i, promptTokens: prompt.count, promptSeconds: r.promptTime,
-                promptTokensPerSecond: r.promptTps, tokens: r.count, decodeSeconds: r.genTime,
-                decodeTokensPerSecond: r.genTps, peakMB: peakMB, medianMB: medianMB,
-                medianResidentMB: medianResidentMB, samples: samples,
-                thermalInitial: ThermalMonitor.describe(thermalInitial),
-                thermalPeak: ThermalMonitor.describe(thermalPeak),
-                thermalFinal: ThermalMonitor.describe(thermalFinal))
+            let (trial, _) = try await Self.sampledTrial(
+                index: i, engine: engine, prompt: prompt, sampling: sampling, generationTokens: decode)
             results.append(trial)
             onTrial(setup, trial)
         }
-        return CoreAINativeBenchmark.Result(setup: setup, trials: results)
+        return CoreAINativeBenchmark.Result(setup: setup, warmup: warmup, trials: results)
         #else
         throw LLMRuntimeError.unsupported("Core AI runtime not present in this build (requires the coreai-models Swift package, iOS/macOS 27).")
         #endif
@@ -963,9 +982,11 @@ public enum CoreAINativeBenchmark {
         public let warmupTrialSeconds: Double
     }
 
-    /// One timed trial: llm-benchmark's two rates with the times they come from, and the
-    /// memory and thermal samples taken across it.
+    /// One trial: llm-benchmark's two rates with the times they come from, and the memory and
+    /// thermal samples taken across it. Index 0 is the warmup trial, 1...N the timed ones.
     public struct Trial: Sendable {
+        /// 0 = the warmup trial (the first generate on this engine after the load, `cold`),
+        /// 1...N = the timed trials that follow it in the same process.
         public let index: Int
         public let promptTokens: Int
         public let promptSeconds: Double
@@ -980,20 +1001,24 @@ public enum CoreAINativeBenchmark {
         public let thermalInitial: String
         public let thermalPeak: String
         public let thermalFinal: String
+        public var cold: Bool { index == 0 }
     }
 
     public struct Result: Sendable {
         public let setup: Setup
+        /// The warmup trial (index 0). Not one of `trials`, so not in the summary's mean.
+        public let warmup: Trial
         public let trials: [Trial]
     }
 
-    /// One YARDSTICK_NATIVE_OK line per timed trial, in the LiteRT-LM row's field names
-    /// (scripts/import_native_benchmark.py lifts both kinds), plus the fields only this arm has.
-    /// init_s is the Prepare time (`createEngine`), ttft_ms the prompt time llm-benchmark divides by.
+    /// One YARDSTICK_NATIVE_OK line per trial (the warmup's as trial=0 cold=1), in the LiteRT-LM
+    /// row's field names (scripts/import_native_benchmark.py lifts both kinds), plus the fields
+    /// only this arm has. init_s is the Prepare time (`createEngine`), ttft_ms the prompt time
+    /// llm-benchmark divides by.
     public static func line(_ s: Setup, _ t: Trial, harness: String) -> String {
         String(
-            format: "YARDSTICK_NATIVE_OK runtime=core-ai trial=%d trials=%d prefill_tokens=%d prefill_tok_s=%.3f decode_tokens=%d decode_tok_s=%.3f ttft_ms=%.3f decode_s=%.6f init_s=%.3f prepare_cached=%d prepare_peak_mb=%.0f engine_warmup_s=%.3f warmup_trial_s=%.3f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d thermal_initial=%@ thermal_peak=%@ thermal_final=%@ seed=%llu harness=%@",
-            t.index, s.trials, t.promptTokens, t.promptTokensPerSecond, t.tokens, t.decodeTokensPerSecond,
+            format: "YARDSTICK_NATIVE_OK runtime=core-ai trial=%d cold=%d trials=%d prefill_tokens=%d prefill_tok_s=%.3f decode_tokens=%d decode_tok_s=%.3f ttft_ms=%.3f decode_s=%.6f init_s=%.3f prepare_cached=%d prepare_peak_mb=%.0f engine_warmup_s=%.3f warmup_trial_s=%.3f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d thermal_initial=%@ thermal_peak=%@ thermal_final=%@ seed=%llu harness=%@",
+            t.index, t.cold ? 1 : 0, s.trials, t.promptTokens, t.promptTokensPerSecond, t.tokens, t.decodeTokensPerSecond,
             t.promptSeconds * 1000, t.decodeSeconds, s.prepare.seconds, s.prepare.cached ? 1 : 0,
             s.prepare.footprintPeakMB, s.prepare.engineWarmupSeconds, s.warmupTrialSeconds,
             s.contextTokens, t.peakMB, t.medianMB, t.medianResidentMB, t.samples,

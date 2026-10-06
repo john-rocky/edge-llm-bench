@@ -194,7 +194,7 @@ struct YardstickApp {
         // card-comparable, and the only one no other runtime can produce.
         if let native = nativeBenchmark {
             try await runNativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
-                                         spec: native, contextTokens: contextTokens,
+                                         spec: native, runs: runs, contextTokens: contextTokens,
                                          outputPath: outputPath)
             return
         }
@@ -379,9 +379,13 @@ struct YardstickApp {
     /// 1024x256, not the 2048 the Gemma-4 protocol pins. Running without it produces a number
     /// that looks on-protocol and is not, so the omission is warned about rather than defaulted
     /// silently.
+    ///
+    /// `runs` calls run back to back in this process, one YARDSTICK_NATIVE_OK line each (stdout,
+    /// and appended to `--output` as each ends). `benchmark()` builds and releases its own engine
+    /// on every call: run 1 is cold, runs 2...N are warm only in the process and the disk caches.
     static func runNativeBenchmark(
         runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
-        spec: (prefill: Int, decode: Int), contextTokens: Int?, outputPath: String?
+        spec: (prefill: Int, decode: Int), runs: Int, contextTokens: Int?, outputPath: String?
     ) async throws {
         #if canImport(LiteRTLM)
         guard let litert = runtime as? MediaPipeRuntime else {
@@ -394,30 +398,42 @@ struct YardstickApp {
                 "yardstick: WARNING native benchmark context_tokens=\(ctx) (litert stock default; the agreed Gemma-4 protocol is 2048 — pass --context-tokens)\n".utf8))
         }
         FileHandle.standardError.write(Data(
-            "yardstick: native benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(ctx)\n".utf8))
+            "yardstick: native benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(ctx) runs=\(runs)\n".utf8))
+        let warmRuns = runs > 1 ? "runs 2...\(runs)" : "none (--runs 1)"
+        FileHandle.standardError.write(Data(
+            "yardstick: native benchmark cold=run 1 (the first benchmark() call in this process) warm=\(warmRuns) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)\n".utf8))
 
-        let info = try await litert.nativeBenchmark(
-            model, prefillTokens: spec.prefill, decodeTokens: spec.decode, maxNumTokens: ctx)
+        for run in 1...runs {
+            let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let callStart = CFAbsoluteTimeGetCurrent()
+            let info = try await litert.nativeBenchmark(
+                model, prefillTokens: spec.prefill, decodeTokens: spec.decode, maxNumTokens: ctx)
+            let wallSeconds = CFAbsoluteTimeGetCurrent() - callStart
+            let thermalFinal = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
 
-        // Emitted in the same shape the iPhone driver's console lines carry, so
-        // scripts/import_native_benchmark.py can lift Mac and iPhone rows identically.
-        let line = String(
-            format: "YARDSTICK_NATIVE_OK prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d harness=%@",
-            info.prefillTokenCount, info.prefillTokensPerSecond,
-            info.decodeTokenCount, info.decodeTokensPerSecond,
-            info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds, ctx,
-            BenchmarkRunner.harnessStamp)
-        print(line)
-        if let outputPath {
-            let handle: FileHandle
-            if !FileManager.default.fileExists(atPath: outputPath) {
-                FileManager.default.createFile(atPath: outputPath, contents: nil)
+            // Emitted in the same shape the iPhone driver's console lines carry, so
+            // scripts/import_native_benchmark.py can lift Mac and iPhone rows identically.
+            let line = String(
+                format: "YARDSTICK_NATIVE_OK run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
+                run, runs, run == 1 ? 1 : 0,
+                info.prefillTokenCount, info.prefillTokensPerSecond,
+                info.decodeTokenCount, info.decodeTokensPerSecond,
+                info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds, ctx,
+                thermalInitial, thermalFinal, wallSeconds,
+                BenchmarkRunner.harnessStamp)
+            print(line)
+            fflush(stdout)
+            if let outputPath {
+                let handle: FileHandle
+                if !FileManager.default.fileExists(atPath: outputPath) {
+                    FileManager.default.createFile(atPath: outputPath, contents: nil)
+                }
+                handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
+                try handle.seekToEnd()
+                try handle.write(contentsOf: Data((line + "\n").utf8))
+                try handle.close()
+                FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
             }
-            handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
-            try handle.seekToEnd()
-            try handle.write(contentsOf: Data((line + "\n").utf8))
-            try handle.close()
-            FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
         }
         #else
         throw CLIError.invalidArgument(
@@ -428,8 +444,9 @@ struct YardstickApp {
     /// Apple's llm-benchmark measurement (BenchmarkMain.swift, apple/coreai-models d30b086) on the
     /// Core AI stock path — `CoreAIRuntime.nativeBenchmarkStock`, the code the iOS app runs too.
     /// `trials` timed trials after one warmup trial; one YARDSTICK_NATIVE_OK line per trial on
-    /// stdout as it ends, and with `--output` the BEGIN line, those lines and the summary appended
-    /// there, so scripts/import_native_benchmark.py reads either.
+    /// stdout as it ends (the warmup's first, as trial 0, cold=1), and with `--output` the BEGIN
+    /// line, those lines and the summary appended there, so scripts/import_native_benchmark.py
+    /// reads either.
     static func runCoreAINativeBenchmark(
         runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
         spec: (prefill: Int, decode: Int), trials: Int, contextTokens: Int?, outputPath: String?
@@ -456,7 +473,7 @@ struct YardstickApp {
         print(summary)
         if let outputPath {
             let lines = [begin]
-                + result.trials.map { CoreAINativeBenchmark.line(result.setup, $0, harness: BenchmarkRunner.harnessStamp) }
+                + ([result.warmup] + result.trials).map { CoreAINativeBenchmark.line(result.setup, $0, harness: BenchmarkRunner.harnessStamp) }
                 + [summary]
             if !FileManager.default.fileExists(atPath: outputPath) {
                 FileManager.default.createFile(atPath: outputPath, contents: nil)
