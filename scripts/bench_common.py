@@ -233,10 +233,14 @@ def corrected_quant(runtime: str, model_id: str, quant: str) -> tuple[str, bool]
     """Apply the audited in-place quantization-label correction (quant-label-rule):
     Gemma-4 .litertlm bundles are the wNa8o8 mobile schema, not uniform int4 —
     early rows recorded "INT4 (QAT)" before the 2026-07-17 audit corrected the
-    label for the SAME artifact. Scope is deliberately narrow (litert-lm +
-    gemma-4 only); other labels render as recorded. Returns (label, corrected?).
+    label for the SAME artifact. Scope is deliberately narrow (the litert-lm
+    arms — litert-lm, litert-lm-cpu, litert-lm-gpu, which run the same
+    .litertlm bundle — + gemma-4 only); other labels render as recorded.
+    Until 2026-10-06 only the bare `litert-lm` arm was corrected, so the Mac
+    litert-lm-cpu Gemma 4 long-context rows rendered "INT4 (QAT)" beside the
+    GPU arm's wNa8o8. Returns (label, corrected?).
     """
-    if (runtime == "litert-lm" and "gemma-4" in model_id.lower()
+    if (runtime.startswith("litert-lm") and "gemma-4" in model_id.lower()
             and quant == "INT4 (QAT)"):
         return "wNa8o8 (int2/int4/int8 + int8 activations, QAT)", True
     return quant, False
