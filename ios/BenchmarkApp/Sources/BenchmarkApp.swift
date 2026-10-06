@@ -214,6 +214,10 @@ enum HeadlessAutoRun {
         /// task/runner path and calls LiteRT-LM's own `benchmark` entry point, the
         /// analogue of Cactus's `cactus_benchmark_tokens`. litert-lm only.
         var nativeBenchmark: (prefill: Int, decode: Int)?
+        /// `--coreai-native-benchmark <prefillTokens>x<decodeTokens>`: Apple's `llm-benchmark`
+        /// measurement on the Core AI stock path (`CoreAIRuntime.nativeBenchmarkStock`) instead
+        /// of a task; `--runs` = timed trials after one warmup trial. core-ai stock ids only.
+        var coreAINativeBenchmark: (prefill: Int, decode: Int)?
     }
 
     static func specFromLaunchArgs(_ args: [String] = CommandLine.arguments) -> Spec? {
@@ -267,9 +271,26 @@ enum HeadlessAutoRun {
             guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]) else { return nil }
             return (p, d)
         }
+        // A malformed value fails here rather than falling through to the task path, which
+        // would measure something else under the cell's name.
+        var coreAINative: (prefill: Int, decode: Int)?
+        if let raw = value("--coreai-native-benchmark") {
+            let parts = raw.lowercased().split(separator: "x")
+            guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]), p > 0, d > 0 else {
+                fatal("bad --coreai-native-benchmark '\(raw)' — expected <prefill>x<decode>, e.g. 1024x256")
+            }
+            guard runtime == .coreAI else {
+                fatal("--coreai-native-benchmark requires --runtime \(RuntimeKind.coreAI.rawValue) (got '\(runtimeRaw)')")
+            }
+            guard value("--litert-native-benchmark") == nil else {
+                fatal("--coreai-native-benchmark and --litert-native-benchmark are exclusive")
+            }
+            coreAINative = (p, d)
+        }
         return Spec(runtime: runtime, modelId: modelId, taskId: taskId, runs: runs,
                     sustainSeconds: sustainSeconds, maxTokens: maxTokens,
-                    contextTokens: contextTokens, nativeBenchmark: native)
+                    contextTokens: contextTokens, nativeBenchmark: native,
+                    coreAINativeBenchmark: coreAINative)
     }
 }
 
@@ -325,6 +346,11 @@ struct HeadlessRunnerView: View {
         guard let model = runtime.supportedModels.first(where: { $0.id == spec.modelId }) else {
             await log("YARDSTICK_FATAL model=\(spec.modelId) not_in_catalog runtime=\(spec.runtime.rawValue)")
             await finish(3)
+            return
+        }
+        if let native = spec.coreAINativeBenchmark {
+            await runCoreAINativeBenchmark(runtime: runtime, model: model, spec: native,
+                                           trials: spec.runs, contextTokensValue: spec.contextTokens)
             return
         }
         if let native = spec.nativeBenchmark {
@@ -587,5 +613,41 @@ struct HeadlessRunnerView: View {
         await log("YARDSTICK_FATAL native_benchmark unavailable (LiteRTLM not linked)")
         await finish(5)
         #endif
+    }
+
+    /// Apple's `llm-benchmark` measurement on the Core AI stock path
+    /// (`CoreAIRuntime.nativeBenchmarkStock`, the code the Mac CLI runs too): `trials` timed
+    /// trials after one warmup trial, one YARDSTICK_NATIVE_OK line per trial in the LiteRT row's
+    /// field names, so scripts/import_native_benchmark.py lifts them as native-benchmark-<P>x<D>.
+    private func runCoreAINativeBenchmark(
+        runtime: any LLMRuntime, model: ModelInfo, spec: (prefill: Int, decode: Int),
+        trials: Int, contextTokensValue: Int?
+    ) async {
+        guard let coreAI = runtime as? CoreAIRuntime else {
+            await log("YARDSTICK_FATAL native_benchmark --coreai-native-benchmark requires runtime=core-ai")
+            await finish(5)
+            return
+        }
+        await log("YARDSTICK_BEGIN native_benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) runtime=core-ai trials=\(trials)")
+        do {
+            let result = try await coreAI.nativeBenchmarkStock(
+                model, prefill: spec.prefill, decode: spec.decode, trials: trials
+            ) { setup, trial in
+                // Console only, like the endurance turn lines; the screen gets the summary.
+                print(CoreAINativeBenchmark.line(setup, trial, harness: BenchmarkRunner.harnessStamp))
+                fflush(stdout)
+            }
+            // The bundle fixes the context. A forced budget it could not apply is said out loud
+            // (the lines carry the bundle's value), as BenchmarkRunner does for a task run.
+            if let forced = contextTokensValue, forced != result.setup.contextTokens {
+                await log("YARDSTICK_WARN context_tokens_forced=\(forced) runtime_context_tokens=\(result.setup.contextTokens) recorded=\(result.setup.contextTokens) (fixed by the loaded artifact; the forced value does not apply)")
+            }
+            await log(CoreAINativeBenchmark.summaryLine(result))
+            await log("YARDSTICK_ALL_DONE")
+            await finish(0)
+        } catch {
+            await log("YARDSTICK_FATAL native_benchmark_failed \(error.localizedDescription)")
+            await finish(6)
+        }
     }
 }

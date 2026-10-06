@@ -91,6 +91,7 @@ struct YardstickApp {
         // here. A Mac number captured without this flag is not comparable with an iPhone one.
         var contextTokens: Int? = nil
         var nativeBenchmark: (prefill: Int, decode: Int)? = nil
+        var coreAINativeBenchmark: (prefill: Int, decode: Int)? = nil
         // LiteRT-LM compute backend (arm identity). Default gpu = every Apple row so far;
         // `cpu` runs the XNNPACK path and stamps `runtime: litert-lm-cpu` (2026-09-18, the
         // dashboard's long-context column: does decode track the allocated KV on each arm).
@@ -127,6 +128,18 @@ struct YardstickApp {
                     exit(2)
                 }
                 nativeBenchmark = (p, d)
+            case "--coreai-native-benchmark":
+                // `<prefill>x<decode>`, e.g. 1024x256 — Apple's llm-benchmark measurement
+                // (BenchmarkMain.swift) on the Core AI stock path; `--runs` = timed trials.
+                let raw = argv.value(after: &i)
+                let parts = raw.lowercased().split(separator: "x")
+                guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]),
+                      p > 0, d > 0 else {
+                    FileHandle.standardError.write(Data(
+                        "bad --coreai-native-benchmark '\(raw)' — expected <prefill>x<decode>, e.g. 1024x256\n".utf8))
+                    exit(2)
+                }
+                coreAINativeBenchmark = (p, d)
             case "--litert-backend":
                 let raw = argv.value(after: &i).lowercased()
                 guard let b = MediaPipeRuntime.ComputeBackend(rawValue: raw) else {
@@ -162,6 +175,11 @@ struct YardstickApp {
         }
         #endif
 
+        if coreAINativeBenchmark != nil, nativeBenchmark != nil {
+            FileHandle.standardError.write(Data(
+                "--coreai-native-benchmark and --litert-native-benchmark are exclusive\n".utf8))
+            exit(2)
+        }
         if litertBackend != .gpu, !["litert-lm", "mediapipe"].contains(runtimeID) {
             FileHandle.standardError.write(Data(
                 "--litert-backend applies to --runtime litert-lm only (got '\(runtimeID)')\n".utf8))
@@ -178,6 +196,12 @@ struct YardstickApp {
             try await runNativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
                                          spec: native, contextTokens: contextTokens,
                                          outputPath: outputPath)
+            return
+        }
+        if let native = coreAINativeBenchmark {
+            try await runCoreAINativeBenchmark(runtime: runtime, runtimeID: runtimeID, model: model,
+                                               spec: native, trials: runs, contextTokens: contextTokens,
+                                               outputPath: outputPath)
             return
         }
 
@@ -398,6 +422,54 @@ struct YardstickApp {
         #else
         throw CLIError.invalidArgument(
             "--litert-native-benchmark unavailable: LiteRTLM is not linked into this build")
+        #endif
+    }
+
+    /// Apple's llm-benchmark measurement (BenchmarkMain.swift, apple/coreai-models d30b086) on the
+    /// Core AI stock path — `CoreAIRuntime.nativeBenchmarkStock`, the code the iOS app runs too.
+    /// `trials` timed trials after one warmup trial; one YARDSTICK_NATIVE_OK line per trial on
+    /// stdout as it ends, and with `--output` the BEGIN line, those lines and the summary appended
+    /// there, so scripts/import_native_benchmark.py reads either.
+    static func runCoreAINativeBenchmark(
+        runtime: any LLMRuntime, runtimeID: String, model: ModelInfo,
+        spec: (prefill: Int, decode: Int), trials: Int, contextTokens: Int?, outputPath: String?
+    ) async throws {
+        #if !YARDSTICK_SPM
+        guard let coreAI = runtime as? CoreAIRuntime else {
+            throw CLIError.invalidArgument(
+                "--coreai-native-benchmark requires --runtime core-ai (got '\(runtimeID)') — it measures the Core AI stock path")
+        }
+        let begin = "YARDSTICK_BEGIN native_benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) runtime=core-ai trials=\(trials)"
+        print(begin)
+        fflush(stdout)
+        let result = try await coreAI.nativeBenchmarkStock(
+            model, prefill: spec.prefill, decode: spec.decode, trials: trials
+        ) { setup, trial in
+            print(CoreAINativeBenchmark.line(setup, trial, harness: BenchmarkRunner.harnessStamp))
+            fflush(stdout)
+        }
+        // The bundle fixes the context; the lines carry its value, never a forced one.
+        if let forced = contextTokens, forced != result.setup.contextTokens {
+            print("YARDSTICK_WARN context_tokens_forced=\(forced) runtime_context_tokens=\(result.setup.contextTokens) recorded=\(result.setup.contextTokens) (fixed by the loaded artifact; the forced value does not apply)")
+        }
+        let summary = CoreAINativeBenchmark.summaryLine(result)
+        print(summary)
+        if let outputPath {
+            let lines = [begin]
+                + result.trials.map { CoreAINativeBenchmark.line(result.setup, $0, harness: BenchmarkRunner.harnessStamp) }
+                + [summary]
+            if !FileManager.default.fileExists(atPath: outputPath) {
+                FileManager.default.createFile(atPath: outputPath, contents: nil)
+            }
+            let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: outputPath))
+            try handle.seekToEnd()
+            try handle.write(contentsOf: Data((lines.joined(separator: "\n") + "\n").utf8))
+            try handle.close()
+            FileHandle.standardError.write(Data("yardstick: appended to \(outputPath)\n".utf8))
+        }
+        #else
+        throw CLIError.invalidArgument(
+            "--coreai-native-benchmark unavailable: the SwiftPM build has no core-ai runtime")
         #endif
     }
 

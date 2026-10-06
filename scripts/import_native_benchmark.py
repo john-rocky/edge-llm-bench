@@ -26,6 +26,14 @@ Pass `--all-thermal` to inspect them anyway, and read the exclusion as a TODO fo
 The task id is `native-benchmark-<prefill>x<decode>`, never `long-context-*`: a forced-prefill
 vendor entry point and a task-prompt run are different measurements and must not pool into one
 median. That separation is the whole point of the protocol's two-row structure.
+
+Core AI rows
+------------
+A line that says `runtime=core-ai` comes from `--coreai-native-benchmark` (CoreAIRuntime's port
+of Apple's llm-benchmark, BenchmarkMain.swift): one line per timed trial after one warmup trial
+in the same process, so each becomes its own record (spread stays visible), coldRun false. That
+path does sample thermal state, so those rows carry it. A line without `runtime=` is a LiteRT-LM
+row and imports exactly as before.
 """
 
 from __future__ import annotations
@@ -91,6 +99,8 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
     # YARDSTICK_BEGIN — so the configured sizes fall back to the measured ones (they are
     # equal whenever the run completed) rather than yielding `native-benchmark-NonexNone`.
     task = f"native-benchmark-{rec['prefill_cfg'] or prefill}x{rec['decode_cfg'] or decode}"
+    if f.get("runtime") == "core-ai":
+        return core_ai_result(rec, source, device_id, model_id, task, prefill, decode)
     return {
         "runtime": "litert-lm",
         "task": task,
@@ -126,6 +136,61 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
             # Not measured by the native path — see the module docstring.
             "initialThermalState": None,
             "peakThermalState": None,
+            "energyJoules": None,
+        },
+    }
+
+
+def core_ai_result(rec, source: Path, device_id: str, model_id: str | None, task: str,
+                   prefill, decode):
+    f, num = rec["fields"], rec["num"]
+    cached = num("prepare_cached", int)
+    return {
+        "runtime": "core-ai",
+        "task": task,
+        "model": {"id": rec["model"] or model_id},
+        "device": {"modelIdentifier": device_id},
+        "outputSample": "",
+        "provenance": {
+            "importedBy": "scripts/import_native_benchmark.py",
+            "sourceFile": str(source),
+            "entryPoint": "CoreAIRuntime.nativeBenchmarkStock",
+            "note": ("port of apple/coreai-models llm-benchmark (BenchmarkMain.swift): a synthetic "
+                     "prompt of prefill_tokens SplitMix64 token ids, greedy, no stop token; prompt "
+                     "tok/s = prefill_tokens / time to the first token, decode tok/s = (tokens - 1) "
+                     "/ time from the first token to the end of the stream; not comparable with "
+                     "task-prompt prefill"),
+        },
+        "conditions": {
+            "trial": num("trial", int),
+            "trials": num("trials", int),
+            "warmupTrials": 1,
+            "seed": num("seed", int),
+            "sampler": "greedy",
+        },
+        "metrics": {
+            # Every timed trial follows a warmup trial in the same process.
+            "coldRun": False,
+            "promptTokenCount": prefill,
+            "promptTokensPerSecond": num("prefill_tok_s"),
+            "generatedTokenCount": decode,
+            "decodeTokensPerSecond": num("decode_tok_s"),
+            "decodeSeconds": num("decode_s"),
+            "firstTokenLatencyMS": num("ttft_ms"),
+            "loadTimeSeconds": num("init_s"),
+            "prepareCacheHit": None if cached is None else cached == 1,
+            "prepareFootprintPeakMB": num("prepare_peak_mb"),
+            "engineWarmupSeconds": num("engine_warmup_s"),
+            "warmupTrialSeconds": num("warmup_trial_s"),
+            "memoryPeakDuringDecodeMB": num("peak_mb"),
+            "memoryMedianMB": num("median_mb"),
+            "memoryMedianResidentMB": num("median_resident_mb"),
+            "memorySampleCount": num("samples", int),
+            "contextTokensConfigured": num("context_tokens", int),
+            "harnessStamp": f.get("harness"),
+            "initialThermalState": f.get("thermal_initial"),
+            "peakThermalState": f.get("thermal_peak"),
+            "finalThermalState": f.get("thermal_final"),
             "energyJoules": None,
         },
     }

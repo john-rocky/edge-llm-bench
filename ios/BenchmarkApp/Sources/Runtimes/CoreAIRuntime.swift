@@ -73,6 +73,10 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     nonisolated(unsafe) private var metadataStopIds: Set<Int32> = []
     nonisolated(unsafe) private var bundleMaxContext: Int?
     nonisolated(unsafe) private var generateCalls = 0
+    // Stock path, for `nativeBenchmarkStock`: the vocabulary its synthetic prompt draws from and
+    // what the load measured (the YARDSTICK_COREAI_PREPARE line's values).
+    nonisolated(unsafe) private var bundleVocabSize: Int?
+    nonisolated(unsafe) private var stockPrepare: CoreAINativeBenchmark.Prepare?
     #endif
 
     public init() {}
@@ -404,6 +408,8 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         metadataStopIds = []
         bundleMaxContext = nil
         generateCalls = 0
+        bundleVocabSize = nil
+        stockPrepare = nil
         #endif
         _loadedModelId = nil
     }
@@ -457,15 +463,31 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
             step = "EngineFactory.createEngine(bundle:)"
             let sampler = MemorySampler()
             await sampler.start(intervalMS: 20)
+            // Progress while the call runs: a first-ever load specializes for a minute or more,
+            // and a phone killed the app inside it (E4B, 2026-10-06) with nothing on the console
+            // after ASSETCHECK. A line at t=0 and every 5 s until the call returns keeps the
+            // memory and thermal state before such a kill on record; it stays outside the timed span.
+            let tickStart = CFAbsoluteTimeGetCurrent()
+            await Self.prepareTick(0, sampler: sampler)
+            let ticker = Task {
+                while true {
+                    do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
+                    await Self.prepareTick(CFAbsoluteTimeGetCurrent() - tickStart, sampler: sampler)
+                }
+            }
             let prepareStart = CFAbsoluteTimeGetCurrent()
             let engine: any InferenceEngine
             do {
                 engine = try await EngineFactory.createEngine(bundle: bundle, options: options)
             } catch {
+                ticker.cancel()
+                await ticker.value
                 await sampler.stop()
                 throw error
             }
             let prepareSeconds = CFAbsoluteTimeGetCurrent() - prepareStart
+            ticker.cancel()
+            await ticker.value
             await sampler.stop()
             let prepareFootprintPeakMB = await sampler.peakMB
             progress(0.7)
@@ -508,6 +530,10 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
             self.metadataStopIds = metadata
             self.eosTokenIds = apple.union(metadata)
             self.bundleMaxContext = bundle.maxContextLength
+            self.bundleVocabSize = bundle.vocabSize
+            self.stockPrepare = CoreAINativeBenchmark.Prepare(
+                cached: cached, seconds: prepareSeconds, footprintPeakMB: prepareFootprintPeakMB,
+                engineWarmupSeconds: warmupSeconds)
             self.generateCalls = 0
             self.stockLoaded = true
             self._loadedModelId = model.id
@@ -632,6 +658,18 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         continuation.finish()
     }
 
+    /// One YARDSTICK_COREAI_PREPARE_TICK line (loadStock, while `createEngine(bundle:)` runs):
+    /// seconds since the first tick, phys_footprint and resident size now, the 20 ms sampler's
+    /// peak so far, and the thermal state.
+    private static func prepareTick(_ t: Double, sampler: MemorySampler) async {
+        let peakMB = await sampler.peakMB
+        print(String(
+            format: "YARDSTICK_COREAI_PREPARE_TICK t=%.1f footprint_mb=%.0f resident_mb=%.0f peak_mb=%.0f thermal=%@",
+            t, MemoryMonitor.footprintMB(), MemoryMonitor.residentMB(), peakMB,
+            ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)))
+        fflush(stdout)
+    }
+
     /// `language.eos_token_ids` from metadata.json; empty when absent.
     private static func metadataEosTokenIds(_ raw: Data) -> Set<Int32> {
         guard let root = try? JSONSerialization.jsonObject(with: raw) as? [String: Any],
@@ -644,7 +682,161 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     private static func idList(_ ids: Set<Int32>) -> String {
         "[" + ids.sorted().map(String.init).joined(separator: ",") + "]"
     }
+
+    /// BenchmarkMain.swift `runTrial` (171–205), line for line.
+    private static func benchmarkTrial(
+        engine: any InferenceEngine,
+        prompt: [Int32],
+        sampling: SamplingConfiguration,
+        generationTokens: Int
+    ) async throws -> (promptTime: Double, count: Int, genTime: Double, promptTps: Double, genTps: Double) {
+        // 176–178: a brief pause for the engine to finish prior async work, then a full reset.
+        try? await Task.sleep(for: .milliseconds(50))
+        try await engine.reset()
+
+        // 180–184
+        let options = InferenceOptions(maxTokens: generationTokens, includeLogits: false)
+        let start = SuspendingClock.now
+        let stream = try await engine.generate(
+            with: prompt, samplingConfiguration: sampling, inferenceOptions: options
+        )
+
+        // 186–197: every token the stream yields counts; nothing looks for a stop token.
+        var promptTime: Double = 0
+        var genStart = SuspendingClock.now
+        var count = 0
+        for try await _ in stream {
+            if promptTime == 0 {
+                let now = SuspendingClock.now
+                promptTime = seconds(now - start)
+                genStart = now
+            }
+            count += 1
+        }
+
+        // 199–202
+        let genTime = seconds(SuspendingClock.now - genStart)
+        let promptTps = promptTime > 0 ? Double(prompt.count) / promptTime : 0
+        let decodeCount = max(0, count - 1)
+        let genTps = genTime > 0 ? Double(decodeCount) / genTime : 0
+        return (promptTime, count, genTime, promptTps, genTps)
+    }
+
+    /// BenchmarkMain.swift `randomPrompt` (209–223): SplitMix64 token ids below `vocabSize`.
+    private static func randomPrompt(vocabSize: Int, count: Int, seed: UInt64) -> [Int32] {
+        var state = seed &+ 0x9E37_79B9_7F4A_7C15
+        var out = [Int32]()
+        out.reserveCapacity(count)
+        let v = UInt64(vocabSize)
+        for _ in 0..<count {
+            state = state &+ 0x9E37_79B9_7F4A_7C15
+            var z = state
+            z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
+            z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
+            z = z ^ (z >> 31)
+            out.append(Int32(z % v))
+        }
+        return out
+    }
+
+    /// `Duration.inSeconds` (CoreAIShared, package access, so not visible here), same formula.
+    private static func seconds(_ d: Duration) -> Double {
+        let (secs, attoseconds) = d.components
+        return Double(secs) + Double(attoseconds) / 1e18
+    }
     #endif  // canImport(CoreAILanguageModels)
+
+    // MARK: - Native benchmark (stock path)
+
+    /// `--coreai-native-benchmark <P>x<D>`: Apple's `llm-benchmark` measurement on the stock
+    /// path. The load is `loadStock`, unchanged (llm-runner's sequence and its console lines);
+    /// the rest copies BenchmarkMain.swift at d30b086, whose line numbers are cited: a seeded
+    /// random prompt of `prefill` token ids, greedy, one whole warmup trial, then `trials` timed
+    /// trials of `decode` tokens with no stop check. `onTrial` gets each timed trial as it ends.
+    public func nativeBenchmarkStock(
+        _ model: ModelInfo,
+        prefill: Int,
+        decode: Int,
+        trials: Int,
+        onTrial: @Sendable (CoreAINativeBenchmark.Setup, CoreAINativeBenchmark.Trial) -> Void
+    ) async throws -> CoreAINativeBenchmark.Result {
+        #if canImport(CoreAILanguageModels)
+        guard prefill > 0, decode > 0, trials > 0 else {
+            throw LLMRuntimeError.unsupported(
+                "native benchmark needs prefill, decode and trials >= 1 (got \(prefill)x\(decode), \(trials) trials)")
+        }
+        guard Self.bundleSpec(for: model.id)?.folder.hasPrefix(Self.stockFolderPrefix) == true else {
+            throw LLMRuntimeError.unsupported(
+                "--coreai-native-benchmark measures Apple's own export on the stock path only "
+                + "(bundle folder \(Self.stockFolderPrefix)*); \(model.id) is not a stock id")
+        }
+        if _loadedModelId != model.id {
+            try await loadModel(model) { _ in }
+        }
+        guard stockLoaded, let engine, let vocabSize = bundleVocabSize, let prepare = stockPrepare,
+              let contextTokens = bundleMaxContext
+        else { throw LLMRuntimeError.modelNotLoaded }
+
+        // 117–118: the synthetic prompt (llm-benchmark's default seed) and greedy sampling.
+        let seed: UInt64 = 0
+        let prompt = Self.randomPrompt(vocabSize: vocabSize, count: prefill, seed: seed)
+        let sampling = SamplingConfiguration(temperature: 0)
+        // A fingerprint of the prompt, so the ids can be compared with the tool's generator.
+        let head = prompt.prefix(8).map(String.init).joined(separator: ",")
+        let sum = prompt.reduce(Int64(0)) { $0 + Int64($1) }
+        print("YARDSTICK_COREAI_NATIVE_PROMPT seed=\(seed) vocab=\(vocabSize) tokens=\(prompt.count) head=\(head) sum=\(sum)")
+        fflush(stdout)
+
+        // 120–126: the warmup is one whole trial, timed and not reported as a trial.
+        let warmupStart = SuspendingClock.now
+        let warm = try await Self.benchmarkTrial(
+            engine: engine, prompt: prompt, sampling: sampling, generationTokens: decode)
+        let warmupSeconds = Self.seconds(SuspendingClock.now - warmupStart)
+        print(String(
+            format: "YARDSTICK_COREAI_NATIVE_WARMUP seconds=%.3f tokens=%d prefill_tok_s=%.3f decode_tok_s=%.3f",
+            warmupSeconds, warm.count, warm.promptTps, warm.genTps))
+        fflush(stdout)
+
+        let setup = CoreAINativeBenchmark.Setup(
+            modelId: model.id, prefill: prefill, decode: decode, trials: trials, seed: seed,
+            contextTokens: contextTokens, prepare: prepare, warmupTrialSeconds: warmupSeconds)
+
+        // 132–139: the timed trials. Memory and thermal are sampled across each one the way
+        // BenchmarkRunner samples a task run (MemorySampler 100 ms, ThermalSampler 1 s);
+        // llm-benchmark itself samples neither.
+        var results: [CoreAINativeBenchmark.Trial] = []
+        for i in 1...trials {
+            let memory = MemorySampler()
+            let thermal = ThermalSampler()
+            await thermal.start()
+            await memory.start()
+            let r = try await Self.benchmarkTrial(
+                engine: engine, prompt: prompt, sampling: sampling, generationTokens: decode)
+            await memory.stop()
+            await thermal.stop()
+            let peakMB = await memory.peakMB
+            let medianMB = await memory.medianMB
+            let medianResidentMB = await memory.medianResidentMB
+            let samples = await memory.sampleCount
+            let thermalInitial = await thermal.initialState
+            let thermalPeak = await thermal.peakState
+            let thermalFinal = await thermal.finalState
+            let trial = CoreAINativeBenchmark.Trial(
+                index: i, promptTokens: prompt.count, promptSeconds: r.promptTime,
+                promptTokensPerSecond: r.promptTps, tokens: r.count, decodeSeconds: r.genTime,
+                decodeTokensPerSecond: r.genTps, peakMB: peakMB, medianMB: medianMB,
+                medianResidentMB: medianResidentMB, samples: samples,
+                thermalInitial: ThermalMonitor.describe(thermalInitial),
+                thermalPeak: ThermalMonitor.describe(thermalPeak),
+                thermalFinal: ThermalMonitor.describe(thermalFinal))
+            results.append(trial)
+            onTrial(setup, trial)
+        }
+        return CoreAINativeBenchmark.Result(setup: setup, trials: results)
+        #else
+        throw LLMRuntimeError.unsupported("Core AI runtime not present in this build (requires the coreai-models Swift package, iOS/macOS 27).")
+        #endif
+    }
 
     // MARK: - Generate
 
@@ -743,6 +935,81 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         #else
         throw LLMRuntimeError.unsupported("Core AI runtime not present in this build.")
         #endif
+    }
+}
+
+/// `--coreai-native-benchmark`: the values `CoreAIRuntime.nativeBenchmarkStock` measures and the
+/// console lines the iOS app and the Mac CLI print from them. Plain values, so this compiles
+/// without the coreai-models package too.
+public enum CoreAINativeBenchmark {
+    /// What `loadStock` measured (the YARDSTICK_COREAI_PREPARE line's values).
+    public struct Prepare: Sendable {
+        public let cached: Bool
+        public let seconds: Double
+        public let footprintPeakMB: Double
+        public let engineWarmupSeconds: Double
+    }
+
+    /// The same for every trial of one invocation.
+    public struct Setup: Sendable {
+        public let modelId: String
+        public let prefill: Int
+        public let decode: Int
+        public let trials: Int
+        public let seed: UInt64
+        /// The bundle's `language.max_context_length`; nothing passed in sizes this engine.
+        public let contextTokens: Int
+        public let prepare: Prepare
+        public let warmupTrialSeconds: Double
+    }
+
+    /// One timed trial: llm-benchmark's two rates with the times they come from, and the
+    /// memory and thermal samples taken across it.
+    public struct Trial: Sendable {
+        public let index: Int
+        public let promptTokens: Int
+        public let promptSeconds: Double
+        public let promptTokensPerSecond: Double
+        public let tokens: Int
+        public let decodeSeconds: Double
+        public let decodeTokensPerSecond: Double
+        public let peakMB: Double
+        public let medianMB: Double
+        public let medianResidentMB: Double
+        public let samples: Int
+        public let thermalInitial: String
+        public let thermalPeak: String
+        public let thermalFinal: String
+    }
+
+    public struct Result: Sendable {
+        public let setup: Setup
+        public let trials: [Trial]
+    }
+
+    /// One YARDSTICK_NATIVE_OK line per timed trial, in the LiteRT-LM row's field names
+    /// (scripts/import_native_benchmark.py lifts both kinds), plus the fields only this arm has.
+    /// init_s is the Prepare time (`createEngine`), ttft_ms the prompt time llm-benchmark divides by.
+    public static func line(_ s: Setup, _ t: Trial, harness: String) -> String {
+        String(
+            format: "YARDSTICK_NATIVE_OK runtime=core-ai trial=%d trials=%d prefill_tokens=%d prefill_tok_s=%.3f decode_tokens=%d decode_tok_s=%.3f ttft_ms=%.3f decode_s=%.6f init_s=%.3f prepare_cached=%d prepare_peak_mb=%.0f engine_warmup_s=%.3f warmup_trial_s=%.3f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d thermal_initial=%@ thermal_peak=%@ thermal_final=%@ seed=%llu harness=%@",
+            t.index, s.trials, t.promptTokens, t.promptTokensPerSecond, t.tokens, t.decodeTokensPerSecond,
+            t.promptSeconds * 1000, t.decodeSeconds, s.prepare.seconds, s.prepare.cached ? 1 : 0,
+            s.prepare.footprintPeakMB, s.prepare.engineWarmupSeconds, s.warmupTrialSeconds,
+            s.contextTokens, t.peakMB, t.medianMB, t.medianResidentMB, t.samples,
+            t.thermalInitial, t.thermalPeak, t.thermalFinal, s.seed, harness)
+    }
+
+    /// llm-benchmark's own summary (BenchmarkMain.swift 141–150): Prepare, Warmup and the mean
+    /// of the trials. Medians are taken from the per-trial lines, not from this line.
+    public static func summaryLine(_ r: Result) -> String {
+        let n = Double(max(r.trials.count, 1))
+        let avgPrompt = r.trials.map(\.promptTokensPerSecond).reduce(0, +) / n
+        let avgGen = r.trials.map(\.decodeTokensPerSecond).reduce(0, +) / n
+        return String(
+            format: "YARDSTICK_COREAI_NATIVE_SUMMARY model=%@ prefill=%d decode=%d trials=%d prepare_s=%.3f prepare_cached=%d warmup_trial_s=%.3f prompt_tok_s_mean=%.3f decode_tok_s_mean=%.3f",
+            r.setup.modelId, r.setup.prefill, r.setup.decode, r.trials.count, r.setup.prepare.seconds,
+            r.setup.prepare.cached ? 1 : 0, r.setup.warmupTrialSeconds, avgPrompt, avgGen)
     }
 }
 
