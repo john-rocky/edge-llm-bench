@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "6cbf1a7e-d286-489e-9e75-132dd80e36da",
+  "runtime": "llama.cpp",
+  "engineVersion": "b8999",
+  "engineArtifact": "a84df7c76613fdcf291bdb2d4e0dddc4a41f0d6901552908ba640fe93fbd4753",
+  "model": {
+    "id": "unsloth/Qwen3-1.7B-GGUF",
+    "quantization": "Q4_K_M",
+    "file": "unsloth_Qwen3-1.7B-GGUF_Qwen3-1.7B-Q4_K_M.gguf",
+    "sha256": "b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-06T07:21:05Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy",
+    "cpuAffinity": "none",
+    "contextTokens": 2048,
+    "chatMode": "single-turn template default (-st)",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 48.3,
+    "exitCode": 0,
+    "roundIndex": 3,
+    "launchIndex": 15,
+    "launchID": "be074ee7-ff36-4e19-a1c9-f68e0a0a0e35",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 35.4,
+    "batteryTemperatureFinalC": 37.8,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./llama-cli -m /data/local/tmp/llmbench/models/unsloth_Qwen3-1.7B-GGUF_Qwen3-1.7B-Q4_K_M.gguf -t 4 -c 2048 -f /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -n 256 --temp 0 --top-p 1 -st",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [],
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "promptTokensPerSecond": 41.2,
+    "decodeTokensPerSecond": 19.4,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 2426.96484375,
+    "memoryPeakResidentMB": 2429.1640625
+  },
+  "provenance": {
+    "rawLog": "llama.cpp_unsloth_Qwen3-1.7B-GGUF_long-context-1024-gen256__ctx2048_filefb84b6e0c574ab9110cde1469f1e896e2e2c24f30cf2d95d8f8b66e9c86133e6_2026-10-06T07-21-05.428040_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024"
+  }
+}
