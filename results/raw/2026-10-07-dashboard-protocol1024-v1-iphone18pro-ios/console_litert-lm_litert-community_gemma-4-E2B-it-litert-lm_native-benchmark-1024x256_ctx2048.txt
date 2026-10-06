@@ -1,0 +1,396 @@
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=2048 runs=1
+YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=none (--runs 1) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x12d1ce710, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x12d3e80f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x12d3e8140, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x12d3e8320, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791318595.829387  523415 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1791318595.829428  523415 litert_lm_loader.cc:291] Section not found: 	
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791318595.848733  523415 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1791318595.848917  523415 gpu_backend_metal.mm:105] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1791318596.007127  523415 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318596.007136  523415 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318596.162460  523415 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791318596.167111  523415 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318596.167117  523415 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318596.256229  523415 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791318596.260538  523415 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318596.260543  523415 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318596.351485  523415 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791318596.360728  523415 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318596.360733  523415 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318596.523244  523415 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x700ff2c050, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7010928140, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1791318597.042012  523415 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1791318597.668013  525153 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1791318597.682609  525153 sampler_factory.cc:565] Metal sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [third_party/odml/litert_lm/runtime/components/sampler_factory.cc:319]
+└ Could not load shared library libLiteRtTopKMetalSampler.dylib: dlopen(libLiteRtTopKMetalSampler.dylib, 0x0005): tried: 'libLiteRtTopKMetalSampler.dylib' (no such file), '/private/preboot/Cryptexes/OSlibLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/CLiteRTLM.framework/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKMetalSampler.dylib' (no such file).
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:573
+W0000 00:00:1791318600.872690  525153 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+I0000 00:00:1791318600.891070  523415 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x12d3e8320, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x12d3e8140, name=GPU Metal
+YARDSTICK_NATIVE_OK run=1 runs=1 cold=1 prefill_tokens=1024 prefill_tok_s=1636.74 decode_tokens=256 decode_tok_s=79.88 ttft_ms=638.2 init_s=2.72 context_tokens=2048 peak_mb=794 median_mb=766 median_resident_mb=620 samples=53 teardown_footprint_mb=57 thermal_initial=nominal thermal_final=nominal wall_s=5.499 harness=2026-07-30-agreed-protocol-r4
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7010928140, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x700ff2c050, name=GPU Metal
+The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=2048 runs=1
+YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=none (--runs 1) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13d3b12c0, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13d3b1270, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13d3b1180, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13d3b1130, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791318902.885960  527058 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1791318902.886008  527058 litert_lm_loader.cc:291] Section not found: 	
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791318902.896106  527058 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1791318902.896279  527058 gpu_backend_metal.mm:105] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1791318903.066867  527058 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318903.066881  527058 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318903.213892  527058 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791318903.218328  527058 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318903.218333  527058 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318903.303401  527058 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791318903.307547  527058 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318903.307553  527058 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318903.391985  527058 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791318903.400512  527058 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791318903.400519  527058 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791318903.556480  527058 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x161585ae0, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x161585b30, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1791318903.584666  527058 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1791318904.196867  528797 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1791318904.211403  528797 sampler_factory.cc:565] Metal sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [third_party/odml/litert_lm/runtime/components/sampler_factory.cc:319]
+└ Could not load shared library libLiteRtTopKMetalSampler.dylib: dlopen(libLiteRtTopKMetalSampler.dylib, 0x0005): tried: 'libLiteRtTopKMetalSampler.dylib' (no such file), '/private/preboot/Cryptexes/OSlibLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/CLiteRTLM.framework/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKMetalSampler.dylib' (no such file).
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:573
+W0000 00:00:1791318907.399775  528797 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+I0000 00:00:1791318907.416702  527058 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x13d3b1130, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x13d3b1180, name=GPU Metal
+YARDSTICK_NATIVE_OK run=1 runs=1 cold=1 prefill_tokens=1024 prefill_tok_s=1673.39 decode_tokens=256 decode_tok_s=79.93 ttft_ms=624.4 init_s=1.59 context_tokens=2048 peak_mb=801 median_mb=790 median_resident_mb=641 samples=48 teardown_footprint_mb=56 thermal_initial=nominal thermal_final=nominal wall_s=4.886 harness=2026-07-30-agreed-protocol-r4
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x161585b30, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x161585ae0, name=GPU Metal
+The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=2048 runs=1
+YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=none (--runs 1) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111ba9130, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111ba8f50, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111ba8f00, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x111ba8640, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791319209.816324  530727 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1791319209.816372  530727 litert_lm_loader.cc:291] Section not found: 	
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791319209.826675  530727 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1791319209.826860  530727 gpu_backend_metal.mm:105] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1791319209.982671  530727 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319209.982680  530727 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319210.129059  530727 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791319210.133609  530727 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319210.133614  530727 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319210.218795  530727 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791319210.222955  530727 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319210.222960  530727 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319210.306258  530727 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791319210.315159  530727 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319210.315165  530727 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319210.470304  530727 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x700363a080, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x700363a300, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1791319210.501241  530727 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1791319211.114349  532469 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1791319211.129147  532469 sampler_factory.cc:565] Metal sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [third_party/odml/litert_lm/runtime/components/sampler_factory.cc:319]
+└ Could not load shared library libLiteRtTopKMetalSampler.dylib: dlopen(libLiteRtTopKMetalSampler.dylib, 0x0005): tried: 'libLiteRtTopKMetalSampler.dylib' (no such file), '/private/preboot/Cryptexes/OSlibLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/CLiteRTLM.framework/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKMetalSampler.dylib' (no such file).
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:573
+W0000 00:00:1791319214.327646  532469 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+I0000 00:00:1791319214.345093  530727 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x111ba8640, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x111ba8f00, name=GPU Metal
+YARDSTICK_NATIVE_OK run=1 runs=1 cold=1 prefill_tokens=1024 prefill_tok_s=1670.91 decode_tokens=256 decode_tok_s=79.67 ttft_ms=625.4 init_s=1.56 context_tokens=2048 peak_mb=801 median_mb=781 median_resident_mb=632 samples=48 teardown_footprint_mb=57 thermal_initial=nominal thermal_final=nominal wall_s=4.902 harness=2026-07-30-agreed-protocol-r4
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x700363a300, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x700363a080, name=GPU Metal
+The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=2048 runs=1
+YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=none (--runs 1) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13515b660, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13515b480, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x135093700, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1350935c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791319516.395769  534317 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1791319516.395818  534317 litert_lm_loader.cc:291] Section not found: 	
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791319516.405715  534317 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:367] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:374] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1791319516.405896  534317 gpu_backend_metal.mm:105] Metal Residency Set successfully enabled and added to Command Queue.
+I0000 00:00:1791319516.581742  534317 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319516.581754  534317 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319516.726229  534317 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791319516.730677  534317 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319516.730684  534317 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319516.812331  534317 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791319516.816440  534317 delegate_kernel.cc:330] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319516.816446  534317 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319516.899508  534317 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+I0000 00:00:1791319516.908066  534317 delegate_kernel.cc:330] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791319516.908071  534317 delegate_kernel.cc:906] Initializing Metal-based API from serialized data.
+I0000 00:00:1791319517.057214  534317 delegate_kernel.cc:804] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7010136ad0, name=GPU Metal
+INFO: [gpu_registry.cc:87] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7010136b20, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1790] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1791319517.085610  534317 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1791319517.697989  536052 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+W0000 00:00:1791319517.712883  536052 sampler_factory.cc:565] Metal sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [third_party/odml/litert_lm/runtime/components/sampler_factory.cc:319]
+└ Could not load shared library libLiteRtTopKMetalSampler.dylib: dlopen(libLiteRtTopKMetalSampler.dylib, 0x0005): tried: 'libLiteRtTopKMetalSampler.dylib' (no such file), '/private/preboot/Cryptexes/OSlibLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), '/private/preboot/Cryptexes/OS/usr/lib/swift/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/CLiteRTLM.framework/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/private/var/containers/Bundle/Application/57E85F96-000D-446E-9AF0-EE872D16D536/BenchmarkApp.app/Frameworks/libLiteRtTopKMetalSampler.dylib' (no such file), '/usr/lib/libLiteRtTopKMetalSampler.dylib' (no such file, not in dyld cache), 'libLiteRtTopKMetalSampler.dylib' (no such file).
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:573
+W0000 00:00:1791319520.903162  536052 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [third_party/odml/litert_lm/runtime/executor/llm_litert_compiled_model_executor.cc:1763]
+└ ERROR: [./third_party/odml/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: ===
+./third_party/odml/litert/litert/cc/litert_macros.h:547
+I0000 00:00:1791319520.921350  534317 delegate_metal.mm:76] Destroyed the Metal environment.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x1350935c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x135093700, name=GPU Metal
+YARDSTICK_NATIVE_OK run=1 runs=1 cold=1 prefill_tokens=1024 prefill_tok_s=1672.93 decode_tokens=256 decode_tok_s=79.87 ttft_ms=624.6 init_s=1.57 context_tokens=2048 peak_mb=803 median_mb=778 median_resident_mb=623 samples=47 teardown_footprint_mb=57 thermal_initial=nominal thermal_final=nominal wall_s=4.837 harness=2026-07-30-agreed-protocol-r4
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7010136b20, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7010136ad0, name=GPU Metal
+The app terminated with the exit code 0.
