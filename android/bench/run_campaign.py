@@ -21,6 +21,12 @@ Order and discipline (fairness rules as code):
     median under half the quarantined capture's un-collapsed median (a
     uniformly slow block re-run passes every within-capture test; Pixel 8a
     2026-09-08) is flagged and kept, never re-run a third time.
+    A context-prompt LiteRT cell (context-tokens= on a prompt task, the
+    two-iteration launch of run_cell.context_prompt) writes two records per
+    launch, iteration 1 cold and iteration 2 warm: the gate judges its cold
+    records (cell_gate.py --basis cold) and the quarantine moves both records
+    of every judged launch, so a retry never stands beside part of the
+    capture it replaces.
 """
 import fcntl
 import argparse
@@ -34,7 +40,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from device_probe import thermal_status, adb  # noqa: E402
-from run_cell import capture_stem, engine_command, DEV_DIR, CPU_MASK  # noqa: E402
+from run_cell import capture_stem, context_prompt, engine_command, DEV_DIR, CPU_MASK  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 COOLDOWN = int(os.environ.get("COOLDOWN", "120"))
@@ -152,6 +158,15 @@ def cell_records(cell, out_dir):
     return sorted(glob.glob(os.path.join(out_dir, pat)))
 
 
+def records_per_launch(cell):
+    """2 for a context-prompt LiteRT cell — one launch, two iteration records
+    (cold, warm; run_cell.context_prompt decides, as it does for the launch) —
+    else 1."""
+    opts = cell["opts"]
+    ctx = int(opts["context-tokens"]) if opts.get("context-tokens") else None
+    return 2 if context_prompt(cell["runtime"], cell["task"], ctx) else 1
+
+
 def note(out_dir, fname, line):
     print(line)
     with open(os.path.join(out_dir, fname), "a") as fh:
@@ -163,7 +178,12 @@ RETRY_VERDICTS = ("HOT", "SPREAD", "DEAD", "COLLAPSE")
 
 def gate_verdict(cell, out_dir, runs, previous=()):
     cmd = [sys.executable, os.path.join(ROOT, "scripts", "cell_gate.py"),
-           "--runs", str(runs)] + cell_records(cell, out_dir)
+           "--runs", str(runs)]
+    if records_per_launch(cell) == 2:
+        # one cold record per launch is the judged set (Android's headline
+        # regime is cold; the warm iteration is information)
+        cmd += ["--basis", "cold"]
+    cmd += cell_records(cell, out_dir)
     if previous:  # the quarantined capture a retry replaces -> LEVEL can fire
         cmd += ["--previous"] + list(previous)   # after the positionals (nargs="*")
     r = subprocess.run(cmd, capture_output=True, text=True)
@@ -186,7 +206,7 @@ def apply_gate(cell, out_dir, runs):
         return  # OK, or SHORT — a crash/timeout is never retried (failed-runs-stay)
     print(f"gate: {verdict} — quarantine + cooldown {GATE_COOLDOWN}s, re-run once")
     quarantined = []
-    for f in cell_records(cell, out_dir)[-runs:]:
+    for f in cell_records(cell, out_dir)[-runs * records_per_launch(cell):]:
         os.rename(f, f + ".attempt1")  # stays in raw for audit, outside the *.json glob
         quarantined.append(f + ".attempt1")
     note(out_dir, "session_provenance.txt",

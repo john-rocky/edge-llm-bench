@@ -35,7 +35,7 @@
       "display": "Mac Studio (M4 Max)",
       "identifier": "Mac16,9",
       "window": "any firing while no heavy export pipeline runs (unified-memory contention: the runner refuses and the job passes over the Mac until it is quiet)",
-      "expected_hours": 1.5,
+      "expected_hours": 2.2,
       "timeout_hours": 4,
       "env": {}
     },
@@ -66,8 +66,8 @@
         }
       ],
       "window": "any firing; USB attached, screen on or off (read and stamped per launch); runs unmasked (devices/galaxy-s26.md)",
-      "expected_hours": 3.5,
-      "timeout_hours": 6,
+      "expected_hours": 7.9,
+      "timeout_hours": 15,
       "env": {}
     },
     "pixel8a": {
@@ -102,8 +102,8 @@
         }
       ],
       "window": "any firing; USB attached, screen on or off (read and stamped per launch); storage-limited, so the set runs as three sessions with pushed models rotated out between them",
-      "expected_hours": 4.5,
-      "timeout_hours": 7,
+      "expected_hours": 11.1,
+      "timeout_hours": 18,
       "env": {}
     },
     "iphone17pro": {
@@ -119,8 +119,28 @@
       "auto_window": "05:00-08:00",
       "auto_idle_hours": 4,
       "window": "the 05:30 firing only (auto_window 05:00-08:00 local) and only after 4 h without a record from the phone (auto_idle_hours); the phone must be unlocked (Auto-Lock Never) or the headless launch is refused, and a plugged phone in a warm room reports 'fair' (admitted only through the anchor rule)",
-      "expected_hours": 2.5,
-      "timeout_hours": 5,
+      "expected_hours": 4.8,
+      "timeout_hours": 8,
+      "env": {
+        "CELL_TIMEOUT": "3600"
+      }
+    },
+    "iphone18pro": {
+      "platform": "iphone",
+      "display": "iPhone 18 Pro",
+      "identifier": "iPhone19,2",
+      "udid": "00008160-000038CA02C00036",
+      "app": "com.example.CoreMLLLMChat",
+      "hold": "~/code/coreai/ondevice/.device_hold",
+      "hold_also_check": [
+        "~/code/litertlm-convert/community_accel_work/.iphone_hold",
+        "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.iphone"
+      ],
+      "auto_window": "05:00-08:00",
+      "auto_idle_hours": 4,
+      "window": "the 05:30 firing only (auto_window 05:00-08:00 local) and only after 4 h without a record from the phone (auto_idle_hours); the bench iPhone, kept on USB; it must be unlocked (Auto-Lock Never) or the headless launch is refused. udid is the UDID that `devicectl list devices` prints (the job finds the phone there by it); hold is the iPhone lanes' own lockfile (noclobber, a JSON line with a keeper pid or a text line)",
+      "expected_hours": 4.8,
+      "timeout_hours": 8,
       "env": {
         "CELL_TIMEOUT": "3600"
       }

@@ -1,0 +1,19 @@
+# 1024 / 256 cells = the protocol cell (prompt ~1024 tokens as the task builds it: 18 lorem blocks + the
+# forced-output tail, 1,339 Qwen3 tokens; decode budget 256; task `long-context-1024-gen256`,
+# prompts/text/long-context-1024-gen256.txt). Same model set, artifacts, backends and cooldowns as the
+# weekly short-chat set (matrices/dashboard-text-v1.cells, 2026-09-04 model set), one row per active
+# (platform, arm, model); Core AI rows are not in this set. context-tokens=2048 on the LiteRT-LM and
+# llama.cpp rows = the protocol's 2048-token context (LiteRT-LM maxNumTokens, llama.cpp n_ctx; on
+# Android it also selects the advanced_main two-iteration path, the only path on which the 256-token
+# output budget is honoured by v0.16.0). MLX rows carry no allocation (mlx-swift-lm grows its cache; no
+# flag). exclude= rows are kept from the short-chat set with their reason (failed-runs-stay).
+# Prepared 2026-10-06 for the first 1024/256 sittings (owner decision 12:3x JST: the dashboard's
+# headline workload). Each file starts with the platform's session anchors (matrices/anchors.cells).
+
+
+# ---- android, storage half b2 (mirror of dashboard-text-v1-android-b2.cells) ----
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048

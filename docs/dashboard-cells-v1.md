@@ -34,9 +34,11 @@ see "Core AI arm (v2)" below; validated by `scripts/validate_cells.py`).
 Task: `short-chat`, the cross-arm standard cell (same prompt and token budget
 on every arm). The 1024-prefill / 256-decode / ctx-2048 column the LiteRT
 team benchmarks with (`long-context-1024-gen256`, methodology
-`agreed-protocol-gemma4.md`) is the natural second task and is not in v1 —
+`agreed-protocol-gemma4.md`) is the natural second task and was not in v1 —
 open question 3 below; the Mac leg of a deeper column (p≈2K / g=256, three
 KV allocations) was measured 2026-09-18, section "Long-context column".
+Since 2026-10-06 the weekly set carries it: section "Second task in the
+weekly set".
 
 ## Cell table
 
@@ -520,6 +522,126 @@ Reading (single-arm facts; the cross-arm standing stays local):
 Android and iPhone legs of the same column: not yet (devices off adb since
 09-15; the iPhone needs the `--litert-backend` plumbing in the app driver).
 
+## Second task in the weekly set: p1024 / d256 / ctx 2048 (2026-10-06)
+
+Open question 3 is answered for the weekly job: since 2026-10-06 every sitting
+measures the protocol cell `long-context-1024-gen256` beside `short-chat`
+(owner decision 2026-10-06; the device time it adds was accepted the same
+morning).
+
+Rows. Every active `short-chat` row on LiteRT-LM, llama.cpp and MLX has one
+`long-context-1024-gen256` twin with the same model id, `backend=`, `file=` and
+`cooldown=`, placed after its model block's short-chat rows, in the same arm
+order: 45 rows, 15 per platform. A twin carries no `anchor=` / `runs=` — the
+session anchor stays the short-chat cell, and the 0.6B anchor model's 1024 row
+is an ordinary payload row (on Android it sits in storage half a, where that
+model's file is pushed). An `exclude=` short-chat row keeps its reason on the
+twin (iPhone MLX Gemma 4 E4B, `app-killed-at-model-load-sigkill`:
+failed-runs-stay). Core AI has no 1024 rows. The Android storage halves
+(`dashboard-text-v1-android-{a,b1,b2}.cells`) carry the same lines as the
+parent, each model's 1024 rows in the half that pushes its files. The
+1024-only files `matrices/dashboard-longctx1024-v1.cells` (Mac + iPhone) and
+`matrices/dashboard-longctx1024-v1-android-{a,b1,b2}.cells` hold the same
+1024 lines with the session anchors in front, for a sitting that measures only
+the second task (`./bench dashboard-job <device> --cells <file>`);
+`android/bench/test_longctx1024.py` pins that the two sets carry identical
+lines.
+
+The task. `prompts/text/long-context-1024-gen256.txt`: 18 lorem blocks plus
+the forced-output tail, byte-identical to the Swift task
+(`LongContextTask`, `forceLongOutput`): about 1,339 Qwen3 / 1,106 Gemma 4
+tokens with the chat template (the count is the engine's; each record's
+`promptTokenCount` is the ground truth); output budget 256 (`budgets.tsv`).
+The same text goes to every arm.
+
+`context-tokens=2048` on every LiteRT-LM and llama.cpp row: the agreed
+protocol's context (`methodology/agreed-protocol-gemma4.md`: prefill 1024,
+decode 256, context forced to 2048 for Gemma 4; the set uses the same
+allocation for the Qwen3 rows, so one column is one allocation) —
+LiteRT-LM `maxNumTokens`, llama.cpp `n_ctx`. On Android the option also
+selects the engine path: a prompt task with `context-tokens=` runs
+`litert_lm_advanced_main --max_num_tokens=2048 --max_output_tokens=256
+--num_iterations=2` (`run_cell.context_prompt`), the only v0.16.0 path that
+applies an output budget at all: the plain `litert_lm_main` the short-chat
+rows run accepts both flags (they are shared flag definitions) but never
+reads them (v0.16.0 `runtime/engine/litert_lm_main.cc`). Without the option
+the 256-token budget would not hold. The `mixed_int4` Qwen3 bundles'
+2,048-entry KV (open question 7) holds 1,339 + 256 tokens; the Qwen3-1.7B
+INT8 file sizes its KV at export,
+so `maxNumTokens` does not resize it, and its record's allocation witness
+echoes the requested value (the S26 2,048-task sitting of 2026-09-23 read
+2,304 / 4,096 / 8,192 at those three settings) — the witness is the setting,
+not the cache size.
+
+MLX rows carry no `context-tokens=`. The yardstick's `MLXRuntime` has no
+`prepareContext` (the `LLMRuntime` default is a no-op) and passes no KV
+limit to `GenerateParameters`, so mlx-swift-lm grows its cache with the
+sequence; the option would change only the record's `contextTokensConfigured`,
+which on an MLX row is the runner's estimate (prompt characters / 3 + 16 +
+budget + 512), not an allocation.
+
+Reading the Android rows. One launch writes two records, iteration 1 (cold)
+and iteration 2 (warm, a fresh Conversation on the loaded engine); the
+Android headline regime stays cold. On this path the S26 GPU logs of
+2026-09-20 all carry `GPU sampler unavailable. Falling back to CPU sampling`
+(the sampler libraries do not load under `advanced_main`), so the GPU arm's
+1024 decode includes CPU-side sampling; whether its short-chat launches on
+the plain main sample on the GPU is not checked here. The first
+1024 launch of a bundle and backend on a phone is a cache build (`firstEver`:
+the context-prompt marker is keyed on the engine artifact and the
+allocation) and drops out of the summaries like every cache build. The gate:
+until 2026-10-06 the Android runner counted records, not launches — it
+judged the newest three records (one and a half launches) and, on a flag,
+quarantined three of the six, so the retry would have stood beside half of
+the capture it replaced (found offline, before the weekly set carried such
+a cell); `run_campaign.py` now quarantines both records of every
+launch and judges the cold records (`cell_gate.py --basis cold`), and
+`test_longctx1024.py` pins both. Whether the context-prompt path writes
+engine caches of its own beside the bundles is not measured; the per-half
+footprint the job logs at the first such sitting is.
+
+Display. When the numbers exist, the 1024 cells sit beside the short-chat
+cells as a second workload, not as a replacement. Today
+`scripts/render_dashboard.py` puts one cell per model and arm in the grid —
+the first task in file order, short-chat — and lists the 1024 cells only in
+the per-cell detail table, without a task column; the renderer change is a
+separate one.
+
+Device time per weekly sitting (estimates, not measurements, 2026-10-06;
+`ops/dashboard-v1/schedule.json` carries the last column until the first
+sittings with the second task replace it):
+
+| device | last sitting, minutes | 1024 cells | added, minutes | sitting, hours | `expected_hours` / `timeout_hours` (was) |
+|---|---|---|---|---|---|
+| Mac Studio (M4 Max) | 79 (2026-10-05) | 15 | 51, measured: the 15 cells of the 2026-10-06 1024-only sitting, cooldowns included | 2.2 | 2.2 / 4 (1.5 / 4) |
+| Galaxy S26, three storage halves | 252 (2026-10-05) | 15 (a 9, b1 3, b2 3) | 224 (a 103, b1 64, b2 57); 288 with one gate retry per half and 10 % for thermal waits | 7.9 (9.0) | 7.9 / 15 (3.5 / 6) |
+| Pixel 8a, one session (halves when storage is short) | 337 (2026-10-02) | 15 | 328 (a 130, b1 106, b2 93); 491 if every llama.cpp cell is gate-retried once, as four of five were on 2026-10-02, plus 10 % for thermal waits | 11.1 (13.8) | 11.1 / 18 (4.5 / 7) |
+| iPhone 17 Pro, iPhone 18 Pro | about 150 (the set with every cell HOT-retried, recurring-job §3) | 14 (+1 `exclude=`) | 65 with every run nominal; 135 with every cell HOT-retried, as a plugged phone in a warm room does | 4.8 | 4.8 / 8 (2.5 / 5; the 18 Pro entry is new) |
+
+How the numbers were made. Android: one launch = load + prefill + decode,
+with the rates at depth from the S26's stored `long-context-2048-gen256`
+launches at `context-tokens=2304` (the shorter 1024 prompt shortens prefill
+accordingly; two iterations per LiteRT launch) and the load left over from
+those launches' elapsed time; the cells with no such launch (LiteRT GPU
+Qwen3, LiteRT CPU Qwen3-4B) take the load from their 2026-10-05 short-chat
+launch and the short-chat decode × 0.9 (GPU) or × 0.75 (CPU) at depth with a
+stated prefill rate; the Pixel 8a scales the S26 rates by its own
+short-chat rates per cell. One run = cooldown (120 or 300 s) + launch + 2 s.
+A launch comes to 15–193 s on the S26 and 53–792 s on the Pixel 8a (llama.cpp
+Qwen3-4B, under the 1,800 s launch timeout). iPhone: the Mac's measured run
+times × the iPhone/Mac short-chat decode ratio ÷ 0.6 for throttling, the
+runner's cooldowns (100 or 300 s), and 240 s plus a re-run per HOT retry.
+Timeout = 1.5 × the estimate, rounded up to the hour. A phone that runs in
+storage halves gets `timeout_hours` / 3 per half from the job
+(`scripts/dashboard_job.py`, `attempt`), so its total is set by the longest
+half: S26 half a ≈ 190 min → 15 h, Pixel 8a half a ≈ 230 min → 18 h.
+
+What it does to the week: a phone sitting that starts at 02:00 now runs into
+the morning (S26, about 10:00) or the afternoon (Pixel 8a, about 13:00),
+holds the device hold for all of it, and absorbs the 05:30 firing — launchd
+starts no second instance — so an iPhone's 05:30 slot moves to a night
+without a phone sitting.
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`
@@ -529,7 +651,9 @@ Android and iPhone legs of the same column: not yet (devices off adb since
 2. The Gemma 4 `-gpu.litertlm` variants published 2026-08-07 (E2B 2.0 GB, E4B
    2.97 GB) are undocumented on the cards; the GPU rows keep the standard
    files. Should they switch?
-3. Second task: add the 1024/256/ctx-2048 column for every arm?
+3. Second task: add the 1024/256/ctx-2048 column for every arm? (In the
+   weekly set since 2026-10-06 for LiteRT-LM, llama.cpp and MLX — section
+   "Second task in the weekly set".)
 4. Devices: the cells file is device-agnostic; which lab devices map to the
    Android and iPhone rows?
 5. Go signal for Qwen3.5 / LFM2.5 — the placeholder rows are ready to

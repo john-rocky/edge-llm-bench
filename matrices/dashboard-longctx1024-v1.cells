@@ -1,0 +1,50 @@
+# 1024 / 256 cells = the protocol cell (prompt ~1024 tokens as the task builds it: 18 lorem blocks + the
+# forced-output tail, 1,339 Qwen3 tokens; decode budget 256; task `long-context-1024-gen256`,
+# prompts/text/long-context-1024-gen256.txt). Same model set, artifacts, backends and cooldowns as the
+# weekly short-chat set (matrices/dashboard-text-v1.cells, 2026-09-04 model set), one row per active
+# (platform, arm, model); Core AI rows are not in this set. context-tokens=2048 on the LiteRT-LM and
+# llama.cpp rows = the protocol's 2048-token context (LiteRT-LM maxNumTokens, llama.cpp n_ctx; on
+# Android it also selects the advanced_main two-iteration path, the only path on which the 256-token
+# output budget is honoured by v0.16.0). MLX rows carry no allocation (mlx-swift-lm grows its cache; no
+# flag). exclude= rows are kept from the short-chat set with their reason (failed-runs-stay).
+# Prepared 2026-10-06 for the first 1024/256 sittings (owner decision 12:3x JST: the dashboard's
+# headline workload). Each file starts with the platform's session anchors (matrices/anchors.cells).
+
+
+# ---- mac ----
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
+mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
+mac litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac mlx-swift mlx-community/Qwen3-4B-4bit long-context-1024-gen256 cooldown=300
+mac litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+
+# ---- ios ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
+ios litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
+ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+ios mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
+ios litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
+ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+ios llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios mlx-swift mlx-community/Qwen3-4B-4bit long-context-1024-gen256 cooldown=300
+ios litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 exclude=app-killed-at-model-load-sigkill
+ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048

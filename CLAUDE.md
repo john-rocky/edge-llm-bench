@@ -61,6 +61,7 @@ Full text: `methodology/fairness-rules.md`. The five working rules:
   regression charts (v0160_regression_verdicts.png) are the committed
   exception. Cross-runtime speed comparison is published for Gemma-4 only,
   and in the archive repo, not here.
+  Exception (2026-10-06, owner decision 2026-09-29 plan 5(a)): the private team repo `john-rocky/litert-bench-dashboard` renders the comparison page from this repo's summary and registries; nothing cross-runtime is added here.
 - **Quarantined captures stay on disk.** `*.jsonl.attempt1` /
   `*.json.attempt1` / `device-jsonl-flagged/` are audit trail, not garbage.
 - **Builds**: `bootstrap.sh` then `build_yardstick_mac.sh`; derived data is

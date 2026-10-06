@@ -50,6 +50,17 @@ Input: schema-v1 records — --jsonl <cell.jsonl> (mac runner) or positional
 per-run .json files (iPhone device-jsonl pulls). Only the newest --runs
 records are judged: a retried cell is judged on its retry, not its history.
 
+--basis cold (the Android runner, for a context-prompt LiteRT cell): one
+launch of litert_lm_advanced_main --num_iterations=2 writes two records,
+iteration 1 cold and iteration 2 warm, so the newest --runs records were 1.5
+launches and the warm SPREAD test ran on two values. With --basis cold only
+the coldRun records are read — one per launch, the newest --runs of them —
+and so are the --previous records: SHORT / DEAD / DEGENERATE / HOT / COLLAPSE
+/ LEVEL are judged on them, and the warm iterations are not judged (no
+SPREAD). Android's headline regime is cold (docs/dashboard-recurring-job-v1.md
+§4, render_dashboard.REGIME); the warm iteration is information. The default
+--basis auto reads every record, as before (Mac and iPhone callers).
+
 Runners act on the verdict by quarantining the flagged capture (mac:
 <cell>.jsonl.attempt1, outside build_summary's *.jsonl glob; iPhone:
 device-jsonl-flagged/; Android: <run>.json.attempt1) and re-running ONCE. The
@@ -91,6 +102,11 @@ def load_records(jsonl, files):
     return recs
 
 
+def cold_only(recs):
+    """The coldRun records, order kept (--basis cold)."""
+    return [r for r in recs if r.get("metrics", {}).get("coldRun")]
+
+
 def decodes(recs, warm_only):
     return [m["decodeTokensPerSecond"] for r in recs for m in [r.get("metrics", {})]
             if m.get("decodeTokensPerSecond") and (not warm_only or not m.get("coldRun"))]
@@ -118,6 +134,9 @@ def main():
     ap.add_argument("--previous", nargs="*", default=[],
                     help="records of the quarantined capture this retry replaces "
                          "(.json files, or one .jsonl); enables LEVEL")
+    ap.add_argument("--basis", choices=("auto", "cold"), default="auto",
+                    help="cold = judge only the coldRun records (one per two-iteration "
+                         "launch; the Android runner's context-prompt cells)")
     ap.add_argument("files", nargs="*")
     a = ap.parse_args()
 
@@ -126,6 +145,8 @@ def main():
     except (OSError, json.JSONDecodeError) as e:
         print(f"SHORT 0 ({e.__class__.__name__})")
         return 1
+    if a.basis == "cold":
+        recs = cold_only(recs)
     recs = recs[-a.runs:]
     if len(recs) < a.runs:
         print(f"SHORT {len(recs)}")
@@ -178,6 +199,8 @@ def main():
                                                        a.previous[0].endswith(".jsonl")) else [])
         except (OSError, json.JSONDecodeError):
             previous = []
+        if a.basis == "cold":
+            previous = cold_only(previous)
         ref = reference_level(previous, bool(warm))
         cur = warm if warm else [r["metrics"]["decodeTokensPerSecond"] for r in recs]
         if ref and cur:
