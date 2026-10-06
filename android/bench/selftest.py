@@ -4,11 +4,12 @@
 Runs run_campaign.py -> run_cell.py -> parsers against a fake `adb` whose
 device state lives in a temp dir, so CI and a fresh clone verify the whole
 capture path — record shape, firstEver labelling via the on-device marker,
-witness stamping, capture gate + quarantine + retry, and the endurance
+witness stamping, capture gate + quarantine + retry, the endurance
 session path (streaming turn sidecar, host-derived decay/slope/degeneracy
-verdicts, failed-runs-stay) — with no phone attached. The fake scripts
-ENGINE OUTPUT, never verdicts: the gate and the endurance derivations judge
-real records.
+verdicts, failed-runs-stay), and the default text check of context-prompt
+launches (text-check-rule) — with no phone attached. The fake scripts
+ENGINE OUTPUT, never verdicts: the gate, the text screen and the endurance
+derivations judge real records.
 
   python3 android/bench/selftest.py     # exit 0 = pass; temp dirs kept on failure
 
@@ -32,6 +33,10 @@ import hashlib, json, os, re, shutil, sys
 
 STATE = %(state)r
 DEV = "/data/local/tmp/llmbench"
+# the reply a two-iteration launch prints before each BenchmarkInfo: on task
+# unless the test wrote STATE/off_task
+ON_TASK = %(on_task)r
+OFF_TASK = %(off_task)r
 
 
 def mp(p):
@@ -56,12 +61,17 @@ def engine(cmd):
     elif "./litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
         ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
         print("max_tokens: " + ctx)
+        reply = OFF_TASK if os.path.exists(os.path.join(STATE, "off_task")) else ON_TASK
+        # the 1024 task's prompt is 1,339 tokens (fits ctx 2048 with the 256 budget)
+        prompt = 1339 if "long-context-1024-gen256" in cmd else 1986
         for count, rate in ((256, d), (93, d + 0.25)):
+            print("I0000 00:00:1.000000 1 litert_lm_lib.cc:868] Running single-turn conversation")
+            print(reply)
             print("BenchmarkInfo:")
-            print("Prefill Turn 1: Processed 1986 tokens in 1s duration.")
+            print("Prefill Turn 1: Processed %%d tokens in 1s duration." %% prompt)
             print("Decode Turn 1: Processed %%d tokens" %% count)
             print("Time to first token: 1.2 s")
-            print("Prefill Speed: 1986.0 tokens/sec")
+            print("Prefill Speed: %%d.0 tokens/sec" %% prompt)
             print("Decode Speed: %%s tokens/sec" %% rate)
     else:
         print("Prefill Turn 1: Processed 21 tokens in 100.00ms duration.")
@@ -180,6 +190,16 @@ if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
 '''
 
+# Scripted replies of the fake two-iteration engine (context-prompt cells): the
+# runner's text check (parsers.text_integrity, on by default) passes the first
+# and flags the second text-off-task-screen — the engine output is scripted, the
+# verdict is the real screen's.
+ON_TASK = ("Running on-device AI means the phone answers without a network: replies stay "
+           "local, private data never leaves the handset, and the assistant keeps working "
+           "offline on a plane or in a tunnel.")
+OFF_TASK = ("Please share the document you want summarised and the questions you have about "
+            "it, and I will answer each of them in order with short explanations.")
+
 _fails = []
 
 
@@ -211,7 +231,7 @@ def main():
 
     adb = os.path.join(bin_dir, "adb")
     with open(adb, "w") as fh:
-        fh.write(FAKE_ADB % {"state": state})
+        fh.write(FAKE_ADB % {"state": state, "on_task": ON_TASK, "off_task": OFF_TASK})
     os.chmod(adb, 0o755)
 
     # fake on-device engine binaries (sha deliberately unmatched in the pins
@@ -233,6 +253,7 @@ def main():
                BENCH_TEST_LOCK_DIR=tmp)
     env.pop("ROUNDS", None)  # inherited round mode must not alter legacy fixtures
     env.pop("BENCH_ROUND_WAKEFULNESS", None)  # nor an inherited sitting-mode screen state
+    env.pop("BENCH_TEXT_CHECK", None)  # the default (on for context-prompt cells) is under test
 
     def schedule(vals):
         json.dump(vals, open(os.path.join(state, "schedule.json"), "w"))
@@ -524,8 +545,48 @@ def main():
         r["conditions"].get("screen") == "Dozing" and r["conditions"].get("screenSource") == "env"
         for _, r in pairs + controls),
        "sitting-mode BENCH_ROUND_WAKEFULNESS wins over the per-launch read (screenSource env)")
+    # text check on by default for context-prompt cells (no BENCH_TEXT_CHECK in env)
+    ok(len(pairs) == 12 and all(
+        r["conditions"].get("textCheck", {}).get("status") == "PASS"
+        and open(os.path.join(out_round, r["provenance"]["decodedText"])).read() == ON_TASK
+        for _, r in pairs),
+       "context-prompt records carry textCheck PASS and their decoded text by default")
+    ok(len(controls) == 2 and not any("textCheck" in r["conditions"] for _, r in controls),
+       "a llama.cpp launch is not text-checked (no context-prompt path)")
     env.pop("ROUNDS")
     env.pop("BENCH_ROUND_WAKEFULNESS")
+
+    # --- campaign E: the weekly job's shape for a 1024 cell (context-tokens=,
+    # no ROUNDS, no BENCH_TEXT_CHECK) with off-task replies: text-check-rule —
+    # records, texts and log stay (failed-runs-stay), flagged FAIL; the launch is
+    # listed in FAILURES.txt; the gate never re-runs it (a re-run reproduces it)
+    cells_e = os.path.join(tmp, "e.cells")
+    with open(cells_e, "w") as fh:
+        fh.write(f"android litert-lm fake/model long-context-1024-gen256 runs=2 backend=gpu "
+                 f"context-tokens=2048 file={litert_model}\n")
+    open(os.path.join(state, "off_task"), "w").close()
+    schedule([25.0, 25.5])
+    env["CAMPAIGN"] = "selftest-e"
+    print("--- campaign E (weekly-path 1024 cell, off-task text -> textCheck FAIL, kept, not retried)")
+    rc = run_campaign(env, cells_e)
+    os.remove(os.path.join(state, "off_task"))
+    ok(rc == 0, f"campaign E exits 0 (got {rc})")
+    out_e = os.path.join(raw_root, "selftest-e", "app-path-android")
+    erecs_e = records(out_e, "litert-lm-gpu_fake_model_long-context-1024-gen256")
+    ok(len(erecs_e) == 4, f"2 launches x 2 iteration records kept (got {len(erecs_e)})")
+    ok(len(erecs_e) == 4 and all(
+        r["conditions"].get("textCheck", {}).get("status") == "FAIL"
+        and r["conditions"]["textCheck"]["flags"] == ["text-off-task-screen"]
+        and r["conditions"].get("protocolFlags") == ["text-off-task-screen"]
+        and r["metrics"].get("decodeTokensPerSecond")
+        and open(os.path.join(out_e, r["provenance"]["decodedText"])).read() == OFF_TASK
+        for _, r in erecs_e),
+       "off-task replies: textCheck FAIL text-off-task-screen (the only flag), rate and text kept")
+    fails_e = os.path.join(out_e, "FAILURES.txt")
+    ok(os.path.exists(fails_e) and open(fails_e).read().count("long-context-1024-gen256") == 2,
+       "both text-failed launches listed in FAILURES.txt")
+    ok(not glob.glob(os.path.join(out_e, "*.json.attempt1")),
+       "a text-failed capture is never quarantine-retried")
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")

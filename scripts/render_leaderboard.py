@@ -15,6 +15,8 @@ Neutrality invariants (why cells look the way they do):
     the headline is the SHORT-CHAT task; other tasks live in RESULTS.md.
   - a warm median whose trial spread exceeds SPREAD_FLAG carries ⚠
     (spread-rule).
+  - a run whose decoded text failed the text check (summary text_check
+    FAIL:…) pools into no number, like a firstEver run (text-check-rule).
   - GSM8K joins on (model_id, runtime); pre-v1 quality rows have no
     model_id and deliberately do not join (tag prose is not decoded).
 """
@@ -95,6 +97,13 @@ def arm_row(rows):
     # separately, never as the engine's speed) — they stay in the session for
     # quant/engine identity but contribute to no metric pool
     meas = [r for r in sess if r.get("first_ever") != "True"]
+    # text-check-rule: a run whose decoded text failed the text check is not a
+    # measurement either — same treatment, counted so the surfaces can say why
+    # a pool shrank or emptied; .get: summaries built before 2026-10-06 have no
+    # text_check column
+    text_fail = [r for r in meas if (r.get("text_check") or "").startswith("FAIL")]
+    text_checked = sum(1 for r in meas if r.get("text_check"))
+    meas = [r for r in meas if not (r.get("text_check") or "").startswith("FAIL")]
     warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
     warm = [v for v in warm if v]
     cold = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "True"]
@@ -148,6 +157,12 @@ def arm_row(rows):
         "quant": (" / ".join(quants) or "unrecorded") + ("†" if qcorr else ""),
         "engine": " / ".join(engines) or "pre-stamp",
         "date": date, "n": len(meas),
+        # runs the text check kept out of the pool, the flags they raised, and
+        # how many of the would-be pool were checked at all (0 = no text check)
+        "text_fail_n": len(text_fail),
+        "text_fail_flags": ", ".join(sorted({f for r in text_fail
+                                             for f in r["text_check"][len("FAIL:"):].split(",") if f})),
+        "text_checked_n": text_checked,
     }
 
 

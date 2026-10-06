@@ -15,7 +15,7 @@ Engine version is absent from pre-v1 rows (see the gap audit). Builds from
 surfaced here as `engine_version`/`engine_artifact`; new writers must emit
 `schema/result.v1.json`.
 
-Peak memory (the last two columns of `device-runs.csv`, 2026-10-06):
+Peak memory (the two columns after `os_version` in `device-runs.csv`, 2026-10-06):
 `mem_footprint_peak_mb` = `memoryPeakDuringDecodeMB`, the phys_footprint
 high-water of the Apple sampler (every 100 ms over the whole generation, load
 excluded); `mem_resident_peak_mb` = `memoryPeakResidentMB`, the resident
@@ -24,6 +24,11 @@ read of the launch). Android `run_cell.py` reads VmHWM on every launch only
 from 2026-10-06; its earlier rows carry a peak only from the
 `BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:
 `methodology/memory.md` "Peak memory".
+
+`text_check` (the last column, 2026-10-06) is the record's `conditions.textCheck`:
+`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a
+`FAIL` run stays a row here and in raw but pools into no number
+(`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).
 
 Release-regression diffing over this layer: `scripts/regression_diff.py`
 (quality joins on tag; device cells join on device/runtime/model/task/cold-warm

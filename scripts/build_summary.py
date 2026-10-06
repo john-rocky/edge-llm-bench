@@ -118,6 +118,20 @@ def context_tokens_of(d, m):
     return int(v)
 
 
+def text_check_of(d):
+    """conditions.textCheck as the summary's text_check (text-check-rule): "PASS",
+    "FAIL:<flag>,<flag>" (the flags android/bench/parsers.text_integrity raised), or ""
+    when the run's decoded text was not checked. A FAIL run stays a row here;
+    render_leaderboard.arm_row keeps it out of every metric pool."""
+    c = d.get("conditions")
+    tc = c.get("textCheck") if isinstance(c, dict) else None
+    if not isinstance(tc, dict):
+        return ""
+    if tc.get("status") == "FAIL":
+        return "FAIL:" + ",".join(tc.get("flags") or [])
+    return "PASS" if tc.get("status") == "PASS" else ""
+
+
 def platform_of(d):
     """ios / mac / android, from the record itself (never from file paths)."""
     dev = d.get("device", {})
@@ -252,6 +266,9 @@ def build_device():
             # writer records (methodology/memory.md "Peak memory")
             "mem_footprint_peak_mb": m.get("memoryPeakDuringDecodeMB"),
             "mem_resident_peak_mb": m.get("memoryPeakResidentMB"),
+            # the decoded-text verdict (2026-10-06), appended last like the peaks:
+            # a FAIL run is a row, never a measurement (text-check-rule)
+            "text_check": text_check_of(d),
         })
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
     path = os.path.join(OUT, "device-runs.csv")
@@ -315,7 +332,7 @@ def main():
             "(`stamp_engine_pins.sh` -> bundled engine-pins.json -> BenchmarkResult),\n"
             "surfaced here as `engine_version`/`engine_artifact`; new writers must emit\n"
             "`schema/result.v1.json`.\n\n"
-            "Peak memory (the last two columns of `device-runs.csv`, 2026-10-06):\n"
+            "Peak memory (the two columns after `os_version` in `device-runs.csv`, 2026-10-06):\n"
             "`mem_footprint_peak_mb` = `memoryPeakDuringDecodeMB`, the phys_footprint\n"
             "high-water of the Apple sampler (every 100 ms over the whole generation, load\n"
             "excluded); `mem_resident_peak_mb` = `memoryPeakResidentMB`, the resident\n"
@@ -324,6 +341,10 @@ def main():
             "from 2026-10-06; its earlier rows carry a peak only from the\n"
             "`BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:\n"
             "`methodology/memory.md` \"Peak memory\".\n\n"
+            "`text_check` (the last column, 2026-10-06) is the record's `conditions.textCheck`:\n"
+            "`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a\n"
+            "`FAIL` run stays a row here and in raw but pools into no number\n"
+            "(`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).\n\n"
             "Release-regression diffing over this layer: `scripts/regression_diff.py`\n"
             "(quality joins on tag; device cells join on device/runtime/model/task/cold-warm\n"
             "with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is\n"

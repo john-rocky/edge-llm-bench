@@ -667,3 +667,21 @@ without a phone sitting.
    (2026-09-18 Mac leg above). For the long-context column, should the 0.6B
    and 4B LiteRT rows switch to a wider-cache file (the wi4b32 build exists
    for 0.6B only), or is a larger-cache `mixed_int4` export planned?
+8. Qwen3-1.7B on the Galaxy S26 GPU at the 1K prefill (2026-10-06). The GPU
+   row's file, `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm`, failed the text
+   check on every iteration of its three `long-context-1024-gen256` launches
+   (prompt 1,338 tokens, `--max_num_tokens=2048`, LiteRT-LM v0.16.0
+   `litert_lm_advanced_main`; hand-run round-mode campaign
+   `results/raw/2026-10-06-dashboard-longctx1024-v1-s26-a2-android/`,
+   `NOTES.md`): `text-off-task-screen` — fluent text that never takes up the
+   question (the cold iteration stops after 116 tokens, the warm one runs the
+   256-token budget), no `Invalid decode` line. The CPU row of the same
+   sitting (INT8 `Qwen3_1.7B.litertlm`) stays on the task. The same GPU file
+   fails at the 2K prefill too, where it decoded 256 newline tokens
+   (`exclude=s26-gpu-garbage-text-at-2k-prefill` in
+   `matrices/dashboard-longctx-v1-android-s26.cells`): the same kind of
+   finding, now at 1K. The cells file stays as it is — the rate leaves the
+   dashboard through the text-check-rule (`methodology/fairness-rules.md`
+   §12), the records stay in raw. Is the wi4b32 file expected to answer a
+   prompt of about 1.3K tokens on the Android GPU with v0.16.0, and is there
+   a file or a setting the GPU row should use instead?

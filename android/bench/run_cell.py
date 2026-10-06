@@ -540,7 +540,13 @@ def main():
         # Legacy paths retain their one-record shape. Context prompt iterations
         # share a launch/log/state sample, but never share token counters.
         samples = iteration_metrics if paired else [metrics]
-        printed_texts = parsers.context_prompt_texts(console) if paired and os.environ.get("BENCH_TEXT_CHECK") == "1" else None
+        # text-check-rule: a context-prompt launch's decoded text is checked by
+        # default (BENCH_TEXT_CHECK=0 turns it off; before 2026-10-06 it ran only
+        # under BENCH_TEXT_CHECK=1, so the weekly job's 1024 cells went unchecked).
+        # A FAIL keeps its records, text and log (failed-runs-stay), flags them,
+        # and the summary's text_check column keeps them out of every number.
+        printed_texts = (parsers.context_prompt_texts(console)
+                         if paired and os.environ.get("BENCH_TEXT_CHECK", "1") == "1" else None)
         any_text_failure = False
         for iteration, sample in enumerate(samples, 1):
             row = {**rec, "id": str(uuid.uuid4()) if paired else rec["id"],

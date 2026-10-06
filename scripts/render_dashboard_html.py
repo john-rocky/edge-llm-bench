@@ -18,7 +18,9 @@ to the grid's largest cell, so it reads magnitude, not identity.
 The history CSV is the same aggregation applied per admitted session: one row
 per (device, model, arm, task, allocation, campaign), for a database or a trend
 view. It imports arm_row and filters the rows it hands over the way
-render_dashboard.build does; it defines no second aggregation.
+render_dashboard.build does; it defines no second aggregation. A session the
+text check left without a number has no history row, as an excluded cell has
+none (text-check-rule); `text_fail` says how many runs of a kept row left the pool.
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
 cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
@@ -47,7 +49,7 @@ BANDWIDTH_JSON = os.path.join(ROOT, "devices", "memory-bandwidth.json")
 HISTORY_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", "model_id",
                   "task", "campaign", "captured", "decode_tps", "spread_pct", "n",
                   "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
-                  "context_tokens", "mem_peak_mb"]
+                  "context_tokens", "mem_peak_mb", "text_fail"]
 
 
 def esc(s):
@@ -110,6 +112,8 @@ def history_rows(cells):
                 dec, spread, n = a["warm"], a["spread"], a["warm_n"]
             else:
                 dec, spread, n = a["cold_median"], a["cold_spread"], a["cold_n"]
+            # no number -> no row: a session whose pool the text check emptied
+            # is left out like an excluded cell (text-check-rule)
             if not dec:
                 continue
             out.append({
@@ -125,6 +129,9 @@ def history_rows(cells):
                 "thermal_initial": ",".join(a["thermal_initial"]),
                 "context_tokens": ctx,
                 "mem_peak_mb": round(a["mem_peak"], 1) if a["mem_peak"] else "",
+                # same "k/N" as the dashboard's text_fail ("" = text not checked)
+                "text_fail": (f"{a['text_fail_n']}/{a['n'] + a['text_fail_n']}"
+                              if a["text_checked_n"] else ""),
             })
     out.sort(key=lambda r: (r["platform"], r["device"], r["model"], r["arm"], r["task"],
                             r["context_tokens"], r["captured"]))
@@ -227,7 +234,7 @@ table.cov td.n, table.cov th.n { text-align: right; padding-right: 22px; font-va
 
 def grid_entry(c, dmax):
     """(tooltip, inner HTML) of one cell in a grid slot; dmax = the grid's largest decode."""
-    if c["status"] == "excluded":
+    if c["status"] in ("excluded", "text-fail"):
         return "", f"<span class=\"gap\">—<span class=\"why\">{esc(c['reason'])}</span></span>"
     if c["status"] != "measured":
         return "", "<span class=\"gap\">not yet measured</span>"
@@ -260,6 +267,7 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
         c.setdefault("context_tokens", "")
         c.setdefault("mem_peak_mb", None)
         c.setdefault("artifact_tag", c["model_id"].split("/", 1)[-1])
+        c.setdefault("text_fail", "")  # a JSON from before the text-check-rule lacks this
     by_dev = {}
     for c in cells:
         by_dev.setdefault((c["platform"], c["device"], c["device_display"]), []).append(c)
@@ -294,12 +302,14 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
              "Runtimes compare only within one device, one task and one model.</p>")
     L.append(f"<p><b>Flags</b>: ▲ spread = the session's runs spread more than {SPREAD_FLAG:.0f}% around the median "
              f"(information, not a verdict; Android cold runs legitimately spread wider) · stale = older than {stale_days} days "
-             "· bw = decode tok/s × bytes read per token ÷ the device's memory-bandwidth ceiling (an estimate, cited per device).</p>")
+             "· bw = decode tok/s × bytes read per token ÷ the device's memory-bandwidth ceiling (an estimate, cited per device) "
+             "· text check failed = every run that could have given the number failed the decoded-text check (empty, off-task "
+             "or looping text), so none is shown; the runs stay in the raw records.</p>")
     L.append("<p><b>Recipe</b>: each runtime runs its own published artifact and quantization (shown under the number, in full in the "
              "detail table) — a different recipe is a different deployment profile, not a win.</p>")
     L.append("</div>")
 
-    shown = [k for k in devs if any(c["status"] in ("measured", "excluded") for c in by_dev[k])]
+    shown = [k for k in devs if any(c["status"] in ("measured", "excluded", "text-fail") for c in by_dev[k])]
     L.append("<table class=\"cov\"><thead><tr><th>device</th><th>regime</th><th class=\"n\">cells measured</th>"
              "<th class=\"n\">stale</th><th>captures</th><th>runtimes in the grid</th></tr></thead><tbody>")
     for key in shown:
@@ -318,6 +328,7 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
         dc = by_dev[key]
         measured = [c for c in dc if c["status"] == "measured"]
         excluded = [c for c in dc if c["status"] == "excluded"]
+        text_failed = [c for c in dc if c["status"] == "text-fail"]
         missing = [c for c in dc if c["status"] == "missing"]
         regime = dc[0]["regime"]
         dates = sorted({c["captured"] for c in measured if c["captured"]})
@@ -329,6 +340,8 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
         cov = f"{len(measured)} of {len(dc)} cells measured"
         if excluded:
             cov += f", {len(excluded)} excluded with a reason"
+        if text_failed:
+            cov += f", {len(text_failed)} failed the text check"
         if missing:
             cov += f", {len(missing)} not yet measured"
         rng = f"captures {dates[0]} … {dates[-1]}" if dates else "no captures"
@@ -375,20 +388,23 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
                      "prefill, TTFT, memory, session, admitted sessions so far</summary>")
             L.append("<table class=\"detail\"><thead><tr><th>model</th><th>runtime</th><th>ctx</th><th>artifact</th><th>quant</th>"
                      "<th>engine</th><th class=\"n\">decode tok/s</th><th class=\"n\">spread %</th><th class=\"n\">n</th>"
-                     "<th class=\"n\">prefill tok/s</th><th class=\"n\">TTFT ms</th><th class=\"n\">mem MB</th>"
+                     "<th class=\"n\">text fail</th><th class=\"n\">prefill tok/s</th><th class=\"n\">TTFT ms</th><th class=\"n\">mem MB</th>"
                      "<th class=\"n\">mem peak MB</th><th class=\"n\">bw</th><th>thermal at start</th><th>captured</th>"
                      "<th>session</th><th class=\"n\">sessions</th></tr></thead><tbody>")
             for c in tcells:
                 ns = len(sessions.get((c["device"], c["model_id"], c["arm"], c["task"], c["context_tokens"]), ()))
                 lead = (f"<tr><td>{esc(c['model'])}</td><td>{esc(c['arm'])}</td><td>{esc(c['context_tokens'] or '—')}</td>"
                         f"<td><code>{esc(c['model_id'])}</code></td>")
-                if c["status"] == "measured":
+                if c["status"] in ("measured", "text-fail"):
+                    # a text-fail row keeps its recipe and session (the runs are in raw);
+                    # its decode is "—" and the grid cell carries the reason
                     approx = "~" if c.get("bw_basis") not in ("vendor",) else ""
                     bwc = f"{approx}{c['bw_util_pct']:.1f}%" if c.get("bw_util_pct") is not None else "n/a"
                     L.append(
                         lead + f"<td>{esc(c['quant'])}</td><td><code>{esc(c['engine'])}</code></td>"
                         f"<td class=\"n\">{fmt(c['decode_tps'])}</td><td class=\"n\">{fmt(c['spread_pct'])}</td>"
-                        f"<td class=\"n\">{c['n']}</td><td class=\"n\">{fmt(c['prefill_tps'])}</td>"
+                        f"<td class=\"n\">{c['n']}</td><td class=\"n\">{esc(c['text_fail'] or '—')}</td>"
+                        f"<td class=\"n\">{fmt(c['prefill_tps'])}</td>"
                         f"<td class=\"n\">{fmt(c['ttft_ms'], 0)}</td><td class=\"n\">{fmt(c['mem_mb'], 0)}</td>"
                         f"<td class=\"n\">{fmt(c['mem_peak_mb'], 0)}</td>"
                         f"<td class=\"n\">{esc(bwc)}</td><td>{esc(c['thermal_initial'])}</td>"
@@ -396,12 +412,14 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
                         f"<td><code>{esc(os.path.basename(c['campaign']))}</code></td><td class=\"n\">{ns}</td></tr>")
                 else:
                     why = c["reason"] if c["status"] == "excluded" else "not yet measured"
-                    L.append(lead + f"<td colspan=\"13\" class=\"gap\">— {esc(why)}</td><td class=\"n\">{ns}</td></tr>")
+                    L.append(lead + f"<td colspan=\"14\" class=\"gap\">— {esc(why)}</td><td class=\"n\">{ns}</td></tr>")
             L.append("</tbody></table>")
             L.append(f"<p class=\"devmeta\">{esc(MEM_NOTE)} ctx = the cell's context-tokens= (its rows are the runs "
                      "recorded at that KV allocation; — = the cell pins none). "
                      "bw = decode tok/s × bytes a decode step reads (the artifact minus per-token-gathered tables) ÷ this device's ceiling; "
-                     "~ marks a ceiling that is a derivation or an estimate, not a vendor figure.</p>")
+                     "~ marks a ceiling that is a derivation or an estimate, not a vendor figure. "
+                     "text fail = the session's runs whose decoded text failed the text check (kept out of every number) / the runs "
+                     "that would have pooled, cold and warm; — = the text was not checked.</p>")
             L.append("</details>")
         L.append("</section>")
 

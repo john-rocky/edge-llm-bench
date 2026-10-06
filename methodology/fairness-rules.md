@@ -115,3 +115,32 @@ Therefore:
 - First-position cache effects are real too: the first run after another arm has pulled a
   multi-GB model through the page cache can read far below true (measured: 16.2 vs 27.4).
   Discard such a round only on the strength of the following rounds, and say so in the table.
+
+## 12. A run whose decoded text fails the text check is not a measurement  <!-- slug: text-check-rule -->
+
+An engine reports tok/s from token counts and clocks; it does not read what it decoded, so
+a run that prints nothing useful gets a normal-looking rate. On the Galaxy S26 GPU the
+LiteRT-LM Qwen3-1.7B `dynamic_wi4b32` file decoded 256 newline tokens at the 2K prefill
+(`results/raw/2026-09-20-dashboard-longctx-v1-s26-android-gpudiag/README.md`) and fluent
+text unrelated to the task at the 1K prefill
+(`results/raw/2026-10-06-dashboard-longctx1024-v1-s26-a2-android/NOTES.md`), both at rates
+that passed every timing check.
+
+- The Android runner checks the decoded text of every context-prompt launch (a LiteRT-LM
+  prompt task with `context-tokens=`: the two-iteration `litert_lm_advanced_main` path) by
+  default since 2026-10-06; `BENCH_TEXT_CHECK=0` turns it off. Each iteration's text is
+  stored beside its record (`*.decoded.txt`) and screened by
+  `android/bench/parsers.text_integrity`: empty or degenerate, off the task's subject (a
+  lexical screen for the current prompts' subject, on-device AI), repetition loop.
+- A FAIL run keeps its record, text and log (failed-runs-stay): `conditions.textCheck` and
+  `protocolFlags` say why, the launch is listed in `FAILURES.txt`, and a text FAIL never
+  triggers the gate's re-run — a re-run reproduces it.
+- `results/summary/device-runs.csv` carries the verdict (`text_check`: `PASS`,
+  `FAIL:<flags>`, empty = not checked); `render_leaderboard.arm_row` keeps FAIL runs out of
+  every metric pool, as it keeps `firstEver` runs out, and a dashboard cell left without a
+  number shows `— (text check failed: <flags> (k of N runs))`, never the rate.
+- The screen is lexical: PASS means on the subject, not correct. A FAIL on a text a person
+  reads as a good answer is a defect of the screen, fixed in `parsers.py` — never a reason to
+  quote the rate. Paths without a stored decoded text (the plain `litert_lm_main`
+  short-chat launch, llama-cli) are not checked by this rule; on the Apple lanes the cell
+  gate's `DEGENERATE` screens `outputSample` for repetition loops (§4).

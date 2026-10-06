@@ -338,6 +338,21 @@ Two rules the job enforces by *not* acting: a flagged or failed cell is
 never averaged away or dropped, and a refused sitting is never partially
 kept — the whole campaign is either admitted or shown as an attempt.
 
+Decoded-text check (2026-10-06, text-check-rule in
+`methodology/fairness-rules.md`): the job sets no `BENCH_TEXT_CHECK`, and the
+Android runner now checks by default the decoded text of every
+context-prompt launch — the weekly LiteRT-LM 1024 cells, which until then
+ran unchecked. A launch whose reply is empty, off the task's subject or a
+repetition loop is a failed run, not a slow one: both records, the stored text
+(`*.decoded.txt`) and the log stay in raw, the launch is in `FAILURES.txt` and
+so in `SESSION.json`, the text FAIL never triggers the gate's re-run (a re-run
+reproduces it), and admission is untouched (the anchors are short-chat cells,
+which store no decoded text). The summary's `text_check` column carries the
+verdict and `arm_row` keeps the run out of every number, so a cell whose runs
+all fail renders `— (text check failed: …)` in place of a rate, every week,
+without an `exclude=`. Human step: read the stored text before the campaign
+is committed.
+
 ## 6. Outputs and where they live
 
 | artifact | path | committed? |

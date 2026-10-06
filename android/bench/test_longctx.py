@@ -36,7 +36,20 @@ def iteration(p, g, rate):
             f"    Decode Speed: {rate} tokens/sec.\n")
 
 
-TWO = "executor_settings:\nmax_tokens: 4096\n" + iteration(1986, 256, 31.0) + iteration(1986, 93, 35.0)
+REPLY = ("On-device AI lets a phone answer offline: the model runs locally, so private text "
+         "never reaches a cloud server and replies keep coming without a network.")
+OFF_TASK = ("Please share the document you want summarised and the questions you have about it, "
+            "and I will answer each of them in order.")
+
+
+def turn(text):
+    """advanced_main's preamble to one iteration: the turn's log line, then the decoded text
+    (the runner's text check reads it; on by default for this path)."""
+    return f"I0000 00:00:1.000000 1 litert_lm_lib.cc:868] Running single-turn conversation\n{text}\n"
+
+
+TWO = ("executor_settings:\nmax_tokens: 4096\n" + turn(REPLY) + iteration(1986, 256, 31.0)
+       + turn(REPLY) + iteration(1986, 93, 35.0))
 
 
 class LongContextTests(unittest.TestCase):
@@ -223,6 +236,27 @@ class LongContextTests(unittest.TestCase):
             self.assertEqual(r["conditions"]["batteryTemperatureInitialC"], 31.2)
             self.assertEqual(r["conditions"]["batteryTemperatureFinalC"], 32.4)
             self.assertTrue(r["conditions"]["thermalGateTimeoutNonNominal"])
+
+    def test_text_check_is_on_by_default_and_a_fail_keeps_its_records(self):
+        # text-check-rule: no env -> checked; off-task text -> the launch fails (FAILURES.txt
+        # in a campaign) while both records stay with their rate, flagged; =0 turns it off
+        off = TWO.replace(REPLY, OFF_TASK)
+        with patch.dict(os.environ):
+            os.environ.pop("BENCH_TEXT_CHECK", None)
+            rc, rows = self.run_mocked_cell(TWO)
+            self.assertEqual(rc, 0)
+            self.assertEqual([r["conditions"]["textCheck"]["status"] for r in rows], ["PASS", "PASS"])
+            rc, rows = self.run_mocked_cell(off)
+            self.assertEqual(rc, 1)
+            self.assertEqual(len(rows), 2)
+            for r in rows:
+                self.assertEqual(r["conditions"]["textCheck"]["flags"], ["text-off-task-screen"])
+                self.assertIn("text-off-task-screen", r["conditions"]["protocolFlags"])
+                self.assertTrue(r["metrics"]["decodeTokensPerSecond"])
+            os.environ["BENCH_TEXT_CHECK"] = "0"
+            rc, rows = self.run_mocked_cell(off)
+            self.assertEqual(rc, 0)
+            self.assertFalse(any("textCheck" in r["conditions"] for r in rows))
 
     def test_missing_second_iteration_keeps_failed_record_without_borrowing_counts(self):
         rc, rows = self.run_mocked_cell("max_tokens: 4096\n" + iteration(1986, 256, 31.0))

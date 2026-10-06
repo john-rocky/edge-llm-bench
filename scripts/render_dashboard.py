@@ -24,6 +24,11 @@ What this adds over LEADERBOARD.md:
     sessions) stay admitted, as they were.
   - staleness: a cell older than --stale-days carries "stale", so a missed
     weekly slot shows in the table and not only in the job ledger.
+  - text check (text-check-rule): arm_row keeps runs whose decoded text
+    failed the check out of the pool; a cell left with no headline number
+    for that reason renders "— (text check failed: <flags> (k of N runs))"
+    (status text-fail), and the detail table's "text fail" column says how
+    many runs of a measured cell left the pool (— = the text was not checked).
   - no ranking: one grid per (device, task), rows in cells-file order
     (light -> heavy; a context-tokens= cell gets its own row per allocation),
     arm columns in a fixed alphabetical order. The recipe (artifact, quantization, engine pin)
@@ -207,7 +212,7 @@ MEM_NOTE = ("mem MB / mem peak MB = the median over the session's runs of each r
 
 def grid_text(c):
     """A grid cell's text: the headline decode with its flags, or why there is none."""
-    if c["status"] == "excluded":
+    if c["status"] in ("excluded", "text-fail"):
         return f"— ({c['reason']})"
     if c["status"] == "missing":
         return "not yet measured"
@@ -261,6 +266,9 @@ def build(cells_path, schedule_path, stale_days, today):
                     # artifact minus per-token-gathered tables where registered)
                     "artifact_bytes": None, "stream_bytes": None, "bw_ceiling_gbps": None,
                     "bw_basis": "", "bw_util_pct": None,
+                    # "k/N": runs of the session the text check kept out of the pool,
+                    # of the runs that would have pooled; "" = text not checked
+                    "text_fail": "",
                 }
                 if c["exclude"]:
                     rec.update(status="excluded", reason=c["exclude"])
@@ -283,6 +291,14 @@ def build(cells_path, schedule_path, stale_days, today):
                                captured=captured, campaign=a["campaign"],
                                thermal_initial=",".join(a["thermal_initial"]),
                                stale=stale)
+                    if a["text_checked_n"]:
+                        rec["text_fail"] = f"{a['text_fail_n']}/{a['n'] + a['text_fail_n']}"
+                    if not dec and a["text_fail_n"]:
+                        # text-check-rule: no headline because the text check emptied
+                        # the pool — the reason is the datum, never the rate
+                        rec.update(status="text-fail", spread_pct=None,
+                                   reason=f"text check failed: {a['text_fail_flags']} "
+                                          f"({a['text_fail_n']} of {a['n'] + a['text_fail_n']} runs)")
                     u = bandwidth_utilization(dec, c["arm"], c["model_id"], ident, plat)
                     if u:
                         rec.update(artifact_bytes=u["artifact_bytes"], stream_bytes=u["bytes"],
@@ -313,7 +329,11 @@ def render_md(out_cells, cells_path, stale_days, today):
              "is ranked. `⚠ N%` = trial spread above the "
              f"{SPREAD_FLAG:.0f}% bar (spread-rule; Android cold trials legitimately "
              f"spread wider, the mark is information, not a verdict). `stale` = older "
-             f"than {stale_days} days. Short-chat prefill is overhead-dominated and does "
+             f"than {stale_days} days. `— (text check failed: …)` = every run of the "
+             "session that could have given the cell's number failed the decoded-text "
+             "check (empty, off-task or looping text), so none is shown "
+             "(text-check-rule; the runs stay in raw). Short-chat prefill is "
+             "overhead-dominated and does "
              "not compare across arms (docs/OPERATIONS.md); it is listed, not headlined. "
              "`bw N%` = decode tok/s × bytes per token ÷ the device's memory-bandwidth "
              "ceiling (`devices/memory-bandwidth.json`, cited per device below): the share "
@@ -334,6 +354,7 @@ def render_md(out_cells, cells_path, stale_days, today):
     for (plat, ident, display), dcells in by_dev.items():
         measured = sum(1 for c in dcells if c["status"] == "measured")
         excluded = sum(1 for c in dcells if c["status"] == "excluded")
+        text_failed = sum(1 for c in dcells if c["status"] == "text-fail")
         missing = sum(1 for c in dcells if c["status"] in ("missing", "no-decode"))
         dates = sorted({c["captured"] for c in dcells if c["captured"]})
         engines = sorted({c["engine"] for c in dcells if c["engine"]})
@@ -341,6 +362,7 @@ def render_md(out_cells, cells_path, stale_days, today):
         L.append("")
         L.append(f"{measured} of {len(dcells)} cells measured"
                  + (f", {excluded} excluded with a reason" if excluded else "")
+                 + (f", {text_failed} failed the text check" if text_failed else "")
                  + (f", {missing} not yet measured" if missing else "")
                  + (f"; captures {dates[0]} .. {dates[-1]}" if dates else "")
                  + (f"; engines observed: {', '.join(engines)}" if engines else "") + ".")
@@ -371,8 +393,9 @@ def render_md(out_cells, cells_path, stale_days, today):
             L.append("<details><summary>per-cell detail (recipe, session, memory, prefill, bandwidth)</summary>")
             L.append("")
             header = ["model", "arm", "ctx", "artifact", "quant", "engine", "decode tok/s",
-                      "spread %", "n", "artifact MB", "MB/token", "bw util", "prefill tok/s",
-                      "TTFT ms", "mem MB", "mem peak MB", "thermal at start", "captured", "session"]
+                      "spread %", "n", "text fail", "artifact MB", "MB/token", "bw util",
+                      "prefill tok/s", "TTFT ms", "mem MB", "mem peak MB", "thermal at start",
+                      "captured", "session"]
             L.append("| " + " | ".join(header) + " |")
             L.append("|" + "---|" * len(header))
             for c in dcells:
@@ -385,9 +408,11 @@ def render_md(out_cells, cells_path, stale_days, today):
                 else:
                     mb = f"{c['artifact_bytes'] / 1e6:.0f}" if c["artifact_bytes"] else "—"
                     tok = f"{c['stream_bytes'] / 1e6:.0f}" if c["stream_bytes"] else "—"
+                    dec = (f"— ({c['reason']})" if c["status"] == "text-fail"
+                           else fmt(c["decode_tps"]))
                     row = head + [
-                        c["quant"], c["engine"], fmt(c["decode_tps"]), fmt(c["spread_pct"]),
-                        str(c["n"]), mb, tok,
+                        c["quant"], c["engine"], dec, fmt(c["spread_pct"]),
+                        str(c["n"]), c["text_fail"] or "—", mb, tok,
                         fmt_bw(bw_of(c)) if c["bw_util_pct"] is not None else "n/a",
                         fmt(c["prefill_tps"]), fmt(c["ttft_ms"], 0), fmt(c["mem_mb"], 0),
                         fmt(c["mem_peak_mb"], 0), c["thermal_initial"] or "—",
@@ -399,7 +424,10 @@ def render_md(out_cells, cells_path, stale_days, today):
                      "recorded at that KV allocation; — = the cell pins none). artifact MB = "
                      "decimal megabytes of the whole artifact; MB/token = the bytes a decode step "
                      "reads (artifact minus per-token-gathered tables, models/artifact-bytes.json); "
-                     "bw util = decode tok/s × MB/token ÷ this device's ceiling.")
+                     "bw util = decode tok/s × MB/token ÷ this device's ceiling. text fail = "
+                     "the session's runs whose decoded text failed the text check (kept out of "
+                     "every number, text-check-rule) / the runs that would have pooled, cold "
+                     "and warm; — = the text was not checked.")
             L.append("")
             L.append("</details>")
             L.append("")
@@ -411,7 +439,7 @@ CSV_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", 
               "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
               "captured", "campaign", "stale",
               "artifact_bytes", "stream_bytes", "bw_ceiling_gbps", "bw_basis", "bw_util_pct",
-              "mem_peak_mb", "context_tokens"]
+              "mem_peak_mb", "context_tokens", "text_fail"]
 
 
 def write_outputs(out_cells, md, md_path, out_dir):

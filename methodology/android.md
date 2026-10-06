@@ -120,3 +120,19 @@ round. The retry is a consecutive block, disclosed in
 A flagged retry stands with a `FLAGGED.txt` note; SHORT never retries
 (failed-runs-stay). The whole path runs device-free in CI:
 `android/bench/selftest.py` (fake adb, scripted engine output, real gate).
+
+Text check (text-check-rule, `methodology/fairness-rules.md` §12): every
+context-prompt launch — a LiteRT-LM prompt task with `context-tokens=`,
+`litert_lm_advanced_main --num_iterations=2` — has its decoded text checked by
+default since 2026-10-06 (`BENCH_TEXT_CHECK=0` turns it off; before, only the
+sittings that set `BENCH_TEXT_CHECK=1` were checked, so the weekly job's 1024
+cells were not). `run_cell.py` cuts each iteration's reply from the console at
+the turn boundary, stores it beside the record (`*.decoded.txt`, sha256 in
+`conditions.textOutputSHA256`) and screens it with `parsers.text_integrity`
+(empty or degenerate, off the task's subject, repetition loop); the verdict is
+`conditions.textCheck`, its flags join `protocolFlags`. A FAIL launch keeps
+both records, the text and the log, is listed in `FAILURES.txt`, and never
+triggers the gate's re-run (a re-run reproduces it); `build_summary.py` writes
+the verdict as `text_check` and `render_leaderboard.arm_row` keeps FAIL runs
+out of every number. The plain `litert_lm_main` short-chat launch and
+llama-cli store no decoded text and are not checked.
