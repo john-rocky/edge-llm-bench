@@ -22,9 +22,9 @@ Design decisions (methodology/android.md):
   - CPU affinity: BENCH_CPU_MASK (default f0 — upstream recommendation, tuned
     on Pixel 8a; empty = no taskset). Recorded per run in conditions; the mask
     is a per-device choice, see CPU_MASK below and devices/*.md.
-  - RSS is sampled from /proc/<pid>/status (VmRSS) by an on-device loop ->
-    memoryMedianResidentMB; iOS phys_footprint has no Android equivalent and
-    is never fabricated.
+  - RSS is sampled from /proc/<pid>/status by an on-device loop (RSS_BASIS):
+    VmRSS -> memoryMedianResidentMB, VmHWM -> memoryPeakResidentMB; iOS
+    phys_footprint has no Android equivalent and is never fabricated.
   - conditions.screen is read from the phone right before every launch
     (device_probe.screen_conditions: "on-usb" / "off-usb (mWakefulness=…)",
     conditions.screenSource "measured" or "env"); on and off are both
@@ -58,6 +58,14 @@ HARNESS_STAMP = "2026-08-android-cli-v1"
 # conditions.cpuAffinity either way; devices/*.md states each device's choice.
 CPU_MASK = os.environ.get("BENCH_CPU_MASK", "f0")
 STRICT_SMOKE = os.environ.get("BENCH_STRICT_SMOKE") == "1"
+# provenance.rssBasis of every record (schema: memoryPeakResidentMB). Until
+# 2026-10-06 VmHWM was read only under BENCH_STRICT_SMOKE, so earlier records
+# from any other sitting carry no peak.
+RSS_BASIS = ("VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s "
+             "after launch until the engine process exits (load, prefill and decode inside "
+             "the window); memoryMedianResidentMB = median of the VmRSS reads, "
+             "memoryPeakResidentMB = the largest VmHWM read (the kernel's resident "
+             "high-water mark since process start); kB / 1024")
 
 
 def load_pins():
@@ -290,7 +298,9 @@ def run_once(cmd, binname, serial, timeout):
     # cat looked for run_out.txt in the wrong cwd while the engine ran fine).
     taskset_prefix = f"taskset {CPU_MASK} " if CPU_MASK else ""
     output_file = f"{DEV_DIR}/run_out_{uuid.uuid4().hex}.txt" if STRICT_SMOKE else f"{DEV_DIR}/run_out.txt"
-    rss_command = "grep -E 'VmRSS|VmHWM'" if STRICT_SMOKE else "grep VmRSS"
+    # VmHWM is the kernel's high-water mark, so a peak between two 0.5 s
+    # VmRSS reads is not lost
+    rss_command = "grep -E 'VmRSS|VmHWM'"
     timeout_prefix = ""
     if os.environ.get("BENCH_SESSION_DEADLINE"):
         remaining = float(os.environ["BENCH_SESSION_DEADLINE"]) - time.time()
@@ -510,7 +520,8 @@ def main():
                            **screen, "elapsedSeconds": round(elapsed, 1),
                            "exitCode": exit_code},
             "metrics": metrics,
-            "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py"},
+            "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
+                           "rssBasis": RSS_BASIS},
         }
         if extended:
             rec["conditions"].update({

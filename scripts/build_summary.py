@@ -245,6 +245,13 @@ def build_device():
             "device": DEVICE_ALIASES.get(dev.get("modelIdentifier"),
                                          dev.get("modelIdentifier")),
             "os_version": dev.get("systemVersion"),
+            # peak memory (2026-10-06), appended so every earlier column keeps
+            # its position: the phys_footprint high-water of the Apple sampler
+            # (the field is named "during decode"; its window is the whole
+            # generation, load excluded) and the resident high-water each
+            # writer records (methodology/memory.md "Peak memory")
+            "mem_footprint_peak_mb": m.get("memoryPeakDuringDecodeMB"),
+            "mem_resident_peak_mb": m.get("memoryPeakResidentMB"),
         })
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
     path = os.path.join(OUT, "device-runs.csv")
@@ -308,6 +315,15 @@ def main():
             "(`stamp_engine_pins.sh` -> bundled engine-pins.json -> BenchmarkResult),\n"
             "surfaced here as `engine_version`/`engine_artifact`; new writers must emit\n"
             "`schema/result.v1.json`.\n\n"
+            "Peak memory (the last two columns of `device-runs.csv`, 2026-10-06):\n"
+            "`mem_footprint_peak_mb` = `memoryPeakDuringDecodeMB`, the phys_footprint\n"
+            "high-water of the Apple sampler (every 100 ms over the whole generation, load\n"
+            "excluded); `mem_resident_peak_mb` = `memoryPeakResidentMB`, the resident\n"
+            "high-water as each writer records it (Android `run_cell.py`: the largest VmHWM\n"
+            "read of the launch). Android `run_cell.py` reads VmHWM on every launch only\n"
+            "from 2026-10-06; its earlier rows carry a peak only from the\n"
+            "`BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:\n"
+            "`methodology/memory.md` \"Peak memory\".\n\n"
             "Release-regression diffing over this layer: `scripts/regression_diff.py`\n"
             "(quality joins on tag; device cells join on device/runtime/model/task/cold-warm\n"
             "with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is\n"

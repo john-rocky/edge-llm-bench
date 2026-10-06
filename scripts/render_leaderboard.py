@@ -119,6 +119,11 @@ def arm_row(rows):
     mem = [fnum(r["mem_footprint_median_mb"]) or fnum(r["mem_resident_median_mb"])
            for r in meas]
     mem = [v for v in mem if v]
+    # per-run high-water, same basis choice as mem; .get: summaries built
+    # before 2026-10-06 have no peak columns
+    mem_peak = [fnum(r.get("mem_footprint_peak_mb")) or fnum(r.get("mem_resident_peak_mb"))
+                for r in meas]
+    mem_peak = [v for v in mem_peak if v]
     quants, qcorr = set(), False
     for r in sess:
         if r["quantization"]:
@@ -136,6 +141,8 @@ def arm_row(rows):
         "prefill": statistics.median(prefill) if prefill else None,
         "ttft": statistics.median(ttft) if ttft else None,
         "mem": statistics.median(mem) if mem else None,
+        "mem_peak": statistics.median(mem_peak) if mem_peak else None,
+        "mem_peak_n": len(mem_peak),
         "quant": (" / ".join(quants) or "unrecorded") + ("†" if qcorr else ""),
         "engine": " / ".join(engines) or "pre-stamp",
         "date": date, "n": len(meas),

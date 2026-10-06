@@ -43,8 +43,13 @@ def engine(cmd):
     q = json.load(open(sched))
     d = q.pop(0) if q else 20.0
     json.dump(q, open(sched, "w"))
-    for _ in range(3):
-        print("VmRSS:\\t  520000 kB")
+    # the sampler's reads, only for the fields the runner's grep asks for
+    # (status order: VmHWM before VmRSS); VmHWM rises 600000 -> 640000 kB
+    for hwm in (600000, 610000, 640000):
+        if "VmHWM" in cmd:
+            print("VmHWM:\\t  %%d kB" %% hwm)
+        if "VmRSS" in cmd:
+            print("VmRSS:\\t  520000 kB")
     print("===ENGINE_OUTPUT===")
     if "./llama-cli" in cmd:
         print("[ Prompt: 200.0 t/s | Generation: %%s t/s ]" %% d)
@@ -261,6 +266,13 @@ def main():
         ok(r1["metrics"]["decodeTokensPerSecond"] == 25.0, "decode parsed from engine output")
         ok(os.path.exists(os.path.join(out_a, r1["provenance"]["rawLog"])),
            "raw console log stored next to the record (stored-report-rule)")
+    # VmHWM is read on every launch, not only under BENCH_STRICT_SMOKE (unset here)
+    ok(len(lit + lla) == 4 and all(
+        r["metrics"].get("memoryMedianResidentMB") == 520000 / 1024
+        and r["metrics"].get("memoryPeakResidentMB") == 640000 / 1024
+        and r["metrics"]["memoryPeakResidentMB"] >= r["metrics"]["memoryMedianResidentMB"]
+        and "VmHWM" in r["provenance"].get("rssBasis", "") for _, r in lit + lla),
+       "memoryPeakResidentMB = largest VmHWM read / 1024 >= the VmRSS median, rssBasis recorded")
     ok(len(lit + lla) == 4 and all(
         r["conditions"].get("screen") == "on-usb" and r["conditions"].get("screenSource") == "measured"
         and r["conditions"].get("stayOnWhilePluggedIn") == "0" for _, r in lit + lla),
@@ -502,6 +514,8 @@ def main():
         ok([r["metrics"]["generatedTokenCount"] for r in rows] == [256, 93], "per-iteration counts remain separate")
         ok([r["conditions"]["regime"] for r in rows] == ["cold", "warm"], "cold/warm labels per launch")
         ok(all(r["conditions"]["batteryTemperatureInitialC"] == 31.6 for r in rows), "battery temperature is Celsius")
+        ok(all(r["metrics"].get("memoryPeakResidentMB") == 640000 / 1024 for r in rows),
+           "both iteration records carry the launch's VmHWM peak")
     with open(os.path.join(out_round, "launch_order.jsonl")) as fh:
         order = [json.loads(line) for line in fh]
     ok([d["cell"] for d in order[4:]] == [d["cell"] for d in order[:4]][::-1], "full order reversed, including anchor")

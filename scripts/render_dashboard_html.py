@@ -8,15 +8,17 @@
 
 The page reads `.dashboard/dashboard-v1.json` — the cells scripts/render_dashboard.py
 built through render_leaderboard.arm_row (latest admitted capture session per
-cell, never pooled across sessions) — and draws one grid per device: rows are
-the models in cells-file order, columns are the arms in a fixed alphabetical
+cell, never pooled across sessions) — and draws one grid per (device, task):
+rows are the models in cells-file order (a row per KV allocation where the
+cells pin context-tokens=), columns are the arms in a fixed alphabetical
 order, every number carries its recipe, engine pin and session date. Nothing
 is ranked; the bar under a number is the same one hue everywhere and is scaled
-to the device's largest cell, so it reads magnitude, not identity.
+to the grid's largest cell, so it reads magnitude, not identity.
 
 The history CSV is the same aggregation applied per admitted session: one row
-per (device, model, arm, campaign), for a database or a trend view. It imports
-arm_row and filters the rows it hands over; it defines no second aggregation.
+per (device, model, arm, task, allocation, campaign), for a database or a trend
+view. It imports arm_row and filters the rows it hands over the way
+render_dashboard.build does; it defines no second aggregation.
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
 cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
@@ -32,7 +34,8 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_dashboard import SUMMARY_CSV, load_admission, rel  # noqa: E402
+from render_dashboard import (MEM_NOTE, SUMMARY_CSV, ctx_key, grid_sections,  # noqa: E402
+                              load_admission, rel)
 from render_leaderboard import SPREAD_FLAG, arm_row  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,7 +46,8 @@ BANDWIDTH_JSON = os.path.join(ROOT, "devices", "memory-bandwidth.json")
 
 HISTORY_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", "model_id",
                   "task", "campaign", "captured", "decode_tps", "spread_pct", "n",
-                  "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial"]
+                  "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
+                  "context_tokens", "mem_peak_mb"]
 
 
 def esc(s):
@@ -90,10 +94,13 @@ def history_rows(cells):
     for c in cells:
         if c["status"] == "excluded":
             continue
+        # the same cell selection as render_dashboard.build, allocation included
+        ctx = c.get("context_tokens") or ""
         sel = [r for r in rows
                if r["platform"] == c["platform"] and r["device"] == c["device"]
                and r["runtime"] == c["arm"] and r["model_id"] == c["model_id"]
-               and r["task"] == c["task"]]
+               and r["task"] == c["task"]
+               and (not ctx or ctx_key(r.get("context_tokens")) == ctx)]
         by_campaign = {}
         for r in sel:
             by_campaign.setdefault(r["campaign"], []).append(r)
@@ -116,8 +123,11 @@ def history_rows(cells):
                 "mem_mb": round(a["mem"], 1) if a["mem"] else "",
                 "quant": a["quant"], "engine": a["engine"],
                 "thermal_initial": ",".join(a["thermal_initial"]),
+                "context_tokens": ctx,
+                "mem_peak_mb": round(a["mem_peak"], 1) if a["mem_peak"] else "",
             })
-    out.sort(key=lambda r: (r["platform"], r["device"], r["model"], r["arm"], r["captured"]))
+    out.sort(key=lambda r: (r["platform"], r["device"], r["model"], r["arm"], r["task"],
+                            r["context_tokens"], r["captured"]))
     return out
 
 
@@ -151,6 +161,11 @@ html, body { margin: 0; background: var(--surface); color: var(--text);
 main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
 h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
 h2 { font-size: 17px; font-weight: 600; margin: 0 0 2px; }
+h3 { font-size: 13px; font-weight: 600; margin: 14px 0 2px; color: var(--text-2); }
+h3 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--text); }
+table.grid th.model .ctx { display: block; font-weight: 400; font-size: 11.5px; color: var(--text-2); }
+.entry + .entry { margin-top: 8px; }
+.tag code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color: var(--text-2); }
 .sub { color: var(--text-2); margin: 0 0 18px; }
 .rules { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; margin: 0 0 22px;
   color: var(--text-2); background: var(--card); }
@@ -210,13 +225,49 @@ table.cov td.n, table.cov th.n { text-align: right; padding-right: 22px; font-va
 """
 
 
+def grid_entry(c, dmax):
+    """(tooltip, inner HTML) of one cell in a grid slot; dmax = the grid's largest decode."""
+    if c["status"] == "excluded":
+        return "", f"<span class=\"gap\">—<span class=\"why\">{esc(c['reason'])}</span></span>"
+    if c["status"] != "measured":
+        return "", "<span class=\"gap\">not yet measured</span>"
+    pct = max(1.5, 100.0 * (c["decode_tps"] or 0) / dmax)
+    meta_bits = [short_quant(c["quant"]), short_engine(c["engine"]), c["captured"]]
+    if c.get("bw_util_pct") is not None:
+        approx = "~" if c.get("bw_basis") not in ("vendor",) else ""
+        meta_bits.append(f"bw {approx}{c['bw_util_pct']:.0f}%")
+    tip = (f"{c['model_id']} · {c['quant']} · engine {c['engine']} · n={c['n']} · "
+           f"prefill {fmt(c['prefill_tps'])} tok/s · TTFT {fmt(c['ttft_ms'], 0)} ms · "
+           f"mem {fmt(c['mem_mb'], 0)} MB · peak {fmt(c['mem_peak_mb'], 0)} MB · "
+           + (f"ctx {c['context_tokens']} · " if c["context_tokens"] else "")
+           + os.path.basename(c["campaign"]))
+    parts = [f"<div class=\"num\">{fmt(c['decode_tps'])}<span class=\"unit\">tok/s</span></div>",
+             f"<div class=\"bar\"><span style=\"width:{pct:.1f}%\"></span></div>",
+             f"<div class=\"meta\">{esc(' · '.join(b for b in meta_bits if b))}</div>"]
+    flags = []
+    if (c["spread_pct"] or 0) > SPREAD_FLAG:
+        flags.append(f"<span class=\"flag warn\">spread {c['spread_pct']:.0f}%</span>")
+    if c["stale"]:
+        flags.append("<span class=\"flag stale\">stale</span>")
+    if flags:
+        parts.append(f"<div class=\"flags\">{''.join(flags)}</div>")
+    return tip, "".join(parts)
+
+
 def render(cells, bandwidth, generated, stale_days, history, open_details, head):
+    for c in cells:
+        # a JSON written before 2026-10-06 lacks these (one task, no allocation)
+        c.setdefault("context_tokens", "")
+        c.setdefault("mem_peak_mb", None)
+        c.setdefault("artifact_tag", c["model_id"].split("/", 1)[-1])
     by_dev = {}
     for c in cells:
         by_dev.setdefault((c["platform"], c["device"], c["device_display"]), []).append(c)
     sessions = {}
     for h in history:
-        sessions.setdefault((h["device"], h["model"], h["arm"]), set()).add(h["campaign"])
+        sessions.setdefault((h["device"], h["model_id"], h["arm"], h["task"], h["context_tokens"]),
+                            set()).add(h["campaign"])
+    tasks = list(dict.fromkeys(c["task"] for c in cells))
 
     order = {"mac": 0, "ios": 1, "android": 2}
     devs = sorted(by_dev, key=lambda k: (order.get(k[0], 9), k[1]))
@@ -226,19 +277,21 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
     L.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
     L.append("<title>edge-llm-bench dashboard</title>")
     L.append(f"<style>{CSS}</style></head><body><main>")
-    L.append("<h1>Local LLM engines on real devices — dashboard v1 (text, short-chat)</h1>")
+    L.append(f"<h1>Local LLM engines on real devices — dashboard v1 (text, {esc(', '.join(tasks))})</h1>")
     n_meas = sum(1 for c in cells if c["status"] == "measured")
     n_cells = sum(1 for c in cells if c["status"] != "missing" or any(
         x["status"] == "measured" for x in by_dev[(c["platform"], c["device"], c["device_display"])]))
     L.append(f"<p class=\"sub\">Rendered {esc(generated[:16].replace('T', ' '))} from the harness's summary layer"
              f"{' at commit ' + esc(head) if head else ''} · {n_meas} measured cells"
-             f" · one number per device × model × runtime, from the latest admitted capture session of that cell.</p>")
+             f" · one number per device × model × runtime × task (and KV allocation where the cell pins one), "
+             "from the latest admitted capture session of that cell.</p>")
     L.append("<div class=\"rules\">")
     L.append("<p><b>Number</b> = decode tokens/s: the median of one session's runs — warm runs on the Apple devices, "
              "fresh-process (cold) runs on Android, where the CLI has no warm regime. Sessions are never pooled; "
              "a cell shows its latest admitted session and its date.</p>")
-    L.append("<p><b>Bar</b> = the same number, scaled to the largest cell of that device. Columns are alphabetical and rows are "
-             "light → heavy; nothing is ranked. Runtimes compare only within one device and one model.</p>")
+    L.append("<p><b>Bar</b> = the same number, scaled to the largest cell of its grid (one device, one task). Columns are "
+             "alphabetical and rows are light → heavy, one row per KV allocation where the cells pin one; nothing is ranked. "
+             "Runtimes compare only within one device, one task and one model.</p>")
     L.append(f"<p><b>Flags</b>: ▲ spread = the session's runs spread more than {SPREAD_FLAG:.0f}% around the median "
              f"(information, not a verdict; Android cold runs legitimately spread wider) · stale = older than {stale_days} days "
              "· bw = decode tok/s × bytes read per token ÷ the device's memory-bandwidth ceiling (an estimate, cited per device).</p>")
@@ -266,13 +319,7 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
         measured = [c for c in dc if c["status"] == "measured"]
         excluded = [c for c in dc if c["status"] == "excluded"]
         missing = [c for c in dc if c["status"] == "missing"]
-        models = []
-        for c in dc:
-            if c["model"] not in models:
-                models.append(c["model"])
-        arms = sorted({c["arm"] for c in dc})
         regime = dc[0]["regime"]
-        dmax = max((c["decode_tps"] or 0) for c in dc) or 1.0
         dates = sorted({c["captured"] for c in measured if c["captured"]})
         engines = sorted({e for c in measured for e in (c["engine"] or "").split(" / ") if e})
         bw = (bandwidth.get("devices") or {}).get(ident) or {}
@@ -293,77 +340,70 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
             L.append(f"<br>Memory-bandwidth ceiling for bw: {bw['gbps']} GB/s ({esc(bw.get('basis'))})")
         elif bw:
             L.append(f"<br>Memory-bandwidth ceiling for bw: n/a ({esc(bw.get('basis'))}) — no vendor figure")
-        L.append("</p>")
+        L.append("</p></div>")
 
-        L.append("<table class=\"grid\"><thead><tr><th class=\"model\">model</th>")
-        for a in arms:
-            L.append(f"<th>{esc(a)} <span class=\"gap\">({esc(regime)} tok/s)</span></th>")
-        L.append("</tr></thead><tbody>")
-        for m in models:
-            L.append(f"<tr><th class=\"model\">{esc(m)}</th>")
+        for task, arms, grid in grid_sections(dc):
+            tcells = [c for c in dc if c["task"] == task]
+            dmax = max((c["decode_tps"] or 0) for c in tcells) or 1.0
+            L.append(f"<div class=\"head-grid\"><h3>task <code>{esc(task)}</code></h3>")
+            L.append("<table class=\"grid\"><thead><tr><th class=\"model\">model</th>")
             for a in arms:
-                c = next((x for x in dc if x["model"] == m and x["arm"] == a), None)
-                if c is None:
-                    L.append("<td><span class=\"gap\">—</span></td>")
-                    continue
-                if c["status"] == "excluded":
-                    L.append(f"<td><span class=\"gap\">—<span class=\"why\">{esc(c['reason'])}</span></span></td>")
-                    continue
-                if c["status"] != "measured":
-                    L.append("<td><span class=\"gap\">not yet measured</span></td>")
-                    continue
-                pct = max(1.5, 100.0 * (c["decode_tps"] or 0) / dmax)
-                meta_bits = [short_quant(c["quant"]), short_engine(c["engine"]), c["captured"]]
-                if c.get("bw_util_pct") is not None:
-                    approx = "~" if c.get("bw_basis") not in ("vendor",) else ""
-                    meta_bits.append(f"bw {approx}{c['bw_util_pct']:.0f}%")
-                tip = (f"{c['model_id']} · {c['quant']} · engine {c['engine']} · n={c['n']} · "
-                       f"prefill {fmt(c['prefill_tps'])} tok/s · TTFT {fmt(c['ttft_ms'], 0)} ms · "
-                       f"mem {fmt(c['mem_mb'], 0)} MB · {os.path.basename(c['campaign'])}")
-                L.append(f"<td title=\"{esc(tip)}\">")
-                L.append(f"<div class=\"num\">{fmt(c['decode_tps'])}<span class=\"unit\">tok/s</span></div>")
-                L.append(f"<div class=\"bar\"><span style=\"width:{pct:.1f}%\"></span></div>")
-                L.append(f"<div class=\"meta\">{esc(' · '.join(b for b in meta_bits if b))}</div>")
-                flags = []
-                if (c["spread_pct"] or 0) > SPREAD_FLAG:
-                    flags.append(f"<span class=\"flag warn\">spread {c['spread_pct']:.0f}%</span>")
-                if c["stale"]:
-                    flags.append("<span class=\"flag stale\">stale</span>")
-                if flags:
-                    L.append(f"<div class=\"flags\">{''.join(flags)}</div>")
-                L.append("</td>")
-            L.append("</tr>")
-        L.append("</tbody></table></div>")
+                L.append(f"<th>{esc(a)} <span class=\"gap\">({esc(regime)} tok/s)</span></th>")
+            L.append("</tr></thead><tbody>")
+            for (m, ctx), slots in grid:
+                ctx_label = f"<span class=\"ctx\">ctx {esc(ctx)}</span>" if ctx else ""
+                L.append(f"<tr><th class=\"model\">{esc(m)}{ctx_label}</th>")
+                for a in arms:
+                    group = slots[a]
+                    if not group:
+                        L.append("<td><span class=\"gap\">—</span></td>")
+                    elif len(group) == 1:
+                        tip, inner = grid_entry(group[0], dmax)
+                        L.append((f"<td title=\"{esc(tip)}\">" if tip else "<td>") + inner + "</td>")
+                    else:
+                        # two artifacts of one arm on one row: every cell shown, named
+                        L.append("<td>")
+                        for c in group:
+                            tip, inner = grid_entry(c, dmax)
+                            L.append((f"<div class=\"entry\" title=\"{esc(tip)}\">" if tip else "<div class=\"entry\">")
+                                     + f"<div class=\"tag\"><code>{esc(c['artifact_tag'])}</code></div>" + inner + "</div>")
+                        L.append("</td>")
+                L.append("</tr>")
+            L.append("</tbody></table></div>")
 
-        L.append(f"<details{' open' if open_details else ''}><summary>per-cell detail — artifact, recipe, engine pin, "
-                 "prefill, TTFT, memory, session, admitted sessions so far</summary>")
-        L.append("<table class=\"detail\"><thead><tr><th>model</th><th>runtime</th><th>artifact</th><th>quant</th>"
-                 "<th>engine</th><th class=\"n\">decode tok/s</th><th class=\"n\">spread %</th><th class=\"n\">n</th>"
-                 "<th class=\"n\">prefill tok/s</th><th class=\"n\">TTFT ms</th><th class=\"n\">mem MB</th>"
-                 "<th class=\"n\">bw</th><th>thermal at start</th><th>captured</th><th>session</th><th class=\"n\">sessions</th></tr></thead><tbody>")
-        for c in dc:
-            ns = len(sessions.get((c["device"], c["model"], c["arm"]), ()))
-            if c["status"] == "measured":
-                approx = "~" if c.get("bw_basis") not in ("vendor",) else ""
-                bwc = f"{approx}{c['bw_util_pct']:.1f}%" if c.get("bw_util_pct") is not None else "n/a"
-                L.append(
-                    f"<tr><td>{esc(c['model'])}</td><td>{esc(c['arm'])}</td><td><code>{esc(c['model_id'])}</code></td>"
-                    f"<td>{esc(c['quant'])}</td><td><code>{esc(c['engine'])}</code></td>"
-                    f"<td class=\"n\">{fmt(c['decode_tps'])}</td><td class=\"n\">{fmt(c['spread_pct'])}</td>"
-                    f"<td class=\"n\">{c['n']}</td><td class=\"n\">{fmt(c['prefill_tps'])}</td>"
-                    f"<td class=\"n\">{fmt(c['ttft_ms'], 0)}</td><td class=\"n\">{fmt(c['mem_mb'], 0)}</td>"
-                    f"<td class=\"n\">{esc(bwc)}</td><td>{esc(c['thermal_initial'])}</td>"
-                    f"<td>{esc(c['captured'])}{' (stale)' if c['stale'] else ''}</td>"
-                    f"<td><code>{esc(os.path.basename(c['campaign']))}</code></td><td class=\"n\">{ns}</td></tr>")
-            else:
-                why = c["reason"] if c["status"] == "excluded" else "not yet measured"
-                L.append(f"<tr><td>{esc(c['model'])}</td><td>{esc(c['arm'])}</td><td><code>{esc(c['model_id'])}</code></td>"
-                         f"<td colspan=\"12\" class=\"gap\">— {esc(why)}</td><td class=\"n\">{ns}</td></tr>")
-        L.append("</tbody></table>")
-        L.append("<p class=\"devmeta\">mem MB = phys_footprint on Apple rows, VmRSS on Android rows (a GPU arm's buffers sit outside RSS). "
-                 "bw = decode tok/s × bytes a decode step reads (the artifact minus per-token-gathered tables) ÷ this device's ceiling; "
-                 "~ marks a ceiling that is a derivation or an estimate, not a vendor figure.</p>")
-        L.append("</details></section>")
+            L.append(f"<details{' open' if open_details else ''}><summary>per-cell detail — artifact, recipe, engine pin, "
+                     "prefill, TTFT, memory, session, admitted sessions so far</summary>")
+            L.append("<table class=\"detail\"><thead><tr><th>model</th><th>runtime</th><th>ctx</th><th>artifact</th><th>quant</th>"
+                     "<th>engine</th><th class=\"n\">decode tok/s</th><th class=\"n\">spread %</th><th class=\"n\">n</th>"
+                     "<th class=\"n\">prefill tok/s</th><th class=\"n\">TTFT ms</th><th class=\"n\">mem MB</th>"
+                     "<th class=\"n\">mem peak MB</th><th class=\"n\">bw</th><th>thermal at start</th><th>captured</th>"
+                     "<th>session</th><th class=\"n\">sessions</th></tr></thead><tbody>")
+            for c in tcells:
+                ns = len(sessions.get((c["device"], c["model_id"], c["arm"], c["task"], c["context_tokens"]), ()))
+                lead = (f"<tr><td>{esc(c['model'])}</td><td>{esc(c['arm'])}</td><td>{esc(c['context_tokens'] or '—')}</td>"
+                        f"<td><code>{esc(c['model_id'])}</code></td>")
+                if c["status"] == "measured":
+                    approx = "~" if c.get("bw_basis") not in ("vendor",) else ""
+                    bwc = f"{approx}{c['bw_util_pct']:.1f}%" if c.get("bw_util_pct") is not None else "n/a"
+                    L.append(
+                        lead + f"<td>{esc(c['quant'])}</td><td><code>{esc(c['engine'])}</code></td>"
+                        f"<td class=\"n\">{fmt(c['decode_tps'])}</td><td class=\"n\">{fmt(c['spread_pct'])}</td>"
+                        f"<td class=\"n\">{c['n']}</td><td class=\"n\">{fmt(c['prefill_tps'])}</td>"
+                        f"<td class=\"n\">{fmt(c['ttft_ms'], 0)}</td><td class=\"n\">{fmt(c['mem_mb'], 0)}</td>"
+                        f"<td class=\"n\">{fmt(c['mem_peak_mb'], 0)}</td>"
+                        f"<td class=\"n\">{esc(bwc)}</td><td>{esc(c['thermal_initial'])}</td>"
+                        f"<td>{esc(c['captured'])}{' (stale)' if c['stale'] else ''}</td>"
+                        f"<td><code>{esc(os.path.basename(c['campaign']))}</code></td><td class=\"n\">{ns}</td></tr>")
+                else:
+                    why = c["reason"] if c["status"] == "excluded" else "not yet measured"
+                    L.append(lead + f"<td colspan=\"13\" class=\"gap\">— {esc(why)}</td><td class=\"n\">{ns}</td></tr>")
+            L.append("</tbody></table>")
+            L.append(f"<p class=\"devmeta\">{esc(MEM_NOTE)} ctx = the cell's context-tokens= (its rows are the runs "
+                     "recorded at that KV allocation; — = the cell pins none). "
+                     "bw = decode tok/s × bytes a decode step reads (the artifact minus per-token-gathered tables) ÷ this device's ceiling; "
+                     "~ marks a ceiling that is a derivation or an estimate, not a vendor figure.</p>")
+            L.append("</details>")
+        L.append("</section>")
 
     L.append("<footer>")
     L.append("<p>Source: results/summary/device-runs.csv (one row per run; every run has its stored log and JSON record under "
