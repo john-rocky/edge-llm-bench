@@ -172,6 +172,14 @@ public actor BenchmarkRunner {
             loadTime = CFAbsoluteTimeGetCurrent() - loadStart
         }
 
+        // A runtime whose context is fixed by its artifact reports it; the record carries that
+        // value. A forced budget it could not apply is said out loud, never recorded as run.
+        let runtimeContextTokens = await configuration.runtime.recordedContextTokens
+        if let fixed = runtimeContextTokens, let forced = configuration.contextTokens, fixed != forced {
+            print("YARDSTICK_WARN context_tokens_forced=\(forced) runtime_context_tokens=\(fixed) recorded=\(fixed) (fixed by the loaded artifact; the forced value does not apply)")
+            fflush(stdout)
+        }
+
         let memoryAfterLoad = MemoryMonitor.footprintMB()
         await memorySampler.start()
         await energyMonitor.start()
@@ -364,7 +372,7 @@ public actor BenchmarkRunner {
             memoryMedianMB: memoryMedian > 0 ? memoryMedian : nil,
             memoryMedianResidentMB: memoryMedianResident > 0 ? memoryMedianResident : nil,
             memoryFinalResidentMB: memoryFinalResident > 0 ? memoryFinalResident : nil,
-            contextTokensConfigured: contextTokens,
+            contextTokensConfigured: runtimeContextTokens ?? contextTokens,
             harnessStamp: Self.harnessStamp,
             initialThermalState: ThermalMonitor.describe(await thermalSampler.initialState),
             peakThermalState: ThermalMonitor.describe(await thermalSampler.peakState),

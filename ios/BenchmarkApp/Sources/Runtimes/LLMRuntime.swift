@@ -44,11 +44,17 @@ public protocol LLMRuntime: AnyObject, Sendable {
     /// value; a runtime whose arm identity includes a compute backend overrides it the way
     /// the Android CLI does (`litert-lm-cpu`), so cpu and gpu rows never pool.
     var recordRuntimeLabel: String { get async }
+
+    /// The context a loaded model actually runs at, when its artifact fixes it and nothing
+    /// passed in can change it (a Core AI static-shape bundle's top rung). The record then
+    /// carries this instead of the requested budget. `nil` (the default): the budget applies.
+    var recordedContextTokens: Int? { get async }
 }
 
 public extension LLMRuntime {
     func prepareContext(maxContextTokens: Int) async {}
     var recordRuntimeLabel: String { get async { kind.rawValue } }
+    var recordedContextTokens: Int? { get async { nil } }
 }
 
 public enum GenerationEvent: Sendable {

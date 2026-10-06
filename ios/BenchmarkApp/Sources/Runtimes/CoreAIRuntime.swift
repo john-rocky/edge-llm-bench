@@ -3,6 +3,9 @@ import Foundation
 import CoreAILanguageModels
 import Metal
 #endif
+#if canImport(CoreAI)
+import CoreAI
+#endif
 #if canImport(Tokenizers)
 import Tokenizers
 #endif
@@ -36,6 +39,14 @@ import Tokenizers
 /// The compiled bundles are **side-loaded** under `Documents/CoreAIModels/<name>/`
 /// (large; not published to HF).
 ///
+/// **Stock path (`g4stock_*` folders).** Apple's own Gemma 4 export
+/// (`models/gemma4/export.py` on apple/coreai-models main, unmodified) runs through
+/// `loadStock` / `runGenerateStock`: the call sequence of Apple's `llm-runner`
+/// (`LanguageModelBundle` → `EngineFactory.createEngine(bundle:)` → tokenizer → stop
+/// tokens → default warmup → `engine.generate`), greedy like Apple's `llm-benchmark`.
+/// It sets no COREAI_* variable, binds no side table and skips no warmup; the export
+/// itself decides the engine (chunked-static → static-shape on the Neural Engine).
+///
 /// Requires iOS 27 / macOS 27 — the `coreai-models` Swift package floor. When
 /// that package is not linked into the build (`canImport` false), this file
 /// compiles to an unavailable stub so the rest of the app is unaffected.
@@ -55,9 +66,29 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     nonisolated(unsafe) private var engine: (any InferenceEngine)?
     nonisolated(unsafe) private var tokenizer: (any Tokenizer)?
     nonisolated(unsafe) private var eosTokenIds: Set<Int32> = []
+    // Stock path only. The stop set is kept split by origin so each run can say whether
+    // its stop token was in Apple's runner set or only in the bundle metadata's list.
+    nonisolated(unsafe) private var stockLoaded = false
+    nonisolated(unsafe) private var appleStopIds: Set<Int32> = []
+    nonisolated(unsafe) private var metadataStopIds: Set<Int32> = []
+    nonisolated(unsafe) private var bundleMaxContext: Int?
+    nonisolated(unsafe) private var generateCalls = 0
     #endif
 
     public init() {}
+
+    /// Stock path: the bundle's `language.max_context_length`, i.e. the top rung of the
+    /// static-shape ladder. Nothing outside the bundle sizes this engine's KV, so the record
+    /// carries this value rather than the requested `--context-tokens`.
+    public var recordedContextTokens: Int? {
+        get async {
+            #if canImport(CoreAILanguageModels)
+            return stockLoaded ? bundleMaxContext : nil
+            #else
+            return nil
+            #endif
+        }
+    }
 
     // MARK: - Model id → bundle + compute variant
 
@@ -135,8 +166,28 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         case "core-ai/olmo2-1b-static-gpu":         return ("olmo2_1b_static_gpu", nil)
         case "core-ai/smollm3-3b-static-gpu":       return ("smollm3_3b_static_gpu", nil)
         case "core-ai/llama-3.2-3b-static-gpu":     return ("llama32_3b_static_gpu", nil)
+        // Apple's own Gemma 4 export (apple/coreai-models main, models/gemma4/export.py,
+        // unmodified), run on the stock path. nil = the structure picks the engine, as in
+        // llm-runner (its "default" variant resolves the same way, EngineFactory.swift 209–215).
+        case "core-ai/gemma4-e2b-stock-ctx2048":      return ("g4stock_e2b_ctx2048", nil)
+        case "core-ai/gemma4-e2b-stock-ctxdefault":   return ("g4stock_e2b_ctxdefault", nil)
+        case "core-ai/gemma4-e4b-stock-ctx2048":      return ("g4stock_e4b_ctx2048", nil)
+        case "core-ai/gemma4-e4b-stock-ctxdefault":   return ("g4stock_e4b_ctxdefault", nil)
+        case "core-ai/gemma4-e2b-stock-ctx2048-fp16": return ("g4stock_e2b_ctx2048_fp16", nil)
         default:                       return nil
         }
+    }
+
+    /// Folder prefix of the stock-path bundles. Never `gemma4_`: that prefix selects the
+    /// legacy single-step / PLE-table handling in `loadModel`.
+    private static let stockFolderPrefix = "g4stock_"
+
+    /// Legacy Gemma-4 PLE ids (bundle folder `gemma4_*`): their S=1 decode graphs need
+    /// COREAI_CHUNK_THRESHOLD=1 before the engine's first framework touch, which
+    /// BenchmarkApp.init (phone) and Yardstick.runCommand (Mac) set from this. Keyed on the
+    /// folder, not the id text: the stock ids contain "gemma4" too and must not get it.
+    static func needsEarlySingleStepPrefill(modelId: String) -> Bool {
+        bundleSpec(for: modelId)?.folder.hasPrefix("gemma4_") == true
     }
 
     /// Resolve a side-loaded `.aimodel` bundle folder on device. We look in
@@ -238,16 +289,20 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
                 + "(it must contain metadata.json, the .aimodel, and tokenizer/)."
             )
         }
+        if spec.folder.hasPrefix(Self.stockFolderPrefix) {
+            try await loadStock(model, bundleURL: bundleURL, progress: progress)
+            return
+        }
 
         var step = "start"
         do {
             progress(0.15)
             // Mirror Apple's llm-benchmark tool: build a ModelConfig from the
             // LanguageBundle and hand it to EngineFactory.
-            step = "LanguageBundle(\(bundleURL.lastPathComponent))"
-            let bundle = try LanguageBundle(at: bundleURL)
+            step = "LanguageModelBundle(\(bundleURL.lastPathComponent))"
+            let bundle = try LanguageModelBundle(at: bundleURL)
             step = "requireModelURL"
-            let modelURL = try bundle.requireModelURL(for: ModelBundle.ComponentKey.main)
+            let modelURL = try bundle.modelBundle.requireModelURL(for: ModelBundle.ComponentKey.main)
             step = "ModelConfig"
             let engineConfig = ModelConfig(
                 name: bundle.name,
@@ -344,9 +399,252 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         engine = nil
         tokenizer = nil
         eosTokenIds = []
+        stockLoaded = false
+        appleStopIds = []
+        metadataStopIds = []
+        bundleMaxContext = nil
+        generateCalls = 0
         #endif
         _loadedModelId = nil
     }
+
+    #if canImport(CoreAILanguageModels)
+    // MARK: - Stock path (Apple's own Gemma 4 export)
+
+    /// Apple's own export, loaded the way Apple's `llm-runner` loads it. Line numbers are
+    /// those of apple/coreai-models d30b086 (the commit this arm links: the next one, #327,
+    /// makes `createEngine(bundle:)` reject the PLE `.safetensors` asset as "not a valid Core
+    /// AI model") `swift/Sources/Tools/llm-runner/LLMRunnerMain.swift` unless another file
+    /// is named.
+    private func loadStock(
+        _ model: ModelInfo,
+        bundleURL: URL,
+        progress: @Sendable @escaping (Double) -> Void
+    ) async throws {
+        var step = "LanguageModelBundle(\(bundleURL.lastPathComponent))"
+        do {
+            progress(0.15)
+            // 411: parse metadata.json. The asset check of 412 (verifyAssetsExisting) runs
+            // inside createEngine(bundle:) (EngineFactory.swift 90); not called twice here.
+            let bundle = try LanguageModelBundle(at: bundleURL)
+            #if canImport(CoreAI)
+            // Record only: what the framework's own model check (`AIModelAsset.isValid`, the
+            // check #327 applies to every asset) says about each asset on this OS.
+            for key in bundle.modelBundle.componentKeys {
+                guard let url = bundle.modelBundle.modelURL(for: key) else { continue }
+                print("YARDSTICK_COREAI_ASSETCHECK key=\(key) file=\(url.lastPathComponent) isValid=\(AIModelAsset.isValid(at: url) ? 1 : 0)")
+            }
+            fflush(stdout)
+            #endif
+            // 419 + 439: the main asset, and whether Core AI already holds its specialization
+            // (a cache lookup; it never specializes).
+            step = "isCached"
+            let mainURL = try bundle.modelBundle.requireModelURL(for: ModelBundle.ComponentKey.main)
+            let cached = PreparedModel.isCached(at: mainURL)
+
+            // 457–467 with no CLI overrides: chunking from metadata.json (nil keeps the
+            // engine default), tensor data from the bundle's assets (the PLE sidecar),
+            // variant and KV strategy at their defaults (auto).
+            let options = EngineOptions(
+                prefillChunkSize: bundle.language.prefillChunkSize,
+                prefillChunkThreshold: bundle.language.prefillChunkThreshold,
+                tensorData: bundle.tensorData
+            )
+
+            // 476–477: the bundle-aware factory. A first-ever load specializes inside this
+            // call, so it is timed and phys_footprint is sampled across it (the runner loads
+            // the tokenizer concurrently, 472; here it follows, outside the timed span).
+            step = "EngineFactory.createEngine(bundle:)"
+            let sampler = MemorySampler()
+            await sampler.start(intervalMS: 20)
+            let prepareStart = CFAbsoluteTimeGetCurrent()
+            let engine: any InferenceEngine
+            do {
+                engine = try await EngineFactory.createEngine(bundle: bundle, options: options)
+            } catch {
+                await sampler.stop()
+                throw error
+            }
+            let prepareSeconds = CFAbsoluteTimeGetCurrent() - prepareStart
+            await sampler.stop()
+            let prepareFootprintPeakMB = await sampler.peakMB
+            progress(0.7)
+
+            // 472 / 480: the bundle's tokenizer (embedded; HF fallback otherwise).
+            step = "loadTokenizer"
+            let tok = try await bundle.loadTokenizer()
+            // Stop set A, the runner's: tokenizer eos (1110) + additionalStopTokenIds read
+            // from the bundle's tokenizer dir (487–498, 1111).
+            var apple: Set<Int32> = []
+            if let e = tok.eosTokenId { apple.insert(Int32(e)) }
+            if let dir = bundle.tokenizerPath {
+                apple.formUnion(LanguageConfig.additionalStopTokenIds(from: dir, tokenizer: tok))
+            }
+            // Stop set B: metadata.json `language.eos_token_ids`, the generation_config eos
+            // list models/gemma4/export.py 179–181 writes; no runner code reads it. The
+            // harness stops on A ∪ B, like every other arm stops at its model's turn end.
+            let metadata = Self.metadataEosTokenIds(bundle.rawMetadata)
+
+            // 505 + 508–513 → 1270–1282: the runner's default warmup (queryLength 0) with the
+            // sampling the runs use — greedy, llm-benchmark's SamplingConfiguration(temperature: 0)
+            // (BenchmarkMain.swift 118).
+            step = "warmup"
+            let sampling = SamplingConfiguration(temperature: 0)
+            try engine.validateSamplingStrategy(sampling)
+            let warmupStart = CFAbsoluteTimeGetCurrent()
+            try await engine.warmup(queryLength: 0, sampling: sampling)
+            let warmupSeconds = CFAbsoluteTimeGetCurrent() - warmupStart
+
+            print(String(
+                format: "YARDSTICK_COREAI_PREPARE model=%@ cached=%d seconds=%.3f footprint_peak_mb=%.0f warmup_seconds=%.3f engine=%@ max_context=%d",
+                model.id, cached ? 1 : 0, prepareSeconds, prepareFootprintPeakMB, warmupSeconds,
+                String(describing: type(of: engine)), bundle.maxContextLength))
+            print("YARDSTICK_COREAI_STOP apple=\(Self.idList(apple)) metadata=\(Self.idList(metadata))")
+            fflush(stdout)
+
+            self.engine = engine
+            self.tokenizer = tok
+            self.appleStopIds = apple
+            self.metadataStopIds = metadata
+            self.eosTokenIds = apple.union(metadata)
+            self.bundleMaxContext = bundle.maxContextLength
+            self.generateCalls = 0
+            self.stockLoaded = true
+            self._loadedModelId = model.id
+            progress(1)
+        } catch let e as LLMRuntimeError {
+            throw e
+        } catch {
+            throw LLMRuntimeError.loadFailed("[\(step)] \(error)")
+        }
+    }
+
+    /// One generation on the stock path: Apple's chat-template helper (531–532), then
+    /// llm-benchmark's reset + greedy generate (BenchmarkMain.swift 178–184), stopping on the
+    /// A ∪ B stop set or the task's token budget.
+    private func runGenerateStock(
+        engine: any InferenceEngine,
+        tokenizer: any Tokenizer,
+        prompt: String,
+        parameters: GenerationParameters,
+        continuation: AsyncThrowingStream<GenerationEvent, Error>.Continuation
+    ) async throws {
+        generateCalls += 1
+        let call = generateCalls
+        // Throws when the tokenizer has no chat template — never a silent raw encode.
+        let promptIds = try PromptUtils.maybeApplyTokenizerChatTemplate(.prompt(prompt), tokenizer: tokenizer)
+        let inputIds = promptIds.map { Int32($0) }
+
+        try await engine.reset()
+        let sampling = SamplingConfiguration(temperature: 0)
+        let options = InferenceOptions(maxTokens: parameters.maxTokens, includeLogits: false)
+
+        let prefillStart = CFAbsoluteTimeGetCurrent()
+        let stream = try await engine.generate(
+            with: inputIds,
+            samplingConfiguration: sampling,
+            inferenceOptions: options
+        )
+        // Arrival time of every token the engine yields (the stop token included), and the
+        // time this loop spends on each one. The engine is pulled, so that time sits between
+        // its steps; it is reported so a gap to llm-benchmark can be attributed.
+        var arrivals: [CFAbsoluteTime] = []
+        arrivals.reserveCapacity(parameters.maxTokens)
+        var harnessSeconds = 0.0
+        var stopToken: Int32?
+        var detokenizer = IncrementalDetokenizer(tokenizer: tokenizer)
+        var emitted = ""
+        var chunks = 0
+        for try await out in stream {
+            let arrived = CFAbsoluteTimeGetCurrent()
+            arrivals.append(arrived)
+            try Task.checkCancellation()
+            let tid = out.tokenId
+            if eosTokenIds.contains(tid) {
+                stopToken = tid
+                stream.setStopReason(.eos)
+                break
+            }
+            let delta = detokenizer.append(Int(tid))
+            if !delta.isEmpty {
+                emitted += delta
+                chunks += 1
+                continuation.yield(.chunk(delta))
+            }
+            harnessSeconds += CFAbsoluteTimeGetCurrent() - arrived
+        }
+        let end = CFAbsoluteTimeGetCurrent()
+
+        let stopReason: GenerationInfo.StopReason
+        switch stream.stopReason {
+        case .eos?, .stopSequence?: stopReason = .stop
+        case .maxTokens?: stopReason = .length
+        case .cancelled?: stopReason = .cancelled
+        case .error?: stopReason = .error
+        case nil: stopReason = arrivals.count >= parameters.maxTokens ? .length : .stop
+        }
+
+        // Inter-token gaps as seen here: max (with the token that closed it and that token's
+        // decode position — a static-shape rung change shows up as one long step), median,
+        // and the harness's share. text_match compares the streamed text with one full decode.
+        var gaps: [Double] = []
+        if arrivals.count >= 2 {
+            gaps.reserveCapacity(arrivals.count - 1)
+            for i in 1..<arrivals.count { gaps.append((arrivals[i] - arrivals[i - 1]) * 1000) }
+        }
+        let textMatch = tokenizer.decode(tokens: detokenizer.ids) == emitted
+        let stopOrigin: String
+        if let s = stopToken {
+            stopOrigin = appleStopIds.contains(s) ? "apple" : (metadataStopIds.contains(s) ? "metadata-only" : "?")
+        } else {
+            stopOrigin = "none"
+        }
+        if let maxIndex = gaps.indices.max(by: { gaps[$0] < gaps[$1] }) {
+            let sorted = gaps.sorted()
+            let rank = max(1, Int((0.5 * Double(sorted.count)).rounded(.up)))
+            let p50 = sorted[min(rank - 1, sorted.count - 1)]
+            let atToken = maxIndex + 2   // 1-based: gap k closes on token k + 2
+            print(String(
+                format: "YARDSTICK_COREAI_ITL run=%d max_ms=%.2f at_token=%d p50_ms=%.2f at_position=%d prompt_tokens=%d tokens=%d chunks=%d harness_ms=%.2f stop=%@ stop_token=%@ stop_origin=%@ text_match=%d",
+                call, gaps[maxIndex], atToken, p50, inputIds.count + atToken - 2, inputIds.count,
+                arrivals.count, chunks, harnessSeconds * 1000, stopReason.rawValue,
+                stopToken.map { String($0) } ?? "-", stopOrigin, textMatch ? 1 : 0))
+        } else {
+            print("YARDSTICK_COREAI_ITL run=\(call) tokens=\(arrivals.count) prompt_tokens=\(inputIds.count) stop=\(stopReason.rawValue) stop_origin=\(stopOrigin)")
+        }
+        // The whole reply, once (the record keeps 200 characters): the text check reads the
+        // output of this prompt length end to end, where a loop would show.
+        if let json = try? JSONEncoder().encode(emitted), let quoted = String(data: json, encoding: .utf8) {
+            print("YARDSTICK_COREAI_TEXT run=\(call) chars=\(emitted.count) text=\(quoted)")
+        }
+        fflush(stdout)
+
+        let firstTokenAt = arrivals.first
+        let promptTime = (firstTokenAt ?? end) - prefillStart
+        let generateTime = max(end - (firstTokenAt ?? prefillStart), 0.001)
+        continuation.yield(.info(GenerationInfo(
+            promptTokenCount: inputIds.count,
+            generationTokenCount: arrivals.count,
+            promptTime: promptTime,
+            generateTime: generateTime,
+            stopReason: stopReason
+        )))
+        continuation.finish()
+    }
+
+    /// `language.eos_token_ids` from metadata.json; empty when absent.
+    private static func metadataEosTokenIds(_ raw: Data) -> Set<Int32> {
+        guard let root = try? JSONSerialization.jsonObject(with: raw) as? [String: Any],
+              let language = root["language"] as? [String: Any],
+              let ids = language["eos_token_ids"] as? [Any]
+        else { return [] }
+        return Set(ids.compactMap { ($0 as? Int).map(Int32.init) })
+    }
+
+    private static func idList(_ ids: Set<Int32>) -> String {
+        "[" + ids.sorted().map(String.init).joined(separator: ",") + "]"
+    }
+    #endif  // canImport(CoreAILanguageModels)
 
     // MARK: - Generate
 
@@ -373,6 +671,12 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     ) async throws {
         #if canImport(CoreAILanguageModels)
         guard let engine, let tokenizer else { throw LLMRuntimeError.modelNotLoaded }
+        if stockLoaded {
+            try await runGenerateStock(
+                engine: engine, tokenizer: tokenizer, prompt: prompt,
+                parameters: parameters, continuation: continuation)
+            return
+        }
 
         // Tokenize with the model's chat template (greedy, deterministic — the
         // same sampling Apple's benchmark tool uses: temperature 0).
@@ -441,3 +745,33 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         #endif
     }
 }
+
+#if canImport(CoreAILanguageModels)
+/// Streams text from a growing token list without re-decoding the whole list on every token:
+/// two short decodes from a moving prefix offset (the scheme of HF text-generation-inference's
+/// `decode_token`), so the per-token cost stays flat over a long output. A step whose text ends
+/// in U+FFFD (a character split across tokens) emits nothing; the next token completes it.
+/// Compared per Unicode scalar, so a combining mark never re-emits the character it joins.
+/// The caller checks the streamed text against one full decode (`text_match`).
+struct IncrementalDetokenizer {
+    private static let replacement: Unicode.Scalar = "\u{FFFD}"
+    let tokenizer: any Tokenizer
+    private(set) var ids: [Int] = []
+    private var prefixOffset = 0
+    private var readOffset = 0
+
+    init(tokenizer: any Tokenizer) {
+        self.tokenizer = tokenizer
+    }
+
+    mutating func append(_ id: Int) -> String {
+        ids.append(id)
+        let prefix = tokenizer.decode(tokens: Array(ids[prefixOffset..<readOffset])).unicodeScalars
+        let window = tokenizer.decode(tokens: Array(ids[prefixOffset...])).unicodeScalars
+        guard window.count > prefix.count, window.last != Self.replacement else { return "" }
+        prefixOffset = readOffset
+        readOffset = ids.count
+        return String(String.UnicodeScalarView(window.dropFirst(prefix.count)))
+    }
+}
+#endif

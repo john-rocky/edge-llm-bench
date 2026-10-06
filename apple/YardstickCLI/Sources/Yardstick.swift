@@ -151,11 +151,16 @@ struct YardstickApp {
         // Gemma-4 PLE bundles on Core AI read COREAI_CHUNK_THRESHOLD at the engine's
         // first framework touch — the same early setenv BenchmarkApp.init does on the
         // phone (S=1 decode graphs; chunked prefill fatals in NDArrayDescriptor).
-        // Gated to a gemma4 core-ai run so it never leaks into another cell.
+        // Gated to a legacy gemma4 PLE id (bundle folder `gemma4_*`) so it never leaks into
+        // another cell — the stock Gemma 4 ids contain "gemma4" too and must not get it.
+        // CoreAIRuntime is not in the SwiftPM build, which has no core-ai runtime at all.
+        #if !YARDSTICK_SPM
         if (runtimeID == "core-ai" || runtimeID == "coreai"),
-           (modelID ?? "").contains("gemma4"), getenv("COREAI_CHUNK_THRESHOLD") == nil {
+           CoreAIRuntime.needsEarlySingleStepPrefill(modelId: modelID ?? ""),
+           getenv("COREAI_CHUNK_THRESHOLD") == nil {
             setenv("COREAI_CHUNK_THRESHOLD", "1", 1)
         }
+        #endif
 
         if litertBackend != .gpu, !["litert-lm", "mediapipe"].contains(runtimeID) {
             FileHandle.standardError.write(Data(

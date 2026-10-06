@@ -19,10 +19,16 @@ struct BenchmarkApp: App {
         //   NDArrayDescriptor.swift:139: Shape at dimension 1 of 8 is not a valid
         //   substitution for source shape 1
         // (reproduced on this device 2026-07-27). GemmaPLEDeviceBench sets it at app start
-        // for exactly this reason. Gated on a gemma4 core-ai headless launch so S=1 stepping
-        // never leaks into another model's prefill measurement.
-        let args = CommandLine.arguments.joined(separator: " ")
-        if args.contains("core-ai") && args.contains("gemma4"),
+        // for exactly this reason. Gated on a legacy gemma4 PLE id (bundle folder `gemma4_*`)
+        // so S=1 stepping never leaks into another model's prefill measurement — the stock
+        // Gemma 4 ids contain "gemma4" too and run Apple's export with no COREAI_* variable.
+        let args = CommandLine.arguments
+        func value(_ flag: String) -> String? {
+            guard let i = args.firstIndex(of: flag), i + 1 < args.count else { return nil }
+            return args[i + 1]
+        }
+        if value("--runtime") == RuntimeKind.coreAI.rawValue,
+           CoreAIRuntime.needsEarlySingleStepPrefill(modelId: value("--model-id") ?? ""),
            getenv("COREAI_CHUNK_THRESHOLD") == nil {
             setenv("COREAI_CHUNK_THRESHOLD", "1", 1)
         }

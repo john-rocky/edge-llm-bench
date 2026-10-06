@@ -1454,6 +1454,21 @@ public enum ModelCatalog {
         // a stock build reports it unsupported; any published number must be labelled
         // "patched engine (reference)". See methodology/core-ai-arm-provenance.md.
         ModelInfo(id: "core-ai/gemma4-e2b-gpu", displayName: "Gemma 4 E2B (Core AI, GPU)", quantization: "int4 q4_0 (QAT, own export)", parameterCountB: 2.0, onDiskSizeMB: 2048, hfRepoId: "mlboydaisuke/gemma-4-E2B-CoreAI"),
+        // Apple's own Gemma 4 export (apple/coreai-models main, models/gemma4/export.py,
+        // unmodified; static-shape ladder, Neural Engine), run on CoreAIRuntime's stock path.
+        // Side-loaded to Documents/CoreAIModels/<folder>/ (Mac: BENCH_COREAI_MODELS_DIR); the
+        // folder is the export's inner bundle dir (metadata.json, .aimodel, _ple.safetensors,
+        // tokenizer/). ctx2048 = `--max-context-length 2048` (rungs 1024/2048); ctxdefault = the
+        // export default 131072 (rungs 1024/8192/32768/131072). The quantization label is the
+        // metadata's `compression` plus the recipe it names (4bit_palettized.yaml; README for the
+        // int8 tables). parameterCountB matches the other Gemma 4 rows (Apple's README lists
+        // 5.0B / 8.0B with the per-layer embeddings). Sizes are the exported bundles' bytes;
+        // nil = not exported yet.
+        ModelInfo(id: "core-ai/gemma4-e2b-stock-ctx2048", displayName: "Gemma 4 E2B (Core AI stock export, ctx 2048)", quantization: "4bit_palettized (4-bit k-means g32; PLE gate/proj 8-bit; embedding + PLE tables int8)", parameterCountB: 2.0, onDiskSizeMB: 3585, hfRepoId: ""),
+        ModelInfo(id: "core-ai/gemma4-e2b-stock-ctxdefault", displayName: "Gemma 4 E2B (Core AI stock export, ctx 131072)", quantization: "4bit_palettized (4-bit k-means g32; PLE gate/proj 8-bit; embedding + PLE tables int8)", parameterCountB: 2.0, onDiskSizeMB: 3587, hfRepoId: ""),
+        ModelInfo(id: "core-ai/gemma4-e4b-stock-ctx2048", displayName: "Gemma 4 E4B (Core AI stock export, ctx 2048)", quantization: "4bit_palettized (4-bit k-means g32; PLE gate/proj 8-bit; embedding + PLE tables int8)", parameterCountB: 4.0, onDiskSizeMB: nil, hfRepoId: ""),
+        ModelInfo(id: "core-ai/gemma4-e4b-stock-ctxdefault", displayName: "Gemma 4 E4B (Core AI stock export, ctx 131072)", quantization: "4bit_palettized (4-bit k-means g32; PLE gate/proj 8-bit; embedding + PLE tables int8)", parameterCountB: 4.0, onDiskSizeMB: nil, hfRepoId: ""),
+        ModelInfo(id: "core-ai/gemma4-e2b-stock-ctx2048-fp16", displayName: "Gemma 4 E2B (Core AI stock export, ctx 2048, no palettization)", quantization: "none (`--compression none`: fp16 weights; embedding + PLE tables int8)", parameterCountB: 2.0, onDiskSizeMB: nil, hfRepoId: ""),
     ]
 
     /// Cactus (`cactus-compute/cactus`) — CQ bundles from `huggingface.co/Cactus-Compute`.
