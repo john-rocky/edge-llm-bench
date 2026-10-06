@@ -34,6 +34,7 @@ import argparse
 import json
 import re
 import sys
+import uuid
 from pathlib import Path
 
 # One regex over the whole line; every field is optional so older console logs (which lack
@@ -130,6 +131,148 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
     }
 
 
+# --schema-v1 (2026-10-06): the audit shape above has no id, timestamp, engine or device snapshot,
+# so build_summary cannot place it in a session and the dashboard never sees the vendor row. With
+# --schema-v1 each line becomes a full schema-v1 record (schema/result.v1.json), written to the
+# campaign's app-path-native/ directory (build_summary globs app-path*/*.json):
+#   - device, engineVersion / engineArtifact and model come from --like, a schema-v1 record of the
+#     same device, engine build and model (the native path reports none of them). The snapshot's
+#     per-run readings are dropped, since nothing read them at the native launch: always
+#     initialThermalState, and batteryLevel / batteryState when the device has a battery (a Mac
+#     without one records the constants -1 / unknown, which are kept);
+#   - timestamp = the launch's start (--launch-times, one per line in file order; the caller takes
+#     them from the runner's CELL lines);
+#   - metrics carry only what the line measured (no null placeholders), plus coldRun true: one
+#     native launch is one process and one engine init; firstEver true on the launches named by
+#     --first-ever (the line itself cannot tell that its launch built the compilation cache —
+#     on the Mac the GPU program cache in $TMPDIR written during that launch can);
+#   - conditions.instrument names the entry point, conditions.launchIndex the line's position.
+PER_RUN_DEVICE_KEYS = ("initialThermalState",)
+BATTERY_KEYS = ("batteryLevel", "batteryState")
+V1_METRICS = (  # (record key, NATIVE_OK field, cast)
+    ("promptTokensPerSecond", "prefill_tok_s", float),
+    ("decodeTokensPerSecond", "decode_tok_s", float),
+    ("firstTokenLatencyMS", "ttft_ms", float),
+    ("loadTimeSeconds", "init_s", float),
+    ("memoryPeakDuringDecodeMB", "peak_mb", float),
+    ("memoryMedianMB", "median_mb", float),
+    ("memoryMedianResidentMB", "median_resident_mb", float),
+    ("memorySampleCount", "samples", int),
+    ("memoryPostTeardownFootprintMB", "teardown_footprint_mb", float),
+    ("contextTokensConfigured", "context_tokens", int),
+)
+LAUNCH_TIME = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+
+
+def load_like(path: Path) -> dict:
+    """A .json record, or the first record of a .jsonl."""
+    txt = path.read_text()
+    try:
+        return json.loads(txt)
+    except json.JSONDecodeError:
+        return json.loads(next(ln for ln in txt.splitlines() if ln.strip()))
+
+
+def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, instrument: str,
+                 first_ever: bool = False):
+    # rec["num"] closes over parse()'s loop variable, so it reads the LAST line's fields once
+    # the generator has been drained (main_schema_v1 counts the lines first) — read this
+    # line's own dict instead.
+    f = rec["fields"]
+
+    def num(k, cast=float):
+        v = f.get(k)
+        if v in (None, "?"):
+            return None
+        try:
+            return cast(v)
+        except ValueError:
+            return None
+
+    prefill = num("prefill_tokens", int) or rec["prefill_cfg"]
+    decode = num("decode_tokens", int) or rec["decode_cfg"]
+    snap = like.get("device", {})
+    device = {k: v for k, v in snap.items() if k not in PER_RUN_DEVICE_KEYS}
+    level = snap.get("batteryLevel")
+    if isinstance(level, (int, float)) and not isinstance(level, bool) and level >= 0:
+        for k in BATTERY_KEYS:
+            device.pop(k, None)
+    model = dict(like["model"])
+    model.setdefault("file", model.get("primaryFile"))
+    metrics = {"coldRun": True, "promptTokenCount": prefill, "generatedTokenCount": decode}
+    if first_ever:
+        metrics["firstEver"] = True
+    for key, field, cast in V1_METRICS:
+        v = num(field, cast)
+        if v is not None:
+            metrics[key] = v
+    if f.get("harness"):
+        metrics["harnessStamp"] = f["harness"]
+    out = {
+        "schemaVersion": 1,
+        "id": str(uuid.uuid4()).upper(),
+        "runtime": like["runtime"],
+        "engineVersion": like.get("engineVersion"),
+        "engineArtifact": like.get("engineArtifact"),
+        "model": model,
+        "task": f"native-benchmark-{rec['prefill_cfg'] or prefill}x{rec['decode_cfg'] or decode}",
+        "timestamp": launch_time,
+        "device": device,
+        "conditions": {"instrument": instrument, "launchIndex": index},
+        "metrics": metrics,
+        "provenance": {"rawLog": str(source), "harness": "scripts/import_native_benchmark.py"},
+    }
+    if like.get("modelRevision"):
+        out["modelRevision"] = like["modelRevision"]
+    return out
+
+
+def main_schema_v1(args) -> int:
+    if len(args.logs) != 1 or args.out is None or args.like is None \
+            or args.launch_times is None or not args.instrument:
+        print("--schema-v1 takes one log and needs --out, --like, --launch-times and --instrument",
+              file=sys.stderr)
+        return 2
+    log = args.logs[0]
+    like = load_like(args.like)
+    if not str(like.get("runtime", "")).startswith("litert-lm"):
+        print(f"--like is a {like.get('runtime')!r} record; the native row is litert-lm", file=sys.stderr)
+        return 2
+    if like.get("device", {}).get("modelIdentifier") != args.device:
+        print(f"--like device {like.get('device', {}).get('modelIdentifier')!r} != --device "
+              f"{args.device!r}", file=sys.stderr)
+        return 2
+    times = [t.strip() for t in args.launch_times.split(",") if t.strip()]
+    bad = [t for t in times if not LAUNCH_TIME.match(t)]
+    if bad:
+        print(f"--launch-times wants UTC YYYY-MM-DDTHH:MM:SSZ, got {bad}", file=sys.stderr)
+        return 2
+    recs = list(parse(log))
+    if len(recs) != len(times):
+        print(f"{log}: {len(recs)} YARDSTICK_NATIVE_OK lines but {len(times)} launch times",
+              file=sys.stderr)
+        return 2
+    first_ever = {int(x) for x in (args.first_ever or "").split(",") if x.strip()}
+    if not first_ever <= set(range(1, len(recs) + 1)):
+        print(f"--first-ever {sorted(first_ever)} names lines outside 1..{len(recs)}", file=sys.stderr)
+        return 2
+    args.out.mkdir(parents=True, exist_ok=True)
+    stem = log.stem.replace("console_", "")
+    for i, (rec, t) in enumerate(zip(recs, times), 1):
+        model_id = rec["model"] or args.model_id
+        if model_id != like["model"].get("id"):
+            print(f"line {i}: model {model_id!r} != --like model {like['model'].get('id')!r}",
+                  file=sys.stderr)
+            return 2
+        out = args.out / f"native_{stem}_{i}.json"
+        out.write_text(json.dumps(to_schema_v1(rec, log, like, t, i, args.instrument,
+                                               first_ever=i in first_ever),
+                                  indent=2, sort_keys=True) + "\n")
+        print(f"wrote {out}", file=sys.stderr)
+    print(f"\n{len(recs)} native row(s) imported as schema-v1 records.", file=sys.stderr)
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("logs", nargs="+", type=Path)
@@ -144,7 +287,25 @@ def main() -> int:
                          "(the Mac CLI's --output carries only the NATIVE_OK line)")
     ap.add_argument("--out", type=Path, default=None,
                     help="output dir (default: alongside each console log)")
+    ap.add_argument("--schema-v1", action="store_true",
+                    help="write full schema-v1 records for <campaign>/app-path-native/ (see the "
+                         "comment above to_schema_v1); one log per call, with --out, --like, "
+                         "--launch-times and --instrument")
+    ap.add_argument("--like", type=Path, default=None,
+                    help="--schema-v1: a schema-v1 record (.json or .jsonl) of the same device, "
+                         "engine build and model, whose device / engine / model fields are copied")
+    ap.add_argument("--launch-times", default=None,
+                    help="--schema-v1: comma-separated UTC launch start times "
+                         "(YYYY-MM-DDTHH:MM:SSZ), one per YARDSTICK_NATIVE_OK line in file order")
+    ap.add_argument("--instrument", default=None,
+                    help="--schema-v1: conditions.instrument, the entry point that printed the lines")
+    ap.add_argument("--first-ever", default=None,
+                    help="--schema-v1: comma-separated line positions (1-based) whose launch built "
+                         "the engine's compilation cache, marked metrics.firstEver (fairness rule 2: "
+                         "never the engine's speed); the caller states the evidence")
     args = ap.parse_args()
+    if args.schema_v1:
+        return main_schema_v1(args)
 
     written = 0
     for log in args.logs:

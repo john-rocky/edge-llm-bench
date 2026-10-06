@@ -1,0 +1,197 @@
+VmHWM:	  281128 kB
+VmRSS:	  280888 kB
+VmHWM:	  313120 kB
+VmRSS:	  281252 kB
+VmHWM:	  539164 kB
+VmRSS:	  236016 kB
+VmHWM:	  539164 kB
+VmRSS:	  258792 kB
+VmHWM:	  539164 kB
+VmRSS:	  344524 kB
+VmHWM:	  539164 kB
+VmRSS:	  308360 kB
+VmHWM:	  539164 kB
+VmRSS:	  410200 kB
+VmHWM:	  555940 kB
+VmRSS:	  555940 kB
+VmHWM:	  568024 kB
+VmRSS:	  560208 kB
+VmHWM:	  568024 kB
+VmRSS:	  559736 kB
+VmHWM:	  568024 kB
+VmRSS:	  560224 kB
+VmHWM:	  568024 kB
+VmRSS:	  560184 kB
+VmHWM:	  568024 kB
+VmRSS:	  560096 kB
+VmHWM:	  568024 kB
+VmRSS:	  559672 kB
+VmHWM:	  568024 kB
+VmRSS:	  560096 kB
+VmHWM:	  568024 kB
+VmRSS:	  559884 kB
+VmHWM:	  568024 kB
+VmRSS:	  560184 kB
+VmHWM:	  568024 kB
+VmRSS:	  560096 kB
+VmHWM:	  568024 kB
+VmRSS:	  547536 kB
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791287416.217159   20604 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1791287416.218712   20604 litert_lm_lib.cc:652] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_qwen3_0_6b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+attention_mask_settings:
+attention_mask_policy: Causal
+local_attention_mask_policy: Not set
+sliding_window_size: Not set
+advanced_settings: prefill_batch_sizes: [1024]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1791287416.218765   20604 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1791287416.218781   20604 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1791287416.218797   20604 litert_lm_lib.cc:688] Creating engine
+W0000 00:00:1791287416.219435   20604 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1791287416.219457   20604 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1791287416.219458   20605 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791287416.219477   20604 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791287416.219494   20604 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074a5a09f90, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074a5a0a410, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074a5a1d2b0, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074a5a1de50, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791287416.250218   20604 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1791287416.250291   20604 litert_lm_loader.cc:291] Section not found: 	
+INFO: [compiled_model.cc:815] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791287416.278392   20604 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1791287416.278968   20604 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:220] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:283] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+I0000 00:00:1791287418.231497   20604 delegate_kernel.cc:325] Total 57 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791287418.231716   20604 delegate_kernel.cc:877] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 881 out of 881 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (main).
+I0000 00:00:1791287419.640473   20604 delegate_kernel.cc:325] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791287419.640532   20604 delegate_kernel.cc:877] Initializing OpenCL-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074a5d95af0, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074a5d9fb10, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791287420.214201   20604 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791287420.214275   20604 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_AUDIO not found. Skipping.
+W0000 00:00:1791287420.214292   20604 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791287420.214304   20604 litert_lm_loader.h:129] TFLite model for type: TF_LITE_END_OF_VISION not found. Skipping.
+W0000 00:00:1791287420.214315   20604 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791287420.214326   20604 litert_lm_loader.h:129] TFLite model for type: TF_LITE_EMBEDDER not found. Skipping.
+W0000 00:00:1791287420.214344   20604 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791287420.214355   20604 litert_lm_loader.h:129] TFLite model for type: TF_LITE_PER_LAYER_EMBEDDER not found. Skipping.
+W0000 00:00:1791287420.214400   20604 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1791287420.214412   20604 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1791287420.214423   20604 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791287420.214434   20604 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1791287420.214696   20604 litert_lm_lib.cc:856] Creating conversation
+I0000 00:00:1791287420.215754   20604 litert_lm_lib.cc:868] Running single-turn conversation
+W0000 00:00:1791287420.749960   20604 tasks.cc:490] Failed to get prefill profile summary: INVALID_ARGUMENT: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1655]
+└ ERROR: [external/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:547
+
+W0000 00:00:1791287420.819256   20604 sampler_factory.cc:401] OpenCL sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [runtime/components/sampler_factory.cc:317]
+└ Could not load shared library libLiteRtTopKOpenClSampler.so: dlopen failed: cannot locate symbol "kLiteRtRuntimeBuiltin" referenced by "/data/local/tmp/llmbench/libLiteRtTopKOpenClSampler.so"....
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:573
+
+W0000 00:00:1791287420.820296   20604 sampler_factory.cc:484] WebGPU sampler not available, falling back to statically linked C API: UNAVAILABLE: ERROR: [runtime/components/sampler_factory.cc:317]
+└ Could not load shared library libLiteRtTopKWebGpuSampler.so: dlopen failed: cannot locate symbol "kLiteRtRuntimeBuiltin" referenced by "/data/local/tmp/llmbench/libLiteRtTopKWebGpuSampler.so"....
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:573
+
+W0000 00:00:1791287420.820327   20604 sampler_factory.cc:764] GPU sampler unavailable. Falling back to CPU sampling. To use GPU sampling, please make sure libLiteRtTopKWebGpuSampler.so or libLiteRtTopKOpenClSampler.so is available at LD_LIBRARY_PATH on device. You can find the shared library under prebuilt/
+W0000 00:00:1791287426.349884   20604 tasks.cc:672] Failed to get decode profile summary: INVALID_ARGUMENT: ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1655]
+└ ERROR: [external/litert/litert/cc/litert_profiler.h:91]
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:547
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 3994.88 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.50 ms
+    - Init Tokenizer: 381.58 ms
+    - Init Total: 3995.85 ms
+--------------------------------------------------
+  Time to first token: 0.56 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 533.903229ms duration.
+      Prefill Speed: 1917.95 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 5.599774008s duration.
+      Decode Speed: 45.72 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 61.302us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074a5a1de50, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074a5a1d2b0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074a5d9fb10, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074a5d95af0, name=LiteRT GPU
+EXIT_CODE=0

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "ae88b04b-2447-4fe9-bf7a-1dcf5e35470a",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-community/Qwen3-1.7B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+    "file": "litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "2eeffef7b51bc3e1225ea69fe7aa5f417397934b56a5b6c20cc068d6fd2c918b"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-06T12:50:56Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 19.8,
+    "exitCode": 0
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 920.0,
+    "promptTokensPerSecond": 1164.26,
+    "decodeTokensPerSecond": 25.96,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 825.5390625,
+    "memoryPeakResidentMB": 839.36328125
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_Qwen3-1.7B_native-benchmark-1024x256_2026-10-06T12-50-56.134443_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024"
+  }
+}

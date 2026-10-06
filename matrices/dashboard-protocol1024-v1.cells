@@ -1,0 +1,24 @@
+# Protocol rows = LiteRT-LM's own benchmark() entry point: prefill forced to exactly 1024 tokens with no prompt, decode 256, context 2048 (methodology/agreed-protocol-gemma4.md "The spec"); vendor-row, card-comparable, never pooled with the task-prompt long-context-1024-gen256 rows.
+# Entry points: Mac = yardstick --litert-native-benchmark 1024x256 --context-tokens 2048 (scripts/bench_matrix_mac.sh); iPhone = the app's --litert-native-benchmark flag, which scripts/bench_matrix_iphone.sh does not forward (it passes the task id as --task).
+# One launch = one measurement: the native path ignores --runs and prints one YARDSTICK_NATIVE_OK line (Mac: appended to the cell's .jsonl; iPhone: console only), not a schema-v1 record; scripts/import_native_benchmark.py lifts the line into JSON.
+# MLX and llama.cpp have no forced-prefill entry on Apple devices (agreed-protocol-gemma4.md deviation 6) = no Apple rows for them; llama-bench is the Android counterpart (matrices/dashboard-protocol1024-v1-android.cells).
+# Prepared 2026-10-06 (round m3 of the dashboard first-tab lane); same model set, catalog ids and cooldowns as matrices/dashboard-longctx1024-v1.cells; anchors = matrices/anchors.cells.
+
+
+# ---- mac ----
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 context-tokens=2048
+mac litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 context-tokens=2048
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048
+mac litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 cooldown=300 context-tokens=2048
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048
+
+# ---- ios ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 context-tokens=2048
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048
+ios litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 cooldown=300 context-tokens=2048
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048

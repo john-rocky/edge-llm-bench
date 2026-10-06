@@ -1,0 +1,30 @@
+# Protocol rows on Android = the engines' own synthetic benchmarks: prefill forced to exactly 1024 tokens with no prompt, decode 256 (methodology/agreed-protocol-gemma4.md "The spec"); vendor rows, never pooled with the task-prompt long-context-1024-gen256 rows.
+# LiteRT-LM = litert_lm_advanced_main --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 (context-tokens=2048; android/bench/run_cell.py engine_command), one cold process per run, one schema-v1 record per run.
+# llama.cpp = llama-bench -p 1024 -n 256 -o json (no context flag: llama-bench sizes its own context, recorded as llama-bench-managed; repetitions and warmup are llama-bench's defaults), one launch per run, coldRun false.
+# MLX has no Android arm; on Apple devices only LiteRT-LM has a forced-prefill entry (matrices/dashboard-protocol1024-v1.cells).
+# Prepared 2026-10-06 (round m3 of the dashboard first-tab lane); same artifacts (file=), backends and cooldowns as the weekly set (matrices/dashboard-text-v1-android-*.cells); anchors = matrices/anchors.cells.
+
+
+# ---- android ----
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
+android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android llama.cpp unsloth/Qwen3-1.7B-GGUF native-benchmark-1024x256 file=Qwen3-1.7B-Q4_K_M.gguf
+
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF native-benchmark-1024x256 cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+
+android litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048
+android llama.cpp unsloth/Qwen3-4B-GGUF native-benchmark-1024x256 cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF native-benchmark-1024x256 cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
