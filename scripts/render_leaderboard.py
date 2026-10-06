@@ -126,8 +126,10 @@ def arm_row(rows):
     mem_peak = [v for v in mem_peak if v]
     quants, qcorr = set(), False
     for r in sess:
-        if r["quantization"]:
-            q, c = corrected_quant(r["runtime"], r["model_id"], r["quantization"])
+        # corrected_quant also restores an audited label for rows recorded
+        # without one (the Android Qwen3-4B LiteRT case), so it runs on every row
+        q, c = corrected_quant(r["runtime"], r["model_id"], r["quantization"] or "")
+        if q:
             quants.add(q)
             qcorr = qcorr or c
     quants = sorted(quants)

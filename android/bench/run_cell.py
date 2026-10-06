@@ -591,6 +591,11 @@ def main():
 # label here (docs/OPERATIONS.md, add-a-model).
 ANDROID_QUANT_LABELS = {
     "qwen3_0_6b_mixed_int4.litertlm": "INT4 (mixed, blockwise gs32)",
+    # the same TorchAO mixed-INT4 recipe as the 0.6B file (the Mac catalog labels
+    # litert-community/Qwen3-4B's primaryFile identically); until 2026-10-06 this
+    # file was missing here, so every Android Qwen3-4B LiteRT record carried
+    # "unrecorded" (bench_common.corrected_quant restores the label for those rows)
+    "qwen3_4b_mixed_int4.litertlm": "INT4 (mixed, blockwise gs32)",
     # litert-community/Qwen3-{0.6B,1.7B} recipe files — the Mac catalog strings
     # (ModelCatalog liteRTLM) for the wi4b32 builds; the 1.7B INT8 file's label
     # is the repo manifest's recipe name (dynamic_wi8_afp32)

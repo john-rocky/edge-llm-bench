@@ -243,4 +243,11 @@ def corrected_quant(runtime: str, model_id: str, quant: str) -> tuple[str, bool]
     if (runtime.startswith("litert-lm") and "gemma-4" in model_id.lower()
             and quant == "INT4 (QAT)"):
         return "wNa8o8 (int2/int4/int8 + int8 activations, QAT)", True
+    # Android Qwen3-4B LiteRT records written before 2026-10-06 carry no label:
+    # android/bench/run_cell.py's label table lacked qwen3_4b_mixed_int4.litertlm
+    # (the only file those cells run) while the Mac catalog labels the same file
+    # "INT4 (mixed, blockwise gs32)". Same artifact, audited label, in-place.
+    if (runtime.startswith("litert-lm") and model_id == "litert-community/Qwen3-4B"
+            and (not quant or quant.startswith("unrecorded"))):
+        return "INT4 (mixed, blockwise gs32)", True
     return quant, False
