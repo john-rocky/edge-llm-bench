@@ -146,7 +146,21 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
 #     native launch is one process and one engine init; firstEver true on the launches named by
 #     --first-ever (the line itself cannot tell that its launch built the compilation cache —
 #     on the Mac the GPU program cache in $TMPDIR written during that launch can);
-#   - conditions.instrument names the entry point, conditions.launchIndex the line's position.
+#   - conditions.instrument names the entry point, conditions.launchIndex the launch's position.
+# Lines of the app build of 2026-10-07 and later say more, and the record keeps it (a field a line
+# lacks is left out, so an older log imports as before):
+#   - `thermal_initial` / `thermal_final` (ProcessInfo.thermalState read before and after the call;
+#     `thermal_peak` where a path samples one) become metrics.initialThermalState /
+#     finalThermalState / peakThermalState — the keys the app's own records use and the ones
+#     build_summary and cell_gate read. Without them a phone's native row has no thermal column and
+#     a throttled launch cannot be told from a cool one;
+#   - `wall_s` (the call's wall-clock seconds) becomes metrics.wallSeconds;
+#   - `run=<i> runs=<N> cold=<0|1>`: one launch can call benchmark() N times, so one launch can
+#     print N lines. `cold` sets coldRun (run 1 is the process's first call; a warm line stamped
+#     cold would pool into the cold median), run / runs land in conditions, and the lines of one
+#     launch share its launchIndex and its start time: --launch-times and --first-ever count
+#     launches (a line without `run=`, or with run=1, starts one), and firstEver marks only the
+#     launch's first line.
 PER_RUN_DEVICE_KEYS = ("initialThermalState",)
 BATTERY_KEYS = ("batteryLevel", "batteryState")
 V1_METRICS = (  # (record key, NATIVE_OK field, cast)
@@ -160,6 +174,12 @@ V1_METRICS = (  # (record key, NATIVE_OK field, cast)
     ("memorySampleCount", "samples", int),
     ("memoryPostTeardownFootprintMB", "teardown_footprint_mb", float),
     ("contextTokensConfigured", "context_tokens", int),
+    ("wallSeconds", "wall_s", float),
+)
+V1_STATES = (  # (record key, NATIVE_OK field) — strings, copied as printed
+    ("initialThermalState", "thermal_initial"),
+    ("peakThermalState", "thermal_peak"),
+    ("finalThermalState", "thermal_final"),
 )
 LAUNCH_TIME = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 
@@ -171,6 +191,18 @@ def load_like(path: Path) -> dict:
         return json.loads(txt)
     except json.JSONDecodeError:
         return json.loads(next(ln for ln in txt.splitlines() if ln.strip()))
+
+
+def launch_positions(recs) -> list[int]:
+    """1-based launch position of each line. A line without `run=` is its own launch (the builds
+    before 2026-10-07 print one line per process); `run=1` starts a launch, `run=2..N` continue it."""
+    pos, n = [], 0
+    for rec in recs:
+        run = rec["fields"].get("run", "")
+        if not (n and run.isdigit() and int(run) > 1):
+            n += 1
+        pos.append(n)
+    return pos
 
 
 def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, instrument: str,
@@ -199,15 +231,24 @@ def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, in
             device.pop(k, None)
     model = dict(like["model"])
     model.setdefault("file", model.get("primaryFile"))
-    metrics = {"coldRun": True, "promptTokenCount": prefill, "generatedTokenCount": decode}
+    cold = num("cold", int)
+    metrics = {"coldRun": True if cold is None else cold == 1,
+               "promptTokenCount": prefill, "generatedTokenCount": decode}
     if first_ever:
         metrics["firstEver"] = True
     for key, field, cast in V1_METRICS:
         v = num(field, cast)
         if v is not None:
             metrics[key] = v
+    for key, field in V1_STATES:
+        if f.get(field) not in (None, "?"):
+            metrics[key] = f[field]
     if f.get("harness"):
         metrics["harnessStamp"] = f["harness"]
+    conditions = {"instrument": instrument, "launchIndex": index}
+    for key in ("run", "runs"):
+        if (v := num(key, int)) is not None:
+            conditions[key] = v
     out = {
         "schemaVersion": 1,
         "id": str(uuid.uuid4()).upper(),
@@ -218,7 +259,7 @@ def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, in
         "task": f"native-benchmark-{rec['prefill_cfg'] or prefill}x{rec['decode_cfg'] or decode}",
         "timestamp": launch_time,
         "device": device,
-        "conditions": {"instrument": instrument, "launchIndex": index},
+        "conditions": conditions,
         "metrics": metrics,
         "provenance": {"rawLog": str(source), "harness": "scripts/import_native_benchmark.py"},
     }
@@ -248,25 +289,30 @@ def main_schema_v1(args) -> int:
         print(f"--launch-times wants UTC YYYY-MM-DDTHH:MM:SSZ, got {bad}", file=sys.stderr)
         return 2
     recs = list(parse(log))
-    if len(recs) != len(times):
-        print(f"{log}: {len(recs)} YARDSTICK_NATIVE_OK lines but {len(times)} launch times",
-              file=sys.stderr)
+    launches = launch_positions(recs)
+    n_launches = launches[-1] if launches else 0
+    if n_launches != len(times):
+        print(f"{log}: {len(recs)} YARDSTICK_NATIVE_OK lines in {n_launches} launches but "
+              f"{len(times)} launch times", file=sys.stderr)
         return 2
     first_ever = {int(x) for x in (args.first_ever or "").split(",") if x.strip()}
-    if not first_ever <= set(range(1, len(recs) + 1)):
-        print(f"--first-ever {sorted(first_ever)} names lines outside 1..{len(recs)}", file=sys.stderr)
+    if not first_ever <= set(range(1, n_launches + 1)):
+        print(f"--first-ever {sorted(first_ever)} names launches outside 1..{n_launches}",
+              file=sys.stderr)
         return 2
     args.out.mkdir(parents=True, exist_ok=True)
     stem = log.stem.replace("console_", "")
-    for i, (rec, t) in enumerate(zip(recs, times), 1):
+    for i, (rec, launch) in enumerate(zip(recs, launches), 1):
         model_id = rec["model"] or args.model_id
         if model_id != like["model"].get("id"):
             print(f"line {i}: model {model_id!r} != --like model {like['model'].get('id')!r}",
                   file=sys.stderr)
             return 2
         out = args.out / f"native_{stem}_{i}.json"
-        out.write_text(json.dumps(to_schema_v1(rec, log, like, t, i, args.instrument,
-                                               first_ever=i in first_ever),
+        head = i == 1 or launches[i - 2] != launch  # the launch's first line
+        out.write_text(json.dumps(to_schema_v1(rec, log, like, times[launch - 1], launch,
+                                               args.instrument,
+                                               first_ever=head and launch in first_ever),
                                   indent=2, sort_keys=True) + "\n")
         print(f"wrote {out}", file=sys.stderr)
     print(f"\n{len(recs)} native row(s) imported as schema-v1 records.", file=sys.stderr)
@@ -296,13 +342,15 @@ def main() -> int:
                          "engine build and model, whose device / engine / model fields are copied")
     ap.add_argument("--launch-times", default=None,
                     help="--schema-v1: comma-separated UTC launch start times "
-                         "(YYYY-MM-DDTHH:MM:SSZ), one per YARDSTICK_NATIVE_OK line in file order")
+                         "(YYYY-MM-DDTHH:MM:SSZ), one per launch in file order (a launch is one "
+                         "YARDSTICK_NATIVE_OK line, or its run=1..N lines)")
     ap.add_argument("--instrument", default=None,
                     help="--schema-v1: conditions.instrument, the entry point that printed the lines")
     ap.add_argument("--first-ever", default=None,
-                    help="--schema-v1: comma-separated line positions (1-based) whose launch built "
-                         "the engine's compilation cache, marked metrics.firstEver (fairness rule 2: "
-                         "never the engine's speed); the caller states the evidence")
+                    help="--schema-v1: comma-separated launch positions (1-based) that built "
+                         "the engine's compilation cache; the launch's first line is marked "
+                         "metrics.firstEver (fairness rule 2: never the engine's speed); the caller "
+                         "states the evidence")
     args = ap.parse_args()
     if args.schema_v1:
         return main_schema_v1(args)
