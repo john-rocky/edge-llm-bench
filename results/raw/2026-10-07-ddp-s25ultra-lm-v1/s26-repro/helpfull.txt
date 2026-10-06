@@ -1,0 +1,204 @@
+litert_lm_advanced_main: Warning: SetProgramUsageMessage() never called
+
+  Flags from external/com_google_absl/absl/flags/parse.cc:
+    --flagfile (comma-separated list of files to load flags from); default: ;
+    --fromenv (comma-separated list of flags to set from the environment [use
+      'export FLAGS_flag1=value']); default: ;
+    --tryfromenv (comma-separated list of flags to try to set from the
+      environment if present); default: ;
+    --undefok (comma-separated list of flag names that it is okay to specify on
+      the command line even if the program does not define a flag with that
+      name); default: ;
+
+
+  Flags from runtime/engine/litert_lm_advanced_main.cc:
+    --backend (Executor backend to use for LLM execution (cpu, gpu, etc.));
+      default: "cpu";
+    --input_prompt (Input prompt to use for testing LLM execution.);
+      default: "";
+    --input_prompt_file (File path to the input prompt.); default: "";
+    --load_model_from_descriptor (Whether to load the model from a file
+      descriptor rather than by path.); default: false;
+    --metric_proto_file_path (Path to the file where the benchmark metrics will
+      be saved in protobuf format. Only collected when --benchmark is true.);
+      default: "";
+    --min_log_severity (Minimum log severity (-1:Default Behavior, 0:Verbose,
+      1:Debug, 2:Info, 3:Warning, 4:Error, 5:Fatal, 1000:Silent)); default: -1;
+    --model_name (The name of the model being tested. In Chrome performance
+      tests, this name is added to performance metrics to distinguish between
+      different models.); default: ;
+    --model_path (Model path to use for LLM execution.); default: "";
+    --prefill_chunk_size (Prefill chunk size for LLM execution. A positive value
+      enables breaking the input prefill sequence into smaller chunks for
+      incremental processing. For example, a chunk size of 128 with an input
+      length of 300 results in 3 chunks: 128, 128, and 44 tokens. A value of -1
+      disables chunking. Only supported by the dynamic executor.); default: -1;
+    --use_session (If true, use Session instead of Conversation to run
+      inference. Note that session does not use Jinja templates. As such, if
+      using Jinja in LLM Metadata, the user is responsible for manually applying
+      the prompt template to the input prompt.); default: false;
+
+  Flags from runtime/engine/shared_flags.cc:
+    --async (Run the LLM execution asynchronously.); default: true;
+    --audio_backend (Backend to use for the audio model (cpu or gpu). If not
+      specified, the audio backend will be chosen based on the main backend.);
+      default: ;
+    --benchmark (Benchmark the LLM execution.); default: false;
+    --benchmark_decode_tokens (If benchmark is true and the value is larger than
+      0, the benchmark will use this number to set the number of decode steps
+      (regardless of the input prompt).); default: 0;
+    --benchmark_prefill_tokens (If benchmark is true and the value is larger
+      than 0, the benchmark will use this number to set the number of prefill
+      tokens (regardless of the input prompt). For better performance, a number
+      of multiple of 128 is recommended, like 1024.); default: 0;
+    --cache_compiled_shaders_only (If true, only the compiled shaders will be
+      cached. If false, gpu graph info including work group sizes (and all
+      compiled shaders depending on backend) will be cached.); default: false;
+    --cache_dir (Directory for cache. Use ':memory' for in-memory cache. CPU
+      path only); default: "";
+    --clear_kv_cache_before_prefill (If true, clear kv cache before the first
+      prefill step. This may help to disclose any issues related to kv cache.);
+      default: true;
+    --configure_magic_numbers (If true and the model contains magic numbers,
+      present magic number configs when the model is initialized.);
+      default: true;
+    --constraint_regex (Regular expression to constrain the output generation.);
+      default: "";
+    --conv_type (Convolution data type. It can be auto, float, or int8. float
+      will be either float32 or float16 depending on the activation data type.
+      See --force_f32. int8 would have better latency with lower accuracy. auto
+      will choose the best type based on the model.); default: "auto";
+    --convert_weights_on_gpu (If true, the executor will convert weights on GPU.
+      It is not supported by the all backends so this flag is ignored when using
+      non-OpenCL and non-WebGPU backends.); default: true;
+    --disable_cache (Disable both the weight and program caches. If set to true,
+      --disable_weight_cache and --disable_gpu_program_cache will be ignored.);
+      default: false;
+    --disable_gpu_program_cache (Disable only the program cache. GPU path
+      only.); default: false;
+    --disable_input_prompt_as_hint (If true, disable the input prompt as a hint
+      when creating the engine. This is useful to align the behavior of other
+      languages with C++, where the input prompt is not used as a hint.);
+      default: false;
+    --disable_weight_cache (Disable only the weight cache. Applies to both CPU
+      and GPU.); default: false;
+    --enable_neon_for_npu_greedy_sampling (If true, enable NEON for NPU greedy
+      sampling.); default: true;
+    --enable_npu_debug_logging (If true, enable debug logging for NPU.);
+      default: false;
+    --enable_profiling (Enable per-op profiling.); default: false;
+    --enable_speculative_decoding (Whether to use speculative decoding.);
+      default: false;
+    --enable_ynnpack (Delegate supported CPU operations to YNNPACK before
+      XNNPACK.); default: false;
+    --expected_output (If not empty, the output will be checked against this
+      string. If the output does not contain the string, the program will exit
+      with an error.); default: "";
+    --force_f32 (Force float 32 precision for the activation data type.);
+      default: false;
+    --frequency_penalty (Scalar subtracted from a token's logit, scaled linearly
+      by the number of times that token has previously appeared.); default: 0;
+    --gpu_enable_metal_residency_set (If true, enable metal residency set for
+      GPU backend which prevents model weigths from being swapped out from
+      memory. Note that it will increase the memory pressure for other
+      applications and may cause others' crash with out-of-memory failures.);
+      default: false;
+    --gpu_external_tensor_mode (If false (by default), the GPU backend will use
+      no external tensor mode which runs slightly faster during decode. It
+      should be set true when GPU backend doesn't support no external tensor
+      mode, e.g. Vulkan or OpenGL.); default: false;
+    --gpu_madvise_original_shared_tensors (If true, the GPU backend will madvise
+      the original shared tensors after use.); default: true;
+    --litert_dispatch_lib_dir (Directory of the LiteRT dispatch library. If not
+      set, the runtime will look for the library in the path defined as the
+      environment variables.); default: "";
+    --log_sink_file (If specified, the logs will be written to this file.);
+      default: ;
+    --max_num_images (Maximum number of images to use for LLM execution.);
+      default: 1;
+    --max_num_tokens (Maximum number of tokens or context length to use for LLM
+      execution of a graph with dynamic context length. If 0, the maximum
+      context length will be determined by some heuristic. On benchmark mode, it
+      will be set to one equal to or greater than benchmark_prefill_tokens +
+      benchmark_decode_tokens.); default: 0;
+    --max_output_tokens (Maximum number of output tokens for generation. For
+      thinking models, both thinking (reasoning) tokens and the final response
+      tokens count towards this limit.); default: -1;
+    --multi_turns (If true, the command line will ask for multi-turns input.);
+      default: false;
+    --no_repeat_ngram_size (If greater than 0, all ngrams of this size can only
+      occur once in the generated sequence. The logits of the banned tokens will
+      be set to -inf.); default: 0;
+    --no_repeat_ngram_window_size (The maximum number of recent tokens to
+      consider for banning. Tokens older than this are forgotten. 0 means track
+      all history.); default: 0;
+    --num_cpu_threads (If greater than 0, the number of CPU threads to use for
+      the LLM execution with CPU backend.); default: 0;
+    --num_iterations (Number of iterations to run the model. By default, it's
+      1.); default: 1;
+    --num_logits_to_print_after_decode (The number of values at the beginning of
+      logits, in the middle of logits, and at the end of logits to print after
+      each decode step. If 0, disables printing logits.); default: 0;
+    --num_output_candidates (The number of candidates generated for the given
+      prompt, or the batch size of the decode signature.); default: 1;
+    --num_threads_to_compile (Number of threads for WebGPU kernel compilation.
+      By default (-1), it's determined by the runtime.); default: -1;
+    --num_threads_to_upload (Number of threads for WebGPU weight upload. By
+      default (-1), it's determined by the runtime.); default: -1;
+    --optimize_shader_compilation (If true, optimize Vulkan shader
+      compilation.); default: true;
+    --preferred_device_substr (Preferred WebGPU device name substring,
+      case-insensitive. If not empty, the adapter which the device name contains
+      the substring will be chosen. If empty, the device will be determined by
+      other factors.); default: "";
+    --prefill_batch_sizes (A list of maximum numbers of prefill tokens processed
+      at once. If empty, it will be the list of one entry with the length of
+      input prompt tokens or benchmark_prefill_tokens when benchmark mode is
+      enabled.); default: ;
+    --presence_penalty (Scalar subtracted globally from a logit if a token has
+      appeared at least once within the currently generated sequence.);
+      default: 0;
+    --repetition_penalty (Multiplicative penalty for any token already
+      generated. Values >= 1.0 (e.g., 1.0 = no penalty, 1.2 = moderate penalty).
+      Positive logits are divided by this penalty, and negative logits are
+      multiplied.); default: 1;
+    --repetition_window_size (The maximum number of recent tokens to consider
+      for penalization. Tokens older than this are forgotten. 0 means track all
+      history.); default: 0;
+    --report_peak_memory_footprint (Report peak memory footprint.);
+      default: false;
+    --sampler_backend (Sampler backend to use for LLM execution (cpu, gpu,
+      etc.). If empty, the sampler backend will be chosen for the best according
+      to the main executor, for example, gpu for gpu main executor.);
+      default: "";
+    --sampler_handles_input (If true and the sampler supports, the sampler
+      manipulates decode input tensors including tokens, positions, and mask.);
+      default: true;
+    --score_target_text (Target text to score.); default: "";
+    --share_constant_tensors (If true, the executor will enable constant tensor
+      sharing.); default: true;
+    --suppress_tokens (A comma-separated list of tokens to suppress.);
+      default: "";
+    --use_hw_cache_update_for_npu (If true, use HW cache update for NPU.);
+      default: true;
+    --use_hw_masking_for_npu (If true, use HW masking for NPU.); default: true;
+    --use_hw_ple_for_npu (If true, use HW PLE for NPU.); default: true;
+    --use_submodel (Whether the submodel should be used if available.);
+      default: false;
+    --verify_magic_numbers (If true and the model contains magic numbers and
+      test signatures, verify magic number configs when the real dimensions that
+      replaced magic numbers match with ones of test signatures.);
+      default: false;
+    --vision_backend (Backend to use for the vision model (cpu, gpu, or npu). If
+      not specified, the vision backend will be chosen based on the main
+      backend.); default: ;
+    --visual_token_budget (Visual token budget for multimodal processing
+      (maximum number of vision tokens per image).); default: -1;
+    --wait_for_weights_conversion_complete_in_benchmark (If false, the executor
+      does not wait for weights conversion on GPU to complete during benchmark.
+      It's meaningful only when benchmark and convert_weights_on_gpu are true.);
+      default: true;
+
+Try --helpfull to get a list of all flags or --help=substring shows help for
+flags which include specified substring in either in the name, or description or
+path.

@@ -1,0 +1,152 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791308431.873671   11849 litert_lm_lib.cc:505] Choose backend: cpu
+I0000 00:00:1791308431.874111   11849 litert_lm_lib.cc:661] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/ddp-lm-latest-repro/gemma-4-E4B-it.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: [1024]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1791308431.874147   11849 litert_lm_lib.cc:668] vision_executor_settings: not set
+I0000 00:00:1791308431.874152   11849 litert_lm_lib.cc:674] audio_executor_settings: not set
+I0000 00:00:1791308431.874159   11849 litert_lm_lib.cc:697] Creating engine
+INFO: [environment.cc:36] Creating LiteRT environment with options
+W0000 00:00:1791308431.874500   11850 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c60c0d6b0, name=GPU OpenCL
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c60c0d1e0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791308432.120045   11849 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c60c0ac40, name=GPU OpenCL
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c60c0ad20, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791308432.121318   11849 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+W0000 00:00:1791308432.121413   11849 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1340, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=3514, num_inputs=53, num_outputs=50, num_ops=2712
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=3606, num_inputs=53, num_outputs=50, num_ops=2801
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 577 tensors of signature decode have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 426 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 426 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+INFO: [magic_number_utils.cc:536] 581 tensors of signature verify have been updated for magic number  32003 to target number 2048
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c60d696c0, name=GPU OpenCL
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c60d697a0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1813] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1813] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=97, num_inputs=1, num_outputs=1, num_ops=49
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+INFO: [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+I0000 00:00:1791308441.244784   11849 litert_lm_lib.cc:865] Creating conversation
+W0000 00:00:1791308441.245315   11849 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1791308441.245347   11849 litert_lm_lib.cc:877] Running single-turn conversation
+I0000 00:00:1791308464.934669   11849 litert_lm_lib.cc:424] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.04 ms
+    - Init Executor: 9370.28 ms
+    - Init LLM metadata: 0.04 ms
+    - Init Model assets: 0.09 ms
+    - Init Tokenizer: 78.23 ms
+    - Init Total: 9370.55 ms
+--------------------------------------------------
+  Time to first token: 7.45 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 7.387776872s duration.
+      Prefill Speed: 138.61 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 16.30107791s duration.
+      Decode Speed: 15.70 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 12.917us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1791308464.986178   11849 litert_lm_lib.cc:474] Peak system ram usage: 4046.2MB.
+I0000 00:00:1791308464.986578   11849 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 4143.3 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 4242.74 MB
+I0000 00:00:1791308464.986776   11849 litert_lm_lib.cc:477] Peak private footprint: 4046.2MB.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c60c0ad20, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c60c0ac40, name=GPU OpenCL
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c60d697a0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c60d696c0, name=GPU OpenCL
+rc=0
