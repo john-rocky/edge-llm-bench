@@ -131,3 +131,32 @@ and 24 % in decode, so the cell was run again. Today's session spreads 52 % and 
 
 These sessions are not imported into `results/summary/device-runs.csv`: a row there is one run of a prompt task with
 decoded text, and these are medians of a benchmark-mode loop without text.
+
+## Gemma 4 E2B gpu at --num-iterations 1 and 2 (iter-check/, afternoon of 2026-10-07)
+
+Purpose: the morning's Gemma 4 E2B gpu session (session-0d1cde8d, five iterations) steps down inside the measured
+process (first process 44.62 tok/s decode, then 30.71 → 26.61 → 26.26 → 26.39 → 26.33), and the table's median is
+the lower level. Two more billed sessions of the same cell — same bundle, CLI, binary, device pool and defaults, only
+`--num-iterations 1` and `--num-iterations 2` — show what one and two cycles report. The 1-iteration session also
+carries `--warmup-runs 0`, which the CLI requires for the pair and which only sets the printed medians' range (the
+binary's arguments in `provenance.txt` are the defaults plus `--num_iterations=1`).
+
+Result (`iter-check/table-iter.md`; decode tok/s, prefill tok/s in brackets):
+
+| --num-iterations | first process (no caches) | measured process, cycle 1 | cycle 2 | cycles 3–5 | session | device build |
+|---:|---|---|---|---|---|---|
+| 1 | 46.97 (3526.0) | 46.17 (3688.8) | — | — | session-a6aea7f8 | S938U1UEU2AYD9 |
+| 2 | 45.47 (3774.7) | 45.43 (3416.9) | 33.85 (3681.7) | — | session-6587db64 | S938U1UEU1AYB3 |
+| 5 | 44.62 (3657.7) | 30.71 (3380.2) | 26.61 (2417.9) | 26.26, 26.39, 26.33 (1978–2026) | session-0d1cde8d | S938U1UEU2AYD9 |
+
+How to read it: a single cycle of this cell reports 45–47 tok/s decode from either process in all three sessions
+(the 5-iteration session's measured process being the exception at 30.71 already in its first cycle); a second cycle
+in the same process is lower (33.85 and 26.61); prefill does not fall between the two cycles of the 2-iteration
+session. Whether the phone's state, the pool's two firmware builds or the cycle count is behind which number is not
+established by three sessions, and no temperature or thermal reading exists for the pool. Both new sessions: both
+processes exit 0, no error line in the binary's log, binary and bundle sha256 as in the morning. `collect_lm.py`
+rejects the 1-iteration job (nothing beyond its one warm-up iteration) and gives the 2-iteration job a one-value
+"median" (33.85); the values above are read from `metrics.pb.txt` and the process log. Files: `iter-check/`
+(`ddp-session/`, `collected/sessions-iter.jsonl`, `table-iter.md`, `run-log-iter.txt`, `sessions-iter.tsv`,
+`tools/`). `table.md` and `collected/sessions.jsonl` are unchanged; fourteen new DDP sessions on 2026-10-07 in all
+(twelve in the morning, these two).
