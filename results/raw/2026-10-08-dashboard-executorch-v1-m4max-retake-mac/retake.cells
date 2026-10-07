@@ -1,0 +1,7 @@
+# Retake of two cells of matrices/dashboard-executorch-v1-mac.cells (lines 18 and 30, copied
+# verbatim at et-wire f84731d): their first sitting, 2026-10-08-dashboard-executorch-v1-m4max-mac,
+# ran while a Gradle build used the host CPU (0.6B: warm decode spread 27.2 % after the gate
+# retry; 4B: the cold run). Run by scripts/bench_matrix_mac.sh with this file.
+
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
