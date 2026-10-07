@@ -1,0 +1,9 @@
+# round r7b-mac (2026-10-08), campaign 2026-10-08-dashboard-executorch-v1-m4max-retake2-mac: a
+# second retake of the two XNNPACK cells of 2026-10-08-dashboard-executorch-v1-m4max-mac that a
+# Gradle build overlapped (0.6B 1K: warm spread flagged; 4B 1K: the cold run); the first retake
+# (…-retake-mac) stopped before 4B. Lines below copied verbatim from
+# matrices/dashboard-executorch-v1-mac.cells; run with scripts/bench_matrix_mac.sh run inside the
+# round's quiet window (quiet_hold et-r7b-mac).
+
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
