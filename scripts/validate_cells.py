@@ -280,9 +280,24 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                     errors.append(f"{where}: android llama.cpp backend=npu|gpu and engine-build=<tag> "
                                   "go together (the pinned flat build is CPU-only; engine-build= "
                                   "alone would stamp the CPU arm with a second build)")
-            if opts.get("engine-build") and not (plat == "android" and rt == "llama.cpp"):
-                errors.append(f"{where}: engine-build= is read for android llama.cpp rows only "
-                              "(android/bench/run_cell.py --engine-build)")
+            # an android litert-lm row on the NPU (arm litert-lm-npu) runs a side build: a
+            # LiteRT-LM runtime with the Qualcomm dispatch libraries, named by engine-build=
+            # (docs/dashboard-cells-v1.md "LiteRT-LM on the NPU"); cpu / gpu run the pinned build
+            if plat == "android" and rt == "litert-lm":
+                if (opts.get("backend") == "npu") != bool(opts.get("engine-build")):
+                    errors.append(f"{where}: android litert-lm backend=npu and engine-build=<tag> go "
+                                  "together (the NPU runs a LiteRT-LM side build with the Qualcomm "
+                                  "dispatch libraries; engine-build= is read for backend=npu only)")
+                if (opts.get("backend") == "npu" and not opts.get("exclude")
+                        and (opts.get("context-tokens") or NATIVE_TASK.match(task)
+                             or ENDURANCE_TASK.match(task))):
+                    errors.append(f"{where}: android litert-lm backend=npu runs a prompt task on the "
+                                  "bundle's own KV cache: no context-tokens= (an AOT bundle's cache "
+                                  "is fixed at export), no native-benchmark- / endurance- task "
+                                  "(not wired; android/bench/run_cell.py refuses them)")
+            if opts.get("engine-build") and not (plat == "android" and rt in ("llama.cpp", "litert-lm")):
+                errors.append(f"{where}: engine-build= is read for android llama.cpp and litert-lm "
+                              "rows only (android/bench/run_cell.py --engine-build)")
             if opts.get("max-tokens") and plat == "mac":
                 errors.append(f"{where}: the Mac CLI has no --max-tokens flag "
                               "(BenchmarkRunner.Configuration carries no budget "

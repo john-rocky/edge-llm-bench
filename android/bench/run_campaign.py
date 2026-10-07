@@ -12,7 +12,9 @@ Order and discipline (fairness rules as code):
     up to THERMAL_WAIT s and records the state either way.
   - a llama.cpp row with backend=npu|gpu engine-build=<tag> runs that side build
     from the device's engines dir (run_cell.py --backend --engine-build; arm
-    llama.cpp-npu / llama.cpp-gpu); a row without backend= is the CPU arm.
+    llama.cpp-npu / llama.cpp-gpu); a row without backend= is the CPU arm. A
+    litert-lm row with backend=npu engine-build=<tag> runs the LiteRT-LM NPU
+    build there the same way (arm litert-lm-npu).
   - an executorch row (backend=xnnpack|vulkan|qnn file=<.pte> recipe=<alias>) runs
     the ExecuTorch runner of its model family on an own export staged under
     ET_MODEL_DIR (run_cell.py --recipe; arm executorch-<backend>;
@@ -304,7 +306,7 @@ def planned_command(cell):
         int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx,
         engine_dir=engine_dir)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
-    env = launch_env(engine_dir, opts.get("backend"))
+    env = launch_env(engine_dir, opts.get("backend"), cell["runtime"])
     return f"cd {DEV_DIR} && {env} {affinity}{command}", binary, sampler
 
 

@@ -2,23 +2,36 @@
 # Three things differ from every other LiteRT-LM row and travel with this one:
 #   1. the bundle is this repo's own export: Qwen3 0.6B compiled ahead of time for SM8850
 #      (model_qualcomm_SM8850.litertlm, 783,864,161 bytes, exported 2026-08-21; side-loaded by
-#      local path) — no SM8850 bundle of these models is published;
-#   2. the runtime is a source build of litert_lm_advanced_main (LiteRT-LM main of 2026-08-21) with the
-#      Qualcomm dispatch and QNN libraries deployed beside it (QAIRT 2.47, V81 skel) — a v0.16.1 binary
-#      fails the dispatch library's runtime-version check;
-#   3. it runs with --use_hw_cache_update_for_npu=false (with the hardware KV-cache update on, this
-#      bundle's output is broken; google-ai-edge/litert-torch#1290).
-# The runner does not drive that runtime yet: run_cell.py refuses backend=npu for litert-lm, so
-# this file validates and lists its cells (the dashboards show them as not yet measured) until
-# then. The quantization label comes from the bundle's own metadata when the row is first measured.
+#      local path; its KV cache is fixed at 1,024 tokens) — no SM8850 bundle of these models
+#      is published;
+#   2. the runtime is a source build of litert_lm_advanced_main (LiteRT-LM main of 2026-08-21)
+#      with the Qualcomm dispatch and QNN libraries deployed beside it (QAIRT 2.47, V81 skel), a
+#      side build in /data/local/tmp/llmbench/engines/main-20260821-selfbuilt/ (android/README.md,
+#      "Side builds") — a v0.16.1 binary fails the dispatch library's runtime-version check;
+#   3. it runs with --use_hw_cache_update_for_npu=false (with the hardware KV-cache update on,
+#      this bundle's output is broken; google-ai-edge/litert-torch#1290).
+# The runner (android/bench/run_cell.py) stamps all three in every record: model.quantization
+# names the export by the file's sha256, engineVersion is the build's android/engine-pins.json
+# key, conditions carry engineBuild, hwCacheUpdateForNpu (the engine's own echo) and the
+# engineCommand; the reply is text-checked. The build's sha256 is registered in the pins on
+# the first device run, until then its records stamp "unknown (…)".
+# The 1K text task's prompt alone is 1,339 tokens on LiteRT-LM's Qwen3 0.6B (its records), 256
+# more to decode, run at context-tokens=2048 elsewhere: this bundle's cache is 1,024 — excluded.
 # The other four models have no SM8850 bundle, published or exported: excluded with that reason.
 # The session anchor is the weekly llama.cpp CPU one.
-# docs/dashboard-cells-v1.md "NPU and Android GPU rows (Galaxy S26, 2026-10-07)".
+# docs/dashboard-cells-v1.md "NPU and Android GPU rows (Galaxy S26, 2026-10-07)", "LiteRT-LM on the NPU".
+#   BENCH_CPU_MASK= ./bench matrix matrices/dashboard-npu-litert-v1-android-s26.cells --platform android
 
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 
-android litert-lm Qwen/Qwen3-0.6B short-chat backend=npu file=~/code/litertlm-convert/npu_qwen3_work/model_qualcomm_SM8850.litertlm
-android litert-lm Qwen/Qwen3-1.7B short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
-android litert-lm google/gemma-4-E2B-it short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
-android litert-lm Qwen/Qwen3-4B short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
-android litert-lm google/gemma-4-E4B-it short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm Qwen/Qwen3-0.6B short-chat backend=npu engine-build=main-20260821-selfbuilt file=~/code/litertlm-convert/npu_qwen3_work/model_qualcomm_SM8850.litertlm
+android litert-lm Qwen/Qwen3-0.6B long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt file=~/code/litertlm-convert/npu_qwen3_work/model_qualcomm_SM8850.litertlm context-tokens=2048 exclude=aot-cache-length-1024
+
+android litert-lm Qwen/Qwen3-1.7B short-chat backend=npu engine-build=main-20260821-selfbuilt exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm Qwen/Qwen3-1.7B long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt context-tokens=2048 exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm google/gemma-4-E2B-it short-chat backend=npu engine-build=main-20260821-selfbuilt exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm google/gemma-4-E2B-it long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt context-tokens=2048 exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm Qwen/Qwen3-4B short-chat backend=npu engine-build=main-20260821-selfbuilt exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm Qwen/Qwen3-4B long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt context-tokens=2048 exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm google/gemma-4-E4B-it short-chat backend=npu engine-build=main-20260821-selfbuilt exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm google/gemma-4-E4B-it long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt context-tokens=2048 exclude=no-sm8850-npu-bundle-published-or-exported

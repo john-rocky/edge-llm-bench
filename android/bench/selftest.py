@@ -1330,13 +1330,13 @@ def main():
     grammar = [
         ("android llama.cpp m/g short-chat backend=npu engine-build=b11469-snapdragon file=x.gguf", None),
         ("android llama.cpp m/g native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon file=x.gguf", None),
-        ("android litert-lm m/l short-chat backend=npu file=x.litertlm", None),
+        ("android litert-lm m/l short-chat backend=npu file=x.litertlm", "go together"),
         ("android llama.cpp m/g short-chat backend=cpu file=x.gguf", "takes backend=npu|gpu"),
         ("android llama.cpp m/g short-chat backend=npu file=x.gguf", "go together"),
         ("android llama.cpp m/g short-chat engine-build=b11469-snapdragon file=x.gguf", "go together"),
         ("mac litert-lm m/l short-chat backend=npu", "backend=npu is an android"),
         ("android litert-lm m/l short-chat backend=gpu engine-build=b11469-snapdragon file=x.litertlm",
-         "engine-build= is read for android llama.cpp rows only"),
+         "go together"),
         ("android litert-lm m/l asr-rtf-librispeech-82s backend=npu file=x.litertlm", "asr-rtf-* needs backend=cpu|gpu"),
         ("android llama.cpp m/g short-chat backend=tpu engine-build=b file=x.gguf", "want cpu|gpu|npu"),
     ]
@@ -1354,7 +1354,7 @@ def main():
     errors, _ = validate_cells.validate_file(path_v)
     ok(any("duplicate cell" in e for e in errors),
        f"validate_cells: one arm on two side builds in one file is a duplicate cell (got {errors})")
-    for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "litert-lm takes --backend cpu|gpu"),
+    for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "pass --backend npu and --engine-build together"),
                        (["--runtime", "llama.cpp", "--backend", "cpu"], "without --backend is the CPU arm"),
                        (["--runtime", "llama.cpp", "--backend", "npu"], "pass --backend and --engine-build together"),
                        (["--runtime", "llama.cpp", "--engine-build", "b11469-snapdragon"], "together")):

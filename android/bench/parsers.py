@@ -267,6 +267,108 @@ def llama_backend_registered(lines, device, buffer, tool, bench_tests=None):
     return used and weights and bool(offloaded) and all(n == total for n, total in offloaded)
 
 
+# LiteRT-LM on the NPU (run_cell.engine_command, a side build with engine-build=): the
+# engine's own lines that say which backend a launch chose and registered and what the
+# Qualcomm dispatch took, in the forms of the self-built litert_lm_advanced_main of
+# 2026-08-21 on the Galaxy S26 (the lane's NPU logs of 2026-08-23 to 2026-10-03, outside this
+# repo; LiteRT-LM main b12c62c7 runtime/engine/litert_lm_lib.cc for the settings echo):
+#   I0000 00:00:1787447197.028690   26280 litert_lm_lib.cc:499] Choose backend: npu
+#   I0000 00:00:1787447197.028842   26280 litert_lm_lib.cc:652] executor_settings: backend: NPU
+#   use_hw_cache_update_for_npu: false            (the settings echo, one per line)
+#   litert_dispatch_lib_dir: /data/local/tmp/llmbench/engines/<tag>
+#   INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b8f206890, name=NpuAccelerator
+#   INFO: [npu_registry.cc:30] NPU accelerator registered.
+#   INFO: [litert_dispatch.cc:159] Loading shared library: <dir>/libLiteRtDispatch_Qualcomm.so
+#   INFO: [compiler_plugin.cc:260] Loaded plugin at: <dir>/libLiteRtCompilerPlugin_Qualcomm.so  (JIT)
+#     BackendType              : Htp(2)          (the dispatch's ::qnn::Options table)
+#   VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 0 (prefill_128).
+#   INFO: [litert_dispatch_device_context.cc:248] Creating new QNN context for bytecode 0x797af997b0 (size 282300416)
+# LiteRT creates its environment several times per launch and only the first registers the
+# NPU: the later ones log "NPU accelerator could not be loaded and registered" on a healthy
+# run, so that warning is not read. Addresses read as <addr>, so a build's lines are the
+# same on every launch.
+LITERT_NPU_LINE_PATTERNS = (
+    re.compile(r"Choose backend: \w+"),
+    re.compile(r"executor_settings: backend: \w+"),
+    re.compile(r"^use_hw_cache_update_for_npu: \w+"),
+    re.compile(r"^litert_dispatch_lib_dir: .*"),
+    re.compile(r"RegisterAccelerator: ptr=\w+, name=NpuAccelerator"),
+    re.compile(r"NPU accelerator registered\."),
+    re.compile(r"Loading shared library: \S*libLiteRtDispatch\S*"),
+    re.compile(r"Loaded plugin at: \S+"),
+    re.compile(r"\bBackendType\s+: \S+"),
+    re.compile(r"Replacing \d+ out of \d+ node\(s\) with delegate \(DispatchDelegate\) node.*"),
+    re.compile(r"Creating new QNN context for bytecode \w+ \(size \d+\)"),
+)
+
+
+def litert_npu_lines(text):
+    """The engine output's NPU lines (LITERT_NPU_LINE_PATTERNS), in order, each once, runs of
+    blanks folded, addresses as <addr> — conditions.backendRegistered of a LiteRT-LM NPU
+    launch. Absent lines stay absent."""
+    out = []
+    for line in text.split("===ENGINE_OUTPUT===", 1)[-1].splitlines():
+        for rx in LITERT_NPU_LINE_PATTERNS:
+            m = rx.search(line)
+            if m:
+                found = re.sub(r"\b0x[0-9a-fA-F]+\b", "<addr>", re.sub(r"\s+", " ", m.group(0).strip()))
+                if found not in out:
+                    out.append(found)
+                break
+    return out
+
+
+def litert_npu_registered(lines):
+    """Did this LiteRT-LM launch run on the NPU? It chose the npu backend, LiteRT registered
+    its NPU accelerator, and the dispatch delegate took at least one of the model's subgraphs
+    (an NPU that registers while the model runs on XNNPACK — a bundle with nothing compiled
+    for this NPU — shows no DispatchDelegate line). Anything less is a launch that may have
+    run elsewhere."""
+    return ("Choose backend: npu" in lines
+            and any(ln.endswith("name=NpuAccelerator") or ln == "NPU accelerator registered." for ln in lines)
+            and any("with delegate (DispatchDelegate)" in ln for ln in lines))
+
+
+# the lines a LiteRT-LM launch logs among its printed reply: absl's ("W0000 00:00:1787447197.923067
+# 26280 tasks.cc:572] …", on its own line or glued to the end of a streamed token), the
+# "=== Source Location Trace: ===" block under one and its file:line entries, LiteRT's and
+# TFLite's own ("INFO: […]", "VERBOSE: …"), and the QNN libraries' ("[1] graph_prepare.cc:208::…")
+RE_ABSL_LOG = re.compile(r"[IWEF]\d{4} \d\d:\d\d:\d+\.\d+\s+\d+ \S+:\d+\] .*$")
+RE_LITERT_LOG_LINE = re.compile(
+    r"^(?:(?:INFO|WARNING|ERROR|VERBOSE|DEBUG): .*"
+    r"|=== Source Location Trace: ===\s*"
+    r"|(?:\./|external/)\S+:\d+\s*"
+    r"|\[\d+\] (?:\S+\.(?:cc|cpp|h):\d+:|Qnn\w* <\w>).*)$")
+
+
+def litert_reply(text):
+    """The reply a litert_lm_advanced_main single-turn launch printed, for the text check (a
+    LiteRT-LM side build's prompt launch: --benchmark with the real prompt, --async=false, so
+    the reply comes in one piece after the engine's logs): the output after its "Running
+    single-turn conversation" log line up to "BenchmarkInfo:" (or the end, when that never
+    came), with the log lines taken out (RE_ABSL_LOG, RE_LITERT_LOG_LINE), from "[thought]"
+    on when the reply has a thinking channel. Reasoning and answer both stay, as printed. ""
+    when nothing was printed."""
+    out = text.split("===ENGINE_OUTPUT===", 1)[-1]
+    start = re.search(r"^.* Running single-turn conversation\s*$", out, re.M)
+    if not start:
+        return ""
+    out = out[start.end():]
+    stop = re.search(r"^BenchmarkInfo:\s*$", out, re.M)
+    out = out[:stop.start()] if stop else out
+    kept = []
+    for line in out.splitlines():
+        if RE_LITERT_LOG_LINE.match(line):
+            continue
+        cut = RE_ABSL_LOG.sub("", line)
+        if cut or not RE_ABSL_LOG.search(line):
+            kept.append(cut)
+    value = "\n".join(kept)
+    if "[thought]" in value:
+        value = value[value.index("[thought]"):]
+    return value.strip() if value.strip() else value
+
+
 # a llama.cpp log line as -lv 4 prints it: "<m>.<s>.<ms>.<us> <I|W|D|E> " and the message
 RE_LLAMA_LOG = re.compile(r"\d+\.\d+\.\d+\.\d+ [IWDE] .*$")
 

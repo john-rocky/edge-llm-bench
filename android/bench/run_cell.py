@@ -10,10 +10,12 @@ Design decisions (methodology/android.md):
     run per (model, backend) builds engine caches and is labelled firstEver.
     Detection is a marker file on the DEVICE ({DEV_DIR}/markers/): the caches
     live there, so host-side state cannot know whether this device already
-    compiled this (model, backend). litert-lm, and the chat launches of a
-    llama.cpp side build on the GPU (its OpenCL program cache); the pinned CPU
-    llama.cpp build and the NPU device keep no persistent compile cache, so
-    their first run is an ordinary cold run.
+    compiled this (model, backend). litert-lm (its NPU arm too, by the same
+    marker: whether an AOT bundle builds anything on its first launch is for a
+    device run to show), and the chat launches of a llama.cpp side build on the
+    GPU (its OpenCL program cache); the pinned CPU llama.cpp build and llama.cpp
+    on the NPU keep no persistent compile cache, so their first run is an
+    ordinary cold run.
   - metrics use BenchmarkResult field names (what build_summary.py reads);
     absent metrics stay absent. llama-cli has no TTFT; litert has no sampler
     control (conditions.sampler = "engine-default", a disclosed same-budget
@@ -24,14 +26,18 @@ Design decisions (methodology/android.md):
     llama.cpp-npu / llama.cpp-gpu: a side build (--engine-build <tag>, the
     official Snapdragon asset in {DEV_DIR}/engines/<tag>/{bin,lib}) run on the
     Hexagon HTP or the Adreno GPU (OpenCL); the bare llama.cpp arm is the
-    pinned CPU build in the flat {DEV_DIR}, as before.
+    pinned CPU build in the flat {DEV_DIR}, as before. litert-lm with
+    --backend npu is a side build too (--engine-build <tag>: a LiteRT-LM
+    runtime build with the Qualcomm dispatch and QNN libraries, flat in
+    {DEV_DIR}/engines/<tag>/), arm litert-lm-npu.
   - side-build witness and device lines: the tool's sha AND every shared lib
     its pin lists (engine-pins.json so_files) must match, else the stamp is
-    'unknown'; the engine's own device lines (registry, `using device`,
-    offloaded N/M, model buffer) go to conditions.backendRegistered, and a
-    launch whose lines do not show the cell's device is flagged
-    backend-not-registered — kept, and out of every pool
-    (render_leaderboard.arm_row).
+    'unknown'; the engine's own device lines (llama.cpp: registry, `using
+    device`, offloaded N/M, model buffer; LiteRT-LM: the chosen backend, the
+    NPU accelerator's registration, the dispatch delegate's subgraphs) go to
+    conditions.backendRegistered, and a launch whose lines do not show the
+    cell's device is flagged backend-not-registered — kept, and out of every
+    pool (render_leaderboard.arm_row).
   - executorch (docs/executorch-arm-v1.md): the tag's own runner of the model's
     family (llama_main for Qwen 3, gemma4_e2e_runner for Gemma 4) from
     {DEV_DIR}/executorch-<tag>[-<backend>]/, arm executorch-<backend>, an own
@@ -111,6 +117,30 @@ LLAMA_DEVICE_BUFFERS = {"HTP0": "HTP0", "GPUOpenCL": "OpenCL"}
 # so a new tool also needs that field in engine-pins.json).
 SNAPDRAGON_CHAT_TOOL = "llama-cli"
 SNAPDRAGON_CHAT_FLAGS = ""
+# A side build's layout under {ENGINES_DIR}/<tag>: (the tool's subdir, the libs' subdir).
+# llama.cpp's release asset keeps bin/ and lib/; the LiteRT-LM NPU build sits flat, its
+# Hexagon skel in dsp/ (the pin's so_files names it dsp/<file>).
+SIDE_DIRS = {"llama.cpp": ("bin", "lib"), "litert-lm": ("", "")}
+# LiteRT-LM on the NPU (cells backend=npu engine-build=<tag>; arm litert-lm-npu): the
+# build's advanced_main, which takes the NPU switches and prints BenchmarkInfo with
+# --benchmark. The hardware KV-cache update stays off: with it on, the one bundle this arm
+# runs (an own Qwen3 0.6B export) decodes garbage on the S26 (google-ai-edge/litert-torch#1290).
+LITERT_NPU_TOOL = "litert_lm_advanced_main"
+# Own NPU ahead-of-time exports the runner can name, keyed by the file's sha256:
+# npu_export names every output model_qualcomm_<SoC>.litertlm whatever the model and
+# recipe, so the name says nothing (quant-label-rule). "cacheTokens" = the KV cache the
+# export fixed: an AOT bundle takes no --max_num_tokens, and the engine prints its length
+# only when a request differs from it. docs/dashboard-cells-v1.md "LiteRT-LM on the NPU".
+OWN_NPU_BUNDLES = {
+    # Qwen3 0.6B for SM8850, model_qualcomm_SM8850.litertlm (783,864,161 bytes): Stage 4 of
+    # the 2026-08-21 day-1 static-range build (its LlmMetadata section is that build's, byte
+    # for byte); the export logs give the recipe, the calibration and the cache
+    "f8909326639011c6123126c06c4f7d205857b1915c8b49de6844522fe5d211f2": {
+        "quantization": ("own export, NPU AOT for SM8850: int8 weights (dynamic_wi8_afp32) with "
+                         "static-range int16 activations, calibration 3 prompts x 8 decode steps; "
+                         "prefill 128, cache 1024 (litert-torch npu_export, 2026-08-21)"),
+        "cacheTokens": 1024},
+}
 # provenance.rssBasis of every record (schema: memoryPeakResidentMB). Until
 # 2026-10-06 VmHWM was read only under BENCH_STRICT_SMOKE, so earlier records
 # from any other sitting carry no peak.
@@ -123,6 +153,10 @@ RSS_BASIS = ("VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s f
 # 406 MiB of weights and 448 MiB of KV in the HTP0 buffers (2026-10-07 smoke)
 SIDE_RSS_NOTE = ("; the host process only: the device's buffers (HTP0 / OpenCL: weights, KV "
                  "cache, compute) are not in VmRSS / VmHWM")
+# the same for the LiteRT-LM NPU build (its own deploy script's note: DSP-side allocation is
+# not counted in VmHWM)
+LITERT_NPU_RSS_NOTE = ("; the host process only: the NPU's buffers (Hexagon, through the Qualcomm "
+                       "dispatch and QNN) are not in VmRSS / VmHWM")
 # cpu-cap-rule (methodology/fairness-rules.md). On a charging Pixel 8a the mid cluster's
 # scaling_max_freq fell from 2367 to 1418-2130 MHz 20-30 s into heavy runs, with the
 # thermal status at 0, and every such llama.cpp run decoded at a third to a quarter of the
@@ -160,8 +194,14 @@ EXECUTORCH_RSS_NOTE = {
 }
 
 
-def load_pins():
-    p = os.path.join(ROOT, "android", "engine-pins.json")
+def load_pins(serial=None):
+    """android/engine-pins.json. BENCH_TEST_PINS names a fixture registry instead, for the
+    FAKESELF selftest only: a side build whose sha256 the device round registers is
+    witnessed in the selftest without an entry in the real registry."""
+    p = os.environ.get("BENCH_TEST_PINS")
+    if p and serial != "FAKESELF":
+        raise SystemExit("BENCH_TEST_PINS is only for the FAKESELF selftest fixture")
+    p = p or os.path.join(ROOT, "android", "engine-pins.json")
     if not os.path.exists(p):
         return {}
     with open(p) as fh:
@@ -174,15 +214,21 @@ def observed_engine(binname, pins, serial, engine_dir=None):
     is on the device is the one that measured the row; during an A/B rehearsal
     two tags alternate on the same device).
 
-    A side build (engine_dir = {ENGINES_DIR}/<tag>) is read from its bin/ and must
-    match its pin's so_files in lib/ as well: there the tool is a 7 KB launcher and
-    the engine is the shared libs, so a lib that differs from the pin stamps
-    'unknown' whatever the launcher says. A side build that is not on the device
-    stops the cell before any launch."""
+    A side build (engine_dir = {ENGINES_DIR}/<tag>, laid out as SIDE_DIRS says) must
+    match its pin's so_files as well: there the engine is the shared libs (llama.cpp's
+    tool is a 7 KB launcher; LiteRT-LM's NPU path runs in the Qualcomm dispatch and QNN
+    libraries), so a lib that differs from the pin stamps 'unknown' whatever the tool
+    says. A side build that is not on the device stops the cell before any launch."""
+    key_by_bin = {"litert_lm_main": ("litert-lm", "litert_lm_main_sha256"),
+                  "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
+                  "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
+                  "llama-cli": ("llama.cpp", "llama_cli_sha256"),
+                  "llama-bench": ("llama.cpp", "llama_bench_sha256")}
+    engine, field = key_by_bin.get(binname) or ("llama.cpp", binname.replace("-", "_") + "_sha256")
     if not engine_dir:
         out = adb(["shell", f"sha256sum {DEV_DIR}/{binname}"], serial)
     else:
-        path = f"{engine_dir}/bin/{binname}"
+        path = side_path(engine_dir, SIDE_DIRS[engine][0], binname)
         out = adb(["shell", f"sha256sum {path} 2>&1 || true"], serial)
         if not out.split() or len(out.split()[0]) != 64:
             raise SystemExit(f"{path} is not on the device ({out.strip()!r}) — push the side "
@@ -198,26 +244,37 @@ def observed_engine(binname, pins, serial, engine_dir=None):
             if entry.get(field) == sha:
                 return tag, sha
         return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
-    key_by_bin = {"litert_lm_main": ("litert-lm", "litert_lm_main_sha256"),
-                  "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
-                  "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
-                  "llama-cli": ("llama.cpp", "llama_cli_sha256"),
-                  "llama-bench": ("llama.cpp", "llama_bench_sha256")}
-    engine, field = key_by_bin.get(binname) or ("llama.cpp", binname.replace("-", "_") + "_sha256")
     for tag, entry in pins.get(engine, {}).items():
         if entry.get(field) == sha:
             libs = entry.get("so_files") if engine_dir else None
             if libs:
-                got = adb(["shell", "sha256sum " + " ".join(f"{engine_dir}/lib/{name}" for name in sorted(libs))
+                paths = {name: side_path(engine_dir, SIDE_DIRS[engine][1], name) for name in libs}
+                got = adb(["shell", "sha256sum " + " ".join(paths[name] for name in sorted(libs))
                            + " 2>&1 || true"], serial)
-                on_device = {os.path.basename(parts[1]): parts[0] for parts in
+                on_device = {parts[1]: parts[0] for parts in
                              (line.split() for line in got.splitlines()) if len(parts) == 2}
-                bad = [name for name in sorted(libs) if on_device.get(name) != libs[name]]
+                bad = [name for name in sorted(libs) if on_device.get(paths[name]) != libs[name]]
                 if bad:
                     return (f"unknown (on-device {tag} {binname} with lib {', '.join(bad)} "
                             "unmatched in android/engine-pins.json)"), sha
             return tag, sha
     return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
+
+
+def side_path(engine_dir, sub, name):
+    """A file of a side build on the device: <engine_dir>/<sub>/<name>, or flat."""
+    return f"{engine_dir}/{sub}/{name}" if sub else f"{engine_dir}/{name}"
+
+
+def own_npu_bundle(sha):
+    """An own NPU export's facts by the file's sha256 (OWN_NPU_BUNDLES) ->
+    (model.quantization label or None, conditions.contextTokens): "aot-fixed-<n>" = the KV
+    cache the export fixed. An unknown export gets no label here (guess_quant then says
+    'unrecorded') and a cache length marked unrecorded."""
+    entry = OWN_NPU_BUNDLES.get(sha)
+    if not entry:
+        return None, "aot-fixed (cache length unrecorded)"
+    return entry["quantization"], f"aot-fixed-{entry['cacheTokens']}"
 
 
 def sha256_file(path):
@@ -370,8 +427,26 @@ def capture_stem(runtime, backend, model_id, task, file_hint=None,
 def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_tokens,
                    context_tokens, engine_dir=None):
     """The on-device command line for one run. Returns (cmd, binname, sampler, ctx_note).
-    engine_dir = a llama.cpp side build ({ENGINES_DIR}/<tag>): the tool by absolute path,
-    every layer on the backend's device; its env comes from launch_env."""
+    engine_dir = a side build ({ENGINES_DIR}/<tag>): the tool by absolute path; llama.cpp
+    with every layer on the backend's device, LiteRT-LM on the NPU; its env comes from
+    launch_env."""
+    if runtime.startswith("litert-lm") and engine_dir:
+        # The NPU side build runs a prompt task on the bundle's own KV cache: an AOT bundle's
+        # cache length is fixed at export (no --max_num_tokens; main() names it from the
+        # bundle, ctx_note here is the placeholder). --benchmark with no synthetic token
+        # counts keeps the real prompt and prints BenchmarkInfo (without it advanced_main
+        # prints no rate; the reply is printed whenever benchmark_prefill_tokens is 0 —
+        # LiteRT-LM main b12c62c7 runtime/engine/litert_lm_lib.cc). The dispatch library is
+        # the build's own (--litert_dispatch_lib_dir; unset, LiteRT-LM looks beside the model).
+        if context_tokens is not None or task.startswith(("native-", "endurance-")):
+            raise SystemExit(f"litert-lm on the NPU runs a prompt task on the bundle's own KV cache "
+                             f"(task {task!r}, context-tokens {context_tokens}): an AOT bundle's cache "
+                             "is fixed at export, and the protocol and endurance paths are not wired")
+        core = (f"{engine_dir}/{LITERT_NPU_TOOL} --backend={backend} --model_path={model_dev} "
+                f"--input_prompt_file={prompt_dev} --max_output_tokens={max_tokens or budget} "
+                "--async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 "
+                f"--use_hw_cache_update_for_npu=false --litert_dispatch_lib_dir={engine_dir}")
+        return core, LITERT_NPU_TOOL, "engine-default", "aot-fixed"
     if runtime.startswith("litert-lm"):
         ctx = f" --max_num_tokens={context_tokens}" if context_tokens else ""
         ctx_note = context_tokens or "bundle-default"
@@ -544,9 +619,10 @@ def dry_run(args, arm, engine_dir):
                                               budget, args.max_tokens, args.context_tokens,
                                               engine_dir=engine_dir)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
-    plan.update(command=f"cd {DEV_DIR} && {launch_env(engine_dir, args.backend)} {affinity}{cmd} "
+    plan.update(command=f"cd {DEV_DIR} && {launch_env(engine_dir, args.backend, args.runtime)} {affinity}{cmd} "
                         f">{DEV_DIR}/run_out.txt 2>&1 </dev/null",
-                binary=f"{DEV_DIR}/{binname}", sampler=sampler)
+                binary=(side_path(engine_dir, SIDE_DIRS[args.runtime][0], binname) if engine_dir
+                        else f"{DEV_DIR}/{binname}"), sampler=sampler)
     if args.runtime == "executorch":
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
         host_bin = os.path.join(ANDROID_BIN_DIR, binname)
@@ -563,15 +639,20 @@ def dry_run(args, arm, engine_dir):
     return 0
 
 
-def launch_env(engine_dir=None, backend=None):
+def launch_env(engine_dir=None, backend=None, runtime="llama.cpp"):
     """The env assignments in front of the engine command. The flat {DEV_DIR} build finds
-    its shared libs in the cwd. A side build gets its own lib/ for them and for the Hexagon
-    session's DSP libs, and the wrapper's Hexagon settings, in the official
+    its shared libs in the cwd. A llama.cpp side build gets its own lib/ for them and for
+    the Hexagon session's DSP libs, and the wrapper's Hexagon settings, in the official
     scripts/snapdragon/run.py order (for either device: the build loads every backend it
     ships), plus an OpenCL program cache of its own (unset, b11469 keeps one cache for
-    every build under $TMPDIR/llama.cpp/cl-cache)."""
+    every build under $TMPDIR/llama.cpp/cl-cache). The LiteRT-LM NPU build finds its
+    dispatch and QNN libs in its own dir and the Hexagon skel in its dsp/, the system's
+    DSP library dirs after it (the form of the build's own deploy script)."""
     if not engine_dir:
         return "LD_LIBRARY_PATH=."
+    if runtime == "litert-lm":
+        return (f'LD_LIBRARY_PATH={engine_dir} '
+                f'ADSP_LIBRARY_PATH="{engine_dir}/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"')
     env = f"LD_LIBRARY_PATH={engine_dir}/lib ADSP_LIBRARY_PATH={engine_dir}/lib"
     if backend == "npu":
         env += f" GGML_HEXAGON_DEVICES={LLAMA_DEVICES[backend]}"
@@ -761,11 +842,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runtime", required=True, choices=["litert-lm", "llama.cpp"])
     ap.add_argument("--backend", default=None, choices=["cpu", "gpu", "npu"],
-                    help="litert-lm: cpu|gpu; llama.cpp: npu|gpu on a side build "
-                         "(--engine-build), none = the CPU arm")
+                    help="litert-lm: cpu|gpu, npu on a side build (--engine-build); llama.cpp: "
+                         "npu|gpu on a side build, none = the CPU arm")
     ap.add_argument("--engine-build", default=None,
-                    help=f"llama.cpp side build on the device, {ENGINES_DIR}/<tag>/{{bin,lib}} "
-                         "(an android/engine-pins.json key); without it the flat pinned build")
+                    help=f"side build on the device, {ENGINES_DIR}/<tag> (an android/engine-pins.json "
+                         "key): llama.cpp's {bin,lib}, the LiteRT-LM NPU build flat; without it the "
+                         "flat pinned build")
     ap.add_argument("--model-id", required=True)
     ap.add_argument("--file", default=None, help="artifact filename inside the HF repo")
     ap.add_argument("--task", required=True)
@@ -797,11 +879,16 @@ def main():
     args = ap.parse_args()
 
     if args.runtime == "litert-lm" and not args.backend:
-        ap.error("litert-lm needs --backend cpu|gpu (arm identity)")
-    if args.runtime == "litert-lm" and (args.backend == "npu" or args.engine_build):
-        ap.error("litert-lm takes --backend cpu|gpu and no --engine-build here (the LiteRT-LM "
-                 "NPU arm runs a runtime build with the Qualcomm dispatch libraries, not wired "
-                 "in this runner)")
+        ap.error("litert-lm needs --backend cpu|gpu|npu (arm identity)")
+    if args.runtime == "litert-lm" and (args.backend == "npu") != bool(args.engine_build):
+        ap.error("litert-lm on the NPU is a side build: pass --backend npu and --engine-build together "
+                 "(the Qualcomm dispatch runs in a LiteRT-LM build with its libraries, "
+                 f"{ENGINES_DIR}/<tag>; --engine-build is read for the NPU only)")
+    if args.runtime == "litert-lm" and args.engine_build and (
+            args.context_tokens is not None or args.task.startswith(("native-", "endurance-"))):
+        ap.error("litert-lm on the NPU runs a prompt task on the bundle's own KV cache: no "
+                 "--context-tokens (an AOT bundle's cache is fixed at export), no native-benchmark- "
+                 "or endurance- task (not wired)")
     if args.runtime == "llama.cpp" and args.backend == "cpu":
         ap.error("llama.cpp without --backend is the CPU arm (`llama.cpp`); --backend takes npu|gpu")
     if args.runtime == "llama.cpp" and bool(args.backend) != bool(args.engine_build):
@@ -829,7 +916,7 @@ def main():
                   file=sys.stderr)
         return endurance_cell.run(args)
 
-    pins = load_pins()
+    pins = load_pins(args.serial)
 
     et = cell_file = None
     if args.runtime == "executorch":
@@ -843,6 +930,7 @@ def main():
     model_dev, model_local = ensure_model(args.model_id, args.file, args.runtime, args.serial)
     if et:
         args.file = cell_file
+    model_sha = sha256_file(model_local)
     prompt_dev = budget = prompt_text = None
     if not args.task.startswith("native-benchmark-"):
         prompt_dev, budget = push_prompt(args.task, args.serial)
@@ -852,7 +940,11 @@ def main():
     cmd, binname, sampler, ctx_note = engine_command(
         args.runtime, args.backend, model_dev, args.task,
         prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir)
-    env = launch_env(engine_dir, args.backend)
+    litert_npu = args.runtime == "litert-lm" and bool(engine_dir)
+    quantization = None
+    if litert_npu:  # the label and the KV cache of an own NPU export, by its sha256
+        quantization, ctx_note = own_npu_bundle(model_sha)
+    env = launch_env(engine_dir, args.backend, args.runtime)
     if et:
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
         push_exact(et["tokenizer"], tokenizer_dev, args.serial)
@@ -863,11 +955,12 @@ def main():
     if os.environ.get("BENCH_SITTING") == "1":
         # the expected build: the cell's side build, else the pin; llama.cpp's field follows
         # the tool (a llama-bench cell compared llama-bench's sha with llama_cli_sha256 and
-        # always stopped here before 2026-10-07)
-        expected_version = "v0.16.0" if args.runtime == "litert-lm" else (args.engine_build or "b8999")
+        # always stopped here before 2026-10-07); a build the registry does not hold stops too
+        expected_version = args.engine_build or ("v0.16.0" if args.runtime == "litert-lm" else "b8999")
         expected_field = ("litert_lm_advanced_main_sha256" if args.runtime == "litert-lm"
                           else binname.replace("-", "_") + "_sha256")
-        if engine_version != expected_version or engine_artifact != pins[args.runtime][expected_version][expected_field]:
+        pinned = pins.get(args.runtime, {}).get(expected_version, {}).get(expected_field)
+        if engine_version != expected_version or engine_artifact != pinned:
             print(f"PIN MISMATCH before launch: {binname} {engine_version} {engine_artifact}", flush=True)
             return 5
     paired = context_prompt(args.runtime, args.task, args.context_tokens)
@@ -899,7 +992,6 @@ def main():
 
     os.makedirs(args.out, exist_ok=True)
     dev = device_info(args.serial)
-    model_sha = sha256_file(model_local)
     ok = 0
     for i in range(1, args.runs + 1):
         if i > 1 and args.cooldown:
@@ -952,11 +1044,22 @@ def main():
         else:
             metrics = parsers.parse_litert(console)
             cold = True
-        # side build: the engine's own device lines (parsers.llama_backend_lines) say which
-        # device this launch registered and used; one that does not show the cell's device
-        # measured another one — kept, flagged, out of every pool and not an OK run
+        # side build: the engine's own device lines (parsers.llama_backend_lines /
+        # litert_npu_lines) say which device this launch registered and used; one that does
+        # not show the cell's device measured another one — kept, flagged, out of every pool
+        # and not an OK run
         side_cond, backend_flags = {}, []
-        if engine_dir:
+        if litert_npu:
+            lines = parsers.litert_npu_lines(console)
+            # the engine's own echo of the setting (its executor_settings dump), absent = null
+            echo = next((ln.split(": ", 1)[1] for ln in lines
+                         if ln.startswith("use_hw_cache_update_for_npu: ")), None)
+            side_cond = {"engineBuild": args.engine_build,
+                         "hwCacheUpdateForNpu": {"true": True, "false": False}.get(echo),
+                         "engineCommand": f"{env} {cmd}", "backendRegistered": lines}
+            if not parsers.litert_npu_registered(lines):
+                backend_flags = ["backend-not-registered"]
+        elif engine_dir:
             device = LLAMA_DEVICES[args.backend]
             bench = binname == "llama-bench"
             lines = (parsers.llama_bench_device_lines(tests) if bench
@@ -1034,7 +1137,7 @@ def main():
             "runtime": arm,
             "engineVersion": engine_version,
             "engineArtifact": engine_artifact,
-            "model": {"id": args.model_id, "quantization": guess_quant(model_dev),
+            "model": {"id": args.model_id, "quantization": quantization or guess_quant(model_dev),
                       "file": os.path.basename(model_dev), "sha256": model_sha},
             "task": args.task,
             "timestamp": iso,
@@ -1053,7 +1156,8 @@ def main():
                            "exitCode": exit_code, **side_cond},
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
-                           "rssBasis": RSS_BASIS + (SIDE_RSS_NOTE if engine_dir else "")},
+                           "rssBasis": RSS_BASIS + (LITERT_NPU_RSS_NOTE if litert_npu
+                                                    else SIDE_RSS_NOTE if engine_dir else "")},
         }
         if et:
             rec["model"].update(et_fields["model"])
@@ -1086,10 +1190,14 @@ def main():
         # A FAIL keeps its records, text and log (failed-runs-stay), flags them,
         # and the summary's text_check column keeps them out of every number.
         # A side build's chat launch is checked the same way (its reply: parsers.llama_cli_reply,
-        # the -lv 4 log lines taken out); the pinned CPU llama.cpp arm is not text-checked.
+        # the -lv 4 log lines taken out; the LiteRT-LM NPU build's: parsers.litert_reply, its
+        # log lines taken out); the pinned CPU llama.cpp arm and the LiteRT-LM cpu / gpu
+        # short-chat launches are not text-checked.
         checking = os.environ.get("BENCH_TEXT_CHECK", "1") == "1"
         if paired and checking:
             printed_texts = parsers.context_prompt_texts(console)
+        elif litert_npu and checking:
+            printed_texts = [parsers.litert_reply(console)]
         elif engine_dir and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
         elif et and checking:
@@ -1143,8 +1251,9 @@ def main():
         if launch_checks.get("protocolFlags"):
             print("protocol flags: " + ", ".join(launch_checks["protocolFlags"]))
         if backend_flags:
+            shown = "the NPU dispatch" if litert_npu else LLAMA_DEVICES[args.backend]
             print(f"backend-not-registered {stem}_{stamp}_run{i}: the engine's lines do not show "
-                  f"{LLAMA_DEVICES[args.backend]} — the record stays, no number pools it")
+                  f"{shown} — the record stays, no number pools it")
         if cpu_capped:
             line = f"cpu-capped {stem}_{stamp}_run{i}: " + "; ".join(cpu_capped)
             print(line + " — the record stays, no number pools it (cpu-cap-rule)")
