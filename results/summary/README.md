@@ -39,6 +39,14 @@ policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw bu
 pools into no number (`render_leaderboard.arm_row`; `methodology/fairness-rules.md`
 cpu-cap-rule).
 
+`backend_registered` (the last column, 2026-10-07) is the Android runner's reading of a
+llama.cpp side build's own device lines (`conditions.backendRegistered`; the
+`llama.cpp-npu` / `llama.cpp-gpu` arms): `true` when they show the cell's device,
+`false` when the record carries `backend-not-registered`, empty on every other row. A
+`false` run stays a row here and in raw but pools into no number
+(`render_leaderboard.arm_row`; `docs/dashboard-cells-v1.md` "NPU and Android GPU
+rows").
+
 Release-regression diffing over this layer: `scripts/regression_diff.py`
 (quality joins on tag; device cells join on device/runtime/model/task/cold-warm
 with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is
