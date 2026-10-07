@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "id": "055b2783-e6bb-4166-b62e-c134182a4bfa",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-community/gemma-4-E2B-it-litert-lm",
+    "quantization": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
+    "file": "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+    "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-06T23:57:50Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 93.4,
+    "exitCode": 0,
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "886eb2ee-734c-4653-8086-6b6a06105da5",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 33.9,
+    "batteryTemperatureFinalC": 33.8,
+    "batteryLevelFinal": 1.0,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+    "allocationWitnessTokens": [
+      2048
+    ],
+    "invalidDecodeCount": 0,
+    "protocolFlags": [],
+    "iterationIndex": 2,
+    "regime": "warm",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 1122,
+      "distinctWords": 128,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "435ff28c7993d41870be1413c716d0dbf2ae2d1ab624304dc2ef47b737b44083"
+  },
+  "metrics": {
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 2350.04296875,
+    "memoryPeakResidentMB": 2387.4140625,
+    "firstTokenLatencyMS": 1180.0,
+    "promptTokensPerSecond": 1039.12,
+    "decodeTokensPerSecond": 8.72,
+    "promptTokenCount": 1106,
+    "generatedTokenCount": 256,
+    "coldRun": false
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-10-06T23-57-50.692262_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "decodedText": "litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-10-06T23-57-50.692262_run1_iter2.decoded.txt"
+  }
+}
