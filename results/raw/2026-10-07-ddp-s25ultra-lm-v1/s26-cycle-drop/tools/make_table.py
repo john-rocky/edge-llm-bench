@@ -38,7 +38,7 @@ def lc_epoch(ts):  # "10-07 16:10:12.749" -> epoch via the thermal log's same-se
     if not rows: return None
     base = rows[0]; bh = datetime.datetime.strptime(base["devtime"], "%H:%M:%S"); th = datetime.datetime.strptime(hms, "%H:%M:%S")
     return base["epoch"] + int((th - bh).total_seconds())
-order = ["A0", "A", "B1", "B2", "B3", "C"]
+order = ["A0", "A", "B1", "B2", "B3", "C", "E0", "E", "D0", "D", "F0", "F", "G0", "G1", "G2", "G3", "G4", "G5"]
 lines = ["| setting | process pid | cycle | prefill tok/s | decode tok/s | decode turn s | TTFT s | init ms | peak mem MB | cycle end (device clock) | battery °C | sys-therm-0 °C | cpu max °C | gpu max °C | ddr °C | gpu MHz | gpu busy % | cpu7 MHz | during cycle: gpu max °C / gpu MHz min–max |",
          "|---|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|"]
 summary = {}

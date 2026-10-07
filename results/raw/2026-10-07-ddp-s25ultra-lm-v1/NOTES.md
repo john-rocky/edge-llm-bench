@@ -191,3 +191,15 @@ dump. What inside the process changes after the first conversation, and what set
 C −9 %, DDP −25 % at cycle 2), is not established. No error line, all six processes exit 0. Files:
 `s26-cycle-drop/` (`steps.log`, `<setting>.logcat-process.txt`, `<setting>.stdout.txt`, `metrics-<setting>.pb`,
 `thermal.tsv`, `table-cycle-drop.md`, `tools/`). Not in `table.md`, not in `results/summary`.
+
+Rounds 2 and 3 (same day, 16:30–16:45 JST; `s26-cycle-drop/round2-flags/`, `round3-control5/`): with the phone
+quiet (screen dozing, no other session on it) eight 3-cycle processes of the same arguments — a control, one with
+`--sampler_backend=cpu`, one with `--max_num_tokens=2048`, and five more controls 60 s apart — all hold 44.3–45.5 in
+cycle 1 and 44.8–47.8 in cycles 2–3 (GPU 1300 MHz, 90–92 % busy; 83–86 % with the CPU sampler). The drop therefore
+is not inherent to the binary and bundle, and the two flags separate nothing because the control did not drop. The
+two round-1 processes that dropped ran while another session drove the phone's screen without the hold
+(screenshots of a foreground app two to seven times a minute from 16:00 to 16:28 JST, touch events, redraws, screen
+on); that activity is absent from every round-2 and round-3 window. It is a lead (B2 was fast with the same activity
+in its window), not an established cause; the slow cycles' signature — GPU at full clock and 99 % busy against
+91–92 % when fast, prefill and TTFT intact — fits a second GPU client. What ran on the DDP pool device beside the
+measured process is not known. Details and per-window counts: `s26-cycle-drop/table-cycle-drop.md`.

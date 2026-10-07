@@ -201,3 +201,62 @@ is not in the log and not in the help text.
 `metrics-<setting>.pb` (as written by `--metric_proto_file_path`), `thermal.tsv`, `tools/` (the scripts as run; the
 user name replaced by USER). The S26's work directory was removed at the end; the hold was returned at 16:14:46 JST.
 Not in `table.md`, not in `results/summary`.
+
+## Rounds 2 and 3 (16:30–16:45 JST, user 16:2x「両方よろしく」): the two flag candidates, and five control runs on the quiet phone
+
+Round 2 (`round2-flags/`): three settings on the same phone, same binary and bundle, each = a cache-writing
+1-iteration process then a 3-iteration process 0 s later (the shape of A0 + A), 180 s rest between settings.
+E = the round-1 arguments again (control); D = E + `--sampler_backend=cpu`; F = E with `--max_num_tokens=2048`.
+Round 3 (`round3-control5/`): the round-1 arguments only, one cache-writing process then five 3-iteration processes
+60 s apart, with the screen state (`dumpsys power` `mWakefulness`) logged before each.
+
+| setting | arguments beyond the common ones | cycle 1 | cycle 2 | cycle 3 | GPU MHz / busy % in cycles 2–3 | screen |
+|---|---|---|---|---|---|---|
+| E0 / E | `--max_num_tokens=1280` (control) | 44.70 (3492) / 45.10 (3921) | 47.64 (3879) | 47.42 (3690) | 1200–1300 / 91–92 | dozing |
+| D0 / D | `--max_num_tokens=1280 --sampler_backend=cpu` | 44.56 (3952) / 45.16 (3938) | 44.76 (3648) | 44.83 (3815) | 1300 / 83–86 | dozing |
+| F0 / F | `--max_num_tokens=2048` | 44.83 (3704) / 45.16 (3716) | 47.73 (3480) | 47.72 (3636) | 1300 / 91–92 | dozing |
+| G0 | `--max_num_tokens=1280` (cache-writing) | 45.67 (3441) | — | — | — | dozing |
+| G1 | `--max_num_tokens=1280` | 44.30 (3778) | 47.29 (3772) | 46.97 (3692) | 1300 / 91–92 | dozing |
+| G2 | 〃 | 44.99 (3358) | 47.26 (3918) | 47.23 (3642) | 1300 / 91–92 | dozing |
+| G3 | 〃 | 45.03 (3969) | 47.25 (3669) | 47.45 (3629) | 1300 / 90–91 | dozing |
+| G4 | 〃 | 45.03 (4024) | 47.57 (3711) | 47.74 (4044) | 1300 / 90–92 | dozing |
+| G5 | 〃 | 45.48 (3919) | 47.75 (3762) | 47.56 (3734) | 1300 / 91–92 | dozing |
+
+(decode tok/s, prefill in brackets; every cycle with its thermal row: `round2-flags/` and `round3-control5/` through
+`tools/make_table.py`.) The binary does not echo `--sampler_backend` in its settings dump; D's GPU busy of 83–86 %
+against 91–92 % in every other 3-cycle process is the only sign in the record that the sampler moved. F's dump says
+`max_tokens: 2048`.
+
+What this adds:
+
+- On the quiet phone the drop does not occur: eight 3-cycle processes (E, D, F, G1–G5) report 44.3–45.5 in cycle 1
+  and 44.8–47.8 in cycles 2–3, GPU at 1300 MHz and 90–92 % busy (83–86 % with the CPU sampler). The second cycle is
+  slightly faster than the first in seven of the eight.
+- So D and F separate nothing: the control did not drop either. The sampler backend and the KV allocation are not
+  shown to matter, and not shown not to.
+- The two processes that did drop (A −42 %, C −9 %, round 1) ran while another session was driving the phone's
+  screen without the hold: from 16:00 to 16:28 JST SurfaceFlinger logged a screenshot of the foreground app
+  `android.template/.ui.MainActivity` two to seven times a minute (`Capture layer list`), with touch events
+  (`Touch Boost … choose 120.00 Hz`) and the app redrawing (`VRI[MainActivity]`); the screen was on (`previousDisplayState
+  = ON` at 16:10:09, `animateScreenStateChange: target=ON` at 16:14:19). None of that appears in any round-2 or round-3
+  window (0 screenshots, 0 touches, 0 redraws; screen dozing). Per round-1 window (lines of the whole logcat window):
+
+| window | decode | screen-state lines | touch | screenshot | app redraws (VRI) |
+|---|---|---:|---:|---:|---:|
+| A (3 cycles) | 43.8 → 25.5 → 23.9 | 2 | 1 | 1 | 65 |
+| B1 | 45.5 | 0 | 0 | 0 | 0 |
+| B2 | 46.0 | 1 | 1 | 1 | 71 |
+| B3 | 46.2 | 0 | 0 | 0 | 1 |
+| C (3 cycles) | 43.3 → 39.5 → 36.7 | 67 | 0 | 2 | 28 |
+
+  The slow cycles coincide with the other session's screen activity in A and C and the quiet windows B1 and B3 are
+  fast; B2 is fast with the same activity in its window, so the activity is a lead, not an established cause. The
+  signature of the slow cycles — GPU at full clock and 99 % busy, 91–92 % when fast, prefill and TTFT intact — fits a
+  second GPU client better than throttling, and the compositor is one.
+- For the DDP pool the same reading applies as a hypothesis only: the measured process's later cycles were slower on
+  three sessions, the pool gives no screen state, and whether anything else ran on the pool device during the
+  measured process is not known.
+
+Files: `round2-flags/` and `round3-control5/` (each: `steps.log`, `<setting>.logcat-process.txt`,
+`<setting>.stdout.txt`, `metrics-<setting>.pb`, `thermal.tsv`, `tools/`). The hold was returned at 16:38:10 and
+16:45:26 JST; the device dir removed each time.
