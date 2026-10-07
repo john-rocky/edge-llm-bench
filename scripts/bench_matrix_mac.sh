@@ -21,6 +21,13 @@
 # a missing one logs SKIPPED with its reason). native-benchmark-* cells still
 # dispatch to scripts/coreai_mac_wrapper.sh (external Apple llm-benchmark
 # binary; own timing, no --context-tokens — documented comparability caveat).
+#
+# executorch cells (docs/executorch-arm-v1.md): scripts/executorch_mac.py runs the
+# ExecuTorch tag's own runner of the model's family on an own export staged under
+# ET_MODEL_DIR (python: ET_PYTHON), run 1 cold and the rest warm (--warmup); backend=
+# picks the runner build (.build/executorch-<tag>[-<backend>]/). A cell whose inputs
+# are not staged is SKIPPED with its reason; the post-capture gate applies as for
+# yardstick cells.
 set -uo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -41,6 +48,7 @@ CAMPAIGN="${CAMPAIGN:-$(date +%F)-mac-matrix}"
 OUT="$REPO/results/raw/$CAMPAIGN"
 UZU_PYTHON="${UZU_PYTHON:-python3}"
 UZU_MODEL_DIR="${UZU_MODEL_DIR:-$REPO/models/uzu}"
+ET_PYTHON="${ET_PYTHON:-python3}"
 DRY_RUN=0
 # Core AI bundles are side-loaded, one folder per catalog id (CoreAIRuntime.bundleSpec):
 # <BENCH_COREAI_MODELS_DIR>/<folder>/{metadata.json, <name>.aimodel | .aimodelc, tokenizer/}.
@@ -107,6 +115,14 @@ run_ys_cell(){
     ${extra[@]+"${extra[@]}"} --output "$OUT/${slug}.jsonl" 2>&1 | tail -4
 }
 
+run_et_cell(){
+  # One capture attempt of the current executorch cell (bash dynamic scope: et_args/slug
+  # are run_cell locals): one runner process per run, records appended to the cell's JSONL.
+  # Exit 75 = the cell's inputs or runner are not staged (nothing ran).
+  "$ET_PYTHON" "$REPO/scripts/executorch_mac.py" "${et_args[@]}" --pause "${ET_PAUSE:-30}" \
+    --timeout "${CELL_TIMEOUT:-1800}" --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT"
+}
+
 guard(){
   # Unified memory: a heavy CPU/GPU pipeline moves these numbers (spread-rule).
   # NB: pattern must not match the repo name "ios-llm-benchmark" in task paths.
@@ -117,6 +133,11 @@ guard(){
   # a session.
   if ps aux | grep -E "coreai\.llm\.export|release/llm-benchmark |export_simple_template\.py|scratchpad/export_[A-Za-z0-9_]*\.py|coreai-models/\.venv/bin/python|coreai-build compile" | grep -v grep >/dev/null; then
     echo "refusing to start: heavy pipeline running (unified-memory contention)" >&2; exit 1
+  fi
+  # ExecuTorch exports (export_llm, export_gemma4.py; scripts/executorch/) load the same
+  # unified memory for minutes
+  if ps aux | grep -E "executorch\.extension\.llm\.export|export_gemma4\.py|scripts/executorch/(export_|run_gemma4_export)" | grep -v grep >/dev/null; then
+    echo "refusing to start: ExecuTorch export running (unified-memory contention)" >&2; exit 1
   fi
 }
 
@@ -181,6 +202,22 @@ run_cell(){
       return
     fi
   fi
+  if [ "$rt" = "executorch" ]; then
+    local et_file et_recipe
+    local -a et_args=()
+    et_file="$(cell_opt file "" ${opts[@]+"${opts[@]}"})"
+    et_recipe="$(cell_opt recipe "" ${opts[@]+"${opts[@]}"})"
+    # file and recipe are capture identity, as for uzu
+    slug="${slug}_$(printf '%s' "$et_file|$et_recipe" | shasum -a 256 | cut -c1-12)"
+    et_args=(--model-id "$mid" --file "$et_file" --recipe "$et_recipe" --backend "$backend" \
+      --task "$task" --runs "$runs")
+    [ -n "$ctx" ] && et_args+=(--context-tokens "$ctx")
+    if [ "$DRY_RUN" = 1 ]; then
+      "$ET_PYTHON" "$REPO/scripts/executorch_mac.py" "${et_args[@]}" --output "$OUT/${slug}.jsonl" --dry-run \
+        || echo "DRY-RUN executorch $mid $task: not runnable as staged (above)"
+      return 0
+    fi
+  fi
   if [ "$DRY_RUN" = 1 ]; then
     printf 'DRY-RUN existing arm: %s run --runtime %s --model-id %s --task %s --runs %s\n' "$YS" "$rt" "$mid" "$task" "$runs"
     return
@@ -232,6 +269,36 @@ run_cell(){
       || echo "FAIL $rt $mid $task round=$round" >> "$OUT/FAILURES.txt"
     # The driver validates schema, finite counters, total token budget and text.
     # These contended cold smoke rows are not admitted as warm dashboard timing.
+    return
+  fi
+  if [ "$rt" = "executorch" ]; then
+    log "CELL $rt / $mid / $task backend=$backend${ctx:+ ctx=$ctx} runs=$runs round=$round ($(date +%H:%M:%S))"
+    run_et_cell
+    case $? in
+      0) ;;
+      75) echo "SKIPPED $rt $mid $task backend=$backend reason=executorch-inputs-not-staged" | tee -a "$OUT/SKIPPED.txt"
+          return ;;
+      *) echo "FAIL $rt $mid $task backend=$backend round=$round" >> "$OUT/FAILURES.txt" ;;
+    esac
+    # the post-capture gate of the yardstick cells (below), on this cell's JSONL
+    if [ -f "$OUT/${slug}.jsonl" ] && [ "${GATE_RETRY:-1}" = "1" ]; then
+      gate="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl")" || true
+      case "$gate" in DEGENERATE*)
+        echo "GATE_FAIL $rt $mid $task verdict='$gate' (output is a repetition loop — not retried; the rate is not a measurement)" \
+          | tee -a "$OUT/FLAGGED.txt" ;;
+      esac
+      case "$gate" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
+        log "gate: $gate — quarantine + cooldown ${GATE_COOLDOWN:-180}s, re-run once"
+        mv "$OUT/${slug}.jsonl" "$OUT/${slug}.jsonl.attempt1"
+        sleep "${GATE_COOLDOWN:-180}"
+        run_et_cell || echo "FAIL $rt $mid $task (gate retry)" >> "$OUT/FAILURES.txt"
+        gate2="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl" 2>/dev/null)" || true
+        case "$gate2" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
+          echo "GATE_FAIL $rt $mid $task first='$gate' retry='$gate2' (retry kept; ⚠ downstream)" \
+            | tee -a "$OUT/FLAGGED.txt" ;;
+        esac ;;
+      esac
+    fi
     return
   fi
   case "$task" in asr-rtf-*)
