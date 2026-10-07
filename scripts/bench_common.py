@@ -188,6 +188,11 @@ def artifact_entry(arm: str, model_id: str, platform: str = ""):
             continue
         if best is None or (plat and not (best.get("platform") or "")):
             best = e
+    # A llama.cpp side build on another device (llama.cpp-npu / llama.cpp-gpu, the
+    # Android NPU / GPU rows since 2026-10-07) loads the same GGUF the CPU arm's row
+    # registers (cells file= is the same file), so its bytes are that entry's.
+    if best is None and arm.startswith("llama.cpp-"):
+        return artifact_entry("llama.cpp", model_id, platform)
     return best
 
 
