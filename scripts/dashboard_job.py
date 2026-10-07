@@ -74,11 +74,27 @@ ANCHOR_CAMPAIGN_RE = r"-dashboard-v1-.*-anchor-"
 # bench --platform name -> cells-file platform token (= campaign dir suffix)
 PLATFORM_TOKEN = {"mac": "mac", "iphone": "ios", "android": "android"}
 ANDROID_DEV_DIR = "/data/local/tmp/llmbench"
-# the Mac runner's own guard, replicated so the job reports BUSY and polls
-# instead of letting `bench matrix` fail once and give up the slot
-MAC_HEAVY_RE = (r"coreai\.llm\.export|release/llm-benchmark |export_simple_template\.py|"
-                r"scratchpad/export_[A-Za-z0-9_]*\.py|coreai-models/\.venv/bin/python|"
-                r"coreai-build compile")
+# the Mac runner's own guard (scripts/bench_matrix_mac.sh heavy_guard), replicated so the
+# job reports BUSY and polls instead of letting `bench matrix` fail once and give up the
+# slot. Every pattern is anchored at the program the process runs: its argv[0] (the coreai
+# venv's python, llm-benchmark, coreai-build), or the module / script a python argv[0]
+# runs. Unanchored, a name anywhere in an argv matched: on 2026-10-08 two coding-agent CLI
+# sessions' argv (their prompt text) named coreai-models/.venv/bin/python, and this guard
+# read an idle Mac as busy while the runner's did the same.
+MAC_HEAVY_PROGRAM_RE = re.compile(
+    r"^[^ ]*(coreai-models/\.venv/bin/python|release/llm-benchmark( |$)|coreai-build compile)")
+MAC_HEAVY_PYTHON_RE = re.compile(
+    r"^[^ ]*[Pp]ython[0-9.]*( [^ ]+)* (-m coreai\.llm\.export|[^ ]*export_simple_template\.py|"
+    r"[^ ]*scratchpad/export_[A-Za-z0-9_]*\.py|-m executorch\.extension\.llm\.export|"
+    r"[^ ]*export_gemma4\.py|[^ ]*scripts/executorch/(export_|run_gemma4_export))")
+
+
+def mac_heavy_command(command):
+    """True when a live process whose argv (joined by spaces) is `command` is a heavy Mac
+    pipeline by the runner's rule above: a Core AI export / benchmark / compile, or an
+    ExecuTorch export, anchored at the program — never a name inside another process's
+    arguments."""
+    return bool(MAC_HEAVY_PROGRAM_RE.search(command) or MAC_HEAVY_PYTHON_RE.search(command))
 
 EXIT_OK, EXIT_CONFIG, EXIT_BUSY, EXIT_ABORTED, EXIT_DEVICE, EXIT_TIMEOUT = 0, 2, 3, 4, 5, 6
 VERDICT_NAME = {EXIT_OK: "OK", EXIT_CONFIG: "CONFIG", EXIT_BUSY: "BUSY",
@@ -315,8 +331,9 @@ def mac_guard():
     # ortgenai_mac.py: the ONNX Runtime GenAI cells' own driver, run by the matrix runner or by hand
     if pgrep("bench_matrix_mac.sh") or pgrep("yardstick run") or pgrep("scripts/ortgenai_mac.py"):
         raise Busy("a Mac capture is already running")
-    rc, out = sh(["ps", "aux"])
-    heavy = [ln for ln in out.splitlines() if re.search(MAC_HEAVY_RE, ln) and "grep" not in ln]
+    rc, out = sh(["ps", "-Awwo", "command="])  # argv only, one line per process
+    heavy = [ln.strip() for ln in out.splitlines()
+             if mac_heavy_command(ln.strip()) and "grep" not in ln]
     if heavy:
         raise Busy(f"heavy pipeline running (unified-memory contention): {heavy[0][:120]}")
 

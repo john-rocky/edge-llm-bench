@@ -100,6 +100,21 @@ def main():
     # its held lock inside the temp dir, never under logs/dashboard-job
     dj.LOG_DIR = os.path.join(tmp, "logs")
 
+    # the Mac guard's heavy-pipeline rule is anchored at the program the process runs
+    # (2026-10-08: two agent CLI sessions' prompt text named the coreai venv's python and
+    # the unanchored rule read an idle Mac as busy)
+    heavy = dj.mac_heavy_command
+    ok(not heavy("/Users/u/.local/bin/claude --model m 'まず coreai-models/.venv/bin/python export_x.py を読んで'"),
+       "mac guard: an agent CLI whose prompt names the coreai venv python is not heavy")
+    ok(heavy("/Users/u/code/coreai-models/.venv/bin/python export_simple_template.py --L 128"),
+       "mac guard: the coreai venv python is heavy")
+    ok(heavy("python3 -m coreai.llm.export --platform iOS"), "mac guard: python -m coreai.llm.export is heavy")
+    ok(heavy("/Users/u/.venv-et151/bin/python3.12 -m executorch.extension.llm.export.export_llm --config q.yaml"),
+       "mac guard: an ExecuTorch export is heavy")
+    ok(heavy("/opt/x/release/llm-benchmark --model a.aimodel"), "mac guard: llm-benchmark is heavy")
+    ok(not heavy("python3 scripts/build_summary.py"), "mac guard: a summary build is not heavy")
+    ok(not heavy("node /x/claude --prompt 'release/llm-benchmark --model'"), "mac guard: llm-benchmark named inside another argv is not heavy")
+
     def attached(*serials):
         with open(os.path.join(state, "devices.txt"), "w") as fh:
             fh.write("".join(s + "\n" for s in serials))
