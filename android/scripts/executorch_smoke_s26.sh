@@ -4,6 +4,7 @@
 #   ET_MODEL=<model>.pte ET_TOKENIZER=tokenizer.json \
 #   ET_PROMPT_SHORT=short-chat.qwen3.txt ET_PROMPT_LONG=long-context-1024-gen256.qwen3.txt \
 #   android/scripts/executorch_smoke_s26.sh <out_dir>
+#   android/scripts/executorch_smoke_s26.sh --summarize <out_dir>   # rebuild summary.* from the files, no device
 #
 # Takes no device hold: the caller holds the phone for the whole call (shared S26). Order:
 # preflight -> push (binary, model, tokenizer, the two template-applied prompts) -> short-chat
@@ -23,7 +24,10 @@
 # device_post.txt, gate.txt, push.txt, cleanup.txt, summary.json and summary.md (metrics from
 # the PyTorchObserver JSON: prefill tok/s = prompt_tokens / (prompt_eval_end - inference_start),
 # which includes tokenization; decode tok/s = generated_tokens / (inference_end - prompt_eval_end);
-# TTFT = first_token - inference_start).
+# TTFT = first_token - inference_start). VmHWM is the sampler's largest read; a launch that exits
+# between two reads can end above it (measured: a 1.6 s launch read 848 MB, its own log 1033 MiB),
+# so the summary also keeps the runner's "RSS after finishing text generation" (getrusage
+# ru_maxrss of the engine at the end of generation) and flags vmHWMUnderRead when the two differ.
 #
 # Env:
 #   SERIAL            adb serial (default: RFGL80R6A6H, the Galaxy S26)
@@ -31,22 +35,24 @@
 #   BENCH_BIN_ROOT    engine binaries (default: <repo>/android/bin)
 #   ET_BIN            xnnpack llama_main (default: <bin root>/executorch-<tag>/llama_main)
 #   ET_VULKAN_BIN     vulkan llama_main (default: <bin root>/executorch-<tag>-vulkan/llama_main; skipped if absent)
-#   ET_MODEL, ET_TOKENIZER, ET_PROMPT_SHORT, ET_PROMPT_LONG   inputs (required)
+#   ET_MODEL, ET_TOKENIZER, ET_PROMPT_SHORT, ET_PROMPT_LONG   inputs (required; --summarize needs the prompts only)
 #   ET_SHORT_TOKENS / ET_LONG_TOKENS / ET_VULKAN_TOKENS        --max_new_tokens (default: 128 / 256 / 16)
 #   ET_GAP            seconds between launches (default: 60)
 #   BATTERY_MAX_C     battery temperature gate (default: 36.0)
 #   SMOKE_DEADLINE    epoch seconds after which no launch starts (default: now + 780)
 set -euo pipefail
 
-OUT="${1:?usage: executorch_smoke_s26.sh <out_dir>}"
+SUMMARIZE_ONLY=0
+if [[ "${1:-}" == --summarize ]]; then SUMMARIZE_ONLY=1; shift; fi
+OUT="${1:?usage: executorch_smoke_s26.sh [--summarize] <out_dir>}"
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SERIAL="${SERIAL:-RFGL80R6A6H}"
 TAG="${ET_TAG:-v1.5.1}"
 BIN_ROOT="${BENCH_BIN_ROOT:-$REPO_ROOT/android/bin}"
 XNN_BIN="${ET_BIN:-$BIN_ROOT/executorch-$TAG/llama_main}"
 VK_BIN="${ET_VULKAN_BIN:-$BIN_ROOT/executorch-$TAG-vulkan/llama_main}"
-MODEL="${ET_MODEL:?set ET_MODEL (.pte)}"
-TOKENIZER="${ET_TOKENIZER:?set ET_TOKENIZER (tokenizer.json)}"
+MODEL="${ET_MODEL:-}"
+TOKENIZER="${ET_TOKENIZER:-}"
 PROMPT_SHORT="${ET_PROMPT_SHORT:?set ET_PROMPT_SHORT}"
 PROMPT_LONG="${ET_PROMPT_LONG:?set ET_PROMPT_LONG}"
 SHORT_TOKENS="${ET_SHORT_TOKENS:-128}"
@@ -57,6 +63,89 @@ BATTERY_MAX="${BATTERY_MAX_C:-36.0}"
 DEADLINE="${SMOKE_DEADLINE:-$(( $(date +%s) + 780 ))}"
 DEV=/data/local/tmp/llmbench/executorch
 CPUFREQ=/sys/devices/system/cpu/cpufreq
+
+summarize() {  # summary.json / summary.md from the launch files in $OUT
+python3 - "$OUT" "$PROMPT_SHORT" "$PROMPT_LONG" <<'PY'
+import glob, json, os, re, statistics, sys
+out, prompt_short, prompt_long = sys.argv[1:4]
+prompts = {"short-chat": open(prompt_short, encoding="utf-8").read(),
+           "long-context-1024-gen256": open(prompt_long, encoding="utf-8").read()}
+rows = []
+for cmd in sorted(glob.glob(os.path.join(out, "*.cmd.txt"))):
+    stem = os.path.basename(cmd)[:-len(".cmd.txt")]
+    read = lambda ext: open(os.path.join(out, f"{stem}.{ext}.txt"), encoding="utf-8", errors="replace").read() \
+        if os.path.exists(os.path.join(out, f"{stem}.{ext}.txt")) else ""
+    sampler, stdout, stderr = read("sampler"), read("stdout"), read("stderr")
+    row = {"launch": stem}
+    m = re.search(r"^EXIT_CODE=(\d+)", sampler, re.M)
+    row["exitCode"] = int(m.group(1)) if m else None
+    up = [float(x) for x in re.findall(r"uptime=([\d.]+)", sampler)]
+    row["wallS"] = round(up[1] - up[0], 2) if len(up) == 2 else None
+    hwm = [int(x) for x in re.findall(r"^VmHWM:\s+(\d+)", sampler, re.M)]
+    rss = [int(x) for x in re.findall(r"^VmRSS:\s+(\d+)", sampler, re.M)]
+    row["vmHWMMB"] = round(max(hwm) / 1024, 1) if hwm else None
+    row["vmRSSMedianMB"] = round(statistics.median(rss) / 1024, 1) if rss else None
+    row["rssReads"] = len(rss)
+    peak = re.findall(r"RSS after finishing text generation: ([\d.]+) MiB", stderr)
+    row["runnerPeakRSSMiB"] = round(float(peak[-1]), 1) if peak else None
+    row["vmHWMUnderRead"] = bool(peak and hwm and max(hwm) / 1024 < float(peak[-1]) - 1)
+    allowed = re.findall(r"^Cpus_allowed_list:\s+(\S+)", sampler, re.M)
+    row["cpusAllowedList"] = sorted(set(allowed))
+    order = re.findall(r"^CPUPOLICY (\S+) (\S+) (.*)$", sampler, re.M)
+    maxes = [line.split()[1:] for line in re.findall(r"^CPUMAX .*$", sampler, re.M)]
+    freq = {}
+    for i, (name, hw, cpus) in enumerate(order):
+        vals = [int(v[i]) for v in maxes if len(v) == len(order) and v[i].isdigit()]
+        if vals and hw.isdigit():
+            freq[name] = {"minMHz": min(vals) // 1000, "hwMHz": int(hw) // 1000, "cpus": cpus.strip()}
+    row["cpuMaxFreqMHz"] = freq
+    row["cpuCapped"] = [k for k, v in freq.items() if v["minMHz"] < v["hwMHz"]]
+    m = re.search(r"^PyTorchObserver (\{.*\})\s*$", stdout, re.M)
+    obs = json.loads(m.group(1)) if m else None
+    row["observer"] = obs
+    if obs:
+        t = obs
+        prefill_ms = t["prompt_eval_end_ms"] - t["inference_start_ms"]
+        decode_ms = t["inference_end_ms"] - t["prompt_eval_end_ms"]
+        row.update({
+            "promptTokens": t["prompt_tokens"], "generatedTokens": t["generated_tokens"],
+            "prefillTokPerS": round(t["prompt_tokens"] / prefill_ms * 1000, 1) if prefill_ms > 0 else None,
+            "decodeTokPerS": round(t["generated_tokens"] / decode_ms * 1000, 1) if decode_ms > 0 else None,
+            "ttftMs": t["first_token_ms"] - t["inference_start_ms"],
+            "loadMs": t["model_load_end_ms"] - t["model_load_start_ms"],
+            "prefillMs": prefill_ms, "decodeMs": decode_ms,
+        })
+    task = "long-context-1024-gen256" if "long-context" in stem else "short-chat"
+    body = stdout[:m.start()] if m else stdout
+    prompt = prompts[task]
+    row["echoedPrompt"] = body.startswith(prompt)
+    text = body[len(prompt):] if body.startswith(prompt) else body
+    row["text"] = text.rstrip("\n")
+    row["textHead60"] = row["text"][:60]
+    m = re.search(r"Resetting threadpool with num threads = (\d+)", stderr)
+    row["threads"] = int(m.group(1)) if m else None
+    row["backendLines"] = [l for l in stderr.splitlines()
+                           if re.search(r"backend|xnnpack|vulkan|delegate", l, re.I)]
+    row["errorLines"] = [l for l in stderr.splitlines() if l.startswith(("E ", "F "))]
+    rows.append(row)
+    with open(os.path.join(out, f"{stem}.text.txt"), "w", encoding="utf-8") as fh:
+        fh.write(row["text"] + "\n")
+json.dump(rows, open(os.path.join(out, "summary.json"), "w"), indent=2, ensure_ascii=False)
+hdr = ("| launch | exit | prompt tok | gen tok | prefill tok/s | decode tok/s | TTFT ms | load ms "
+       "| VmHWM MB | runner peak RSS MiB | threads | cpus | capped | text (first 60) |")
+lines = [hdr, "|" + "---|" * (hdr.count("|") - 1)]
+for r in rows:
+    lines.append("| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |".format(
+        r["launch"], r["exitCode"], r.get("promptTokens"), r.get("generatedTokens"),
+        r.get("prefillTokPerS"), r.get("decodeTokPerS"), r.get("ttftMs"), r.get("loadMs"),
+        f'{r["vmHWMMB"]}{" (under-read)" if r["vmHWMUnderRead"] else ""}', r["runnerPeakRSSMiB"], r["threads"], ",".join(r["cpusAllowedList"]), ",".join(r["cpuCapped"]) or "none",
+        r["textHead60"].replace("\n", "\\n").replace("|", "\\|")))
+open(os.path.join(out, "summary.md"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
+print("\n".join(lines))
+PY
+}
+if (( SUMMARIZE_ONLY )); then summarize; exit 0; fi
+: "${ET_MODEL:?set ET_MODEL (.pte)}" "${ET_TOKENIZER:?set ET_TOKENIZER (tokenizer.json)}"
 
 for f in "$XNN_BIN" "$MODEL" "$TOKENIZER" "$PROMPT_SHORT" "$PROMPT_LONG"; do
   [[ -f "$f" ]] || { echo "ERROR: missing $f" >&2; exit 1; }
@@ -196,81 +285,7 @@ if (( HAVE_VK )); then
   launch 4 short-chat-vulkan "$DEV/vulkan/llama_main" "$DEV/short-chat.txt" "$VK_TOKENS"
 fi
 
-python3 - "$OUT" "$PROMPT_SHORT" "$PROMPT_LONG" <<'PY'
-import glob, json, os, re, statistics, sys
-out, prompt_short, prompt_long = sys.argv[1:4]
-prompts = {"short-chat": open(prompt_short, encoding="utf-8").read(),
-           "long-context-1024-gen256": open(prompt_long, encoding="utf-8").read()}
-rows = []
-for cmd in sorted(glob.glob(os.path.join(out, "*.cmd.txt"))):
-    stem = os.path.basename(cmd)[:-len(".cmd.txt")]
-    read = lambda ext: open(os.path.join(out, f"{stem}.{ext}.txt"), encoding="utf-8", errors="replace").read() \
-        if os.path.exists(os.path.join(out, f"{stem}.{ext}.txt")) else ""
-    sampler, stdout, stderr = read("sampler"), read("stdout"), read("stderr")
-    row = {"launch": stem}
-    m = re.search(r"^EXIT_CODE=(\d+)", sampler, re.M)
-    row["exitCode"] = int(m.group(1)) if m else None
-    up = [float(x) for x in re.findall(r"uptime=([\d.]+)", sampler)]
-    row["wallS"] = round(up[1] - up[0], 2) if len(up) == 2 else None
-    hwm = [int(x) for x in re.findall(r"^VmHWM:\s+(\d+)", sampler, re.M)]
-    rss = [int(x) for x in re.findall(r"^VmRSS:\s+(\d+)", sampler, re.M)]
-    row["vmHWMMB"] = round(max(hwm) / 1024, 1) if hwm else None
-    row["vmRSSMedianMB"] = round(statistics.median(rss) / 1024, 1) if rss else None
-    row["rssReads"] = len(rss)
-    allowed = re.findall(r"^Cpus_allowed_list:\s+(\S+)", sampler, re.M)
-    row["cpusAllowedList"] = sorted(set(allowed))
-    order = re.findall(r"^CPUPOLICY (\S+) (\S+) (.*)$", sampler, re.M)
-    maxes = [line.split()[1:] for line in re.findall(r"^CPUMAX .*$", sampler, re.M)]
-    freq = {}
-    for i, (name, hw, cpus) in enumerate(order):
-        vals = [int(v[i]) for v in maxes if len(v) == len(order) and v[i].isdigit()]
-        if vals and hw.isdigit():
-            freq[name] = {"minMHz": min(vals) // 1000, "hwMHz": int(hw) // 1000, "cpus": cpus.strip()}
-    row["cpuMaxFreqMHz"] = freq
-    row["cpuCapped"] = [k for k, v in freq.items() if v["minMHz"] < v["hwMHz"]]
-    m = re.search(r"^PyTorchObserver (\{.*\})\s*$", stdout, re.M)
-    obs = json.loads(m.group(1)) if m else None
-    row["observer"] = obs
-    if obs:
-        t = obs
-        prefill_ms = t["prompt_eval_end_ms"] - t["inference_start_ms"]
-        decode_ms = t["inference_end_ms"] - t["prompt_eval_end_ms"]
-        row.update({
-            "promptTokens": t["prompt_tokens"], "generatedTokens": t["generated_tokens"],
-            "prefillTokPerS": round(t["prompt_tokens"] / prefill_ms * 1000, 1) if prefill_ms > 0 else None,
-            "decodeTokPerS": round(t["generated_tokens"] / decode_ms * 1000, 1) if decode_ms > 0 else None,
-            "ttftMs": t["first_token_ms"] - t["inference_start_ms"],
-            "loadMs": t["model_load_end_ms"] - t["model_load_start_ms"],
-            "prefillMs": prefill_ms, "decodeMs": decode_ms,
-        })
-    task = "long-context-1024-gen256" if "long-context" in stem else "short-chat"
-    body = stdout[:m.start()] if m else stdout
-    prompt = prompts[task]
-    row["echoedPrompt"] = body.startswith(prompt)
-    text = body[len(prompt):] if body.startswith(prompt) else body
-    row["text"] = text.rstrip("\n")
-    row["textHead60"] = row["text"][:60]
-    m = re.search(r"Resetting threadpool with num threads = (\d+)", stderr)
-    row["threads"] = int(m.group(1)) if m else None
-    row["backendLines"] = [l for l in stderr.splitlines()
-                           if re.search(r"backend|xnnpack|vulkan|delegate", l, re.I)]
-    row["errorLines"] = [l for l in stderr.splitlines() if l.startswith(("E ", "F "))]
-    rows.append(row)
-    with open(os.path.join(out, f"{stem}.text.txt"), "w", encoding="utf-8") as fh:
-        fh.write(row["text"] + "\n")
-json.dump(rows, open(os.path.join(out, "summary.json"), "w"), indent=2, ensure_ascii=False)
-hdr = ("| launch | exit | prompt tok | gen tok | prefill tok/s | decode tok/s | TTFT ms | load ms "
-       "| VmHWM MB | threads | cpus | capped | text (first 60) |")
-lines = [hdr, "|" + "---|" * (hdr.count("|") - 1)]
-for r in rows:
-    lines.append("| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |".format(
-        r["launch"], r["exitCode"], r.get("promptTokens"), r.get("generatedTokens"),
-        r.get("prefillTokPerS"), r.get("decodeTokPerS"), r.get("ttftMs"), r.get("loadMs"),
-        r["vmHWMMB"], r["threads"], ",".join(r["cpusAllowedList"]), ",".join(r["cpuCapped"]) or "none",
-        r["textHead60"].replace("\n", "\\n").replace("|", "\\|")))
-open(os.path.join(out, "summary.md"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
-print("\n".join(lines))
-PY
+summarize
 
 if (( SKIPPED )); then
   echo "== $SKIPPED launch(es) skipped (gate not met before the deadline)"; exit 4
