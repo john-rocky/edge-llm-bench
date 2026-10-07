@@ -27,11 +27,20 @@
   `on-usb` (rows without `conditions.screenSource`; `Awake` / `Dozing` there
   are sitting-mode readings). Energy cells: manual, unplugged
   (methodology/android.md).
-- NPU: physically present (Hexagon) and known to work via a separately built
-  litert_lm_main with the Qualcomm dispatch library — but that binary is not
-  this repo's pinned artifact, and the LiteRT NPU path is Early Access
-  Program only, so LiteRT rows here are cpu/gpu and the NPU row stays n/a
-  with that reason.
+- NPU and GPU: a Hexagon v81 NPU (llama.cpp's log: `Hexagon Arch version v81`)
+  and an Adreno 840 GPU (OpenCL 3.0). Since 2026-10-07 two llama.cpp arms run
+  on them, `llama.cpp-npu` (`--device HTP0`) and `llama.cpp-gpu`
+  (`--device GPUOpenCL`), from llama.cpp's official Snapdragon release asset
+  as a side build (`b11469-snapdragon`, in
+  `/data/local/tmp/llmbench/engines/b11469-snapdragon/`) with the official
+  wrapper's settings; a launch counts only when the engine's own lines show
+  the device. LiteRT-LM on the NPU (`litert-lm-npu`) needs a runtime built
+  with the Qualcomm dispatch libraries and a bundle compiled for SM8850: this
+  repo has one, its own export of Qwen3 0.6B, run on its own runtime build
+  (not driven by the runner yet). The LiteRT-LM cpu/gpu rows are unchanged.
+  The NPU and GPU arms' memory columns read the host process only — the
+  HTP0 / OpenCL buffers sit outside VmRSS. Details, settings and the
+  disclosures: `docs/dashboard-cells-v1.md` "NPU and Android GPU rows".
 - CPU affinity choice: **this device runs unmasked** (`BENCH_CPU_MASK=`,
   recorded per run as `conditions.cpuAffinity: none`). The lane's default
   `taskset f0` was tuned on the Pixel 8a's four contiguous mid cores; here it

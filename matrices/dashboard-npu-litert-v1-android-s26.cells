@@ -1,0 +1,24 @@
+# LiteRT-LM on the NPU (arm litert-lm-npu: the Qualcomm dispatch, Hexagon v81), Galaxy S26 only.
+# Three things differ from every other LiteRT-LM row and travel with this one:
+#   1. the bundle is this repo's own export: Qwen3 0.6B compiled ahead of time for SM8850
+#      (model_qualcomm_SM8850.litertlm, 783,864,161 bytes, exported 2026-08-21; side-loaded by
+#      local path) — no SM8850 bundle of these models is published;
+#   2. the runtime is a source build of litert_lm_advanced_main (LiteRT-LM main of 2026-08-21) with the
+#      Qualcomm dispatch and QNN libraries deployed beside it (QAIRT 2.47, V81 skel) — a v0.16.1 binary
+#      fails the dispatch library's runtime-version check;
+#   3. it runs with --use_hw_cache_update_for_npu=false (with the hardware KV-cache update on, this
+#      bundle's output is broken; google-ai-edge/litert-torch#1290).
+# The runner does not drive that runtime yet: run_cell.py refuses backend=npu for litert-lm, so
+# this file validates and lists its cells (the dashboards show them as not yet measured) until
+# then. The quantization label comes from the bundle's own metadata when the row is first measured.
+# The other four models have no SM8850 bundle, published or exported: excluded with that reason.
+# The session anchor is the weekly llama.cpp CPU one.
+# docs/dashboard-cells-v1.md "NPU and Android GPU rows (Galaxy S26, 2026-10-07)".
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android litert-lm Qwen/Qwen3-0.6B short-chat backend=npu file=~/code/litertlm-convert/npu_qwen3_work/model_qualcomm_SM8850.litertlm
+android litert-lm Qwen/Qwen3-1.7B short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm google/gemma-4-E2B-it short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm Qwen/Qwen3-4B short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported
+android litert-lm google/gemma-4-E4B-it short-chat backend=npu exclude=no-sm8850-npu-bundle-published-or-exported

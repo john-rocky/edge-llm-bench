@@ -1,0 +1,40 @@
+# NPU and Android GPU rows, Galaxy S26 only (Snapdragon 8 Elite Gen 5: Hexagon v81 NPU, Adreno 840 GPU):
+# llama.cpp's official Snapdragon release asset b11469 (llama-b11469-bin-android-arm64-snapdragon.tar.gz),
+# a side build pinned as android/engine-pins.json "b11469-snapdragon" and pushed to
+# /data/local/tmp/llmbench/engines/b11469-snapdragon/{bin,lib} (android/README.md, "Side builds").
+#   backend=npu -> arm llama.cpp-npu (--device HTP0), backend=gpu -> arm llama.cpp-gpu (--device GPUOpenCL);
+#   every layer on the device (-ngl 99), the official wrapper's settings (-t 6 -fa on -ub 1024,
+#   GGML_HEXAGON_OPPOLL=1; android/bench/run_cell.py).
+# The same unsloth Q4_K_M files as the weekly llama.cpp CPU rows (file=), the same two tasks
+# (short-chat, and long-context-1024-gen256 at context-tokens=2048), the same cooldowns.
+# The session anchor is the weekly one: the llama.cpp CPU arm (pinned b8999) on Qwen3 0.6B.
+# The Pixel 8a has no Hexagon NPU and no Snapdragon GPU: this file is for the S26.
+# docs/dashboard-cells-v1.md "NPU and Android GPU rows (Galaxy S26, 2026-10-07)".
+#   BENCH_CPU_MASK= ./bench matrix matrices/dashboard-npu-v1-android-s26.cells --platform android
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=npu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=gpu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048
+
+android llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=npu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=gpu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-1.7B-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/Qwen3-1.7B-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048
+
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-4B-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/Qwen3-4B-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048
+
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048

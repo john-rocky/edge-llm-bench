@@ -232,7 +232,7 @@ design.
 |---|---|---|---|
 | LiteRT-LM v0.16.0 | Android, iPhone, Mac | yes | pinned (`environment.lock.json`); Android binary built from source at the tag — releases ship none |
 | MLX (`mlx-swift-lm` @ 60bd0d7) | iPhone, Mac | yes | Gemma 4 loads only at the 2026-07-06 re-upload revision of the mlx-community repos, which is HF main today |
-| llama.cpp b8999 | Android, iPhone, Mac | yes | Android: official CPU-only binary (GPU needs a custom NDK build); Apple: arm wired, no rows in this repo yet |
+| llama.cpp b8999 | Android, iPhone, Mac | yes | Android: official CPU-only binary; the NPU (Hexagon) and Adreno GPU (OpenCL) rows run the release's official Snapdragon asset as a side build — section "NPU and Android GPU rows" below; Apple: arm wired, no rows in this repo yet |
 | Core AI (Apple) | iPhone, Mac | v2 (2026-09-08) | own exports, side-loaded; Qwen3 0.6B/1.7B/4B rows active, the Gemma 4 rows `exclude=` because their per-layer-embedding bundles need the unpublished engine patch — "Core AI arm (v2)" below |
 | Mirai (uzu) | Mac | separate cells | wired on Mac 2026-09-24, smoke only; [docs/uzu-arm-v1.md](uzu-arm-v1.md) |
 
@@ -675,6 +675,114 @@ audit; Qwen3 0.6B / 1.7B and Gemma 4 E2B keep running on the Pixel 8a, and
 every row keeps running on the Galaxy S26. Source: the lane's round notes
 `~/code/standup/drafts/2026-10-06-dashboard-first-tab-attachments/ROUND-m5.md`
 (outside this repo) and that sitting's records.
+
+## NPU and Android GPU rows (Galaxy S26, 2026-10-07)
+
+Arms. `llama.cpp-npu` runs llama.cpp on the Hexagon NPU (`--device HTP0`) and
+`llama.cpp-gpu` on the Adreno GPU through OpenCL (`--device GPUOpenCL`), both
+from the release's official Snapdragon asset; `litert-lm-npu` is LiteRT-LM on
+the NPU through the Qualcomm dispatch. A cells row without `backend=` stays
+the CPU arm `llama.cpp` (the pinned b8999) and runs exactly as before; the
+three new arms are cells of their own (the dashboards key a cell on the
+arm), so they displace no existing row.
+
+Build and witness. `llama-b11469-bin-android-arm64-snapdragon.tar.gz` (release
+b11469, 2026-10-07, a prerelease; sha256 `669e18399eb9…e310f065`, equal to the
+release's published digest) unpacks to `bin/` (7 KB launchers) and `lib/` (the
+engine: libllama, the ggml CPU / OpenCL / Hexagon backends, the v73–v81 HTP
+libraries). `LLAMA_FLAVOR=snapdragon LLAMA_TAG=b11469
+android/scripts/fetch_llama_android.sh` pins it in `android/engine-pins.json` as
+`b11469-snapdragon`: the sha256 of `llama-cli`, `llama-bench` and seven libs
+(`so_files`: libggml-hexagon, libggml-htp-v81, libggml-opencl, libggml-cpu,
+libllama, libllama-cli-impl, libllama-bench-impl). On the phone it lives in
+`/data/local/tmp/llmbench/engines/b11469-snapdragon/{bin,lib}`, never in the
+flat directory of the pinned CPU build, whose libraries carry the same names
+(`android/README.md`, "Side builds"). A cells row names it with
+`engine-build=b11469-snapdragon`; the witness matches the tool's sha256 and
+then every pinned lib on the phone, and any mismatch stamps `unknown (…)`
+with the lib named. Records carry `engineVersion: b11469-snapdragon`,
+`engineArtifact` = the tool's sha256 and `conditions.engineBuild`.
+
+Pin. `environment.lock.json` stays at b8999 and the CPU arm keeps it.
+`b11469-snapdragon` is a standing side build for the NPU and GPU arms, not a
+one-off comparison build (the b10903 witness entry is one of those); moving
+the lock's pin is a separate decision.
+
+Settings. The side build runs with the official wrapper's defaults (b11469
+`scripts/snapdragon/run.py`: the settings the vendor intends), not the bare
+binaries': the chat tool `-ngl 99 -fa on -ub 1024 -t 6`; llama-bench `-t 6`,
+with `-ub 1024` on the NPU only and flash attention left at llama-bench's auto;
+`GGML_HEXAGON_OPPOLL=1` on every run and `GGML_HEXAGON_DEVICES=HTP0` on the NPU.
+Added here: `-ngl 99` on llama-bench too (every layer on the device, which is
+what the arm says), an OpenCL program cache per build
+(`GGML_OPENCL_KERNEL_CACHE_DIR=<build>/clcache`; left unset, b11469 keeps one
+cache for every build under `$TMPDIR/llama.cpp/cl-cache`), and `-lv 4` before
+`--device` on the chat tool (below). Records stamp `conditions.threads`,
+`flashAttn`, `ubatch`, `hexagonOpPoll`, `nGpuLayers`, `ggmlDevice` and the
+whole `engineCommand`. The CPU arm keeps `-t 4` and its command. The first
+device smoke of the build (2026-10-07) ran the binaries' bare defaults, one
+launch per form; the rows use the wrapper's.
+
+Quantization. The same unsloth Q4_K_M GGUF files as the CPU arm's rows (the
+OpenCL and Hexagon backends of b11469 run Q4_K, Q5_K and Q6_K tensors).
+
+Registration lines. A launch counts as the arm's only when the engine says it
+ran on the device. The chat tool: its `using device <device>` line, a model
+buffer of that device (`HTP0` / `OpenCL model buffer size = …`) and
+`offloaded N/N layers` — b11469's llama-cli prints them only at `-lv 4` set
+before `--device` (it logs errors only by default, ggml and llama INFO lines
+sit at verbosity 4 in its logger, and it loads the backends while it parses
+`--device`). llama-bench silences llama's log: its JSON's `devices`,
+`n_gpu_layers` and `backends` (with `gpu_info`, `flash_attn`, `n_ubatch`) are
+the witness; the build registers both backends on every run, so `backends`
+alone says nothing. The lines go to `conditions.backendRegistered`. A launch
+without them — none, another device's, fewer than all layers — is flagged
+`backend-not-registered`, stays in raw, is a failed launch (`FAILURES.txt`)
+and pools into no number (`results/summary/device-runs.csv` column
+`backend_registered` false; `render_leaderboard.arm_row`).
+
+Text check. The chat tool's reply (after its echo of the prompt, with the
+`-lv 4` log lines taken out) goes through the same text check as the LiteRT-LM
+1K rows (text-check-rule, `methodology/fairness-rules.md` §12). The CPU arm is
+not text-checked, as before.
+
+Memory. `memoryMedianResidentMB` / `memoryPeakResidentMB` are the host
+process's VmRSS / VmHWM; the device's buffers (weights, KV cache and compute
+in HTP0 or OpenCL memory) are outside them, and the records' `rssBasis` says
+so. On the 2026-10-07 smoke (Qwen3 0.6B short-chat, lane notes outside this
+repo) the NPU launch's VmHWM was 217 MiB while llama.cpp's own breakdown put
+880 MiB in HTP0 (406 weights, 448 KV, 26 compute).
+
+Cache build (GPU). The first chat launch on a build's empty OpenCL program
+cache compiles the programs at load (17.7 s on that smoke; 0.04 s from the
+cache on the next launch) and is labelled `firstEver` like LiteRT-LM's GPU
+cache builds: one marker per (model, arm, build), and a cache directory
+without a program relabels the next launch whatever the markers say.
+llama-bench compiles at load as well but times after its own warmup run, so
+its launches are not labelled. The NPU keeps no compile cache.
+
+LiteRT-LM on the NPU. One model has a bundle: this repo's own export of Qwen3
+0.6B for SM8850 (`model_qualcomm_SM8850.litertlm`, side-loaded by local path).
+The row carries three disclosures: the bundle is an own export (no SM8850
+bundle of these models is published); the runtime is a source build of
+`litert_lm_advanced_main` (LiteRT-LM main of 2026-08-21) with the Qualcomm
+dispatch and QNN libraries deployed beside it (QAIRT 2.47), because a v0.16.1
+binary fails the dispatch library's runtime-version check; and it runs with
+`--use_hw_cache_update_for_npu=false`, without which this bundle's output is
+broken (google-ai-edge/litert-torch#1290). `run_cell.py` does not drive that
+runtime yet and refuses `backend=npu` for litert-lm, so the row is listed and
+shows as not yet measured. The other four models have no SM8850 bundle,
+published or exported: `exclude=no-sm8850-npu-bundle-published-or-exported`.
+
+Cells, all Galaxy S26 only (the Pixel 8a has neither a Hexagon NPU nor an
+Adreno GPU), each starting with the weekly session anchor (the llama.cpp CPU
+arm on Qwen3 0.6B): `matrices/dashboard-npu-v1-android-s26.cells` (short-chat
+and `long-context-1024-gen256` at `context-tokens=2048`, five models × npu /
+gpu, the weekly files' cooldowns), `matrices/dashboard-npu-protocol1024-v1-android-s26.cells`
+(`native-benchmark-1024x256`, five models × npu / gpu) and
+`matrices/dashboard-npu-litert-v1-android-s26.cells` (the LiteRT-LM NPU row and
+the four excluded ones). They are not in the weekly job's schedule; putting
+them there is a separate decision.
 
 ## Open questions for the LiteRT team
 

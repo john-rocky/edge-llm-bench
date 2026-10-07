@@ -1,7 +1,9 @@
 # Android lane — adb-driven CLI benchmarks (Pixel 8a first)
 
-Engines with Android support: **LiteRT-LM** (cpu/gpu) and **llama.cpp** (cpu).
-MLX and Core AI are Apple-only (n/a rows); Cactus is a phase-2 slot.
+Engines with Android support: **LiteRT-LM** (cpu/gpu) and **llama.cpp** (cpu; on
+Snapdragon phones also npu and gpu, from the release's official Snapdragon asset —
+"Side builds" below). MLX and Core AI are Apple-only (n/a rows); Cactus is a
+phase-2 slot.
 Measurement semantics and every disclosed difference from the Apple lane:
 `methodology/android.md`. Device notes: `devices/pixel-8a.md`.
 
@@ -56,6 +58,35 @@ adb shell chmod +x /data/local/tmp/llmbench/litert_lm_main /data/local/tmp/llmbe
 ```
 
 Models are HF-downloaded on the host and pushed on first use by the driver.
+
+## Side builds (llama.cpp on the NPU and the Adreno GPU)
+
+The `llama.cpp-npu` / `llama.cpp-gpu` rows (cells `backend=npu|gpu
+engine-build=<tag>`) run llama.cpp's official Snapdragon release asset from a
+directory of its own on the phone, `/data/local/tmp/llmbench/engines/<tag>/{bin,lib}`
+— never the flat directory above, where the pinned CPU build's libraries carry
+the same names. `<tag>` is the build's key in `android/engine-pins.json`.
+
+```bash
+LLAMA_FLAVOR=snapdragon LLAMA_TAG=b11469 android/scripts/fetch_llama_android.sh
+#   -> android/bin/llama-b11469-snapdragon/{bin,lib}, pin "b11469-snapdragon"
+E=/data/local/tmp/llmbench/engines/b11469-snapdragon
+adb shell mkdir -p $E/bin $E/lib
+adb push android/bin/llama-b11469-snapdragon/bin/llama-cli android/bin/llama-b11469-snapdragon/bin/llama-bench $E/bin/
+adb push android/bin/llama-b11469-snapdragon/lib/*.so $E/lib/
+adb shell chmod +x $E/bin/llama-cli $E/bin/llama-bench
+```
+
+Push every `.so`: the 7 KB launchers load the engine from `lib/` with no
+RUNPATH (`llama-cli` alone needs eleven of them, `libllama-server-impl.so` and
+`libmtmd.so` among them), and the runner sets `LD_LIBRARY_PATH` and
+`ADSP_LIBRARY_PATH` to `$E/lib`. The OpenCL program cache goes to `$E/clcache`
+on the first GPU chat launch, which the runner labels `firstEver`; pushing the
+build again into an emptied directory relabels the next one. The witness reads
+`$E/bin/<tool>` and the pinned libs in `$E/lib/` (a lib that is not the pin's
+stamps `unknown`), and a cell whose `engines/<tag>` is not on the phone stops
+before any launch. Settings, device lines and disclosures:
+`docs/dashboard-cells-v1.md` "NPU and Android GPU rows".
 
 ## Run
 

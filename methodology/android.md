@@ -8,8 +8,8 @@ every difference below is disclosed here once so tables don't have to.
 
 | arm | recorded runtime | acquisition | backend |
 |---|---|---|---|
-| LiteRT-LM | `litert-lm-cpu` / `litert-lm-gpu` | per-release bazel+NDK source build (`android/scripts/build_litert_lm_main.sh`) — releases ship no Android binary (verified v0.14–v0.16); upstream build bug + fix flag: google-ai-edge/LiteRT-LM#3247 | cpu, gpu (ML Drift .so set). NPU = n/a (Early Access only) — row stays with reason (failed-runs-stay) |
-| llama.cpp | `llama.cpp` | official release artifact `llama-<tag>-bin-android-arm64.tar.gz`, same tag as the Apple arm (official-sdk rule) | CPU only in the official artifact; GPU (OpenCL) would need a custom NDK build — phase 2, disclosed as n/a until then |
+| LiteRT-LM | `litert-lm-cpu` / `litert-lm-gpu` / `litert-lm-npu` | per-release bazel+NDK source build (`android/scripts/build_litert_lm_main.sh`) — releases ship no Android binary (verified v0.14–v0.16); upstream build bug + fix flag: google-ai-edge/LiteRT-LM#3247 | cpu, gpu (ML Drift .so set). NPU (`litert-lm-npu`, Galaxy S26): an own runtime build with the Qualcomm dispatch libraries and an own SM8850 export (Qwen3 0.6B only), not driven by `run_cell.py` yet; the other models `exclude=` with the reason — `docs/dashboard-cells-v1.md` "NPU and Android GPU rows" |
+| llama.cpp | `llama.cpp` (CPU) / `llama.cpp-npu` / `llama.cpp-gpu` | official release artifact `llama-<tag>-bin-android-arm64.tar.gz`, same tag as the Apple arm (official-sdk rule) | CPU: the official `android-arm64` artifact at the pinned tag. NPU and GPU on Snapdragon phones (`llama.cpp-npu` / `llama.cpp-gpu`): the release's official `android-arm64-snapdragon` artifact as a side build (cells `engine-build=`), Hexagon HTP / Adreno OpenCL, run with the official wrapper's settings; a launch counts only when the engine's own lines show the device — `docs/dashboard-cells-v1.md` "NPU and Android GPU rows" |
 | MLX / Core AI | — | Apple-only; render as n/a | |
 | Cactus | — | phase 2 slot (`environment.lock.json` `arms.cactus.android: planned`) | |
 
@@ -30,8 +30,11 @@ v1 measures the same engine through `litert_lm_main`.
   as the engine's speed (cold-warm-split). Detection is automatic: a marker
   file on the device (`markers/<artifact>.<backend>.cachebuilt`, written after
   the first clean exit) — the caches live on the device, so host state cannot
-  know whether this (model, backend) already compiled there. litert-lm only;
-  llama.cpp keeps no persistent compile cache. `firstEver` rows stay in raw
+  know whether this (model, backend) already compiled there. litert-lm, and
+  the chat launches of the llama.cpp GPU side build (its OpenCL program cache:
+  `markers/<artifact>.llama.cpp-gpu.<engine sha>.cachebuilt`, and a build whose
+  cache directory holds no program reads as not built); the pinned CPU
+  llama.cpp build and the NPU keep no persistent compile cache. `firstEver` rows stay in raw
   and in `device-runs.csv`, and are excluded from every metric pool
   (leaderboard `arm_row`, `regression_diff` cells). One-time cold-start
   behavior, verified on the S26 2026-08-31: a device whose caches predate
@@ -51,7 +54,7 @@ v1 measures the same engine through `litert_lm_main`.
 |---|---|---|---|
 | decode / prefill tok/s | engine-reported | engine-reported | engine-reported (avg_ts) |
 | TTFT | engine-reported (excludes init, like iOS loadTime split) | **absent** | **absent** |
-| memory | driver RSS sampler (`/proc/<pid>/status` VmRSS, 0.5 s, median) → `memoryMedianResidentMB`; `memoryMedianMB` (phys_footprint) has **no Android equivalent — never fabricated** | same | same |
+| memory | driver RSS sampler (`/proc/<pid>/status` VmRSS, 0.5 s, median) → `memoryMedianResidentMB`; `memoryMedianMB` (phys_footprint) has **no Android equivalent — never fabricated**. The device buffers of a GPU or NPU arm (ML Drift / OpenCL / HTP0 memory) sit outside the process RSS; a llama.cpp side build's records say so in `provenance.rssBasis` | same | same |
 | energy | manual only (batterystats delta, unplugged) — phase 2 protocol, owner-triggered | same | same |
 
 ## Conditions pinned per run

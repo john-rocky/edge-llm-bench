@@ -1,0 +1,26 @@
+# Protocol rows (prefill forced to exactly 1024 tokens, decode 256: native-benchmark-1024x256) of the
+# NPU and Android GPU arms, Galaxy S26 only: llama-bench of llama.cpp's official Snapdragon asset b11469
+# (side build "b11469-snapdragon"; matrices/dashboard-npu-v1-android-s26.cells says how it runs),
+# llama-bench -p 1024 -n 256 -o json -ngl 99 -t 6 --device HTP0 (with -ub 1024) | GPUOpenCL — the
+# official wrapper's llama-bench settings; one launch per run, coldRun false (llama-bench repeats
+# in-process after its warmup run), never pooled with the task-prompt rows.
+# Same GGUF files and cooldowns as the weekly protocol rows (matrices/dashboard-protocol1024-v1-android.cells);
+# the session anchor is the weekly llama.cpp CPU one.
+#   BENCH_CPU_MASK= ./bench matrix matrices/dashboard-npu-protocol1024-v1-android-s26.cells --platform android
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 backend=npu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-1.7B-GGUF native-benchmark-1024x256 backend=npu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-1.7B-GGUF native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf
+
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF native-benchmark-1024x256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-4B-GGUF native-benchmark-1024x256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-4B-GGUF native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF native-benchmark-1024x256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
