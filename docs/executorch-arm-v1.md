@@ -215,10 +215,15 @@ token). The stored log keeps it after `===ENGINE_STDERR===`.
 
 ## Status (2026-10-08)
 
-Wired, not measured. Round r1 exported Qwen3 0.6B and smoke-ran the Mac `llama_main`; round r2
-built the Android runner and smoke-ran it on a Galaxy S26; round r3 exported Gemma 4 E2B and ran
-it with `gemma4_e2e_runner` on the Mac (`llama_main --method_name text_decoder` exits 1 on that
-export). No number from those smokes is a measurement. The runners' output of those smokes is
+Measured on the Mac Studio M4 Max (XNNPACK, Qwen3 0.6B / 1.7B / 4B, both text tasks, campaign
+`2026-10-08-dashboard-executorch-v1-m4max-mac`), partially on the Galaxy S26
+(`2026-10-08-dashboard-executorch-v1-s26-android`: the Qwen3 0.6B short-chat cell; the phone
+capped a CPU the runner ran on in every other launch, so those cells have no valid run) and on
+the Pixel 8a (`2026-10-08-dashboard-executorch-v1-pixel8a-android`: the Qwen3 0.6B short-chat
+cell; the phone left USB during the 1K unit). The MLX delegate ran a smoke on the Mac
+(`2026-10-08-executorch-gpu-smoke-m4max-mac`, not a dashboard sitting). Earlier smokes (round
+r1 on the Mac, r2 on the S26, r3's Gemma 4 E2B run with `gemma4_e2e_runner`; `llama_main
+--method_name text_decoder` exits 1 on that export) are not measurements. The runners' output of those smokes is
 the parser fixture (`android/bench/testdata/executorch/`), and `android/bench/selftest.py` runs
 the Android path end to end on it with no phone.
 
