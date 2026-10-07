@@ -10,7 +10,9 @@ verdicts, failed-runs-stay), the default text check of context-prompt
 launches (text-check-rule), exclude-on= per device, a phone lost under a
 running engine (the launch fails, never re-run), and the CPU frequency cap read
 per run (cpu-cap-rule: the flag, the pre-launch wait, the summary column and
-arm_row's pool) — with no phone attached. The fake scripts ENGINE OUTPUT and
+arm_row's pool), and the executorch arm (the runner of the model's family on a
+staged own export: inputs pushed, the runner's stderr read apart from its stdout, its stats
+recomputed, the record and its summary row; the Mac writer's record from a stored launch) — with no phone attached. The fake scripts ENGINE OUTPUT and
 sysfs reads, never verdicts: the gate, the text screen, the cap rule and the
 endurance derivations judge real records.
 
@@ -105,6 +107,27 @@ def side_chat_reply(cmd):
             tail, ""]
 
 
+def et_engine(cmd):
+    """An ExecuTorch runner launch (sh -c 'exec ./executorch-<tag>/<runner> ... 2>err'): the
+    next STATE/et_launches.json entry's stdout to stdout and its stderr into the file the
+    command sends the runner's stderr to, as on the phone. Every file the command names must
+    be on the device, else the runner fails as it would there."""
+    p = os.path.join(STATE, "et_launches.json")
+    q = json.load(open(p)) if os.path.exists(p) else []
+    launch = q.pop(0) if q else {}
+    json.dump(q, open(p, "w"))
+    err = re.search(r"2>(\\S+?)'", cmd).group(1)
+    needed = [m.group(1) for m in re.finditer(r"--(?:model_path|tokenizer_path|prompt_file)=(\\S+)", cmd)]
+    needed.append(DEV + "/" + re.search(r"exec \\./(\\S+)", cmd).group(1))
+    missing = [n for n in needed if not os.path.exists(mp(n))]
+    if missing or not launch:
+        open(mp(err), "w").write("E 00:00:00.000001 executorch:fake] missing " + " ".join(missing) + "\\n")
+        return 1
+    sys.stdout.write(open(launch["stdout"]).read())
+    open(mp(err), "w").write(open(launch["stderr"]).read())
+    return 0
+
+
 def engine(cmd):
     with open(os.path.join(STATE, "engine_cmds"), "a") as fh:
         fh.write(cmd.split(" >", 1)[0] + "\\n")
@@ -154,6 +177,9 @@ def engine(cmd):
             print("Time to first token: 1.2 s")
             print("Prefill Speed: %%d.0 tokens/sec" %% prompt)
             print("Decode Speed: %%s tokens/sec" %% rate)
+    elif "exec ./executorch-" in cmd:
+        print("EXIT_CODE=%%d" %% et_engine(cmd))
+        return 0
     else:
         print("Prefill Turn 1: Processed 21 tokens in 100.00ms duration.")
         print("Decode Turn 1: Processed 128 tokens")
@@ -275,6 +301,13 @@ def shell(cmd):
         for pat in cmd.split()[2:]:
             for p in _g.glob(mp(pat)):
                 os.remove(p)
+        return 0
+    if cmd.startswith("cat ") and "; rm -f " in cmd:
+        # executorch: the runner's stderr file, read and removed after a launch
+        p = mp(cmd.split()[1])
+        if os.path.exists(p):
+            sys.stdout.write(open(p).read())
+            os.remove(p)
         return 0
     sys.stderr.write("fake-adb: unhandled shell: " + cmd + "\\n")
     return 1
@@ -1343,6 +1376,207 @@ def main():
        and plan[1]["command"].startswith(f"cd /data/local/tmp/llmbench && {env_npu} taskset f0 {eng_dev}/bin/llama-cli -lv 4 "),
        f"--dry-run plans the side build's env and tool, the CPU arm's flat build: "
        f"{[d.get('command', '')[:90] for d in plan]}")
+
+    # --- executorch: the runner of the model's family (docs/executorch-arm-v1.md). The fake
+    # phone replays the Galaxy S26 smoke of 2026-10-07 (android/bench/testdata/executorch:
+    # llama_main's stdout, its ET_LOG stderr); the inputs are a staged own export in miniature
+    # (a stand-in .pte, its recipe.json, a tokenizer, the rendered prompts the launches read).
+    import parsers
+    fx = os.path.join(ROOT, "android", "bench", "testdata", "executorch")
+    rd = lambda name: open(os.path.join(fx, name), encoding="utf-8").read()
+    short = parsers.parse_executorch(rd("s26-short-chat.stdout.txt"), rd("s26-short-chat.stderr.txt"),
+                                     rd("short-chat.qwen3-chat.txt"))
+    long_ = parsers.parse_executorch(rd("s26-long-context-1024-gen256.stdout.txt"),
+                                     rd("s26-long-context-1024-gen256.stderr.txt"),
+                                     rd("long-context-1024-gen256.qwen3-chat.txt"))
+    ms, ml = short["metrics"], long_["metrics"]
+    ok((round(ms["decodeTokensPerSecond"], 1), ms["promptTokenCount"], ms["generatedTokenCount"],
+        ms["firstTokenLatencyMS"], round(ml["decodeTokensPerSecond"], 1), ml["promptTokenCount"],
+        ml["firstTokenLatencyMS"], short["flags"], long_["flags"]) == (124.5, 19, 127, 57, 31.2, 1338, 1921, [], []),
+       f"parse_executorch: the S26 smoke's short-chat decode 124.5 tok/s (127 / 1020 ms), prompt 19, TTFT 57 ms; "
+       f"1K decode 31.2, prompt 1338, TTFT 1921; rates recomputed from the stats line's ms agree with its own "
+       f"(got {ms} {ml} {short['flags']} {long_['flags']})")
+    ok(short["text"].startswith("<think>\nOkay, so the user is asking") and not short["text"].endswith("\n")
+       and "PyTorchObserver" not in short["text"] and short["log"].get("cpuThreads") == 8
+       and short["log"].get("metadata", {}).get("get_max_context_len") == 2048
+       and short["log"].get("rssAfterGenerationMiB") == 1031.214844,
+       f"text = stdout after the echo, cut before the stats line; the runner log: 8 threads, "
+       f"get_max_context_len 2048, RSS after finishing text generation 1031.214844 MiB (got {short['log']})")
+    bad = parsers.parse_executorch(rd("s26-short-chat.stdout.txt"), "", rd("long-context-1024-gen256.qwen3-chat.txt"))
+    ok(bad["text"] is None and "echo-mismatch" in bad["flags"],
+       f"a stdout whose echo is not the prompt gives no text, flagged echo-mismatch (got {bad['flags']})")
+    g4 = parsers.parse_gemma4_runner(rd("mac-gemma-4-E2B-it-short-chat.stdout.txt"),
+                                     rd("mac-gemma-4-E2B-it-short-chat.stderr.txt"))
+    mg = g4["metrics"]
+    ok((mg["promptTokenCount"], mg["generatedTokenCount"], round(mg["decodeTokensPerSecond"], 2),
+        round(mg["promptTokensPerSecond"], 1), mg["firstTokenLatencyMS"], g4["flags"])
+       == (20, 64, 46.38, 197.4, 101.3, []) and g4["text"].startswith("Imagine a smartphone")
+       and g4["statsReport"].startswith("=== Gemma 4 Performance Report ===\n  Model load:"),
+       f"parse_gemma4_runner: the report's counts over its printed times (64 / 1.38 s, 20 / 101.3 ms), "
+       f"its own rates within the rounding (got {mg} {g4['flags']})")
+
+    et_models = os.path.join(tmp, "etmodels")
+    stem = "Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048"
+    os.makedirs(os.path.join(et_models, stem + ".prompts"))
+    with open(os.path.join(et_models, stem + ".pte"), "w") as fh:
+        fh.write("stand-in .pte of " + stem)
+    with open(os.path.join(et_models, "tokenizer.json"), "w") as fh:
+        fh.write('{"stand-in": "tokenizer.json"}')
+    rev = "c1899de289a04d12100db370d81485cdf75e47ca"
+    manifest = {"snapshot": f"/hf/models--Qwen--Qwen3-0.6B/snapshots/{rev}", "transformers": "5.0.0rc1",
+                "call": "apply_chat_template([{'role': 'user', 'content': <file>}], tokenize=False, "
+                        "add_generation_prompt=True)", "tasks": {}}
+    for task, tokens in (("short-chat", 19), ("long-context-1024-gen256", 1338)):
+        text = rd(f"{task}.qwen3-chat.txt")
+        with open(os.path.join(et_models, stem + ".prompts", f"{task}.chat.txt"), "w") as fh:
+            fh.write(text)
+        manifest["tasks"][task] = {"renderedSha256": hashlib.sha256(text.encode()).hexdigest(),
+                                   "hostPromptTokens": tokens}
+    json.dump(manifest, open(os.path.join(et_models, stem + ".prompts", "prompts.json"), "w"))
+    sha = lambda path: hashlib.sha256(open(path, "rb").read()).hexdigest()
+    recipe = {"executorch": "1.5.1", "model_class": "qwen3_0_6b",
+              "config_yaml_path": "examples/models/qwen3/config/qwen3_xnnpack_q8da4w.yaml",
+              "config_yaml": ("model:\n  dtype_override: fp32\n\nquantization:\n  qmode: 8da4w\n"
+                              "  embedding_quantize: 8,0\n\nexport:\n  max_seq_length: 2048\n"
+                              "  max_context_length: 2048\n\nbackend:\n  xnnpack:\n    enabled: True\n"),
+              "checkpoint": {"hf_repo": "Qwen/Qwen3-0.6B", "revision": rev, "snapshot": manifest["snapshot"]},
+              "pte_sha256": sha(os.path.join(et_models, stem + ".pte")),
+              "tokenizer": {"file": "/elsewhere/tokenizer.json",
+                            "sha256": sha(os.path.join(et_models, "tokenizer.json"))}}
+    json.dump(recipe, open(os.path.join(et_models, stem + ".recipe.json"), "w"))
+    # the runner is on the phone by hand, as the other engines are; this one reads as the pinned
+    # XNNPACK build of v1.5.1 (the fake sha256sum prints the stand-in's sha)
+    pinned = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))["executorch"]["v1.5.1"]
+    os.makedirs(os.path.join(dev, "executorch-v1.5.1"))
+    with open(os.path.join(dev, "executorch-v1.5.1", "llama_main"), "w") as fh:
+        fh.write("sha256=" + pinned["llama_main_sha256"])
+    json.dump([{"stdout": os.path.join(fx, f"s26-{t}.stdout.txt"), "stderr": os.path.join(fx, f"s26-{t}.stderr.txt")}
+               for t in ("short-chat", "long-context-1024-gen256")], open(os.path.join(state, "et_launches.json"), "w"))
+    alias = "et1.5.1-xnnpack-8da4w-g128-emb8"
+    cells_et = os.path.join(tmp, "et.cells")
+    with open(cells_et, "w") as fh:
+        fh.write(f"android executorch own-export/{stem} short-chat backend=xnnpack local=1 file={stem}.pte "
+                 f"recipe={alias} runs=1\n"
+                 f"android executorch own-export/{stem} long-context-1024-gen256 backend=xnnpack local=1 "
+                 f"file={stem}.pte recipe={alias} runs=1 context-tokens=2048\n")
+    env_et = dict(env, CAMPAIGN="selftest-et", ET_MODEL_DIR=et_models, BENCH_ANDROID_BIN_DIR=os.path.join(tmp, "etbin"))
+    calls = os.path.join(state, "engine_calls")
+    n_before = len(open(calls).read().splitlines()) if os.path.exists(calls) else 0
+    print("--- campaign ET (executorch-xnnpack: the S26 smoke replayed through run_campaign -> run_cell)")
+    rc = run_campaign(env_et, cells_et)
+    ok(rc == 0, f"campaign ET exits 0 (got {rc})")
+    out_et = os.path.join(raw_root, "selftest-et", "app-path-android")
+    recs_et = records(out_et, "executorch-xnnpack_")
+    ok(len(recs_et) == 2, f"2 executorch records (got {len(recs_et)})")
+    by_task = {r["task"]: r for _, r in recs_et}
+    if len(by_task) == 2:
+        rs, rl = by_task["short-chat"], by_task["long-context-1024-gen256"]
+        label = parsers.EXECUTORCH_RECIPES[alias]["label"]
+        ok(all(r["runtime"] == "executorch-xnnpack" and r["engineVersion"] == "v1.5.1"
+               and r["engineArtifact"] == pinned["llama_main_sha256"] and r["model"]["quantization"] == label
+               and r["model"]["hfRevision"] == rev for r in (rs, rl)),
+           "record: arm executorch-xnnpack, the observed runner stamped v1.5.1 by its pinned sha, "
+           "model.quantization = the recipe alias's label, hfRevision from the recipe.json")
+        ok(round(rs["metrics"]["decodeTokensPerSecond"], 2) == 124.51 and rs["metrics"]["promptTokenCount"] == 19
+           and rs["metrics"]["firstTokenLatencyMS"] == 57 and round(rl["metrics"]["decodeTokensPerSecond"], 2) == 31.17
+           and rl["metrics"]["promptTokenCount"] == 1338 and rs["metrics"]["coldRun"] is True
+           and rs["metrics"]["harnessStamp"] == "2026-08-android-cli-v1+executorch-runner-stats",
+           f"metrics recomputed from the replayed stats lines (got {rs['metrics']} / {rl['metrics']})")
+        ok(rs["metrics"]["memoryPeakResidentMB"] == 1031.214844 == rs["metrics"]["memoryPeakEngineReportedMB"]
+           and "RSS after finishing text generation" in rs["provenance"]["rssBasis"],
+           f"memoryPeakResidentMB = the runner's own ru_maxrss when the sampler's VmHWM reads are lower "
+           f"(fake 625 MiB < 1031.2) (got {rs['metrics'].get('memoryPeakResidentMB')})")
+        ok(all(r["conditions"].get("contextTokens") == r["conditions"].get("contextBudget") == 2048
+               and r["conditions"]["contextSource"] == "runner log (Metadata: get_max_context_len)"
+               and r["conditions"]["cpuThreads"] == 8 and r["conditions"]["sampler"] == parsers.EXECUTORCH_SAMPLER
+               and r["conditions"]["warm"] is False and r["conditions"]["executorchRunner"] == "llama_main"
+               for r in (rs, rl)),
+           "conditions: the allocation the runner logged (2048), its thread pool (8), greedy, cold")
+        ok(all(r["conditions"]["textCheck"]["status"] == "PASS" and not r["conditions"].get("protocolFlags")
+               and r["outputSample"].startswith("<think>") for r in (rs, rl))
+           and open(os.path.join(out_et, rs["provenance"]["decodedText"])).read() == short["text"],
+           "the runner's text is checked (PASS), stored beside the record, its head in outputSample")
+        ok(rs["provenance"]["definitions"] == parsers.EXECUTORCH_DEFINITIONS["llama_main"]
+           and rs["provenance"]["statsLine"].startswith('PyTorchObserver {"prefill_token_per_sec":333.333')
+           and rs["provenance"]["promptSha256"] == manifest["tasks"]["short-chat"]["renderedSha256"]
+           and rs["provenance"]["recipe"] == stem + ".recipe.json",
+           "provenance: the definitions verbatim, the stats line verbatim, the rendered prompt's sha256, the recipe")
+        log = open(os.path.join(out_et, rs["provenance"]["rawLog"])).read()
+        ok("===ENGINE_STDERR===" in log and "RSS after finishing text generation" in log.split("===ENGINE_STDERR===")[1]
+           and "RSS after" not in log.split("===ENGINE_STDERR===")[0],
+           "the stored log keeps the runner's stderr after ===ENGINE_STDERR===, apart from its stdout")
+        ok(rl["conditions"]["engineCommand"].startswith("sh -c 'exec ./executorch-v1.5.1/llama_main --model_path=")
+           and "--temperature=0 --max_new_tokens=256 2>/data/local/tmp/llmbench/run_err.txt'" in rl["conditions"]["engineCommand"],
+           f"the 1K launch's command: the runner through sh -c, its stderr to its own file "
+           f"(got {rl['conditions']['engineCommand'][:120]!r})")
+    model_dev = os.path.join(dev, "models", f"own-export_{stem}_{stem}")
+    ok(open(model_dev + ".short-chat.prompt.txt").read() == rd("short-chat.qwen3-chat.txt")
+       and os.path.exists(model_dev + ".tokenizer.json") and not os.path.exists(os.path.join(dev, "run_err.txt")),
+       "the rendered prompt and the tokenizer were pushed beside the .pte; the stderr file was read and removed")
+    # refusals before any launch: a recipe= the recipe.json contradicts, a runner not on the phone
+    with open(cells_et, "w") as fh:
+        fh.write(f"android executorch own-export/{stem} short-chat backend=xnnpack local=1 file={stem}.pte "
+                 f"recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 runs=1\n")
+    rc_recipe = run_campaign(dict(env_et, CAMPAIGN="selftest-et-recipe"), cells_et)
+    os.remove(os.path.join(dev, "executorch-v1.5.1", "llama_main"))
+    with open(cells_et, "w") as fh:
+        fh.write(f"android executorch own-export/{stem} short-chat backend=xnnpack local=1 file={stem}.pte "
+                 f"recipe={alias} runs=1\n")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime", "executorch",
+                        "--backend", "xnnpack", "--model-id", f"own-export/{stem}", "--file", f"{stem}.pte",
+                        "--recipe", alias, "--task", "short-chat", "--runs", "1",
+                        "--out", os.path.join(tmp, "et-nobinary")], env=env_et, capture_output=True, text=True)
+    n_after = len(open(calls).read().splitlines()) if os.path.exists(calls) else 0
+    ok(rc_recipe == 0 and n_after - n_before == 2
+       and "FAILURES.txt" in os.listdir(os.path.join(raw_root, "selftest-et-recipe", "app-path-android"))
+       and p.returncode != 0 and "is not on the device" in p.stderr
+       and "etbin/executorch-v1.5.1 /data/local/tmp/llmbench/" in p.stderr,
+       f"a recipe= the recipe.json contradicts and a runner missing on the phone stop before any launch "
+       f"(engine shells {n_after - n_before}, {p.stderr.strip()[-120:]!r})")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime", "executorch",
+                        "--backend", "xnnpack", "--model-id", f"own-export/{stem}", "--file", f"{stem}.pte",
+                        "--recipe", alias, "--task", "long-context-1024-gen256", "--out", os.path.join(tmp, "unused"),
+                        "--dry-run"], env=dict(env_et, BENCH_CPU_MASK=""), capture_output=True, text=True)
+    plan = json.loads(p.stdout) if p.returncode == 0 else {}
+    ok(plan.get("command", "").startswith("cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. sh -c 'exec "
+                                          "./executorch-v1.5.1/llama_main --model_path=/data/local/tmp/llmbench/models/")
+       and plan.get("contextTokens") == 2048 and len(plan.get("pushes", [])) == 3
+       and not os.path.exists(os.path.join(tmp, "unused")),
+       f"run_cell --dry-run prints the on-device command and the inputs it would push, with no device call "
+       f"(got {p.returncode} {p.stdout[:100]!r} {p.stderr[-200:]!r})")
+    # the summary row of an executorch record, and its pool (build_summary, arm_row)
+    with patch.object(build_summary, "ROOT", raw_root.rsplit(os.sep + "raw", 1)[0]), \
+         patch.object(build_summary, "OUT", os.path.join(tmp, "summary-et")), \
+         patch.object(build_summary, "iter_device_records",
+                      lambda: [(f, r) for f, r in recs_et]):
+        os.makedirs(build_summary.OUT, exist_ok=True)
+        path, _ = build_summary.build_device()
+    rows_et = list(csv.DictReader(open(path)))
+    got = sorted((r["runtime"], r["task"], r["context_tokens"], r["text_check"], r["prompt_tokens"],
+                  r["mem_resident_peak_mb"], r["quantization"] == label) for r in rows_et)
+    ok(got == [("executorch-xnnpack", "long-context-1024-gen256", "2048", "PASS", "1338", "1034.859375", True),
+               ("executorch-xnnpack", "short-chat", "2048", "PASS", "19", "1031.214844", True)]
+       and arm_row([r for r in rows_et if r["task"] == "short-chat"])["cold_n"] == 1,
+       f"summary rows: arm, allocation, text check, prompt count, peak, label; arm_row pools the cold run (got {got})")
+    # the Mac writer builds the same keys from a stored launch (the r1 cold short-chat stdout)
+    import executorch_mac
+    from types import SimpleNamespace
+    inputs = parsers.executorch_inputs(et_models, f"{stem}.pte", "short-chat", alias, ROOT)
+    host = {"loadAverage": [2.0, 2.0, 2.0], "cpuSpeedLimit": None, "others": [], "thermal": "nominal"}
+    mac = executorch_mac.build_record(
+        SimpleNamespace(model_id=f"own-export/{stem}", backend="xnnpack", task="short-chat", context_tokens=None,
+                        campaign_dir=os.path.join(tmp, "mac")),
+        inputs, 1, True, rd("mac-short-chat-cold-1.stdout.txt"), "", 0, 1256194048, 1.619, host, host,
+        {"systemName": "macOS", "modelIdentifier": "Mac16,9"}, ["llama_main"], "61e7e881a4e3e12d38e3d102e01e15119b33395c164229fa21ab351b6a174e0e",
+        {k: os.path.join(tmp, "mac", f"x.{k}") for k in ("stdout", "stderr", "log")})
+    unchecked = executorch_mac.validate(mac)
+    ok(mac["runtime"] == "executorch-xnnpack" and mac["status"] == "ok" and mac["engineVersion"] == "v1.5.1"
+       and round(mac["metrics"]["decodeTokensPerSecond"], 2) == 110.63 and mac["metrics"]["memoryPeakResidentMB"] == 1198.0
+       and mac["metrics"]["coldRun"] is True and mac["conditions"]["warm"] is False
+       and mac["conditions"]["contextTokens"] == 2048 and mac["conditions"]["textCheck"]["status"] == "PASS"
+       and mac["provenance"]["definitions"] == parsers.EXECUTORCH_DEFINITIONS["llama_main"],
+       f"Mac writer: the r1 cold launch's record (decode 110.63, ru_maxrss 1198.0 MiB, v1.5.1 by the "
+       f"lock's sha; schema {'validated' if not unchecked else 'not checked here: ' + unchecked})")
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")

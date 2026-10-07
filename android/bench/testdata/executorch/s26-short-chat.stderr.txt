@@ -1,0 +1,44 @@
+I tokenizers:regex.cpp:40] Registering override fallback regex
+I 00:00:00.004115 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.004320 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.004332 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu0/regs/identification/midr_el1
+I 00:00:00.004479 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu1/regs/identification/midr_el1
+I 00:00:00.004618 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu2/regs/identification/midr_el1
+I 00:00:00.004751 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu3/regs/identification/midr_el1
+I 00:00:00.004887 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu4/regs/identification/midr_el1
+I 00:00:00.005020 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu5/regs/identification/midr_el1
+I 00:00:00.005154 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu6/regs/identification/midr_el1
+I 00:00:00.005288 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu7/regs/identification/midr_el1
+I 00:00:00.005422 executorch:main.cpp:159] Resetting threadpool with num threads = 8
+I 00:00:00.005427 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.005433 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.005993 executorch:threadpool.cpp:66] Resetting threadpool to 8 threads.
+I 00:00:00.006005 executorch:runner.cpp:69] Creating LLaMa runner: model_path=/data/local/tmp/llmbench/executorch/model.pte, tokenizer_path=/data/local/tmp/llmbench/executorch/tokenizer.json
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791379686.097983   16300 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+I 00:00:00.395540 executorch:llm_runner_helper.cpp:55] Loaded json tokenizer
+I 00:00:00.397699 executorch:llm_runner_helper.cpp:258] Reading metadata from model
+I 00:00:00.398666 executorch:llm_runner_helper.cpp:137] Metadata: use_sdpa_with_kv_cache = 1
+I 00:00:00.398674 executorch:llm_runner_helper.cpp:137] Metadata: use_kv_cache = 1
+I 00:00:00.398679 executorch:llm_runner_helper.cpp:137] Metadata: get_max_context_len = 2048
+I 00:00:00.398683 executorch:llm_runner_helper.cpp:137] Metadata: get_max_seq_len = 2048
+I 00:00:00.398686 executorch:llm_runner_helper.cpp:137] Metadata: enable_dynamic_shape = 1
+I 00:00:00.398693 executorch:llm_runner_helper.cpp:179] eos_id = 151645
+I 00:00:00.398699 executorch:llm_runner_helper.cpp:294] Using method: forward
+I 00:00:01.221537 executorch:text_llm_runner.cpp:92] RSS after loading model: 1028.144531 MiB (0 if unsupported)
+I 00:00:01.278843 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:01.279044 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 128, given pos_ 19, num_prompt_tokens 19, max_context_len 2048
+I 00:00:01.279108 executorch:text_llm_runner.cpp:231] RSS after prompt prefill: 1031.214844 MiB (0 if unsupported)
+I 00:00:02.298779 executorch:text_llm_runner.cpp:261] RSS after finishing text generation: 1031.214844 MiB (0 if unsupported)
+I 00:00:02.298789 executorch:text_llm_runner.cpp:264] Max new tokens 128 reached!
+I 00:00:02.298801 executorch:stats.h:179] 	Prompt Tokens: 19    Generated Tokens: 127
+I 00:00:02.298802 executorch:stats.h:185] 	Model Load Time:		0.823000 (seconds)
+I 00:00:02.298813 executorch:stats.h:194] 	Total inference time:		1.077000 (seconds)		 Rate: 	117.920149 (tokens/second)
+I 00:00:02.298815 executorch:stats.h:203] 		Prompt evaluation:	0.057000 (seconds)		 Rate: 	333.333333 (tokens/second)
+I 00:00:02.298816 executorch:stats.h:215] 		Generated 127 tokens:	1.020000 (seconds)		 Rate: 	124.509804 (tokens/second)
+I 00:00:02.298817 executorch:stats.h:223] 	Time to first generated token:	0.057000 (seconds)
+I 00:00:02.298819 executorch:stats.h:230] 	Sampling time over 146 tokens:	0.018000 (seconds)

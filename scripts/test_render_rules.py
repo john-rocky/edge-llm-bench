@@ -12,6 +12,9 @@ cpu_capped) is kept out the same way, and a cell left without a headline for tha
 as "cpu-capped": no valid run, with the count. So is a llama.cpp side build's run whose own
 device lines did not show the cell's NPU / GPU device (protocolFlags backend-not-registered;
 column backend_registered), and its cell reads only its own arm's rows.
+The executorch arm's rows (docs/executorch-arm-v1.md) carry their delegate in the arm on every
+platform (executorch-xnnpack, …): the cells file's backend= and the runners' records name the
+same arm, and validate_cells keeps such a row to an own export with its recipe alias.
 
 Fixtures live in temp dirs; results/ is neither read nor written.
 
@@ -31,6 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_summary  # noqa: E402
 import render_dashboard  # noqa: E402
 import render_dashboard_html  # noqa: E402
+import validate_cells  # noqa: E402
 from render_leaderboard import arm_row  # noqa: E402
 
 OFF = "FAIL:text-off-task-screen"
@@ -310,6 +314,84 @@ class SideBuild(unittest.TestCase):
         got = {c["arm"]: (c["status"], c["decode_tps"], c["n"]) for c in out}
         self.assertEqual(got, {"llama.cpp": ("measured", 30.5, 2), "llama.cpp-npu": ("measured", 74.0, 2),
                                "llama.cpp-gpu": ("missing", None, 0)})
+
+
+
+class ExecuTorchArm(unittest.TestCase):
+    """executorch rows: backend= is the arm (executorch-<backend>) for the Android runner,
+    the campaign driver and the dashboard alike; validate_cells keeps a row to an own export
+    with its delegate, recipe alias and the export's allocation."""
+
+    ROW = ("{plat} executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 {task} "
+           "backend={backend} local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte "
+           "recipe=et1.5.1-xnnpack-8da4w-g128-emb8{extra}\n")
+
+    def cells(self, text):
+        tmp = tempfile.TemporaryDirectory(prefix="render-rules-et-")
+        self.addCleanup(tmp.cleanup)
+        path = os.path.join(tmp.name, "et.cells")
+        with open(path, "w") as fh:
+            fh.write(text)
+        return path, tmp.name
+
+    def test_the_arm_carries_the_delegate(self):
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                        "android", "bench"))
+        import run_campaign
+        import run_cell
+        for plat in ("android", "mac"):
+            self.assertEqual(render_dashboard.arm_of(plat, "executorch", {"backend": "xnnpack"}), "executorch-xnnpack")
+        self.assertEqual(render_dashboard.arm_of("android", "executorch", {"backend": "vulkan"}), "executorch-vulkan")
+        self.assertEqual(run_cell.arm_name("executorch", "xnnpack"), "executorch-xnnpack")
+        self.assertEqual(run_campaign.arm_of({"runtime": "executorch", "opts": {"backend": "qnn"}}), "executorch-qnn")
+        self.assertTrue(run_cell.capture_stem("executorch", "xnnpack", "own-export/m", "short-chat")
+                        .startswith("executorch-xnnpack_own-export_m_short-chat"))
+        # the other runtimes' arms read as before
+        self.assertEqual(render_dashboard.arm_of("mac", "litert-lm", {"backend": "gpu"}), "litert-lm")
+        self.assertEqual(render_dashboard.arm_of("android", "llama.cpp", {}), "llama.cpp")
+
+    def test_validate_cells_rows(self):
+        good = (self.ROW.format(plat="android", task="short-chat", backend="xnnpack", extra="")
+                + self.ROW.format(plat="android", task="long-context-1024-gen256", backend="xnnpack",
+                                  extra=" context-tokens=2048")
+                + self.ROW.format(plat="mac", task="short-chat", backend="xnnpack", extra=" runs=4"))
+        path, _ = self.cells(good)
+        self.assertEqual(validate_cells.validate_file(path), ([], []))
+        bad = {
+            self.ROW.format(plat="android", task="short-chat", backend="gpu", extra=""): "backend=<qnn|vulkan|xnnpack>",
+            self.ROW.format(plat="mac", task="short-chat", backend="vulkan", extra=""): "backend=<coreml|metal|mlx|xnnpack>",
+            self.ROW.format(plat="ios", task="short-chat", backend="xnnpack", extra=""): "rows are android / mac",
+            self.ROW.format(plat="android", task="long-context-1024-gen256", backend="xnnpack", extra=""):
+                "needs context-tokens=",
+            self.ROW.format(plat="android", task="long-context-1024-gen256", backend="xnnpack",
+                            extra=" context-tokens=4096"): "the export allocates 2048",
+            self.ROW.format(plat="mac", task="short-chat", backend="xnnpack", extra=" runs=1"): "runs>=2",
+            self.ROW.format(plat="android", task="short-chat", backend="xnnpack", extra="").replace(
+                "recipe=et1.5.1-xnnpack-8da4w-g128-emb8", "recipe=int4"): "not a bare bit width",
+            self.ROW.format(plat="android", task="short-chat", backend="xnnpack", extra="").replace(
+                " local=1", ""): "local=1 file=<name>.pte",
+        }
+        for line, want in bad.items():
+            path, _ = self.cells(line)
+            errors, _ = validate_cells.validate_file(path)
+            self.assertTrue(any(want in e for e in errors), f"{want!r} not in {errors} for {line.strip()}")
+
+    def test_the_dashboard_reads_the_arms_rows(self):
+        mid = "own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048"
+        et = [dict(row(v, True, "PASS", False, "executorch-xnnpack", mid, m), task="short-chat")
+              for m, v in ((80, 124.5), (81, 135.0), (82, 120.0))]
+        other = [dict(row(30.0, True, "PASS", False, "executorch-vulkan", mid, 83), task="short-chat")]
+        path, tmp = self.cells(self.ROW.format(plat="android", task="short-chat", backend="xnnpack", extra="")
+                               + self.ROW.format(plat="android", task="short-chat", backend="qnn", extra=""))
+        summary = os.path.join(tmp, "device-runs.csv")
+        with open(summary, "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS)
+            w.writeheader()
+            w.writerows(et + other)
+        with patch.object(render_dashboard, "SUMMARY_CSV", summary), patch.object(render_dashboard, "ROOT", tmp):
+            out, _ = render_dashboard.build(path, os.path.join(tmp, "no-schedule.json"), 10, TODAY)
+        got = {c["arm"]: (c["status"], c["decode_tps"], c["n"]) for c in out}
+        self.assertEqual(got, {"executorch-xnnpack": ("measured", 124.5, 3), "executorch-qnn": ("missing", None, 0)})
 
 
 if __name__ == "__main__":
