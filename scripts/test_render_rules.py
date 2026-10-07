@@ -9,7 +9,9 @@ a firstEver run, and render_dashboard renders a cell left without a headline for
 reason as "text-fail" with the reason, never the rate (methodology/fairness-rules.md). A run
 during which the phone capped a CPU the engine ran on (record protocolFlags cpu-capped; column
 cpu_capped) is kept out the same way, and a cell left without a headline for that reason renders
-as "cpu-capped": no valid run, with the count.
+as "cpu-capped": no valid run, with the count. So is a llama.cpp side build's run whose own
+device lines did not show the cell's NPU / GPU device (protocolFlags backend-not-registered;
+column backend_registered), and its cell reads only its own arm's rows.
 
 Fixtures live in temp dirs; results/ is neither read nor written.
 
@@ -268,6 +270,46 @@ class Dashboard(unittest.TestCase):
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["status"], "text-fail")
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["decode_tps"], "")
         self.assertEqual(got[("litert-lm-cpu", "org/model")]["text_fail"], "2/5")
+
+
+class SideBuild(unittest.TestCase):
+    """A llama.cpp side build on the NPU / GPU (arms llama.cpp-npu / llama.cpp-gpu): the
+    summary's backend_registered column, arm_row leaving a run whose device lines did not
+    show the cell's device out of every pool, and the dashboard reading the npu cell from
+    its own arm's rows — never the CPU arm's, whose cells row has no backend=."""
+
+    def test_backend_registered_column_pool_and_cell(self):
+        flagged = {"conditions": {"backendRegistered": [], "protocolFlags": ["backend-not-registered"]}}
+        shown = {"conditions": {"backendRegistered": ["load_tensors: offloaded 29/29 layers to GPU"]}}
+        self.assertEqual([build_summary.backend_registered_of(r) for r in (flagged, shown, {"conditions": {}}, {})],
+                         ["false", "true", "", ""])
+        npu = [dict(row(v, True, "PASS", False, "llama.cpp-npu", "org/gguf", m), backend_registered=b,
+                    task="short-chat", context_tokens="")
+               for m, v, b in ((60, 73.1, "true"), (61, 20.0, "false"), (62, 74.9, "true"))]
+        a = arm_row(npu)
+        self.assertEqual((a["cold_median"], a["cold_n"], a["n"], a["backend_off_n"]), (74.0, 2, 2, 1))
+        b = arm_row(npu[:1] + npu[2:])   # the same session without the flagged run: the same pool
+        pool = ("cold_median", "cold_n", "cold_spread", "n", "prefill", "ttft", "mem", "mem_peak")
+        self.assertEqual({k: a[k] for k in pool}, {k: b[k] for k in pool})
+        cpu = [dict(row(v, True, "", False, "llama.cpp", "org/gguf", m), task="short-chat", context_tokens="",
+                    backend_registered="") for m, v in ((70, 30.0), (71, 31.0))]
+        with tempfile.TemporaryDirectory(prefix="render-rules-side-") as tmp:
+            summary = os.path.join(tmp, "device-runs.csv")
+            with open(summary, "w", newline="") as fh:
+                w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS + BACKEND_FIELDS, extrasaction="ignore")
+                w.writeheader()
+                w.writerows(npu + cpu)
+            cells = os.path.join(tmp, "fixture.cells")
+            with open(cells, "w") as fh:
+                fh.write("android llama.cpp org/gguf short-chat\n"
+                         "android llama.cpp org/gguf short-chat backend=npu engine-build=b11469-snapdragon\n"
+                         "android llama.cpp org/gguf short-chat backend=gpu engine-build=b11469-snapdragon\n")
+            with patch.object(render_dashboard, "SUMMARY_CSV", summary), \
+                 patch.object(render_dashboard, "ROOT", tmp):
+                out, _ = render_dashboard.build(cells, os.path.join(tmp, "no-schedule.json"), 10, TODAY)
+        got = {c["arm"]: (c["status"], c["decode_tps"], c["n"]) for c in out}
+        self.assertEqual(got, {"llama.cpp": ("measured", 30.5, 2), "llama.cpp-npu": ("measured", 74.0, 2),
+                               "llama.cpp-gpu": ("missing", None, 0)})
 
 
 if __name__ == "__main__":

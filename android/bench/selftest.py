@@ -41,6 +41,10 @@ DEV = "/data/local/tmp/llmbench"
 # unless the test wrote STATE/off_task
 ON_TASK = %(on_task)r
 OFF_TASK = %(off_task)r
+# a llama.cpp side build's llama-bench console on -dev HTP0 (the S26 smoke's, verbatim)
+BENCH_HTP0 = %(bench_htp0)r
+# a side build's device lines per --device, the forms of the S26 smoke's -lv 4 launches
+SIDE_LINES = %(side_lines)r
 
 
 def mp(p):
@@ -69,7 +73,41 @@ def cpu_launch():
     return run
 
 
+def side_build_lines(cmd):
+    """A llama.cpp side build's device lines for this launch: STATE/side_lines.json (one
+    list per launch, consumed like schedule.json) while the test scripts them, else the
+    lines of the device the command names. A GPU launch writes a program into the build's
+    OpenCL cache dir when it holds none, as the engine does on its first launch."""
+    p = os.path.join(STATE, "side_lines.json")
+    q = json.load(open(p)) if os.path.exists(p) else []
+    lines = q.pop(0) if q else None
+    if os.path.exists(p):
+        json.dump(q, open(p, "w"))
+    device = re.search(r"--device (\\S+)", cmd).group(1)
+    cache = re.search(r"GGML_OPENCL_KERNEL_CACHE_DIR=(\\S+)", cmd)
+    if device == "GPUOpenCL" and cache:
+        d = mp(cache.group(1))
+        os.makedirs(d, exist_ok=True)
+        if not any(f.endswith(".clbin") for f in os.listdir(d)):
+            open(os.path.join(d, "0123456789abcdef.clbin"), "w").close()
+    return SIDE_LINES[device] if lines is None else lines
+
+
+def side_chat_reply(cmd):
+    """The chat tool's echo of the prompt (cli-ui.h: "> " and the first 500 bytes) and its
+    reply, a -lv 4 log line in the middle of it as on the phone."""
+    prompt = open(mp(re.search(r" -f (\\S+)", cmd).group(1))).read()
+    shown = prompt if len(prompt) <= 500 else prompt[:500] + " ... (truncated)"
+    reply = OFF_TASK if os.path.exists(os.path.join(STATE, "off_task")) else ON_TASK
+    head, tail = reply[:60], reply[60:]
+    return ["", "> " + shown, "", "[Start thinking]", "", head,
+            "0.03.650.151 I slot print_timing: id  0 | task 0 |        eval time =    1737.24 ms /   128 tokens",
+            tail, ""]
+
+
 def engine(cmd):
+    with open(os.path.join(STATE, "engine_cmds"), "a") as fh:
+        fh.write(cmd.split(" >", 1)[0] + "\\n")
     sched = os.path.join(STATE, "schedule.json")
     q = json.load(open(sched))
     d = q.pop(0) if q else 20.0
@@ -93,7 +131,13 @@ def engine(cmd):
             tick = dict(probe_caps(), **ticks[min(k, len(ticks) - 1)])
             print("CPUMAX " + " ".join(str(tick.get(name, hw)) for name, hw, _ in POLICIES))
     print("===ENGINE_OUTPUT===")
-    if "./llama-cli" in cmd:
+    side = DEV + "/engines/" in cmd
+    if side and "/bin/llama-bench " in cmd:
+        sys.stdout.write(BENCH_HTP0)
+    elif "./llama-cli" in cmd or (side and "/bin/llama-cli " in cmd):
+        if side:
+            for line in side_build_lines(cmd) + side_chat_reply(cmd):
+                print(line)
         print("[ Prompt: 200.0 t/s | Generation: %%s t/s ]" %% d)
     elif "./litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
         ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
@@ -190,12 +234,21 @@ def shell(cmd):
             return 1
         return engine(cmd)
     if cmd.startswith("sha256sum"):
-        p = mp(cmd.split()[1])
-        if not os.path.exists(p):
-            print("sha256sum: " + p + ": No such file or directory")
-            return 1
-        print(hashlib.sha256(open(p, "rb").read()).hexdigest() + "  " + p)
-        return 0
+        # every device path named; a stand-in for a real engine file holds the sha256sum
+        # the phone would print for it ("sha256=<hex>": the side build's pinned files)
+        status = 0
+        for arg in cmd.split()[1:]:
+            if not arg.startswith(DEV):
+                continue
+            p = mp(arg)
+            if not os.path.exists(p):
+                print("sha256sum: " + arg + ": No such file or directory")
+                status = 1
+                continue
+            data = open(p, "rb").read()
+            digest = data[7:71].decode() if data.startswith(b"sha256=") else hashlib.sha256(data).hexdigest()
+            print(digest + "  " + arg)
+        return 0 if "|| true" in cmd else status
     if cmd.startswith("stat -c %%s"):
         p = mp(cmd.split()[-1])
         if not os.path.exists(p):
@@ -204,7 +257,10 @@ def shell(cmd):
         print(os.path.getsize(p))
         return 0
     if cmd.startswith("ls ") and "echo present" in cmd:
-        print("present" if os.path.exists(mp(cmd.split()[1])) else "absent")
+        # every `ls <path>` of the && chain must find something (a glob may name it)
+        import glob as _g
+        paths = [seg.split()[1] for seg in cmd.split("&&") if seg.strip().startswith("ls ")]
+        print("present" if all(_g.glob(mp(p)) for p in paths) else "absent")
         return 0
     if cmd.startswith("mkdir -p") and "touch" in cmd:
         mk, touch = cmd.split("&&")
@@ -261,6 +317,184 @@ ON_TASK = ("Running on-device AI means the phone answers without a network: repl
 OFF_TASK = ("Please share the document you want summarised and the questions you have about "
             "it, and I will answer each of them in order with short explanations.")
 
+# A llama.cpp side build's consoles, the forms of the 2026-10-07 Galaxy S26 smoke of
+# b11469-snapdragon (Qwen3 0.6B Q4_K_M; the launch logs are outside this repo, in the lane's
+# round notes): llama-bench -o json on HTP0, verbatim from its first line to the JSON's
+# end — the Hexagon registry's "FASTRPC_GET_DOMAINS[0]" line comes before the array — and
+# the chat tool's device lines at -lv 4 per device, timestamp prefixes included.
+BENCH_HTP0 = """ggml_opencl: selected platform: 'QUALCOMM Snapdragon(TM)'
+
+ggml_opencl: device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'
+ggml_opencl: default device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'
+ggml-hex: Loading driver libcdsprpc.so
+ggml-hex: FASTRPC_GET_DOMAINS[0]: type 1 id 1000 name 'nsp1000' status 1 instance-id 0
+ggml-hex: using CDSP domain: instance-id 0 id 1000 name 'nsp1000'
+ggml-hex: Hexagon backend (experimental) : allocating new registry : ndev 1
+ggml-hex: Hexagon Arch version v81, DMA64 enabled
+ggml-hex: device 0: HTP0 (phys=0, virt=0, domain=nsp1000:1000)
+[
+  {
+    "build_commit": "ad2156533",
+    "build_number": 11469,
+    "cpu_info": "CPU",
+    "gpu_info": "QUALCOMM Adreno(TM) 840, Hexagon",
+    "backends": "OpenCL,HTP",
+    "model_filename": "/data/local/tmp/llmbench/models/unsloth_Qwen3-0.6B-GGUF_Qwen3-0.6B-Q4_K_M.gguf",
+    "model_type": "qwen3 0.6B Q4_K - Medium",
+    "model_size": 390753280,
+    "model_n_params": 596049920,
+    "n_batch": 2048,
+    "n_ubatch": 512,
+    "n_threads": 4,
+    "cpu_mask": "0x0",
+    "cpu_strict": false,
+    "poll": 50,
+    "type_k": "f16",
+    "type_v": "f16",
+    "n_gpu_layers": 99,
+    "n_cpu_moe": 0,
+    "split_mode": "layer",
+    "main_gpu": 0,
+    "no_kv_offload": false,
+    "flash_attn": -1,
+    "devices": "HTP0",
+    "tensor_split": "0.00",
+    "tensor_buft_overrides": "none",
+    "load_mode": "auto",
+    "lazy_mode": "auto",
+    "embeddings": false,
+    "no_op_offload": 0,
+    "no_host": false,
+    "repack": true,
+    "fit_target": 0,
+    "fit_min_ctx": 0,
+    "n_prompt": 1024,
+    "n_gen": 0,
+    "n_depth": 0,
+    "test_time": "2026-10-07T13:22:48Z",
+    "avg_ns": 244490000,
+    "stddev_ns": 6713945,
+    "avg_ts": 4190.935295,
+    "stddev_ts": 119.484661,
+    "samples_ns": [ 232482552, 247277500, 247561406, 247672552, 247455990 ],
+    "samples_ts": [ 4404.63, 4141.1, 4136.35, 4134.49, 4138.11 ]
+  },
+  {
+    "build_commit": "ad2156533",
+    "build_number": 11469,
+    "cpu_info": "CPU",
+    "gpu_info": "QUALCOMM Adreno(TM) 840, Hexagon",
+    "backends": "OpenCL,HTP",
+    "model_filename": "/data/local/tmp/llmbench/models/unsloth_Qwen3-0.6B-GGUF_Qwen3-0.6B-Q4_K_M.gguf",
+    "model_type": "qwen3 0.6B Q4_K - Medium",
+    "model_size": 390753280,
+    "model_n_params": 596049920,
+    "n_batch": 2048,
+    "n_ubatch": 512,
+    "n_threads": 4,
+    "cpu_mask": "0x0",
+    "cpu_strict": false,
+    "poll": 50,
+    "type_k": "f16",
+    "type_v": "f16",
+    "n_gpu_layers": 99,
+    "n_cpu_moe": 0,
+    "split_mode": "layer",
+    "main_gpu": 0,
+    "no_kv_offload": false,
+    "flash_attn": -1,
+    "devices": "HTP0",
+    "tensor_split": "0.00",
+    "tensor_buft_overrides": "none",
+    "load_mode": "auto",
+    "lazy_mode": "auto",
+    "embeddings": false,
+    "no_op_offload": 0,
+    "no_host": false,
+    "repack": true,
+    "fit_target": 0,
+    "fit_min_ctx": 0,
+    "n_prompt": 0,
+    "n_gen": 256,
+    "n_depth": 0,
+    "test_time": "2026-10-07T13:22:49Z",
+    "avg_ns": 3316229592,
+    "stddev_ns": 15315119,
+    "avg_ts": 77.197416,
+    "stddev_ts": 0.355374,
+    "samples_ns": [ 3312565207, 3306181666, 3320475363, 3340468957, 3301456769 ],
+    "samples_ts": [ 77.2815, 77.4307, 77.0974, 76.6359, 77.5415 ]
+  }
+]
+"""
+SIDE_LINES = {
+    "HTP0": [
+        "0.00.029.081 I ggml_opencl: selected platform: 'QUALCOMM Snapdragon(TM)'",
+        "0.00.030.004 I ",
+        "ggml_opencl: device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'",
+        "0.00.032.064 I ggml-hex: FASTRPC_GET_DOMAINS[0]: type 1 id 1000 name 'nsp1000' status 1 instance-id 0",
+        "0.00.032.096 I ggml-hex: Hexagon Arch version v81, DMA64 enabled",
+        "0.00.032.097 I ggml-hex: device 0: HTP0 (phys=0, virt=0, domain=nsp1000:1000)",
+        "0.00.439.366 I llama_prepare_model_devices: using device HTP0 (Hexagon) (unknown id) - 0 MiB free",
+        "0.00.573.759 I load_tensors: offloaded 29/29 layers to GPU",
+        "0.00.573.762 I load_tensors:          CPU model buffer size =   121.71 MiB",
+        "0.00.573.763 I load_tensors:         HTP0 model buffer size =   406.58 MiB",
+    ],
+    "GPUOpenCL": [
+        "0.00.025.781 I ggml_opencl: selected platform: 'QUALCOMM Snapdragon(TM)'",
+        "0.00.026.571 I ",
+        "ggml_opencl: device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'",
+        "0.00.028.445 I ggml-hex: Hexagon Arch version v81, DMA64 enabled",
+        "0.00.444.410 I llama_prepare_model_devices: using device GPUOpenCL (QUALCOMM Adreno(TM) 840) (unknown id) - 4537 MiB free",
+        "0.00.546.924 I ggml_opencl: kernel cache enabled at '/data/local/tmp/llmbench/engines/b11469-snapdragon/clcache'",
+        "0.18.287.803 I load_tensors: offloaded 29/29 layers to GPU",
+        "0.18.287.808 I load_tensors:          CPU model buffer size =   121.71 MiB",
+        "0.18.287.810 I load_tensors:       OpenCL model buffer size =   372.75 MiB",
+        "0.19.671.103 I ggml_opencl: OpenCL driver: OpenCL 3.0 QUALCOMM build: 0842.19.8 Compiler E031.50.19.18",
+    ],
+}
+# The key layout of a CPU llama.cpp record (no backend=) as the runner wrote it at 3d5655c,
+# before the side builds: top-level keys and one level below, in order — a legacy cell, and
+# a round-mode launch. The side-build wiring must not move a key of the CPU arm.
+CPU_LLAMA_KEYS = {
+    "legacy": "schemaVersion id runtime engineVersion engineArtifact model.id model.quantization "
+              "model.file model.sha256 task timestamp device.modelIdentifier device.systemName "
+              "device.systemVersion device.securityPatch device.soc device.product device.batteryLevel "
+              "device.batteryState conditions.sampler conditions.cpuAffinity conditions.cpusAllowedList "
+              "conditions.cpuMaxFreqMHz conditions.contextTokens conditions.chatMode "
+              "conditions.thermalRawStatus conditions.thermalRawStatusFinal conditions.screen "
+              "conditions.screenSource conditions.stayOnWhilePluggedIn conditions.elapsedSeconds "
+              "conditions.exitCode metrics.promptTokensPerSecond metrics.decodeTokensPerSecond "
+              "metrics.coldRun metrics.harnessStamp metrics.initialThermalState metrics.finalThermalState "
+              "metrics.memoryMedianResidentMB metrics.memoryPeakResidentMB provenance.rawLog "
+              "provenance.harness provenance.rssBasis".split(),
+    "round": "schemaVersion id runtime engineVersion engineArtifact model.id model.quantization "
+             "model.file model.sha256 task timestamp device.modelIdentifier device.systemName "
+             "device.systemVersion device.securityPatch device.soc device.product device.batteryLevel "
+             "device.batteryState conditions.sampler conditions.cpuAffinity conditions.cpusAllowedList "
+             "conditions.cpuMaxFreqMHz conditions.contextTokens conditions.chatMode "
+             "conditions.thermalRawStatus conditions.thermalRawStatusFinal conditions.screen "
+             "conditions.screenSource conditions.elapsedSeconds conditions.exitCode conditions.roundIndex "
+             "conditions.launchIndex conditions.launchID conditions.elapsedScope "
+             "conditions.stateAndMemoryScope conditions.batteryTemperatureInitialC "
+             "conditions.batteryTemperatureFinalC conditions.batteryLevelFinal conditions.thermalGateTimedOut "
+             "conditions.thermalGateTimeoutNonNominal conditions.initialThermalNonNominal "
+             "conditions.outputTokenBudget conditions.engineCommand conditions.invalidDecodeCount "
+             "conditions.protocolFlags conditions.iterationIndex conditions.regime "
+             "metrics.promptTokensPerSecond metrics.decodeTokensPerSecond metrics.coldRun "
+             "metrics.harnessStamp metrics.initialThermalState metrics.finalThermalState "
+             "metrics.memoryMedianResidentMB metrics.memoryPeakResidentMB provenance.rawLog "
+             "provenance.harness provenance.rssBasis".split(),
+}
+
+
+def key_layout(rec):
+    """A record's keys, top level and one level below, in order ("conditions.screen")."""
+    out = []
+    for k, v in rec.items():
+        out += [f"{k}.{sub}" for sub in v] if isinstance(v, dict) else [k]
+    return out
+
 _fails = []
 
 
@@ -292,7 +526,8 @@ def main():
 
     adb = os.path.join(bin_dir, "adb")
     with open(adb, "w") as fh:
-        fh.write(FAKE_ADB % {"state": state, "on_task": ON_TASK, "off_task": OFF_TASK})
+        fh.write(FAKE_ADB % {"state": state, "on_task": ON_TASK, "off_task": OFF_TASK,
+                             "bench_htp0": BENCH_HTP0, "side_lines": SIDE_LINES})
     os.chmod(adb, 0o755)
 
     # fake on-device engine binaries (sha deliberately unmatched in the pins
@@ -838,6 +1073,276 @@ def main():
     ok(got_a == (2, 19.75, 1, 3),
        f"arm_row: the capped run is out of the pool, counted (cold_n, cold_median, cpu_capped_n, "
        f"cpu_read_n = {got_a})")
+
+    # --- llama.cpp side builds (2026-10-07): the official Snapdragon asset of b11469 in
+    # DEV/engines/b11469-snapdragon/{bin,lib}, run on the Hexagon NPU (llama.cpp-npu) or the
+    # Adreno GPU through OpenCL (llama.cpp-gpu). The fake files hold the sha256sum the phone
+    # prints for the real ones (the pin's), so the witness matches them through the registry.
+    pin = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))["llama.cpp"]["b11469-snapdragon"]
+    eng = os.path.join(dev, "engines", "b11469-snapdragon")
+    eng_dev = "/data/local/tmp/llmbench/engines/b11469-snapdragon"
+    for sub in ("bin", "lib"):
+        os.makedirs(os.path.join(eng, sub))
+    for name, digest in [("bin/llama-cli", pin["llama_cli_sha256"]), ("bin/llama-bench", pin["llama_bench_sha256"])] + \
+            [(f"lib/{lib}", h) for lib, h in pin["so_files"].items()]:
+        with open(os.path.join(eng, name), "w") as fh:
+            fh.write("sha256=" + digest)
+    side_root = os.path.join(tmp, "side")
+    side_raw = os.path.join(side_root, "results", "raw")
+    cmds = os.path.join(state, "engine_cmds")
+    npu_cell = f"short-chat runs=1 backend=npu engine-build=b11469-snapdragon file={gguf_model}"
+
+    # check 1: an NPU chat launch and an NPU llama-bench launch beside the CPU anchor. Each
+    # record is the arm llama.cpp-npu, stamped with the side build by its witness (tool and
+    # libs), carries the engine's device lines (backendRegistered: the chat tool's -lv 4
+    # lines; llama-bench's JSON fields) and the wrapper's settings, and is not flagged.
+    cells_n = os.path.join(tmp, "n.cells")
+    with open(cells_n, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat anchor=1 runs=1 file={gguf_model}\n"
+                 f"android llama.cpp fake/gguf {npu_cell}\n"
+                 f"android llama.cpp fake/gguf native-benchmark-1024x256 runs=1 backend=npu "
+                 f"engine-build=b11469-snapdragon file={gguf_model}\n")
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    schedule([20.0, 73.1, 0.0])
+    print("--- campaign N (llama.cpp-npu: chat + llama-bench on the side build, CPU anchor beside)")
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-n", BENCH_RAW_ROOT=side_raw), cells_n)
+    ok(rc == 0, f"campaign N exits 0 (got {rc})")
+    out_n = os.path.join(side_raw, "selftest-n", "app-path-android")
+    npu = [r for _, r in records(out_n, "llama.cpp-npu_")]
+    chat = [r for r in npu if r["task"] == "short-chat"]
+    bench = [r for r in npu if r["task"] == "native-benchmark-1024x256"]
+    want_lines = ["ggml_opencl: device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'",
+                  "ggml-hex: Hexagon Arch version v81, DMA64 enabled",
+                  "llama_prepare_model_devices: using device HTP0 (Hexagon) (unknown id) - 0 MiB free",
+                  "load_tensors: offloaded 29/29 layers to GPU",
+                  "load_tensors: CPU model buffer size = 121.71 MiB",
+                  "load_tensors: HTP0 model buffer size = 406.58 MiB"]
+    env_npu = (f"LD_LIBRARY_PATH={eng_dev}/lib ADSP_LIBRARY_PATH={eng_dev}/lib GGML_HEXAGON_DEVICES=HTP0 "
+               f"GGML_HEXAGON_OPPOLL=1 GGML_OPENCL_KERNEL_CACHE_DIR={eng_dev}/clcache")
+    if len(chat) == 1:
+        r = chat[0]
+        c = r["conditions"]
+        ok((r["runtime"], r["engineVersion"], r["engineArtifact"])
+           == ("llama.cpp-npu", "b11469-snapdragon", pin["llama_cli_sha256"]),
+           f"npu chat: runtime llama.cpp-npu, engineVersion b11469-snapdragon (tool + 7 libs matched), "
+           f"engineArtifact = the pinned llama-cli (got {r['runtime']}, {r['engineVersion']})")
+        ok(c.get("backendRegistered") == want_lines and not c.get("protocolFlags"),
+           f"npu chat: backendRegistered = the engine's HTP0 lines, prefixes off, not flagged "
+           f"(got {c.get('backendRegistered')}, flags {c.get('protocolFlags')})")
+        ok((c.get("engineBuild"), c.get("ggmlDevice"), c.get("threads"), c.get("flashAttn"), c.get("ubatch"),
+            c.get("hexagonOpPoll"), c.get("nGpuLayers")) == ("b11469-snapdragon", "HTP0", 6, "on", 1024, 1, 99),
+           "npu chat: the wrapper's settings stamped (threads 6, flash attention on, ubatch 1024, OPPOLL 1, -ngl 99)")
+        cmd_c = c.get("engineCommand", "")
+        ok(cmd_c.startswith(env_npu + f" {eng_dev}/bin/llama-cli -lv 4 -m ")
+           and cmd_c.index("-lv 4") < cmd_c.index("--device HTP0")
+           and " -t 6 -c 4096 " in cmd_c and cmd_c.endswith(" -st -ngl 99 -fa on -ub 1024 --device HTP0"),
+           f"npu chat: engineCommand = the side build's env + tool, -lv 4 before --device: {cmd_c!r}")
+        text = open(os.path.join(out_n, r["provenance"].get("decodedText", "missing"))).read() \
+            if r["provenance"].get("decodedText") else ""
+        ok(c.get("textCheck", {}).get("status") == "PASS" and ON_TASK[:60] in text and ON_TASK[60:] in text
+           and "print_timing" not in text,
+           f"npu chat: the reply is text-checked (PASS), the -lv 4 log line taken out of it: {text!r}")
+        ok("firstEver" not in r["metrics"] and r["metrics"].get("decodeTokensPerSecond") == 73.1
+           and "the host process only" in r["provenance"]["rssBasis"],
+           "npu chat: no cache build on the NPU, decode parsed, rssBasis says the HTP0 buffers are outside RSS")
+    else:
+        ok(False, f"one npu chat record (got {len(chat)})")
+    if len(bench) == 1:
+        r = bench[0]
+        c = r["conditions"]
+        m = r["metrics"]
+        ok((r["runtime"], r["engineVersion"], r["engineArtifact"])
+           == ("llama.cpp-npu", "b11469-snapdragon", pin["llama_bench_sha256"]),
+           f"npu llama-bench: engineArtifact = the pinned llama-bench (got {r['engineVersion']})")
+        ok((m.get("promptTokensPerSecond"), m.get("promptTokenCount"), m.get("decodeTokensPerSecond"),
+            m.get("generatedTokenCount"), m.get("coldRun")) == (4190.935295, 1024, 77.197416, 256, False),
+           f"npu llama-bench: the S26 smoke's console parses (pp1024 and tg256 past the "
+           f"FASTRPC_GET_DOMAINS[0] line) (got {m})")
+        ok(c.get("backendRegistered") == ['llama-bench json: {"devices": "HTP0", "backends": "OpenCL,HTP", '
+                                          '"gpu_info": "QUALCOMM Adreno(TM) 840, Hexagon", "n_gpu_layers": 99, '
+                                          '"flash_attn": -1, "n_ubatch": 512}']
+           and "protocolFlags" not in c and "textCheck" not in c,
+           f"npu llama-bench: backendRegistered = its JSON's device fields, not flagged, no text check "
+           f"(got {c.get('backendRegistered')})")
+        ok(c.get("engineCommand", "").startswith(env_npu + f" {eng_dev}/bin/llama-bench -m ")
+           and c["engineCommand"].endswith(" -t 6 -p 1024 -n 256 -o json -ngl 99 -ub 1024 --device HTP0")
+           and (c.get("flashAttn"), c.get("ubatch")) == ("auto (llama-bench default)", 1024),
+           f"npu llama-bench: the wrapper's bench flags (-t 6, -ub 1024 on HTP, no -fa): {c.get('engineCommand')!r}")
+    else:
+        ok(False, f"one npu llama-bench record (got {len(bench)})")
+    shells = open(cmds).read().splitlines() if os.path.exists(cmds) else []
+    cpu_n = records(out_n, "llama.cpp_")
+    ok(len(shells) == 3 and shells[0].startswith("cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./llama-cli -m ")
+       and " -t 4 " in shells[0] and all(s.startswith(f"cd /data/local/tmp/llmbench && {env_npu} taskset f0 {eng_dev}/bin/")
+                                       for s in shells[1:]),
+       f"the CPU anchor still runs the flat pinned build (-t 4), the side build its own dir: {shells}")
+
+    # check 2: a launch whose console does not show the cell's device — none of the device
+    # lines (the b11469 chat tool at its default verbosity), another device's lines, or a
+    # partial offload — is kept, flagged backend-not-registered, listed in FAILURES.txt, and
+    # leaves the pool: summary backend_registered false, out of arm_row; the shown run pools.
+    cells_n2 = os.path.join(tmp, "n2.cells")
+    with open(cells_n2, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf {npu_cell.replace('runs=1', 'runs=4')}\n")
+    partial = [ln.replace("offloaded 29/29", "offloaded 20/29") for ln in SIDE_LINES["HTP0"]]
+    json.dump([[], SIDE_LINES["GPUOpenCL"], partial, None], open(os.path.join(state, "side_lines.json"), "w"))
+    schedule([70.0, 88.0, 71.0, 73.0])
+    print("--- campaign N2 (npu launches without the HTP0 lines: none, the GPU's, 20/29 offloaded; then a shown one)")
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-n2", BENCH_RAW_ROOT=side_raw), cells_n2)
+    os.remove(os.path.join(state, "side_lines.json"))
+    ok(rc == 0, f"campaign N2 exits 0 (got {rc})")
+    out_n2 = os.path.join(side_raw, "selftest-n2", "app-path-android")
+    n2 = [r for _, r in records(out_n2, "llama.cpp-npu_")]
+    got_n2 = [(r["conditions"].get("protocolFlags") or None, r["metrics"].get("decodeTokensPerSecond")) for r in n2]
+    ok(got_n2 == [(["backend-not-registered"], 70.0), (["backend-not-registered"], 88.0),
+                  (["backend-not-registered"], 71.0), (None, 73.0)],
+       f"no device lines / another device's / 20 of 29 layers: flagged backend-not-registered, record and rate "
+       f"kept; the run that shows HTP0 is not flagged (got {got_n2})")
+    ok(len(n2) == 4 and n2[0]["conditions"].get("backendRegistered") == []
+       and any("using device GPUOpenCL" in ln for ln in n2[1]["conditions"].get("backendRegistered", [])),
+       "the record carries the lines it had: none, or the other device's")
+    fails_n2 = os.path.join(out_n2, "FAILURES.txt")
+    fails_n2 = open(fails_n2).read().splitlines() if os.path.exists(fails_n2) else []
+    ok(fails_n2 == ["llama.cpp-npu fake/gguf short-chat rc=1"] * 3,
+       f"each flagged launch is a failed launch, listed under its arm: {fails_n2}")
+
+    # GPU: the first chat launch on an empty program cache is the cache build (firstEver,
+    # marker written); the next is not; a re-pushed build (cache dir emptied, marker kept)
+    # builds again and is labelled again
+    cells_g4 = os.path.join(tmp, "g4.cells")
+    with open(cells_g4, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=2 backend=gpu engine-build=b11469-snapdragon "
+                 f"file={gguf_model}\n")
+    schedule([88.5, 88.8])
+    print("--- campaign G4 (llama.cpp-gpu: OpenCL program cache built by run 1)")
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-g4", BENCH_RAW_ROOT=side_raw), cells_g4)
+    ok(rc == 0, f"campaign G4 exits 0 (got {rc})")
+    gpu = [r for _, r in records(os.path.join(side_raw, "selftest-g4", "app-path-android"), "llama.cpp-gpu_")]
+    ok([r["metrics"].get("firstEver") for r in gpu] == [True, None]
+       and all(r["conditions"].get("ggmlDevice") == "GPUOpenCL" and not r["conditions"].get("protocolFlags")
+               and "GGML_HEXAGON_DEVICES" not in r["conditions"]["engineCommand"] for r in gpu)
+       and glob.glob(os.path.join(dev, "markers", "*.llama.cpp-gpu.*.cachebuilt")),
+       f"gpu: run 1 on an empty cache is firstEver, run 2 is not, marker written, no HTP device env "
+       f"(got {[r['metrics'].get('firstEver') for r in gpu]})")
+    for f in glob.glob(os.path.join(eng, "clcache", "*.clbin")):
+        os.remove(f)
+    schedule([88.1, 88.6])
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-g5", BENCH_RAW_ROOT=side_raw), cells_g4)
+    gpu5 = [r for _, r in records(os.path.join(side_raw, "selftest-g5", "app-path-android"), "llama.cpp-gpu_")]
+    ok(rc == 0 and [r["metrics"].get("firstEver") for r in gpu5] == [True, None],
+       "gpu: an emptied program cache relabels the next launch firstEver even with the marker on the device")
+
+    # the witness reads the libs: a side build whose libggml-hexagon.so is not the pin's
+    # stamps 'unknown' with the lib named; a side build that is not on the device stops
+    # the cell before any launch (no record, listed in FAILURES.txt)
+    hexagon = os.path.join(eng, "lib", "libggml-hexagon.so")
+    with open(hexagon, "w") as fh:
+        fh.write("sha256=" + "0" * 64)
+    cells_w = os.path.join(tmp, "w.cells")
+    with open(cells_w, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf {npu_cell}\n"
+                 f"android llama.cpp fake/gguf native-benchmark-1024x256 runs=1 backend=npu "
+                 f"engine-build=b0-not-pushed file={gguf_model}\n")
+    schedule([73.0])
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    print("--- campaign W (a lib that is not the pin's; a side build that is not on the device)")
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-w", BENCH_RAW_ROOT=side_raw), cells_w)
+    with open(hexagon, "w") as fh:
+        fh.write("sha256=" + pin["so_files"]["libggml-hexagon.so"])
+    out_w = os.path.join(side_raw, "selftest-w", "app-path-android")
+    w = [r for _, r in records(out_w, "llama.cpp-npu_")]
+    fails_w = os.path.join(out_w, "FAILURES.txt")
+    fails_w = open(fails_w).read().splitlines() if os.path.exists(fails_w) else []
+    ok(len(w) == 1 and w[0]["engineVersion"] == "unknown (on-device b11469-snapdragon llama-cli with lib "
+                                                 "libggml-hexagon.so unmatched in android/engine-pins.json)",
+       f"a lib off the pin stamps 'unknown' and names the lib (got {[r['engineVersion'] for r in w]})")
+    ok(fails_w == ["llama.cpp-npu fake/gguf native-benchmark-1024x256 rc=1"]
+       and len(open(cmds).read().splitlines()) == 1,
+       f"a side build that is not on the device: no launch, no record, one FAILURES.txt line: {fails_w}")
+
+    # the summary and the pool: backend_registered true / false / empty, and arm_row leaves
+    # the false runs out (campaign N2: three flagged, one shown -> a pool of one)
+    with patch.object(build_summary, "ROOT", side_root), \
+         patch.object(build_summary, "OUT", os.path.join(side_root, "summary")):
+        os.makedirs(build_summary.OUT, exist_ok=True)
+        path, _ = build_summary.build_device()
+    side_rows = list(csv.DictReader(open(path)))
+    rows_n2 = [r for r in side_rows if r["campaign"] == "results/raw/selftest-n2"]
+    ok([r["backend_registered"] for r in rows_n2] == ["false", "false", "false", "true"]
+       and {r["backend_registered"] for r in side_rows if r["runtime"] == "llama.cpp"} == {""},
+       f"summary: backend_registered false / true on the side build's runs, empty on the CPU arm's "
+       f"(got {[r['backend_registered'] for r in rows_n2]})")
+    a = arm_row(rows_n2) if rows_n2 else {}  # no rows = a runner that wrote no record: a FAIL, not a crash
+    ok((a.get("cold_n"), a.get("cold_median"), a.get("backend_off_n")) == (1, 73.0, 3),
+       f"arm_row: the three flagged runs are out of the pool, counted (cold_n, cold_median, backend_off_n = "
+       f"{(a.get('cold_n'), a.get('cold_median'), a.get('backend_off_n'))})")
+
+    # check 3: the CPU llama.cpp arm's records keep 3d5655c's key layout — a legacy cell's
+    # (campaigns A and N, the latter beside side-build cells) and a round launch's (the round
+    # campaign's anchor): nothing of the side-build wiring reaches a row without backend=
+    layouts = [key_layout(r) for _, r in lla + cpu_n]
+    ok(len(layouts) == 3 and all(k == CPU_LLAMA_KEYS["legacy"] for k in layouts),
+       f"CPU llama.cpp legacy records: the key layout of 3d5655c "
+       f"(got {[k for k in layouts if k != CPU_LLAMA_KEYS['legacy']][:1]})")
+    layouts = [key_layout(r) for _, r in controls]
+    ok(len(layouts) == 2 and all(k == CPU_LLAMA_KEYS["round"] for k in layouts),
+       f"CPU llama.cpp round-mode records: the key layout of 3d5655c "
+       f"(got {[k for k in layouts if k != CPU_LLAMA_KEYS['round']][:1]})")
+
+    # the cells grammar of the side builds (validate_cells) and the runner's refusals
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import validate_cells
+    grammar = [
+        ("android llama.cpp m/g short-chat backend=npu engine-build=b11469-snapdragon file=x.gguf", None),
+        ("android llama.cpp m/g native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon file=x.gguf", None),
+        ("android litert-lm m/l short-chat backend=npu file=x.litertlm", None),
+        ("android llama.cpp m/g short-chat backend=cpu file=x.gguf", "takes backend=npu|gpu"),
+        ("android llama.cpp m/g short-chat backend=npu file=x.gguf", "go together"),
+        ("android llama.cpp m/g short-chat engine-build=b11469-snapdragon file=x.gguf", "go together"),
+        ("mac litert-lm m/l short-chat backend=npu", "backend=npu is an android"),
+        ("android litert-lm m/l short-chat backend=gpu engine-build=b11469-snapdragon file=x.litertlm",
+         "engine-build= is read for android llama.cpp rows only"),
+        ("android litert-lm m/l asr-rtf-librispeech-82s backend=npu file=x.litertlm", "asr-rtf-* needs backend=cpu|gpu"),
+        ("android llama.cpp m/g short-chat backend=tpu engine-build=b file=x.gguf", "want cpu|gpu|npu"),
+    ]
+    for line, want in grammar:
+        path_v = os.path.join(tmp, "grammar.cells")
+        with open(path_v, "w") as fh:
+            fh.write(line + "\n")
+        errors, _ = validate_cells.validate_file(path_v)
+        ok((not errors) if want is None else any(want in e for e in errors),
+           f"validate_cells: {line.split(' file=')[0]!r} -> {'valid' if want is None else want!r} (got {errors})")
+    path_v = os.path.join(tmp, "grammar.cells")
+    with open(path_v, "w") as fh:
+        fh.write("android llama.cpp m/g short-chat backend=npu engine-build=a file=x.gguf\n"
+                 "android llama.cpp m/g short-chat backend=npu engine-build=b file=x.gguf\n")
+    errors, _ = validate_cells.validate_file(path_v)
+    ok(any("duplicate cell" in e for e in errors),
+       f"validate_cells: one arm on two side builds in one file is a duplicate cell (got {errors})")
+    for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "litert-lm takes --backend cpu|gpu"),
+                       (["--runtime", "llama.cpp", "--backend", "cpu"], "without --backend is the CPU arm"),
+                       (["--runtime", "llama.cpp", "--backend", "npu"], "pass --backend and --engine-build together"),
+                       (["--runtime", "llama.cpp", "--engine-build", "b11469-snapdragon"], "together")):
+        # --file: a runner that let the arguments through would push the local fixture to the
+        # fake phone, never ask the Hub
+        p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), *argv,
+                            "--model-id", "m/g", "--file", gguf_model, "--task", "short-chat", "--runs", "1",
+                            "--out", os.path.join(tmp, "refused")],
+                           env=env, capture_output=True, text=True)
+        ok(p.returncode == 2 and want in p.stderr, f"run_cell refuses {' '.join(argv)}: {p.stderr.strip()[-110:]!r}")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_n,
+                        "--dry-run"], env=dict(env, ROUNDS="1"), capture_output=True, text=True)
+    plan = [json.loads(line) for line in p.stdout.splitlines() if line.startswith("{")]
+    ok(p.returncode == 0 and [d["cell"].split(" file=")[0] for d in plan] == [
+        "llama.cpp fake/gguf short-chat context-tokens=default",
+        "llama.cpp-npu fake/gguf short-chat context-tokens=default",
+        "llama.cpp-npu fake/gguf native-benchmark-1024x256 context-tokens=default"]
+       and plan[0]["command"].startswith("cd /data/local/tmp/llmbench && LD_LIBRARY_PATH=. taskset f0 ./llama-cli ")
+       and plan[1]["command"].startswith(f"cd /data/local/tmp/llmbench && {env_npu} taskset f0 {eng_dev}/bin/llama-cli -lv 4 "),
+       f"--dry-run plans the side build's env and tool, the CPU arm's flat build: "
+       f"{[d.get('command', '')[:90] for d in plan]}")
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")
