@@ -132,6 +132,28 @@ def text_check_of(d):
     return "PASS" if tc.get("status") == "PASS" else ""
 
 
+def cpu_cap_of(d):
+    """(cpu_capped, cpu_max_freq) of one record (cpu-cap-rule). cpu_capped: "true" when
+    conditions.protocolFlags carries cpu-capped (a policy of the engine's CPUs sat below its
+    hardware maximum during the run), "false" when the runner read the caps
+    (conditions.cpuMaxFreqMHz) and raised no flag, "" when it did not read them (Android
+    records before 2026-10-07, every other writer). cpu_max_freq: "p<N> <min>/<hw>" per
+    cpufreq policy in MHz, e.g. "p0 1704/1704 p4 1418/2367 p8 2914/2914". A capped run
+    stays a row here; render_leaderboard.arm_row keeps it out of every metric pool."""
+    c = d.get("conditions")
+    if not isinstance(c, dict):
+        return "", ""
+    freq = c.get("cpuMaxFreqMHz") if isinstance(c.get("cpuMaxFreqMHz"), dict) else {}
+    flags = c.get("protocolFlags") if isinstance(c.get("protocolFlags"), list) else []
+    capped = "true" if "cpu-capped" in flags else "false" if freq else ""
+    parts = []
+    for name in sorted(freq, key=lambda n: (len(n), n)):
+        v = freq[name] if isinstance(freq[name], dict) else {}
+        label = "p" + name[len("policy"):] if name.startswith("policy") else name
+        parts.append(f"{label} {v.get('min')}/{v.get('hw')}")
+    return capped, " ".join(parts)
+
+
 def platform_of(d):
     """ios / mac / android, from the record itself (never from file paths)."""
     dev = d.get("device", {})
@@ -218,6 +240,7 @@ def build_device():
         m, dev, model = d.get("metrics", {}), d.get("device", {}), d.get("model", {})
         if not m:
             continue
+        cpu_capped, cpu_max_freq = cpu_cap_of(d)
         parent = os.path.dirname(f)
         if os.path.basename(parent) == "raw":
             campaign = "flat"                       # results/raw/x.jsonl
@@ -269,6 +292,10 @@ def build_device():
             # the decoded-text verdict (2026-10-06), appended last like the peaks:
             # a FAIL run is a row, never a measurement (text-check-rule)
             "text_check": text_check_of(d),
+            # the CPU frequency cap during the run (2026-10-07), appended after it:
+            # a capped run is a row, never a measurement (cpu-cap-rule)
+            "cpu_capped": cpu_capped,
+            "cpu_max_freq": cpu_max_freq,
         })
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
     path = os.path.join(OUT, "device-runs.csv")
@@ -345,6 +372,14 @@ def main():
             "`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a\n"
             "`FAIL` run stays a row here and in raw but pools into no number\n"
             "(`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).\n\n"
+            "`cpu_capped` / `cpu_max_freq` (after `text_check`, 2026-10-07) are the CPU frequency\n"
+            "cap the Android runner read during the run: `cpu_capped` = `true` when a cpufreq\n"
+            "policy of the engine's CPUs sat below its hardware maximum (the record's\n"
+            "`protocolFlags` carry `cpu-capped`), `false` when the caps were read and none was\n"
+            "below, empty where they were not read; `cpu_max_freq` = `p<N> <min>/<hw>` MHz per\n"
+            "policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw but\n"
+            "pools into no number (`render_leaderboard.arm_row`; `methodology/fairness-rules.md`\n"
+            "cpu-cap-rule).\n\n"
             "Release-regression diffing over this layer: `scripts/regression_diff.py`\n"
             "(quality joins on tag; device cells join on device/runtime/model/task/cold-warm\n"
             "with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is\n"

@@ -20,7 +20,8 @@ per (device, model, arm, task, allocation, campaign), for a database or a trend
 view. It imports arm_row and filters the rows it hands over the way
 render_dashboard.build does; it defines no second aggregation. A session the
 text check left without a number has no history row, as an excluded cell has
-none (text-check-rule); `text_fail` says how many runs of a kept row left the pool.
+none (text-check-rule), and so is one the CPU cap left without a number (cpu-cap-rule);
+`text_fail` says how many runs of a kept row left the pool.
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
 cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
@@ -112,8 +113,9 @@ def history_rows(cells):
                 dec, spread, n = a["warm"], a["spread"], a["warm_n"]
             else:
                 dec, spread, n = a["cold_median"], a["cold_spread"], a["cold_n"]
-            # no number -> no row: a session whose pool the text check emptied
-            # is left out like an excluded cell (text-check-rule)
+            # no number -> no row: a session whose pool the text check or the CPU
+            # cap emptied is left out like an excluded cell (text-check-rule,
+            # cpu-cap-rule)
             if not dec:
                 continue
             out.append({
@@ -130,7 +132,7 @@ def history_rows(cells):
                 "context_tokens": ctx,
                 "mem_peak_mb": round(a["mem_peak"], 1) if a["mem_peak"] else "",
                 # same "k/N" as the dashboard's text_fail ("" = text not checked)
-                "text_fail": (f"{a['text_fail_n']}/{a['n'] + a['text_fail_n']}"
+                "text_fail": (f"{a['text_fail_n']}/{a['n'] + a['text_fail_n'] + a['cpu_capped_n']}"
                               if a["text_checked_n"] else ""),
             })
     out.sort(key=lambda r: (r["platform"], r["device"], r["model"], r["arm"], r["task"],
@@ -234,8 +236,9 @@ table.cov td.n, table.cov th.n { text-align: right; padding-right: 22px; font-va
 
 def grid_entry(c, dmax):
     """(tooltip, inner HTML) of one cell in a grid slot; dmax = the grid's largest decode."""
-    if c["status"] in ("excluded", "text-fail"):
-        return "", f"<span class=\"gap\">—<span class=\"why\">{esc(c['reason'])}</span></span>"
+    if c["status"] in ("excluded", "text-fail", "cpu-capped"):
+        why = f"no valid run: {c['reason']}" if c["status"] == "cpu-capped" else c["reason"]
+        return "", f"<span class=\"gap\">—<span class=\"why\">{esc(why)}</span></span>"
     if c["status"] != "measured":
         return "", "<span class=\"gap\">not yet measured</span>"
     pct = max(1.5, 100.0 * (c["decode_tps"] or 0) / dmax)
@@ -304,12 +307,15 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
              f"(information, not a verdict; Android cold runs legitimately spread wider) · stale = older than {stale_days} days "
              "· bw = decode tok/s × bytes read per token ÷ the device's memory-bandwidth ceiling (an estimate, cited per device) "
              "· text check failed = every run that could have given the number failed the decoded-text check (empty, off-task "
-             "or looping text), so none is shown; the runs stay in the raw records.</p>")
+             "or looping text), so none is shown; the runs stay in the raw records "
+             "· no valid run: cpu-capped = every such run ran while the phone held a CPU the engine ran on below its hardware "
+             "maximum clock, so none is shown; the runs stay in the raw records.</p>")
     L.append("<p><b>Recipe</b>: each runtime runs its own published artifact and quantization (shown under the number, in full in the "
              "detail table) — a different recipe is a different deployment profile, not a win.</p>")
     L.append("</div>")
 
-    shown = [k for k in devs if any(c["status"] in ("measured", "excluded", "text-fail") for c in by_dev[k])]
+    shown = [k for k in devs if any(c["status"] in ("measured", "excluded", "text-fail", "cpu-capped")
+                                    for c in by_dev[k])]
     L.append("<table class=\"cov\"><thead><tr><th>device</th><th>regime</th><th class=\"n\">cells measured</th>"
              "<th class=\"n\">stale</th><th>captures</th><th>runtimes in the grid</th></tr></thead><tbody>")
     for key in shown:
@@ -329,6 +335,7 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
         measured = [c for c in dc if c["status"] == "measured"]
         excluded = [c for c in dc if c["status"] == "excluded"]
         text_failed = [c for c in dc if c["status"] == "text-fail"]
+        cpu_capped = [c for c in dc if c["status"] == "cpu-capped"]
         missing = [c for c in dc if c["status"] == "missing"]
         regime = dc[0]["regime"]
         dates = sorted({c["captured"] for c in measured if c["captured"]})
@@ -342,6 +349,8 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
             cov += f", {len(excluded)} excluded with a reason"
         if text_failed:
             cov += f", {len(text_failed)} failed the text check"
+        if cpu_capped:
+            cov += f", {len(cpu_capped)} had no valid run (cpu-capped)"
         if missing:
             cov += f", {len(missing)} not yet measured"
         rng = f"captures {dates[0]} … {dates[-1]}" if dates else "no captures"
@@ -395,9 +404,9 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
                 ns = len(sessions.get((c["device"], c["model_id"], c["arm"], c["task"], c["context_tokens"]), ()))
                 lead = (f"<tr><td>{esc(c['model'])}</td><td>{esc(c['arm'])}</td><td>{esc(c['context_tokens'] or '—')}</td>"
                         f"<td><code>{esc(c['model_id'])}</code></td>")
-                if c["status"] in ("measured", "text-fail"):
-                    # a text-fail row keeps its recipe and session (the runs are in raw);
-                    # its decode is "—" and the grid cell carries the reason
+                if c["status"] in ("measured", "text-fail", "cpu-capped"):
+                    # a text-fail or cpu-capped row keeps its recipe and session (the runs
+                    # are in raw); its decode is "—" and the grid cell carries the reason
                     approx = "~" if c.get("bw_basis") not in ("vendor",) else ""
                     bwc = f"{approx}{c['bw_util_pct']:.1f}%" if c.get("bw_util_pct") is not None else "n/a"
                     L.append(

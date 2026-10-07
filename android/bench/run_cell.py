@@ -29,6 +29,12 @@ Design decisions (methodology/android.md):
     (device_probe.screen_conditions: "on-usb" / "off-usb (mWakefulness=…)",
     conditions.screenSource "measured" or "env"); on and off are both
     admissible, the record says which it was.
+  - CPU frequency cap (cpu-cap-rule): a launch waits up to CPUCAP_WAIT s for
+    every cpufreq policy's scaling_max_freq to be back at cpuinfo_max_freq; the
+    on-device sampler reads each policy's scaling_max_freq with the RSS, and a
+    run during which a policy of the engine's CPUs sat below its hardware
+    maximum carries protocolFlags cpu-capped (conditions.cpuMaxFreqMHz). The
+    run stays a record and pools into no number (render_leaderboard.arm_row).
 """
 import argparse
 import datetime
@@ -66,6 +72,18 @@ RSS_BASIS = ("VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s f
              "the window); memoryMedianResidentMB = median of the VmRSS reads, "
              "memoryPeakResidentMB = the largest VmHWM read (the kernel's resident "
              "high-water mark since process start); kB / 1024")
+# cpu-cap-rule (methodology/fairness-rules.md). On a charging Pixel 8a the mid cluster's
+# scaling_max_freq fell from 2367 to 1418-2130 MHz 20-30 s into heavy runs, with the
+# thermal status at 0, and every such llama.cpp run decoded at a third to a quarter of the
+# uncapped runs' rate (2026-10-07, 7 of 21 launches). A launch waits up to CPUCAP_WAIT s
+# for a cap to lift (those caps had lifted by the next launch, 120 s later), then runs
+# anyway, flagged.
+CPUFREQ = "/sys/devices/system/cpu/cpufreq"
+CPUCAP_WAIT = int(os.environ.get("CPUCAP_WAIT", "300"))
+# every policy's name, hardware maximum, current cap and CPUs, one line each
+CPU_POLICY_PROBE = ("for p in " + CPUFREQ + "/policy*; do h=; m=; r=; read h <$p/cpuinfo_max_freq; "
+                    "read m <$p/scaling_max_freq; read r <$p/related_cpus; "
+                    "echo \"CPUFREQ ${p##*/} ${h:--} ${m:--} $r\"; done")
 
 
 def load_pins():
@@ -299,8 +317,16 @@ def run_once(cmd, binname, serial, timeout):
     taskset_prefix = f"taskset {CPU_MASK} " if CPU_MASK else ""
     output_file = f"{DEV_DIR}/run_out_{uuid.uuid4().hex}.txt" if STRICT_SMOKE else f"{DEV_DIR}/run_out.txt"
     # VmHWM is the kernel's high-water mark, so a peak between two 0.5 s
-    # VmRSS reads is not lost
-    rss_command = "grep -E 'VmRSS|VmHWM'"
+    # VmRSS reads is not lost; Cpus_allowed_list is where the engine may run
+    # (LiteRT-LM sets its own affinity, 4-8 on the Pixel 8a's Tensor G3)
+    rss_command = "grep -E 'VmRSS|VmHWM|Cpus_allowed_list'"
+    # cpu-cap-rule: each policy's hardware maximum and CPUs once, then every
+    # policy's scaling_max_freq at launch and on each tick, printed when it
+    # changes (read is a builtin: no process per tick)
+    cpu_head = ("for p in " + CPUFREQ + "/policy*; do h=; r=; read h <$p/cpuinfo_max_freq; "
+                "read r <$p/related_cpus; echo \"CPUPOLICY ${p##*/} ${h:--} $r\"; done; ")
+    cpu_tick = ("c=CPUMAX; for f in " + CPUFREQ + "/policy*/scaling_max_freq; do m=; read m <$f; "
+                "c=\"$c ${m:--}\"; done; [ \"$c\" = \"$pc\" ] || echo \"$c\"; pc=$c; ")
     timeout_prefix = ""
     if os.environ.get("BENCH_SESSION_DEADLINE"):
         remaining = float(os.environ["BENCH_SESSION_DEADLINE"]) - time.time()
@@ -308,11 +334,11 @@ def run_once(cmd, binname, serial, timeout):
         timeout_prefix = f"timeout -k 2 {max(1, int(min(timeout, remaining - 8)))} "
         timeout = min(timeout, max(1, remaining - 2))
     shell = (f"cd {DEV_DIR} && LD_LIBRARY_PATH=. {taskset_prefix}{timeout_prefix}{cmd} "
-             f">{output_file} 2>&1 </dev/null & pid=$!; "
+             f">{output_file} 2>&1 </dev/null & pid=$!; " + cpu_head + cpu_tick +
              f"sleep 1; epid=$(pgrep -n -f {binname}); [ -z \"$epid\" ] && epid=$pid; "
              "while kill -0 $pid 2>/dev/null; do "
-             f"{rss_command} /proc/$epid/status 2>/dev/null; sleep 0.5; done; wait $pid; ec=$?; "
-             f"echo ===ENGINE_OUTPUT===; cat {output_file}; echo EXIT_CODE=$ec")
+             f"{rss_command} /proc/$epid/status 2>/dev/null; " + cpu_tick + "sleep 0.5; done; "
+             f"wait $pid; ec=$?; echo ===ENGINE_OUTPUT===; cat {output_file}; echo EXIT_CODE=$ec")
     if STRICT_SMOKE:
         shell = "set -C; " + shell  # refuse even an accidental output-path collision
     try:
@@ -337,6 +363,116 @@ def run_once(cmd, binname, serial, timeout):
         if line.startswith("EXIT_CODE="):
             exit_code = int(line.split("=", 1)[1])
     return out, exit_code, (statistics.median(rss_kb) / 1024 if rss_kb else None)
+
+
+def khz(text):
+    return int(text) if text.isdigit() else None
+
+
+def mhz(value_khz):
+    return value_khz // 1000 if value_khz % 1000 == 0 else round(value_khz / 1000, 1)
+
+
+def cpu_set(text):
+    """A kernel CPU list ("4-8", "0-3,8", "0 1 2 3") -> {4, 5, 6, 7, 8}."""
+    cpus = set()
+    for part in text.replace(" ", ",").split(","):
+        first, _, last = part.partition("-")
+        if first.isdigit() and (not last or last.isdigit()):
+            cpus.update(range(int(first), int(last or first) + 1))
+    return cpus
+
+
+def cpu_list(cpus):
+    """{4, 5, 6, 7} -> "4-7" (the kernel's list form)."""
+    runs = []
+    for c in sorted(cpus):
+        if runs and c == runs[-1][1] + 1:
+            runs[-1][1] = c
+        else:
+            runs.append([c, c])
+    return ",".join(f"{a}-{b}" if b > a else f"{a}" for a, b in runs)
+
+
+def cpu_policies(serial):
+    """{policy: {"hw": kHz, "max": kHz, "cpus": {cpu, …}}} as the phone reads now
+    (cpuinfo_max_freq, scaling_max_freq, related_cpus); {} without cpufreq."""
+    out = adb(["shell", CPU_POLICY_PROBE], serial)
+    policies = {}
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) < 4 or parts[0] != "CPUFREQ" or khz(parts[2]) is None:
+            continue
+        policies[parts[1]] = {"hw": khz(parts[2]), "max": khz(parts[3]),
+                              "cpus": cpu_set(" ".join(parts[4:]))}
+    return policies
+
+
+def wait_cpu_uncapped(serial, out_dir):
+    """cpu-cap-rule, before a launch: wait up to CPUCAP_WAIT s (10 s polls) until every
+    policy's scaling_max_freq is back at its cpuinfo_max_freq. -> True when the wait ran
+    out: the launch runs anyway, flagged cpu-capped-at-start, with one line in
+    THERMAL_GATE.txt beside the thermal gate's (the job's SESSION.json lists that file)."""
+    t0 = time.time()
+    deadline = min(t0 + CPUCAP_WAIT, float(os.environ.get("BENCH_SESSION_DEADLINE", "inf")))
+    while True:
+        capped = {name: p for name, p in cpu_policies(serial).items()
+                  if p["max"] is not None and p["max"] < p["hw"]}
+        if not capped:
+            return False
+        caps = ", ".join(f"{name} {mhz(p['max'])}/{mhz(p['hw'])} MHz" for name, p in sorted(capped.items()))
+        if time.time() >= deadline:
+            with open(os.path.join(out_dir, "THERMAL_GATE.txt"), "a") as fh:
+                fh.write(f"cpu cap gate timeout after {time.time() - t0:.0f}s at "
+                         f"{time.strftime('%F %T')}; ran anyway: {caps}\n")
+            return True
+        print(f"cpu cap gate: {caps} — waiting…", flush=True)
+        time.sleep(min(10, max(0.1, deadline - time.time())))
+
+
+def cpu_reads(console):
+    """The sampler's CPU lines of one launch (run_once), before the engine output ->
+    ({policy: {"hw": kHz or None, "cpus": {cpu, …}}}, {policy: [scaling_max_freq kHz, …]},
+    [Cpus_allowed_list reads])."""
+    order, policies, maxes, allowed = [], {}, {}, []
+    for line in console.split("===ENGINE_OUTPUT===", 1)[0].splitlines():
+        parts = line.split()
+        if parts[:1] == ["CPUPOLICY"] and len(parts) >= 3:
+            order.append(parts[1])
+            policies[parts[1]] = {"hw": khz(parts[2]), "cpus": cpu_set(" ".join(parts[3:]))}
+        elif parts[:1] == ["CPUMAX"] and len(parts) == len(order) + 1:
+            for name, value in zip(order, parts[1:]):
+                if khz(value) is not None:
+                    maxes.setdefault(name, []).append(khz(value))
+        elif parts[:1] == ["Cpus_allowed_list:"] and len(parts) == 2:
+            allowed.append(parts[1])
+    return policies, maxes, allowed
+
+
+def cpu_conditions(console):
+    """cpu-cap-rule for one launch -> (conditions, capped).
+
+    conditions.cpuMaxFreqMHz = {policy: {"min": the lowest scaling_max_freq the sampler
+    read, "hw": cpuinfo_max_freq, "cpus": the policy's CPUs}} in MHz. capped = the
+    policies of the engine's CPUs whose min sat below hw: the engine's CPUs are every
+    Cpus_allowed_list it was read with (LiteRT-LM widens its own affinity mid-launch),
+    else the launch mask, else every CPU."""
+    policies, maxes, allowed = cpu_reads(console)
+    freq = {name: {"min": mhz(min(maxes[name])), "hw": mhz(p["hw"]), "cpus": cpu_list(p["cpus"])}
+            for name, p in policies.items() if p["hw"] is not None and maxes.get(name)}
+    conditions = {"cpuMaxFreqMHz": freq} if freq else {}
+    engine_cpus = set().union(*(cpu_set(a) for a in allowed))
+    if not engine_cpus and CPU_MASK:
+        try:
+            mask = int(CPU_MASK, 16)
+            engine_cpus = {c for c in range(mask.bit_length()) if mask >> c & 1}
+        except ValueError:
+            pass
+    capped = [f"{name} min {freq[name]['min']}/{freq[name]['hw']} MHz (cpus {freq[name]['cpus']})"
+              for name, p in policies.items() if name in freq
+              and (not engine_cpus or not p["cpus"] or p["cpus"] & engine_cpus)
+              and min(maxes[name]) < p["hw"]]
+    return conditions, capped
 
 
 def main():
@@ -416,12 +552,17 @@ def main():
     for i in range(1, args.runs + 1):
         if i > 1 and args.cooldown:
             time.sleep(args.cooldown)
+        start_capped = wait_cpu_uncapped(args.serial, args.out)
         raw_status, thermal_name = thermal_status(args.serial)
         batt = battery(args.serial)
         screen = screen_conditions(args.serial)
         t0 = time.time()
         console, exit_code, rss_mb = run_once(cmd, binname, args.serial, args.timeout)
         elapsed = time.time() - t0
+        cpu_cond, cpu_capped = cpu_conditions(console)
+        # a measurement condition, not an engine failure: kept out of launch_checks, so
+        # the run's OK / exit code / firstEver marker stay what the engine made them
+        cpu_flags = (["cpu-capped"] if cpu_capped else []) + (["cpu-capped-at-start"] if start_capped else [])
         launch_id = str(uuid.uuid4()) if extended else None
         launch_checks = {}
 
@@ -515,6 +656,7 @@ def main():
                        "batteryState": batt["batteryState"]},
             "conditions": {"sampler": sampler,
                            "cpuAffinity": f"taskset {CPU_MASK}" if CPU_MASK else "none",
+                           **cpu_cond,
                            "contextTokens": ctx_note,
                            **({"chatMode": "single-turn template default (-st)"}
                               if args.runtime == "llama.cpp"
@@ -582,6 +724,9 @@ def main():
                     fh.write(value)
                 row["provenance"]["decodedText"] = text_name
                 any_text_failure |= bool(row["conditions"]["protocolFlags"])
+            if cpu_flags:
+                # cpu-cap-rule: the record stays, arm_row keeps it out of every pool
+                row["conditions"]["protocolFlags"] = list(row["conditions"].get("protocolFlags", [])) + cpu_flags
             name = f"{stem}_{stamp}_run{i}{'_iter' + str(iteration) if paired else ''}.json"
             with open(os.path.join(args.out, name), "w") as fh:
                 json.dump(row, fh, indent=2)
@@ -590,6 +735,11 @@ def main():
         print(f"run {i}/{args.runs} {status} decode={d} thermal={thermal_name}->{end_name}")
         if launch_checks.get("protocolFlags"):
             print("protocol flags: " + ", ".join(launch_checks["protocolFlags"]))
+        if cpu_capped:
+            line = f"cpu-capped {stem}_{stamp}_run{i}: " + "; ".join(cpu_capped)
+            print(line + " — the record stays, no number pools it (cpu-cap-rule)")
+            with open(os.path.join(args.out, "THERMAL_GATE.txt"), "a") as fh:
+                fh.write(line + "\n")
         if exit_code == 0 and d and not launch_checks.get("protocolFlags") and not any_text_failure:
             ok += 1
     return 0 if ok == args.runs else 1

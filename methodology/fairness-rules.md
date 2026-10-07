@@ -144,3 +144,43 @@ that passed every timing check.
   quote the rate. Paths without a stored decoded text (the plain `litert_lm_main`
   short-chat launch, llama-cli) are not checked by this rule; on the Apple lanes the cell
   gate's `DEGENERATE` screens `outputSample` for repetition loops (§4).
+
+## 13. A run during which the phone capped the engine's CPU clock is not a measurement  <!-- slug: cpu-cap-rule -->
+
+A phone can lower a CPU cluster's frequency ceiling (`scaling_max_freq`) during a run while
+the thermal status a runner gates on stays at 0. On the Pixel 8a (Tensor G3) charging on AC
+at 100 %, policy4 — cpu4-7, the four A715 cores the llama.cpp arm runs on under
+`taskset f0` — fell from 2367 MHz to 1418-2130 MHz 20-30 s after a heavy prefill, with the
+battery at 33.5-37.2 °C and `Thermal Status` 0 throughout (at the start of that sitting the
+HAL's `VIRTUAL-SKIN-CHARGE` sensor read 35.8 °C at mStatus 2; which policy lowered the cap
+was not traced). Of 21 llama.cpp launches on 2026-10-07, the 7 capped ones decoded at 2.9-4.6
+tok/s and the 14 uncapped ones at the cells' 2026-10-02 rates (Qwen3-1.7B 1K: 11.1 uncapped,
+3.3 / 3.6 capped; same build and settings, no difference in the memory counters). A read
+before the run does not see it: the cap fell during the run and had lifted by the next
+launch 120 s later. LiteRT-LM sets its own affinity to cpu4-8 on this SoC (the X3 core
+included), so the rule reads where the engine was allowed to run instead of assuming the
+launch mask (evidence: standup ROUND-m5; the capped records are kept as
+`results/raw/2026-10-07-dashboard-v1-pixel8a-a-llama-retake*-android/**/*.json.quarantine-cpu-cap`).
+
+- Before each launch the Android runner (`android/bench/run_cell.py`) waits up to
+  `CPUCAP_WAIT` s (default 300) for every cpufreq policy's `scaling_max_freq` to equal its
+  `cpuinfo_max_freq`; when the wait runs out the launch runs anyway and carries the flag
+  `cpu-capped-at-start` (and a line in `THERMAL_GATE.txt`), as the thermal gate does.
+- During the launch the on-device sampler reads every policy's `scaling_max_freq` with the
+  engine's RSS (every 0.5 s) and the engine's `Cpus_allowed_list`. The record carries each
+  policy's lowest read beside its hardware maximum and CPUs
+  (`conditions.cpuMaxFreqMHz = {"policy4": {"min": 1418, "hw": 2367, "cpus": "4-7"}, …}`).
+  A run during which a policy of the engine's CPUs (every `Cpus_allowed_list` read during the
+  run, else the launch mask, else every CPU) sat below its hardware maximum carries
+  `protocolFlags` `cpu-capped`. The flag is a measurement condition, not an engine failure:
+  the run counts as completed (no `FAILURES.txt` line), its record, rate and log stay
+  (failed-runs-stay).
+- `results/summary/device-runs.csv` carries the verdict (`cpu_capped`: `true`, `false`,
+  empty = not read; `cpu_max_freq`); `render_leaderboard.arm_row` keeps `true` runs out of
+  every metric pool, after the text check (§12), and a dashboard cell left without a number
+  shows `— (no valid run: cpu-capped (k of N runs))`, never the rate.
+- Charging is not stopped to avoid the cap: the weekly job is unattended and a sitting
+  outlasts the battery. A cell whose every run is capped (on 2026-10-07: llama.cpp Gemma 4
+  E2B 1K on the charging Pixel 8a) has no valid run until a sitting gives it one. The GPU
+  clock is not readable from the shell on the Pixel 8a (devfreq is permission-denied); a GPU
+  arm is judged on the CPUs its process may run on, like every arm.

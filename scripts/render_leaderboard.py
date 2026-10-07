@@ -17,6 +17,8 @@ Neutrality invariants (why cells look the way they do):
     (spread-rule).
   - a run whose decoded text failed the text check (summary text_check
     FAIL:…) pools into no number, like a firstEver run (text-check-rule).
+  - a run during which the phone capped the clock of a CPU the engine ran
+    on (summary cpu_capped true) pools into no number either (cpu-cap-rule).
   - GSM8K joins on (model_id, runtime); pre-v1 quality rows have no
     model_id and deliberately do not join (tag prose is not decoded).
 """
@@ -104,6 +106,13 @@ def arm_row(rows):
     text_fail = [r for r in meas if (r.get("text_check") or "").startswith("FAIL")]
     text_checked = sum(1 for r in meas if r.get("text_check"))
     meas = [r for r in meas if not (r.get("text_check") or "").startswith("FAIL")]
+    # cpu-cap-rule: a run during which a CPU the engine ran on sat below its
+    # hardware maximum clock measured the phone's cap, not the engine — same
+    # treatment again, after the text check (a run that failed both counts as a
+    # text failure); .get: summaries built before 2026-10-07 have no cpu_capped
+    cpu_capped = [r for r in meas if r.get("cpu_capped") == "true"]
+    cpu_read = sum(1 for r in meas if r.get("cpu_capped"))
+    meas = [r for r in meas if r.get("cpu_capped") != "true"]
     warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
     warm = [v for v in warm if v]
     cold = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "True"]
@@ -163,6 +172,10 @@ def arm_row(rows):
         "text_fail_flags": ", ".join(sorted({f for r in text_fail
                                              for f in r["text_check"][len("FAIL:"):].split(",") if f})),
         "text_checked_n": text_checked,
+        # runs the CPU cap kept out of the pool, and the runs past the text check
+        # whose caps were read, capped or not (0 = not read: no cpu-cap-rule verdict)
+        "cpu_capped_n": len(cpu_capped),
+        "cpu_read_n": cpu_read,
     }
 
 

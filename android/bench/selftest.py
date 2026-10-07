@@ -7,10 +7,12 @@ capture path — record shape, firstEver labelling via the on-device marker,
 witness stamping, capture gate + quarantine + retry, the endurance
 session path (streaming turn sidecar, host-derived decay/slope/degeneracy
 verdicts, failed-runs-stay), the default text check of context-prompt
-launches (text-check-rule), exclude-on= per device, and a phone lost under a
-running engine (the launch fails, never re-run) — with no phone attached. The fake scripts
-ENGINE OUTPUT, never verdicts: the gate, the text screen and the endurance
-derivations judge real records.
+launches (text-check-rule), exclude-on= per device, a phone lost under a
+running engine (the launch fails, never re-run), and the CPU frequency cap read
+per run (cpu-cap-rule: the flag, the pre-launch wait, the summary column and
+arm_row's pool) — with no phone attached. The fake scripts ENGINE OUTPUT and
+sysfs reads, never verdicts: the gate, the text screen, the cap rule and the
+endurance derivations judge real records.
 
   python3 android/bench/selftest.py     # exit 0 = pass; temp dirs kept on failure
 
@@ -18,6 +20,7 @@ Captures go under the selftest's own temp dir (BENCH_RAW_ROOT), never into
 results/raw — build_summary globs that tree unconditionally, so a leaked fake
 row would pool into the real accumulation layer.
 """
+import csv
 import glob
 import hashlib
 import json
@@ -44,18 +47,51 @@ def mp(p):
     return p.replace(DEV, os.path.join(STATE, "dev"))
 
 
+# the Pixel 8a's cpufreq policies: name, cpuinfo_max_freq (kHz), related_cpus
+POLICIES = [("policy0", 1704000, "0 1 2 3"), ("policy4", 2367000, "4 5 6 7"), ("policy8", 2914000, "8")]
+
+
+def probe_caps():
+    """{policy: scaling_max_freq kHz} the phone holds now: STATE/cpu_probe.json while the
+    test keeps a cap there, else every policy at its hardware maximum."""
+    p = os.path.join(STATE, "cpu_probe.json")
+    return json.load(open(p)) if os.path.exists(p) else {}
+
+
+def cpu_launch():
+    """This launch's sampler script (STATE/cpu_runs.json, one entry per engine launch,
+    consumed like schedule.json): {"ticks": [{policy: kHz}, ...], "allowed": [list, ...]};
+    no entry = the probe's caps on every tick, Cpus_allowed_list 4-7 (taskset f0)."""
+    p = os.path.join(STATE, "cpu_runs.json")
+    q = json.load(open(p)) if os.path.exists(p) else []
+    run = q.pop(0) if q else {}
+    json.dump(q, open(p, "w"))
+    return run
+
+
 def engine(cmd):
     sched = os.path.join(STATE, "schedule.json")
     q = json.load(open(sched))
     d = q.pop(0) if q else 20.0
     json.dump(q, open(sched, "w"))
+    cpu = cpu_launch() if "CPUPOLICY" in cmd else None
+    if cpu is not None:
+        for name, hw, cpus in POLICIES:
+            print("CPUPOLICY %%s %%d %%s" %% (name, hw, cpus))
     # the sampler's reads, only for the fields the runner's grep asks for
     # (status order: VmHWM before VmRSS); VmHWM rises 600000 -> 640000 kB
-    for hwm in (600000, 610000, 640000):
+    for k, hwm in enumerate((600000, 610000, 640000)):
         if "VmHWM" in cmd:
             print("VmHWM:\\t  %%d kB" %% hwm)
         if "VmRSS" in cmd:
             print("VmRSS:\\t  520000 kB")
+        if "Cpus_allowed_list" in cmd:
+            allowed = (cpu or {}).get("allowed") or ["4-7"]
+            print("Cpus_allowed_list:\\t" + allowed[min(k, len(allowed) - 1)])
+        if cpu is not None:
+            ticks = cpu.get("ticks") or [{}]
+            tick = dict(probe_caps(), **ticks[min(k, len(ticks) - 1)])
+            print("CPUMAX " + " ".join(str(tick.get(name, hw)) for name, hw, _ in POLICIES))
     print("===ENGINE_OUTPUT===")
     if "./llama-cli" in cmd:
         print("[ Prompt: 200.0 t/s | Generation: %%s t/s ]" %% d)
@@ -140,6 +176,12 @@ def shell(cmd):
         return 0
     if cmd == "settings get global stay_on_while_plugged_in":
         print("0")
+        return 0
+    if "CPUFREQ" in cmd and "===ENGINE_OUTPUT===" not in cmd:
+        # the runner's pre-launch cap probe: name, hardware maximum, cap, CPUs
+        caps = probe_caps()
+        for name, hw, cpus in POLICIES:
+            print("CPUFREQ %%s %%d %%d %%s" %% (name, hw, caps.get(name, hw), cpus))
         return 0
     if "===ENGINE_OUTPUT===" in cmd:
         with open(os.path.join(STATE, "engine_calls"), "a") as fh:
@@ -268,7 +310,7 @@ def main():
     env = dict(os.environ,
                PATH=bin_dir + os.pathsep + os.environ.get("PATH", ""),
                BENCH_ANDROID_SERIAL="FAKESELF", BENCH_RAW_ROOT=raw_root,
-               COOLDOWN="0", THERMAL_WAIT="5", GATE_COOLDOWN="0",
+               COOLDOWN="0", THERMAL_WAIT="5", GATE_COOLDOWN="0", CPUCAP_WAIT="1",
                BENCH_TEST_LOCK_DIR=tmp)
     env.pop("ROUNDS", None)  # inherited round mode must not alter legacy fixtures
     env.pop("BENCH_ROUND_WAKEFULNESS", None)  # nor an inherited sitting-mode screen state
@@ -677,6 +719,102 @@ def main():
     for flag in ("drop_probe", "drop_engine"):
         if os.path.exists(os.path.join(state, flag)):
             os.remove(os.path.join(state, flag))
+
+    # --- campaign G: no CPU frequency cap (cpu-cap-rule). Every policy's
+    # scaling_max_freq stays at its cpuinfo_max_freq through the run: no flag, and
+    # the record carries each policy's lowest read beside its hardware maximum.
+    cells_g = os.path.join(tmp, "g.cells")
+    with open(cells_g, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=2 file={gguf_model}\n")
+    schedule([20.0, 20.4])
+    env["CAMPAIGN"] = "selftest-g"
+    print("--- campaign G (no CPU cap: no flag, the caps recorded)")
+    rc = run_campaign(env, cells_g)
+    ok(rc == 0, f"campaign G exits 0 (got {rc})")
+    out_g = os.path.join(raw_root, "selftest-g", "app-path-android")
+    lla_g = records(out_g, "llama.cpp_")
+    uncapped = {"policy0": {"min": 1704, "hw": 1704, "cpus": "0-3"},
+                "policy4": {"min": 2367, "hw": 2367, "cpus": "4-7"},
+                "policy8": {"min": 2914, "hw": 2914, "cpus": "8"}}
+    ok(len(lla_g) == 2 and all(r["conditions"].get("cpuMaxFreqMHz") == uncapped
+                               and "protocolFlags" not in r["conditions"] for _, r in lla_g),
+       f"uncapped runs: cpuMaxFreqMHz = every policy's min at its hw maximum, no protocolFlags "
+       f"(got {[(r['conditions'].get('cpuMaxFreqMHz'), r['conditions'].get('protocolFlags')) for _, r in lla_g]})")
+    ok(not os.path.exists(os.path.join(out_g, "THERMAL_GATE.txt")), "no cap line in THERMAL_GATE.txt")
+
+    # --- campaign H: the charging Pixel 8a of 2026-10-07 (policy4 = the A715 cores the
+    # llama.cpp arm runs on, 2367 -> 1418 MHz 20-30 s into a run, thermal status 0).
+    # Launch 2 is capped on policy4: flagged cpu-capped, its record and rate kept, the
+    # campaign not failed; launch 3 is capped on policy0 only, cores the engine was not
+    # allowed on: no flag. Then build_summary and arm_row: the capped run is a row
+    # (cpu_capped true) outside the pool. H2: a launch that starts capped waits
+    # CPUCAP_WAIT s, runs anyway and carries cpu-capped-at-start beside cpu-capped.
+    sum_root = os.path.join(tmp, "sumroot")
+    cells_h = os.path.join(tmp, "h.cells")
+    with open(cells_h, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=3 file={gguf_model}\n")
+    schedule([20.0, 15.0, 19.5])
+    json.dump([{}, {"ticks": [{}, {"policy4": 1418000}, {"policy4": 1572000}]},
+               {"ticks": [{}, {"policy0": 1425000}, {}]}], open(os.path.join(state, "cpu_runs.json"), "w"))
+    env_h = dict(env, CAMPAIGN="selftest-h", BENCH_RAW_ROOT=os.path.join(sum_root, "results", "raw"))
+    print("--- campaign H (policy4 capped in run 2, policy0 in run 3 -> one cpu-capped run, out of arm_row's pool)")
+    rc = run_campaign(env_h, cells_h)
+    ok(rc == 0, f"campaign H exits 0: a capped run is not a failed run (got {rc})")
+    out_h = os.path.join(sum_root, "results", "raw", "selftest-h", "app-path-android")
+    lla_h = records(out_h, "llama.cpp_")
+    flags_h = [r["conditions"].get("protocolFlags") for _, r in lla_h]
+    ok(flags_h == [None, ["cpu-capped"], None],
+       f"only the run capped on the engine's cores is flagged cpu-capped (got {flags_h})")
+    ok(len(lla_h) == 3
+       and lla_h[1][1]["conditions"].get("cpuMaxFreqMHz", {}).get("policy4") == {"min": 1418, "hw": 2367, "cpus": "4-7"}
+       and lla_h[2][1]["conditions"].get("cpuMaxFreqMHz", {}).get("policy0") == {"min": 1425, "hw": 1704, "cpus": "0-3"}
+       and lla_h[1][1]["metrics"]["decodeTokensPerSecond"] == 15.0,
+       "the capped run keeps its record and rate; each run records its policies' lowest cap")
+    gate_h = os.path.join(out_h, "THERMAL_GATE.txt")
+    gate_h = open(gate_h).read().splitlines() if os.path.exists(gate_h) else []
+    ok(len(gate_h) == 1 and gate_h[0].startswith("cpu-capped llama.cpp_fake_gguf_short-chat_")
+       and gate_h[0].endswith("policy4 min 1418/2367 MHz (cpus 4-7)")
+       and not os.path.exists(os.path.join(out_h, "FAILURES.txt")),
+       f"one THERMAL_GATE.txt line for the capped run, nothing in FAILURES.txt: {gate_h}")
+    with open(os.path.join(state, "cpu_probe.json"), "w") as fh:
+        json.dump({"policy4": 2130000}, fh)
+    cells_h2 = os.path.join(tmp, "h2.cells")
+    with open(cells_h2, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=1 file={gguf_model}\n")
+    schedule([4.6])
+    env_h2 = dict(env_h, CAMPAIGN="selftest-h2")
+    print("--- campaign H2 (the cap holds through CPUCAP_WAIT=1 s: run anyway, cpu-capped-at-start)")
+    rc = run_campaign(env_h2, cells_h2)
+    os.remove(os.path.join(state, "cpu_probe.json"))
+    ok(rc == 0, f"campaign H2 exits 0 (got {rc})")
+    out_h2 = os.path.join(sum_root, "results", "raw", "selftest-h2", "app-path-android")
+    lla_h2 = records(out_h2, "llama.cpp_")
+    gate_h2 = os.path.join(out_h2, "THERMAL_GATE.txt")
+    gate_h2 = open(gate_h2).read() if os.path.exists(gate_h2) else ""
+    ok(len(lla_h2) == 1 and all(r["conditions"].get("protocolFlags") == ["cpu-capped", "cpu-capped-at-start"]
+                                for _, r in lla_h2)
+       and "cpu cap gate timeout after 1s" in gate_h2 and "ran anyway: policy4 2130/2367 MHz" in gate_h2,
+       f"a launch that starts capped waits CPUCAP_WAIT, runs, carries both flags: "
+       f"{[r['conditions'].get('protocolFlags') for _, r in lla_h2]} {gate_h2.splitlines()[:1]}")
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    from unittest.mock import patch
+    import build_summary
+    from render_leaderboard import arm_row
+    with patch.object(build_summary, "ROOT", sum_root), \
+         patch.object(build_summary, "OUT", os.path.join(sum_root, "summary")):
+        os.makedirs(build_summary.OUT, exist_ok=True)
+        path, _ = build_summary.build_device()
+    rows_h = [r for r in csv.DictReader(open(path)) if r["campaign"] == "results/raw/selftest-h"]
+    got_h = [(r.get("cpu_capped"), r.get("cpu_max_freq")) for r in rows_h]
+    ok(got_h == [("false", "p0 1704/1704 p4 2367/2367 p8 2914/2914"),
+                 ("true", "p0 1704/1704 p4 1418/2367 p8 2914/2914"),
+                 ("false", "p0 1425/1704 p4 2367/2367 p8 2914/2914")],
+       f"summary: cpu_capped false / true / false, cpu_max_freq min/hw per policy (got {got_h})")
+    a = arm_row(rows_h)
+    got_a = (a["cold_n"], a["cold_median"], a.get("cpu_capped_n"), a.get("cpu_read_n"))
+    ok(got_a == (2, 19.75, 1, 3),
+       f"arm_row: the capped run is out of the pool, counted (cold_n, cold_median, cpu_capped_n, "
+       f"cpu_read_n = {got_a})")
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")

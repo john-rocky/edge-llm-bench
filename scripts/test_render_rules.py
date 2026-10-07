@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Device-free checks of the text-check-rule on the summary -> arm_row -> dashboard path
-(CI: leaderboard-check).
+"""Device-free checks of the text-check-rule and the cpu-cap-rule on the summary -> arm_row ->
+dashboard path (CI: leaderboard-check).
 
 A run whose decoded text failed the Android runner's text check (record
 conditions.textCheck status FAIL) stays a row of results/summary/device-runs.csv — column
 text_check — and pools into no number: render_leaderboard.arm_row drops it the way it drops
 a firstEver run, and render_dashboard renders a cell left without a headline for that
-reason as "text-fail" with the reason, never the rate (methodology/fairness-rules.md).
+reason as "text-fail" with the reason, never the rate (methodology/fairness-rules.md). A run
+during which the phone capped a CPU the engine ran on (record protocolFlags cpu-capped; column
+cpu_capped) is kept out the same way, and a cell left without a headline for that reason renders
+as "cpu-capped": no valid run, with the count.
 
 Fixtures live in temp dirs; results/ is neither read nor written.
 
@@ -37,6 +40,8 @@ FIELDS = ["source", "campaign", "platform", "timestamp", "runtime", "schema_vers
           "energy_j_per_tok", "thermal_initial", "thermal_final", "battery_state", "cold_run",
           "first_ever", "context_tokens", "device", "os_version", "mem_footprint_peak_mb",
           "mem_resident_peak_mb", "text_check"]
+# appended after text_check on 2026-10-07 (cpu-cap-rule)
+CPU_FIELDS = ["cpu_capped", "cpu_max_freq"]
 
 
 def setUpModule():
@@ -148,8 +153,8 @@ class SummaryColumn(unittest.TestCase):
                 fh.seek(0)
                 header = next(csv.reader(fh))
         self.assertEqual(n, 4)
-        self.assertEqual(header[-1], "text_check")   # appended: every earlier column keeps its place
-        self.assertEqual(header[:-1], FIELDS[:-1])
+        # appended: every earlier column keeps its place (text_check, then the CPU cap pair)
+        self.assertEqual(header, FIELDS + CPU_FIELDS)
         by_name = {os.path.basename(r["source"]): r["text_check"] for r in got}
         self.assertEqual(by_name, {"pass.json": "PASS",
                                    "fail.json": "FAIL:text-empty-or-degenerate,text-off-task-screen",
@@ -163,21 +168,22 @@ class Dashboard(unittest.TestCase):
              "android litert-lm org/other long-context-1024-gen256 backend=gpu context-tokens=2048 "
              "exclude=fixture-reason\n")
 
-    def render(self):
+    def render(self, extra_cells="", extra_rows=()):
         rows = (session([25.7, 25.5, 26.0], [25.7, 26.1, 26.0], [OFF] * 3)
                 + session([30.0, 30.0, 10.0], [31.0, 31.0, 9.0], ["PASS", "PASS", OFF], runtime="litert-lm-cpu")
                 + [row(19.4, True, "", False, "llama.cpp", "org/gguf", m) for m in (40, 41, 42)]
-                + session([5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [OFF] * 3, model_id="org/other"))
+                + session([5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [OFF] * 3, model_id="org/other")
+                + list(extra_rows))
         tmp = tempfile.TemporaryDirectory(prefix="render-rules-dashboard-")
         self.addCleanup(tmp.cleanup)
         summary = os.path.join(tmp.name, "device-runs.csv")
         with open(summary, "w", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=FIELDS)
+            w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS)
             w.writeheader()
             w.writerows(rows)
         cells = os.path.join(tmp.name, "fixture.cells")
         with open(cells, "w") as fh:
-            fh.write(self.CELLS)
+            fh.write(self.CELLS + extra_cells)
         with patch.object(render_dashboard, "SUMMARY_CSV", summary), \
              patch.object(render_dashboard, "ROOT", tmp.name), \
              patch.object(render_dashboard_html, "SUMMARY_CSV", summary):
@@ -212,13 +218,50 @@ class Dashboard(unittest.TestCase):
         self.assertEqual({(h["arm"], h["model_id"]): h["text_fail"] for h in history},
                          {("litert-lm-cpu", "org/model"): "2/5", ("llama.cpp", "org/gguf"): ""})
 
+    def test_every_run_cpu_capped_is_no_valid_run(self):
+        # cpu-cap-rule, record -> summary column -> arm_row -> dashboard, in the shape of the
+        # 2026-10-07 Pixel 8a: llama.cpp on the A715 cores (taskset f0), policy4 capped from
+        # 2367 to 1418 MHz in every run of the session -> no valid run, never the rate
+        record = {"conditions": {"cpuMaxFreqMHz": {"policy0": {"min": 1704, "hw": 1704, "cpus": "0-3"},
+                                                    "policy4": {"min": 1418, "hw": 2367, "cpus": "4-7"}},
+                                 "protocolFlags": ["cpu-capped"]}}
+        self.assertEqual(build_summary.cpu_cap_of(record), ("true", "p0 1704/1704 p4 1418/2367"))
+        record["conditions"]["protocolFlags"] = []
+        # caps read, no flag (the runner found no policy of the engine's CPUs below hw)
+        self.assertEqual(build_summary.cpu_cap_of(record)[0], "false")
+        self.assertEqual(build_summary.cpu_cap_of({"conditions": {"exitCode": 0}}), ("", ""))   # not read
+        capped = [dict(row(v, True, "", False, "llama.cpp", "org/capped", m), cpu_capped="true",
+                       cpu_max_freq="p0 1704/1704 p4 1418/2367 p8 2914/2914")
+                  for m, v in ((50, 3.3), (51, 3.6), (52, 2.9))]
+        a = arm_row(capped)
+        self.assertEqual((a["cold_median"], a["n"], a["cpu_capped_n"], a["cpu_read_n"]), (None, 0, 3, 3))
+        self.assertIsNone(a["prefill"])              # no metric of a capped run survives
+        out, md, history, page = self.render(
+            "android llama.cpp org/capped long-context-1024-gen256 context-tokens=2048\n", capped)
+        c = out[("llama.cpp", "org/capped")]
+        self.assertEqual((c["status"], c["reason"], c["decode_tps"], c["n"], c["cpu_capped"]),
+                         ("cpu-capped", "cpu-capped (3 of 3 runs)", None, 0, "3/3"))
+        self.assertEqual(c["campaign"], "results/raw/2026-10-06-fixture-android")   # the session stays the evidence
+        grid = [ln for ln in md.split("<details>")[0].splitlines()
+                if ln.startswith("| **") and "no valid run" in ln]
+        self.assertEqual(len(grid), 1)
+        self.assertIn("— (no valid run: cpu-capped (3 of 3 runs))", grid[0])
+        self.assertFalse(any(v in grid[0] for v in ("3.3", "3.6", "2.9")))   # the rate never shows
+        self.assertIn("2 of 5 cells measured, 1 excluded with a reason, 1 failed the text check, "
+                      "1 had no valid run (cpu-capped)", md)
+        self.assertIn("no valid run: cpu-capped (3 of 3 runs)", page)
+        self.assertNotIn(("llama.cpp", "org/capped"), {(h["arm"], h["model_id"]) for h in history})
+        # the cells without a capped run read as before
+        self.assertEqual(out[("litert-lm-gpu", "org/model")]["status"], "text-fail")
+        self.assertEqual(out[("litert-lm-cpu", "org/model")]["cpu_capped"], "")
+
     def test_csv_carries_the_status_and_the_column(self):
         out, md, _, _ = self.render()
         with tempfile.TemporaryDirectory(prefix="render-rules-csv-") as tmp:
             render_dashboard.write_outputs(list(out.values()), md, os.path.join(tmp, "D.md"), tmp)
             with open(os.path.join(tmp, "dashboard-v1.csv"), newline="") as fh:
                 got = {(r["arm"], r["model_id"]): r for r in csv.DictReader(fh)}
-        self.assertEqual(render_dashboard.CSV_FIELDS[-1], "text_fail")
+        self.assertEqual(render_dashboard.CSV_FIELDS[-2:], ["text_fail", "cpu_capped"])
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["status"], "text-fail")
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["decode_tps"], "")
         self.assertEqual(got[("litert-lm-cpu", "org/model")]["text_fail"], "2/5")

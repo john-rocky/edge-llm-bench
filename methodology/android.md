@@ -61,6 +61,15 @@ v1 measures the same engine through `litert_lm_main`.
   nominal gate works unchanged; the raw int rides along in
   `conditions.thermalRawStatus`. Gate: wait for status 0 up to `THERMAL_WAIT`
   (default 600 s), run anyway after timeout and record it (`THERMAL_GATE.txt`).
+- CPU frequency cap (cpu-cap-rule, `fairness-rules.md` §13): status 0 does not mean
+  the clock is free — a charging Pixel 8a held cpu4-7 at 1418-2130 MHz of 2367 during
+  runs with the status at 0 (2026-10-07). Before each launch `run_cell.py` waits up to
+  `CPUCAP_WAIT` (default 300 s) for every cpufreq policy's `scaling_max_freq` to be back at
+  `cpuinfo_max_freq` (`cpu-capped-at-start` and a `THERMAL_GATE.txt` line when it is not);
+  during the launch the sampler reads every policy's `scaling_max_freq` with the RSS, the
+  record keeps each policy's lowest read (`conditions.cpuMaxFreqMHz`, min / hw / cpus in
+  MHz), and a run during which a policy of the engine's CPUs sat below its hardware
+  maximum is flagged `cpu-capped` and pools into no number.
 - Battery level/state from `dumpsys battery` (disclose-hw-state).
 - Screen: benches run with USB attached. The screen state is read from the
   phone before every launch (`dumpsys power`, `mWakefulness`) and stamped in
