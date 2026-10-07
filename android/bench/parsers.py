@@ -529,6 +529,34 @@ EXECUTORCH_RECIPES = {
         "args": {"quantize": "8da4w+emb8", "no_audio": True, "no_vision": True},
         "defaults": {"group_size": 128, "dtype": "float32", "quantize_kv_cache": False},
     },
+    # the Qwen 3 yaml above lowered to another delegate by export_llm overrides
+    # (scripts/executorch/export_qwen3.py --set; the recipe.json's export_args are what "args"
+    # checks, None = the key is not overridden, the yaml's value stands). export_llama_lib takes
+    # the xnnpack branch first, so xnnpack is turned off.
+    # MLX: no handler for 8da4w's dynamic activation quantization (that export stops at
+    # "Missing out variants: torchao::choose_qparams_affine ..."), so 4w = torchao
+    # IntxWeightOnlyConfig int4 symmetric PerGroup(128) (the 4w default is 256), hqq_scale_only,
+    # every Linear; the yaml's embedding_quantize 8,0 stays outside the delegate
+    "et1.5.1-mlx-4w-g128-emb8": {
+        "runner": "llama_main", "executorch": "1.5.1",
+        "label": ("4w: int4 symmetric weight-only, group 128, HQQ scale-only (every Linear incl. "
+                  "lm_head), fp32 activations; embedding int8 per-row (embedding_byte, outside the "
+                  "delegate); fp32 compute and KV cache; MLX delegate; own export, ExecuTorch 1.5.1"),
+        "args": {"backend.xnnpack.enabled": False, "backend.mlx.enabled": True,
+                 "quantization.qmode": "4w", "quantization.group_size": 128,
+                 "quantization.embedding_quantize": None, "model.dtype_override": None},
+    },
+    # Vulkan takes the yaml's 8da4w as it is (et_vk.linear_dq8ca_q4gsw in the export log)
+    "et1.5.1-vulkan-8da4w-g128-emb8": {
+        "runner": "llama_main", "executorch": "1.5.1",
+        "label": ("8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, "
+                  "group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row "
+                  "(embedding_byte, outside the delegate); fp32 compute and KV cache; Vulkan delegate; "
+                  "own export, ExecuTorch 1.5.1"),
+        "args": {"backend.xnnpack.enabled": False, "backend.vulkan.enabled": True,
+                 "quantization.qmode": None, "quantization.group_size": None,
+                 "quantization.embedding_quantize": None, "model.dtype_override": None},
+    },
 }
 EXECUTORCH_SAMPLER = "greedy (--temperature 0: argmax)"
 RE_ET_THREADS = re.compile(r"(?:Resetting threadpool with num threads =|Setting threadpool to) (\d+)")

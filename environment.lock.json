@@ -103,6 +103,19 @@
             "sha256": "840299c46c0b3305972498f698111aea688a5b95c12b5e4da844715f536cd11f",
             "built": "2026-10-07, cmake-out/examples/models/gemma4-r3/gemma4_e2e_runner"
           }
+        },
+        "backends": {
+          "mlx": {
+            "build": "scripts/executorch/build_llama_main_mac_mlx.sh: cmake --preset mlx-release -B cmake-out-mlx (the MLX delegate; MLX v0.32.2 = backends/mlx/third-party/mlx 1f8e74e3 with the delegate's patches, MLX_METAL_JIT=ON; the optimized, quantized and LLM kernels; no XNNPACK; ET_LOG at level Error), then examples/models/llama with the llama-mlx preset's cache (Release, EXECUTORCH_BUILD_MLX=ON); mlx.metallib sits beside llama_main (MLX loads the colocated metallib first)",
+            "binaries": {
+              "llama_main": {
+                "backend": "mlx",
+                "sha256": "4c2eac5a46ee6d81e943d79add7c40f00050609688e8ee0a415b7f69f923179d",
+                "metallib_sha256": "e957ab5cbd6be207a125b441f57050e0bf2c5f9a24d6be9b85fbe0f230c9ea7a",
+                "built": "2026-10-08, cmake-out-mlx/examples/models/llama/llama_main"
+              }
+            }
+          }
         }
       },
       "android": {

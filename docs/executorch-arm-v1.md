@@ -12,8 +12,9 @@ must name the same exporter; a cells row never names it.
 The models are **own exports**: the ExecuTorch source tree's own exporters and example
 recipes, run by us. They are not published ExecuTorch artifacts, and the arm never mixes
 them with published `.pte` files. The arm id is `executorch-<backend>` on every platform
-(`executorch-xnnpack`; `vulkan` / `qnn` on Android and `mlx` / `metal` / `coreml` on the Mac
-are reserved names, nothing runs on them yet).
+(`executorch-xnnpack`; `executorch-mlx` on the Mac has cells since 2026-10-08, see "GPU
+delegates on the Mac"; `vulkan` / `qnn` on Android and `metal` / `coreml` on the Mac are reserved
+names, nothing runs on them yet).
 
 Cells: `matrices/dashboard-executorch-v1-android.cells`, `matrices/dashboard-executorch-v1-mac.cells`
 (the dashboard model set: Qwen3 0.6B / 1.7B / 4B, Gemma 4 E2B / E4B × short-chat and the 1K text
@@ -68,6 +69,8 @@ task). Runners: `android/bench/run_cell.py --runtime executorch` (through
 |---|---|---|
 | `et1.5.1-xnnpack-8da4w-g128-emb8` | `llama_main` | 8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1 |
 | `et1.5.1-gemma4-xnnpack-8da4w-g128-emb8` | `gemma4_e2e_runner` | 8da4w+emb8 (export_gemma4.py): int8 dynamic activations x int4 weights, group 128, HQQ scale-only on the Linear layers (a Linear whose input width is not a multiple of 128 stays unquantized); embeddings int8 per-row; fp32 compute and KV cache; text decoder only; own export, ExecuTorch 1.5.1 |
+| `et1.5.1-mlx-4w-g128-emb8` | `llama_main` (MLX build) | 4w: int4 symmetric weight-only, group 128, HQQ scale-only (every Linear incl. lm_head), fp32 activations; embedding int8 per-row (embedding_byte, outside the delegate); fp32 compute and KV cache; MLX delegate; own export, ExecuTorch 1.5.1 |
+| `et1.5.1-vulkan-8da4w-g128-emb8` | `llama_main` (Vulkan build) | 8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte, outside the delegate); fp32 compute and KV cache; Vulkan delegate; own export, ExecuTorch 1.5.1 |
 
 The labels state what the export code and its recipe.json establish (`parsers.EXECUTORCH_RECIPES`
 lists the recipe.json facts each label is checked against). Qwen 3: the yaml sets no
@@ -83,6 +86,8 @@ Staged exports read for this page (the rest: the recipe.json beside each `.pte` 
 |---|---|---|
 | `own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048` | `2517e337fbe6da0850a9bc1dfbe015690def3aedc362534429744735e9e110a3` | Qwen/Qwen3-0.6B `c1899de289a04d12100db370d81485cdf75e47ca` |
 | `own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048` | `f1db0147579216e39dad7c747ebc9331fb44b9165330805ee2bb12a1a213f384` | google/gemma-4-E2B-it `3e22461f65e89153144f8adb70e3b8c2cc9845a7` |
+| `own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048` | `4d1777e5954e46fd129d7374db11797499b43395ede79dba83325d3f7930bd03` | Qwen/Qwen3-0.6B `c1899de289a04d12100db370d81485cdf75e47ca` |
+| `own-export/Qwen3-0.6B-ET1.5.1-vulkan-8da4w-emb8-ctx2048` | `3b4bc033998c254ea797c0919e218509fec9a4bb989ff0d87d40263df0d1a0c2` | Qwen/Qwen3-0.6B `c1899de289a04d12100db370d81485cdf75e47ca` |
 
 ## Record fields and definitions
 
@@ -125,6 +130,49 @@ Clock: std::chrono::steady_clock; the report prints ms with one decimal under 1 
 | `conditions.protocolFlags` | `echo-mismatch`, `stats-rate-mismatch` (a printed rate the recomputation does not reproduce), `prompt-token-count-mismatch` (llama_main against the host tokenizer's count), `output-budget-exceeded`, `context-budget-exceeded`, `allocation-witness-mismatch`, and Android's `cpu-capped` |
 | `provenance.statsLine` / `statsReport` | the runner's statistics verbatim |
 | `provenance.recipe`, `recipeSha256`, `recipeAlias`, `promptFile`, `promptSha256`, `tokenizerSha256` | the inputs of the run |
+
+## GPU delegates on the Mac (round r7-gpu, 2026-10-08)
+
+The same Qwen 3 yaml is lowered to another delegate by export_llm overrides:
+`scripts/executorch/export_qwen3.py --set KEY=VALUE` appends them after the yaml and the
+recipe.json keeps them (`config_overrides` verbatim, `export_args` typed; the cells' `recipe=`
+alias checks `export_args`, a key it maps to None must not be overridden). `export_llama_lib`
+takes its XNNPACK branch first, so every such export turns `backend.xnnpack.enabled` off.
+Identity is what the artifact and the binary carry, not a log line: the `.pte`'s delegate
+(`scripts/executorch/pte_inspect.py`: delegate id and call count, the operators left outside)
+and the backend ids compiled into the runner.
+
+- **MLX** (arm `executorch-mlx`, Apple GPU). Export: `--set backend.xnnpack.enabled=false --set
+  ++backend.mlx.enabled=true --set quantization.qmode=4w --set ++quantization.group_size=128`.
+  The yaml's 8da4w does not lower: the MLX partitioner has no handler for its dynamic
+  activation quantization (`torchao.choose_qparams_affine` / `quantize_affine` /
+  `dequantize_affine`, 197 each on Qwen3 0.6B) and `to_executorch` stops at `Missing out
+  variants: {'torchao::quantize_affine', 'torchao::choose_qparams_affine',
+  'torchao::dequantize_affine'}`. So the MLX recipe is weight-only int4 (`4w` = torchao
+  `IntxWeightOnlyConfig`, symmetric, `hqq_scale_only`, every Linear); group 128 is set because
+  `4w` defaults to 256. The `.pte`'s `forward` is one `MLXBackend` call; the yaml's embedding
+  quantization (`embedding_byte`) stays outside it on the CPU kernels. Runner:
+  `scripts/executorch/build_llama_main_mac_mlx.sh` (`cmake --preset mlx-release` into
+  `cmake-out-mlx`, then `examples/models/llama` with the `llama-mlx` preset's cache; the MLX
+  submodule at the tag's pin 1f8e74e3 = MLX v0.32.2, built by the delegate with
+  `MLX_METAL_JIT=ON`), copied with `mlx.metallib` to `.build/executorch-v1.5.1-mlx/`; its
+  sha256 is `arms.executorch.mac.backends.mlx` in `environment.lock.json`. The binary carries the
+  `MLXBackend` id and no XNNPACK. With the JIT, a kernel outside the small metallib is compiled
+  from source the first time a process uses it, inside run 1 (cold). The numbers are the same
+  `llama_main` statistics (`PyTorchObserver`, the definitions above) and the same parser.
+- **Metal** (`executorch-metal`): no route for Qwen 3 in v1.5.1. `export_llm` has no Metal
+  backend (`backend.metal` stops at `ConfigKeyError: Key 'metal' not in 'BackendConfig'`); the
+  tag's Metal LLM exporters are model-specific (`examples/models/qwen3_5_moe`, `voxtral*`,
+  `whisper`, `parakeet`, …) or optimum-executorch's `--recipe metal`; and `llama_main` never
+  links `metal_backend` (`examples/models/llama/CMakeLists.txt`; the Makefile has no
+  `llama-metal`).
+- **Vulkan** (`executorch-vulkan`, Android): exported on the Mac with `--set
+  backend.xnnpack.enabled=false --set ++backend.vulkan.enabled=true`, the yaml's 8da4w as it
+  is (the Linear layers become `et_vk.linear_dq8ca_q4gsw`). The `.pte`'s `forward` is one
+  `VulkanBackend` call with `embedding_byte` outside. It runs on the Android Vulkan build
+  (`android/bin/executorch-v1.5.1-vulkan/`), not on the Mac.
+- Gemma 4: `export_gemma4.py` lowers to XNNPACK only, so the Mac MLX rows of Gemma 4 are
+  excluded (`gemma4-exporter-has-no-mlx-path`).
 
 ## Inputs and staging
 

@@ -32,3 +32,26 @@ mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-conte
 # --- Gemma 4 E4B ---
 mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 runs=4 exclude=gemma4-runner-has-no-warm-regime
 mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-runner-has-no-warm-regime
+
+# --- MLX delegate (Apple GPU), added 2026-10-08 (round r7-gpu; docs/executorch-arm-v1.md "GPU
+# delegates on the Mac") --- arm executorch-mlx. The Qwen 3 yaml above lowered to the MLX
+# delegate by export_llm overrides (scripts/executorch/export_qwen3.py --set
+# backend.xnnpack.enabled=false ++backend.mlx.enabled=true). MLX takes no 8da4w (no handler for
+# its dynamic activation quantization; that export stops), so the weights are 4w group 128
+# (recipe=et1.5.1-mlx-4w-g128-emb8 states it): another recipe than the XNNPACK rows. Runner:
+# llama_main built with the mlx-release preset (scripts/executorch/build_llama_main_mac_mlx.sh),
+# copied with mlx.metallib to .build/executorch-v1.5.1-mlx/. Only the Qwen3-0.6B export exists
+# so far; the 1.7B / 4B files are the names the same export gives (not staged = skipped).
+# Gemma 4: export_gemma4.py lowers to XNNPACK only (the tag's MLX route for Gemma 4 is
+# backends/mlx/examples/llm export_llm_hf with its own runner), so those rows stay excluded;
+# their file= / recipe= name nothing that exists.
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 runs=4
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 runs=4
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 runs=4 exclude=gemma4-exporter-has-no-mlx-path
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 context-tokens=2048 runs=4 exclude=gemma4-exporter-has-no-mlx-path
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 runs=4
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 runs=4 exclude=gemma4-exporter-has-no-mlx-path
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-exporter-has-no-mlx-path
