@@ -762,17 +762,11 @@ llama-bench compiles at load as well but times after its own warmup run, so
 its launches are not labelled. The NPU keeps no compile cache.
 
 LiteRT-LM on the NPU. One model has a bundle: this repo's own export of Qwen3
-0.6B for SM8850 (`model_qualcomm_SM8850.litertlm`, side-loaded by local path).
-The row carries three disclosures: the bundle is an own export (no SM8850
-bundle of these models is published); the runtime is a source build of
-`litert_lm_advanced_main` (LiteRT-LM main of 2026-08-21) with the Qualcomm
-dispatch and QNN libraries deployed beside it (QAIRT 2.47), because a v0.16.1
-binary fails the dispatch library's runtime-version check; and it runs with
-`--use_hw_cache_update_for_npu=false`, without which this bundle's output is
-broken (google-ai-edge/litert-torch#1290). `run_cell.py` does not drive that
-runtime yet and refuses `backend=npu` for litert-lm, so the row is listed and
-shows as not yet measured. The other four models have no SM8850 bundle,
-published or exported: `exclude=no-sm8850-npu-bundle-published-or-exported`.
+0.6B for SM8850, run on this repo's own build of the runtime with the hardware
+KV-cache update off — three disclosures every record of the row carries
+(subsection "LiteRT-LM on the NPU" below). The other four models have no
+SM8850 bundle, published or exported:
+`exclude=no-sm8850-npu-bundle-published-or-exported`.
 
 Cells, all Galaxy S26 only (the Pixel 8a has neither a Hexagon NPU nor an
 Adreno GPU), each starting with the weekly session anchor (the llama.cpp CPU
@@ -780,9 +774,99 @@ arm on Qwen3 0.6B): `matrices/dashboard-npu-v1-android-s26.cells` (short-chat
 and `long-context-1024-gen256` at `context-tokens=2048`, five models × npu /
 gpu, the weekly files' cooldowns), `matrices/dashboard-npu-protocol1024-v1-android-s26.cells`
 (`native-benchmark-1024x256`, five models × npu / gpu) and
-`matrices/dashboard-npu-litert-v1-android-s26.cells` (the LiteRT-LM NPU row and
-the four excluded ones). They are not in the weekly job's schedule; putting
-them there is a separate decision.
+`matrices/dashboard-npu-litert-v1-android-s26.cells` (the LiteRT-LM NPU row:
+short-chat on Qwen3 0.6B; its 1K row and the other models' rows excluded). They
+are not in the weekly job's schedule; putting them there is a separate
+decision.
+
+### LiteRT-LM on the NPU (arm `litert-lm-npu`, runner wired 2026-10-08)
+
+Bundle. `model_qualcomm_SM8850.litertlm`, 783,864,161 bytes, sha256
+`f8909326639011c6123126c06c4f7d205857b1915c8b49de6844522fe5d211f2`,
+side-loaded by local path: litert-torch's `npu_export` pipeline of 2026-08-21
+on `Qwen/Qwen3-0.6B` — stages 1–3 on the Mac (export with int8 weights,
+`dynamic_wi8_afp32`; calibration on 3 prompts × 8 decode steps; static-range
+quantization with 16-bit activations), stage 4 compiled ahead of time for
+SM8850 in a Linux container (that compile's own log is not kept). Prefill signature 128 and a KV cache
+of 1,024 tokens, both fixed at export. Its metadata section is that day's
+static-range build's byte for byte; the same day's re-calibrated build (10
+prompts × 32 steps) is another file and not this row's. The quantizer's log
+also says "Forcing a16w4 per-tensor for Hadamard rotation FC ops"; whether
+this graph has such ops is unverified. No SM8850 bundle of these models is
+published. `model.quantization` names the export by its sha256
+(`android/bench/run_cell.py` `OWN_NPU_BUNDLES`: `npu_export` names every
+output `model_qualcomm_<SoC>.litertlm`, whatever the model and recipe, so the
+name says nothing); `conditions.contextTokens` is `aot-fixed-1024` (no
+`--max_num_tokens`: the bundle's cache is fixed). A file the table does not
+know keeps quantization `unrecorded` and `aot-fixed (cache length unrecorded)`.
+
+Runtime. A source build of `litert_lm_advanced_main` from a shallow clone of
+LiteRT-LM `main` on 2026-08-21 JST (main at or before `b12c62c7`: it carries
+`e3feda9e`, not `90f42140`), 39,908,888 bytes, md5
+`ca629242e622c3547a64ac6629f104cb`, with the Qualcomm dispatch library from
+the same build (its LiteRT revision is not recorded), the QNN libraries of
+QAIRT 2.47.0.260601 and the V81 skel beside it. The official v0.16.1 Android
+binary could not be paired with a dispatch library (the LiteRT v2.2.0 release
+`.so` fails its runtime-version check; 2026-09-08). On the phone the build sits
+flat in `/data/local/tmp/llmbench/engines/main-20260821-selfbuilt/` (the skel
+in `dsp/`; `android/README.md`, "Side builds"), and cells name it
+`engine-build=main-20260821-selfbuilt`. The witness reads the tool and six
+libs (`libLiteRtDispatch_Qualcomm.so`, `libGemmaModelConstraintProvider.so`,
+`libQnnHtp.so`, `libQnnSystem.so`, `libQnnHtpV81Stub.so`,
+`dsp/libQnnHtpV81Skel.so`) against `android/engine-pins.json` `litert-lm` →
+`main-20260821-selfbuilt`. That entry is written from the phone's files on the
+first device run (the binary has no host copy); until then the records stamp
+`unknown (…)`, and a sitting stops such a cell before it launches. Records
+carry `engineVersion` = that key, `engineArtifact` = the tool's sha256 and
+`conditions.engineBuild`.
+
+Command (`conditions.engineCommand`, whole):
+`LD_LIBRARY_PATH=<build> ADSP_LIBRARY_PATH="<build>/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"
+<build>/litert_lm_advanced_main --backend=npu --model_path=<bundle>
+--input_prompt_file=<prompt> --max_output_tokens=<budget> --async=false
+--benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0
+--use_hw_cache_update_for_npu=false --litert_dispatch_lib_dir=<build>`.
+`--benchmark` with no synthetic token counts keeps the real prompt and prints
+BenchmarkInfo; without it this binary prints no rate (LiteRT-LM `main`
+`runtime/engine/litert_lm_lib.cc`: the reply is printed whenever
+`benchmark_prefill_tokens` is 0, BenchmarkInfo only under `--benchmark`). The
+hardware KV-cache update is off: with it on, this bundle's output is broken on
+the S26 (google-ai-edge/litert-torch#1290). `conditions.hwCacheUpdateForNpu`
+is the engine's own echo of that setting. The other NPU switches keep their
+defaults.
+
+Registration lines. `conditions.backendRegistered` carries the engine's own
+lines: `Choose backend: npu`; the settings echo (`executor_settings: backend:
+NPU`, `use_hw_cache_update_for_npu`, `litert_dispatch_lib_dir`); the NPU
+accelerator's registration (`RegisterAccelerator: … name=NpuAccelerator`,
+`NPU accelerator registered.`); the dispatch library loaded; QNN's
+`BackendType`; each subgraph the dispatch delegate took (`Replacing … with
+delegate (DispatchDelegate) …`); the QNN contexts created; addresses read as
+`<addr>`. A launch counts as the arm's when it chose the npu backend,
+registered the NPU and the dispatch delegate took at least one subgraph — a
+bundle with nothing compiled for this NPU registers it and runs on XNNPACK.
+Anything less is flagged `backend-not-registered`: kept in raw, a failed
+launch (`FAILURES.txt`), pooled into no number. LiteRT logs "NPU accelerator
+could not be loaded and registered" for each environment after the first, on
+healthy runs too, so that warning is not read.
+
+Text check. The reply — after the engine's "Running single-turn conversation"
+line, up to BenchmarkInfo, the engine's log lines taken out, from `[thought]`
+on when the reply has a thinking channel — goes through the same text check as
+the 1K rows (text-check-rule). The LiteRT-LM CPU and GPU short-chat rows stay
+unchecked, as before.
+
+Memory and cache build. Memory is the host process's VmRSS / VmHWM; the NPU's
+buffers are outside them, and `rssBasis` says so. The first launch per device
+and bundle is labelled `firstEver` by LiteRT-LM's marker, as on the CPU and
+GPU; whether an AOT bundle builds anything on its first launch is for the
+first device run to show.
+
+Tasks. A prompt task on the bundle's own cache only: the runner and
+`scripts/validate_cells.py` refuse `context-tokens=`, `native-benchmark-*` and
+`endurance-*` on this arm. Short-chat on Qwen3 0.6B is the row; its 1K text
+task is `exclude=aot-cache-length-1024` (the prompt alone is 1,339 tokens on
+LiteRT-LM's Qwen3 0.6B, against a 1,024-token cache).
 
 ## Open questions for the LiteRT team
 

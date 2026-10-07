@@ -1,9 +1,9 @@
 # Android lane — adb-driven CLI benchmarks (Pixel 8a first)
 
-Engines with Android support: **LiteRT-LM** (cpu/gpu) and **llama.cpp** (cpu; on
-Snapdragon phones also npu and gpu, from the release's official Snapdragon asset —
-"Side builds" below). MLX and Core AI are Apple-only (n/a rows); Cactus is a
-phase-2 slot.
+Engines with Android support: **LiteRT-LM** (cpu/gpu; on the Galaxy S26 also npu,
+from this repo's own runtime build) and **llama.cpp** (cpu; on Snapdragon phones also
+npu and gpu, from the release's official Snapdragon asset) — "Side builds" below.
+MLX and Core AI are Apple-only (n/a rows); Cactus is a phase-2 slot.
 Measurement semantics and every disclosed difference from the Apple lane:
 `methodology/android.md`. Device notes: `devices/pixel-8a.md`.
 
@@ -59,7 +59,7 @@ adb shell chmod +x /data/local/tmp/llmbench/litert_lm_main /data/local/tmp/llmbe
 
 Models are HF-downloaded on the host and pushed on first use by the driver.
 
-## Side builds (llama.cpp on the NPU and the Adreno GPU)
+## Side builds (llama.cpp on the NPU and the Adreno GPU, LiteRT-LM on the NPU)
 
 The `llama.cpp-npu` / `llama.cpp-gpu` rows (cells `backend=npu|gpu
 engine-build=<tag>`) run llama.cpp's official Snapdragon release asset from a
@@ -87,6 +87,36 @@ build again into an emptied directory relabels the next one. The witness reads
 stamps `unknown`), and a cell whose `engines/<tag>` is not on the phone stops
 before any launch. Settings, device lines and disclosures:
 `docs/dashboard-cells-v1.md` "NPU and Android GPU rows".
+
+LiteRT-LM on the NPU (`litert-lm-npu`, cells `backend=npu engine-build=<tag>`)
+is a side build too: a LiteRT-LM runtime build with the Qualcomm dispatch and
+QNN libraries, flat in `/data/local/tmp/llmbench/engines/<tag>/`, the Hexagon
+skel in `dsp/`. `main-20260821-selfbuilt` is this repo's own build
+(`docs/dashboard-cells-v1.md` "LiteRT-LM on the NPU"); its binary has no host
+copy and sits on the Galaxy S26 in `/data/local/tmp/litertlm_npu/`, its
+libraries come from the same build's deploy directory (`$R` below):
+
+```bash
+E=/data/local/tmp/llmbench/engines/main-20260821-selfbuilt
+adb shell mkdir -p $E/dsp
+adb shell cp /data/local/tmp/litertlm_npu/litert_lm_advanced_main $E/
+adb shell chmod +x $E/litert_lm_advanced_main
+adb push $R/libLiteRtDispatch_Qualcomm.so $R/libGemmaModelConstraintProvider.so $E/
+adb push $R/qnn/aarch64-android/libQnnHtp.so $R/qnn/aarch64-android/libQnnSystem.so \
+    $R/qnn/aarch64-android/libQnnHtpV81Stub.so $E/
+adb push $R/qnn/hexagon-v81/libQnnHtpV81Skel.so $E/dsp/
+adb shell sha256sum $E/litert_lm_advanced_main $E/*.so $E/dsp/*.so
+#   -> android/engine-pins.json "litert-lm": {"main-20260821-selfbuilt": {
+#        "litert_lm_advanced_main_sha256": …, "so_files": {"libLiteRtDispatch_Qualcomm.so": …,
+#        …, "dsp/libQnnHtpV81Skel.so": …}}}
+```
+
+The runner sets `LD_LIBRARY_PATH=$E` and
+`ADSP_LIBRARY_PATH="$E/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"`
+and passes `--litert_dispatch_lib_dir=$E`; the witness reads
+`$E/litert_lm_advanced_main` and the libs its pin lists, under the names the
+pin gives them (`dsp/…` for the skel). Until the pin is written, the records
+stamp `unknown (…)` and a sitting stops the cell before it launches.
 
 ## Run
 

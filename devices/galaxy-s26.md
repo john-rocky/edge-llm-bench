@@ -36,11 +36,20 @@
   wrapper's settings; a launch counts only when the engine's own lines show
   the device. LiteRT-LM on the NPU (`litert-lm-npu`) needs a runtime built
   with the Qualcomm dispatch libraries and a bundle compiled for SM8850: this
-  repo has one, its own export of Qwen3 0.6B, run on its own runtime build
-  (not driven by the runner yet). The LiteRT-LM cpu/gpu rows are unchanged.
-  The NPU and GPU arms' memory columns read the host process only — the
-  HTP0 / OpenCL buffers sit outside VmRSS. Details, settings and the
-  disclosures: `docs/dashboard-cells-v1.md` "NPU and Android GPU rows".
+  repo has one, its own export of Qwen3 0.6B (KV cache fixed at 1,024
+  tokens), run on its own build of `litert_lm_advanced_main` (LiteRT-LM main
+  of 2026-08-21, QAIRT 2.47 libraries, V81 skel) with the hardware KV-cache
+  update off; since 2026-10-08 the runner drives it as a side build
+  (`main-20260821-selfbuilt`, flat in
+  `/data/local/tmp/llmbench/engines/main-20260821-selfbuilt/`, the skel in
+  `dsp/`), a launch counting only when the engine's lines show the NPU chosen,
+  registered and dispatched to. The binary itself has no host copy: on this
+  phone it is `/data/local/tmp/litertlm_npu/litert_lm_advanced_main`, which
+  the build's directory takes a copy of. The LiteRT-LM cpu/gpu rows are
+  unchanged. The NPU and GPU arms' memory columns read the host process only
+  — the HTP0 / OpenCL / NPU buffers sit outside VmRSS. Details, settings and
+  the disclosures: `docs/dashboard-cells-v1.md` "NPU and Android GPU rows" and
+  "LiteRT-LM on the NPU".
 - CPU affinity choice: **this device runs unmasked** (`BENCH_CPU_MASK=`,
   recorded per run as `conditions.cpuAffinity: none`). The lane's default
   `taskset f0` was tuned on the Pixel 8a's four contiguous mid cores; here it

@@ -47,6 +47,8 @@ OFF_TASK = %(off_task)r
 BENCH_HTP0 = %(bench_htp0)r
 # a side build's device lines per --device, the forms of the S26 smoke's -lv 4 launches
 SIDE_LINES = %(side_lines)r
+# the LiteRT-LM NPU build's lines before its reply (the forms of its S26 runs)
+NPU_LINES = %(npu_lines)r
 
 
 def mp(p):
@@ -93,6 +95,18 @@ def side_build_lines(cmd):
         if not any(f.endswith(".clbin") for f in os.listdir(d)):
             open(os.path.join(d, "0123456789abcdef.clbin"), "w").close()
     return SIDE_LINES[device] if lines is None else lines
+
+
+def npu_lines():
+    """The LiteRT-LM NPU build's lines for this launch: STATE/npu_lines.json (one list per
+    launch, consumed like schedule.json; null = the default) while the test scripts them,
+    else NPU_LINES."""
+    p = os.path.join(STATE, "npu_lines.json")
+    q = json.load(open(p)) if os.path.exists(p) else []
+    lines = q.pop(0) if q else None
+    if os.path.exists(p):
+        json.dump(q, open(p, "w"))
+    return NPU_LINES if lines is None else lines
 
 
 def side_chat_reply(cmd):
@@ -162,6 +176,30 @@ def engine(cmd):
             for line in side_build_lines(cmd) + side_chat_reply(cmd):
                 print(line)
         print("[ Prompt: 200.0 t/s | Generation: %%s t/s ]" %% d)
+    elif side and "/litert_lm_advanced_main " in cmd and "--backend=npu" in cmd:
+        # the LiteRT-LM NPU build with --benchmark on the real prompt, --async=false: its
+        # lines, the profile-summary warnings a benchmark launch logs before the reply (with
+        # their trace blocks), the reply in one piece, then BenchmarkInfo
+        reply = OFF_TASK if os.path.exists(os.path.join(STATE, "off_task")) else ON_TASK
+        for line in npu_lines():
+            print(line)
+        print("I0000 00:00:1787447197.907884   26280 litert_lm_lib.cc:868] Running single-turn conversation")
+        for stage, line_no in (("prefill", 572), ("decode", 786)):
+            print("W0000 00:00:1787447197.923067   26280 tasks.cc:%%d] Failed to get %%s profile summary: "
+                  "UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model"
+                  %% (line_no, stage))
+            print("=== Source Location Trace: ===")
+            print("./runtime/executor/llm_executor_base.h:233")
+            print("")
+        print("[thought] " + reply[:70] + "[/thought]")
+        print(reply[70:])
+        print("BenchmarkInfo:")
+        print("  Time to first token: 0.05 s")
+        print("    Prefill Turn 1: Processed 18 tokens in 9.1ms duration.")
+        print("      Prefill Speed: 1978.02 tokens/sec.")
+        print("    Decode Turn 1: Processed 128 tokens in 1.2s duration.")
+        print("      Decode Speed: %%s tokens/sec." %% d)
+        print("INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b8f206890, name=NpuAccelerator")
     elif "./litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
         ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
         print("max_tokens: " + ctx)
@@ -486,6 +524,69 @@ SIDE_LINES = {
         "0.19.671.103 I ggml_opencl: OpenCL driver: OpenCL 3.0 QUALCOMM build: 0842.19.8 Compiler E031.50.19.18",
     ],
 }
+# The LiteRT-LM NPU build's console before its reply: the forms of the self-built
+# litert_lm_advanced_main (LiteRT-LM main of 2026-08-21) on the Galaxy S26 — the settings echo
+# of its runs with the hardware KV-cache update off (2026-09-08), the registry, dispatch and
+# DispatchDelegate lines of its AOT benchmark runs (2026-08-23), both on Gemma 3 270M bundles
+# (the lane's logs, outside this repo) — with this model and the runner's engines dir in the
+# paths. LiteRT logs the NPU's registration failure for every environment after the first
+# one: a healthy run has it.
+NPU_ENG = "/data/local/tmp/llmbench/engines/main-20260821-selfbuilt"
+NPU_LINES = [
+    "WARNING: All log messages before absl::InitializeLog() is called are written to STDERR",
+    "I0000 00:00:1787447197.028690   26280 litert_lm_lib.cc:499] Choose backend: npu",
+    "I0000 00:00:1787447197.028842   26280 litert_lm_lib.cc:652] executor_settings: backend: NPU",
+    "backend_config:",
+    "enable_neon_for_npu_greedy_sampling: true",
+    "use_hw_masking_for_npu: true",
+    "use_hw_cache_update_for_npu: false",
+    "enable_npu_debug_logging: false",
+    "",
+    "max_tokens: 0",
+    "litert_dispatch_lib_dir: " + NPU_ENG,
+    "model_assets: model_path: /data/local/tmp/llmbench/models/Qwen_Qwen3-0.6B_model_qualcomm_SM8850.litertlm",
+    "INFO: [environment.cc:36] Creating LiteRT environment with options",
+    "INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b8f206890, name=NpuAccelerator",
+    "INFO: [npu_registry.cc:30] NPU accelerator registered.",
+    "WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.",
+    "INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b8f2064d0, name=CpuAccelerator",
+    "INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.",
+    "INFO: [environment.cc:36] Creating LiteRT environment with options",
+    "WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: "
+    "kLiteRtStatusErrorInvalidArgument.",
+    'I0000 00:00:1787447197.035488   26280 llm_litert_npu_compiled_model_executor.cc:1892] Detected NPU '
+    'prefill size: 128 (signature "prefill_128").',
+    "INFO: [litert_dispatch.cc:159] Loading shared library: " + NPU_ENG + "/libLiteRtDispatch_Qualcomm.so",
+    "INFO: [common.h:160] ",
+    "",
+    "+------------------------------------------+",
+    "|              ::qnn::Options              |",
+    "+------------------------------------------+",
+    "[GENERAL]",
+    "  LogLevel                 : Off(0)",
+    "  BackendType              : Htp(2)",
+    "VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions "
+    "for subgraph 0 (prefill_128).",
+    "INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_0",
+    "INFO: [litert_dispatch_device_context.cc:248] Creating new QNN context for bytecode 0x797af997b0 "
+    "(size 282300416)",
+    "VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions "
+    "for subgraph 1 (decode).",
+    "INFO: [litert_dispatch_device_context.cc:243] Reusing cached QNN context for bytecode 0x797af997b0 "
+    "(size 282300416)",
+    "I0000 00:00:1787447197.907000   26280 litert_lm_lib.cc:856] Creating conversation",
+]
+# what the runner keeps of them: conditions.backendRegistered of a LiteRT-LM NPU launch
+NPU_REGISTERED = [
+    "Choose backend: npu", "executor_settings: backend: NPU", "use_hw_cache_update_for_npu: false",
+    "litert_dispatch_lib_dir: " + NPU_ENG, "RegisterAccelerator: ptr=<addr>, name=NpuAccelerator",
+    "NPU accelerator registered.", "Loading shared library: " + NPU_ENG + "/libLiteRtDispatch_Qualcomm.so",
+    "BackendType : Htp(2)",
+    "Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for "
+    "subgraph 0 (prefill_128).",
+    "Creating new QNN context for bytecode <addr> (size 282300416)",
+    "Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for "
+    "subgraph 1 (decode)."]
 # The key layout of a CPU llama.cpp record (no backend=) as the runner wrote it at 3d5655c,
 # before the side builds: top-level keys and one level below, in order — a legacy cell, and
 # a round-mode launch. The side-build wiring must not move a key of the CPU arm.
@@ -560,7 +661,7 @@ def main():
     adb = os.path.join(bin_dir, "adb")
     with open(adb, "w") as fh:
         fh.write(FAKE_ADB % {"state": state, "on_task": ON_TASK, "off_task": OFF_TASK,
-                             "bench_htp0": BENCH_HTP0, "side_lines": SIDE_LINES})
+                             "bench_htp0": BENCH_HTP0, "side_lines": SIDE_LINES, "npu_lines": NPU_LINES})
     os.chmod(adb, 0o755)
 
     # fake on-device engine binaries (sha deliberately unmatched in the pins
@@ -1324,19 +1425,211 @@ def main():
        f"CPU llama.cpp round-mode records: the key layout of 3d5655c "
        f"(got {[k for k in layouts if k != CPU_LLAMA_KEYS['round']][:1]})")
 
+    # --- LiteRT-LM on the NPU (2026-10-08): a LiteRT-LM runtime build with the Qualcomm
+    # dispatch and QNN libraries, flat in DEV/engines/<tag> (the skel in dsp/), an own AOT
+    # bundle side-loaded by path. The build's pin is registered on the first device run, so
+    # the witness reads a fixture registry here (BENCH_TEST_PINS = the real one + this tag).
+    npu_tag = "main-20260821-selfbuilt"
+    npu_eng = os.path.join(dev, "engines", npu_tag)
+    npu_files = ["litert_lm_advanced_main", "libLiteRtDispatch_Qualcomm.so", "libGemmaModelConstraintProvider.so",
+                 "libQnnHtp.so", "libQnnSystem.so", "libQnnHtpV81Stub.so", "dsp/libQnnHtpV81Skel.so"]
+    npu_sha = {name: hashlib.sha256(("fixture " + name).encode()).hexdigest() for name in npu_files}
+    os.makedirs(os.path.join(npu_eng, "dsp"))
+    for name in npu_files:
+        with open(os.path.join(npu_eng, name), "w") as fh:
+            fh.write("sha256=" + npu_sha[name])
+    fixture_pins = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))
+    fixture_pins["litert-lm"][npu_tag] = {"litert_lm_advanced_main_sha256": npu_sha["litert_lm_advanced_main"],
+                                          "so_files": {n: npu_sha[n] for n in npu_files[1:]}}
+    pins_path = os.path.join(tmp, "engine-pins.fixture.json")
+    json.dump(fixture_pins, open(pins_path, "w"))
+    npu_bundle = os.path.join(tmp, "npu", "model_qualcomm_SM8850.litertlm")
+    os.makedirs(os.path.dirname(npu_bundle))
+    with open(npu_bundle, "w") as fh:
+        fh.write("weights of an own NPU export")
+    npu_cell = f"short-chat backend=npu engine-build={npu_tag} file={npu_bundle}"
+    env_l = dict(env, BENCH_TEST_PINS=pins_path)
+    model_l = "/data/local/tmp/llmbench/models/Qwen_Qwen3-0.6B_model_qualcomm_SM8850.litertlm"
+    env_litert_npu = (f'LD_LIBRARY_PATH={NPU_ENG} '
+                      f'ADSP_LIBRARY_PATH="{NPU_ENG}/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"')
+    cmd_litert_npu = (f"{NPU_ENG}/litert_lm_advanced_main --backend=npu --model_path={model_l} "
+                      "--input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 "
+                      "--async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 "
+                      f"--use_hw_cache_update_for_npu=false --litert_dispatch_lib_dir={NPU_ENG}")
+
+    # check L1: a LiteRT-LM NPU cell's records — the arm litert-lm-npu, stamped with the build
+    # by its witness (the tool and six libs, the skel under dsp/), the engine's NPU lines in
+    # backendRegistered, the HW cache update off as the engine echoed it, the bundle's fixed
+    # cache, the build's env and flags in engineCommand, the reply text-checked with the
+    # engine's log lines taken out of it, rssBasis saying the NPU's buffers are outside RSS;
+    # the first launch labelled by litert's cache marker. An export the runner cannot name by
+    # its sha256 keeps quantization "unrecorded" and an unrecorded cache length.
+    cells_l = os.path.join(tmp, "l.cells")
+    with open(cells_l, "w") as fh:
+        fh.write(f"android litert-lm Qwen/Qwen3-0.6B {npu_cell} runs=2\n")
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    schedule([66.4, 66.9])
+    print("--- campaign L (litert-lm-npu: the NPU build's launch, two runs)")
+    rc = run_campaign(dict(env_l, CAMPAIGN="selftest-l", BENCH_RAW_ROOT=side_raw), cells_l)
+    ok(rc == 0, f"campaign L exits 0 (got {rc})")
+    out_l = os.path.join(side_raw, "selftest-l", "app-path-android")
+    lnpu = [r for _, r in records(out_l, "litert-lm-npu_")]
+    if len(lnpu) == 2:
+        r = lnpu[0]
+        c = r["conditions"]
+        ok((r["runtime"], r["engineVersion"], r["engineArtifact"])
+           == ("litert-lm-npu", npu_tag, npu_sha["litert_lm_advanced_main"]),
+           f"litert npu: runtime litert-lm-npu, engineVersion {npu_tag} (tool + 6 libs matched, the skel "
+           f"under dsp/), engineArtifact = the build's tool (got {r['runtime']}, {r['engineVersion']})")
+        ok(c.get("backendRegistered") == NPU_REGISTERED and not c.get("protocolFlags"),
+           f"litert npu: backendRegistered = the engine's NPU lines (addresses as <addr>), not flagged "
+           f"(got {c.get('backendRegistered')}, flags {c.get('protocolFlags')})")
+        ok((c.get("engineBuild"), c.get("hwCacheUpdateForNpu"), c.get("contextTokens"), c.get("sampler"))
+           == (npu_tag, False, "aot-fixed (cache length unrecorded)", "engine-default")
+           and r["model"]["quantization"] == "unrecorded (artifact name carries no quant label)",
+           f"litert npu: engineBuild, hwCacheUpdateForNpu false (the engine's echo), the AOT cache, and an "
+           f"unknown export unlabelled (got {c.get('engineBuild')}, {c.get('hwCacheUpdateForNpu')}, "
+           f"{c.get('contextTokens')}, {r['model']['quantization']!r})")
+        ok(c.get("engineCommand") == f"{env_litert_npu} {cmd_litert_npu}",
+           f"litert npu: engineCommand = the build's env + advanced_main with --benchmark on the real prompt, "
+           f"the HW cache update off, the build's dispatch dir: {c.get('engineCommand')!r}")
+        text = open(os.path.join(out_l, r["provenance"].get("decodedText", "missing"))).read() \
+            if r["provenance"].get("decodedText") else ""
+        ok(c.get("textCheck", {}).get("status") == "PASS" and text.startswith("[thought] " + ON_TASK[:70])
+           and ON_TASK[70:] in text and "profile summary" not in text and "Source Location" not in text,
+           f"litert npu: the reply is text-checked (PASS), the engine's log lines taken out of it: {text!r}")
+        m = r["metrics"]
+        ok((m.get("decodeTokensPerSecond"), m.get("promptTokensPerSecond"), m.get("promptTokenCount"),
+            m.get("generatedTokenCount"), m.get("firstTokenLatencyMS"), m.get("coldRun"))
+           == (66.4, 1978.02, 18, 128, 50.0, True)
+           and r["provenance"]["rssBasis"].endswith("the NPU's buffers (Hexagon, through the Qualcomm dispatch "
+                                                    "and QNN) are not in VmRSS / VmHWM"),
+           f"litert npu: BenchmarkInfo parsed, rssBasis says the NPU's buffers are outside RSS (got {m})")
+        ok([x["metrics"].get("firstEver") for x in lnpu] == [True, None]
+           and os.path.exists(os.path.join(dev, "markers", os.path.basename(model_l) + ".npu.cachebuilt")),
+           f"litert npu: litert's cache marker: run 1 firstEver, run 2 not "
+           f"(got {[x['metrics'].get('firstEver') for x in lnpu]})")
+    else:
+        ok(False, f"two litert-lm-npu records (got {len(lnpu)})")
+    shells = open(cmds).read().splitlines() if os.path.exists(cmds) else []
+    ok(len(shells) == 2 and all(s == f"cd /data/local/tmp/llmbench && {env_litert_npu} taskset f0 {cmd_litert_npu}"
+                                for s in shells),
+       f"litert npu: the engine shell runs the build's own dir and libs: {shells[:1]}")
+    ok(not glob.glob(os.path.join(out_l, "FAILURES.txt")), "litert npu: no failed launch")
+
+    # check L2: a launch whose lines do not show the NPU dispatch — none at all, the NPU
+    # registered while nothing was dispatched to it (the model on XNNPACK), the dispatch
+    # without the NPU's registration — is kept, flagged backend-not-registered, a failed launch
+    # (FAILURES.txt), summary backend_registered false and out of arm_row's pool; the shown run
+    # pools. A lib off the build's pin (the skel under dsp/) stamps 'unknown' and names it.
+    cells_l2 = os.path.join(tmp, "l2.cells")
+    with open(cells_l2, "w") as fh:
+        fh.write(f"android litert-lm Qwen/Qwen3-0.6B {npu_cell} runs=4\n")
+    no_dispatch = [ln for ln in NPU_LINES if "DispatchDelegate" not in ln and "QNN context" not in ln]
+    no_register = [ln for ln in NPU_LINES if "name=NpuAccelerator" not in ln and "accelerator registered." not in ln]
+    json.dump([[], no_dispatch, no_register, None], open(os.path.join(state, "npu_lines.json"), "w"))
+    schedule([70.0, 88.0, 71.0, 73.0])
+    print("--- campaign L2 (litert npu launches without the NPU lines: none, registered but not dispatched, "
+          "dispatched but not registered; then a shown one)")
+    rc = run_campaign(dict(env_l, CAMPAIGN="selftest-l2", BENCH_RAW_ROOT=side_raw), cells_l2)
+    os.remove(os.path.join(state, "npu_lines.json"))
+    ok(rc == 0, f"campaign L2 exits 0 (got {rc})")
+    out_l2 = os.path.join(side_raw, "selftest-l2", "app-path-android")
+    l2 = [r for _, r in records(out_l2, "litert-lm-npu_")]
+    got_l2 = [(r["conditions"].get("protocolFlags") or None, r["metrics"].get("decodeTokensPerSecond")) for r in l2]
+    ok(got_l2 == [(["backend-not-registered"], 70.0), (["backend-not-registered"], 88.0),
+                  (["backend-not-registered"], 71.0), (None, 73.0)],
+       f"no NPU lines / registered but not dispatched / dispatched but not registered: flagged "
+       f"backend-not-registered, record and rate kept; the shown run is not flagged (got {got_l2})")
+    ok(len(l2) == 4 and l2[0]["conditions"].get("backendRegistered") == []
+       and l2[0]["conditions"].get("hwCacheUpdateForNpu") is None
+       and not any("DispatchDelegate" in ln for ln in l2[1]["conditions"].get("backendRegistered", []))
+       and "Choose backend: npu" in l2[1]["conditions"].get("backendRegistered", []),
+       "the record carries the lines it had (none: no echo either, hwCacheUpdateForNpu null)")
+    fails_l2 = os.path.join(out_l2, "FAILURES.txt")
+    fails_l2 = open(fails_l2).read().splitlines() if os.path.exists(fails_l2) else []
+    ok(fails_l2 == ["litert-lm-npu Qwen/Qwen3-0.6B short-chat rc=1"] * 3,
+       f"each flagged launch is a failed launch, listed under its arm: {fails_l2}")
+    skel = os.path.join(npu_eng, "dsp", "libQnnHtpV81Skel.so")
+    with open(skel, "w") as fh:
+        fh.write("sha256=" + "0" * 64)
+    cells_l3 = os.path.join(tmp, "l3.cells")
+    with open(cells_l3, "w") as fh:
+        fh.write(f"android litert-lm Qwen/Qwen3-0.6B {npu_cell} runs=1\n")
+    schedule([73.0])
+    run_campaign(dict(env_l, CAMPAIGN="selftest-l3", BENCH_RAW_ROOT=side_raw), cells_l3)
+    with open(skel, "w") as fh:
+        fh.write("sha256=" + npu_sha["dsp/libQnnHtpV81Skel.so"])
+    l3 = [r for _, r in records(os.path.join(side_raw, "selftest-l3", "app-path-android"), "litert-lm-npu_")]
+    ok(len(l3) == 1 and l3[0]["engineVersion"] == f"unknown (on-device {npu_tag} litert_lm_advanced_main with lib "
+                                                  "dsp/libQnnHtpV81Skel.so unmatched in android/engine-pins.json)",
+       f"a skel off the build's pin stamps 'unknown' and names it (got {[r['engineVersion'] for r in l3]})")
+    with patch.object(build_summary, "ROOT", side_root), \
+         patch.object(build_summary, "OUT", os.path.join(side_root, "summary")):
+        path, _ = build_summary.build_device()
+    rows_l2 = [r for r in csv.DictReader(open(path)) if r["campaign"] == "results/raw/selftest-l2"]
+    ok([r["backend_registered"] for r in rows_l2] == ["false", "false", "false", "true"]
+       and {r["runtime"] for r in rows_l2} == {"litert-lm-npu"},
+       f"summary: backend_registered false / true on the NPU build's runs "
+       f"(got {[r['backend_registered'] for r in rows_l2]})")
+    a = arm_row(rows_l2) if rows_l2 else {}
+    ok((a.get("cold_n"), a.get("cold_median"), a.get("backend_off_n")) == (1, 73.0, 3),
+       f"arm_row: the three flagged runs are out of the pool, counted (cold_n, cold_median, backend_off_n = "
+       f"{(a.get('cold_n'), a.get('cold_median'), a.get('backend_off_n'))})")
+    # the export this arm runs is named by its sha256 (the label and the cache length its export
+    # logs give); the reply extraction on the shapes of the build's real consoles
+    sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
+    import run_cell
+    import parsers
+    # (getattr: a runner without them is a FAIL line here, not a crash before the checks below)
+    own = getattr(run_cell, "own_npu_bundle", None)
+    label, ctx = own("f8909326639011c6123126c06c4f7d205857b1915c8b49de6844522fe5d211f2") if own else ("", None)
+    ok(ctx == "aot-fixed-1024" and label.startswith("own export, NPU AOT for SM8850: int8 weights")
+       and "static-range int16 activations" in label,
+       f"own_npu_bundle: the Qwen3 0.6B SM8850 export -> its label and cache (got {label!r}, {ctx!r})")
+    litert_reply = getattr(parsers, "litert_reply", lambda text: None)
+    jit = ("I0000 00:00:1790871082.995872   23069 litert_lm_lib.cc:868] Running single-turn conversation\n"
+           "[1] graph_prepare.cc:208::ERROR:could not create op: q::Select.exe\n"
+           "[1] QnnDsp <E> validateNativeOps master op validator ElementWiseSelect_ERROR: [qnn_manager.cc:480] \n"
+           "[thought] \nOkay, the user is asking what the capital of France is. I know that France has "
+           "many cities, but[/thought]\n"
+           "INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000076b6e130d0, name=CpuAccelerator\n")
+    garbage = ("I0000 00:00:1790957228.031559   19740 litert_lm_lib.cc:868] Running single-turn conversation\n"
+               "[1] graph_prepare.cc:1772::ERROR:Op 0x4e790000280b preparation failed with err:-1\n"
+               "<?\n Philippines Philippines Philippines Philippines Philippines Philippines Philippines\n"
+               "INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400006d4380b590, name=CpuAccelerator\n")
+    ok(litert_reply(jit) == ("[thought] \nOkay, the user is asking what the capital of France is. "
+                             "I know that France has many cities, but[/thought]")
+       and litert_reply(garbage) == "<?\n Philippines Philippines Philippines Philippines Philippines "
+                                    "Philippines Philippines"
+       and parsers.text_integrity(litert_reply(garbage) or "")["status"] == "FAIL"
+       and litert_reply("no conversation started") == "",
+       "litert_reply on the build's own consoles (no BenchmarkInfo, QNN lines, a thought channel; the "
+       "HW-cache-update garbage fails the screen)")
+
     # the cells grammar of the side builds (validate_cells) and the runner's refusals
     sys.path.insert(0, os.path.join(ROOT, "scripts"))
     import validate_cells
     grammar = [
         ("android llama.cpp m/g short-chat backend=npu engine-build=b11469-snapdragon file=x.gguf", None),
         ("android llama.cpp m/g native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon file=x.gguf", None),
-        ("android litert-lm m/l short-chat backend=npu file=x.litertlm", "go together"),
+        ("android litert-lm m/l short-chat backend=npu engine-build=main-20260821-selfbuilt file=x.litertlm", None),
+        ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
+         "file=x.litertlm context-tokens=2048 exclude=aot-cache-length-1024", None),
         ("android llama.cpp m/g short-chat backend=cpu file=x.gguf", "takes backend=npu|gpu"),
         ("android llama.cpp m/g short-chat backend=npu file=x.gguf", "go together"),
         ("android llama.cpp m/g short-chat engine-build=b11469-snapdragon file=x.gguf", "go together"),
         ("mac litert-lm m/l short-chat backend=npu", "backend=npu is an android"),
-        ("android litert-lm m/l short-chat backend=gpu engine-build=b11469-snapdragon file=x.litertlm",
+        ("android litert-lm m/l short-chat backend=npu file=x.litertlm", "go together"),
+        ("android litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt file=x.litertlm",
          "go together"),
+        ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
+         "file=x.litertlm context-tokens=2048", "no context-tokens="),
+        ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=main-20260821-selfbuilt "
+         "file=x.litertlm", "no native-benchmark-"),
+        ("ios litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt",
+         "engine-build= is read for android llama.cpp and litert-lm rows only"),
         ("android litert-lm m/l asr-rtf-librispeech-82s backend=npu file=x.litertlm", "asr-rtf-* needs backend=cpu|gpu"),
         ("android llama.cpp m/g short-chat backend=tpu engine-build=b file=x.gguf", "want cpu|gpu|npu"),
     ]
@@ -1355,6 +1648,10 @@ def main():
     ok(any("duplicate cell" in e for e in errors),
        f"validate_cells: one arm on two side builds in one file is a duplicate cell (got {errors})")
     for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "pass --backend npu and --engine-build together"),
+                       (["--runtime", "litert-lm", "--backend", "gpu", "--engine-build", npu_tag],
+                        "pass --backend npu and --engine-build together"),
+                       (["--runtime", "litert-lm", "--backend", "npu", "--engine-build", npu_tag,
+                         "--context-tokens", "2048"], "no --context-tokens"),
                        (["--runtime", "llama.cpp", "--backend", "cpu"], "without --backend is the CPU arm"),
                        (["--runtime", "llama.cpp", "--backend", "npu"], "pass --backend and --engine-build together"),
                        (["--runtime", "llama.cpp", "--engine-build", "b11469-snapdragon"], "together")):
@@ -1365,6 +1662,19 @@ def main():
                             "--out", os.path.join(tmp, "refused")],
                            env=env, capture_output=True, text=True)
         ok(p.returncode == 2 and want in p.stderr, f"run_cell refuses {' '.join(argv)}: {p.stderr.strip()[-110:]!r}")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime", "litert-lm",
+                        "--backend", "npu", "--engine-build", npu_tag, "--model-id", "m/l", "--file", npu_bundle,
+                        "--task", "short-chat", "--runs", "1", "--out", os.path.join(tmp, "refused"),
+                        "--serial", "R3CX40ABCDE"], env=env_l, capture_output=True, text=True)
+    ok(p.returncode == 1 and "BENCH_TEST_PINS is only for the FAKESELF selftest fixture" in p.stderr,
+       f"run_cell reads a fixture registry for the FAKESELF serial only: {p.stderr.strip()[-90:]!r}")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_l,
+                        "--dry-run"], env=dict(env, ROUNDS="1"), capture_output=True, text=True)
+    plan = [json.loads(line) for line in p.stdout.splitlines() if line.startswith("{")]
+    ok(p.returncode == 0 and len(plan) == 1
+       and plan[0]["cell"].startswith("litert-lm-npu Qwen/Qwen3-0.6B short-chat context-tokens=default ")
+       and plan[0]["command"] == f"cd /data/local/tmp/llmbench && {env_litert_npu} taskset f0 {cmd_litert_npu}",
+       f"--dry-run plans the LiteRT-LM NPU build's env and command: {[d.get('command', '')[:100] for d in plan]}")
     p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_n,
                         "--dry-run"], env=dict(env, ROUNDS="1"), capture_output=True, text=True)
     plan = [json.loads(line) for line in p.stdout.splitlines() if line.startswith("{")]
