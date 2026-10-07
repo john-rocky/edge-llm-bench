@@ -1,0 +1,21 @@
+# executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat run 2 (warm)
+# command: /Users/USER/code/edge-llm-bench-wt-et-wire/.build/executorch-v1.5.1/llama_main --model_path /Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte --tokenizer_path /Users/USER/code/edge-llm-bench/models/executorch/tokenizer.json --prompt_file /Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.prompts/short-chat.chat.txt --temperature 0 --max_new_tokens 128 --warmup
+# exit 0 wall 2.804s ru_maxrss 1256325120
+===== stdout =====
+<|im_start|>user
+Explain what on-device AI means in simple terms.<|im_end|>
+<|im_start|>assistant
+<think>
+Okay, so the user is asking for an explanation of on-device AI in simple terms. Let me start by breaking down the term. On-device AI refers to AI systems that run on the user's device, not on a server or cloud. That makes sense because it's more efficient and less reliant on external resources.
+
+Now, I need to explain this clearly. Maybe start with a definition. Then, think about the key components: AI, device, and maybe the type of AI. AI is the part that makes decisions, device is the device where the AI is running, and maybe the type of AI could be something like
+PyTorchObserver {"prefill_token_per_sec":463.415,"decode_token_per_sec":110.724,"prompt_tokens":19,"generated_tokens":127,"model_load_start_ms":1791395218428,"model_load_end_ms":1791395218665,"inference_start_ms":1791395219866,"inference_end_ms":1791395221054,"model_execution_start_ms":1791395221044,"model_execution_end_ms":1791395221053,"prompt_eval_end_ms":1791395219907,"first_token_ms":1791395219907,"aggregate_sampling_time_ms":12,"aggregate_model_execution_time_ms":1171,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+
+===== stderr =====
+I tokenizers:regex.cpp:40] Registering override fallback regex
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791395218.382311 105446127 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
