@@ -1,0 +1,225 @@
+{
+ "label": "Mac M4 Max CPU, 1024 random tokens (r2b mac_ladder attempt 2)",
+ "profile": "mac/mac_prefill_profile_2026-10-07_23-26-25_336.json",
+ "node_events": 513,
+ "node_kernel_ms": 1121.384,
+ "model_run_ms": 1122.828,
+ "providers": {
+  "CPUExecutionProvider": 513
+ },
+ "intra_op_pool": {
+  "pool": "session-1-intra-op",
+  "pool_threads_incl_caller": 8
+ },
+ "prompt_tokens": 1024,
+ "kinds": [
+  {
+   "kind": "GroupQueryAttention",
+   "count": 28,
+   "ms": 419.388,
+   "share": 0.374
+  },
+  {
+   "kind": "MatMulNBits bits 4 (layers)",
+   "count": 92,
+   "ms": 258.495,
+   "share": 0.2305,
+   "gmacs": 236.22,
+   "gmac_per_s": 913.8
+  },
+  {
+   "kind": "MatMulNBits bits 8 (layers)",
+   "count": 104,
+   "ms": 208.721,
+   "share": 0.1861,
+   "gmacs": 214.75,
+   "gmac_per_s": 1028.9
+  },
+  {
+   "kind": "MatMulNBits bits 8 lm_head",
+   "count": 1,
+   "ms": 140.185,
+   "share": 0.125,
+   "gmacs": 159.32,
+   "gmac_per_s": 1136.5
+  },
+  {
+   "kind": "SimplifiedLayerNormalization",
+   "count": 57,
+   "ms": 77.638,
+   "share": 0.0692
+  },
+  {
+   "kind": "SkipSimplifiedLayerNormalization",
+   "count": 56,
+   "ms": 6.528,
+   "share": 0.0058
+  },
+  {
+   "kind": "QuickGelu",
+   "count": 28,
+   "ms": 6.038,
+   "share": 0.0054
+  },
+  {
+   "kind": "Mul",
+   "count": 28,
+   "ms": 3.196,
+   "share": 0.0029
+  },
+  {
+   "kind": "Reshape",
+   "count": 112,
+   "ms": 0.592,
+   "share": 0.0005
+  },
+  {
+   "kind": "GatherBlockQuantized",
+   "count": 1,
+   "ms": 0.54,
+   "share": 0.0005
+  },
+  {
+   "kind": "ReduceSum",
+   "count": 1,
+   "ms": 0.028,
+   "share": 0.0
+  },
+  {
+   "kind": "Cast",
+   "count": 2,
+   "ms": 0.02,
+   "share": 0.0
+  },
+  {
+   "kind": "Sub",
+   "count": 1,
+   "ms": 0.008,
+   "share": 0.0
+  },
+  {
+   "kind": "Gather",
+   "count": 1,
+   "ms": 0.004,
+   "share": 0.0
+  },
+  {
+   "kind": "Shape",
+   "count": 1,
+   "ms": 0.003,
+   "share": 0.0
+  }
+ ],
+ "top": [
+  {
+   "node": "/lm_head/MatMulNBits",
+   "kind": "MatMulNBits bits 8 lm_head",
+   "ms": 140.185,
+   "share": 0.125,
+   "input0": [
+    1,
+    1024,
+    1024
+   ]
+  },
+  {
+   "node": "/model/layers.18/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.796,
+   "share": 0.015,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.16/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.657,
+   "share": 0.0149,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.24/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.633,
+   "share": 0.0148,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.10/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.528,
+   "share": 0.0147,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.6/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.511,
+   "share": 0.0147,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.13/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.486,
+   "share": 0.0147,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.15/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.475,
+   "share": 0.0147,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.23/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.471,
+   "share": 0.0147,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.26/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 16.469,
+   "share": 0.0147,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  }
+ ]
+}

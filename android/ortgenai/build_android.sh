@@ -30,6 +30,12 @@ OUT="$REPO_ROOT/android/bin/ortgenai-$GENAI_VERSION"
 DL="$OUT/download"
 SRC="$OUT/src/benchmark/c"
 
+# The previous MANIFEST, read before this build replaces it: a binary whose
+# sha256 changes stays listed on a "history:" line, so output made with an
+# earlier build (an engine log naming the old sha) still finds its source.
+PREV_MANIFEST="$(cat "$OUT/MANIFEST.txt" 2>/dev/null || true)"
+PREV_WRITTEN="$(printf '%s\n' "$PREV_MANIFEST" | sed -n '1s/.*build_android\.sh //p')"
+
 GENAI_AAR="onnxruntime-genai-android-$GENAI_VERSION.aar"
 GENAI_AAR_URL="https://github.com/microsoft/onnxruntime-genai/releases/download/v$GENAI_VERSION/$GENAI_AAR"
 GENAI_AAR_SHA256=f8b28a9ce448d97e0d5ab9614eae018a4d994d739de84e9fc5f9ff3b6673dd50
@@ -115,6 +121,13 @@ done
   done
   echo "$(sha256 "$OUT/ortgenai_run")  ortgenai_run  built from android/ortgenai/ortgenai_run.cpp (sha256 $(sha256 "$REPO_ROOT/android/ortgenai/ortgenai_run.cpp"))"
   echo "$(sha256 "$OUT/model_benchmark")  model_benchmark  built from src/benchmark/c (upstream v$GENAI_VERSION, unchanged)"
+  printf '%s\n' "$PREV_MANIFEST" | grep '^history: ' || true
+  for b in ortgenai_run model_benchmark; do
+    prev="$(printf '%s\n' "$PREV_MANIFEST" | awk -v b="$b" '$2 == b {print; exit}')"
+    if [[ -n "$prev" && "${prev%% *}" != "$(sha256 "$OUT/$b")" ]]; then
+      echo "history: $prev; in the MANIFEST written $PREV_WRITTEN, replaced $(date '+%Y-%m-%d %H:%M %Z')"
+    fi
+  done
   echo "ndk: $NDK_REVISION"
   echo "clang: $("$CXX" --version | head -1)"
   echo "flags: ${CXXFLAGS[*]} -lonnxruntime-genai -ldl"
