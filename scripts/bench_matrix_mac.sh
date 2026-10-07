@@ -31,8 +31,10 @@
 #
 # onnxruntime-genai cells (docs/ortgenai-arm-v1.md): scripts/ortgenai_mac.py in
 # its own venv ($ORTGENAI_PYTHON, default ~/.venvs/ortgenai-0.17.1/bin/python; a
-# missing venv logs SKIPPED with its reason), one fresh engine process per run,
-# the cell's runs appended to <slug>.jsonl like a yardstick cell, and the same
+# missing venv logs SKIPPED with its reason), one engine process per cell running
+# the cell's runs= generations back to back (ORTGENAI_PAUSE s between them, default
+# 0) like `yardstick run --runs N` — run 1 cold, runs 2..N warm — the runs appended
+# to <slug>.jsonl like a yardstick cell, and the same
 # post-capture gate. backend= (cpu | webgpu), file= (the GenAI folder in the
 # repo), revision= (the HF commit) and context-tokens= come from the row; the
 # folder, the revision and both options are capture identity. ORTGENAI_SMOKE=<note>
@@ -137,8 +139,9 @@ run_et_cell(){
 
 run_ort_cell(){
   # One capture attempt of an onnxruntime-genai cell: ort_args is a run_cell local.
-  # The driver bounds each engine process itself (--timeout); its exit is 1 when a
-  # run failed (crash, missing metric, text check, telemetry or GPU witness).
+  # The driver bounds each run itself (--timeout: the load with run 1, then each later
+  # run); its exit is 1 when a run failed (crash, missing metric, text check, telemetry
+  # or GPU witness) or was not attempted (the engine process ended before it).
   "$ORTGENAI_PYTHON" "$REPO/scripts/ortgenai_mac.py" "${ort_args[@]}" \
     --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT"
 }
@@ -251,7 +254,7 @@ run_cell(){
     slug="${slug}_$(printf '%s' "$ort_file|$ort_rev" | shasum -a 256 | cut -c1-12)"
     ort_args=(--model-id "$mid" --file "$ort_file" --revision "$ort_rev" --backend "$backend"
               --task "$task" --context-tokens "$ctx" --runs "$runs"
-              --pause "${ORTGENAI_PAUSE:-5}" --timeout "${ORTGENAI_RUN_TIMEOUT:-900}")
+              --pause "${ORTGENAI_PAUSE:-0}" --timeout "${ORTGENAI_RUN_TIMEOUT:-900}")
     [ -n "${ORTGENAI_SMOKE:-}" ] && ort_args+=(--smoke "$ORTGENAI_SMOKE")
     [ -n "${ORTGENAI_QUIET_LABEL:-}" ] && ort_args+=(--quiet-label "$ORTGENAI_QUIET_LABEL")
     if [ ! -x "$ORTGENAI_PYTHON" ]; then
@@ -386,7 +389,7 @@ run_cell(){
   esac
 
   if [ "$rt" = "onnxruntime-genai" ]; then
-    log "CELL $rt / $mid / $task backend=$backend ctx=$ctx runs=$runs round=$round ($(date +%H:%M:%S)) (one engine process per run)"
+    log "CELL $rt / $mid / $task backend=$backend ctx=$ctx runs=$runs round=$round ($(date +%H:%M:%S)) (one engine process: run 1 cold, runs 2..$runs warm)"
     if ! run_capture; then
       echo "FAIL $rt $mid $task backend=$backend ctx=$ctx round=$round" >> "$OUT/FAILURES.txt"
     fi

@@ -876,9 +876,10 @@ LiteRT-LM's Qwen3 0.6B, against a 1,024-token cache).
 `context-tokens=2048`; arms `onnxruntime-genai-cpu` (Mac, Android) and `onnxruntime-genai-webgpu`
 (Mac). Gemma 4 E2B / E4B rows are `exclude=` with their reason, the Pixel 8a's Qwen3-4B rows carry
 the 4B-class `exclude-on=`, the iPhone rows are disabled until the app has the runtime, and there
-is no anchor row (the weekly file is an owner decision). Every run is one engine process, so its
-cells headline the cold median on the Mac too. Drivers, pins, recipe labels, timing, memory and
-telemetry: [docs/ortgenai-arm-v1.md](ortgenai-arm-v1.md).
+is no anchor row (the weekly file is an owner decision). The regime is the platform's: on the
+Mac one engine process per cell (run 1 cold, runs 2..N warm, the warm median headlines, as
+`yardstick run --runs N`), on Android a fresh process per run (cold). Drivers, pins, recipe
+labels, regime, timing, memory and telemetry: [docs/ortgenai-arm-v1.md](ortgenai-arm-v1.md).
 
 ## Open questions for the LiteRT team
 

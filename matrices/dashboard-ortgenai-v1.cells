@@ -12,8 +12,9 @@
 #           /data/local/tmp/llmbench/ortgenai/ (android/README.md)
 #   ios     the release XCFramework 0.17.0 is CPU-only; its rows are disabled at the bottom until the
 #           app has the runtime and the catalog entries
-# Every run is a fresh engine process (cold) on every platform; the dashboards headline the cold
-# median for these arms (scripts/render_dashboard.py regime_of).
+# Regime as every arm on the platform: on the Mac one engine process per cell, runs= generations
+# (run 1 cold, runs 2..N warm, like `yardstick run --runs N`; the warm median headlines); on Android
+# one fresh process per run (cold). docs/ortgenai-arm-v1.md "Regime".
 #
 # Models: file= is the GenAI folder in the repo (cpu: onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128,
 # webgpu: onnxruntime/webgpu/webgpu-int4-kld-block-32), revision= the repo's commit "Add optimized

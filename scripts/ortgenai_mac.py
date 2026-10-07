@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Mac ONNX Runtime GenAI cells (docs/ortgenai-arm-v1.md): one fresh engine process per run,
-the runs of one cell appended to one schema-v1 JSONL.
+"""Mac ONNX Runtime GenAI cells (docs/ortgenai-arm-v1.md): one engine process per cell, its
+--runs generations of the task's prompt appended to one schema-v1 JSONL, run 1 cold and
+runs 2..N warm (the yardstick's --runs).
 
   <venv>/bin/python scripts/ortgenai_mac.py --model-id onnx-community/Qwen3-0.6B-ONNX \\
       --file onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 \\
       --revision da1453100cf3ff33ef56d17983fc7a8648706db6 --backend cpu \\
-      --task short-chat --context-tokens 2048 --runs 3 \\
+      --task short-chat --context-tokens 2048 --runs 4 \\
       --output results/raw/<campaign>/<cell>.jsonl
 
 scripts/bench_matrix_mac.sh runs it for every `mac onnxruntime-genai` row of a cells file.
@@ -18,11 +19,21 @@ WebGPU arm registers the plugin EP and runs the folder whose genai_config names 
 provider. model.quantization is the folder's entry in models/ortgenai-recipes.json (read from
 its model.onnx by scripts/ortgenai_recipe.py); an unregistered folder is refused.
 
+Regime (methodology/fairness-rules.md cold-warm-split; the yardstick's --runs N): the engine
+process loads the model and the tokenizer once and generates --runs times from the same
+prompt, each generation on a new Generator (GenAI allocates the KV cache for max_length
+when a generator is created, so every run allocates its own). Run 1 is the process's first
+generation: coldRun true, conditions.regime "cold (first generation in the process)". Runs
+2..N: coldRun false, "warm (generation k of N in one process)"; the dashboards headline the
+median of the warm runs on the Mac, as for every other Mac arm. --runs 1 is one cold run.
+firstEver (--first-ever) marks run 1 only.
+
 Records: --output <cell>.jsonl gets one compact JSON line per run (build_summary reads
-results/raw/<campaign>/*.jsonl); each run's harness log, engine report (.worker.json) and
-decoded text go to <campaign dir>/ortgenai-logs/. Every run is a fresh process, so every
-record is coldRun true and conditions.regime "cold (one process per run)": the arm has no
-warm regime, and the dashboards headline its cold median (render_dashboard.regime_of).
+results/raw/<campaign>/*.jsonl), written when the engine process has exited; the process's
+harness log and engine report (.worker.json) and each run's decoded text go to
+<campaign dir>/ortgenai-logs/. A run that fails stays a failed record; the runs after a
+run that ended the engine process are not attempted (no record; the runner's gate reads
+SHORT), as when a yardstick run throws.
 Text: a long-context-* run carries conditions.textCheck = android/bench/parsers.text_integrity
 of its decoded text (the screen the Android LiteRT-LM context-prompt launches carry); a
 short-chat run is screened like every Apple arm, by the runner's post-capture gate
@@ -38,10 +49,14 @@ Timing, the cut points of upstream benchmark/c model_benchmark:
   TTFT     = append_tokens + the first generate_next_token (greedy pick from the prefill logits)
   decode   = tokens 2..N / the summed wall clock of their generate_next_token calls
 Generation stops at EOS (is_done) or the task's output budget; no min_length.
-Memory: the parent samples the engine process's phys_footprint every 100 ms
-(proc_pid_rusage RUSAGE_INFO_V4) from after the model load to the last token, MiB
-(bytes / 2^20), the Apple BenchmarkRunner basis. GPU identity per run: the GPU time the
-engine process accrued during generation (IOKit AGXDeviceUserClient AppUsage of its pid).
+Memory: per run, the parent samples the engine process's phys_footprint every 100 ms
+(proc_pid_rusage RUSAGE_INFO_V4) from the run's generator creation to its last token, MiB
+(bytes / 2^20), the Apple BenchmarkRunner basis (its window: after the load, the
+generation). GPU identity per run: the GPU time the engine process accrued during that
+run's generation (IOKit AGXDeviceUserClient AppUsage of its pid).
+The worker and the parent hand over on stdin / stdout around every generation (READY k,
+GO, DONE k, then NEXT or EXIT), so the parent's host snapshots, GPU-time reads, sampler
+windows and the --pause between runs stay outside the timed region.
 """
 import os
 
@@ -89,7 +104,8 @@ EPS = {"cpu": "CPUExecutionProvider", "webgpu": "WebGpuExecutionProvider"}
 DEVICE_TYPES = {"cpu": "CPU", "webgpu": "WebGPU"}
 TELEMETRY_DIR = Path.home() / "Library/Application Support/Microsoft/DeveloperTools/.onnxruntime"
 QUIET_LOCK = Path(os.environ.get("QUIET_LOCK") or Path.home() / "code/coreai/_GPU_LOCK")
-REGIME = "cold (one process per run)"
+REGIME_COLD = "cold (first generation in the process)"
+REGIME_WARM = "warm (generation {k} of {n} in one process)"
 METRIC_DEFINITIONS = (
     "prefill tok/s = promptTokenCount / wall clock of Generator.append_tokens(prompt); "
     "TTFT = append_tokens + the first generate_next_token (greedy pick from the prefill logits, no forward pass); "
@@ -97,12 +113,15 @@ METRIC_DEFINITIONS = (
     "(each = one forward pass + greedy pick); generatedTokenCount counts every picked token, a final EOS included; "
     "stopReason stop = EOS (is_done), length = the output budget, max_length = the KV allocation filled, "
     "no min_length; memory = phys_footprint of the engine process, "
-    "100 ms samples from after model load and generator creation to the last token, high-water and median, "
-    "MiB (bytes / 2^20); past_present_share_buffer true allocates the KV cache for max_length = contextTokens "
-    "when the generator is created, so both memory numbers include it")
+    "100 ms samples from the run's generator creation to its last token, high-water and median, "
+    "MiB (bytes / 2^20); each run creates its own generator, and past_present_share_buffer true allocates "
+    "the KV cache for max_length = contextTokens when a generator is created, so both memory numbers include it; "
+    "regime: one engine process per cell, the model loaded once, run 1 = its first generation (cold), "
+    "runs 2..N = later generations of the same prompt in that process (warm)")
 MEMORY_BASIS = ("phys_footprint of the engine process (proc_pid_rusage RUSAGE_INFO_V4 ri_phys_footprint) "
-                "sampled by the parent every 100 ms from the worker's LOADED line (model, tokenizer and "
-                "generator created) to its DONE line (last token); MiB = bytes / 2^20")
+                "sampled by the parent every 100 ms from the worker's READY <k> line (model and tokenizer "
+                "loaded, run k's generator created) to its DONE <k> line (run k's last token); "
+                "MiB = bytes / 2^20")
 
 
 def sha256(path):
@@ -223,8 +242,9 @@ def quiet_window():
         return ""
 
 
-def host_snapshot():
-    """disclose-hw-state: thermal, low power, load and the foreign processes above 20 % CPU."""
+def host_snapshot(engine_pid=None):
+    """disclose-hw-state: thermal, low power, load and the foreign processes above 20 % CPU
+    (this harness and its engine process are not foreign)."""
     thermal, low_power = process_info()
     loads = os.getloadavg()
     others = []
@@ -234,7 +254,7 @@ def host_snapshot():
             pc, pid = float(parts[0]), int(parts[1])
         except (ValueError, IndexError):
             continue
-        if pc >= 20.0 and pid != os.getpid():
+        if pc >= 20.0 and pid not in (os.getpid(), engine_pid):
             others.append(f"{os.path.basename(parts[2])}:{pc:.0f}%")
     return {"device": device_info(),
             "snapshot": {"thermal": thermal, "lowPowerMode": low_power, "loadAverage": loads[0],
@@ -313,10 +333,25 @@ def loaded_images(pattern):
 
 
 def worker(args):
-    """One engine lifetime. LOADED / DONE on stdout; the parent answers GO / EXIT on stdin, so its
-    GPU-time reads and sampler start/stop stay outside the timed region."""
+    """One engine process: the model and the tokenizer once, then --runs generations of the same
+    prompt, each on a new Generator. READY <k> / DONE <k> on stdout; the parent answers GO, then
+    NEXT (another run) or EXIT on stdin, so its reads and the pause stay outside the timed region.
+    The result file is rewritten after every run: a process that dies in run k leaves runs
+    1..k-1. --timeout bounds the load with run 1, then each later run on its own."""
     signal.alarm(args.timeout)
-    payload = {"pid": os.getpid(), "ok": False}
+    payload = {"pid": os.getpid(), "ok": False, "runs": []}
+
+    def save():
+        tmp = args.worker_result.with_name(args.worker_result.name + ".tmp")
+        tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n")
+        tmp.replace(args.worker_result)
+
+    def answer(word):
+        line = sys.stdin.readline().strip()
+        if line != word:
+            raise RuntimeError(f"parent answered {line!r}, expected {word}")
+
+    k = 0
     try:
         if args.telemetry == "off" and os.environ.get("ORT_DISABLE_TELEMETRY") != "1":
             raise RuntimeError("ORT_DISABLE_TELEMETRY=1 missing from the engine environment")
@@ -346,66 +381,91 @@ def worker(args):
         ids = tokenizer.encode(templated)
         payload.update(templatedPromptSha256=hashlib.sha256(templated.encode()).hexdigest(),
                        templatedPromptTail=templated[-80:], promptTokenCount=int(len(ids)))
-        params = og.GeneratorParams(model)
-        params.set_search_options(max_length=args.context_tokens, do_sample=False)
-        generator = og.Generator(model, params)
-        payload["onnxruntimeImages"] = loaded_images("onnxruntime")
         eos = json.loads((args.model_dir / "genai_config.json").read_text())["model"]["eos_token_id"]
         eos = set(eos if isinstance(eos, list) else [eos])
-        r0 = resource.getrusage(resource.RUSAGE_SELF)
-        print("LOADED", flush=True)
-        if sys.stdin.readline().strip() != "GO":
-            raise RuntimeError("parent did not answer GO")
-        t0 = time.perf_counter()
-        generator.append_tokens(ids)
-        t1 = time.perf_counter()
-        steps, tokens = [], []
-        while not generator.is_done() and len(tokens) < budget:
-            a = time.perf_counter()
-            generator.generate_next_token()
-            steps.append(time.perf_counter() - a)
-            tokens.append(int(generator.get_next_tokens()[0]))
-        t_end = time.perf_counter()
-        r1 = resource.getrusage(resource.RUSAGE_SELF)
-        print("DONE", flush=True)
-        if sys.stdin.readline().strip() != "EXIT":
-            raise RuntimeError("parent did not answer EXIT")
-        hit_eos = bool(tokens) and tokens[-1] in eos
-        # the repo's stopReason words (stop / length) plus max_length: the KV allocation filled
-        payload.update(prefillSeconds=t1 - t0, firstStepSeconds=steps[0] if steps else None,
-                       decodeSeconds=sum(steps[1:]), generationWallSeconds=t_end - t0,
-                       stepSeconds=steps, tokens=tokens, generatedTokenCount=len(tokens), hitEos=hit_eos,
-                       sequenceLength=int(generator.token_count()),
-                       stopReason="stop" if hit_eos else ("length" if len(tokens) >= budget else "max_length"),
-                       cpuSecondsDuringGeneration=(r1.ru_utime - r0.ru_utime) + (r1.ru_stime - r0.ru_stime),
-                       text=tokenizer.decode(tokens[:-1] if hit_eos else tokens))
+        for k in range(1, args.runs + 1):
+            if k > 1:
+                signal.alarm(0)  # the parent's pause is not this run's time
+                answer("NEXT")
+                signal.alarm(args.timeout)
+            # a new generator per run: its KV cache (max_length) is allocated and zero-filled here
+            t = time.perf_counter()
+            params = og.GeneratorParams(model)
+            params.set_search_options(max_length=args.context_tokens, do_sample=False)
+            generator = og.Generator(model, params)
+            generator_seconds = time.perf_counter() - t
+            if k == 1:
+                payload["onnxruntimeImages"] = loaded_images("onnxruntime")
+            r0 = resource.getrusage(resource.RUSAGE_SELF)
+            print(f"READY {k}", flush=True)
+            answer("GO")
+            t0 = time.perf_counter()
+            generator.append_tokens(ids)
+            t1 = time.perf_counter()
+            steps, tokens = [], []
+            while not generator.is_done() and len(tokens) < budget:
+                a = time.perf_counter()
+                generator.generate_next_token()
+                steps.append(time.perf_counter() - a)
+                tokens.append(int(generator.get_next_tokens()[0]))
+            t_end = time.perf_counter()
+            r1 = resource.getrusage(resource.RUSAGE_SELF)
+            print(f"DONE {k}", flush=True)
+            hit_eos = bool(tokens) and tokens[-1] in eos
+            # the repo's stopReason words (stop / length) plus max_length: the KV allocation filled
+            payload["runs"].append(dict(
+                run=k, generatorSeconds=generator_seconds, prefillSeconds=t1 - t0,
+                firstStepSeconds=steps[0] if steps else None, decodeSeconds=sum(steps[1:]),
+                generationWallSeconds=t_end - t0, stepSeconds=steps, tokens=tokens,
+                generatedTokenCount=len(tokens), hitEos=hit_eos, sequenceLength=int(generator.token_count()),
+                stopReason="stop" if hit_eos else ("length" if len(tokens) >= budget else "max_length"),
+                cpuSecondsDuringGeneration=(r1.ru_utime - r0.ru_utime) + (r1.ru_stime - r0.ru_stime),
+                text=tokenizer.decode(tokens[:-1] if hit_eos else tokens)))
+            save()
+            del generator, params  # this run's KV cache goes before the next run allocates its own
+        signal.alarm(0)
+        answer("EXIT")
         payload["ok"] = True
     except Exception as e:
         payload["error"] = f"{type(e).__name__}: {e}"
+        payload["errorRun"] = k
         traceback.print_exc()
-    args.worker_result.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n")
+    save()
     return 0 if payload["ok"] else 1
 
 
-# ---------------------------------------------------------------- parent side of one run
+# ---------------------------------------------------------------- parent side of one cell
 class Sampler(threading.Thread):
     """Every 100 ms from spawn to exit: socket fds of the engine process (whole life) and its
-    phys_footprint (kept only inside the LOADED..DONE window)."""
+    phys_footprint (kept only inside a run's READY..DONE window, one list per run)."""
 
     def __init__(self, pid):
         super().__init__(daemon=True)
-        self.pid, self.window, self.stop = pid, False, threading.Event()
-        self.footprints, self.socket_max, self.socket_first, self.lifetime_max = [], 0, None, None
+        self.pid, self.window, self.stop, self.lock = pid, None, threading.Event(), threading.Lock()
+        self.socket_max, self.socket_first, self.lifetime_max = 0, None, None
         self.start_time = time.monotonic()
 
     def read(self):
         info = pid_rusage(self.pid)
         if info is None:
             return None
-        if self.window:
-            self.footprints.append(info.ri_phys_footprint)
-        self.lifetime_max = info.ri_lifetime_max_phys_footprint
+        with self.lock:
+            if self.window is not None:
+                self.window.append(info.ri_phys_footprint)
+            self.lifetime_max = info.ri_lifetime_max_phys_footprint
         return info
+
+    def begin(self):
+        """A run's window opens: the samples from here to end() are that run's."""
+        with self.lock:
+            self.window = []
+        self.read()
+
+    def end(self):
+        self.read()
+        with self.lock:
+            samples, self.window = self.window or [], None
+        return samples
 
     def run(self):
         while not self.stop.is_set():
@@ -457,17 +517,27 @@ def mib(values):
     return [v / (1 << 20) for v in values]
 
 
-def run_once(args, index, prompt, budget, quant, libs):
+def send(proc, word):
+    try:
+        proc.stdin.write(word + "\n")
+        proc.stdin.flush()
+    except BrokenPipeError:
+        pass  # the worker has died; its result file and exit code say why
+
+
+def run_cell(args, prompt, budget, quant, libs):
+    """One engine process and its --runs generations: one record per run it attempted, appended
+    to --output once the process has exited. True when every run was attempted and is ok."""
     runtime = RUNTIMES[args.backend]
     started = dt.datetime.now(dt.timezone.utc)
     slug = args.model_id.replace("/", "_").replace(".", "_")
-    stem = f"{runtime}_{slug}_{args.model_dir.name}_{args.task}_ctx{args.context_tokens}_run{index}_{started:%Y%m%dT%H%M%S.%fZ}"
+    stem = f"{runtime}_{slug}_{args.model_dir.name}_{args.task}_ctx{args.context_tokens}_runs{args.runs}_{started:%Y%m%dT%H%M%S.%fZ}"
     out = args.logs
     log, result_path = out / f"{stem}.log", out / f"{stem}.worker.json"
     worker_args = ["--worker", "--worker-result", str(result_path), "--model-id", args.model_id,
                    "--model-dir", str(args.model_dir), "--backend", args.backend, "--task", args.task,
                    "--context-tokens", str(args.context_tokens), "--telemetry", args.telemetry,
-                   "--timeout", str(args.timeout)]
+                   "--runs", str(args.runs), "--timeout", str(args.timeout)]
     cmd = [sys.executable, str(Path(__file__).resolve()), *worker_args]
     env = dict(os.environ, PYTHONUNBUFFERED="1", HF_HUB_OFFLINE="1")
     for key in ("ORT_DISABLE_TELEMETRY", "ORTGENAI_TELEMETRY_COMPARISON", "ORTGENAI_ORT_VERBOSE_LOGGING",
@@ -479,10 +549,10 @@ def run_once(args, index, prompt, budget, quant, libs):
         env["ORTGENAI_TELEMETRY_COMPARISON"] = "1"
     if args.ort_verbose:
         env["ORTGENAI_ORT_VERBOSE_LOGGING"] = "1"
-    before = host_snapshot()
+    spawn_host = host_snapshot()
     tdir_before = telemetry_dir_manifest(args.telemetry_dir)
     start = time.monotonic()
-    gpu = {}
+    runs = {}  # run k -> what the parent read around it
     with log.open("a") as f:
         f.write(f"{args.capture_purpose}\ncommand: {shlex.join(cmd)}\nengine env: ORT_DISABLE_TELEMETRY="
                 f"{env.get('ORT_DISABLE_TELEMETRY', '(unset)')} ORTGENAI_ORT_VERBOSE_LOGGING="
@@ -495,153 +565,201 @@ def run_once(args, index, prompt, budget, quant, libs):
         watch = LsofWatch(proc.pid, out / f"{stem}.lsof.txt") if args.lsof_watch else None
         if watch:
             watch.start()
-        after_load, done_seen = None, False
+        segment = start  # run 1's segment starts at the spawn (import and load are its), run k's at NEXT
         for line in proc.stdout:
             f.write(f"[worker stdout] {line}")
             f.flush()
-            if line.strip() == "LOADED":
-                gpu["afterLoad"] = gpu_time_ns(proc.pid)
+            mark = re.search(r"\b(READY|DONE) (\d+)$", line.strip())
+            if not mark:
+                continue
+            word, k = mark.group(1), int(mark.group(2))
+            if word == "READY":  # run k's generator exists; the worker waits for GO
+                r = runs.setdefault(k, {"segmentStart": segment})
+                r["before"] = host_snapshot(proc.pid)
+                r["gpuReady"] = gpu_time_ns(proc.pid)
                 info = sampler.read()
-                after_load = info.ri_phys_footprint if info else None
-                sampler.window = True
-                sampler.read()
-                try:
-                    proc.stdin.write("GO\n")
-                    proc.stdin.flush()
-                except BrokenPipeError:
-                    pass  # the worker died after LOADED; its result file says why
-            elif line.strip() == "DONE":
-                sampler.read()
-                sampler.window, done_seen = False, True
-                gpu["afterGeneration"] = gpu_time_ns(proc.pid)
-                try:
-                    proc.stdin.write("EXIT\n")
-                    proc.stdin.flush()
-                except BrokenPipeError:
-                    pass
-        rc = proc.wait(timeout=args.timeout + 60)
+                r["afterLoad"] = info.ri_phys_footprint if info else None
+                sampler.begin()
+                r["timestamp"] = dt.datetime.now(dt.timezone.utc)
+                send(proc, "GO")
+            elif k in runs:  # DONE k: run k's last token
+                r = runs[k]
+                r["footprints"] = sampler.end()
+                r["lifetimeMax"] = sampler.lifetime_max
+                r["gpuDone"] = gpu_time_ns(proc.pid)
+                r["after"] = host_snapshot(proc.pid)
+                r["elapsed"] = time.monotonic() - r["segmentStart"]
+                if k < args.runs:
+                    time.sleep(args.pause)
+                    segment = time.monotonic()
+                    send(proc, "NEXT")
+                else:
+                    send(proc, "EXIT")
+        try:
+            rc = proc.wait(timeout=60)
+        except subprocess.TimeoutExpired:  # stdout closed, the process still there
+            proc.kill()
+            rc = proc.wait()
         sampler.stop.set()
         sampler.join(5)
         if watch:
             watch.stop.set()
             watch.join(10)
-    elapsed = time.monotonic() - start
+    process_elapsed = time.monotonic() - start
     tdir_after = telemetry_dir_manifest(args.telemetry_dir)
-    after = host_snapshot()
+    exit_host = host_snapshot()
     data = json.loads(result_path.read_text()) if result_path.exists() else {"error": f"worker exit {rc}; no result"}
-    n = data.get("generatedTokenCount") or 0
-    metrics = {"coldRun": True, "firstEver": bool(args.first_ever and index == 1),
-               "contextTokensConfigured": args.context_tokens,
-               "initialThermalState": before["snapshot"]["thermal"], "finalThermalState": after["snapshot"]["thermal"]}
-    if data.get("ok") and n > 0:
-        prefill, first, decode = data["prefillSeconds"], data["firstStepSeconds"], data["decodeSeconds"]
-        metrics.update(promptTokenCount=data["promptTokenCount"], generatedTokenCount=n,
-                       promptTokensPerSecond=data["promptTokenCount"] / prefill,
-                       firstTokenLatencyMS=(prefill + first) * 1000, prefillMS=prefill * 1000,
-                       decodeSeconds=decode, totalGenerationTimeSeconds=data["generationWallSeconds"],
-                       loadTimeSeconds=data["loadTimeSeconds"], stopReason=data["stopReason"],
-                       cpuSecondsDuringGeneration=data["cpuSecondsDuringGeneration"])
-        if n > 1 and decode > 0:
-            metrics["decodeTokensPerSecond"] = (n - 1) / decode
-    if sampler.footprints and done_seen:  # no window without a last token
-        mem = mib(sampler.footprints)
-        metrics.update(memoryPeakDuringDecodeMB=max(mem), memoryMedianMB=statistics.median(mem),
-                       memorySampleCount=len(mem))
-    if after_load is not None:
-        metrics["memoryAfterLoadMB"] = after_load / (1 << 20)
-    if sampler.lifetime_max is not None:
-        metrics["memoryLifetimePeakMB"] = sampler.lifetime_max / (1 << 20)
-    g0, g1 = gpu.get("afterLoad", {}), gpu.get("afterGeneration", {})
-    if "ns" in g0 and "ns" in g1:
-        metrics.update(gpuMillisecondsDuringGeneration=(g1["ns"] - g0["ns"]) / 1e6, gpuClients=g1["clients"])
-    text = data.get("text", "")
-    verdict = text_verdict(args.task, text)
-    text_ok = verdict is None or verdict["status"] == "PASS"
-    witness_ok = (args.backend == "cpu" or (data.get("deviceType") == "WebGPU"
-                  and any("libonnxruntime_providers_webgpu" in p for p in data.get("onnxruntimeImages", []))
-                  and (metrics.get("gpuMillisecondsDuringGeneration") or 0) > 0))
-    numeric = [metrics.get(k) for k in ("promptTokensPerSecond", "decodeTokensPerSecond", "firstTokenLatencyMS",
-                                        "memoryPeakDuringDecodeMB", "memoryMedianMB")]
-    finite = all(isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in numeric)
+    reported = {d["run"]: d for d in data.get("runs", [])}
+    # the runs the process attempted: run 1 whatever happened (the load is part of it), and every
+    # run whose generator it created; the runs after the one that ended it are not attempted
+    attempted = sorted(set(runs) | {1})
     diff = manifest_diff(tdir_before, tdir_after)
     telemetry_clean = not (diff["added"] or diff["removed"] or diff["modified"] or diff["dirCreated"])
-    ok = (data.get("ok") and rc == 0 and finite and 0 < n <= budget and text_ok
-          and witness_ok and sampler.socket_max == 0 and (args.telemetry == "on" or telemetry_clean))
     gpu_accel = (f"{data['registered']['name']} ({Path(data['registered']['library']).name}, onnxruntime-ep-webgpu "
                  f"{VERSIONS['onnxruntime-ep-webgpu']} plugin EP, registered with register_execution_provider_library; "
                  f"genai device_type {data.get('deviceType')})" if data.get("registered")
                  else "none registered (CPU EP)")
-    conditions = {
-        "contextTokens": args.context_tokens, "contextBudget": args.context_tokens,
-        "outputTokenBudget": budget, "maxOutputTokens": budget, "sampler": "greedy",
-        "searchOptions": {"max_length": args.context_tokens, "do_sample": False,
-                          "overrides": "genai_config search: max_length 40960, do_sample true (temperature 0.6, top_k 20, top_p 0.95)"},
-        "pastPresentShareBuffer": json.loads((args.model_dir / "genai_config.json").read_text())["search"].get("past_present_share_buffer"),
-        "chatMode": "single-turn, model chat_template.jinja default (Qwen3 thinking on)", "thinking": True,
-        "telemetry": ("off: ORT_DISABLE_TELEMETRY=1 before init + disable_telemetry_events()" if args.telemetry == "off"
-                      else "ON (comparison run: neither ORT_DISABLE_TELEMETRY nor disable_telemetry_events)"),
-        "metricDefinitions": METRIC_DEFINITIONS, "threads": "engine default",
-        "executionProvider": EPS[args.backend], "gpuAccelerator": gpu_accel,
-        "providerOptions": json.loads((args.model_dir / "genai_config.json").read_text())["model"]["decoder"]["session_options"]["provider_options"],
-        "ortLogging": "ORTGENAI_ORT_VERBOSE_LOGGING=1 (identity evidence; timing perturbed)" if args.ort_verbose else "engine default (ERROR)",
-        "exitCode": rc, "elapsedSeconds": elapsed, "warm": False, "regime": REGIME,
-        "thermalInitial": before["snapshot"]["thermal"], "thermalFinal": after["snapshot"]["thermal"],
-        "loadAverage": before["snapshot"]["loadAverage"], "capturePurpose": args.capture_purpose,
-        "hostQuiet": bool(args.quiet_label) and args.quiet_label in before["snapshot"]["quietWindow"]}
-    if args.campaign_note:
-        conditions["campaignNote"] = args.campaign_note
-    if verdict is not None:
-        conditions["textCheck"] = verdict
-    rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "timestamp": started.isoformat(), "runtime": runtime,
-           "engineVersion": f"onnxruntime-genai {VERSIONS['onnxruntime-genai']} + onnxruntime {VERSIONS['onnxruntime']}"
-                            + (f" + onnxruntime-ep-webgpu {VERSIONS['onnxruntime-ep-webgpu']}" if args.backend == "webgpu" else ""),
-           "engineArtifact": f"libonnxruntime-genai.dylib sha256:{libs['onnxruntime_genai/libonnxruntime-genai.dylib']['sha256']}",
-           "model": {"id": args.model_id, **({"hfRevision": args.hf_revision} if args.hf_revision else {}),
-                     "quantization": quant, "file": args.folder,
-                     "sha256": args.model_sha256, "bytes": args.model_bytes, "files": args.model_files},
-           "task": args.task, "device": before["device"], "conditions": conditions, "metrics": metrics,
-           "harnessStamp": STAMP, "outputSample": text[:200], "status": "ok" if ok else "failed",
-           "provenance": {"rawLog": rel(log), "decodedText": rel(out / f"{stem}.decoded.txt"),
-                          "workerResult": rel(result_path), "harness": "scripts/ortgenai_mac.py",
-                          "campaign": rel(args.campaign_dir), "harnessCommand": shlex.join([sys.executable, *sys.argv]),
-                          "command": shlex.join(cmd), "memoryBasis": MEMORY_BASIS,
-                          "hostBefore": before, "hostAfter": after, "engineLibraries": libs,
-                          "genai": data.get("genai"), "onnxruntimeImages": data.get("onnxruntimeImages"),
-                          "gpuTime": {"basis": "IOKit AGXDeviceUserClient AppUsage accumulatedGPUTime of the engine pid "
-                                               "(ioreg -a -r -c AGXDeviceUserClient), read at LOADED and at DONE",
-                                      "afterLoad": g0, "afterGeneration": g1},
-                          "sockets": {"basis": "proc_pidinfo PROC_PIDLISTFDS every 100 ms from spawn to exit, "
-                                               "fds of type socket", "max": sampler.socket_max, "first": sampler.socket_first},
-                          "lsofWatch": rel(out / f"{stem}.lsof.txt") if watch else None,
-                          "telemetryDir": {"path": str(args.telemetry_dir), "diff": diff,
-                                           "before": tdir_before, "after": tdir_after},
-                          "promptFile": f"prompts/text/{args.task}.txt",
-                          "promptSha256": hashlib.sha256(prompt.encode()).hexdigest(),
-                          "templatedPromptSha256": data.get("templatedPromptSha256"),
-                          "templatedPromptTail": data.get("templatedPromptTail"),
-                          "stepMilliseconds": [round(s * 1000, 3) for s in data.get("stepSeconds", [])],
-                          "modelDir": str(args.model_dir),
-                          "recipe": "models/ortgenai-recipes.json (scripts/ortgenai_recipe.py, read from model.onnx)"}}
-    if data.get("error") or not ok:
-        rec["failureDetail"] = "; ".join(x for x in (
-            data.get("error"), None if rc == 0 else f"exit {rc}", None if finite else "nonfinite or missing metric",
-            None if text_ok else f"text check {verdict['flags']}",
-            None if witness_ok else "WebGPU not witnessed (device_type / plugin image / GPU time)",
-            None if sampler.socket_max == 0 else f"socket fds seen: {sampler.socket_max}",
-            None if (args.telemetry == "on" or telemetry_clean) else f"telemetry dir changed: {diff}") if x)
+    genai_config = json.loads((args.model_dir / "genai_config.json").read_text())
+    records, texts = [], {}
+    for k in attempted:
+        r, d = runs.get(k, {}), reported.get(k)  # d None: run k did not finish
+        before, after = r.get("before") or spawn_host, r.get("after") or exit_host
+        n = d["generatedTokenCount"] if d else 0
+        metrics = {"coldRun": k == 1, "firstEver": bool(args.first_ever and k == 1),
+                   "contextTokensConfigured": args.context_tokens,
+                   "initialThermalState": before["snapshot"]["thermal"], "finalThermalState": after["snapshot"]["thermal"]}
+        if d and n > 0:
+            prefill, first, decode = d["prefillSeconds"], d["firstStepSeconds"], d["decodeSeconds"]
+            metrics.update(promptTokenCount=data["promptTokenCount"], generatedTokenCount=n,
+                           promptTokensPerSecond=data["promptTokenCount"] / prefill,
+                           firstTokenLatencyMS=(prefill + first) * 1000, prefillMS=prefill * 1000,
+                           decodeSeconds=decode, totalGenerationTimeSeconds=d["generationWallSeconds"],
+                           generatorSeconds=d["generatorSeconds"], stopReason=d["stopReason"],
+                           cpuSecondsDuringGeneration=d["cpuSecondsDuringGeneration"])
+            if k == 1:  # the model loads once, before run 1 (a warm run has no load, as in the yardstick)
+                metrics["loadTimeSeconds"] = data["loadTimeSeconds"]
+            if n > 1 and decode > 0:
+                metrics["decodeTokensPerSecond"] = (n - 1) / decode
+        if r.get("footprints") and d:  # no window without the run's last token
+            mem = mib(r["footprints"])
+            metrics.update(memoryPeakDuringDecodeMB=max(mem), memoryMedianMB=statistics.median(mem),
+                           memorySampleCount=len(mem))
+        if r.get("afterLoad") is not None:
+            metrics["memoryAfterLoadMB"] = r["afterLoad"] / (1 << 20)
+        lifetime = r.get("lifetimeMax") or sampler.lifetime_max  # the process's high-water by this run's end
+        if lifetime is not None:
+            metrics["memoryLifetimePeakMB"] = lifetime / (1 << 20)
+        g0, g1 = r.get("gpuReady", {}), r.get("gpuDone", {})
+        if "ns" in g0 and "ns" in g1:
+            metrics.update(gpuMillisecondsDuringGeneration=(g1["ns"] - g0["ns"]) / 1e6, gpuClients=g1["clients"])
+        text = d["text"] if d else ""
+        verdict = text_verdict(args.task, text)
+        text_ok = verdict is None or verdict["status"] == "PASS"
+        witness_ok = (args.backend == "cpu" or (data.get("deviceType") == "WebGPU"
+                      and any("libonnxruntime_providers_webgpu" in p for p in data.get("onnxruntimeImages") or [])
+                      and (metrics.get("gpuMillisecondsDuringGeneration") or 0) > 0))
+        numeric = [metrics.get(key) for key in ("promptTokensPerSecond", "decodeTokensPerSecond", "firstTokenLatencyMS",
+                                                "memoryPeakDuringDecodeMB", "memoryMedianMB")]
+        finite = all(isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in numeric)
+        # a run that finished stands on its own (as a yardstick record written before a later run
+        # throws); the process-wide checks (sockets, the telemetry store) hold for all of them
+        ok = (d is not None and finite and 0 < n <= budget and text_ok and witness_ok
+              and sampler.socket_max == 0 and (args.telemetry == "on" or telemetry_clean))
+        conditions = {
+            "contextTokens": args.context_tokens, "contextBudget": args.context_tokens,
+            "outputTokenBudget": budget, "maxOutputTokens": budget, "sampler": "greedy",
+            "searchOptions": {"max_length": args.context_tokens, "do_sample": False,
+                              "overrides": "genai_config search: max_length 40960, do_sample true (temperature 0.6, top_k 20, top_p 0.95)"},
+            "pastPresentShareBuffer": genai_config["search"].get("past_present_share_buffer"),
+            "chatMode": "single-turn, model chat_template.jinja default (Qwen3 thinking on)", "thinking": True,
+            "telemetry": ("off: ORT_DISABLE_TELEMETRY=1 before init + disable_telemetry_events()" if args.telemetry == "off"
+                          else "ON (comparison run: neither ORT_DISABLE_TELEMETRY nor disable_telemetry_events)"),
+            "metricDefinitions": METRIC_DEFINITIONS, "threads": "engine default",
+            "executionProvider": EPS[args.backend], "gpuAccelerator": gpu_accel,
+            "providerOptions": genai_config["model"]["decoder"]["session_options"]["provider_options"],
+            "ortLogging": "ORTGENAI_ORT_VERBOSE_LOGGING=1 (identity evidence; timing perturbed)" if args.ort_verbose else "engine default (ERROR)",
+            "exitCode": rc, "elapsedSeconds": r.get("elapsed", process_elapsed - (r.get("segmentStart", start) - start)),
+            "processElapsedSeconds": process_elapsed,
+            "warm": k > 1, "regime": REGIME_COLD if k == 1 else REGIME_WARM.format(k=k, n=args.runs),
+            "runIndex": k, "runsInProcess": args.runs, "pauseBetweenRunsSeconds": args.pause,
+            "thermalInitial": before["snapshot"]["thermal"], "thermalFinal": after["snapshot"]["thermal"],
+            "loadAverage": before["snapshot"]["loadAverage"], "capturePurpose": args.capture_purpose,
+            "hostQuiet": bool(args.quiet_label) and args.quiet_label in before["snapshot"]["quietWindow"]}
+        if args.campaign_note:
+            conditions["campaignNote"] = args.campaign_note
+        if verdict is not None:
+            conditions["textCheck"] = verdict
+        rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "timestamp": (r.get("timestamp") or started).isoformat(),
+               "runtime": runtime,
+               "engineVersion": f"onnxruntime-genai {VERSIONS['onnxruntime-genai']} + onnxruntime {VERSIONS['onnxruntime']}"
+                                + (f" + onnxruntime-ep-webgpu {VERSIONS['onnxruntime-ep-webgpu']}" if args.backend == "webgpu" else ""),
+               "engineArtifact": f"libonnxruntime-genai.dylib sha256:{libs['onnxruntime_genai/libonnxruntime-genai.dylib']['sha256']}",
+               "model": {"id": args.model_id, **({"hfRevision": args.hf_revision} if args.hf_revision else {}),
+                         "quantization": quant, "file": args.folder,
+                         "sha256": args.model_sha256, "bytes": args.model_bytes, "files": args.model_files},
+               "task": args.task, "device": before["device"], "conditions": conditions, "metrics": metrics,
+               "harnessStamp": STAMP, "outputSample": text[:200], "status": "ok" if ok else "failed",
+               "provenance": {"rawLog": rel(log), "decodedText": rel(out / f"{stem}_run{k}.decoded.txt"),
+                              "workerResult": rel(result_path), "harness": "scripts/ortgenai_mac.py",
+                              "campaign": rel(args.campaign_dir), "harnessCommand": shlex.join([sys.executable, *sys.argv]),
+                              "command": shlex.join(cmd), "enginePid": proc.pid, "memoryBasis": MEMORY_BASIS,
+                              "hostBefore": before, "hostAfter": after, "engineLibraries": libs,
+                              "genai": data.get("genai"), "onnxruntimeImages": data.get("onnxruntimeImages"),
+                              "gpuTime": {"basis": "IOKit AGXDeviceUserClient AppUsage accumulatedGPUTime of the engine pid "
+                                                   "(ioreg -a -r -c AGXDeviceUserClient), read at READY <k> and at DONE <k>",
+                                          "afterLoad": g0, "afterGeneration": g1},
+                              "sockets": {"basis": "proc_pidinfo PROC_PIDLISTFDS every 100 ms from spawn to exit, "
+                                                   "fds of type socket (the whole engine process, every run)",
+                                          "max": sampler.socket_max, "first": sampler.socket_first},
+                              "lsofWatch": rel(out / f"{stem}.lsof.txt") if watch else None,
+                              "telemetryDir": {"path": str(args.telemetry_dir), "diff": diff,
+                                               "before": tdir_before, "after": tdir_after},
+                              "promptFile": f"prompts/text/{args.task}.txt",
+                              "promptSha256": hashlib.sha256(prompt.encode()).hexdigest(),
+                              "templatedPromptSha256": data.get("templatedPromptSha256"),
+                              "templatedPromptTail": data.get("templatedPromptTail"),
+                              "stepMilliseconds": [round(s * 1000, 3) for s in (d or {}).get("stepSeconds", [])],
+                              "modelDir": str(args.model_dir),
+                              "recipe": "models/ortgenai-recipes.json (scripts/ortgenai_recipe.py, read from model.onnx)"}}
+        if not ok:
+            in_flight = None
+            if d is None:
+                in_flight = (data.get("error") if data.get("errorRun") in (0, k) else None) or (
+                    f"the engine process ended before run {k} finished")
+            rec["failureDetail"] = "; ".join(x for x in (
+                in_flight, None if (d is not None or rc == 0) else f"exit {rc}",
+                None if finite else "nonfinite or missing metric",
+                None if text_ok else f"text check {verdict['flags']}",
+                None if witness_ok else "WebGPU not witnessed (device_type / plugin image / GPU time)",
+                None if sampler.socket_max == 0 else f"socket fds seen: {sampler.socket_max}",
+                None if (args.telemetry == "on" or telemetry_clean) else f"telemetry dir changed: {diff}") if x)
+        records.append(rec)
+        texts[k] = text
     from jsonschema import Draft7Validator, FormatChecker
-    Draft7Validator(json.loads((REPO / "schema/result.v1.json").read_text()), format_checker=FormatChecker()).validate(rec)
+    validator = Draft7Validator(json.loads((REPO / "schema/result.v1.json").read_text()), format_checker=FormatChecker())
+    for rec in records:
+        validator.validate(rec)
     with args.output.open("a") as fh:  # one compact line per run (the runner counts lines with "task")
-        fh.write(json.dumps(rec, ensure_ascii=False, allow_nan=False) + "\n")
-    (out / f"{stem}.decoded.txt").write_text(text + "\n")
-    print(f"{rec['status'].upper()} run {index}: exit={rc} prompt={metrics.get('promptTokenCount')} gen={n} "
-          f"stop={metrics.get('stopReason')} prefill={metrics.get('promptTokensPerSecond') or 0:.1f} tok/s "
-          f"ttft={metrics.get('firstTokenLatencyMS') or 0:.1f} ms decode={metrics.get('decodeTokensPerSecond') or 0:.1f} tok/s "
-          f"peak={metrics.get('memoryPeakDuringDecodeMB') or 0:.0f} MiB gpu={metrics.get('gpuMillisecondsDuringGeneration')} ms "
-          f"sockets={sampler.socket_max} telemetry_dir_clean={telemetry_clean} "
-          f"text={verdict['status'] if verdict else 'gate (outputSample)'} -> {args.output.name}",
-          flush=True)
-    return rec["status"] == "ok"
+        for rec in records:
+            fh.write(json.dumps(rec, ensure_ascii=False, allow_nan=False) + "\n")
+    for rec in records:
+        k, m = rec["conditions"]["runIndex"], rec["metrics"]
+        (out / f"{stem}_run{k}.decoded.txt").write_text(texts[k] + "\n")
+        print(f"{rec['status'].upper()} run {k}/{args.runs} {'cold' if k == 1 else 'warm'}: exit={rc} "
+              f"prompt={m.get('promptTokenCount')} gen={m.get('generatedTokenCount', 0)} stop={m.get('stopReason')} "
+              f"prefill={m.get('promptTokensPerSecond') or 0:.1f} tok/s ttft={m.get('firstTokenLatencyMS') or 0:.1f} ms "
+              f"decode={m.get('decodeTokensPerSecond') or 0:.1f} tok/s peak={m.get('memoryPeakDuringDecodeMB') or 0:.0f} MiB "
+              f"gpu={m.get('gpuMillisecondsDuringGeneration')} ms sockets={sampler.socket_max} "
+              f"telemetry_dir_clean={telemetry_clean} "
+              f"text={rec['conditions']['textCheck']['status'] if 'textCheck' in rec['conditions'] else 'gate (outputSample)'}"
+              f" -> {args.output.name}", flush=True)
+    all_ok = all(rec["status"] == "ok" for rec in records)
+    if len(attempted) < args.runs:
+        print(f"FAIL runs {len(attempted) + 1}..{args.runs} not attempted: the engine process (exit {rc}) "
+              f"ended in run {attempted[-1]}", flush=True)
+    elif rc != 0 and all_ok:
+        print(f"FAIL the engine process exited {rc} after its last run", flush=True)
+    return len(attempted) == args.runs and rc == 0 and all_ok
 
 
 def rel(path):
@@ -661,15 +779,19 @@ def main():
                                                    "keeps its revision and folder)")
     ap.add_argument("--backend", choices=("cpu", "webgpu"), required=True)
     ap.add_argument("--task", choices=TASKS, default="short-chat")
-    ap.add_argument("--runs", type=int, default=1)
+    ap.add_argument("--runs", type=int, default=1,
+                    help="generations in one engine process: run 1 cold, runs 2..N warm (the yardstick's --runs)")
     ap.add_argument("--context-tokens", type=int, default=2048, help="search max_length = the KV allocation")
     ap.add_argument("--output", type=Path, help="the cell's JSONL: one record per run is appended")
     ap.add_argument("--campaign-dir", type=Path,
-                    help="campaign dir; per-run logs go to its ortgenai-logs/ (default: the --output file's dir)")
+                    help="campaign dir; the process's logs go to its ortgenai-logs/ (default: the --output file's dir)")
     ap.add_argument("--smoke", metavar="NOTE", help="a smoke capture: conditions.capturePurpose smoke and NOTE "
                                                     "as conditions.campaignNote (default: measurement, no note)")
-    ap.add_argument("--pause", type=float, default=5.0, help="seconds between runs")
-    ap.add_argument("--timeout", type=int, default=900, help="seconds one engine process may take")
+    ap.add_argument("--pause", type=float, default=0.0,
+                    help="seconds between two runs, the engine process idle (default 0: back to back, as the "
+                         "yardstick's runs)")
+    ap.add_argument("--timeout", type=int, default=900,
+                    help="seconds the import and model load with run 1 may take, and each later run")
     ap.add_argument("--telemetry", choices=("off", "on"), default="off",
                     help="on = comparison evidence only: the engine keeps its default telemetry")
     ap.add_argument("--ort-verbose", action="store_true",
@@ -723,9 +845,11 @@ def main():
                 args.model_dir, args.model_id, args.folder, args.hf_revision)
         print(f"{RUNTIMES[args.backend]} {args.model_id} {args.folder}@{(args.hf_revision or '?')[:12]} ({where})")
         for index in range(1, args.runs + 1):
-            print(f"  run {index}/{args.runs}: fresh engine process; task {args.task} budget {budget}; "
-                  f"max_length {args.context_tokens}; greedy; telemetry {args.telemetry}; "
-                  f"pause {args.pause if index > 1 else 0} s; {args.capture_purpose}")
+            regime = REGIME_COLD if index == 1 else REGIME_WARM.format(k=index, n=args.runs)
+            step = ("engine process starts, model load, new generator" if index == 1
+                    else f"pause {args.pause} s, new generator in the same process")
+            print(f"  run {index}/{args.runs}: {regime}: {step}; task {args.task} budget {budget}; "
+                  f"max_length {args.context_tokens}; greedy; telemetry {args.telemetry}; {args.capture_purpose}")
         print(f"  quantization: {quant}")
         return 0
     for package, version in VERSIONS.items():
@@ -753,12 +877,7 @@ def main():
     # the weights the engine loads: model.onnx plus its external data file where the folder has one
     args.model_bytes = sum(args.model_files[n]["bytes"] for n in ("model.onnx", "model.onnx.data") if n in args.model_files)
     libs = engine_libraries()
-    ok = True
-    for index in range(1, args.runs + 1):
-        if index > 1:
-            time.sleep(args.pause)
-        ok = run_once(args, index, prompt, budget, quant, libs) and ok
-    return 0 if ok else 1
+    return 0 if run_cell(args, prompt, budget, quant, libs) else 1
 
 
 if __name__ == "__main__":

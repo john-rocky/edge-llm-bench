@@ -15,10 +15,8 @@ of `onnx-community/Qwen3-{0.6B,1.7B,4B}-ONNX`, the dashboard's two text tasks
 | Android | `onnxruntime-genai-cpu` | CPU EP | `android/bench/run_cell.py` + `ortgenai_run` |
 | iPhone | `onnxruntime-genai-cpu` | CPU EP | not wired yet (rows disabled) |
 
-`backend=` is arm identity, as for LiteRT-LM. Every run is a fresh engine
-process (cold) on every platform: the arm has no warm regime, so the dashboards
-headline its cold median on the Mac too (`scripts/render_dashboard.py`
-`regime_of`; records carry `conditions.regime`). Gemma 4 E2B / E4B rows stay in
+`backend=` is arm identity, as for LiteRT-LM. The regime is each platform's (see
+"Regime" below): warm runs headline on the Mac, cold on Android. Gemma 4 E2B / E4B rows stay in
 the cells file as `exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe`:
 no published GenAI folder for them, and the official model builder routes Gemma
 4 to its MoE path (the lane's check, 2026-10-07).
@@ -77,6 +75,32 @@ folder 91 int4 / 106 int8, block 32, fp16 scales, an int8 block-32 embedding,
 fp16 activations and KV. The two folders are different recipes, so the CPU and
 WebGPU arms do not run the same weights.
 
+## Regime
+
+The arm runs the regime of the other arms on each platform
+(`methodology/fairness-rules.md` cold-warm-split: a table that compares engines
+holds the regime fixed).
+
+- Mac: one engine process per cell, as `yardstick run --runs N`. It loads the
+  model and the tokenizer once and generates the cell's `runs=` times (4 by
+  default) from the same prompt, back to back (`--pause`, the runner's
+  `ORTGENAI_PAUSE`, default 0), each generation on a new generator, so each run
+  allocates its own KV cache. Run 1 is the process's first generation: `coldRun`
+  true, `conditions.regime` "cold (first generation in the process)". Runs 2..N:
+  `coldRun` false, "warm (generation k of N in one process)". The dashboards
+  headline the median of the warm runs, as for every Mac arm; run 1 stays a
+  record, reported apart. Every run's record carries its own prefill, TTFT,
+  decode and memory (its own generation window) and `conditions.runIndex`;
+  `firstEver` marks run 1 only. A run that fails stays a failed record; the runs
+  after one that ended the engine process are not attempted (no record), as when
+  a yardstick run throws.
+- Android: every run is a fresh `ortgenai_run` process (cold), as for every
+  Android arm (`methodology/android.md`).
+
+Until 2026-10-08 the Mac driver ran one process per run, so every Mac record is
+cold: the 2026-10-07 smoke and wiring-smoke campaigns. Those records have no
+warm run, so a Mac table reads their cells as "records without a decode figure".
+
 ## Timing and memory
 
 The cut points of upstream `benchmark/c` `model_benchmark`, on every platform:
@@ -93,8 +117,8 @@ driver `ortgenai_run` on Android). Greedy (`do_sample` false), the folder's
 (`conditions.metricDefinitions`); stopReason `stop` = EOS, `length` = the budget.
 
 Memory: on the Mac, the engine process's `phys_footprint` sampled every 100 ms
-from after the model and generator are created to the last token (high-water and
-median, MiB), the Apple BenchmarkRunner basis; on Android, the runner's VmRSS /
+from the run's generator creation to its last token (high-water and median, MiB),
+the Apple BenchmarkRunner basis; on Android, the runner's VmRSS /
 VmHWM sampler of the engine process (`rssBasis`). Both folders set
 `past_present_share_buffer`, so GenAI allocates the KV cache for the whole
 `max_length` when the generator is created (zero-filled on the CPU): the memory
@@ -154,7 +178,7 @@ six on the CPU (2026-10-07).
 ~/.venvs/ortgenai-0.17.1/bin/python scripts/ortgenai_mac.py --model-id onnx-community/Qwen3-0.6B-ONNX \
   --file onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 \
   --revision da1453100cf3ff33ef56d17983fc7a8648706db6 --backend cpu --task short-chat \
-  --context-tokens 2048 --runs 3 --output results/raw/<campaign>/<cell>.jsonl
+  --context-tokens 2048 --runs 4 --output results/raw/<campaign>/<cell>.jsonl
 ./bench matrix matrices/dashboard-ortgenai-v1.cells --platform mac
 scripts/bench_matrix_mac.sh run matrices/dashboard-ortgenai-v1.cells --dry-run   # the plan, no engine
 
