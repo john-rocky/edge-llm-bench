@@ -176,7 +176,9 @@ guard(){
 }
 
 running(){ # <ERE> -> 0 when a live process's command line (argv joined by spaces) matches it
-  ps -Awwo command= | grep -Eq "$1"
+  # grep -c reads every line: under `set -o pipefail`, `grep -q` closing early made ps exit 141 (SIGPIPE)
+  # and the pipeline false, so a heavy job was missed (2026-10-08 06:21, a Core AI export at 518 %)
+  [ "$(ps -Awwo command= | grep -Ec "$1")" -gt 0 ]
 }
 
 check_binary(){
