@@ -11,6 +11,10 @@ Writes into --out-dir:
   runs/<UTC stamp>/ (convert / export logs and hydra's resolved config).
 and symlinks <name>.pte, <name>.recipe.json and tokenizer.json from --link-dir.
 
+--set KEY=VALUE appends export_llm hydra overrides after the yaml: the same recipe
+lowered to another delegate (backend.xnnpack.enabled=false ++backend.mlx.enabled=true)
+or with the quantization a delegate takes. The recipe keeps them verbatim.
+
 The venv's python runs with the working directory set to the run dir, never the
 source tree's parent: a directory named `executorch` on sys.path would shadow the
 installed wheel.
@@ -22,6 +26,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shlex
 import shutil
 import subprocess
@@ -91,6 +96,13 @@ def hub_lfs_sha(repo, rev, filename):
     return "unavailable: not an LFS file in the tree listing"
 
 
+def typed(value):
+    """A hydra override's value as the config holds it: true / false, an integer, else the text."""
+    if value.lower() in ("true", "false"):
+        return value.lower() == "true"
+    return int(value) if value.lstrip("-").isdigit() else value
+
+
 def host_facts():
     def cmd(*a):
         try:
@@ -110,6 +122,10 @@ def main():
     ap.add_argument("--params", required=True, help="params json, relative to the source tree")
     ap.add_argument("--config", required=True, help="export_llm config yaml, relative to the source tree")
     ap.add_argument("--name", required=True, help="output stem, e.g. Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048")
+    ap.add_argument("--set", dest="overrides", action="append", default=[], metavar="KEY=VALUE",
+                    help="export_llm hydra override appended after the yaml (repeatable; ++key adds a key the "
+                         "yaml lacks), e.g. backend.xnnpack.enabled=false ++backend.mlx.enabled=true; "
+                         "recorded in the recipe as config_overrides and export_args")
     ap.add_argument("--tag", default="v1.5.1", help="tag the source tree must describe as")
     ap.add_argument("--et-dir", type=Path, default=DEFAULTS["et_dir"])
     ap.add_argument("--venv", type=Path, default=DEFAULTS["venv"])
@@ -153,6 +169,17 @@ def main():
         wheel_copy = site_et / rel
         same[rel] = {"tree": sha256(et / rel), "wheel": sha256(wheel_copy) if wheel_copy.is_file() else "absent"}
         same[rel]["identical"] = same[rel]["tree"] == same[rel]["wheel"]
+    # a delegate an override enables lowers with the wheel's backends/<name>/ python as well
+    for name in sorted({m.group(1) for o in args.overrides
+                        if (m := re.fullmatch(r"\+*backend\.(\w+)\.enabled=(?i:true)", o))}):
+        src = next((d for d in (et / "backends" / name, et / "backends" / "apple" / name) if d.is_dir()), None)
+        if src is None:
+            sys.exit(f"ERROR: no backends/{name} (or backends/apple/{name}) in {et} to check the wheel against")
+        tree_files = sorted(p for p in src.rglob("*.py") if "third-party" not in p.parts)
+        differ = [str(p.relative_to(et)) for p in tree_files
+                  if not (site_et / p.relative_to(et)).is_file() or sha256(p) != sha256(site_et / p.relative_to(et))]
+        same[f"{src.relative_to(et)}/**/*.py"] = {"files": len(tree_files), "differ": differ,
+                                                  "identical": bool(tree_files) and not differ}
     print("wheel vs tree: " + ", ".join(f"{k.rsplit('/', 1)[-1]}={'same' if v['identical'] else 'DIFF'}"
                                         for k, v in same.items()), flush=True)
     if not all(v["identical"] for v in same.values()):
@@ -180,7 +207,7 @@ def main():
         sys.exit(f"ERROR: {pte} exists; move it aside first (an export is never overwritten in place)")
     export_cmd = [py, "-m", "executorch.extension.llm.export.export_llm", "--config", config,
                   f"+base.model_class={args.model_class}", f"+base.params={params}",
-                  f"+base.checkpoint={pth}", f"+export.output_name={pte}"]
+                  f"+base.checkpoint={pth}", f"+export.output_name={pte}", *args.overrides]
     print("export: " + shlex.join(map(str, export_cmd)), flush=True)
     export_secs = run(export_cmd, rundir / "export_llm.log", rundir, env)
     if not pte.is_file():
@@ -226,6 +253,11 @@ def main():
         "exported_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "logs": {"convert": str(rundir / "convert_weights.log"), "export": str(rundir / "export_llm.log")},
     }
+    if args.overrides:
+        # what the yaml does not say: the overrides verbatim, and as typed key -> value pairs
+        # (the cells' recipe= alias checks these, parsers.EXECUTORCH_RECIPES "args")
+        recipe["config_overrides"] = args.overrides
+        recipe["export_args"] = {k.lstrip("+"): typed(v) for k, v in (o.split("=", 1) for o in args.overrides)}
     recipe_path = out / f"{args.name}.recipe.json"
     recipe_path.write_text(json.dumps(recipe, indent=2, ensure_ascii=False) + "\n")
     print(f"pte {pte} {recipe['pte_bytes']} bytes sha256 {recipe['pte_sha256']}", flush=True)

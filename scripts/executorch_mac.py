@@ -91,18 +91,21 @@ def device_info():
             "batteryState": "unknown", "buildConfiguration": "Release"}
 
 
-def witness(runner, binary_sha):
-    """engineVersion = the tag whose environment.lock.json entry (arms.executorch.mac.binaries)
-    holds this binary's sha256 — the observed build, never the newest pin."""
+def witness(runner, binary_sha, backend="xnnpack"):
+    """engineVersion = the tag whose environment.lock.json entry holds this binary's sha256:
+    arms.executorch.mac.binaries for the XNNPACK builds, arms.executorch.mac.backends.<backend>
+    .binaries for another delegate's build — the observed build, never the newest pin."""
+    where = "arms.executorch.mac" + ("" if backend == "xnnpack" else f".backends.{backend}")
     try:
         lock = json.loads((REPO / "environment.lock.json").read_text())
         arm = lock["arms"]["executorch"]
-        entry = arm["mac"]["binaries"][runner]
+        mac = arm["mac"] if backend == "xnnpack" else arm["mac"]["backends"][backend]
+        entry = mac["binaries"][runner]
         if entry.get("sha256") == binary_sha:
             return arm["tag"]
     except (OSError, ValueError, KeyError, TypeError):
         pass
-    return f"unknown (mac {runner} sha unmatched in environment.lock.json arms.executorch.mac)"
+    return f"unknown (mac {runner} sha unmatched in environment.lock.json {where})"
 
 
 def runner_command(binary, inputs, budget, warm):
@@ -170,7 +173,7 @@ def build_record(args, inputs, index, cold, stdout, stderr, exit_code, maxrss_by
     rec = {"schemaVersion": 1, "id": str(uuid.uuid4()),
            "timestamp": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "runtime": f"executorch-{args.backend}",
-           "engineVersion": witness(inputs["runner"], binary_sha),
+           "engineVersion": witness(inputs["runner"], binary_sha, args.backend),
            "engineArtifact": f"{inputs['runner']} sha256:{binary_sha}",
            "model": {"id": args.model_id, **fields["model"]},
            "task": args.task, "device": device, "conditions": conditions, "metrics": metrics,
