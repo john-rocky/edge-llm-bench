@@ -20,7 +20,8 @@ Cells: `matrices/dashboard-executorch-v1-android.cells`, `matrices/dashboard-exe
 (the dashboard model set: Qwen3 0.6B / 1.7B / 4B, Gemma 4 E2B / E4B × short-chat and the 1K text
 task). Runners: `android/bench/run_cell.py --runtime executorch` (through
 `android/bench/run_campaign.py`), `scripts/executorch_mac.py` (through
-`scripts/bench_matrix_mac.sh`). The iPhone arm is not wired.
+`scripts/bench_matrix_mac.sh`). The iPhone rows (`matrices/dashboard-executorch-v1-ios.cells`)
+run in a second build of the iPhone app with ExecuTorch's Swift package linked (section "iPhone").
 
 ## Pins and artifact provenance
 
@@ -211,6 +212,8 @@ token). The stored log keeps it after `===ENGINE_STDERR===`.
 - Mac: run 1 cold, runs 2..N warm (`llama_main --warmup`); the Mac headline is warm.
   `gemma4_e2e_runner` has no warmup, so the Mac Gemma 4 rows are excluded with that reason.
   Android: cold only, one fresh process per run, as the other Android arms.
+  iPhone: run 1 cold (the model loads in the app process), runs 2..N warm in the same process,
+  the runner's KV position reset before every run.
 - Own exports, not published artifacts; the label says so.
 - Prefill includes tokenization with `llama_main` and excludes it with `gemma4_e2e_runner`.
 - Vulkan, QNN and the Mac GPU backends are not measured.
@@ -220,10 +223,105 @@ token). The stored log keeps it after `===ENGINE_STDERR===`.
   is rebooted before a sitting when its uptime is over 2 h (`reboot_before` in
   `ops/dashboard-v1/schedule.json`), and the Qwen3-4B and Gemma 4 E4B rows are
   `exclude-on=pixel8a`.
-- The weekly job does not run these rows yet; section "Weekly job" says what a sitting needs
-  once its cells carry them.
+- iPhone: the ExecuTorch 1.5.0 runtime (the newest release Swift package) runs the 1.5.1 exports;
+  the prompt token count is the host tokenizer's, and the times are the adapter's wall clock.
+- The weekly job runs the Mac rows since 2026-10-08 (section "Weekly job"); the Android and
+  iPhone rows are by-hand sittings.
 - Name an ExecuTorch sitting `<date>-dashboard-executorch-…`: the team dashboard
   (litert-bench-dashboard) reads only campaigns whose name contains `dashboard`.
+
+## iPhone
+
+The app runs the own exports through ExecuTorch's Swift `TextRunner`
+(`extension/llm/apple/ExecuTorchLLM`, the binding over the C++ `TextLLMRunner` that `llama_main`
+drives) on the XNNPACK delegate (`ios/BenchmarkApp/Sources/Runtimes/ExecuTorchRuntime.swift`).
+Core AI and the ExecuTorch package cannot share the app target (both emit
+`include/module.modulemap` into the products directory), so this arm is a second build of the
+same app: `ios/BenchmarkApp/project-executorch.yml` is `project.yml` without Core AI and with the
+ExecuTorch products; the target, scheme, bundle id and every other arm are `project.yml`'s. It
+replaces the Core AI build on the phone for the sittings that run
+`matrices/dashboard-executorch-v1-ios.cells`.
+
+```bash
+cd ios/BenchmarkApp && xcodegen generate --spec project-executorch.yml   # BenchmarkApp-executorch.xcodeproj
+xcodebuild build -project BenchmarkApp-executorch.xcodeproj -scheme BenchmarkApp -configuration Release \
+  -destination 'generic/platform=iOS' -derivedDataPath <dir> -skipPackagePluginValidation \
+  -skipMacroValidation CODE_SIGNING_ALLOWED=NO    # unsigned compile check; the install is signed in Xcode
+```
+
+- Engine: ExecuTorch **1.5.0**. There is no 1.5.1 Swift package (no `swiftpm-1.5.1` branch); the
+  project pins the head of `swiftpm-1.5.0` by revision (`56cc93a96d5f`, prebuilt xcframeworks
+  fetched by the checksums in its `Package.swift`). Between the tags v1.5.0 and v1.5.1 no runtime,
+  kernel, XNNPACK, program-format or LLM-runner source changed (Arm / Cortex-M / NXP backends,
+  export passes, a threadpool getter). The build phase "Stamp engine pins" adds the `executorch`
+  pin read from the resolved package, so records carry `engineVersion` `v1.5.0` and
+  `engineArtifact` `executorch SwiftPM 56cc93a96d5f: executorch_llm-1.5.0.zip sha256:…` (the
+  checksum of every zip the target links). The record's `runtime` is `executorch-xnnpack`.
+- Linkage: the archives that register the backend, the kernels and the prim ops
+  (`executorch`, `backend_xnnpack`, `kernels_llm`, `kernels_optimized`, `kernels_quantized`) are
+  force-loaded, as the ExecuTorch iOS docs' "Linkage" section asks: with `-ObjC` alone none of
+  their registrations links and every `.pte` fails at load.
+- Prompt: the adapter renders Qwen 3's chat template for one user turn
+  (`<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n`, the template's defaults, so
+  the model thinks), byte for byte the prompt the Mac and Android runners read from
+  `<name>.prompts/<task>.chat.txt`.
+- Prompt tokens: the binding reports no statistics. The count is the host tokenizer's for the
+  rendered prompt (`prompts.json` `hostPromptTokens`: 19 short-chat, 1,338 for the 1K task), keyed
+  in `ExecuTorchModelSpec` by the rendered prompt's sha256; a prompt not listed records 0 and no
+  prefill rate. Every run prints `YARDSTICK_NOTE executorch template=… prompt_sha256=…
+  prompt_tokens=… prompt_tokens_source=…` to the console the iPhone runner stores beside the
+  records. The C++ runner also prints its `PyTorchObserver` statistics line to the app's stdout,
+  so the same console holds the runner's own token counts and timestamps.
+- Context: the KV cache is the export's 2048 tokens (`Config.sequenceLength` = 2048). The app
+  records the cell's `context-tokens=` as the run's allocation, so every iPhone row names 2048.
+- Gemma 4 is excluded (`exclude=gemma4-no-swift-runner-for-text_decoder-method`): its `.pte` has
+  the one method `text_decoder` (three inputs, no metadata methods), which `TextRunner` cannot
+  drive, and `gemma4_e2e_runner` has no Swift binding.
+
+The adapter's numbers, beside the `llama_main` definitions above (adapter clock:
+`CFAbsoluteTimeGetCurrent`, seconds as a double):
+
+| | iPhone (`TextRunner`) | Mac / Android (`llama_main`) |
+|---|---|---|
+| prefill window | the `generate` call to the first token callback: tokenization, the prefill, the first sample and its decode to text | `inference_start_ms` to `prompt_eval_end_ms` (tokenization included) |
+| prefill tok/s | host prompt tokens / that window | `prompt_tokens` / that window |
+| TTFT | the harness's run start to the first streamed chunk | `first_token_ms - inference_start_ms` |
+| decode window | the first token callback to `generate` returning | `prompt_eval_end_ms` to `inference_end_ms` |
+| decode tokens | token callbacks - 1 (the decode loop; the reply has one more) | `generated_tokens` (the decode loop) |
+| stop reason | `length` when the reply reaches the task budget | (the runner logs `Max new tokens N reached!`) |
+
+### Side-load
+
+The catalog rows have no Hub repo behind them: the app reads
+`Documents/models/executorch/<model id with "/" as "__">/` and reports a missing file at load (no
+download). Copy a folder holding the `.pte` and `tokenizer.json` (copies or hard links), one per
+model, over USB:
+
+```bash
+APP=com.example.CoreMLLLMChat DEV=<CoreDevice id>   # scripts/bench_matrix_iphone.sh's defaults
+M=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048     # then Qwen3-1.7B-…, Qwen3-4B-…
+xcrun devicectl device copy to --device "$DEV" --domain-type appDataContainer \
+  --domain-identifier "$APP" --source <folder with $M.pte and tokenizer.json> \
+  --destination "Documents/models/executorch/own-export__$M"
+```
+
+The three models take about 4.2 GB of app storage (`.pte` 469 + 1,204 + 2,469 MB, `tokenizer.json`
+11 MB each). Records are pulled by the iPhone runner as for every other arm
+(`Documents/results`).
+
+Before the first sitting, the iPhone runner (`scripts/bench_matrix_iphone.sh`) has to map an
+executorch row: it forwards a row's `backend=` as `--litert-backend` for every runtime, which the
+app refuses for `xnnpack` (`YARDSTICK_FATAL bad --litert-backend`), and its capture gate looks the
+records up by the cells runtime (`executorch_…`) while their files carry the record runtime
+(`executorch-xnnpack_…`).
+
+### Install (a person, Xcode)
+
+1. Open `ios/BenchmarkApp/BenchmarkApp-executorch.xcodeproj` (after `scripts/bootstrap.sh` has filled `Vendored/`).
+2. Target `BenchmarkApp`, Signing & Capabilities: the team, and the bundle id `com.example.CoreMLLLMChat` (the bench App ID).
+3. The two increased-memory entitlements (`BenchmarkApp.entitlements`: increased-memory-limit, extended-virtual-addressing) must be granted by the profile.
+4. Scheme `BenchmarkApp`, Run, Build Configuration `Release` (records state it as `device.buildConfiguration`); run it on the bench iPhone, which replaces the Core AI build.
+5. Stage the models (above) before the sitting.
 
 ## Status (2026-10-08)
 
@@ -238,6 +336,9 @@ r1 on the Mac, r2 on the S26, r3's Gemma 4 E2B run with `gemma4_e2e_runner`; `ll
 --method_name text_decoder` exits 1 on that export) are not measurements. The runners' output of those smokes is
 the parser fixture (`android/bench/testdata/executorch/`), and `android/bench/selftest.py` runs
 the Android path end to end on it with no phone.
+
+iPhone: round r6-ios built the app with the ExecuTorch package (an unsigned Release compile on
+the Mac); it has not run on a phone yet.
 
 ## Run one cell
 

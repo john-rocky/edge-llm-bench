@@ -415,7 +415,7 @@ class ExecuTorchArm(unittest.TestCase):
                                         "android", "bench"))
         import run_campaign
         import run_cell
-        for plat in ("android", "mac"):
+        for plat in ("android", "mac", "ios"):
             self.assertEqual(render_dashboard.arm_of(plat, "executorch", {"backend": "xnnpack"}), "executorch-xnnpack")
         self.assertEqual(render_dashboard.arm_of("android", "executorch", {"backend": "vulkan"}), "executorch-vulkan")
         self.assertEqual(run_cell.arm_name("executorch", "xnnpack"), "executorch-xnnpack")
@@ -430,13 +430,22 @@ class ExecuTorchArm(unittest.TestCase):
         good = (self.ROW.format(plat="android", task="short-chat", backend="xnnpack", extra="")
                 + self.ROW.format(plat="android", task="long-context-1024-gen256", backend="xnnpack",
                                   extra=" context-tokens=2048")
-                + self.ROW.format(plat="mac", task="short-chat", backend="xnnpack", extra=" runs=4"))
+                + self.ROW.format(plat="mac", task="short-chat", backend="xnnpack", extra=" runs=4")
+                + self.ROW.format(plat="ios", task="short-chat", backend="xnnpack",
+                                  extra=" context-tokens=2048 runs=4"))
         path, _ = self.cells(good)
         self.assertEqual(validate_cells.validate_file(path), ([], []))
         bad = {
             self.ROW.format(plat="android", task="short-chat", backend="gpu", extra=""): "backend=<qnn|vulkan|xnnpack>",
             self.ROW.format(plat="mac", task="short-chat", backend="vulkan", extra=""): "backend=<coreml|metal|mlx|xnnpack>",
-            self.ROW.format(plat="ios", task="short-chat", backend="xnnpack", extra=""): "rows are android / mac",
+            # the iPhone app (project-executorch.yml) links XNNPACK only and records the cell's
+            # context-tokens= as the run's allocation
+            self.ROW.format(plat="ios", task="short-chat", backend="coreml", extra=" context-tokens=2048"):
+                "backend=<xnnpack>",
+            self.ROW.format(plat="ios", task="short-chat", backend="xnnpack", extra=""):
+                "an ios executorch row needs context-tokens=",
+            self.ROW.format(plat="ios", task="short-chat", backend="xnnpack", extra=" context-tokens=2048 runs=1"):
+                "runs>=2",
             self.ROW.format(plat="android", task="long-context-1024-gen256", backend="xnnpack", extra=""):
                 "needs context-tokens=",
             self.ROW.format(plat="android", task="long-context-1024-gen256", backend="xnnpack",

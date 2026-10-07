@@ -68,6 +68,9 @@ ANDROID_LLAMA_BACKENDS = {"npu", "gpu"}
 # scripts/executorch_mac.py)
 EXECUTORCH_BACKENDS = {"android": {"xnnpack", "vulkan", "qnn"}, "mac": {"xnnpack", "mlx", "metal", "coreml"}}
 EXECUTORCH_TASKS = {"short-chat", "long-context-1024-gen256"}
+# an iPhone executorch row: the app built from ios/BenchmarkApp/project-executorch.yml, the
+# ExecuTorch SwiftPM runtime with the XNNPACK delegate only (docs/executorch-arm-v1.md "iPhone")
+EXECUTORCH_BACKENDS["ios"] = {"xnnpack"}
 # runtimes whose backend= values are not BACKENDS: the ORT GenAI arm names its execution
 # provider (cpu = the CPU EP; webgpu = the WebGPU plugin EP, Mac only)
 BACKENDS_OF = {"onnxruntime-genai": {"cpu", "webgpu"}}
@@ -211,6 +214,16 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
             elif "recipe" in opts and not (TTS_TASK.match(task) and plat == "android"):
                 errors.append(f"{where}: recipe= currently belongs to uzu cells and android "
                               "tts-rtf-* rows only")
+            # an iPhone executorch row: the app records the cell's context-tokens= as the run's
+            # KV allocation (BenchmarkRunner contextTokensConfigured; without it, its own
+            # estimate), so every row names the export's; run 1 is cold, runs 2..N warm in the
+            # same app process
+            if plat == "ios" and rt == "executorch":
+                if "context-tokens" not in opts:
+                    errors.append(f"{where}: an ios executorch row needs context-tokens=<the export's "
+                                  "allocation> on every task (the app records the cell's value)")
+                if not opts.get("exclude") and int(opts.get("runs", "4")) < 2:
+                    errors.append(f"{where}: an ios executorch row needs runs>=2 (run 1 cold, the rest warm)")
             if rt != "uzu" and "thinking" in opts:
                 errors.append(f"{where}: thinking= currently belongs to uzu cells only")
             if rt == "onnxruntime-genai":
