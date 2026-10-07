@@ -203,3 +203,13 @@ on); that activity is absent from every round-2 and round-3 window. It is a lead
 in its window), not an established cause; the slow cycles' signature — GPU at full clock and 99 % busy against
 91–92 % when fast, prefill and TTFT intact — fits a second GPU client. What ran on the DDP pool device beside the
 measured process is not known. Details and per-window counts: `s26-cycle-drop/table-cycle-drop.md`.
+
+Round 4 (2026-10-08 02:00–02:08 JST; `s26-cycle-drop/round4-maxtokens/`): how this bundle's gpu prefill moves with
+`--max_num_tokens` and with the cache files, on the quiet S26 (screen dozing, 0 screenshot / touch lines), one cycle
+per process, three of each setting in turn 30 s apart. `--max_num_tokens=1280` (the DDP value) 3991 tok/s median
+prefill, `4096` 3195 (−20 %); decode 45.5 and 45.0; TTFT 0.28 and 0.34 s; peak memory 691–697 and 717–761 MB.
+Without the flag the binary sets 1280 itself in benchmark mode (settings dump `max_tokens: 1280`, help text quoted
+in the table file), so "no flag" is the same as 1280 here and does not reproduce an app that sets nothing. Cold (no
+cache files): init 6494–6810 ms against 2097–2272 ms cached, prefill 3479 and 3995 (two samples, −13 % and ±0
+against the cached median). A process at 4096 started with the caches written at 1280 initialized as if uncached
+(6454 ms). Details: `s26-cycle-drop/round4-maxtokens/table-maxtokens.md`.
