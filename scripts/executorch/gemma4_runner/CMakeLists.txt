@@ -17,6 +17,11 @@
 #   cmake -S scripts/executorch/gemma4_runner -B <ET>/cmake-out/examples/models/gemma4-r3 \
 #     -DCMAKE_BUILD_TYPE=Release -DEXECUTORCH_ROOT=<ET> -DET_CMAKE_OUT=<ET>/cmake-out
 #   cmake --build <ET>/cmake-out/examples/models/gemma4-r3 --target gemma4_e2e_runner -j
+#
+# Android (arm64-v8a): android/scripts/build_executorch_llama_main.sh configures this file
+# with the NDK toolchain against its stage-1 install (ET_CMAKE_OUT=<ET>/cmake-out-android);
+# the if(ANDROID) blocks below apply what examples/models/llama/CMakeLists.txt applies to
+# llama_main there.
 cmake_minimum_required(VERSION 3.24)
 project(gemma4_e2e_runner C CXX)
 
@@ -82,12 +87,29 @@ set(link_libraries
     extension_llm_runner
     tokenizers::tokenizers
 )
+if(ANDROID)
+  # The llama README's stage 1 builds no torchao kernels for Android (the llm preset turns
+  # them on for Apple silicon only); llama_main links them only if(TARGET
+  # torchao_ops_executorch), and neither runner's .pte calls one. cpuinfo logs through
+  # liblog there.
+  foreach(_lib torchao_ops_executorch kleidiai)
+    if(NOT TARGET ${_lib})
+      list(REMOVE_ITEM link_libraries ${_lib})
+    endif()
+  endforeach()
+  list(APPEND link_libraries log)
+endif()
 foreach(_lib optimized_native_cpu_ops_lib quantized_ops_lib custom_ops
              torchao_ops_executorch xnnpack_backend
 )
-  executorch_target_link_options_shared_lib(${_lib})
+  if(TARGET ${_lib})
+    executorch_target_link_options_shared_lib(${_lib})
+  endif()
 endforeach()
 target_link_libraries(gemma4_e2e_runner PUBLIC ${link_libraries})
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   target_link_options_gc_sections(gemma4_e2e_runner)
+  if(ANDROID)
+    target_link_options(gemma4_e2e_runner PRIVATE "LINKER:-s")
+  endif()
 endif()
