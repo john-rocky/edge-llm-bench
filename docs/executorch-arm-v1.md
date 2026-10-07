@@ -35,8 +35,12 @@ task). Runners: `android/bench/run_cell.py --runtime executorch` (through
   pushed: `adb push android/bin/executorch-v1.5.1 /data/local/tmp/llmbench/`. The runner stamps
   `engineVersion` from the on-device binary's sha256 (`<runner>_sha256` for the XNNPACK build,
   `<runner>_<backend>_sha256` for another); an unmatched binary stamps `unknown (…)`.
-  `gemma4_e2e_runner` has no Android build yet: the Android Gemma 4 rows stop at the binary
-  check, with the push command, until one is built and pinned.
+  `gemma4_e2e_runner` is built for Android by the same script since 2026-10-08 (the tag's
+  `examples/models/gemma4` runner sources with the CMake list under
+  `scripts/executorch/gemma4_runner/`, the same tag and options as `llama_main`) and pinned
+  beside it; the Galaxy S26 matrix driver is `android/scripts/executorch_matrix_s26.sh`
+  (one model per queued hold, the cells file's rows one at a time, the `.pte` pushed for
+  the slot and removed after it).
 - Mac build (`scripts/executorch/build_llama_main_mac.sh`): `cmake --workflow --preset
   llm-release`, then `cmake --workflow --preset llama-release` in `examples/models/llama`
   (Release; ET_LOG compiled out; the preset also builds Core ML and the torchao kernels,
