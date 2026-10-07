@@ -1,0 +1,15 @@
+# round r7b-mac (2026-10-08), campaign 2026-10-08-dashboard-executorch-v1-m4max-mlx-mac: the
+# backend=mlx rows of matrices/dashboard-executorch-v1-mac.cells (lines below copied verbatim; the
+# Gemma 4 rows stay excluded with their reason). Run with scripts/bench_matrix_mac.sh run inside
+# the round's quiet window (quiet_hold et-r7b-mac), ET_MODEL_DIR = the main checkout's models/executorch.
+
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 runs=4
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 runs=4
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 runs=4 exclude=gemma4-exporter-has-no-mlx-path
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 context-tokens=2048 runs=4 exclude=gemma4-exporter-has-no-mlx-path
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 runs=4
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 runs=4 exclude=gemma4-exporter-has-no-mlx-path
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-exporter-has-no-mlx-path
