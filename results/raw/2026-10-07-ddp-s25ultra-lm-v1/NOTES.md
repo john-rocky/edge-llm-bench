@@ -225,3 +225,10 @@ measured 313.5 / 35.10 / 3.29 s / 228 ms / 2504 MB. Both processes exit 0 in bot
 dump; no error line. The gpu prefill at 4096 sits about a fifth under the 1280 sessions of 2026-10-07, the size of the
 1280 → 4096 step measured on the S26 (round 4). Files: `iter-check/ddp-session/<session>/`, `run-log-aligned.txt`,
 `sessions-aligned.tsv`, `tools/`. Not rows of `table.md` or `results/summary`; nothing added to leaderboard data.
+
+Round 6 (2026-10-08 03:19–03:53 JST): two more gpu and two more cpu sessions at the same arguments (order gpu, cpu, gpu,
+cpu; all passed at the first try), so `iter-check/table-aligned.md` now holds three sessions per backend with medians
+and spreads. gpu cold prefill 2710.0 / 2937.3 / 2798.6 (median 2798.6, spread 8.4 %), cached 2996.2 / 3027.8 / 2914.0
+(median 2996.2, spread 3.9 %); gpu decode 44.70–45.57 cold, 43.96–47.07 cached. cpu cold prefill 326.4–339.1 (median
+329.3), cached 305.2–313.5 (median 305.3); cpu decode 34.0–35.4; 4 threads. Sessions session-76bb31e7 and
+session-93c1148a (gpu), session-20550b6d and session-ca7670c5 (cpu). Bucket inputs back to 11,680,278,877 bytes.

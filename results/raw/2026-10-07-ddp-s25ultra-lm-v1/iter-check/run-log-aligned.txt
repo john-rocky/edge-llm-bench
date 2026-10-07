@@ -242,3 +242,423 @@ Removing gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmar
 2
 exit=0
 ### END 02:58:55 JST
+
+# round 6 (2026-10-08 03:19 JST, owner GO 03:2x): two more gpu and two more cpu sessions at the same arguments, gpu -> cpu -> gpu -> cpu, one at a time
+
+### CMD: gcloud config list 2>&1 | sed 's/^account = .*/account = ACCOUNT/'  (account and project, read only)
+### START 2026-10-08 03:19:35 JST
+[core]
+account = ACCOUNT
+disable_usage_reporting = True
+project = litert-edge-portal
+
+Your active configuration is: [default]
+exit=0
+### END 03:19:37 JST
+
+### CMD: gcloud storage ls -l gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main 2>&1  (what latest holds, read only)
+### START 2026-10-08 03:19:37 JST
+  40382152  2026-09-18T18:33:54Z  gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main
+TOTAL: 1 objects, 40382152 bytes (38.51MiB)
+exit=0
+### END 03:19:37 JST
+
+### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && pip show litert-cli-nightly 2>/dev/null | head -2  (the venv and its CLI version)
+### START 2026-10-08 03:19:37 JST
+Name: litert-cli-nightly
+Version: 0.3.0.dev20261006
+exit=0
+### END 03:19:38 JST
+
+### CMD: shasum -a 256 /Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm  (the bundle's sha256)
+### START 2026-10-08 03:19:38 JST
+181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c  /Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm
+exit=0
+### END 03:19:42 JST
+
+### CMD: ps -axo command | grep -i 'litert benchmark' | grep -v grep | wc -l  (no other DDP driver on this machine)
+### START 2026-10-08 03:19:42 JST
+       0
+exit=0
+### END 03:19:43 JST
+
+### CMD: ls /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check/ddp-session/ | grep -c -E 'session-e60522b0|session-c3c1094e'  (round 5's two sessions are in the record)
+### START 2026-10-08 03:19:43 JST
+2
+exit=0
+### END 03:19:43 JST
+
+### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### START 2026-10-08 03:19:43 JST
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
+Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-d6b49c2b/...
+Fetching GCP access token...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpohohup49/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-d6b49c2b/...
+Submitting 'gpu' benchmark session 'litert-cli-benchmark-d6b49c2b' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Benchmark session submitted successfully!
+Waiting for session 'session-76bb31e7' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791397333694-65d4431b9f80d-52ad6ee9-cb63e7ed, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-76bb31e7
+..................
+Session 'session-76bb31e7' finished: PASSED
+
+Job 'gpu-pa3q-35': PASSED
+Output files saved to: /Users/USER/.cache/litert-cli/ddp/session-76bb31e7/gpu-pa3q-35
+10-07 11:25:58.237  3733  3733 I native  : I0000 00:00:1791397558.237361    3733 litert_lm_lib.cc:505] Choose backend: gpu
+10-07 11:25:58.237  3733  3733 I native  : I0000 00:00:1791397558.237586    3733 litert_lm_lib.cc:661] executor_settings: backend: GPU
+10-07 11:25:58.237  3733  3733 I native  : I0000 00:00:1791397558.237611    3733 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:25:58.237  3733  3733 I native  : I0000 00:00:1791397558.237613    3733 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:25:58.237  3733  3733 I native  : I0000 00:00:1791397558.237617    3733 litert_lm_lib.cc:697] Creating engine
+10-07 11:25:58.237  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:25:58.238  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:25:58.238  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:25:58.239  3733  3733 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:25:58.275  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:25:58.275  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:25:58.275  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:25:58.276  3733  3733 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:25:58.406  3733  3733 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-07 11:25:58.406  3733  3733 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-07 11:26:03.816  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:26:03.816  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:26:03.817  3733  3733 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:26:03.817  3733  3733 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:26:03.948  3733  3733 I native  : I0000 00:00:1791397563.948565    3733 litert_lm_lib.cc:865] Creating conversation
+10-07 11:26:03.951  3733  3733 I native  : I0000 00:00:1791397563.951278    3733 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:26:09.918  3733  3733 I native  : I0000 00:00:1791397569.918409    3733 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:26:09.919  3733  3733 I native  :     - Init Executor: 5710.68 ms
+10-07 11:26:09.919  3733  3733 I native  :     - Init Total: 5710.85 ms
+10-07 11:26:09.919  3733  3733 I native  :   Time to first token: 0.37 s
+10-07 11:26:09.919  3733  3733 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:26:09.919  3733  3733 I native  :     Prefill Turn 1: Processed 1024 tokens in 348.621615ms duration.
+10-07 11:26:09.919  3733  3733 I native  :       Prefill Speed: 2937.28 tokens/sec.
+10-07 11:26:09.919  3733  3733 I native  :   Decode Turns (Total 1 turns):
+10-07 11:26:09.919  3733  3733 I native  :     Decode Turn 1: Processed 256 tokens in 5.617281977s duration.
+10-07 11:26:09.919  3733  3733 I native  :       Decode Speed: 45.57 tokens/sec.
+10-07 11:26:09.925  3733  3733 I native  : I0000 00:00:1791397569.924949    3733 litert_lm_lib.cc:474] Peak system ram usage: 747.684MB.
+10-07 11:26:09.925  3733  3733 I native  : I0000 00:00:1791397569.925227    3733 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 765.628 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 784.003 MB
+10-07 11:26:09.925  3733  3733 I native  : I0000 00:00:1791397569.925561    3733 litert_lm_lib.cc:477] Peak private footprint: 747.684MB.
+10-07 11:26:10.268  3796  3796 I native  : I0000 00:00:1791397570.268496    3796 litert_lm_lib.cc:505] Choose backend: gpu
+10-07 11:26:10.269  3796  3796 I native  : I0000 00:00:1791397570.269304    3796 litert_lm_lib.cc:661] executor_settings: backend: GPU
+10-07 11:26:10.269  3796  3796 I native  : I0000 00:00:1791397570.269346    3796 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:26:10.269  3796  3796 I native  : I0000 00:00:1791397570.269357    3796 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:26:10.269  3796  3796 I native  : I0000 00:00:1791397570.269369    3796 litert_lm_lib.cc:697] Creating engine
+10-07 11:26:10.270  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:26:10.270  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:26:10.270  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:26:10.271  3796  3796 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:26:10.318  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:26:10.318  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:26:10.319  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:26:10.319  3796  3796 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:26:10.396  3796  3796 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-07 11:26:10.396  3796  3796 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-07 11:26:12.248  3796  3796 I native  : I0000 00:00:1791397572.248531    3796 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:26:12.441  3796  3796 I native  : I0000 00:00:1791397572.441705    3796 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:26:12.534  3796  3796 I native  : I0000 00:00:1791397572.534505    3796 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:26:12.641  3796  3796 I native  : I0000 00:00:1791397572.641825    3796 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:26:12.656  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:26:12.657  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:26:12.657  3796  3796 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:26:12.657  3796  3796 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:26:12.729  3796  3796 I native  : I0000 00:00:1791397572.729538    3796 litert_lm_lib.cc:865] Creating conversation
+10-07 11:26:12.730  3796  3796 I native  : I0000 00:00:1791397572.730357    3796 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:26:18.892  3796  3796 I native  : I0000 00:00:1791397578.892775    3796 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:26:18.893  3796  3796 I native  :     - Init Executor: 2459.92 ms
+10-07 11:26:18.893  3796  3796 I native  :     - Init Total: 2460.08 ms
+10-07 11:26:18.894  3796  3796 I native  :   Time to first token: 0.36 s
+10-07 11:26:18.894  3796  3796 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:26:18.894  3796  3796 I native  :     Prefill Turn 1: Processed 1024 tokens in 338.197239ms duration.
+10-07 11:26:18.894  3796  3796 I native  :       Prefill Speed: 3027.82 tokens/sec.
+10-07 11:26:18.894  3796  3796 I native  :   Decode Turns (Total 1 turns):
+10-07 11:26:18.894  3796  3796 I native  :     Decode Turn 1: Processed 256 tokens in 5.823338436s duration.
+10-07 11:26:18.894  3796  3796 I native  :       Decode Speed: 43.96 tokens/sec.
+10-07 11:26:18.915  3796  3796 I native  : I0000 00:00:1791397578.915753    3796 litert_lm_lib.cc:474] Peak system ram usage: 720.844MB.
+10-07 11:26:18.915  3796  3796 I native  : I0000 00:00:1791397578.915854    3796 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 738.144 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 755.859 MB
+10-07 11:26:18.916  3796  3796 I native  : I0000 00:00:1791397578.916001    3796 litert_lm_lib.cc:477] Peak private footprint: 720.844MB.
+LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the other 1:
+  prefill 3027.8 tokens/s, decode 44.0 tokens/s, time to first token 0.36 s; init 2460 ms (cold 5711 ms in the first process); peak memory 721 MB (RSS)
+exit=0
+### END 03:26:53 JST
+
+### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### START 2026-10-08 03:26:53 JST
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
+Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-4a2460a2/...
+Fetching GCP access token...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpdobsfh4g/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-4a2460a2/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-4a2460a2' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Benchmark session submitted successfully!
+Waiting for session 'session-20550b6d' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791397800146-65d444d8777ac-02370c5f-8c1280f4, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-20550b6d
+........................
+Session 'session-20550b6d' finished: PASSED
+
+Job 'cpu-pa3q-35': PASSED
+Output files saved to: /Users/USER/.cache/litert-cli/ddp/session-20550b6d/cpu-pa3q-35
+10-07 11:35:11.137 14091 14091 I native  : I0000 00:00:1791398111.137143   14091 litert_lm_lib.cc:505] Choose backend: cpu
+10-07 11:35:11.137 14091 14091 I native  : I0000 00:00:1791398111.137318   14091 litert_lm_lib.cc:661] executor_settings: backend: CPU
+10-07 11:35:11.137 14091 14091 I native  : I0000 00:00:1791398111.137345   14091 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:35:11.137 14091 14091 I native  : I0000 00:00:1791398111.137349   14091 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:35:11.137 14091 14091 I native  : I0000 00:00:1791398111.137355   14091 litert_lm_lib.cc:697] Creating engine
+10-07 11:35:11.146 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:35:11.148 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:35:11.148 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:35:11.149 14091 14091 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:35:11.199 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:35:11.199 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:35:11.199 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:35:11.199 14091 14091 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:35:13.240 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:35:13.241 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:35:13.241 14091 14091 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:35:13.241 14091 14091 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:35:13.290 14091 14091 I native  : I0000 00:00:1791398113.290872   14091 litert_lm_lib.cc:865] Creating conversation
+10-07 11:35:13.291 14091 14091 I native  : I0000 00:00:1791398113.291533   14091 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:35:23.735 14091 14091 I native  : I0000 00:00:1791398123.735522   14091 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:35:23.735 14091 14091 I native  :     - Init Executor: 2144.34 ms
+10-07 11:35:23.735 14091 14091 I native  :     - Init Total: 2153.42 ms
+10-07 11:35:23.735 14091 14091 I native  :   Time to first token: 3.14 s
+10-07 11:35:23.735 14091 14091 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:35:23.735 14091 14091 I native  :     Prefill Turn 1: Processed 1024 tokens in 3.110014218s duration.
+10-07 11:35:23.735 14091 14091 I native  :       Prefill Speed: 329.26 tokens/sec.
+10-07 11:35:23.735 14091 14091 I native  :   Decode Turns (Total 1 turns):
+10-07 11:35:23.735 14091 14091 I native  :     Decode Turn 1: Processed 256 tokens in 7.333471716s duration.
+10-07 11:35:23.735 14091 14091 I native  :       Decode Speed: 34.91 tokens/sec.
+10-07 11:35:23.779 14091 14091 I native  : I0000 00:00:1791398123.779335   14091 litert_lm_lib.cc:474] Peak system ram usage: 2606.18MB.
+10-07 11:35:23.779 14091 14091 I native  : I0000 00:00:1791398123.779525   14091 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 2668.73 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 2732.78 MB
+10-07 11:35:23.779 14091 14091 I native  : I0000 00:00:1791398123.779700   14091 litert_lm_lib.cc:477] Peak private footprint: 2606.18MB.
+10-07 11:35:23.969 14139 14139 I native  : I0000 00:00:1791398123.969785   14139 litert_lm_lib.cc:505] Choose backend: cpu
+10-07 11:35:23.969 14139 14139 I native  : I0000 00:00:1791398123.969917   14139 litert_lm_lib.cc:661] executor_settings: backend: CPU
+10-07 11:35:23.969 14139 14139 I native  : I0000 00:00:1791398123.969943   14139 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:35:23.969 14139 14139 I native  : I0000 00:00:1791398123.969953   14139 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:35:23.969 14139 14139 I native  : I0000 00:00:1791398123.969963   14139 litert_lm_lib.cc:697] Creating engine
+10-07 11:35:23.970 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:35:23.970 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:35:23.971 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:35:23.971 14139 14139 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:35:24.008 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:35:24.008 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:35:24.009 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:35:24.009 14139 14139 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:35:24.050 14139 14139 I tflite  : XNNPack weight cache loaded from '/data/local/tmp/litert-cli/gemma-4-E2B-it.litertlm_1791398109_2588147712.xnnpack_cache'.
+10-07 11:35:24.148 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:35:24.148 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:35:24.148 14139 14139 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:35:24.148 14139 14139 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:35:24.202 14139 14139 I native  : I0000 00:00:1791398124.201998   14139 litert_lm_lib.cc:865] Creating conversation
+10-07 11:35:24.202 14139 14139 I native  : I0000 00:00:1791398124.202816   14139 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:35:35.082 14139 14139 I native  : I0000 00:00:1791398135.082102   14139 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:35:35.082 14139 14139 I native  :     - Init Executor: 231.68 ms
+10-07 11:35:35.082 14139 14139 I native  :     - Init Total: 231.92 ms
+10-07 11:35:35.082 14139 14139 I native  :   Time to first token: 3.38 s
+10-07 11:35:35.082 14139 14139 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:35:35.082 14139 14139 I native  :     Prefill Turn 1: Processed 1024 tokens in 3.355251144s duration.
+10-07 11:35:35.082 14139 14139 I native  :       Prefill Speed: 305.19 tokens/sec.
+10-07 11:35:35.082 14139 14139 I native  :   Decode Turns (Total 1 turns):
+10-07 11:35:35.082 14139 14139 I native  :     Decode Turn 1: Processed 256 tokens in 7.523552757s duration.
+10-07 11:35:35.082 14139 14139 I native  :       Decode Speed: 34.03 tokens/sec.
+10-07 11:35:35.090 14139 14139 I native  : I0000 00:00:1791398135.090547   14139 litert_lm_lib.cc:474] Peak system ram usage: 2504.16MB.
+10-07 11:35:35.090 14139 14139 I native  : I0000 00:00:1791398135.090579   14139 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 2564.26 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 2625.81 MB
+10-07 11:35:35.090 14139 14139 I native  : I0000 00:00:1791398135.090647   14139 litert_lm_lib.cc:477] Peak private footprint: 2504.16MB.
+LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the other 1:
+  prefill 305.2 tokens/s, decode 34.0 tokens/s, time to first token 3.38 s; init 232 ms (cold 2153 ms in the first process); peak memory 2504 MB (RSS)
+exit=0
+### END 03:36:17 JST
+
+### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --gpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B gpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### START 2026-10-08 03:36:17 JST
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
+Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-3c28cac7/...
+Fetching GCP access token...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmpgtu4gbgt/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-3c28cac7/...
+Submitting 'gpu' benchmark session 'litert-cli-benchmark-3c28cac7' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Benchmark session submitted successfully!
+Waiting for session 'session-93c1148a' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791398363724-65d446f1efc98-950dc942-ed5cab9c, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-93c1148a
+..................
+Session 'session-93c1148a' finished: PASSED
+
+Job 'gpu-pa3q-35': PASSED
+Output files saved to: /Users/USER/.cache/litert-cli/ddp/session-93c1148a/gpu-pa3q-35
+10-07 11:42:56.088  8635  8635 I native  : I0000 00:00:1791398576.088185    8635 litert_lm_lib.cc:505] Choose backend: gpu
+10-07 11:42:56.097  8635  8635 I native  : I0000 00:00:1791398576.097265    8635 litert_lm_lib.cc:661] executor_settings: backend: GPU
+10-07 11:42:56.097  8635  8635 I native  : I0000 00:00:1791398576.097324    8635 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:42:56.097  8635  8635 I native  : I0000 00:00:1791398576.097373    8635 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:42:56.097  8635  8635 I native  : I0000 00:00:1791398576.097404    8635 litert_lm_lib.cc:697] Creating engine
+10-07 11:42:56.097  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:42:56.098  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:42:56.099  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:42:56.099  8635  8635 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:42:56.150  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:42:56.150  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:42:56.150  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:42:56.150  8635  8635 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:42:56.282  8635  8635 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-07 11:42:56.282  8635  8635 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-07 11:43:01.704  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:43:01.705  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:43:01.705  8635  8635 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:43:01.705  8635  8635 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:43:01.843  8635  8635 I native  : I0000 00:00:1791398581.843448    8635 litert_lm_lib.cc:865] Creating conversation
+10-07 11:43:01.846  8635  8635 I native  : I0000 00:00:1791398581.846357    8635 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:43:07.940  8635  8635 I native  : I0000 00:00:1791398587.940710    8635 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:43:07.941  8635  8635 I native  :     - Init Executor: 5745.67 ms
+10-07 11:43:07.941  8635  8635 I native  :     - Init Total: 5745.88 ms
+10-07 11:43:07.941  8635  8635 I native  :   Time to first token: 0.39 s
+10-07 11:43:07.941  8635  8635 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:43:07.941  8635  8635 I native  :     Prefill Turn 1: Processed 1024 tokens in 365.894167ms duration.
+10-07 11:43:07.941  8635  8635 I native  :       Prefill Speed: 2798.62 tokens/sec.
+10-07 11:43:07.942  8635  8635 I native  :   Decode Turns (Total 1 turns):
+10-07 11:43:07.942  8635  8635 I native  :     Decode Turn 1: Processed 256 tokens in 5.726966196s duration.
+10-07 11:43:07.942  8635  8635 I native  :       Decode Speed: 44.70 tokens/sec.
+10-07 11:43:07.988  8635  8635 I native  : I0000 00:00:1791398587.988508    8635 litert_lm_lib.cc:474] Peak system ram usage: 746.793MB.
+10-07 11:43:07.989  8635  8635 I native  : I0000 00:00:1791398587.988889    8635 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 764.716 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 783.069 MB
+10-07 11:43:07.989  8635  8635 I native  : I0000 00:00:1791398587.989121    8635 litert_lm_lib.cc:477] Peak private footprint: 746.793MB.
+10-07 11:43:08.376  8708  8708 I native  : I0000 00:00:1791398588.375983    8708 litert_lm_lib.cc:505] Choose backend: gpu
+10-07 11:43:08.376  8708  8708 I native  : I0000 00:00:1791398588.376798    8708 litert_lm_lib.cc:661] executor_settings: backend: GPU
+10-07 11:43:08.376  8708  8708 I native  : I0000 00:00:1791398588.376834    8708 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:43:08.376  8708  8708 I native  : I0000 00:00:1791398588.376844    8708 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:43:08.376  8708  8708 I native  : I0000 00:00:1791398588.376856    8708 litert_lm_lib.cc:697] Creating engine
+10-07 11:43:08.377  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:43:08.377  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:43:08.377  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:43:08.378  8708  8708 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:43:08.424  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:43:08.425  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:43:08.425  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:43:08.425  8708  8708 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:43:08.500  8708  8708 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-07 11:43:08.500  8708  8708 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-07 11:43:10.270  8708  8708 I native  : I0000 00:00:1791398590.270108    8708 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:43:10.453  8708  8708 I native  : I0000 00:00:1791398590.453059    8708 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:43:10.535  8708  8708 I native  : I0000 00:00:1791398590.535029    8708 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:43:10.634  8708  8708 I native  : I0000 00:00:1791398590.633972    8708 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-07 11:43:10.649  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:43:10.649  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:43:10.649  8708  8708 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:43:10.649  8708  8708 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:43:10.722  8708  8708 I native  : I0000 00:00:1791398590.722737    8708 litert_lm_lib.cc:865] Creating conversation
+10-07 11:43:10.723  8708  8708 I native  : I0000 00:00:1791398590.723449    8708 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:43:16.514  8708  8708 I native  : I0000 00:00:1791398596.514343    8708 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:43:16.514  8708  8708 I native  :     - Init Executor: 2345.65 ms
+10-07 11:43:16.515  8708  8708 I native  :     - Init Total: 2345.79 ms
+10-07 11:43:16.515  8708  8708 I native  :   Time to first token: 0.37 s
+10-07 11:43:16.515  8708  8708 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:43:16.515  8708  8708 I native  :     Prefill Turn 1: Processed 1024 tokens in 351.412084ms duration.
+10-07 11:43:16.515  8708  8708 I native  :       Prefill Speed: 2913.96 tokens/sec.
+10-07 11:43:16.515  8708  8708 I native  :   Decode Turns (Total 1 turns):
+10-07 11:43:16.515  8708  8708 I native  :     Decode Turn 1: Processed 256 tokens in 5.438592967s duration.
+10-07 11:43:16.515  8708  8708 I native  :       Decode Speed: 47.07 tokens/sec.
+10-07 11:43:16.544  8708  8708 I native  : I0000 00:00:1791398596.544387    8708 litert_lm_lib.cc:474] Peak system ram usage: 725.066MB.
+10-07 11:43:16.544  8708  8708 I native  : I0000 00:00:1791398596.544505    8708 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 742.468 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 760.287 MB
+10-07 11:43:16.544  8708  8708 I native  : I0000 00:00:1791398596.544710    8708 litert_lm_lib.cc:477] Peak private footprint: 725.066MB.
+LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the other 1:
+  prefill 2914.0 tokens/s, decode 47.1 tokens/s, time to first token 0.37 s; init 2346 ms (cold 5746 ms in the first process); peak memory 725 MB (RSS)
+exit=0
+### END 03:44:03 JST
+
+### CMD: source /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5f1069b5-75f5-48a0-8cf8-e569a9902f1e/scratchpad/.venv-nightly/bin/activate && LITERT_GCP_PROJECT=litert-edge-portal litert benchmark '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' --ddp --device pa3q-35 --cpu --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096  (billed DDP session: Gemma 4 E2B cpu, --num-iterations 1 --warmup-runs 0 --max-num-tokens 4096 (prefill 1024 / decode 256 at the defaults))
+### START 2026-10-08 03:44:03 JST
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://litert-edge-portal-devicerun'.
+Ensuring GCS bucket 'gs://litert-edge-portal-devicerun' exists for project 'litert-edge-portal'...
+Uploading local model '/Users/USER/.cache/huggingface/hub/models--litert-community--gemma-4-E2B-it-litert-lm/snapshots/b3ca0d2f076785a8f4b2219ddbd2bdb99954eae1/gemma-4-E2B-it.litertlm' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-872ceabd/...
+Fetching GCP access token...
+Uploading run script '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/tmp7gp92zpx/litert_lm_run.sh' to gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-872ceabd/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-872ceabd' to DDP (Project: litert-edge-portal, Devices: pa3q-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Benchmark session submitted successfully!
+Waiting for session 'session-ca7670c5' to complete (Operation: projects/litert-edge-portal/locations/global/operations/operation-1791398830067-65d448aeacea2-03a2f12d-f030ef5f, timeout: 2400 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/litert-edge-portal-devicerun/litert-cli/sessions/session-ca7670c5
+.......................
+Session 'session-ca7670c5' finished: PASSED
+
+Job 'cpu-pa3q-35': PASSED
+Output files saved to: /Users/USER/.cache/litert-cli/ddp/session-ca7670c5/cpu-pa3q-35
+10-07 11:51:52.435  7100  7100 I native  : I0000 00:00:1791399112.435293    7100 litert_lm_lib.cc:505] Choose backend: cpu
+10-07 11:51:52.435  7100  7100 I native  : I0000 00:00:1791399112.435807    7100 litert_lm_lib.cc:661] executor_settings: backend: CPU
+10-07 11:51:52.436  7100  7100 I native  : I0000 00:00:1791399112.436033    7100 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:51:52.436  7100  7100 I native  : I0000 00:00:1791399112.436061    7100 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:51:52.436  7100  7100 I native  : I0000 00:00:1791399112.436136    7100 litert_lm_lib.cc:697] Creating engine
+10-07 11:51:52.445  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:51:52.446  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:51:52.447  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:51:52.447  7100  7100 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:51:52.499  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:51:52.499  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:51:52.500  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:51:52.500  7100  7100 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:51:54.745  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:51:54.746  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:51:54.746  7100  7100 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:51:54.746  7100  7100 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:51:54.815  7100  7100 I native  : I0000 00:00:1791399114.815227    7100 litert_lm_lib.cc:865] Creating conversation
+10-07 11:51:54.820  7100  7100 I native  : I0000 00:00:1791399114.820776    7100 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:52:05.346  7100  7100 I native  : I0000 00:00:1791399125.346906    7100 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:52:05.347  7100  7100 I native  :     - Init Executor: 2370.21 ms
+10-07 11:52:05.347  7100  7100 I native  :     - Init Total: 2378.93 ms
+10-07 11:52:05.347  7100  7100 I native  :   Time to first token: 3.17 s
+10-07 11:52:05.347  7100  7100 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:52:05.347  7100  7100 I native  :     Prefill Turn 1: Processed 1024 tokens in 3.13736078s duration.
+10-07 11:52:05.347  7100  7100 I native  :       Prefill Speed: 326.39 tokens/sec.
+10-07 11:52:05.347  7100  7100 I native  :   Decode Turns (Total 1 turns):
+10-07 11:52:05.347  7100  7100 I native  :     Decode Turn 1: Processed 256 tokens in 7.387750362s duration.
+10-07 11:52:05.347  7100  7100 I native  :       Decode Speed: 34.65 tokens/sec.
+10-07 11:52:05.353  7100  7100 I native  : I0000 00:00:1791399125.353865    7100 litert_lm_lib.cc:474] Peak system ram usage: 2606.2MB.
+10-07 11:52:05.353  7100  7100 I native  : I0000 00:00:1791399125.353899    7100 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 2668.74 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 2732.79 MB
+10-07 11:52:05.353  7100  7100 I native  : I0000 00:00:1791399125.353970    7100 litert_lm_lib.cc:477] Peak private footprint: 2606.2MB.
+10-07 11:52:05.553  7198  7198 I native  : I0000 00:00:1791399125.553721    7198 litert_lm_lib.cc:505] Choose backend: cpu
+10-07 11:52:05.553  7198  7198 I native  : I0000 00:00:1791399125.553851    7198 litert_lm_lib.cc:661] executor_settings: backend: CPU
+10-07 11:52:05.553  7198  7198 I native  : I0000 00:00:1791399125.553878    7198 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-07 11:52:05.553  7198  7198 I native  : I0000 00:00:1791399125.553888    7198 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-07 11:52:05.553  7198  7198 I native  : I0000 00:00:1791399125.553898    7198 litert_lm_lib.cc:697] Creating engine
+10-07 11:52:05.558  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:52:05.558  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:52:05.558  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:52:05.559  7198  7198 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:52:05.611  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:52:05.611  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:52:05.612  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:52:05.612  7198  7198 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:52:05.651  7198  7198 I tflite  : XNNPack weight cache loaded from '/data/local/tmp/litert-cli/gemma-4-E2B-it.litertlm_1791399110_2588147712.xnnpack_cache'.
+10-07 11:52:05.753  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-07 11:52:05.753  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-07 11:52:05.753  7198  7198 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-07 11:52:05.753  7198  7198 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-07 11:52:05.810  7198  7198 I native  : I0000 00:00:1791399125.810472    7198 litert_lm_lib.cc:865] Creating conversation
+10-07 11:52:05.811  7198  7198 I native  : I0000 00:00:1791399125.811262    7198 litert_lm_lib.cc:877] Running single-turn conversation
+10-07 11:52:16.651  7198  7198 I native  : I0000 00:00:1791399136.651600    7198 litert_lm_lib.cc:424] BenchmarkInfo:
+10-07 11:52:16.651  7198  7198 I native  :     - Init Executor: 252.56 ms
+10-07 11:52:16.651  7198  7198 I native  :     - Init Total: 256.48 ms
+10-07 11:52:16.651  7198  7198 I native  :   Time to first token: 3.38 s
+10-07 11:52:16.651  7198  7198 I native  :   Prefill Turns (Total 1 turns):
+10-07 11:52:16.651  7198  7198 I native  :     Prefill Turn 1: Processed 1024 tokens in 3.354200624s duration.
+10-07 11:52:16.651  7198  7198 I native  :       Prefill Speed: 305.29 tokens/sec.
+10-07 11:52:16.651  7198  7198 I native  :   Decode Turns (Total 1 turns):
+10-07 11:52:16.651  7198  7198 I native  :     Decode Turn 1: Processed 256 tokens in 7.485623591s duration.
+10-07 11:52:16.651  7198  7198 I native  :       Decode Speed: 34.20 tokens/sec.
+10-07 11:52:16.701  7198  7198 I native  : I0000 00:00:1791399136.701424    7198 litert_lm_lib.cc:474] Peak system ram usage: 2505.7MB.
+10-07 11:52:16.701  7198  7198 I native  : I0000 00:00:1791399136.701661    7198 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 2565.83 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 2627.41 MB
+10-07 11:52:16.701  7198  7198 I native  : I0000 00:00:1791399136.701848    7198 litert_lm_lib.cc:477] Peak private footprint: 2505.7MB.
+LiteRT-LM benchmark: second process, 1 iteration(s), 0 warm-up; median of the other 1:
+  prefill 305.3 tokens/s, decode 34.2 tokens/s, time to first token 3.38 s; init 256 ms (cold 2379 ms in the first process); peak memory 2506 MB (RSS)
+exit=0
+### END 03:53:07 JST
+
+### CMD: python3 -I /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/d21f53ca-5923-4da1-b5fc-7e34ecbf7034/scratchpad/r5/tools/gather.py /Users/USER/code/edge-llm-bench/results/raw/2026-10-07-ddp-s25ultra-lm-v1/iter-check session-76bb31e7 session-20550b6d session-93c1148a session-ca7670c5  (copy round 6's four sessions into the campaign dir and read their first processes)
+### START 2026-10-08 03:53:43 JST
+{"session": "session-76bb31e7", "job": "gpu-pa3q-35", "pids": ["3733", "3796"], "process_lines": 395, "logcat_lines": 994, "cold_init_total_ms": 5710.85, "first_prefill_tok_s": 2937.28, "first_decode_tok_s": 45.57, "first_ttft_s": 0.37, "first_peak_private_mb": 747.684, "errors": []}
+{"session": "session-20550b6d", "job": "cpu-pa3q-35", "pids": ["14091", "14139"], "process_lines": 2410, "logcat_lines": 2876, "cold_init_total_ms": 2153.42, "first_prefill_tok_s": 329.26, "first_decode_tok_s": 34.91, "first_ttft_s": 3.14, "first_peak_private_mb": 2606.18, "errors": []}
+{"session": "session-93c1148a", "job": "gpu-pa3q-35", "pids": ["8635", "8708"], "process_lines": 395, "logcat_lines": 907, "cold_init_total_ms": 5745.88, "first_prefill_tok_s": 2798.62, "first_decode_tok_s": 44.7, "first_ttft_s": 0.39, "first_peak_private_mb": 746.793, "errors": []}
+{"session": "session-ca7670c5", "job": "cpu-pa3q-35", "pids": ["7100", "7198"], "process_lines": 2410, "logcat_lines": 3032, "cold_init_total_ms": 2378.93, "first_prefill_tok_s": 326.39, "first_decode_tok_s": 34.65, "first_ttft_s": 3.17, "first_peak_private_mb": 2606.2, "errors": []}
+exit=0
+### END 03:53:43 JST
+
+### CMD: gcloud storage rm -r gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-d6b49c2b gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-4a2460a2 gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-3c28cac7 gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-872ceabd 2>&1 | tail -1; gcloud storage du -s gs://litert-edge-portal-devicerun/litert-cli/inputs/; gcloud storage ls gs://litert-edge-portal-devicerun/litert-cli/sessions/ | grep -c -E 'session-(e60522b0|c3c1094e|76bb31e7|20550b6d|93c1148a|ca7670c5)'  (remove round 6's four uploaded input dirs from the project bucket; session outputs stay)
+### START 2026-10-08 03:53:43 JST
+..............
+11680278877  gs://litert-edge-portal-devicerun/litert-cli/inputs/
+6
+exit=0
+### END 03:54:34 JST
