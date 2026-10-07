@@ -45,4 +45,23 @@
   gate flags the shape either way (COLLAPSE on the median, LEVEL on a
   uniformly slow re-run). Mechanism unmeasured; the reboot is the remedy
   that was tested.
+- CPU placement differs by engine, by design. Cores: cpu0-3 Cortex-A510
+  (cpufreq policy0, 1704 MHz), cpu4-7 Cortex-A715 (policy4, 2367 MHz), cpu8
+  Cortex-X3 (policy8, 2914 MHz). llama.cpp runs where the runner puts it:
+  `taskset f0` + `-t 4`, the four A715 cores (the runner's setting, tuned on
+  this phone). LiteRT-LM sets its own affinity to cpu4-8 on the Tensor G3
+  (A715 x4 + X3; `kTensorAffinities` in LiteRT-LM's
+  `runtime/engine/cpu_affinity_utils.cc`, read at v0.14.0-alpha.0-90):
+  launched under `taskset f0`, the v0.16.0 CPU engine widened to 4-8 within a
+  second and the GPU engine read 4-8 from the first sample (2026-10-07). Rows
+  compare each engine at its own placement, not an equalized one: widening
+  llama.cpp's mask changes the tuned setting (on the Galaxy S26 a mask across
+  the cluster boundary broke ggml's thread sync: 15 tok/s masked, 105.6
+  unmasked, `run_cell.py` CPU_MASK), and the runner's mask does not hold
+  LiteRT-LM's own choice. Records say both: `conditions.cpuAffinity` is the
+  launch mask, `conditions.cpusAllowedList` the engine's `Cpus_allowed_list`
+  read during the run (since 2026-10-07). While the phone charges, policy4 can
+  sit below 2367 MHz mid-run with the thermal status at 0; such runs are
+  flagged and pool into no number (`methodology/fairness-rules.md` §13
+  cpu-cap-rule).
 - Build/run: `android/README.md` (engine acquisition, driver, campaign runner).

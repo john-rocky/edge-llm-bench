@@ -740,6 +740,10 @@ def main():
                                and "protocolFlags" not in r["conditions"] for _, r in lla_g),
        f"uncapped runs: cpuMaxFreqMHz = every policy's min at its hw maximum, no protocolFlags "
        f"(got {[(r['conditions'].get('cpuMaxFreqMHz'), r['conditions'].get('protocolFlags')) for _, r in lla_g]})")
+    ok(len(lla_g) == 2 and all(r["conditions"].get("cpusAllowedList") == "4-7"
+                               and r["conditions"].get("cpuAffinity") == "taskset f0" for _, r in lla_g),
+       f"cpusAllowedList = the engine's Cpus_allowed_list read during the run, beside the launch mask "
+       f"(got {[r['conditions'].get('cpusAllowedList') for _, r in lla_g]})")
     ok(not os.path.exists(os.path.join(out_g, "THERMAL_GATE.txt")), "no cap line in THERMAL_GATE.txt")
 
     # --- campaign H: the charging Pixel 8a of 2026-10-07 (policy4 = the A715 cores the
@@ -796,6 +800,25 @@ def main():
        and "cpu cap gate timeout after 1s" in gate_h2 and "ran anyway: policy4 2130/2367 MHz" in gate_h2,
        f"a launch that starts capped waits CPUCAP_WAIT, runs, carries both flags: "
        f"{[r['conditions'].get('protocolFlags') for _, r in lla_h2]} {gate_h2.splitlines()[:1]}")
+    # H3: LiteRT-LM widens its own affinity from the launch mask to 4-8 (the X3 core)
+    # mid-launch on the Tensor G3: cpusAllowedList is the last read, and a cap on policy8,
+    # outside the llama.cpp arm's mask, flags this run
+    cells_h3 = os.path.join(tmp, "h3.cells")
+    with open(cells_h3, "w") as fh:
+        fh.write(f"android litert-lm fake/model short-chat runs=1 backend=gpu file={litert_model}\n")
+    schedule([14.8])
+    json.dump([{"allowed": ["4-7", "4-8", "4-8"], "ticks": [{}, {}, {"policy8": 2000000}]}],
+              open(os.path.join(state, "cpu_runs.json"), "w"))
+    env_h3 = dict(env_h, CAMPAIGN="selftest-h3")
+    print("--- campaign H3 (LiteRT-LM allowed 4-7 -> 4-8, policy8 capped -> cpu-capped)")
+    rc = run_campaign(env_h3, cells_h3)
+    ok(rc == 0, f"campaign H3 exits 0 (got {rc})")
+    lit_h3 = records(os.path.join(sum_root, "results", "raw", "selftest-h3", "app-path-android"), "litert-lm-gpu_")
+    got_h3 = [(r["conditions"].get("cpusAllowedList"), r["conditions"].get("protocolFlags"),
+               r["conditions"].get("cpuMaxFreqMHz", {}).get("policy8")) for _, r in lit_h3]
+    ok(got_h3 == [("4-8", ["cpu-capped"], {"min": 2000, "hw": 2914, "cpus": "8"})],
+       f"LiteRT-LM: cpusAllowedList 4-8 (the last read), policy8 capped -> cpu-capped (got {got_h3})")
+
     sys.path.insert(0, os.path.join(ROOT, "scripts"))
     from unittest.mock import patch
     import build_summary

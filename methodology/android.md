@@ -57,6 +57,10 @@ v1 measures the same engine through `litert_lm_main`.
 ## Conditions pinned per run
 
 - `taskset f0` (big cores; upstream's own recommendation) — in `conditions.cpuAffinity`.
+  That is the launch mask; an engine may set its own affinity (LiteRT-LM: cpu4-8 on the
+  Pixel 8a, `devices/pixel-8a.md`), so the sampler also reads the engine's
+  `Cpus_allowed_list` during the run and the record keeps the last read in
+  `conditions.cpusAllowedList` (since 2026-10-07).
 - Thermal: `dumpsys thermalservice` status int; 0 → `"nominal"` so the repo's
   nominal gate works unchanged; the raw int rides along in
   `conditions.thermalRawStatus`. Gate: wait for status 0 up to `THERMAL_WAIT`

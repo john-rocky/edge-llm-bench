@@ -452,6 +452,9 @@ def cpu_reads(console):
 def cpu_conditions(console):
     """cpu-cap-rule for one launch -> (conditions, capped).
 
+    conditions.cpusAllowedList = the engine's last Cpus_allowed_list read: where it was
+    allowed to run, which conditions.cpuAffinity (the launch mask) is not when the engine
+    sets its own affinity (LiteRT-LM: 4-8 on the Pixel 8a's Tensor G3, under taskset f0).
     conditions.cpuMaxFreqMHz = {policy: {"min": the lowest scaling_max_freq the sampler
     read, "hw": cpuinfo_max_freq, "cpus": the policy's CPUs}} in MHz. capped = the
     policies of the engine's CPUs whose min sat below hw: the engine's CPUs are every
@@ -460,7 +463,9 @@ def cpu_conditions(console):
     policies, maxes, allowed = cpu_reads(console)
     freq = {name: {"min": mhz(min(maxes[name])), "hw": mhz(p["hw"]), "cpus": cpu_list(p["cpus"])}
             for name, p in policies.items() if p["hw"] is not None and maxes.get(name)}
-    conditions = {"cpuMaxFreqMHz": freq} if freq else {}
+    conditions = {"cpusAllowedList": allowed[-1]} if allowed else {}
+    if freq:
+        conditions["cpuMaxFreqMHz"] = freq
     engine_cpus = set().union(*(cpu_set(a) for a in allowed))
     if not engine_cpus and CPU_MASK:
         try:
