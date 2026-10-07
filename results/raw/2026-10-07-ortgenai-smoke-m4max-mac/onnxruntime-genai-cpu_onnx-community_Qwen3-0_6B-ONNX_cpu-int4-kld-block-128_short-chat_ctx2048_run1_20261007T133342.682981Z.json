@@ -1,0 +1,405 @@
+{
+ "schemaVersion": 1,
+ "id": "be36c05a-f7a8-4656-b38a-16a5370124e1",
+ "timestamp": "2026-10-07T13:33:42.682981+00:00",
+ "runtime": "onnxruntime-genai-cpu",
+ "engineVersion": "onnxruntime-genai 0.17.1 + onnxruntime 1.30.0",
+ "engineArtifact": "libonnxruntime-genai.dylib sha256:36ad46730a7e1d4dda7efd9545fb584d68befd2adedf82400e843e175762f036",
+ "model": {
+  "id": "onnx-community/Qwen3-0.6B-ONNX",
+  "hfRevision": "da1453100cf3ff33ef56d17983fc7a8648706db6",
+  "quantization": "int4 + int8 mixed MatMulNBits (92 int4 / 105 int8 of 197; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+  "file": "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128",
+  "sha256": "35fe34321ea9b1eaa43dfa648dd199903d01d93f97dc2b24fe1d16079ebea957",
+  "bytes": 524589133
+ },
+ "task": "short-chat",
+ "device": {
+  "systemName": "macOS",
+  "modelIdentifier": "Mac16,9",
+  "chip": "Apple M4 Max",
+  "systemVersion": "Version 27.0 (Build 26A428)",
+  "processorCount": 16,
+  "physicalMemoryMB": 131072,
+  "batteryState": "unknown",
+  "buildConfiguration": "PyPI wheels (onnxruntime-genai cp314 macosx_12_0_arm64, onnxruntime macosx_14_0_arm64, onnxruntime-ep-webgpu macosx_14_0_universal2)"
+ },
+ "conditions": {
+  "contextTokens": 2048,
+  "contextBudget": 2048,
+  "outputTokenBudget": 128,
+  "maxOutputTokens": 128,
+  "sampler": "greedy",
+  "searchOptions": {
+   "max_length": 2048,
+   "do_sample": false,
+   "overrides": "genai_config search: max_length 40960, do_sample true (temperature 0.6, top_k 20, top_p 0.95)"
+  },
+  "pastPresentShareBuffer": true,
+  "chatMode": "single-turn, model chat_template.jinja default (Qwen3 thinking on)",
+  "thinking": true,
+  "telemetry": "off: ORT_DISABLE_TELEMETRY=1 before init + disable_telemetry_events()",
+  "metricDefinitions": "prefill tok/s = promptTokenCount / wall clock of Generator.append_tokens(prompt); TTFT = append_tokens + the first generate_next_token (greedy pick from the prefill logits, no forward pass); decode tok/s = (generatedTokenCount - 1) / summed wall clock of generate_next_token calls 2..N (each = one forward pass + greedy pick); generatedTokenCount counts every picked token, a final EOS included; stop = EOS (is_done) or the output budget, no min_length; memory = phys_footprint of the engine process, 100 ms samples from after model load and generator creation to the last token, high-water and median, MiB (bytes / 2^20); past_present_share_buffer true allocates the KV cache for max_length = contextTokens when the generator is created, so both memory numbers include it",
+  "threads": "engine default",
+  "executionProvider": "CPUExecutionProvider",
+  "gpuAccelerator": "none registered (CPU EP)",
+  "providerOptions": [],
+  "ortLogging": "engine default (ERROR)",
+  "exitCode": 0,
+  "elapsedSeconds": 1.142005042056553,
+  "warm": false,
+  "thermalInitial": "nominal",
+  "thermalFinal": "nominal",
+  "loadAverage": 3.802734375,
+  "capturePurpose": "smoke",
+  "hostQuiet": true,
+  "campaignNote": "r1 smoke (Opus 5.5 round r1, 2026-10-07), quiet window ortgenai-r1; not a dashboard measurement",
+  "textCheck": {
+   "status": "PASS",
+   "alphanumericCount": 473,
+   "distinctWords": 53,
+   "taskTerms": true,
+   "flags": [],
+   "method": "android/bench/parsers.text_integrity lexical screen + cell_gate.degenerate (first 200 characters, 6-gram ratio < 0.5) + U+FFFD; full text retained for review"
+  }
+ },
+ "metrics": {
+  "coldRun": true,
+  "firstEver": false,
+  "contextTokensConfigured": 2048,
+  "initialThermalState": "nominal",
+  "finalThermalState": "nominal",
+  "promptTokenCount": 19,
+  "generatedTokenCount": 128,
+  "promptTokensPerSecond": 942.2129882298568,
+  "firstTokenLatencyMS": 20.24604205507785,
+  "prefillMS": 20.16529196407646,
+  "decodeSeconds": 0.4836154602235183,
+  "totalGenerationTimeSeconds": 0.5048500839620829,
+  "loadTimeSeconds": 0.4839360419427976,
+  "stopReason": "length",
+  "cpuSecondsDuringGeneration": 4.0090259999999995,
+  "decodeTokensPerSecond": 262.6053351174979,
+  "memoryPeakDuringDecodeMB": 1252.4704666137695,
+  "memoryMedianMB": 1252.3454666137695,
+  "memorySampleCount": 7,
+  "memoryAfterLoadMB": 1240.3610916137695,
+  "memoryLifetimePeakMB": 1252.4704666137695,
+  "gpuMillisecondsDuringGeneration": 0.0,
+  "gpuClients": 0
+ },
+ "harnessStamp": "ortgenai-mac-v0-2026-10-07",
+ "outputSample": "<think>\nOkay, the user is asking for a simple explanation of what on-device AI means. Let me start by breaking down the term.\n\nOn-device AI refers to AI systems that run on a device, like a smartphone",
+ "status": "ok",
+ "provenance": {
+  "rawLog": "results/raw/2026-10-07-ortgenai-smoke-m4max-mac/onnxruntime-genai-cpu_onnx-community_Qwen3-0_6B-ONNX_cpu-int4-kld-block-128_short-chat_ctx2048_run1_20261007T133342.682981Z.log",
+  "decodedText": "results/raw/2026-10-07-ortgenai-smoke-m4max-mac/onnxruntime-genai-cpu_onnx-community_Qwen3-0_6B-ONNX_cpu-int4-kld-block-128_short-chat_ctx2048_run1_20261007T133342.682981Z.decoded.txt",
+  "workerResult": "results/raw/2026-10-07-ortgenai-smoke-m4max-mac/onnxruntime-genai-cpu_onnx-community_Qwen3-0_6B-ONNX_cpu-int4-kld-block-128_short-chat_ctx2048_run1_20261007T133342.682981Z.worker.json",
+  "harness": "scripts/ortgenai_mac.py",
+  "campaign": "results/raw/2026-10-07-ortgenai-smoke-m4max-mac",
+  "harnessCommand": "/Users/USER/.venvs/ortgenai-0.17.1/bin/python scripts/ortgenai_mac.py --model-id onnx-community/Qwen3-0.6B-ONNX --quiet-label ortgenai-r1 --pause 5 --model-dir /Users/USER/.cache/huggingface/hub/models--onnx-community--Qwen3-0.6B-ONNX/snapshots/da1453100cf3ff33ef56d17983fc7a8648706db6/onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 --backend cpu --task short-chat --runs 3 --out results/raw/2026-10-07-ortgenai-smoke-m4max-mac --campaign-note 'r1 smoke (Opus 5.5 round r1, 2026-10-07), quiet window ortgenai-r1; not a dashboard measurement'",
+  "command": "/Users/USER/.venvs/ortgenai-0.17.1/bin/python /Users/USER/code/edge-llm-bench-wt-ort-mac/scripts/ortgenai_mac.py --worker --worker-result /Users/USER/code/edge-llm-bench-wt-ort-mac/results/raw/2026-10-07-ortgenai-smoke-m4max-mac/onnxruntime-genai-cpu_onnx-community_Qwen3-0_6B-ONNX_cpu-int4-kld-block-128_short-chat_ctx2048_run1_20261007T133342.682981Z.worker.json --model-id onnx-community/Qwen3-0.6B-ONNX --model-dir /Users/USER/.cache/huggingface/hub/models--onnx-community--Qwen3-0.6B-ONNX/snapshots/da1453100cf3ff33ef56d17983fc7a8648706db6/onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 --backend cpu --task short-chat --context-tokens 2048 --telemetry off --timeout 900 --out /Users/USER/code/edge-llm-bench-wt-ort-mac/results/raw/2026-10-07-ortgenai-smoke-m4max-mac",
+  "memoryBasis": "phys_footprint of the engine process (proc_pid_rusage RUSAGE_INFO_V4 ri_phys_footprint) sampled by the parent every 100 ms from the worker's LOADED line (model, tokenizer and generator created) to its DONE line (last token); MiB = bytes / 2^20",
+  "hostBefore": {
+   "device": {
+    "systemName": "macOS",
+    "modelIdentifier": "Mac16,9",
+    "chip": "Apple M4 Max",
+    "systemVersion": "Version 27.0 (Build 26A428)",
+    "processorCount": 16,
+    "physicalMemoryMB": 131072,
+    "batteryState": "unknown",
+    "buildConfiguration": "PyPI wheels (onnxruntime-genai cp314 macosx_12_0_arm64, onnxruntime macosx_14_0_arm64, onnxruntime-ep-webgpu macosx_14_0_universal2)"
+   },
+   "snapshot": {
+    "thermal": "nominal",
+    "lowPowerMode": false,
+    "loadAverage": 3.802734375,
+    "loadAverages": [
+     3.802734375,
+     11.12646484375,
+     12.890625
+    ],
+    "loadSource": "os.getloadavg",
+    "others": [
+     "mediaanalysisd:110%",
+     "Google Chrome Helper (Renderer):81%",
+     "Google Chrome:23%"
+    ],
+    "quietWindow": "ortgenai-r1 timing pid 92131 since 2026-10-07T22:33:42+0900",
+    "sampledAt": "2026-10-07T13:33:42.742940+00:00"
+   },
+   "source": "sysctl / sw_vers / NSProcessInfo / ps, read by the harness"
+  },
+  "hostAfter": {
+   "device": {
+    "systemName": "macOS",
+    "modelIdentifier": "Mac16,9",
+    "chip": "Apple M4 Max",
+    "systemVersion": "Version 27.0 (Build 26A428)",
+    "processorCount": 16,
+    "physicalMemoryMB": 131072,
+    "batteryState": "unknown",
+    "buildConfiguration": "PyPI wheels (onnxruntime-genai cp314 macosx_12_0_arm64, onnxruntime macosx_14_0_arm64, onnxruntime-ep-webgpu macosx_14_0_universal2)"
+   },
+   "snapshot": {
+    "thermal": "nominal",
+    "lowPowerMode": false,
+    "loadAverage": 3.802734375,
+    "loadAverages": [
+     3.802734375,
+     11.12646484375,
+     12.890625
+    ],
+    "loadSource": "os.getloadavg",
+    "others": [
+     "mediaanalysisd:113%",
+     "mds_stores:84%",
+     "Google Chrome Helper (Renderer):74%",
+     "Google Chrome:22%"
+    ],
+    "quietWindow": "ortgenai-r1 timing pid 92131 since 2026-10-07T22:33:42+0900",
+    "sampledAt": "2026-10-07T13:33:43.943065+00:00"
+   },
+   "source": "sysctl / sw_vers / NSProcessInfo / ps, read by the harness"
+  },
+  "engineLibraries": {
+   "onnxruntime_genai/libonnxruntime-genai.dylib": {
+    "sha256": "36ad46730a7e1d4dda7efd9545fb584d68befd2adedf82400e843e175762f036",
+    "bytes": 11967632
+   },
+   "onnxruntime_genai/onnxruntime_genai.cpython-314-darwin.so": {
+    "sha256": "a06c138ce6de0c1e64c771e743e6deb8f47ead7cf2a1d28fd0066c2943c126a5",
+    "bytes": 600056
+   },
+   "onnxruntime/capi/libonnxruntime.1.30.0.dylib": {
+    "sha256": "fc5e2d939d523717be730720312a75eeb528d6a8627d467af5507f462b1f88d2",
+    "bytes": 33209560
+   },
+   "onnxruntime_ep_webgpu/libonnxruntime_providers_webgpu.dylib": {
+    "sha256": "894aa43c308c97afe58f6485b8411962181a39b27170f5f210cc7503adb52850",
+    "bytes": 14966224
+   }
+  },
+  "genai": {
+   "version": "0.17.1",
+   "commit": "83de55a1f3886cddbb32a5517e26adb3f9d65159"
+  },
+  "onnxruntimeImages": [
+   "/Users/USER/.venvs/ortgenai-0.17.1/lib/python3.14/site-packages/onnxruntime/capi/libonnxruntime.1.30.0.dylib",
+   "/Users/USER/.venvs/ortgenai-0.17.1/lib/python3.14/site-packages/onnxruntime_genai/libonnxruntime-genai.dylib",
+   "/Users/USER/.venvs/ortgenai-0.17.1/lib/python3.14/site-packages/onnxruntime_genai/onnxruntime_genai.cpython-314-darwin.so"
+  ],
+  "gpuTime": {
+   "basis": "IOKit AGXDeviceUserClient AppUsage accumulatedGPUTime of the engine pid (ioreg -a -r -c AGXDeviceUserClient), read at LOADED and at DONE",
+   "afterLoad": {
+    "ns": 0,
+    "clients": 0
+   },
+   "afterGeneration": {
+    "ns": 0,
+    "clients": 0
+   }
+  },
+  "sockets": {
+   "basis": "proc_pidinfo PROC_PIDLISTFDS every 100 ms from spawn to exit, fds of type socket",
+   "max": 0,
+   "first": null
+  },
+  "lsofWatch": null,
+  "telemetryDir": {
+   "path": "/Users/USER/Library/Application Support/Microsoft/DeveloperTools/.onnxruntime",
+   "diff": {
+    "added": [],
+    "removed": [],
+    "modified": [],
+    "dirCreated": false
+   },
+   "before": {
+    "exists": true,
+    "files": {
+     "deviceid": {
+      "bytes": 36,
+      "mtimeNs": 1788555149147052976,
+      "sha256": "18d76b4e4f90a194a83ada44df9c435d1466cb1549690062f598b81a11cdebcc"
+     },
+     "onnxruntime.db": {
+      "bytes": 32768,
+      "mtimeNs": 1789523698078791814,
+      "sha256": "9ec672ca6fc7b5bc6bda122323037b166db90d01a616120eeeeaba63542c6391"
+     },
+     "onnxruntime.db-shm": {
+      "bytes": 32768,
+      "mtimeNs": 1789791652393629913,
+      "sha256": "46666fa572443e8d5adf98952a648edae7abf18580c2e254221b66f2f86be952"
+     },
+     "onnxruntime.db-wal": {
+      "bytes": 605672,
+      "mtimeNs": 1789791653177505596,
+      "sha256": "7c7e5b11909189a89e9aedd3a387546e9add5b94925fac1ae7baeee2eb5e1e2f"
+     }
+    }
+   },
+   "after": {
+    "exists": true,
+    "files": {
+     "deviceid": {
+      "bytes": 36,
+      "mtimeNs": 1788555149147052976,
+      "sha256": "18d76b4e4f90a194a83ada44df9c435d1466cb1549690062f598b81a11cdebcc"
+     },
+     "onnxruntime.db": {
+      "bytes": 32768,
+      "mtimeNs": 1789523698078791814,
+      "sha256": "9ec672ca6fc7b5bc6bda122323037b166db90d01a616120eeeeaba63542c6391"
+     },
+     "onnxruntime.db-shm": {
+      "bytes": 32768,
+      "mtimeNs": 1789791652393629913,
+      "sha256": "46666fa572443e8d5adf98952a648edae7abf18580c2e254221b66f2f86be952"
+     },
+     "onnxruntime.db-wal": {
+      "bytes": 605672,
+      "mtimeNs": 1789791653177505596,
+      "sha256": "7c7e5b11909189a89e9aedd3a387546e9add5b94925fac1ae7baeee2eb5e1e2f"
+     }
+    }
+   }
+  },
+  "promptFile": "prompts/text/short-chat.txt",
+  "promptSha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+  "templatedPromptSha256": "9d2fe60da55b75283dbd26cd6f8db55bf12e5c3c0c1f37670067623f6461074d",
+  "templatedPromptTail": "xplain what on-device AI means in simple terms.<|im_end|>\n<|im_start|>assistant\n",
+  "stepMilliseconds": [
+   0.081,
+   4.601,
+   4.034,
+   4.094,
+   3.879,
+   4.167,
+   3.946,
+   3.859,
+   3.82,
+   3.821,
+   3.849,
+   3.74,
+   3.696,
+   3.629,
+   3.849,
+   3.888,
+   3.854,
+   3.855,
+   3.883,
+   3.888,
+   3.86,
+   3.774,
+   3.804,
+   3.693,
+   3.704,
+   3.698,
+   3.7,
+   3.683,
+   3.715,
+   3.764,
+   3.698,
+   3.674,
+   3.675,
+   3.653,
+   3.722,
+   3.693,
+   3.744,
+   3.732,
+   3.699,
+   3.676,
+   3.73,
+   3.748,
+   3.672,
+   3.73,
+   3.702,
+   3.676,
+   3.709,
+   3.669,
+   3.722,
+   3.696,
+   3.737,
+   3.705,
+   3.763,
+   3.811,
+   3.759,
+   3.745,
+   3.784,
+   3.685,
+   3.701,
+   3.7,
+   3.701,
+   3.706,
+   3.741,
+   3.741,
+   3.777,
+   3.76,
+   3.753,
+   3.743,
+   3.71,
+   3.728,
+   3.739,
+   3.759,
+   3.778,
+   3.72,
+   3.705,
+   3.729,
+   3.719,
+   3.722,
+   3.777,
+   3.728,
+   3.733,
+   3.821,
+   3.876,
+   3.835,
+   3.815,
+   3.859,
+   3.819,
+   3.76,
+   3.781,
+   3.813,
+   3.769,
+   3.765,
+   4.115,
+   4.358,
+   3.87,
+   5.057,
+   4.077,
+   3.813,
+   3.799,
+   3.774,
+   3.838,
+   3.879,
+   3.795,
+   3.84,
+   3.999,
+   3.819,
+   3.779,
+   3.809,
+   3.789,
+   3.806,
+   3.819,
+   3.791,
+   3.831,
+   3.8,
+   3.791,
+   3.784,
+   3.823,
+   3.842,
+   3.802,
+   3.769,
+   3.801,
+   3.781,
+   3.889,
+   3.884,
+   3.862,
+   3.803,
+   3.894,
+   3.891
+  ],
+  "modelDir": "/Users/USER/.cache/huggingface/hub/models--onnx-community--Qwen3-0.6B-ONNX/snapshots/da1453100cf3ff33ef56d17983fc7a8648706db6/onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128"
+ }
+}
