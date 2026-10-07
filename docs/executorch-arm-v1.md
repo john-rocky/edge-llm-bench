@@ -39,9 +39,10 @@ task). Runners: `android/bench/run_cell.py --runtime executorch` (through
   `gemma4_e2e_runner` is built for Android by the same script since 2026-10-08 (the tag's
   `examples/models/gemma4` runner sources with the CMake list under
   `scripts/executorch/gemma4_runner/`, the same tag and options as `llama_main`) and pinned
-  beside it; the Galaxy S26 matrix driver is `android/scripts/executorch_matrix_s26.sh`
+  beside it. The Android matrix driver is `android/scripts/executorch_matrix_android.sh`
   (one model per queued hold, the cells file's rows one at a time, the `.pte` pushed for
-  the slot and removed after it).
+  the slot and removed after it; the phone's launch mask, hold files and campaign name come
+  from its entry in `ops/dashboard-v1/schedule.json`, `--plan` prints them).
 - Mac build (`scripts/executorch/build_llama_main_mac.sh`): `cmake --workflow --preset
   llm-release`, then `cmake --workflow --preset llama-release` in `examples/models/llama`
   (Release; ET_LOG compiled out; the preset also builds Core ML and the torchao kernels,
@@ -125,7 +126,7 @@ Clock: std::chrono::steady_clock; the report prints ms with one decimal under 1 
 | `metrics.coldRun`, `conditions.warm` | run 1 of a Mac cell and every Android run: cold; Mac runs 2..N (llama_main `--warmup`): warm |
 | `conditions.contextTokens` / `contextBudget`, `contextSource` | 2048; Android llama_main: the runner's own log (`Metadata: get_max_context_len`), else the recipe.json (Gemma 4's `.pte` has no metadata method; its KV cache buffers were read as `[1, 1, 2048, …]` when the export was inspected) |
 | `conditions.chatMode`, `thinkingPolicy` | llama_main: the prompt rendered once on the host with the model's chat template (HF `apply_chat_template(add_generation_prompt=True)`, template defaults: Qwen 3 thinks); gemma4_e2e_runner: the repository prompt as `--prompt`, the runner's built-in turn template, no thinking control |
-| `conditions.cpuThreads`, `cpuThreadsPolicy` | `--cpu_threads` is never passed: the engine's heuristic (cpuinfo `get_num_performant_cores`); the Android build logs the pool size (8 on the Galaxy S26). The Mac stock build logs nothing; a logging build of the same source read 16 on the M4 Max (it counts no efficiency core) |
+| `conditions.cpuThreads`, `cpuThreadsPolicy` | `--cpu_threads` is never passed: the engine's heuristic (cpuinfo `get_num_performant_cores`); the Android build logs the pool size (8 on the Galaxy S26, 9 on the Pixel 8a: on both phones the log shows the per-CPU `midr_el1` fallback of `extension/threadpool/cpuinfo_utils.cpp`, whose efficiency-core list (A520 / A53 / A55 / A57) has no A510). The Mac stock build logs nothing; a logging build of the same source read 16 on the M4 Max (it counts no efficiency core) |
 | `conditions.textCheck` | `android/bench/parsers.text_integrity` over the runner's text (llama_main: stdout after the prompt echo, cut before the stats line; gemma4_e2e_runner: stdout); a FAIL pools into no number |
 | `conditions.protocolFlags` | `echo-mismatch`, `stats-rate-mismatch` (a printed rate the recomputation does not reproduce), `prompt-token-count-mismatch` (llama_main against the host tokenizer's count), `output-budget-exceeded`, `context-budget-exceeded`, `allocation-witness-mismatch`, and Android's `cpu-capped` |
 | `provenance.statsLine` / `statsReport` | the runner's statistics verbatim |
@@ -201,6 +202,12 @@ token). The stored log keeps it after `===ENGINE_STDERR===`.
 - Own exports, not published artifacts; the label says so.
 - Prefill includes tokenization with `llama_main` and excludes it with `gemma4_e2e_runner`.
 - Vulkan, QNN and the Mac GPU backends are not measured.
+- Pixel 8a: the launches run under `taskset f0` (cpus 4-7, the phone's device env in
+  `devices/pixel-8a.md`, as the llama.cpp arm) and the runner keeps that mask
+  (`conditions.cpusAllowedList` 4-7), so `llama_main`'s 9 threads share four cores. The phone
+  is rebooted before a sitting when its uptime is over 2 h (`reboot_before` in
+  `ops/dashboard-v1/schedule.json`), and the Qwen3-4B and Gemma 4 E4B rows are
+  `exclude-on=pixel8a`.
 - The Android weekly sitting (`BENCH_SITTING=1`) refuses executorch at the pin check (the sitting
   expects the litert-lm / llama.cpp pins): adding ExecuTorch to the weekly job is a later step.
 - Name an ExecuTorch sitting `<date>-dashboard-executorch-…`: the team dashboard

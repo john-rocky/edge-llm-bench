@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Galaxy S26 driver for the ExecuTorch arm's Android cells (matrices/dashboard-executorch-v1-android.cells,
-# docs/executorch-arm-v1.md): every cell's cold launches through android/bench/run_campaign.py, one
-# model at a time, inside device-hold windows of at most WINDOW_MIN minutes taken from the shared
-# phone's queue (community_accel_work/queue_cli.py, hold_cli.py).
+# Android driver for the ExecuTorch arm's cells (matrices/dashboard-executorch-v1-android.cells,
+# docs/executorch-arm-v1.md) on one phone: every cell's cold launches through android/bench/run_campaign.py,
+# one model at a time, inside device-hold windows of at most WINDOW_MIN minutes taken from the shared
+# phone's queue (community_accel_work/queue_cli.py, hold_cli.py). Run on the Galaxy S26 and the Pixel 8a.
 #
-#   android/scripts/executorch_matrix_s26.sh <state_dir> [<model> ...]
-#       models: 0.6B 1.7B E2B 4B E4B (default: the five, lightest first)
-#   android/scripts/executorch_matrix_s26.sh --plan [<model> ...]   # the windows the estimates give, no device
+#   android/scripts/executorch_matrix_android.sh <state_dir> [<model> ...]
+#       models: 0.6B 1.7B E2B 4B E4B (default: the five, lightest first; pass only the rows that run on
+#       the phone, a row exclude-on= the phone would take a window for nothing)
+#   android/scripts/executorch_matrix_android.sh --plan [<model> ...]   # the windows the estimates give, no device
 #
 # A unit is one cells row: a one-row cells file run by run_campaign.py, with its cold launches,
 # cooldowns and capture gate. A window holds the units of one model while the next unit's estimate
@@ -28,11 +29,19 @@
 # listings before and after, the queue lines and each unit's console.
 #
 # Env (default):
-#   SERIAL (RFGL80R6A6H)  CAMPAIGN (<date of the first call>-dashboard-executorch-v1-s26-android, kept in
+#   SERIAL (RFGL80R6A6H, the Galaxy S26). The phone's entry in SCHEDULE (ops/dashboard-v1/schedule.json; a
+#   test points it elsewhere), the device whose serial is SERIAL, gives the defaults of CPU_MASK, HOLD,
+#   HOLD_ALSO and CAMPAIGN; a serial the schedule does not list keeps the forms in brackets. --plan prints them.
+#   CPU_MASK (the entry's cpu_mask: f0 on the Pixel 8a, empty on the S26; []): BENCH_CPU_MASK for
+#     run_cell.py, the launch's taskset mask, empty = no taskset (devices/*.md say each phone's choice)
+#   HOLD (the entry's hold; [community_accel_work/s2_npu_sweep/.device_hold])
+#   HOLD_ALSO (the entry's hold_also_check, space-separated; [$HOLD.s26 $HOLD.$SERIAL]): the phone's other
+#     hold files, read before any adb call of a window
+#   CAMPAIGN (<date of the first call>-dashboard-executorch-v1-<the entry's key; [s26]>-android, kept in
 #   <state_dir>/CAMPAIGN; the team dashboard reads only campaigns named with "dashboard")
 #   CELLS (<repo>/matrices/dashboard-executorch-v1-android.cells)
 #   ET_MODEL_DIR (~/code/edge-llm-bench/models/executorch)  BENCH_ANDROID_BIN_DIR (~/code/edge-llm-bench/android/bin)
-#   HOLD (community_accel_work/s2_npu_sweep/.device_hold)  QUEUE_PREFIX (et-r5-s26)  SUPERVISOR (edge-llm-bench-24)
+#   QUEUE_PREFIX (et-r5-s26)  SUPERVISOR (edge-llm-bench-24)
 #   WINDOW_MIN (45)  MARGIN_S (180: kept free at a window's end before a unit starts)  CUT_S (150)
 #   WAIT_TIMEOUT (36000)  ROUND_HOURS (10)  MAX_WINDOWS (no limit)
 #   NO_NEW_WINDOW_AFTER (epoch: no window is queued or started from then on)
@@ -48,12 +57,37 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SELF="$REPO_ROOT/android/scripts/$(basename "$0")"
 SERIAL="${SERIAL:-RFGL80R6A6H}"
+schedule_entry() {  # <schedule.json> <serial>: the device's key, cpu_mask, hold, hold_also_check, one per line
+  python3 - "$1" "$2" <<'PY' 2>/dev/null
+import json, os, sys
+for key, dev in json.load(open(sys.argv[1])).get("devices", {}).items():
+    if dev.get("serial") == sys.argv[2]:
+        print(key)
+        print(dev.get("cpu_mask", ""))
+        print(os.path.expanduser(dev.get("hold") or ""))
+        print(" ".join(os.path.expanduser(p) for p in dev.get("hold_also_check", [])))
+        break
+PY
+}
+SCHEDULE="${SCHEDULE:-$REPO_ROOT/ops/dashboard-v1/schedule.json}"
+ENTRY="$(schedule_entry "$SCHEDULE" "$SERIAL" || true)"
+DEV_KEY="$(echo "$ENTRY" | sed -n 1p)"
+ENTRY_MASK="$(echo "$ENTRY" | sed -n 2p)"
+if [[ -n "${CPU_MASK+x}" ]]; then MASK_SOURCE=env
+else CPU_MASK="$ENTRY_MASK"; MASK_SOURCE="${DEV_KEY:+schedule.json $DEV_KEY}"; MASK_SOURCE="${MASK_SOURCE:-no schedule entry}"; fi
 CAMPAIGN_ENV="${CAMPAIGN:-}"
 CELLS="${CELLS:-$REPO_ROOT/matrices/dashboard-executorch-v1-android.cells}"
 export ET_MODEL_DIR="${ET_MODEL_DIR:-$HOME/code/edge-llm-bench/models/executorch}"
 export BENCH_ANDROID_BIN_DIR="${BENCH_ANDROID_BIN_DIR:-$HOME/code/edge-llm-bench/android/bin}"
 CAW="$HOME/code/litertlm-convert/community_accel_work"
+HOLD="${HOLD:-$(echo "$ENTRY" | sed -n 3p)}"
 HOLD="${HOLD:-$CAW/s2_npu_sweep/.device_hold}"
+if [[ -z "${HOLD_ALSO+x}" ]]; then
+  HOLD_ALSO="$(echo "$ENTRY" | sed -n 4p)"
+  [[ -n "$DEV_KEY" ]] || HOLD_ALSO="$HOLD.s26 $HOLD.$SERIAL"
+fi
+# the keeper (this script again, --keeper) reads the same phone
+export SERIAL CPU_MASK HOLD HOLD_ALSO
 QCLI="${QCLI:-$CAW/queue_cli.py}"
 HCLI="${HCLI:-$CAW/hold_cli.py}"
 QUEUE_PREFIX="${QUEUE_PREFIX:-et-r5-s26}"
@@ -136,7 +170,7 @@ except Exception:
 PY
 }
 
-device_state() {  # the phone's state now: build, thermal, battery, screen, cpufreq caps, free space
+device_state() {  # the phone's state now: build, thermal, battery, screen, cpufreq caps, free space, uptime, memory and swap
   adbs shell "echo model=\$(getprop ro.product.model) android=\$(getprop ro.build.version.release) \
 patch=\$(getprop ro.build.version.security_patch) soc=\$(getprop ro.soc.model); \
 dumpsys thermalservice | grep -m1 'Thermal Status'; \
@@ -144,7 +178,7 @@ dumpsys battery | grep -E '^  (level|temperature|status|AC powered|USB powered):
 dumpsys power | grep -m1 mWakefulness=; echo stay_on_while_plugged_in=\$(settings get global stay_on_while_plugged_in); \
 for p in /sys/devices/system/cpu/cpufreq/policy*; do h=; m=; r=; read h <\$p/cpuinfo_max_freq; \
 read m <\$p/scaling_max_freq; read r <\$p/related_cpus; echo \"CPUFREQ \${p##*/} hw=\$h max=\$m cpus=\$r\"; done; \
-df -h /data | tail -1; echo uptime=\$(cat /proc/uptime)"
+df -h /data | tail -1; echo uptime=\$(cat /proc/uptime); grep -E '^(MemTotal|MemAvailable|SwapTotal|SwapFree):' /proc/meminfo"
 }
 
 cap_evidence() {  # <window dir> <pre|post>: the phone's power, thermal and cpufreq-cap state, read only
@@ -179,6 +213,29 @@ window_allowed() {  # <seconds the window needs>: may it start now? (WINDOW_GATE
     WINDOW_GATE="a window of about $1 s would not end before $(date -r "$HARD_STOP" '+%T') (HARD_STOP)"; return 1
   fi
   return 0
+}
+
+other_live_holds() {  # other phones' live holds beside $HOLD (an iPhone's excepted): the adb server is theirs too
+  python3 - "$HOLD" $HOLD_ALSO <<'PY' 2>/dev/null || true
+import glob, json, os, sys
+mine = {os.path.abspath(p) for p in sys.argv[1:]}
+name = os.path.basename(sys.argv[1])
+stem = "." + name[1:].split(".")[0] if name.startswith(".") else name.split(".")[0]
+for f in sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), stem + "*"))):
+    if os.path.abspath(f) in mine or ".queue" in f or "iphone" in os.path.basename(f).lower():
+        continue
+    try:
+        pid = int(json.load(open(f))["pid"])
+    except Exception:
+        continue
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        continue
+    except Exception:
+        pass
+    print(f"{os.path.basename(f)} pid {pid}")
+PY
 }
 
 foreign_engines() {  # engine processes of any lane (binaries and models live under /data/local/tmp)
@@ -269,6 +326,7 @@ fi
 if [[ "${1:-}" == --plan ]]; then
   shift
   MODELS=("$@"); [[ ${#MODELS[@]} -gt 0 ]] || MODELS=(0.6B 1.7B E2B 4B E4B)
+  echo "phone $SERIAL (${DEV_KEY:-not in $SCHEDULE}): cpu mask ${CPU_MASK:-none} ($MASK_SOURCE), hold $HOLD, other hold files ${HOLD_ALSO:-none}; a new state dir's campaign ${CAMPAIGN:-$(date +%F)-dashboard-executorch-v1-${DEV_KEY:-s26}-android}"
   for model in "${MODELS[@]}"; do
     used=0; w=0
     while IFS= read -r row; do
@@ -283,7 +341,7 @@ if [[ "${1:-}" == --plan ]]; then
 fi
 
 # ---------------------------------------------------------------- driver
-STATE="${1:?usage: executorch_matrix_s26.sh <state_dir> [<model> ...] | --plan [<model> ...]}"; shift
+STATE="${1:?usage: executorch_matrix_android.sh <state_dir> [<model> ...] | --plan [<model> ...]}"; shift
 mkdir -p "$STATE"; STATE="$(cd "$STATE" && pwd)"
 MODELS=("$@"); [[ ${#MODELS[@]} -gt 0 ]] || MODELS=(0.6B 1.7B E2B 4B E4B)
 ROUND_END=$(( $(date +%s) + ROUND_HOURS * 3600 ))
@@ -293,7 +351,7 @@ if [[ -f "$STATE/CAMPAIGN" ]]; then
   CAMPAIGN="$(cat "$STATE/CAMPAIGN")"
   [[ -z "$CAMPAIGN_ENV" || "$CAMPAIGN_ENV" == "$CAMPAIGN" ]] || { echo "ERROR: $STATE runs campaign $CAMPAIGN, not $CAMPAIGN_ENV" >&2; exit 2; }
 else
-  CAMPAIGN="${CAMPAIGN_ENV:-$(date +%F)-dashboard-executorch-v1-s26-android}"
+  CAMPAIGN="${CAMPAIGN_ENV:-$(date +%F)-dashboard-executorch-v1-${DEV_KEY:-s26}-android}"
   echo "$CAMPAIGN" >"$STATE/CAMPAIGN"
 fi
 touch "$STATE/units_done.tsv"
@@ -313,6 +371,10 @@ for r in $RUNNERS; do
 done
 OUT_DIR="${BENCH_RAW_ROOT:-$REPO_ROOT/results/raw}/$CAMPAIGN/app-path-android"
 log "driver $$: models ${MODELS[*]}, campaign $CAMPAIGN, window ${WINDOW_MIN} min, round end $(date -r "$ROUND_END" '+%F %T')"
+log "phone $SERIAL (${DEV_KEY:-not in $SCHEDULE}): cpu mask ${CPU_MASK:-none} ($MASK_SOURCE), hold $HOLD, other hold files ${HOLD_ALSO:-none}"
+if [[ -n "$DEV_KEY" && "$CPU_MASK" != "$ENTRY_MASK" ]]; then
+  log "NOTE: CPU_MASK=${CPU_MASK:-<empty>} from the env; the schedule's cpu_mask for $DEV_KEY is ${ENTRY_MASK:-<empty>}"
+fi
 
 WINDOWS_RUN=0
 STOP=""
@@ -321,13 +383,13 @@ run_unit() {  # <window dir> <model> <row> -> rc of run_campaign.py (124 = stopp
   local ws=$1 model=$2 row=$3 task tag cells pid rc=0 cut
   task="$(field "$row" 4)"; tag="unit-$(task_label "$task")"
   cells="$ws/$tag.cells"
-  { echo "# $tag of $(basename "$CELLS") (android/scripts/executorch_matrix_s26.sh, window $(basename "$ws"))"
+  { echo "# $tag of $(basename "$CELLS") (android/scripts/$(basename "$SELF"), window $(basename "$ws"))"
     echo "$row"; } >"$cells"
   cut=$(( $(cat "$ws/WINDOW_END") - CUT_S ))
   # a session of its own: the window's cut stops run_campaign.py, run_cell.py and their adb at once
   python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' \
     env -u BENCH_SITTING -u BENCH_SESSION_DEADLINE -u BENCH_STRICT_SMOKE -u ROUNDS -u BENCH_ROUND_WAKEFULNESS \
-    CAMPAIGN="$CAMPAIGN" BENCH_ANDROID_SERIAL="$SERIAL" BENCH_CPU_MASK= COOLDOWN="$COOLDOWN" \
+    CAMPAIGN="$CAMPAIGN" BENCH_ANDROID_SERIAL="$SERIAL" BENCH_CPU_MASK="$CPU_MASK" COOLDOWN="$COOLDOWN" \
     GATE_COOLDOWN="$GATE_COOLDOWN" python3 "$REPO_ROOT/android/bench/run_campaign.py" "$cells" \
     >"$ws/$tag.console.txt" 2>&1 </dev/null &
   pid=$!
@@ -371,7 +433,7 @@ battery_gate() {  # battery temperature <= BATTERY_MAX_C, up to BATTERY_WAIT s
 }
 
 window() {  # <model> -> runs one window from the model's first unit not done; sets STOP on a stop
-  local model=$1 rows first="" row label n ws wait_s acq wend k=0 est pte need avail ec need_s
+  local model=$1 rows first="" row label n ws wait_s acq wend k=0 est pte need avail ec need_s others usb
   rows="$(model_rows "$model")"
   while IFS= read -r row; do
     [[ -n "$row" ]] || continue
@@ -413,7 +475,7 @@ window() {  # <model> -> runs one window from the model's first unit not done; s
   WINDOWS_RUN=$((WINDOWS_RUN + 1))
   # the phone's other hold files (ops/dashboard-v1/schedule.json hold_also_check): a live owner there is a lane
   # using the phone under another name
-  for f in "$HOLD.s26" "$HOLD.$SERIAL"; do
+  for f in $HOLD_ALSO; do
     # busy unless it names a pid that is gone (an empty or unreadable hold counts as busy, device_hold.py)
     if [[ -e "$f" ]] && python3 - "$f" <<'PY' 2>/dev/null; then
 import json, os, sys
@@ -435,9 +497,16 @@ PY
   done
 
   if [[ "$(adbs get-state 2>/dev/null)" != device ]]; then
-    # a phone back on USB can stay invisible until the adb server restarts (no cell runs now)
-    log "  $SERIAL not on adb (ioreg: $(ioreg -p IOUSB -l 2>/dev/null | grep -c -i samsung) Samsung entries): restarting the adb server once"
-    adb kill-server </dev/null >/dev/null 2>&1 || true; adb start-server </dev/null >/dev/null 2>&1 || true; sleep 3
+    # a phone back on USB can stay invisible until the adb server restarts (no cell of ours runs now); the
+    # server serves every phone on this Mac: not while another phone is held (its lane's adb would be cut)
+    others="$(other_live_holds)"
+    usb="ioreg: $(ioreg -p IOUSB -l 2>/dev/null | grep -c "\"USB Serial Number\" = \"$SERIAL\"" || true) USB entries with its serial"
+    if [[ -n "$others" ]]; then
+      log "  $SERIAL not on adb ($usb); the adb server is not restarted while other phones are held: $(echo "$others" | tr '\n' ' ')"
+    else
+      log "  $SERIAL not on adb ($usb): restarting the adb server once"
+      adb kill-server </dev/null >/dev/null 2>&1 || true; adb start-server </dev/null >/dev/null 2>&1 || true; sleep 3
+    fi
   fi
   if [[ "$(adbs get-state 2>/dev/null)" != device ]]; then
     log "window $(basename "$ws"): $SERIAL is not on adb"
