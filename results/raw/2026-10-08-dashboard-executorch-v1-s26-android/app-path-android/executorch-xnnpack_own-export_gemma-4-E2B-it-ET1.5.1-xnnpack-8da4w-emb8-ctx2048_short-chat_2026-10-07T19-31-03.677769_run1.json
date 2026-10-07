@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "4a24516f-f554-4ced-a0e1-1160f77d201d",
+  "runtime": "executorch-xnnpack",
+  "engineVersion": "v1.5.1",
+  "engineArtifact": "a286ac0af0e9fa90b4041d960e735887108a67fb6ce54c0caee2964e659033d1",
+  "model": {
+    "id": "own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+    "quantization": "8da4w+emb8 (export_gemma4.py): int8 dynamic activations x int4 weights, group 128, HQQ scale-only on the Linear layers (a Linear whose input width is not a multiple of 128 stays unquantized); embeddings int8 per-row; fp32 compute and KV cache; text decoder only; own export, ExecuTorch 1.5.1",
+    "file": "gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte",
+    "sha256": "f1db0147579216e39dad7c747ebc9331fb44b9165330805ee2bb12a1a213f384",
+    "hfRevision": "3e22461f65e89153144f8adb70e3b8c2cc9845a7"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-10-07T19:31:03Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy (--temperature 0: argmax)",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3628.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4185.6,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 8.3,
+    "exitCode": 0,
+    "executorchRunner": "gemma4_e2e_runner",
+    "maxOutputTokens": 128,
+    "chatMode": "gemma4_e2e_runner's built-in turn template (Gemma4Runner::build_input_ids: BOS, turn start, 'user\\n', the prompt, turn end, '\\n', turn start, 'model\\n'); --prompt = prompts/text/<task>.txt",
+    "thinkingPolicy": "the runner's built-in template has no thinking control; reasoning tokens, if any, count against the same budget",
+    "cpuThreadsPolicy": "engine heuristic (--cpu_threads -1: cpuinfo get_num_performant_cores)",
+    "contextSource": "recipe.json export_args.max_seq_len; the .pte has no metadata method (no get_max_context_len): its KV cache buffers were read as [1, 1, 2048, \u2026] when the export was inspected",
+    "contextBudget": 2048,
+    "cpuThreads": 8,
+    "runnerDefaults": "--enable_workspace_sharing true (XNNPACK workspace sharing + weight cache)",
+    "warm": false,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 393,
+      "distinctWords": 64,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "6c8538bf6ae50c620dd2954930fd58f8ee0286f56dc87e9bcf3e17374f1529ae"
+  },
+  "metrics": {
+    "promptTokenCount": 20,
+    "promptTokensPerSecond": 88.1057268722467,
+    "generatedTokenCount": 128,
+    "decodeTokensPerSecond": 31.44963144963145,
+    "firstTokenLatencyMS": 227.0,
+    "loadTimeSeconds": 3.53,
+    "memoryPeakEngineReportedMB": 3036.0,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+executorch-runner-stats",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 3029.638671875,
+    "memoryPeakResidentMB": 3115.9609375
+  },
+  "provenance": {
+    "rawLog": "executorch-xnnpack_own-export_gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_short-chat_2026-10-07T19-31-03.677769_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; executorch: memoryPeakResidentMB = the larger of that and the runner's own peak (memoryPeakEngineReportedMB: the largest VmRSS it read at each decode step, its report's 'Memory (peak)', MB = MiB)",
+    "definitions": "prefill tok/s = prompt tokens / prefill ms * 1000, prefill = the one text_decoder forward over the prompt (Gemma4Runner::generate_text opens the window after it has tokenized the prompt, so prefill excludes tokenization).\nTTFT ms = the same prefill window (Gemma4Stats::time_to_first_token_ms, text only).\ndecode tok/s = generated tokens / generation ms * 1000, generation = from after the first token is sampled from the prefill logits to the end of the decode loop (Gemma4Runner::decode_loop); generated tokens = every token of the reply, the prefill-sampled one included, so the window holds one forward pass fewer than the count.\ncold = one generation in a fresh gemma4_e2e_runner process; the runner has no warmup option, so there is no warm regime.\nClock: std::chrono::steady_clock; the report prints ms with one decimal under 1 s and seconds with two decimals from 1 s on (10 ms resolution).",
+    "recipe": "gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.recipe.json",
+    "recipeSha256": "f95276df781d23ba8c040b8e572f5f0da5451e0a0003d572c9e62971b04f2e94",
+    "recipeAlias": "et1.5.1-gemma4-xnnpack-8da4w-g128-emb8",
+    "exporter": "examples/models/gemma4/export_gemma4.py",
+    "modelProvenance": "own export with the ExecuTorch tag's own exporter (recipe.json beside the .pte); not a published artifact",
+    "promptFile": "prompts/text/short-chat.txt",
+    "promptSha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+    "tokenizer": "gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.tokenizer.json",
+    "tokenizerSha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+    "textExtraction": "stdout minus the final newline (std::endl after the token stream)",
+    "statsReport": "=== Gemma 4 Performance Report ===\n  Model load:        3.53 s\n  Prefill:           227.0 ms (20 tokens, 88 tok/s)\n  Generation:        4.07 s (128 tokens, 31 tok/s)\n  TTFT:              227.0 ms\n  Total:             4.30 s\n  Memory (load):     2929 MB\n  Memory (peak):     3036 MB",
+    "decodedText": "executorch-xnnpack_own-export_gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_short-chat_2026-10-07T19-31-03.677769_run1_iter1.decoded.txt"
+  },
+  "outputSample": "Imagine a smartphone, a smart camera, or even a security sensor. These devices can now \"think\" or learn on their own, right there, without needing to constantly send data to a big, powerful computer i"
+}

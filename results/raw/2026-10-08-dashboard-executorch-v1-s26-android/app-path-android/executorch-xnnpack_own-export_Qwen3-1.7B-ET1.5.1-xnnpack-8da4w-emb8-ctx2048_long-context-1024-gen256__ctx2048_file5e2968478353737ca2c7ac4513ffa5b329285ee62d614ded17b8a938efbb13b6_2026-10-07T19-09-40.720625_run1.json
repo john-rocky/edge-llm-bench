@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "48894508-1d5b-4311-9997-92662b8b64dd",
+  "runtime": "executorch-xnnpack",
+  "engineVersion": "v1.5.1",
+  "engineArtifact": "d4779808e20e2b7fbefe2347fa0c650ae2e7a2431c3ec1c18f0f0560df7f6cfd",
+  "model": {
+    "id": "own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+    "quantization": "8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1",
+    "file": "Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte",
+    "sha256": "76b68b2c2735f3808aff9f13bde07043fda24aad2be774aa1ff3d2ea750b553d",
+    "hfRevision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-07T19:09:40Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy (--temperature 0: argmax)",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2227.2,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 2227.2,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 16.8,
+    "exitCode": 0,
+    "executorchRunner": "llama_main",
+    "maxOutputTokens": 256,
+    "chatMode": "host chat template: HF apply_chat_template(add_generation_prompt=True), template defaults (transformers 5.0.0rc1, Qwen/Qwen3-1.7B@70d244cc86cc); llama_main --prompt_file, num_bos 0",
+    "thinkingPolicy": "model default: the chat template rendered without enable_thinking (Qwen 3: thinking on); reasoning tokens count against the same budget",
+    "cpuThreadsPolicy": "engine heuristic (--cpu_threads -1: cpuinfo get_num_performant_cores)",
+    "contextSource": "runner log (Metadata: get_max_context_len)",
+    "contextBudget": 2048,
+    "cpuThreads": 8,
+    "warm": false,
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "3a660f68-0d59-4ca7-85c0-f73e3a75ae40",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 32.0,
+    "batteryTemperatureFinalC": 33.7,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "sh -c 'exec ./executorch-v1.5.1/llama_main --model_path=/data/local/tmp/llmbench/models/own-export_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte --tokenizer_path=/data/local/tmp/llmbench/models/own-export_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.tokenizer.json --prompt_file=/data/local/tmp/llmbench/models/own-export_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.long-context-1024-gen256.prompt.txt --temperature=0 --max_new_tokens=256 2>/data/local/tmp/llmbench/run_err.txt'",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 1,
+    "regime": "cold-process",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 927,
+      "distinctWords": 108,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "f4b615591b31442fd391ad96cc9470a84ad096f928660c687a7f2e4f8a7048a9"
+  },
+  "metrics": {
+    "promptTokenCount": 1338,
+    "generatedTokenCount": 255,
+    "promptTokensPerSecond": 427.20306513409963,
+    "decodeTokensPerSecond": 23.44180915609487,
+    "firstTokenLatencyMS": 3132,
+    "loadTimeSeconds": 1.667,
+    "memoryPeakEngineReportedMB": 1709.652344,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+executorch-runner-stats",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 1624.853515625,
+    "memoryPeakResidentMB": 1709.652344
+  },
+  "provenance": {
+    "rawLog": "executorch-xnnpack_own-export_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_long-context-1024-gen256__ctx2048_file5e2968478353737ca2c7ac4513ffa5b329285ee62d614ded17b8a938efbb13b6_2026-10-07T19-09-40.720625_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; executorch: memoryPeakResidentMB = the larger of that and the runner's own peak (memoryPeakEngineReportedMB: getrusage ru_maxrss at the end of generation, its stderr line 'RSS after finishing text generation', MiB) \u2014 a launch can end between two 0.5 s reads above the last one",
+    "definitions": "prefill tok/s = prompt_tokens / (prompt_eval_end_ms - inference_start_ms) * 1000. The window opens before the runner tokenizes the prompt (TextLLMRunner::generate sets inference_start_ms, then encodes), so prefill includes tokenization.\nTTFT ms = first_token_ms - inference_start_ms = the same window (first_token_ms is taken when prefill returns, before the first token is decoded to text).\ndecode tok/s = generated_tokens / (inference_end_ms - prompt_eval_end_ms) * 1000, generated_tokens = tokens of the decode loop; the reply has one more token, the one prefill sampled.\ncold = one generation in a fresh llama_main process (no --warmup). warm = llama_main --warmup: one unmeasured generation of the same prompt and max_new_tokens in the same process, stats and KV position reset, the second generation measured.\nClock: integer milliseconds (extension/llm/runner/util.h time_in_ms).",
+    "recipe": "Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.recipe.json",
+    "recipeSha256": "f311a97dcc67800520311ea0a305bbc053301ead88cb77c0d1342b3c4c7250e0",
+    "recipeAlias": "et1.5.1-xnnpack-8da4w-g128-emb8",
+    "exporter": "extension/llm/export/export_llm (examples/models/qwen3/config/qwen3_xnnpack_q8da4w.yaml)",
+    "modelProvenance": "own export with the ExecuTorch tag's own exporter (recipe.json beside the .pte); not a published artifact",
+    "promptFile": "Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.prompts/long-context-1024-gen256.chat.txt",
+    "promptSha256": "360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2",
+    "tokenizer": "tokenizer.json",
+    "tokenizerSha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "textExtraction": "stdout minus the echoed prompt, cut before '\\nPyTorchObserver '",
+    "statsLine": "PyTorchObserver {\"prefill_token_per_sec\":427.203,\"decode_token_per_sec\":23.4418,\"prompt_tokens\":1338,\"generated_tokens\":255,\"model_load_start_ms\":1791400164217,\"model_load_end_ms\":1791400165884,\"inference_start_ms\":1791400165884,\"inference_end_ms\":1791400179894,\"model_execution_start_ms\":1791400179845,\"model_execution_end_ms\":1791400179893,\"prompt_eval_end_ms\":1791400169016,\"first_token_ms\":1791400169016,\"aggregate_sampling_time_ms\":60,\"aggregate_model_execution_time_ms\":13938,\"SCALING_FACTOR_UNITS_PER_SECOND\":1000}",
+    "promptRender": {
+      "call": "apply_chat_template([{'role': 'user', 'content': <file>}], tokenize=False, add_generation_prompt=True)",
+      "transformers": "5.0.0rc1",
+      "snapshot": "/Users/USER/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+      "hostPromptTokens": 1338,
+      "renderedSha256": "360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2"
+    },
+    "decodedText": "executorch-xnnpack_own-export_Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_long-context-1024-gen256__ctx2048_file5e2968478353737ca2c7ac4513ffa5b329285ee62d614ded17b8a938efbb13b6_2026-10-07T19-09-40.720625_run1_iter1.decoded.txt"
+  },
+  "outputSample": "<think>\nOkay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.\n\nFirst, I ne"
+}

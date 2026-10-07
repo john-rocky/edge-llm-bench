@@ -1,0 +1,65 @@
+CPUPOLICY policy0 3628800 0 1 2 3 4 5
+CPUPOLICY policy6 4742400 6 7
+CPUMAX 3628800 4742400
+VmHWM:	 1056404 kB
+VmRSS:	 1033892 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1056404 kB
+VmRSS:	 1034400 kB
+Cpus_allowed_list:	0-7
+===ENGINE_OUTPUT===
+<|im_start|>user
+Explain what on-device AI means in simple terms.<|im_end|>
+<|im_start|>assistant
+<think>
+Okay, so the user is asking for an explanation of on-device AI in simple terms. Let me start by breaking down the term. On-device AI refers to AI systems that run on the user's device, not on a server or cloud. That makes sense. Now, I need to explain this in simple terms.
+
+First, maybe start with a definition. Then, explain what on-device AI means. Maybe mention examples like smart devices or apps. Also, mention that it's not about the AI model but the device. That's important. Then, maybe talk about how it works. Like, the AI model is trained on
+PyTorchObserver {"prefill_token_per_sec":431.818,"decode_token_per_sec":132.706,"prompt_tokens":19,"generated_tokens":127,"model_load_start_ms":1791398979545,"model_load_end_ms":1791398979921,"inference_start_ms":1791398979921,"inference_end_ms":1791398980922,"model_execution_start_ms":1791398980914,"model_execution_end_ms":1791398980922,"prompt_eval_end_ms":1791398979965,"first_token_ms":1791398979965,"aggregate_sampling_time_ms":20,"aggregate_model_execution_time_ms":978,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+EXIT_CODE=0
+
+===ENGINE_STDERR===
+I tokenizers:regex.cpp:40] Registering override fallback regex
+I 00:00:00.002033 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.002069 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.002084 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu0/regs/identification/midr_el1
+I 00:00:00.002118 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu1/regs/identification/midr_el1
+I 00:00:00.002144 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu2/regs/identification/midr_el1
+I 00:00:00.002167 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu3/regs/identification/midr_el1
+I 00:00:00.002197 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu4/regs/identification/midr_el1
+I 00:00:00.002221 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu5/regs/identification/midr_el1
+I 00:00:00.002244 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu6/regs/identification/midr_el1
+I 00:00:00.002268 executorch:cpuinfo_utils.cpp:100] Reading file /sys/devices/system/cpu/cpu7/regs/identification/midr_el1
+I 00:00:00.002290 executorch:main.cpp:159] Resetting threadpool with num threads = 8
+I 00:00:00.002298 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.002305 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.003048 executorch:threadpool.cpp:66] Resetting threadpool to 8 threads.
+I 00:00:00.003063 executorch:runner.cpp:69] Creating LLaMa runner: model_path=/data/local/tmp/llmbench/models/own-export_Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048_Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte, tokenizer_path=/data/local/tmp/llmbench/models/own-export_Qwen3-0.6B-ET1.5.1-xnnp
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791398979.476801   31681 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+I 00:00:00.275005 executorch:llm_runner_helper.cpp:55] Loaded json tokenizer
+I 00:00:00.275037 executorch:llm_runner_helper.cpp:258] Reading metadata from model
+I 00:00:00.275095 executorch:llm_runner_helper.cpp:137] Metadata: use_sdpa_with_kv_cache = 1
+I 00:00:00.275098 executorch:llm_runner_helper.cpp:137] Metadata: use_kv_cache = 1
+I 00:00:00.275100 executorch:llm_runner_helper.cpp:137] Metadata: get_max_context_len = 2048
+I 00:00:00.275103 executorch:llm_runner_helper.cpp:137] Metadata: get_max_seq_len = 2048
+I 00:00:00.275105 executorch:llm_runner_helper.cpp:137] Metadata: enable_dynamic_shape = 1
+I 00:00:00.275109 executorch:llm_runner_helper.cpp:179] eos_id = 151645
+I 00:00:00.275113 executorch:llm_runner_helper.cpp:294] Using method: forward
+I 00:00:00.651417 executorch:text_llm_runner.cpp:92] RSS after loading model: 1028.277344 MiB (0 if unsupported)
+I 00:00:00.695096 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:00.695251 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 128, given pos_ 19, num_prompt_tokens 19, max_context_len 2048
+I 00:00:00.695292 executorch:text_llm_runner.cpp:231] RSS after prompt prefill: 1031.644531 MiB (0 if unsupported)
+I 00:00:01.652593 executorch:text_llm_runner.cpp:261] RSS after finishing text generation: 1031.644531 MiB (0 if unsupported)
+I 00:00:01.652604 executorch:text_llm_runner.cpp:264] Max new tokens 128 reached!
+I 00:00:01.652613 executorch:stats.h:179] 	Prompt Tokens: 19    Generated Tokens: 127
+I 00:00:01.652624 executorch:stats.h:185] 	Model Load Time:		0.376000 (seconds)
+I 00:00:01.652634 executorch:stats.h:194] 	Total inference time:		1.001000 (seconds)		 Rate: 	126.873127 (tokens/second)
+I 00:00:01.652636 executorch:stats.h:203] 		Prompt evaluation:	0.044000 (seconds)		 Rate: 	431.818182 (tokens/second)
+I 00:00:01.652637 executorch:stats.h:215] 		Generated 127 tokens:	0.957000 (seconds)		 Rate: 	132.706374 (tokens/second)
+I 00:00:01.652638 executorch:stats.h:223] 	Time to first generated token:	0.044000 (seconds)
+I 00:00:01.652640 executorch:stats.h:230] 	Sampling time over 146 tokens:	0.020000 (seconds)
