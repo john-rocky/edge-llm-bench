@@ -4,8 +4,10 @@ Formats verified against the v0.16.0 sources (runtime/framework/io_types.cc
 BenchmarkInfo operator<<) and llama.cpp b8999. Absent metrics stay absent —
 never derived, never defaulted (a fabricated field is worse than a hole).
 """
+import hashlib
 import json
 import math
+import os
 import re
 
 # litert_lm_main --benchmark / task mode (io_types.cc)
@@ -295,3 +297,473 @@ def llama_cli_reply(text, prompt=None):
             kept.append(cut)
     value = "\n".join(kept)
     return value.strip() if value.strip() else value
+
+
+# ---------------------------------------------------------------- ExecuTorch
+# The ExecuTorch arm (docs/executorch-arm-v1.md): an own export of each model with the
+# ExecuTorch tag's own exporter, run by the tag's own C++ runner for its model family —
+# llama_main (examples/models/llama) for Qwen 3, gemma4_e2e_runner (examples/models/gemma4)
+# for Gemma 4 — on Android (android/bench/run_cell.py) and on the Mac
+# (scripts/executorch_mac.py). Both writers read the runners' consoles and the staged
+# inputs here; executorch_inputs is the one function of this module that reads files.
+#   llama_main: stdout = the prompt echo, the generated text, "\n" and one
+#     "PyTorchObserver {json}" line (extension/llm/runner/stats.h print_report)
+#   gemma4_e2e_runner: stdout = the generated text and "\n"; stderr ends with its
+#     "=== Gemma 4 Performance Report ===" (runner/gemma4_stats.h report())
+#   stderr also holds ET_LOG lines when the build logs (the Android builds do; the Mac
+#   stock Release build compiles them out).
+
+EXECUTORCH_STATS_PREFIX = "PyTorchObserver "
+GEMMA4_REPORT_HEAD = "=== Gemma 4 Performance Report ==="
+# provenance.definitions of every executorch record, verbatim, per runner
+EXECUTORCH_DEFINITIONS = {
+    "llama_main": (
+        "prefill tok/s = prompt_tokens / (prompt_eval_end_ms - inference_start_ms) * 1000. The window "
+        "opens before the runner tokenizes the prompt (TextLLMRunner::generate sets inference_start_ms, "
+        "then encodes), so prefill includes tokenization.\n"
+        "TTFT ms = first_token_ms - inference_start_ms = the same window (first_token_ms is taken when "
+        "prefill returns, before the first token is decoded to text).\n"
+        "decode tok/s = generated_tokens / (inference_end_ms - prompt_eval_end_ms) * 1000, "
+        "generated_tokens = tokens of the decode loop; the reply has one more token, the one prefill "
+        "sampled.\n"
+        "cold = one generation in a fresh llama_main process (no --warmup). warm = llama_main --warmup: "
+        "one unmeasured generation of the same prompt and max_new_tokens in the same process, stats and "
+        "KV position reset, the second generation measured.\n"
+        "Clock: integer milliseconds (extension/llm/runner/util.h time_in_ms)."),
+    "gemma4_e2e_runner": (
+        "prefill tok/s = prompt tokens / prefill ms * 1000, prefill = the one text_decoder forward over "
+        "the prompt (Gemma4Runner::generate_text opens the window after it has tokenized the prompt, so "
+        "prefill excludes tokenization).\n"
+        "TTFT ms = the same prefill window (Gemma4Stats::time_to_first_token_ms, text only).\n"
+        "decode tok/s = generated tokens / generation ms * 1000, generation = from after the first token "
+        "is sampled from the prefill logits to the end of the decode loop (Gemma4Runner::decode_loop); "
+        "generated tokens = every token of the reply, the prefill-sampled one included, so the window "
+        "holds one forward pass fewer than the count.\n"
+        "cold = one generation in a fresh gemma4_e2e_runner process; the runner has no warmup option, so "
+        "there is no warm regime.\n"
+        "Clock: std::chrono::steady_clock; the report prints ms with one decimal under 1 s and seconds "
+        "with two decimals from 1 s on (10 ms resolution)."),
+}
+# cells recipe= alias -> the record's model.quantization label (quant-label-rule), the runner
+# of its model family and the recipe.json facts the label states: executorch_inputs refuses an
+# artifact whose recipe.json says otherwise. A model whose export is not established has no alias.
+EXECUTORCH_RECIPES = {
+    # export_llm with examples/models/qwen3/config/qwen3_xnnpack_q8da4w.yaml, unchanged: no
+    # group_size in the yaml = v1.5.1 quantize.py's 128 (export log block_size=(1, 128)),
+    # use_hqq on, every Linear incl. the output projection, embedding_quantize 8,0
+    "et1.5.1-xnnpack-8da4w-g128-emb8": {
+        "runner": "llama_main", "executorch": "1.5.1",
+        "label": ("8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, "
+                  "group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row "
+                  "(embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1"),
+        "yaml": {"qmode": "8da4w", "embedding_quantize": "8,0", "group_size": None,
+                 "dtype_override": "fp32"},
+    },
+    # examples/models/gemma4/export_gemma4.py --quantize 8da4w+emb8 --no-audio --no-vision:
+    # quant_utils.apply_linear_quantization -> extension/llm/export/quantize.py 8da4w =
+    # Int8DynamicActivationIntxWeightConfig(int4, PerGroup(128), hqq_scale_only) with
+    # skip_incompatible_shapes; apply_embedding_quantization = EmbeddingQuantHandler(8 bit,
+    # group None); the exporter's defaults as the recipe.json records them
+    "et1.5.1-gemma4-xnnpack-8da4w-g128-emb8": {
+        "runner": "gemma4_e2e_runner", "executorch": "1.5.1",
+        "label": ("8da4w+emb8 (export_gemma4.py): int8 dynamic activations x int4 weights, group 128, "
+                  "HQQ scale-only on the Linear layers (a Linear whose input width is not a multiple "
+                  "of 128 stays unquantized); embeddings int8 per-row; fp32 compute and KV cache; "
+                  "text decoder only; own export, ExecuTorch 1.5.1"),
+        "args": {"quantize": "8da4w+emb8", "no_audio": True, "no_vision": True},
+        "defaults": {"group_size": 128, "dtype": "float32", "quantize_kv_cache": False},
+    },
+}
+EXECUTORCH_SAMPLER = "greedy (--temperature 0: argmax)"
+RE_ET_THREADS = re.compile(r"(?:Resetting threadpool with num threads =|Setting threadpool to) (\d+)")
+RE_ET_METADATA = re.compile(r"Metadata: (\w+) = (-?\d+)")
+RE_ET_RSS = re.compile(r"RSS after (loading model|prompt prefill|finishing text generation): ([\d.]+) MiB")
+RE_ET_MAX_NEW = re.compile(r"Max new tokens resolved: (\d+), given pos_ (\d+), "
+                           r"num_prompt_tokens (\d+), max_context_len (\d+)")
+RE_ET_REACHED = re.compile(r"Max new tokens (\d+) reached!")
+RE_ET_ERROR = re.compile(r"^E \d\d:\d\d:\d\d\.\d+ executorch:.*$", re.M)
+ET_RSS_KEYS = {"loading model": "rssAfterLoadMiB", "prompt prefill": "rssAfterPrefillMiB",
+               "finishing text generation": "rssAfterGenerationMiB"}
+RE_G4_LINE = re.compile(r"^\s+(Model load|Prefill|Generation|TTFT|Total):\s+([\d.]+) (ms|s)"
+                        r"(?: \((\d+) tokens, ([\d.]+) tok/s\))?\s*$", re.M)
+RE_G4_MEMORY = re.compile(r"^\s+Memory \((load|peak)\):\s+([\d.]+) MB\s*$", re.M)
+# a report line: two spaces, a label, a colon ("  Prefill:           101.3 ms (20 tokens, 197 tok/s)")
+RE_G4_REPORT_LINE = re.compile(r"^  [A-Z][\w ()]*:\s")
+
+
+def executorch_runner_for(name):
+    """The runner of a model family, from a model id or artifact name: llama_main for
+    Qwen 3, gemma4_e2e_runner for Gemma 4, None for anything else (no rule = no launch)."""
+    low = os.path.basename(name).lower()
+    if re.search(r"gemma-?4", low):
+        return "gemma4_e2e_runner"
+    if re.search(r"qwen3-", low):
+        return "llama_main"
+    return None
+
+
+def executorch_recipe_runner(recipe):
+    """The runner a recipe.json's exporter feeds: export_gemma4.py -> gemma4_e2e_runner,
+    export_llm with a Qwen 3 config -> llama_main, else None."""
+    exporter = (recipe.get("exporter") or {}).get("tree_path") or ""
+    if exporter.endswith("examples/models/gemma4/export_gemma4.py"):
+        return "gemma4_e2e_runner"
+    if (str(recipe.get("model_class") or "").startswith("qwen3")
+            or str(recipe.get("config_yaml_path") or "").startswith("examples/models/qwen3/")):
+        return "llama_main"
+    return None
+
+
+def _yaml_value(cfg, key):
+    hit = re.search(rf"^\s*{key}:\s*(.+?)\s*$", cfg, re.M)
+    return hit.group(1).strip("'\"") if hit else None
+
+
+def executorch_recipe_problems(alias, recipe):
+    """What makes a staged artifact's recipe.json disagree with the cells' recipe= alias
+    (EXECUTORCH_RECIPES) -> [problem, ...]; [] = the label applies. recipe = the
+    <stem>.recipe.json dict the export wrote beside the .pte."""
+    want = EXECUTORCH_RECIPES.get(alias)
+    if want is None:
+        return [f"recipe alias {alias!r} has no label (parsers.EXECUTORCH_RECIPES)"]
+    problems = []
+    if str(recipe.get("executorch")) != want["executorch"]:
+        problems.append(f"recipe.json executorch {recipe.get('executorch')!r} != {want['executorch']!r}")
+    runner = executorch_recipe_runner(recipe)
+    if runner != want["runner"]:
+        problems.append(f"recipe.json feeds runner {runner!r}, the alias names {want['runner']!r}")
+    if "yaml" in want:
+        cfg = recipe.get("resolved_config_yaml") or recipe.get("config_yaml") or ""
+        for key, value in want["yaml"].items():
+            if _yaml_value(cfg, key) != value:
+                problems.append(f"recipe.json {key} {_yaml_value(cfg, key)!r} != {value!r}")
+        if not re.search(r"^\s*xnnpack:\s*\n\s*enabled:\s*[Tt]rue", cfg, re.M):
+            problems.append("recipe.json config does not enable the xnnpack backend")
+    for section in ("args", "defaults"):
+        got = recipe.get("export_args" if section == "args" else "exporter_defaults_in_effect") or {}
+        for key, value in want.get(section, {}).items():
+            if got.get(key) != value:
+                problems.append(f"recipe.json {section} {key} {got.get(key)!r} != {value!r}")
+    return problems
+
+
+def executorch_context_tokens(recipe):
+    """The KV allocation fixed at export -> (tokens or None, where the recipe.json says it):
+    export_llm's export.max_context_length, export_gemma4.py's --max_seq_len."""
+    cfg = recipe.get("resolved_config_yaml") or recipe.get("config_yaml") or ""
+    value = _yaml_value(cfg, "max_context_length")
+    if value and value.isdigit():
+        return int(value), "recipe.json export.max_context_length"
+    value = (recipe.get("export_args") or {}).get("max_seq_len")
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value, "recipe.json export_args.max_seq_len"
+    return None, "not in recipe.json"
+
+
+def parse_executorch(stdout, stderr="", prompt=None):
+    """llama_main's stdout and stderr -> {"runner", "metrics", "stats", "statsLine", "text",
+    "textExtraction", "log", "engineErrors", "flags"}.
+
+    metrics use BenchmarkResult names, recomputed from the stats line's integer-ms
+    timestamps (EXECUTORCH_DEFINITIONS); a rate whose window is 0 ms stays absent, as
+    the stats line leaves it out. The line's own prefill_token_per_sec /
+    decode_token_per_sec only check the recomputation (flag stats-rate-mismatch).
+    text = stdout after the echoed prompt, cut before "\nPyTorchObserver "; an echo
+    that is not the prompt leaves text None (flag echo-mismatch) — never a guessed cut.
+    log = what the runner logged (thread pool size, the .pte metadata, the RSS
+    lines: getrusage ru_maxrss on Linux, 0 where unsupported)."""
+    out = {"runner": "llama_main", "metrics": {}, "stats": None, "statsLine": None, "text": None,
+           "textExtraction": "not checked (no prompt given)", "log": _executorch_log(stderr),
+           "engineErrors": RE_ET_ERROR.findall(stderr or ""), "flags": []}
+    lines = [ln for ln in stdout.splitlines() if ln.startswith(EXECUTORCH_STATS_PREFIX)]
+    if len(lines) != 1:
+        out["flags"].append(f"stats-line-count-{len(lines)}")
+    if lines:
+        out["statsLine"] = lines[-1]
+        try:
+            out["stats"] = json.loads(lines[-1][len(EXECUTORCH_STATS_PREFIX):])
+        except ValueError:
+            out["flags"].append("stats-line-unparsable")
+    s = out["stats"] or {}
+
+    def num(key):
+        v = s.get(key)
+        return v if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+    m = out["metrics"]
+    start, prefill_end, end = num("inference_start_ms"), num("prompt_eval_end_ms"), num("inference_end_ms")
+    prompt_tokens, generated = num("prompt_tokens"), num("generated_tokens")
+    if prompt_tokens is not None:
+        m["promptTokenCount"] = int(prompt_tokens)
+    if generated is not None:
+        m["generatedTokenCount"] = int(generated)
+    if None not in (start, prefill_end, prompt_tokens) and prefill_end - start > 0:
+        m["promptTokensPerSecond"] = prompt_tokens / (prefill_end - start) * 1000
+    if None not in (prefill_end, end, generated) and end - prefill_end > 0:
+        m["decodeTokensPerSecond"] = generated / (end - prefill_end) * 1000
+    first = num("first_token_ms")
+    if start and first and first >= start:
+        m["firstTokenLatencyMS"] = first - start
+    load_start, load_end = num("model_load_start_ms"), num("model_load_end_ms")
+    if load_start and load_end and load_end >= load_start:
+        m["loadTimeSeconds"] = (load_end - load_start) / 1000
+    for ours, theirs in (("promptTokensPerSecond", "prefill_token_per_sec"),
+                         ("decodeTokensPerSecond", "decode_token_per_sec")):
+        reported = num(theirs)
+        # the stats line prints 6 significant digits (std::stringstream default)
+        if (reported is None) != (ours not in m) or (
+                reported is not None and abs(m[ours] - reported) > 1e-5 * max(1.0, abs(reported))):
+            out["flags"].append("stats-rate-mismatch")
+            break
+    if prompt is not None:
+        if stdout.startswith(prompt):
+            body = stdout[len(prompt):]
+            cut = body.rfind("\n" + EXECUTORCH_STATS_PREFIX)
+            out["text"] = body[:cut] if cut >= 0 else body
+            out["textExtraction"] = "stdout minus the echoed prompt, cut before '\\nPyTorchObserver '"
+        else:
+            out["textExtraction"] = "FAILED: stdout does not start with the prompt echo"
+            out["flags"].append("echo-mismatch")
+    return out
+
+
+def _executorch_log(stderr):
+    log = {}
+    threads = RE_ET_THREADS.findall(stderr or "")
+    if threads:
+        log["cpuThreads"] = int(threads[-1])
+    for key, value in RE_ET_METADATA.findall(stderr or ""):
+        log.setdefault("metadata", {})[key] = int(value)
+    for which, value in RE_ET_RSS.findall(stderr or ""):
+        log[ET_RSS_KEYS[which]] = float(value)
+    resolved = RE_ET_MAX_NEW.findall(stderr or "")
+    if resolved:
+        log["maxNewTokensResolved"] = int(resolved[-1][0])
+    reached = RE_ET_REACHED.findall(stderr or "")
+    if reached:
+        log["maxNewTokensReached"] = int(reached[-1])
+    return log
+
+
+def parse_gemma4_runner(stdout, stderr=""):
+    """gemma4_e2e_runner's stdout and stderr -> the dict parse_executorch returns, from its
+    "=== Gemma 4 Performance Report ===" (statsReport, verbatim) instead of a stats line.
+
+    The report prints rounded times (ms with one decimal under 1 s, else seconds with two)
+    and rates with none: metrics are the counts over the printed times, and a printed rate
+    outside what the rounding allows flags stats-rate-mismatch. text = stdout minus the
+    newline the runner ends it with (no prompt echo)."""
+    out = {"runner": "gemma4_e2e_runner", "metrics": {}, "stats": {}, "statsReport": None,
+           "text": stdout[:-1] if stdout.endswith("\n") else stdout,
+           "textExtraction": "stdout minus the final newline (std::endl after the token stream)",
+           "log": _executorch_log(stderr), "engineErrors": RE_ET_ERROR.findall(stderr or ""),
+           "flags": []}
+    at = (stderr or "").rfind(GEMMA4_REPORT_HEAD)
+    if at < 0:
+        out["flags"].append("stats-report-missing")
+        return out
+    block = [GEMMA4_REPORT_HEAD]
+    for line in stderr[at + len(GEMMA4_REPORT_HEAD):].split("\n")[1:]:
+        if not RE_G4_REPORT_LINE.match(line):
+            break
+        block.append(line)
+    out["statsReport"] = "\n".join(block)
+    report = "\n".join(block[1:])
+    stats = out["stats"]
+    for name, value, unit, tokens, rate in RE_G4_LINE.findall(report):
+        key = name.lower().replace(" ", "_")
+        stats[key + "_ms"] = float(value) * (1000 if unit == "s" else 1)
+        stats[key + "_resolution_ms"] = 10.0 if unit == "s" else 0.1
+        if tokens:
+            stats[key + "_tokens"] = int(tokens)
+            stats[key + "_tok_per_s_printed"] = float(rate)
+    for which, value in RE_G4_MEMORY.findall(report):
+        stats[f"memory_{which}_mb"] = float(value)
+    m = out["metrics"]
+    for phase, count_key, rate_key in (("prefill", "promptTokenCount", "promptTokensPerSecond"),
+                                       ("generation", "generatedTokenCount", "decodeTokensPerSecond")):
+        tokens, ms = stats.get(phase + "_tokens"), stats.get(phase + "_ms")
+        if tokens is None or not ms:
+            continue
+        m[count_key] = tokens
+        m[rate_key] = tokens / ms * 1000
+        half = stats[phase + "_resolution_ms"] / 2
+        low, high = tokens / (ms + half) * 1000, tokens / max(ms - half, 1e-9) * 1000
+        printed = stats[phase + "_tok_per_s_printed"]
+        if not (low - 0.5 <= printed <= high + 0.5):
+            out["flags"].append("stats-rate-mismatch")
+    if "ttft_ms" in stats:
+        m["firstTokenLatencyMS"] = stats["ttft_ms"]
+    if "model_load_ms" in stats:
+        m["loadTimeSeconds"] = stats["model_load_ms"] / 1000
+    if "promptTokenCount" not in m or "generatedTokenCount" not in m:
+        out["flags"].append("stats-report-incomplete")
+    return out
+
+
+def _sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
+    """The host-side inputs of one executorch cell, checked: the .pte (cells file=, under
+    model_dir unless absolute), its <stem>.recipe.json (the .pte's sha256 and the recipe=
+    alias's facts), the tokenizer it names (sha256) and the prompt the runner reads —
+    llama_main a prompt rendered once on the host with the model's chat template
+    (<stem>.prompts/<task>.chat.txt and prompts.json beside the .pte, written by
+    scripts/executorch/make_prompts.py), gemma4_e2e_runner the repository prompt itself
+    (prompts/text/<task>.txt; the runner applies its own turn template).
+    -> dict; raises ValueError naming what to stage when something is missing or disagrees."""
+    pte = os.path.expanduser(pte_file)
+    if not os.path.isabs(pte):
+        pte = os.path.join(model_dir, pte)
+    if not os.path.isfile(pte):
+        raise ValueError(f"{pte} is not staged (ET_MODEL_DIR={model_dir}; docs/executorch-arm-v1.md)")
+    stem = pte[:-len(".pte")] if pte.endswith(".pte") else pte
+    recipe_path = stem + ".recipe.json"
+    if not os.path.isfile(recipe_path):
+        raise ValueError(f"{recipe_path} is missing: the export writes it beside the .pte")
+    with open(recipe_path) as fh:
+        recipe = json.load(fh)
+    problems = executorch_recipe_problems(alias, recipe)
+    if problems:
+        raise ValueError(f"{os.path.basename(recipe_path)} vs recipe={alias}: " + "; ".join(problems))
+    runner = EXECUTORCH_RECIPES[alias]["runner"]
+    if executorch_runner_for(pte) != runner:
+        raise ValueError(f"{os.path.basename(pte)}: the name's model family runs "
+                         f"{executorch_runner_for(pte)!r}, the recipe {runner!r}")
+    pte_sha = _sha256(pte)
+    if recipe.get("pte_sha256") != pte_sha:
+        raise ValueError(f"{os.path.basename(pte)} sha256 {pte_sha} != its recipe.json pte_sha256 "
+                         f"{recipe.get('pte_sha256')}")
+    tok_named = (recipe.get("tokenizer") or {}).get("file") or ""
+    tokenizer = os.path.join(os.path.dirname(pte), os.path.basename(tok_named))
+    if not tok_named or not os.path.isfile(tokenizer):
+        raise ValueError(f"tokenizer {os.path.basename(tok_named) or '?'} is not staged beside {pte}")
+    tokenizer_sha = _sha256(tokenizer)
+    if tokenizer_sha != (recipe.get("tokenizer") or {}).get("sha256"):
+        raise ValueError(f"{tokenizer} sha256 {tokenizer_sha} != the recipe.json's")
+    checkpoint = recipe.get("checkpoint") or {}
+    manifest = None
+    if runner == "llama_main":
+        prompts_dir = stem + ".prompts"
+        prompt = os.path.join(prompts_dir, f"{task}.chat.txt")
+        listing = os.path.join(prompts_dir, "prompts.json")
+        render = (f"<python with transformers> scripts/executorch/make_prompts.py --snapshot "
+                  f"{checkpoint.get('snapshot', '<the HF snapshot of the checkpoint>')} --suffix chat "
+                  f"--out-dir {prompts_dir}")
+        if not (os.path.isfile(prompt) and os.path.isfile(listing)):
+            raise ValueError(f"{prompt} is not rendered; stage it with: {render}")
+        with open(listing) as fh:
+            rendered = json.load(fh)
+        entry = (rendered.get("tasks") or {}).get(task) or {}
+        if checkpoint.get("revision") and checkpoint["revision"] not in str(rendered.get("snapshot")):
+            raise ValueError(f"{listing} was rendered from {rendered.get('snapshot')}, not the "
+                             f"checkpoint revision {checkpoint['revision']}; re-render: {render}")
+        manifest = {"call": rendered.get("call"), "transformers": rendered.get("transformers"),
+                    "snapshot": rendered.get("snapshot"), "hostPromptTokens": entry.get("hostPromptTokens"),
+                    "renderedSha256": entry.get("renderedSha256")}
+    else:
+        prompt = os.path.join(repo_root, "prompts", "text", f"{task}.txt")
+    with open(prompt, encoding="utf-8") as fh:
+        prompt_text = fh.read()
+    prompt_sha = hashlib.sha256(prompt_text.encode()).hexdigest()
+    if manifest and manifest["renderedSha256"] != prompt_sha:
+        raise ValueError(f"{prompt} sha256 {prompt_sha} != prompts.json renderedSha256 (edited after rendering)")
+    with open(recipe_path, "rb") as fh:
+        recipe_sha = hashlib.sha256(fh.read()).hexdigest()
+    context, context_source = executorch_context_tokens(recipe)
+    return {"pte": pte, "pteSha256": pte_sha, "recipePath": recipe_path, "recipeSha256": recipe_sha,
+            "recipe": recipe, "alias": alias, "label": EXECUTORCH_RECIPES[alias]["label"],
+            "runner": runner, "tokenizer": tokenizer, "tokenizerSha256": tokenizer_sha,
+            "prompt": prompt, "promptSha256": prompt_sha, "promptText": prompt_text,
+            "promptManifest": manifest, "contextTokens": context, "contextSource": context_source,
+            "hfRepo": checkpoint.get("hf_repo"), "hfRevision": checkpoint.get("revision"),
+            "exporter": ((recipe.get("exporter") or {}).get("tree_path")
+                         or "extension/llm/export/export_llm (" + str(recipe.get("config_yaml_path")) + ")")}
+
+
+def executorch_record_fields(parsed, inputs, budget, declared_context=None):
+    """What an executorch record carries beyond the runner's harness, the same on Android
+    and the Mac -> {"metrics", "model", "conditions", "provenance", "text", "flags"}.
+    flags = the parser's, plus prompt-token-count-mismatch (llama_main's count against the
+    host tokenizer's), output-budget-exceeded, context-budget-exceeded and
+    allocation-witness-mismatch (the cell's context-tokens= against the run's allocation)."""
+    runner, log, m = parsed["runner"], parsed["log"], dict(parsed["metrics"])
+    flags = list(parsed["flags"])
+    if runner == "llama_main":
+        witness = (log.get("metadata") or {}).get("get_max_context_len")
+        context = witness if witness is not None else inputs["contextTokens"]
+        context_source = ("runner log (Metadata: get_max_context_len)" if witness is not None
+                          else inputs["contextSource"])
+        engine_peak = log.get("rssAfterGenerationMiB")
+        reply = m.get("generatedTokenCount", 0) + 1 if "generatedTokenCount" in m else None
+        host = (inputs.get("promptManifest") or {}).get("hostPromptTokens")
+        if host is not None and m.get("promptTokenCount") is not None and host != m["promptTokenCount"]:
+            flags.append("prompt-token-count-mismatch")
+        chat = ("host chat template: HF apply_chat_template(add_generation_prompt=True), template "
+                f"defaults (transformers {(inputs.get('promptManifest') or {}).get('transformers')}, "
+                f"{inputs.get('hfRepo')}@{str(inputs.get('hfRevision'))[:12]}); llama_main "
+                "--prompt_file, num_bos 0")
+        thinking = ("model default: the chat template rendered without enable_thinking (Qwen 3: "
+                    "thinking on); reasoning tokens count against the same budget")
+    else:
+        context, context_source = inputs["contextTokens"], (
+            inputs["contextSource"] + "; the .pte has no metadata method (no get_max_context_len): "
+            "its KV cache buffers were read as [1, 1, 2048, …] when the export was inspected")
+        engine_peak = parsed["stats"].get("memory_peak_mb")
+        reply = m.get("generatedTokenCount")
+        chat = ("gemma4_e2e_runner's built-in turn template (Gemma4Runner::build_input_ids: BOS, "
+                "turn start, 'user\\n', the prompt, turn end, '\\n', turn start, 'model\\n'); "
+                "--prompt = prompts/text/<task>.txt")
+        thinking = ("the runner's built-in template has no thinking control; reasoning tokens, if "
+                    "any, count against the same budget")
+    if engine_peak:
+        m["memoryPeakEngineReportedMB"] = engine_peak
+    if reply is not None and budget and reply > budget:
+        flags.append("output-budget-exceeded")
+    if context and m.get("promptTokenCount", 0) + (reply or 0) > context:
+        flags.append("context-budget-exceeded")
+    if declared_context and context and int(declared_context) != int(context):
+        flags.append("allocation-witness-mismatch")
+    conditions = {"executorchRunner": runner, "sampler": EXECUTORCH_SAMPLER,
+                  "maxOutputTokens": budget, "chatMode": chat, "thinkingPolicy": thinking,
+                  "cpuThreadsPolicy": "engine heuristic (--cpu_threads -1: cpuinfo "
+                                      "get_num_performant_cores)",
+                  "contextSource": context_source}
+    if context:
+        conditions.update(contextBudget=int(context), contextTokens=int(context))
+    if "cpuThreads" in log:
+        conditions["cpuThreads"] = log["cpuThreads"]
+    if runner == "gemma4_e2e_runner":
+        conditions["runnerDefaults"] = "--enable_workspace_sharing true (XNNPACK workspace sharing + weight cache)"
+    provenance = {"definitions": EXECUTORCH_DEFINITIONS[runner],
+                  "recipe": os.path.basename(inputs["recipePath"]), "recipeSha256": inputs["recipeSha256"],
+                  "recipeAlias": inputs["alias"], "exporter": inputs["exporter"],
+                  "modelProvenance": ("own export with the ExecuTorch tag's own exporter (recipe.json "
+                                      "beside the .pte); not a published artifact"),
+                  "promptFile": inputs["prompt"] if runner == "gemma4_e2e_runner"
+                  else os.path.join(os.path.basename(os.path.dirname(inputs["prompt"])),
+                                    os.path.basename(inputs["prompt"])),
+                  "promptSha256": inputs["promptSha256"],
+                  "tokenizer": os.path.basename(inputs["tokenizer"]),
+                  "tokenizerSha256": inputs["tokenizerSha256"],
+                  "textExtraction": parsed["textExtraction"]}
+    if runner == "gemma4_e2e_runner":
+        provenance["promptFile"] = f"prompts/text/{os.path.basename(inputs['prompt'])}"
+        provenance["statsReport"] = parsed.get("statsReport")
+    else:
+        provenance["statsLine"] = parsed.get("statsLine")
+        provenance["promptRender"] = inputs.get("promptManifest")
+    if parsed["engineErrors"]:
+        provenance["engineErrors"] = parsed["engineErrors"]
+    model = {"quantization": inputs["label"], "sha256": inputs["pteSha256"],
+             "file": os.path.basename(inputs["pte"])}
+    if inputs.get("hfRevision"):
+        model["hfRevision"] = inputs["hfRevision"]
+    return {"metrics": m, "model": model, "conditions": conditions, "provenance": provenance,
+            "text": parsed["text"], "flags": flags}

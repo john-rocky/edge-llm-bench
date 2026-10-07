@@ -13,6 +13,10 @@ Order and discipline (fairness rules as code):
   - a llama.cpp row with backend=npu|gpu engine-build=<tag> runs that side build
     from the device's engines dir (run_cell.py --backend --engine-build; arm
     llama.cpp-npu / llama.cpp-gpu); a row without backend= is the CPU arm.
+  - an executorch row (backend=xnnpack|vulkan|qnn file=<.pte> recipe=<alias>) runs
+    the ExecuTorch runner of its model family on an own export staged under
+    ET_MODEL_DIR (run_cell.py --recipe; arm executorch-<backend>;
+    docs/executorch-arm-v1.md).
   - exclude=/manual= cells are skipped with the reason logged (SKIPPED.txt);
     an exclude-on=<device key>[,<key>…]:<reason> cell is skipped only on the
     devices it names (ops/dashboard-v1/schedule.json key -> serial, matched
@@ -155,6 +159,8 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
         cmd += ["--backend", cell["opts"]["backend"]]
     if cell["opts"].get("engine-build"):
         cmd += ["--engine-build", cell["opts"]["engine-build"]]
+    if cell["runtime"] == "executorch" and cell["opts"].get("recipe"):
+        cmd += ["--recipe", cell["opts"]["recipe"]]
     if cell["opts"].get("file"):
         cmd += ["--file", cell["opts"]["file"]]
     if cell["opts"].get("max-tokens"):

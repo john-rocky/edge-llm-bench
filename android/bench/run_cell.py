@@ -32,6 +32,13 @@ Design decisions (methodology/android.md):
     launch whose lines do not show the cell's device is flagged
     backend-not-registered — kept, and out of every pool
     (render_leaderboard.arm_row).
+  - executorch (docs/executorch-arm-v1.md): the tag's own runner of the model's
+    family (llama_main for Qwen 3, gemma4_e2e_runner for Gemma 4) from
+    {DEV_DIR}/executorch-<tag>[-<backend>]/, arm executorch-<backend>, an own
+    export staged on the host under ET_MODEL_DIR (parsers.executorch_inputs:
+    .pte, recipe.json, tokenizer, the prompt the runner reads). Its stderr goes
+    to a file of its own, read after the launch: one stream would put a log
+    line into the text (llama_main logs right after the first token).
   - CPU affinity: BENCH_CPU_MASK (default f0 — upstream recommendation, tuned
     on Pixel 8a; empty = no taskset). Recorded per run in conditions; the mask
     is a per-device choice, see CPU_MASK below and devices/*.md.
@@ -54,6 +61,7 @@ import datetime
 import hashlib
 import json
 import os
+import shlex
 import statistics
 import subprocess
 import sys
@@ -127,6 +135,29 @@ CPUCAP_WAIT = int(os.environ.get("CPUCAP_WAIT", "300"))
 CPU_POLICY_PROBE = ("for p in " + CPUFREQ + "/policy*; do h=; m=; r=; read h <$p/cpuinfo_max_freq; "
                     "read m <$p/scaling_max_freq; read r <$p/related_cpus; "
                     "echo \"CPUFREQ ${p##*/} ${h:--} ${m:--} $r\"; done")
+# executorch arm (docs/executorch-arm-v1.md): the tag's runners, one build directory per
+# backend, android/bin/executorch-<tag>[-<backend>]/ on the host
+# (android/scripts/build_executorch_llama_main.sh; the XNNPACK build has no suffix), pushed by
+# hand to the same directory under DEV_DIR (the builds share their file names). A model's
+# inputs are staged on the host under ET_MODEL_DIR and pushed beside its .pte.
+EXECUTORCH_TAG = os.environ.get("BENCH_EXECUTORCH_TAG", "v1.5.1")
+EXECUTORCH_BACKENDS = ("xnnpack", "vulkan", "qnn")
+EXECUTORCH_MODEL_DIR = os.environ.get("ET_MODEL_DIR", os.path.join(ROOT, "models", "executorch"))
+ANDROID_BIN_DIR = os.environ.get("BENCH_ANDROID_BIN_DIR", os.path.join(ROOT, "android", "bin"))
+# the runner's stderr, read and removed after each launch (executorch_stderr)
+EXECUTORCH_STDERR = f"{DEV_DIR}/run_err.txt"
+# harnessStamp suffix: run_cell's launch protocol, the runner's own stats read by parsers
+EXECUTORCH_STAMP = "+executorch-runner-stats"
+# appended to rssBasis: the runner's own peak beside the sampler's VmHWM reads
+EXECUTORCH_RSS_NOTE = {
+    "llama_main": ("; executorch: memoryPeakResidentMB = the larger of that and the runner's own "
+                   "peak (memoryPeakEngineReportedMB: getrusage ru_maxrss at the end of generation, "
+                   "its stderr line 'RSS after finishing text generation', MiB) — a launch can end "
+                   "between two 0.5 s reads above the last one"),
+    "gemma4_e2e_runner": ("; executorch: memoryPeakResidentMB = the larger of that and the runner's "
+                          "own peak (memoryPeakEngineReportedMB: the largest VmRSS it read at each "
+                          "decode step, its report's 'Memory (peak)', MB = MiB)"),
+}
 
 
 def load_pins():
@@ -157,6 +188,16 @@ def observed_engine(binname, pins, serial, engine_dir=None):
             raise SystemExit(f"{path} is not on the device ({out.strip()!r}) — push the side "
                              "build first (android/README.md, 'Side builds')")
     sha = out.split()[0]
+    if binname.split("/")[0].startswith("executorch-"):
+        # executorch: the tag's pin holds one sha per runner and build, <runner>_sha256 for
+        # the XNNPACK build and <runner>_<backend>_sha256 for executorch-<tag>-<backend>/
+        build_dir, runner = binname.split("/", 1)
+        backend = next((b for b in EXECUTORCH_BACKENDS if build_dir.endswith("-" + b)), "")
+        field = f"{runner}_{backend}_sha256" if backend else f"{runner}_sha256"
+        for tag, entry in pins.get("executorch", {}).items():
+            if entry.get(field) == sha:
+                return tag, sha
+        return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
     key_by_bin = {"litert_lm_main": ("litert-lm", "litert_lm_main_sha256"),
                   "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
                   "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
@@ -396,7 +437,130 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
         return (f"./llama-cli -m {model_dev} -t 4 -c {ctx} -f {prompt_dev} "
                 f"-n {max_tokens or budget} --temp 0 --top-p 1 -st"), \
             "llama-cli", "greedy", ctx
+    if runtime == "executorch":
+        # The family's runner (parsers.executorch_runner_for: the name; the recipe.json must
+        # agree, run_cell main), run through sh -c so that its stderr goes to its own file
+        # (EXECUTORCH_STDERR) while run_once takes its stdout; exec makes the runner the
+        # process run_once's pgrep and timeout see. llama_main reads the prompt the host
+        # rendered with the model's chat template, pushed beside the .pte
+        # (executorch_device_paths; prompt_dev is the unrendered one);
+        # gemma4_e2e_runner takes the unrendered prompt as --prompt and applies its own
+        # turn template.
+        runner = parsers.executorch_runner_for(model_dev)
+        if runner is None:
+            raise SystemExit(f"executorch: no runner for {os.path.basename(model_dev)} "
+                             "(parsers.executorch_runner_for knows Qwen 3 and Gemma 4)")
+        binname = executorch_binname(backend, runner)
+        tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, task)
+        prompt_arg = (f"--prompt_file={rendered_dev}" if runner == "llama_main"
+                      else f'--prompt="$(cat {prompt_dev})"')
+        inner = (f"exec ./{binname} --model_path={model_dev} --tokenizer_path={tokenizer_dev} "
+                 f"{prompt_arg} --temperature=0 --max_new_tokens={max_tokens or budget} "
+                 f"2>{EXECUTORCH_STDERR}")
+        return f"sh -c {shlex.quote(inner)}", binname, parsers.EXECUTORCH_SAMPLER, \
+            context_tokens or "export-fixed"
     raise SystemExit(f"unknown android runtime {runtime!r}")
+
+
+def executorch_binname(backend, runner):
+    """executorch-<tag>[-<backend>]/<runner>, relative to DEV_DIR (and to ANDROID_BIN_DIR)."""
+    return f"executorch-{EXECUTORCH_TAG}{'' if backend == 'xnnpack' else '-' + backend}/{runner}"
+
+
+def executorch_device_paths(model_dev, task):
+    """The tokenizer and the rendered prompt pushed beside a .pte on the device."""
+    stem = model_dev[:-len(".pte")] if model_dev.endswith(".pte") else model_dev
+    return f"{stem}.tokenizer.json", f"{stem}.{task}.prompt.txt"
+
+
+def push_exact(local, dev_path, serial):
+    """Push a small input unless the device holds the same bytes (sha256), then verify.
+    Strict smoke refuses to push, as push_verified does."""
+    want = sha256_file(local)
+    have = adb(["shell", f"sha256sum {dev_path} 2>&1 || true"], serial).split()
+    if have[:1] == [want]:
+        return
+    if STRICT_SMOKE:
+        raise SystemExit(f"strict smoke requires pre-staged matching input: {dev_path}")
+    adb(["shell", "mkdir", "-p", os.path.dirname(dev_path)], serial)
+    adb(["push", local, dev_path], serial, timeout=600)
+    have = adb(["shell", f"sha256sum {dev_path} 2>&1 || true"], serial).split()
+    if have[:1] != [want]:
+        raise SystemExit(f"push verification failed: {dev_path} (device {have[:1]}, local {want})")
+
+
+def executorch_binary_on_device(binname, serial):
+    """Stop before any launch when the runner is not on the device (pushed by hand, as the
+    other engines are)."""
+    out = adb(["shell", f"sha256sum {DEV_DIR}/{binname} 2>&1 || true"], serial)
+    if not out.split() or len(out.split()[0]) != 64:
+        build_dir = binname.split("/")[0]
+        raise SystemExit(f"{DEV_DIR}/{binname} is not on the device — adb push "
+                         f"{os.path.relpath(os.path.join(ANDROID_BIN_DIR, build_dir), ROOT)} {DEV_DIR}/ "
+                         "(android/scripts/build_executorch_llama_main.sh builds it)")
+
+
+def executorch_stderr(serial):
+    """The runner's stderr of the launch that just ended, read and removed from the device
+    (a launch that never started the runner leaves none)."""
+    return adb(["shell", f"cat {EXECUTORCH_STDERR} 2>/dev/null; rm -f {EXECUTORCH_STDERR}"],
+               serial, retries=1)
+
+
+def executorch_fields(console, et, budget, declared_context):
+    """One executorch launch's console (run_once's, with the runner's stderr appended after
+    ===ENGINE_STDERR===) -> parsers.executorch_record_fields."""
+    engine = console.split("===ENGINE_OUTPUT===\n", 1)[-1]
+    stdout, _, stderr = engine.partition("\n===ENGINE_STDERR===\n")
+    stdout = stdout[:stdout.rfind("EXIT_CODE=")] if "EXIT_CODE=" in stdout else stdout
+    if et["runner"] == "llama_main":
+        parsed = parsers.parse_executorch(stdout, stderr, et["promptText"])
+    else:
+        parsed = parsers.parse_gemma4_runner(stdout, stderr)
+    return parsers.executorch_record_fields(parsed, et, budget, declared_context)
+
+
+def dry_run(args, arm, engine_dir):
+    """--dry-run: the launch this invocation would make, with no device call — one JSON line
+    with the on-device command as run_once starts it, the engine binary and, for executorch,
+    the inputs it would push (checked as for a launch)."""
+    with open(os.path.join(ROOT, "prompts", "text", "budgets.tsv")) as fh:
+        budgets = dict(line.strip().split("\t") for line in fh if line.strip())
+    budget = int(budgets[args.task]) if args.task in budgets else None
+    plan = {"runtime": arm, "modelId": args.model_id, "task": args.task}
+    local = args.file
+    if args.runtime == "executorch":
+        try:
+            et = parsers.executorch_inputs(EXECUTORCH_MODEL_DIR, args.file, args.task, args.recipe, ROOT)
+        except ValueError as e:
+            raise SystemExit(f"executorch: {e}")
+        local = et["pte"]
+    if not local:
+        raise SystemExit("--dry-run needs --file (no network resolution)")
+    name = os.path.basename(local) if os.path.isabs(local) or local.startswith(("~", "./", "../")) else local
+    model_dev = f"{DEV_DIR}/models/{args.model_id.replace('/', '_')}_{name}"
+    prompt_dev = f"{DEV_DIR}/prompts/{args.task}.txt"
+    cmd, binname, sampler, _ = engine_command(args.runtime, args.backend, model_dev, args.task, prompt_dev,
+                                              budget, args.max_tokens, args.context_tokens,
+                                              engine_dir=engine_dir)
+    affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
+    plan.update(command=f"cd {DEV_DIR} && {launch_env(engine_dir, args.backend)} {affinity}{cmd} "
+                        f">{DEV_DIR}/run_out.txt 2>&1 </dev/null",
+                binary=f"{DEV_DIR}/{binname}", sampler=sampler)
+    if args.runtime == "executorch":
+        tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
+        host_bin = os.path.join(ANDROID_BIN_DIR, binname)
+        pushes = [(et["pte"], model_dev, et["pteSha256"]), (et["tokenizer"], tokenizer_dev, et["tokenizerSha256"])]
+        pushes.append((et["prompt"], rendered_dev if et["runner"] == "llama_main" else prompt_dev,
+                       et["promptSha256"]))
+        plan.update(pushes=[{"local": a, "device": b, "sha256": c} for a, b, c in pushes],
+                    hostBinary=host_bin,
+                    hostBinarySha256=sha256_file(host_bin) if os.path.isfile(host_bin) else "missing",
+                    quantization=et["label"], executorchRunner=et["runner"],
+                    contextTokens=et["contextTokens"], promptSha256=et["promptSha256"],
+                    stderrFile=EXECUTORCH_STDERR)
+    print(json.dumps(plan, ensure_ascii=False))
+    return 0
 
 
 def launch_env(engine_dir=None, backend=None):
@@ -620,6 +784,16 @@ def main():
     ap.add_argument("--round-index", type=int)
     ap.add_argument("--launch-index", type=int)
     ap.add_argument("--gate-timed-out", action="store_true")
+    ap.add_argument("--recipe", default=None,
+                    help="executorch: the cells' recipe= alias (parsers.EXECUTORCH_RECIPES)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="print the launch (on-device command, binary, inputs) without any device call")
+    # the executorch arm's runtime and backends (docs/executorch-arm-v1.md)
+    for action in ap._actions:
+        if action.dest == "runtime":
+            action.choices = [*action.choices, "executorch"]
+        elif action.dest == "backend":
+            action.choices = [*action.choices, *EXECUTORCH_BACKENDS]
     args = ap.parse_args()
 
     if args.runtime == "litert-lm" and not args.backend:
@@ -635,6 +809,15 @@ def main():
                  "(--engine-build alone would stamp the CPU arm `llama.cpp` with a second build)")
     arm = arm_name(args.runtime, args.backend)
     engine_dir = f"{ENGINES_DIR}/{args.engine_build}" if args.engine_build else None
+    if args.runtime == "executorch":
+        if args.backend not in EXECUTORCH_BACKENDS or args.engine_build:
+            ap.error("executorch needs --backend xnnpack|vulkan|qnn (arm identity) and no --engine-build")
+        if not args.file or not args.recipe:
+            ap.error("executorch needs --file <the .pte, under ET_MODEL_DIR> and --recipe <alias>")
+    elif args.backend in EXECUTORCH_BACKENDS or args.recipe:
+        ap.error("--backend xnnpack|vulkan|qnn and --recipe belong to --runtime executorch")
+    if args.dry_run:
+        return dry_run(args, arm, engine_dir)
 
     if endurance_cell.ENDURANCE_TASK.match(args.task):
         if args.runtime != "litert-lm":
@@ -648,7 +831,18 @@ def main():
 
     pins = load_pins()
 
+    et = cell_file = None
+    if args.runtime == "executorch":
+        try:
+            et = parsers.executorch_inputs(EXECUTORCH_MODEL_DIR, args.file, args.task, args.recipe, ROOT)
+        except ValueError as e:
+            raise SystemExit(f"executorch: {e}")
+        # ensure_model pushes the staged .pte from its local path; capture_stem keys the
+        # records on the cells' file=, as run_campaign does
+        cell_file, args.file = args.file, et["pte"]
     model_dev, model_local = ensure_model(args.model_id, args.file, args.runtime, args.serial)
+    if et:
+        args.file = cell_file
     prompt_dev = budget = prompt_text = None
     if not args.task.startswith("native-benchmark-"):
         prompt_dev, budget = push_prompt(args.task, args.serial)
@@ -659,6 +853,12 @@ def main():
         args.runtime, args.backend, model_dev, args.task,
         prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir)
     env = launch_env(engine_dir, args.backend)
+    if et:
+        tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, args.task)
+        push_exact(et["tokenizer"], tokenizer_dev, args.serial)
+        if et["runner"] == "llama_main":
+            push_exact(et["prompt"], rendered_dev, args.serial)
+        executorch_binary_on_device(binname, args.serial)
     engine_version, engine_artifact = observed_engine(binname, pins, args.serial, engine_dir)
     if os.environ.get("BENCH_SITTING") == "1":
         # the expected build: the cell's side build, else the pin; llama.cpp's field follows
@@ -711,6 +911,8 @@ def main():
         t0 = time.time()
         console, exit_code, rss_mb = run_once(cmd, binname, args.serial, args.timeout, env)
         elapsed = time.time() - t0
+        if et:
+            console += "\n===ENGINE_STDERR===\n" + executorch_stderr(args.serial)
         cpu_cond, cpu_capped = cpu_conditions(console)
         # a measurement condition, not an engine failure: kept out of launch_checks, so
         # the run's OK / exit code / firstEver marker stay what the engine made them
@@ -743,6 +945,10 @@ def main():
         elif args.runtime == "llama.cpp":
             metrics = parsers.parse_llama_cli(console)
             cold = True
+        elif et:
+            et_fields = executorch_fields(console, et, args.max_tokens or budget, args.context_tokens)
+            metrics = dict(et_fields["metrics"])
+            cold = True
         else:
             metrics = parsers.parse_litert(console)
             cold = True
@@ -774,6 +980,8 @@ def main():
             launch_checks["protocolFlags"].append(f"engine-exit-{exit_code}")
         if extended and "HOST_ADB_FAILURE:" in console:
             launch_checks["protocolFlags"].append("host-adb-failure")
+        if et and et_fields["flags"]:
+            launch_checks.setdefault("protocolFlags", []).extend(et_fields["flags"])
         try:
             end_status, end_name = thermal_status(args.serial)
             end_batt = battery(args.serial) if extended else None
@@ -793,6 +1001,11 @@ def main():
         high_water = [int(line.split()[1]) for line in console.splitlines() if line.startswith("VmHWM:")]
         if high_water:
             metrics["memoryPeakResidentMB"] = max(high_water) / 1024
+        if et:
+            metrics["harnessStamp"] = HARNESS_STAMP + EXECUTORCH_STAMP
+            engine_peak = metrics.get("memoryPeakEngineReportedMB")
+            if engine_peak and engine_peak > metrics.get("memoryPeakResidentMB", 0):
+                metrics["memoryPeakResidentMB"] = engine_peak
         # every run until the first clean exit is (or may be finishing) the
         # cache build; the first run that exits 0 writes the marker
         if (args.first_ever and i == 1) or not cache_built:
@@ -842,6 +1055,14 @@ def main():
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
                            "rssBasis": RSS_BASIS + (SIDE_RSS_NOTE if engine_dir else "")},
         }
+        if et:
+            rec["model"].update(et_fields["model"])
+            rec["conditions"].update(et_fields["conditions"], warm=False)
+            rec["provenance"].update(et_fields["provenance"])
+            rec["provenance"]["rssBasis"] += EXECUTORCH_RSS_NOTE[et["runner"]]
+            rec["outputSample"] = (et_fields["text"] or "")[:200]
+            if launch_checks.get("protocolFlags"):
+                rec["conditions"]["protocolFlags"] = list(launch_checks["protocolFlags"])
         if extended:
             rec["conditions"].update({
                 "roundIndex": args.round_index, "launchIndex": args.launch_index,
@@ -871,6 +1092,8 @@ def main():
             printed_texts = parsers.context_prompt_texts(console)
         elif engine_dir and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
+        elif et and checking:
+            printed_texts = [et_fields["text"] or ""]
         else:
             printed_texts = None
         any_text_failure = False
