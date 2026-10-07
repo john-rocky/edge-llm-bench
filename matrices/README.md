@@ -15,8 +15,12 @@ for their published campaigns).
 - `platform`: `ios` | `mac` | `android`. Runners filter to their own platform and
   ignore the rest, so one file can describe a cross-platform matrix.
 - `runtime`: a `RuntimeKind` raw value (`mlx-swift`, `llama.cpp`, `litert-lm`,
-  `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`), or
-  `uzu` (Mac-only Python SDK driver; `docs/uzu-arm-v1.md`).
+  `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`),
+  `uzu` (Mac-only Python SDK driver; `docs/uzu-arm-v1.md`), or
+  `onnxruntime-genai` (ONNX Runtime GenAI on a published GenAI folder:
+  `scripts/ortgenai_mac.py` on the Mac, `android/bench/run_cell.py` on Android;
+  every row names `backend=`, `file=`, `revision=` and `context-tokens=`;
+  `docs/ortgenai-arm-v1.md`).
   `executorch` rows (android / mac) run ExecuTorch's own runner of the model's family on an
   own export: `backend=` the delegate (arm `executorch-<backend>`), `local=1 file=<name>.pte`
   under `ET_MODEL_DIR`, `recipe=<alias>` the quantization label; `docs/executorch-arm-v1.md`.
@@ -45,8 +49,9 @@ for their published campaigns).
 | `exclude=<slug>` | structurally impossible / known-fail cell. Runners skip it; the leaderboard renders it as `— (<slug>)`. Keeping the row is deliberate (fairness rule: failed runs stay in the table) |
 | `manual=1` | never run by automated runners (energy cells: the unplug discipline is a human step). `energy` task REQUIRES this flag |
 | `local=1` | model is side-loaded, not in the HF catalog — catalog preflight skips it |
-| `file=<name>` | artifact filename inside the HF repo (Android GGUF cells: which quant file to fetch/push) |
-| `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`; Mac litert-lm: forwarded as `yardstick --litert-backend`, `cpu` rows stamp `runtime: litert-lm-cpu`). The Mac runner keys the capture file on `backend=` and `context-tokens=`, so one cell at two allocations is two files |
+| `file=<name>` | artifact filename inside the HF repo (Android GGUF cells: which quant file to fetch/push; `onnxruntime-genai`: the GenAI folder's path in the repo, e.g. `onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128`) |
+| `revision=<sha>` | `onnxruntime-genai` only, required on every row whose `file=` is a folder in an HF repo: the 40-hex commit the folder is fetched at (each repo has its own); part of the Mac capture file's identity with `file=` |
+| `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`; Mac litert-lm: forwarded as `yardstick --litert-backend`, `cpu` rows stamp `runtime: litert-lm-cpu`; `onnxruntime-genai`: `cpu` \| `webgpu` on the Mac, `cpu` on Android and iOS, the execution provider — records `onnxruntime-genai-<backend>`). The Mac runner keys the capture file on `backend=` and `context-tokens=`, so one cell at two allocations is two files |
 | `thinking=off\|model-default` | Mac `uzu` reasoning mode; part of capture identity, stamped in each record; default `model-default` |
 | `recipe=<name>` | required for Mac `uzu`: converter/publisher recipe, e.g. `lalamo-d1cfe68e-bfloat16-default`, `lalamo-d1cfe68e-qwen3-4b-mlx-affine-4bit-gs64` or `Mirai-M`; bare bit counts are rejected. `file=` names an own-export directory under `UZU_MODEL_DIR`. Android `tts-rtf-*` rows: the graph set beside the talker — absent = the sample's default set, `mtp-folded-int8-codec-split` = the repo's fast graphs (`docs/tts-rtf-v1.md` "Fast-graph recipe row") |
 
@@ -96,6 +101,11 @@ for their published campaigns).
   the sample's own Android app on the Galaxy S26 CPU, ASR round trip as the audio
   check; since 2026-09-29 a second android row for the repo's fast graphs, run
   interleaved with the default row); `docs/tts-rtf-v1.md`.
+- `dashboard-ortgenai-v1.cells` — the ONNX Runtime GenAI arm (2026-10-07): Qwen3
+  0.6B / 1.7B / 4B on the onnx-community GenAI folders, short-chat and the 1K text
+  task at context-tokens=2048, Mac CPU and WebGPU, Android CPU (iPhone rows disabled
+  until the app has the runtime), Gemma 4 E2B / E4B `exclude=` with their reason;
+  `docs/ortgenai-arm-v1.md`.
 
 ## Validation
 

@@ -79,6 +79,16 @@ def newest_lock_litert_tag():
 
 
 def check_mac(required):
+    # the ONNX Runtime GenAI cells' own venv (docs/ortgenai-arm-v1.md), before the yardstick checks
+    # (those cells need no Xcode and no yardstick). Advisory: without it those cells log SKIPPED
+    # reason=ortgenai-venv-missing, the rest of the sitting runs.
+    ort_py = os.path.expanduser(os.environ.get("ORTGENAI_PYTHON",
+                                               os.path.join("~", ".venvs", "ortgenai-0.17.1", "bin", "python")))
+    check(OK if os.access(ort_py, os.X_OK) else WARN, "onnxruntime-genai venv",
+          ort_py if os.access(ort_py, os.X_OK) else
+          f"no python at {ort_py} - the onnxruntime-genai cells log SKIPPED; python3 -m venv that dir and "
+          "pip install onnxruntime-genai==0.17.1 onnxruntime==1.30.0 onnxruntime-ep-webgpu==0.4.0 "
+          "huggingface_hub onnx jsonschema (docs/ortgenai-arm-v1.md)")
     if not which("xcodebuild"):
         check(FAIL if required else WARN, "xcodebuild", "install Xcode (27 beta era; see docs/OPERATIONS.md)")
         return
@@ -191,7 +201,10 @@ def check_android(required):
     base = ["adb"] + (["-s", serial] if serial else [])
     for binname, source in (
             ("litert_lm_main", "android/bin/ or the GitHub release assets"),
-            ("llama-cli", "android/scripts/fetch_llama_android.sh")):
+            ("llama-cli", "android/scripts/fetch_llama_android.sh"),
+            # the ONNX Runtime GenAI runtime dir (onnxruntime-genai rows): ortgenai_run + the AARs' libraries
+            ("ortgenai/ortgenai_run", "android/ortgenai/build_android.sh, then push android/bin/ortgenai-0.17.0/ "
+                                      "to /data/local/tmp/llmbench/ortgenai/")):
         rc, out = run(base + ["shell", "sha256sum", f"/data/local/tmp/llmbench/{binname}"])
         if rc != 0 or "No such file" in out:
             check(lvl, f"{binname} on device",

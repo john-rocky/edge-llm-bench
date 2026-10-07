@@ -97,6 +97,10 @@ def runtime_display(runtime: str) -> str:
         "litert-lm": "litert-lm",
         "apple-fm": "apple-fm",
         "core-ai": "core-ai",
+        # ONNX Runtime GenAI: the backend is part of the arm (docs/ortgenai-arm-v1.md)
+        "onnxruntime-genai": "onnxruntime-genai",
+        "onnxruntime-genai-cpu": "onnxruntime-genai-cpu",
+        "onnxruntime-genai-webgpu": "onnxruntime-genai-webgpu",
     }.get(runtime, runtime)
 
 

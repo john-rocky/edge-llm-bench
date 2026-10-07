@@ -235,6 +235,7 @@ design.
 | llama.cpp b8999 | Android, iPhone, Mac | yes | Android: official CPU-only binary; the NPU (Hexagon) and Adreno GPU (OpenCL) rows run the release's official Snapdragon asset as a side build — section "NPU and Android GPU rows" below; Apple: arm wired, no rows in this repo yet |
 | Core AI (Apple) | iPhone, Mac | v2 (2026-09-08) | own exports, side-loaded; Qwen3 0.6B/1.7B/4B rows active, the Gemma 4 rows `exclude=` because their per-layer-embedding bundles need the unpublished engine patch — "Core AI arm (v2)" below |
 | Mirai (uzu) | Mac | separate cells | wired on Mac 2026-09-24, smoke only; [docs/uzu-arm-v1.md](uzu-arm-v1.md) |
+| ONNX Runtime GenAI | Mac (CPU, WebGPU), Android (CPU) | separate cells | wired 2026-10-07, not measured yet; "ONNX Runtime GenAI arm (v1, 2026-10-07)" below |
 
 ## Core AI arm (v2, 2026-09-08)
 
@@ -867,6 +868,17 @@ Tasks. A prompt task on the bundle's own cache only: the runner and
 `endurance-*` on this arm. Short-chat on Qwen3 0.6B is the row; its 1K text
 task is `exclude=aot-cache-length-1024` (the prompt alone is 1,339 tokens on
 LiteRT-LM's Qwen3 0.6B, against a 1,024-token cache).
+
+## ONNX Runtime GenAI arm (v1, 2026-10-07)
+
+`matrices/dashboard-ortgenai-v1.cells`: Qwen3 0.6B / 1.7B / 4B on the onnx-community GenAI folders
+(`file=` the folder, `revision=` each repo's commit), short-chat and the 1K text task at
+`context-tokens=2048`; arms `onnxruntime-genai-cpu` (Mac, Android) and `onnxruntime-genai-webgpu`
+(Mac). Gemma 4 E2B / E4B rows are `exclude=` with their reason, the Pixel 8a's Qwen3-4B rows carry
+the 4B-class `exclude-on=`, the iPhone rows are disabled until the app has the runtime, and there
+is no anchor row (the weekly file is an owner decision). Every run is one engine process, so its
+cells headline the cold median on the Mac too. Drivers, pins, recipe labels, timing, memory and
+telemetry: [docs/ortgenai-arm-v1.md](ortgenai-arm-v1.md).
 
 ## Open questions for the LiteRT team
 

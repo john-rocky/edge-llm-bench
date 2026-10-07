@@ -70,6 +70,19 @@ CSV_PLATFORM = {"ios": "ios", "mac": "mac", "android": "android"}
 # headline regime per platform: Apple lanes have in-process warm runs, the
 # Android CLIs do not (methodology/android.md) — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold"}
+# Arms with no warm regime on any platform: every run is a fresh engine process
+# (onnxruntime-genai: scripts/ortgenai_mac.py, records conditions.regime "cold (one
+# process per run)"), so the cell's headline is its cold median wherever it runs —
+# named "cold" in its own column header, never pooled with a warm column
+# (cold-warm-split). Without this the Mac rows of such an arm had no warm run and
+# rendered "records without a decode figure".
+COLD_ARMS = {"onnxruntime-genai-cpu", "onnxruntime-genai-webgpu"}
+
+
+def regime_of(plat, arm):
+    """The headline regime of one arm on one platform: the platform's, unless the
+    arm's protocol has no warm run (COLD_ARMS)."""
+    return "cold" if arm in COLD_ARMS else REGIME[plat]
 
 
 def rel(p):
@@ -83,7 +96,10 @@ def arm_of(plat, runtime, opts):
     (llama.cpp-npu / llama.cpp-gpu; without backend= the row is the CPU arm,
     bare `llama.cpp`); the Mac CPU arm stamps litert-lm-cpu too, while the Mac
     GPU arm keeps the bare `litert-lm` every Apple row has carried (yardstick
-    --litert-backend)."""
+    --litert-backend). onnxruntime-genai carries its backend on every platform
+    (onnxruntime-genai-cpu / onnxruntime-genai-webgpu)."""
+    if runtime == "onnxruntime-genai" and opts.get("backend"):
+        return f"{runtime}-{opts['backend']}"
     if plat == "android" and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
     if plat == "mac" and runtime == "litert-lm" and opts.get("backend") == "cpu":
@@ -287,9 +303,10 @@ def build(cells_path, schedule_path, stale_days, today):
                        and r["task"] == c["task"]
                        and (not c["context_tokens"]
                             or ctx_key(r.get("context_tokens")) == c["context_tokens"])]
+                regime = regime_of(plat, c["arm"])
                 rec = {
                     "platform": plat, "device": ident, "device_display": display,
-                    "regime": REGIME[plat], "model": c["model"], "arm": c["arm"],
+                    "regime": regime, "model": c["model"], "arm": c["arm"],
                     "model_id": c["model_id"], "task": c["task"], "anchor": c["anchor"],
                     "status": "missing", "reason": "", "decode_tps": None,
                     "spread_pct": None, "n": 0, "prefill_tps": None, "ttft_ms": None,
@@ -315,7 +332,7 @@ def build(cells_path, schedule_path, stale_days, today):
                     rec.update(status="excluded", reason=why)
                 elif sel:
                     a = arm_row(sel)
-                    if REGIME[plat] == "warm":
+                    if regime == "warm":
                         dec, spread, n = a["warm"], a["spread"], a["warm_n"]
                     else:
                         dec, spread, n = a["cold_median"], a["cold_spread"], a["cold_n"]
@@ -370,7 +387,9 @@ def render_md(out_cells, cells_path, stale_days, today):
     L.append("")
     L.append("Reading rules: **warm** = median of same-session warm runs (Apple lanes); "
              "**cold** = median of the session's fresh-process runs (Android v1 has no "
-             "warm regime). Arms compare only within one device and one model; each cell "
+             "warm regime, and the onnxruntime-genai arms run one engine process per run "
+             "on every platform, so their columns are cold on the Mac too). Arms compare "
+             "only within one device and one model; each cell "
              "runs its arm's own published recipe (artifact, quantization, engine pin in "
              "the detail table) — a different recipe is a different deployment profile, "
              "not a win. One grid per device and task; columns are alphabetical, rows are in "
@@ -413,7 +432,9 @@ def render_md(out_cells, cells_path, stale_days, today):
         missing = sum(1 for c in dcells if c["status"] in ("missing", "no-decode"))
         dates = sorted({c["captured"] for c in dcells if c["captured"]})
         engines = sorted({c["engine"] for c in dcells if c["engine"]})
-        L.append(f"## {display} — `{ident}`, {plat}, headline regime **{REGIME[plat]}**")
+        cold_arms = sorted({c["arm"] for c in dcells if c["regime"] != REGIME[plat]})
+        L.append(f"## {display} — `{ident}`, {plat}, headline regime **{REGIME[plat]}**"
+                 + (f" ({', '.join(cold_arms)}: cold, one engine process per run)" if cold_arms else ""))
         L.append("")
         L.append(f"{measured} of {len(dcells)} cells measured"
                  + (f", {excluded} excluded with a reason" if excluded else "")
@@ -431,7 +452,7 @@ def render_md(out_cells, cells_path, stale_days, today):
         for task, arms, grid in grid_sections(dcells):
             L.append(f"### `{task}`")
             L.append("")
-            L.append("| model | " + " | ".join(f"{a} ({REGIME[plat]} tok/s)" for a in arms) + " |")
+            L.append("| model | " + " | ".join(f"{a} ({regime_of(plat, a)} tok/s)" for a in arms) + " |")
             L.append("|---|" + "---|" * len(arms))
             for (m, ctx), slots in grid:
                 line = [f"**{m}**" + (f" · ctx {ctx}" if ctx else "")]

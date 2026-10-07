@@ -156,6 +156,87 @@
         "compatibility_adapter": "scripts/uzu_prepare_lalamo.py (known ungated Qwen3 0.6B/1.7B/4B and explicit Gemma 4 E2B; tensor payload bytes unchanged)"
       },
       "note": "Mac only, smoke only; first admitted session needs a quiet host. Engine and converter are pinned; docs/uzu-arm-v1.md."
+    },
+    "onnxruntime-genai": {
+      "source": "https://github.com/microsoft/onnxruntime-genai",
+      "platforms": [
+        "mac",
+        "android",
+        "ios"
+      ],
+      "arms": [
+        "onnxruntime-genai-cpu",
+        "onnxruntime-genai-webgpu (mac)"
+      ],
+      "doc": "docs/ortgenai-arm-v1.md",
+      "mac": {
+        "runner": "scripts/ortgenai_mac.py (ORTGENAI_PYTHON, default ~/.venvs/ortgenai-0.17.1/bin/python)",
+        "python": "3.14.6",
+        "packages": {
+          "onnxruntime-genai": "0.17.1",
+          "onnxruntime": "1.30.0",
+          "onnxruntime-ep-webgpu": "0.4.0",
+          "huggingface_hub": "2.1.1",
+          "onnx": "1.23.2",
+          "jsonschema": "4.26.0"
+        },
+        "wheels": "onnxruntime-genai cp314 macosx_12_0_arm64 (commit 83de55a1), onnxruntime macosx_14_0_arm64, onnxruntime-ep-webgpu macosx_14_0_universal2 (PyPI)",
+        "engine_libraries": {
+          "onnxruntime_genai/libonnxruntime-genai.dylib": {
+            "sha256": "36ad46730a7e1d4dda7efd9545fb584d68befd2adedf82400e843e175762f036",
+            "bytes": 11967632
+          },
+          "onnxruntime_genai/onnxruntime_genai.cpython-314-darwin.so": {
+            "sha256": "a06c138ce6de0c1e64c771e743e6deb8f47ead7cf2a1d28fd0066c2943c126a5"
+          },
+          "onnxruntime/capi/libonnxruntime.1.30.0.dylib": {
+            "sha256": "fc5e2d939d523717be730720312a75eeb528d6a8627d467af5507f462b1f88d2",
+            "bytes": 33209560
+          },
+          "onnxruntime/capi/onnxruntime_pybind11_state.so": {
+            "sha256": "fe1c2457a5d37ea06e804990a44ae60432a0716ea89ad64370654b3197490200"
+          },
+          "onnxruntime_ep_webgpu/libonnxruntime_providers_webgpu.dylib": {
+            "sha256": "894aa43c308c97afe58f6485b8411962181a39b27170f5f210cc7503adb52850",
+            "bytes": 14966224
+          }
+        },
+        "note": "every record carries provenance.engineLibraries (sha256 + bytes read at the cell's start) and engineArtifact = the genai dylib's sha256; the WebGPU arm registers the plugin EP with register_execution_provider_library and runs the webgpu folder"
+      },
+      "android": {
+        "release_aar": {
+          "url": "https://github.com/microsoft/onnxruntime-genai/releases/download/v0.17.0/onnxruntime-genai-android-0.17.0.aar",
+          "sha256": "f8b28a9ce448d97e0d5ab9614eae018a4d994d739de84e9fc5f9ff3b6673dd50"
+        },
+        "onnxruntime_android": {
+          "maven": "com.microsoft.onnxruntime:onnxruntime-android:1.30.0",
+          "url": "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.30.0/onnxruntime-android-1.30.0.aar",
+          "sha256": "e7fb945e402205f6db858d65bb78d2bdb0812317b383976c9e3bceb4862c73f1"
+        },
+        "built_by": "android/ortgenai/build_android.sh (NDK 29.0.13113456-beta1, aarch64-linux-android28): ortgenai_run (harness driver) + upstream model_benchmark into android/bin/ortgenai-0.17.0/",
+        "pins": "android/engine-pins.json \"onnxruntime-genai\" \"0.17.0\" (so_files + ortgenai_run_sha256: the witness)",
+        "device_dir": "/data/local/tmp/llmbench/ortgenai/"
+      },
+      "ios": {
+        "release_zip": {
+          "url": "https://github.com/microsoft/onnxruntime-genai/releases/download/v0.17.0/onnxruntime-genai-ios-0.17.0.zip",
+          "sha256": "699697a1cf0699978083478a028857c188814f027a41b100dad1116cf45ce6cb"
+        },
+        "status": "not wired: the app adapter and catalog entries come with the iPhone round; the matrices/dashboard-ortgenai-v1.cells ios rows are disabled until then"
+      },
+      "release": "v0.17.0 published 2026-09-28T06:15:36Z (GitHub release digests, checked 2026-10-08); PyPI onnxruntime-genai 0.17.1 is the Mac package",
+      "models": {
+        "repos": {
+          "onnx-community/Qwen3-0.6B-ONNX": "da1453100cf3ff33ef56d17983fc7a8648706db6",
+          "onnx-community/Qwen3-1.7B-ONNX": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+          "onnx-community/Qwen3-4B-ONNX": "98ddba15d05dede4435afb63f13280abcdbc2a48"
+        },
+        "folders": [
+          "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128",
+          "onnxruntime/webgpu/webgpu-int4-kld-block-32"
+        ],
+        "note": "each revision is that repo's commit \"Add optimized models for ORT GenAI (#3)\" (2026-04-20, authors Xenova and kvaishnavi); the recipe labels live in models/ortgenai-recipes.json"
+      }
     }
   },
   "python_instruments": {

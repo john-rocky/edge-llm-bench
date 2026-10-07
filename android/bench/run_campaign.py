@@ -40,6 +40,7 @@ Order and discipline (fairness rules as code):
     of every judged launch, so a retry never stands beside part of the
     capture it replaces.
 """
+import atexit
 import fcntl
 import argparse
 import glob
@@ -53,7 +54,7 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from device_probe import thermal_status, adb  # noqa: E402
 from run_cell import (arm_name, capture_stem, context_prompt, engine_command, launch_env,  # noqa: E402
-                      DEV_DIR, CPU_MASK, ENGINES_DIR)
+                      ortgenai_dev_dir, remove_ortgenai_folder, DEV_DIR, CPU_MASK, ENGINES_DIR)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
@@ -165,6 +166,8 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
         cmd += ["--recipe", cell["opts"]["recipe"]]
     if cell["opts"].get("file"):
         cmd += ["--file", cell["opts"]["file"]]
+    if cell["opts"].get("revision"):
+        cmd += ["--revision", cell["opts"]["revision"]]
     if cell["opts"].get("max-tokens"):
         cmd += ["--max-tokens", cell["opts"]["max-tokens"]]
     if cell["opts"].get("context-tokens"):
@@ -191,7 +194,8 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
 
 def arm_of(cell):
     # run_cell.py's arm: backend is part of arm identity (litert-lm-<backend>, and
-    # llama.cpp-<backend> for a side build on npu / gpu; bare llama.cpp = the CPU arm)
+    # llama.cpp-<backend> for a side build on npu / gpu; bare llama.cpp = the CPU arm;
+    # onnxruntime-genai-<backend>)
     return arm_name(cell["runtime"], cell["opts"].get("backend"))
 
 
@@ -277,6 +281,24 @@ def apply_gate(cell, out_dir, runs):
              "(retry kept; ⚠ downstream)")
 
 
+def keep_ortgenai_folders(cells, serial):
+    """onnxruntime-genai cells push a GenAI folder (0.5-2.9 GB) to the phone. run_cell.py
+    removes it when its invocation ends, which in an interleaved campaign would push it
+    again before every run of the cell: the campaign keeps the folders for its whole length
+    (BENCH_ORTGENAI_KEEP_MODEL=1 for its run_cell children) and removes them when it ends,
+    unless the operator set BENCH_ORTGENAI_KEEP_MODEL=1 (then they stay)."""
+    dirs = sorted({ortgenai_dev_dir(c["model_id"], c["opts"]["file"]) for c in cells
+                   if c["runtime"] == "onnxruntime-genai" and c["opts"].get("file")})
+    if not dirs:
+        return []
+    keep = os.environ.get("BENCH_ORTGENAI_KEEP_MODEL") == "1"
+    os.environ["BENCH_ORTGENAI_KEEP_MODEL"] = "1"
+    if not keep:
+        for d in dirs:
+            atexit.register(remove_ortgenai_folder, d, serial)
+    return dirs
+
+
 def round_schedule(anchors, payload, rounds):
     """One launch/cell/round; reversing the WHOLE order preserves triples."""
     cells = anchors + payload
@@ -295,6 +317,8 @@ def planned_command(cell):
         raise ValueError("dry-run requires explicit file= (no network resolution)")
     filename = os.path.basename(filename) if os.path.isabs(filename) or filename.startswith(("~", "./", "../")) else filename
     model = f"{DEV_DIR}/models/{cell['model_id'].replace('/', '_')}_{filename}"
+    if cell["runtime"] == "onnxruntime-genai":  # a GenAI folder, pushed as <repo>_<folder name>/
+        model = ortgenai_dev_dir(cell["model_id"], opts["file"])
     prompt = f"{DEV_DIR}/prompts/{cell['task']}.txt"
     with open(os.path.join(ROOT, "prompts", "text", "budgets.tsv")) as fh:
         budgets = dict(line.strip().split("\t") for line in fh)
@@ -395,6 +419,10 @@ def main():
     with open(os.path.join(out_dir, "session_provenance.txt"), "a") as fh:
         fh.write(f"session start {time.strftime('%F %T')} cells={cells_file} "
                  f"cooldown={COOLDOWN}s\n")
+    kept = keep_ortgenai_folders(anchors + payload, SERIAL)
+    if kept:
+        note(out_dir, "session_provenance.txt", "onnxruntime-genai folders kept on the phone until the campaign "
+             f"ends: {', '.join(kept)}")
 
     if rounds is not None:
         note(out_dir, "session_provenance.txt",

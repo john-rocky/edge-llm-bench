@@ -44,6 +44,12 @@ loudly instead of rebuilding the summary and looking like a capture.
      SHA256SUMS) to a GitHub release `android-litert-lm-<tag>` — upstream
      ships no Android binary, so the release asset is what lets anyone else
      skip the bazel+NDK build.
+   - ONNX Runtime GenAI: Android = the versions and sha256s at the top of
+     `android/ortgenai/build_android.sh`, then push `android/bin/ortgenai-<version>/`
+     to `/data/local/tmp/llmbench/ortgenai/` per `android/README.md` ("ONNX Runtime
+     GenAI") and add its `android/engine-pins.json` entry; Mac = a venv with the new
+     pip versions (`ORTGENAI_PYTHON`) and `VERSIONS` in `scripts/ortgenai_mac.py`,
+     which refuses any other installed version (`docs/ortgenai-arm-v1.md`).
    - Record artifact sha256s in `environment.lock.json` (the registry); the
      build stamps the *observed* pins into every row (the witness) — if they
      disagree, the row is telling you the truth.
@@ -269,6 +275,12 @@ old times until then).
    Prefer the in-harness adapter whenever the SDK links into yardstick (the
    Core AI prompt-task rows moved that way on 2026-09-08): same protocol,
    same record, no caveat.
+   Worked example of an arm with its own driver on every platform: ONNX Runtime GenAI
+   (`docs/ortgenai-arm-v1.md`) — `scripts/ortgenai_mac.py` on the Mac (own venv,
+   `ORTGENAI_PYTHON`), `run_cell.py --runtime onnxruntime-genai` on Android with its
+   runtime dir pushed per `android/README.md` ("ONNX Runtime GenAI"), the pins in
+   `android/engine-pins.json`, and each model folder's recipe label registered in
+   `models/ortgenai-recipes.json` (`scripts/ortgenai_recipe.py --register`).
 5. Register what the arm loads in `models/artifact-bytes.json`
    (`scripts/artifact_bytes.py --refresh`) so its rows get the `bw util`
    column; a new device needs its ceiling in `devices/memory-bandwidth.json`

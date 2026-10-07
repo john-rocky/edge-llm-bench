@@ -27,7 +27,10 @@ RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             # model's public host-side pipeline — the tts-rtf-* instrument in v1
             "litert",
             # Mirai's uzu engine through its Python SDK (Mac only; docs/uzu-arm-v1.md)
-            "uzu"}
+            "uzu",
+            # ONNX Runtime GenAI on a published GenAI folder (docs/ortgenai-arm-v1.md):
+            # scripts/ortgenai_mac.py on the Mac, android/bench/run_cell.py on Android
+            "onnxruntime-genai"}
 TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
          "long-context-3k",
@@ -52,7 +55,7 @@ ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
 STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
-            "engine-build"}
+            "engine-build", "revision"}
 BACKENDS = {"cpu", "gpu", "npu"}
 # the backends of the Mac / iPhone LiteRT-LM rows and of the asr / vl instruments
 CPU_GPU = {"cpu", "gpu"}
@@ -65,6 +68,14 @@ ANDROID_LLAMA_BACKENDS = {"npu", "gpu"}
 # scripts/executorch_mac.py)
 EXECUTORCH_BACKENDS = {"android": {"xnnpack", "vulkan", "qnn"}, "mac": {"xnnpack", "mlx", "metal", "coreml"}}
 EXECUTORCH_TASKS = {"short-chat", "long-context-1024-gen256"}
+# runtimes whose backend= values are not BACKENDS: the ORT GenAI arm names its execution
+# provider (cpu = the CPU EP; webgpu = the WebGPU plugin EP, Mac only)
+BACKENDS_OF = {"onnxruntime-genai": {"cpu", "webgpu"}}
+# onnxruntime-genai: the backends each platform has a published route for (the Android AAR
+# and the iOS XCFramework are CPU-only), and the tasks of v1
+ORTGENAI_BACKENDS = {"mac": {"cpu", "webgpu"}, "android": {"cpu"}, "ios": {"cpu"}}
+ORTGENAI_TASKS = {"short-chat", "long-context-1024-gen256"}
+HF_REVISION = re.compile(r"^[0-9a-f]{40}$")
 # schedule.json device platform -> cells-file platform token
 SCHEDULE_PLATFORM = {"iphone": "ios"}
 
@@ -119,8 +130,8 @@ def parse_line(line):
         elif k in STR_KEYS:
             if not v:
                 raise ValueError(f"{k}= needs a value")
-            if k == "backend" and v not in BACKENDS:
-                raise ValueError(f"backend={v!r} (want cpu|gpu|npu)")
+            if k == "backend" and v not in BACKENDS_OF.get(rt, BACKENDS):
+                raise ValueError(f"backend={v!r} (want {'|'.join(sorted(BACKENDS_OF.get(rt, BACKENDS)))})")
             if k == "exclude-on":
                 parse_exclude_on(v)
         else:
@@ -202,6 +213,31 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                               "tts-rtf-* rows only")
             if rt != "uzu" and "thinking" in opts:
                 errors.append(f"{where}: thinking= currently belongs to uzu cells only")
+            if rt == "onnxruntime-genai":
+                # Every budget is explicit (docs/ortgenai-arm-v1.md): the backend is arm
+                # identity, file= is the GenAI folder in the repo, revision= its HF commit
+                # (one per repo: the three onnx-community Qwen3 repos have three), and
+                # context-tokens= the max_length the KV cache is allocated for. An excluded
+                # row (no published folder) keeps backend= and context-tokens= only.
+                if plat not in ORTGENAI_BACKENDS:
+                    errors.append(f"{where}: onnxruntime-genai runs on mac / android / ios")
+                elif opts.get("backend") not in ORTGENAI_BACKENDS[plat]:
+                    errors.append(f"{where}: onnxruntime-genai on {plat} needs backend="
+                                  f"{'|'.join(sorted(ORTGENAI_BACKENDS[plat]))} (arm identity)")
+                if task not in ORTGENAI_TASKS:
+                    errors.append(f"{where}: onnxruntime-genai v1 tasks are {', '.join(sorted(ORTGENAI_TASKS))}")
+                if not int(opts.get("context-tokens", "0")):
+                    errors.append(f"{where}: onnxruntime-genai needs context-tokens=<max_length> "
+                                  "(the KV allocation; past_present_share_buffer allocates it up front)")
+                if not opts.get("exclude"):
+                    local = opts.get("file", "").startswith(("/", "~"))
+                    if not opts.get("file"):
+                        errors.append(f"{where}: onnxruntime-genai needs file=<GenAI folder in the repo> "
+                                      "(quant-per-arm-rule: the recipe travels with the row)")
+                    if not local and not HF_REVISION.match(opts.get("revision", "")):
+                        errors.append(f"{where}: onnxruntime-genai needs revision=<the 40-hex HF commit of the repo>")
+            elif "revision" in opts:
+                errors.append(f"{where}: revision= currently belongs to onnxruntime-genai cells only")
             if (task not in TASKS and not NATIVE_TASK.match(task)
                     and not ENDURANCE_TASK.match(task)):
                 errors.append(f"{where}: unknown task {task!r}")
@@ -257,11 +293,12 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")
             if opts.get("backend") and not (
-                    plat == "android" or (plat == "mac" and rt == "litert-lm")
-                    or (plat == "ios" and rt == "litert-lm") or rt == "executorch"):
+                    plat == "android" or (plat == "mac" and rt in ("litert-lm", "onnxruntime-genai"))
+                    or (plat == "ios" and rt in ("litert-lm", "onnxruntime-genai")) or rt == "executorch"):
                 errors.append(f"{where}: backend= is for android cells and mac / ios "
-                              "litert-lm cells only (the Mac and iPhone runners forward "
-                              "it as --litert-backend; every other Apple arm encodes its "
+                              "litert-lm and onnxruntime-genai cells only (the Mac and iPhone "
+                              "runners forward it as --litert-backend, the ORT GenAI driver as its "
+                              "execution provider; every other Apple arm encodes its "
                               "backend in the model id)")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
@@ -342,7 +379,10 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                     elif SCHEDULE_PLATFORM.get(dev.get("platform"), dev.get("platform")) != plat:
                         errors.append(f"{where}: exclude-on device {key!r} is a "
                                       f"{dev.get('platform')} device; the row is {plat}")
+            # uzu and the Mac onnxruntime-genai driver resolve HF ids themselves (no
+            # yardstick catalog); iPhone onnxruntime-genai rows are app catalog entries
             if (catalog is not None and plat != "android" and rt != "uzu"
+                    and not (plat == "mac" and rt == "onnxruntime-genai")
                     and opts.get("local") != "1" and opts.get("exclude") is None):
                 if mid not in catalog.get(rt, []):
                     errors.append(f"{where}: model id {mid!r} not in the "

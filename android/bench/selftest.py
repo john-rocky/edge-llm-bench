@@ -10,9 +10,14 @@ verdicts, failed-runs-stay), the default text check of context-prompt
 launches (text-check-rule), exclude-on= per device, a phone lost under a
 running engine (the launch fails, never re-run), and the CPU frequency cap read
 per run (cpu-cap-rule: the flag, the pre-launch wait, the summary column and
-arm_row's pool), and the executorch arm (the runner of the model's family on a
+arm_row's pool), the executorch arm (the runner of the model's family on a
 staged own export: inputs pushed, the runner's stderr read apart from its stdout, its stats
-recomputed, the record and its summary row; the Mac writer's record from a stored launch) — with no phone attached. The fake scripts ENGINE OUTPUT and
+recomputed, the record and its summary row; the Mac writer's record from a stored launch),
+and the ONNX Runtime GenAI cells (a GenAI folder pushed file by
+file once per campaign and removed when it ends, ortgenai_run's report parsed with
+its unknown keys kept, the witness over the binary and its three libraries, the 1K
+text check, the engine's socket kinds, an unregistered recipe refused) — with no
+phone attached. The fake scripts ENGINE OUTPUT and
 sysfs reads, never verdicts: the gate, the text screen, the cap rule and the
 endurance derivations judge real records.
 
@@ -167,6 +172,9 @@ def engine(cmd):
             ticks = cpu.get("ticks") or [{}]
             tick = dict(probe_caps(), **ticks[min(k, len(ticks) - 1)])
             print("CPUMAX " + " ".join(str(tick.get(name, hw)) for name, hw, _ in POLICIES))
+    if "SOCKET" in cmd:
+        # the sampler's socket classification: one unix socket (logd on a phone)
+        print("SOCKET 4242 unix")
     print("===ENGINE_OUTPUT===")
     side = DEV + "/engines/" in cmd
     if side and "/bin/llama-bench " in cmd:
@@ -200,6 +208,20 @@ def engine(cmd):
         print("    Decode Turn 1: Processed 128 tokens in 1.2s duration.")
         print("      Decode Speed: %%s tokens/sec." %% d)
         print("INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b8f206890, name=NpuAccelerator")
+    elif "/ortgenai/ortgenai_run " in cmd:
+        # android/ortgenai/ortgenai_run.cpp's output contract; threads= stands for a key the
+        # parser does not know (kept whole in conditions.engineReport)
+        budget = int(re.search(r" -g (\\d+)", cmd).group(1))
+        prompt = 1338 if "long-context-1024-gen256" in cmd else 19
+        print("[PROMPT BEGIN]<|im_start|>user\\nfake prompt<|im_end|>\\n<|im_start|>assistant\\n[PROMPT END]")
+        print("ORTGENAI prompt_tokens=%%d gen_tokens=%%d prefill_ms=50.000 ttft_ms=50.250 "
+              "decode_ms_total=1000.000 decode_tps=%%s stop=budget max_length=%%s peak_rss_kb=1328524 "
+              "seq_tokens=%%d last_token=40 load_ms=1400.000 generator_ms=100.000 chat_template=model "
+              "ort_version=1.30.0 threads=default"
+              %% (prompt, budget, d, re.search(r" -ml (\\d+)", cmd).group(1), prompt + budget))
+        print("ORTGENAI_LIBS " + " ".join(DEV + "/ortgenai/" + n for n in
+                                          ("libmat.so", "libonnxruntime-genai.so", "libonnxruntime.so")))
+        print("[OUTPUT BEGIN]" + ON_TASK + "[OUTPUT END]")
     elif "./litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
         ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
         print("max_tokens: " + ctx)
@@ -334,6 +356,10 @@ def shell(cmd):
     if cmd.startswith("mkdir"):
         os.makedirs(mp(cmd.split()[-1]), exist_ok=True)
         return 0
+    if cmd.startswith("rm -rf "):
+        for path in cmd.split()[2:]:
+            shutil.rmtree(mp(path), ignore_errors=True)
+        return 0
     if cmd.startswith("rm -f "):
         import glob as _g
         for pat in cmd.split()[2:]:
@@ -365,6 +391,8 @@ def main(argv):
         dst = mp(argv[2])
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copyfile(argv[1], dst)
+        with open(os.path.join(STATE, "push_log"), "a") as fh:
+            fh.write(argv[2] + "\\n")
         print("1 file pushed")
         return 0
     if argv[0] == "shell":
@@ -1188,6 +1216,134 @@ def main():
     ok(got_h3 == [("4-8", ["cpu-capped"], {"min": 2000, "hw": 2914, "cpus": "8"})],
        f"LiteRT-LM: cpusAllowedList 4-8 (the last read), policy8 capped -> cpu-capped (got {got_h3})")
 
+    # --- campaign ORT: an ONNX Runtime GenAI cell pair (short-chat x2, 1K x1) on a GenAI
+    # folder: pushed file by file once for the campaign's three launches and removed when it
+    # ends, the recipe label from the registry (BENCH_ORTGENAI_RECIPES), the ORTGENAI report
+    # parsed with its unknown key kept, the witness over ortgenai_run and the three libraries
+    # (the fake files hold the pinned sha256sums), the 1K text check, the socket kinds.
+    ort_pin = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))["onnxruntime-genai"]["0.17.0"]
+    ort_dir = os.path.join(dev, "ortgenai")
+    os.makedirs(ort_dir)
+    for name, digest in [("ortgenai_run", ort_pin["ortgenai_run_sha256"])] + list(ort_pin["so_files"].items()):
+        with open(os.path.join(ort_dir, name), "w") as fh:
+            fh.write("sha256=" + digest)
+    ort_folder = os.path.join(tmp, "fake-ortgenai", "cpu-int4-kld-block-128")
+    os.makedirs(ort_folder)
+    for name in ("genai_config.json", "model.onnx", "model.onnx.data", "tokenizer.json", "chat_template.jinja"):
+        with open(os.path.join(ort_folder, name), "w") as fh:
+            fh.write("fake " + name * 3)
+    ort_sha = hashlib.sha256(open(os.path.join(ort_folder, "model.onnx"), "rb").read()).hexdigest()
+    recipes = os.path.join(tmp, "ortgenai-recipes.json")
+    json.dump({"recipes": [{"model_id": "fake/ortgenai", "folder": ort_folder, "model_onnx_sha256": ort_sha,
+                            "label": "int4 + int8 mixed MatMulNBits (selftest label)"}]}, open(recipes, "w"))
+    cells_ort = os.path.join(tmp, "ort.cells")
+    with open(cells_ort, "w") as fh:
+        fh.write(f"android onnxruntime-genai fake/ortgenai short-chat runs=2 backend=cpu file={ort_folder} "
+                 "context-tokens=2048\n"
+                 f"android onnxruntime-genai fake/ortgenai long-context-1024-gen256 runs=1 backend=cpu "
+                 f"file={ort_folder} context-tokens=2048\n")
+    push_log = os.path.join(state, "push_log")
+    if os.path.exists(push_log):
+        os.remove(push_log)
+    # interleaved rounds: short-chat run 1, the 1K run, short-chat run 2
+    schedule([98.25, 43.5, 97.5])
+    env_ort = dict(env_h, CAMPAIGN="selftest-ort", BENCH_ORTGENAI_RECIPES=recipes)
+    env_ort.pop("BENCH_ORTGENAI_KEEP_MODEL", None)
+    print("--- campaign ORT (onnxruntime-genai: folder pushed once, report, witness, text check, sockets, removal)")
+    rc = run_campaign(env_ort, cells_ort)
+    ok(rc == 0, f"campaign ORT exits 0 (got {rc})")
+    out_ort = os.path.join(sum_root, "results", "raw", "selftest-ort", "app-path-android")
+    ort_recs = records(out_ort, "onnxruntime-genai-cpu_")
+    ok(len(ort_recs) == 3, f"3 onnxruntime-genai-cpu records (got {len(ort_recs)})")
+    short = [r for _, r in ort_recs if r["task"] == "short-chat"]
+    long1k = [r for _, r in ort_recs if r["task"] == "long-context-1024-gen256"]
+    sizes = {n: os.path.getsize(os.path.join(ort_folder, n)) for n in os.listdir(ort_folder)}
+    ok(len(ort_recs) == 3 and all(
+        (r["runtime"], r["engineVersion"], r["engineArtifact"])
+        == ("onnxruntime-genai-cpu", ort_pin["engine_version"], ort_pin["ortgenai_run_sha256"])
+        and r["model"]["quantization"] == "int4 + int8 mixed MatMulNBits (selftest label)"
+        and r["model"]["file"] == ort_folder and r["model"]["sha256"] == ort_sha
+        and r["model"]["bytes"] == sizes["model.onnx"] + sizes["model.onnx.data"]
+        and sorted(r["model"]["files"]) == sorted(sizes) for _, r in ort_recs),
+       "ORT record: arm onnxruntime-genai-cpu, the pin's engine_version (ortgenai_run + three libraries "
+       "matched), the registry's label, folder, model.onnx sha, weight bytes and every file")
+    ok(len(short) == 2 and [r["metrics"].get("decodeTokensPerSecond") for r in short] == [98.25, 97.5]
+       and all(r["metrics"]["promptTokenCount"] == 19 and r["metrics"]["generatedTokenCount"] == 128
+               and abs(r["metrics"]["promptTokensPerSecond"] - 19 / 50.0 * 1000) < 1e-9
+               and r["metrics"]["firstTokenLatencyMS"] == 50.25 and r["metrics"]["stopReason"] == "length"
+               and r["metrics"]["coldRun"] is True and "firstEver" not in r["metrics"] for r in short),
+       "ORT metrics: decode_tps, prompt tokens / prefill_ms, ttft_ms, budget -> length, cold, no firstEver")
+    env_ort_cmd = ("LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/"
+                   "libonnxruntime.so ORT_DISABLE_TELEMETRY=1")
+    cmds_ort = [ln for ln in (open(os.path.join(state, "engine_cmds")).read().splitlines()
+                              if os.path.exists(os.path.join(state, "engine_cmds")) else [])
+                if "/ortgenai/ortgenai_run " in ln]
+    ok(len(cmds_ort) == 3 and all(ln.startswith(f"cd /data/local/tmp/llmbench && {env_ort_cmd} taskset f0 "
+                                                "/data/local/tmp/llmbench/ortgenai/ortgenai_run -i ") for ln in cmds_ort),
+       f"ORT launch: launch_env's library path and telemetry switch, then the tool by absolute path: {cmds_ort[:1]}")
+    ok(len(ort_recs) == 3 and all(
+        r["conditions"]["contextTokens"] == 2048 and r["conditions"]["sampler"] == "greedy"
+        and r["conditions"]["telemetry"].startswith("off: ORT_DISABLE_TELEMETRY=1")
+        and r["conditions"]["chatMode"].startswith("single-turn") and r["conditions"]["threads"] == "engine default"
+        and "AppendTokenSequences" in r["conditions"]["metricDefinitions"]
+        and r["conditions"]["engineReport"].get("threads") == "default"
+        and r["conditions"]["engineReport"].get("max_length") == 2048
+        and len(r["conditions"]["engineLibraries"]) == 3
+        and r["conditions"].get("engineSockets") == {"unix": 1, "inet": 0}
+        and r["conditions"]["engineCommand"].startswith("/data/local/tmp/llmbench/ortgenai/ortgenai_run -i ")
+        and " -ml 2048" in r["conditions"]["engineCommand"] for _, r in ort_recs),
+       "ORT conditions: context 2048, greedy, telemetry off, chat mode, threads, metric definitions, the whole "
+       "engine report (unknown key kept), mapped libraries, socket kinds, the engine command")
+    ok(len(long1k) == 1 and long1k[0]["conditions"].get("textCheck", {}).get("status") == "PASS"
+       and long1k[0]["conditions"]["engineReport"]["prompt_tokens"] == 1338
+       and open(os.path.join(out_ort, long1k[0]["provenance"]["decodedText"])).read() == ON_TASK
+       and " -g 256 " in long1k[0]["conditions"]["engineCommand"],
+       "ORT 1K: textCheck PASS (parsers.text_integrity), decoded text stored, budget 256")
+    ok(len(short) == 2 and not any("textCheck" in r["conditions"] for r in short)
+       and all(os.path.exists(os.path.join(out_ort, r["provenance"]["decodedText"])) for r in short),
+       "ORT short-chat: no textCheck (as on every Android arm), decoded text stored")
+    pushed = open(push_log).read().splitlines() if os.path.exists(push_log) else []
+    ort_dev = os.path.join(dev, "models", "fake_ortgenai_cpu-int4-kld-block-128")
+    ok(sorted(x for x in pushed if "/models/fake_ortgenai_" in x) == sorted(
+        f"/data/local/tmp/llmbench/models/fake_ortgenai_cpu-int4-kld-block-128/{n}" for n in sizes),
+       f"the folder is pushed file by file, once for the campaign's three launches (pushes: {pushed})")
+    ok(not os.path.exists(ort_dev), "the folder is removed from the phone when the campaign ends")
+    prov_ort = os.path.join(out_ort, "session_provenance.txt")
+    ok(os.path.exists(prov_ort) and "kept on the phone until the campaign ends" in open(prov_ort).read(),
+       "session_provenance.txt says the folder stays for the campaign")
+    # a bare run_cell (no campaign): the folder leaves the phone when the invocation ends; a
+    # libonnxruntime.so that is not the pinned one stamps the run "unknown" (the witness)
+    os.remove(push_log)
+    with open(os.path.join(ort_dir, "libonnxruntime.so"), "w") as fh:
+        fh.write("another libonnxruntime build")
+    schedule([97.0])
+    bare_out = os.path.join(tmp, "ort-bare")
+    rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
+                          "--runtime", "onnxruntime-genai", "--backend", "cpu", "--model-id", "fake/ortgenai",
+                          "--file", ort_folder, "--task", "short-chat", "--runs", "1", "--context-tokens", "2048",
+                          "--out", bare_out, "--serial", "FAKESELF"], env=env_ort)
+    bare = records(bare_out, "onnxruntime-genai-cpu_")
+    ok(rc == 0 and len(bare) == 1 and not os.path.exists(ort_dev)
+       and len([x for x in open(push_log).read().splitlines() if "/models/fake_ortgenai_" in x]) == len(sizes),
+       "bare run_cell: one record, the folder pushed and removed at exit")
+    ok(len(bare) == 1 and bare[0][1]["engineVersion"] == ("unknown (on-device 0.17.0 ortgenai/ortgenai_run with lib "
+                                                         "libonnxruntime.so unmatched in android/engine-pins.json)"),
+       f"a libonnxruntime.so that is not the pin's stamps 'unknown' (got {bare[0][1]['engineVersion'] if bare else None})")
+    with open(os.path.join(ort_dir, "libonnxruntime.so"), "w") as fh:
+        fh.write("sha256=" + ort_pin["so_files"]["libonnxruntime.so"])
+    other = os.path.join(tmp, "fake-ortgenai", "unregistered")
+    shutil.copytree(ort_folder, other)
+    with open(os.path.join(other, "model.onnx"), "w") as fh:
+        fh.write("another graph")
+    os.remove(push_log)
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
+                        "--runtime", "onnxruntime-genai", "--backend", "cpu", "--model-id", "fake/ortgenai",
+                        "--file", other, "--task", "short-chat", "--runs", "1", "--context-tokens", "2048",
+                        "--out", bare_out, "--serial", "FAKESELF"], env=env_ort, capture_output=True, text=True)
+    ok(p.returncode != 0 and "no recipe label" in p.stderr and "--register" in p.stderr
+       and not os.path.exists(push_log),
+       f"an unregistered folder is refused before any push: {p.stderr.strip().splitlines()[-1:]}")
+
     sys.path.insert(0, os.path.join(ROOT, "scripts"))
     from unittest.mock import patch
     import build_summary
@@ -1207,6 +1363,17 @@ def main():
     ok(got_a == (2, 19.75, 1, 3),
        f"arm_row: the capped run is out of the pool, counted (cold_n, cold_median, cpu_capped_n, "
        f"cpu_read_n = {got_a})")
+    rows_ort = [r for r in csv.DictReader(open(path)) if r["campaign"] == "results/raw/selftest-ort"]
+    got_ort = sorted((r["runtime"], r["task"], r["context_tokens"], r["text_check"], r["cold_run"]) for r in rows_ort)
+    ok(got_ort == [("onnxruntime-genai-cpu", "long-context-1024-gen256", "2048", "PASS", "True"),
+                   ("onnxruntime-genai-cpu", "short-chat", "2048", "", "True"),
+                   ("onnxruntime-genai-cpu", "short-chat", "2048", "", "True")],
+       f"summary: the ORT rows carry the arm, context 2048, the 1K text check, cold (got {got_ort})")
+    a_ort = arm_row([r for r in rows_ort if r["task"] == "short-chat"])
+    ok((a_ort["cold_n"], a_ort["cold_median"], a_ort["quant"])
+       == (2, 97.875, "int4 + int8 mixed MatMulNBits (selftest label)"),
+       f"arm_row: the ORT short-chat cell's cold median and recipe "
+       f"(got {(a_ort['cold_n'], a_ort['cold_median'], a_ort['quant'])})")
 
     # --- llama.cpp side builds (2026-10-07): the official Snapdragon asset of b11469 in
     # DEV/engines/b11469-snapdragon/{bin,lib}, run on the Hexagon NPU (llama.cpp-npu) or the

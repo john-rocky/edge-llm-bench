@@ -94,5 +94,31 @@
       "build": "android/scripts/build_executorch_llama_main.sh: examples/models/llama/README.md Step 4 (two CMake stages), NDK r28c, android-23, Release, ET_LOG on (PAL posix: stderr), XNNPACK + KERNELS_OPTIMIZED / QUANTIZED / LLM; the Vulkan build adds EXECUTORCH_BUILD_VULKAN=ON. android/bin/executorch-v1.5.1[-vulkan]/{llama_main,BUILD_INFO.json,SHA256SUMS}, built 2026-10-07",
       "note": "run_cell.py --runtime executorch: <runner>_sha256 = the XNNPACK build in executorch-v1.5.1/, <runner>_<backend>_sha256 = executorch-v1.5.1-<backend>/; gemma4_e2e_runner (the Gemma 4 runner, examples/models/gemma4) has no Android build yet: its rows stamp 'unknown' until one is built and its sha added here (docs/executorch-arm-v1.md)"
     }
+  },
+  "onnxruntime-genai": {
+    "0.17.0": {
+      "requested_tag": "v0.17.0",
+      "observed": "0.17.0",
+      "engine_version": "onnxruntime-genai 0.17.0 (release aar) + onnxruntime-android 1.30.0 (Maven)",
+      "source_aar": {
+        "url": "https://github.com/microsoft/onnxruntime-genai/releases/download/v0.17.0/onnxruntime-genai-android-0.17.0.aar",
+        "sha256": "f8b28a9ce448d97e0d5ab9614eae018a4d994d739de84e9fc5f9ff3b6673dd50"
+      },
+      "onnxruntime_android_aar": {
+        "url": "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.30.0/onnxruntime-android-1.30.0.aar",
+        "sha256": "e7fb945e402205f6db858d65bb78d2bdb0812317b383976c9e3bceb4862c73f1"
+      },
+      "so_files": {
+        "libonnxruntime-genai.so": "1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35",
+        "libmat.so": "8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f",
+        "libonnxruntime.so": "df5d25c72a868dca773597c71e2000756d43fe4d70ade516d3693c54e12e0ada"
+      },
+      "ortgenai_run_sha256": "4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f",
+      "ortgenai_run_source_sha256": "3ab781f62500d3b785b640c576630e00f9f28ca8154c3be379921d9c251424a6",
+      "model_benchmark_sha256": "062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04",
+      "ndk": "29.0.13113456-beta1",
+      "built": "android/ortgenai/build_android.sh, 2026-10-07 23:13 JST (android/bin/ortgenai-0.17.0/MANIFEST.txt)",
+      "note": "device dir /data/local/tmp/llmbench/ortgenai/ = the three so_files (jni/arm64-v8a of the two AARs) + ortgenai_run (harness driver, android/ortgenai/ortgenai_run.cpp) + model_benchmark (upstream v0.17.0 benchmark/c, unchanged); run_cell.py stamps engineVersion from engine_version only when ortgenai_run AND the three libraries match. The 23:13 build added --threads (a diagnostic; the cells run the engine default); the 22:24 build ea5eab675ad927d36a79c6636929dfc656f56ad681dc617328ff640b3dbf72a4 (source 44fab43937cb7ca2fb0a3c177b2c2dd34348efbcfa1eab47ca77b6f14d2cc45c) ran the r2 smoke and is not pinned"
+    }
   }
 }

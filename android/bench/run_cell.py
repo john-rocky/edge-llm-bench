@@ -61,8 +61,24 @@ Design decisions (methodology/android.md):
     run during which a policy of the engine's CPUs sat below its hardware
     maximum carries protocolFlags cpu-capped (conditions.cpuMaxFreqMHz). The
     run stays a record and pools into no number (render_leaderboard.arm_row).
+  - engine sockets (onnxruntime-genai launches): the sampler lists the engine's
+    socket fds every tick and classifies each new one once against the engine's
+    /proc/<pid>/net tables (conditions.engineSockets = {"unix": n, "inet": m},
+    distinct sockets over the launch; "other" = in neither table) — the official
+    ORT GenAI build ships a telemetry SDK (docs/ortgenai-arm-v1.md). The other
+    arms' launch shell and record layout are unchanged.
+  - onnxruntime-genai (docs/ortgenai-arm-v1.md): --backend cpu, file= the GenAI
+    folder in the HF repo at --revision (or a local folder), pushed file by file
+    to {DEV_DIR}/models/<repo>_<folder name>/ and removed when the invocation
+    ends (BENCH_ORTGENAI_KEEP_MODEL=1 keeps it; run_campaign.py keeps it for the
+    whole campaign and removes it at the end). The engine is ortgenai_run in
+    {DEV_DIR}/ortgenai/ beside the release AAR's libraries; its ORTGENAI report
+    line is parsed by parsers.parse_ortgenai and kept whole in
+    conditions.engineReport; model.quantization is the folder's entry in
+    models/ortgenai-recipes.json (an unregistered folder is refused).
 """
 import argparse
+import atexit
 import datetime
 import hashlib
 import json
@@ -80,7 +96,27 @@ import endurance_cell  # noqa: E402
 import parsers  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import ortgenai_recipe  # noqa: E402  (stdlib lookup of the recipe registry)
+
 DEV_DIR = "/data/local/tmp/llmbench"
+# ONNX Runtime GenAI: ortgenai_run + model_benchmark + the AAR's libonnxruntime-genai.so
+# and libmat.so + Maven onnxruntime-android's libonnxruntime.so (android/README.md)
+ORTGENAI_DIR = f"{DEV_DIR}/ortgenai"
+ORTGENAI_LIBS = ("libonnxruntime-genai.so", "libmat.so", "libonnxruntime.so")
+ORTGENAI_CHAT_MODE = "single-turn, model chat_template.jinja default (Qwen3 thinking on)"
+ORTGENAI_TELEMETRY = "off: ORT_DISABLE_TELEMETRY=1 before init + OgaSetTelemetryEnabled(false)"
+ORTGENAI_METRICS = (
+    "prefill tok/s = promptTokenCount / prefill_ms, the wall clock of ortgenai_run's "
+    "AppendTokenSequences(prompt) (prompt forward pass + logits); TTFT = ttft_ms = "
+    "AppendTokenSequences + the first GenerateNextToken (greedy pick from the prefill logits); "
+    "decode tok/s = decode_tps = (gen_tokens - 1) / decode_ms_total, the summed wall clock of "
+    "GenerateNextToken calls 2..N (each = one forward pass + greedy pick); gen_tokens counts "
+    "every GenerateNextToken call, the one that samples EOS included; stop = EOS (IsDone) or "
+    "the output budget (-g), no min_length; memory = the runner's VmRSS / VmHWM sampler of the "
+    "engine process (rssBasis); past_present_share_buffer true allocates and zero-fills the KV "
+    "cache for max_length = contextTokens (-ml) when the generator is created, so the memory "
+    "numbers include it")
 HARNESS_STAMP = "2026-08-android-cli-v1"
 # CPU affinity mask for the engine process. "f0" (the upstream recommendation,
 # tuned on Pixel 8a's 4 contiguous mid cores) is NOT device-neutral: on the
@@ -223,7 +259,9 @@ def observed_engine(binname, pins, serial, engine_dir=None):
                   "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
                   "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
                   "llama-cli": ("llama.cpp", "llama_cli_sha256"),
-                  "llama-bench": ("llama.cpp", "llama_bench_sha256")}
+                  "llama-bench": ("llama.cpp", "llama_bench_sha256"),
+                  "ortgenai/ortgenai_run": ("onnxruntime-genai", "ortgenai_run_sha256"),
+                  "ortgenai/model_benchmark": ("onnxruntime-genai", "model_benchmark_sha256")}
     engine, field = key_by_bin.get(binname) or ("llama.cpp", binname.replace("-", "_") + "_sha256")
     if not engine_dir:
         out = adb(["shell", f"sha256sum {DEV_DIR}/{binname}"], serial)
@@ -246,9 +284,12 @@ def observed_engine(binname, pins, serial, engine_dir=None):
         return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
     for tag, entry in pins.get(engine, {}).items():
         if entry.get(field) == sha:
-            libs = entry.get("so_files") if engine_dir else None
+            libs = entry.get("so_files") if (engine_dir or engine == "onnxruntime-genai") else None
             if libs:
-                paths = {name: side_path(engine_dir, SIDE_DIRS[engine][1], name) for name in libs}
+                # a side build's pinned libs sit where SIDE_DIRS says; the ORT GenAI runtime
+                # dir holds them beside ortgenai_run (the engine is the libraries there too)
+                paths = {name: (side_path(engine_dir, SIDE_DIRS[engine][1], name) if engine_dir
+                                else f"{DEV_DIR}/{os.path.dirname(binname)}/{name}") for name in libs}
                 got = adb(["shell", "sha256sum " + " ".join(paths[name] for name in sorted(libs))
                            + " 2>&1 || true"], serial)
                 on_device = {parts[1]: parts[0] for parts in
@@ -368,6 +409,81 @@ def push_verified(local, dev_path, serial):
     if out != str(want):
         raise SystemExit(f"push verification failed: device has {out} bytes, "
                          f"local is {want} — check the USB connection")
+
+
+def ortgenai_dev_dir(model_id, folder):
+    """The device folder one ORT GenAI model folder is pushed to (run_campaign.py removes it
+    when the campaign ends): {DEV_DIR}/models/<repo>_<folder name>."""
+    return f"{DEV_DIR}/models/{model_id.replace('/', '_')}_{os.path.basename(folder.rstrip('/'))}"
+
+
+def resolve_ortgenai_folder(model_id, folder, revision):
+    """onnxruntime-genai file= -> (host folder, {name: {bytes, sha256}}). A path that
+    starts with / or ~ is a local (side-loaded) folder; anything else is the folder's
+    path inside the HF repo, fetched at `revision` with snapshot_download (that folder
+    only, into the host's HF cache)."""
+    if folder.startswith(("/", "~")):
+        local = os.path.expanduser(folder)
+    else:
+        if not revision:
+            raise SystemExit("onnxruntime-genai: --revision <HF commit> is required for a folder in "
+                             "an HF repo (cells revision=)")
+        from huggingface_hub import snapshot_download
+        local = os.path.join(snapshot_download(model_id, revision=revision,
+                                               allow_patterns=[f"{folder}/*"]), folder)
+    if not (os.path.isfile(os.path.join(local, "genai_config.json"))
+            and os.path.isfile(os.path.join(local, "model.onnx"))):
+        raise SystemExit(f"{local}: not a GenAI folder (genai_config.json and model.onnx expected)")
+    return local, ortgenai_recipe.folder_files(local)
+
+
+def push_ortgenai_folder(local, files, dev_dir, serial):
+    """Push every file of the folder on its own, from its resolved path: an HF cache
+    snapshot holds symlinks into blobs/, and a directory push carries the links, not the
+    bytes (adb walks a pushed directory with lstat; not verified on a device).
+    push_verified skips a file the device already holds at the same size and checks the
+    size after a push, model.onnx and model.onnx.data included."""
+    adb(["shell", "mkdir", "-p", dev_dir], serial)
+    for name in files:
+        push_verified(os.path.realpath(os.path.join(local, name)), f"{dev_dir}/{name}", serial)
+
+
+def remove_ortgenai_folder(dev_dir, serial):
+    """Free the phone's storage once the folder's runs are done (the 4B folder is 2.9 GB):
+    one try, no device-loss retries (a phone that is gone keeps the folder, and the exit is
+    not held up by it). run_cell.py calls it when it exits, run_campaign.py when the
+    campaign ends."""
+    if not dev_dir.startswith(f"{DEV_DIR}/models/") or "/.." in dev_dir:
+        raise ValueError(f"refusing to remove {dev_dir}")
+    try:
+        adb(["shell", "rm", "-rf", dev_dir], serial, retries=1)
+        print(f"removed {dev_dir}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"could not remove {dev_dir}: {exc}", file=sys.stderr)
+
+
+def ortgenai_present(serial):
+    out = adb(["shell", f"ls {ORTGENAI_DIR}/ortgenai_run >/dev/null 2>&1 && echo present || echo absent"],
+              serial)
+    return "present" in out
+
+
+def engine_sockets(console):
+    """{"unix": n, "inet": m[, "other": k]}: the distinct socket fds the sampler saw on the
+    engine process, by the /proc/<pid>/net table that lists each one; None when the
+    sampler never ticked (the engine exited within its first second)."""
+    head = console.split("===ENGINE_OUTPUT===", 1)[0]
+    if not any(line.startswith("VmRSS") for line in head.splitlines()):
+        return None
+    kinds = {}
+    for line in head.splitlines():
+        parts = line.split()
+        if parts[:1] == ["SOCKET"] and len(parts) == 3:
+            kinds[parts[1]] = parts[2]
+    counts = {"unix": 0, "inet": 0}
+    for kind in kinds.values():
+        counts[kind] = counts.get(kind, 0) + 1
+    return counts
 
 
 def push_prompt(task, serial):
@@ -534,6 +650,18 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
                  f"2>{EXECUTORCH_STDERR}")
         return f"sh -c {shlex.quote(inner)}", binname, parsers.EXECUTORCH_SAMPLER, \
             context_tokens or "export-fixed"
+    if runtime == "onnxruntime-genai":
+        if task.startswith(("native-", "endurance-")):
+            raise SystemExit("onnxruntime-genai v1 rows are prompt tasks (a native-benchmark row "
+                             "through model_benchmark is not wired; docs/ortgenai-arm-v1.md)")
+        if not context_tokens:
+            raise SystemExit("onnxruntime-genai needs --context-tokens: max_length, the KV cache it "
+                             "allocates up front (cells context-tokens=)")
+        # the tool by absolute path (run_once's mksh note), its env from launch_env;
+        # ortgenai_run applies the folder's chat_template.jinja, greedy, no min_length
+        core = (f"{ORTGENAI_DIR}/ortgenai_run -i {model_dev} --prompt_file {prompt_dev} "
+                f"-g {max_tokens or budget} -ml {context_tokens}")
+        return core, "ortgenai/ortgenai_run", "greedy", context_tokens
     raise SystemExit(f"unknown android runtime {runtime!r}")
 
 
@@ -614,6 +742,8 @@ def dry_run(args, arm, engine_dir):
         raise SystemExit("--dry-run needs --file (no network resolution)")
     name = os.path.basename(local) if os.path.isabs(local) or local.startswith(("~", "./", "../")) else local
     model_dev = f"{DEV_DIR}/models/{args.model_id.replace('/', '_')}_{name}"
+    if args.runtime == "onnxruntime-genai":  # a GenAI folder, pushed as <repo>_<folder name>/
+        model_dev = ortgenai_dev_dir(args.model_id, args.file)
     prompt_dev = f"{DEV_DIR}/prompts/{args.task}.txt"
     cmd, binname, sampler, _ = engine_command(args.runtime, args.backend, model_dev, args.task, prompt_dev,
                                               budget, args.max_tokens, args.context_tokens,
@@ -647,7 +777,14 @@ def launch_env(engine_dir=None, backend=None, runtime="llama.cpp"):
     ships), plus an OpenCL program cache of its own (unset, b11469 keeps one cache for
     every build under $TMPDIR/llama.cpp/cl-cache). The LiteRT-LM NPU build finds its
     dispatch and QNN libs in its own dir and the Hexagon skel in its dsp/, the system's
-    DSP library dirs after it (the form of the build's own deploy script)."""
+    DSP library dirs after it (the form of the build's own deploy script).
+    onnxruntime-genai: its runtime dir holds the release AAR's libonnxruntime-genai.so +
+    libmat.so and Maven's libonnxruntime.so, which GenAI dlopens from ORT_LIB_PATH;
+    ORT_DISABLE_TELEMETRY=1 before the engine starts keeps the official build's telemetry
+    off for the process (ortgenai_run refuses to start without it)."""
+    if runtime == "onnxruntime-genai":
+        return (f"LD_LIBRARY_PATH={ORTGENAI_DIR} ORT_LIB_PATH={ORTGENAI_DIR}/libonnxruntime.so "
+                "ORT_DISABLE_TELEMETRY=1")
     if not engine_dir:
         return "LD_LIBRARY_PATH=."
     if runtime == "litert-lm":
@@ -659,7 +796,7 @@ def launch_env(engine_dir=None, backend=None, runtime="llama.cpp"):
     return env + f" GGML_HEXAGON_OPPOLL=1 GGML_OPENCL_KERNEL_CACHE_DIR={engine_dir}/clcache"
 
 
-def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=."):
+def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=.", sockets=False):
     """One engine process with an RSS sampler wrapped around it on-device.
 
     $! is the backgrounded subshell, not the engine (measured: sampling it
@@ -685,6 +822,14 @@ def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=."):
                 "read r <$p/related_cpus; echo \"CPUPOLICY ${p##*/} ${h:--} $r\"; done; ")
     cpu_tick = ("c=CPUMAX; for f in " + CPUFREQ + "/policy*/scaling_max_freq; do m=; read m <$f; "
                 "c=\"$c ${m:--}\"; done; [ \"$c\" = \"$pc\" ] || echo \"$c\"; pc=$c; ")
+    # engine sockets: every socket fd of the engine, classified once when first seen
+    # against the engine's own /proc/<pid>/net tables (unix, else inet, else other);
+    # one ls per tick, the rest are builtins until a new socket appears
+    sock_tick = ("for l in $(ls -l /proc/$epid/fd 2>/dev/null); do case $l in socket:\\[*) "
+                 "i=${l#socket:\\[}; i=${i%\\]}; case \" $sk \" in *\" $i \"*) ;; *) sk=\"$sk $i\"; k=other; "
+                 "if grep -qE \" $i( |\\$)\" /proc/$epid/net/unix 2>/dev/null; then k=unix; "
+                 "elif cat /proc/$epid/net/tcp /proc/$epid/net/tcp6 /proc/$epid/net/udp /proc/$epid/net/udp6 "
+                 "2>/dev/null | grep -qE \" $i( |\\$)\"; then k=inet; fi; echo \"SOCKET $i $k\";; esac;; esac; done; ")
     timeout_prefix = ""
     if os.environ.get("BENCH_SESSION_DEADLINE"):
         remaining = float(os.environ["BENCH_SESSION_DEADLINE"]) - time.time()
@@ -694,8 +839,9 @@ def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=."):
     shell = (f"cd {DEV_DIR} && {env} {taskset_prefix}{timeout_prefix}{cmd} "
              f">{output_file} 2>&1 </dev/null & pid=$!; " + cpu_head + cpu_tick +
              f"sleep 1; epid=$(pgrep -n -f {binname}); [ -z \"$epid\" ] && epid=$pid; "
-             "while kill -0 $pid 2>/dev/null; do "
-             f"{rss_command} /proc/$epid/status 2>/dev/null; " + cpu_tick + "sleep 0.5; done; "
+             "sk=; while kill -0 $pid 2>/dev/null; do "
+             f"{rss_command} /proc/$epid/status 2>/dev/null; " + (sock_tick if sockets else "") + cpu_tick
+             + "sleep 0.5; done; "
              f"wait $pid; ec=$?; echo ===ENGINE_OUTPUT===; cat {output_file}; echo EXIT_CODE=$ec")
     if STRICT_SMOKE:
         shell = "set -C; " + shell  # refuse even an accidental output-path collision
@@ -840,16 +986,19 @@ def cpu_conditions(console):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--runtime", required=True, choices=["litert-lm", "llama.cpp"])
+    ap.add_argument("--runtime", required=True, choices=["litert-lm", "llama.cpp", "onnxruntime-genai"])
     ap.add_argument("--backend", default=None, choices=["cpu", "gpu", "npu"],
                     help="litert-lm: cpu|gpu, npu on a side build (--engine-build); llama.cpp: "
-                         "npu|gpu on a side build, none = the CPU arm")
+                         "npu|gpu on a side build, none = the CPU arm; onnxruntime-genai: cpu")
     ap.add_argument("--engine-build", default=None,
                     help=f"side build on the device, {ENGINES_DIR}/<tag> (an android/engine-pins.json "
                          "key): llama.cpp's {bin,lib}, the LiteRT-LM NPU build flat; without it the "
                          "flat pinned build")
     ap.add_argument("--model-id", required=True)
-    ap.add_argument("--file", default=None, help="artifact filename inside the HF repo")
+    ap.add_argument("--file", default=None, help="artifact filename inside the HF repo "
+                                                 "(onnxruntime-genai: the GenAI folder's path in it)")
+    ap.add_argument("--revision", default=None,
+                    help="HF commit to fetch --file at (onnxruntime-genai, cells revision=)")
     ap.add_argument("--task", required=True)
     ap.add_argument("--runs", type=int, default=3)
     ap.add_argument("--max-tokens", type=int, default=None)
@@ -894,6 +1043,12 @@ def main():
     if args.runtime == "llama.cpp" and bool(args.backend) != bool(args.engine_build):
         ap.error("llama.cpp on npu|gpu is a side build: pass --backend and --engine-build together "
                  "(--engine-build alone would stamp the CPU arm `llama.cpp` with a second build)")
+    ort = args.runtime == "onnxruntime-genai"
+    if ort and (args.backend != "cpu" or args.engine_build):
+        ap.error("onnxruntime-genai on Android takes --backend cpu (the official AAR is CPU-only) "
+                 "and no --engine-build (its runtime dir is " + ORTGENAI_DIR + ")")
+    if ort and not args.file:
+        ap.error("onnxruntime-genai needs --file <the GenAI folder in the HF repo, or a local folder>")
     arm = arm_name(args.runtime, args.backend)
     engine_dir = f"{ENGINES_DIR}/{args.engine_build}" if args.engine_build else None
     if args.runtime == "executorch":
@@ -927,10 +1082,34 @@ def main():
         # ensure_model pushes the staged .pte from its local path; capture_stem keys the
         # records on the cells' file=, as run_campaign does
         cell_file, args.file = args.file, et["pte"]
-    model_dev, model_local = ensure_model(args.model_id, args.file, args.runtime, args.serial)
+    ort_model = None
+    if ort:
+        if not ortgenai_present(args.serial):
+            raise SystemExit(f"{ORTGENAI_DIR}/ortgenai_run is not on the device: push android/bin/ortgenai-0.17.0/ "
+                             f"to {ORTGENAI_DIR}/ (android/README.md)")
+        local, files = resolve_ortgenai_folder(args.model_id, args.file, args.revision)
+        recipe = ortgenai_recipe.lookup(args.model_id, args.file, files["model.onnx"]["sha256"])
+        if not recipe:
+            raise SystemExit(f"{args.model_id} {args.file} (model.onnx sha256 {files['model.onnx']['sha256'][:12]}) "
+                             "has no recipe label in models/ortgenai-recipes.json (quant-label-rule); register it: "
+                             + ortgenai_recipe.register_command(local, args.model_id, args.file, args.revision))
+        model_dev, model_local = ortgenai_dev_dir(args.model_id, args.file), os.path.join(local, "model.onnx")
+        push_ortgenai_folder(local, files, model_dev, args.serial)
+        if os.environ.get("BENCH_ORTGENAI_KEEP_MODEL") != "1":
+            # the folder leaves the phone when this invocation ends (run_campaign.py sets
+            # BENCH_ORTGENAI_KEEP_MODEL=1 and removes it when the campaign ends)
+            atexit.register(remove_ortgenai_folder, model_dev, args.serial)
+        ort_model = {"id": args.model_id, **({"hfRevision": args.revision} if args.revision else {}),
+                     "quantization": recipe["label"], "file": args.file,
+                     "sha256": files["model.onnx"]["sha256"],
+                     # the weights the engine loads: model.onnx and its external data file
+                     "bytes": sum(files[n]["bytes"] for n in ("model.onnx", "model.onnx.data") if n in files),
+                     "files": files}
+    else:
+        model_dev, model_local = ensure_model(args.model_id, args.file, args.runtime, args.serial)
     if et:
         args.file = cell_file
-    model_sha = sha256_file(model_local)
+    model_sha = ort_model["sha256"] if ort else sha256_file(model_local)
     prompt_dev = budget = prompt_text = None
     if not args.task.startswith("native-benchmark-"):
         prompt_dev, budget = push_prompt(args.task, args.serial)
@@ -952,15 +1131,21 @@ def main():
             push_exact(et["prompt"], rendered_dev, args.serial)
         executorch_binary_on_device(binname, args.serial)
     engine_version, engine_artifact = observed_engine(binname, pins, args.serial, engine_dir)
+    engine_tag = engine_version
+    if not engine_tag.startswith("unknown"):
+        # a pins entry may name its build for the record (ORT GenAI: the release AAR's
+        # libraries + Maven's onnxruntime-android); the witness stays the tag's shas
+        engine_version = pins.get(args.runtime, {}).get(engine_tag, {}).get("engine_version", engine_tag)
     if os.environ.get("BENCH_SITTING") == "1":
         # the expected build: the cell's side build, else the pin; llama.cpp's field follows
         # the tool (a llama-bench cell compared llama-bench's sha with llama_cli_sha256 and
         # always stopped here before 2026-10-07); a build the registry does not hold stops too
-        expected_version = args.engine_build or ("v0.16.0" if args.runtime == "litert-lm" else "b8999")
+        expected_version = args.engine_build or ("v0.16.0" if args.runtime == "litert-lm"
+                                                 else "0.17.0" if ort else "b8999")
         expected_field = ("litert_lm_advanced_main_sha256" if args.runtime == "litert-lm"
-                          else binname.replace("-", "_") + "_sha256")
+                          else "ortgenai_run_sha256" if ort else binname.replace("-", "_") + "_sha256")
         pinned = pins.get(args.runtime, {}).get(expected_version, {}).get(expected_field)
-        if engine_version != expected_version or engine_artifact != pinned:
+        if engine_tag != expected_version or engine_artifact != pinned:
             print(f"PIN MISMATCH before launch: {binname} {engine_version} {engine_artifact}", flush=True)
             return 5
     paired = context_prompt(args.runtime, args.task, args.context_tokens)
@@ -1001,7 +1186,7 @@ def main():
         batt = battery(args.serial)
         screen = screen_conditions(args.serial)
         t0 = time.time()
-        console, exit_code, rss_mb = run_once(cmd, binname, args.serial, args.timeout, env)
+        console, exit_code, rss_mb = run_once(cmd, binname, args.serial, args.timeout, env, sockets=ort)
         elapsed = time.time() - t0
         if et:
             console += "\n===ENGINE_STDERR===\n" + executorch_stderr(args.serial)
@@ -1040,6 +1225,9 @@ def main():
         elif et:
             et_fields = executorch_fields(console, et, args.max_tokens or budget, args.context_tokens)
             metrics = dict(et_fields["metrics"])
+            cold = True
+        elif ort:
+            metrics, ort_report, ort_loaded, ort_text = parsers.parse_ortgenai(console)
             cold = True
         else:
             metrics = parsers.parse_litert(console)
@@ -1137,8 +1325,8 @@ def main():
             "runtime": arm,
             "engineVersion": engine_version,
             "engineArtifact": engine_artifact,
-            "model": {"id": args.model_id, "quantization": quantization or guess_quant(model_dev),
-                      "file": os.path.basename(model_dev), "sha256": model_sha},
+            "model": ort_model or {"id": args.model_id, "quantization": quantization or guess_quant(model_dev),
+                                   "file": os.path.basename(model_dev), "sha256": model_sha},
             "task": args.task,
             "timestamp": iso,
             "device": {**dev, "batteryLevel": batt["batteryLevel"],
@@ -1167,6 +1355,24 @@ def main():
             rec["outputSample"] = (et_fields["text"] or "")[:200]
             if launch_checks.get("protocolFlags"):
                 rec["conditions"]["protocolFlags"] = list(launch_checks["protocolFlags"])
+        if ort:
+            sockets = engine_sockets(console)
+            if sockets is not None:
+                rec["conditions"]["engineSockets"] = sockets
+            rec["conditions"].update({
+                "chatMode": ORTGENAI_CHAT_MODE, "telemetry": ORTGENAI_TELEMETRY,
+                "metricDefinitions": ORTGENAI_METRICS, "threads": "engine default",
+                # every key=value of ortgenai_run's ORTGENAI line, unknown ones included
+                "engineReport": ort_report,
+                # the libraries the engine process mapped (ORTGENAI_LIBS); their shas are the
+                # witness's (observed_engine checks them against the pins entry)
+                "engineLibraries": ort_loaded,
+            })
+            ort_text_name = f"{stem}_{stamp}_run{i}.decoded.txt"
+            with open(os.path.join(args.out, ort_text_name), "w") as fh:
+                fh.write(ort_text or "")
+            rec["provenance"]["decodedText"] = ort_text_name
+            rec["provenance"]["recipe"] = "models/ortgenai-recipes.json (scripts/ortgenai_recipe.py)"
         if extended:
             rec["conditions"].update({
                 "roundIndex": args.round_index, "launchIndex": args.launch_index,
@@ -1235,6 +1441,15 @@ def main():
                     fh.write(value)
                 row["provenance"]["decodedText"] = text_name
                 any_text_failure |= bool(row["conditions"]["protocolFlags"])
+            if ort and args.task.startswith("long-context-"):
+                # text-check-rule: the screen the LiteRT-LM context-prompt launches carry,
+                # unchanged (the same bar for every arm); short-chat carries none, as on
+                # every other Android arm
+                verdict = parsers.text_integrity(ort_text or "")
+                row["conditions"]["protocolFlags"] = list(row["conditions"].get("protocolFlags", [])) + verdict["flags"]
+                row["conditions"]["textCheck"] = verdict
+                row["conditions"]["textOutputSHA256"] = hashlib.sha256((ort_text or "").encode()).hexdigest()
+                any_text_failure |= bool(verdict["flags"])
             if cpu_flags or backend_flags:
                 # cpu-cap-rule / a side build off its device: the record stays, arm_row
                 # keeps it out of every pool

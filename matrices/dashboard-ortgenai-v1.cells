@@ -1,0 +1,98 @@
+# ONNX Runtime GenAI arm, v1 (2026-10-07): the dashboard's Qwen3 0.6B / 1.7B / 4B on the
+# short-chat task and the 1K text task (long-context-1024-gen256), on the published GenAI
+# folders of onnx-community/Qwen3-<size>-ONNX. Gemma 4 E2B / E4B stay as excluded rows.
+# One-pager: docs/ortgenai-arm-v1.md; cells-v1 section "ONNX Runtime GenAI arm (v1, 2026-10-07)".
+#
+# Arms (backend= is arm identity, as for LiteRT-LM):
+#   mac     backend=cpu    -> onnxruntime-genai-cpu     pip onnxruntime-genai 0.17.1 + onnxruntime 1.30.0
+#           backend=webgpu -> onnxruntime-genai-webgpu  + onnxruntime-ep-webgpu 0.4.0 (plugin EP, Dawn on Metal)
+#           scripts/ortgenai_mac.py in its venv (ORTGENAI_PYTHON, default ~/.venvs/ortgenai-0.17.1)
+#   android backend=cpu    -> onnxruntime-genai-cpu     release AAR 0.17.0 + Maven onnxruntime-android 1.30.0
+#           (android/engine-pins.json "onnxruntime-genai" "0.17.0"; the AAR is CPU-only), ortgenai_run in
+#           /data/local/tmp/llmbench/ortgenai/ (android/README.md)
+#   ios     the release XCFramework 0.17.0 is CPU-only; its rows are disabled at the bottom until the
+#           app has the runtime and the catalog entries
+# Every run is a fresh engine process (cold) on every platform; the dashboards headline the cold
+# median for these arms (scripts/render_dashboard.py regime_of).
+#
+# Models: file= is the GenAI folder in the repo (cpu: onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128,
+# webgpu: onnxruntime/webgpu/webgpu-int4-kld-block-32), revision= the repo's commit "Add optimized
+# models for ORT GenAI (#3)" (2026-04-20; each repo has its own sha). The recipe of each folder is
+# read from its model.onnx into models/ortgenai-recipes.json (scripts/ortgenai_recipe.py --register);
+# the drivers refuse a folder without an entry, and only the 0.6B folders are registered so far.
+# context-tokens=2048 on every row = the max_length GenAI allocates the KV cache for up front
+# (past_present_share_buffer), the budget of the other arms' 1K rows; greedy, the folder's
+# chat_template.jinja, no system prompt (Qwen3 thinking on). No anchor row: the arm joins the weekly
+# file only with an owner GO.
+#
+#   ./bench matrix matrices/dashboard-ortgenai-v1.cells --platform mac
+#   BENCH_CPU_MASK= ./bench matrix matrices/dashboard-ortgenai-v1.cells --platform android   # Galaxy S26
+
+# ============================= Mac =============================
+
+# --- Qwen3-0.6B ---
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+
+# --- Qwen3-1.7B ---
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+
+# --- Gemma 4 E2B: no published GenAI folder (onnx-community / microsoft); the official model
+#     builder routes Gemma 4 to its MoE path (lane check 2026-10-07) ---
+mac onnxruntime-genai google/gemma-4-E2B-it short-chat backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+mac onnxruntime-genai google/gemma-4-E2B-it short-chat backend=webgpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+mac onnxruntime-genai google/gemma-4-E2B-it long-context-1024-gen256 backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+mac onnxruntime-genai google/gemma-4-E2B-it long-context-1024-gen256 backend=webgpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+
+# --- Qwen3-4B (model.onnx + model.onnx.data) ---
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=webgpu cooldown=300 file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=webgpu cooldown=300 file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+
+# --- Gemma 4 E4B ---
+mac onnxruntime-genai google/gemma-4-E4B-it short-chat backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+mac onnxruntime-genai google/gemma-4-E4B-it short-chat backend=webgpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+mac onnxruntime-genai google/gemma-4-E4B-it long-context-1024-gen256 backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+mac onnxruntime-genai google/gemma-4-E4B-it long-context-1024-gen256 backend=webgpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+
+# =========================== Android ===========================
+# CPU only (the official AAR). The folder is pushed to /data/local/tmp/llmbench/models/<repo>_<folder name>/
+# and removed when the campaign ends. The Qwen3-4B rows carry the Pixel 8a exclusion every other arm's
+# 4B-class rows carry (docs/dashboard-cells-v1.md "Per-device exclusion").
+
+# --- Qwen3-0.6B ---
+android onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+android onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+
+# --- Qwen3-1.7B ---
+android onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+android onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+
+# --- Gemma 4 E2B ---
+android onnxruntime-genai google/gemma-4-E2B-it short-chat backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+android onnxruntime-genai google/gemma-4-E2B-it long-context-1024-gen256 backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+
+# --- Qwen3-4B ---
+android onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+
+# --- Gemma 4 E4B ---
+android onnxruntime-genai google/gemma-4-E4B-it short-chat backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+android onnxruntime-genai google/gemma-4-E4B-it long-context-1024-gen256 backend=cpu cooldown=300 context-tokens=2048 exclude=no-published-genai-model-official-builder-routes-gemma4-to-moe
+
+# =========================== iPhone (disabled) ============================
+# The iPhone 18 Pro rows, CPU only (the release XCFramework). Enabled when the app ships the
+# runtime adapter and the catalog entries for these folders (validate_cells checks ios ids against
+# the app catalog).
+#ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+#ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+#ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+#ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+#ios onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+#ios onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048

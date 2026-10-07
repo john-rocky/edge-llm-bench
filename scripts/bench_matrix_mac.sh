@@ -28,6 +28,17 @@
 # picks the runner build (.build/executorch-<tag>[-<backend>]/). A cell whose inputs
 # are not staged is SKIPPED with its reason; the post-capture gate applies as for
 # yardstick cells.
+#
+# onnxruntime-genai cells (docs/ortgenai-arm-v1.md): scripts/ortgenai_mac.py in
+# its own venv ($ORTGENAI_PYTHON, default ~/.venvs/ortgenai-0.17.1/bin/python; a
+# missing venv logs SKIPPED with its reason), one fresh engine process per run,
+# the cell's runs appended to <slug>.jsonl like a yardstick cell, and the same
+# post-capture gate. backend= (cpu | webgpu), file= (the GenAI folder in the
+# repo), revision= (the HF commit) and context-tokens= come from the row; the
+# folder, the revision and both options are capture identity. ORTGENAI_SMOKE=<note>
+# stamps the records as a smoke (conditions.capturePurpose smoke) instead of a
+# measurement; ORTGENAI_QUIET_LABEL names the quiet window the session runs in.
+# A cells file whose mac rows are all uzu / onnxruntime-genai needs no yardstick.
 set -uo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -49,6 +60,7 @@ OUT="$REPO/results/raw/$CAMPAIGN"
 UZU_PYTHON="${UZU_PYTHON:-python3}"
 UZU_MODEL_DIR="${UZU_MODEL_DIR:-$REPO/models/uzu}"
 ET_PYTHON="${ET_PYTHON:-python3}"
+ORTGENAI_PYTHON="${ORTGENAI_PYTHON:-$HOME/.venvs/ortgenai-0.17.1/bin/python}"
 DRY_RUN=0
 # Core AI bundles are side-loaded, one folder per catalog id (CoreAIRuntime.bundleSpec):
 # <BENCH_COREAI_MODELS_DIR>/<folder>/{metadata.json, <name>.aimodel | .aimodelc, tokenizer/}.
@@ -121,6 +133,18 @@ run_et_cell(){
   # Exit 75 = the cell's inputs or runner are not staged (nothing ran).
   "$ET_PYTHON" "$REPO/scripts/executorch_mac.py" "${et_args[@]}" --pause "${ET_PAUSE:-30}" \
     --timeout "${CELL_TIMEOUT:-1800}" --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT"
+}
+
+run_ort_cell(){
+  # One capture attempt of an onnxruntime-genai cell: ort_args is a run_cell local.
+  # The driver bounds each engine process itself (--timeout); its exit is 1 when a
+  # run failed (crash, missing metric, text check, telemetry or GPU witness).
+  "$ORTGENAI_PYTHON" "$REPO/scripts/ortgenai_mac.py" "${ort_args[@]}" \
+    --output "$OUT/${slug}.jsonl" --campaign-dir "$OUT"
+}
+
+run_capture(){
+  if [ "$rt" = "onnxruntime-genai" ]; then run_ort_cell; else run_ys_cell; fi
 }
 
 guard(){
@@ -216,6 +240,33 @@ run_cell(){
       "$ET_PYTHON" "$REPO/scripts/executorch_mac.py" "${et_args[@]}" --output "$OUT/${slug}.jsonl" --dry-run \
         || echo "DRY-RUN executorch $mid $task: not runnable as staged (above)"
       return 0
+    fi
+  fi
+  local -a ort_args=()
+  if [ "$rt" = "onnxruntime-genai" ]; then
+    local ort_file ort_rev
+    ort_file="$(cell_opt file "" ${opts[@]+"${opts[@]}"})"
+    ort_rev="$(cell_opt revision "" ${opts[@]+"${opts[@]}"})"
+    # The folder and its HF revision are capture identity beside backend= and ctx.
+    slug="${slug}_$(printf '%s' "$ort_file|$ort_rev" | shasum -a 256 | cut -c1-12)"
+    ort_args=(--model-id "$mid" --file "$ort_file" --revision "$ort_rev" --backend "$backend"
+              --task "$task" --context-tokens "$ctx" --runs "$runs"
+              --pause "${ORTGENAI_PAUSE:-5}" --timeout "${ORTGENAI_RUN_TIMEOUT:-900}")
+    [ -n "${ORTGENAI_SMOKE:-}" ] && ort_args+=(--smoke "$ORTGENAI_SMOKE")
+    [ -n "${ORTGENAI_QUIET_LABEL:-}" ] && ort_args+=(--quiet-label "$ORTGENAI_QUIET_LABEL")
+    if [ ! -x "$ORTGENAI_PYTHON" ]; then
+      # before the cooldown: a cell that cannot run takes no session time
+      if [ "$DRY_RUN" = 1 ]; then
+        echo "DRY-RUN SKIPPED $rt $mid $task backend=$backend reason=ortgenai-venv-missing ($ORTGENAI_PYTHON)"
+      else
+        echo "SKIPPED $rt $mid $task backend=$backend reason=ortgenai-venv-missing ($ORTGENAI_PYTHON)" | tee -a "$OUT/SKIPPED.txt"
+      fi
+      return
+    fi
+    if [ "$DRY_RUN" = 1 ]; then
+      printf 'DRY-RUN %s -> %s.jsonl\n' "$rt" "$slug"
+      "$ORTGENAI_PYTHON" "$REPO/scripts/ortgenai_mac.py" "${ort_args[@]}" --output "$OUT/${slug}.jsonl" --dry-run
+      return
     fi
   fi
   if [ "$DRY_RUN" = 1 ]; then
@@ -334,6 +385,15 @@ run_cell(){
     return ;;
   esac
 
+  if [ "$rt" = "onnxruntime-genai" ]; then
+    log "CELL $rt / $mid / $task backend=$backend ctx=$ctx runs=$runs round=$round ($(date +%H:%M:%S)) (one engine process per run)"
+    if ! run_capture; then
+      echo "FAIL $rt $mid $task backend=$backend ctx=$ctx round=$round" >> "$OUT/FAILURES.txt"
+    fi
+    post_capture_gate
+    return
+  fi
+
   local extra=() task_arg="$task"
   [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
   [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
@@ -355,13 +415,19 @@ run_cell(){
   esac
 
   log "CELL $rt / $mid / $task${backend:+ backend=$backend}${ctx:+ ctx=$ctx} runs=$runs round=$round ($(date +%H:%M:%S))"
-  if ! run_ys_cell; then
+  if ! run_capture; then
     echo "FAIL $rt $mid $task${backend:+ backend=$backend}${ctx:+ ctx=$ctx} round=$round" >> "$OUT/FAILURES.txt"
   fi
+  post_capture_gate
+}
+
+post_capture_gate(){
   # Post-capture gate (scripts/cell_gate.py): a HOT or wide-spread capture is
   # quarantined (.jsonl.attempt1 — kept in raw, outside build_summary's
   # *.jsonl glob) and the cell re-runs ONCE after a real cooldown. SHORT is
-  # never retried here — that is a failure, and failed runs stay.
+  # never retried here — that is a failure, and failed runs stay. bash dynamic
+  # scope: rt/mid/task/runs/slug (and ort_args / extra) are run_cell locals.
+  local gate gate2
   if [ -f "$OUT/${slug}.jsonl" ] && [ "${GATE_RETRY:-1}" = "1" ]; then
     gate="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl")" || true
     case "$gate" in DEGENERATE*)
@@ -374,7 +440,7 @@ run_cell(){
       log "gate: $gate — quarantine + cooldown ${GATE_COOLDOWN:-180}s, re-run once"
       mv "$OUT/${slug}.jsonl" "$OUT/${slug}.jsonl.attempt1"
       sleep "${GATE_COOLDOWN:-180}"
-      run_ys_cell || echo "FAIL $rt $mid $task (gate retry)" >> "$OUT/FAILURES.txt"
+      run_capture || echo "FAIL $rt $mid $task (gate retry)" >> "$OUT/FAILURES.txt"
       gate2="$(python3 "$REPO/scripts/cell_gate.py" --runs "$runs" --jsonl "$OUT/${slug}.jsonl" 2>/dev/null)" || true
       case "$gate2" in HOT*|SPREAD*|DEAD*|COLLAPSE*)
         echo "GATE_FAIL $rt $mid $task first='$gate' retry='$gate2' (retry kept; ⚠ downstream)" \
@@ -397,7 +463,12 @@ cmd_run(){
     while IFS= read -r dry_line; do run_cell 1 "$dry_line" || return; done < <(cells_for mac "$cells_file")
     return
   fi
-  check_binary
+  # The yardstick runs every mac row but the uzu and onnxruntime-genai ones (own drivers).
+  if cells_for mac "$cells_file" 2>/dev/null | awk '{print $1}' | grep -qvxE 'uzu|onnxruntime-genai'; then
+    check_binary
+  else
+    echo "yardstick: not needed (every mac cell is uzu / onnxruntime-genai)"
+  fi
   guard
   mkdir -p "$OUT"
   { sw_vers; date "+session start %F %T"; echo "cells: $cells_file"; } >> "$OUT/session_provenance.txt"

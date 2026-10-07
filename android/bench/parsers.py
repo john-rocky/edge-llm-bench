@@ -166,6 +166,60 @@ def parse_llama_cli(text):
     return m
 
 
+RE_ORTGENAI = re.compile(r"^ORTGENAI (.*)$", re.M)
+RE_ORTGENAI_LIBS = re.compile(r"^ORTGENAI_LIBS (.*)$", re.M)
+RE_ORTGENAI_OUTPUT = re.compile(r"\[OUTPUT BEGIN\](.*?)\[OUTPUT END\]", re.S)
+ORTGENAI_STOP = {"eos": "stop", "budget": "length", "max_length": "max_length"}
+
+
+def _number(value):
+    try:
+        return int(value)
+    except ValueError:
+        try:
+            return float(value)
+        except ValueError:
+            return value
+
+
+def parse_ortgenai(text):
+    """ortgenai_run console (android/ortgenai/ortgenai_run.cpp output contract) ->
+    (metrics, report, libraries, decoded text).
+
+    report = every key=value of the ORTGENAI line, numbers as numbers and unknown keys
+    kept (the record carries it whole); libraries = the ORTGENAI_LIBS paths; decoded
+    text = the [OUTPUT BEGIN]..[OUTPUT END] span, None when the run printed none.
+    metrics use BenchmarkResult names: prompt tok/s = prompt_tokens / prefill_ms (the
+    AppendTokenSequences wall clock), TTFT = ttft_ms, decode = the line's decode_tps
+    ((gen_tokens - 1) / decode_ms_total), stopReason eos -> stop, budget -> length.
+    Absent keys stay absent."""
+    m = RE_ORTGENAI.search(text)
+    if not m:
+        return {}, {}, [], None
+    report = {}
+    for item in m.group(1).split():
+        key, sep, value = item.partition("=")
+        if sep:
+            report[key] = _number(value)
+    metrics = {}
+    if isinstance(report.get("prompt_tokens"), int):
+        metrics["promptTokenCount"] = report["prompt_tokens"]
+    if isinstance(report.get("gen_tokens"), int):
+        metrics["generatedTokenCount"] = report["gen_tokens"]
+    prefill = report.get("prefill_ms")
+    if isinstance(prefill, (int, float)) and prefill > 0 and "promptTokenCount" in metrics:
+        metrics["promptTokensPerSecond"] = metrics["promptTokenCount"] / prefill * 1000.0
+    if isinstance(report.get("ttft_ms"), (int, float)):
+        metrics["firstTokenLatencyMS"] = float(report["ttft_ms"])
+    if isinstance(report.get("decode_tps"), (int, float)):
+        metrics["decodeTokensPerSecond"] = float(report["decode_tps"])
+    if report.get("stop") in ORTGENAI_STOP:
+        metrics["stopReason"] = ORTGENAI_STOP[report["stop"]]
+    libs = RE_ORTGENAI_LIBS.search(text)
+    out = RE_ORTGENAI_OUTPUT.search(text)
+    return metrics, report, (libs.group(1).split() if libs else []), (out.group(1) if out else None)
+
+
 def parse_llama_bench_json(text):
     """llama-bench -o json -> list of per-test dicts {kind, avg_ts, n_prompt, n_gen,
     stddev_ts} plus the fields that say where the tests ran (BENCH_DEVICE_FIELDS).

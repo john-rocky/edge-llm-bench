@@ -312,7 +312,8 @@ def mac_guard():
     """Busy when a Mac capture runs or a heavy pipeline would contend for
     unified memory (the runner's own guard, replicated so the job reports
     BUSY and polls instead of letting `bench matrix` fail once)."""
-    if pgrep("bench_matrix_mac.sh") or pgrep("yardstick run"):
+    # ortgenai_mac.py: the ONNX Runtime GenAI cells' own driver, run by the matrix runner or by hand
+    if pgrep("bench_matrix_mac.sh") or pgrep("yardstick run") or pgrep("scripts/ortgenai_mac.py"):
         raise Busy("a Mac capture is already running")
     rc, out = sh(["ps", "aux"])
     heavy = [ln for ln in out.splitlines() if re.search(MAC_HEAVY_RE, ln) and "grep" not in ln]
@@ -344,7 +345,9 @@ def preflight_android(dev, dry):
     except OSError:
         raise Busy(f"campaign lock held: {lock_path}")
     check_holds(dev, dry)
-    rc, out = sh(adb_cmd(serial, "shell", "ps -A | grep -E 'litert_lm|llama' | grep -v grep"))
+    # the engines the Android rows run: LiteRT-LM, llama.cpp, ONNX Runtime GenAI (ortgenai_run,
+    # model_benchmark in /data/local/tmp/llmbench/ortgenai/)
+    rc, out = sh(adb_cmd(serial, "shell", "ps -A | grep -E 'litert_lm|llama|ortgenai_run|model_benchmark' | grep -v grep"))
     foreign = [ln for ln in out.splitlines() if ln.strip()]
     if foreign:
         raise Busy(f"foreign engine process on the phone: {foreign[0].strip()}")

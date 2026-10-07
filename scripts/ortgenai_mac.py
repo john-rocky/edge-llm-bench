@@ -1,11 +1,32 @@
 #!/usr/bin/env python3
-"""Mac ONNX Runtime GenAI cells: one fresh engine process per run, one schema-v1 JSON per run.
+"""Mac ONNX Runtime GenAI cells (docs/ortgenai-arm-v1.md): one fresh engine process per run,
+the runs of one cell appended to one schema-v1 JSONL.
 
-Prototype (2026-10-07, r1 smoke). Install onnxruntime-genai==0.17.1, onnxruntime==1.30.0
-and onnxruntime-ep-webgpu==0.4.0 in a private venv and run this script with that venv's
-python. The model is a published GenAI folder (genai_config.json + model.onnx + tokenizer)
-passed as an absolute --model-dir; the WebGPU arm registers the plugin EP and uses the
-folder whose genai_config names the webgpu provider.
+  <venv>/bin/python scripts/ortgenai_mac.py --model-id onnx-community/Qwen3-0.6B-ONNX \\
+      --file onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 \\
+      --revision da1453100cf3ff33ef56d17983fc7a8648706db6 --backend cpu \\
+      --task short-chat --context-tokens 2048 --runs 3 \\
+      --output results/raw/<campaign>/<cell>.jsonl
+
+scripts/bench_matrix_mac.sh runs it for every `mac onnxruntime-genai` row of a cells file.
+Install onnxruntime-genai==0.17.1, onnxruntime==1.30.0, onnxruntime-ep-webgpu==0.4.0,
+huggingface_hub, onnx and jsonschema in a private venv and run this script with that venv's
+python. The model is a published GenAI folder (genai_config.json + model.onnx + tokenizer):
+--model-id + --file (the folder's path in the repo) + --revision resolve it through the HF
+cache (snapshot_download of that folder only); --model-dir names a local folder instead. The
+WebGPU arm registers the plugin EP and runs the folder whose genai_config names the webgpu
+provider. model.quantization is the folder's entry in models/ortgenai-recipes.json (read from
+its model.onnx by scripts/ortgenai_recipe.py); an unregistered folder is refused.
+
+Records: --output <cell>.jsonl gets one compact JSON line per run (build_summary reads
+results/raw/<campaign>/*.jsonl); each run's harness log, engine report (.worker.json) and
+decoded text go to <campaign dir>/ortgenai-logs/. Every run is a fresh process, so every
+record is coldRun true and conditions.regime "cold (one process per run)": the arm has no
+warm regime, and the dashboards headline its cold median (render_dashboard.regime_of).
+Text: a long-context-* run carries conditions.textCheck = android/bench/parsers.text_integrity
+of its decoded text (the screen the Android LiteRT-LM context-prompt launches carry); a
+short-chat run is screened like every Apple arm, by the runner's post-capture gate
+(cell_gate.degenerate on outputSample).
 
 Telemetry: the engine process gets ORT_DISABLE_TELEMETRY=1 in its environment before
 onnxruntime_genai is imported, and calls disable_telemetry_events(). --telemetry on drops
@@ -22,7 +43,17 @@ Memory: the parent samples the engine process's phys_footprint every 100 ms
 (bytes / 2^20), the Apple BenchmarkRunner basis. GPU identity per run: the GPU time the
 engine process accrued during generation (IOKit AGXDeviceUserClient AppUsage of its pid).
 """
-import argparse
+import os
+
+# Any onnxruntime import in this (parent) process must find telemetry off: the engine
+# libraries ship the 1DS SDK, ON by default, and an import without this variable writes
+# to its store (r2b, 2026-10-07: a helper that imported onnxruntime in its parent). The
+# worker's environment is built per run below (off, or on for the comparison runs only:
+# ORTGENAI_TELEMETRY_COMPARISON=1 marks such a worker, and only it starts without the switch).
+if os.environ.get("ORTGENAI_TELEMETRY_COMPARISON") != "1":
+    os.environ.setdefault("ORT_DISABLE_TELEMETRY", "1")
+
+import argparse  # noqa: E402
 import ctypes
 import datetime as dt
 import hashlib
@@ -30,7 +61,6 @@ import importlib.metadata
 import importlib.util
 import json
 import math
-import os
 from pathlib import Path
 import plistlib
 import re
@@ -45,13 +75,13 @@ import time
 import traceback
 import uuid
 
-from cell_gate import degenerate
+import ortgenai_recipe
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "android" / "bench"))
 from parsers import text_integrity  # noqa: E402  (the Android runner's lexical screen)
 
-STAMP = "ortgenai-mac-v0-2026-10-07"
+STAMP = "ortgenai-mac-v1-2026-10-07"
 TASKS = ("short-chat", "long-context-1024-gen256")
 VERSIONS = {"onnxruntime-genai": "0.17.1", "onnxruntime": "1.30.0", "onnxruntime-ep-webgpu": "0.4.0"}
 RUNTIMES = {"cpu": "onnxruntime-genai-cpu", "webgpu": "onnxruntime-genai-webgpu"}
@@ -59,26 +89,14 @@ EPS = {"cpu": "CPUExecutionProvider", "webgpu": "WebGpuExecutionProvider"}
 DEVICE_TYPES = {"cpu": "CPU", "webgpu": "WebGPU"}
 TELEMETRY_DIR = Path.home() / "Library/Application Support/Microsoft/DeveloperTools/.onnxruntime"
 QUIET_LOCK = Path(os.environ.get("QUIET_LOCK") or Path.home() / "code/coreai/_GPU_LOCK")
-# Exact recipes read from model.onnx with --describe-quant (MatMulNBits / GatherBlockQuantized
-# attributes, scale and KV dtypes) plus config.json and the Hub commit; never a bit count alone.
-QUANT_LABELS = {
-    ("onnx-community/Qwen3-0.6B-ONNX", "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128"):
-        "int4 + int8 mixed MatMulNBits (92 int4 / 105 int8 of 197; per-layer int8 overrides as published), "
-        "block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 "
-        "GatherBlockQuantized embedding; fp32 activations and KV (onnx-community "
-        "cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
-    ("onnx-community/Qwen3-0.6B-ONNX", "onnxruntime/webgpu/webgpu-int4-kld-block-32"):
-        "int4 + int8 mixed MatMulNBits (91 int4 / 106 int8 of 197; per-layer int8 overrides as published), "
-        "block 32, asymmetric uint8 zero points, fp16 scales, accuracy_level 4; int8 block-32 "
-        "GatherBlockQuantized embedding; fp16 activations and KV (onnx-community "
-        "webgpu-int4-kld-block-32, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
-}
+REGIME = "cold (one process per run)"
 METRIC_DEFINITIONS = (
     "prefill tok/s = promptTokenCount / wall clock of Generator.append_tokens(prompt); "
     "TTFT = append_tokens + the first generate_next_token (greedy pick from the prefill logits, no forward pass); "
     "decode tok/s = (generatedTokenCount - 1) / summed wall clock of generate_next_token calls 2..N "
     "(each = one forward pass + greedy pick); generatedTokenCount counts every picked token, a final EOS included; "
-    "stop = EOS (is_done) or the output budget, no min_length; memory = phys_footprint of the engine process, "
+    "stopReason stop = EOS (is_done), length = the output budget, max_length = the KV allocation filled, "
+    "no min_length; memory = phys_footprint of the engine process, "
     "100 ms samples from after model load and generator creation to the last token, high-water and median, "
     "MiB (bytes / 2^20); past_present_share_buffer true allocates the KV cache for max_length = contextTokens "
     "when the generator is created, so both memory numbers include it")
@@ -264,28 +282,24 @@ def model_identity(model_dir):
     return None, model_dir.name
 
 
-def describe_quant(model_dir):
-    """The facts a quantization label is built from, read from model.onnx (needs the onnx package)."""
-    import collections
-    import onnx
-    from onnx import helper
-    m = onnx.load(str(model_dir / "model.onnx"), load_external_data=False)
-    inits = {i.name: i for i in m.graph.initializer}
-    combos = collections.Counter()
-    for n in m.graph.node:
-        if n.op_type in ("MatMulNBits", "GatherBlockQuantized"):
-            a = {x.name: helper.get_attribute_value(x) for x in n.attribute}
-            scale = inits.get(n.input[2]) if len(n.input) > 2 else None
-            combos[(n.op_type, a.get("bits"), a.get("block_size"), a.get("accuracy_level"),
-                    "zero points" if len(n.input) > 3 and n.input[3] else "no zero points",
-                    onnx.TensorProto.DataType.Name(scale.data_type) if scale is not None else "?")] += 1
-    kv = next((onnx.TensorProto.DataType.Name(i.type.tensor_type.elem_type) for i in m.graph.input
-               if i.name.startswith("past_key_values")), None)
-    return {"producer": m.producer_name, "opsets": {o.domain or "ai.onnx": o.version for o in m.opset_import},
-            "metadata": {p.key: p.value for p in m.metadata_props}, "nodes": len(m.graph.node),
-            "quantizedOps": [{"op": k[0], "bits": k[1], "blockSize": k[2], "accuracyLevel": k[3],
-                              "zeroPoints": k[4], "scaleType": k[5], "count": c} for k, c in sorted(combos.items(), key=str)],
-            "kvType": kv}
+def resolve_folder(model_id, folder, revision, local_only=False):
+    """The GenAI folder `folder` of `model_id` at `revision` in the HF cache, downloading only
+    that folder's files (snapshot_download allow_patterns). local_only: no network; None when
+    the folder is not in the cache."""
+    from huggingface_hub import snapshot_download
+    try:
+        snap = snapshot_download(model_id, revision=revision, allow_patterns=[f"{folder}/*"],
+                                 local_files_only=local_only)
+    except Exception:
+        if local_only:
+            return None
+        raise
+    path = Path(snap) / folder
+    if not (path / "genai_config.json").exists() or not (path / "model.onnx").exists():
+        if local_only:
+            return None
+        raise SystemExit(f"{model_id}@{revision}: {folder} has no genai_config.json / model.onnx")
+    return path
 
 
 # ---------------------------------------------------------------- engine process
@@ -357,11 +371,12 @@ def worker(args):
         if sys.stdin.readline().strip() != "EXIT":
             raise RuntimeError("parent did not answer EXIT")
         hit_eos = bool(tokens) and tokens[-1] in eos
+        # the repo's stopReason words (stop / length) plus max_length: the KV allocation filled
         payload.update(prefillSeconds=t1 - t0, firstStepSeconds=steps[0] if steps else None,
                        decodeSeconds=sum(steps[1:]), generationWallSeconds=t_end - t0,
                        stepSeconds=steps, tokens=tokens, generatedTokenCount=len(tokens), hitEos=hit_eos,
                        sequenceLength=int(generator.token_count()),
-                       stopReason="eos" if hit_eos else ("length" if len(tokens) >= budget else "max_length"),
+                       stopReason="stop" if hit_eos else ("length" if len(tokens) >= budget else "max_length"),
                        cpuSecondsDuringGeneration=(r1.ru_utime - r0.ru_utime) + (r1.ru_stime - r0.ru_stime),
                        text=tokenizer.decode(tokens[:-1] if hit_eos else tokens))
         payload["ok"] = True
@@ -430,17 +445,12 @@ class LsofWatch(threading.Thread):
             f.write(f"# polls={self.polls} max_entries={self.max_entries}\n")
 
 
-def text_verdict(text):
-    verdict = text_integrity(text)
-    flags = list(verdict["flags"])
-    if degenerate(text[:200], 0.5):
-        flags.append("text-degenerate-6gram")
-    if "\ufffd" in text:
-        flags.append("text-replacement-character")
-    verdict.update(flags=flags, status="FAIL" if flags else "PASS",
-                   method=("android/bench/parsers.text_integrity lexical screen + cell_gate.degenerate "
-                           "(first 200 characters, 6-gram ratio < 0.5) + U+FFFD; full text retained for review"))
-    return verdict
+def text_verdict(task, text):
+    """conditions.textCheck of a long-context-* run: parsers.text_integrity unchanged, the screen
+    the Android LiteRT-LM context-prompt launches carry (text-check-rule; the same bar for every
+    arm). None for short-chat: the runner's post-capture gate screens outputSample
+    (cell_gate.degenerate), as for every Apple arm."""
+    return text_integrity(text) if task.startswith("long-context-") else None
 
 
 def mib(values):
@@ -452,19 +462,21 @@ def run_once(args, index, prompt, budget, quant, libs):
     started = dt.datetime.now(dt.timezone.utc)
     slug = args.model_id.replace("/", "_").replace(".", "_")
     stem = f"{runtime}_{slug}_{args.model_dir.name}_{args.task}_ctx{args.context_tokens}_run{index}_{started:%Y%m%dT%H%M%S.%fZ}"
-    out = args.out
+    out = args.logs
     log, result_path = out / f"{stem}.log", out / f"{stem}.worker.json"
     worker_args = ["--worker", "--worker-result", str(result_path), "--model-id", args.model_id,
                    "--model-dir", str(args.model_dir), "--backend", args.backend, "--task", args.task,
                    "--context-tokens", str(args.context_tokens), "--telemetry", args.telemetry,
-                   "--timeout", str(args.timeout), "--out", str(out)]
+                   "--timeout", str(args.timeout)]
     cmd = [sys.executable, str(Path(__file__).resolve()), *worker_args]
     env = dict(os.environ, PYTHONUNBUFFERED="1", HF_HUB_OFFLINE="1")
-    for key in ("ORT_DISABLE_TELEMETRY", "ORTGENAI_ORT_VERBOSE_LOGGING", "OPENAI_API_KEY", "ANTHROPIC_API_KEY",
-                "GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"):
+    for key in ("ORT_DISABLE_TELEMETRY", "ORTGENAI_TELEMETRY_COMPARISON", "ORTGENAI_ORT_VERBOSE_LOGGING",
+                "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "OPENROUTER_API_KEY"):
         env.pop(key, None)
     if args.telemetry == "off":
         env["ORT_DISABLE_TELEMETRY"] = "1"
+    else:
+        env["ORTGENAI_TELEMETRY_COMPARISON"] = "1"
     if args.ort_verbose:
         env["ORTGENAI_ORT_VERBOSE_LOGGING"] = "1"
     before = host_snapshot()
@@ -543,7 +555,8 @@ def run_once(args, index, prompt, budget, quant, libs):
     if "ns" in g0 and "ns" in g1:
         metrics.update(gpuMillisecondsDuringGeneration=(g1["ns"] - g0["ns"]) / 1e6, gpuClients=g1["clients"])
     text = data.get("text", "")
-    verdict = text_verdict(text)
+    verdict = text_verdict(args.task, text)
+    text_ok = verdict is None or verdict["status"] == "PASS"
     witness_ok = (args.backend == "cpu" or (data.get("deviceType") == "WebGPU"
                   and any("libonnxruntime_providers_webgpu" in p for p in data.get("onnxruntimeImages", []))
                   and (metrics.get("gpuMillisecondsDuringGeneration") or 0) > 0))
@@ -552,7 +565,7 @@ def run_once(args, index, prompt, budget, quant, libs):
     finite = all(isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in numeric)
     diff = manifest_diff(tdir_before, tdir_after)
     telemetry_clean = not (diff["added"] or diff["removed"] or diff["modified"] or diff["dirCreated"])
-    ok = (data.get("ok") and rc == 0 and finite and 0 < n <= budget and verdict["status"] == "PASS"
+    ok = (data.get("ok") and rc == 0 and finite and 0 < n <= budget and text_ok
           and witness_ok and sampler.socket_max == 0 and (args.telemetry == "on" or telemetry_clean))
     gpu_accel = (f"{data['registered']['name']} ({Path(data['registered']['library']).name}, onnxruntime-ep-webgpu "
                  f"{VERSIONS['onnxruntime-ep-webgpu']} plugin EP, registered with register_execution_provider_library; "
@@ -571,22 +584,26 @@ def run_once(args, index, prompt, budget, quant, libs):
         "executionProvider": EPS[args.backend], "gpuAccelerator": gpu_accel,
         "providerOptions": json.loads((args.model_dir / "genai_config.json").read_text())["model"]["decoder"]["session_options"]["provider_options"],
         "ortLogging": "ORTGENAI_ORT_VERBOSE_LOGGING=1 (identity evidence; timing perturbed)" if args.ort_verbose else "engine default (ERROR)",
-        "exitCode": rc, "elapsedSeconds": elapsed, "warm": False,
+        "exitCode": rc, "elapsedSeconds": elapsed, "warm": False, "regime": REGIME,
         "thermalInitial": before["snapshot"]["thermal"], "thermalFinal": after["snapshot"]["thermal"],
         "loadAverage": before["snapshot"]["loadAverage"], "capturePurpose": args.capture_purpose,
-        "hostQuiet": bool(args.quiet_label) and args.quiet_label in before["snapshot"]["quietWindow"],
-        "campaignNote": args.campaign_note, "textCheck": verdict}
+        "hostQuiet": bool(args.quiet_label) and args.quiet_label in before["snapshot"]["quietWindow"]}
+    if args.campaign_note:
+        conditions["campaignNote"] = args.campaign_note
+    if verdict is not None:
+        conditions["textCheck"] = verdict
     rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "timestamp": started.isoformat(), "runtime": runtime,
            "engineVersion": f"onnxruntime-genai {VERSIONS['onnxruntime-genai']} + onnxruntime {VERSIONS['onnxruntime']}"
                             + (f" + onnxruntime-ep-webgpu {VERSIONS['onnxruntime-ep-webgpu']}" if args.backend == "webgpu" else ""),
            "engineArtifact": f"libonnxruntime-genai.dylib sha256:{libs['onnxruntime_genai/libonnxruntime-genai.dylib']['sha256']}",
-           "model": {"id": args.model_id, "hfRevision": args.hf_revision, "quantization": quant, "file": args.folder,
-                     "sha256": args.model_sha256, "bytes": args.model_bytes},
+           "model": {"id": args.model_id, **({"hfRevision": args.hf_revision} if args.hf_revision else {}),
+                     "quantization": quant, "file": args.folder,
+                     "sha256": args.model_sha256, "bytes": args.model_bytes, "files": args.model_files},
            "task": args.task, "device": before["device"], "conditions": conditions, "metrics": metrics,
            "harnessStamp": STAMP, "outputSample": text[:200], "status": "ok" if ok else "failed",
            "provenance": {"rawLog": rel(log), "decodedText": rel(out / f"{stem}.decoded.txt"),
                           "workerResult": rel(result_path), "harness": "scripts/ortgenai_mac.py",
-                          "campaign": rel(out), "harnessCommand": shlex.join([sys.executable, *sys.argv]),
+                          "campaign": rel(args.campaign_dir), "harnessCommand": shlex.join([sys.executable, *sys.argv]),
                           "command": shlex.join(cmd), "memoryBasis": MEMORY_BASIS,
                           "hostBefore": before, "hostAfter": after, "engineLibraries": libs,
                           "genai": data.get("genai"), "onnxruntimeImages": data.get("onnxruntimeImages"),
@@ -603,23 +620,26 @@ def run_once(args, index, prompt, budget, quant, libs):
                           "templatedPromptSha256": data.get("templatedPromptSha256"),
                           "templatedPromptTail": data.get("templatedPromptTail"),
                           "stepMilliseconds": [round(s * 1000, 3) for s in data.get("stepSeconds", [])],
-                          "modelDir": str(args.model_dir)}}
+                          "modelDir": str(args.model_dir),
+                          "recipe": "models/ortgenai-recipes.json (scripts/ortgenai_recipe.py, read from model.onnx)"}}
     if data.get("error") or not ok:
         rec["failureDetail"] = "; ".join(x for x in (
             data.get("error"), None if rc == 0 else f"exit {rc}", None if finite else "nonfinite or missing metric",
-            None if verdict["status"] == "PASS" else f"text check {verdict['flags']}",
+            None if text_ok else f"text check {verdict['flags']}",
             None if witness_ok else "WebGPU not witnessed (device_type / plugin image / GPU time)",
             None if sampler.socket_max == 0 else f"socket fds seen: {sampler.socket_max}",
             None if (args.telemetry == "on" or telemetry_clean) else f"telemetry dir changed: {diff}") if x)
     from jsonschema import Draft7Validator, FormatChecker
     Draft7Validator(json.loads((REPO / "schema/result.v1.json").read_text()), format_checker=FormatChecker()).validate(rec)
-    (out / f"{stem}.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1, allow_nan=False) + "\n")
+    with args.output.open("a") as fh:  # one compact line per run (the runner counts lines with "task")
+        fh.write(json.dumps(rec, ensure_ascii=False, allow_nan=False) + "\n")
     (out / f"{stem}.decoded.txt").write_text(text + "\n")
     print(f"{rec['status'].upper()} run {index}: exit={rc} prompt={metrics.get('promptTokenCount')} gen={n} "
           f"stop={metrics.get('stopReason')} prefill={metrics.get('promptTokensPerSecond') or 0:.1f} tok/s "
           f"ttft={metrics.get('firstTokenLatencyMS') or 0:.1f} ms decode={metrics.get('decodeTokensPerSecond') or 0:.1f} tok/s "
           f"peak={metrics.get('memoryPeakDuringDecodeMB') or 0:.0f} MiB gpu={metrics.get('gpuMillisecondsDuringGeneration')} ms "
-          f"sockets={sampler.socket_max} telemetry_dir_clean={telemetry_clean} text={verdict['status']} -> {stem}.json",
+          f"sockets={sampler.socket_max} telemetry_dir_clean={telemetry_clean} "
+          f"text={verdict['status'] if verdict else 'gate (outputSample)'} -> {args.output.name}",
           flush=True)
     return rec["status"] == "ok"
 
@@ -634,16 +654,22 @@ def rel(path):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model-id", required=True, help="HF repo id, e.g. onnx-community/Qwen3-0.6B-ONNX")
-    ap.add_argument("--model-dir", type=Path, required=True, help="absolute path of the GenAI folder")
+    ap.add_argument("--file", help="the GenAI folder's path inside the repo (cells file=), resolved through "
+                                   "the HF cache at --revision; only that folder is downloaded")
+    ap.add_argument("--revision", help="HF commit of the repo (cells revision=); required with --file")
+    ap.add_argument("--model-dir", type=Path, help="a local GenAI folder instead of --file (an HF cache path "
+                                                   "keeps its revision and folder)")
     ap.add_argument("--backend", choices=("cpu", "webgpu"), required=True)
     ap.add_argument("--task", choices=TASKS, default="short-chat")
     ap.add_argument("--runs", type=int, default=1)
     ap.add_argument("--context-tokens", type=int, default=2048, help="search max_length = the KV allocation")
-    ap.add_argument("--out", type=Path, required=True, help="campaign dir (records, logs, decoded text)")
-    ap.add_argument("--campaign-note", default="")
-    ap.add_argument("--quantization", help="exact recipe; default = the QUANT_LABELS entry of (model id, folder)")
+    ap.add_argument("--output", type=Path, help="the cell's JSONL: one record per run is appended")
+    ap.add_argument("--campaign-dir", type=Path,
+                    help="campaign dir; per-run logs go to its ortgenai-logs/ (default: the --output file's dir)")
+    ap.add_argument("--smoke", metavar="NOTE", help="a smoke capture: conditions.capturePurpose smoke and NOTE "
+                                                    "as conditions.campaignNote (default: measurement, no note)")
     ap.add_argument("--pause", type=float, default=5.0, help="seconds between runs")
-    ap.add_argument("--timeout", type=int, default=900)
+    ap.add_argument("--timeout", type=int, default=900, help="seconds one engine process may take")
     ap.add_argument("--telemetry", choices=("off", "on"), default="off",
                     help="on = comparison evidence only: the engine keeps its default telemetry")
     ap.add_argument("--ort-verbose", action="store_true",
@@ -654,47 +680,78 @@ def main():
                     help="run 1 is the first run of this (model, backend) on this device (engine/shader cache build)")
     ap.add_argument("--quiet-label", default="",
                     help="label of the quiet_hold window this run is inside; conditions.hostQuiet = the lock names it")
-    ap.add_argument("--describe-quant", action="store_true", help="print the model.onnx quantization facts and exit")
-    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--describe-quant", action="store_true",
+                    help="print the folder's recipe facts (scripts/ortgenai_recipe.py describe) and exit")
+    ap.add_argument("--dry-run", action="store_true", help="print the planned runs; no download, no engine")
     ap.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--worker-result", type=Path, help=argparse.SUPPRESS)
     args = ap.parse_args()
-    args.model_dir = args.model_dir.resolve()
     if args.worker:
+        args.model_dir = args.model_dir.resolve()
         return worker(args)
-    if args.describe_quant:
-        print(json.dumps(describe_quant(args.model_dir), indent=1))
-        return 0
+    if bool(args.file) == bool(args.model_dir):
+        ap.error("name the folder with --file (+ --revision) or with --model-dir, one of the two")
+    if args.file and not re.fullmatch(r"[0-9a-f]{40}", args.revision or ""):
+        ap.error("--file needs --revision <the 40-hex HF commit> (cells revision=)")
     if args.runs < 1 or args.pause < 0 or args.context_tokens < 1:
         ap.error("runs and context-tokens must be positive, pause nonnegative")
+    prompt, budget = task_input(args.task)
+    if args.model_dir:
+        args.model_dir = args.model_dir.resolve()
+        cached_revision, args.folder = model_identity(args.model_dir)
+        args.hf_revision = args.revision or cached_revision
+    else:
+        args.hf_revision, args.folder = args.revision, args.file.strip("/")
+        args.model_dir = resolve_folder(args.model_id, args.folder, args.hf_revision, local_only=args.dry_run)
+    if args.describe_quant:
+        if args.model_dir is None:
+            ap.error(f"{args.folder} is not in the HF cache")
+        print(json.dumps(ortgenai_recipe.describe(str(args.model_dir)), indent=1))
+        return 0
+    args.capture_purpose = ("evidence only: telemetry ON comparison run, numbers discarded" if args.telemetry == "on"
+                            else "evidence only: ORT verbose logging (EP identity), timing perturbed" if args.ort_verbose
+                            else "smoke" if args.smoke is not None else "measurement")
+    args.campaign_note = args.smoke or ""
+    if args.dry_run:
+        if args.model_dir is None:
+            where = f"not in the HF cache yet; the first run downloads {args.folder} at {args.hf_revision[:12]}"
+            quant = "looked up at the first run (models/ortgenai-recipes.json)"
+        else:
+            where = str(args.model_dir)
+            entry = ortgenai_recipe.lookup(args.model_id, args.folder, sha256(args.model_dir / "model.onnx"))
+            quant = entry["label"] if entry else "NOT REGISTERED, the run is refused: " + ortgenai_recipe.register_command(
+                args.model_dir, args.model_id, args.folder, args.hf_revision)
+        print(f"{RUNTIMES[args.backend]} {args.model_id} {args.folder}@{(args.hf_revision or '?')[:12]} ({where})")
+        for index in range(1, args.runs + 1):
+            print(f"  run {index}/{args.runs}: fresh engine process; task {args.task} budget {budget}; "
+                  f"max_length {args.context_tokens}; greedy; telemetry {args.telemetry}; "
+                  f"pause {args.pause if index > 1 else 0} s; {args.capture_purpose}")
+        print(f"  quantization: {quant}")
+        return 0
     for package, version in VERSIONS.items():
         observed = importlib.metadata.version(package)
         if observed != version:
             ap.error(f"expected {package} {version}, observed {observed}")
-    args.hf_revision, args.folder = model_identity(args.model_dir)
-    quant = args.quantization or QUANT_LABELS.get((args.model_id, args.folder))
-    if not quant:
-        ap.error(f"no quantization label for ({args.model_id}, {args.folder}); read it with --describe-quant "
-                 "and pass --quantization")
-    if quant.lower() in ("int4", "4bit", "4-bit", "int8"):
-        ap.error("quantization must name the recipe, not a bit width (quant-label-rule)")
     providers = json.loads((args.model_dir / "genai_config.json").read_text())["model"]["decoder"]["session_options"]["provider_options"]
     if (args.backend == "webgpu") != any("webgpu" in p for p in providers):
         ap.error(f"--backend {args.backend} does not match the folder's provider_options {providers}")
-    args.capture_purpose = ("evidence only: telemetry ON comparison run, numbers discarded" if args.telemetry == "on"
-                            else "evidence only: ORT verbose logging (EP identity), timing perturbed" if args.ort_verbose
-                            else "smoke")
-    prompt, budget = task_input(args.task)
-    if args.dry_run:
-        for index in range(1, args.runs + 1):
-            print(f"run {index}/{args.runs}: fresh engine process; {RUNTIMES[args.backend]}; {args.folder}@{args.hf_revision}; "
-                  f"task {args.task} budget {budget}; max_length {args.context_tokens}; greedy; telemetry {args.telemetry}; "
-                  f"pause {args.pause if index > 1 else 0} s; quantization: {quant}")
-        return 0
-    args.out = args.out.resolve()
-    args.out.mkdir(parents=True, exist_ok=True)
     onnx_path = args.model_dir / "model.onnx"
-    args.model_sha256, args.model_bytes = sha256(onnx_path), onnx_path.stat().st_size
+    args.model_sha256 = sha256(onnx_path)
+    entry = ortgenai_recipe.lookup(args.model_id, args.folder, args.model_sha256)
+    if not entry:
+        ap.error(f"{args.model_id} {args.folder} (model.onnx sha256 {args.model_sha256[:12]}) has no recipe label in "
+                 "models/ortgenai-recipes.json (quant-label-rule) - register it: "
+                 + ortgenai_recipe.register_command(args.model_dir, args.model_id, args.folder, args.hf_revision))
+    quant = entry["label"]
+    if args.output is None:
+        ap.error("--output <cell.jsonl> is required")
+    args.output = args.output.resolve()
+    args.campaign_dir = (args.campaign_dir or args.output.parent).resolve()
+    args.logs = args.campaign_dir / "ortgenai-logs"
+    args.logs.mkdir(parents=True, exist_ok=True)
+    args.model_files = ortgenai_recipe.folder_files(str(args.model_dir))
+    # the weights the engine loads: model.onnx plus its external data file where the folder has one
+    args.model_bytes = sum(args.model_files[n]["bytes"] for n in ("model.onnx", "model.onnx.data") if n in args.model_files)
     libs = engine_libraries()
     ok = True
     for index in range(1, args.runs + 1):

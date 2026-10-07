@@ -2,8 +2,9 @@
 
 Engines with Android support: **LiteRT-LM** (cpu/gpu; on the Galaxy S26 also npu,
 from this repo's own runtime build) and **llama.cpp** (cpu; on Snapdragon phones also
-npu and gpu, from the release's official Snapdragon asset) — "Side builds" below.
-MLX and Core AI are Apple-only (n/a rows); Cactus is a phase-2 slot.
+npu and gpu, from the release's official Snapdragon asset) — "Side builds" below —
+and **ONNX Runtime GenAI** (cpu, the official release AAR — "ONNX Runtime GenAI"
+below). MLX and Core AI are Apple-only (n/a rows); Cactus is a phase-2 slot.
 Measurement semantics and every disclosed difference from the Apple lane:
 `methodology/android.md`. Device notes: `devices/pixel-8a.md`.
 
@@ -117,6 +118,41 @@ and passes `--litert_dispatch_lib_dir=$E`; the witness reads
 `$E/litert_lm_advanced_main` and the libs its pin lists, under the names the
 pin gives them (`dsp/…` for the skel). Until the pin is written, the records
 stamp `unknown (…)` and a sitting stops the cell before it launches.
+
+## ONNX Runtime GenAI (the `onnxruntime-genai-cpu` rows)
+
+The official onnxruntime-genai 0.17.0 release AAR is CPU-only and ships no
+`libonnxruntime.so` (GenAI dlopens it from `ORT_LIB_PATH`), so its runtime dir on
+the phone, `/data/local/tmp/llmbench/ortgenai/`, holds the AAR's
+`libonnxruntime-genai.so` and `libmat.so`, Maven onnxruntime-android 1.30.0's
+`libonnxruntime.so`, the harness driver `ortgenai_run`
+(`android/ortgenai/ortgenai_run.cpp`: one generation per process, the model
+folder's chat template, greedy, EOS or the budget) and the upstream
+`model_benchmark`. `android/ortgenai/build_android.sh` fetches both AARs and the
+upstream sources by sha256 and builds into `android/bin/ortgenai-0.17.0/`
+(gitignored; `MANIFEST.txt`).
+
+```bash
+android/ortgenai/build_android.sh                  # NDK; -> android/bin/ortgenai-0.17.0/
+O=/data/local/tmp/llmbench/ortgenai
+adb shell mkdir -p $O
+adb push android/bin/ortgenai-0.17.0/libonnxruntime-genai.so android/bin/ortgenai-0.17.0/libmat.so \
+    android/bin/ortgenai-0.17.0/libonnxruntime.so android/bin/ortgenai-0.17.0/ortgenai_run \
+    android/bin/ortgenai-0.17.0/model_benchmark $O/
+adb shell chmod +x $O/ortgenai_run $O/model_benchmark
+```
+
+The witness reads `$O/ortgenai_run` and the three libraries beside it against
+`android/engine-pins.json` "onnxruntime-genai" "0.17.0" (a library that is not the
+pin's stamps `unknown`), and the runner starts the engine with
+`LD_LIBRARY_PATH=$O ORT_LIB_PATH=$O/libonnxruntime.so ORT_DISABLE_TELEMETRY=1`
+(`ortgenai_run` refuses to run without the last one). The model is a GenAI folder
+(cells `file=` + `revision=`): the runner fetches that folder into the host's HF
+cache, pushes it file by file to `/data/local/tmp/llmbench/models/<repo>_<folder
+name>/` and removes it when `run_cell.py` ends, or when the campaign ends under
+`run_campaign.py` (`BENCH_ORTGENAI_KEEP_MODEL=1` keeps it). Its recipe label comes
+from `models/ortgenai-recipes.json`; a folder without an entry is refused before
+any push. `docs/ortgenai-arm-v1.md`.
 
 ## Run
 
