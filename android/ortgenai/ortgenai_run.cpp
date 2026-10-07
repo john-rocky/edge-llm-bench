@@ -27,11 +27,20 @@
 //   ORTGENAI prompt_tokens= gen_tokens= prefill_ms= ttft_ms= decode_ms_total=
 //            decode_tps= stop=eos|budget|max_length max_length= peak_rss_kb=
 //            seq_tokens= last_token= load_ms= generator_ms= chat_template=
-//            ort_version=
+//            ort_version= threads=<N|default>
 //   ORTGENAI_LIBS <path of every mapped libonnxruntime*.so / libmat.so>
 //   [OUTPUT BEGIN]<decoded generated tokens>[OUTPUT END]
 // Exit 0 after a completed generation, 1 on an engine error, 2 on a usage
 // error (-g 0, an empty prompt, telemetry not disabled).
+//
+// Threads: without --threads the model loads through OgaCreateModel, so GenAI
+// picks the decoder's intra-op thread count itself (v0.17.0
+// src/models/model.cpp CreateSessionOptionsFromConfig:
+// hardware_concurrency() / 2, at least 1, at most 16, unless genai_config sets
+// one). --threads N is a diagnostic: OgaCreateConfig, an overlay of
+// model.decoder.session_options.intra_op_num_threads = N, then
+// OgaCreateModelFromConfig (the same config load and model build, plus the
+// overlay); load_ms then also covers the config load and the overlay.
 //
 // Memory: peak_rss_kb is getrusage ru_maxrss (KiB on Linux), the number
 // model_benchmark prints. With past_present_share_buffer (the onnx-community
@@ -56,6 +65,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -76,13 +86,15 @@ struct Options {
   std::string prompt_file;
   long budget = -1;
   long max_length = -1;
+  long threads = -1;  // -1 = GenAI's own choice (no overlay)
   bool chat_template = true;
 };
 
 [[noreturn]] void Usage(const char* argv0, const std::string& error) {
   std::cerr << "Error: " << error << "\n"
             << "Usage: " << argv0
-            << " -i <model dir> --prompt_file <path> -g <budget> -ml <max_length> [--no-chat-template]\n";
+            << " -i <model dir> --prompt_file <path> -g <budget> -ml <max_length> [--threads N]"
+               " [--no-chat-template]\n";
   std::exit(2);
 }
 
@@ -111,6 +123,8 @@ Options ParseOptions(int argc, char** argv) {
       opts.budget = ParsePositive(argv[0], arg, value());
     } else if (arg == "-ml") {
       opts.max_length = ParsePositive(argv[0], arg, value());
+    } else if (arg == "--threads") {
+      opts.threads = ParsePositive(argv[0], arg, value());
     } else if (arg == "--no-chat-template") {
       opts.chat_template = false;
     } else {
@@ -193,7 +207,16 @@ std::string MappedEngineLibraries() {
 
 int Run(const Options& opts, const std::string& prompt) {
   const auto load_start = Clock::now();
-  auto model = OgaModel::Create(opts.model_dir.c_str());
+  std::unique_ptr<OgaModel> model;
+  if (opts.threads > 0) {
+    auto config = OgaConfig::Create(opts.model_dir.c_str());
+    const std::string overlay = R"({"model":{"decoder":{"session_options":{"intra_op_num_threads":)" +
+                                std::to_string(opts.threads) + "}}}}";
+    config->Overlay(overlay.c_str());
+    model = OgaModel::Create(*config);
+  } else {
+    model = OgaModel::Create(opts.model_dir.c_str());
+  }
   const auto load_time = Clock::now() - load_start;
   auto tokenizer = OgaTokenizer::Create(*model);
 
@@ -262,7 +285,8 @@ int Run(const Options& opts, const std::string& prompt) {
   line << " stop=" << stop << " max_length=" << opts.max_length << " peak_rss_kb=" << usage.ru_maxrss
        << " seq_tokens=" << seq_tokens << " last_token=" << last_token << " load_ms=" << Ms(load_time)
        << " generator_ms=" << Ms(generator_time) << " chat_template=" << (opts.chat_template ? "model" : "none")
-       << " ort_version=" << LoadedOrtVersion();
+       << " ort_version=" << LoadedOrtVersion()
+       << " threads=" << (opts.threads > 0 ? std::to_string(opts.threads) : std::string{"default"});
   std::cout << line.str() << "\n"
             << "ORTGENAI_LIBS " << MappedEngineLibraries() << "\n"
             << "[OUTPUT BEGIN]" << output << "[OUTPUT END]\n"

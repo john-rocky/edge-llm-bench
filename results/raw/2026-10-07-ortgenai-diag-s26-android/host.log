@@ -1,0 +1,24 @@
+2026-10-07 23:22:07 phase dry (no adb)
+2026-10-07 23:22:07 dry: libonnxruntime-genai.so sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35 = MANIFEST
+2026-10-07 23:22:07 dry: libmat.so sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f = MANIFEST
+2026-10-07 23:22:07 dry: libonnxruntime.so sha256 df5d25c72a868dca773597c71e2000756d43fe4d70ade516d3693c54e12e0ada = MANIFEST
+2026-10-07 23:22:07 dry: ortgenai_run sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f = MANIFEST
+2026-10-07 23:22:07 dry: model_benchmark sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04 = MANIFEST
+2026-10-07 23:22:07 dry: run_diag.sh sha256 48e5560304f2729dd9c17f053a66c5441e1f60ed1d20e6a21d5bcfc8d51fd124
+2026-10-07 23:22:07 dry: model chat_template.jinja 4168 bytes
+2026-10-07 23:22:07 dry: model config.json 8957 bytes
+2026-10-07 23:22:07 dry: model genai_config.json 1520 bytes
+2026-10-07 23:22:07 dry: model model.onnx 524589133 bytes
+2026-10-07 23:22:07 dry: model tokenizer.json 11422648 bytes
+2026-10-07 23:22:07 dry: model tokenizer_config.json 663 bytes
+2026-10-07 23:22:07 dry: prompt long-context-1024-gen256.txt sha256 f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426
+2026-10-07 23:22:07 dry: hold now: none
+2026-10-07 23:22:07 dry: plan D2a r2b-D2-mb-l64 gate=full limit=120s pause=10s mask=-: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 64
+2026-10-07 23:22:07 dry: plan D2b r2b-D2-mb-l256 gate=caps limit=120s pause=10s mask=-: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 256
+2026-10-07 23:22:07 dry: plan D2c r2b-D2-mb-l512 gate=caps limit=180s pause=60s mask=-: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-07 23:22:07 dry: plan D1 r2b-D1-mb-l1024-profile gate=full limit=300s pause=60s mask=-: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-07 23:22:07 dry: plan D3 r2b-D3-run-threads6 gate=full limit=300s pause=60s mask=-: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 6
+2026-10-07 23:22:07 dry: plan D6 r2b-D6-run-default gate=full limit=300s pause=60s mask=-: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
+2026-10-07 23:22:07 dry: plan D4 r2b-D4-run-threads8 gate=full limit=300s pause=60s mask=-: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 8
+2026-10-07 23:22:07 dry: plan D5 r2b-D5-run-mask-c0 gate=full limit=420s pause=0s mask=c0: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
+2026-10-07 23:22:07 dry: PASS

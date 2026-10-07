@@ -1,0 +1,2664 @@
+{
+ "model": "/Users/USER/.cache/huggingface/hub/models--onnx-community--Qwen3-0.6B-ONNX/snapshots/da1453100cf3ff33ef56d17983fc7a8648706db6/onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/model.onnx",
+ "opsets": {
+  "ai.onnx": 21,
+  "com.microsoft": 1
+ },
+ "node_count": 547,
+ "op_counts": {
+  "Cast": 2,
+  "Constant": 5,
+  "Gather": 1,
+  "GatherBlockQuantized": 1,
+  "GroupQueryAttention": 28,
+  "MatMulNBits bits=4": 92,
+  "MatMulNBits bits=8": 105,
+  "Mul": 56,
+  "ReduceSum": 1,
+  "Reshape": 113,
+  "Shape": 1,
+  "Sigmoid": 28,
+  "SimplifiedLayerNormalization": 57,
+  "SkipSimplifiedLayerNormalization": 56,
+  "Sub": 1
+ },
+ "outputs": [
+  {
+   "name": "logits",
+   "elem_type": 1,
+   "dims": [
+    "batch_size",
+    "sequence_length",
+    151936
+   ]
+  }
+ ],
+ "nodes": {
+  "/lm_head/Reshape_tied": {
+   "op_type": "Reshape"
+  },
+  "/model/constant_nodes/INT64/[0, -1, 1024]": {
+   "op_type": "Constant"
+  },
+  "/model/constant_nodes/INT64/[0, -1, 2048]": {
+   "op_type": "Constant"
+  },
+  "/model/constant_nodes/INT64/[0, -1, 128]": {
+   "op_type": "Constant"
+  },
+  "/model/embed_tokens/GatherBlockQuantized": {
+   "op_type": "GatherBlockQuantized"
+  },
+  "/model/layers.0/input_layernorm/LayerNorm": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.0/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.0/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.0/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.0/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.0/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.0/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.0/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.0/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.0/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/constant_nodes/INT64/1": {
+   "op_type": "Constant"
+  },
+  "/model/attn_mask_reformat/attn_mask_subgraph/Shape": {
+   "op_type": "Shape"
+  },
+  "/model/attn_mask_reformat/attn_mask_subgraph/Gather": {
+   "op_type": "Gather"
+  },
+  "/model/attn_mask_reformat/attn_mask_subgraph/Gather/Cast": {
+   "op_type": "Cast"
+  },
+  "/model/constant_nodes/INT64/[1]": {
+   "op_type": "Constant"
+  },
+  "/model/attn_mask_reformat/attn_mask_subgraph/ReduceSum": {
+   "op_type": "ReduceSum"
+  },
+  "/model/attn_mask_reformat/attn_mask_subgraph/Sub": {
+   "op_type": "Sub"
+  },
+  "/model/attn_mask_reformat/attn_mask_subgraph/Sub/Cast": {
+   "op_type": "Cast"
+  },
+  "/model/layers.0/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.0/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.0/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.0/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.0/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.0/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.0/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.0/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.0/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.1/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.1/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.1/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.1/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.1/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.1/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.1/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.1/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.1/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.1/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.1/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.1/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.1/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.1/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.1/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.1/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.1/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.1/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.1/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.2/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.2/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.2/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.2/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.2/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.2/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.2/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.2/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.2/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.2/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.2/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.2/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.2/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.2/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.2/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.2/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.2/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.2/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.2/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.3/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.3/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.3/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.3/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.3/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.3/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.3/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.3/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.3/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.3/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.3/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.3/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.3/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.3/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.3/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.3/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.3/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.3/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.3/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.4/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.4/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.4/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.4/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.4/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.4/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.4/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.4/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.4/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.4/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.4/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.4/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.4/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.4/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.4/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.4/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.4/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.4/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.4/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.5/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.5/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.5/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.5/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.5/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.5/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.5/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.5/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.5/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.5/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.5/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.5/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.5/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.5/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.5/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.5/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.5/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.5/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.5/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.6/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.6/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.6/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.6/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.6/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.6/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.6/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.6/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.6/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.6/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.6/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.6/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.6/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.6/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.6/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.6/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.6/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.6/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.6/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.7/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.7/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.7/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.7/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.7/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.7/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.7/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.7/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.7/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.7/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.7/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.7/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.7/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.7/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.7/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.7/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.7/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.7/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.7/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.8/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.8/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.8/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.8/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.8/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.8/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.8/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.8/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.8/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.8/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.8/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.8/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.8/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.8/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.8/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.8/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.8/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.8/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.8/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.9/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.9/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.9/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.9/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.9/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.9/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.9/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.9/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.9/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.9/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.9/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.9/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.9/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.9/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.9/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.9/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.9/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.9/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.9/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.10/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.10/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.10/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.10/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.10/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.10/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.10/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.10/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.10/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.10/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.10/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.10/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.10/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.10/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.10/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.10/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.10/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.10/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.10/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.11/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.11/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.11/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.11/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.11/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.11/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.11/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.11/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.11/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.11/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.11/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.11/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.11/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.11/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.11/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.11/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.11/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.11/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.11/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.12/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.12/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.12/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.12/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.12/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.12/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.12/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.12/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.12/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.12/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.12/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.12/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.12/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.12/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.12/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.12/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.12/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.12/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.12/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.13/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.13/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.13/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.13/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.13/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.13/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.13/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.13/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.13/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.13/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.13/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.13/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.13/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.13/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.13/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.13/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.13/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.13/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.13/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.14/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.14/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.14/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.14/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.14/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.14/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.14/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.14/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.14/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.14/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.14/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.14/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.14/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.14/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.14/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.14/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.14/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.14/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.14/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.15/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.15/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.15/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.15/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.15/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.15/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.15/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.15/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.15/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.15/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.15/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.15/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.15/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.15/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.15/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.15/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.15/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.15/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.15/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.16/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.16/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.16/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.16/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.16/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.16/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.16/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.16/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.16/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.16/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.16/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.16/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.16/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.16/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.16/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.16/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.16/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.16/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.16/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.17/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.17/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.17/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.17/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.17/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.17/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.17/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.17/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.17/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.17/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.17/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.17/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.17/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.17/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.17/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.17/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.17/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.17/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.17/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.18/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.18/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.18/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.18/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.18/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.18/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.18/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.18/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.18/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.18/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.18/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.18/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.18/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.18/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.18/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.18/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.18/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.18/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.18/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.19/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.19/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.19/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.19/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.19/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.19/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.19/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.19/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.19/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.19/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.19/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.19/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.19/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.19/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.19/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.19/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.19/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.19/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.19/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.20/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.20/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.20/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.20/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.20/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.20/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.20/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.20/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.20/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.20/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.20/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.20/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.20/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.20/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.20/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.20/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.20/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.20/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.20/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.21/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.21/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.21/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.21/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.21/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.21/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.21/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.21/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.21/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.21/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.21/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.21/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.21/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.21/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.21/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.21/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.21/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.21/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.21/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.22/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.22/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.22/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.22/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.22/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.22/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.22/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.22/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.22/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.22/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.22/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.22/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.22/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.22/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.22/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.22/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.22/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.22/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.22/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.23/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.23/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.23/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.23/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.23/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.23/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.23/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.23/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.23/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.23/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.23/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.23/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.23/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.23/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.23/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.23/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.23/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.23/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.23/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.24/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.24/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.24/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.24/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.24/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.24/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.24/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.24/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.24/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.24/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.24/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.24/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.24/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.24/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.24/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.24/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.24/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.24/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.24/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.25/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.25/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.25/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.25/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.25/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.25/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.25/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.25/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.25/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.25/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.25/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.25/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.25/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.25/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.25/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.25/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.25/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.25/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.25/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.26/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.26/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.26/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.26/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.26/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.26/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.26/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.26/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.26/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.26/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.26/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.26/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.26/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.26/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.26/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.26/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.26/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.26/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.26/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.27/input_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.27/attn/v_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.27/attn/k_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 1024
+  },
+  "/model/layers.27/attn/k_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.27/attn/k_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.27/attn/k_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.27/attn/q_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 2048
+  },
+  "/model/layers.27/attn/q_norm/Reshape_1": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.27/attn/q_norm/SimplifiedLayerNormalization": {
+   "op_type": "SimplifiedLayerNormalization"
+  },
+  "/model/layers.27/attn/q_norm/Reshape_2": {
+   "op_type": "Reshape"
+  },
+  "/model/layers.27/attn/GroupQueryAttention": {
+   "op_type": "GroupQueryAttention"
+  },
+  "/model/layers.27/attn/o_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 4,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 2048,
+   "N": 1024
+  },
+  "/model/layers.27/post_attention_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/model/layers.27/mlp/up_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.27/mlp/gate_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 3072
+  },
+  "/model/layers.27/mlp/act_fn/Sigmoid": {
+   "op_type": "Sigmoid"
+  },
+  "/model/layers.27/mlp/act_fn/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.27/mlp/Mul": {
+   "op_type": "Mul"
+  },
+  "/model/layers.27/mlp/down_proj/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 3072,
+   "N": 1024
+  },
+  "/model/layers.28/final_norm_layernorm/SkipLayerNorm": {
+   "op_type": "SkipSimplifiedLayerNormalization"
+  },
+  "/lm_head/MatMulNBits": {
+   "op_type": "MatMulNBits",
+   "bits": 8,
+   "block_size": 128,
+   "accuracy_level": 4,
+   "K": 1024,
+   "N": 151936
+  }
+ }
+}
