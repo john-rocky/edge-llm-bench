@@ -154,6 +154,19 @@ def cpu_cap_of(d):
     return capped, " ".join(parts)
 
 
+def backend_registered_of(d):
+    """conditions.backendRegistered as the summary's backend_registered: "true" when the
+    Android runner read a llama.cpp side build's device lines and they showed the cell's
+    device (npu / gpu), "false" when the run carries protocolFlags backend-not-registered,
+    "" when the runner did not read them (every other row). A "false" run stays a row here;
+    render_leaderboard.arm_row keeps it out of every metric pool."""
+    c = d.get("conditions")
+    if not isinstance(c, dict) or not isinstance(c.get("backendRegistered"), list):
+        return ""
+    flags = c.get("protocolFlags") if isinstance(c.get("protocolFlags"), list) else []
+    return "false" if "backend-not-registered" in flags else "true"
+
+
 def platform_of(d):
     """ios / mac / android, from the record itself (never from file paths)."""
     dev = d.get("device", {})
@@ -296,6 +309,9 @@ def build_device():
             # a capped run is a row, never a measurement (cpu-cap-rule)
             "cpu_capped": cpu_capped,
             "cpu_max_freq": cpu_max_freq,
+            # a llama.cpp side build's device lines (2026-10-07), appended after them:
+            # a run off the cell's device is a row, never a measurement
+            "backend_registered": backend_registered_of(d),
         })
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
     path = os.path.join(OUT, "device-runs.csv")
@@ -380,6 +396,13 @@ def main():
             "policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw but\n"
             "pools into no number (`render_leaderboard.arm_row`; `methodology/fairness-rules.md`\n"
             "cpu-cap-rule).\n\n"
+            "`backend_registered` (the last column, 2026-10-07) is the Android runner's reading of a\n"
+            "llama.cpp side build's own device lines (`conditions.backendRegistered`; the\n"
+            "`llama.cpp-npu` / `llama.cpp-gpu` arms): `true` when they show the cell's device,\n"
+            "`false` when the record carries `backend-not-registered`, empty on every other row. A\n"
+            "`false` run stays a row here and in raw but pools into no number\n"
+            "(`render_leaderboard.arm_row`; `docs/dashboard-cells-v1.md` \"NPU and Android GPU\n"
+            "rows\").\n\n"
             "Release-regression diffing over this layer: `scripts/regression_diff.py`\n"
             "(quality joins on tag; device cells join on device/runtime/model/task/cold-warm\n"
             "with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is\n"

@@ -42,6 +42,8 @@ FIELDS = ["source", "campaign", "platform", "timestamp", "runtime", "schema_vers
           "mem_resident_peak_mb", "text_check"]
 # appended after text_check on 2026-10-07 (cpu-cap-rule)
 CPU_FIELDS = ["cpu_capped", "cpu_max_freq"]
+# appended after them the same day (a llama.cpp side build's device lines)
+BACKEND_FIELDS = ["backend_registered"]
 
 
 def setUpModule():
@@ -153,8 +155,9 @@ class SummaryColumn(unittest.TestCase):
                 fh.seek(0)
                 header = next(csv.reader(fh))
         self.assertEqual(n, 4)
-        # appended: every earlier column keeps its place (text_check, then the CPU cap pair)
-        self.assertEqual(header, FIELDS + CPU_FIELDS)
+        # appended: every earlier column keeps its place (text_check, then the CPU cap pair,
+        # then backend_registered)
+        self.assertEqual(header, FIELDS + CPU_FIELDS + BACKEND_FIELDS)
         by_name = {os.path.basename(r["source"]): r["text_check"] for r in got}
         self.assertEqual(by_name, {"pass.json": "PASS",
                                    "fail.json": "FAIL:text-empty-or-degenerate,text-off-task-screen",

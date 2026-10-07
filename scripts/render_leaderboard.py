@@ -19,6 +19,8 @@ Neutrality invariants (why cells look the way they do):
     FAIL:…) pools into no number, like a firstEver run (text-check-rule).
   - a run during which the phone capped the clock of a CPU the engine ran
     on (summary cpu_capped true) pools into no number either (cpu-cap-rule).
+  - nor does a llama.cpp side-build run whose own device lines did not show
+    the cell's npu / gpu device (summary backend_registered false).
   - GSM8K joins on (model_id, runtime); pre-v1 quality rows have no
     model_id and deliberately do not join (tag prose is not decoded).
 """
@@ -113,6 +115,11 @@ def arm_row(rows):
     cpu_capped = [r for r in meas if r.get("cpu_capped") == "true"]
     cpu_read = sum(1 for r in meas if r.get("cpu_capped"))
     meas = [r for r in meas if r.get("cpu_capped") != "true"]
+    # a llama.cpp side build's run whose own device lines did not show the cell's
+    # device (npu / gpu) measured another device — same treatment, last; .get:
+    # summaries built before 2026-10-07 have no backend_registered column
+    backend_off = [r for r in meas if r.get("backend_registered") == "false"]
+    meas = [r for r in meas if r.get("backend_registered") != "false"]
     warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
     warm = [v for v in warm if v]
     cold = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "True"]
@@ -176,6 +183,8 @@ def arm_row(rows):
         # whose caps were read, capped or not (0 = not read: no cpu-cap-rule verdict)
         "cpu_capped_n": len(cpu_capped),
         "cpu_read_n": cpu_read,
+        # runs a side build's device lines kept out of the pool (backend-not-registered)
+        "backend_off_n": len(backend_off),
     }
 
 

@@ -51,8 +51,15 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
-STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters"}
-BACKENDS = {"cpu", "gpu"}
+STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
+            "engine-build"}
+BACKENDS = {"cpu", "gpu", "npu"}
+# the backends of the Mac / iPhone LiteRT-LM rows and of the asr / vl instruments
+CPU_GPU = {"cpu", "gpu"}
+# an Android llama.cpp row: no backend= = the CPU arm `llama.cpp` (the pinned official CPU
+# build); backend=npu|gpu = a side build's Hexagon / Adreno OpenCL device, named by
+# engine-build=<engine-pins.json key> (docs/dashboard-cells-v1.md "NPU and Android GPU rows")
+ANDROID_LLAMA_BACKENDS = {"npu", "gpu"}
 # schedule.json device platform -> cells-file platform token
 SCHEDULE_PLATFORM = {"iphone": "ios"}
 
@@ -102,7 +109,7 @@ def parse_line(line):
             if not v:
                 raise ValueError(f"{k}= needs a value")
             if k == "backend" and v not in BACKENDS:
-                raise ValueError(f"backend={v!r} (want cpu|gpu)")
+                raise ValueError(f"backend={v!r} (want cpu|gpu|npu)")
             if k == "exclude-on":
                 parse_exclude_on(v)
         else:
@@ -170,7 +177,7 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                     errors.append(f"{where}: asr-rtf-* is a mac / android / ios litert-lm cell in v1 "
                                   "(scripts/asr_rtf_mac.py, scripts/asr_rtf_android.py, "
                                   "scripts/asr_rtf_iphone.py; docs/asr-rtf-v1.md)")
-                if opts.get("backend") not in BACKENDS:
+                if opts.get("backend") not in CPU_GPU:
                     errors.append(f"{where}: asr-rtf-* needs backend=cpu|gpu (arm identity)")
                 if not opts.get("file"):
                     errors.append(f"{where}: asr-rtf-* needs file=<artifact> "
@@ -183,7 +190,7 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                     errors.append(f"{where}: vl-* is a mac / android litert-lm cell in v1 "
                                   "(scripts/vl_response_mac.py, scripts/vl_response_android.py; "
                                   "docs/vl-response-v1.md)")
-                if opts.get("backend") not in BACKENDS:
+                if opts.get("backend") not in CPU_GPU:
                     errors.append(f"{where}: vl-* needs backend=cpu|gpu (arm identity)")
                 if not opts.get("file"):
                     errors.append(f"{where}: vl-* needs file=<artifact.litertlm>")
@@ -218,6 +225,21 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                               "(arm identity; run_cell refuses it — the anchors.cells "
                               "android litert row shipped without one and had never "
                               "actually run until the S26 first session hit it)")
+            # backend=npu: the Android arms llama.cpp-npu (a side build's Hexagon HTP) and
+            # litert-lm-npu (the Qualcomm dispatch); the Mac / iPhone runners take cpu|gpu
+            if opts.get("backend") == "npu" and not (plat == "android" and rt in ("llama.cpp", "litert-lm")):
+                errors.append(f"{where}: backend=npu is an android llama.cpp / litert-lm row only")
+            if plat == "android" and rt == "llama.cpp":
+                if opts.get("backend") and opts["backend"] not in ANDROID_LLAMA_BACKENDS:
+                    errors.append(f"{where}: android llama.cpp takes backend=npu|gpu (a side build's "
+                                  "device); a row without backend= is the CPU arm `llama.cpp`")
+                if bool(opts.get("backend")) != bool(opts.get("engine-build")):
+                    errors.append(f"{where}: android llama.cpp backend=npu|gpu and engine-build=<tag> "
+                                  "go together (the pinned flat build is CPU-only; engine-build= "
+                                  "alone would stamp the CPU arm with a second build)")
+            if opts.get("engine-build") and not (plat == "android" and rt == "llama.cpp"):
+                errors.append(f"{where}: engine-build= is read for android llama.cpp rows only "
+                              "(android/bench/run_cell.py --engine-build)")
             if opts.get("max-tokens") and plat == "mac":
                 errors.append(f"{where}: the Mac CLI has no --max-tokens flag "
                               "(BenchmarkRunner.Configuration carries no budget "

@@ -10,6 +10,9 @@ Order and discipline (fairness rules as code):
     round 1 of every cell, then round 2 of every cell — never one arm's block.
   - >=COOLDOWN s between runs; the thermal gate waits for status 0 (nominal)
     up to THERMAL_WAIT s and records the state either way.
+  - a llama.cpp row with backend=npu|gpu engine-build=<tag> runs that side build
+    from the device's engines dir (run_cell.py --backend --engine-build; arm
+    llama.cpp-npu / llama.cpp-gpu); a row without backend= is the CPU arm.
   - exclude=/manual= cells are skipped with the reason logged (SKIPPED.txt);
     an exclude-on=<device key>[,<key>…]:<reason> cell is skipped only on the
     devices it names (ops/dashboard-v1/schedule.json key -> serial, matched
@@ -43,7 +46,8 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from device_probe import thermal_status, adb  # noqa: E402
-from run_cell import capture_stem, context_prompt, engine_command, DEV_DIR, CPU_MASK  # noqa: E402
+from run_cell import (arm_name, capture_stem, context_prompt, engine_command, launch_env,  # noqa: E402
+                      DEV_DIR, CPU_MASK, ENGINES_DIR)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
@@ -149,6 +153,8 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
         cmd += ["--cooldown", str(COOLDOWN)]
     if cell["opts"].get("backend"):
         cmd += ["--backend", cell["opts"]["backend"]]
+    if cell["opts"].get("engine-build"):
+        cmd += ["--engine-build", cell["opts"]["engine-build"]]
     if cell["opts"].get("file"):
         cmd += ["--file", cell["opts"]["file"]]
     if cell["opts"].get("max-tokens"):
@@ -166,17 +172,19 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
     rc = subprocess.call(cmd)
     if rc:
         with open(os.path.join(out_dir, "FAILURES.txt"), "a") as fh:
+            # a side build's line names its arm (llama.cpp-npu …), every other line keeps
+            # the bare runtime it always had
             identity = (cell_id(cell, True) if rnd is not None else
-                        f"{cell['runtime']} {cell['model_id']} {cell['task']}")
+                        f"{arm_of(cell) if cell['opts'].get('engine-build') else cell['runtime']} "
+                        f"{cell['model_id']} {cell['task']}")
             fh.write(f"{identity} rc={rc}\n")
     return rc
 
 
 def arm_of(cell):
-    # mirrors run_cell.py's arm: backend is part of arm identity for litert-lm only
-    if cell["runtime"] == "litert-lm":
-        return f"litert-lm-{cell['opts'].get('backend')}"
-    return cell["runtime"]
+    # run_cell.py's arm: backend is part of arm identity (litert-lm-<backend>, and
+    # llama.cpp-<backend> for a side build on npu / gpu; bare llama.cpp = the CPU arm)
+    return arm_name(cell["runtime"], cell["opts"].get("backend"))
 
 
 def cell_id(cell, round_mode=False):
@@ -284,11 +292,14 @@ def planned_command(cell):
         budgets = dict(line.strip().split("\t") for line in fh)
     ctx = int(opts["context-tokens"]) if opts.get("context-tokens") else None
     limit = int(opts["max-tokens"]) if opts.get("max-tokens") else None
+    engine_dir = f"{ENGINES_DIR}/{opts['engine-build']}" if opts.get("engine-build") else None
     command, binary, sampler, _ = engine_command(
         cell["runtime"], opts.get("backend"), model, cell["task"], prompt,
-        int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx)
+        int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx,
+        engine_dir=engine_dir)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
-    return f"cd {DEV_DIR} && LD_LIBRARY_PATH=. {affinity}{command}", binary, sampler
+    env = launch_env(engine_dir, opts.get("backend"))
+    return f"cd {DEV_DIR} && {env} {affinity}{command}", binary, sampler
 
 
 def main():

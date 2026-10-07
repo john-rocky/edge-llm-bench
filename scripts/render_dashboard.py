@@ -78,10 +78,13 @@ def rel(p):
 
 def arm_of(plat, runtime, opts):
     """The arm id as device-runs.csv records it: Android litert carries its
-    backend in the runtime string (litert-lm-cpu / litert-lm-gpu); the Mac
-    CPU arm stamps litert-lm-cpu too, while the Mac GPU arm keeps the bare
-    `litert-lm` every Apple row has carried (yardstick --litert-backend)."""
-    if plat == "android" and runtime == "litert-lm" and opts.get("backend"):
+    backend in the runtime string (litert-lm-cpu / litert-lm-gpu / litert-lm-npu),
+    and so does an Android llama.cpp side build on its npu / gpu device
+    (llama.cpp-npu / llama.cpp-gpu; without backend= the row is the CPU arm,
+    bare `llama.cpp`); the Mac CPU arm stamps litert-lm-cpu too, while the Mac
+    GPU arm keeps the bare `litert-lm` every Apple row has carried (yardstick
+    --litert-backend)."""
+    if plat == "android" and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
     if plat == "mac" and runtime == "litert-lm" and opts.get("backend") == "cpu":
         return f"{runtime}-cpu"
@@ -232,8 +235,8 @@ def bw_of(c):
 MEM_NOTE = ("mem MB / mem peak MB = the median over the session's runs of each run's median "
             "sample / high-water mark: phys_footprint on Apple rows (sampled every 100 ms over "
             "the generation, load excluded), VmRSS / VmHWM of the engine process on Android rows "
-            "(read every 0.5 s over the whole launch, load included; a GPU arm's buffers sit "
-            "outside RSS; before 2026-10-06 only the BENCH_STRICT_SMOKE sittings read VmHWM, so "
+            "(read every 0.5 s over the whole launch, load included; a GPU or NPU arm's device "
+            "buffers sit outside RSS; before 2026-10-06 only the BENCH_STRICT_SMOKE sittings read VmHWM, so "
             "older Android short-chat cells show —), the process RSS high-water on uzu rows "
             "(load included, decimal MB) — methodology/memory.md \"Peak memory\".")
 
