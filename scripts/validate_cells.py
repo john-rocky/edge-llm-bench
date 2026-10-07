@@ -60,6 +60,11 @@ CPU_GPU = {"cpu", "gpu"}
 # build); backend=npu|gpu = a side build's Hexagon / Adreno OpenCL device, named by
 # engine-build=<engine-pins.json key> (docs/dashboard-cells-v1.md "NPU and Android GPU rows")
 ANDROID_LLAMA_BACKENDS = {"npu", "gpu"}
+# an executorch row's backend= (arm executorch-<backend>, docs/executorch-arm-v1.md): the
+# ExecuTorch delegate the runner build carries, per platform runner (android/bench/run_cell.py,
+# scripts/executorch_mac.py)
+EXECUTORCH_BACKENDS = {"android": {"xnnpack", "vulkan", "qnn"}, "mac": {"xnnpack", "mlx", "metal", "coreml"}}
+EXECUTORCH_TASKS = {"short-chat", "long-context-1024-gen256"}
 # schedule.json device platform -> cells-file platform token
 SCHEDULE_PLATFORM = {"iphone": "ios"}
 
@@ -99,6 +104,12 @@ def parse_line(line):
         k, v = kv.split("=", 1)
         if k in opts:
             raise ValueError(f"duplicate option {k!r}")
+        if k == "backend" and rt == "executorch":
+            # executorch names its delegate (validate_file checks it per platform)
+            if not v:
+                raise ValueError("backend= needs a value")
+            opts[k] = v
+            continue
         if k in INT_KEYS:
             if not v.isdigit():
                 raise ValueError(f"{k}={v!r} is not an integer")
@@ -154,6 +165,38 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                     errors.append(f"{where}: uzu own export needs file=<export-directory>")
                 if opts.get("thinking", "model-default") not in {"off", "model-default"}:
                     errors.append(f"{where}: uzu thinking= must be off|model-default")
+            elif rt == "executorch":
+                if plat not in EXECUTORCH_BACKENDS:
+                    errors.append(f"{where}: executorch v1 rows are android / mac (android/bench/run_cell.py, "
+                                  "scripts/executorch_mac.py)")
+                elif opts.get("backend") not in EXECUTORCH_BACKENDS[plat]:
+                    errors.append(f"{where}: executorch needs backend=<"
+                                  f"{'|'.join(sorted(EXECUTORCH_BACKENDS[plat]))}> on {plat} (arm identity)")
+                if task not in EXECUTORCH_TASKS:
+                    errors.append(f"{where}: unsupported executorch task {task!r}")
+                if opts.get("local") != "1" or not opts.get("file", "").endswith(".pte"):
+                    errors.append(f"{where}: executorch runs an own export: local=1 file=<name>.pte "
+                                  "(under ET_MODEL_DIR)")
+                if not opts.get("recipe") or opts["recipe"].lower() in {"int4", "4bit", "4-bit", "8da4w"}:
+                    errors.append(f"{where}: executorch needs recipe=<alias> (parsers.EXECUTORCH_RECIPES), "
+                                  "not a bare bit width")
+                # the KV allocation is fixed at export: the model id states it, a context-tokens=
+                # names the same number, and the 1K task's rows name it as the other arms' do
+                exported = re.search(r"-ctx(\d+)$", mid)
+                if not exported:
+                    errors.append(f"{where}: executorch model id must end in -ctx<N> (the export's allocation)")
+                elif "context-tokens" in opts and opts["context-tokens"] != exported.group(1):
+                    errors.append(f"{where}: context-tokens={opts['context-tokens']} but the export "
+                                  f"allocates {exported.group(1)} (model id)")
+                if task == "long-context-1024-gen256" and "context-tokens" not in opts:
+                    errors.append(f"{where}: executorch long-context-1024-gen256 needs context-tokens=<the "
+                                  "export's allocation>")
+                if "max-tokens" in opts:
+                    errors.append(f"{where}: executorch takes the task budget (prompts/text/budgets.tsv), "
+                                  "not max-tokens=")
+                if plat == "mac" and not opts.get("exclude") and int(opts.get("runs", "4")) < 2:
+                    errors.append(f"{where}: a mac executorch row needs runs>=2 (run 1 cold, the rest "
+                                  "warm: the Mac headline is warm)")
             elif "recipe" in opts and not (TTS_TASK.match(task) and plat == "android"):
                 errors.append(f"{where}: recipe= currently belongs to uzu cells and android "
                               "tts-rtf-* rows only")
@@ -215,7 +258,7 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                               "(unplug discipline is a human step)")
             if opts.get("backend") and not (
                     plat == "android" or (plat == "mac" and rt == "litert-lm")
-                    or (plat == "ios" and rt == "litert-lm")):
+                    or (plat == "ios" and rt == "litert-lm") or rt == "executorch"):
                 errors.append(f"{where}: backend= is for android cells and mac / ios "
                               "litert-lm cells only (the Mac and iPhone runners forward "
                               "it as --litert-backend; every other Apple arm encodes its "

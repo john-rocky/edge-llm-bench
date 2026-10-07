@@ -88,6 +88,10 @@ def arm_of(plat, runtime, opts):
         return f"{runtime}-{opts['backend']}"
     if plat == "mac" and runtime == "litert-lm" and opts.get("backend") == "cpu":
         return f"{runtime}-cpu"
+    # executorch carries its delegate on every platform (executorch-xnnpack, …;
+    # docs/executorch-arm-v1.md)
+    if runtime == "executorch" and opts.get("backend"):
+        return f"{runtime}-{opts['backend']}"
     return runtime
 
 

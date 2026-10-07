@@ -17,6 +17,9 @@ for their published campaigns).
 - `runtime`: a `RuntimeKind` raw value (`mlx-swift`, `llama.cpp`, `litert-lm`,
   `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`), or
   `uzu` (Mac-only Python SDK driver; `docs/uzu-arm-v1.md`).
+  `executorch` rows (android / mac) run ExecuTorch's own runner of the model's family on an
+  own export: `backend=` the delegate (arm `executorch-<backend>`), `local=1 file=<name>.pte`
+  under `ET_MODEL_DIR`, `recipe=<alias>` the quantization label; `docs/executorch-arm-v1.md`.
 - `model-id`: catalog id (usually the HF repo id; side-loaded ids like
   `litert-local/...` need `local=1`).
 - `task`: a `BenchmarkTask` id (`short-chat`, `long-context-1024-gen256`, ...),
@@ -85,6 +88,9 @@ for their published campaigns).
   LFM2.5-VL-450M / 1.6B int4 fixB, InternVL3-1B, Qwen2-VL-2B, Gemma 4 E2B ×
   litert-lm cpu / gpu on the Mac): one pinned CC0 image + one prompt through
   LiteRT-LM's own CLI; `docs/vl-response-v1.md`.
+- `dashboard-executorch-v1-{android,mac}.cells` — the ExecuTorch arm (own exports of the
+  dashboard model set with ExecuTorch v1.5.1, XNNPACK; short-chat and the 1K text task):
+  `docs/executorch-arm-v1.md`.
 - `tts-rtf-v1.cells` — the TTS real-time-factor cells (Qwen3-TTS-12Hz-0.6B-Base
   through its public LiteRT reference pipeline on the Mac CPU and, since 2026-09-27,
   the sample's own Android app on the Galaxy S26 CPU, ASR round trip as the audio

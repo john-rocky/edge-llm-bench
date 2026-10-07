@@ -1,0 +1,34 @@
+# ExecuTorch arm on the Mac, v1 (2026-10-08; docs/executorch-arm-v1.md). The dashboard model
+# set as OWN EXPORTS with ExecuTorch v1.5.1's own exporters (not published artifacts), run by
+# scripts/executorch_mac.py with the tag's own runner of the model's family (llama_main for
+# Qwen 3, gemma4_e2e_runner for Gemma 4) from .build/executorch-v1.5.1/ (copied from the
+# ExecuTorch tree's cmake-out). runs=4 = run 1 cold, runs 2-4 warm (llama_main --warmup); the
+# Mac headline is warm. gemma4_e2e_runner has no warmup option, so the Gemma 4 rows have no
+# warm regime and stay excluded with that reason (not measured is not measured). file= is the
+# .pte under ET_MODEL_DIR (default models/executorch); recipe= names the quantization label,
+# checked against the recipe.json. The KV cache is allocated at export (2048 tokens): the 1K
+# rows name it as context-tokens=2048. Model files live on the external volume through the
+# symlinks of models/executorch: stage them on the internal disk before a measured sitting
+# (round r1: loads from the external volume took 2-10 s longer at times; the windows of every
+# rate exclude load). No session anchor: run it within a sitting that has one.
+#   ./bench matrix matrices/dashboard-executorch-v1-mac.cells --platform mac
+
+# --- Qwen3-0.6B ---
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 runs=4
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+
+# --- Qwen3-1.7B ---
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 runs=4
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+
+# --- Gemma 4 E2B ---
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 runs=4 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-runner-has-no-warm-regime
+
+# --- Qwen3-4B ---
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 runs=4
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
+
+# --- Gemma 4 E4B ---
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 runs=4 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-runner-has-no-warm-regime

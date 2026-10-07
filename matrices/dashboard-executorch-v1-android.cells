@@ -1,0 +1,38 @@
+# ExecuTorch arm on Android, v1 (2026-10-08; docs/executorch-arm-v1.md). The dashboard
+# model set (Qwen3 0.6B / 1.7B / 4B, Gemma 4 E2B / E4B) as OWN EXPORTS with ExecuTorch v1.5.1's
+# own exporters (not published artifacts), run by the tag's own runner of the model's family:
+# llama_main for Qwen 3, gemma4_e2e_runner for Gemma 4 (android/bench/run_cell.py picks it from
+# the model; the recipe.json beside the .pte must agree). backend= is the delegate the runner
+# build carries (arm executorch-<backend>): xnnpack = the CPU build in
+# android/bin/executorch-v1.5.1/, pushed by hand to the same directory on the phone.
+# file= is the .pte under ET_MODEL_DIR (default models/executorch); recipe= names the
+# quantization label (android/bench/parsers.py EXECUTORCH_RECIPES), checked against the
+# recipe.json. The KV cache is allocated at export (2048 tokens): the 1K rows name it as
+# context-tokens=2048, the short-chat rows record it too. Cold fresh-process runs, the
+# Android regime. Each model: short-chat then the 1K text task; Gemma 4 and 4B cooldown=300;
+# the Qwen3-4B and Gemma 4 E4B rows exclude-on=pixel8a as in dashboard-text-v1.cells (they do
+# not fit the Pixel 8a's 8 GB). No session anchor: run it within a sitting that has one, or
+# beside dashboard-text-v1.cells' anchor row.
+# The Gemma 4 rows need gemma4_e2e_runner built for Android (not yet: they stop at the
+# binary check with the push command until it is on the phone).
+#   ./bench matrix matrices/dashboard-executorch-v1-android.cells --platform android
+
+# --- Qwen3-0.6B ---
+android executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
+android executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+
+# --- Qwen3-1.7B ---
+android executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
+android executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+
+# --- Gemma 4 E2B ---
+android executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300
+android executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048
+
+# --- Qwen3-4B ---
+android executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+
+# --- Gemma 4 E4B ---
+android executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash

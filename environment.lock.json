@@ -82,6 +82,43 @@
     },
     "executorch": {
       "source": "https://github.com/pytorch/executorch",
+      "tag": "v1.5.1",
+      "commit": "3b60683923245cf472b7323426920e15623ba361",
+      "platforms": [
+        "mac",
+        "android"
+      ],
+      "runners": "the tag's own C++ runner of the model's family: llama_main (examples/models/llama) for Qwen 3, gemma4_e2e_runner (examples/models/gemma4) for Gemma 4; unpatched (official-sdk)",
+      "mac": {
+        "runner": "scripts/executorch_mac.py (.build/executorch-v1.5.1[-<backend>]/<runner>, copied from the tree's cmake-out)",
+        "build": "scripts/executorch/build_llama_main_mac.sh: cmake --workflow --preset llm-release, then --preset llama-release in examples/models/llama (Release, ET_LOG compiled out; the preset also builds Core ML and the torchao kernels, XNNPACK with KleidiAI); gemma4_e2e_runner from examples/models/gemma4 in the same cmake-out",
+        "binaries": {
+          "llama_main": {
+            "backend": "xnnpack",
+            "sha256": "61e7e881a4e3e12d38e3d102e01e15119b33395c164229fa21ab351b6a174e0e",
+            "built": "2026-10-07, cmake-out/examples/models/llama/llama_main"
+          },
+          "gemma4_e2e_runner": {
+            "backend": "xnnpack",
+            "sha256": "840299c46c0b3305972498f698111aea688a5b95c12b5e4da844715f536cd11f",
+            "built": "2026-10-07, cmake-out/examples/models/gemma4-r3/gemma4_e2e_runner"
+          }
+        }
+      },
+      "android": {
+        "runner": "android/bench/run_cell.py --runtime executorch",
+        "pins": "android/engine-pins.json executorch.v1.5.1 (android/bin/executorch-v1.5.1[-vulkan]/, android/scripts/build_executorch_llama_main.sh)"
+      },
+      "export": {
+        "venv": "CPython 3.12, executorch==1.5.1 (PyPI wheel; its export sources equal the tag's tree), torch==2.14.0 (the tag's torch_pin.py), torchao==0.18.0, transformers==5.0.0rc1",
+        "qwen3": "scripts/executorch/export_qwen3.py: the tree's convert_weights.py, then export_llm with examples/models/qwen3/config/qwen3_xnnpack_q8da4w.yaml unchanged (max_seq_length = max_context_length = 2048)",
+        "gemma4": "examples/models/gemma4/export_gemma4.py --quantize 8da4w+emb8 --max_seq_len 2048 --no-audio --no-vision [--variant e4b]",
+        "artifacts": "own exports, not published: <name>.pte with <name>.recipe.json beside it (ExecuTorch version and commit, config, checkpoint revision and file hashes, commands, .pte sha256), staged under models/executorch (ET_MODEL_DIR)"
+      },
+      "note": "Own exports of the dashboard model set, run by ExecuTorch's own runners; docs/executorch-arm-v1.md. The 2026-08-15 muse-glimmer capture's build is arms.executorch-2026-08-15-muse-glimmer."
+    },
+    "executorch-2026-08-15-muse-glimmer": {
+      "source": "https://github.com/pytorch/executorch",
       "commit": "abc5586",
       "patch": "patches/executorch-abc5586-empty-data-path.diff",
       "built": "cmake solo_runner (examples/models/muse-glimmer, Metal backend)",
