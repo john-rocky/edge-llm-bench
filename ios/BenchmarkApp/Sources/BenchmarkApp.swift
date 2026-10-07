@@ -5,6 +5,9 @@ import UIKit
 #if canImport(Darwin)
 import Darwin   // exit(), fflush(), stdout
 #endif
+#if canImport(Metal)
+import Metal    // MTLCreateSystemDefaultDevice() for the YARDSTICK_METAL_DEVICE line
+#endif
 
 @main
 struct BenchmarkApp: App {
@@ -289,10 +292,62 @@ enum HeadlessAutoRun {
             }
             coreAINative = (p, d)
         }
+        // Both run here, before any runtime exists (AppSession builds the runtimes when the
+        // first view appears): every autorun console names its GPU, and a purge cannot race
+        // an engine that already opened its cache.
+        logMetalDevice()
+        if args.contains("--purge-engine-cache") { purgeEngineCache(modelId: modelId) }
         return Spec(runtime: runtime, modelId: modelId, taskId: taskId, runs: runs,
                     sustainSeconds: sustainSeconds, maxTokens: maxTokens,
                     contextTokens: contextTokens, nativeBenchmark: native,
                     coreAINativeBenchmark: coreAINative)
+    }
+
+    /// `YARDSTICK_METAL_DEVICE`: the system default Metal device's `name` (the string a GPU
+    /// delegate's device-name table is matched against) and its `registryID`.
+    static func logMetalDevice() {
+        #if canImport(Metal)
+        let device = MTLCreateSystemDefaultDevice()
+        print("YARDSTICK_METAL_DEVICE name=\(device?.name ?? "nil") registry_id=\(device.map { String($0.registryID) } ?? "nil")")
+        #else
+        print("YARDSTICK_METAL_DEVICE name=nil registry_id=nil")
+        #endif
+        fflush(stdout)
+    }
+
+    /// `--purge-engine-cache`: LiteRT-LM's GPU delegate serializes its programs (the kernel
+    /// choice included) and weights into NSTemporaryDirectory() as
+    /// `<model file>_<mtime>_<size>_mldrift_{program,weight}_cache.bin` and restores them on the
+    /// next load. The key holds the model file and the delegate options, not the GPU name or the
+    /// engine build, so a launch of one build can restore what another build compiled. This
+    /// removes the regular files directly in that directory whose names start with the launched
+    /// model's file name + "_" and end in `_mldrift_program_cache.bin` or
+    /// `_mldrift_weight_cache.bin`; other models' caches stay. One `YARDSTICK_CACHE_PURGE` line
+    /// per file (`none` when there is none).
+    static func purgeEngineCache(modelId: String) {
+        let modelFile = ModelCatalog.liteRTLM.first(where: { $0.id == modelId })?.primaryFile ?? ""
+        guard !modelFile.isEmpty else {
+            print("YARDSTICK_CACHE_PURGE none prefix=? (no LiteRT-LM model file name for \(modelId) in the catalog)")
+            fflush(stdout)
+            return
+        }
+        let prefix = modelFile + "_"
+        let fm = FileManager.default
+        let dir = NSTemporaryDirectory()
+        let suffixes = ["_mldrift_program_cache.bin", "_mldrift_weight_cache.bin"]
+        var matched = 0
+        for name in ((try? fm.contentsOfDirectory(atPath: dir)) ?? []).sorted()
+        where name.hasPrefix(prefix) && suffixes.contains(where: { name.hasSuffix($0) }) {
+            let path = (dir as NSString).appendingPathComponent(name)
+            guard let attrs = try? fm.attributesOfItem(atPath: path),
+                  (attrs[.type] as? FileAttributeType) == FileAttributeType.typeRegular else { continue }
+            let bytes = (attrs[.size] as? NSNumber)?.int64Value ?? -1
+            let removed = (try? fm.removeItem(atPath: path)) != nil
+            print("YARDSTICK_CACHE_PURGE file=\(name) bytes=\(bytes) removed=\(removed ? 1 : 0)")
+            matched += 1
+        }
+        if matched == 0 { print("YARDSTICK_CACHE_PURGE none prefix=\(prefix)") }
+        fflush(stdout)
     }
 }
 
