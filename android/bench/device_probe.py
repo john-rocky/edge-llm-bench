@@ -8,6 +8,7 @@ methodology/android.md, not silent.
 import re
 import subprocess
 import os
+import sys
 import time
 
 THERMAL_NAMES = {0: "nominal", 1: "light", 2: "moderate", 3: "severe",
@@ -18,7 +19,14 @@ def adb(args, serial=None, timeout=30, retries=3):
     """adb with transient-drop tolerance: a USB renegotiation mid-campaign
     (measured: the probe between two cells) used to kill the whole run. On
     failure, wait for the device to re-enumerate and retry; only after
-    `retries` consecutive failures does the error propagate."""
+    `retries` consecutive failures does the error propagate. A command that
+    is retried says so once on stderr (the campaign log):
+    `adb retry after device loss: <command head> (<error>)`.
+
+    retries=1 = no retry: run_cell.run_once passes it for the engine shell,
+    which must never run twice — on 2026-10-07 the Pixel 8a rebooted under a
+    running engine, the shell was replayed after wait-for-device on the
+    rebooted phone, and the replay's record read as one run."""
     cmd = ["adb"] + (["-s", serial] if serial else []) + args
     if os.environ.get("BENCH_SESSION_DEADLINE"):
         timeout = min(timeout, max(1, float(os.environ["BENCH_SESSION_DEADLINE"]) - time.time() - 1))
@@ -32,6 +40,13 @@ def adb(args, serial=None, timeout=30, retries=3):
                                            timeout=timeout)
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             last = e
+            if retries == 1:
+                break  # no wait-for-device either: nothing is re-run
+            if attempt == 0:
+                why = (f"exit {e.returncode}" if isinstance(e, subprocess.CalledProcessError)
+                       else f"timeout {e.timeout:g} s")
+                print(f"adb retry after device loss: {' '.join(cmd)[:120]} ({why})",
+                      file=sys.stderr, flush=True)
             wait = ["adb"] + (["-s", serial] if serial else []) + ["wait-for-device"]
             try:
                 subprocess.run(wait, timeout=60, check=False)

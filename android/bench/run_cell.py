@@ -316,7 +316,11 @@ def run_once(cmd, binname, serial, timeout):
     if STRICT_SMOKE:
         shell = "set -C; " + shell  # refuse even an accidental output-path collision
     try:
-        out = adb(["shell", shell], serial, timeout=timeout)
+        # retries=1: a launch that loses the phone fails here (no record; the
+        # campaign lists it in FAILURES.txt) and is never replayed after
+        # wait-for-device — a replay runs on whatever the phone became (a reboot
+        # on 2026-10-07) and its record would read as this launch
+        out = adb(["shell", shell], serial, timeout=timeout, retries=1)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         if not STRICT_SMOKE:
             raise

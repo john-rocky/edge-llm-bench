@@ -6,8 +6,9 @@ device state lives in a temp dir, so CI and a fresh clone verify the whole
 capture path — record shape, firstEver labelling via the on-device marker,
 witness stamping, capture gate + quarantine + retry, the endurance
 session path (streaming turn sidecar, host-derived decay/slope/degeneracy
-verdicts, failed-runs-stay), and the default text check of context-prompt
-launches (text-check-rule) — with no phone attached. The fake scripts
+verdicts, failed-runs-stay), the default text check of context-prompt
+launches (text-check-rule), exclude-on= per device, and a phone lost under a
+running engine (the launch fails, never re-run) — with no phone attached. The fake scripts
 ENGINE OUTPUT, never verdicts: the gate, the text screen and the endurance
 derivations judge real records.
 
@@ -95,6 +96,18 @@ def endurance(cmd):
     return spec.get("exit", 0)
 
 
+def lost(flag):
+    """The phone leaves the bus under this one command (STATE/<flag> set by the test,
+    consumed here): adb ends with an error and no output, as when the Pixel 8a rebooted
+    under a running engine (2026-10-07 15:58)."""
+    p = os.path.join(STATE, flag)
+    if not os.path.exists(p):
+        return False
+    os.remove(p)
+    sys.stderr.write("adb: device offline\\n")
+    return True
+
+
 def shell(cmd):
     # "./" = actually running the driver; a bare mention (sha256sum for the
     # witness stamp) must fall through to the real handlers
@@ -113,6 +126,8 @@ def shell(cmd):
                "ro.product.device": "fake"}.get(cmd.split()[1], ""))
         return 0
     if "dumpsys thermalservice" in cmd:
+        if lost("drop_probe"):
+            return 1
         print("Thermal Status: 0")
         return 0
     if "dumpsys battery" in cmd:
@@ -127,6 +142,10 @@ def shell(cmd):
         print("0")
         return 0
     if "===ENGINE_OUTPUT===" in cmd:
+        with open(os.path.join(STATE, "engine_calls"), "a") as fh:
+            fh.write("engine shell\\n")
+        if lost("drop_engine"):
+            return 1
         return engine(cmd)
     if cmd.startswith("sha256sum"):
         p = mp(cmd.split()[1])
@@ -621,6 +640,43 @@ def main():
             ok(len(lit_x) == 1 and not skip_txt,
                f"{key}: the exclude-on row runs on a device it does not name "
                f"(got {len(lit_x)} records, SKIPPED.txt {skip_txt.strip()!r})")
+
+    # --- campaign F: the phone drops off the bus under a running engine. The engine
+    # shell is never re-run (2026-10-07: a reboot mid-launch had the shell replayed on
+    # the rebooted Pixel 8a, and the replay's record read as one run): that launch fails
+    # with no record and is listed in FAILURES.txt, the next launch runs. A probe that
+    # loses the phone is still retried, with one line in the campaign log.
+    cells_f = os.path.join(tmp, "f.cells")
+    with open(cells_f, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=2 file={gguf_model}\n")
+    calls = os.path.join(state, "engine_calls")
+    if os.path.exists(calls):
+        os.remove(calls)
+    for flag in ("drop_probe", "drop_engine"):
+        open(os.path.join(state, flag), "w").close()
+    schedule([20.0, 20.5])
+    env["CAMPAIGN"] = "selftest-f"
+    print("--- campaign F (device lost under the first engine shell and the first probe)")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_f],
+                       env=env, capture_output=True, text=True)
+    print(p.stdout + p.stderr)
+    out_f = os.path.join(raw_root, "selftest-f", "app-path-android")
+    lla_f = records(out_f, "llama.cpp_")
+    n_calls = len(open(calls).read().splitlines()) if os.path.exists(calls) else 0
+    fails_f = os.path.join(out_f, "FAILURES.txt")
+    fails_f = open(fails_f).read() if os.path.exists(fails_f) else ""
+    retried = [ln for ln in (p.stdout + p.stderr).splitlines() if ln.startswith("adb retry after device loss: ")]
+    ok(p.returncode == 0, f"campaign F exits 0 (got {p.returncode})")
+    ok(n_calls == 2 and len(lla_f) == 1 and lla_f[0][1]["metrics"]["decodeTokensPerSecond"] == 20.0,
+       f"the lost engine shell is not re-run: 2 engine shells for 2 launches (got {n_calls}), "
+       f"1 record, the second launch's (got {[r['metrics'].get('decodeTokensPerSecond') for _, r in lla_f]})")
+    ok(fails_f.strip() == "llama.cpp fake/gguf short-chat rc=1",
+       f"the lost launch is listed in FAILURES.txt: {fails_f.strip()!r}")
+    ok(len(retried) == 1 and "dumpsys thermalservice" in retried[0] and "ENGINE_OUTPUT" not in retried[0],
+       f"the lost probe is retried, one log line naming it, none for the engine shell: {retried}")
+    for flag in ("drop_probe", "drop_engine"):
+        if os.path.exists(os.path.join(state, flag)):
+            os.remove(os.path.join(state, flag))
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")

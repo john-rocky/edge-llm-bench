@@ -329,6 +329,7 @@ old times until then).
   raised `device not found`, `bench matrix` exited 1, the 15 cells already had
   records and the job still closed COMPLETED / admitted — read the job log's
   tail, not only the ledger, before calling a sitting clean.
+- **A launch that loses the phone is a failed launch (since 2026-10-07).** `device_probe.adb` still re-runs probes, pushes and pulls after `adb wait-for-device`, with one line in the campaign log (`adb retry after device loss: <command>`), but never the engine shell (`run_cell.run_once`, retries=1): that launch ends with a traceback and no record, the campaign lists it in `FAILURES.txt`, and the cell is a run short (the gate's SHORT, never re-run). Before, a phone that rebooted under a running engine had the shell replayed on the rebooted phone, and the replay's record read as one run (Pixel 8a, 2026-10-07 15:58).
 - **Phone storage, not memory, bounds the dashboard set.** The full 15-cell
   Android set needs about 28 GB on the device (pushed models plus LiteRT's
   XNNPACK caches at 0.6-0.8x the model size); `matrices/dashboard-text-v1-android-{a,b,b1,b2}.cells`
