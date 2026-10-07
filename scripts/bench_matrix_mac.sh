@@ -158,14 +158,25 @@ guard(){
   # out ~11% low) — so also match the coreai export venv and any scratchpad
   # export_*.py wholesale; refusing too eagerly costs a cooldown, missing costs
   # a session.
-  if ps aux | grep -E "coreai\.llm\.export|release/llm-benchmark |export_simple_template\.py|scratchpad/export_[A-Za-z0-9_]*\.py|coreai-models/\.venv/bin/python|coreai-build compile" | grep -v grep >/dev/null; then
+  # Every pattern is anchored at the program the process runs: its argv[0] (the
+  # coreai venv's python, llm-benchmark, coreai-build), or the module / script a
+  # python argv[0] runs. Unanchored, a name anywhere in an argv matched: on
+  # 2026-10-08 the guard refused an idle Mac because two coding-agent CLI sessions'
+  # argv (their prompt text) named coreai-models/.venv/bin/python.
+  local py='^[^ ]*[Pp]ython[0-9.]*( [^ ]+)* '
+  if running '^[^ ]*coreai-models/\.venv/bin/python|^[^ ]*release/llm-benchmark( |$)|^[^ ]*coreai-build compile' \
+     || running "$py"'(-m coreai\.llm\.export|[^ ]*export_simple_template\.py|[^ ]*scratchpad/export_[A-Za-z0-9_]*\.py)'; then
     echo "refusing to start: heavy pipeline running (unified-memory contention)" >&2; exit 1
   fi
   # ExecuTorch exports (export_llm, export_gemma4.py; scripts/executorch/) load the same
   # unified memory for minutes
-  if ps aux | grep -E "executorch\.extension\.llm\.export|export_gemma4\.py|scripts/executorch/(export_|run_gemma4_export)" | grep -v grep >/dev/null; then
+  if running "$py"'(-m executorch\.extension\.llm\.export|[^ ]*export_gemma4\.py|[^ ]*scripts/executorch/(export_|run_gemma4_export))'; then
     echo "refusing to start: ExecuTorch export running (unified-memory contention)" >&2; exit 1
   fi
+}
+
+running(){ # <ERE> -> 0 when a live process's command line (argv joined by spaces) matches it
+  ps -Awwo command= | grep -Eq "$1"
 }
 
 check_binary(){
