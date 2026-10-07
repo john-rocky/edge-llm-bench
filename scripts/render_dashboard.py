@@ -15,8 +15,10 @@ cells, not one pooled cell); a cell without it reads every row of its key.
 
 What this adds over LEADERBOARD.md:
   - the cells file is the authority: a cell with no rows renders "not yet
-    measured", an exclude= cell renders its reason (failed-runs-stay), and
-    rows that are not in the file are not shown.
+    measured", an exclude= cell renders its reason (failed-runs-stay), an
+    exclude-on=<device key>:<reason> cell renders its reason on the devices it
+    names (schedule.json key -> the identifier the rows carry) and its number
+    everywhere else, and rows that are not in the file are not shown.
   - session admission: a campaign whose SESSION.json (written by
     scripts/dashboard_job.py) says "admitted": false is dropped BEFORE arm_row
     picks the latest session, so an aborted sitting never displaces the last
@@ -52,7 +54,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # noqa: E402
                           bandwidth_utilization, fmt_bw, logical_model)
 from render_leaderboard import SPREAD_FLAG, arm_row  # noqa: E402
-from validate_cells import parse_line  # noqa: E402
+from validate_cells import parse_exclude_on, parse_line  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_CELLS = os.path.join("matrices", "dashboard-text-v1.cells")
@@ -138,6 +140,8 @@ def load_cells(path):
                 "platform": plat, "runtime": rt, "arm": arm_of(plat, rt, opts),
                 "model_id": mid, "task": task, "opts": opts, "line": lineno,
                 "model": model_row(mid), "exclude": opts.get("exclude"),
+                # {schedule.json device key: reason}; exclusion() reads it per device
+                "exclude_on": parse_exclude_on(opts["exclude-on"]) if opts.get("exclude-on") else {},
                 "anchor": opts.get("anchor") == "1",
                 "context_tokens": ctx_key(opts.get("context-tokens")),
             })
@@ -172,6 +176,25 @@ def load_schedule(path):
     if not os.path.exists(path):
         return {}
     return json.load(open(path))
+
+
+def device_keys(schedule):
+    """device identifier (the rows' device column) -> the schedule.json device
+    keys that carry it; exclude-on= names devices by key."""
+    out = {}
+    for key, dev in schedule.get("devices", {}).items():
+        out.setdefault(dev.get("identifier"), set()).add(key)
+    return out
+
+
+def exclusion(c, keys):
+    """Why cell `c` is not a measurement on the device with these schedule keys,
+    or None: its exclude= (every device), else the exclude-on= reason of one of
+    the keys. The one rule for this table and the team page (litert-bench-dashboard)."""
+    if c.get("exclude"):
+        return c["exclude"]
+    on = c.get("exclude_on") or {}
+    return next((on[k] for k in sorted(keys) if k in on), None)
 
 
 def devices_for(plat, schedule, rows):
@@ -234,6 +257,7 @@ def build(cells_path, schedule_path, stale_days, today):
     rows = [r for r in rows if admitted.get(r["campaign"], True)]
     cells = load_cells(cells_path)
     schedule = load_schedule(schedule_path)
+    keys_of = device_keys(schedule)
 
     out_cells = []
     for plat in ("mac", "ios", "android"):
@@ -242,6 +266,7 @@ def build(cells_path, schedule_path, stale_days, today):
             continue
         for ident, display in devices_for(plat, schedule, rows):
             for c in plat_cells:
+                why = exclusion(c, keys_of.get(ident, ()))
                 sel = [r for r in rows
                        if r["platform"] == plat and r["device"] == ident
                        and r["runtime"] == c["arm"] and r["model_id"] == c["model_id"]
@@ -270,8 +295,8 @@ def build(cells_path, schedule_path, stale_days, today):
                     # of the runs that would have pooled; "" = text not checked
                     "text_fail": "",
                 }
-                if c["exclude"]:
-                    rec.update(status="excluded", reason=c["exclude"])
+                if why:
+                    rec.update(status="excluded", reason=why)
                 elif sel:
                     a = arm_row(sel)
                     if REGIME[plat] == "warm":

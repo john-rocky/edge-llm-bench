@@ -588,6 +588,40 @@ def main():
     ok(not glob.glob(os.path.join(out_e, "*.json.attempt1")),
        "a text-failed capture is never quarantine-retried")
 
+    # --- campaign X: exclude-on=<schedule key>:<reason> skips a row on the device
+    # that key names and runs it on every other one (the Pixel 8a's 4B-class rows,
+    # 2026-10-07). The serials are the registry's own (ops/dashboard-v1/schedule.json);
+    # the fake adb answers whatever serial is set, and the lock goes to the temp dir
+    # (BENCH_LOCK_DIR), never to the real /tmp lock of a phone in use.
+    registry = json.load(open(os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")))["devices"]
+    cells_x = os.path.join(tmp, "x.cells")
+    with open(cells_x, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=1 file={gguf_model}\n"
+                 f"android litert-lm fake/model short-chat runs=1 backend=gpu file={litert_model} "
+                 "exclude-on=pixel8a:selftest-does-not-fit\n")
+    for key, skips in (("pixel8a", True), ("s26", False)):
+        env_x = dict(env, BENCH_ANDROID_SERIAL=registry[key]["serial"], BENCH_LOCK_DIR=tmp,
+                     CAMPAIGN=f"selftest-x-{key}")
+        env_x.pop("BENCH_TEST_LOCK_DIR")
+        schedule([21.0, 22.0])
+        print(f"--- campaign X on the {key} serial (exclude-on=pixel8a: "
+              f"{'skipped here' if skips else 'runs here'})")
+        rc = run_campaign(env_x, cells_x)
+        ok(rc == 0, f"campaign X ({key}) exits 0 (got {rc})")
+        out_x = os.path.join(raw_root, f"selftest-x-{key}", "app-path-android")
+        skip_txt = os.path.join(out_x, "SKIPPED.txt")
+        skip_txt = open(skip_txt).read() if os.path.exists(skip_txt) else ""
+        lit_x, lla_x = records(out_x, "litert-lm-gpu_"), records(out_x, "llama.cpp_")
+        ok(len(lla_x) == 1, f"{key}: the row without exclude-on runs (got {len(lla_x)} records)")
+        if skips:
+            ok(not lit_x and skip_txt.strip() == "CELL_SKIP litert-lm-gpu fake/model short-chat "
+                                                   "exclude-on=pixel8a reason=selftest-does-not-fit",
+               f"{key}: the exclude-on row is skipped, SKIPPED.txt names its key and reason: {skip_txt.strip()!r}")
+        else:
+            ok(len(lit_x) == 1 and not skip_txt,
+               f"{key}: the exclude-on row runs on a device it does not name "
+               f"(got {len(lit_x)} records, SKIPPED.txt {skip_txt.strip()!r})")
+
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")
     if _fails:

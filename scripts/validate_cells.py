@@ -8,13 +8,18 @@
 --catalog: output of `yardstick list --json`; model ids are checked against it
 (cells with local=1 or platform=android are exempt — android ids are HF repos
 resolved by the android driver, not ModelCatalog entries).
+exclude-on=<device key>[,<key>…]:<reason> keys are checked against the devices
+of ops/dashboard-v1/schedule.json (--schedule), read only when a row has one.
 Exit 1 on any error; warnings don't fail.
 """
 import argparse
 import json
+import os
 import re
 import sys
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
 PLATFORMS = {"ios", "mac", "android"}
 RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             "anemll", "apple-fm", "core-ai", "cactus",
@@ -46,8 +51,32 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
-STR_KEYS = {"exclude", "file", "backend", "recipe", "thinking", "engine-counters"}
+STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters"}
 BACKENDS = {"cpu", "gpu"}
+# schedule.json device platform -> cells-file platform token
+SCHEDULE_PLATFORM = {"iphone": "ios"}
+
+
+def parse_exclude_on(value):
+    """exclude-on=<device key>[,<key>…]:<reason> -> {key: reason}: the row stays in
+    the file and runs on every other device; on the devices named by their
+    ops/dashboard-v1/schedule.json key the Android runner skips it and the
+    dashboards show the reason (docs/dashboard-cells-v1.md). Raises ValueError."""
+    keys, sep, reason = value.partition(":")
+    names = keys.split(",")
+    if not sep or not reason or not all(names):
+        raise ValueError(f"exclude-on={value!r} (want <device key>[,<key>…]:<reason>)")
+    if len(set(names)) != len(names):
+        raise ValueError(f"exclude-on={value!r} names a device twice")
+    return {k: reason for k in names}
+
+
+def load_schedule_devices(path=DEFAULT_SCHEDULE):
+    """schedule.json devices ({key: entry}); {} when the file is absent."""
+    if not os.path.exists(path):
+        return {}
+    with open(path) as fh:
+        return json.load(fh).get("devices", {})
 
 
 def parse_line(line):
@@ -74,14 +103,17 @@ def parse_line(line):
                 raise ValueError(f"{k}= needs a value")
             if k == "backend" and v not in BACKENDS:
                 raise ValueError(f"backend={v!r} (want cpu|gpu)")
+            if k == "exclude-on":
+                parse_exclude_on(v)
         else:
             raise ValueError(f"unknown option key {k!r}")
         opts[k] = v
     return plat, rt, mid, task, opts
 
 
-def validate_file(path, catalog=None, require_anchor=False):
+def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAULT_SCHEDULE):
     errors, warnings = [], []
+    devices = None  # schedule.json devices, read at the first exclude-on= row
     seen = {}
     anchors_by_platform = set()
     platforms_in_file = set()
@@ -206,6 +238,30 @@ def validate_file(path, catalog=None, require_anchor=False):
                 if opts.get("exclude") or opts.get("manual"):
                     errors.append(f"{where}: an anchor cell cannot be "
                                   "excluded/manual")
+            if "exclude-on" in opts:
+                if plat != "android":
+                    errors.append(f"{where}: exclude-on= is read by the Android runner only "
+                                  "(android/bench/run_campaign.py); the Mac and iPhone "
+                                  "runners would run the row on every device")
+                if opts.get("exclude"):
+                    errors.append(f"{where}: exclude= already excludes the row on every "
+                                  "device; exclude-on= beside it is ambiguous")
+                if opts.get("anchor") == "1":
+                    errors.append(f"{where}: an anchor cell cannot be excluded on a device "
+                                  "(that device's sittings need their session anchor)")
+                if devices is None:
+                    devices = load_schedule_devices(schedule_path)
+                for key in parse_exclude_on(opts["exclude-on"]):
+                    dev = devices.get(key)
+                    if dev is None:
+                        shown = os.path.abspath(schedule_path)
+                        if shown.startswith(ROOT + os.sep):
+                            shown = os.path.relpath(shown, ROOT)
+                        errors.append(f"{where}: exclude-on device key {key!r} is not in "
+                                      f"{shown} (keys: {', '.join(sorted(devices)) or 'none'})")
+                    elif SCHEDULE_PLATFORM.get(dev.get("platform"), dev.get("platform")) != plat:
+                        errors.append(f"{where}: exclude-on device {key!r} is a "
+                                      f"{dev.get('platform')} device; the row is {plat}")
             if (catalog is not None and plat != "android" and rt != "uzu"
                     and opts.get("local") != "1" and opts.get("exclude") is None):
                 if mid not in catalog.get(rt, []):
@@ -232,11 +288,13 @@ def main():
     ap.add_argument("files", nargs="+")
     ap.add_argument("--catalog", help="yardstick list --json output")
     ap.add_argument("--require-anchor", action="store_true")
+    ap.add_argument("--schedule", default=DEFAULT_SCHEDULE,
+                    help="device registry for exclude-on= keys (default: %(default)s)")
     args = ap.parse_args()
     catalog = load_catalog(args.catalog) if args.catalog else None
     failed = False
     for path in args.files:
-        errors, warnings = validate_file(path, catalog, args.require_anchor)
+        errors, warnings = validate_file(path, catalog, args.require_anchor, args.schedule)
         for w in warnings:
             print(f"WARN {w}")
         for e in errors:

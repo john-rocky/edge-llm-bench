@@ -9,9 +9,11 @@
 #   ./bench matrix matrices/dashboard-text-v1-android-b2.cells --platform android
 
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
-android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm
-android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm
-android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
-android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
-android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
-android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048
+# Pixel 8a: the Qwen3-4B / Gemma 4 E4B rows are exclude-on=pixel8a since 2026-10-07 (they do not fit its 8 GB;
+# docs/dashboard-cells-v1.md "Per-device exclusion"); every other device runs them.
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash

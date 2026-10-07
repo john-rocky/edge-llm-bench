@@ -10,7 +10,10 @@ Order and discipline (fairness rules as code):
     round 1 of every cell, then round 2 of every cell — never one arm's block.
   - >=COOLDOWN s between runs; the thermal gate waits for status 0 (nominal)
     up to THERMAL_WAIT s and records the state either way.
-  - exclude=/manual= cells are skipped with the reason logged (SKIPPED.txt).
+  - exclude=/manual= cells are skipped with the reason logged (SKIPPED.txt);
+    an exclude-on=<device key>[,<key>…]:<reason> cell is skipped only on the
+    devices it names (ops/dashboard-v1/schedule.json key -> serial, matched
+    against the serial this driver locks), logged with its key.
   - capture gate (scripts/cell_gate.py; mac/iPhone parity): a flagged cell is
     quarantined in raw (*.json.attempt1, outside build_summary's glob) and
     re-runs ONCE as a block after GATE_COOLDOWN s; a flagged retry stands
@@ -43,6 +46,7 @@ from device_probe import thermal_status, adb  # noqa: E402
 from run_cell import capture_stem, context_prompt, engine_command, DEV_DIR, CPU_MASK  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
 COOLDOWN = int(os.environ.get("COOLDOWN", "120"))
 THERMAL_WAIT = int(os.environ.get("THERMAL_WAIT", "600"))
 GATE_COOLDOWN = int(os.environ.get("GATE_COOLDOWN", "180"))
@@ -74,6 +78,42 @@ def parse_cells(path):
         else:
             payload.append(cell)
     return anchors, payload, skipped
+
+
+def exclude_on(cell):
+    """exclude-on=<schedule.json device key>[,<key>…]:<reason> -> {key: reason}
+    (scripts/validate_cells.py parse_exclude_on checks the form)."""
+    value = cell["opts"].get("exclude-on")
+    if not value:
+        return {}
+    keys, _, reason = value.partition(":")
+    return {key: reason for key in keys.split(",")}
+
+
+def skip_on_device(anchors, payload, serial):
+    """Take out the cells whose exclude-on= names the device with this serial
+    (its schedule.json key). -> (anchors, payload, [(cell, key, reason)]). A key
+    the schedule does not know stops the driver before any device call: it
+    cannot tell which phone the key means (validate_cells.py fails it first)."""
+    named = {key for c in anchors + payload for key in exclude_on(c)}
+    if not named:
+        return anchors, payload, []
+    with open(SCHEDULE) as fh:
+        devices = json.load(fh).get("devices", {})
+    unknown = sorted(named - set(devices))
+    if unknown:
+        raise SystemExit(f"exclude-on: device key(s) {', '.join(unknown)} not in "
+                         f"{os.path.relpath(SCHEDULE, ROOT)} — refusing to guess the device")
+    here = {key for key, dev in devices.items() if serial and dev.get("serial") == serial}
+    kept, out = ([], []), []
+    for group, keep in zip((anchors, payload), kept):
+        for c in group:
+            hit = sorted(set(exclude_on(c)) & here)
+            if hit:
+                out.append((c, hit[0], exclude_on(c)[hit[0]]))
+            else:
+                keep.append(c)
+    return kept[0], kept[1], out
 
 
 def wait_nominal(out_dir):
@@ -266,14 +306,20 @@ def main():
     if args.dry_run:
         if rounds is None:
             ap.error("--dry-run requires opt-in ROUNDS=N")
+        # no device call: exclude-on= resolves against the env's serial only
+        anchors, payload, skipped_on = skip_on_device(anchors, payload, SERIAL)
         for cell, reason in skipped:
             print(json.dumps({"skip": cell_id(cell), "reason": reason}))
+        for cell, key, reason in skipped_on:
+            print(json.dumps({"skip": cell_id(cell), "excludeOn": key, "reason": reason}))
         for rnd, launch, cell in round_schedule(anchors, payload, rounds):
             command, binary, sampler = planned_command(cell)
             print(json.dumps({"round": rnd, "launch": launch, "cell": cell_id(cell, True),
                               "anchor": cell["opts"].get("anchor") == "1",
                               "command": command, "binary": binary, "sampler": sampler,
-                              "cooldownSeconds": COOLDOWN, "gateAutoRetry": False}))
+                              "cooldownSeconds": COOLDOWN, "gateAutoRetry": False,
+                              **({"excludeOn": cell["opts"]["exclude-on"]}
+                                 if cell["opts"].get("exclude-on") else {})}))
         return 0
     if rounds is not None and not SERIAL:
         ap.error("round mode requires BENCH_ANDROID_SERIAL (explicit device)")
@@ -294,6 +340,8 @@ def main():
         r = subprocess.run(["adb", "get-serialno"], capture_output=True, text=True)
         got = r.stdout.strip()
         lock_key = got if r.returncode == 0 and got and got != "unknown" else "default"
+    # exclude-on= is per device: the device is the one this driver locks
+    anchors, payload, skipped_on = skip_on_device(anchors, payload, lock_key)
     lock_dir = os.environ.get("BENCH_LOCK_DIR") or os.environ.get("BENCH_TEST_LOCK_DIR", "/tmp")
     lock = open(os.path.join(lock_dir, f"edge-llm-bench-android-{lock_key}.lock"), "w")
     try:
@@ -313,6 +361,11 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     for cell, reason in skipped:
         line = f"CELL_SKIP {cell['runtime']} {cell['model_id']} {cell['task']} reason={reason}"
+        print(line)
+        with open(os.path.join(out_dir, "SKIPPED.txt"), "a") as fh:
+            fh.write(line + "\n")
+    for cell, key, reason in skipped_on:
+        line = f"CELL_SKIP {cell_id(cell)} exclude-on={key} reason={reason}"
         print(line)
         with open(os.path.join(out_dir, "SKIPPED.txt"), "a") as fh:
             fh.write(line + "\n")

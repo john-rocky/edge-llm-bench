@@ -129,7 +129,8 @@ exactly the three new ids — expected until the Apple binaries are rebuilt.
    needs about 28 GB on an Android device (models plus LiteRT's XNNPACK
    caches) and about 35 GB of app storage on the iPhone (staged files plus
    in-app MLX downloads); the split Android cells files exist for that. The
-   4B-class models themselves fit the 8 GB Pixel 8a on every arm.
+   4B-class models themselves fit the 8 GB Pixel 8a on every arm (2026-09-05;
+   not in the 2026-10-07 sitting — section "Per-device exclusion").
 5. Budget about half a day per platform including downloads; cooldowns
    dominate (300 s before every Gemma 4 and 4B cell).
 
@@ -641,6 +642,39 @@ the morning (S26, about 10:00) or the afternoon (Pixel 8a, about 13:00),
 holds the device hold for all of it, and absorbs the 05:30 firing — launchd
 starts no second instance — so an iPhone's 05:30 slot moves to a night
 without a phone sitting.
+
+## Per-device exclusion (2026-10-07)
+
+`exclude-on=<device key>[,<key>…]:<reason>` keeps a row in the file and takes
+it out only on the devices it names by their `ops/dashboard-v1/schedule.json`
+key: the Android runner skips it on the phone whose serial that key carries
+(`SKIPPED.txt`: `CELL_SKIP <cell> exclude-on=<key> reason=<reason>`) and runs
+it everywhere else, and both dashboards (`scripts/render_dashboard.py` and the
+team page, through `render_dashboard.exclusion`) show the reason in that
+device's cell; `exclude=` stays the every-device form, and `validate_cells.py`
+fails a key the schedule does not have, a key of another platform, a
+non-Android row (the Mac and iPhone runners do not read the option), an anchor
+row and a row that also carries `exclude=`. The Pixel 8a's Qwen3-4B and Gemma 4
+E4B rows carry `exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash`
+on every arm and task (short-chat, `long-context-1024-gen256`,
+`native-benchmark-1024x256`; owner decision 2026-10-07): in the 2026-10-07 b1r2
+sitting the LiteRT-LM CPU Qwen3-4B 1K launch held 3.26 GB in swap beside 3.9 GB
+resident, the phone's 3.9 GB zram was full (44 kB free) with 1.6 GB available,
+and in the 52 minutes since its boot the phone had read 34.6 GB from flash and
+swapped out 17.7 GB; that cell's first launch of the sitting ran into the
+1,800 s launch timeout with no record, and llama.cpp Qwen3-4B short-chat read
+0.8 tok/s twice where the 2026-09-05 and 09-08 sittings read 6.1–6.8. A rate
+taken in that state measures the phone's memory, not the engine. Gemma 4 E4B
+(3.66 GB `.litertlm`, 4.98 GB GGUF, both larger than the 4B files) goes with
+it; no memory reading of it was taken, and its llama.cpp short-chat on this
+phone has read from 0.9 to 5.4 tok/s across four sittings (2026-09-05 to
+09-09). The LiteRT-LM GPU Qwen3-4B short-chat of the same sitting held its
+September level (6.9 / 7.4 against 6.6–6.7); the row goes as a whole because
+the phone's memory state, not one arm, moved. The records stay in raw for
+audit; Qwen3 0.6B / 1.7B and Gemma 4 E2B keep running on the Pixel 8a, and
+every row keeps running on the Galaxy S26. Source: the lane's round notes
+`~/code/standup/drafts/2026-10-06-dashboard-first-tab-attachments/ROUND-m5.md`
+(outside this repo) and that sitting's records.
 
 ## Open questions for the LiteRT team
 
