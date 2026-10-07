@@ -199,7 +199,9 @@ BENCH_CPU_MASK= ./bench matrix matrices/dashboard-ortgenai-v1.cells --platform a
 Wired on the Mac and Android: cells, both drivers, the records' shape, the
 summary, the bench table and the team page (not measured until a sitting
 records the cells). Every number so far is a smoke (the Mac 2026-10-07 runs and
-the wiring smoke, the Galaxy S26 driver smoke), none a dashboard measurement.
+the wiring smoke, the Mac 2026-10-08 warm-regime smoke — one engine process, run 1
+cold and runs 2-4 warm — and the Galaxy S26 driver smoke), none a dashboard
+measurement.
 Open: the 1.7B / 4B recipe entries; the protocol rows (`model_benchmark` on
 Android, a Mac entry); the iPhone adapter; `streamed_bytes` for the six folders
 in `models/artifact-bytes.json` (the int8 embedding table is gathered per token,
