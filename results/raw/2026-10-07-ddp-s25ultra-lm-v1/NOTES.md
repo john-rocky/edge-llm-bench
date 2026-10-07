@@ -160,3 +160,34 @@ rejects the 1-iteration job (nothing beyond its one warm-up iteration) and gives
 (`ddp-session/`, `collected/sessions-iter.jsonl`, `table-iter.md`, `run-log-iter.txt`, `sessions-iter.tsv`,
 `tools/`). `table.md` and `collected/sessions.jsonl` are unchanged; fourteen new DDP sessions on 2026-10-07 in all
 (twelve in the morning, these two).
+
+## Where the second cycle's decode drop comes from: the same binary on a Galaxy S26 with a thermal log (s26-cycle-drop/, 16:09–16:15 JST)
+
+Purpose: the DDP sessions above show the measured process of Gemma 4 E2B gpu decoding slower from its second cycle
+on, and the pool gives no temperature or clock. The DDP binary (sha256 adac974b…2d06) and bundle (18193810…a63c) were
+run on the Galaxy S26 (SM-S942Q, SoC SM8850) over adb under the shared hold, with the phone's thermal zones, GPU
+clock and GPU busy read once a second: A0 one process without caches, A one process `--num_iterations=3` right after
+it, B three `--num_iterations=1` processes back to back, a 180 s rest, C = A again. Same arguments as the DDP sessions
+(`--backend=gpu`, 1024 / 256 / `--max_num_tokens=1280`). One run per setting, not a measurement.
+
+Result (`s26-cycle-drop/table-cycle-drop.md`; decode tok/s per cycle, prefill in brackets):
+
+| setting | cycle 1 | cycle 2 | cycle 3 | GPU MHz / busy during cycles 2–3 | gpuss max °C |
+|---|---|---|---|---|---:|
+| A0 (no caches, 1 cycle) | 43.83 (3460) | — | — | — | 74 |
+| A (3 cycles, 0 s after A0) | 43.82 (3874) | 25.53 (3759) | 23.85 (3861) | 1050–1300 / 99 % | 78 |
+| B1, B2, B3 (1 cycle each, 0 s apart, after A) | 45.47 (4104), 45.99 (4158), 46.24 (4147) | — | — | — | 83 |
+| C (3 cycles, after a 180 s rest) | 43.31 (4161) | 39.45 (4160) | 36.66 (3177) | 826–902 / 93–94 % | 80 |
+
+How to read it: the drop reproduces inside a process (A and C) and not across processes (B1–B3 start at the first-cycle
+level on the hottest phone of the sitting), so the phone's temperature is not what lowers the later cycles. In A the
+GPU ran at 1050–1300 MHz and 99 % busy through cycles 2–3 and still took 10.0 s and 10.7 s per 256 tokens against
+5.8 s in cycle 1, so the clock is not it either; in C the clock did fall to 902 → 826 MHz after `gpuss-4` reached
+79.9 °C and the decode fell less, a clock reduction on top of the in-process effect. Prefill and TTFT do not fall
+between cycles 1 and 2 in either run. The log has no line about the KV cache, token counts or a reset between cycles:
+each cycle is `Creating conversation` → `Running single-turn conversation` on the one engine of the process (lines
+quoted in the table file); `clear_kv_cache_before_prefill: true` and `max_tokens: 1280` appear only in the settings
+dump. What inside the process changes after the first conversation, and what sets the size of the drop (A −42 %,
+C −9 %, DDP −25 % at cycle 2), is not established. No error line, all six processes exit 0. Files:
+`s26-cycle-drop/` (`steps.log`, `<setting>.logcat-process.txt`, `<setting>.stdout.txt`, `metrics-<setting>.pb`,
+`thermal.tsv`, `table-cycle-drop.md`, `tools/`). Not in `table.md`, not in `results/summary`.
