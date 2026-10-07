@@ -6,7 +6,7 @@ for querying, regression tracking, and leaderboard export — regenerate any
 time with `python3 scripts/build_summary.py`.
 
 - `quality.csv` — 0 GSM8K report rows (all historical schema variants normalized)
-- `device-runs.csv` — 3383 per-run device records (speed / memory / energy cells)
+- `device-runs.csv` — 3385 per-run device records (speed / memory / energy cells)
 - `history.csv` — 32 regression verdicts flattened from `results/regression-reports/*/verdicts.json`
 
 Engine version is absent from pre-v1 rows (see the gap audit). Builds from
@@ -29,6 +29,15 @@ from 2026-10-06; its earlier rows carry a peak only from the
 `PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a
 `FAIL` run stays a row here and in raw but pools into no number
 (`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).
+
+`cpu_capped` / `cpu_max_freq` (after `text_check`, 2026-10-07) are the CPU frequency
+cap the Android runner read during the run: `cpu_capped` = `true` when a cpufreq
+policy of the engine's CPUs sat below its hardware maximum (the record's
+`protocolFlags` carry `cpu-capped`), `false` when the caps were read and none was
+below, empty where they were not read; `cpu_max_freq` = `p<N> <min>/<hw>` MHz per
+policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw but
+pools into no number (`render_leaderboard.arm_row`; `methodology/fairness-rules.md`
+cpu-cap-rule).
 
 Release-regression diffing over this layer: `scripts/regression_diff.py`
 (quality joins on tag; device cells join on device/runtime/model/task/cold-warm
