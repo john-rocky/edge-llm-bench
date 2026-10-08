@@ -43,6 +43,18 @@ task). Runners: `android/bench/run_cell.py --runtime executorch` (through
   (one model per queued hold, the cells file's rows one at a time, the `.pte` pushed for
   the slot and removed after it; the phone's launch mask, hold files and campaign name come
   from its entry in `ops/dashboard-v1/schedule.json`, `--plan` prints them).
+- The driver's skin gate: before each unit it reads `dumpsys thermalservice` and waits until the
+  `SKIN` value of the "Current temperatures from HAL" block is at most `SKIN_MAX_C` (the sensor's
+  first hot throttling threshold in the same dump minus 2.0 °C, 36.0 on the Galaxy S26; 36.0 when
+  the dump has none), for up to `SKIN_WAIT` (900 s). A unit still above it is not started and the
+  window goes back; three such windows in a row stop the driver. The "Cached temperatures" block
+  holds the value of the HAL's last throttling-status change, not the temperature now (on the S26
+  it reads 37.9 °C whenever the status is 0), so it is logged beside the current value and gates
+  only with `SKIN_SOURCE=cached`. `<state_dir>/skin_gate.tsv` has one row per gate (both readings,
+  the threshold, the seconds waited, the result). `LAUNCH_PROBES` (e.g. `3 10`) reads the whole
+  thermal dump and every policy's `scaling_cur_freq` / `scaling_max_freq` that many seconds after
+  each launch's adb shell starts (two adb shells per launch; the campaign's `LAUNCH_PROBES.txt`
+  names the units that had them).
 - Mac build (`scripts/executorch/build_llama_main_mac.sh`): `cmake --workflow --preset
   llm-release`, then `cmake --workflow --preset llama-release` in `examples/models/llama`
   (Release; ET_LOG compiled out; the preset also builds Core ML and the torchao kernels,

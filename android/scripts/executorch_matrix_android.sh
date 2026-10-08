@@ -21,9 +21,18 @@
 #   driver is gone) -> queue_cli.py wait -> the phone's state, other lanes' engines on it, free space
 #   -> the files the run overwrites outside its own names are pulled to the window's dir -> the
 #   runner directory is pushed (sha256 checked) -> per unit: battery <= BATTERY_MAX_C (up to
-#   BATTERY_WAIT s), then run_campaign.py in a session of its own (stopped CUT_S s before the window
-#   ends) -> what was pushed is removed and every overwritten file put back, a listing checks it ->
-#   the keeper gives the hold back.
+#   BATTERY_WAIT s), the skin gate (below), then run_campaign.py in a session of its own (stopped CUT_S s
+#   before the window ends) -> what was pushed is removed and every overwritten file put back, a
+#   listing checks it -> the keeper gives the hold back.
+#
+# Skin gate: before each unit, `dumpsys thermalservice` once per SKIN_POLL s until the SKIN_SENSOR value
+# from the "Current temperatures from HAL" block is <= SKIN_MAX_C. The "Cached temperatures" block holds
+# the value of the HAL's last throttling-status callback, not the temperature now: on the Galaxy S26 it
+# reads 37.9 for as long as the status stays 0 (the value at which it last fell back below 38.0), so it is
+# logged beside the current value and gates only with SKIN_SOURCE=cached. A unit whose reading stays above
+# SKIN_MAX_C for SKIN_WAIT s is not started: the window goes back (phone cleaned, hold released) and the
+# next window tries again; SKIN_STRIKES such windows in a row stop the driver. Every gate is a row of
+# <state_dir>/skin_gate.tsv (readings, threshold, seconds waited, result).
 # Records land where run_campaign.py writes them (results/raw/$CAMPAIGN/app-path-android, or under
 # BENCH_RAW_ROOT); <state_dir> keeps driver.log, units_done.tsv and per window the phone's state, the
 # listings before and after, the queue lines and each unit's console.
@@ -49,6 +58,13 @@
 #     would not fit is not started) -- e.g. the weekly job's firing on the same phone
 #   EVIDENCE_DIR (<state_dir>/evidence: the phone's power and cap state read at each window's start and end)
 #   BATTERY_MAX_C (36.0)  BATTERY_WAIT (600)
+#   SKIN_SENSOR (SKIN; empty = no skin gate)  SKIN_SOURCE (current | cached)  SKIN_MAX_C (the sensor's first
+#   hot throttling threshold in the dump's "Temperature static thresholds from HAL" minus SKIN_MARGIN_C (2.0);
+#   36.0 when the dump has none)  SKIN_WAIT (900)  SKIN_POLL (30)  SKIN_STRIKES (3)
+#   LAUNCH_PROBES (empty; e.g. "3 10"): seconds after each launch's adb shell appears on the host at which
+#     the phone's whole `dumpsys thermalservice` and every policy's scaling_cur_freq / scaling_max_freq are
+#     read once (read only, two adb shells per launch; <window>/<unit>.probes.txt, and the campaign's
+#     LAUNCH_PROBES.txt says which units had them)
 #   COOLDOWN (120) and GATE_COOLDOWN (180) as run_campaign.py reads them; its other env passes through
 #   (THERMAL_WAIT, CPUCAP_WAIT, GATE_RETRY, BENCH_RAW_ROOT, BENCH_LOCK_DIR). BENCH_SITTING,
 #   BENCH_SESSION_DEADLINE, BENCH_STRICT_SMOKE and ROUNDS are unset for the units (a by-hand matrix).
@@ -102,6 +118,15 @@ NO_NEW_WINDOW_AFTER="${NO_NEW_WINDOW_AFTER:-}"
 HARD_STOP="${HARD_STOP:-}"
 BATTERY_MAX_C="${BATTERY_MAX_C:-36.0}"
 BATTERY_WAIT="${BATTERY_WAIT:-600}"
+SKIN_SENSOR="${SKIN_SENSOR-SKIN}"
+SKIN_SOURCE="${SKIN_SOURCE:-current}"
+SKIN_MAX_C_ENV="${SKIN_MAX_C:-}"
+SKIN_MARGIN_C="${SKIN_MARGIN_C:-2.0}"
+SKIN_WAIT="${SKIN_WAIT:-900}"
+SKIN_POLL="${SKIN_POLL:-30}"
+SKIN_STRIKES="${SKIN_STRIKES:-3}"
+case "$SKIN_SOURCE" in current|cached) ;; *) echo "ERROR: SKIN_SOURCE is current or cached, not $SKIN_SOURCE" >&2; exit 2 ;; esac
+LAUNCH_PROBES="${LAUNCH_PROBES:-}"
 COOLDOWN="${COOLDOWN:-120}"
 GATE_COOLDOWN="${GATE_COOLDOWN:-180}"
 ET_TAG="${BENCH_EXECUTORCH_TAG:-v1.5.1}"
@@ -195,7 +220,140 @@ cap_evidence() {  # <window dir> <pre|post>: the phone's power, thermal and cpuf
       echo "== settings list $ns (power|perf|processing|battery_protect|protect)"
       adbs shell "settings list $ns | grep -i -E 'power|perf|processing|battery_protect|protect'; true"
     done
+    echo "== dumpsys battery (plugged|status|level|powered)"; adbs shell "dumpsys battery | grep -i -E 'plugged|status|level|powered'; true"
+    echo "== settings list global (power|perf|cpu|limit|processing)"
+    adbs shell "settings list global | grep -i -E 'power|perf|cpu|limit|processing'; true"
+    echo "== cpufreq policy governor / related_cpus"
+    adbs shell "for p in /sys/devices/system/cpu/cpufreq/policy*; do echo \"\${p##*/} governor=\$(cat \$p/scaling_governor) related_cpus=\$(cat \$p/related_cpus)\"; done"
   } >"$EVIDENCE_DIR/$(basename "$1")-$2.txt" 2>&1 || true
+}
+
+skin_parse() {  # `dumpsys thermalservice` on stdin -> "<cached> <its status> <current> <its status> <first hot threshold>"
+  # for SKIN_SENSOR, "-" for each value the dump does not have (the blocks: Cached temperatures, Current
+  # temperatures from HAL, Temperature static thresholds from HAL; a NaN threshold is none)
+  awk -v s="$SKIN_SENSOR" '
+    /^Cached temperatures:/ { sec = "cached"; next }
+    /^Current temperatures from HAL:/ { sec = "current"; next }
+    /^Temperature static thresholds from HAL:/ { sec = "thresh"; next }
+    /^[^[:space:]]/ { sec = "" }
+    index($0, "mName=" s ",") == 0 { next }
+    sec == "cached" || sec == "current" {
+      v = $0; sub(/.*mValue=/, "", v); sub(/,.*/, "", v)
+      st = $0; sub(/.*mStatus=/, "", st); sub(/[^0-9].*/, "", st)
+      val[sec] = v; stat[sec] = st
+    }
+    sec == "thresh" {
+      t = $0; sub(/.*mHotThrottlingThresholds=\[/, "", t); sub(/[],].*/, "", t)
+      if (t ~ /^-?[0-9]+([.][0-9]+)?$/) hot1 = t
+    }
+    function d(x) { return x == "" ? "-" : x }
+    END { print d(val["cached"]), d(stat["cached"]), d(val["current"]), d(stat["current"]), d(hot1) }'
+}
+skin_read() {  # the phone's SKIN_SENSOR now (skin_parse's five fields), empty when the dump could not be read
+  local out
+  out="$(adbs shell "dumpsys thermalservice" 2>/dev/null || true)"
+  [[ "$out" == *"Thermal Status"* ]] || return 0
+  echo "$out" | skin_parse
+}
+skin_line() {  # a device-state line from skin_read's fields
+  local r; r="$(skin_read)"
+  [[ -n "$r" ]] || { echo "SKIN_GATE ${SKIN_SENSOR:-off}: thermalservice not read"; return 0; }
+  set -- $r
+  echo "SKIN_GATE ${SKIN_SENSOR:-off}: current $3 (status $4), cached $1 (status $2), first hot threshold $5"
+}
+skin_max() {  # <first hot threshold or -> -> the gate's maximum and where it comes from
+  if [[ -n "$SKIN_MAX_C_ENV" ]]; then echo "$SKIN_MAX_C_ENV SKIN_MAX_C"
+  elif [[ "$1" != - ]]; then awk -v t="$1" -v m="$SKIN_MARGIN_C" 'BEGIN { printf "%.1f hot-threshold-%s-minus-%s\n", t - m, t, m }'
+  else echo "36.0 no-hot-threshold-in-the-dump"; fi
+}
+
+skin_gate() {  # <window dir> <model> <task> <deadline epoch> -> 0 run the unit, 1 above SKIN_MAX_C for SKIN_WAIT s (the
+  # window goes back), 2 the deadline came first (no time left in the window), 3 no SKIN_SENSOR in the dump,
+  # 4 the dump could not be read; SKIN_GATE_WAITED = the seconds waited, one row of skin_gate.tsv either way
+  local ws=$1 model=$2 task=$3 t0 deadline r cached cst cur ccs hot1 max maxsrc reading first="" last="" polls=0 absent=0 rc
+  SKIN_GATE_WAITED=0
+  [[ -n "$SKIN_SENSOR" ]] || return 0
+  t0=$(date +%s); deadline=$((t0 + SKIN_WAIT)); (( $4 < deadline )) && deadline=$4
+  [[ -s "$STATE/skin_gate.tsv" ]] || printf 'time\twindow\tmodel\ttask\tsensor\tsource\thot1_c\tmax_c\tmax_from\tfirst_c\tlast_c\tcached_c\tcurrent_c\twaited_s\tpolls\tresult\n' >"$STATE/skin_gate.tsv"
+  cached=-; cur=-; hot1=-; max=-; maxsrc=-
+  while :; do
+    r="$(skin_read)"; polls=$((polls + 1))
+    if [[ -n "$r" ]]; then
+      read -r cached cst cur ccs hot1 <<<"$r"
+      read -r max maxsrc <<<"$(skin_max "$hot1")"
+      if [[ "$SKIN_SOURCE" == cached ]]; then reading=$cached; else reading=$cur; fi
+      if [[ "$reading" == - ]]; then
+        absent=$((absent + 1))
+        # a dump without the sensor twice: waiting does not bring it
+        if (( absent >= 2 )); then rc=3; break; fi
+      else
+        absent=0; [[ -n "$first" ]] || first=$reading; last=$reading
+        if awk -v r="$reading" -v m="$max" 'BEGIN { exit !(r <= m) }'; then rc=0; break; fi
+        (( polls > 1 )) || log "  $SKIN_SENSOR $reading C ($SKIN_SOURCE; cached $cached, current $cur) > $max ($maxsrc): waiting up to $(( deadline - t0 )) s"
+      fi
+    fi
+    if (( $(date +%s) >= deadline )); then
+      if [[ -z "$first" && "$absent" == 0 ]]; then rc=4
+      elif (( deadline < t0 + SKIN_WAIT )); then rc=2
+      else rc=1; fi
+      break
+    fi
+    local nap=$(( absent > 0 ? 5 : SKIN_POLL )) left=$(( deadline - $(date +%s) ))
+    (( left < nap )) && nap=$(( left > 1 ? left : 1 ))
+    sleep "$nap"
+  done
+  SKIN_GATE_WAITED=$(( $(date +%s) - t0 ))
+  local result
+  case $rc in 0) result=pass ;; 1) result=window-returned ;; 2) result=no-time-left ;; 3) result=no-sensor ;; *) result=unreadable ;; esac
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$(now)" "$(basename "$ws")" "$model" "$task" \
+    "$SKIN_SENSOR" "$SKIN_SOURCE" "$hot1" "$max" "$maxsrc" "${first:--}" "${last:--}" "$cached" "$cur" "$SKIN_GATE_WAITED" "$polls" "$result" \
+    >>"$STATE/skin_gate.tsv"
+  case $rc in
+    0) log "  $SKIN_SENSOR $last C ($SKIN_SOURCE; cached $cached, current $cur) <= $max ($maxsrc) after $SKIN_GATE_WAITED s" ;;
+    1) log "  $SKIN_SENSOR ${last:-?} C ($SKIN_SOURCE; cached $cached, current $cur) still > $max after $SKIN_GATE_WAITED s (SKIN_WAIT $SKIN_WAIT)" ;;
+    2) log "  $SKIN_SENSOR ${last:-?} C ($SKIN_SOURCE) still > $max when the window had no time left for the unit ($SKIN_GATE_WAITED s)" ;;
+    3) log "  no $SKIN_SENSOR in the dump's ${SKIN_SOURCE/current/Current temperatures from HAL} block (two reads)" ;;
+    *) log "  dumpsys thermalservice could not be read for $SKIN_GATE_WAITED s" ;;
+  esac
+  return $rc
+}
+
+skin_config() {
+  if [[ -z "$SKIN_SENSOR" ]]; then echo "skin gate: off (SKIN_SENSOR empty)"; return 0; fi
+  echo "skin gate: $SKIN_SENSOR from the dump's ${SKIN_SOURCE/current/current (HAL)} block <= ${SKIN_MAX_C_ENV:-its first hot threshold - $SKIN_MARGIN_C (36.0 without one)}, up to $SKIN_WAIT s per unit (reads every $SKIN_POLL s), $SKIN_STRIKES windows back in a row stop; launch probes: ${LAUNCH_PROBES:-none}"
+}
+now_hires() { perl -MTime::HiRes=time -e 'printf "%.3f\n", time'; }
+launch_probes() {  # <window dir> <unit tag> <run_campaign pid>: LAUNCH_PROBES s after each of the unit's launches appears
+  # on the host (run_cell's adb shell of the engine), the phone's thermal HAL and cpufreq, read once each. One launch
+  # at a time: a launch that starts before the last offset of the one before is not read (cells cooldowns >= 120 s)
+  local ws=$1 tag=$2 upid=$3 out="$1/$2.probes.txt" seen=" " p t0 off n=0 d all q pp
+  while kill -0 "$upid" 2>/dev/null; do
+    all=" $(pgrep -f -- "-s $SERIAL shell .*[=]==ENGINE_OUTPUT===" 2>/dev/null | tr '\n' ' ')"
+    p=""
+    for q in $all; do
+      [[ "$seen" != *" $q "* ]] || continue
+      # a fork of a launch's adb (the same command line until it execs) is not a launch
+      pp="$(ps -o ppid= -p "$q" 2>/dev/null | tr -d ' ')"
+      if [[ -n "$pp" && "$all" == *" $pp "* ]]; then seen="$seen$q "; continue; fi
+      p=$q; break
+    done
+    if [[ -n "$p" ]]; then
+      seen="$seen$p "; n=$((n + 1)); t0=$(now_hires)
+      echo "== launch $n: adb pid $p seen at $(date -r "${t0%.*}" '+%F %T').${t0#*.} (t=0)" >>"$out"
+      for off in $LAUNCH_PROBES; do
+        d=$(awk -v t="$t0" -v o="$off" -v n="$(now_hires)" 'BEGIN { d = t + o - n; printf "%.3f", (d < 0 ? 0 : d) }')
+        sleep "$d"
+        if ! kill -0 "$p" 2>/dev/null; then echo "== +${off} s: the launch had ended" >>"$out"; break; fi
+        {
+          echo "== +${off} s: read from t=$(awk -v t="$t0" -v n="$(now_hires)" 'BEGIN { printf "%.2f", n - t }')"
+          adbs shell "dumpsys thermalservice; for q in /sys/devices/system/cpu/cpufreq/policy*; do \
+echo \"CPUFREQ \${q##*/} cur=\$(cat \$q/scaling_cur_freq) max=\$(cat \$q/scaling_max_freq)\"; done" || echo "== adb failed"
+          echo "== +${off} s: done at t=$(awk -v t="$t0" -v n="$(now_hires)" 'BEGIN { printf "%.2f", n - t }')"
+        } >>"$out" 2>&1
+      done
+    fi
+    sleep 0.2
+  done
 }
 
 window_end() {  # <acquired epoch>: the window's end, WINDOW_MIN after the hold or HARD_STOP if sooner
@@ -327,6 +485,7 @@ if [[ "${1:-}" == --plan ]]; then
   shift
   MODELS=("$@"); [[ ${#MODELS[@]} -gt 0 ]] || MODELS=(0.6B 1.7B E2B 4B E4B)
   echo "phone $SERIAL (${DEV_KEY:-not in $SCHEDULE}): cpu mask ${CPU_MASK:-none} ($MASK_SOURCE), hold $HOLD, other hold files ${HOLD_ALSO:-none}; a new state dir's campaign ${CAMPAIGN:-$(date +%F)-dashboard-executorch-v1-${DEV_KEY:-s26}-android}"
+  echo "$(skin_config)"
   for model in "${MODELS[@]}"; do
     used=0; w=0
     while IFS= read -r row; do
@@ -375,6 +534,7 @@ log "phone $SERIAL (${DEV_KEY:-not in $SCHEDULE}): cpu mask ${CPU_MASK:-none} ($
 if [[ -n "$DEV_KEY" && "$CPU_MASK" != "$ENTRY_MASK" ]]; then
   log "NOTE: CPU_MASK=${CPU_MASK:-<empty>} from the env; the schedule's cpu_mask for $DEV_KEY is ${ENTRY_MASK:-<empty>}"
 fi
+log "$(skin_config)"
 
 WINDOWS_RUN=0
 STOP=""
@@ -395,6 +555,14 @@ run_unit() {  # <window dir> <model> <row> -> rc of run_campaign.py (124 = stopp
   pid=$!
   echo "$pid" >"$ws/UNIT_PGID"
   log "  $model $task: run_campaign.py pid $pid (console $(basename "$ws")/$tag.console.txt, cut at $(date -r "$cut" '+%T'))"
+  local probes=""
+  if [[ -n "$LAUNCH_PROBES" ]]; then
+    mkdir -p "$OUT_DIR"
+    echo "$(now) $model $task: the driver read the phone's dumpsys thermalservice and each cpufreq policy's scaling_cur_freq / scaling_max_freq ${LAUNCH_PROBES// /, } s after each launch's adb shell appeared on the host (android/scripts/$(basename "$SELF") LAUNCH_PROBES, read only, two adb shells per launch)" >>"$OUT_DIR/LAUNCH_PROBES.txt"
+    launch_probes "$ws" "$tag" "$pid" &
+    probes=$!
+    log "  $model $task: launch probes at +${LAUNCH_PROBES// / s, +} s (pid $probes, $(basename "$ws")/$tag.probes.txt)"
+  fi
   while kill -0 "$pid" 2>/dev/null; do
     if (( $(date +%s) >= cut )); then
       log "  $model $task: window cut reached, stopping the unit"
@@ -411,6 +579,13 @@ run_unit() {  # <window dir> <model> <row> -> rc of run_campaign.py (124 = stopp
     sleep 5
   done
   if (( rc == 0 )); then wait "$pid" || rc=$?; else wait "$pid" 2>/dev/null || true; fi
+  if [[ -n "$probes" ]]; then
+    # the last launch's reads first (the probe loop ends by itself after its last offset)
+    local o maxoff=0
+    for o in $LAUNCH_PROBES; do (( o > maxoff )) && maxoff=$o; done
+    for _ in $(seq 1 $(( (maxoff + 2) * 5 ))); do kill -0 "$probes" 2>/dev/null || break; sleep 0.2; done
+    kill "$probes" 2>/dev/null || true; wait "$probes" 2>/dev/null || true
+  fi
   rm -f "$ws/UNIT_PGID"
   return $rc
 }
@@ -433,7 +608,7 @@ battery_gate() {  # battery temperature <= BATTERY_MAX_C, up to BATTERY_WAIT s
 }
 
 window() {  # <model> -> runs one window from the model's first unit not done; sets STOP on a stop
-  local model=$1 rows first="" row label n ws wait_s acq wend k=0 est pte need avail ec need_s others usb
+  local model=$1 rows first="" row label n ws wait_s acq wend k=0 est pte need avail ec need_s others usb sg strikes
   rows="$(model_rows "$model")"
   while IFS= read -r row; do
     [[ -n "$row" ]] || continue
@@ -513,6 +688,7 @@ PY
     STOP="device not on adb"; touch "$ws/RELEASE"; wait "$KEEPER" 2>/dev/null || true; return 0
   fi
   device_state >"$ws/device_pre.txt" 2>&1 || true
+  skin_line >>"$ws/device_pre.txt" 2>&1 || true
   cap_evidence "$ws" pre
   adbs shell "ps -A -o PID,ARGS 2>&1 | head -3" >"$ws/ps_sample.txt" 2>&1 || true
   sed 's/^/    /' "$ws/device_pre.txt" | tee -a "$STATE/driver.log"
@@ -579,6 +755,21 @@ for d in models prompts $RUNNER_DIR; do if [ -d $DEV/\$d ]; then echo DIR_PRESEN
     fi
     k=$((k + 1))
     battery_gate || true
+    sg=0; skin_gate "$ws" "$model" "$(field "$row" 4)" $((wend - MARGIN_S)) || sg=$?
+    case $sg in
+      0) [[ -z "$SKIN_SENSOR" ]] || echo 0 >"$STATE/skin_returns"
+         if (( SKIN_GATE_WAITED > 0 && $(date +%s) + est > wend - MARGIN_S )); then
+           log "  unit $(field "$row" 4) (estimate ${est} s) no longer fits before $(date -r $((wend - MARGIN_S)) '+%T') after the skin wait: window closes"
+           break
+         fi ;;
+      1) strikes=$(( $(cat "$STATE/skin_returns" 2>/dev/null || echo 0) + 1 )); echo "$strikes" >"$STATE/skin_returns"
+         log "  window $(basename "$ws") goes back: $SKIN_SENSOR above its maximum for $SKIN_WAIT s ($strikes window(s) in a row)"
+         if (( strikes >= SKIN_STRIKES )); then STOP="$SKIN_SENSOR above its maximum for SKIN_WAIT in $strikes windows in a row"; fi
+         break ;;
+      2) log "  window $(basename "$ws") closes: no time left for the unit while $SKIN_SENSOR was above its maximum"; break ;;
+      3) STOP="no $SKIN_SENSOR in the phone's thermalservice dump"; break ;;
+      *) STOP="thermalservice unreadable"; break ;;
+    esac
     log "  unit $model $(field "$row" 4) starts (estimate ${est} s)"
     ec=0; run_unit "$ws" "$model" "$row" || ec=$?
     log "  unit $model $(field "$row" 4) ended rc=$ec; records now $(ls "$OUT_DIR"/*.json 2>/dev/null | grep -c "_$(field "$row" 3 | tr '/' '_')_$(field "$row" 4)" || true)"
@@ -593,6 +784,7 @@ for d in models prompts $RUNNER_DIR; do if [ -d $DEV/\$d ]; then echo DIR_PRESEN
     log "  cleanup: NOT clean ($(basename "$ws")/cleanup.txt)"; STOP="cleanup not clean"
   fi
   device_state >"$ws/device_post.txt" 2>&1 || true
+  skin_line >>"$ws/device_post.txt" 2>&1 || true
   cap_evidence "$ws" post
   touch "$ws/RELEASE"
   for _ in $(seq 1 24); do [[ -f "$ws/RELEASED" ]] && break; sleep 5; done
