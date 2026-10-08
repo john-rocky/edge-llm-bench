@@ -301,6 +301,106 @@
    "tool": "scripts/ortgenai_recipe.py"
   },
   {
+   "model_id": "onnx-community/Qwen3-1.7B-ONNX",
+   "revision": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+   "folder": "onnxruntime/webgpu/webgpu-int4-kld-block-32",
+   "model_onnx_sha256": "46d813105b1ae677c28f2e83a79de0d2db1b84ec6a5e344a6fcfa8ce3eba90bf",
+   "label": "int4 + int8 mixed MatMulNBits (96 int4 / 101 int8 of 197; per-layer int8 overrides as published), block 32, asymmetric uint8 zero points, fp16 scales, accuracy_level 4; int8 block-32 GatherBlockQuantized embedding; fp16 activations and KV (onnx-community webgpu-int4-kld-block-32, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+   "source_commit": {
+    "id": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+    "title": "Add optimized models for ORT GenAI (#3)",
+    "date": "2026-04-20",
+    "authors": [
+     "Xenova",
+     "kvaishnavi"
+    ]
+   },
+   "files": {
+    "chat_template.jinja": {
+     "bytes": 4168,
+     "sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8"
+    },
+    "config.json": {
+     "bytes": 8707,
+     "sha256": "37e5d15050e28c9464735024ebcc981f8c87af70535c2273eea884f66bb7c582"
+    },
+    "genai_config.json": {
+     "bytes": 1752,
+     "sha256": "8e98992590df1dc5f938890c9f2b43f6a5c3eb7c362ec1ffd474a1793af6210b"
+    },
+    "model.onnx": {
+     "bytes": 1478657378,
+     "sha256": "46d813105b1ae677c28f2e83a79de0d2db1b84ec6a5e344a6fcfa8ce3eba90bf"
+    },
+    "tokenizer.json": {
+     "bytes": 11422648,
+     "sha256": "979d160e081df25a1bf7f4e2e8f4c441b5dfdc9a8e84aec9f32e80445e1b59b8"
+    },
+    "tokenizer_config.json": {
+     "bytes": 663,
+     "sha256": "bfd13b57b2e0c2cb582f311c0895f077d16a868c0dc61e4dbbba544a835341d6"
+    }
+   },
+   "facts": {
+    "producer": "onnxruntime-genai",
+    "producerVersion": "",
+    "opsets": {
+     "ai.onnx": 21,
+     "com.microsoft": 1
+    },
+    "metadata": {
+     "olive_version": "0.11.0.dev0"
+    },
+    "nodes": 547,
+    "quantizedOps": [
+     {
+      "op": "GatherBlockQuantized",
+      "bits": 8,
+      "blockSize": 32,
+      "accuracyLevel": null,
+      "scaleType": "FLOAT16",
+      "zeroPointType": "UINT8",
+      "count": 1
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 4,
+      "blockSize": 32,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT16",
+      "zeroPointType": "UINT8",
+      "count": 96
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 8,
+      "blockSize": 32,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT16",
+      "zeroPointType": "UINT8",
+      "count": 101
+     }
+    ],
+    "kvTypes": [
+     "FLOAT16"
+    ],
+    "logitsTypes": [
+     "FLOAT16"
+    ],
+    "config": {
+     "quant_method": "olive",
+     "bits": 4,
+     "group_size": 32,
+     "symmetric": false,
+     "overrideBits": {
+      "8": 102
+     }
+    }
+   },
+   "registered": "2026-10-08",
+   "tool": "scripts/ortgenai_recipe.py"
+  },
+  {
    "model_id": "onnx-community/Qwen3-4B-ONNX",
    "revision": "98ddba15d05dede4435afb63f13280abcdbc2a48",
    "folder": "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128",
@@ -398,6 +498,110 @@
      "symmetric": false,
      "overrideBits": {
       "8": 111
+     }
+    }
+   },
+   "registered": "2026-10-08",
+   "tool": "scripts/ortgenai_recipe.py"
+  },
+  {
+   "model_id": "onnx-community/Qwen3-4B-ONNX",
+   "revision": "98ddba15d05dede4435afb63f13280abcdbc2a48",
+   "folder": "onnxruntime/webgpu/webgpu-int4-kld-block-32",
+   "model_onnx_sha256": "bcaf3e1fc7ee93a7dc2eb4d973ea2fbdcabe8f3fb00b589b86d07ab46ab7245a",
+   "label": "int4 + int8 mixed MatMulNBits (146 int4 / 107 int8 of 253; per-layer int8 overrides as published), block 32, asymmetric uint8 zero points, fp16 scales, accuracy_level 4; int8 block-32 GatherBlockQuantized embedding; fp16 activations and KV (onnx-community webgpu-int4-kld-block-32, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+   "source_commit": {
+    "id": "98ddba15d05dede4435afb63f13280abcdbc2a48",
+    "title": "Add optimized models for ORT GenAI (#3)",
+    "date": "2026-04-20",
+    "authors": [
+     "Xenova",
+     "kvaishnavi"
+    ]
+   },
+   "files": {
+    "chat_template.jinja": {
+     "bytes": 4168,
+     "sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8"
+    },
+    "config.json": {
+     "bytes": 9347,
+     "sha256": "875d4ceeae11784f5ee27f4977ae999e1c7ed485fdd4d6d3e567bc178923b4c9"
+    },
+    "genai_config.json": {
+     "bytes": 1752,
+     "sha256": "8756bac715c6f1493436e77ea744485eb818f221decc4046abbc74e9274ffc22"
+    },
+    "model.onnx": {
+     "bytes": 501431,
+     "sha256": "bcaf3e1fc7ee93a7dc2eb4d973ea2fbdcabe8f3fb00b589b86d07ab46ab7245a"
+    },
+    "model.onnx.data": {
+     "bytes": 3070704640,
+     "sha256": "18bef60545f9e8703ac0471a433d15ff0a527e172d967e6441283ac08520f9ce"
+    },
+    "tokenizer.json": {
+     "bytes": 11422648,
+     "sha256": "979d160e081df25a1bf7f4e2e8f4c441b5dfdc9a8e84aec9f32e80445e1b59b8"
+    },
+    "tokenizer_config.json": {
+     "bytes": 663,
+     "sha256": "bfd13b57b2e0c2cb582f311c0895f077d16a868c0dc61e4dbbba544a835341d6"
+    }
+   },
+   "facts": {
+    "producer": "onnxruntime-genai",
+    "producerVersion": "",
+    "opsets": {
+     "ai.onnx": 21,
+     "com.microsoft": 1
+    },
+    "metadata": {
+     "olive_version": "0.11.0.dev0"
+    },
+    "nodes": 699,
+    "quantizedOps": [
+     {
+      "op": "GatherBlockQuantized",
+      "bits": 8,
+      "blockSize": 32,
+      "accuracyLevel": null,
+      "scaleType": "FLOAT16",
+      "zeroPointType": "UINT8",
+      "count": 1
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 4,
+      "blockSize": 32,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT16",
+      "zeroPointType": "UINT8",
+      "count": 146
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 8,
+      "blockSize": 32,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT16",
+      "zeroPointType": "UINT8",
+      "count": 107
+     }
+    ],
+    "kvTypes": [
+     "FLOAT16"
+    ],
+    "logitsTypes": [
+     "FLOAT16"
+    ],
+    "config": {
+     "quant_method": "olive",
+     "bits": 4,
+     "group_size": 32,
+     "symmetric": false,
+     "overrideBits": {
+      "8": 108
      }
     }
    },

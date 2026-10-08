@@ -1,0 +1,8 @@
+measurement
+command: /Users/USER/.venvs/ortgenai-0.17.1/bin/python /Users/USER/code/edge-llm-bench-wt-ort-r4mac/scripts/ortgenai_mac.py --worker --worker-result /Users/USER/code/edge-llm-bench-wt-ort-r4mac/results/raw/2026-10-08-dashboard-ortgenai-v1-m4max-2-mac/ortgenai-logs/onnxruntime-genai-webgpu_onnx-community_Qwen3-4B-ONNX_webgpu-int4-kld-block-32_short-chat_ctx2048_runs4_20261008T145654.178893Z.worker.json --model-id onnx-community/Qwen3-4B-ONNX --model-dir /Users/USER/.cache/huggingface/hub/models--onnx-community--Qwen3-4B-ONNX/snapshots/98ddba15d05dede4435afb63f13280abcdbc2a48/onnxruntime/webgpu/webgpu-int4-kld-block-32 --backend webgpu --task short-chat --context-tokens 2048 --telemetry off --runs 4 --timeout 900
+engine env: ORT_DISABLE_TELEMETRY=1 ORTGENAI_ORT_VERBOSE_LOGGING=(unset)
+[harness] register_execution_provider_library('WebGpuExecutionProvider', '/Users/USER/.venvs/ortgenai-0.17.1/lib/python3.14/site-packages/onnxruntime_ep_webgpu/libonnxruntime_providers_webgpu.dylib') returned
+Traceback (most recent call last):
+  File "/Users/USER/code/edge-llm-bench-wt-ort-r4mac/scripts/ortgenai_mac.py", line 371, in worker
+    model = og.Model(og.Config(str(args.model_dir)))
+RuntimeError: External data path validation failed for initializer: model.embed_tokens.qweight. Error: External data path escapes model directory. External data path: "model.onnx.data" resolved path: "/Users/USER/.cache/huggingface/hub/blobs/0c/0c4174f45d2da65e97749267ec773e952780b30c80f35a0e03df176353f6bc26" allowed directory: "/Users/USER/.cache/huggingface/hub/blobs/33"
