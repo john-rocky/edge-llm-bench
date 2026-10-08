@@ -1,0 +1,66 @@
+# Core AI stock arm on the Mac, v1 (2026-10-08; docs/coreai-arm-v1.md). Apple's own exports of the
+# dashboard model set (apple/coreai-models bd3c539, its export pipeline unchanged, context 2048), run
+# by Apple's static-shape engine on the stock path of the yardstick's CoreAIRuntime (llm-runner's call
+# sequence). The engine pins chunked-static bundles to the Neural Engine; no public option picks the
+# compute unit. backend=ane is arm identity only: rows stamp `core-ai-ane`, the runner passes nothing
+# for it. The bundle fixes the KV allocation (the export's --max-context-length, the model id's
+# -ctx2048); context-tokens=2048 names it, as the other arms' 1K rows name theirs.
+#
+# Two instruments per model, both arms:
+#   long-context-1024-gen256  the 1K text task through the harness (the same prompt and record for
+#                             every arm); runs=4 = run 1 cold, runs 2-4 warm (the Mac headline is warm)
+#   native-benchmark-1024x256 each engine's own benchmark: Core AI = Apple's llm-benchmark
+#                             measurement (yardstick --coreai-native-benchmark; runs=4 = 4 timed
+#                             trials after the warmup trial, which is printed as trial 0, cold);
+#                             LiteRT-LM = its benchmark() (yardstick --litert-native-benchmark;
+#                             runs=4 = 4 calls in one process, call 1 cold)
+# The two instruments count differently (docs/coreai-arm-v1.md "Record fields and definitions"),
+# so their rows never pool. The LiteRT-LM rows are the same cells as
+# matrices/dashboard-longctx1024-v1.cells and dashboard-protocol1024-v1.cells (same keys), here so
+# that both arms run in one sitting: the same yardstick build, the same OS, the same hour.
+# Native lines land in the cell's .jsonl (no schema-v1 record; build_summary skips them); lift them
+# with scripts/import_native_benchmark.py --schema-v1 into <campaign>/app-path-native/
+# (docs/coreai-arm-v1.md "Run one cell"). Bundles are staged under BENCH_COREAI_MODELS_DIR (default
+# ~/.cache/edge-llm-bench/CoreAIModels/stock_<model>_ctx2048/); a missing one logs SKIPPED.
+# Model order and cooldowns as matrices/dashboard-longctx1024-v1.cells; anchors = matrices/anchors.cells.
+# Name the campaign <date>-dashboard-coreai-v1-<device>: the team dashboard reads only campaigns
+# whose name contains "dashboard".
+#   ./bench matrix matrices/dashboard-coreai-v1-mac.cells --platform mac --campaign <date>-dashboard-coreai-v1-m4max
+#   scripts/bench_matrix_mac.sh run matrices/dashboard-coreai-v1-mac.cells --dry-run    # every row resolved, nothing run
+
+
+# ---- session anchors ----
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+
+# --- Qwen3-0.6B ---
+mac core-ai core-ai/qwen3-0.6b-stock-ctx2048 long-context-1024-gen256 backend=ane context-tokens=2048 runs=4
+mac core-ai core-ai/qwen3-0.6b-stock-ctx2048 native-benchmark-1024x256 backend=ane context-tokens=2048 runs=4
+mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048 runs=4
+mac litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 context-tokens=2048 runs=4
+
+# --- Qwen3-1.7B ---
+mac core-ai core-ai/qwen3-1.7b-stock-ctx2048 long-context-1024-gen256 backend=ane context-tokens=2048 runs=4
+mac core-ai core-ai/qwen3-1.7b-stock-ctx2048 native-benchmark-1024x256 backend=ane context-tokens=2048 runs=4
+mac litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048 runs=4
+mac litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 context-tokens=2048 runs=4
+
+# --- Gemma 4 E2B ---
+mac core-ai core-ai/gemma4-e2b-stock-ctx2048 long-context-1024-gen256 backend=ane cooldown=300 context-tokens=2048 runs=4
+mac core-ai core-ai/gemma4-e2b-stock-ctx2048 native-benchmark-1024x256 backend=ane cooldown=300 context-tokens=2048 runs=4
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048 runs=4
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048 runs=4
+
+# --- Qwen3-4B ---
+mac core-ai core-ai/qwen3-4b-stock-ctx2048 long-context-1024-gen256 backend=ane cooldown=300 context-tokens=2048 runs=4
+mac core-ai core-ai/qwen3-4b-stock-ctx2048 native-benchmark-1024x256 backend=ane cooldown=300 context-tokens=2048 runs=4
+mac litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048 runs=4
+mac litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 cooldown=300 context-tokens=2048 runs=4
+
+# --- Gemma 4 E4B --- (on the 1K text task Core AI's E4B ends its reply early, at the model's own
+# end of turn: measured as it is, docs/coreai-arm-v1.md "Regime and disclosure"; its native row
+# decodes 256)
+mac core-ai core-ai/gemma4-e4b-stock-ctx2048 long-context-1024-gen256 backend=ane cooldown=300 context-tokens=2048 runs=4
+mac core-ai core-ai/gemma4-e4b-stock-ctx2048 native-benchmark-1024x256 backend=ane cooldown=300 context-tokens=2048 runs=4
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048 runs=4
+mac litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048 runs=4

@@ -105,6 +105,11 @@ def arm_of(plat, runtime, opts):
     # docs/executorch-arm-v1.md)
     if runtime == "executorch" and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
+    # the Core AI stock arm (Apple's exports on the Neural Engine) stamps core-ai-ane on Mac
+    # and iPhone (CoreAIRuntime.recordRuntimeLabel; docs/coreai-arm-v1.md); the own-export
+    # rows without backend= stay `core-ai`
+    if plat in ("mac", "ios") and runtime == "core-ai" and opts.get("backend") == "ane":
+        return "core-ai-ane"
     return runtime
 
 

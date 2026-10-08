@@ -69,9 +69,12 @@ packages:
     # Vendored/ is git-ignored; clone with GIT_LFS_SKIP_SMUDGE=1 (broken Android LFS blob upstream).
     path: Vendored/LiteRT-LM
   coreai-models:
-    # Apple's official Core AI Swift runtime (CoreAILM). Local path because the
-    # package floor is iOS/macOS 27 and our checkout carries small local fixes.
-    # Vendored/ is git-ignored; symlink it: Vendored/coreai-models -> ~/code/coreai/coreai-models
+    # Apple's Core AI Swift runtime (CoreAILM). Local path because the package floor
+    # is iOS/macOS 27. Since 2026-10-08 it is a checkout of apple/coreai-models at the
+    # stock arm's pin, unchanged (bd3c539; environment.lock.json
+    # arms.coreai-models.stock-v1, docs/coreai-arm-v1.md); the own-export rows' 0.2.0
+    # checkout carried local fixes (methodology/core-ai-arm-provenance.md).
+    # Vendored/ is git-ignored; point it at the checkout: Vendored/coreai-models -> <checkout>
     path: Vendored/coreai-models
 
 targets:

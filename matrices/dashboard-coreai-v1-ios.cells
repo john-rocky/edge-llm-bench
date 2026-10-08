@@ -1,0 +1,69 @@
+# Core AI stock arm on the iPhone, v1 (2026-10-08; docs/coreai-arm-v1.md). Apple's own exports of the
+# dashboard model set (apple/coreai-models bd3c539, its export pipeline unchanged, context 2048: the
+# same bundles the Mac rows run), run by Apple's static-shape engine on the stock path of the app's
+# CoreAIRuntime (llm-runner's call sequence). The engine pins chunked-static bundles to the Neural
+# Engine; no public option picks the compute unit. backend=ane is arm identity only: rows stamp
+# `core-ai-ane`, the runner passes nothing for it. The bundle fixes the KV allocation (the export's
+# --max-context-length, the model id's -ctx2048); context-tokens=2048 names it, as the other arms'
+# 1K rows name theirs.
+#
+# Two instruments per model, both arms, each one app launch per row:
+#   long-context-1024-gen256  the 1K text task through the harness (the same prompt and record for
+#                             every arm); runs=3 = run 1 cold, runs 2-3 warm (the iPhone headline is warm)
+#   native-benchmark-1024x256 each engine's own benchmark: Core AI = Apple's llm-benchmark
+#                             measurement (--coreai-native-benchmark; runs=3 = 3 timed trials after
+#                             the warmup trial, which is printed as trial 0, cold); LiteRT-LM = its
+#                             benchmark() (--litert-native-benchmark; runs=3 = 3 calls in one process,
+#                             call 1 cold)
+# The two instruments count differently (docs/coreai-arm-v1.md "Record fields and definitions"),
+# so their rows never pool. The LiteRT-LM rows are the same cells as
+# matrices/dashboard-longctx1024-v1.cells and dashboard-protocol1024-v1.cells (same keys), here so
+# that both arms run in one sitting: the same app build, the same OS, the same hour.
+# scripts/bench_matrix_iphone.sh launches a native row with the engine's flag and imports its
+# console lines with scripts/import_native_benchmark.py --schema-v1 into <campaign>/app-path-native/,
+# --like = this campaign's 1K task record of the same arm and model (so each model's task row runs
+# first); without one it logs NATIVE_IMPORT_PENDING. No capture gate on native rows (no device record).
+# Bundles are side-loaded once to the app's Documents/CoreAIModels/stock_<model>_ctx2048/ (USB); the
+# first load of a bundle on a phone specializes it on the device (minutes; the line's prepare_cached=0
+# marks that launch firstEver). Model order and cooldowns as matrices/dashboard-longctx1024-v1.cells;
+# anchors = matrices/anchors.cells. Name the campaign <date>-dashboard-coreai-v1-<device>: the team
+# dashboard reads only campaigns whose name contains "dashboard".
+#   BENCH_UDID=<udid> ./bench matrix matrices/dashboard-coreai-v1-ios.cells --platform iphone --campaign <date>-dashboard-coreai-v1-iphone18pro
+#   DRY_RUN=1 scripts/bench_matrix_iphone.sh run matrices/dashboard-coreai-v1-ios.cells    # every launch resolved, no device call
+
+
+# ---- session anchors ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+
+# --- Qwen3-0.6B ---
+ios core-ai core-ai/qwen3-0.6b-stock-ctx2048 long-context-1024-gen256 backend=ane context-tokens=2048 runs=3
+ios core-ai core-ai/qwen3-0.6b-stock-ctx2048 native-benchmark-1024x256 backend=ane context-tokens=2048 runs=3
+ios litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048 runs=3
+ios litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 context-tokens=2048 runs=3
+
+# --- Qwen3-1.7B ---
+ios core-ai core-ai/qwen3-1.7b-stock-ctx2048 long-context-1024-gen256 backend=ane context-tokens=2048 runs=3
+ios core-ai core-ai/qwen3-1.7b-stock-ctx2048 native-benchmark-1024x256 backend=ane context-tokens=2048 runs=3
+ios litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048 runs=3
+ios litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 context-tokens=2048 runs=3
+
+# --- Gemma 4 E2B ---
+ios core-ai core-ai/gemma4-e2b-stock-ctx2048 long-context-1024-gen256 backend=ane cooldown=300 context-tokens=2048 runs=3
+ios core-ai core-ai/gemma4-e2b-stock-ctx2048 native-benchmark-1024x256 backend=ane cooldown=300 context-tokens=2048 runs=3
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048 runs=3
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048 runs=3
+
+# --- Qwen3-4B ---
+ios core-ai core-ai/qwen3-4b-stock-ctx2048 long-context-1024-gen256 backend=ane cooldown=300 context-tokens=2048 runs=3
+ios core-ai core-ai/qwen3-4b-stock-ctx2048 native-benchmark-1024x256 backend=ane cooldown=300 context-tokens=2048 runs=3
+ios litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048 runs=3
+ios litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 cooldown=300 context-tokens=2048 runs=3
+
+# --- Gemma 4 E4B --- (on the 1K text task Core AI's E4B ends its reply early, at the model's own
+# end of turn: measured as it is, docs/coreai-arm-v1.md "Regime and disclosure"; its native row
+# decodes 256)
+ios core-ai core-ai/gemma4-e4b-stock-ctx2048 long-context-1024-gen256 backend=ane cooldown=300 context-tokens=2048 runs=3
+ios core-ai core-ai/gemma4-e4b-stock-ctx2048 native-benchmark-1024x256 backend=ane cooldown=300 context-tokens=2048 runs=3
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048 runs=3
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048 runs=3

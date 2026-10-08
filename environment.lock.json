@@ -78,7 +78,19 @@
           "note": "fork engine, NOT the pinned 0.2.0 arm — 0.2.0 neither builds/runs on macOS 27.0 26A5406e (FM ABI) nor supports muse_glimmer; labelled 'fork engine (reference)' per methodology/core-ai-arm-provenance.md. See results/raw/2026-08-15-muse-glimmer-30b-3way/ENV.md."
         }
       },
-      "dashboard_v2_note": "Since 2026-09-08 the dashboard's Core AI rows (Qwen3 0.6B/1.7B/4B, own exports, side-loaded) run through the yardstick's CoreAIRuntime on the Mac and the app on the phone — the standard EngineFactory/generate path against this pinned 0.2.0 checkout (which carries the static-inputs patch; the Qwen3 rows do not use it). The PLE caveat above still governs the Gemma 4 rows, which the cells file keeps as exclude=. Bundle identities: the models entries below."
+      "dashboard_v2_note": "Since 2026-09-08 the dashboard's Core AI rows (Qwen3 0.6B/1.7B/4B, own exports, side-loaded) run through the yardstick's CoreAIRuntime on the Mac and the app on the phone — the standard EngineFactory/generate path against this pinned 0.2.0 checkout (which carries the static-inputs patch; the Qwen3 rows do not use it). The PLE caveat above still governs the Gemma 4 rows, which the cells file keeps as exclude=. Bundle identities: the models entries below.",
+      "stock-v1": {
+        "arm": "core-ai-ane",
+        "source": "https://github.com/apple/coreai-models",
+        "commit": "bd3c539540c1f9aa96675079b38810f51845653c",
+        "describe": "1.0.0-10-gbd3c539",
+        "validated_on": "2026-10-08 (round r1): the iOS app and the Mac yardstick built on it (Xcode 27.0 RC 27A266a), the Gemma 4 E2B export, a Mac smoke on macOS 27.0 26A428 (not a measurement)",
+        "vendored_via": "ios/BenchmarkApp/Vendored/coreai-models -> a checkout of the commit, unchanged; ios/BenchmarkApp/scripts/stamp_engine_pins.sh stamps its git describe --tags --dirty as the records' engineVersion",
+        "bundles": "Apple's export pipeline at this commit, unchanged, each model's default recipe, --max-context-length 2048: models/gemma4/export.py for Gemma 4 E2B / E4B, coreai.llm.export <preset> --platform iOS for Qwen3 0.6B / 1.7B / 4B; one iOS export per model for both iPhone and Mac. The <folder>.recipe.json beside each export folder is its provenance (exporter commit, command, checkpoint revision, yaml, every file's sha256, bundle bytes)",
+        "ids": "core-ai/<model>-stock-ctx2048 -> bundle folder stock_<model>_ctx2048 (CoreAIRuntime.bundleSpec, scripts/bench_matrix_mac.sh coreai_folder)",
+        "compute_unit": "Neural Engine: the runner specializes Apple's chunked-static bundles for it and no public option selects another unit",
+        "note": "Gemma 4's per-layer-embedding table is metadata.json auxiliary_assets.per_layer_embeddings since #332 (the runner validates assets only, so a bundle exported before #332 fails this pin's asset check). Records stamp runtime core-ai-ane (CoreAIRuntime.recordRuntimeLabel); cells matrices/dashboard-coreai-v1-{ios,mac}.cells; docs/coreai-arm-v1.md."
+      }
     },
     "executorch": {
       "source": "https://github.com/pytorch/executorch",

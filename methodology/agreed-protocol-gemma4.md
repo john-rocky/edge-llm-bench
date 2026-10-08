@@ -139,7 +139,8 @@ arm; the seam only opens on EOS-terminated runs.
 ## What a compliant capture looks like
 
 ```bash
-# prefill + decode, the agreed way (LiteRT only — no other arm has an equivalent entry point).
+# prefill + decode, the agreed way (LiteRT's entry point; since 2026-10-08 the Core AI stock arm
+# has its own, Apple's llm-benchmark measurement: --coreai-native-benchmark, docs/coreai-arm-v1.md).
 # --context-tokens is required here too: without it benchmark() runs at 1056, not 2048.
 --yardstick-autorun --runtime litert-lm --model-id <id> \
     --litert-native-benchmark 1024x256 --context-tokens 2048
@@ -155,4 +156,11 @@ gained them in `-r3` (2026-07-28); a result whose
 `harnessStamp` is older, or whose `contextTokensConfigured` is null, was captured before the
 protocol was implementable and is not comparable with the card.
 
-The driver that runs all of this: `scripts/bench_gemma4_e2b_protocol_iphone.sh`.
+The drivers that run all of this are the matrix runners, `scripts/bench_matrix_iphone.sh` and
+`scripts/bench_matrix_mac.sh` (`./bench matrix`): a `native-benchmark-1024x256` row launches the
+engine's own benchmark (on the iPhone since 2026-10-08; its console lines are imported into
+`app-path-native/`), a `long-context-1024-gen256` row the cross-arm column. Cells:
+`matrices/dashboard-protocol1024-v1.cells`, `matrices/dashboard-longctx1024-v1.cells`. (The
+`scripts/bench_gemma4_e2b_protocol_iphone.sh` named here before is not in this repository.) Since
+2026-10-08 the Core AI stock arm has a forced-prefill entry too, Apple's `llm-benchmark`
+measurement (`--coreai-native-benchmark`; `docs/coreai-arm-v1.md`).

@@ -234,8 +234,22 @@ design.
 | MLX (`mlx-swift-lm` @ 60bd0d7) | iPhone, Mac | yes | Gemma 4 loads only at the 2026-07-06 re-upload revision of the mlx-community repos, which is HF main today |
 | llama.cpp b8999 | Android, iPhone, Mac | yes | Android: official CPU-only binary; the NPU (Hexagon) and Adreno GPU (OpenCL) rows run the release's official Snapdragon asset as a side build — section "NPU and Android GPU rows" below; Apple: arm wired, no rows in this repo yet |
 | Core AI (Apple) | iPhone, Mac | v2 (2026-09-08) | own exports, side-loaded; Qwen3 0.6B/1.7B/4B rows active, the Gemma 4 rows `exclude=` because their per-layer-embedding bundles need the unpublished engine patch — "Core AI arm (v2)" below |
+| Core AI stock (`core-ai-ane`) | iPhone, Mac | separate cells (v3, 2026-10-08) | Apple's exports on the Neural Engine, all five models; wired, not measured yet — "Core AI arm (v3)" below |
 | Mirai (uzu) | Mac | separate cells | wired on Mac 2026-09-24, smoke only; [docs/uzu-arm-v1.md](uzu-arm-v1.md) |
 | ONNX Runtime GenAI | Mac (CPU, WebGPU), Android (CPU) | separate cells | wired 2026-10-07, not measured yet; "ONNX Runtime GenAI arm (v1, 2026-10-07)" below |
+
+## Core AI arm (v3, 2026-10-08): the stock arm
+
+A second Core AI arm runs Apple's own toolchain end to end: bundles made by Apple's export pipeline
+(apple/coreai-models `bd3c539`, unchanged, each model's default recipe, context 2048), which include
+Gemma 4 E2B / E4B since #332 moved their per-layer embeddings to `auxiliary_assets`, run by Apple's
+static-shape engine through `llm-runner`'s call sequence on the Neural Engine (no public option
+picks another compute unit). Rows `core-ai core-ai/<model>-stock-ctx2048 … backend=ane` stamp
+`core-ai-ane` and never pool with the own-export rows below (`core-ai`), which stay as they are. Its
+cells are their own files, `matrices/dashboard-coreai-v1-{ios,mac}.cells` (the 1K text task and the
+protocol 1024/256 — Apple's `llm-benchmark` measurement — beside the same model's LiteRT-LM rows, one
+sitting for both), not the weekly file yet. Pins, recipes, definitions, staging and disclosure:
+[docs/coreai-arm-v1.md](coreai-arm-v1.md).
 
 ## Core AI arm (v2, 2026-09-08)
 

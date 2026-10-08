@@ -72,8 +72,12 @@ EXECUTORCH_TASKS = {"short-chat", "long-context-1024-gen256"}
 # ExecuTorch SwiftPM runtime with the XNNPACK delegate only (docs/executorch-arm-v1.md "iPhone")
 EXECUTORCH_BACKENDS["ios"] = {"xnnpack"}
 # runtimes whose backend= values are not BACKENDS: the ORT GenAI arm names its execution
-# provider (cpu = the CPU EP; webgpu = the WebGPU plugin EP, Mac only)
-BACKENDS_OF = {"onnxruntime-genai": {"cpu", "webgpu"}}
+# provider (cpu = the CPU EP; webgpu = the WebGPU plugin EP, Mac only); the Core AI stock arm
+# names the Neural Engine its engine is pinned to (arm core-ai-ane, docs/coreai-arm-v1.md)
+BACKENDS_OF = {"onnxruntime-genai": {"cpu", "webgpu"}, "core-ai": {"ane"}}
+# the Core AI stock arm's catalog ids: Apple's own exports on the stock path (bundle folders
+# stock_*, CoreAIRuntime.bundleSpec), the export's KV allocation in the id
+COREAI_STOCK_ID = re.compile(r"^core-ai/.+-stock-ctx(\d+|default)(?:-[a-z0-9]+)?$")
 # onnxruntime-genai: the backends each platform has a published route for (the Android AAR
 # and the iOS XCFramework are CPU-only), and the tasks of v1
 ORTGENAI_BACKENDS = {"mac": {"cpu", "webgpu"}, "android": {"cpu"}, "ios": {"cpu"}}
@@ -251,6 +255,26 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                         errors.append(f"{where}: onnxruntime-genai needs revision=<the 40-hex HF commit of the repo>")
             elif "revision" in opts:
                 errors.append(f"{where}: revision= currently belongs to onnxruntime-genai cells only")
+            if rt == "core-ai":
+                # The stock arm (docs/coreai-arm-v1.md): Apple's own exports on the stock path stamp
+                # core-ai-ane (CoreAIRuntime.recordRuntimeLabel), so backend=ane names the arm and
+                # goes with a stock id both ways (a stock row without it would never meet its
+                # records); the export fixes the KV allocation (the id's ctx); the app's
+                # --coreai-native-benchmark measures the stock path only. Rows without backend= are
+                # the own-export arm (v2), unchanged.
+                stock = COREAI_STOCK_ID.match(mid)
+                if opts.get("backend") and plat not in ("mac", "ios"):
+                    errors.append(f"{where}: core-ai backend=ane is a mac / ios row (the Core AI stock arm)")
+                if bool(stock) != (opts.get("backend") == "ane"):
+                    errors.append(f"{where}: core-ai backend=ane and a stock id (core-ai/<model>-stock-ctx<N>) "
+                                  "go together (the stock path stamps core-ai-ane; an own export stamps core-ai)")
+                if (stock and stock.group(1).isdigit() and "context-tokens" in opts
+                        and opts["context-tokens"] != stock.group(1)):
+                    errors.append(f"{where}: context-tokens={opts['context-tokens']} but the export "
+                                  f"allocates {stock.group(1)} (model id)")
+                if NATIVE_TASK.match(task) and plat == "ios" and not stock:
+                    errors.append(f"{where}: an ios core-ai native-benchmark row needs a stock id (the app's "
+                                  "--coreai-native-benchmark measures Apple's export on the stock path only)")
             if (task not in TASKS and not NATIVE_TASK.match(task)
                     and not ENDURANCE_TASK.match(task)):
                 errors.append(f"{where}: unknown task {task!r}")
@@ -306,13 +330,13 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")
             if opts.get("backend") and not (
-                    plat == "android" or (plat == "mac" and rt in ("litert-lm", "onnxruntime-genai"))
-                    or (plat == "ios" and rt in ("litert-lm", "onnxruntime-genai")) or rt == "executorch"):
+                    plat == "android" or (plat == "mac" and rt in ("litert-lm", "onnxruntime-genai", "core-ai"))
+                    or (plat == "ios" and rt in ("litert-lm", "onnxruntime-genai", "core-ai")) or rt == "executorch"):
                 errors.append(f"{where}: backend= is for android cells and mac / ios "
-                              "litert-lm and onnxruntime-genai cells only (the Mac and iPhone "
+                              "litert-lm, onnxruntime-genai and core-ai cells only (the Mac and iPhone "
                               "runners forward it as --litert-backend, the ORT GenAI driver as its "
-                              "execution provider; every other Apple arm encodes its "
-                              "backend in the model id)")
+                              "execution provider; core-ai's backend=ane is arm identity only; every "
+                              "other Apple arm encodes its backend in the model id)")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
                               "(arm identity; run_cell refuses it — the anchors.cells "

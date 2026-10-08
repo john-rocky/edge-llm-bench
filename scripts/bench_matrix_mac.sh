@@ -18,9 +18,17 @@
 # core-ai cells: prompt tasks (short-chat, long-context-*) run through the
 # yardstick's CoreAIRuntime like every other arm — same protocol, same record
 # (since 2026-09-08; the bundle is side-loaded under BENCH_COREAI_MODELS_DIR,
-# a missing one logs SKIPPED with its reason). native-benchmark-* cells still
-# dispatch to scripts/coreai_mac_wrapper.sh (external Apple llm-benchmark
-# binary; own timing, no --context-tokens — documented comparability caveat).
+# a missing one logs SKIPPED with its reason). native-benchmark-* cells of an own
+# export still dispatch to scripts/coreai_mac_wrapper.sh (external Apple
+# llm-benchmark binary; own timing, no --context-tokens — documented comparability
+# caveat). The Core AI stock arm (2026-10-08, docs/coreai-arm-v1.md: Apple's exports,
+# ids core-ai/<model>-stock-ctx<N>, folders stock_*) takes backend=ane as arm identity
+# only (records stamp core-ai-ane; nothing is passed), and its native-benchmark-* rows
+# run the same measurement in-process: yardstick --coreai-native-benchmark <P>x<D>
+# --runs N (N timed trials after the warmup trial), the lines appended to the cell's
+# .jsonl like LiteRT-LM's --litert-native-benchmark rows (import: docs/coreai-arm-v1.md).
+# --dry-run prints each yardstick row's resolved command and whether a Core AI bundle
+# is staged, and writes nothing.
 #
 # executorch cells (docs/executorch-arm-v1.md): scripts/executorch_mac.py runs the
 # ExecuTorch tag's own runner of the model's family on an own export staged under
@@ -95,6 +103,42 @@ coreai_folder(){ # <model-id> -> bundle folder, mirroring CoreAIRuntime.bundleSp
   esac
 }
 
+coreai_is_stock(){ # <model-id> -> 0 for the Core AI stock arm's ids (Apple's exports, folder stock_*)
+  case "$(coreai_folder "$1")" in stock_*) return 0 ;; esac
+  return 1
+}
+
+coreai_stock_provenance(){ # <model-id> -> one session_provenance.txt line for a staged stock bundle
+  # Apple's exports carry auxiliary assets beside the main .aimodel (Gemma 4's per-layer
+  # embeddings, metadata.json auxiliary_assets since apple/coreai-models #332), and each
+  # export folder has a recipe.json beside it on the export volume
+  # (models/coreai/<folder>.recipe.json: exporter commit, command, checkpoint revision,
+  # yaml, every file's sha256): the whole bundle's bytes, its auxiliary assets and that
+  # recipe's sha256 go next to the session (stored-report-rule).
+  local folder dir
+  folder="$(coreai_folder "$1")"
+  dir="$BENCH_COREAI_MODELS_DIR/$folder"
+  python3 - "$dir" "$1" "$REPO/models/coreai/$folder.recipe.json" >> "$OUT/session_provenance.txt" <<'PY'
+import hashlib, json, os, sys
+d, mid, recipe = sys.argv[1], sys.argv[2], sys.argv[3]
+meta = json.load(open(os.path.join(d, "metadata.json")))
+total = sum(os.path.getsize(os.path.realpath(os.path.join(r, f)))
+            for r, _, fs in os.walk(d) for f in fs)
+aux = meta.get("auxiliary_assets") or {}
+aux_txt = ",".join(f"{k}:{v}:{os.path.getsize(os.path.join(d, v))}" for k, v in sorted(aux.items())
+                   if os.path.exists(os.path.join(d, v))) or "none"
+if os.path.exists(recipe):
+    r = json.load(open(recipe))
+    sha = hashlib.sha256(open(recipe, "rb").read()).hexdigest()
+    rec = f"recipe={recipe} sha256={sha} recipe_bundle_bytes={r.get('bundle_bytes')}"
+else:
+    rec = f"recipe=not-found ({recipe})"
+print(f"core-ai stock bundle {mid}: compression={meta.get('compression')} "
+      f"max_context={(meta.get('language') or {}).get('max_context_length')} "
+      f"bundle_bytes={total} auxiliary={aux_txt} {rec}")
+PY
+}
+
 coreai_bundle_ready(){ # <model-id> -> 0 when staged (or an id this preflight does not know); else a SKIPPED line, 1
   local folder dir
   folder="$(coreai_folder "$1")"
@@ -133,6 +177,60 @@ run_ys_cell(){
   command -v gtimeout >/dev/null && to=(gtimeout "${CELL_TIMEOUT:-1800}")
   ${to[@]+"${to[@]}"} "$YS" run --runtime "$rt" --model-id "$mid" --task "$task_arg" --runs "$runs" \
     ${extra[@]+"${extra[@]}"} --output "$OUT/${slug}.jsonl" 2>&1 | tail -4
+}
+
+dry_run_ys_cell(){
+  # --dry-run for a row the yardstick (or a task driver) runs: its resolved command, read
+  # only — no cooldown, no capture file, no SKIPPED.txt / session_provenance.txt line.
+  # bash dynamic scope: rt/mid/task/runs/ctx/maxtok/backend/slug are run_cell locals. The
+  # argument assembly mirrors the capture path in run_cell; keep the two in step.
+  local extra=() task_arg="$task" dir
+  if [ "$rt" = "core-ai" ]; then
+    case "$task" in native-benchmark-*)
+      if ! coreai_is_stock "$mid"; then
+        printf 'DRY-RUN %s -> %s %s %s %s %s\n' "$rt" "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT"
+        return
+      fi ;;
+    esac
+    if [ -n "$(coreai_folder "$mid")" ]; then
+      dir="$BENCH_COREAI_MODELS_DIR/$(coreai_folder "$mid")"
+      if [ ! -f "$dir/metadata.json" ]; then
+        printf 'DRY-RUN SKIPPED %s %s %s reason=coreai-bundle-not-staged (%s)\n' "$rt" "$mid" "$task" "$dir"
+        return
+      fi
+      printf 'DRY-RUN   bundle staged: %s\n' "$dir"
+    fi
+  fi
+  if [ "$rt" = "cactus" ]; then
+    printf 'DRY-RUN SKIPPED %s %s %s reason=no-mac-arm\n' "$rt" "$mid" "$task"
+    return
+  fi
+  case "$task" in asr-rtf-*|vl-*|tts-rtf-*)
+    printf 'DRY-RUN %s %s %s -> its task driver (scripts/{asr_rtf,vl_response,tts_rtf}_mac.py), no dry run of its own\n' "$rt" "$mid" "$task"
+    return ;;
+  esac
+  [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
+  [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
+  if [ -n "$backend" ]; then
+    if [ "$rt" = "litert-lm" ]; then
+      extra+=(--litert-backend "$backend")
+    elif [ "$rt" != "core-ai" ] || [ "$backend" != "ane" ]; then
+      printf 'DRY-RUN SKIPPED %s %s %s reason=backend-option-is-litert-lm-only\n' "$rt" "$mid" "$task"
+      return
+    fi
+  fi
+  case "$task" in native-benchmark-*)
+    if [ "$rt" = "core-ai" ]; then
+      extra+=(--coreai-native-benchmark "${task#native-benchmark-}")
+    else
+      extra+=(--litert-native-benchmark "${task#native-benchmark-}")
+    fi
+    task_arg="short-chat" ;;
+  esac
+  local xs=""
+  [ ${#extra[@]} -gt 0 ] && xs=" ${extra[*]}"   # bash 3.2 + set -u: an empty "${extra[@]}" is unbound
+  printf 'DRY-RUN %s run --runtime %s --model-id %s --task %s --runs %s%s --output %s\n' \
+    "$YS" "$rt" "$mid" "$task_arg" "$runs" "$xs" "$OUT/${slug}.jsonl"
 }
 
 run_et_cell(){
@@ -292,7 +390,7 @@ run_cell(){
     fi
   fi
   if [ "$DRY_RUN" = 1 ]; then
-    printf 'DRY-RUN existing arm: %s run --runtime %s --model-id %s --task %s --runs %s\n' "$YS" "$rt" "$mid" "$task" "$runs"
+    dry_run_ys_cell
     return
   fi
 
@@ -301,17 +399,20 @@ run_cell(){
   if [ "$rt" = "core-ai" ]; then
     case "$task" in
       native-benchmark-*)
-        # Engine-native synthetic benchmark = Apple's external llm-benchmark
-        # binary (own timing, no --context-tokens; the caveat travels in the
-        # wrapper's provenance note).
-        "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT" \
-          || echo "FAIL core-ai $mid $task" >> "$OUT/FAILURES.txt"
-        return ;;
+        if ! coreai_is_stock "$mid"; then
+          # Engine-native synthetic benchmark of an own export = Apple's external
+          # llm-benchmark binary (own timing, no --context-tokens; the caveat travels
+          # in the wrapper's provenance note).
+          "$REPO/scripts/coreai_mac_wrapper.sh" "$mid" "$task" "$runs" "$OUT" \
+            || echo "FAIL core-ai $mid $task" >> "$OUT/FAILURES.txt"
+          return
+        fi ;;  # the stock arm: the same measurement in the yardstick (--coreai-native-benchmark, below)
     esac
     # Prompt tasks run through yardstick's CoreAIRuntime below, like every
     # other arm. A bundle that is not staged is SKIPPED with its reason —
     # "not yet measured" in the table, not four failed runs.
     coreai_bundle_ready "$mid" || return
+    coreai_is_stock "$mid" && coreai_stock_provenance "$mid"
   fi
   if [ "$rt" = "cactus" ]; then
     echo "SKIPPED $rt $mid $task reason=no-mac-arm" | tee -a "$OUT/SKIPPED.txt"
@@ -424,6 +525,8 @@ run_cell(){
   if [ -n "$backend" ]; then
     if [ "$rt" = "litert-lm" ]; then
       extra+=(--litert-backend "$backend")
+    elif [ "$rt" = "core-ai" ] && [ "$backend" = "ane" ]; then
+      :   # the Core AI stock arm: arm identity only (core-ai-ane); the engine picks the Neural Engine
     else
       echo "SKIPPED $rt $mid $task reason=backend-option-is-litert-lm-only" | tee -a "$OUT/SKIPPED.txt"
       return
@@ -431,8 +534,14 @@ run_cell(){
   fi
   case "$task" in native-benchmark-*)
     # The native benchmark runs INSTEAD of a task (yardstick resolves --task
-    # before the native branch, so it must still name a real task id).
-    extra+=(--litert-native-benchmark "${task#native-benchmark-}")
+    # before the native branch, so it must still name a real task id): LiteRT-LM's
+    # benchmark(), or for the Core AI stock arm Apple's llm-benchmark measurement
+    # (--runs = timed trials after the warmup trial, which prints as trial 0, cold).
+    if [ "$rt" = "core-ai" ]; then
+      extra+=(--coreai-native-benchmark "${task#native-benchmark-}")
+    else
+      extra+=(--litert-native-benchmark "${task#native-benchmark-}")
+    fi
     task_arg="short-chat" ;;
   esac
 

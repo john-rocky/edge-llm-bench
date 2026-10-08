@@ -25,6 +25,20 @@
 #     to device-jsonl-flagged/ (kept for audit, out of build_summary's glob),
 #     the cell cools THERMAL_COOLDOWN and re-runs once; a flagged retry stands
 #     with a FLAGGED.txt note.
+#
+# native-benchmark-<P>x<D> rows (2026-10-08, docs/coreai-arm-v1.md): one launch runs the
+# engine's own benchmark instead of a task — litert-lm --litert-native-benchmark (runs= calls of
+# benchmark(), call 1 cold), core-ai --coreai-native-benchmark (Apple's llm-benchmark measurement
+# on the stock path: runs= timed trials after the warmup trial, printed as trial 0, cold). The
+# app writes no record for them: the console's YARDSTICK_NATIVE_OK lines are imported with
+# scripts/import_native_benchmark.py --schema-v1 into <campaign>/app-path-native/, --like = this
+# campaign's task record of the same arm and model (so a model's task row runs first; without
+# one the console is listed in NATIVE_IMPORT_PENDING.txt). No capture gate on them. A core-ai
+# row's backend=ane is arm identity only (records stamp core-ai-ane); nothing is passed for it.
+#
+#   DRY_RUN=1 scripts/bench_matrix_iphone.sh run <cells>   # print every launch; no device call
+#     (the loop below runs with xcrun / gtimeout / sleep replaced by printers and the campaign
+#     directory in a temp dir: nothing under results/, no wait)
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,6 +58,20 @@ SERIOUS_COOLDOWN="${SERIOUS_COOLDOWN:-600}"
 CELL_TIMEOUT="${CELL_TIMEOUT:-3600}"                 # litert teardown stalls: keep 3600 for litert cells
 CAMPAIGN="${CAMPAIGN:-$(date +%F)-iphone-matrix}"
 OUT="$REPO/results/raw/$CAMPAIGN"
+if [ "${DRY_RUN:-0}" = 1 ]; then
+  # Every device call of this script goes through xcrun (gtimeout only wraps it): print it to
+  # the terminal (fd 3) instead; `device info details` answers the two lines the provenance
+  # grep expects. The campaign directory is a temp dir and cooldowns do not wait.
+  exec 3>&1
+  OUT="$(mktemp -d)/$CAMPAIGN"
+  printf 'DRY-RUN campaign dir (temp): %s\n' "$OUT" >&3
+  xcrun(){
+    printf 'DRY-RUN xcrun %s\n' "$*" >&3
+    case "$*" in *"device info details"*) printf 'OS Version: (dry run)\nOS Build Update: (dry run)\n' ;; esac
+  }
+  gtimeout(){ while [ $# -gt 0 ] && [ "${1#--}" != "$1" ]; do shift; done; shift; "$@"; }
+  sleep(){ :; }
+fi
 
 log(){ printf '\n=== %s ===\n' "$*"; }
 
@@ -127,6 +155,107 @@ launch_refused(){ # <runtime> <model-id> <task> -> 0 when the cell's launch was 
   tail -40 "$logf" | grep -qE "CoreDeviceError error 4016|not able to fulfill the requested usage assertion|could not be, unlocked|specified device was not found|Device is not connected"
 }
 
+count_lines(){ # <pattern> <file> -> how many lines of the file match (0 when it does not exist)
+  local n=0
+  [ -f "$2" ] && n="$(grep -c -- "$1" "$2" || true)"
+  echo "${n:-0}"
+}
+
+native_cell(){ # <runtime> <model-id> <task> <runs> [extra launch args...] — one native-benchmark launch
+  # The engine's own benchmark instead of a task (header: native-benchmark rows). `--task`
+  # still names a real task id (the app reads it before the native branch). Always returns 0:
+  # a launch with no YARDSTICK_NATIVE_OK line is logged, and the session goes on.
+  local rt="$1" mid="$2" task="$3" runs="$4"; shift 4
+  local flag arm=""
+  case "$rt" in
+    litert-lm) flag=--litert-native-benchmark; arm=litert-lm ;;
+    core-ai)   flag=--coreai-native-benchmark; arm=core-ai-ane ;;
+    *) echo "SKIPPED $rt $mid $task reason=no-native-benchmark-entry-on-ios" | tee -a "$OUT/SKIPPED.txt"; return 0 ;;
+  esac
+  # a LiteRT-LM CPU row stamps litert-lm-cpu (--litert-backend cpu among the extra args)
+  local a prev=""
+  for a in "$@"; do [ "$prev" = "--litert-backend" ] && [ "$a" = cpu ] && arm=litert-lm-cpu; prev="$a"; done
+  local logf="$OUT/console_$(echo "${rt}_${mid}_${task}" | tr '/.' '__').txt"
+  local ok0 fatal0 t0 t1 ok fatal
+  ok0="$(count_lines YARDSTICK_NATIVE_OK "$logf")"; fatal0="$(count_lines YARDSTICK_FATAL "$logf")"
+  t0="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  log "CELL $rt / $mid / $task runs=$runs (native: one launch, $flag) $* ($(date +%H:%M:%S))"
+  gtimeout --kill-after=30 "$CELL_TIMEOUT" \
+    xcrun devicectl device process launch --console --terminate-existing --device "$DEV" "$APP" \
+    -- --yardstick-autorun --runtime "$rt" --model-id "$mid" --task short-chat --runs "$runs" "$@" \
+    "$flag" "${task#native-benchmark-}" \
+    </dev/null 2>&1 | tee -a "$logf" \
+    | grep -E "YARDSTICK_(BEGIN|NATIVE_OK|WARN|FATAL|ALL_DONE)" || true
+  t1="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  ok=$(( $(count_lines YARDSTICK_NATIVE_OK "$logf") - ok0 ))
+  fatal=$(( $(count_lines YARDSTICK_FATAL "$logf") - fatal0 ))
+  # the importer counts launches from the lines (a LiteRT-LM run=1 or a Core AI trial that does
+  # not go up starts one) and takes one start time per launch that printed any
+  [ "$ok" -gt 0 ] && echo "$t0" >> "$logf.launch_times"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$t0" "$t1" "$arm" "$mid" "$task" "$runs" "$ok" "$fatal" \
+    >> "$OUT/native_launches.tsv"
+  echo "native lines=$ok fatal=$fatal ($(basename "$logf"))"
+  native_import "$arm" "$mid" "$logf"
+  return 0
+}
+
+native_like(){ # <arm> <model-id> -> this campaign's task record of that arm and model (the 1K text task first, newest)
+  ARM="$1" MID="$2" OUT="$OUT" python3 - <<'PY'
+import glob, json, os
+best = None
+for f in glob.glob(os.path.join(os.environ["OUT"], "device-jsonl", "*.json")):
+    try:
+        r = json.load(open(f))
+    except (OSError, ValueError):
+        continue
+    task = r.get("task") or ""
+    if (r.get("runtime") != os.environ["ARM"] or (r.get("model") or {}).get("id") != os.environ["MID"]
+            or task.startswith("native-benchmark-")):
+        continue
+    key = (task == "long-context-1024-gen256", r.get("timestamp") or "")
+    if best is None or key > best[0]:
+        best = (key, f)
+if best:
+    print(best[1])
+PY
+}
+
+native_import(){ # <arm> <model-id> <console log> -> schema-v1 records in app-path-native/, or a NATIVE_IMPORT_PENDING line
+  local arm="$1" mid="$2" logf="$3" like dev instrument rc=0
+  if [ ! -s "$logf.launch_times" ]; then
+    echo "NATIVE_IMPORT_PENDING $(basename "$logf") (no launch printed a YARDSTICK_NATIVE_OK line)" \
+      | tee -a "$OUT/NATIVE_IMPORT_PENDING.txt"
+    return 0
+  fi
+  like="$(native_like "$arm" "$mid")"
+  if [ -z "$like" ]; then
+    echo "NATIVE_IMPORT_PENDING $(basename "$logf") (no $arm task record of $mid in device-jsonl/ for --like)" \
+      | tee -a "$OUT/NATIVE_IMPORT_PENDING.txt"
+    return 0
+  fi
+  dev="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["device"]["modelIdentifier"])' "$like" 2>/dev/null)" || dev=""
+  if [ -z "$dev" ]; then
+    echo "NATIVE_IMPORT_PENDING $(basename "$logf") (--like $(basename "$like") has no device.modelIdentifier)" \
+      | tee -a "$OUT/NATIVE_IMPORT_PENDING.txt"
+    return 0
+  fi
+  case "$arm" in
+    core-ai-ane) instrument="core-ai llm-benchmark measurement (CoreAIRuntime.nativeBenchmarkStock) via BenchmarkApp --coreai-native-benchmark" ;;
+    *) instrument="litert-lm native benchmark() via BenchmarkApp --litert-native-benchmark" ;;
+  esac
+  # every launch of the console so far, again: the importer numbers a console's lines 1..N, so the
+  # records of a later launch land beside the earlier ones (same files rewritten, new ids)
+  python3 "$REPO/scripts/import_native_benchmark.py" --schema-v1 "$logf" --out "$OUT/app-path-native" \
+    --like "$like" --launch-times "$(paste -sd, "$logf.launch_times")" --instrument "$instrument" \
+    --device "$dev" 2>> "$OUT/native_import.log" || rc=$?
+  if [ "$rc" = 0 ]; then
+    echo "NATIVE_IMPORTED $(basename "$logf") -> app-path-native/ (--like $(basename "$like"))"
+  else
+    echo "NATIVE_IMPORT_PENDING $(basename "$logf") (importer exit $rc; native_import.log)" \
+      | tee -a "$OUT/NATIVE_IMPORT_PENDING.txt"
+  fi
+}
+
 preflight(){ # <cells-file>
   [ -n "${CATALOG_JSON:-}" ] || { echo "preflight: CATALOG_JSON unset — skipping (advisory)"; return 0; }
   python3 "$REPO/scripts/validate_cells.py" --catalog "$CATALOG_JSON" "$1"
@@ -176,6 +305,11 @@ cmd_run(){
       log "previous capture saw serious/critical thermal — pausing ${serious_wait}s more before this cell"
       sleep "$serious_wait"; serious_wait=0
     fi
+    case "$task" in native-benchmark-*)
+      # the engine's own benchmark: one launch, its console lines imported, no capture gate
+      native_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
+      continue ;;
+    esac
     run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
     local pulled verdict
     pulled="$(pull_new)"; verdict="$(cell_verdict "$rec_rt" "$mid" "$task" "$runs")"

@@ -1,7 +1,8 @@
 # Core AI arm — provenance and reproduction
 
-The Core AI arm has two classes of rows, and the difference matters for how you read (and
-reproduce) them.
+The Core AI arm has three classes of rows, and the difference matters for how you read (and
+reproduce) them. Classes 1 and 2 are our own exports on the GPU engine (arm `core-ai`); class 3
+(since 2026-10-08) is Apple's own exports on Apple's stock path (arm `core-ai-ane`).
 
 ## Class 1 — stock rows (every non-PLE model)
 
@@ -13,8 +14,11 @@ published under `huggingface.co/mlboydaisuke/*-CoreAI`).
 
 ## Class 2 — patched-engine rows: Gemma-4 E2B/E4B, labelled "patched engine (reference)"
 
-Apple ships **no Gemma-4 bundle**, and Gemma-4's per-layer embeddings (PLE) need two engine
-features that are **not in Apple's released package** (absent from 0.1.0 and 0.2.0):
+These are our own Gemma-4 exports, and their per-layer embeddings (PLE) need two engine
+features that are **not in Apple's released package** (absent from 0.1.0 and 0.2.0). (Apple's
+own pipeline now exports Gemma 4, and its engine runs those bundles unpatched since
+apple/coreai-models #332: class 3 below. This class stays as the own-export reference.)
+The two features:
 
 - `EngineOptions.staticInputBuffers` / `StaticInputBuffer` — bind the mmap'd PLE table
   (`ple/embed_per_layer.i8` + `.scale.f32`) as static graph inputs for the `_tbl` in-graph
@@ -78,6 +82,43 @@ the app.)
   (~3.7 tok/s; ~5.1 s at a 19-token prompt). Do not quote decode tok/s without it.
 - Memory is mmap'd-weights `phys_footprint` (clean pages uncharged) — same caveat as
   llama.cpp; footnote it, don't rank it against wired-memory runtimes.
+
+## Class 3 — stock rows: Apple's exports on Apple's stock path (`core-ai-ane`, since 2026-10-08)
+
+Everything is Apple's, unchanged: the bundles are made by Apple's export pipeline (apple/coreai-models
+`bd3c539`, `1.0.0-10-gbd3c539`, each model's default recipe: Gemma 4 E2B / E4B through
+`models/gemma4/export.py`, Qwen3 0.6B / 1.7B / 4B through `coreai.llm.export <preset> --platform iOS`,
+all at `--max-context-length 2048`), and the engine is that commit's Swift package, driven through
+the call sequence of Apple's `llm-runner` (`LanguageModelBundle` → `EngineFactory.createEngine(bundle:)`
+→ tokenizer → stop tokens → the default warmup → `engine.generate`). No patch, no `COREAI_*`
+variable, no side table. Apple's static-shape engine runs these chunked-static bundles on the Neural
+Engine and no public option selects another unit, so the rows stamp `core-ai-ane` and are an arm of
+their own; they never pool with classes 1 and 2.
+
+### Exact reproduction
+
+1. `git clone https://github.com/apple/coreai-models && git -C coreai-models checkout bd3c539`, then
+   `uv sync` in it (its `uv.lock`).
+2. Export, per model (cwd `models/gemma4` for Gemma 4, the repo root for Qwen3):
+   `uv run export.py --model google/gemma-4-E2B-it --max-context-length 2048 --output-dir <dir>` /
+   `uv run coreai.llm.export qwen3-0.6b --platform iOS --max-context-length 2048 --output-dir <dir>`.
+   Apple's export does not reproduce byte for byte; the `<folder>.recipe.json` beside each of this
+   repo's exports records the checkpoint revision, the yaml and every file's sha256.
+3. Point `ios/BenchmarkApp/Vendored/coreai-models` at the same checkout, build the app or the
+   yardstick, stage the bundle as `stock_<model>_ctx2048/` (Mac: `~/.cache/edge-llm-bench/CoreAIModels/`;
+   iPhone: the app's `Documents/CoreAIModels/`) and run the cells of
+   `matrices/dashboard-coreai-v1-{ios,mac}.cells`.
+
+### How to read the row
+
+- "Apple's export": Apple's pipeline and recipe, run by this repo; not an artifact this repo
+  converted or tuned. The recipe label is Apple's (the bundle's `metadata.json` `compression`).
+- The compute unit is the engine's choice (the Neural Engine), not a flag of ours.
+- Two instruments, as for LiteRT-LM: the 1K text task through the harness, and Apple's
+  `llm-benchmark` measurement for the protocol 1024/256 (each with its own definitions). On the Mac
+  the memory figure is drawn and not ranked (the Neural Engine's weights are not charged to the
+  process's `phys_footprint`).
+- Definitions, staging and the disclosures: `docs/coreai-arm-v1.md`.
 
 ## Why the arm exists at all
 
