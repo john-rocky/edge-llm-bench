@@ -85,7 +85,7 @@
         "commit": "bd3c539540c1f9aa96675079b38810f51845653c",
         "describe": "1.0.0-10-gbd3c539",
         "validated_on": "2026-10-08 (round r1): the iOS app and the Mac yardstick built on it (Xcode 27.0 RC 27A266a), the Gemma 4 E2B export, a Mac smoke on macOS 27.0 26A428 (not a measurement)",
-        "vendored_via": "ios/BenchmarkApp/Vendored/coreai-models -> a checkout of the commit, unchanged; ios/BenchmarkApp/scripts/stamp_engine_pins.sh stamps its git describe --tags --dirty as the records' engineVersion",
+        "vendored_via": "ios/BenchmarkApp/Vendored/coreai-models -> a checkout of the commit, unchanged; ios/BenchmarkApp/scripts/stamp_engine_pins.sh stamps its git describe --tags --always --dirty as the records' engineVersion",
         "bundles": "Apple's export pipeline at this commit, unchanged, each model's default recipe, --max-context-length 2048: models/gemma4/export.py for Gemma 4 E2B / E4B, coreai.llm.export <preset> --platform iOS for Qwen3 0.6B / 1.7B / 4B; one iOS export per model for both iPhone and Mac. The <folder>.recipe.json beside each export folder is its provenance (exporter commit, command, checkpoint revision, yaml, every file's sha256, bundle bytes)",
         "ids": "core-ai/<model>-stock-ctx2048 -> bundle folder stock_<model>_ctx2048 (CoreAIRuntime.bundleSpec, scripts/bench_matrix_mac.sh coreai_folder)",
         "compute_unit": "Neural Engine: the runner specializes Apple's chunked-static bundles for it and no public option selects another unit",

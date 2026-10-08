@@ -21,7 +21,9 @@
 # Native lines land in the cell's .jsonl (no schema-v1 record; build_summary skips them); lift them
 # with scripts/import_native_benchmark.py --schema-v1 into <campaign>/app-path-native/
 # (docs/coreai-arm-v1.md "Run one cell"). Bundles are staged under BENCH_COREAI_MODELS_DIR (default
-# ~/.cache/edge-llm-bench/CoreAIModels/stock_<model>_ctx2048/); a missing one logs SKIPPED.
+# ~/.cache/edge-llm-bench/CoreAIModels/stock_<model>_ctx2048/); a missing one logs SKIPPED. The first
+# load of a bundle under a yardstick's name specializes it (minutes for some bundles): specialize
+# each bundle with one unmeasured launch before the sitting's cells (docs/coreai-arm-v1.md).
 # Model order and cooldowns as matrices/dashboard-longctx1024-v1.cells; anchors = matrices/anchors.cells.
 # Name the campaign <date>-dashboard-coreai-v1-<device>: the team dashboard reads only campaigns
 # whose name contains "dashboard".

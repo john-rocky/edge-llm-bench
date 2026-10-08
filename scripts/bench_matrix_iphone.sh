@@ -229,7 +229,7 @@ native_import(){ # <arm> <model-id> <console log> -> schema-v1 records in app-pa
       | tee -a "$OUT/NATIVE_IMPORT_PENDING.txt"
     return 0
   fi
-  like="$(native_like "$arm" "$mid")"
+  like="$(native_like "$arm" "$mid")" || like=""   # set -e: a failed lookup must not end the session
   if [ -z "$like" ]; then
     echo "NATIVE_IMPORT_PENDING $(basename "$logf") (no $arm task record of $mid in device-jsonl/ for --like)" \
       | tee -a "$OUT/NATIVE_IMPORT_PENDING.txt"

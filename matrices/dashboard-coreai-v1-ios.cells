@@ -24,8 +24,10 @@
 # --like = this campaign's 1K task record of the same arm and model (so each model's task row runs
 # first); without one it logs NATIVE_IMPORT_PENDING. No capture gate on native rows (no device record).
 # Bundles are side-loaded once to the app's Documents/CoreAIModels/stock_<model>_ctx2048/ (USB); the
-# first load of a bundle on a phone specializes it on the device (minutes; the line's prepare_cached=0
-# marks that launch firstEver). Model order and cooldowns as matrices/dashboard-longctx1024-v1.cells;
+# first load of a bundle on a phone specializes it on the device (minutes): specialize each bundle with
+# one unmeasured launch before the sitting's cells (docs/coreai-arm-v1.md); a native line that still
+# says prepare_cached=0 imports as firstEver. Model order and cooldowns as
+# matrices/dashboard-longctx1024-v1.cells;
 # anchors = matrices/anchors.cells. Name the campaign <date>-dashboard-coreai-v1-<device>: the team
 # dashboard reads only campaigns whose name contains "dashboard".
 #   BENCH_UDID=<udid> ./bench matrix matrices/dashboard-coreai-v1-ios.cells --platform iphone --campaign <date>-dashboard-coreai-v1-iphone18pro

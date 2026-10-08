@@ -44,8 +44,8 @@ the same model's LiteRT-LM rows, so both arms run in one sitting on one build an
   its `CoreAILM` package. Registry: `environment.lock.json` `arms.coreai-models.stock-v1` (the
   0.2.0 block above it is the own-export arm's).
 - `ios/BenchmarkApp/scripts/stamp_engine_pins.sh` records the checkout as `git describe --tags
-  --dirty`, so a record's `engineVersion` reads `1.0.0-10-gbd3c539` and would end in `-dirty` had
-  the checkout carried a local change.
+  --always --dirty` (113), so a record's `engineVersion` reads `1.0.0-10-gbd3c539` and would end in
+  `-dirty` had the checkout carried a local change.
 - #332 ("Move Gemma 4 PLE sidecar to auxiliary_assets in metadata.json") changed both sides: the
   Gemma 4 export writes its per-layer-embedding table as `auxiliary_assets.per_layer_embeddings`
   (a `.safetensors` beside the `.aimodel`), and the runner checks only `assets` with
