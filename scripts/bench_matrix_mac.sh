@@ -85,6 +85,12 @@ coreai_folder(){ # <model-id> -> bundle folder, mirroring CoreAIRuntime.bundleSp
     core-ai/qwen3-4b-gpu)   echo qwen3_4b_gpu ;;
     core-ai/gemma4-e2b-gpu) echo gemma4_e2b_gpu ;;
     core-ai/gemma4-e4b-gpu) echo gemma4_e4b_gpu ;;
+    # Apple's own exports on the stock path (folder prefix stock_, CoreAIRuntime.bundleSpec)
+    core-ai/gemma4-e2b-stock-ctx2048) echo stock_gemma4_e2b_ctx2048 ;;
+    core-ai/gemma4-e4b-stock-ctx2048) echo stock_gemma4_e4b_ctx2048 ;;
+    core-ai/qwen3-0.6b-stock-ctx2048) echo stock_qwen3_0_6b_ctx2048 ;;
+    core-ai/qwen3-1.7b-stock-ctx2048) echo stock_qwen3_1_7b_ctx2048 ;;
+    core-ai/qwen3-4b-stock-ctx2048)   echo stock_qwen3_4b_ctx2048 ;;
     *) echo "" ;;   # other ids: no preflight here; yardstick reports the miss itself
   esac
 }

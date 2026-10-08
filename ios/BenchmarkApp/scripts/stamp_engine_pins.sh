@@ -107,9 +107,10 @@ fi
 
 # core-ai — git state of the (possibly symlinked) checkout, plus whether it carries the
 # unpublished StaticInputBuffer engine patch (the PLE-model arm is meaningless without
-# knowing which of the two engines ran).
+# knowing which of the two engines ran). --dirty: a checkout with uncommitted edits to
+# tracked files is not the commit it names, so the pin says so (`-dirty` suffix).
 if [ -e "${V}/coreai-models" ]; then
-    COREAI_VER="$(git -C "${V}/coreai-models" describe --tags --always 2>/dev/null || true)"
+    COREAI_VER="$(git -C "${V}/coreai-models" describe --tags --always --dirty 2>/dev/null || true)"
     if [ -n "${COREAI_VER}" ]; then
         if grep -qrs "public struct StaticInputBuffer" "${V}/coreai-models/swift/Sources" 2>/dev/null; then
             COREAI_VER="${COREAI_VER}+static-inputs-patch"

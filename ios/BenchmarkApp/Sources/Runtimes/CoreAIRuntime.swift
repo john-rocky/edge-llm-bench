@@ -39,11 +39,11 @@ import Tokenizers
 /// The compiled bundles are **side-loaded** under `Documents/CoreAIModels/<name>/`
 /// (large; not published to HF).
 ///
-/// **Stock path (`g4stock_*` folders).** Apple's own Gemma 4 export
-/// (`models/gemma4/export.py` on apple/coreai-models main, unmodified) runs through
-/// `loadStock` / `runGenerateStock`: the call sequence of Apple's `llm-runner`
-/// (`LanguageModelBundle` → `EngineFactory.createEngine(bundle:)` → tokenizer → stop
-/// tokens → default warmup → `engine.generate`), greedy like Apple's `llm-benchmark`.
+/// **Stock path (`stock_*` folders).** Apple's own exports (apple/coreai-models main,
+/// unmodified: `models/gemma4/export.py` for Gemma 4, `coreai.llm.export <preset> --platform
+/// iOS` for Qwen3) run through `loadStock` / `runGenerateStock`: the call sequence of Apple's
+/// `llm-runner` (`LanguageModelBundle` → `EngineFactory.createEngine(bundle:)` → tokenizer →
+/// stop tokens → default warmup → `engine.generate`), greedy like Apple's `llm-benchmark`.
 /// It sets no COREAI_* variable, binds no side table and skips no warmup; the export
 /// itself decides the engine (chunked-static → static-shape on the Neural Engine).
 ///
@@ -91,6 +91,19 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
             #else
             return nil
             #endif
+        }
+    }
+
+    /// `core-ai-ane` when the stock path loaded a static-shape engine: for Apple's static
+    /// export the runner specializes for the Neural Engine and no public option selects
+    /// another unit, so the row names that backend the way `litert-lm-cpu` does and never
+    /// pools with the `core-ai` rows of the legacy bundles. Every other load stays `core-ai`.
+    public var recordRuntimeLabel: String {
+        get async {
+            #if canImport(CoreAILanguageModels)
+            if stockLoaded, engine is StaticShapeEngine { return "\(kind.rawValue)-ane" }
+            #endif
+            return kind.rawValue
         }
     }
 
@@ -170,21 +183,28 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         case "core-ai/olmo2-1b-static-gpu":         return ("olmo2_1b_static_gpu", nil)
         case "core-ai/smollm3-3b-static-gpu":       return ("smollm3_3b_static_gpu", nil)
         case "core-ai/llama-3.2-3b-static-gpu":     return ("llama32_3b_static_gpu", nil)
-        // Apple's own Gemma 4 export (apple/coreai-models main, models/gemma4/export.py,
-        // unmodified), run on the stock path. nil = the structure picks the engine, as in
-        // llm-runner (its "default" variant resolves the same way, EngineFactory.swift 209–215).
-        case "core-ai/gemma4-e2b-stock-ctx2048":      return ("g4stock_e2b_ctx2048", nil)
-        case "core-ai/gemma4-e2b-stock-ctxdefault":   return ("g4stock_e2b_ctxdefault", nil)
-        case "core-ai/gemma4-e4b-stock-ctx2048":      return ("g4stock_e4b_ctx2048", nil)
-        case "core-ai/gemma4-e4b-stock-ctxdefault":   return ("g4stock_e4b_ctxdefault", nil)
-        case "core-ai/gemma4-e2b-stock-ctx2048-fp16": return ("g4stock_e2b_ctx2048_fp16", nil)
+        // Apple's own exports (apple/coreai-models main, unmodified: models/gemma4/export.py
+        // for Gemma 4, coreai.llm.export <preset> --platform iOS for Qwen3, all at
+        // --max-context-length 2048), run on the stock path. nil = the structure picks the
+        // engine, as in llm-runner (its "default" variant resolves the same way,
+        // EngineFactory.swift 209–215).
+        case "core-ai/gemma4-e2b-stock-ctx2048":      return ("stock_gemma4_e2b_ctx2048", nil)
+        case "core-ai/gemma4-e4b-stock-ctx2048":      return ("stock_gemma4_e4b_ctx2048", nil)
+        case "core-ai/qwen3-0.6b-stock-ctx2048":      return ("stock_qwen3_0_6b_ctx2048", nil)
+        case "core-ai/qwen3-1.7b-stock-ctx2048":      return ("stock_qwen3_1_7b_ctx2048", nil)
+        case "core-ai/qwen3-4b-stock-ctx2048":        return ("stock_qwen3_4b_ctx2048", nil)
+        // Gemma 4 forms of the 2026-10-06 comparison only: the export default context
+        // (131072) and `--compression none`.
+        case "core-ai/gemma4-e2b-stock-ctxdefault":   return ("stock_gemma4_e2b_ctxdefault", nil)
+        case "core-ai/gemma4-e4b-stock-ctxdefault":   return ("stock_gemma4_e4b_ctxdefault", nil)
+        case "core-ai/gemma4-e2b-stock-ctx2048-fp16": return ("stock_gemma4_e2b_ctx2048_fp16", nil)
         default:                       return nil
         }
     }
 
     /// Folder prefix of the stock-path bundles. Never `gemma4_`: that prefix selects the
     /// legacy single-step / PLE-table handling in `loadModel`.
-    private static let stockFolderPrefix = "g4stock_"
+    private static let stockFolderPrefix = "stock_"
 
     /// Legacy Gemma-4 PLE ids (bundle folder `gemma4_*`): their S=1 decode graphs need
     /// COREAI_CHUNK_THRESHOLD=1 before the engine's first framework touch, which
@@ -415,13 +435,15 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
     }
 
     #if canImport(CoreAILanguageModels)
-    // MARK: - Stock path (Apple's own Gemma 4 export)
+    // MARK: - Stock path (Apple's own exports)
 
     /// Apple's own export, loaded the way Apple's `llm-runner` loads it. Line numbers are
-    /// those of apple/coreai-models d30b086 (the commit this arm links: the next one, #327,
-    /// makes `createEngine(bundle:)` reject the PLE `.safetensors` asset as "not a valid Core
-    /// AI model") `swift/Sources/Tools/llm-runner/LLMRunnerMain.swift` unless another file
-    /// is named.
+    /// those of apple/coreai-models bd3c539 (1.0.0-10-gbd3c539, the commit this arm links:
+    /// since #332 a Gemma 4 export declares its PLE `.safetensors` sidecar under
+    /// `auxiliary_assets`, which `bundle.tensorData` reads and the asset check only requires
+    /// to exist; a bundle exported before #332 lists it under `assets` and fails that check as
+    /// "not a valid Core AI model") `swift/Sources/Tools/llm-runner/LLMRunnerMain.swift`
+    /// unless another file is named.
     private func loadStock(
         _ model: ModelInfo,
         bundleURL: URL,
@@ -430,12 +452,13 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         var step = "LanguageModelBundle(\(bundleURL.lastPathComponent))"
         do {
             progress(0.15)
-            // 411: parse metadata.json. The asset check of 412 (verifyAssetsExisting) runs
+            // 411: parse metadata.json. The asset check of 412 (validateModelAssets) runs
             // inside createEngine(bundle:) (EngineFactory.swift 90); not called twice here.
             let bundle = try LanguageModelBundle(at: bundleURL)
             #if canImport(CoreAI)
             // Record only: what the framework's own model check (`AIModelAsset.isValid`, the
-            // check #327 applies to every asset) says about each asset on this OS.
+            // check validateModelAssets applies to every `assets` entry) says about each
+            // asset on this OS.
             for key in bundle.modelBundle.componentKeys {
                 guard let url = bundle.modelBundle.modelURL(for: key) else { continue }
                 print("YARDSTICK_COREAI_ASSETCHECK key=\(key) file=\(url.lastPathComponent) isValid=\(AIModelAsset.isValid(at: url) ? 1 : 0)")
@@ -448,18 +471,18 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
             let mainURL = try bundle.modelBundle.requireModelURL(for: ModelBundle.ComponentKey.main)
             let cached = PreparedModel.isCached(at: mainURL)
 
-            // 457–467 with no CLI overrides: chunking from metadata.json (nil keeps the
-            // engine default), tensor data from the bundle's assets (the PLE sidecar),
-            // variant and KV strategy at their defaults (auto).
+            // 456–466 with no CLI overrides: chunking from metadata.json (nil keeps the
+            // engine default), tensor data from the bundle's auxiliary assets (the PLE
+            // sidecar), variant and KV strategy at their defaults (auto).
             let options = EngineOptions(
                 prefillChunkSize: bundle.language.prefillChunkSize,
                 prefillChunkThreshold: bundle.language.prefillChunkThreshold,
                 tensorData: bundle.tensorData
             )
 
-            // 476–477: the bundle-aware factory. A first-ever load specializes inside this
+            // 475–476: the bundle-aware factory. A first-ever load specializes inside this
             // call, so it is timed and phys_footprint is sampled across it (the runner loads
-            // the tokenizer concurrently, 472; here it follows, outside the timed span).
+            // the tokenizer concurrently, 471; here it follows, outside the timed span).
             step = "EngineFactory.createEngine(bundle:)"
             let sampler = MemorySampler()
             await sampler.start(intervalMS: 20)
@@ -492,22 +515,28 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
             let prepareFootprintPeakMB = await sampler.peakMB
             progress(0.7)
 
-            // 472 / 480: the bundle's tokenizer (embedded; HF fallback otherwise).
+            // 471 / 479: the bundle's tokenizer (embedded; HF fallback otherwise).
             step = "loadTokenizer"
             let tok = try await bundle.loadTokenizer()
-            // Stop set A, the runner's: tokenizer eos (1110) + additionalStopTokenIds read
-            // from the bundle's tokenizer dir (487–498, 1111).
+            // Stop set A, the runner's: tokenizer eos (1118) + additionalStopTokenIds read
+            // from the bundle's tokenizer dir (486–497, 1119) + an agentic model's <|eot|>
+            // (499–506; nil for a tokenizer without the agentic markers).
             var apple: Set<Int32> = []
             if let e = tok.eosTokenId { apple.insert(Int32(e)) }
             if let dir = bundle.tokenizerPath {
                 apple.formUnion(LanguageConfig.additionalStopTokenIds(from: dir, tokenizer: tok))
+            }
+            if let eot = agenticEndOfTurnTokenId(
+                thinkingFormat: detectThinkingFormat(using: tok), tokenizer: tok),
+                eot != tok.eosTokenId.map({ Int32($0) }) {
+                apple.insert(eot)
             }
             // Stop set B: metadata.json `language.eos_token_ids`, the generation_config eos
             // list models/gemma4/export.py 179–181 writes; no runner code reads it. The
             // harness stops on A ∪ B, like every other arm stops at its model's turn end.
             let metadata = Self.metadataEosTokenIds(bundle.rawMetadata)
 
-            // 505 + 508–513 → 1270–1282: the runner's default warmup (queryLength 0) with the
+            // 513 + 516–521 → 1266–1278: the runner's default warmup (queryLength 0) with the
             // sampling the runs use — greedy, llm-benchmark's SamplingConfiguration(temperature: 0)
             // (BenchmarkMain.swift 118).
             step = "warmup"
@@ -545,7 +574,7 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
         }
     }
 
-    /// One generation on the stock path: Apple's chat-template helper (531–532), then
+    /// One generation on the stock path: Apple's chat-template helper (539–540), then
     /// llm-benchmark's reset + greedy generate (BenchmarkMain.swift 178–184), stopping on the
     /// A ∪ B stop set or the task's token budget.
     private func runGenerateStock(
@@ -789,7 +818,8 @@ public final class CoreAIRuntime: LLMRuntime, @unchecked Sendable {
 
     /// `--coreai-native-benchmark <P>x<D>`: Apple's `llm-benchmark` measurement on the stock
     /// path. The load is `loadStock`, unchanged (llm-runner's sequence and its console lines);
-    /// the rest copies BenchmarkMain.swift at d30b086, whose line numbers are cited: a seeded
+    /// the rest copies BenchmarkMain.swift at bd3c539 (the same lines as at d30b086, where
+    /// this was first written), whose line numbers are cited: a seeded
     /// random prompt of `prefill` token ids, greedy, one whole warmup trial, then `trials` timed
     /// trials of `decode` tokens with no stop check. `onTrial` gets each trial as it ends: the
     /// warmup first, as trial 0 (cold: the first generate on this engine after the load), then
