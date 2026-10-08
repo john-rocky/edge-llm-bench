@@ -159,8 +159,14 @@ cmd_run(){
     [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
     [ -n "$counters" ] && extra+=(--litert-engine-counters "$counters")
     local be
-    be="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"   # litert-lm: cpu|gpu (arm identity)
-    [ -n "$be" ] && extra+=(--litert-backend "$be")
+    be="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"   # arm identity
+    # litert-lm: the app's --litert-backend cpu|gpu. onnxruntime-genai: the release XCFramework
+    # is CPU-only (no flag) and its records carry the arm id onnxruntime-genai-<backend>, which
+    # names their files (ResultStore) — the gate looks them up by that id
+    # (docs/ortgenai-arm-v1.md "iPhone").
+    [ -n "$be" ] && [ "$rt" = litert-lm ] && extra+=(--litert-backend "$be")
+    local rec_rt="$rt"
+    [ "$rt" = onnxruntime-genai ] && [ -n "$be" ] && rec_rt="onnxruntime-genai-$be"
 
     [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
     if [ "${serious_wait:-0}" -gt 0 ]; then
@@ -169,7 +175,7 @@ cmd_run(){
     fi
     run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
     local pulled verdict
-    pulled="$(pull_new)"; verdict="$(cell_verdict "$rt" "$mid" "$task" "$runs")"
+    pulled="$(pull_new)"; verdict="$(cell_verdict "$rec_rt" "$mid" "$task" "$runs")"
     echo "pulled=$pulled verdict=$verdict"
     local retry_cool="$THERMAL_COOLDOWN"
     case "$verdict" in *serious*|*critical*) retry_cool="$SERIOUS_COOLDOWN"; serious_wait="$SERIOUS_COOLDOWN" ;; esac
@@ -193,10 +199,10 @@ cmd_run(){
     fi
     if [[ "$verdict" == HOT* || "$verdict" == SPREAD* || "$verdict" == DEAD* || "$verdict" == COLLAPSE* || "$verdict" == GATE_ERROR* ]]; then
       log "gate: $verdict — quarantine flagged capture, cooldown ${retry_cool}s, re-run once"
-      quarantine_cell "$rt" "$mid" "$task" "$runs"
+      quarantine_cell "$rec_rt" "$mid" "$task" "$runs"
       sleep "$retry_cool"
       run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
-      pulled="$(pull_new)"; verdict="$(cell_verdict "$rt" "$mid" "$task" "$runs")"
+      pulled="$(pull_new)"; verdict="$(cell_verdict "$rec_rt" "$mid" "$task" "$runs")"
       echo "pulled=$pulled verdict=$verdict"
       case "$verdict" in *serious*|*critical*) serious_wait="$SERIOUS_COOLDOWN" ;; esac
       [[ "$verdict" == HOT* || "$verdict" == SPREAD* || "$verdict" == DEAD* || "$verdict" == COLLAPSE* || "$verdict" == GATE_ERROR* ]] \

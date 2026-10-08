@@ -13,7 +13,7 @@ of `onnx-community/Qwen3-{0.6B,1.7B,4B}-ONNX`, the dashboard's two text tasks
 | Mac | `onnxruntime-genai-cpu` | CPU EP | `scripts/ortgenai_mac.py` |
 | Mac | `onnxruntime-genai-webgpu` | WebGPU plugin EP (`onnxruntime-ep-webgpu`, Dawn on Metal) | `scripts/ortgenai_mac.py` |
 | Android | `onnxruntime-genai-cpu` | CPU EP | `android/bench/run_cell.py` + `ortgenai_run` |
-| iPhone | `onnxruntime-genai-cpu` | CPU EP | not wired yet (rows disabled) |
+| iPhone | `onnxruntime-genai-cpu` | CPU EP | the app's `ONNXRuntimeGenAIRuntime` (`scripts/bench_matrix_iphone.sh`) |
 
 `backend=` is arm identity, as for LiteRT-LM. The regime is each platform's (see
 "Regime" below): warm runs headline on the Mac, cold on Android. Gemma 4 E2B / E4B rows stay in
@@ -42,8 +42,12 @@ lane found no published route for them (not verified beyond that check).
   `model_benchmark`. Pins: `android/engine-pins.json` "onnxruntime-genai"
   "0.17.0" — `ortgenai_run` and the three libraries are the witness; a library
   that is not the pin's stamps `unknown`. Device layout: `android/README.md`.
-- iPhone: the release `onnxruntime-genai-ios-0.17.0.zip` (XCFramework,
-  ios-arm64; sha256 in `environment.lock.json`), for the round that wires the app.
+- iPhone: the release `onnxruntime-genai-ios-0.17.0.zip` (XCFramework; sha256 in
+  `environment.lock.json`), vendored by `ios/BenchmarkApp/scripts/fetch_ortgenai_xcframework.sh`.
+  The ios-arm64 framework is a dynamic library that carries ONNX Runtime and the 1DS
+  telemetry SDK (no separate ORT library); `engineVersion` = "onnxruntime-genai 0.17.0 (release
+  ios xcframework)", `engineArtifact` = the zip's and the ios-arm64 binary's sha256
+  (`stamp_engine_pins.sh`). "iPhone" below.
 - Models: each repo at its own commit "Add optimized models for ORT GenAI (#3)"
   (2026-04-20, authors Xenova and kvaishnavi):
   0.6B `da1453100cf3ff33ef56d17983fc7a8648706db6`, 1.7B
@@ -96,6 +100,9 @@ holds the regime fixed).
   a yardstick run throws.
 - Android: every run is a fresh `ortgenai_run` process (cold), as for every
   Android arm (`methodology/android.md`).
+- iPhone: as every iPhone arm, one app launch per cell (`--runs`, the runner's default 4):
+  run 1 loads the model and is the process's first generation (cold), runs 2..N reuse the
+  loaded model (warm), each on a new generator; the warm median headlines.
 
 Until 2026-10-08 the Mac driver ran one process per run, so every Mac record is
 cold: the 2026-10-07 smoke and wiring-smoke campaigns. Those records have no
@@ -170,6 +177,82 @@ which logs every program launch (about 520 lines per token) and changes the
 timing, so they are taken in separate identity runs (`--ort-verbose`), never in
 a measured one: 340 of 346 nodes on the WebGPU EP, the attention-mask subgraph's
 six on the CPU (2026-10-07).
+
+## iPhone
+
+**Build.** `ios/BenchmarkApp/scripts/fetch_ortgenai_xcframework.sh` (also step 1b of
+`bootstrap.sh`) downloads the release zip, checks its sha256 against the pin and unpacks
+`Vendored/onnxruntime-genai.xcframework` unchanged, with a sidecar tag ("<version> <zip sha256>")
+that `stamp_engine_pins.sh` turns into the engine pin, and writes
+`Vendored/onnxruntime-genai-module/module.modulemap`: the release ships its headers without a
+module map, and its hyphenated name cannot be a framework module, so the map exposes
+`ort_genai_c.h` as the Swift module `onnxruntime_genai` (`project.yml`, `SWIFT_INCLUDE_PATHS` of
+the app target). The framework is linked and embedded in the iOS app only — the release has no
+macOS slice, so the yardstick target does not compile the adapter — and without the module
+`ONNXRuntimeGenAIRuntime.swift` compiles to a stub that reports the runtime unavailable. The
+other arms in the same build are the pinned ones (LiteRT-LM v0.16.0, llama.cpp b8999, mlx-swift
+60bd0d78), so a session's anchors (MLX and LiteRT-LM) run on the pins.
+
+**Adapter** (`ios/BenchmarkApp/Sources/Runtimes/ONNXRuntimeGenAIRuntime.swift`, the C API):
+`OgaCreateModel` on the folder (CPU EP, the folder's empty provider options; the model must
+report device type CPU), `OgaCreateTokenizer`; per generation `OgaTokenizerApplyChatTemplate`
+(the tokenizer's own template, one user turn, generation prompt on), `OgaTokenizerEncode`, a new
+generator with `max_length` = the run's context budget and `do_sample` false, then
+`AppendTokenSequences` and `GenerateNextToken` until `IsDone` or the budget, each token decoded
+with a tokenizer stream (a final EOS is not text). No `OgaShutdown` between loads. The cut points
+are the arm's; the iPhone record holds them in the app's fields:
+
+| | iPhone (app) | Mac / Android drivers |
+|---|---|---|
+| prefill tok/s | prompt tokens / `AppendTokenSequences` (`promptTime`) | the same |
+| decode tok/s | `generatedTokenCount` / `generateTime` = (N − 1) / the summed `GenerateNextToken` calls 2..N (the runner's division) | (N − 1) / the same sum |
+| `generatedTokenCount` | N − 1, the decode loop's tokens (as the iPhone ExecuTorch adapter) | N, every picked token, a final EOS included |
+| TTFT | the runner's wall clock: call start → first streamed text (chat template, tokenizer, generator creation with its KV allocation, prefill, first pick, its text) | `AppendTokenSequences` + the first `GenerateNextToken` |
+| memory | the runner's `phys_footprint` from the end of the load to the last token (high-water and median), as every iPhone arm | Mac: the engine process's `phys_footprint` from generator creation; Android: VmRSS / VmHWM |
+| stopReason | `stop` = EOS, `length` = the budget (a filled KV allocation also reads `length`; the console says `max_length`) | `stop` / `length` / `max_length` |
+
+The iPhone record has the app's fields only (no `conditions`): `metrics.contextTokensConfigured`
+(2048), `modelRevision`, `model.quantization` (the registry's label, in the app catalog). The
+rest goes to the console the runner keeps (`console_*.txt` in the campaign dir): every load prints
+`YARDSTICK_NOTE ortgenai_load` (folder, commit, device type, the ONNX Runtime version the
+framework carries, read from its `OrtGetApiBase`, EOS ids, `max_length`, threads = engine default,
+the telemetry variable), every generation `YARDSTICK_NOTE ortgenai_run` (prompt and picked
+tokens; generator, prefill, first-pick and decode ms; the engine-side TTFT; the stop word; the
+templated prompt's sha256) and `YARDSTICK_NOTE ortgenai_text` (the decoded text, JSON).
+
+**Models.** The app catalog (`ModelCatalog.onnxRuntimeGenAI`) names each CPU folder and the commit
+it is fetched at (`ModelCatalog.onnxRuntimeGenAIRevisions`, the cells' `revision=`). The adapter
+downloads that commit with HubClient into the app's hub cache (`Library/Caches/huggingface/hub`,
+python layout; later loads read it without network) and points the cache's `refs/main` at it,
+which is where the record's `modelRevision` is read from (as a sideload stage pins it). Not
+"main": on 2026-10-07 the three repos' main moved to a commit that edits only the repo-root
+`tokenizer_config.json` (the folders are byte-identical), and a row names the commit its files
+came from.
+
+**Telemetry.** The release framework links the 1DS SDK. GenAI reads `ORT_DISABLE_TELEMETRY` when
+the first model is created (v0.17.0 `CreateModelWithTelemetry` → `GenAiTelemetry::Initialize`);
+the adapter sets it in the process environment when the runtime is created (app start) and again
+before every load, and calls `OgaSetTelemetryEnabled(false)` before the load.
+
+**Install and run** (bundle id = the runner's `APP`, `com.example.CoreMLLLMChat`, the App ID that
+carries the two increased-memory entitlements):
+
+```bash
+ios/BenchmarkApp/scripts/fetch_ortgenai_xcframework.sh
+xcodebuild build -project ios/BenchmarkApp/BenchmarkApp.xcodeproj -scheme BenchmarkApp \
+  -configuration Release -destination 'generic/platform=iOS' -derivedDataPath .build/dd-ios-ortgenai \
+  -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+  -skipPackagePluginValidation -skipMacroValidation \
+  DEVELOPMENT_TEAM=<team> PRODUCT_BUNDLE_IDENTIFIER=com.example.CoreMLLLMChat
+xcrun devicectl device install app --device <devicectl id> \
+  .build/dd-ios-ortgenai/Build/Products/Release-iphoneos/BenchmarkApp.app
+BENCH_UDID=<devicectl id> CAMPAIGN=<name> scripts/bench_matrix_iphone.sh run matrices/dashboard-ortgenai-v1.cells
+```
+
+The runner passes `backend=` to the app only for LiteRT-LM and finds an ORT cell's records by
+their arm id (`onnxruntime-genai-cpu_<model>_<task>_*.json`). The bench phone's weekly job
+measures whatever app is installed and installs nothing: after a sitting on this build, install
+the phone's pinned build again.
 
 ## Run one cell
 
