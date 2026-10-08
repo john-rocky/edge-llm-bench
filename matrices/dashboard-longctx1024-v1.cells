@@ -7,6 +7,8 @@
 # Android it also selects the advanced_main two-iteration path, the only path on which the 256-token
 # output budget is honoured by v0.16.0). MLX rows carry no allocation (mlx-swift-lm grows its cache; no
 # flag). exclude= rows are kept from the short-chat set with their reason (failed-runs-stay).
+# executorch rows (Mac): the weekly set's (own exports, docs/executorch-arm-v1.md); context-tokens=2048
+# is the KV allocation fixed at export; without runs=4 (the Mac runner's default).
 # Prepared 2026-10-06 for the first 1024/256 sittings (owner decision 12:3x JST: the dashboard's
 # headline workload). Each file starts with the platform's session anchors (matrices/anchors.cells).
 
@@ -17,18 +19,28 @@ mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
 mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
 mac mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
 mac litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
 mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
 mac mlx-swift mlx-community/Qwen3-4B-4bit long-context-1024-gen256 cooldown=300
 mac litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048
 mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
 mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
 
 # ---- ios ----
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
