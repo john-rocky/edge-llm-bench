@@ -1,0 +1,225 @@
+{
+ "label": "Galaxy S26 CPU, 1024 random tokens, model_benchmark --profile_prefill (r2b D1)",
+ "profile": "device/r2b-D1-mb-l1024-profile.d/prefill_profile_2026-10-08_08-32-25_220.json",
+ "node_events": 513,
+ "node_kernel_ms": 21352.176,
+ "model_run_ms": 21354.283,
+ "providers": {
+  "CPUExecutionProvider": 513
+ },
+ "intra_op_pool": {
+  "pool": "session-1-intra-op",
+  "pool_threads_incl_caller": 4
+ },
+ "prompt_tokens": 1024,
+ "kinds": [
+  {
+   "kind": "GroupQueryAttention",
+   "count": 28,
+   "ms": 19931.343,
+   "share": 0.9335
+  },
+  {
+   "kind": "MatMulNBits bits 8 (layers)",
+   "count": 104,
+   "ms": 501.705,
+   "share": 0.0235,
+   "gmacs": 214.75,
+   "gmac_per_s": 428.0
+  },
+  {
+   "kind": "MatMulNBits bits 8 lm_head",
+   "count": 1,
+   "ms": 439.231,
+   "share": 0.0206,
+   "gmacs": 159.32,
+   "gmac_per_s": 362.7
+  },
+  {
+   "kind": "MatMulNBits bits 4 (layers)",
+   "count": 92,
+   "ms": 371.589,
+   "share": 0.0174,
+   "gmacs": 236.22,
+   "gmac_per_s": 635.7
+  },
+  {
+   "kind": "SimplifiedLayerNormalization",
+   "count": 57,
+   "ms": 32.67,
+   "share": 0.0015
+  },
+  {
+   "kind": "QuickGelu",
+   "count": 28,
+   "ms": 26.961,
+   "share": 0.0013
+  },
+  {
+   "kind": "Mul",
+   "count": 28,
+   "ms": 25.243,
+   "share": 0.0012
+  },
+  {
+   "kind": "SkipSimplifiedLayerNormalization",
+   "count": 56,
+   "ms": 21.632,
+   "share": 0.001
+  },
+  {
+   "kind": "GatherBlockQuantized",
+   "count": 1,
+   "ms": 0.972,
+   "share": 0.0
+  },
+  {
+   "kind": "Reshape",
+   "count": 112,
+   "ms": 0.734,
+   "share": 0.0
+  },
+  {
+   "kind": "ReduceSum",
+   "count": 1,
+   "ms": 0.049,
+   "share": 0.0
+  },
+  {
+   "kind": "Cast",
+   "count": 2,
+   "ms": 0.02,
+   "share": 0.0
+  },
+  {
+   "kind": "Sub",
+   "count": 1,
+   "ms": 0.012,
+   "share": 0.0
+  },
+  {
+   "kind": "Gather",
+   "count": 1,
+   "ms": 0.009,
+   "share": 0.0
+  },
+  {
+   "kind": "Shape",
+   "count": 1,
+   "ms": 0.006,
+   "share": 0.0
+  }
+ ],
+ "top": [
+  {
+   "node": "/model/layers.26/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 844.291,
+   "share": 0.0395,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.27/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 786.887,
+   "share": 0.0369,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.24/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 784.118,
+   "share": 0.0367,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.20/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 742.525,
+   "share": 0.0348,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.25/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 740.918,
+   "share": 0.0347,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.22/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 734.494,
+   "share": 0.0344,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.23/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 732.087,
+   "share": 0.0343,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.16/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 720.026,
+   "share": 0.0337,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.12/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 715.678,
+   "share": 0.0335,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  },
+  {
+   "node": "/model/layers.14/attn/GroupQueryAttention",
+   "kind": "GroupQueryAttention",
+   "ms": 714.692,
+   "share": 0.0335,
+   "input0": [
+    1,
+    1024,
+    2048
+   ]
+  }
+ ]
+}
