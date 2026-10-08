@@ -160,12 +160,15 @@ cmd_run(){
     [ -n "$counters" ] && extra+=(--litert-engine-counters "$counters")
     local be
     be="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"   # arm identity
-    # litert-lm: the app's --litert-backend cpu|gpu. onnxruntime-genai: the release XCFramework
-    # is CPU-only (no flag) and its records carry the arm id onnxruntime-genai-<backend>, which
-    # names their files (ResultStore) — the gate looks them up by that id
-    # (docs/ortgenai-arm-v1.md "iPhone").
+    # litert-lm: the app's --litert-backend cpu|gpu. executorch: the delegate is the build's
+    # (ios/BenchmarkApp/project-executorch.yml links XNNPACK only) and its records carry the
+    # arm id executorch-<backend>, which names their files (ResultStore) — the gate looks
+    # them up by that id (docs/executorch-arm-v1.md "iPhone"). onnxruntime-genai: the release
+    # XCFramework is CPU-only (no flag) and its records carry onnxruntime-genai-<backend> the
+    # same way (docs/ortgenai-arm-v1.md "iPhone").
     [ -n "$be" ] && [ "$rt" = litert-lm ] && extra+=(--litert-backend "$be")
     local rec_rt="$rt"
+    [ "$rt" = executorch ] && [ -n "$be" ] && rec_rt="executorch-$be"
     [ "$rt" = onnxruntime-genai ] && [ -n "$be" ] && rec_rt="onnxruntime-genai-$be"
 
     [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }

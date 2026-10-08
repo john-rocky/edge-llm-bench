@@ -30,12 +30,16 @@ Android ~15 min, iPhone half a day + GUI signing). Runbooks:
 
 ## Rules that produce wrong numbers when broken (slugs cited in code)
 
-Full text: `methodology/fairness-rules.md`. The five working rules:
+Full text: `methodology/fairness-rules.md`. The six working rules:
 `quant-per-arm-rule` (recipe visible in every row), `quant-label-rule`
 ("int4" is not a spec; Gemma-4 `.litertlm` = wNa8o8, non-transferable),
 `budget-mode-rule` (never mix budgets/modes across arms),
 `spread-rule` (wide trial spread ⇒ throw out, re-run),
-`stored-report-rule`.
+`stored-report-rule`,
+`cpu-cap-rule` (an Android run whose engine CPUs' clock ceiling fell more
+than 15 % pools into no number; ≤15 % pools, marked ◇ and `cpu_capped`
+`true`; the line is `render_leaderboard.CPU_CAP_MAX_DROP_PCT` only, owner
+decision 2026-10-08 on `results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*`).
 
 ## Hard constraints for agents
 

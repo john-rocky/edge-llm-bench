@@ -21,7 +21,8 @@ view. It imports arm_row and filters the rows it hands over the way
 render_dashboard.build does; it defines no second aggregation. A session the
 text check left without a number has no history row, as an excluded cell has
 none (text-check-rule), and so is one the CPU cap left without a number (cpu-cap-rule);
-`text_fail` says how many runs of a kept row left the pool.
+`text_fail` says how many runs of a kept row left the pool, `cpu_capped_counted` how
+many of its pool ran under a CPU frequency cap within the line (counted, marked ◇).
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
 cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
@@ -37,8 +38,8 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_dashboard import (MEM_NOTE, SUMMARY_CSV, ctx_key, grid_sections,  # noqa: E402
-                              load_admission, rel)
+from render_dashboard import (CAP_LINE, MEM_NOTE, SUMMARY_CSV, cap_mark, ctx_key,  # noqa: E402
+                              grid_sections, load_admission, rel)
 from render_leaderboard import SPREAD_FLAG, arm_row  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,7 +51,7 @@ BANDWIDTH_JSON = os.path.join(ROOT, "devices", "memory-bandwidth.json")
 HISTORY_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", "model_id",
                   "task", "campaign", "captured", "decode_tps", "spread_pct", "n",
                   "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
-                  "context_tokens", "mem_peak_mb", "text_fail"]
+                  "context_tokens", "mem_peak_mb", "text_fail", "cpu_capped_counted"]
 
 
 def esc(s):
@@ -118,6 +119,8 @@ def history_rows(cells):
             # cpu-cap-rule)
             if not dec:
                 continue
+            # the session's runs that would have pooled, as render_dashboard.build counts them
+            would = a["n"] + a["text_fail_n"] + a["cpu_capped_n"]
             out.append({
                 "platform": c["platform"], "device": c["device"],
                 "device_display": c["device_display"], "regime": c["regime"],
@@ -132,8 +135,9 @@ def history_rows(cells):
                 "context_tokens": ctx,
                 "mem_peak_mb": round(a["mem_peak"], 1) if a["mem_peak"] else "",
                 # same "k/N" as the dashboard's text_fail ("" = text not checked)
-                "text_fail": (f"{a['text_fail_n']}/{a['n'] + a['text_fail_n'] + a['cpu_capped_n']}"
-                              if a["text_checked_n"] else ""),
+                "text_fail": f"{a['text_fail_n']}/{would}" if a["text_checked_n"] else "",
+                # same "k/N" as the dashboard's cpu_capped_counted ("" = caps not read)
+                "cpu_capped_counted": f"{a['cpu_capped_counted_n']}/{would}" if a["cpu_read_n"] else "",
             })
     out.sort(key=lambda r: (r["platform"], r["device"], r["model"], r["arm"], r["task"],
                             r["context_tokens"], r["captured"]))
@@ -250,6 +254,7 @@ def grid_entry(c, dmax):
            f"prefill {fmt(c['prefill_tps'])} tok/s · TTFT {fmt(c['ttft_ms'], 0)} ms · "
            f"mem {fmt(c['mem_mb'], 0)} MB · peak {fmt(c['mem_peak_mb'], 0)} MB · "
            + (f"ctx {c['context_tokens']} · " if c["context_tokens"] else "")
+           + (f"{cap_mark(c)} · " if cap_mark(c) else "")
            + os.path.basename(c["campaign"]))
     parts = [f"<div class=\"num\">{fmt(c['decode_tps'])}<span class=\"unit\">tok/s</span></div>",
              f"<div class=\"bar\"><span style=\"width:{pct:.1f}%\"></span></div>",
@@ -257,6 +262,8 @@ def grid_entry(c, dmax):
     flags = []
     if (c["spread_pct"] or 0) > SPREAD_FLAG:
         flags.append(f"<span class=\"flag warn\">spread {c['spread_pct']:.0f}%</span>")
+    if cap_mark(c):
+        flags.append(f"<span class=\"flag\">{esc(cap_mark(c))}</span>")
     if c["stale"]:
         flags.append("<span class=\"flag stale\">stale</span>")
     if flags:
@@ -308,8 +315,10 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
              "· bw = decode tok/s × bytes read per token ÷ the device's memory-bandwidth ceiling (an estimate, cited per device) "
              "· text check failed = every run that could have given the number failed the decoded-text check (empty, off-task "
              "or looping text), so none is shown; the runs stay in the raw records "
-             "· no valid run: cpu-capped = every such run ran while the phone held a CPU the engine ran on below its hardware "
-             "maximum clock, so none is shown; the runs stay in the raw records.</p>")
+             f"· no valid run: cpu-capped &gt;{CAP_LINE} = every such run ran while the phone held the clock ceiling of a CPU the "
+             f"engine ran on more than {CAP_LINE} below its hardware maximum, so none is shown; the runs stay in the raw records "
+             f"· ◇ cpu-capped ≤{CAP_LINE} (k of N runs) = k of the runs behind the number ran under a shallower cap, at most "
+             f"{CAP_LINE} below the maximum; they count, and the number says so.</p>")
     L.append("<p><b>Recipe</b>: each runtime runs its own published artifact and quantization (shown under the number, in full in the "
              "detail table) — a different recipe is a different deployment profile, not a win.</p>")
     L.append("</div>")
@@ -345,12 +354,15 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
         L.append("<section class=\"device\"><div class=\"head-grid\">")
         L.append(f"<h2>{esc(display)}</h2>")
         cov = f"{len(measured)} of {len(dc)} cells measured"
+        cap_marked = [c for c in measured if cap_mark(c)]
+        if cap_marked:
+            cov += f" ({len(cap_marked)} with runs cpu-capped ≤{CAP_LINE}, ◇)"
         if excluded:
             cov += f", {len(excluded)} excluded with a reason"
         if text_failed:
             cov += f", {len(text_failed)} failed the text check"
         if cpu_capped:
-            cov += f", {len(cpu_capped)} had no valid run (cpu-capped)"
+            cov += f", {len(cpu_capped)} had no valid run (cpu-capped >{CAP_LINE})"
         if missing:
             cov += f", {len(missing)} not yet measured"
         rng = f"captures {dates[0]} … {dates[-1]}" if dates else "no captures"

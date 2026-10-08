@@ -677,6 +677,26 @@ every row keeps running on the Galaxy S26. Source: the lane's round notes
 `~/code/standup/drafts/2026-10-06-dashboard-first-tab-attachments/ROUND-m5.md`
 (outside this repo) and that sitting's records.
 
+## CPU frequency cap line (2026-10-08)
+
+A cell's runs on Android carry `cpu-capped` when the clock ceiling of a CPU the engine ran on
+fell below its hardware maximum during the run (since 2026-10-07,
+`methodology/fairness-rules.md` §13 cpu-cap-rule). Since 2026-10-08 (owner decision) the depth
+decides the pool: a run whose ceiling fell at most 15 % (summary `cpu_cap_drop_pct`, the line
+`render_leaderboard.CPU_CAP_MAX_DROP_PCT`) pools, and the cell's number carries
+`◇ cpu-capped ≤15 % (k of N runs)`; a run past it stays out, and a cell left with no other
+run reads `— (no valid run: cpu-capped >15 % (k of N runs))`. The detail table's
+`cpu capped >15 %` and `cpu capped ≤15 %` columns count both kinds (`—` = caps not read,
+records before 2026-10-07). Rendered before and after the line from the same records (every
+`matrices/dashboard-*.cells` file), four Galaxy S26 cells of the 2026-10-08 sittings moved:
+the ONNX Runtime GenAI Qwen3 1.7B short-chat cell and the ExecuTorch Qwen3 1.7B and Gemma 4
+E2B short-chat cells now have a number (3, 3 and 2 of 3 runs within the line, 4.9-14.2 %),
+and the LiteRT-LM GPU Qwen3 0.6B short-chat anchor pools its run 1 (2.8 %; its three runs
+then spread 5.3 %, ⚠). Every 1K cell of those sittings stays without a valid run, as does the
+ONNX Runtime GenAI Qwen3 4B short-chat cell (18.6 %). No other cell of any file moved. The
+Pixel 8a's capped launches of 2026-10-07 are quarantined files (`*.json.quarantine-cpu-cap`)
+and move nothing.
+
 ## NPU and Android GPU rows (Galaxy S26, 2026-10-07)
 
 Arms. `llama.cpp-npu` runs llama.cpp on the Hexagon NPU (`--device HTP0`) and
@@ -880,6 +900,24 @@ is no anchor row (the weekly file is an owner decision). The regime is the platf
 Mac one engine process per cell (run 1 cold, runs 2..N warm, the warm median headlines, as
 `yardstick run --runs N`), on Android a fresh process per run (cold). Drivers, pins, recipe
 labels, regime, timing, memory and telemetry: [docs/ortgenai-arm-v1.md](ortgenai-arm-v1.md).
+
+## ExecuTorch arm in the weekly set, Mac leg (2026-10-08)
+
+Since 2026-10-08 (owner GO) the Mac blocks of `dashboard-text-v1.cells` and
+`dashboard-longctx1024-v1.cells` end with the ExecuTorch rows of
+`matrices/dashboard-executorch-v1-mac.cells`: our own exports of the dashboard models with
+ExecuTorch v1.5.1's own exporters (not published artifacts; `docs/executorch-arm-v1.md`), the
+arm `executorch-xnnpack` (8da4w, group 128, embedding int8) and `executorch-mlx` (the MLX
+delegate, Qwen 3 at 4w group 128 — another recipe, stated per row), short-chat and the 1K
+text task at `context-tokens=2048`, the Mac runner's regime (run 1 cold, runs 2-4 warm through
+`llama_main --warmup`). 12 rows run; the 8 Gemma 4 rows are `exclude=` with their reasons
+(the XNNPACK runner `gemma4_e2e_runner` has no warm regime; the exporter has no MLX path).
+The Mac sitting grows by about one hour (`expected_hours` 2.2 → 3.2, `timeout_hours` 4 → 5,
+`ops/dashboard-v1/schedule.json`; derivation in the lane's round record, two measured sittings
+of 36 and 22 minutes). The Android and iPhone ExecuTorch rows are not in the weekly set: the
+Android rows wait on the Galaxy S26's CPU cap line and on keeping the runner directory on the
+phones; the iPhone rows need the ExecuTorch build of the app, which replaces the Core AI build
+under the same bundle id, so they are by-hand sittings only.
 
 ## Open questions for the LiteRT team
 

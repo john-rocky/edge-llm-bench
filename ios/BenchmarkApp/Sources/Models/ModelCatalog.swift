@@ -1059,10 +1059,43 @@ public enum ModelCatalog {
     /// runtime's catalog as `mediaPipe`; LiteRT-LM is the current name.
     public static let mediaPipe: [ModelInfo] = liteRTLM
 
-    /// Models the ExecuTorch adapter can load.
-    /// Each repo ships a `.pte` plus a `tokenizer.model` (sentencepiece).
-    /// No official Gemma 4 .pte exists yet (May 2026).
+    /// Models the ExecuTorch adapter can load: a `.pte` plus the tokenizer its
+    /// `ExecuTorchModelSpec` names (ExecuTorchRuntime.swift).
     public static let executorch: [ModelInfo] = [
+        // Own exports (docs/executorch-arm-v1.md): ExecuTorch 1.5.1's own exporter with the
+        // tree's qwen3_xnnpack_q8da4w.yaml, run by us, not published artifacts. No Hub repo
+        // behind the id: the .pte and tokenizer.json are side-loaded into
+        // Documents/models/executorch/<id with "/" as "__">/.
+        ModelInfo(
+            id: "own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            displayName: "Qwen3 0.6B (own export, ET 1.5.1 XNNPACK 8da4w)",
+            quantization: "8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 469,
+            hfRepoId: "own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            hfFilePatterns: ["*.pte", "tokenizer.json"],
+            primaryFile: "Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte"
+        ),
+        ModelInfo(
+            id: "own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            displayName: "Qwen3 1.7B (own export, ET 1.5.1 XNNPACK 8da4w)",
+            quantization: "8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1",
+            parameterCountB: 1.7,
+            onDiskSizeMB: 1204,
+            hfRepoId: "own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            hfFilePatterns: ["*.pte", "tokenizer.json"],
+            primaryFile: "Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte"
+        ),
+        ModelInfo(
+            id: "own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            displayName: "Qwen3 4B (own export, ET 1.5.1 XNNPACK 8da4w)",
+            quantization: "8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2469,
+            hfRepoId: "own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            hfFilePatterns: ["*.pte", "tokenizer.json"],
+            primaryFile: "Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte"
+        ),
         ModelInfo(
             id: "executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET",
             displayName: "Llama 3.2 1B SpinQuant INT4 (.pte)",

@@ -31,11 +31,15 @@ What this adds over LEADERBOARD.md:
     for that reason renders "— (text check failed: <flags> (k of N runs))"
     (status text-fail), and the detail table's "text fail" column says how
     many runs of a measured cell left the pool (— = the text was not checked).
-  - CPU cap (cpu-cap-rule): arm_row keeps runs during which a CPU the engine
-    ran on sat below its hardware maximum clock out of the pool the same way;
-    a cell left with no headline number for that reason renders
-    "— (no valid run: cpu-capped (k of N runs))" (status cpu-capped), and the
-    "cpu capped" column says how many runs left the pool (— = caps not read).
+  - CPU cap (cpu-cap-rule): arm_row keeps runs during which the clock ceiling
+    of a CPU the engine ran on fell more than CPU_CAP_MAX_DROP_PCT (15 %) below
+    its hardware maximum out of the pool the same way; a cell left with no
+    headline number for that reason renders
+    "— (no valid run: cpu-capped >15 % (k of N runs))" (status cpu-capped), and
+    the "cpu capped >15 %" column says how many runs left the pool (— = caps
+    not read). Runs under a shallower cap pool: the number carries
+    "◇ cpu-capped ≤15 % (k of N runs)" and the "cpu capped ≤15 %" column says
+    how many of the pool's runs ran under one.
   - no ranking: one grid per (device, task), rows in cells-file order
     (light -> heavy; a context-tokens= cell gets its own row per allocation),
     arm columns in a fixed alphabetical order. The recipe (artifact, quantization, engine pin)
@@ -58,7 +62,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # noqa: E402
                           bandwidth_utilization, fmt_bw, logical_model)
-from render_leaderboard import SPREAD_FLAG, arm_row  # noqa: E402
+from render_leaderboard import CPU_CAP_MAX_DROP_PCT, SPREAD_FLAG, arm_row  # noqa: E402
 from validate_cells import parse_exclude_on, parse_line  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -70,6 +74,8 @@ CSV_PLATFORM = {"ios": "ios", "mac": "mac", "android": "android"}
 # headline regime per platform: Apple lanes have in-process warm runs, the
 # Android CLIs do not (methodology/android.md) — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold"}
+# the cpu-cap-rule line as the tables print it ("15 %"); the value lives in render_leaderboard
+CAP_LINE = f"{CPU_CAP_MAX_DROP_PCT:g} %"
 
 
 def rel(p):
@@ -248,6 +254,14 @@ MEM_NOTE = ("mem MB / mem peak MB = the median over the session's runs of each r
             "(load included, decimal MB) — methodology/memory.md \"Peak memory\".")
 
 
+def cap_mark(c):
+    """The mark a measured cell carries when runs of its pool ran under a CPU frequency cap
+    within the line (cpu-cap-rule): "◇ cpu-capped ≤15 % (k of N runs)", N = the session's
+    runs that would have pooled; "" when none did (or the caps were not read)."""
+    k, _, n = (c.get("cpu_capped_counted") or "").partition("/")
+    return f"◇ cpu-capped ≤{CAP_LINE} ({k} of {n} runs)" if k not in ("", "0") else ""
+
+
 def grid_text(c):
     """A grid cell's text: the headline decode with its flags, or why there is none."""
     if c["status"] in ("excluded", "text-fail"):
@@ -261,6 +275,8 @@ def grid_text(c):
     t = fmt(c["decode_tps"])
     if c["spread_pct"] is not None and c["spread_pct"] > SPREAD_FLAG:
         t += f" ⚠ {c['spread_pct']:.0f}%"
+    if cap_mark(c):
+        t += " " + cap_mark(c)
     if c["bw_util_pct"] is not None:
         t += f" · bw {fmt_bw(bw_of(c))}"
     if c["stale"]:
@@ -311,8 +327,12 @@ def build(cells_path, schedule_path, stale_days, today):
                     # "k/N": runs of the session the text check kept out of the pool,
                     # of the runs that would have pooled; "" = text not checked
                     "text_fail": "",
-                    # "k/N": the same for the CPU cap (cpu-cap-rule); "" = caps not read
+                    # "k/N": the same for the CPU cap past the line (cpu-cap-rule); "" =
+                    # caps not read
                     "cpu_capped": "",
+                    # "k/N": runs of the pool that ran under a cap within the line, of the
+                    # same N; "" = caps not read
+                    "cpu_capped_counted": "",
                 }
                 if why:
                     rec.update(status="excluded", reason=why)
@@ -341,6 +361,7 @@ def build(cells_path, schedule_path, stale_days, today):
                         rec["text_fail"] = f"{a['text_fail_n']}/{would}"
                     if a["cpu_read_n"]:
                         rec["cpu_capped"] = f"{a['cpu_capped_n']}/{would}"
+                        rec["cpu_capped_counted"] = f"{a['cpu_capped_counted_n']}/{would}"
                     if not dec and a["text_fail_n"]:
                         # text-check-rule: no headline because the text check emptied
                         # the pool — the reason is the datum, never the rate
@@ -349,9 +370,10 @@ def build(cells_path, schedule_path, stale_days, today):
                                           f"({a['text_fail_n']} of {would} runs)")
                     elif not dec and a["cpu_capped_n"]:
                         # cpu-cap-rule: no headline because every run that could give it
-                        # ran under a CPU frequency cap — no valid run, never the rate
+                        # ran under a CPU frequency cap past the line — no valid run, never
+                        # the rate
                         rec.update(status="cpu-capped", spread_pct=None,
-                                   reason=f"cpu-capped ({a['cpu_capped_n']} of {would} runs)")
+                                   reason=f"cpu-capped >{CAP_LINE} ({a['cpu_capped_n']} of {would} runs)")
                     u = bandwidth_utilization(dec, c["arm"], c["model_id"], ident, plat)
                     if u:
                         rec.update(artifact_bytes=u["artifact_bytes"], stream_bytes=u["bytes"],
@@ -385,10 +407,13 @@ def render_md(out_cells, cells_path, stale_days, today):
              f"than {stale_days} days. `— (text check failed: …)` = every run of the "
              "session that could have given the cell's number failed the decoded-text "
              "check (empty, off-task or looping text), so none is shown "
-             "(text-check-rule; the runs stay in raw). `— (no valid run: cpu-capped …)` = "
-             "every such run ran while the phone held a CPU the engine ran on below its "
-             "hardware maximum clock (seen on a charging phone with the thermal status "
-             "still 0), so none is shown (cpu-cap-rule; the runs stay in raw). "
+             "(text-check-rule; the runs stay in raw). `— (no valid run: cpu-capped "
+             f">{CAP_LINE} …)` = every such run ran while the phone held the clock ceiling of a "
+             f"CPU the engine ran on more than {CAP_LINE} below its hardware maximum (seen with "
+             "the thermal status still 0), so none is shown (cpu-cap-rule; the runs stay in "
+             f"raw). `◇ cpu-capped ≤{CAP_LINE} (k of N runs)` = k of the runs behind the number "
+             f"ran under a shallower cap, at most {CAP_LINE} below the maximum: they count, "
+             "and the number says so. "
              "Short-chat prefill is "
              "overhead-dominated and does "
              "not compare across arms (docs/OPERATIONS.md); it is listed, not headlined. "
@@ -413,15 +438,17 @@ def render_md(out_cells, cells_path, stale_days, today):
         excluded = sum(1 for c in dcells if c["status"] == "excluded")
         text_failed = sum(1 for c in dcells if c["status"] == "text-fail")
         cpu_capped = sum(1 for c in dcells if c["status"] == "cpu-capped")
+        cap_marked = sum(1 for c in dcells if c["status"] == "measured" and cap_mark(c))
         missing = sum(1 for c in dcells if c["status"] in ("missing", "no-decode"))
         dates = sorted({c["captured"] for c in dcells if c["captured"]})
         engines = sorted({c["engine"] for c in dcells if c["engine"]})
         L.append(f"## {display} — `{ident}`, {plat}, headline regime **{REGIME[plat]}**")
         L.append("")
         L.append(f"{measured} of {len(dcells)} cells measured"
+                 + (f" ({cap_marked} with runs cpu-capped ≤{CAP_LINE}, ◇)" if cap_marked else "")
                  + (f", {excluded} excluded with a reason" if excluded else "")
                  + (f", {text_failed} failed the text check" if text_failed else "")
-                 + (f", {cpu_capped} had no valid run (cpu-capped)" if cpu_capped else "")
+                 + (f", {cpu_capped} had no valid run (cpu-capped >{CAP_LINE})" if cpu_capped else "")
                  + (f", {missing} not yet measured" if missing else "")
                  + (f"; captures {dates[0]} .. {dates[-1]}" if dates else "")
                  + (f"; engines observed: {', '.join(engines)}" if engines else "") + ".")
@@ -452,7 +479,8 @@ def render_md(out_cells, cells_path, stale_days, today):
             L.append("<details><summary>per-cell detail (recipe, session, memory, prefill, bandwidth)</summary>")
             L.append("")
             header = ["model", "arm", "ctx", "artifact", "quant", "engine", "decode tok/s",
-                      "spread %", "n", "text fail", "cpu capped", "artifact MB", "MB/token",
+                      "spread %", "n", "text fail", f"cpu capped >{CAP_LINE}",
+                      f"cpu capped ≤{CAP_LINE}", "artifact MB", "MB/token",
                       "bw util", "prefill tok/s", "TTFT ms", "mem MB", "mem peak MB",
                       "thermal at start", "captured", "session"]
             L.append("| " + " | ".join(header) + " |")
@@ -472,7 +500,8 @@ def render_md(out_cells, cells_path, stale_days, today):
                            else fmt(c["decode_tps"]))
                     row = head + [
                         c["quant"], c["engine"], dec, fmt(c["spread_pct"]),
-                        str(c["n"]), c["text_fail"] or "—", c["cpu_capped"] or "—", mb, tok,
+                        str(c["n"]), c["text_fail"] or "—", c["cpu_capped"] or "—",
+                        c["cpu_capped_counted"] or "—", mb, tok,
                         fmt_bw(bw_of(c)) if c["bw_util_pct"] is not None else "n/a",
                         fmt(c["prefill_tps"]), fmt(c["ttft_ms"], 0), fmt(c["mem_mb"], 0),
                         fmt(c["mem_peak_mb"], 0), c["thermal_initial"] or "—",
@@ -487,10 +516,13 @@ def render_md(out_cells, cells_path, stale_days, today):
                      "bw util = decode tok/s × MB/token ÷ this device's ceiling. text fail = "
                      "the session's runs whose decoded text failed the text check (kept out of "
                      "every number, text-check-rule) / the runs that would have pooled, cold "
-                     "and warm; — = the text was not checked. cpu capped = the session's runs "
-                     "during which a CPU the engine ran on sat below its hardware maximum clock "
-                     "(kept out of every number, cpu-cap-rule) / the same runs that would have "
-                     "pooled; — = the caps were not read (records before 2026-10-07).")
+                     "and warm; — = the text was not checked. cpu capped >" + CAP_LINE + " = the "
+                     "session's runs during which the clock ceiling of a CPU the engine ran on "
+                     "fell more than " + CAP_LINE + " below its hardware maximum (kept out of every "
+                     "number, cpu-cap-rule) / the same runs that would have pooled; cpu capped ≤"
+                     + CAP_LINE + " = the pool's runs whose ceiling fell less (counted, the "
+                     "number marked ◇) / the same N; — = the caps were not read (records "
+                     "before 2026-10-07).")
             L.append("")
             L.append("</details>")
             L.append("")
@@ -502,7 +534,7 @@ CSV_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", 
               "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
               "captured", "campaign", "stale",
               "artifact_bytes", "stream_bytes", "bw_ceiling_gbps", "bw_basis", "bw_util_pct",
-              "mem_peak_mb", "context_tokens", "text_fail", "cpu_capped"]
+              "mem_peak_mb", "context_tokens", "text_fail", "cpu_capped", "cpu_capped_counted"]
 
 
 def write_outputs(out_cells, md, md_path, out_dir):

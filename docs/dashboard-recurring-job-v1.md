@@ -190,8 +190,9 @@ expected shape of a week, not a lost slot.
 The wall times above are the short-chat set. Since 2026-10-06 every sitting
 also measures the 1024 / 256 cells, which roughly doubles it; estimated
 sitting length, hours (`docs/dashboard-cells-v1.md`, "Second task in the
-weekly set", has the derivation): Mac Studio 2.2 (the added 51 minutes
-measured), Galaxy S26 7.9 in three halves (9.0 with a gate retry per half),
+weekly set", has the derivation): Mac Studio 3.2 (the added 51 minutes of
+the 1K task measured; +1.0 for the ExecuTorch rows since 2026-10-08, "ExecuTorch
+arm in the weekly set, Mac leg"), Galaxy S26 7.9 in three halves (9.0 with a gate retry per half),
 Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), iPhone 4.8 with every
 cell HOT-retried. `schedule.json` carries them as `expected_hours`, and
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×

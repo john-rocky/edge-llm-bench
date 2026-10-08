@@ -1,0 +1,228 @@
+# The iPhone app with the ExecuTorch arm linked: project.yml minus Core AI, plus the
+# ExecuTorch Swift package (docs/executorch-arm-v1.md "iPhone"). Core AI and ExecuTorch
+# cannot share the iOS target — coreai-models' CXGrammar.xcframework and the executorch
+# xcframeworks both emit include/module.modulemap into the products dir ("Multiple
+# commands produce module.modulemap", the note in project.yml) — so the ExecuTorch arm
+# is a second app build: same target name, scheme, bundle id and every other arm as
+# project.yml; installed in place of the Core AI build for the sittings that measure it.
+#
+#   xcodegen generate --spec project-executorch.yml   # -> BenchmarkApp-executorch.xcodeproj
+#
+# No yardstick target: the Mac ExecuTorch arm runs ExecuTorch's own C++ runners
+# (scripts/executorch_mac.py), and on macOS the executorch xcframework collides with
+# LiteRT-LM's CLiteRTLM_mac the same way (project.yml, the yardstick note).
+name: BenchmarkApp-executorch
+options:
+  bundleIdPrefix: com.iosllmbenchmark
+  deploymentTarget:
+    iOS: "18.0"
+    macOS: "14.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: minimal
+
+packages:
+  mlx-swift-lm:
+    url: https://github.com/ml-explore/mlx-swift-lm
+    # Pinned by revision (project.yml: the runtime IS the thing under measurement).
+    revision: 60bd0d7880c82980f9481f8be78862e9b63c58a3
+  mlx-swift:
+    url: https://github.com/ml-explore/mlx-swift
+    # Transitive pin, as in project.yml (0.31.5+ manifests need Swift tools 6.3 = Xcode 27).
+    exactVersion: 0.31.6
+  swift-huggingface:
+    url: https://github.com/huggingface/swift-huggingface
+    from: "0.8.1"
+  swift-transformers:
+    url: https://github.com/huggingface/swift-transformers
+    from: "1.0.0"
+  executorch:
+    url: https://github.com/pytorch/executorch.git
+    # The head of branch swiftpm-1.5.0 (git ls-remote, 2026-10-08; commit "1.5.0",
+    # 2026-09-16): prebuilt ExecuTorch 1.5.0 xcframeworks fetched from
+    # ossci-ios.s3.amazonaws.com by the checksums in its Package.swift. Pinned by revision,
+    # not `branch:`, for the reason mlx-swift-lm is: a branch can move under a cell. There
+    # is no swiftpm-1.5.1 branch (the 1.5.1 docs name one); 1.5.0 -> 1.5.1 changed no
+    # runtime, kernel, XNNPACK or LLM-runner source (Arm / Cortex-M / NXP backends, export
+    # passes, a threadpool getter), so the 1.5.1 own exports are expected to load on this
+    # 1.5.0 runtime (a phone run confirms it). The records say which ran: engineVersion
+    # v1.5.0 (the pre-build phase below).
+    revision: 56cc93a96d5fb8d21554ec5f00fbad5a5b228bc4
+  Anemll:
+    path: Vendored/Anemll/anemll-swift-cli
+  # CoreML-LLM stays off (project.yml has the reasons).
+  LiteRT-LM:
+    # Local path (not url:) so SwiftPM accepts the package's `.unsafeFlags(-all_load)`.
+    # Vendored/ is git-ignored (scripts/bootstrap.sh).
+    path: Vendored/LiteRT-LM
+  # No coreai-models: Core AI is the arm this build drops (see the header).
+
+targets:
+  BenchmarkApp:
+    type: application
+    platform: iOS
+    # project.yml's floor (it came from Core AI), kept so every other arm builds as it does
+    # there; the bench iPhones run iOS 27 (the ExecuTorch package's own floor is iOS 17).
+    deploymentTarget: "27.0"
+    sources:
+      - path: Sources
+      # Observed engine pins, bundled as a resource (project.yml has the history).
+      - path: Vendored/engine-pins.json
+        buildPhase: resources
+        optional: true
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: iOS LLM Bench
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "1"
+        NSCameraUsageDescription: "Used to benchmark live vision-language model inference (VLM) on the camera feed."
+        UILaunchScreen: {}
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes:
+          - processing
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.iosllmbenchmark.benchmarkapp
+        CODE_SIGN_ENTITLEMENTS: BenchmarkApp.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_STRICT_CONCURRENCY: minimal
+        # ExecuTorch registers its backend, kernels and prim ops from static initializers in
+        # archive members nothing references, so -ObjC alone links none of them (the first
+        # build of this file, 2026-10-08: no XnnpackBackend, llama::custom_sdpa or
+        # quantized_decomposed::embedding_byte in the binary) and every .pte would fail at
+        # load. Force-load the archives that register, as the ExecuTorch iOS docs' "Linkage"
+        # section does; ProcessXCFramework stages them in BUILT_PRODUCTS_DIR.
+        "ET_PLATFORM[sdk=iphoneos*]": ios
+        "ET_PLATFORM[sdk=iphonesimulator*]": simulator
+        OTHER_LDFLAGS:
+          - "-ObjC"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libexecutorch_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libbackend_xnnpack_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libkernels_llm_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libkernels_optimized_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libkernels_quantized_$(ET_PLATFORM).a"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+    preBuildScripts:
+      # project.yml's phase (the shared scripts/stamp_engine_pins.sh, same declared output),
+      # plus the executorch pin that script does not know: read from the package checkout
+      # this build resolved — the revision checked out and its Package.swift (the version
+      # and the checksum of every prebuilt zip this target links). Observed or absent: with
+      # no checkout to read, the rows carry no executorch pin (warned), never a default.
+      - name: Stamp engine pins
+        script: |
+          set -e
+          "$SRCROOT/scripts/stamp_engine_pins.sh"
+          ET_CHECKOUT="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/executorch"
+          if [ ! -f "$ET_CHECKOUT/Package.swift" ]; then
+            echo "warning: no executorch checkout at $ET_CHECKOUT - the rows carry no executorch pin"
+            exit 0
+          fi
+          /usr/bin/python3 - "$ET_CHECKOUT" "$SRCROOT/Vendored/engine-pins.json" <<'PY'
+          import json, re, subprocess, sys
+          checkout, pins_path = sys.argv[1], sys.argv[2]
+          src = open(checkout + "/Package.swift").read()
+          version = re.search(r'^let version = "([0-9][^"]*)"', src, re.M).group(1)
+          rev = subprocess.run(["git", "-C", checkout, "rev-parse", "HEAD"], check=True,
+                               capture_output=True, text=True).stdout.strip()
+          sums = dict(re.findall(r'"(\w+)": \[\s*"sha256": "([0-9a-f]{64})"', src))
+          linked = ["executorch_llm", "executorch", "backend_xnnpack", "kernels_llm",
+                    "kernels_optimized", "kernels_quantized", "threadpool"]
+          missing = [n for n in linked if n not in sums]
+          if missing or not re.fullmatch(r"[0-9a-f]{40}", rev):
+              sys.exit(f"executorch pin: unreadable checkout {checkout} (rev {rev!r}, no checksum for {missing})")
+          pins = json.load(open(pins_path))
+          pins["executorch"] = {
+              "version": "v" + version,
+              "artifact": f"executorch SwiftPM {rev[:12]}: " + ", ".join(
+                  f"{n}-{version}.zip sha256:{sums[n][:12]}" for n in linked)}
+          json.dump(pins, open(pins_path, "w"), indent=4)
+          print("engine pins + executorch v" + version + " @" + rev[:12])
+          PY
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - $(SRCROOT)/Vendored/engine-pins.json
+    dependencies:
+      - package: mlx-swift-lm
+        product: MLXLLM
+      - package: mlx-swift-lm
+        product: MLXVLM
+      - package: mlx-swift-lm
+        product: MLXLMCommon
+      - package: swift-huggingface
+        product: HuggingFace
+      - package: swift-transformers
+        product: Transformers
+      # ExecuTorch 1.5.0 (ExecuTorchRuntime.swift: `#if canImport(ExecuTorchLLM)`): the
+      # runtime, the LLM runner (TextRunner), the XNNPACK backend and the kernels the own
+      # exports call outside the delegate — quantized_decomposed::embedding_byte
+      # (kernels_quantized), llama::custom_sdpa / llama::update_cache (kernels_llm), the
+      # aten copy / view / mean / cat ops (kernels_optimized). Release products: the
+      # _debug ones keep ET_LOG.
+      - package: executorch
+        product: executorch
+      - package: executorch
+        product: executorch_llm
+      - package: executorch
+        product: backend_xnnpack
+      - package: executorch
+        product: kernels_llm
+      - package: executorch
+        product: kernels_optimized
+      - package: executorch
+        product: kernels_quantized
+      - package: Anemll
+        product: AnemllCore
+      - package: LiteRT-LM
+        product: LiteRTLM
+      - framework: Vendored/llama.xcframework
+        embed: true
+        codeSign: true
+        optional: true
+      - framework: Vendored/cactus-ios.xcframework
+        embed: true
+        codeSign: true
+        optional: true
+
+# Shared scheme so `xcodebuild -scheme BenchmarkApp` works headlessly.
+schemes:
+  BenchmarkApp:
+    build:
+      targets:
+        BenchmarkApp: all
+    run:
+      config: Release
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -1,0 +1,130 @@
+2026-10-08 16:04:47 r2c phase dry (no adb)
+2026-10-08 16:04:48 dry: l2probe built: sha256 dea5176bc0b3feea7e5e8de5192be4477b87919c0ffa8d48abfaeccecf5c7910 from l2probe.c sha256 82a21e5ffa8cd9ec2ff0fae24cc09bf14650aed4575a4ae3efcb8bc50c3b96d0; ndk 29.0.13113456-beta1; Android (13065274, +pgo, -bolt, +lto, -mlgo, based on r547379) clang version 20.0.0 (https://android.googlesource.com/toolchain/llvm-project b718bcaf8c198c82f3021447d943401e3ab5bd54); flags --target=aarch64-linux-android28 -O2 -Wall -fPIE -pie
+2026-10-08 16:04:48 dry: libonnxruntime-genai.so sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35 = MANIFEST
+2026-10-08 16:04:48 dry: libmat.so sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f = MANIFEST
+2026-10-08 16:04:48 dry: libonnxruntime.so sha256 df5d25c72a868dca773597c71e2000756d43fe4d70ade516d3693c54e12e0ada = MANIFEST
+2026-10-08 16:04:48 dry: ortgenai_run sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f = MANIFEST
+2026-10-08 16:04:48 dry: model_benchmark sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04 = MANIFEST
+2026-10-08 16:04:48 dry: run_diag.sh (r2b, unchanged) sha256 48e5560304f2729dd9c17f053a66c5441e1f60ed1d20e6a21d5bcfc8d51fd124; diag_s26.sh (sourced) sha256 8d421b9d8248f8bb56a985c26a0be4d4c2bcaa125d41776f4aac9d5a6b4d3f8f
+2026-10-08 16:04:48 dry: model chat_template.jinja 4168 bytes
+2026-10-08 16:04:48 dry: model config.json 8957 bytes
+2026-10-08 16:04:48 dry: model genai_config.json 1520 bytes
+2026-10-08 16:04:48 dry: model model.onnx 524589133 bytes
+2026-10-08 16:04:48 dry: model tokenizer.json 11422648 bytes
+2026-10-08 16:04:48 dry: model tokenizer_config.json 663 bytes
+2026-10-08 16:04:48 dry: hold now: {"pid": 21661, "script": "AS5-skills-cl-fixes-before", "device": "S26", "started": "2026-10-08 16:02:20"}
+2026-10-08 16:04:48 dry: plan E1 r2c-E1-mb-l512-noflash limit=180s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai/run_diag.sh r2c-E1-mb-l512-noflash - 180 model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-08 16:04:48 dry: plan E2 r2c-E2-mb-l1024-profile-noflash limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai/run_diag.sh r2c-E2-mb-l1024-profile-noflash - 300 model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-08 16:04:48 dry: PASS
+2026-10-08 16:04:52 keeper 53460: start: hold /Users/USER/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold, release file /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/d9b2c2af-8c16-4160-9f0a-1d08bfcda55e/scratchpad/r2c.release, hold max 900s, deadline 17:30
+holder: AS5-skills-cl-fixes-before (pid 21661, since 2026-10-08 16:02:20)
+1. ortgenai_r2c_l2  edge-llm-bench-df  ~15 min  queued 2026-10-08 16:04:52 (no keeper waiting)
+hold acquired: /Users/USER/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold (owner pid 53460) at 16:06:32
+2026-10-08 16:06:33 keeper 53460: hold acquired: {"pid": 53460, "script": "ortgenai_r2c_l2", "device": "S26", "started": "2026-10-08 16:06:32"}
+2026-10-08 16:06:42 r2c phase all: hold since 16:06:32, frame left 14 min 50 s
+2026-10-08 16:06:42 probe
+2026-10-08 16:06:42 probe lock: free (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock)
+2026-10-08 16:06:42 probe hold: {"pid": 53460, "script": "ortgenai_r2c_l2", "device": "S26", "started": "2026-10-08 16:06:32"}
+2026-10-08 16:06:43 probe host drivers:  pid 32022 (android/bench/run_campaign.py, lock edge-llm-bench-android-4C131JEKB15210.lock); pid 72686 (android/bench/run_campaign.py, lock edge-llm-bench-android-FAKESELF.lock); pid 72702 (android/bench/run_cell.py, lock edge-llm-bench-android-FAKESELF.lock); (none on RFGL80R6A6H)
+2026-10-08 16:06:43 probe device engines: none
+2026-10-08 16:06:43 probe android: SM-S942Q / Android 16 / patch 2026-08-05 / samsung/m1qjpnx/m1q:16/BP4A.251205.006/S942QOPS1AZH9_SJP1AZH9:user/release-keys / uptime 504491.24 / cpus online 0-7
+2026-10-08 16:06:43 probe disk: /dev/block/dm-88 232019968 220645488  11067280  96% /data/user/0
+2026-10-08 16:06:43 probe runtime dir: total 78588;-rw-rw-rw- 1 shell shell 28597536 2026-09-25 18:35 libmat.so;-rw-rw-rw- 1 shell shell  6673360 2026-09-25 18:35 libonnxruntime-genai.so;-rw-rw-rw- 1 shell shell 32990480 2026-09-10 07:34 libonnxruntime.so;-rwxr-xr-x 1 shell shell  6062400 2026-10-07 22:24 model_benchmark;-rwxr-xr-x 1 shell shell  6044016 2026-10-07 23:13 ortgenai_run;-rw-rw-rw- 1 shell shell     5371 2026-10-07 23:20 run_diag.sh;-rw-rw-rw- 1 shell shell     2099 2026-10-07 22:26 run_sampled.sh;
+2026-10-08 16:06:43 probe out/: ls: /data/local/tmp/llmbench/ortgenai/out: No such file or directory;
+2026-10-08 16:06:43 probe model dir: ls: /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128: No such file or directory;
+2026-10-08 16:06:43 probe env through sh: Y=1 ORT_GQA_DISABLE_FLASH_ATTENTION=1 
+2026-10-08 16:06:43 probe state: thermal=0 battery=338dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6881MB wake=Dozing
+2026-10-08 16:06:44 campaign lock taken (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock, perl pid 73353)
+2026-10-08 16:06:44 push
+2026-10-08 16:06:44 push l2probe sha256 dea5176bc0b3feea7e5e8de5192be4477b87919c0ffa8d48abfaeccecf5c7910
+2026-10-08 16:06:44 push runtime libonnxruntime-genai.so present, sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35
+2026-10-08 16:06:44 push runtime libmat.so present, sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f
+2026-10-08 16:06:45 push runtime libonnxruntime.so present, sha256 df5d25c72a868dca773597c71e2000756d43fe4d70ade516d3693c54e12e0ada
+2026-10-08 16:06:45 push runtime ortgenai_run present, sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f
+2026-10-08 16:06:45 push runtime model_benchmark present, sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04
+2026-10-08 16:06:45 push runtime run_diag.sh present, sha256 48e5560304f2729dd9c17f053a66c5441e1f60ed1d20e6a21d5bcfc8d51fd124
+2026-10-08 16:06:45 push model chat_template.jinja 4168 bytes
+2026-10-08 16:06:45 push model config.json 8957 bytes
+2026-10-08 16:06:45 push model genai_config.json 1520 bytes
+2026-10-08 16:07:01 push model model.onnx 524589133 bytes
+2026-10-08 16:07:01 push model tokenizer.json 11422648 bytes
+2026-10-08 16:07:01 push model tokenizer_config.json 663 bytes
+2026-10-08 16:07:01 push done; disk: /dev/block/dm-88 232019968 221169520  10543248  96% /data/user/0
+2026-10-08 16:07:01 (a) l2probe: _SC_LEVEL1_DCACHE_SIZE 0 errno=0;_SC_LEVEL2_CACHE_SIZE 0 errno=0;_SC_LEVEL3_CACHE_SIZE 0 errno=0;_SC_NPROCESSORS_ONLN 8 errno=0;_SC_LEVEL1_DCACHE_LINESIZE 64 errno=0;_SC_LEVEL1_ICACHE_LINESIZE 64 errno=0;_SC_LEVEL2_CACHE_LINESIZE 0 errno=0;EXIT=0;
+2026-10-08 16:07:01 (b) cache dirs: CACHEDIR cpu0 index0 index1 index2 uevent ;CACHEDIR cpu1 index0 index1 index2 uevent ;CACHEDIR cpu2 index0 index1 index2 uevent ;CACHEDIR cpu3 index0 index1 index2 uevent ;CACHEDIR cpu4 index0 index1 index2 uevent ;CACHEDIR cpu5 index0 index1 index2 uevent ;CACHEDIR cpu6 index0 index1 index2 uevent ;CACHEDIR cpu7 index0 index1 index2 uevent ;INDEX cpu0 index0 level=1 type=Data shared_cpu_list=0;INDEX cpu0 index1 level=1 type=Instruction shared_cpu_list=0;INDEX cpu0 index2 level=2 type=Unified shared_cpu_list=0-5;INDEX cpu6 index0 level=1 type=Data shared_cpu_list=6;INDEX cpu6 index1 level=1 type=Instruction shared_cpu_list=6;INDEX cpu6 index2 level=2 type=Unified shared_cpu_list=6-7;
+2026-10-08 16:07:01 (c) /proc/cpuinfo: 8 processors; parts: 0x002 x8 ; hardware: 
+2026-10-08 16:07:02 gate pass (full): thermal=0 battery=335dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6908MB wake=Dozing
+2026-10-08 16:07:02 launch E1 r2c-E1-mb-l512-noflash: limit=180s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai/run_diag.sh r2c-E1-mb-l512-noflash - 180 model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-08 16:07:02   E1 environ: ENGINE_PID=14705 EXE=/data/local/tmp/llmbench/ortgenai/model_benchmark ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so ORT_DISABLE_TELEMETRY=1 LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai ORT_GQA_DISABLE_FLASH_ATTENTION=1 
+2026-10-08 16:07:06 launch E1: EXIT_CODE=0
+  E1 | Batch size: 1, prompt tokens: 512, tokens to generate: 8
+  E1 | Model Creation Latency: 1389.59 ms
+  E1 | Generator Creation Latency: 87.5808 ms
+  E1 | Prompt processing (time to first token):
+  E1 | 	avg (us):       845078
+  E1 | 	avg (tokens/s): 605.862
+  E1 | Token generation:
+  E1 | 	avg (us):       19227.4
+  E1 | 	avg (tokens/s): 52.009
+  E1 | Token sampling:
+  E1 | 	avg (us):       257.135
+  E1 | 	avg (tokens/s): 3889.01
+  E1 | E2E generation (entire generation loop):
+  E1 | 	avg (ms):       979.93
+  E1 | Peak working set size: 1791021056 bytes (1.67 GB)
+  E1 ~ START uptime=504510.25 battery_temp=335 thermal=0 online=0-7
+  E1 ~ LAUNCH uptime=504510.47 pid=14705 engine_pid=14705 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+  E1 ~ CPUMAX 3628800 4742400 uptime=504510.47
+  E1 ~ SOCKET fd=3 inode=13536718
+  E1 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13536718
+  E1 ~ CPUMAX 3628800 4339200 uptime=504512.65
+  E1 ~ CPUMAX 3628800 3648000 uptime=504513.18
+  E1 ~ EXIT_CODE=0 uptime=504513.72
+  E1 ~ END battery_temp=335 thermal=0
+  E1 ~ LOGCAT_LINES=5
+  E1 ~ max Threads: 4
+2026-10-08 16:07:06 after E1: thermal=0 battery=335dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=7009MB wake=Dozing
+2026-10-08 16:07:06 pause 120s
+2026-10-08 16:09:06 gate pass (full): thermal=0 battery=321dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6985MB wake=Dozing
+2026-10-08 16:09:06 launch E2 r2c-E2-mb-l1024-profile-noflash: limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai/run_diag.sh r2c-E2-mb-l1024-profile-noflash - 300 model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-08 16:09:07   E2 environ: ENGINE_PID=14883 EXE=/data/local/tmp/llmbench/ortgenai/model_benchmark ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so ORT_DISABLE_TELEMETRY=1 LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai ORT_GQA_DISABLE_FLASH_ATTENTION=1 
+2026-10-08 16:09:10 launch E2: EXIT_CODE=0
+  E2 | Profiling will run on iteration index 0 (1-based: 1 of 1)
+  E2 | Batch size: 1, prompt tokens: 1024, tokens to generate: 8
+  E2 | Model Creation Latency: 792.219 ms
+  E2 | Generator Creation Latency: 60.2042 ms
+  E2 | Prompt processing (time to first token):
+  E2 | 	avg (us):       1.92525e+06
+  E2 | 	avg (tokens/s): 531.879
+  E2 | Token generation:
+  E2 | 	avg (us):       30551.4
+  E2 | 	avg (tokens/s): 32.7317
+  E2 | Token sampling:
+  E2 | 	avg (us):       221.406
+  E2 | 	avg (tokens/s): 4516.59
+  E2 | E2E generation (entire generation loop):
+  E2 | 	avg (ms):       2139.33
+  E2 | Peak working set size: 2349355008 bytes (2.19 GB)
+  E2 ~ START uptime=504634.81 battery_temp=321 thermal=0 online=0-7
+  E2 ~ LAUNCH uptime=504635.05 pid=14883 engine_pid=14883 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+  E2 ~ CPUMAX 3628800 4742400 uptime=504635.05
+  E2 ~ SOCKET fd=3 inode=13540595
+  E2 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13540595
+  E2 ~ CPUMAX 3628800 3974400 uptime=504636.31
+  E2 ~ CPUMAX 3628800 4742400 uptime=504636.84
+  E2 ~ CPUMAX 3628800 3859200 uptime=504637.38
+  E2 ~ CPUMAX 3513600 3648000 uptime=504637.91
+  E2 ~ EXIT_CODE=0 uptime=504638.44
+  E2 ~ END battery_temp=321 thermal=0
+  E2 ~ LOGCAT_LINES=5
+  E2 ~ OUTDIR prefill_profile_2026-10-08_16-09-08_013.json 548997
+  E2 ~ max Threads: 4
+2026-10-08 16:09:11 after E2: thermal=0 battery=321dC capped=policy0 policy6  policy0=3513600/3628800 policy6=4185600/4742400 level=79 bstatus=4 MemAvailable=7030MB wake=Dozing
+2026-10-08 16:09:11 phase all done; frame left 12 min
+2026-10-08 16:09:11 clean: device out/ r2c files: r2c-E1-mb-l512-noflash.d r2c-E1-mb-l512-noflash.engine.txt r2c-E1-mb-l512-noflash.sampler.txt r2c-E2-mb-l1024-profile-noflash.d r2c-E2-mb-l1024-profile-noflash.engine.txt r2c-E2-mb-l1024-profile-noflash.sampler.txt ; pulled: r2c-E1-mb-l512-noflash.d r2c-E1-mb-l512-noflash.engine.txt r2c-E1-mb-l512-noflash.sampler.txt r2c-E2-mb-l1024-profile-noflash.d r2c-E2-mb-l1024-profile-noflash.engine.txt r2c-E2-mb-l1024-profile-noflash.sampler.txt 
+2026-10-08 16:09:11 clean: model folder removed, out/ r2c files and l2probe removed; left: libmat.so libonnxruntime-genai.so libonnxruntime.so model_benchmark ortgenai_run run_diag.sh run_sampled.sh 
+2026-10-08 16:09:11 clean: disk /dev/block/dm-88 232019968 220645516  11067252  96% /data/user/0; engines: 
+2026-10-08 16:09:11 release requested (/private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/d9b2c2af-8c16-4160-9f0a-1d08bfcda55e/scratchpad/r2c.release); exit code 0
+device hold removed
+2026-10-08 16:09:12 keeper 53460: hold returned (release file) after 159 s; hold now: none
+2026-10-08 16:09:13 hold now: none

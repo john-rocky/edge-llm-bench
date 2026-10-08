@@ -1,0 +1,160 @@
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+I tokenizers:regex.cpp:40] Registering override fallback regex
+YARDSTICK_BEGIN runtime=executorch model=own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791444506.727505 1522335 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":243.45,"decode_token_per_sec":45.3011,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444507412,"inference_end_ms":1791444518537,"model_execution_start_ms":1791444518513,"model_execution_end_ms":1791444518537,"prompt_eval_end_ms":1791444512908,"first_token_ms":1791444512908,"aggregate_sampling_time_ms":39,"aggregate_model_execution_time_ms":11081,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=45.30 decode_tok_s_wall=45.30 ttft_ms=5496 prefill_tok_s=243.5 prefill_tok_s_wall=243.4 prompt_tokens=1338 peak_mb=1664 median_mb=1608 median_resident_mb=1983 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":233.345,"decode_token_per_sec":41.7212,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444518755,"inference_end_ms":1791444530601,"model_execution_start_ms":1791444530575,"model_execution_end_ms":1791444530601,"prompt_eval_end_ms":1791444524489,"first_token_ms":1791444524489,"aggregate_sampling_time_ms":35,"aggregate_model_execution_time_ms":11800,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=41.72 decode_tok_s_wall=41.72 ttft_ms=5734 prefill_tok_s=233.3 prefill_tok_s_wall=233.3 prompt_tokens=1338 peak_mb=1608 median_mb=1608 median_resident_mb=1984 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":227.667,"decode_token_per_sec":38.9729,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444530819,"inference_end_ms":1791444543239,"model_execution_start_ms":1791444543212,"model_execution_end_ms":1791444543238,"prompt_eval_end_ms":1791444536696,"first_token_ms":1791444536696,"aggregate_sampling_time_ms":41,"aggregate_model_execution_time_ms":12367,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=38.97 decode_tok_s_wall=38.97 ttft_ms=5877 prefill_tok_s=227.7 prefill_tok_s_wall=227.7 prompt_tokens=1338 peak_mb=1609 median_mb=1609 median_resident_mb=1984 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":220.574,"decode_token_per_sec":36.268,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444543467,"inference_end_ms":1791444556564,"model_execution_start_ms":1791444556532,"model_execution_end_ms":1791444556564,"prompt_eval_end_ms":1791444549533,"first_token_ms":1791444549533,"aggregate_sampling_time_ms":43,"aggregate_model_execution_time_ms":13042,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=36.27 decode_tok_s_wall=36.27 ttft_ms=6066 prefill_tok_s=220.6 prefill_tok_s_wall=220.6 prompt_tokens=1338 peak_mb=1611 median_mb=1610 median_resident_mb=1985 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.
+I tokenizers:regex.cpp:40] Registering override fallback regex
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_BEGIN runtime=executorch model=own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791444801.091701 1527115 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":241.473,"decode_token_per_sec":43.9428,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444802406,"inference_end_ms":1791444813750,"model_execution_start_ms":1791444813725,"model_execution_end_ms":1791444813750,"prompt_eval_end_ms":1791444807947,"first_token_ms":1791444807947,"aggregate_sampling_time_ms":40,"aggregate_model_execution_time_ms":11297,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=43.94 decode_tok_s_wall=43.94 ttft_ms=5541 prefill_tok_s=241.5 prefill_tok_s_wall=241.5 prompt_tokens=1338 peak_mb=1664 median_mb=1608 median_resident_mb=1983 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":231.528,"decode_token_per_sec":40.6051,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444813980,"inference_end_ms":1791444826039,"model_execution_start_ms":1791444826012,"model_execution_end_ms":1791444826039,"prompt_eval_end_ms":1791444819759,"first_token_ms":1791444819759,"aggregate_sampling_time_ms":41,"aggregate_model_execution_time_ms":12010,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=40.61 decode_tok_s_wall=40.61 ttft_ms=5779 prefill_tok_s=231.5 prefill_tok_s_wall=231.5 prompt_tokens=1338 peak_mb=1609 median_mb=1609 median_resident_mb=1984 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":225.823,"decode_token_per_sec":37.9803,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444826252,"inference_end_ms":1791444838891,"model_execution_start_ms":1791444838859,"model_execution_end_ms":1791444838891,"prompt_eval_end_ms":1791444832177,"first_token_ms":1791444832177,"aggregate_sampling_time_ms":47,"aggregate_model_execution_time_ms":12583,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=37.98 decode_tok_s_wall=37.98 ttft_ms=5925 prefill_tok_s=225.8 prefill_tok_s_wall=225.8 prompt_tokens=1338 peak_mb=1610 median_mb=1610 median_resident_mb=1985 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2523
+YARDSTICK_NOTE executorch template=qwen3-chatml prompt_sha256=360771899cd15f27bcedd5911f5c7f6775ccc15a092e2d133ec29cd83c90baf2 prompt_bytes=5269 prompt_tokens=1338 prompt_tokens_source=host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1) sequence_length=2048
+<think>
+Okay, let's tackle this query. The user wants a list of 25 distinct things that on-device AI can do that a cloud model can't. And each item needs two full sentences explaining it.
+
+First, I need to recall what on-device AI is. It's processing done on the device's hardware, not relying on the cloud. So, things like local computation, real-time processing, and data not being sent to the cloud.
+
+Let me start with the first item. Maybe something like real-time processing. Since the cloud is slower, on-device can handle immediate tasks. Then, data privacy is a big one. The cloud might store data, but on-device can process it locally, which is better for privacy.
+
+Wait, the user said "on-device AI lets a phone do that a cloud model cannot." So, the phone has local processing power, so it can do things that the cloud can't. Like real-time processing, or things that require local computation without sending data to the cloud.
+
+So, for each item, I need to think of a specific function. Let's list them in order. Let's go through the possible points.
+
+First, real-time processing. The cloud can process data, but the phone can process it in real
+PyTorchObserver {"prefill_token_per_sec":219.416,"decode_token_per_sec":35.8146,"prompt_tokens":1338,"generated_tokens":255,"model_load_start_ms":0,"model_load_end_ms":0,"inference_start_ms":1791444839109,"inference_end_ms":1791444852327,"model_execution_start_ms":1791444852295,"model_execution_end_ms":1791444852327,"prompt_eval_end_ms":1791444845207,"first_token_ms":1791444845207,"aggregate_sampling_time_ms":34,"aggregate_model_execution_time_ms":13175,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=35.81 decode_tok_s_wall=35.81 ttft_ms=6098 prefill_tok_s=219.4 prefill_tok_s_wall=219.4 prompt_tokens=1338 peak_mb=1610 median_mb=1610 median_resident_mb=1985 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.

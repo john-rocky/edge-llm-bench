@@ -6,7 +6,7 @@ The benchmark is only useful if the comparisons are honest. The full rules:
 > "Rules that produce wrong numbers when broken" both number their rules, and the
 > two numberings collide (this file's §3 is quantization; CLAUDE.md's #3 is
 > budget/mode mixing — scripts used to cite "rule 3" ambiguously). Each heading
-> below carries a `slug:` comment; CLAUDE.md's five working rules map to:
+> below carries a `slug:` comment; CLAUDE.md's six working rules map to:
 >
 > | CLAUDE.md working rule | slug |
 > |---|---|
@@ -15,6 +15,7 @@ The benchmark is only useful if the comparisons are honest. The full rules:
 > | 3. Never mix modes or budgets across arms | `budget-mode-rule` |
 > | 4. Decode trials must agree within a few percent | `spread-rule` |
 > | 5. A number without a stored report is not a measurement | `stored-report-rule` |
+> | 6. A run whose CPU clock ceiling fell more than 15 % is not a measurement | `cpu-cap-rule` |
 
 ## 1. Same prompt, same token budget  <!-- slug: same-budget -->
 
@@ -145,7 +146,7 @@ that passed every timing check.
   short-chat launch, llama-cli) are not checked by this rule; on the Apple lanes the cell
   gate's `DEGENERATE` screens `outputSample` for repetition loops (§4).
 
-## 13. A run during which the phone capped the engine's CPU clock is not a measurement  <!-- slug: cpu-cap-rule -->
+## 13. A run during which the phone capped the engine's CPU clock by more than 15 % is not a measurement  <!-- slug: cpu-cap-rule -->
 
 A phone can lower a CPU cluster's frequency ceiling (`scaling_max_freq`) during a run while
 the thermal status a runner gates on stays at 0. On the Pixel 8a (Tensor G3) charging on AC
@@ -176,11 +177,36 @@ launch mask (evidence: standup ROUND-m5; the capped records are kept as
   the run counts as completed (no `FAILURES.txt` line), its record, rate and log stay
   (failed-runs-stay).
 - `results/summary/device-runs.csv` carries the verdict (`cpu_capped`: `true`, `false`,
-  empty = not read; `cpu_max_freq`); `render_leaderboard.arm_row` keeps `true` runs out of
-  every metric pool, after the text check (§12), and a dashboard cell left without a number
-  shows `— (no valid run: cpu-capped (k of N runs))`, never the rate.
+  empty = not read; `cpu_max_freq`) and its depth (`cpu_cap_drop_pct`, next item);
+  `render_leaderboard.arm_row` keeps a `true` run past the line out of every metric pool,
+  after the text check (§12), and a dashboard cell left without a number shows
+  `— (no valid run: cpu-capped >15 % (k of N runs))`, never the rate.
+- The line (owner decision 2026-10-08). The flag stays the fact — any fall below the
+  hardware maximum, judged by the runner as before; how far the ceiling fell decides the
+  pool. `cpu_cap_drop_pct` is the largest `(1 − min / hw) × 100` over the policies of the
+  engine's CPUs (`conditions.cpusAllowedList`, else the launch mask, else every CPU), one
+  decimal (`0.0` = read, none fell). A flagged run at or below
+  `render_leaderboard.CPU_CAP_MAX_DROP_PCT` (15, the one place the line is set) pools like an
+  uncapped run and stays marked: `cpu_capped` stays `true` in the summary and in raw, and the
+  dashboard's number carries `◇ cpu-capped ≤15 % (k of N runs)`. A run past the line stays
+  out, as every flagged run did from 2026-10-07, and so does a flagged row of a summary built
+  before the column existed. A counted run's rate is not corrected for its cap; the mark is
+  the disclosure. Material: the Galaxy S26 sittings of 2026-10-08 (USB, not charging,
+  thermal status 0 at every start; in the ONNX Runtime GenAI sitting every CPU launch whose
+  load lasted beyond about 3 s was capped, standup ROUND4s26), where the prime cluster
+  (policy6, cpus 6-7, 4742.4 MHz) fell furthest in every capped run. The largest fall of a run
+  was 2.8 % in the LiteRT-LM GPU anchor's run 1, 11.7-14.2 % in the ONNX Runtime GenAI Qwen3
+  1.7B short-chat runs (policy6 4070-4186 MHz) and 4.9-11.7 % in five ExecuTorch short-chat
+  runs (Qwen3 1.7B, Gemma 4 E2B) — inside the line; 18.6 % in the ONNX Runtime GenAI Qwen3 4B
+  short-chat runs, an ExecuTorch Gemma 4 E2B short-chat run and an ExecuTorch Qwen3 0.6B 1K
+  run, and 34-58 % in the other 1K launches, both clusters capped — past it
+  (`results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*-android/`,
+  `results/raw/2026-10-08-dashboard-executorch-v1-s26{,-b}-android/`). The Pixel 8a's capped
+  launches of 2026-10-07 (above) were renamed `*.json.quarantine-cpu-cap` before the runner
+  read the caps: they carry no `cpuMaxFreqMHz` and stay out of the summary whatever the line.
 - Charging is not stopped to avoid the cap: the weekly job is unattended and a sitting
-  outlasts the battery. A cell whose every run is capped (on 2026-10-07: llama.cpp Gemma 4
-  E2B 1K on the charging Pixel 8a) has no valid run until a sitting gives it one. The GPU
+  outlasts the battery. A cell whose every run is capped past the line (on 2026-10-07:
+  llama.cpp Gemma 4 E2B 1K on the charging Pixel 8a) has no valid run until a sitting gives
+  it one. The GPU
   clock is not readable from the shell on the Pixel 8a (devfreq is permission-denied); a GPU
   arm is judged on the CPUs its process may run on, like every arm.

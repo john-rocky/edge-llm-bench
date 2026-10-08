@@ -282,11 +282,40 @@ BENCH_CPU_MASK= ./bench matrix matrices/dashboard-ortgenai-v1.cells --platform a
 `ORTGENAI_SMOKE=<note>` stamps a Mac run as a smoke instead of a measurement;
 `--dry-run` on the driver shows each run, the folder's cache state and its label.
 
+## Android CPU prefill: the GQA flash path (2026-10-08)
+
+On the Galaxy S26 the CPU EP's 1K prefill is 50 s for 1,338 tokens (26.6 tok/s)
+against 362 tok/s on the 19-token short-chat prompt (round r2 / r2b / r2c records,
+`results/raw/2026-10-07-ortgenai-{smoke,diag}-s26-android/`,
+`results/raw/2026-10-08-ortgenai-l2probe-s26-android/`). Cause, measured on the
+device: bionic's `sysconf(_SC_LEVEL2_CACHE_SIZE)` returns 0, the Android build of
+ONNX Runtime 1.30.0 reads the L2 size only through that call (the cpuinfo
+fallback of onnxruntime#29621 is compiled out under `__ANDROID__`), and the
+`GroupQueryAttention` flash path sizes its tiles from that value, so the tiles
+become 1 × 1 and the attention cost grows with the square of the prompt length
+(93 % of a 1,024-token prefill in GQA). With
+`ORT_GQA_DISABLE_FLASH_ATTENTION=1` the 1,024-token prefill takes 1.9 s instead
+of 21.4 s. Reported upstream as
+[microsoft/onnxruntime#33196](https://github.com/microsoft/onnxruntime/issues/33196)
+(2026-10-08).
+
+The dashboard rows keep the engine default (the flash path on): the arm is
+measured as the released libraries behave (`official-sdk`), and the workaround
+is a process environment variable, not a session option. A row measured with
+the workaround would be a different arm and is not added. When a release
+carries the fix, the S26 cells are re-measured on that release and the pin
+registry gains its entry. Until then the S26 1K cells read "no valid run": a
+50 s prefill at full load drops the CPU clock ceiling below the cpu-cap-rule
+line within a few seconds (`methodology/fairness-rules.md` §13).
+
 ## Status (2026-10-08)
 
 Wired on the Mac and Android: cells, both drivers, the records' shape, the
-summary, the bench table and the team page (not measured until a sitting
-records the cells). Every number so far is a smoke (the Mac 2026-10-07 runs and
+summary, the bench table and the team page. The first Galaxy S26 dashboard
+sitting is in (`results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*-android/`):
+Qwen3 0.6B short-chat measured, Qwen3 1.7B short-chat counted under the
+cpu-cap-rule line (its three runs' ceiling fell 12-14 %), the other four cells
+without a valid run (ceiling down 19-58 %, the section above). Every number so far is a smoke (the Mac 2026-10-07 runs and
 the wiring smoke, the Mac 2026-10-08 warm-regime smoke — one engine process, run 1
 cold and runs 2-4 warm — and the Galaxy S26 driver smoke), none a dashboard
 measurement.

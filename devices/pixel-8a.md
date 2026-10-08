@@ -62,6 +62,6 @@
   launch mask, `conditions.cpusAllowedList` the engine's `Cpus_allowed_list`
   read during the run (since 2026-10-07). While the phone charges, policy4 can
   sit below 2367 MHz mid-run with the thermal status at 0; such runs are
-  flagged and pool into no number (`methodology/fairness-rules.md` §13
-  cpu-cap-rule).
+  flagged, and a fall of more than 15 % keeps them out of every number
+  (`methodology/fairness-rules.md` §13 cpu-cap-rule).
 - Build/run: `android/README.md` (engine acquisition, driver, campaign runner).

@@ -1,0 +1,35 @@
+# ExecuTorch arm on the iPhone, v1 (2026-10-08; docs/executorch-arm-v1.md "iPhone"). The same
+# OWN EXPORTS as the Mac and Android rows (ExecuTorch v1.5.1's own exporters, not published
+# artifacts), run by the iPhone app built from ios/BenchmarkApp/project-executorch.yml: the
+# prebuilt ExecuTorch 1.5.0 SwiftPM runtime (there is no 1.5.1 package) with the XNNPACK
+# delegate, through its Swift TextRunner (ExecuTorchRuntime.swift). That build replaces the
+# Core AI build on the phone for the sittings that run this file. runs=4 = run 1 cold (the
+# model loads in the app process), runs 2-4 warm (the same process; the runner's KV position
+# is reset before every run). file= / recipe= are the row's recipe (quant-per-arm-rule); the
+# app reads the .pte named by its catalog row, side-loaded with tokenizer.json into
+# Documents/models/executorch/<model id with "/" as "__">/. The KV cache is allocated at
+# export (2048 tokens) and the app records the cell's context-tokens= as the run's
+# allocation, so every row names it. Gemma 4: its .pte has the one method text_decoder
+# (three inputs, no metadata methods), which the Swift TextRunner cannot drive; the Mac
+# and Android arms run it with gemma4_e2e_runner, which has no Swift binding.
+#   scripts/bench_matrix_iphone.sh run matrices/dashboard-executorch-v1-ios.cells
+
+# --- Qwen3-0.6B ---
+ios executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+ios executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+
+# --- Qwen3-1.7B ---
+ios executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+ios executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+
+# --- Gemma 4 E2B ---
+ios executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-no-swift-runner-for-text_decoder-method
+ios executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-no-swift-runner-for-text_decoder-method
+
+# --- Qwen3-4B ---
+ios executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
+ios executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4
+
+# --- Gemma 4 E4B ---
+ios executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-no-swift-runner-for-text_decoder-method
+ios executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 runs=4 exclude=gemma4-no-swift-runner-for-text_decoder-method

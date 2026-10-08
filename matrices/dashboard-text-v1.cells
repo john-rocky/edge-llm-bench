@@ -24,6 +24,12 @@
 # measurement (same pattern as android-first-session.cells).
 # Second task since 2026-10-06: each model block ends with its long-context-1024-gen256 rows (p1024 / d256,
 # context-tokens=2048 on LiteRT-LM and llama.cpp, none on MLX, no Core AI rows) — docs/dashboard-cells-v1.md.
+# ExecuTorch rows on the Mac: our own exports of the dashboard models with ExecuTorch v1.5.1's own
+# exporters, not published artifacts (docs/executorch-arm-v1.md, "Weekly job"). Each Mac model
+# block's short-chat rows and its 1024 rows end with them, the lines of
+# matrices/dashboard-executorch-v1-mac.cells without runs=4 (the Mac runner's default): XNNPACK and
+# the MLX delegate (Qwen 3 at 4w group 128, another recipe than the XNNPACK rows); the Gemma 4 rows
+# are excluded with their reasons. No Android or iPhone ExecuTorch rows in this file yet.
 #
 # Run one platform at a time; the device is whatever the runner env selects
 # (BENCH_ANDROID_SERIAL / BENCH_UDID), so the same file serves every device:
@@ -172,51 +178,75 @@ ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldo
 # local 2026-08-18 export not published yet (identity in each session's
 # session_provenance.txt). The external llm-benchmark wrapper is only for
 # native-benchmark-* cells, none here.
+# executorch = scripts/executorch_mac.py with the tag's own runners from .build/executorch-v1.5.1/
+# (XNNPACK) and .build/executorch-v1.5.1-mlx/ (MLX delegate): run 1 cold, runs 2-4 warm
+# (llama_main --warmup). gemma4_e2e_runner has no warmup, so the Gemma 4 rows stay excluded. A
+# runner or .pte that is not staged is SKIPPED with its reason.
 
 # --- Qwen3-0.6B ---
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B short-chat
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
 mac core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
 mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
 
 # --- Qwen3-1.7B ---
 mac mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
 mac litert-lm litert-community/Qwen3-1.7B short-chat
 mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
 mac core-ai core-ai/qwen3-1.7b-gpu short-chat
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8
 mac mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
 mac litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
 
 # --- Gemma 4 E2B ---
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat cooldown=300
 mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
 mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
 mac core-ai core-ai/gemma4-e2b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 exclude=gemma4-exporter-has-no-mlx-path
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
 mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
 
 # --- Qwen3-4B ---
 mac mlx-swift mlx-community/Qwen3-4B-4bit short-chat cooldown=300
 mac litert-lm litert-community/Qwen3-4B short-chat cooldown=300
 mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
 mac core-ai core-ai/qwen3-4b-gpu short-chat cooldown=300
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300
 mac mlx-swift mlx-community/Qwen3-4B-4bit long-context-1024-gen256 cooldown=300
 mac litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048
+mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048
 
 # --- Gemma 4 E4B ---
 mac litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
 mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300
 mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
 mac core-ai core-ai/gemma4-e4b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 exclude=gemma4-exporter-has-no-mlx-path
 mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
 mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
 
 # ===================== DISABLED placeholders =====================
 # Qwen3.5 and LFM2.5 — held by the LiteRT team on 2026-09-04 ("not all changes
