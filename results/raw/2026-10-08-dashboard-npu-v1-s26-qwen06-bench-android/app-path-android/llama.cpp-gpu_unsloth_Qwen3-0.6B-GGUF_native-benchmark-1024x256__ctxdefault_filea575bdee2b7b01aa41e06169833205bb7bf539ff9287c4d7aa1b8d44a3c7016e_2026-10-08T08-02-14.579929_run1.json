@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "adf6c78a-8764-47b5-9c43-ffa623676758",
+  "runtime": "llama.cpp-gpu",
+  "engineVersion": "b11469-snapdragon",
+  "engineArtifact": "787d33794d04c602aaeeb2d13c2707fd2610012712b73d892a04cf34c49d8fa9",
+  "model": {
+    "id": "unsloth/Qwen3-0.6B-GGUF",
+    "quantization": "Q4_K_M",
+    "file": "unsloth_Qwen3-0.6B-GGUF_Qwen3-0.6B-Q4_K_M.gguf",
+    "sha256": "ac2d97712095a558e31573f62f466a3f9d93990898b0ec79d7c974c1780d524a"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-08T08:02:14Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "n/a (llama-bench)",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2227.2,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 2227.2,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": "llama-bench-managed",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 23.3,
+    "exitCode": 0,
+    "engineBuild": "b11469-snapdragon",
+    "ggmlDevice": "GPUOpenCL",
+    "nGpuLayers": 99,
+    "threads": 6,
+    "flashAttn": "auto (llama-bench default)",
+    "ubatch": "512 (llama-bench default)",
+    "hexagonOpPoll": 1,
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/b11469-snapdragon/lib ADSP_LIBRARY_PATH=/data/local/tmp/llmbench/engines/b11469-snapdragon/lib GGML_HEXAGON_OPPOLL=1 GGML_OPENCL_KERNEL_CACHE_DIR=/data/local/tmp/llmbench/engines/b11469-snapdragon/clcache /data/local/tmp/llmbench/engines/b11469-snapdragon/bin/llama-bench -m /data/local/tmp/llmbench/models/unsloth_Qwen3-0.6B-GGUF_Qwen3-0.6B-Q4_K_M.gguf -t 6 -p 1024 -n 256 -o json -ngl 99 --device GPUOpenCL",
+    "backendRegistered": [
+      "llama-bench json: {\"devices\": \"GPUOpenCL\", \"backends\": \"OpenCL,HTP\", \"gpu_info\": \"QUALCOMM Adreno(TM) 840, Hexagon\", \"n_gpu_layers\": 99, \"flash_attn\": -1, \"n_ubatch\": 512}"
+    ],
+    "roundIndex": 3,
+    "launchIndex": 9,
+    "launchID": "77f2c259-6da1-42a6-a5d1-b14b22c80308",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 34.9,
+    "batteryTemperatureFinalC": 36.2,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": null,
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "promptTokensPerSecond": 1373.153097,
+    "promptTokenCount": 1024,
+    "decodeTokensPerSecond": 90.288024,
+    "generatedTokenCount": 256,
+    "coldRun": false,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 255.62109375,
+    "memoryPeakResidentMB": 338.84375
+  },
+  "provenance": {
+    "rawLog": "llama.cpp-gpu_unsloth_Qwen3-0.6B-GGUF_native-benchmark-1024x256__ctxdefault_filea575bdee2b7b01aa41e06169833205bb7bf539ff9287c4d7aa1b8d44a3c7016e_2026-10-08T08-02-14.579929_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; the host process only: the device's buffers (HTP0 / OpenCL: weights, KV cache, compute) are not in VmRSS / VmHWM"
+  }
+}

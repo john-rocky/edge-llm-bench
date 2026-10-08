@@ -1,0 +1,16 @@
+# Per-model split of matrices/dashboard-npu-v1-android-s26.cells
+# (Gemma-4-E2B-it): the session anchor and this model's rows,
+# its short-chat and long-context-1024-gen256 (context 2048) rows on the NPU and the GPU —
+# every row byte-identical to the plan file, which stays the source of the rows. One campaign per file
+# (one 45-minute device slot), in the round mode of android/bench/run_campaign.py (one launch per cell
+# per round, the whole order reversed on even rounds, the anchor once per round):
+#   ROUNDS=3 COOLDOWN=120 BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= BENCH_TEXT_CHECK=1 \
+#     ./bench matrix matrices/dashboard-npu-v1-android-s26-gemmae2b.cells --platform android \
+#     --campaign 2026-10-08-dashboard-npu-v1-s26-gemmae2b-chat
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048

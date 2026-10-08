@@ -1,0 +1,14 @@
+# Per-model split of matrices/dashboard-npu-protocol1024-v1-android-s26.cells
+# (Qwen3-4B): the session anchor and this model's rows,
+# its native-benchmark-1024x256 rows (llama-bench 1024/256) on the NPU and the GPU —
+# every row byte-identical to the plan file, which stays the source of the rows. One campaign per file
+# (one 45-minute device slot), in the round mode of android/bench/run_campaign.py (one launch per cell
+# per round, the whole order reversed on even rounds, the anchor once per round):
+#   ROUNDS=3 COOLDOWN=120 BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= BENCH_TEXT_CHECK=1 \
+#     ./bench matrix matrices/dashboard-npu-protocol1024-v1-android-s26-qwen4b.cells --platform android \
+#     --campaign 2026-10-08-dashboard-npu-v1-s26-qwen4b-bench
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-4B-GGUF native-benchmark-1024x256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-4B-GGUF native-benchmark-1024x256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf

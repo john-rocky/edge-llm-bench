@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "f4233a16-f354-46ad-be33-743bd42f896a",
+  "runtime": "llama.cpp-npu",
+  "engineVersion": "b11469-snapdragon",
+  "engineArtifact": "2dc86fc0cb486ce4eb0e0b082f28f5c420d23badc8cae447e96db33fb8f6742d",
+  "model": {
+    "id": "unsloth/Qwen3-1.7B-GGUF",
+    "quantization": "Q4_K_M",
+    "file": "unsloth_Qwen3-1.7B-GGUF_Qwen3-1.7B-Q4_K_M.gguf",
+    "sha256": "b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-10-08T08:34:59Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3513.6,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4262.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 4096,
+    "chatMode": "single-turn template default (-st)",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 5.7,
+    "exitCode": 0,
+    "engineBuild": "b11469-snapdragon",
+    "ggmlDevice": "HTP0",
+    "nGpuLayers": 99,
+    "threads": 6,
+    "flashAttn": "on",
+    "ubatch": 1024,
+    "hexagonOpPoll": 1,
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/b11469-snapdragon/lib ADSP_LIBRARY_PATH=/data/local/tmp/llmbench/engines/b11469-snapdragon/lib GGML_HEXAGON_DEVICES=HTP0 GGML_HEXAGON_OPPOLL=1 GGML_OPENCL_KERNEL_CACHE_DIR=/data/local/tmp/llmbench/engines/b11469-snapdragon/clcache /data/local/tmp/llmbench/engines/b11469-snapdragon/bin/llama-cli -lv 4 -m /data/local/tmp/llmbench/models/unsloth_Qwen3-1.7B-GGUF_Qwen3-1.7B-Q4_K_M.gguf -t 6 -c 4096 -f /data/local/tmp/llmbench/prompts/short-chat.txt -n 128 --temp 0 --top-p 1 -st -ngl 99 -fa on -ub 1024 --device HTP0",
+    "backendRegistered": [
+      "ggml_opencl: device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'",
+      "ggml-hex: Hexagon Arch version v81, DMA64 enabled",
+      "llama_prepare_model_devices: using device HTP0 (Hexagon) (unknown id) - 0 MiB free",
+      "load_tensors: offloaded 29/29 layers to GPU",
+      "load_tensors: CPU model buffer size = 243.43 MiB",
+      "load_tensors: HTP0 model buffer size = 1149.13 MiB"
+    ],
+    "roundIndex": 2,
+    "launchIndex": 9,
+    "launchID": "fb8eebcc-5610-4c80-925b-d5606213a014",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 33.5,
+    "batteryTemperatureFinalC": 33.5,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 128,
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 1,
+    "regime": "cold-process",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 468,
+      "distinctWords": 71,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "c4c718978e37ace068872733b66eba67cee75162ed8769c487523305e46008bd"
+  },
+  "metrics": {
+    "promptTokensPerSecond": 376.9,
+    "decodeTokensPerSecond": 44.3,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 331.6015625,
+    "memoryPeakResidentMB": 335.4765625
+  },
+  "provenance": {
+    "rawLog": "llama.cpp-npu_unsloth_Qwen3-1.7B-GGUF_short-chat__ctxdefault_filefb84b6e0c574ab9110cde1469f1e896e2e2c24f30cf2d95d8f8b66e9c86133e6_2026-10-08T08-34-59.374409_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; the host process only: the device's buffers (HTP0 / OpenCL: weights, KV cache, compute) are not in VmRSS / VmHWM",
+    "decodedText": "llama.cpp-npu_unsloth_Qwen3-1.7B-GGUF_short-chat__ctxdefault_filefb84b6e0c574ab9110cde1469f1e896e2e2c24f30cf2d95d8f8b66e9c86133e6_2026-10-08T08-34-59.374409_run1_iter1.decoded.txt"
+  }
+}
