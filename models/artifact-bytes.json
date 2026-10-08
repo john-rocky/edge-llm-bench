@@ -596,10 +596,103 @@
     "tokenizer/tokenizer.json",
     "tokenizer/tokenizer_config.json"
    ],
-   "note": "Apple's export (apple/coreai-models bd3c539, models/gemma4/export.py --max-context-length 2048, 4bit_palettized.yaml), the same bundle on iPhone and Mac; bytes = the whole bundle as its stock_gemma4_e2b_ctx2048.recipe.json records it (bundle_bytes: every file of the folder, the per-layer-embedding sidecar auxiliary_assets.per_layer_embeddings included). No streamed_bytes yet: scripts/artifact_streamed_bytes.py does not read an .aimodel, so until one is registered the bw column counts the sidecar, a per-token gather, for this row",
+   "note": "Apple's export (apple/coreai-models bd3c539, models/gemma4/export.py --max-context-length 2048, 4bit_palettized.yaml), the same bundle on iPhone and Mac; bytes = the whole bundle as its stock_gemma4_e2b_ctx2048.recipe.json records it (bundle_bytes: every file of the folder, the per-layer-embedding sidecar auxiliary_assets.per_layer_embeddings included). streamed_bytes = the main .aimodel's census, the tied int8 embedding table counted as the output head and the sidecar left out (scripts/coreai_streamed_bytes.py)",
    "bytes": 3759568498,
    "checked": "2026-10-08",
-   "main_hash": "fb5c352a56155c7638f9a6d428eeb3dc12f3740a7487db2b0f20018815908078"
+   "main_hash": "fb5c352a56155c7638f9a6d428eeb3dc12f3740a7487db2b0f20018815908078",
+   "streamed_bytes": 1377139541,
+   "streamed_basis": "coreai: gemma_4_e2b_it_4bit_palettized_static.aimodel census (AIModelAssetSummary.storage_types, elements x bits / 8): UInt4 1,835,532,288 x 4 + Int8 402,653,185 x 8 + UInt8 27,525,120 x 8 + Float16 14,595,946 x 16 + Int32 560 x 32 + UInt32 238 x 32 + UInt64 1 x 64 = 1,377,139,541 B; the Int8 embedding table (262144 x 1536) is an input of every extend_* function (2), which returns logits over the whole vocabulary (262144): the tied LM head, counted; the per-layer-embedding sidecar gemma_4_e2b_it_4bit_palettized_static_ple.safetensors (2,348,810,448 B, gathered per token into ple_embeddings) is in bytes only; an estimate from the export's census (the Neural Engine has no bus counter)",
+   "streamed_tool": "scripts/coreai_streamed_bytes.py",
+   "streamed_checked": "2026-10-08"
+  },
+  {
+   "arm": "core-ai-ane",
+   "model_id": "core-ai/gemma4-e4b-stock-ctx2048",
+   "source": "local:~/.cache/edge-llm-bench/CoreAIModels/stock_gemma4_e4b_ctx2048",
+   "files": [
+    "gemma_4_e4b_it_4bit_palettized_static.aimodel/main.hash",
+    "gemma_4_e4b_it_4bit_palettized_static.aimodel/main.mlirb",
+    "gemma_4_e4b_it_4bit_palettized_static.aimodel/metadata.json",
+    "gemma_4_e4b_it_4bit_palettized_static_ple.safetensors",
+    "metadata.json",
+    "tokenizer/chat_template.jinja",
+    "tokenizer/tokenizer.json",
+    "tokenizer/tokenizer_config.json"
+   ],
+   "note": "Apple's export (apple/coreai-models bd3c539, models/gemma4/export.py --model google/gemma-4-E4B-it --max-context-length 2048, 4bit_palettized.yaml), the same bundle on iPhone and Mac; bytes = the whole bundle as its stock_gemma4_e4b_ctx2048.recipe.json records it (bundle_bytes: every file of the folder, the per-layer-embedding sidecar auxiliary_assets.per_layer_embeddings included); streamed_bytes = the main .aimodel's census, the tied int8 embedding table counted as the output head and the sidecar left out (scripts/coreai_streamed_bytes.py)",
+   "bytes": 5581732504,
+   "checked": "2026-10-08",
+   "main_hash": "f9749ae8cecc171b008fdaaf57e9cf3798073ffb4e54dc6cca70261f25c3f777",
+   "streamed_bytes": 2728972189,
+   "streamed_basis": "coreai: gemma_4_e4b_it_4bit_palettized_static.aimodel census (AIModelAssetSummary.storage_types, elements x bits / 8): UInt4 3,890,216,960 x 4 + Int8 671,088,641 x 8 + UInt8 55,050,240 x 8 + Float16 28,860,494 x 16 + Int32 669 x 32 + UInt32 289 x 32 + UInt64 1 x 64 = 2,728,972,189 B; the Int8 embedding table (262144 x 2560) is an input of every extend_* function (2), which returns logits over the whole vocabulary (262144): the tied LM head, counted; the per-layer-embedding sidecar gemma_4_e4b_it_4bit_palettized_static_ple.safetensors (2,818,572,496 B, gathered per token into ple_embeddings) is in bytes only; an estimate from the export's census (the Neural Engine has no bus counter)",
+   "streamed_tool": "scripts/coreai_streamed_bytes.py",
+   "streamed_checked": "2026-10-08"
+  },
+  {
+   "arm": "core-ai-ane",
+   "model_id": "core-ai/qwen3-0.6b-stock-ctx2048",
+   "source": "local:~/.cache/edge-llm-bench/CoreAIModels/stock_qwen3_0_6b_ctx2048",
+   "files": [
+    "metadata.json",
+    "qwen3_0_6b_mixed_4bit_8bit_static.aimodel/main.hash",
+    "qwen3_0_6b_mixed_4bit_8bit_static.aimodel/main.mlirb",
+    "qwen3_0_6b_mixed_4bit_8bit_static.aimodel/metadata.json",
+    "tokenizer/chat_template.jinja",
+    "tokenizer/tokenizer.json",
+    "tokenizer/tokenizer_config.json"
+   ],
+   "note": "Apple's export (apple/coreai-models bd3c539, coreai.llm.export qwen3-0.6b --platform iOS --max-context-length 2048, qwen3_0_6b_mixed_4bit_8bit.yaml), the same bundle on iPhone and Mac; bytes = the whole bundle as its stock_qwen3_0_6b_ctx2048.recipe.json records it (bundle_bytes: every file of the folder); streamed_bytes = the main .aimodel's census, the tied int8 embedding table counted as the output head (scripts/coreai_streamed_bytes.py)",
+   "bytes": 448534305,
+   "checked": "2026-10-08",
+   "main_hash": "dc5a2f58c10a08e722871e323218394f7220368a69e168b8b8f3fe44f291f6e0",
+   "streamed_bytes": 425286939,
+   "streamed_basis": "coreai: qwen3_0_6b_mixed_4bit_8bit_static.aimodel census (AIModelAssetSummary.storage_types, elements x bits / 8): UInt4 346,030,080 x 4 + Int8 155,582,465 x 8 + UInt8 94,371,840 x 8 + Float16 1,157,637 x 16 + Int32 354 x 32 + UInt32 224 x 32 + UInt64 1 x 64 = 425,286,939 B; the Int8 embedding table (151936 x 1024) is an input of every extend_* function (12), which returns logits over the whole vocabulary (151936): the tied LM head, counted; an estimate from the export's census (the Neural Engine has no bus counter)",
+   "streamed_tool": "scripts/coreai_streamed_bytes.py",
+   "streamed_checked": "2026-10-08"
+  },
+  {
+   "arm": "core-ai-ane",
+   "model_id": "core-ai/qwen3-1.7b-stock-ctx2048",
+   "source": "local:~/.cache/edge-llm-bench/CoreAIModels/stock_qwen3_1_7b_ctx2048",
+   "files": [
+    "metadata.json",
+    "qwen3_1_7b_6bit_static.aimodel/main.hash",
+    "qwen3_1_7b_6bit_static.aimodel/main.mlirb",
+    "qwen3_1_7b_6bit_static.aimodel/metadata.json",
+    "tokenizer/chat_template.jinja",
+    "tokenizer/tokenizer.json",
+    "tokenizer/tokenizer_config.json"
+   ],
+   "note": "Apple's export (apple/coreai-models bd3c539, coreai.llm.export qwen3-1.7b --platform iOS --max-context-length 2048, qwen3_1_7b_6bit.yaml), the same bundle on iPhone and Mac; bytes = the whole bundle as its stock_qwen3_1_7b_ctx2048.recipe.json records it (bundle_bytes: every file of the folder); streamed_bytes = the main .aimodel's census, the tied int8 embedding table counted as the output head (scripts/coreai_streamed_bytes.py)",
+   "bytes": 1401880519,
+   "checked": "2026-10-08",
+   "main_hash": "80230756a2911173fb5dbf5e6ceede4f85a0ef1c9791b6261a3ad9a2d4813028",
+   "streamed_bytes": 1378668831,
+   "streamed_basis": "coreai: qwen3_1_7b_6bit_static.aimodel census (AIModelAssetSummary.storage_types, elements x bits / 8): UInt6 1,409,286,144 x 6 + Int8 311,164,929 x 8 + Float16 5,268,485 x 16 + Int32 354 x 32 + UInt32 225 x 32 + UInt64 1 x 64 = 1,378,668,831 B; the Int8 embedding table (151936 x 2048) is an input of every extend_* function (12), which returns logits over the whole vocabulary (151936): the tied LM head, counted; an estimate from the export's census (the Neural Engine has no bus counter)",
+   "streamed_tool": "scripts/coreai_streamed_bytes.py",
+   "streamed_checked": "2026-10-08"
+  },
+  {
+   "arm": "core-ai-ane",
+   "model_id": "core-ai/qwen3-4b-stock-ctx2048",
+   "source": "local:~/.cache/edge-llm-bench/CoreAIModels/stock_qwen3_4b_ctx2048",
+   "files": [
+    "metadata.json",
+    "qwen3_4b_mixed_4bit_8bit_static.aimodel/main.hash",
+    "qwen3_4b_mixed_4bit_8bit_static.aimodel/main.mlirb",
+    "qwen3_4b_mixed_4bit_8bit_static.aimodel/metadata.json",
+    "tokenizer/chat_template.jinja",
+    "tokenizer/tokenizer.json",
+    "tokenizer/tokenizer_config.json"
+   ],
+   "note": "Apple's export (apple/coreai-models bd3c539, coreai.llm.export qwen3-4b --platform iOS --max-context-length 2048, qwen3_4b_mixed_4bit_8bit.yaml), the same bundle on iPhone and Mac; bytes = the whole bundle as its stock_qwen3_4b_ctx2048.recipe.json records it (bundle_bytes: every file of the folder); streamed_bytes = the main .aimodel's census, the tied int8 embedding table counted as the output head (scripts/coreai_streamed_bytes.py)",
+   "bytes": 2492982191,
+   "checked": "2026-10-08",
+   "main_hash": "72e59b1183218c5174f8aaa89a704a64221ebab7e4490c63a215d69989bc5e7b",
+   "streamed_bytes": 2460423467,
+   "streamed_basis": "coreai: qwen3_4b_mixed_4bit_8bit_static.aimodel census (AIModelAssetSummary.storage_types, elements x bits / 8): UInt4 3,128,688,640 x 4 + UInt8 504,627,200 x 8 + Int8 388,956,161 x 8 + Float16 1,246,469 x 16 + Int32 442 x 32 + UInt32 268 x 32 + UInt64 1 x 64 = 2,460,423,467 B; the Int8 embedding table (151936 x 2560) is an input of every extend_* function (12), which returns logits over the whole vocabulary (151936): the tied LM head, counted; an estimate from the export's census (the Neural Engine has no bus counter)",
+   "streamed_tool": "scripts/coreai_streamed_bytes.py",
+   "streamed_checked": "2026-10-08"
   },
   {
    "arm": "litert-lm",
