@@ -1459,8 +1459,9 @@ public enum ModelCatalog {
         // models/gemma4/export.py, Qwen3 from `coreai.llm.export <preset> --platform iOS`.
         // Side-loaded to Documents/CoreAIModels/<folder>/ (Mac: BENCH_COREAI_MODELS_DIR); the
         // folder is the export's inner bundle dir (metadata.json, .aimodel, tokenizer/, and for
-        // Gemma 4 the _ple.safetensors sidecar). ctx2048 = `--max-context-length 2048` (rungs
-        // 1024/2048); ctxdefault = the Gemma 4 export default 131072 (rungs
+        // Gemma 4 the _ple.safetensors sidecar). ctx2048 = `--max-context-length 2048` (rungs:
+        // Gemma 4 1024/2048, 7 functions; Qwen3 256/512/1024/2048 x query 8/16/64, 28 functions);
+        // ctxdefault = the Gemma 4 export default 131072 (rungs
         // 1024/8192/32768/131072). The quantization label is the metadata's `compression` plus
         // the recipe yaml the export applied (Gemma 4: 4bit_palettized.yaml and its README for
         // the int8 tables; Qwen3: the registry's iOS preset yaml and the README's compression
@@ -1469,10 +1470,10 @@ public enum ModelCatalog {
         // the per-layer embeddings). Sizes are the exported bundles' bytes / 2^20; nil = not
         // exported at the pinned commit yet.
         ModelInfo(id: "core-ai/gemma4-e2b-stock-ctx2048", displayName: "Gemma 4 E2B (Core AI stock export, ctx 2048)", quantization: "4bit_palettized (4bit_palettized.yaml: 4-bit k-means g32; PLE gate/proj 8-bit; per-layer model projection uncompressed; embedding + PLE tables int8)", parameterCountB: 2.0, onDiskSizeMB: 3585, hfRepoId: ""),
-        ModelInfo(id: "core-ai/gemma4-e4b-stock-ctx2048", displayName: "Gemma 4 E4B (Core AI stock export, ctx 2048)", quantization: "4bit_palettized (4bit_palettized.yaml: 4-bit k-means g32; PLE gate/proj 8-bit; per-layer model projection uncompressed; embedding + PLE tables int8)", parameterCountB: 4.0, onDiskSizeMB: nil, hfRepoId: ""),
-        ModelInfo(id: "core-ai/qwen3-0.6b-stock-ctx2048", displayName: "Qwen3-0.6B (Core AI stock export, ctx 2048)", quantization: "mixed 4-bit/8-bit palettized (qwen3_0_6b_mixed_4bit_8bit.yaml; embedding int8)", parameterCountB: 0.6, onDiskSizeMB: nil, hfRepoId: ""),
-        ModelInfo(id: "core-ai/qwen3-1.7b-stock-ctx2048", displayName: "Qwen3-1.7B (Core AI stock export, ctx 2048)", quantization: "6-bit palettized (qwen3_1_7b_6bit.yaml; embedding int8)", parameterCountB: 1.7, onDiskSizeMB: nil, hfRepoId: ""),
-        ModelInfo(id: "core-ai/qwen3-4b-stock-ctx2048", displayName: "Qwen3-4B (Core AI stock export, ctx 2048)", quantization: "mixed 4-bit/8-bit palettized (qwen3_4b_mixed_4bit_8bit.yaml; embedding int8)", parameterCountB: 4.0, onDiskSizeMB: nil, hfRepoId: ""),
+        ModelInfo(id: "core-ai/gemma4-e4b-stock-ctx2048", displayName: "Gemma 4 E4B (Core AI stock export, ctx 2048)", quantization: "4bit_palettized (4bit_palettized.yaml: 4-bit k-means g32; PLE gate/proj 8-bit; per-layer model projection uncompressed; embedding + PLE tables int8)", parameterCountB: 4.0, onDiskSizeMB: 5323, hfRepoId: ""),
+        ModelInfo(id: "core-ai/qwen3-0.6b-stock-ctx2048", displayName: "Qwen3-0.6B (Core AI stock export, ctx 2048)", quantization: "mixed 4-bit/8-bit palettized (qwen3_0_6b_mixed_4bit_8bit.yaml; embedding int8)", parameterCountB: 0.6, onDiskSizeMB: 428, hfRepoId: ""),
+        ModelInfo(id: "core-ai/qwen3-1.7b-stock-ctx2048", displayName: "Qwen3-1.7B (Core AI stock export, ctx 2048)", quantization: "6-bit palettized (qwen3_1_7b_6bit.yaml; embedding int8)", parameterCountB: 1.7, onDiskSizeMB: 1337, hfRepoId: ""),
+        ModelInfo(id: "core-ai/qwen3-4b-stock-ctx2048", displayName: "Qwen3-4B (Core AI stock export, ctx 2048)", quantization: "mixed 4-bit/8-bit palettized (qwen3_4b_mixed_4bit_8bit.yaml; embedding int8)", parameterCountB: 4.0, onDiskSizeMB: 2377, hfRepoId: ""),
         // Gemma 4 forms of the 2026-10-06 comparison only (export default context;
         // `--compression none`).
         ModelInfo(id: "core-ai/gemma4-e2b-stock-ctxdefault", displayName: "Gemma 4 E2B (Core AI stock export, ctx 131072)", quantization: "4bit_palettized (4bit_palettized.yaml: 4-bit k-means g32; PLE gate/proj 8-bit; per-layer model projection uncompressed; embedding + PLE tables int8)", parameterCountB: 2.0, onDiskSizeMB: nil, hfRepoId: ""),
