@@ -95,6 +95,8 @@ pull_new(){ # records (*.json) + endurance turn sidecars (*.turns.ndjson, next t
 }
 
 cell_files(){ # <runtime> <model-id> <task> -> matching device-jsonl paths, sorted
+  # the Core AI stock arm's records stamp core-ai-ane, which names their files (ResultStore)
+  case "$1/$2" in core-ai/core-ai/*-stock-ctx*) set -- core-ai-ane "$2" "$3" ;; esac
   RT="$1" MID="$2" TASK="$3" OUT="$OUT" python3 - <<'PY'
 import glob, os
 pat = (os.environ["RT"] + "_" + os.environ["MID"].replace("/", "_")
