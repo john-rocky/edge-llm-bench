@@ -250,6 +250,22 @@ def core_ai_result(rec, source: Path, device_id: str, model_id: str | None, task
 #     launch share its launchIndex and its start time: --launch-times and --first-ever count
 #     launches (a line without `run=`, or with run=1, starts one), and firstEver marks only the
 #     launch's first line.
+# Core AI lines (`runtime=core-ai`, CoreAIRuntime.nativeBenchmarkStock: Apple's llm-benchmark
+# measurement on the stock path) import the same way, plus what that path prints:
+#   - one launch is one load followed by the warmup trial (`trial=0 cold=1`, the first generate on
+#     the engine after the load) and the timed trials 1..N (`cold=0`). A line whose trial number
+#     does not go up starts the next launch (builds before 2026-10-07 print no trial 0; there
+#     trial 1 starts it), and a Core AI line without `cold=` is a timed trial: coldRun false;
+#   - --like is a record of the same arm, whose runtime (core-ai-ane) names the rows; a Core AI
+#     line never imports under a litert-lm record, nor a LiteRT-LM line under a core-ai one;
+#   - `decode_s` and the load's values every line of a launch repeats (`prepare_cached`,
+#     `prepare_peak_mb`, `engine_warmup_s`, `warmup_trial_s`) become metrics.decodeSeconds,
+#     prepareCacheHit, prepareFootprintPeakMB, engineWarmupSeconds and warmupTrialSeconds;
+#     `trial` / `trials` / `seed` land in conditions with warmupTrials 1 and sampler greedy (the
+#     keys of core_ai_result above);
+#   - `prepare_cached=0` is Core AI's own cache lookup before the load saying that this launch's
+#     load specialized the bundle, so the launch's first line is marked firstEver whether or not
+#     --first-ever names it.
 PER_RUN_DEVICE_KEYS = ("initialThermalState",)
 BATTERY_KEYS = ("batteryLevel", "batteryState")
 V1_METRICS = (  # (record key, NATIVE_OK field, cast)
@@ -270,6 +286,12 @@ V1_STATES = (  # (record key, NATIVE_OK field) — strings, copied as printed
     ("peakThermalState", "thermal_peak"),
     ("finalThermalState", "thermal_final"),
 )
+V1_COREAI_METRICS = (  # Core AI lines only: (record key, NATIVE_OK field, cast)
+    ("decodeSeconds", "decode_s", float),
+    ("prepareFootprintPeakMB", "prepare_peak_mb", float),
+    ("engineWarmupSeconds", "engine_warmup_s", float),
+    ("warmupTrialSeconds", "warmup_trial_s", float),
+)
 LAUNCH_TIME = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 
 
@@ -282,13 +304,26 @@ def load_like(path: Path) -> dict:
         return json.loads(next(ln for ln in txt.splitlines() if ln.strip()))
 
 
+def is_core_ai(rec) -> bool:
+    return rec["fields"].get("runtime") == "core-ai"
+
+
 def launch_positions(recs) -> list[int]:
     """1-based launch position of each line. A line without `run=` is its own launch (the builds
-    before 2026-10-07 print one line per process); `run=1` starts a launch, `run=2..N` continue it."""
-    pos, n = [], 0
+    before 2026-10-07 print one line per process); `run=1` starts a launch, `run=2..N` continue it.
+    A Core AI line continues the launch while its `trial=` goes up (trial 0 = the warmup trial
+    right after the load, 1..N the timed trials); a trial number that does not, starts one."""
+    pos, n, last_trial = [], 0, None
     for rec in recs:
-        run = rec["fields"].get("run", "")
-        if not (n and run.isdigit() and int(run) > 1):
+        if is_core_ai(rec):
+            trial = rec["fields"].get("trial", "")
+            cont = bool(n) and trial.isdigit() and last_trial is not None and int(trial) > last_trial
+            last_trial = int(trial) if trial.isdigit() else None
+        else:
+            run = rec["fields"].get("run", "")
+            cont = bool(n) and run.isdigit() and int(run) > 1
+            last_trial = None
+        if not cont:
             n += 1
         pos.append(n)
     return pos
@@ -320,24 +355,31 @@ def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, in
             device.pop(k, None)
     model = dict(like["model"])
     model.setdefault("file", model.get("primaryFile"))
+    core_ai = is_core_ai(rec)
     cold = num("cold", int)
-    metrics = {"coldRun": True if cold is None else cold == 1,
+    # Without cold=: a LiteRT-LM line is its process's only call (cold), a Core AI line a timed
+    # trial after the warmup trial in the same process (warm).
+    metrics = {"coldRun": (not core_ai) if cold is None else cold == 1,
                "promptTokenCount": prefill, "generatedTokenCount": decode}
     if first_ever:
         metrics["firstEver"] = True
-    for key, field, cast in V1_METRICS:
+    for key, field, cast in V1_METRICS + (V1_COREAI_METRICS if core_ai else ()):
         v = num(field, cast)
         if v is not None:
             metrics[key] = v
+    if core_ai and (cached := num("prepare_cached", int)) is not None:
+        metrics["prepareCacheHit"] = cached == 1
     for key, field in V1_STATES:
         if f.get(field) not in (None, "?"):
             metrics[key] = f[field]
     if f.get("harness"):
         metrics["harnessStamp"] = f["harness"]
     conditions = {"instrument": instrument, "launchIndex": index}
-    for key in ("run", "runs"):
+    for key in ("run", "runs") + (("trial", "trials", "seed") if core_ai else ()):
         if (v := num(key, int)) is not None:
             conditions[key] = v
+    if core_ai:
+        conditions.update({"warmupTrials": 1, "sampler": "greedy"})
     out = {
         "schemaVersion": 1,
         "id": str(uuid.uuid4()).upper(),
@@ -365,8 +407,15 @@ def main_schema_v1(args) -> int:
         return 2
     log = args.logs[0]
     like = load_like(args.like)
-    if not str(like.get("runtime", "")).startswith("litert-lm"):
-        print(f"--like is a {like.get('runtime')!r} record; the native row is litert-lm", file=sys.stderr)
+    recs = list(parse(log))
+    families = {"core-ai" if is_core_ai(r) else "litert-lm" for r in recs}
+    if len(families) > 1:
+        print(f"{log}: Core AI and LiteRT-LM lines in one log; import them from separate logs",
+              file=sys.stderr)
+        return 2
+    family = families.pop() if families else "litert-lm"
+    if not str(like.get("runtime", "")).startswith(family):
+        print(f"--like is a {like.get('runtime')!r} record; the native row is {family}", file=sys.stderr)
         return 2
     if like.get("device", {}).get("modelIdentifier") != args.device:
         print(f"--like device {like.get('device', {}).get('modelIdentifier')!r} != --device "
@@ -377,7 +426,6 @@ def main_schema_v1(args) -> int:
     if bad:
         print(f"--launch-times wants UTC YYYY-MM-DDTHH:MM:SSZ, got {bad}", file=sys.stderr)
         return 2
-    recs = list(parse(log))
     launches = launch_positions(recs)
     n_launches = launches[-1] if launches else 0
     if n_launches != len(times):
@@ -399,9 +447,14 @@ def main_schema_v1(args) -> int:
             return 2
         out = args.out / f"native_{stem}_{i}.json"
         head = i == 1 or launches[i - 2] != launch  # the launch's first line
+        specialized = is_core_ai(rec) and rec["fields"].get("prepare_cached") == "0"
+        if head and specialized and launch not in first_ever:
+            print(f"line {i}: prepare_cached=0 — launch {launch}'s load specialized the bundle; "
+                  f"marked firstEver", file=sys.stderr)
         out.write_text(json.dumps(to_schema_v1(rec, log, like, times[launch - 1], launch,
                                                args.instrument,
-                                               first_ever=head and launch in first_ever),
+                                               first_ever=head and (launch in first_ever
+                                                                    or specialized)),
                                   indent=2, sort_keys=True) + "\n")
         print(f"wrote {out}", file=sys.stderr)
     print(f"\n{len(recs)} native row(s) imported as schema-v1 records.", file=sys.stderr)
@@ -432,7 +485,8 @@ def main() -> int:
     ap.add_argument("--launch-times", default=None,
                     help="--schema-v1: comma-separated UTC launch start times "
                          "(YYYY-MM-DDTHH:MM:SSZ), one per launch in file order (a launch is one "
-                         "YARDSTICK_NATIVE_OK line, or its run=1..N lines)")
+                         "YARDSTICK_NATIVE_OK line, or its run=1..N lines, or a Core AI load's "
+                         "trial=0..N lines)")
     ap.add_argument("--instrument", default=None,
                     help="--schema-v1: conditions.instrument, the entry point that printed the lines")
     ap.add_argument("--first-ever", default=None,
