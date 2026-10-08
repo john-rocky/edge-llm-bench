@@ -116,11 +116,11 @@ Audit columns, the harness's own clock over what it received (`BenchmarkRunner.s
 `promptTokensPerSecondWallClock` = prompt tokens ÷ (first chunk − the generate call). Regime:
 run 1 of a launch is cold (the first generate after the load), runs 2..N warm; the headline is the
 warm median, as for every Apple arm. `contextTokensConfigured` / `recordedContextTokens` is the
-bundle's `language.max_context_length` (`CoreAIRuntime.recordedContextTokens`, 84–93): the export
+bundle's `language.max_context_length` (`CoreAIRuntime.recordedContextTokens`, 84–95): the export
 fixes the KV allocation, `--context-tokens` does not resize it, and a forced value that differs is
 said in a `YARDSTICK_WARN` line. Memory: `memoryPeakDuringDecodeMB` / `memoryMedianMB` =
 `phys_footprint` sampled from after the load to the end of generation (`BenchmarkRunner.swift` 184,
-291–296; `MemoryMonitor.swift` 16–29), as for every Apple arm.
+291–296; `MemoryMonitor.swift` 16–30), as for every Apple arm.
 
 **The protocol 1024/256 (`native-benchmark-1024x256`, Apple's `llm-benchmark` measurement).**
 `--coreai-native-benchmark 1024x256` runs `CoreAIRuntime.nativeBenchmarkStock` (827–884), the
@@ -169,9 +169,13 @@ with a protocol row, and read the definitions with the number.
 - iPhone: the app's `Documents/CoreAIModels/<folder>/`, copied over USB (`xcrun devicectl device
   copy to --domain-type appDataContainer`); a multi-GB copy over Wi-Fi dies.
 - Specialization: the first load of a bundle specializes it for the Neural Engine on that device
-  (seconds on the Mac, minutes on a phone; `YARDSTICK_COREAI_PREPARE cached=0`) and caches it under
-  the OS build and the executable's name (Mac: `~/Library/Caches/coreai-cache/<OS build>/<binary
-  name>/<main.hash>/…`; iPhone: the app container's `Library/Caches/coreai-cache/…`). A Mac
+  (from under a minute to several minutes, on the Mac as on a phone; `YARDSTICK_COREAI_PREPARE
+  cached=0`) and caches it under the OS build and the executable's name (Mac:
+  `~/Library/Caches/coreai-cache/<OS build>/<binary name>/<main.hash>/…`; iPhone: the app
+  container's `Library/Caches/coreai-cache/…`). A sitting specializes each bundle with one
+  unmeasured launch (a short-chat run) before its cells, so no measured launch builds the cache
+  (fairness rule 2: first-ever is not cold); a protocol line that still says `prepare_cached=0`
+  imports as `firstEver`. A Mac
   yardstick rebuilt under the same name can find the previous build's entry and fail its first
   function load (`[warmup] nilError`): run a byte-identical copy under a new name, or delete that
   entry. On a phone, a cached load that is killed (memory high-water) or fails is not proof that
