@@ -163,10 +163,11 @@ phase_push() {
     want="$(sha_local "$src")"
     got="$(sha_dev "$D/$f")"
     if [[ "$got" == "$want" ]]; then log "push runtime $f present, sha256 $want"; continue; fi
+    local before="$got"
     ADB_TIMEOUT=600 adbs push "$src" "$D/$f" >/dev/null || die "push $f failed"
     got="$(sha_dev "$D/$f")"
     [[ "$got" == "$want" ]] || die "push verification failed: $f device $got local $want"
-    log "push runtime $f sha256 $want (was ${got:-missing})"
+    log "push runtime $f sha256 $want (was ${before:-missing})"
   done
   sh_dev "chmod 755 $D/ortgenai_run $D/model_benchmark" >/dev/null
   for f in $MODEL_FILES; do

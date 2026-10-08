@@ -1,0 +1,22 @@
+CPUPOLICY policy0 hw=3628800 cap=3628800 cpus=0 1 2 3 4 5
+CPUPOLICY policy6 hw=4742400 cap=4742400 cpus=6 7
+START uptime=477147.60 battery_temp=269 thermal=0 online=0-7
+LAUNCH uptime=477147.82 pid=21686 engine_pid=21686 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 256
+TICK 477147.82 VmHWM:259948 VmRSS:185960 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=1 cur=2496000/883200 bat=-
+CPUMAX 3628800 4742400 uptime=477147.82
+SOCKET fd=3 inode=13102640
+SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13102640
+TICK 477148.44 VmHWM:894176 VmRSS:753336 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=1 cur=3628800/883200 bat=-
+TICK 477148.97 VmHWM:894176 VmRSS:836336 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=1 cur=3628800/883200 bat=-
+TICK 477149.49 VmHWM:937968 VmRSS:857904 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=1 cur=3628800/883200 bat=-
+TICK 477150.02 VmHWM:1347056 VmRSS:1346288 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,7,0,1 cur=3628800/4742400 bat=-
+TICK 477150.55 VmHWM:1347064 VmRSS:1346812 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,0,7,1 cur=3628800/4742400 bat=-
+TICK 477151.07 VmHWM:1347080 VmRSS:1346312 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,0,7,1 cur=3628800/4742400 bat=-
+EXIT_CODE=0 uptime=477151.60
+END battery_temp=269 thermal=0
+LOGCAT_LINES=5
+LOGCAT 10-08 08:30:59.574 I/GenAI   (21686): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+LOGCAT 10-08 08:30:59.652 W/libc    (21686): Access denied finding property "ro.mediatek.platform"
+LOGCAT 10-08 08:30:59.652 W/libc    (21686): Access denied finding property "ro.chipname"
+LOGCAT 10-08 08:30:59.654 I/GenAI   (21686): ORT API Version 26 was found.
+LOGCAT 10-08 08:30:59.654 I/GenAI   (21686): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release

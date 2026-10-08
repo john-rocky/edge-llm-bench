@@ -22,3 +22,312 @@
 2026-10-07 23:22:07 dry: plan D4 r2b-D4-run-threads8 gate=full limit=300s pause=60s mask=-: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 8
 2026-10-07 23:22:07 dry: plan D5 r2b-D5-run-mask-c0 gate=full limit=420s pause=0s mask=c0: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
 2026-10-07 23:22:07 dry: PASS
+2026-10-08 08:30:15 phase probe
+2026-10-08 08:30:15 probe lock: free (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock)
+2026-10-08 08:30:15 probe hold: {"pid": 97179, "script": "ortgenai_r2b_diag", "device": "S26", "started": "2026-10-08 08:30:00"}
+2026-10-08 08:30:15 probe host drivers: none
+2026-10-08 08:30:16 probe device engines: none
+2026-10-08 08:30:16 probe android: SM-S942Q / Android 16 / patch 2026-08-05 / samsung/m1qjpnx/m1q:16/BP4A.251205.006/S942QOPS1AZH9_SJP1AZH9:user/release-keys / uptime 477104.15 / cpus online 0-7
+2026-10-08 08:30:16 probe disk: /dev/block/dm-88 232019968 220507612  11205156  96% /data/user/0
+2026-10-08 08:30:16 probe runtime dir: total 78576;-rw-rw-rw- 1 shell shell 28597536 2026-09-25 18:35 libmat.so;-rw-rw-rw- 1 shell shell  6673360 2026-09-25 18:35 libonnxruntime-genai.so;-rw-rw-rw- 1 shell shell 32990480 2026-09-10 07:34 libonnxruntime.so;-rwxr-xr-x 1 shell shell  6062400 2026-10-07 22:24 model_benchmark;-rwxr-xr-x 1 shell shell  6040952 2026-10-07 22:24 ortgenai_run;-rw-rw-rw- 1 shell shell     2099 2026-10-07 22:26 run_sampled.sh;
+2026-10-08 08:30:16 probe taskset: /system/bin/taskset
+2026-10-08 08:30:16 probe state: thermal=0 battery=267dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5603MB wake=Dozing
+2026-10-08 08:30:22 phase push
+2026-10-08 08:30:22 push runtime libonnxruntime-genai.so present, sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35
+2026-10-08 08:30:22 push runtime libmat.so present, sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f
+2026-10-08 08:30:22 push runtime libonnxruntime.so present, sha256 df5d25c72a868dca773597c71e2000756d43fe4d70ade516d3693c54e12e0ada
+2026-10-08 08:30:22 push runtime ortgenai_run sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f (was 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f)
+2026-10-08 08:30:23 push runtime model_benchmark present, sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04
+2026-10-08 08:30:23 push runtime run_diag.sh sha256 48e5560304f2729dd9c17f053a66c5441e1f60ed1d20e6a21d5bcfc8d51fd124 (was 48e5560304f2729dd9c17f053a66c5441e1f60ed1d20e6a21d5bcfc8d51fd124)
+2026-10-08 08:30:23 push model chat_template.jinja 4168 bytes
+2026-10-08 08:30:23 push model config.json 8957 bytes
+2026-10-08 08:30:23 push model genai_config.json 1520 bytes
+2026-10-08 08:30:35 push model model.onnx 524589133 bytes
+2026-10-08 08:30:36 push model tokenizer.json 11422648 bytes
+2026-10-08 08:30:36 push model tokenizer_config.json 663 bytes
+2026-10-08 08:30:36 prompt long-context-1024-gen256.txt present, sha256 matches f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426
+2026-10-08 08:30:36 push done; disk: /dev/block/dm-88 232019968 221031676  10681092  96% /data/user/0
+2026-10-08 08:30:45 phase run (all); frame left 44 min
+2026-10-08 08:30:46 campaign lock taken (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock, perl pid 6744)
+2026-10-08 08:30:46 gate pass (full): thermal=0 battery=267dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5602MB wake=Dozing
+2026-10-08 08:30:46 launch D2a r2b-D2-mb-l64: mask=- limit=120s: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 64
+2026-10-08 08:30:49 launch D2a: EXIT_CODE=0
+  D2a | Batch size: 1, prompt tokens: 64, tokens to generate: 8
+  D2a | Model Creation Latency: 1370.25 ms
+  D2a | Generator Creation Latency: 98.2593 ms
+  D2a | Prompt processing (time to first token):
+  D2a | 	avg (us):       163146
+  D2a | 	avg (tokens/s): 392.287
+  D2a | Token generation:
+  D2a | 	avg (us):       10441.3
+  D2a | 	avg (tokens/s): 95.7736
+  D2a | Token sampling:
+  D2a | 	avg (us):       209.063
+  D2a | 	avg (tokens/s): 4783.25
+  D2a | E2E generation (entire generation loop):
+  D2a | 	avg (ms):       236.446
+  D2a | Peak working set size: 1395757056 bytes (1.30 GB)
+  D2a ~ START uptime=477134.48 battery_temp=267 thermal=0 online=0-7
+  D2a ~ LAUNCH uptime=477134.70 pid=21562 engine_pid=21562 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 64
+  D2a ~ CPUMAX 3628800 4742400 uptime=477134.70
+  D2a ~ SOCKET fd=3 inode=13102197
+  D2a ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13102197
+  D2a ~ EXIT_CODE=0 uptime=477136.90
+  D2a ~ END battery_temp=268 thermal=0
+  D2a ~ LOGCAT_LINES=5
+  D2a ~ max Threads: 4
+2026-10-08 08:30:49 after D2a: thermal=0 battery=268dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5607MB wake=Dozing
+2026-10-08 08:30:49 pause 10s
+2026-10-08 08:30:59 gate pass (caps): thermal=0 battery=269dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5617MB wake=Dozing
+2026-10-08 08:30:59 launch D2b r2b-D2-mb-l256: mask=- limit=120s: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 256
+2026-10-08 08:31:03 launch D2b: EXIT_CODE=0
+  D2b | Batch size: 1, prompt tokens: 256, tokens to generate: 8
+  D2b | Model Creation Latency: 1409.64 ms
+  D2b | Generator Creation Latency: 86.25 ms
+  D2b | Prompt processing (time to first token):
+  D2b | 	avg (us):       1.51428e+06
+  D2b | 	avg (tokens/s): 169.057
+  D2b | Token generation:
+  D2b | 	avg (us):       12277.9
+  D2b | 	avg (tokens/s): 81.4474
+  D2b | Token sampling:
+  D2b | 	avg (us):       212.968
+  D2b | 	avg (tokens/s): 4695.54
+  D2b | E2E generation (entire generation loop):
+  D2b | 	avg (ms):       1600.45
+  D2b | Peak working set size: 1534468096 bytes (1.43 GB)
+  D2b ~ START uptime=477147.60 battery_temp=269 thermal=0 online=0-7
+  D2b ~ LAUNCH uptime=477147.82 pid=21686 engine_pid=21686 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 256
+  D2b ~ CPUMAX 3628800 4742400 uptime=477147.82
+  D2b ~ SOCKET fd=3 inode=13102640
+  D2b ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13102640
+  D2b ~ EXIT_CODE=0 uptime=477151.60
+  D2b ~ END battery_temp=269 thermal=0
+  D2b ~ LOGCAT_LINES=5
+  D2b ~ max Threads: 4
+2026-10-08 08:31:04 after D2b: thermal=0 battery=269dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5592MB wake=Dozing
+2026-10-08 08:31:04 pause 10s
+2026-10-08 08:31:14 gate pass (caps): thermal=0 battery=271dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5632MB wake=Dozing
+2026-10-08 08:31:14 launch D2c r2b-D2-mb-l512: mask=- limit=180s: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-08 08:31:22 launch D2c: EXIT_CODE=0
+  D2c | Batch size: 1, prompt tokens: 512, tokens to generate: 8
+  D2c | Model Creation Latency: 1407.15 ms
+  D2c | Generator Creation Latency: 86.9167 ms
+  D2c | Prompt processing (time to first token):
+  D2c | 	avg (us):       5.54528e+06
+  D2c | 	avg (tokens/s): 92.3308
+  D2c | Token generation:
+  D2c | 	avg (us):       15701.1
+  D2c | 	avg (tokens/s): 63.69
+  D2c | Token sampling:
+  D2c | 	avg (us):       259.948
+  D2c | 	avg (tokens/s): 3846.92
+  D2c | E2E generation (entire generation loop):
+  D2c | 	avg (ms):       5655.45
+  D2c | Peak working set size: 1714163712 bytes (1.60 GB)
+  D2c ~ START uptime=477162.30 battery_temp=271 thermal=0 online=0-7
+  D2c ~ LAUNCH uptime=477162.52 pid=21847 engine_pid=21847 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+  D2c ~ CPUMAX 3628800 4742400 uptime=477162.52
+  D2c ~ SOCKET fd=3 inode=13106388
+  D2c ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13106388
+  D2c ~ CPUMAX 3628800 4512000 uptime=477166.30
+  D2c ~ CPUMAX 3628800 4742400 uptime=477166.83
+  D2c ~ CPUMAX 3628800 4396800 uptime=477167.35
+  D2c ~ CPUMAX 3628800 4262400 uptime=477167.88
+  D2c ~ CPUMAX 3628800 4742400 uptime=477168.93
+  D2c ~ CPUMAX 3628800 4512000 uptime=477169.46
+  D2c ~ EXIT_CODE=0 uptime=477170.53
+  D2c ~ END battery_temp=274 thermal=0
+  D2c ~ LOGCAT_LINES=5
+  D2c ~ max Threads: 4
+2026-10-08 08:31:22 after D2c: thermal=0 battery=274dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5599MB wake=Dozing
+2026-10-08 08:31:22 pause 60s
+2026-10-08 08:32:23 gate pass (full): thermal=0 battery=282dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5594MB wake=Dozing
+2026-10-08 08:32:23 launch D1 r2b-D1-mb-l1024-profile: mask=- limit=300s: model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-08 08:32:47 launch D1: EXIT_CODE=0
+  D1 | Profiling will run on iteration index 0 (1-based: 1 of 1)
+  D1 | Batch size: 1, prompt tokens: 1024, tokens to generate: 8
+  D1 | Model Creation Latency: 1375.53 ms
+  D1 | Generator Creation Latency: 88.1507 ms
+  D1 | Prompt processing (time to first token):
+  D1 | 	avg (us):       2.13612e+07
+  D1 | 	avg (tokens/s): 47.9374
+  D1 | Token generation:
+  D1 | 	avg (us):       22297.8
+  D1 | 	avg (tokens/s): 44.8475
+  D1 | Token sampling:
+  D1 | 	avg (us):       453.542
+  D1 | 	avg (tokens/s): 2204.87
+  D1 | E2E generation (entire generation loop):
+  D1 | 	avg (ms):       21517.7
+  D1 | Peak working set size: 2077458432 bytes (1.93 GB)
+  D1 ~ START uptime=477231.19 battery_temp=282 thermal=0 online=0-7
+  D1 ~ LAUNCH uptime=477231.41 pid=22210 engine_pid=22210 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark mask=- cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+  D1 ~ CPUMAX 3628800 4742400 uptime=477231.41
+  D1 ~ SOCKET fd=3 inode=13108931
+  D1 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13108931
+  D1 ~ CPUMAX 3628800 4396800 uptime=477234.69
+  D1 ~ CPUMAX 3628800 4512000 uptime=477235.74
+  D1 ~ CPUMAX 3628800 4396800 uptime=477236.26
+  D1 ~ CPUMAX 3628800 4512000 uptime=477236.79
+  D1 ~ CPUMAX 3628800 4396800 uptime=477237.35
+  D1 ~ CPUMAX 3628800 4262400 uptime=477237.88
+  D1 ~ CPUMAX 3628800 4339200 uptime=477238.40
+  D1 ~ CPUMAX 3628800 4262400 uptime=477238.93
+  D1 ~ CPUMAX 3628800 4339200 uptime=477239.45
+  D1 ~ CPUMAX 3628800 4262400 uptime=477239.98
+  D1 ~ CPUMAX 3628800 3648000 uptime=477240.50
+  D1 ~ CPUMAX 3628800 4262400 uptime=477241.03
+  D1 ~ CPUMAX 3628800 4185600 uptime=477241.55
+  D1 ~ CPUMAX 3628800 4262400 uptime=477242.08
+  D1 ~ CPUMAX 3628800 4185600 uptime=477242.61
+  D1 ~ CPUMAX 3628800 4262400 uptime=477243.66
+  D1 ~ CPUMAX 3628800 4185600 uptime=477244.71
+  D1 ~ CPUMAX 3628800 4070400 uptime=477247.37
+  D1 ~ CPUMAX 3628800 4185600 uptime=477247.90
+  D1 ~ CPUMAX 3513600 3974400 uptime=477248.95
+  D1 ~ CPUMAX 3302400 3648000 uptime=477250.53
+  D1 ~ CPUMAX 3187200 3129600 uptime=477252.64
+  D1 ~ CPUMAX 3187200 3398400 uptime=477254.76
+  D1 ~ EXIT_CODE=0 uptime=477255.30
+  D1 ~ END battery_temp=298 thermal=0
+  D1 ~ LOGCAT_LINES=5
+  D1 ~ OUTDIR prefill_profile_2026-10-08_08-32-25_220.json 549743
+  D1 ~ max Threads: 4
+2026-10-08 08:32:47 after D1: thermal=0 battery=298dC capped=policy0 policy6  policy0=3187200/3628800 policy6=3398400/4742400 level=79 bstatus=4 MemAvailable=5820MB wake=Dozing
+2026-10-08 08:32:47 pause 60s
+2026-10-08 08:33:48 gate pass (full): thermal=0 battery=306dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5906MB wake=Dozing
+2026-10-08 08:33:48 launch D3 r2b-D3-run-threads6: mask=- limit=300s: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 6
+2026-10-08 08:34:21 launch D3: EXIT_CODE=0
+  D3 | ORTGENAI prompt_tokens=1338 gen_tokens=32 prefill_ms=29937.672 ttft_ms=29937.935 decode_ms_total=714.915 decode_tps=43.362 stop=budget max_length=2048 peak_rss_kb=2224484 seq_tokens=1370 last_token=1378 load_ms=1349.679 generator_ms=98.812 chat_template=model ort_version=1.30.0 threads=6
+  D3 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai/libmat.so /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  D3 ~ START uptime=477316.07 battery_temp=306 thermal=0 online=0-7
+  D3 ~ LAUNCH uptime=477316.28 pid=23004 engine_pid=23004 exe=/data/local/tmp/llmbench/ortgenai/ortgenai_run mask=- cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 6
+  D3 ~ CPUMAX 3628800 4742400 uptime=477316.28
+  D3 ~ SOCKET fd=3 inode=13114124
+  D3 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13114124
+  D3 ~ CPUMAX 3628800 4396800 uptime=477319.05
+  D3 ~ CPUMAX 3628800 4742400 uptime=477319.58
+  D3 ~ CPUMAX 3628800 4185600 uptime=477320.11
+  D3 ~ CPUMAX 3513600 3859200 uptime=477320.65
+  D3 ~ CPUMAX 3628800 4185600 uptime=477321.20
+  D3 ~ CPUMAX 3628800 4070400 uptime=477322.80
+  D3 ~ CPUMAX 3513600 3974400 uptime=477323.34
+  D3 ~ CPUMAX 3398400 3974400 uptime=477323.87
+  D3 ~ CPUMAX 3513600 3974400 uptime=477324.41
+  D3 ~ CPUMAX 3398400 4070400 uptime=477324.94
+  D3 ~ CPUMAX 3513600 3859200 uptime=477325.48
+  D3 ~ CPUMAX 3513600 4070400 uptime=477326.02
+  D3 ~ CPUMAX 3398400 3974400 uptime=477326.55
+  D3 ~ CPUMAX 3187200 3398400 uptime=477327.09
+  D3 ~ CPUMAX 3187200 3129600 uptime=477329.24
+  D3 ~ CPUMAX 2899200 2880000 uptime=477331.43
+  D3 ~ CPUMAX 2745600 2668800 uptime=477333.59
+  D3 ~ CPUMAX 2496000 2438400 uptime=477337.43
+  D3 ~ EXIT_CODE=0 uptime=477349.00
+  D3 ~ END battery_temp=329 thermal=0
+  D3 ~ LOGCAT_LINES=5
+  D3 ~ max Threads: 6
+2026-10-08 08:34:21 after D3: thermal=0 battery=329dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=4 MemAvailable=6010MB wake=Dozing
+2026-10-08 08:34:21 pause 60s
+2026-10-08 08:35:21 gate pass (full): thermal=0 battery=322dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6030MB wake=Dozing
+2026-10-08 08:35:21 launch D6 r2b-D6-run-default: mask=- limit=300s: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
+2026-10-08 08:36:11 launch D6: EXIT_CODE=0
+  D6 | ORTGENAI prompt_tokens=1338 gen_tokens=32 prefill_ms=46417.038 ttft_ms=46417.326 decode_ms_total=726.505 decode_tps=42.670 stop=budget max_length=2048 peak_rss_kb=2251072 seq_tokens=1370 last_token=1378 load_ms=1336.446 generator_ms=99.561 chat_template=model ort_version=1.30.0 threads=default
+  D6 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai/libmat.so /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  D6 ~ START uptime=477409.73 battery_temp=322 thermal=0 online=0-7
+  D6 ~ LAUNCH uptime=477409.95 pid=23916 engine_pid=23916 exe=/data/local/tmp/llmbench/ortgenai/ortgenai_run mask=- cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
+  D6 ~ CPUMAX 3628800 4742400 uptime=477409.95
+  D6 ~ SOCKET fd=3 inode=13124040
+  D6 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13124040
+  D6 ~ CPUMAX 3628800 4396800 uptime=477413.21
+  D6 ~ CPUMAX 3628800 4339200 uptime=477414.26
+  D6 ~ CPUMAX 3628800 4262400 uptime=477414.78
+  D6 ~ CPUMAX 3628800 4396800 uptime=477415.31
+  D6 ~ CPUMAX 3513600 3974400 uptime=477415.88
+  D6 ~ CPUMAX 3187200 3398400 uptime=477417.98
+  D6 ~ CPUMAX 3187200 3129600 uptime=477420.13
+  D6 ~ CPUMAX 2899200 2880000 uptime=477422.25
+  D6 ~ CPUMAX 2745600 2668800 uptime=477423.84
+  D6 ~ CPUMAX 2496000 2438400 uptime=477434.00
+  D6 ~ CPUMAX 2227200 2227200 uptime=477450.13
+  D6 ~ CPUMAX 2496000 2438400 uptime=477454.45
+  D6 ~ CPUMAX 2227200 2227200 uptime=477456.60
+  D6 ~ EXIT_CODE=0 uptime=477459.34
+  D6 ~ END battery_temp=345 thermal=0
+  D6 ~ LOGCAT_LINES=5
+  D6 ~ max Threads: 4
+2026-10-08 08:36:11 after D6: thermal=0 battery=345dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=4 MemAvailable=6034MB wake=Dozing
+2026-10-08 08:36:11 pause 60s
+2026-10-08 08:37:12 gate pass (full): thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6008MB wake=Dozing
+2026-10-08 08:37:12 launch D4 r2b-D4-run-threads8: mask=- limit=300s: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 8
+2026-10-08 08:37:41 launch D4: EXIT_CODE=0
+  D4 | ORTGENAI prompt_tokens=1338 gen_tokens=32 prefill_ms=25612.109 ttft_ms=25612.389 decode_ms_total=798.111 decode_tps=38.842 stop=budget max_length=2048 peak_rss_kb=2251776 seq_tokens=1370 last_token=1378 load_ms=1333.126 generator_ms=98.925 chat_template=model ort_version=1.30.0 threads=8
+  D4 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai/libmat.so /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  D4 ~ START uptime=477520.11 battery_temp=333 thermal=0 online=0-7
+  D4 ~ LAUNCH uptime=477520.33 pid=25133 engine_pid=25133 exe=/data/local/tmp/llmbench/ortgenai/ortgenai_run mask=- cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048 --threads 8
+  D4 ~ CPUMAX 3628800 4742400 uptime=477520.33
+  D4 ~ SOCKET fd=3 inode=13138305
+  D4 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13138305
+  D4 ~ CPUMAX 3628800 4396800 uptime=477522.60
+  D4 ~ CPUMAX 3513600 4185600 uptime=477523.14
+  D4 ~ CPUMAX 3513600 4070400 uptime=477523.73
+  D4 ~ CPUMAX 3398400 3974400 uptime=477524.33
+  D4 ~ CPUMAX 3302400 3974400 uptime=477524.93
+  D4 ~ CPUMAX 3398400 3974400 uptime=477525.54
+  D4 ~ CPUMAX 3513600 3974400 uptime=477526.15
+  D4 ~ CPUMAX 3187200 3398400 uptime=477526.70
+  D4 ~ CPUMAX 2899200 2880000 uptime=477529.07
+  D4 ~ CPUMAX 2496000 2438400 uptime=477530.87
+  D4 ~ CPUMAX 2227200 2227200 uptime=477533.27
+  D4 ~ EXIT_CODE=0 uptime=477548.84
+  D4 ~ END battery_temp=351 thermal=0
+  D4 ~ LOGCAT_LINES=5
+  D4 ~ max Threads: 8
+2026-10-08 08:37:41 after D4: thermal=0 battery=351dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=4 MemAvailable=5986MB wake=Dozing
+2026-10-08 08:37:41 pause 60s
+2026-10-08 08:38:41 gate pass (full): thermal=0 battery=340dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6000MB wake=Dozing
+2026-10-08 08:38:41 launch D5 r2b-D5-run-mask-c0: mask=c0 limit=420s: ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
+2026-10-08 08:39:57 launch D5: EXIT_CODE=0
+  D5 | ORTGENAI prompt_tokens=1338 gen_tokens=32 prefill_ms=72303.660 ttft_ms=72303.895 decode_ms_total=1753.157 decode_tps=17.682 stop=budget max_length=2048 peak_rss_kb=2224684 seq_tokens=1370 last_token=1378 load_ms=778.552 generator_ms=66.491 chat_template=model ort_version=1.30.0 threads=default
+  D5 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai/libmat.so /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  D5 ~ START uptime=477609.53 battery_temp=340 thermal=0 online=0-7
+  D5 ~ LAUNCH uptime=477609.76 pid=26020 engine_pid=26020 exe=/data/local/tmp/llmbench/ortgenai/ortgenai_run mask=c0 cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 32 -ml 2048
+  D5 ~ CPUMAX 3628800 4742400 uptime=477609.76
+  D5 ~ SOCKET fd=3 inode=13066229
+  D5 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 13066229
+  D5 ~ CPUMAX 3628800 4608000 uptime=477612.76
+  D5 ~ CPUMAX 3628800 4512000 uptime=477613.34
+  D5 ~ CPUMAX 3628800 4396800 uptime=477613.92
+  D5 ~ CPUMAX 3398400 3859200 uptime=477615.08
+  D5 ~ CPUMAX 3302400 3648000 uptime=477616.80
+  D5 ~ CPUMAX 3187200 3398400 uptime=477619.10
+  D5 ~ CPUMAX 3187200 3129600 uptime=477620.84
+  D5 ~ CPUMAX 2899200 2880000 uptime=477627.19
+  D5 ~ CPUMAX 2745600 2668800 uptime=477641.10
+  D5 ~ CPUMAX 2899200 2880000 uptime=477649.31
+  D5 ~ CPUMAX 2745600 2668800 uptime=477655.15
+  D5 ~ CPUMAX 2496000 2438400 uptime=477665.08
+  D5 ~ CPUMAX 2745600 2668800 uptime=477669.20
+  D5 ~ CPUMAX 2496000 2438400 uptime=477673.28
+  D5 ~ CPUMAX 2745600 2668800 uptime=477681.43
+  D5 ~ CPUMAX 2496000 2438400 uptime=477683.74
+  D5 ~ EXIT_CODE=0 uptime=477685.47
+  D5 ~ END battery_temp=360 thermal=0
+  D5 ~ LOGCAT_LINES=5
+  D5 ~ max Threads: 4
+2026-10-08 08:39:57 after D5: thermal=0 battery=360dC capped=policy0 policy6  policy0=2496000/3628800 policy6=2438400/4742400 level=79 bstatus=4 MemAvailable=5982MB wake=Dozing
+2026-10-08 08:39:57 phase run done; frame left 35 min
+2026-10-08 10:12:33 phase probe
+2026-10-08 10:12:33 probe lock: free (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock)
+2026-10-08 10:12:33 probe hold: {"pid": 25823, "script": "ortgenai_r2b_diag", "device": "S26", "started": "2026-10-08 10:12:17"}
+2026-10-08 10:12:33 probe host drivers: none
+2026-10-08 10:12:33 probe device engines: none
+2026-10-08 10:12:33 probe android: SM-S942Q / Android 16 / patch 2026-08-05 / samsung/m1qjpnx/m1q:16/BP4A.251205.006/S942QOPS1AZH9_SJP1AZH9:user/release-keys / uptime 483241.30 / cpus online 0-7
+2026-10-08 10:12:33 probe disk: /dev/block/dm-88 232019968 221035468  10677300  96% /data/user/0
+2026-10-08 10:12:33 probe runtime dir: total 78591;-rw-rw-rw-  1 shell shell 28597536 2026-09-25 18:35 libmat.so;-rw-rw-rw-  1 shell shell  6673360 2026-09-25 18:35 libonnxruntime-genai.so;-rw-rw-rw-  1 shell shell 32990480 2026-09-10 07:34 libonnxruntime.so;-rwxr-xr-x  1 shell shell  6062400 2026-10-07 22:24 model_benchmark;-rwxr-xr-x  1 shell shell  6044016 2026-10-07 23:13 ortgenai_run;drwxrwxrwx 10 shell shell     3452 2026-10-08 08:38 out;-rw-rw-rw-  1 shell shell     5371 2026-10-07 23:20 run_diag.sh;-rw-rw-rw-  1 shell shell     2099 2026-10-07 22:26 run_sampled.sh;
+2026-10-08 10:12:33 probe taskset: /system/bin/taskset
+2026-10-08 10:12:33 probe state: thermal=0 battery=271dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=80 bstatus=4 MemAvailable=5702MB wake=Dozing
+2026-10-08 10:12:39 clean: model folder and out/ removed; left: libmat.so libonnxruntime-genai.so libonnxruntime.so model_benchmark ortgenai_run run_diag.sh run_sampled.sh 
+2026-10-08 10:12:39 clean: disk /dev/block/dm-88 232019968 220510680  11202088  96% /data/user/0; engines: none
+2026-10-08 10:17:48 note: the two "push runtime … (was …)" lines of 08:30:22-23 print the sha after the push (a logging bug in diag_s26.sh, fixed after the run): before the push the device held an ortgenai_run of 6,040,952 B dated 2026-10-07 22:24 (r2's build by size and date; its sha256 was not logged) and no run_diag.sh (probe 08:30:16)
