@@ -57,6 +57,19 @@ run's generation (IOKit AGXDeviceUserClient AppUsage of its pid).
 The worker and the parent hand over on stdin / stdout around every generation (READY k,
 GO, DONE k, then NEXT or EXIT), so the parent's host snapshots, GPU-time reads, sampler
 windows and the --pause between runs stay outside the timed region.
+
+Staging: the engine loads a copy of the folder in a temporary dir (every file an APFS
+clone of its real file, a hard link where cloning fails; removed when the cell ends) when
+--overlay is given, or when the folder keeps its weights in model.onnx.data behind links
+(the HF cache's snapshot links; onnxruntime 1.30.0 refuses external data whose real path
+leaves the model's directory, "External data path escapes model directory"). Otherwise
+it loads the folder in place. The HF cache is never written.
+--overlay <JSON object>: merged into the folder's genai_config.json in the copy (a dict
+merges key by key, any other value — provider_options, a number — replaces), e.g.
+'{"model": {"decoder": {"session_options": {"intra_op_num_threads": 12}}}}'. The record
+carries it verbatim (conditions.genaiConfigOverlay); model.quantization stays the label
+of the folder's model.onnx (the overlay changes the session, not the weights). Lever
+runs only: a dashboard cell runs the engine default.
 """
 import os
 
@@ -71,6 +84,7 @@ if os.environ.get("ORTGENAI_TELEMETRY_COMPARISON") != "1":
 import argparse  # noqa: E402
 import ctypes
 import datetime as dt
+import difflib
 import hashlib
 import importlib.metadata
 import importlib.util
@@ -81,10 +95,12 @@ import plistlib
 import re
 import resource
 import shlex
+import shutil
 import signal
 import statistics
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -171,6 +187,7 @@ class ProcFdInfo(ctypes.Structure):
 
 _libc.proc_pid_rusage.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(RusageInfoV4)]
 _libc.proc_pidinfo.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint64, ctypes.c_void_p, ctypes.c_int]
+_libc.clonefile.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint32]
 RUSAGE_INFO_V4, PROC_PIDLISTFDS, PROX_FDTYPE_SOCKET = 4, 1, 2
 
 
@@ -320,6 +337,71 @@ def resolve_folder(model_id, folder, revision, local_only=False):
             return None
         raise SystemExit(f"{model_id}@{revision}: {folder} has no genai_config.json / model.onnx")
     return path
+
+
+def deep_merge(base, overlay):
+    """genai_config.json with an overlay applied: a dict merges key by key (recursively); any
+    other value (a list such as provider_options, a number, a string) replaces the base's."""
+    if not isinstance(base, dict) or not isinstance(overlay, dict):
+        return overlay
+    merged = dict(base)
+    for key, value in overlay.items():
+        merged[key] = deep_merge(base[key], value) if key in base else value
+    return merged
+
+
+def staging_reason(model_dir, overlay):
+    """Why the engine loads a staged copy of the folder instead of the folder itself (None: it
+    does not). External data behind links: the HF cache's snapshot entries are links into its
+    blob store, and onnxruntime 1.30.0 refuses a model.onnx.data whose real path leaves the
+    directory of model.onnx's ("External data path escapes model directory", r4-mac 2026-10-08)."""
+    if overlay is not None:
+        return "genai_config overlay"
+    data = model_dir / "model.onnx.data"
+    if data.exists() and ((model_dir / "model.onnx").is_symlink() or data.is_symlink()):
+        return "external data behind links"
+    return None
+
+
+def stage_folder(model_dir, overlay, reason):
+    """A copy of the GenAI folder for the engine, in a new temporary dir: every file an APFS clone
+    (clonefile) of its real file, a hard link where cloning fails, both on the same volume as the
+    HF cache and neither writing to it; with an overlay, genai_config.json written with it applied.
+    Returns (dir, provenance)."""
+    stage = Path(tempfile.mkdtemp(prefix="ortgenai-stage-"))
+    files = {}
+    try:
+        for src in sorted(model_dir.iterdir()):
+            real, dst = src.resolve(), stage / src.name
+            if real.is_dir():
+                raise RuntimeError(f"{src} is a directory; a GenAI folder is flat")
+            if src.name == "genai_config.json" and overlay is not None:
+                config = deep_merge(json.loads(real.read_text()), overlay)
+                dst.write_text(json.dumps(config, indent=4) + "\n")
+                files[src.name] = {"method": "written (overlay applied)", "source": str(real), "sha256": sha256(dst)}
+                continue
+            if _libc.clonefile(os.fsencode(real), os.fsencode(dst), 0) == 0:
+                method = "clonefile"
+            else:
+                err = ctypes.get_errno()
+                os.link(real, dst)  # same volume or nothing: no byte copy of the weights
+                method = f"hardlink (clonefile errno {err})"
+            files[src.name] = {"method": method, "source": str(real), "bytes": dst.stat().st_size}
+    except BaseException:
+        shutil.rmtree(stage, ignore_errors=True)
+        raise
+    return stage, {"reason": reason, "dir": str(stage), "files": files}
+
+
+def effective_config(model_dir, overlay):
+    """The genai_config the engine reads: the folder's, with --overlay merged in."""
+    config = json.loads((model_dir / "genai_config.json").read_text())
+    return config if overlay is None else deep_merge(config, overlay)
+
+
+def threads_condition(config):
+    intra = config["model"]["decoder"]["session_options"].get("intra_op_num_threads")
+    return "engine default" if intra is None else f"intra_op_num_threads {intra} (genai_config)"
 
 
 # ---------------------------------------------------------------- engine process
@@ -535,7 +617,7 @@ def run_cell(args, prompt, budget, quant, libs):
     out = args.logs
     log, result_path = out / f"{stem}.log", out / f"{stem}.worker.json"
     worker_args = ["--worker", "--worker-result", str(result_path), "--model-id", args.model_id,
-                   "--model-dir", str(args.model_dir), "--backend", args.backend, "--task", args.task,
+                   "--model-dir", str(args.engine_dir), "--backend", args.backend, "--task", args.task,
                    "--context-tokens", str(args.context_tokens), "--telemetry", args.telemetry,
                    "--runs", str(args.runs), "--timeout", str(args.timeout)]
     cmd = [sys.executable, str(Path(__file__).resolve()), *worker_args]
@@ -619,7 +701,8 @@ def run_cell(args, prompt, budget, quant, libs):
                  f"{VERSIONS['onnxruntime-ep-webgpu']} plugin EP, registered with register_execution_provider_library; "
                  f"genai device_type {data.get('deviceType')})" if data.get("registered")
                  else "none registered (CPU EP)")
-    genai_config = json.loads((args.model_dir / "genai_config.json").read_text())
+    genai_config_path = args.engine_dir / "genai_config.json"  # the file the engine read
+    genai_config = json.loads(genai_config_path.read_text())
     records, texts = [], {}
     for k in attempted:
         r, d = runs.get(k, {}), reported.get(k)  # d None: run k did not finish
@@ -674,7 +757,7 @@ def run_cell(args, prompt, budget, quant, libs):
             "chatMode": "single-turn, model chat_template.jinja default (Qwen3 thinking on)", "thinking": True,
             "telemetry": ("off: ORT_DISABLE_TELEMETRY=1 before init + disable_telemetry_events()" if args.telemetry == "off"
                           else "ON (comparison run: neither ORT_DISABLE_TELEMETRY nor disable_telemetry_events)"),
-            "metricDefinitions": METRIC_DEFINITIONS, "threads": "engine default",
+            "metricDefinitions": METRIC_DEFINITIONS, "threads": threads_condition(genai_config),
             "executionProvider": EPS[args.backend], "gpuAccelerator": gpu_accel,
             "providerOptions": genai_config["model"]["decoder"]["session_options"]["provider_options"],
             "ortLogging": "ORTGENAI_ORT_VERBOSE_LOGGING=1 (identity evidence; timing perturbed)" if args.ort_verbose else "engine default (ERROR)",
@@ -687,6 +770,8 @@ def run_cell(args, prompt, budget, quant, libs):
             "hostQuiet": bool(args.quiet_label) and args.quiet_label in before["snapshot"]["quietWindow"]}
         if args.campaign_note:
             conditions["campaignNote"] = args.campaign_note
+        if args.overlay_obj is not None:
+            conditions["genaiConfigOverlay"] = args.overlay_obj
         if verdict is not None:
             conditions["textCheck"] = verdict
         rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "timestamp": (r.get("timestamp") or started).isoformat(),
@@ -720,7 +805,10 @@ def run_cell(args, prompt, budget, quant, libs):
                               "templatedPromptTail": data.get("templatedPromptTail"),
                               "stepMilliseconds": [round(s * 1000, 3) for s in (d or {}).get("stepSeconds", [])],
                               "modelDir": str(args.model_dir),
+                              "genaiConfigSha256": sha256(genai_config_path),
                               "recipe": "models/ortgenai-recipes.json (scripts/ortgenai_recipe.py, read from model.onnx)"}}
+        if args.staging:
+            rec["provenance"]["staging"] = args.staging
         if not ok:
             in_flight = None
             if d is None:
@@ -802,6 +890,9 @@ def main():
                     help="run 1 is the first run of this (model, backend) on this device (engine/shader cache build)")
     ap.add_argument("--quiet-label", default="",
                     help="label of the quiet_hold window this run is inside; conditions.hostQuiet = the lock names it")
+    ap.add_argument("--overlay", metavar="JSON",
+                    help="a JSON object merged into the folder's genai_config.json in a staged copy (dicts merge, "
+                         "other values replace), recorded as conditions.genaiConfigOverlay; lever runs only")
     ap.add_argument("--describe-quant", action="store_true",
                     help="print the folder's recipe facts (scripts/ortgenai_recipe.py describe) and exit")
     ap.add_argument("--dry-run", action="store_true", help="print the planned runs; no download, no engine")
@@ -817,6 +908,14 @@ def main():
         ap.error("--file needs --revision <the 40-hex HF commit> (cells revision=)")
     if args.runs < 1 or args.pause < 0 or args.context_tokens < 1:
         ap.error("runs and context-tokens must be positive, pause nonnegative")
+    args.overlay_obj = None
+    if args.overlay is not None:
+        try:
+            args.overlay_obj = json.loads(args.overlay)
+        except json.JSONDecodeError as e:
+            ap.error(f"--overlay is not JSON: {e}")
+        if not isinstance(args.overlay_obj, dict) or not args.overlay_obj:
+            ap.error("--overlay must be a non-empty JSON object")
     prompt, budget = task_input(args.task)
     if args.model_dir:
         args.model_dir = args.model_dir.resolve()
@@ -851,14 +950,38 @@ def main():
             print(f"  run {index}/{args.runs}: {regime}: {step}; task {args.task} budget {budget}; "
                   f"max_length {args.context_tokens}; greedy; telemetry {args.telemetry}; {args.capture_purpose}")
         print(f"  quantization: {quant}")
+        if args.overlay_obj is not None:
+            print(f"  overlay: {json.dumps(args.overlay_obj)}")
+        reason = staging_reason(args.model_dir, args.overlay_obj) if args.model_dir is not None else None
+        if reason:  # stage for real (clones, no engine), show what the engine would read, remove it
+            stage, staging = stage_folder(args.model_dir, args.overlay_obj, reason)
+            try:
+                config = json.loads((stage / "genai_config.json").read_text())
+                print(f"  staged copy ({reason}): {stage}")
+                for name, info in staging["files"].items():
+                    print(f"    {name}: {info['method']} <- {info['source']}")
+                original = json.dumps(json.loads((args.model_dir / "genai_config.json").read_text()), indent=4)
+                diff = list(difflib.unified_diff(original.splitlines(), json.dumps(config, indent=4).splitlines(),
+                                                 "genai_config.json (folder)", "genai_config.json (staged)", lineterm=""))
+                print("  genai_config.json diff (both re-serialized with indent 4):")
+                print("\n".join(f"    {line}" for line in diff) if diff else "    (none)")
+                providers = config["model"]["decoder"]["session_options"]["provider_options"]
+                print(f"  engine reads: provider_options {json.dumps(providers)}; threads {threads_condition(config)}; "
+                      f"past_present_share_buffer {config['search'].get('past_present_share_buffer')}")
+            finally:
+                shutil.rmtree(stage, ignore_errors=True)
+                print(f"  staged copy removed: {not stage.exists()}")
+        else:
+            print("  engine reads the folder in place (no overlay, no external data behind links)")
         return 0
     for package, version in VERSIONS.items():
         observed = importlib.metadata.version(package)
         if observed != version:
             ap.error(f"expected {package} {version}, observed {observed}")
-    providers = json.loads((args.model_dir / "genai_config.json").read_text())["model"]["decoder"]["session_options"]["provider_options"]
+    providers = effective_config(args.model_dir, args.overlay_obj)["model"]["decoder"]["session_options"]["provider_options"]
     if (args.backend == "webgpu") != any("webgpu" in p for p in providers):
-        ap.error(f"--backend {args.backend} does not match the folder's provider_options {providers}")
+        ap.error(f"--backend {args.backend} does not match the provider_options the engine would read {providers} "
+                 "(the folder's, or the --overlay's)")
     onnx_path = args.model_dir / "model.onnx"
     args.model_sha256 = sha256(onnx_path)
     entry = ortgenai_recipe.lookup(args.model_id, args.folder, args.model_sha256)
@@ -877,7 +1000,14 @@ def main():
     # the weights the engine loads: model.onnx plus its external data file where the folder has one
     args.model_bytes = sum(args.model_files[n]["bytes"] for n in ("model.onnx", "model.onnx.data") if n in args.model_files)
     libs = engine_libraries()
-    return 0 if run_cell(args, prompt, budget, quant, libs) else 1
+    reason = staging_reason(args.model_dir, args.overlay_obj)
+    stage, args.staging = stage_folder(args.model_dir, args.overlay_obj, reason) if reason else (None, None)
+    args.engine_dir = stage or args.model_dir
+    try:
+        return 0 if run_cell(args, prompt, budget, quant, libs) else 1
+    finally:
+        if stage:
+            shutil.rmtree(stage, ignore_errors=True)
 
 
 if __name__ == "__main__":
