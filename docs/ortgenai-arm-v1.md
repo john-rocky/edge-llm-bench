@@ -44,8 +44,9 @@ lane found no published route for them (not verified beyond that check).
   that is not the pin's stamps `unknown`. Device layout: `android/README.md`.
 - iPhone: the release `onnxruntime-genai-ios-0.17.0.zip` (XCFramework; sha256 in
   `environment.lock.json`), vendored by `ios/BenchmarkApp/scripts/fetch_ortgenai_xcframework.sh`.
-  The ios-arm64 framework is a dynamic library that carries ONNX Runtime and the 1DS
-  telemetry SDK (no separate ORT library); `engineVersion` = "onnxruntime-genai 0.17.0 (release
+  The ios-arm64 framework is a dynamic library that carries ONNX Runtime — 1.26.0, as its
+  `OrtGetApiBase` reports at run time (2026-10-08), where the Mac and Android arms load 1.30.0 —
+  and the 1DS telemetry SDK (no separate ORT library); `engineVersion` = "onnxruntime-genai 0.17.0 (release
   ios xcframework)", `engineArtifact` = the zip's and the ios-arm64 binary's sha256
   (`stamp_engine_pins.sh`). "iPhone" below.
 - Models: each repo at its own commit "Add optimized models for ORT GenAI (#3)"
@@ -210,6 +211,10 @@ are the arm's; the iPhone record holds them in the app's fields:
 | TTFT | the runner's wall clock: call start → first streamed text (chat template, tokenizer, generator creation with its KV allocation, prefill, first pick, its text) | `AppendTokenSequences` + the first `GenerateNextToken` |
 | memory | the runner's `phys_footprint` from the end of the load to the last token (high-water and median), as every iPhone arm | Mac: the engine process's `phys_footprint` from generator creation; Android: VmRSS / VmHWM |
 | stopReason | `stop` = EOS, `length` = the budget (a filled KV allocation also reads `length`; the console says `max_length`) | `stop` / `length` / `max_length` |
+
+One difference from the other platforms' records of this arm: on the iPhone a record's
+`generatedTokenCount` counts the tokens from the second on (the first is on the TTFT side), so it
+reads one fewer than the Mac and Android records, which count every picked token.
 
 The iPhone record has the app's fields only (no `conditions`): `metrics.contextTokensConfigured`
 (2048), `modelRevision`, `model.quantization` (the registry's label, in the app catalog). The
