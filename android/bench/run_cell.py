@@ -1139,11 +1139,19 @@ def main():
     if os.environ.get("BENCH_SITTING") == "1":
         # the expected build: the cell's side build, else the pin; llama.cpp's field follows
         # the tool (a llama-bench cell compared llama-bench's sha with llama_cli_sha256 and
-        # always stopped here before 2026-10-07); a build the registry does not hold stops too
+        # always stopped here before 2026-10-07); a build the registry does not hold stops too.
+        # executorch (no --engine-build): the tag's pin, one sha per runner and build as
+        # observed_engine reads it — <runner>_sha256 for the XNNPACK build,
+        # <runner>_<backend>_sha256 for executorch-<tag>-<backend>/ (every executorch cell
+        # stopped here before 2026-10-08)
         expected_version = args.engine_build or ("v0.16.0" if args.runtime == "litert-lm"
-                                                 else "0.17.0" if ort else "b8999")
+                                                 else "0.17.0" if ort else "v1.5.1" if et else "b8999")
         expected_field = ("litert_lm_advanced_main_sha256" if args.runtime == "litert-lm"
                           else "ortgenai_run_sha256" if ort else binname.replace("-", "_") + "_sha256")
+        if et:
+            runner = binname.split("/", 1)[1]
+            expected_field = (f"{runner}_sha256" if args.backend == "xnnpack"
+                              else f"{runner}_{args.backend}_sha256")
         pinned = pins.get(args.runtime, {}).get(expected_version, {}).get(expected_field)
         if engine_tag != expected_version or engine_artifact != pinned:
             print(f"PIN MISMATCH before launch: {binname} {engine_version} {engine_artifact}", flush=True)

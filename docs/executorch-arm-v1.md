@@ -220,8 +220,8 @@ token). The stored log keeps it after `===ENGINE_STDERR===`.
   is rebooted before a sitting when its uptime is over 2 h (`reboot_before` in
   `ops/dashboard-v1/schedule.json`), and the Qwen3-4B and Gemma 4 E4B rows are
   `exclude-on=pixel8a`.
-- The Android weekly sitting (`BENCH_SITTING=1`) refuses executorch at the pin check (the sitting
-  expects the litert-lm / llama.cpp pins): adding ExecuTorch to the weekly job is a later step.
+- The weekly job does not run these rows yet; section "Weekly job" says what a sitting needs
+  once its cells carry them.
 - Name an ExecuTorch sitting `<date>-dashboard-executorch-…`: the team dashboard
   (litert-bench-dashboard) reads only campaigns whose name contains `dashboard`.
 
@@ -255,3 +255,37 @@ python3 scripts/executorch_mac.py --model-id own-export/Qwen3-0.6B-ET1.5.1-xnnpa
 
 Add `--dry-run` to either to print the launch (command, binary, inputs) with no device call and
 no run. Matrix rows go through `./bench matrix matrices/dashboard-executorch-v1-<platform>.cells`.
+
+## Weekly job
+
+The recurring job (`./bench dashboard-job`, `docs/dashboard-recurring-job-v1.md`) measures
+`matrices/dashboard-text-v1.cells`, or its Android storage halves, and those files do not carry
+the ExecuTorch rows: adding them is an owner decision. Once they carry them, a sitting needs:
+
+- Android: the runner directory on the phone (`adb push android/bin/executorch-v1.5.1
+  /data/local/tmp/llmbench/`, by hand and left there, as the other engines are). A cell whose
+  runner is missing still waits its cooldown in every round (its `.pte` is pushed in the first),
+  then stops before the launch (a `FAILURES.txt` line each time): the ten rows cost about 1.9 h of
+  the phone for no record. `android/scripts/executorch_matrix_android.sh` removes that directory
+  after its window even when it found it there, so a by-hand window between two sittings takes it
+  away. Also: the `.pte` files with their recipe.json, tokenizer and rendered prompts under
+  `ET_MODEL_DIR` of the checkout the job runs in (each cell pushes its `.pte`; the halves'
+  `min_free_gb` has to count them).
+- Mac: both runner builds in `.build/executorch-v1.5.1/` and `.build/executorch-v1.5.1-mlx/` of
+  that checkout (or `ET_MAC_RUNNER_DIR`; a missing runner is a `SKIPPED` line, not a failure)
+  and the `.pte` files under `ET_MODEL_DIR`. Loads from the external volume took 2-10 s longer
+  at times; the load is outside every rate.
+- `BENCH_SITTING=1` is not set by the job: it marks a by-hand sitting (with `ROUNDS=N`,
+  `run_campaign.py`'s round mode). Its pin check before the first launch expects the tag's pin
+  per runner and build since 2026-10-08 (`v1.5.1`; `<runner>_sha256` for the XNNPACK build,
+  `<runner>_<backend>_sha256` for another); until then every executorch cell stopped there with
+  `PIN MISMATCH` (exit 5).
+- iPhone: the job cannot run these rows. The bench app is one bundle id
+  (`com.example.CoreMLLLMChat`); the ExecuTorch build of it replaces the Core AI build on the
+  phone, because one app target cannot link both Swift packages (both emit
+  `include/module.modulemap`), and the job never installs an app. So the ExecuTorch iPhone rows run only in a by-hand sitting
+  while a person has that build installed. Whoever installs it holds the iPhone's hold file
+  (`ops/dashboard-v1/schedule.json`, the phone's `hold`) until the Core AI build is back, so a
+  weekly firing passes the phone over instead of measuring the weekly cells on a swapped app. Not
+  built, a later option: a second app target with its own bundle id, so both builds stay
+  installed side by side.

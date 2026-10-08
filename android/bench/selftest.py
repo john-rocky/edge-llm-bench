@@ -12,7 +12,8 @@ running engine (the launch fails, never re-run), and the CPU frequency cap read
 per run (cpu-cap-rule: the flag, the pre-launch wait, the summary column and
 arm_row's pool), the executorch arm (the runner of the model's family on a
 staged own export: inputs pushed, the runner's stderr read apart from its stdout, its stats
-recomputed, the record and its summary row; the Mac writer's record from a stored launch),
+recomputed, the record and its summary row; BENCH_SITTING=1's pin check per runner; the Mac
+writer's record from a stored launch),
 and the ONNX Runtime GenAI cells (a GenAI folder pushed file by
 file once per campaign and removed when it ends, ortgenai_run's report parsed with
 its unknown keys kept, the witness over the binary and its three libraries, the 1K
@@ -2021,6 +2022,58 @@ def main():
        and not os.path.exists(os.path.join(tmp, "unused")),
        f"run_cell --dry-run prints the on-device command and the inputs it would push, with no device call "
        f"(got {p.returncode} {p.stdout[:100]!r} {p.stderr[-200:]!r})")
+    # BENCH_SITTING=1 (run_cell's pin check before the first launch): the runner on the phone must
+    # be the tag's pinned build of that runner — <runner>_sha256 of v1.5.1 for the XNNPACK build,
+    # llama_main for Qwen 3 and gemma4_e2e_runner for Gemma 4 — else rc 5 with no launch
+    g4stem = "gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048"
+    g4alias = "et1.5.1-gemma4-xnnpack-8da4w-g128-emb8"
+    with open(os.path.join(et_models, g4stem + ".pte"), "w") as fh:
+        fh.write("stand-in .pte of " + g4stem)
+    with open(os.path.join(et_models, g4stem + ".tokenizer.json"), "w") as fh:
+        fh.write('{"stand-in": "gemma 4 tokenizer.json"}')
+    json.dump({"executorch": "1.5.1", "exporter": {"tree_path": "examples/models/gemma4/export_gemma4.py"},
+               "export_args": {"quantize": "8da4w+emb8", "max_seq_len": 2048, "variant": "e2b",
+                               "no_audio": True, "no_vision": True},
+               "exporter_defaults_in_effect": {"group_size": 128, "dtype": "float32", "quantize_kv_cache": False},
+               "checkpoint": {"hf_repo": "google/gemma-4-E2B-it", "revision": "3e22461f65e89153144f8adb70e3b8c2cc9845a7"},
+               "pte_sha256": sha(os.path.join(et_models, g4stem + ".pte")),
+               "tokenizer": {"file": f"/elsewhere/{g4stem}.tokenizer.json",
+                             "sha256": sha(os.path.join(et_models, g4stem + ".tokenizer.json"))}},
+              open(os.path.join(et_models, g4stem + ".recipe.json"), "w"))
+    for runner in ("llama_main", "gemma4_e2e_runner"):
+        with open(os.path.join(dev, "executorch-v1.5.1", runner), "w") as fh:
+            fh.write("sha256=" + pinned[f"{runner}_sha256"])
+    json.dump([{"stdout": os.path.join(fx, "s26-short-chat.stdout.txt"), "stderr": os.path.join(fx, "s26-short-chat.stderr.txt")},
+               {"stdout": os.path.join(fx, "mac-gemma-4-E2B-it-short-chat.stdout.txt"),
+                "stderr": os.path.join(fx, "mac-gemma-4-E2B-it-short-chat.stderr.txt")}],
+              open(os.path.join(state, "et_launches.json"), "w"))
+
+    def sitting_cell(cell_stem, cell_alias, out):
+        return subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime",
+                               "executorch", "--backend", "xnnpack", "--model-id", f"own-export/{cell_stem}",
+                               "--file", f"{cell_stem}.pte", "--recipe", cell_alias, "--task", "short-chat",
+                               "--runs", "1", "--out", out], env=dict(env_et, BENCH_SITTING="1"),
+                              capture_output=True, text=True)
+    print("--- executorch under BENCH_SITTING=1 (the pin check before the first launch)")
+    sit_out = os.path.join(tmp, "et-sitting")
+    p_q, p_g = sitting_cell(stem, alias, sit_out), sitting_cell(g4stem, g4alias, sit_out)
+    got = sorted((r["conditions"]["executorchRunner"], r["engineVersion"], r["engineArtifact"])
+                 for _, r in records(sit_out, "executorch-xnnpack_"))
+    ok(p_q.returncode == 0 and p_g.returncode == 0 and "PIN MISMATCH" not in p_q.stdout + p_g.stdout
+       and got == sorted([("llama_main", "v1.5.1", pinned["llama_main_sha256"]),
+                          ("gemma4_e2e_runner", "v1.5.1", pinned["gemma4_e2e_runner_sha256"])]),
+       f"sitting: the pinned v1.5.1 llama_main (Qwen 3) and gemma4_e2e_runner (Gemma 4) pass the pin check, "
+       f"each against its own sha256, and record (rc {p_q.returncode} / {p_g.returncode}, got {got}, "
+       f"{(p_q.stdout + p_g.stdout).strip()[-160:]!r})")
+    with open(os.path.join(dev, "executorch-v1.5.1", "llama_main"), "w") as fh:
+        fh.write("a llama_main build the registry does not pin")
+    n_sit = len(open(calls).read().splitlines()) if os.path.exists(calls) else 0
+    p = sitting_cell(stem, alias, os.path.join(tmp, "et-sitting-unpinned"))
+    n_sit_after = len(open(calls).read().splitlines()) if os.path.exists(calls) else 0
+    ok(p.returncode == 5 and "PIN MISMATCH before launch: executorch-v1.5.1/llama_main unknown" in p.stdout
+       and n_sit_after == n_sit and not records(os.path.join(tmp, "et-sitting-unpinned"), "executorch-xnnpack_"),
+       f"sitting: a llama_main the registry does not pin stops with rc 5 before any launch, no record "
+       f"(rc {p.returncode}, engine shells {n_sit_after - n_sit}, {p.stdout.strip()[-140:]!r})")
     # the summary row of an executorch record, and its pool (build_summary, arm_row)
     with patch.object(build_summary, "ROOT", raw_root.rsplit(os.sep + "raw", 1)[0]), \
          patch.object(build_summary, "OUT", os.path.join(tmp, "summary-et")), \
