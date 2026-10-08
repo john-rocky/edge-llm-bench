@@ -55,8 +55,14 @@ the same model's LiteRT-LM rows, so both arms run in one sitting on one build an
   --max-context-length 2048` (its default compression config `4bit_palettized.yaml`,
   `export.py` 71); Qwen3 = `coreai.llm.export qwen3-<size> --platform iOS --max-context-length 2048`
   (the iOS registry preset's compression config, `python/src/coreai_models/model_registry.py`
-  314–354). The iOS default context is 4096 (`_constants.py` 39), so 2048 is passed. The export's
-  context ladder for 2048 is [1024, 2048] (`export.py` `context_ladder`).
+  314–354). The iOS default context is 4096 (`_constants.py` 39), so 2048 is passed. Gemma 4's
+  context ladder for 2048 is [1024, 2048] (`export.py` `context_ladder`, 247): 7 functions
+  (`load_embeddings`, `gather_embeddings_8` / `_64`, and per rung `prompt_opt_<ctx>_64` and
+  `extend_<ctx>_8`). Qwen3's iOS graphs are static shapes instead: cache lengths from 256 doubling
+  up to the context, 256 / 512 / 1024 / 2048, each at query lengths 8 / 16 / 64
+  (`python/src/coreai_models/models/base.py` 903, 906, 1034–1076): 28 functions
+  (`load_embeddings`, `gather_embeddings_8` / `_16` / `_64`, `extend_<ctx>_<q>` and
+  `prompt_opt_<ctx>_<q>`); its export log has no context-ladder line.
 - Each export folder has `<folder>.recipe.json` beside it: the exporter's commit, describe and
   `uv.lock` sha256, the command verbatim, the checkpoint's HF repo and revision (read from the
   export log's resolve-cache lines), the recipe yaml verbatim with its sha256, `metadata.json`'s
@@ -73,17 +79,23 @@ The quantization is Apple's default per model; the record's label (`model.quanti
 catalog's (`ios/BenchmarkApp/Sources/Models/ModelCatalog.swift`, the stock entries), and
 `metadata.json`'s `compression` is the export's own name for it.
 
-| Model id | Export recipe (Apple's default) | `metadata.json` `compression` | Record label |
-|---|---|---|---|
-| `core-ai/gemma4-e2b-stock-ctx2048` | `models/gemma4/4bit_palettized.yaml`: 4-bit k-means palettization, group 32; PLE gate / projection 8-bit; per-layer model projection uncompressed; embedding and PLE tables int8 | `4bit_palettized` | 4bit_palettized (4bit_palettized.yaml: …) |
-| `core-ai/gemma4-e4b-stock-ctx2048` | the same yaml | r2 | 4bit_palettized (4bit_palettized.yaml: …) |
-| `core-ai/qwen3-0.6b-stock-ctx2048` | `models/qwen3/qwen3_0_6b_mixed_4bit_8bit.yaml`; embedding int8 | r2 | mixed 4-bit/8-bit palettized (…) |
-| `core-ai/qwen3-1.7b-stock-ctx2048` | `models/qwen3/qwen3_1_7b_6bit.yaml`; embedding int8 (the iOS `LoadEmbeddings` default `embedding_table_dtype=torch.int8`; the yaml leaves the embedding out) | r2 | 6-bit palettized (…) |
-| `core-ai/qwen3-4b-stock-ctx2048` | `models/qwen3/qwen3_4b_mixed_4bit_8bit.yaml`; embedding int8 | r2 | mixed 4-bit/8-bit palettized (…) |
+| Model id | Export recipe (Apple's default) | `metadata.json` `compression` | Functions (cache rungs × query lengths) | Record label |
+|---|---|---|---|---|
+| `core-ai/gemma4-e2b-stock-ctx2048` | `models/gemma4/4bit_palettized.yaml`: 4-bit k-means palettization, group 32; PLE gate / projection 8-bit; per-layer model projection uncompressed; embedding and PLE tables int8 | `4bit_palettized` | 7 (1024 / 2048; prompt 64, extend 8) | 4bit_palettized (4bit_palettized.yaml: …) |
+| `core-ai/gemma4-e4b-stock-ctx2048` | the same yaml | `4bit_palettized` | 7 (1024 / 2048; prompt 64, extend 8) | 4bit_palettized (4bit_palettized.yaml: …) |
+| `core-ai/qwen3-0.6b-stock-ctx2048` | `models/qwen3/qwen3_0_6b_mixed_4bit_8bit.yaml`: 4-bit k-means, group 8; the linears of layers 0 / 2 / 4 / 7 / 15 / 16 8-bit per tensor; embedding int8 | `qwen3_0_6b_mixed_4bit_8bit` | 28 (256 / 512 / 1024 / 2048 × 8 / 16 / 64) | mixed 4-bit/8-bit palettized (…) |
+| `core-ai/qwen3-1.7b-stock-ctx2048` | `models/qwen3/qwen3_1_7b_6bit.yaml`: 6-bit k-means, group 8, every linear (stored as UInt6); embedding int8 (the iOS `LoadEmbeddings` default `embedding_table_dtype=torch.int8`; the yaml leaves the embedding out) | `qwen3_1_7b_6bit` | 28 (256 / 512 / 1024 / 2048 × 8 / 16 / 64) | 6-bit palettized (…) |
+| `core-ai/qwen3-4b-stock-ctx2048` | `models/qwen3/qwen3_4b_mixed_4bit_8bit.yaml`: 4-bit k-means, group 32; the linears of layers 6 / 8 / 11 / 33 / 34 8-bit per tensor; embedding int8 | `qwen3_4b_mixed_4bit_8bit` | 28 (256 / 512 / 1024 / 2048 × 8 / 16 / 64) | mixed 4-bit/8-bit palettized (…) |
 
-"r2" = filled from the round r2 exports' `metadata.json` when they are registered. The recipes
-differ from the LiteRT-LM bundles' (quant-per-arm-rule): a row compares deployment profiles, and
-the label travels with it.
+`compression` is each bundle's `metadata.json`, the functions its `.aimodel`'s (the summary of
+`coreai.authoring.asset.AIModelAsset`), the yaml the one its `recipe.json` holds verbatim. In both
+families the int8 embedding table is also the output head (tied): every `extend_*` function takes
+it as `embedding_table` and returns logits over the whole vocabulary.
+Bundle bytes, and the bytes a decode step streams (`streamed_bytes`, the `bw util` column; the
+main `.aimodel`'s census, Gemma 4's per-layer-embedding sidecar left out), are in
+`models/artifact-bytes.json` (`scripts/coreai_streamed_bytes.py`). The recipes differ from the
+LiteRT-LM bundles' (quant-per-arm-rule): a row compares deployment profiles, and the label travels
+with it.
 
 ## Record fields and definitions
 
@@ -159,6 +171,15 @@ differently (decode tokens ÷ decode turn against (tokens − 1) ÷ the time aft
 engine clock against the app's), and so does each against the text task: compare a protocol row
 with a protocol row, and read the definitions with the number.
 
+**Which regime a protocol cell headlines.** Both arms' protocol cells read the agreed protocol's
+regime (`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported
+separately as first use): the warm median — Core AI trials 1..N, LiteRT-LM `benchmark()` calls
+2..N — wherever the session has warm runs, with the cold first call's median beside it (the team
+page's tooltip and inspector, `cold_tps`; the detail table of `scripts/render_dashboard.py`); a
+session whose launches made one call each (the LiteRT-LM protocol sittings before 2026-10-08)
+headlines its cold median. One rule for both arms and every platform:
+`scripts/render_dashboard.py` `headline_regime`, which the team page's `make_cell` follows.
+
 ## Inputs and staging
 
 - Exports live on the export volume, one folder per id plus its `recipe.json`; `models/coreai` in
@@ -175,16 +196,31 @@ with a protocol row, and read the definitions with the number.
   container's `Library/Caches/coreai-cache/…`). A sitting specializes each bundle with one
   unmeasured launch (a short-chat run) before its cells, so no measured launch builds the cache
   (fairness rule 2: first-ever is not cold); a protocol line that still says `prepare_cached=0`
-  imports as `firstEver`. A Mac
+  imports as `firstEver`. On the Mac Studio M4 Max (macOS 27.0, 26A428) the first load of each
+  bundle under a binary name with no cache entry took 46 s (Gemma 4 E2B), 88 s (E4B), 343 s
+  (Qwen3 0.6B), 508 s (1.7B) and 717 s (4B) on 2026-10-08; a cached load (`cached=1`) took under
+  a second before the engine's warmup. The specialization is therefore done before the sitting,
+  outside its measurement window, under the name the sitting runs (`yardstick`, not a copy). A Mac
   yardstick rebuilt under the same name can find the previous build's entry and fail its first
   function load (`[warmup] nilError`): run a byte-identical copy under a new name, or delete that
   entry. On a phone, a cached load that is killed (memory high-water) or fails is not proof that
   the bundle cannot run: delete only that bundle's entry and specialize again once.
-- Stop tokens: the tokenizer's EOS and `tokenizer_config.json`'s `eot_token` (Apple's runner set),
-  united with `metadata.json`'s `eos_token_ids`; each run's `YARDSTICK_COREAI_STOP` line lists both.
+- Stop tokens: Apple's runner set — the tokenizer's EOS plus `LanguageConfig.additionalStopTokenIds`
+  (apple/coreai-models `swift/Sources/CoreAILanguageModels/Bundle/LanguageConfig.swift` 194: the
+  tokenizer config's extra EOS entries and the tokenizer's turn-ending special tokens) — united
+  with `metadata.json`'s `eos_token_ids`; each run's `YARDSTICK_COREAI_STOP` line lists both.
+  Gemma 4's export writes `eos_token_ids` (`export.py` 93, 180–182; `metadata=[1,50,106]`); the
+  Qwen3 export writes none, so a Qwen3 run stops on the runner's set alone, `apple=[151643,151645]`
+  = `<|im_end|>` (151645, the tokenizer config's `eos_token`) and `<|endoftext|>` (151643, a
+  turn-ending special of `tokenizer.json`), `metadata=[]`.
 - The prompt is the repository's text-task prompt through the model's chat template
-  (`PromptUtils.maybeApplyTokenizerChatTemplate`): Apple's Swift template puts one more token
-  (a newline after `<bos>`) into a Gemma 4 prompt than the Hugging Face template.
+  (`PromptUtils.maybeApplyTokenizerChatTemplate`, `CoreAIRuntime.swift` 590): Apple's Swift template
+  puts one more token (a newline after `<bos>`) into a Gemma 4 prompt than the Hugging Face
+  template. The call passes no `enable_thinking`, and Qwen3's template writes an empty thinking
+  block only when it is false (the bundle's `tokenizer/chat_template.jinja`), so a Qwen3 reply to
+  the 1K text task opens with `<think>` — as the other arms' Qwen3 rows do (their records'
+  `outputSample`, e.g. the 2026-10-07 iPhone 18 Pro sitting
+  `2026-10-07-dashboard-longctx1024-v1-iphone18pro-c1-ios`).
 
 ## Regime and disclosure
 
@@ -195,7 +231,8 @@ with a protocol row, and read the definitions with the number.
   recipe.json's sha256s and its `main.hash`, not the commit and checkpoint alone.
 - Gemma 4 E4B on the 1K text task ends its reply at its own end of turn (token 106), at 58
   generated tokens in the 2026-10-06 comparison on the d30b086 export — a refusal of the lorem
-  text, the same text on the Mac and the iPhone. The row is measured as it is (not excluded): its
+  text, the same text on the Mac and the iPhone — and again on this pin's export (the 2026-10-08
+  Mac smoke). The row is measured as it is (not excluded): its
   record's generated-token count says so, and the 256-token decode of that model is the protocol
   row's.
 - Mac memory is drawn and not ranked: on the Neural Engine path the weights are not charged to
@@ -216,7 +253,14 @@ with Apple's pipeline, and ran one smoke on the Mac Studio M4 Max (not a measure
 sitting): the bundle loaded on `StaticShapeEngine`, the text task decoded the same text the
 comparison lane's d30b086 export did (byte for byte), the GPU stayed idle during generation, the
 records stamped `core-ai-ane` and `1.0.0-10-gbd3c539`, and the protocol lines imported as
-schema-v1 records. No dashboard sitting has run on either platform.
+schema-v1 records. Round r2 exported Gemma 4 E4B and Qwen3 0.6B / 1.7B / 4B the same way and ran
+one smoke each on the Mac, again not a measurement: every bundle loaded on `StaticShapeEngine`,
+the text task passed the capture gate, Gemma 4 E4B ended at its end of turn as above, the Qwen3
+replies stayed inside `<think>` for all 256 tokens, and the protocol lines imported. Per GPU
+client (`ioreg` `AppUsage.accumulatedGPUTime`) the yardstick held no GPU time during any load and
+none in the E4B runs; during the Qwen3 generations it submitted GPU work for a small part of the
+time (what it is was not identified) — far less than a decode on the GPU would take. No dashboard
+sitting has run on either platform.
 
 ## Run one cell
 

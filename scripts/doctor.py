@@ -146,6 +146,19 @@ def check_mac(required):
               f"{len(have)}/{len(want)} staged under {cdir} — missing "
               f"{', '.join(d for d in want if d not in have)} (those cells log SKIPPED; "
               "staging recipe in docs/dashboard-cells-v1.md)")
+    # The Core AI stock arm's five folders (Apple's exports, matrices/dashboard-coreai-v1-mac.cells;
+    # CoreAIRuntime.bundleSpec / bench_matrix_mac.sh coreai_folder). Advisory the same way: a
+    # missing folder is a SKIPPED cell.
+    want = ["stock_qwen3_0_6b_ctx2048", "stock_qwen3_1_7b_ctx2048", "stock_gemma4_e2b_ctx2048",
+            "stock_qwen3_4b_ctx2048", "stock_gemma4_e4b_ctx2048"]
+    have = [d for d in want if os.path.exists(os.path.join(cdir, d, "metadata.json"))]
+    if len(have) == len(want):
+        check(OK, "core-ai stock bundles", f"{len(have)}/{len(want)} staged under {cdir}")
+    else:
+        check(WARN, "core-ai stock bundles",
+              f"{len(have)}/{len(want)} staged under {cdir} — missing "
+              f"{', '.join(d for d in want if d not in have)} (those cells log SKIPPED; "
+              "staging and the specialization before a sitting in docs/coreai-arm-v1.md)")
 
 
 # ---------- iphone ----------

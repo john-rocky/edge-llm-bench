@@ -51,7 +51,7 @@ for their published campaigns).
 | `local=1` | model is side-loaded, not in the HF catalog — catalog preflight skips it |
 | `file=<name>` | artifact filename inside the HF repo (Android GGUF cells: which quant file to fetch/push; `onnxruntime-genai`: the GenAI folder's path in the repo, e.g. `onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128`) |
 | `revision=<sha>` | `onnxruntime-genai` only, required on every row whose `file=` is a folder in an HF repo: the 40-hex commit the folder is fetched at (each repo has its own); part of the Mac capture file's identity with `file=` |
-| `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`; Mac litert-lm: forwarded as `yardstick --litert-backend`, `cpu` rows stamp `runtime: litert-lm-cpu`; `onnxruntime-genai`: `cpu` \| `webgpu` on the Mac, `cpu` on Android and iOS, the execution provider — records `onnxruntime-genai-<backend>`). The Mac runner keys the capture file on `backend=` and `context-tokens=`, so one cell at two allocations is two files |
+| `backend=<b>` | engine backend for runtimes that expose one (Android litert-lm: `cpu` \| `gpu`; Mac litert-lm: forwarded as `yardstick --litert-backend`, `cpu` rows stamp `runtime: litert-lm-cpu`; `onnxruntime-genai`: `cpu` \| `webgpu` on the Mac, `cpu` on Android and iOS, the execution provider — records `onnxruntime-genai-<backend>`; `core-ai`: `ane` on mac / ios rows of a stock id (`core-ai/<model>-stock-ctx<N>`, Apple's exports on the stock path) and only there, arm identity — records `core-ai-ane`, nothing is passed to the runtime; `docs/coreai-arm-v1.md`). The Mac runner keys the capture file on `backend=` and `context-tokens=`, so one cell at two allocations is two files |
 | `thinking=off\|model-default` | Mac `uzu` reasoning mode; part of capture identity, stamped in each record; default `model-default` |
 | `recipe=<name>` | required for Mac `uzu`: converter/publisher recipe, e.g. `lalamo-d1cfe68e-bfloat16-default`, `lalamo-d1cfe68e-qwen3-4b-mlx-affine-4bit-gs64` or `Mirai-M`; bare bit counts are rejected. `file=` names an own-export directory under `UZU_MODEL_DIR`. Android `tts-rtf-*` rows: the graph set beside the talker — absent = the sample's default set, `mtp-folded-int8-codec-split` = the repo's fast graphs (`docs/tts-rtf-v1.md` "Fast-graph recipe row") |
 
@@ -96,6 +96,10 @@ for their published campaigns).
 - `dashboard-executorch-v1-{android,mac}.cells` — the ExecuTorch arm (own exports of the
   dashboard model set with ExecuTorch v1.5.1, XNNPACK; short-chat and the 1K text task):
   `docs/executorch-arm-v1.md`.
+- `dashboard-coreai-v1-{ios,mac}.cells` — the Core AI stock arm (2026-10-08): Apple's own exports
+  (apple/coreai-models bd3c539, each model's default recipe, context 2048) of the dashboard model set
+  on the Neural Engine, `backend=ane`, the 1K text task and the protocol 1024/256 beside the same
+  models' LiteRT-LM rows, one sitting for both; not in the weekly set; `docs/coreai-arm-v1.md`.
 - `tts-rtf-v1.cells` — the TTS real-time-factor cells (Qwen3-TTS-12Hz-0.6B-Base
   through its public LiteRT reference pipeline on the Mac CPU and, since 2026-09-27,
   the sample's own Android app on the Galaxy S26 CPU, ASR round trip as the audio
