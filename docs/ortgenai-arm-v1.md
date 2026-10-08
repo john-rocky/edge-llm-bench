@@ -310,17 +310,20 @@ line within a few seconds (`methodology/fairness-rules.md` §13).
 
 ## Status (2026-10-08)
 
-Wired on the Mac and Android: cells, both drivers, the records' shape, the
-summary, the bench table and the team page. The first Galaxy S26 dashboard
+Wired on the Mac, Android and the iPhone: cells, the drivers and the app adapter, the
+records' shape, the summary, the bench table and the team page. The first iPhone 18 Pro
+dashboard sitting is in (`results/raw/2026-10-08-dashboard-ortgenai-v1-iphone18pro-*-ios/`): the
+six Qwen3 cells measured, the three 1K cells carrying the gate's flag after the runner's one retry
+(0.6B SPREAD; 1.7B and 4B HOT, thermal state fair / serious). The first Galaxy S26 dashboard
 sitting is in (`results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*-android/`):
 Qwen3 0.6B short-chat measured, Qwen3 1.7B short-chat counted under the
 cpu-cap-rule line (its three runs' ceiling fell 12-14 %), the other four cells
-without a valid run (ceiling down 19-58 %, the section above). Every number so far is a smoke (the Mac 2026-10-07 runs and
-the wiring smoke, the Mac 2026-10-08 warm-regime smoke — one engine process, run 1
-cold and runs 2-4 warm — and the Galaxy S26 driver smoke), none a dashboard
-measurement.
+without a valid run (ceiling down 19-58 %, the section above). The other numbers so far are
+smokes (the Mac 2026-10-07 runs and the wiring smoke, the Mac 2026-10-08 warm-regime smoke —
+one engine process, run 1 cold and runs 2-4 warm — and the Galaxy S26 driver smoke), not
+dashboard measurements.
 Open: the 1.7B / 4B recipe entries; the protocol rows (`model_benchmark` on
-Android, a Mac entry); the iPhone adapter; `streamed_bytes` for the six folders
+Android, a Mac entry); `streamed_bytes` for the six folders
 in `models/artifact-bytes.json` (the int8 embedding table is gathered per token,
 not streamed, and is still counted, so this arm's bandwidth column reads high);
 the weekly file (an owner decision).
