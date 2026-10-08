@@ -677,6 +677,26 @@ every row keeps running on the Galaxy S26. Source: the lane's round notes
 `~/code/standup/drafts/2026-10-06-dashboard-first-tab-attachments/ROUND-m5.md`
 (outside this repo) and that sitting's records.
 
+## CPU frequency cap line (2026-10-08)
+
+A cell's runs on Android carry `cpu-capped` when the clock ceiling of a CPU the engine ran on
+fell below its hardware maximum during the run (since 2026-10-07,
+`methodology/fairness-rules.md` §13 cpu-cap-rule). Since 2026-10-08 (owner decision) the depth
+decides the pool: a run whose ceiling fell at most 15 % (summary `cpu_cap_drop_pct`, the line
+`render_leaderboard.CPU_CAP_MAX_DROP_PCT`) pools, and the cell's number carries
+`◇ cpu-capped ≤15 % (k of N runs)`; a run past it stays out, and a cell left with no other
+run reads `— (no valid run: cpu-capped >15 % (k of N runs))`. The detail table's
+`cpu capped >15 %` and `cpu capped ≤15 %` columns count both kinds (`—` = caps not read,
+records before 2026-10-07). Rendered before and after the line from the same records (every
+`matrices/dashboard-*.cells` file), four Galaxy S26 cells of the 2026-10-08 sittings moved:
+the ONNX Runtime GenAI Qwen3 1.7B short-chat cell and the ExecuTorch Qwen3 1.7B and Gemma 4
+E2B short-chat cells now have a number (3, 3 and 2 of 3 runs within the line, 4.9-14.2 %),
+and the LiteRT-LM GPU Qwen3 0.6B short-chat anchor pools its run 1 (2.8 %; its three runs
+then spread 5.3 %, ⚠). Every 1K cell of those sittings stays without a valid run, as does the
+ONNX Runtime GenAI Qwen3 4B short-chat cell (18.6 %). No other cell of any file moved. The
+Pixel 8a's capped launches of 2026-10-07 are quarantined files (`*.json.quarantine-cpu-cap`)
+and move nothing.
+
 ## NPU and Android GPU rows (Galaxy S26, 2026-10-07)
 
 Arms. `llama.cpp-npu` runs llama.cpp on the Hexagon NPU (`--device HTP0`) and

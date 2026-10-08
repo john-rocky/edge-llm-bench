@@ -78,7 +78,9 @@ v1 measures the same engine through `litert_lm_main`.
   during the launch the sampler reads every policy's `scaling_max_freq` with the RSS, the
   record keeps each policy's lowest read (`conditions.cpuMaxFreqMHz`, min / hw / cpus in
   MHz), and a run during which a policy of the engine's CPUs sat below its hardware
-  maximum is flagged `cpu-capped` and pools into no number.
+  maximum is flagged `cpu-capped`. It pools into no number when that ceiling fell more
+  than 15 % (summary `cpu_cap_drop_pct` above `render_leaderboard.CPU_CAP_MAX_DROP_PCT`),
+  and pools, marked, when it fell less.
 - Battery level/state from `dumpsys battery` (disclose-hw-state).
 - Screen: benches run with USB attached. The screen state is read from the
   phone before every launch (`dumpsys power`, `mWakefulness`) and stamped in

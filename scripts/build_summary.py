@@ -139,7 +139,8 @@ def cpu_cap_of(d):
     (conditions.cpuMaxFreqMHz) and raised no flag, "" when it did not read them (Android
     records before 2026-10-07, every other writer). cpu_max_freq: "p<N> <min>/<hw>" per
     cpufreq policy in MHz, e.g. "p0 1704/1704 p4 1418/2367 p8 2914/2914". A capped run
-    stays a row here; render_leaderboard.arm_row keeps it out of every metric pool."""
+    stays a row here; render_leaderboard.arm_row keeps it out of every metric pool when its
+    cpu_cap_drop_pct (cpu_cap_drop_of) is above the line."""
     c = d.get("conditions")
     if not isinstance(c, dict):
         return "", ""
@@ -152,6 +153,58 @@ def cpu_cap_of(d):
         label = "p" + name[len("policy"):] if name.startswith("policy") else name
         parts.append(f"{label} {v.get('min')}/{v.get('hw')}")
     return capped, " ".join(parts)
+
+
+def cpu_set(text):
+    """A kernel CPU list ("4-8", "0-3,8", "0 1 2 3") -> {4, 5, 6, 7, 8}, as
+    android/bench/run_cell.cpu_set reads it."""
+    cpus = set()
+    for part in str(text).replace(" ", ",").split(","):
+        first, _, last = part.partition("-")
+        if first.isdigit() and (not last or last.isdigit()):
+            cpus.update(range(int(first), int(last or first) + 1))
+    return cpus
+
+
+def cpu_cap_drop_of(d):
+    """How far the clock ceiling of the CPUs the engine ran on fell during the run, as the
+    summary's cpu_cap_drop_pct (cpu-cap-rule line, 2026-10-08): the largest
+    (1 - min / hw) x 100 over the cpufreq policies of the engine's CPUs in
+    conditions.cpuMaxFreqMHz, one decimal ("0.0" = read, none fell); "" when the caps were
+    not read. The engine's CPUs are chosen in run_cell.cpu_conditions's order:
+    conditions.cpusAllowedList, else the launch mask (conditions.cpuAffinity
+    "taskset <hex>"), else every CPU. The runner flags against every Cpus_allowed_list it
+    read and the record keeps the last one, so a flagged run whose last list shows no fall
+    (an engine that narrowed its own affinity mid-run) reads its fall over every policy.
+    render_leaderboard.arm_row pools a flagged run whose drop is at most
+    CPU_CAP_MAX_DROP_PCT, counted, and keeps a deeper one out."""
+    c = d.get("conditions")
+    if not isinstance(c, dict) or not isinstance(c.get("cpuMaxFreqMHz"), dict):
+        return ""
+    engine = cpu_set(c.get("cpusAllowedList") or "")
+    affinity = str(c.get("cpuAffinity") or "")
+    if not engine and affinity.startswith("taskset "):
+        try:
+            mask = int(affinity.split()[1], 16)
+            engine = {i for i in range(mask.bit_length()) if mask >> i & 1}
+        except (IndexError, ValueError):
+            pass
+    drops = []   # (fall %, the policy is one of the engine's CPUs)
+    for v in c["cpuMaxFreqMHz"].values():
+        try:
+            low, hw = float(v["min"]), float(v["hw"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if hw > 0:
+            cpus = cpu_set(v.get("cpus") or "")
+            drops.append(((1 - low / hw) * 100, not engine or not cpus or bool(cpus & engine)))
+    if not drops:
+        return ""
+    drop = max((x for x, mine in drops if mine), default=0.0)
+    flags = c.get("protocolFlags") if isinstance(c.get("protocolFlags"), list) else []
+    if "cpu-capped" in flags and round(drop, 1) <= 0:
+        drop = max(x for x, _ in drops)
+    return f"{max(drop, 0.0):.1f}"
 
 
 def backend_registered_of(d):
@@ -312,6 +365,9 @@ def build_device():
             # a llama.cpp side build's device lines (2026-10-07), appended after them:
             # a run off the cell's device is a row, never a measurement
             "backend_registered": backend_registered_of(d),
+            # how far the engine CPUs' clock ceiling fell (2026-10-08), appended last: a
+            # capped run within the line pools, counted (cpu-cap-rule)
+            "cpu_cap_drop_pct": cpu_cap_drop_of(d),
         })
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
     path = os.path.join(OUT, "device-runs.csv")
@@ -384,7 +440,7 @@ def main():
             "from 2026-10-06; its earlier rows carry a peak only from the\n"
             "`BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:\n"
             "`methodology/memory.md` \"Peak memory\".\n\n"
-            "`text_check` (the last column, 2026-10-06) is the record's `conditions.textCheck`:\n"
+            "`text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:\n"
             "`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a\n"
             "`FAIL` run stays a row here and in raw but pools into no number\n"
             "(`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).\n\n"
@@ -393,16 +449,24 @@ def main():
             "policy of the engine's CPUs sat below its hardware maximum (the record's\n"
             "`protocolFlags` carry `cpu-capped`), `false` when the caps were read and none was\n"
             "below, empty where they were not read; `cpu_max_freq` = `p<N> <min>/<hw>` MHz per\n"
-            "policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw but\n"
-            "pools into no number (`render_leaderboard.arm_row`; `methodology/fairness-rules.md`\n"
-            "cpu-cap-rule).\n\n"
-            "`backend_registered` (the last column, 2026-10-07) is the Android runner's reading of a\n"
+            "policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw; it\n"
+            "pools into no number when `cpu_cap_drop_pct` is above the line\n"
+            "(`render_leaderboard.CPU_CAP_MAX_DROP_PCT`, 15) and pools, counted, when it is at or\n"
+            "below it (`render_leaderboard.arm_row`; `methodology/fairness-rules.md` cpu-cap-rule).\n\n"
+            "`backend_registered` (after `cpu_max_freq`, 2026-10-07) is the Android runner's reading of a\n"
             "llama.cpp side build's own device lines (`conditions.backendRegistered`; the\n"
             "`llama.cpp-npu` / `llama.cpp-gpu` arms): `true` when they show the cell's device,\n"
             "`false` when the record carries `backend-not-registered`, empty on every other row. A\n"
             "`false` run stays a row here and in raw but pools into no number\n"
             "(`render_leaderboard.arm_row`; `docs/dashboard-cells-v1.md` \"NPU and Android GPU\n"
             "rows\").\n\n"
+            "`cpu_cap_drop_pct` (the last column, 2026-10-08) is how far the clock ceiling of the\n"
+            "CPUs the engine ran on fell during the run: the largest `(1 - min / hw) x 100` over the\n"
+            "cpufreq policies of those CPUs (`conditions.cpusAllowedList`, else the launch mask,\n"
+            "else every CPU), one decimal; `0.0` where the caps were read and none of them fell,\n"
+            "empty where they were not read. `render_leaderboard.arm_row` keeps a `cpu_capped`\n"
+            "`true` run out of every number when it is above `CPU_CAP_MAX_DROP_PCT` (15) and pools\n"
+            "it, counted, when it is not (`methodology/fairness-rules.md` cpu-cap-rule).\n\n"
             "Release-regression diffing over this layer: `scripts/regression_diff.py`\n"
             "(quality joins on tag; device cells join on device/runtime/model/task/cold-warm\n"
             "with budget-mode-rule/spread-rule/cross-session guardrails). The capture+diff loop is\n"

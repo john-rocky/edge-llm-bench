@@ -8,8 +8,10 @@ text_check — and pools into no number: render_leaderboard.arm_row drops it the
 a firstEver run, and render_dashboard renders a cell left without a headline for that
 reason as "text-fail" with the reason, never the rate (methodology/fairness-rules.md). A run
 during which the phone capped a CPU the engine ran on (record protocolFlags cpu-capped; column
-cpu_capped) is kept out the same way, and a cell left without a headline for that reason renders
-as "cpu-capped": no valid run, with the count. So is a llama.cpp side build's run whose own
+cpu_capped) is kept out the same way when the ceiling fell by more than the line (column
+cpu_cap_drop_pct above render_leaderboard.CPU_CAP_MAX_DROP_PCT), and a cell left without a
+headline for that reason renders as "cpu-capped": no valid run, with the count; a run whose
+ceiling fell less pools, and the number carries the count. So is a llama.cpp side build's run whose own
 device lines did not show the cell's NPU / GPU device (protocolFlags backend-not-registered;
 column backend_registered), and its cell reads only its own arm's rows.
 The executorch arm's rows (docs/executorch-arm-v1.md) carry their delegate in the arm on every
@@ -34,6 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_summary  # noqa: E402
 import render_dashboard  # noqa: E402
 import render_dashboard_html  # noqa: E402
+import render_leaderboard  # noqa: E402
 import validate_cells  # noqa: E402
 from render_leaderboard import arm_row  # noqa: E402
 
@@ -50,6 +53,8 @@ FIELDS = ["source", "campaign", "platform", "timestamp", "runtime", "schema_vers
 CPU_FIELDS = ["cpu_capped", "cpu_max_freq"]
 # appended after them the same day (a llama.cpp side build's device lines)
 BACKEND_FIELDS = ["backend_registered"]
+# appended last on 2026-10-08 (the cpu-cap-rule line)
+DROP_FIELDS = ["cpu_cap_drop_pct"]
 
 
 def setUpModule():
@@ -162,12 +167,33 @@ class SummaryColumn(unittest.TestCase):
                 header = next(csv.reader(fh))
         self.assertEqual(n, 4)
         # appended: every earlier column keeps its place (text_check, then the CPU cap pair,
-        # then backend_registered)
-        self.assertEqual(header, FIELDS + CPU_FIELDS + BACKEND_FIELDS)
+        # then backend_registered, then the cap's drop)
+        self.assertEqual(header, FIELDS + CPU_FIELDS + BACKEND_FIELDS + DROP_FIELDS)
         by_name = {os.path.basename(r["source"]): r["text_check"] for r in got}
         self.assertEqual(by_name, {"pass.json": "PASS",
                                    "fail.json": "FAIL:text-empty-or-degenerate,text-off-task-screen",
                                    "unchecked.json": "", "odd.json": ""})
+
+    def test_cpu_cap_drop_reads_the_engines_cpus(self):
+        # cpu_cap_drop_of: the largest fall over the policies of the engine's CPUs, in
+        # run_cell.cpu_conditions's order (allowed list, else launch mask, else every CPU)
+        freq = {"policy0": {"min": 1425, "hw": 1704, "cpus": "0-3"},
+                "policy4": {"min": 2130, "hw": 2367, "cpus": "4-7"},
+                "policy8": {"min": 2914, "hw": 2914, "cpus": "8"}}
+
+        def drop(**cond):
+            return build_summary.cpu_cap_drop_of({"conditions": dict(cpuMaxFreqMHz=freq, **cond)})
+        self.assertEqual(drop(cpusAllowedList="4-7"), "10.0")              # policy0's 16.4 is not the engine's
+        self.assertEqual(drop(cpusAllowedList="0-8"), "16.4")
+        self.assertEqual(drop(cpusAllowedList="8"), "0.0")                 # read, none of the engine's fell
+        self.assertEqual(drop(cpuAffinity="taskset f0"), "10.0")           # no allowed list: the launch mask
+        self.assertEqual(drop(cpuAffinity="none"), "16.4")                 # neither: every CPU
+        self.assertEqual(drop(), "16.4")
+        # flagged, but the last allowed list shows no fall (the runner flags against every list
+        # it read): the fall over every policy
+        self.assertEqual(drop(cpusAllowedList="8", protocolFlags=["cpu-capped"]), "16.4")
+        self.assertEqual(build_summary.cpu_cap_drop_of({"conditions": {"exitCode": 0}}), "")   # not read
+        self.assertEqual(build_summary.cpu_cap_drop_of({"conditions": None}), "")
 
 
 class Dashboard(unittest.TestCase):
@@ -187,7 +213,7 @@ class Dashboard(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         summary = os.path.join(tmp.name, "device-runs.csv")
         with open(summary, "w", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS)
+            w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS + BACKEND_FIELDS + DROP_FIELDS)
             w.writeheader()
             w.writerows(rows)
         cells = os.path.join(tmp.name, "fixture.cells")
@@ -230,39 +256,89 @@ class Dashboard(unittest.TestCase):
     def test_every_run_cpu_capped_is_no_valid_run(self):
         # cpu-cap-rule, record -> summary column -> arm_row -> dashboard, in the shape of the
         # 2026-10-07 Pixel 8a: llama.cpp on the A715 cores (taskset f0), policy4 capped from
-        # 2367 to 1418 MHz in every run of the session -> no valid run, never the rate
+        # 2367 to 1418 MHz (a 40.1 % fall, past the line) in every run of the session -> no
+        # valid run, never the rate
         record = {"conditions": {"cpuMaxFreqMHz": {"policy0": {"min": 1704, "hw": 1704, "cpus": "0-3"},
                                                     "policy4": {"min": 1418, "hw": 2367, "cpus": "4-7"}},
-                                 "protocolFlags": ["cpu-capped"]}}
+                                 "cpusAllowedList": "4-7", "protocolFlags": ["cpu-capped"]}}
         self.assertEqual(build_summary.cpu_cap_of(record), ("true", "p0 1704/1704 p4 1418/2367"))
+        self.assertEqual(build_summary.cpu_cap_drop_of(record), "40.1")
         record["conditions"]["protocolFlags"] = []
         # caps read, no flag (the runner found no policy of the engine's CPUs below hw)
         self.assertEqual(build_summary.cpu_cap_of(record)[0], "false")
         self.assertEqual(build_summary.cpu_cap_of({"conditions": {"exitCode": 0}}), ("", ""))   # not read
         capped = [dict(row(v, True, "", False, "llama.cpp", "org/capped", m), cpu_capped="true",
-                       cpu_max_freq="p0 1704/1704 p4 1418/2367 p8 2914/2914")
+                       cpu_max_freq="p0 1704/1704 p4 1418/2367 p8 2914/2914", cpu_cap_drop_pct="40.1")
                   for m, v in ((50, 3.3), (51, 3.6), (52, 2.9))]
         a = arm_row(capped)
-        self.assertEqual((a["cold_median"], a["n"], a["cpu_capped_n"], a["cpu_read_n"]), (None, 0, 3, 3))
+        self.assertEqual((a["cold_median"], a["n"], a["cpu_capped_n"], a["cpu_capped_counted_n"],
+                          a["cpu_read_n"]), (None, 0, 3, 0, 3))
         self.assertIsNone(a["prefill"])              # no metric of a capped run survives
+        # a summary built before the line (no cpu_cap_drop_pct) keeps every flagged run out
+        self.assertEqual(arm_row([{k: v for k, v in r.items() if k != "cpu_cap_drop_pct"}
+                                  for r in capped]), a)
         out, md, history, page = self.render(
             "android llama.cpp org/capped long-context-1024-gen256 context-tokens=2048\n", capped)
         c = out[("llama.cpp", "org/capped")]
-        self.assertEqual((c["status"], c["reason"], c["decode_tps"], c["n"], c["cpu_capped"]),
-                         ("cpu-capped", "cpu-capped (3 of 3 runs)", None, 0, "3/3"))
+        self.assertEqual((c["status"], c["reason"], c["decode_tps"], c["n"], c["cpu_capped"],
+                          c["cpu_capped_counted"]),
+                         ("cpu-capped", "cpu-capped >15 % (3 of 3 runs)", None, 0, "3/3", "0/3"))
         self.assertEqual(c["campaign"], "results/raw/2026-10-06-fixture-android")   # the session stays the evidence
         grid = [ln for ln in md.split("<details>")[0].splitlines()
                 if ln.startswith("| **") and "no valid run" in ln]
         self.assertEqual(len(grid), 1)
-        self.assertIn("— (no valid run: cpu-capped (3 of 3 runs))", grid[0])
+        self.assertIn("— (no valid run: cpu-capped >15 % (3 of 3 runs))", grid[0])
         self.assertFalse(any(v in grid[0] for v in ("3.3", "3.6", "2.9")))   # the rate never shows
         self.assertIn("2 of 5 cells measured, 1 excluded with a reason, 1 failed the text check, "
-                      "1 had no valid run (cpu-capped)", md)
-        self.assertIn("no valid run: cpu-capped (3 of 3 runs)", page)
+                      "1 had no valid run (cpu-capped >15 %)", md)
+        self.assertIn("no valid run: cpu-capped &gt;15 % (3 of 3 runs)", page)
         self.assertNotIn(("llama.cpp", "org/capped"), {(h["arm"], h["model_id"]) for h in history})
         # the cells without a capped run read as before
         self.assertEqual(out[("litert-lm-gpu", "org/model")]["status"], "text-fail")
         self.assertEqual(out[("litert-lm-cpu", "org/model")]["cpu_capped"], "")
+
+    def test_a_cap_within_the_line_pools_marked(self):
+        # the line (render_leaderboard.CPU_CAP_MAX_DROP_PCT, 15): the Galaxy S26 Qwen3 1.7B
+        # short-chat runs of 2026-10-08, the prime cluster capped 11.7-14.2 % -> the three
+        # runs pool and the number carries the count; the boundary itself counts
+        self.assertEqual(render_leaderboard.CPU_CAP_MAX_DROP_PCT, 15)
+        shallow = [dict(row(v, True, "", False, "onnxruntime-genai-cpu", "org/shallow", m),
+                        cpu_capped="true", cpu_max_freq=f"p0 3628.8/3628.8 p6 {low}/4742.4",
+                        cpu_cap_drop_pct=drop, task="short-chat", context_tokens="2048")
+                   for m, v, low, drop in ((53, 41.4, 4070.4, "14.2"), (54, 41.9, 4185.6, "11.7"),
+                                           (55, 41.1, 4070.4, "15.0"))]
+        a = arm_row(shallow)
+        self.assertEqual((a["cold_median"], a["cold_n"], a["cpu_capped_n"], a["cpu_capped_counted_n"],
+                          a["cpu_read_n"]), (41.4, 3, 0, 3, 3))
+        # one run past the line leaves the pool; the other two stay, counted
+        mixed = [dict(r) for r in shallow]
+        mixed[2]["cpu_cap_drop_pct"] = "15.1"
+        b = arm_row(mixed)
+        self.assertEqual((b["cold_median"], b["cold_n"], b["cpu_capped_n"], b["cpu_capped_counted_n"]),
+                         (41.65, 2, 1, 2))
+        cells = ("android onnxruntime-genai org/shallow short-chat backend=cpu context-tokens=2048\n"
+                 "android onnxruntime-genai org/mixed short-chat backend=cpu context-tokens=2048\n")
+        mixed = [dict(r, model_id="org/mixed") for r in mixed]
+        out, md, history, page = self.render(cells, shallow + mixed)
+        c = out[("onnxruntime-genai-cpu", "org/shallow")]
+        self.assertEqual((c["status"], c["decode_tps"], c["n"], c["cpu_capped"], c["cpu_capped_counted"]),
+                         ("measured", 41.4, 3, "0/3", "3/3"))
+        m = out[("onnxruntime-genai-cpu", "org/mixed")]
+        self.assertEqual((m["status"], m["decode_tps"], m["n"], m["cpu_capped"], m["cpu_capped_counted"]),
+                         ("measured", 41.65, 2, "1/3", "2/3"))
+        self.assertEqual(render_dashboard.cap_mark(c), "◇ cpu-capped ≤15 % (3 of 3 runs)")
+        grid = "\n".join(ln for ln in md.split("### `short-chat`")[1].split("<details>")[0].splitlines()
+                         if ln.startswith("| **"))
+        self.assertIn("| 41.4 ◇ cpu-capped ≤15 % (3 of 3 runs) |", grid)
+        self.assertIn("| 41.6 ◇ cpu-capped ≤15 % (2 of 3 runs) |", grid)
+        self.assertIn("4 of 6 cells measured (2 with runs cpu-capped ≤15 %, ◇), 1 excluded with a reason, "
+                      "1 failed the text check", md)
+        self.assertIn("◇ cpu-capped ≤15 % (3 of 3 runs)", page)
+        self.assertIn("4 of 6 cells measured (2 with runs cpu-capped ≤15 %, ◇)", page)
+        hist = {h["model_id"]: h["cpu_capped_counted"] for h in history if h["arm"] == "onnxruntime-genai-cpu"}
+        self.assertEqual(hist, {"org/shallow": "3/3", "org/mixed": "2/3"})
+        # a cell whose runs were read uncapped carries no mark
+        self.assertEqual(render_dashboard.cap_mark(dict(c, cpu_capped_counted="0/3")), "")
 
     def test_csv_carries_the_status_and_the_column(self):
         out, md, _, _ = self.render()
@@ -270,7 +346,7 @@ class Dashboard(unittest.TestCase):
             render_dashboard.write_outputs(list(out.values()), md, os.path.join(tmp, "D.md"), tmp)
             with open(os.path.join(tmp, "dashboard-v1.csv"), newline="") as fh:
                 got = {(r["arm"], r["model_id"]): r for r in csv.DictReader(fh)}
-        self.assertEqual(render_dashboard.CSV_FIELDS[-2:], ["text_fail", "cpu_capped"])
+        self.assertEqual(render_dashboard.CSV_FIELDS[-3:], ["text_fail", "cpu_capped", "cpu_capped_counted"])
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["status"], "text-fail")
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["decode_tps"], "")
         self.assertEqual(got[("litert-lm-cpu", "org/model")]["text_fail"], "2/5")

@@ -9,8 +9,9 @@ session path (streaming turn sidecar, host-derived decay/slope/degeneracy
 verdicts, failed-runs-stay), the default text check of context-prompt
 launches (text-check-rule), exclude-on= per device, a phone lost under a
 running engine (the launch fails, never re-run), and the CPU frequency cap read
-per run (cpu-cap-rule: the flag, the pre-launch wait, the summary column and
-arm_row's pool), the executorch arm (the runner of the model's family on a
+per run (cpu-cap-rule: the flag, the pre-launch wait, the summary columns and
+arm_row's pool, a 10 % fall counted and a 30 % fall kept out by the 15 % line),
+the executorch arm (the runner of the model's family on a
 staged own export: inputs pushed, the runner's stderr read apart from its stdout, its stats
 recomputed, the record and its summary row; BENCH_SITTING=1's pin check per runner; the Mac
 writer's record from a stored launch),
@@ -1216,6 +1217,26 @@ def main():
                r["conditions"].get("cpuMaxFreqMHz", {}).get("policy8")) for _, r in lit_h3]
     ok(got_h3 == [("4-8", ["cpu-capped"], {"min": 2000, "hw": 2914, "cpus": "8"})],
        f"LiteRT-LM: cpusAllowedList 4-8 (the last read), policy8 capped -> cpu-capped (got {got_h3})")
+    # H4: the line (owner decision 2026-10-08, render_leaderboard.CPU_CAP_MAX_DROP_PCT = 15).
+    # Run 2's policy4 ceiling falls 10 % (2367 -> 2130 MHz), run 3's 30 % (-> 1657 MHz): the
+    # runner flags both, as it flags any fall (the flag is the fact); below, the summary's
+    # cpu_cap_drop_pct reads 10.0 and 30.0, and arm_row pools run 2, counted, and keeps run 3 out
+    cells_h4 = os.path.join(tmp, "h4.cells")
+    with open(cells_h4, "w") as fh:
+        fh.write(f"android llama.cpp fake/gguf short-chat runs=3 file={gguf_model}\n")
+    schedule([20.0, 19.0, 12.0])
+    json.dump([{}, {"ticks": [{}, {"policy4": 2130000}, {}]},
+               {"ticks": [{}, {"policy4": 1657000}, {"policy4": 1900000}]}],
+              open(os.path.join(state, "cpu_runs.json"), "w"))
+    env_h4 = dict(env_h, CAMPAIGN="selftest-h4")
+    print("--- campaign H4 (policy4 10 % below hw in run 2, 30 % in run 3 -> both flagged cpu-capped)")
+    rc = run_campaign(env_h4, cells_h4)
+    ok(rc == 0, f"campaign H4 exits 0 (got {rc})")
+    lla_h4 = records(os.path.join(sum_root, "results", "raw", "selftest-h4", "app-path-android"), "llama.cpp_")
+    got_h4 = [(r["conditions"].get("protocolFlags"),
+               r["conditions"].get("cpuMaxFreqMHz", {}).get("policy4", {}).get("min")) for _, r in lla_h4]
+    ok(got_h4 == [(None, 2367), (["cpu-capped"], 2130), (["cpu-capped"], 1657)],
+       f"a 10 % and a 30 % fall are both flagged cpu-capped: the flag does not read the line (got {got_h4})")
 
     # --- campaign ORT: an ONNX Runtime GenAI cell pair (short-chat x2, 1K x1) on a GenAI
     # folder: pushed file by file once for the campaign's three launches and removed when it
@@ -1364,6 +1385,21 @@ def main():
     ok(got_a == (2, 19.75, 1, 3),
        f"arm_row: the capped run is out of the pool, counted (cold_n, cold_median, cpu_capped_n, "
        f"cpu_read_n = {got_a})")
+    # the line: cpu_cap_drop_pct = the largest fall over the engine's policies (cpus 4-7 for
+    # the masked llama.cpp runs, 4-8 for H3's LiteRT-LM run); run 3 of H fell on policy0 only,
+    # outside the engine's CPUs: 0.0. H2's run started capped 10 % and stayed there
+    rows_all = list(csv.DictReader(open(path)))
+    got_drop = {camp: [r.get("cpu_cap_drop_pct") for r in rows_all if r["campaign"] == f"results/raw/{camp}"]
+                for camp in ("selftest-h", "selftest-h2", "selftest-h3", "selftest-h4")}
+    ok(got_drop == {"selftest-h": ["0.0", "40.1", "0.0"], "selftest-h2": ["10.0"],
+                    "selftest-h3": ["31.4"], "selftest-h4": ["0.0", "10.0", "30.0"]},
+       f"summary: cpu_cap_drop_pct per run (got {got_drop})")
+    rows_h4 = [r for r in rows_all if r["campaign"] == "results/raw/selftest-h4"]
+    a4 = arm_row(rows_h4)
+    got_a4 = (a4["cold_n"], a4["cold_median"], a4["cpu_capped_n"], a4["cpu_capped_counted_n"], a4["cpu_read_n"])
+    ok([r["cpu_capped"] for r in rows_h4] == ["false", "true", "true"] and got_a4 == (2, 19.5, 1, 1, 3),
+       f"arm_row: the 10 % run pools, counted, the 30 % run stays out; both stay true in the summary "
+       f"(cold_n, cold_median, cpu_capped_n, cpu_capped_counted_n, cpu_read_n = {got_a4})")
     rows_ort = [r for r in csv.DictReader(open(path)) if r["campaign"] == "results/raw/selftest-ort"]
     got_ort = sorted((r["runtime"], r["task"], r["context_tokens"], r["text_check"], r["cold_run"]) for r in rows_ort)
     ok(got_ort == [("onnxruntime-genai-cpu", "long-context-1024-gen256", "2048", "PASS", "True"),

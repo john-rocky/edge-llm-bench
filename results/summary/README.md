@@ -25,7 +25,7 @@ from 2026-10-06; its earlier rows carry a peak only from the
 `BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:
 `methodology/memory.md` "Peak memory".
 
-`text_check` (the last column, 2026-10-06) is the record's `conditions.textCheck`:
+`text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:
 `PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a
 `FAIL` run stays a row here and in raw but pools into no number
 (`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).
@@ -35,17 +35,26 @@ cap the Android runner read during the run: `cpu_capped` = `true` when a cpufreq
 policy of the engine's CPUs sat below its hardware maximum (the record's
 `protocolFlags` carry `cpu-capped`), `false` when the caps were read and none was
 below, empty where they were not read; `cpu_max_freq` = `p<N> <min>/<hw>` MHz per
-policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw but
-pools into no number (`render_leaderboard.arm_row`; `methodology/fairness-rules.md`
-cpu-cap-rule).
+policy (`conditions.cpuMaxFreqMHz`). A `true` run stays a row here and in raw; it
+pools into no number when `cpu_cap_drop_pct` is above the line
+(`render_leaderboard.CPU_CAP_MAX_DROP_PCT`, 15) and pools, counted, when it is at or
+below it (`render_leaderboard.arm_row`; `methodology/fairness-rules.md` cpu-cap-rule).
 
-`backend_registered` (the last column, 2026-10-07) is the Android runner's reading of a
+`backend_registered` (after `cpu_max_freq`, 2026-10-07) is the Android runner's reading of a
 llama.cpp side build's own device lines (`conditions.backendRegistered`; the
 `llama.cpp-npu` / `llama.cpp-gpu` arms): `true` when they show the cell's device,
 `false` when the record carries `backend-not-registered`, empty on every other row. A
 `false` run stays a row here and in raw but pools into no number
 (`render_leaderboard.arm_row`; `docs/dashboard-cells-v1.md` "NPU and Android GPU
 rows").
+
+`cpu_cap_drop_pct` (the last column, 2026-10-08) is how far the clock ceiling of the
+CPUs the engine ran on fell during the run: the largest `(1 - min / hw) x 100` over the
+cpufreq policies of those CPUs (`conditions.cpusAllowedList`, else the launch mask,
+else every CPU), one decimal; `0.0` where the caps were read and none of them fell,
+empty where they were not read. `render_leaderboard.arm_row` keeps a `cpu_capped`
+`true` run out of every number when it is above `CPU_CAP_MAX_DROP_PCT` (15) and pools
+it, counted, when it is not (`methodology/fairness-rules.md` cpu-cap-rule).
 
 Release-regression diffing over this layer: `scripts/regression_diff.py`
 (quality joins on tag; device cells join on device/runtime/model/task/cold-warm

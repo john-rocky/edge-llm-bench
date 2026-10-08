@@ -18,7 +18,10 @@ Neutrality invariants (why cells look the way they do):
   - a run whose decoded text failed the text check (summary text_check
     FAIL:…) pools into no number, like a firstEver run (text-check-rule).
   - a run during which the phone capped the clock of a CPU the engine ran
-    on (summary cpu_capped true) pools into no number either (cpu-cap-rule).
+    on (summary cpu_capped true) pools into no number either when the
+    ceiling fell by more than CPU_CAP_MAX_DROP_PCT (summary
+    cpu_cap_drop_pct); a run whose ceiling fell by less pools, counted, so
+    the surfaces can mark the number (cpu-cap-rule).
   - nor does a llama.cpp side-build run whose own device lines did not show
     the cell's npu / gpu device (summary backend_registered false).
   - GSM8K joins on (model_id, runtime); pre-v1 quality rows have no
@@ -43,6 +46,16 @@ BEGIN = "<!-- BEGIN GENERATED: scripts/render_leaderboard.py -->"
 END = "<!-- END GENERATED: scripts/render_leaderboard.py -->"
 HEADLINE_TASK = "short-chat"
 SPREAD_FLAG = 5.0  # % — same bar the regression differ uses
+# cpu-cap-rule line (owner decision 2026-10-08, methodology/fairness-rules.md §13): a run
+# flagged cpu-capped still pools, counted and marked, while the clock ceiling of the CPUs
+# the engine ran on fell by at most this many percent (summary cpu_cap_drop_pct: the
+# largest (1 - min / hw) x 100 over their cpufreq policies); a deeper cap keeps it out of
+# every pool. Material, the Galaxy S26 of 2026-10-08 (results/raw/2026-10-08-dashboard-
+# ortgenai-v1-s26-*-android): the largest fall of a run was 3-14 % in the LiteRT-LM GPU
+# anchor's run 1 and the ONNX Runtime GenAI Qwen3 1.7B short-chat runs, 19 % in its 4B
+# short-chat runs and 49-58 % in every 1K launch (the prime cluster, policy6, fell
+# furthest in each).
+CPU_CAP_MAX_DROP_PCT = 15
 
 
 def load(name):
@@ -94,6 +107,15 @@ def latest_session(rows):
     return sess, max((r["timestamp"] or "")[:10] for r in sess)
 
 
+def shallow_cap(r):
+    """A row flagged cpu-capped whose engine CPUs' clock ceiling fell by at most
+    CPU_CAP_MAX_DROP_PCT (summary cpu_cap_drop_pct, read as the column shows it): it
+    pools, counted (cpu-cap-rule). A flagged row without the column (a summary built
+    before 2026-10-08) is not shallow and stays out, as every flagged run did then."""
+    drop = fnum(r.get("cpu_cap_drop_pct"))
+    return r.get("cpu_capped") == "true" and drop is not None and drop <= CPU_CAP_MAX_DROP_PCT
+
+
 def arm_row(rows):
     """One leaderboard line from one cell's latest-session rows."""
     sess, date = latest_session(rows)
@@ -108,18 +130,22 @@ def arm_row(rows):
     text_fail = [r for r in meas if (r.get("text_check") or "").startswith("FAIL")]
     text_checked = sum(1 for r in meas if r.get("text_check"))
     meas = [r for r in meas if not (r.get("text_check") or "").startswith("FAIL")]
-    # cpu-cap-rule: a run during which a CPU the engine ran on sat below its
-    # hardware maximum clock measured the phone's cap, not the engine — same
-    # treatment again, after the text check (a run that failed both counts as a
-    # text failure); .get: summaries built before 2026-10-07 have no cpu_capped
-    cpu_capped = [r for r in meas if r.get("cpu_capped") == "true"]
+    # cpu-cap-rule: a run during which the ceiling of a CPU the engine ran on fell
+    # more than CPU_CAP_MAX_DROP_PCT below its hardware maximum measured the phone's
+    # cap, not the engine — same treatment again, after the text check (a run that
+    # failed both counts as a text failure); a shallower cap pools, counted below;
+    # .get: summaries built before 2026-10-07 have no cpu_capped
+    cpu_capped = [r for r in meas if r.get("cpu_capped") == "true" and not shallow_cap(r)]
     cpu_read = sum(1 for r in meas if r.get("cpu_capped"))
-    meas = [r for r in meas if r.get("cpu_capped") != "true"]
+    meas = [r for r in meas if r.get("cpu_capped") != "true" or shallow_cap(r)]
     # a llama.cpp side build's run whose own device lines did not show the cell's
     # device (npu / gpu) measured another device — same treatment, last; .get:
     # summaries built before 2026-10-07 have no backend_registered column
     backend_off = [r for r in meas if r.get("backend_registered") == "false"]
     meas = [r for r in meas if r.get("backend_registered") != "false"]
+    # the pool's runs that ran under a cap within the line: they count, and the
+    # surfaces mark the number with how many there were
+    capped_counted = [r for r in meas if shallow_cap(r)]
     warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
     warm = [v for v in warm if v]
     cold = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "True"]
@@ -179,9 +205,11 @@ def arm_row(rows):
         "text_fail_flags": ", ".join(sorted({f for r in text_fail
                                              for f in r["text_check"][len("FAIL:"):].split(",") if f})),
         "text_checked_n": text_checked,
-        # runs the CPU cap kept out of the pool, and the runs past the text check
-        # whose caps were read, capped or not (0 = not read: no cpu-cap-rule verdict)
+        # runs the CPU cap kept out of the pool (a fall past CPU_CAP_MAX_DROP_PCT), the
+        # pool's runs under a cap within it, and the runs past the text check whose caps
+        # were read, capped or not (0 = not read: no cpu-cap-rule verdict)
         "cpu_capped_n": len(cpu_capped),
+        "cpu_capped_counted_n": len(capped_counted),
         "cpu_read_n": cpu_read,
         # runs a side build's device lines kept out of the pool (backend-not-registered)
         "backend_off_n": len(backend_off),
