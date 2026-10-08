@@ -138,6 +138,10 @@ final class AppSession: ObservableObject {
             // CactusRuntime self-reports availability via canImport(cactus):
             // vendored xcframework present -> runs; absent -> unavailable stub.
             return CactusRuntime()
+        case .onnxRuntimeGenAI:
+            // Same pattern, canImport(onnxruntime_genai): the release XCFramework and its
+            // module map vendored (scripts/fetch_ortgenai_xcframework.sh) -> runs; absent -> stub.
+            return ONNXRuntimeGenAIRuntime()
         }
     }
 }

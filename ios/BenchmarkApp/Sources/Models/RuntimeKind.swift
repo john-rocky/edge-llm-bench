@@ -10,6 +10,7 @@ public enum RuntimeKind: String, CaseIterable, Codable, Sendable, Identifiable {
     case appleFM = "apple-fm"
     case coreAI = "core-ai"
     case cactus = "cactus"
+    case onnxRuntimeGenAI = "onnxruntime-genai"
 
     public var id: String { rawValue }
 
@@ -24,6 +25,7 @@ public enum RuntimeKind: String, CaseIterable, Codable, Sendable, Identifiable {
         case .appleFM: return "Apple Foundation Models"
         case .coreAI: return "Apple Core AI"
         case .cactus: return "Cactus"
+        case .onnxRuntimeGenAI: return "ONNX Runtime GenAI"
         }
     }
 }

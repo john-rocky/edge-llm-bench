@@ -135,6 +135,9 @@ targets:
         # with: SWIFT_ACTIVE_COMPILATION_CONDITIONS="$(inherited) COREAI_STATIC_INPUTS"
         # See methodology/core-ai-arm-provenance.md.
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+        # The C API of the ONNX Runtime GenAI release (module `onnxruntime_genai`); the map
+        # exists only when the framework is vendored, so the adapter compiles to a stub without it.
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(SRCROOT)/Vendored/onnxruntime-genai-module"
     preBuildScripts:
       # Regenerate the OBSERVED engine pins (git state of Vendored/ clones, the CLiteRTLM
       # binaryTarget zip+checksum, the llama sidecar tag) so every BenchmarkResult records
@@ -188,6 +191,15 @@ targets:
       # framework bundles cactus_engine.h + modulemap, so `import cactus` works;
       # CactusRuntime is canImport-guarded and stubs out when this is absent.
       - framework: Vendored/cactus-ios.xcframework
+        embed: true
+        codeSign: true
+        optional: true
+      # ONNX Runtime GenAI (the onnxruntime-genai arm, CPU EP): the release XCFramework, a
+      # dynamic framework, fetched and sha-checked by scripts/fetch_ortgenai_xcframework.sh,
+      # which also writes the module map SWIFT_INCLUDE_PATHS (settings above) points at.
+      # iOS only: the release has no macOS slice, so the yardstick target neither links it
+      # nor compiles ONNXRuntimeGenAIRuntime.swift.
+      - framework: Vendored/onnxruntime-genai.xcframework
         embed: true
         codeSign: true
         optional: true

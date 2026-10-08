@@ -1464,6 +1464,57 @@ public enum ModelCatalog {
         ),
     ]
 
+    /// ONNX Runtime GenAI (the release XCFramework, CPU EP; docs/ortgenai-arm-v1.md): the
+    /// published GenAI CPU folders of `onnx-community/Qwen3-<size>-ONNX`. The id is the repo id,
+    /// as in matrices/dashboard-ortgenai-v1.cells; only the folder is fetched (`hfFilePatterns`),
+    /// at the commit in `onnxRuntimeGenAIRevisions`, and `primaryFile` is its genai_config.json.
+    /// `quantization` is the folder's label in models/ortgenai-recipes.json, read from its
+    /// model.onnx by scripts/ortgenai_recipe.py — never typed by hand ("int4" alone would be
+    /// wrong: about half of the MatMulNBits are int8). Sizes are the folders' bytes / 1e6.
+    public static let onnxRuntimeGenAI: [ModelInfo] = [
+        ModelInfo(
+            id: "onnx-community/Qwen3-0.6B-ONNX",
+            displayName: "Qwen3-0.6B (ORT GenAI CPU)",
+            quantization: "int4 + int8 mixed MatMulNBits (92 int4 / 105 int8 of 197; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 536,
+            hfRepoId: "onnx-community/Qwen3-0.6B-ONNX",
+            hfFilePatterns: ["onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/*"],
+            primaryFile: "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/genai_config.json"
+        ),
+        ModelInfo(
+            id: "onnx-community/Qwen3-1.7B-ONNX",
+            displayName: "Qwen3-1.7B (ORT GenAI CPU)",
+            quantization: "int4 + int8 mixed MatMulNBits (96 int4 / 101 int8 of 197; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+            parameterCountB: 1.7,
+            onDiskSizeMB: 1420,
+            hfRepoId: "onnx-community/Qwen3-1.7B-ONNX",
+            hfFilePatterns: ["onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/*"],
+            primaryFile: "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/genai_config.json"
+        ),
+        ModelInfo(
+            id: "onnx-community/Qwen3-4B-ONNX",
+            displayName: "Qwen3-4B (ORT GenAI CPU)",
+            quantization: "int4 + int8 mixed MatMulNBits (143 int4 / 110 int8 of 253; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2897,
+            hfRepoId: "onnx-community/Qwen3-4B-ONNX",
+            hfFilePatterns: ["onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/*"],
+            primaryFile: "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128/genai_config.json"
+        ),
+    ]
+
+    /// The HF commit each `onnxRuntimeGenAI` entry is fetched at: the cells file's `revision=`
+    /// and environment.lock.json's model pins (each repo's "Add optimized models for ORT GenAI
+    /// (#3)", 2026-04-20). Not "main": main moved on 2026-10-07 (a repo-root
+    /// tokenizer_config.json edit; the folders are unchanged), and a row names the commit its
+    /// files came from.
+    public static let onnxRuntimeGenAIRevisions: [String: String] = [
+        "onnx-community/Qwen3-0.6B-ONNX": "da1453100cf3ff33ef56d17983fc7a8648706db6",
+        "onnx-community/Qwen3-1.7B-ONNX": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+        "onnx-community/Qwen3-4B-ONNX": "98ddba15d05dede4435afb63f13280abcdbc2a48",
+    ]
+
     /// Default model picked when the app first launches.
     public static let defaultModel: ModelInfo = mlx[0]
 }

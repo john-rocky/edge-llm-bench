@@ -125,6 +125,25 @@ elif [ -d "${V}/cactus-ios.xcframework" ]; then
     add_pin "cactus" "unrecorded (framework present without its source clone)"
 fi
 
+# onnxruntime-genai — the release XCFramework (CPU EP). scripts/fetch_ortgenai_xcframework.sh
+# writes the sidecar "<version> <zip sha256>" only after the zip matched its pin; the
+# artifact also names the ios-arm64 binary's own sha256, read here from the vendored file.
+ORT_FW="${V}/onnxruntime-genai.xcframework"
+if [ -d "${ORT_FW}" ]; then
+    ORT_VER=""
+    ORT_ZIP_SHA=""
+    if [ -f "${ORT_FW}.tag" ]; then
+        read -r ORT_VER ORT_ZIP_SHA < "${ORT_FW}.tag" || true
+    fi
+    if [ -n "${ORT_VER}" ] && [ -n "${ORT_ZIP_SHA}" ]; then
+        ORT_BIN_SHA="$(shasum -a 256 "${ORT_FW}/ios-arm64/onnxruntime-genai.framework/onnxruntime-genai" 2>/dev/null | awk '{print $1}' || true)"
+        add_pin "onnxruntime-genai" "onnxruntime-genai ${ORT_VER} (release ios xcframework)" \
+            "onnxruntime-genai-ios-${ORT_VER}.zip sha256:${ORT_ZIP_SHA}, ios-arm64 binary sha256:${ORT_BIN_SHA:-unread}"
+    else
+        add_pin "onnxruntime-genai" "unrecorded (framework present without its sidecar tag)"
+    fi
+fi
+
 PINS_JSON="{${ENTRIES}}"
 
 # json.tool both pretty-prints and validates; a malformed pin string fails the build here

@@ -2,6 +2,8 @@
 # Fetch the binary + cloned dependencies the BenchmarkApp project needs:
 #
 #   1. Vendored/llama.xcframework  (llama.cpp Metal build, ~168 MB)
+#  1b. Vendored/onnxruntime-genai.xcframework (ONNX Runtime GenAI release, ~54 MB zip;
+#      scripts/fetch_ortgenai_xcframework.sh)
 #   2. Vendored/Anemll             (cloned source for AnemllCore SwiftPM target)
 #   3. Vendored/LiteRT-LM          (cloned source for the LiteRTLM SwiftPM target)
 #   4. Vendored/CoreML-LLM         (cloned source for the CoreMLLLM SwiftPM target)
@@ -54,6 +56,10 @@ if [ ! -d "${LLAMA_FRAMEWORK}" ]; then
 else
     echo "${LLAMA_FRAMEWORK} already present."
 fi
+
+# 1b. onnxruntime-genai.xcframework (ONNX Runtime GenAI release, CPU EP; the iPhone's
+#     onnxruntime-genai arm): sha-pinned download, sidecar tag and module map.
+./scripts/fetch_ortgenai_xcframework.sh
 
 # 2. Anemll (SwiftPM Package.swift lives in a subdirectory; SPM cannot resolve from a remote URL).
 if [ ! -d "${ANEMLL_DIR}" ]; then

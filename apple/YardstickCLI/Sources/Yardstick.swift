@@ -420,6 +420,9 @@ struct YardstickApp {
             (RuntimeKind.mediaPipe, ModelCatalog.liteRTLM),
             (RuntimeKind.coreAI, ModelCatalog.coreAI),
             (RuntimeKind.cactus, ModelCatalog.cactus),
+            // The iPhone app's arm (no Mac adapter: the Mac rows run scripts/ortgenai_mac.py);
+            // listed so validate_cells --catalog can check the ios rows against the app catalog.
+            (RuntimeKind.onnxRuntimeGenAI, ModelCatalog.onnxRuntimeGenAI),
         ] {
             models[kind.rawValue] = catalog.map {
                 ["id": $0.id, "hfRepoId": $0.hfRepoId,
