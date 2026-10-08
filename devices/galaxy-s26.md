@@ -67,4 +67,23 @@
   18:11, battery 100% on USB), and at idle the caps were gone (2026-09-08 06:39,
   before the first automated dashboard session). The dashboard job's preflight
   reads a cap as "busy" and polls — the right reading; do not measure under one.
+- What sets the cap (a diagnosis on 2026-10-08: five llama-bench loads of
+  Qwen3 0.6B, USB attached, screen dozing; standup ROUND-r6 of the NPU rows
+  lane): the SoC's temperature, not the skin sensor or charging. Both
+  clusters' step-down began at AP sensor readings of 46-51 °C (the two loads
+  that read the AP; the CPU load's earlier policy6 dips, at 31-44 °C, are not
+  explained) while the skin sensor read 29-38 °C (under its first threshold,
+  38.0 °C) and `Thermal Status` stayed 0, and loads capped alike charging
+  (`dumpsys battery` status 2) and not (status 4) — no phone setting removes
+  it. The load sets the speed and the order, not the depth: a CPU load
+  (llama.cpp on cpu6-7 and about two of cpu0-5) took policy6 down 1.1-2.1 s
+  in and policy0 8.1-10.7 s in; an NPU load (the HTP0 side build: cpu0-5
+  busy, cpu6-7 idle) took both together 9-16 s in; four of the five loads
+  reached 2227 / 2227 MHz (38.6 / 53.0 % below the maxima). At rest the cap
+  lifted 12-37 s after the load and did not return during the rests (60 s to
+  5 min). `dumpsys thermalservice`'s "Cached temperatures" kept SKIN at
+  37.9 °C through all 27 reads while "Current temperatures from HAL" moved
+  between 28.9 and 37.9 °C: read the HAL's current values. Because the cap is
+  the phone's, the NPU and GPU arms count a capped run (cpu-cap-rule,
+  `methodology/fairness-rules.md` §13); the CPU arms keep the 15 % line.
 - Build/run: `android/README.md` (engine acquisition, driver, campaign runner).

@@ -204,9 +204,34 @@ launch mask (evidence: standup ROUND-m5; the capped records are kept as
   `results/raw/2026-10-08-dashboard-executorch-v1-s26{,-b}-android/`). The Pixel 8a's capped
   launches of 2026-10-07 (above) were renamed `*.json.quarantine-cpu-cap` before the runner
   read the caps: they carry no `cpuMaxFreqMHz` and stay out of the summary whatever the line.
+- The accelerator arms (owner decision 2026-10-08). On the Android arms whose engine places
+  the model on the NPU or the GPU — `llama.cpp-npu` (Hexagon NPU, `--device HTP0`),
+  `llama.cpp-gpu` (Adreno GPU through OpenCL), `litert-lm-npu` (NPU through the Qualcomm
+  dispatch), `litert-lm-gpu` (GPU), `executorch-vulkan` (Vulkan delegate, GPU) and
+  `executorch-qnn` (QNN delegate, NPU), the set `render_leaderboard.CPU_CAP_EXEMPT_ARMS` — a
+  flagged run pools, counted, however far the ceiling fell, and the number carries
+  `◇ cpu-capped, counted (accelerator arm), max drop D % (k of N runs)`, D the largest
+  `cpu_cap_drop_pct` among those runs. The CPU arms (`llama.cpp`, `litert-lm-cpu`,
+  `executorch-xnnpack`, `onnxruntime-genai-cpu`, `litert-cpu`) keep the line. The runner, the
+  flag and the summary columns do not change: an accelerator arm's run is flagged on the CPUs
+  its process may run on, as every arm's. Why: on these arms the capped CPUs carry the
+  engine's host side, and the cap on the Galaxy S26 is the phone's, not a setting's. Material
+  (standup notes of the NPU rows lane): two llama-bench runs on the S26 on 2026-10-07
+  (ROUND-r1), during which the ceilings fell (policy0 to 3187 MHz and policy6 to 3130 MHz on
+  the NPU arm; both to 2227 MHz on the GPU arm) — the NPU arm's five tg256 repetitions spread
+  1.2 % with no trend, the GPU arm's fell 3.4 % from the first to the last (the cap's
+  direction; the cause not established); a diagnosis of the cap on 2026-10-08 (ROUND-r6, five
+  llama-bench loads) — it follows the SoC's temperature (the clusters stepped down at AP
+  sensor readings of 46-51 °C, two loads read), not the skin sensor (29-38 °C, under its
+  first threshold) or charging (capped alike charging and not), so no phone setting removes
+  it; and the S26 sitting of 2026-10-08 (ROUND-r3), where with the line alone the Qwen3 1.7B
+  1K cells of both llama.cpp arms (falls of 28-44 %) and every protocol cell (53-63 %) had no
+  valid run. Revert: make `CPU_CAP_EXEMPT_ARMS` empty and re-render the surfaces (the summary
+  does not read it).
 - Charging is not stopped to avoid the cap: the weekly job is unattended and a sitting
-  outlasts the battery. A cell whose every run is capped past the line (on 2026-10-07:
-  llama.cpp Gemma 4 E2B 1K on the charging Pixel 8a) has no valid run until a sitting gives
-  it one. The GPU
+  outlasts the battery. A CPU arm's cell whose every run is capped past the line (on
+  2026-10-07: llama.cpp Gemma 4 E2B 1K on the charging Pixel 8a) has no valid run until a
+  sitting gives it one. The GPU
   clock is not readable from the shell on the Pixel 8a (devfreq is permission-denied); a GPU
-  arm is judged on the CPUs its process may run on, like every arm.
+  arm is judged on the CPUs its process may run on, like every arm, and pools as the
+  accelerator arms do (above).

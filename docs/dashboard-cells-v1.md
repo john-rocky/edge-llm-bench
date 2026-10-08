@@ -686,8 +686,9 @@ decides the pool: a run whose ceiling fell at most 15 % (summary `cpu_cap_drop_p
 `render_leaderboard.CPU_CAP_MAX_DROP_PCT`) pools, and the cell's number carries
 `◇ cpu-capped ≤15 % (k of N runs)`; a run past it stays out, and a cell left with no other
 run reads `— (no valid run: cpu-capped >15 % (k of N runs))`. The detail table's
-`cpu capped >15 %` and `cpu capped ≤15 %` columns count both kinds (`—` = caps not read,
-records before 2026-10-07). Rendered before and after the line from the same records (every
+`cpu capped >15 %` and `cpu capped, counted` columns count both kinds (`—` = caps not read,
+records before 2026-10-07). The Android NPU and GPU arms count a capped run at any fall
+(the next section's "CPU cap"). Rendered before and after the line from the same records (every
 `matrices/dashboard-*.cells` file), four Galaxy S26 cells of the 2026-10-08 sittings moved:
 the ONNX Runtime GenAI Qwen3 1.7B short-chat cell and the ExecuTorch Qwen3 1.7B and Gemma 4
 E2B short-chat cells now have a number (3, 3 and 2 of 3 runs within the line, 4.9-14.2 %),
@@ -781,6 +782,20 @@ cache builds: one marker per (model, arm, build), and a cache directory
 without a program relabels the next launch whatever the markers say.
 llama-bench compiles at load as well but times after its own warmup run, so
 its launches are not labelled. The NPU keeps no compile cache.
+
+CPU cap. The 15 % line of the cpu-cap-rule does not apply to these arms
+(owner decision 2026-10-08, `methodology/fairness-rules.md` §13, "The
+accelerator arms"): `render_leaderboard.CPU_CAP_EXEMPT_ARMS` = `llama.cpp-npu`,
+`llama.cpp-gpu`, `litert-lm-npu`, `litert-lm-gpu`, `executorch-vulkan`,
+`executorch-qnn`, the arms whose engine places the model on the NPU or the GPU.
+The runner reads and flags the caps as on every arm; a flagged run pools,
+counted, whatever the fall, and the number carries `◇ cpu-capped, counted
+(accelerator arm), max drop D % (k of N runs)`, D the largest
+`cpu_cap_drop_pct` among those runs. On the S26 an NPU load took both
+clusters' ceilings down 9-16 s into a launch (`devices/galaxy-s26.md`): with
+the line alone, the Qwen3 1.7B 1K cells and the protocol cells of the
+2026-10-08 sitting had no valid run. The session anchor (the llama.cpp CPU
+arm) keeps the line.
 
 LiteRT-LM on the NPU. One model has a bundle: this repo's own export of Qwen3
 0.6B for SM8850, run on this repo's own build of the runtime with the hardware
