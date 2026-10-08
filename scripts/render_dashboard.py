@@ -78,6 +78,26 @@ CSV_PLATFORM = {"ios": "ios", "mac": "mac", "android": "android"}
 # headline regime per platform: Apple lanes have in-process warm runs, the
 # Android CLIs do not (methodology/android.md) — the column header says which
 REGIME = {"ios": "warm", "mac": "warm", "android": "cold"}
+# the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark
+# entry; methodology/agreed-protocol-gemma4.md, docs/dashboard-cells-v1.md)
+PROTOCOL_TASK_PREFIX = "native-benchmark-"
+
+
+def headline_regime(plat, task, a):
+    """The regime cell `task` on `plat` headlines from arm_row result `a` (cold-warm-split: one
+    regime per number, never mixed). A text-task cell reads its platform's (REGIME). A protocol
+    cell reads the agreed protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
+    for the side-by-side, cold reported separately as first use), wherever its session has warm
+    runs, on every platform and for every arm alike — LiteRT-LM benchmark() calls 2..N of a
+    launch, Core AI trials 1..N (the trials llm-benchmark averages), llama-bench's in-process
+    repeats — and its cold median only where the session has none (one call per launch, as the
+    sittings before 2026-10-08 ran). The one rule for this table and the team page
+    (litert-bench-dashboard make_cell)."""
+    if task.startswith(PROTOCOL_TASK_PREFIX):
+        return "warm" if a["warm_n"] else "cold"
+    return REGIME[plat]
+
+
 # the cpu-cap-rule line as the tables print it ("15 %"); the value lives in render_leaderboard
 CAP_LINE = f"{CPU_CAP_MAX_DROP_PCT:g} %"
 
@@ -306,6 +326,9 @@ def grid_text(c):
     if c["status"] == "no-decode":
         return "— (records without a decode figure)"
     t = fmt(c["decode_tps"])
+    if c["regime"] != REGIME[c["platform"]]:
+        # a protocol cell reads its session's regime (headline_regime), not the device header's
+        t += f" ({c['regime']})"
     if c["spread_pct"] is not None and c["spread_pct"] > SPREAD_FLAG:
         t += f" ⚠ {c['spread_pct']:.0f}%"
     if cap_mark(c):
@@ -368,21 +391,27 @@ def build(cells_path, schedule_path, stale_days, today):
                     "cpu_capped_counted": "",
                     # the largest fall (%) among those runs; None = none, or not recorded
                     "cpu_capped_counted_max_drop": None,
+                    # a protocol cell that headlines warm: the cold (first-call) median of the
+                    # same session beside it, first use reported separately (headline_regime)
+                    "cold_tps": None,
                 }
                 if why:
                     rec.update(status="excluded", reason=why)
                 elif sel:
                     a = arm_row(sel)
-                    if REGIME[plat] == "warm":
+                    regime = headline_regime(plat, c["task"], a)
+                    if regime == "warm":
                         dec, spread, n = a["warm"], a["spread"], a["warm_n"]
                     else:
                         dec, spread, n = a["cold_median"], a["cold_spread"], a["cold_n"]
+                    if c["task"].startswith(PROTOCOL_TASK_PREFIX) and regime == "warm":
+                        rec["cold_tps"] = a["cold_median"]
                     captured = a["date"]
                     stale = False
                     if captured:
                         age = (today - datetime.date.fromisoformat(captured)).days
                         stale = age > stale_days
-                    rec.update(status="measured" if dec else "no-decode",
+                    rec.update(status="measured" if dec else "no-decode", regime=regime,
                                decode_tps=dec, spread_pct=spread, n=n,
                                prefill_tps=a["prefill"], ttft_ms=a["ttft"],
                                mem_mb=a["mem"], mem_peak_mb=a["mem_peak"],
@@ -453,6 +482,12 @@ def render_md(out_cells, cells_path, stale_days, today):
              "(k of N runs)` = the same on an Android NPU or GPU arm, whose capped runs count "
              "whatever the fall (the CPUs carry the engine's host side there; owner decision "
              "2026-10-08); D = the largest fall among them. "
+             "Protocol cells (`native-benchmark-*`, each engine's own benchmark entry: a "
+             "launch's first call cold, the rest warm) read the agreed protocol's regime, the "
+             "warm median, wherever the session has warm runs, on every platform, and the cold "
+             "median only where it has none (one call per launch); a cell that reads another "
+             "regime than its device's header says `(cold)` / `(warm)`, and the detail table "
+             "gives a warm protocol cell's cold first-call median beside it. "
              "Short-chat prefill is "
              "overhead-dominated and does "
              "not compare across arms (docs/OPERATIONS.md); it is listed, not headlined. "
@@ -535,6 +570,10 @@ def render_md(out_cells, cells_path, stale_days, today):
                     dec = (f"— ({c['reason']})" if c["status"] == "text-fail"
                            else f"— (no valid run: {c['reason']})" if c["status"] == "cpu-capped"
                            else fmt(c["decode_tps"]))
+                    if c["status"] == "measured" and c["regime"] != REGIME[plat]:
+                        dec += f" ({c['regime']})"
+                    if c.get("cold_tps") is not None:
+                        dec += f" (cold first call {fmt(c['cold_tps'])})"
                     row = head + [
                         c["quant"], c["engine"], dec, fmt(c["spread_pct"]),
                         str(c["n"]), c["text_fail"] or "—", c["cpu_capped"] or "—",
@@ -571,7 +610,8 @@ CSV_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", 
               "prefill_tps", "ttft_ms", "mem_mb", "quant", "engine", "thermal_initial",
               "captured", "campaign", "stale",
               "artifact_bytes", "stream_bytes", "bw_ceiling_gbps", "bw_basis", "bw_util_pct",
-              "mem_peak_mb", "context_tokens", "text_fail", "cpu_capped", "cpu_capped_counted"]
+              "mem_peak_mb", "context_tokens", "text_fail", "cpu_capped", "cpu_capped_counted",
+              "cold_tps"]
 
 
 def write_outputs(out_cells, md, md_path, out_dir):
@@ -584,7 +624,7 @@ def write_outputs(out_cells, md, md_path, out_dir):
         for c in out_cells:
             row = {k: c.get(k) for k in CSV_FIELDS}
             for k in ("decode_tps", "spread_pct", "prefill_tps", "ttft_ms", "mem_mb", "bw_util_pct",
-                      "mem_peak_mb"):
+                      "mem_peak_mb", "cold_tps"):
                 if isinstance(row[k], float):
                     row[k] = round(row[k], 2)
             w.writerow(row)

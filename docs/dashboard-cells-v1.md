@@ -948,6 +948,24 @@ Android rows wait on the Galaxy S26's CPU cap line and on keeping the runner dir
 phones; the iPhone rows need the ExecuTorch build of the app, which replaces the Core AI build
 under the same bundle id, so they are by-hand sittings only.
 
+## Protocol cells: the headline regime (2026-10-08)
+
+A `native-benchmark-<P>x<D>` cell is one launch of an engine's own benchmark entry: its first
+call cold, the calls after it warm (LiteRT-LM `benchmark()` calls 2..N of a `--runs N` launch;
+the Core AI stock arm's trials 1..N, the ones `llm-benchmark` averages; llama-bench's in-process
+repeats, all recorded warm). Since 2026-10-08 such a cell headlines the agreed protocol's regime
+(`methodology/agreed-protocol-gemma4.md`: warm for the side-by-side, cold reported separately as
+first use) on every platform and for every arm: the warm median wherever the session has warm
+runs, with the session's cold first-call median beside it (`cold_tps`), and the cold median only
+where the session has none — the LiteRT-LM protocol sittings before 2026-10-08 made one call per
+launch. The text tasks keep their platform's regime (warm on the Apple lanes, cold on Android).
+One rule for this repo's dashboard table and the team page: `scripts/render_dashboard.py`
+`headline_regime` (its detail table gives the cold value; a grid cell that reads another regime
+than its device's header says `(cold)` / `(warm)`), followed by the team page's `make_cell`.
+Before this, the bench table read protocol cells by the platform's regime (an Apple cell with
+cold runs only showed no number, an Android llama-bench cell likewise) and the team page by
+"cold where the cold pool has runs".
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`

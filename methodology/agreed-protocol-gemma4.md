@@ -156,6 +156,13 @@ gained them in `-r3` (2026-07-28); a result whose
 `harnessStamp` is older, or whose `contextTokensConfigured` is null, was captured before the
 protocol was implementable and is not comparable with the card.
 
+The dashboards read a `native-benchmark-1024x256` cell by the regime row above (since
+2026-10-08): the warm median wherever the session has warm runs (`benchmark()` calls 2..N of a
+`--runs N` launch; the Core AI stock arm's trials 1..N; llama-bench's in-process repeats), the
+session's cold first call reported beside it as first use, and the cold median only for a
+sitting whose launches made one call each (`scripts/render_dashboard.py` `headline_regime`, the
+team page's `make_cell`; `docs/dashboard-cells-v1.md` "Protocol cells: the headline regime").
+
 The drivers that run all of this are the matrix runners, `scripts/bench_matrix_iphone.sh` and
 `scripts/bench_matrix_mac.sh` (`./bench matrix`): a `native-benchmark-1024x256` row launches the
 engine's own benchmark (on the iPhone since 2026-10-08; its console lines are imported into

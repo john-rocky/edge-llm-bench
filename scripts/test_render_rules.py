@@ -414,7 +414,8 @@ class Dashboard(unittest.TestCase):
             render_dashboard.write_outputs(list(out.values()), md, os.path.join(tmp, "D.md"), tmp)
             with open(os.path.join(tmp, "dashboard-v1.csv"), newline="") as fh:
                 got = {(r["arm"], r["model_id"]): r for r in csv.DictReader(fh)}
-        self.assertEqual(render_dashboard.CSV_FIELDS[-3:], ["text_fail", "cpu_capped", "cpu_capped_counted"])
+        # appended last: the text-check and CPU-cap counts, then (2026-10-08) a protocol cell's cold_tps
+        self.assertEqual(render_dashboard.CSV_FIELDS[-4:], ["text_fail", "cpu_capped", "cpu_capped_counted", "cold_tps"])
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["status"], "text-fail")
         self.assertEqual(got[("litert-lm-gpu", "org/model")]["decode_tps"], "")
         self.assertEqual(got[("litert-lm-cpu", "org/model")]["text_fail"], "2/5")
@@ -545,6 +546,87 @@ class ExecuTorchArm(unittest.TestCase):
             out, _ = render_dashboard.build(path, os.path.join(tmp, "no-schedule.json"), 10, TODAY)
         got = {c["arm"]: (c["status"], c["decode_tps"], c["n"]) for c in out}
         self.assertEqual(got, {"executorch-xnnpack": ("measured", 124.5, 3), "executorch-qnn": ("missing", None, 0)})
+
+
+class ProtocolRegime(unittest.TestCase):
+    """A protocol cell (native-benchmark-*: one launch of an engine's own benchmark entry, its first
+    call cold, the rest warm) headlines the agreed protocol's regime on every platform and for
+    every arm: the warm median where its session has warm runs, the cold median only where it has
+    none (render_dashboard.headline_regime); a warm protocol cell carries its cold first-call median
+    beside it (cold_tps). A text-task cell keeps its platform's regime."""
+
+    CELLS = ("mac core-ai core-ai/m-stock-ctx2048 native-benchmark-1024x256 backend=ane context-tokens=2048\n"
+             "mac litert-lm org/model native-benchmark-1024x256 context-tokens=2048\n"
+             "mac litert-lm org/model long-context-1024-gen256 context-tokens=2048\n"
+             "android llama.cpp org/gguf native-benchmark-1024x256\n"
+             "android litert-lm org/model native-benchmark-1024x256 backend=gpu context-tokens=2048\n"
+             "android litert-lm org/model long-context-1024-gen256 backend=gpu context-tokens=2048\n")
+
+    @staticmethod
+    def prow(decode, cold, plat, runtime, model_id, minute, task="native-benchmark-1024x256"):
+        r = row(decode, cold, "", False, runtime, model_id, minute,
+                campaign=f"results/raw/2026-10-08-fixture-{plat}")
+        r.update(platform=plat, task=task, device=f"FIXTURE-{plat.upper()}")
+        return r
+
+    def test_headline_regime(self):
+        hr = render_dashboard.headline_regime
+        both, cold_only, warm_only = {"warm_n": 3, "cold_n": 1}, {"warm_n": 0, "cold_n": 2}, {"warm_n": 3, "cold_n": 0}
+        for plat in ("mac", "ios", "android"):
+            self.assertEqual(hr(plat, "native-benchmark-1024x256", both), "warm")
+            self.assertEqual(hr(plat, "native-benchmark-1024x256", warm_only), "warm")
+            self.assertEqual(hr(plat, "native-benchmark-1024x256", cold_only), "cold")
+        # a text task reads its platform's regime whatever its pools hold
+        self.assertEqual(hr("android", "long-context-1024-gen256", both), "cold")
+        self.assertEqual(hr("mac", "long-context-1024-gen256", cold_only), "warm")
+
+    def test_the_dashboard_reads_protocol_cells_by_the_rule(self):
+        p = self.prow
+        rows = ([p(50.9, True, "mac", "core-ai-ane", "core-ai/m-stock-ctx2048", 0)]       # trial 0
+                + [p(v, False, "mac", "core-ai-ane", "core-ai/m-stock-ctx2048", m)          # trials 1..3
+                   for m, v in ((1, 51.8), (2, 52.0), (3, 51.9))]
+                # an older sitting: one benchmark() call per launch, every record cold
+                + [p(v, True, "mac", "litert-lm", "org/model", m) for m, v in ((10, 60.0), (11, 62.0))]
+                + [p(v, m == 20, "mac", "litert-lm", "org/model", m, "long-context-1024-gen256")
+                   for m, v in ((20, 40.0), (21, 44.0), (22, 45.0), (23, 46.0))]
+                # llama-bench: in-process repeats, recorded warm
+                + [p(v, False, "android", "llama.cpp", "org/gguf", m) for m, v in ((30, 20.0), (31, 21.0))]
+                # one launch with --runs 3: call 1 cold, calls 2..3 warm
+                + [p(v, m == 40, "android", "litert-lm-gpu", "org/model", m)
+                   for m, v in ((40, 30.0), (41, 33.0), (42, 34.0))]
+                + [p(v, m == 50, "android", "litert-lm-gpu", "org/model", m, "long-context-1024-gen256")
+                   for m, v in ((50, 25.0), (51, 28.0))])
+        tmp = tempfile.TemporaryDirectory(prefix="render-rules-protocol-")
+        self.addCleanup(tmp.cleanup)
+        summary = os.path.join(tmp.name, "device-runs.csv")
+        with open(summary, "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS + BACKEND_FIELDS + DROP_FIELDS)
+            w.writeheader()
+            w.writerows(rows)
+        cells = os.path.join(tmp.name, "fixture.cells")
+        with open(cells, "w") as fh:
+            fh.write(self.CELLS)
+        with patch.object(render_dashboard, "SUMMARY_CSV", summary), \
+             patch.object(render_dashboard, "ROOT", tmp.name):
+            out, _ = render_dashboard.build(cells, os.path.join(tmp.name, "no-schedule.json"), 10, TODAY)
+            md = render_dashboard.render_md(out, cells, 10, TODAY)
+        got = {(c["platform"], c["arm"], c["task"][:6]): (c["regime"], c["decode_tps"], c["n"], c["cold_tps"])
+               for c in out}
+        self.assertEqual(got, {
+            # warm trials 1..3, the cold trial 0 beside them
+            ("mac", "core-ai-ane", "native"): ("warm", 51.9, 3, 50.9),
+            # no warm run in the session: the cold median, nothing beside it
+            ("mac", "litert-lm", "native"): ("cold", 61.0, 2, None),
+            ("mac", "litert-lm", "long-c"): ("warm", 45.0, 3, None),
+            ("android", "llama.cpp", "native"): ("warm", 20.5, 2, None),
+            ("android", "litert-lm-gpu", "native"): ("warm", 33.5, 2, 30.0),
+            ("android", "litert-lm-gpu", "long-c"): ("cold", 25.0, 1, None),
+        })
+        # the grid says when a cell reads another regime than its device's header
+        grid = md.split("<details>")
+        self.assertIn("| 61.0 (cold) |", grid[0])
+        self.assertTrue(any("20.5 (warm)" in g for g in grid))
+        self.assertTrue(any("51.9 (cold first call 50.9)" in g for g in grid))
 
 
 if __name__ == "__main__":
