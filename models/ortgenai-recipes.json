@@ -199,6 +199,210 @@
    },
    "registered": "2026-10-07",
    "tool": "scripts/ortgenai_recipe.py"
+  },
+  {
+   "model_id": "onnx-community/Qwen3-1.7B-ONNX",
+   "revision": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+   "folder": "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128",
+   "model_onnx_sha256": "9fddc5a0a7f9c51132c376db8fe44774b17a8e42d721c4d289ade16af87da0bd",
+   "label": "int4 + int8 mixed MatMulNBits (96 int4 / 101 int8 of 197; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+   "source_commit": {
+    "id": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+    "title": "Add optimized models for ORT GenAI (#3)",
+    "date": "2026-04-20",
+    "authors": [
+     "Xenova",
+     "kvaishnavi"
+    ]
+   },
+   "files": {
+    "chat_template.jinja": {
+     "bytes": 4168,
+     "sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8"
+    },
+    "config.json": {
+     "bytes": 8697,
+     "sha256": "14c4e163fc54e5c7301a7f26054386ac77734401355fecd530ce4a98233f070c"
+    },
+    "genai_config.json": {
+     "bytes": 1520,
+     "sha256": "d328d2ad4cbd7915eee3ad047eabfc562d8daf7307b202c1e6aaef4e8a236ba2"
+    },
+    "model.onnx": {
+     "bytes": 1408943689,
+     "sha256": "9fddc5a0a7f9c51132c376db8fe44774b17a8e42d721c4d289ade16af87da0bd"
+    },
+    "tokenizer.json": {
+     "bytes": 11422648,
+     "sha256": "979d160e081df25a1bf7f4e2e8f4c441b5dfdc9a8e84aec9f32e80445e1b59b8"
+    },
+    "tokenizer_config.json": {
+     "bytes": 663,
+     "sha256": "bfd13b57b2e0c2cb582f311c0895f077d16a868c0dc61e4dbbba544a835341d6"
+    }
+   },
+   "facts": {
+    "producer": "onnxruntime-genai",
+    "producerVersion": "",
+    "opsets": {
+     "ai.onnx": 21,
+     "com.microsoft": 1
+    },
+    "metadata": {
+     "olive_version": "0.11.0.dev0"
+    },
+    "nodes": 547,
+    "quantizedOps": [
+     {
+      "op": "GatherBlockQuantized",
+      "bits": 8,
+      "blockSize": 128,
+      "accuracyLevel": null,
+      "scaleType": "FLOAT",
+      "zeroPointType": "UINT8",
+      "count": 1
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 4,
+      "blockSize": 128,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT",
+      "zeroPointType": "UINT8",
+      "count": 96
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 8,
+      "blockSize": 128,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT",
+      "zeroPointType": "UINT8",
+      "count": 101
+     }
+    ],
+    "kvTypes": [
+     "FLOAT"
+    ],
+    "logitsTypes": [
+     "FLOAT"
+    ],
+    "config": {
+     "quant_method": "olive",
+     "bits": 4,
+     "group_size": 128,
+     "symmetric": false,
+     "overrideBits": {
+      "8": 102
+     }
+    }
+   },
+   "registered": "2026-10-08",
+   "tool": "scripts/ortgenai_recipe.py"
+  },
+  {
+   "model_id": "onnx-community/Qwen3-4B-ONNX",
+   "revision": "98ddba15d05dede4435afb63f13280abcdbc2a48",
+   "folder": "onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128",
+   "model_onnx_sha256": "b4547cf9327bd532cb81703cf013f958117ba5a3e5a81c7c79a33aba534ff337",
+   "label": "int4 + int8 mixed MatMulNBits (143 int4 / 110 int8 of 253; per-layer int8 overrides as published), block 128, asymmetric uint8 zero points, fp32 scales, accuracy_level 4; int8 block-128 GatherBlockQuantized embedding; fp32 activations and KV (onnx-community cpu-int4-kld-block-128, Olive 0.11.0.dev0 + ORT GenAI model builder, PR #3 2026-04-20)",
+   "source_commit": {
+    "id": "98ddba15d05dede4435afb63f13280abcdbc2a48",
+    "title": "Add optimized models for ORT GenAI (#3)",
+    "date": "2026-04-20",
+    "authors": [
+     "Xenova",
+     "kvaishnavi"
+    ]
+   },
+   "files": {
+    "chat_template.jinja": {
+     "bytes": 4168,
+     "sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8"
+    },
+    "config.json": {
+     "bytes": 9567,
+     "sha256": "0bfeedcfa808cb8404e75d32cef3cdb6c566631acdb7c0edbe9e6945763c6989"
+    },
+    "genai_config.json": {
+     "bytes": 1520,
+     "sha256": "dcb9aa8dd93b1acc17a2df193811c200ab540932c20a98ce4d4d23ce88a69b7d"
+    },
+    "model.onnx": {
+     "bytes": 519634,
+     "sha256": "b4547cf9327bd532cb81703cf013f958117ba5a3e5a81c7c79a33aba534ff337"
+    },
+    "model.onnx.data": {
+     "bytes": 2885434880,
+     "sha256": "d6003acd70841b99a44ce4c21d13dc42244e3ec3b7c12d70919f9b55440bbc45"
+    },
+    "tokenizer.json": {
+     "bytes": 11422648,
+     "sha256": "979d160e081df25a1bf7f4e2e8f4c441b5dfdc9a8e84aec9f32e80445e1b59b8"
+    },
+    "tokenizer_config.json": {
+     "bytes": 663,
+     "sha256": "bfd13b57b2e0c2cb582f311c0895f077d16a868c0dc61e4dbbba544a835341d6"
+    }
+   },
+   "facts": {
+    "producer": "onnxruntime-genai",
+    "producerVersion": "",
+    "opsets": {
+     "ai.onnx": 21,
+     "com.microsoft": 1
+    },
+    "metadata": {
+     "olive_version": "0.11.0.dev0"
+    },
+    "nodes": 699,
+    "quantizedOps": [
+     {
+      "op": "GatherBlockQuantized",
+      "bits": 8,
+      "blockSize": 128,
+      "accuracyLevel": null,
+      "scaleType": "FLOAT",
+      "zeroPointType": "UINT8",
+      "count": 1
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 4,
+      "blockSize": 128,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT",
+      "zeroPointType": "UINT8",
+      "count": 143
+     },
+     {
+      "op": "MatMulNBits",
+      "bits": 8,
+      "blockSize": 128,
+      "accuracyLevel": 4,
+      "scaleType": "FLOAT",
+      "zeroPointType": "UINT8",
+      "count": 110
+     }
+    ],
+    "kvTypes": [
+     "FLOAT"
+    ],
+    "logitsTypes": [
+     "FLOAT"
+    ],
+    "config": {
+     "quant_method": "olive",
+     "bits": 4,
+     "group_size": 128,
+     "symmetric": false,
+     "overrideBits": {
+      "8": 111
+     }
+    }
+   },
+   "registered": "2026-10-08",
+   "tool": "scripts/ortgenai_recipe.py"
   }
  ],
  "_doc": "Recipe label of each ONNX Runtime GenAI model folder the cells run, read from its model.onnx by scripts/ortgenai_recipe.py --register (never typed). The drivers look an entry up by (model_id, folder, model_onnx_sha256) and refuse a folder that has none."
