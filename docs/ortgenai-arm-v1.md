@@ -282,6 +282,26 @@ BENCH_CPU_MASK= ./bench matrix matrices/dashboard-ortgenai-v1.cells --platform a
 `ORTGENAI_SMOKE=<note>` stamps a Mac run as a smoke instead of a measurement;
 `--dry-run` on the driver shows each run, the folder's cache state and its label.
 
+Lever runs (speed ladder, not dashboard cells): `--overlay '<JSON object>'` on the Mac driver
+merges the object into the folder's `genai_config.json` (a dict merges key by key, any other
+value replaces, e.g. `{"model": {"decoder": {"session_options": {"intra_op_num_threads": 12}}}}`
+or a whole `provider_options` list) in a copy of the folder — every file an APFS clone of its
+real file in a temporary dir, removed when the cell ends; the HF cache is never written — and
+records it as `conditions.genaiConfigOverlay`, with `conditions.threads`,
+`pastPresentShareBuffer` and `providerOptions` read from the config the engine loaded and
+`model.quantization` still the folder's label. `--dry-run` with `--overlay` prints the copy's
+`genai_config.json` diff. The driver stages the same copy (no overlay) for a folder whose
+`model.onnx.data` sits behind links: the HF cache's snapshot entries link into its blob store,
+and onnxruntime 1.30.0 refuses external data whose real path leaves the directory of
+`model.onnx`'s ("External data path escapes model directory", the first 4B WebGPU captures of
+2026-10-08). On the iPhone, `ORTGENAI_INTRA_OP_THREADS=<n>` in the launch environment
+(`devicectl device process launch --environment-variables`) makes the adapter load a copy of the
+folder in the app's `Library/Caches/ortgenai-threads/` with `intra_op_num_threads` = n; every
+load prints GenAI's own count for the phone (min(max(1, processors / 2), 16), from
+`activeProcessorCount`) and whether the folder sets one (`YARDSTICK_NOTE ortgenai_load`).
+Neither the overlay nor the variable changes a dashboard row: the arm runs each folder as
+published, at the engine's default threads.
+
 ## Android CPU prefill: the GQA flash path (2026-10-08)
 
 On the Galaxy S26 the CPU EP's 1K prefill is 50 s for 1,338 tokens (26.6 tok/s)

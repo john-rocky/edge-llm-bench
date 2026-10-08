@@ -33,6 +33,14 @@ import onnxruntime_genai
 /// uploader, the events and the device id off for the process. It is set when this runtime
 /// is created (app start) and again before every model load, and `OgaSetTelemetryEnabled(false)`
 /// is called before the load too.
+///
+/// Threads: GenAI sets the intra-op thread count itself unless the folder's genai_config.json
+/// names one: min(max(1, hardware_concurrency() / 2), 16) (v0.17.0 `src/models/model.cpp`
+/// `CreateSessionOptionsFromConfig`), and the C API has no getter. Every load prints that rule's
+/// value from `activeProcessorCount` and whether the folder sets `intra_op_num_threads`. A lever
+/// run only (the dashboard arm runs the folder as published): `ORTGENAI_INTRA_OP_THREADS=<n>` in
+/// the launch environment loads a copy of the folder whose genai_config.json sets
+/// `model.decoder.session_options.intra_op_num_threads` = n (the fetched folder stays as it is).
 public actor ONNXRuntimeGenAIRuntime: LLMRuntime {
     public let kind: RuntimeKind = .onnxRuntimeGenAI
     public let isAvailable: Bool = true
@@ -68,8 +76,12 @@ public actor ONNXRuntimeGenAIRuntime: LLMRuntime {
         guard let revision = ModelCatalog.onnxRuntimeGenAIRevisions[model.id] else {
             throw LLMRuntimeError.loadFailed("no pinned HF revision for \(model.id)")
         }
-        let folder = try await Self.fetchFolder(model, revision: revision, progress: progress)
-        let eos = try Self.eosTokenIds(folder: folder)
+        let fetched = try await Self.fetchFolder(model, revision: revision, progress: progress)
+        let eos = try Self.eosTokenIds(folder: fetched)
+        let folderThreads = try Self.configIntraOpThreads(folder: fetched)
+        let threadsOverride = try Self.intraOpThreadsOverride()
+        let folder = try threadsOverride.map { try Self.threadsCopy(of: fetched, model: model, intraOpThreads: $0) }
+            ?? fetched
 
         await unloadModel()
         Self.disableTelemetryEnvironment()
@@ -104,15 +116,22 @@ public actor ONNXRuntimeGenAIRuntime: LLMRuntime {
         self.eosTokenIds = eos
         self.loadedModelId = model.id
         let telemetryEnv = getenv("ORT_DISABLE_TELEMETRY").map { String(cString: $0) } ?? "unset"
+        let processors = ProcessInfo.processInfo.activeProcessorCount
+        let threads = threadsOverride.map { "intra_op_num_threads=\($0)(ORTGENAI_INTRA_OP_THREADS,folder-copy)" }
+            ?? folderThreads.map { "intra_op_num_threads=\($0)(folder)" } ?? "engine-default"
         Self.note(String(
             format: "YARDSTICK_NOTE ortgenai_load model=%@ revision=%@ folder=%@ device_type=%@ ort=%@ "
-                + "load_s=%.3f eos=%@ max_length=%ld threads=engine-default processors=%ld "
+                + "load_s=%.3f eos=%@ max_length=%ld threads=%@ processors=%ld "
+                + "engine_default_threads=%ld(min(max(1,processors/2),16)) folder_intra_op_num_threads=%@ "
                 + "telemetry=ORT_DISABLE_TELEMETRY=%@,api-disabled",
             model.id, revision, (model.primaryFile as NSString).deletingLastPathComponent, deviceType,
             Self.loadedOrtVersion(), loadSeconds,
-            eos.sorted().map(String.init).joined(separator: ","), maxLength,
-            ProcessInfo.processInfo.activeProcessorCount, telemetryEnv
+            eos.sorted().map(String.init).joined(separator: ","), maxLength, threads,
+            processors, min(max(1, processors / 2), 16), folderThreads.map(String.init) ?? "none", telemetryEnv
         ))
+        if threadsOverride != nil {
+            Self.note("YARDSTICK_NOTE ortgenai_threads_copy " + folder.path)
+        }
     }
 
     public func unloadModel() async {
@@ -314,6 +333,59 @@ public actor ONNXRuntimeGenAIRuntime: LLMRuntime {
         if let one = config["eos_token_id"] as? Int { return [Int32(one)] }
         if let many = config["eos_token_id"] as? [Int], !many.isEmpty { return Set(many.map { Int32($0) }) }
         throw LLMRuntimeError.loadFailed("genai_config.json has no model.eos_token_id")
+    }
+
+    /// genai_config.json `model.decoder.session_options.intra_op_num_threads` (nil: the folder does
+    /// not set it, and GenAI picks the count).
+    private static func configIntraOpThreads(folder: URL) throws -> Int? {
+        let data = try Data(contentsOf: folder.appendingPathComponent("genai_config.json"))
+        let root = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let decoder = (root?["model"] as? [String: Any])?["decoder"] as? [String: Any]
+        return (decoder?["session_options"] as? [String: Any])?["intra_op_num_threads"] as? Int
+    }
+
+    /// `ORTGENAI_INTRA_OP_THREADS` from the launch environment (a lever run); nil when unset.
+    private static func intraOpThreadsOverride() throws -> Int? {
+        guard let raw = ProcessInfo.processInfo.environment["ORTGENAI_INTRA_OP_THREADS"] else { return nil }
+        guard let n = Int(raw), n > 0 else {
+            throw LLMRuntimeError.loadFailed("ORTGENAI_INTRA_OP_THREADS must be a positive integer, got '\(raw)'")
+        }
+        return n
+    }
+
+    /// The fetched folder copied to `Library/Caches/ortgenai-threads/<repo>-intra<n>/`, rebuilt at every
+    /// load: each file a copy of its real file (the hub cache's snapshot entries are links into its blob
+    /// store; FileManager clones on APFS), genai_config.json written with
+    /// `model.decoder.session_options.intra_op_num_threads` = n. The fetched folder is not written.
+    private static func threadsCopy(of folder: URL, model: ModelInfo, intraOpThreads: Int) throws -> URL {
+        let fm = FileManager.default
+        let caches = try fm.url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let copy = caches.appendingPathComponent("ortgenai-threads", isDirectory: true).appendingPathComponent(
+            "\(model.hfRepoId.replacingOccurrences(of: "/", with: "_"))-intra\(intraOpThreads)", isDirectory: true)
+        if fm.fileExists(atPath: copy.path) { try fm.removeItem(at: copy) }
+        try fm.createDirectory(at: copy, withIntermediateDirectories: true)
+        for name in try fm.contentsOfDirectory(atPath: folder.path) {
+            let source = folder.appendingPathComponent(name).resolvingSymlinksInPath()
+            let target = copy.appendingPathComponent(name)
+            guard name == "genai_config.json" else {
+                try fm.copyItem(at: source, to: target)
+                continue
+            }
+            let data = try Data(contentsOf: source)
+            guard var root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  var config = root["model"] as? [String: Any],
+                  var decoder = config["decoder"] as? [String: Any] else {
+                throw LLMRuntimeError.loadFailed("genai_config.json has no model.decoder section")
+            }
+            var session = decoder["session_options"] as? [String: Any] ?? [:]
+            session["intra_op_num_threads"] = intraOpThreads
+            decoder["session_options"] = session
+            config["decoder"] = decoder
+            root["model"] = config
+            try JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+                .write(to: target)
+        }
+        return copy
     }
 
     /// The ONNX Runtime the framework carries, from its OrtApiBase table (two C function
