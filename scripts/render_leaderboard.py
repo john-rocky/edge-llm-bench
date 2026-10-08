@@ -21,7 +21,9 @@ Neutrality invariants (why cells look the way they do):
     on (summary cpu_capped true) pools into no number either when the
     ceiling fell by more than CPU_CAP_MAX_DROP_PCT (summary
     cpu_cap_drop_pct); a run whose ceiling fell by less pools, counted, so
-    the surfaces can mark the number (cpu-cap-rule).
+    the surfaces can mark the number (cpu-cap-rule). On an Android NPU or
+    GPU arm (CPU_CAP_EXEMPT_ARMS) a capped run pools, counted, however far
+    the ceiling fell, and the surfaces mark the number with the largest fall.
   - nor does a llama.cpp side-build run whose own device lines did not show
     the cell's npu / gpu device (summary backend_registered false).
   - GSM8K joins on (model_id, runtime); pre-v1 quality rows have no
@@ -56,6 +58,28 @@ SPREAD_FLAG = 5.0  # % — same bar the regression differ uses
 # short-chat runs and 49-58 % in every 1K launch (the prime cluster, policy6, fell
 # furthest in each).
 CPU_CAP_MAX_DROP_PCT = 15
+# cpu-cap-rule, the accelerator arms (owner decision 2026-10-08, methodology/fairness-rules.md
+# §13): the Android arms whose engine places the model on the NPU or the GPU. A run of theirs
+# flagged cpu-capped pools, counted and marked with its fall, whatever the fall; the line above
+# holds for every other arm (the CPU arms llama.cpp, litert-lm-cpu, executorch-xnnpack,
+# onnxruntime-genai-cpu, litert-cpu). On these arms the capped CPUs carry the engine's host
+# side. Material, the Galaxy S26 (standup ROUND-r1, -r3 and -r6 of the NPU rows lane,
+# 2026-10-07/08): five llama-bench tg256 repetitions under a cap that set in during the test
+# spread 1.2 % with no trend on the NPU arm and fell 3.4 % from the first to the last on the
+# GPU arm (the cap's direction; the cause not established); the cap follows the SoC's
+# temperature, not the skin sensor or charging, so no phone setting removes it; with the line
+# alone the Qwen3 1.7B 1K cells of both llama.cpp arms (28-44 %) and every protocol cell
+# (53-63 %) had no valid run. Only the Android runner reads the caps: the same arm names on
+# the Mac and the iPhone carry no flag. Revert: an empty set — every arm follows the line
+# again (the summary does not read it; re-render the surfaces).
+CPU_CAP_EXEMPT_ARMS = frozenset({
+    "llama.cpp-npu",      # llama.cpp side build, Hexagon NPU (--device HTP0)
+    "llama.cpp-gpu",      # llama.cpp side build, Adreno GPU through OpenCL (--device GPUOpenCL)
+    "litert-lm-npu",      # LiteRT-LM, NPU through the Qualcomm dispatch
+    "litert-lm-gpu",      # LiteRT-LM, GPU
+    "executorch-vulkan",  # ExecuTorch, Vulkan delegate (GPU)
+    "executorch-qnn",     # ExecuTorch, QNN delegate (Hexagon NPU)
+})
 
 
 def load(name):
@@ -107,13 +131,19 @@ def latest_session(rows):
     return sess, max((r["timestamp"] or "")[:10] for r in sess)
 
 
-def shallow_cap(r):
-    """A row flagged cpu-capped whose engine CPUs' clock ceiling fell by at most
-    CPU_CAP_MAX_DROP_PCT (summary cpu_cap_drop_pct, read as the column shows it): it
-    pools, counted (cpu-cap-rule). A flagged row without the column (a summary built
-    before 2026-10-08) is not shallow and stays out, as every flagged run did then."""
+def shallow_cap(r, arm=None):
+    """A row flagged cpu-capped that pools, counted (cpu-cap-rule): on an arm of
+    CPU_CAP_EXEMPT_ARMS whatever its fall, on every other arm when its engine CPUs' clock
+    ceiling fell by at most CPU_CAP_MAX_DROP_PCT (summary cpu_cap_drop_pct, read as the
+    column shows it). arm = the row's arm, by default its runtime column. A CPU arm's
+    flagged row without the column (a summary built before 2026-10-08) is not shallow and
+    stays out, as every flagged run did then."""
+    if r.get("cpu_capped") != "true":
+        return False
+    if (r.get("runtime") if arm is None else arm) in CPU_CAP_EXEMPT_ARMS:
+        return True
     drop = fnum(r.get("cpu_cap_drop_pct"))
-    return r.get("cpu_capped") == "true" and drop is not None and drop <= CPU_CAP_MAX_DROP_PCT
+    return drop is not None and drop <= CPU_CAP_MAX_DROP_PCT
 
 
 def arm_row(rows):
@@ -133,7 +163,8 @@ def arm_row(rows):
     # cpu-cap-rule: a run during which the ceiling of a CPU the engine ran on fell
     # more than CPU_CAP_MAX_DROP_PCT below its hardware maximum measured the phone's
     # cap, not the engine — same treatment again, after the text check (a run that
-    # failed both counts as a text failure); a shallower cap pools, counted below;
+    # failed both counts as a text failure); a shallower cap pools, counted below, and
+    # so does any cap on an accelerator arm (CPU_CAP_EXEMPT_ARMS, shallow_cap);
     # .get: summaries built before 2026-10-07 have no cpu_capped
     cpu_capped = [r for r in meas if r.get("cpu_capped") == "true" and not shallow_cap(r)]
     cpu_read = sum(1 for r in meas if r.get("cpu_capped"))
@@ -143,9 +174,12 @@ def arm_row(rows):
     # summaries built before 2026-10-07 have no backend_registered column
     backend_off = [r for r in meas if r.get("backend_registered") == "false"]
     meas = [r for r in meas if r.get("backend_registered") != "false"]
-    # the pool's runs that ran under a cap within the line: they count, and the
-    # surfaces mark the number with how many there were
+    # the pool's runs that ran under a cap within the line (any cap on an accelerator
+    # arm): they count, and the surfaces mark the number with how many there were and,
+    # on an accelerator arm, the largest fall among them
     capped_counted = [r for r in meas if shallow_cap(r)]
+    counted_drops = [fnum(r.get("cpu_cap_drop_pct")) for r in capped_counted]
+    counted_drops = [v for v in counted_drops if v is not None]
     warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
     warm = [v for v in warm if v]
     cold = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "True"]
@@ -206,10 +240,13 @@ def arm_row(rows):
                                              for f in r["text_check"][len("FAIL:"):].split(",") if f})),
         "text_checked_n": text_checked,
         # runs the CPU cap kept out of the pool (a fall past CPU_CAP_MAX_DROP_PCT), the
-        # pool's runs under a cap within it, and the runs past the text check whose caps
-        # were read, capped or not (0 = not read: no cpu-cap-rule verdict)
+        # pool's runs under a cap within it (any cap on an accelerator arm) with the
+        # largest fall among them (None: none, or no fall recorded), and the runs past the
+        # text check whose caps were read, capped or not (0 = not read: no cpu-cap-rule
+        # verdict)
         "cpu_capped_n": len(cpu_capped),
         "cpu_capped_counted_n": len(capped_counted),
+        "cpu_capped_counted_max_drop": max(counted_drops) if counted_drops else None,
         "cpu_read_n": cpu_read,
         # runs a side build's device lines kept out of the pool (backend-not-registered)
         "backend_off_n": len(backend_off),

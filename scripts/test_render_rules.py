@@ -11,7 +11,9 @@ during which the phone capped a CPU the engine ran on (record protocolFlags cpu-
 cpu_capped) is kept out the same way when the ceiling fell by more than the line (column
 cpu_cap_drop_pct above render_leaderboard.CPU_CAP_MAX_DROP_PCT), and a cell left without a
 headline for that reason renders as "cpu-capped": no valid run, with the count; a run whose
-ceiling fell less pools, and the number carries the count. So is a llama.cpp side build's run whose own
+ceiling fell less pools, and the number carries the count. On an Android NPU or GPU arm
+(render_leaderboard.CPU_CAP_EXEMPT_ARMS) a capped run pools whatever the fall, and the number
+carries the count and the largest fall. So is a llama.cpp side build's run whose own
 device lines did not show the cell's NPU / GPU device (protocolFlags backend-not-registered;
 column backend_registered), and its cell reads only its own arm's rows.
 The executorch arm's rows (docs/executorch-arm-v1.md) carry their delegate in the arm on every
@@ -339,6 +341,72 @@ class Dashboard(unittest.TestCase):
         self.assertEqual(hist, {"org/shallow": "3/3", "org/mixed": "2/3"})
         # a cell whose runs were read uncapped carries no mark
         self.assertEqual(render_dashboard.cap_mark(dict(c, cpu_capped_counted="0/3")), "")
+
+    def test_an_accelerator_arm_counts_a_deep_cap(self):
+        # the accelerator arms (owner decision 2026-10-08, render_leaderboard.CPU_CAP_EXEMPT_ARMS):
+        # a Galaxy S26 llama.cpp NPU cell whose three runs fell as the arm's protocol launches
+        # of 2026-10-08 did, both clusters capped past the line (53.0-58.3 %) -> the three runs
+        # pool, counted, and the number carries the largest drop; the arm decides, not the row
+        npu = [dict(row(v, True, "PASS", False, "llama.cpp-npu", "org/gguf", m), cpu_capped="true",
+                    cpu_max_freq=f"p0 2227.2/3628.8 p6 {low}/4742.4", cpu_cap_drop_pct=drop,
+                    backend_registered="true")
+               for m, v, low, drop in ((56, 50.0, 2227.2, "53.0"), (57, 51.0, 1977.6, "58.3"),
+                                       (58, 49.0, 2227.2, "53.0"))]
+        a = arm_row(npu)
+        self.assertEqual((a["cold_median"], a["cold_n"], a["cpu_capped_n"], a["cpu_capped_counted_n"],
+                          a["cpu_read_n"]), (50.0, 3, 0, 3, 3))
+        self.assertEqual(a["cpu_capped_counted_max_drop"], 58.3)
+        self.assertTrue(render_leaderboard.shallow_cap(npu[1]))
+        self.assertFalse(render_leaderboard.shallow_cap(npu[1], arm="llama.cpp"))   # the CPU arm keeps the line
+        self.assertTrue(render_leaderboard.shallow_cap({k: v for k, v in npu[1].items() if k != "runtime"},
+                                                       arm="llama.cpp-gpu"))
+        self.assertFalse(render_leaderboard.shallow_cap(dict(npu[1], cpu_capped="false")))
+        # a summary built before the drop column: the flagged runs still count, the drop unknown
+        old = arm_row([{k: v for k, v in r.items() if k != "cpu_cap_drop_pct"} for r in npu])
+        self.assertEqual((old["cold_n"], old["cpu_capped_counted_n"], old["cpu_capped_counted_max_drop"]),
+                         (3, 3, None))
+        cells = ("android llama.cpp org/gguf long-context-1024-gen256 backend=npu "
+                 "engine-build=b11469-snapdragon context-tokens=2048\n")
+        out, md, history, page = self.render(cells, npu)
+        c = out[("llama.cpp-npu", "org/gguf")]
+        self.assertEqual((c["status"], c["decode_tps"], c["n"], c["cpu_capped"], c["cpu_capped_counted"],
+                          c["cpu_capped_counted_max_drop"]), ("measured", 50.0, 3, "0/3", "3/3", 58.3))
+        mark = "◇ cpu-capped, counted (accelerator arm), max drop 58.3 % (3 of 3 runs)"
+        self.assertEqual(render_dashboard.cap_mark(c), mark)
+        self.assertEqual(render_dashboard.cap_mark(dict(c, cpu_capped_counted_max_drop=None)),
+                         "◇ cpu-capped, counted (accelerator arm), max drop not recorded (3 of 3 runs)")
+        grid = "\n".join(ln for ln in md.split("<details>")[0].splitlines() if ln.startswith("| **"))
+        self.assertIn(f"| 50.0 {mark} |", grid)
+        self.assertIn("3 of 5 cells measured (1 with runs cpu-capped on an accelerator arm, counted, ◇), "
+                      "1 excluded with a reason, 1 failed the text check", md)
+        self.assertIn(mark, page)
+        self.assertIn("3 of 5 cells measured (1 with runs cpu-capped on an accelerator arm, counted, ◇)", page)
+        self.assertEqual({h["model_id"]: h["cpu_capped_counted"] for h in history if h["arm"] == "llama.cpp-npu"},
+                         {"org/gguf": "3/3"})
+
+    def test_a_cpu_arm_keeps_the_line(self):
+        # the exemption is a list of arm names (render_leaderboard.CPU_CAP_EXEMPT_ARMS): the arms an
+        # Android cells row names for an NPU or GPU backend, and no CPU arm -> a CPU arm's run
+        # capped 50 % stays out of every pool, as before
+        exempt = render_leaderboard.CPU_CAP_EXEMPT_ARMS
+        accel = {render_dashboard.arm_of("android", rt, {"backend": b})
+                 for rt, b in (("llama.cpp", "npu"), ("llama.cpp", "gpu"), ("litert-lm", "npu"),
+                               ("litert-lm", "gpu"), ("executorch", "vulkan"), ("executorch", "qnn"))}
+        self.assertEqual(set(exempt), accel)
+        cpu_arms = {render_dashboard.arm_of("android", rt, opts)
+                    for rt, opts in (("llama.cpp", {}), ("litert-lm", {"backend": "cpu"}),
+                                     ("executorch", {"backend": "xnnpack"}),
+                                     ("onnxruntime-genai", {"backend": "cpu"}))} | {"litert-cpu"}
+        self.assertEqual(cpu_arms, {"llama.cpp", "litert-lm-cpu", "executorch-xnnpack",
+                                    "onnxruntime-genai-cpu", "litert-cpu"})
+        self.assertFalse(cpu_arms & exempt)
+        for arm in sorted(cpu_arms):
+            capped = [dict(row(v, True, "", False, arm, "org/cpu", m), cpu_capped="true",
+                           cpu_max_freq="p0 1814.4/3628.8 p6 2371.2/4742.4", cpu_cap_drop_pct="50.0")
+                      for m, v in ((60, 3.3), (61, 3.6), (62, 2.9))]
+            a = arm_row(capped)
+            self.assertEqual((a["cold_median"], a["cold_n"], a["cpu_capped_n"], a["cpu_capped_counted_n"],
+                              a["cpu_capped_counted_max_drop"]), (None, 0, 3, 0, None), arm)
 
     def test_csv_carries_the_status_and_the_column(self):
         out, md, _, _ = self.render()

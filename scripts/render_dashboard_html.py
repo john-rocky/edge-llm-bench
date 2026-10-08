@@ -22,7 +22,8 @@ render_dashboard.build does; it defines no second aggregation. A session the
 text check left without a number has no history row, as an excluded cell has
 none (text-check-rule), and so is one the CPU cap left without a number (cpu-cap-rule);
 `text_fail` says how many runs of a kept row left the pool, `cpu_capped_counted` how
-many of its pool ran under a CPU frequency cap within the line (counted, marked ◇).
+many of its pool ran under a CPU frequency cap within the line, or under any cap on an
+Android NPU or GPU arm (counted, marked ◇).
 
 Every output is LOCAL and gitignored (/.dashboard/): the rendered page is
 cross-runtime standings, which this repo does not publish (CLAUDE.md, owner
@@ -38,8 +39,8 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from render_dashboard import (CAP_LINE, MEM_NOTE, SUMMARY_CSV, cap_mark, ctx_key,  # noqa: E402
-                              grid_sections, load_admission, rel)
+from render_dashboard import (CAP_LINE, MEM_NOTE, SUMMARY_CSV, cap_mark,  # noqa: E402
+                              cap_marked_text, ctx_key, grid_sections, load_admission, rel)
 from render_leaderboard import SPREAD_FLAG, arm_row  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -318,7 +319,10 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
              f"· no valid run: cpu-capped &gt;{CAP_LINE} = every such run ran while the phone held the clock ceiling of a CPU the "
              f"engine ran on more than {CAP_LINE} below its hardware maximum, so none is shown; the runs stay in the raw records "
              f"· ◇ cpu-capped ≤{CAP_LINE} (k of N runs) = k of the runs behind the number ran under a shallower cap, at most "
-             f"{CAP_LINE} below the maximum; they count, and the number says so.</p>")
+             f"{CAP_LINE} below the maximum; they count, and the number says so "
+             "· ◇ cpu-capped, counted (accelerator arm), max drop D % (k of N runs) = the same on an Android NPU or GPU arm, "
+             "whose capped runs count whatever the fall (the CPUs carry the engine's host side there); D = the largest fall "
+             "among them.</p>")
     L.append("<p><b>Recipe</b>: each runtime runs its own published artifact and quantization (shown under the number, in full in the "
              "detail table) — a different recipe is a different deployment profile, not a win.</p>")
     L.append("</div>")
@@ -353,10 +357,7 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
 
         L.append("<section class=\"device\"><div class=\"head-grid\">")
         L.append(f"<h2>{esc(display)}</h2>")
-        cov = f"{len(measured)} of {len(dc)} cells measured"
-        cap_marked = [c for c in measured if cap_mark(c)]
-        if cap_marked:
-            cov += f" ({len(cap_marked)} with runs cpu-capped ≤{CAP_LINE}, ◇)"
+        cov = f"{len(measured)} of {len(dc)} cells measured" + cap_marked_text(dc)
         if excluded:
             cov += f", {len(excluded)} excluded with a reason"
         if text_failed:

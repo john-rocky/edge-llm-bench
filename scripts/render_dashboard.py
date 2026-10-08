@@ -38,8 +38,11 @@ What this adds over LEADERBOARD.md:
     "— (no valid run: cpu-capped >15 % (k of N runs))" (status cpu-capped), and
     the "cpu capped >15 %" column says how many runs left the pool (— = caps
     not read). Runs under a shallower cap pool: the number carries
-    "◇ cpu-capped ≤15 % (k of N runs)" and the "cpu capped ≤15 %" column says
-    how many of the pool's runs ran under one.
+    "◇ cpu-capped ≤15 % (k of N runs)" and the "cpu capped, counted" column
+    says how many of the pool's runs ran under one. On an Android NPU or GPU
+    arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS) every capped run pools: the
+    number carries "◇ cpu-capped, counted (accelerator arm), max drop D %
+    (k of N runs)", D the largest fall among them.
   - no ranking: one grid per (device, task), rows in cells-file order
     (light -> heavy; a context-tokens= cell gets its own row per allocation),
     arm columns in a fixed alphabetical order. The recipe (artifact, quantization, engine pin)
@@ -62,7 +65,8 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # noqa: E402
                           bandwidth_utilization, fmt_bw, logical_model)
-from render_leaderboard import CPU_CAP_MAX_DROP_PCT, SPREAD_FLAG, arm_row  # noqa: E402
+from render_leaderboard import (CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT, SPREAD_FLAG,  # noqa: E402
+                                arm_row)
 from validate_cells import parse_exclude_on, parse_line  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -256,10 +260,34 @@ MEM_NOTE = ("mem MB / mem peak MB = the median over the session's runs of each r
 
 def cap_mark(c):
     """The mark a measured cell carries when runs of its pool ran under a CPU frequency cap
-    within the line (cpu-cap-rule): "◇ cpu-capped ≤15 % (k of N runs)", N = the session's
-    runs that would have pooled; "" when none did (or the caps were not read)."""
+    (cpu-cap-rule): "◇ cpu-capped ≤15 % (k of N runs)" for the runs within the line, and on an
+    accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, whose capped runs all pool)
+    "◇ cpu-capped, counted (accelerator arm), max drop D % (k of N runs)", D = the largest fall
+    among them; N = the session's runs that would have pooled; "" when none did (or the caps
+    were not read)."""
     k, _, n = (c.get("cpu_capped_counted") or "").partition("/")
-    return f"◇ cpu-capped ≤{CAP_LINE} ({k} of {n} runs)" if k not in ("", "0") else ""
+    if k in ("", "0"):
+        return ""
+    if c.get("arm") in CPU_CAP_EXEMPT_ARMS:
+        drop = c.get("cpu_capped_counted_max_drop")
+        drop = "not recorded" if drop is None else f"{drop:.1f} %"
+        return f"◇ cpu-capped, counted (accelerator arm), max drop {drop} ({k} of {n} runs)"
+    return f"◇ cpu-capped ≤{CAP_LINE} ({k} of {n} runs)"
+
+
+def cap_marked_text(cells):
+    """The coverage line's count of measured cells marked ◇ (cap_mark), CPU arms and
+    accelerator arms apart: " (2 with runs cpu-capped ≤15 %, ◇)",
+    " (1 with runs cpu-capped on an accelerator arm, counted, ◇)", both joined by "; ";
+    "" when none is marked."""
+    marked = [c for c in cells if c["status"] == "measured" and cap_mark(c)]
+    accel = sum(1 for c in marked if c.get("arm") in CPU_CAP_EXEMPT_ARMS)
+    parts = []
+    if len(marked) - accel:
+        parts.append(f"{len(marked) - accel} with runs cpu-capped ≤{CAP_LINE}")
+    if accel:
+        parts.append(f"{accel} with runs cpu-capped on an accelerator arm, counted")
+    return f" ({'; '.join(parts)}, ◇)" if parts else ""
 
 
 def grid_text(c):
@@ -330,9 +358,11 @@ def build(cells_path, schedule_path, stale_days, today):
                     # "k/N": the same for the CPU cap past the line (cpu-cap-rule); "" =
                     # caps not read
                     "cpu_capped": "",
-                    # "k/N": runs of the pool that ran under a cap within the line, of the
-                    # same N; "" = caps not read
+                    # "k/N": runs of the pool that ran under a cap within the line (any cap on
+                    # an accelerator arm), of the same N; "" = caps not read
                     "cpu_capped_counted": "",
+                    # the largest fall (%) among those runs; None = none, or not recorded
+                    "cpu_capped_counted_max_drop": None,
                 }
                 if why:
                     rec.update(status="excluded", reason=why)
@@ -362,6 +392,7 @@ def build(cells_path, schedule_path, stale_days, today):
                     if a["cpu_read_n"]:
                         rec["cpu_capped"] = f"{a['cpu_capped_n']}/{would}"
                         rec["cpu_capped_counted"] = f"{a['cpu_capped_counted_n']}/{would}"
+                        rec["cpu_capped_counted_max_drop"] = a["cpu_capped_counted_max_drop"]
                     if not dec and a["text_fail_n"]:
                         # text-check-rule: no headline because the text check emptied
                         # the pool — the reason is the datum, never the rate
@@ -413,7 +444,10 @@ def render_md(out_cells, cells_path, stale_days, today):
              "the thermal status still 0), so none is shown (cpu-cap-rule; the runs stay in "
              f"raw). `◇ cpu-capped ≤{CAP_LINE} (k of N runs)` = k of the runs behind the number "
              f"ran under a shallower cap, at most {CAP_LINE} below the maximum: they count, "
-             "and the number says so. "
+             "and the number says so. `◇ cpu-capped, counted (accelerator arm), max drop D % "
+             "(k of N runs)` = the same on an Android NPU or GPU arm, whose capped runs count "
+             "whatever the fall (the CPUs carry the engine's host side there; owner decision "
+             "2026-10-08); D = the largest fall among them. "
              "Short-chat prefill is "
              "overhead-dominated and does "
              "not compare across arms (docs/OPERATIONS.md); it is listed, not headlined. "
@@ -438,14 +472,12 @@ def render_md(out_cells, cells_path, stale_days, today):
         excluded = sum(1 for c in dcells if c["status"] == "excluded")
         text_failed = sum(1 for c in dcells if c["status"] == "text-fail")
         cpu_capped = sum(1 for c in dcells if c["status"] == "cpu-capped")
-        cap_marked = sum(1 for c in dcells if c["status"] == "measured" and cap_mark(c))
         missing = sum(1 for c in dcells if c["status"] in ("missing", "no-decode"))
         dates = sorted({c["captured"] for c in dcells if c["captured"]})
         engines = sorted({c["engine"] for c in dcells if c["engine"]})
         L.append(f"## {display} — `{ident}`, {plat}, headline regime **{REGIME[plat]}**")
         L.append("")
-        L.append(f"{measured} of {len(dcells)} cells measured"
-                 + (f" ({cap_marked} with runs cpu-capped ≤{CAP_LINE}, ◇)" if cap_marked else "")
+        L.append(f"{measured} of {len(dcells)} cells measured" + cap_marked_text(dcells)
                  + (f", {excluded} excluded with a reason" if excluded else "")
                  + (f", {text_failed} failed the text check" if text_failed else "")
                  + (f", {cpu_capped} had no valid run (cpu-capped >{CAP_LINE})" if cpu_capped else "")
@@ -480,7 +512,7 @@ def render_md(out_cells, cells_path, stale_days, today):
             L.append("")
             header = ["model", "arm", "ctx", "artifact", "quant", "engine", "decode tok/s",
                       "spread %", "n", "text fail", f"cpu capped >{CAP_LINE}",
-                      f"cpu capped ≤{CAP_LINE}", "artifact MB", "MB/token",
+                      "cpu capped, counted", "artifact MB", "MB/token",
                       "bw util", "prefill tok/s", "TTFT ms", "mem MB", "mem peak MB",
                       "thermal at start", "captured", "session"]
             L.append("| " + " | ".join(header) + " |")
@@ -519,10 +551,10 @@ def render_md(out_cells, cells_path, stale_days, today):
                      "and warm; — = the text was not checked. cpu capped >" + CAP_LINE + " = the "
                      "session's runs during which the clock ceiling of a CPU the engine ran on "
                      "fell more than " + CAP_LINE + " below its hardware maximum (kept out of every "
-                     "number, cpu-cap-rule) / the same runs that would have pooled; cpu capped ≤"
-                     + CAP_LINE + " = the pool's runs whose ceiling fell less (counted, the "
-                     "number marked ◇) / the same N; — = the caps were not read (records "
-                     "before 2026-10-07).")
+                     "number, cpu-cap-rule) / the same runs that would have pooled; cpu capped, "
+                     "counted = the pool's runs whose ceiling fell less, or fell at all on an "
+                     "Android NPU or GPU arm (counted, the number marked ◇) / the same N; — = the "
+                     "caps were not read (records before 2026-10-07).")
             L.append("")
             L.append("</details>")
             L.append("")

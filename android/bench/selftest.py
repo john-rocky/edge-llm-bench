@@ -10,7 +10,8 @@ verdicts, failed-runs-stay), the default text check of context-prompt
 launches (text-check-rule), exclude-on= per device, a phone lost under a
 running engine (the launch fails, never re-run), and the CPU frequency cap read
 per run (cpu-cap-rule: the flag, the pre-launch wait, the summary columns and
-arm_row's pool, a 10 % fall counted and a 30 % fall kept out by the 15 % line),
+arm_row's pool, a 10 % fall counted and a 30 % fall kept out by the 15 % line, a
+LiteRT-LM GPU run's 31.4 % fall counted on an accelerator arm),
 the executorch arm (the runner of the model's family on a
 staged own export: inputs pushed, the runner's stderr read apart from its stdout, its stats
 recomputed, the record and its summary row; BENCH_SITTING=1's pin check per runner; the Mac
@@ -1400,6 +1401,14 @@ def main():
     ok([r["cpu_capped"] for r in rows_h4] == ["false", "true", "true"] and got_a4 == (2, 19.5, 1, 1, 3),
        f"arm_row: the 10 % run pools, counted, the 30 % run stays out; both stay true in the summary "
        f"(cold_n, cold_median, cpu_capped_n, cpu_capped_counted_n, cpu_read_n = {got_a4})")
+    # an accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, owner decision 2026-10-08):
+    # H3's LiteRT-LM GPU run, its ceiling 31.4 % down (past the line), pools, counted, its fall kept
+    a3 = arm_row([r for r in rows_all if r["campaign"] == "results/raw/selftest-h3"])
+    got_a3 = (a3["cold_n"], a3["cold_median"], a3["cpu_capped_n"], a3["cpu_capped_counted_n"],
+              a3.get("cpu_capped_counted_max_drop"))
+    ok(got_a3 == (1, 14.8, 0, 1, 31.4),
+       f"arm_row: an accelerator arm's run capped past the line pools, counted (cold_n, cold_median, "
+       f"cpu_capped_n, cpu_capped_counted_n, cpu_capped_counted_max_drop = {got_a3})")
     rows_ort = [r for r in csv.DictReader(open(path)) if r["campaign"] == "results/raw/selftest-ort"]
     got_ort = sorted((r["runtime"], r["task"], r["context_tokens"], r["text_check"], r["cold_run"]) for r in rows_ort)
     ok(got_ort == [("onnxruntime-genai-cpu", "long-context-1024-gen256", "2048", "PASS", "True"),
