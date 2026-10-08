@@ -1,0 +1,244 @@
+CPUPOLICY policy0 3628800 0 1 2 3 4 5
+CPUPOLICY policy6 4742400 6 7
+CPUMAX 3628800 4742400
+VmHWM:	  855160 kB
+VmRSS:	  827620 kB
+Cpus_allowed_list:	0-7
+VmHWM:	  855160 kB
+VmRSS:	  814028 kB
+Cpus_allowed_list:	0-7
+VmHWM:	  855160 kB
+VmRSS:	  814412 kB
+Cpus_allowed_list:	0-7
+VmHWM:	  855160 kB
+VmRSS:	  814796 kB
+Cpus_allowed_list:	0-7
+VmHWM:	  855160 kB
+VmRSS:	  815052 kB
+Cpus_allowed_list:	0-7
+VmHWM:	  855160 kB
+VmRSS:	  815308 kB
+Cpus_allowed_list:	0-7
+VmHWM:	  855160 kB
+VmRSS:	  815436 kB
+Cpus_allowed_list:	0-7
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791423881.674681   32296 litert_lm_lib.cc:499] Choose backend: npu
+I0000 00:00:1791423881.674860   32296 litert_lm_lib.cc:652] executor_settings: backend: NPU
+backend_config:
+enable_neon_for_npu_greedy_sampling: true
+use_hw_masking_for_npu: true
+use_hw_cache_update_for_npu: false
+enable_npu_debug_logging: false
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: /data/local/tmp/llmbench/engines/main-20260821-selfbuilt
+model_assets: model_path: /data/local/tmp/llmbench/models/Qwen_Qwen3-0.6B_model_qualcomm_SM8850.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1791423881.674912   32296 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1791423881.674932   32296 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1791423881.674953   32296 litert_lm_lib.cc:688] Creating engine
+W0000 00:00:1791423881.675161   32296 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1791423881.675187   32296 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1791423881.675206   32296 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791423881.675225   32296 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791423881.675244   32298 litert_lm_loader.cc:291] Section not found: 
+INFO: [environment.cc:36] Creating LiteRT environment with options
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077f86089b0, name=NpuAccelerator
+INFO: [npu_registry.cc:30] NPU accelerator registered.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtVulkanAccelerator.so).
+WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077f8608bf0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtVulkanAccelerator.so).
+WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077f8608170, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+I0000 00:00:1791423881.679470   32296 llm_litert_npu_compiled_model_executor.cc:1892] Detected NPU prefill size: 128 (signature "prefill_128").
+WARNING: [compiled_model.cc:819] Compiler plugin path is provided in the environment, but the model is pre-compiled. Plugins won't be applied.
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: [litert_dispatch.cc:159] Loading shared library: /data/local/tmp/llmbench/engines/main-20260821-selfbuilt/libLiteRtDispatch_Qualcomm.so
+INFO: [common.h:160] 
+
++------------------------------------------+
+|              ::qnn::Options              |
++------------------------------------------+
+[GENERAL]
+  LogLevel                 : Off(0)
+  BackendType              : Htp(2)
+  Profiling                : Off(0)
+  UseInt64BiasAsInt32      : true
+  EnableWeightSharing      : false
+  EnableJustInTime         : false
+  GraphPriority            : Default(0)
+  GraphIOTensorMemType     : MemHandle(1)
+  CustomOpPackage          :
+    name                   :
+    interface_provider     :
+    compile_package_path   :
+    dispatch_package_path  :
+    target                 :
+[HTP]
+  UseConvHMX               : true
+  UseFoldReLU              : true
+  HtpDlbc                  : false
+  HtpDlbcWeights           : false
+  HtpPPoint                : 0
+  HtpPerformanceMode       : Burst(2)
+  HtpPerfCtrlMode          : Manual(0)
+  VtcmSize                 : 0
+  NumHvxThreads            : 0
+  OptimizationLevel        : HtpOptimizeForInferenceO3(2)
+[IR]
+  IrJsonDir                :
+  DlcDir                   :
+[SAVER]
+  SaverOutputDir           :
+[DSP]
+  DspPerformanceMode       : Default(0)
+  DspPerfCtrlMode          : Manual(0)
+[GPU]
+  GpuPerformanceMode       : High(1)
+  GpuPrecision             : Fp16(2)
+[DEBUG]
+  DumpTensorIds            :
+  SchematicDir             :
+
+INFO: [qnn_manager.cc:488] Adding shared library dir to path: /data/local/tmp/llmbench/engines/main-20260821-selfbuilt
+INFO: [dynamic_loading.cc:132] dir already in LD_LIBRARY_PATH
+INFO: [qnn_manager.cc:175] Loading qnn system shared library from "/data/local/tmp/llmbench/engines/main-20260821-selfbuilt/libQnnSystem.so"
+INFO: [qnn_manager.cc:142] Loading qnn shared library from "libQnnHtp.so"
+INFO: [qnn_manager.cc:165] Loaded qnn shared library
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 0 (prefill_128).
+INFO: [context_binary_info.cc:231] Context binary SDK version matches current SDK: 2.47.0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_1
+INFO: [litert_dispatch_device_context.cc:248] Creating new QNN context for bytecode 0x75e17b3650 (size 622174208)
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 1 (decode).
+INFO: [context_binary_info.cc:231] Context binary SDK version matches current SDK: 2.47.0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_1
+INFO: [litert_dispatch_device_context.cc:243] Reusing cached QNN context for bytecode 0x75e17b3650 (size 622174208)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtWebGpuAccelerator.so).
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtVulkanAccelerator.so).
+WARNING: [gpu_registry.cc:131] GPU accelerator could not be loaded and registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077f86093d0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+WARNING: [compiled_model.cc:819] Compiler plugin path is provided in the environment, but the model is pre-compiled. Plugins won't be applied.
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 2 (prefill_mask_128).
+INFO: [context_binary_info.cc:231] Context binary SDK version matches current SDK: 2.47.0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_1
+INFO: [litert_dispatch_device_context.cc:248] Creating new QNN context for bytecode 0x78e7f97470 (size 155648)
+VERBOSE: Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 3 (decode_mask).
+INFO: [context_binary_info.cc:231] Context binary SDK version matches current SDK: 2.47.0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_0
+INFO: [context_binary_info.cc:112] Found qnn graph: qnn_partition_1
+INFO: [litert_dispatch_device_context.cc:243] Reusing cached QNN context for bytecode 0x78e7f97470 (size 155648)
+VERBOSE: Replacing 2 out of 13 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 0 (prefill_rope_128).
+VERBOSE: Replacing 2 out of 12 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 1 (decode_rope).
+INFO: [compiled_model.cc:833] Flatbuffer model initialized directly from incoming litert model.
+VERBOSE: Replacing 1 out of 4 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (decode_embedder).
+VERBOSE: Replacing 1 out of 4 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 1 (prefill_embedder_128).
+W0000 00:00:1791423882.002398   32296 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791423882.002420   32296 litert_lm_loader.h:129] TFLite model for type: TF_LITE_VISION_ENCODER not found. Skipping.
+W0000 00:00:1791423882.002434   32296 litert_lm_loader.cc:291] Section not found: 
+W0000 00:00:1791423882.002444   32296 litert_lm_loader.h:129] TFLite model for type: TF_LITE_AUDIO_ENCODER_HW not found. Skipping.
+W0000 00:00:1791423882.222016   32296 litert_lm_loader.h:158] TFLite model type: TF_LITE_VISION_ENCODER not found for backend constraints. Skipping.
+W0000 00:00:1791423882.222102   32296 litert_lm_loader.h:158] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for backend constraints. Skipping.
+W0000 00:00:1791423882.222116   32296 litert_lm_loader.h:174] TFLite model type: TF_LITE_VISION_ENCODER not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791423882.222129   32296 litert_lm_loader.h:174] TFLite model type: TF_LITE_AUDIO_ENCODER_HW not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1791423882.222569   32296 litert_lm_lib.cc:856] Creating conversation
+I0000 00:00:1791423882.223678   32296 litert_lm_lib.cc:868] Running single-turn conversation
+W0000 00:00:1791423882.345242   32296 tasks.cc:572] Failed to get prefill profile summary: UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model
+=== Source Location Trace: ===
+./runtime/executor/llm_executor_base.h:233
+
+W0000 00:00:1791423886.013532   32296 tasks.cc:786] Failed to get decode profile summary: UNIMPLEMENTED: GetProfileSummary not implemented for backend: LiteRT NPU Compiled Model
+=== Source Location Trace: ===
+./runtime/executor/llm_executor_base.h:233
+
+[thought] er
+Okay, the user is asking for an explanation of on-device AI in simple terms. Let me start by recalling what I know about AI. On-device AI refers to using AI models that are trained on data stored on a device, like a phone or computer, rather than relying on cloud services. That makes sense because it reduces reliance on internet access.
+
+Wait, but I should make it as simple as possible. Maybe start with a simple definition. Then explain why it's better. Also, mention examples like using a phone's camera or app. Need to check if there are any other points to include. Oh, and maybe[/thought]
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 546.76 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.08 ms
+    - Init Tokenizer: 397.35 ms
+    - Init Total: 547.57 ms
+--------------------------------------------------
+  Time to first token: 0.10 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 19 tokens in 73.787448ms duration.
+      Prefill Speed: 257.50 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 3.66816979s duration.
+      Decode Speed: 34.89 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 84.114us, 19 tokens
+--------------------------------------------------
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000077f8608bf0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000077f86089b0, name=NpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000077f86093d0, name=CpuAccelerator
+EXIT_CODE=0
