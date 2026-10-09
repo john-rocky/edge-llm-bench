@@ -1,0 +1,110 @@
+{
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-coreai-v1, Core AI stock arm: manual retry sitting after a reboot of the phone, round r5b (the admission rule = scripts/dashboard_job.py admit; the campaign holds its anchor rows and the Core AI rows of the retried models that ran)",
+ "campaign": "results/raw/2026-10-09-dashboard-coreai-v1-iphone18pro-retry-ios",
+ "phase": "anchor+payload",
+ "cells": "matrices/dashboard-coreai-v1-ios.cells",
+ "cells_run": "/Users/USER/code/standup/drafts/2026-10-08-dashboard-coreai-arm-attachments/r5b/cells/run.cells",
+ "device_key": "iphone18pro",
+ "device_display": "iPhone 18 Pro",
+ "device_identifier": "iPhone19,2",
+ "platform": "iphone",
+ "attempt": 1,
+ "started": "2026-10-09 11:08:23",
+ "ended": "2026-10-09 12:21:58",
+ "hold": "per cell: ~/code/coreai/ondevice/.device_hold (noclobber keeper, label coreai-r5b-<cells>, the shared line's order); given back between cells, cooldowns outside the hold",
+ "admitted": true,
+ "verdict": "ADMITTED",
+ "reason": "anchor nominal, ratio 0.994 vs reference (60bd0d7880c82980f9481f8be78862e9b63c58a3)",
+ "anchor": {
+  "regime": "warm",
+  "anchors": [
+   {
+    "cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat",
+    "primary": true,
+    "median": 221.18818738716882,
+    "n": 2,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+    "reference": {
+     "campaign": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+     "median": 222.6324684086747,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+     "median": 222.6324684086747,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+     "median": 222.6324684086747,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "ratio": 0.9935127116371244
+   },
+   {
+    "cell": "litert-lm litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 169.30968673340135,
+    "n": 2,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "v0.16.0",
+    "reference": {
+     "campaign": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+     "median": 171.14766164418103,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+     "median": 171.14766164418103,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+     "median": 171.14766164418103,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "ratio": 0.9892608821346279
+   }
+  ]
+ },
+ "reference_sessions_in_temp_summary": [],
+ "launch_reference": "results/raw/2026-10-08-dashboard-coreai-v1-iphone18pro-ios",
+ "reference_is_launch_reference": true,
+ "runner_exit": 0,
+ "cells_expected": 6,
+ "cells_with_records": 6,
+ "flagged": [
+  "GATE_FAIL core-ai core-ai/qwen3-0.6b-stock-ctx2048 long-context-1024-gen256 verdict='GARBLED (round r5b, by hand)' (3 records moved to device-jsonl-flagged/: on this iPhone 18 Pro, iOS 27.2 beta, after a reboot and a fresh specialization the bundle loads but its output fails the round's check (specialize launch: decode 3.76 tok/s, text starting 'ial corn_BYTE \", dough calcu '); cell_gate.py's repetition test does not catch word salad; the same bundle decodes normally on the Mac Studio, 2026-10-08 sitting; kept for audit, not a measurement)",
+  "NOT_IMPORTED core-ai core-ai/qwen3-0.6b-stock-ctx2048 native-benchmark-1024x256 (round r5b): its console is kept, its YARDSTICK_NATIVE_OK lines are not imported (the instrument reads no text, and the model's output is garbled on this phone)"
+ ]
+}
