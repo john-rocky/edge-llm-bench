@@ -1,0 +1,112 @@
+{
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-coreai-v1, Core AI stock arm: manual sitting, round r6 (the admission rule = scripts/dashboard_job.py admit; the campaign holds its anchor rows)",
+ "campaign": "results/raw/2026-10-09-dashboard-coreai-v1-iphone17pro-ios",
+ "phase": "anchor+payload",
+ "cells": "matrices/dashboard-coreai-v1-ios.cells",
+ "device_key": "iphone17pro",
+ "device_display": "iPhone 17 Pro",
+ "device_identifier": "iPhone18,1",
+ "platform": "iphone",
+ "attempt": 1,
+ "started": "2026-10-09 13:06:02",
+ "ended": "2026-10-09 14:48:13",
+ "hold": "per cell: ~/code/litertlm-convert/community_accel_work/.iphone_hold (the 17 Pro's hold file, a noclobber JSON keeper, device iPhone 17 Pro, label coreai-r6-c<chunk>; no queue); given back between cells, cooldowns outside the hold",
+ "admitted": true,
+ "verdict": "ADMITTED",
+ "reason": "non-nominal start (fair) admitted: anchor within 5% of the newest all-nominal session on this build",
+ "anchor": {
+  "regime": "warm",
+  "anchors": [
+   {
+    "cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat",
+    "primary": true,
+    "median": 179.4604063952637,
+    "n": 2,
+    "thermal": [
+     "fair"
+    ],
+    "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+    "reference": {
+     "campaign": "results/raw/2026-09-09-dashboard-v1-iphone17pro-retake2-ios",
+     "median": 176.88616251158547,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-09-09-dashboard-v1-iphone17pro-retake2-ios",
+     "median": 176.88616251158547,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-09-09-dashboard-v1-iphone17pro-retake2-ios",
+     "median": 176.88616251158547,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "ratio": 1.0145531105832524
+   },
+   {
+    "cell": "litert-lm litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 124.7160720704135,
+    "n": 2,
+    "thermal": [
+     "fair"
+    ],
+    "engine_version": "v0.16.0",
+    "reference": {
+     "campaign": "results/raw/2026-09-09-dashboard-v1-iphone17pro-retake2-anchor-ios",
+     "median": 120.56453870053586,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-09-09-dashboard-v1-iphone17pro-retake2-anchor-ios",
+     "median": 120.56453870053586,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-09-09-dashboard-v1-iphone17pro-retake2-anchor-ios",
+     "median": 120.56453870053586,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.16.0"
+    },
+    "ratio": 1.034434116487514
+   }
+  ]
+ },
+ "reference_sessions_in_temp_summary": [],
+ "runner_exit": 0,
+ "cells_expected": 22,
+ "cells_with_records": 12,
+ "flagged": [
+  "GATE_FAIL mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat retry='HOT fair,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL litert-lm litert-community/Qwen3-0.6B short-chat retry='HOT fair,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 retry='HOT fair,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL core-ai core-ai/gemma4-e2b-stock-ctx2048 long-context-1024-gen256 retry='HOT fair,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 retry='HOT fair,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL core-ai core-ai/qwen3-4b-stock-ctx2048 long-context-1024-gen256 retry='HOT fair,fair,fair' (retry kept; flagged capture in device-jsonl-flagged/)",
+  "GATE_FAIL litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 verdict='HOT serious,serious,serious (round r6, by hand: the protocol launch started serious right after the 1K cell had ended serious; no capture gate on native rows, and the 600 s pause followed only a gate verdict)' (3 app-path-native records and the console set aside as *.attempt1, decode 28.03/29.31/29.47 tok/s; not re-run: the 17 Pro left USB at 15:03 and the round closed PARTIAL, so this sitting has no LiteRT-LM Gemma 4 E2B protocol row)"
+ ]
+}
