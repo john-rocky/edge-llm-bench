@@ -109,7 +109,7 @@ class TaskContract(unittest.TestCase):
 # ------------------------------------------------------------------ the cells
 
 class CellsContract(unittest.TestCase):
-    TWIN_RUNTIMES = ("litert-lm", "llama.cpp", "mlx-swift", "executorch")
+    TWIN_RUNTIMES = ("litert-lm", "llama.cpp", "mlx-swift", "executorch", "onnxruntime-genai")
 
     def test_every_short_chat_row_has_one_1024_twin(self):
         weekly = rows(WEEKLY)
@@ -136,9 +136,10 @@ class CellsContract(unittest.TestCase):
             else:
                 self.assertEqual(twin.get("context-tokens"), str(CTX))
         self.assertEqual(len(twins), expected)
-        # 15 per platform on LiteRT-LM / llama.cpp / MLX, and the Mac's 10 executorch rows (XNNPACK and
-        # the MLX delegate, the Gemma 4 ones excluded)
-        self.assertEqual(len(twins), 55)
+        # 15 per platform on LiteRT-LM / llama.cpp / MLX, the Mac's 10 executorch rows (XNNPACK and
+        # the MLX delegate, the Gemma 4 ones excluded) and the Mac's 6 onnxruntime-genai rows (CPU EP and
+        # the WebGPU plugin EP, Qwen3 only; weekly since 2026-10-09)
+        self.assertEqual(len(twins), 61)
 
     def test_weekly_rows_are_the_1024_set(self):
         weekly = {r[0] for r in rows(WEEKLY) if r[4] == TASK}
