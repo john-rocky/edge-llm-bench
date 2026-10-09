@@ -68,3 +68,9 @@ ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300
 ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 exclude=app-killed-at-model-load-sigkill
 ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+# ONNX Runtime GenAI (weekly since 2026-10-09 with the iPhone 18 Pro's pinned build that carries the adapter):
+# the three Qwen3 1K rows of matrices/dashboard-ortgenai-v1.cells, the twins of the iPhone short-chat rows in
+# dashboard-text-v1.cells.
+ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048

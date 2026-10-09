@@ -925,8 +925,8 @@ LiteRT-LM's Qwen3 0.6B, against a 1,024-token cache).
 (`file=` the folder, `revision=` each repo's commit), short-chat and the 1K text task at
 `context-tokens=2048`; arms `onnxruntime-genai-cpu` (Mac, Android) and `onnxruntime-genai-webgpu`
 (Mac). Gemma 4 E2B / E4B rows are `exclude=` with their reason, the Pixel 8a's Qwen3-4B rows carry
-the 4B-class `exclude-on=`, the iPhone rows are disabled until the app has the runtime, and there
-is no anchor row (the weekly file is an owner decision). The regime is the platform's: on the
+the 4B-class `exclude-on=`, the iPhone rows are in the weekly set since 2026-10-09 (the pinned
+build carries the adapter), and there is no anchor row (the weekly file is an owner decision). The regime is the platform's: on the
 Mac one engine process per cell (run 1 cold, runs 2..N warm, the warm median headlines, as
 `yardstick run --runs N`), on Android a fresh process per run (cold). Drivers, pins, recipe
 labels, regime, timing, memory and telemetry: [docs/ortgenai-arm-v1.md](ortgenai-arm-v1.md).
@@ -943,11 +943,21 @@ cell ran under a CPU clock cap deeper than the 15 % line in every launch of the 
 sitting (cpu-cap-rule; the prefill cost is upstream, microsoft/onnxruntime#33196), so they stay
 by-hand until a release carries the fix. An `extra_cells` file runs after the set as its own
 tagged session (`-ort`), whole-set or halves alike, with its own `timeout_hours`; the Pixel 8a
-has no such entry (never measured there). The iPhone 18 Pro rows are not in the weekly set: the
-night job installs nothing, and the pinned app build predates the ONNX Runtime adapter (the
-2026-10-08 sitting ran a by-hand build; `docs/ortgenai-arm-v1.md`). The Mac sitting grows by
-about 35 minutes (the 2026-10-08 sitting: 34 minutes for the 12 cells and their anchors;
-`expected_hours` 3.2 → 3.8), the S26 sitting by about 15 minutes (`expected_hours` 7.9 → 8.2).
+has no such entry (never measured there). The Mac sitting grows by about 35 minutes (the
+2026-10-08 sitting: 34 minutes for the 12 cells and their anchors; `expected_hours` 3.2 → 3.8),
+the S26 sitting by about 15 minutes (`expected_hours` 7.9 → 8.2).
+
+The iPhone rows are in the weekly set since 2026-10-09 too: the iPhone section of
+`dashboard-text-v1.cells` ends with the six Qwen3 rows of the same file (CPU EP, the release
+XCFramework 0.17.0 through the app's adapter, the engine default; one app launch per cell, run 1
+cold, runs 2-4 warm), and `dashboard-longctx1024-v1.cells` carries their three 1K twins. The night
+job installs nothing, so they waited for the iPhone 18 Pro's pinned app build to carry the adapter:
+that build was rebuilt from main on 2026-10-09 (its provenance: `docs/dashboard-recurring-job-v1.md`
+§3). The iPhone 18 Pro sitting grows by about one hour (the 2026-10-08 by-hand sitting: three
+holds, 59.5 minutes, for the six cells with each model's first fetch, four gate retakes and one
+pair of anchors; `expected_hours` 4.8 → 5.8, `timeout_hours` 8 → 9). Both iPhones read the same file: an app built before the adapter
+(2026-10-08) ends these launches at "unknown runtime" with no record — a SHORT cell, not retried,
+after its cooldown.
 
 ## NPU and Android GPU rows in the weekly set (2026-10-09)
 

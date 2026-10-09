@@ -197,7 +197,8 @@ GenAI arm in the weekly set"), Galaxy S26 10.3 in three halves plus the ONNX Run
 since 2026-10-09, the NPU / GPU session (+2.1, "NPU and Android GPU rows in the weekly set";
 11.5 with a gate retry per session),
 Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), iPhone 4.8 with every
-cell HOT-retried. `schedule.json` carries them as `expected_hours`, and
+cell HOT-retried (the iPhone 18 Pro 5.8 since 2026-10-09: +1.0 for the ONNX Runtime
+rows, "ONNX Runtime GenAI arm in the weekly set"). `schedule.json` carries them as `expected_hours`, and
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×
 its longest half times three, because the job gives each half an equal share
 of the timeout; an extra file's session (below) runs under its own
@@ -263,6 +264,31 @@ the phone unlocked, and an unlocked phone left overnight is either charging
 anchor rule, §4) or draining. The job passes over a locked phone (not ready)
 and the morning brief shows it in the ledger; the operator decides whether
 to unlock it for the next 05:30 firing or run it by hand.
+
+The iPhone 18 Pro's app is a pin. The job installs nothing: a sitting measures whatever
+build of `com.example.CoreMLLLMChat` is on the phone, and every record stamps that build's
+engines (`engineVersion`). Since 2026-10-09 the pinned build is a Release build of bench
+`50ab482` (the iOS sources as of `c05d183`), main binary sha256
+`042df03a447cde76dab7d7f8bc6bf218536a3ce15af57e9235772ecac8f4f1a7`, signed as the builds
+before it (the team profile of `com.example.CoreMLLLMChat`, with the increased-memory-limit
+and extended-virtual-addressing entitlements). Its `Vendored/`: LiteRT-LM v0.16.0 (a copy of
+the main checkout's `Vendored/LiteRT-LM.v0160`, the maxNumTokens patch applied; that
+checkout's own `Vendored/LiteRT-LM` is v0.18.0 now, and a build from it would change the
+phone's LiteRT-LM arm), `coreai-models` → apple/coreai-models `bd3c539` (1.0.0-10-gbd3c539, the
+stock arm's pin), llama.cpp b8999, cactus 1ace6d78, and the ONNX Runtime GenAI release
+XCFramework 0.17.0 (zip sha256 699697a1…). Its Swift packages resolve to the versions of the
+build it replaced (`-onlyUsePackageVersionsFromResolvedFile`: mlx-swift-lm 60bd0d78…,
+swift-transformers 1.3.3, swift-jinja 2.4.2, swift-huggingface 0.9.0). Against that build
+(main binary 6564d5b7…, core-ai 1.0.0-4-gd30b086) the engine pins differ only in core-ai and
+the added onnxruntime-genai, and the embedded LiteRT-LM, llama.cpp and cactus frameworks are
+byte-identical once unsigned. The .app is kept on the bench host at
+`~/code/edge-llm-bench-wt-ort-r7/.build/dd-ios-pin-2026-10-09/BenchmarkApp.app`: a lane that
+installs its own build on the phone puts this one back afterwards. Its check on the phone
+(`results/raw/2026-10-09-iphone18pro-pin-check-ios`, NOTES.md): the two session anchors
+within 1 % of the 2026-10-08 anchors, and one ONNX Runtime GenAI launch; the Core AI stock
+bundles on the phone (Gemma 4 E2B, E4B) loaded neither with it nor with the build the Core AI
+arm had measured them with: the app's specialization cache pointed at compiled Neural Engine
+programs the phone no longer had (`No model at modelFilePath … existsInCache=0` in the device log).
 
 What the job does about the two devices it cannot manage: the iPhone 15 is
 never a bench device (no schedule entry, no way to select it); the Galaxy S26

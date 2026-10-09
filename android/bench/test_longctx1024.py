@@ -137,9 +137,10 @@ class CellsContract(unittest.TestCase):
                 self.assertEqual(twin.get("context-tokens"), str(CTX))
         self.assertEqual(len(twins), expected)
         # 15 per platform on LiteRT-LM / llama.cpp / MLX, the Mac's 10 executorch rows (XNNPACK and
-        # the MLX delegate, the Gemma 4 ones excluded) and the Mac's 6 onnxruntime-genai rows (CPU EP and
-        # the WebGPU plugin EP, Qwen3 only; weekly since 2026-10-09)
-        self.assertEqual(len(twins), 61)
+        # the MLX delegate, the Gemma 4 ones excluded), the Mac's 6 onnxruntime-genai rows (CPU EP and
+        # the WebGPU plugin EP, Qwen3 only; weekly since 2026-10-09) and the iPhone's 3 (CPU EP, Qwen3
+        # only; weekly since 2026-10-09, the pinned app build carries the adapter)
+        self.assertEqual(len(twins), 64)
 
     def test_weekly_rows_are_the_1024_set(self):
         weekly = {r[0] for r in rows(WEEKLY) if r[4] == TASK}

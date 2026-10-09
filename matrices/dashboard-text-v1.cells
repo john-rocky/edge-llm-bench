@@ -165,6 +165,18 @@ ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256
 ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 exclude=app-killed-at-model-load-sigkill
 ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
 
+# --- ONNX Runtime GenAI (arm onnxruntime-genai-cpu; weekly since 2026-10-09, owner GO (i) and the iPhone 18
+# Pro's pinned app build of that day, which carries the adapter — docs/dashboard-recurring-job-v1.md §3): the
+# six Qwen3 rows of matrices/dashboard-ortgenai-v1.cells, CPU EP (the release XCFramework 0.17.0) at the engine
+# default, one app launch per cell (run 1 cold, runs 2-4 warm; docs/ortgenai-arm-v1.md "iPhone"). An app built
+# before the adapter (2026-10-08) ends these launches at "unknown runtime" with no record.
+ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+
 # ============================= Mac =============================
 # Same three arms through the full-flavor yardstick (scripts/build_yardstick_mac.sh;
 # the runner refuses the spm-lite build for llama.cpp cells). Core AI (v2) runs
@@ -252,8 +264,8 @@ mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-contex
 # published onnx-community Qwen3 folders at the engine default (docs/ortgenai-arm-v1.md; recipes in
 # models/ortgenai-recipes.json). Mac: all 12 Qwen3 cells. Galaxy S26: only the two short-chat cells, in
 # matrices/dashboard-ortgenai-v1-android-ort.cells (schedule.json extra_cells) — its other cells run under
-# a CPU clock cap on that phone (cpu-cap-rule) until upstream microsoft/onnxruntime#33196 lands. iPhone 18 Pro:
-# none until the pinned app build carries the ONNX Runtime adapter (the night job installs nothing).
+# a CPU clock cap on that phone (cpu-cap-rule) until upstream microsoft/onnxruntime#33196 lands. iPhone: the six
+# Qwen3 cells at the end of the iPhone section since 2026-10-09 (the iPhone 18 Pro's pinned build carries the adapter).
 mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
 mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
 mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
