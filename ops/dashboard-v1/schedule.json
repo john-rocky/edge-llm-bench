@@ -71,10 +71,17 @@
           "min_free_gb": 4,
           "timeout_hours": 1,
           "_doc": "ONNX Runtime GenAI, the two Qwen3 short-chat cells that give valid runs on this phone (owner GO 2026-10-09); runs as its own tagged session (-ort) after the set, whole or halves"
+        },
+        {
+          "cells": "matrices/dashboard-npu-v1-android-s26-short.cells",
+          "tag": "npu",
+          "min_free_gb": 7,
+          "timeout_hours": 4,
+          "_doc": "llama.cpp on the NPU and the Adreno GPU (side build b11469-snapdragon): the session anchor and the short-chat cells of matrices/dashboard-npu-v1-android-s26.cells (owner GO 2026-10-09; the 1K and protocol cells stay by-hand); its own tagged session (-npu) after the ONNX Runtime one, about 2.1 h; skipped while /data/local/tmp/llmbench/engines/b11469-snapdragon is not on the phone (android/README.md, 'Side builds'). Its five GGUF files are the storage halves' own copies (a: Qwen3 0.6B / 1.7B, Gemma 4 E2B; b1: Qwen3 4B; b2: Gemma 4 E4B), on the phone when it starts; min_free_gb is the room to push back the ones a rotation between the halves can take away (Qwen3 1.7B, Gemma 4 E2B, Qwen3 4B: 6.6 GB as the job counts space, KiB / 10^6, on the phone's models/ listing of 2026-10-08), not its 11.8 GB footprint: a floor above the free space the halves leave (13.9 GB after them on 2026-10-05) would rotate the halves' LiteRT bundles and caches out every week"
         }
       ],
-      "window": "any firing; USB attached, screen on or off (read and stamped per launch); runs unmasked (devices/galaxy-s26.md)",
-      "expected_hours": 8.2,
+      "window": "any firing; USB attached, screen on or off (read and stamped per launch); runs unmasked (devices/galaxy-s26.md); the NPU / GPU session needs the llama.cpp side build in /data/local/tmp/llmbench/engines/b11469-snapdragon on the phone",
+      "expected_hours": 10.3,
       "timeout_hours": 15,
       "env": {}
     },

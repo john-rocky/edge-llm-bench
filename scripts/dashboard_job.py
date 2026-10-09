@@ -19,7 +19,9 @@ no ledger line. The sitting itself does only what a careful operator did by hand
 for the first pass, in this order:
 
   preflight   device attached / unlocked / not held by a sibling lane / no foreign
-              engine process / storage floor / host runner idle
+              engine process / storage floor / host runner idle / the side builds the
+              cells files launch are on the phone (a file whose build is missing is
+              skipped by itself, the others run)
   hold        take the sibling lane's device hold for the run (hold_cli.py)
   phase A     ./bench matrix matrices/anchors.cells   -> <campaign>-anchor
   admission   the fresh anchor against the newest ADMITTED session's anchor on this
@@ -338,7 +340,45 @@ def mac_guard():
         raise Busy(f"heavy pipeline running (unified-memory contention): {heavy[0][:120]}")
 
 
-def preflight_android(dev, dry):
+def side_build_tools(cells_file):
+    """On-device paths of the tools a cells file's side-build rows launch (engine-build=<tag>,
+    android/README.md "Side builds"), laid out as android/bench/run_cell.py looks for them:
+    llama.cpp's release asset keeps its tools in <dev dir>/engines/<tag>/bin/ (llama-bench for a
+    native-benchmark task, llama-cli otherwise), LiteRT-LM's NPU build sits flat in
+    <dev dir>/engines/<tag>/. Excluded rows launch nothing; a file that is not there is left
+    to `bench matrix` to report, as before."""
+    path = os.path.join(ROOT, cells_file)
+    if not os.path.exists(path):
+        return []
+    tools = set()
+    for c in load_cells(path):
+        tag = c["opts"].get("engine-build")
+        if c["platform"] != "android" or c["exclude"] or not tag:
+            continue
+        build = f"{ANDROID_DEV_DIR}/engines/{tag}"
+        if c["runtime"] == "litert-lm":
+            tools.add(f"{build}/litert_lm_advanced_main")
+        else:
+            tool = "llama-bench" if c["task"].startswith("native-benchmark-") else "llama-cli"
+            tools.add(f"{build}/bin/{tool}")
+    return sorted(tools)
+
+
+def android_side_builds_missing(serial, cells_files):
+    """cells file -> the side-build tools it launches that are not on the phone (one `ls` for
+    all of them). run_cell.py stops each such cell before its launch (observed_engine), so the
+    job skips that file as a whole and runs the others."""
+    tools = {f: side_build_tools(f) for f in cells_files}
+    wanted = sorted({t for ts in tools.values() for t in ts})
+    if not wanted:
+        return {}
+    rc, out = sh(adb_cmd(serial, "shell", "ls " + " ".join(wanted) + " 2>/dev/null"))
+    present = set(out.split())
+    return {f: [t for t in ts if t not in present] for f, ts in tools.items()
+            if any(t not in present for t in ts)}
+
+
+def preflight_android(dev, dry, cells_files=()):
     serial = dev["serial"]
     state = android_state(serial)
     if state is None:
@@ -388,14 +428,23 @@ def preflight_android(dev, dry):
         raise Busy(f"CPU frequency capped (charge/thermal throttle): {', '.join(capped)}")
     free = android_free_gb(serial)
     log(f"free on /data: {free:.1f} GB" if free is not None else "free on /data: unknown")
-    return {"free_gb": free}
+    # a side build that is not on the phone (android/README.md, "Side builds") costs only the
+    # files that launch it: phase B skips them and runs the rest; with nothing left to run the
+    # device is not ready
+    missing = android_side_builds_missing(serial, cells_files)
+    for f, tools in missing.items():
+        log(f"side build not on the phone for {f}: {', '.join(tools)} — that file is skipped")
+    if cells_files and all(f in missing for f in cells_files):
+        raise NotReady("side build not on the phone for " + ", ".join(cells_files)
+                       + " — push it first (android/README.md, 'Side builds')")
+    return {"free_gb": free, "side_build_missing": missing}
 
 
 def devicectl(*args, timeout=90):
     return sh(["xcrun", "devicectl"] + list(args), timeout=timeout)
 
 
-def preflight_iphone(dev, dry):
+def preflight_iphone(dev, dry, cells_files=()):
     udid = dev["udid"]
     if not dev.get("app"):
         raise NotReady("schedule.json: iphone device needs an explicit \"app\" bundle id "
@@ -421,7 +470,7 @@ def preflight_iphone(dev, dry):
     return {}
 
 
-def preflight_mac(dev, dry):
+def preflight_mac(dev, dry, cells_files=()):
     mac_guard()
     rc, out = sh([os.path.join(ROOT, "bench"), "doctor", "--platform", "mac"], timeout=120)
     if rc != 0:
@@ -429,7 +478,19 @@ def preflight_mac(dev, dry):
     return {}
 
 
+# each takes (device entry, dry run, the cells files phase B may run); only the Android
+# preflight reads the files (their side builds)
 PREFLIGHT = {"android": preflight_android, "iphone": preflight_iphone, "mac": preflight_mac}
+
+
+def phase_b_files(schedule, dev, cells_override):
+    """The cells files phase B may run: an explicit --cells file alone (a targeted retake), or
+    the whole set and the device's storage halves (the free space decides which) followed by
+    its extra files."""
+    if cells_override:
+        return [cells_override]
+    return ([schedule["cells"]] + [h["cells"] for h in dev.get("split", [])]
+            + [e["cells"] for e in dev.get("extra_cells", [])])
 
 
 # ---------------------------------------------------------------- holds
@@ -756,7 +817,7 @@ def attempt(schedule, key, dev, attempt_no, args):
     log(f"=== slot {key} ({dev['display']}, {platform}) attempt {attempt_no} campaign base {base}"
         + (" [dry-run]" if dry else ""))
 
-    info = PREFLIGHT[platform](dev, dry)      # raises Busy / NotReady
+    info = PREFLIGHT[platform](dev, dry, phase_b_files(schedule, dev, args.cells))  # raises Busy / NotReady
     log("preflight ok")
     if dry:
         log("plan:")
@@ -816,18 +877,29 @@ def attempt(schedule, key, dev, attempt_no, args):
         timeout_s = float(dev.get("timeout_hours", 6)) * 3600 / len(plan)
         # per-device extra files (schedule.json "extra_cells": an arm measured on
         # this device only, e.g. the ONNX Runtime GenAI cells on the Galaxy S26):
-        # each runs after the set as its own tagged session with its own timeout;
+        # each runs after the set as its own tagged session with its own timeout
+        # (the tag: the entry's "tag", else from the file name as for a half);
         # an explicit --cells retake never fans out into them
         extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])}
         plan += [(f, float(e.get("min_free_gb", 0))) for f, e in extras.items()]
         worst = EXIT_OK
         previous = []
         last_rel = None
+        no_build = []
         for cells_file, floor in plan:
             camp = base
             if halves or cells_file in extras:
-                tag = re.sub(r"^.*-android-|\.cells$", "", os.path.basename(cells_file))
+                tag = ((extras[cells_file].get("tag") if cells_file in extras else None)
+                       or re.sub(r"^.*-android-|\.cells$", "", os.path.basename(cells_file)))
                 camp = f"{base}-{tag}"
+            if cells_file in info.get("side_build_missing", {}):
+                # preflight found its side build missing: no session, no rotation for it; the
+                # verdict stays the sitting's, the reason names the file (ledger)
+                log(f"skipping {cells_file}: side build not on the phone "
+                    f"({', '.join(info['side_build_missing'][cells_file])}; android/README.md, "
+                    "'Side builds')")
+                no_build.append(os.path.basename(cells_file))
+                continue
             if halves:
                 free = android_free_gb(dev["serial"]) if not dry else info.get("free_gb")
                 log(f"free before {tag}: {free:.1f} GB (floor {floor:g} GB)" if free is not None
@@ -900,7 +972,10 @@ def attempt(schedule, key, dev, attempt_no, args):
         if not dry:
             rc = sh([PY, os.path.join(ROOT, "scripts", "render_dashboard.py")], timeout=300)[0]
             log(f"render_dashboard exit {rc}")
-        return worst, ("ok" if worst == EXIT_OK else VERDICT_NAME[worst].lower()), last_rel
+        reason = "ok" if worst == EXIT_OK else VERDICT_NAME[worst].lower()
+        if no_build:
+            reason += "; skipped, side build not on the phone: " + ", ".join(no_build)
+        return worst, reason, last_rel
     finally:
         hold_release(hold)
 

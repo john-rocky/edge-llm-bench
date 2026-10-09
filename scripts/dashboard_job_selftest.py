@@ -9,10 +9,16 @@ accumulation-layer rows and SESSION.json verdicts handed in directly — no
 phone, no results/raw, no log file under logs/dashboard-job. The same rows
 pin session admission (§4): the reference is the newest admitted session
 whose anchor ran the same engine build, none = first session on that build.
+Last, a dry-run sitting on a fake phone pins the side-build check: a cells
+file whose engine-build=<tag> build is not on the phone is skipped by itself
+and the rest of the sitting runs.
 
   python3 scripts/dashboard_job_selftest.py     # exit 0 = pass
 """
+import argparse
+import contextlib
 import datetime
+import io
 import os
 import shutil
 import sys
@@ -60,6 +66,15 @@ def main(argv):
             pass
         elif cmd.startswith("ls ") and "/models" in cmd:
             print("fake.gguf")
+        elif cmd.startswith("ls ") and "/engines/" in cmd:
+            # the side-build tools on the fake phone: the paths listed in engines.txt
+            listed = os.path.join(STATE, "engines.txt")
+            have = set(open(listed).read().split()) if os.path.exists(listed) else set()
+            paths = [p for p in cmd[3:].split() if p.startswith("/")]
+            for p in paths:
+                if p in have:
+                    print(p)
+            return 0 if all(p in have for p in paths) else 1
         elif cmd.startswith("dumpsys power"):
             print("  mWakefulness=Awake")
         elif "scaling_max_freq" in cmd:
@@ -315,6 +330,89 @@ def main():
        and p["reference_any_version"]["campaign"] == "results/raw/lane-near-android",
        f"hot start with an all-nominal session on another build only (28.5, within 5%): {reason}")
     dj.load_rows, dj.load_admission = real_load_rows, real_load_admission
+
+    print("--- side builds: a cells file whose engine-build=<tag> build is not on the phone is skipped by "
+          "itself, the rest of the sitting runs (dry-run plan, fake adb)")
+    cells_dir = os.path.join(tmp, "cells")
+    os.makedirs(cells_dir)
+
+    def cells_file(name, *rows):
+        path = os.path.join(cells_dir, name)
+        with open(path, "w") as fh:
+            fh.write("\n".join(rows) + "\n")
+        return path
+
+    anchor = "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf"
+    half = cells_file("set-android-h1.cells", anchor)
+    side = cells_file("side-android-s26-short.cells", anchor,
+                      "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=npu "
+                      "engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf",
+                      "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=gpu "
+                      "engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf")
+    tool = "/data/local/tmp/llmbench/engines/b11469-snapdragon/bin/llama-cli"
+    sched = {"anchors": "matrices/anchors.cells", "cells": half}
+    s26 = {"platform": "android", "display": "Fake S", "identifier": "FakeS", "serial": "FAKE-S",
+           "cpu_mask": "", "hold": os.path.join(tmp, "hold_s"), "storage_gb_full": 100,
+           "timeout_hours": 3, "split": [{"cells": half, "min_free_gb": 1}],
+           "extra_cells": [{"cells": side, "tag": "npu", "min_free_gb": 1, "timeout_hours": 4}]}
+    attached("FAKE-S")
+    engines = os.path.join(state, "engines.txt")
+    real_pgrep = dj.pgrep
+    dj.pgrep = lambda pattern: []   # host drivers of other lanes are not this test's business
+    base = f"{datetime.date.today().isoformat()}-dashboard-v1-s26"
+
+    def plan(cells=None):
+        args = argparse.Namespace(suffix=None, dry_run=True, cells=cells)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code, reason, _ = dj.attempt(sched, "s26", s26, 1, args)
+        return code, reason, buf.getvalue()
+
+    def matrix_line(text, cells, camp):
+        return any(f"bench matrix {cells} --platform android --campaign {camp} " in ln
+                   for ln in text.splitlines())
+
+    if os.path.exists(engines):
+        os.remove(engines)
+    code, reason, text = plan()
+    ok(code == dj.EXIT_OK and matrix_line(text, half, f"{base}-h1"),
+       f"build absent: the storage half still runs (exit {code})")
+    ok(not matrix_line(text, side, f"{base}-npu") and f"skipping {side}: side build not on the phone ({tool};" in text,
+       "build absent: the side-build file has no bench matrix line, the skip names its missing tool")
+    ok(reason == "ok; skipped, side build not on the phone: side-android-s26-short.cells",
+       f"build absent: the sitting's reason names the skipped file for the ledger: {reason!r}")
+    with open(engines, "w") as fh:
+        fh.write(tool + "\n")
+    code, reason, text = plan()
+    ok(code == dj.EXIT_OK and reason == "ok" and matrix_line(text, half, f"{base}-h1")
+       and matrix_line(text, side, f"{base}-npu") and "side build not on the phone" not in text,
+       f"build present: both run, the extra file as its own session under its tag (-npu): {reason!r}")
+    ok(any("gtimeout --kill-after=60 14400 " in ln and f"bench matrix {side} " in ln for ln in text.splitlines()),
+       "build present: the extra file's session runs under its own timeout_hours (4 h)")
+    os.remove(engines)
+    try:
+        plan(cells=side)
+        ok(False, "a --cells retake of a side-build file whose build is absent: device not ready")
+    except dj.NotReady as e:
+        ok("side build not on the phone" in str(e),
+           f"a --cells retake of a side-build file whose build is absent: device not ready ({e})")
+    proto = cells_file("proto-android-x.cells",
+                       "android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 backend=npu "
+                       "engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf",
+                       "android litert-lm Qwen/Qwen3-0.6B short-chat backend=npu "
+                       "engine-build=main-20260821-selfbuilt file=/fake/model_qualcomm_SM8850.litertlm",
+                       "android litert-lm Qwen/Qwen3-1.7B short-chat backend=npu "
+                       "engine-build=gone-build exclude=no-bundle")
+    ok(dj.side_build_tools(proto) == [
+        "/data/local/tmp/llmbench/engines/b11469-snapdragon/bin/llama-bench",
+        "/data/local/tmp/llmbench/engines/main-20260821-selfbuilt/litert_lm_advanced_main"]
+       and dj.side_build_tools(half) == [] and dj.side_build_tools(side) == [tool],
+       "the tool each side-build row launches: llama-bench for a native benchmark, llama-cli for a "
+       "prompt, the flat LiteRT-LM NPU tool; none for an excluded row or a file without side builds")
+    dj.pgrep = real_pgrep
+    lock = "/tmp/edge-llm-bench-android-FAKE-S.lock"   # the preflight's campaign-lock probe
+    if os.path.exists(lock):
+        os.remove(lock)
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")

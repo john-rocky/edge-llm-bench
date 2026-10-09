@@ -1,0 +1,30 @@
+# NPU and Android GPU rows in the weekly job, Galaxy S26 only: the session anchor and the short-chat
+# rows of matrices/dashboard-npu-v1-android-s26.cells (five models x npu / gpu on llama.cpp's
+# Snapdragon side build), every row byte-identical to that plan file, which stays the source of the
+# rows and the file the team page reads. ops/dashboard-v1/schedule.json devices.s26.extra_cells runs
+# it after the set as its own tagged session (-npu), since 2026-10-09 (owner GO).
+# The plan file's long-context-1024-gen256 rows and the protocol file's rows stay by-hand: on the
+# 2026-10-08 sitting a 1K launch of Qwen3 4B / Gemma 4 E2B raised the battery 0.4-4.1 C and a
+# llama-bench 1024/256 launch of Qwen3 1.7B 4.7-6.4 C, against at most 1.6 C for a short-chat
+# launch, and the job has no battery-temperature stop (the runner waits up to 600 s for thermal
+# status 0 before a launch and then runs).
+# Needs the side build on the phone, /data/local/tmp/llmbench/engines/b11469-snapdragon (android/README.md,
+# "Side builds"): without it the job skips this session and runs the rest of the sitting.
+#   BENCH_CPU_MASK= ./bench matrix matrices/dashboard-npu-v1-android-s26-short.cells --platform android
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=npu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat backend=gpu engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=npu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat backend=gpu engine-build=b11469-snapdragon file=Qwen3-1.7B-Q4_K_M.gguf
+
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=Qwen3-4B-Q4_K_M.gguf
+
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf
