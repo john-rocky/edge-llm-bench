@@ -814,14 +814,21 @@ def attempt(schedule, key, dev, attempt_no, args):
         plan = ([(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
                 if halves else [(args.cells or schedule["cells"], 0.0)])
         timeout_s = float(dev.get("timeout_hours", 6)) * 3600 / len(plan)
+        # per-device extra files (schedule.json "extra_cells": an arm measured on
+        # this device only, e.g. the ONNX Runtime GenAI cells on the Galaxy S26):
+        # each runs after the set as its own tagged session with its own timeout;
+        # an explicit --cells retake never fans out into them
+        extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])}
+        plan += [(f, float(e.get("min_free_gb", 0))) for f, e in extras.items()]
         worst = EXIT_OK
         previous = []
         last_rel = None
         for cells_file, floor in plan:
             camp = base
-            if halves:
+            if halves or cells_file in extras:
                 tag = re.sub(r"^.*-android-|\.cells$", "", os.path.basename(cells_file))
                 camp = f"{base}-{tag}"
+            if halves:
                 free = android_free_gb(dev["serial"]) if not dry else info.get("free_gb")
                 log(f"free before {tag}: {free:.1f} GB (floor {floor:g} GB)" if free is not None
                     else f"free before {tag}: unknown (floor {floor:g} GB)")
@@ -839,7 +846,9 @@ def attempt(schedule, key, dev, attempt_no, args):
                     worst = max(worst, EXIT_DEVICE)
                     continue
             rel_path = campaign_rel(camp, platform)
-            rc = run_matrix(cells_file, platform, camp, env, timeout_s, dry)
+            session_timeout = (float(extras[cells_file].get("timeout_hours", 1)) * 3600
+                               if cells_file in extras else timeout_s)
+            rc = run_matrix(cells_file, platform, camp, env, session_timeout, dry)
             previous.append(cells_file)
             last_rel = rel_path
             if dry:

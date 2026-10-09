@@ -190,9 +190,10 @@ expected shape of a week, not a lost slot.
 The wall times above are the short-chat set. Since 2026-10-06 every sitting
 also measures the 1024 / 256 cells, which roughly doubles it; estimated
 sitting length, hours (`docs/dashboard-cells-v1.md`, "Second task in the
-weekly set", has the derivation): Mac Studio 3.2 (the added 51 minutes of
+weekly set", has the derivation): Mac Studio 3.8 (the added 51 minutes of
 the 1K task measured; +1.0 for the ExecuTorch rows since 2026-10-08, "ExecuTorch
-arm in the weekly set, Mac leg"), Galaxy S26 7.9 in three halves (9.0 with a gate retry per half),
+arm in the weekly set, Mac leg"; +0.6 for the ONNX Runtime rows since 2026-10-09, "ONNX Runtime
+GenAI arm in the weekly set"), Galaxy S26 8.2 in three halves plus the ONNX Runtime session (9.3 with a gate retry per half),
 Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), iPhone 4.8 with every
 cell HOT-retried. `schedule.json` carries them as `expected_hours`, and
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×
@@ -265,6 +266,16 @@ never a bench device (no schedule entry, no way to select it); the Galaxy S26
 must be attached by a person — while it is not, every firing reports it not
 ready and measures the other pending devices; it is measured the first night
 it is attached and free.
+
+### Per-device extra files (2026-10-09)
+
+A device entry may carry `extra_cells`: cells files measured on that device only (an arm that
+is valid on one phone and not another). After the set — the whole file or the storage halves —
+the job runs each as its own session, campaign `<base>-<tag>` with the tag taken from the file
+name as for a half, under its own `timeout_hours` (default 1) and `min_free_gb` (in halves mode
+the other halves' pushed copies are rotated out first, as between halves). An explicit `--cells`
+retake never fans out into them. First use: the ONNX Runtime GenAI short-chat cells on the
+Galaxy S26 (`docs/dashboard-cells-v1.md`, "ONNX Runtime GenAI arm in the weekly set").
 
 ## 4. Session admission
 

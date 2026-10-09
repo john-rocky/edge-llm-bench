@@ -1,0 +1,7 @@
+# ONNX Runtime GenAI on the Galaxy S26 in the weekly set (schedule.json devices.s26.extra_cells, since
+# 2026-10-09, owner GO (i)): the two Qwen3 short-chat cells of matrices/dashboard-ortgenai-v1.cells that
+# give valid runs on this phone; the 1K cells and the 4B cell run under a CPU clock cap there (cpu-cap-rule,
+# results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*-android) until microsoft/onnxruntime#33196 lands.
+# Not for the Pixel 8a (never measured there).
+android onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+android onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048

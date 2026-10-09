@@ -248,6 +248,25 @@ mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldo
 mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
 mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
 
+# --- ONNX Runtime GenAI (arm onnxruntime-genai-{cpu,webgpu}; weekly since 2026-10-09, owner GO (i)): the
+# published onnx-community Qwen3 folders at the engine default (docs/ortgenai-arm-v1.md; recipes in
+# models/ortgenai-recipes.json). Mac: all 12 Qwen3 cells. Galaxy S26: only the two short-chat cells, in
+# matrices/dashboard-ortgenai-v1-android-ort.cells (schedule.json extra_cells) — its other cells run under
+# a CPU clock cap on that phone (cpu-cap-rule) until upstream microsoft/onnxruntime#33196 lands. iPhone 18 Pro:
+# none until the pinned app build carries the ONNX Runtime adapter (the night job installs nothing).
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX short-chat backend=webgpu cooldown=300 file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=cpu cooldown=300 file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 backend=webgpu cooldown=300 file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=98ddba15d05dede4435afb63f13280abcdbc2a48 context-tokens=2048
+
 # ===================== DISABLED placeholders =====================
 # Qwen3.5 and LFM2.5 — held by the LiteRT team on 2026-09-04 ("not all changes
 # for these have landed/validated"). Uncomment when they say go. The

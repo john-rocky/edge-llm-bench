@@ -930,6 +930,24 @@ Mac one engine process per cell (run 1 cold, runs 2..N warm, the warm median hea
 `yardstick run --runs N`), on Android a fresh process per run (cold). Drivers, pins, recipe
 labels, regime, timing, memory and telemetry: [docs/ortgenai-arm-v1.md](ortgenai-arm-v1.md).
 
+## ONNX Runtime GenAI arm in the weekly set (2026-10-09)
+
+Since 2026-10-09 (owner GO) the Mac block of `dashboard-text-v1.cells` ends with the 12 Qwen3
+rows of `matrices/dashboard-ortgenai-v1.cells` (0.6B / 1.7B / 4B, short-chat and the 1K text
+task at `context-tokens=2048`, the CPU EP and the WebGPU plugin EP, the engine default; one
+engine process per cell, run 1 cold, runs 2-4 warm). The Galaxy S26 measures only the two
+Qwen3 short-chat cells (0.6B, 1.7B), from `matrices/dashboard-ortgenai-v1-android-ort.cells`
+through `devices.s26.extra_cells` in `ops/dashboard-v1/schedule.json`: its 1K cells and the 4B
+cell ran under a CPU clock cap deeper than the 15 % line in every launch of the 2026-10-08
+sitting (cpu-cap-rule; the prefill cost is upstream, microsoft/onnxruntime#33196), so they stay
+by-hand until a release carries the fix. An `extra_cells` file runs after the set as its own
+tagged session (`-ort`), whole-set or halves alike, with its own `timeout_hours`; the Pixel 8a
+has no such entry (never measured there). The iPhone 18 Pro rows are not in the weekly set: the
+night job installs nothing, and the pinned app build predates the ONNX Runtime adapter (the
+2026-10-08 sitting ran a by-hand build; `docs/ortgenai-arm-v1.md`). The Mac sitting grows by
+about 35 minutes (the 2026-10-08 sitting: 34 minutes for the 12 cells and their anchors;
+`expected_hours` 3.2 → 3.8), the S26 sitting by about 15 minutes (`expected_hours` 7.9 → 8.2).
+
 ## ExecuTorch arm in the weekly set, Mac leg (2026-10-08)
 
 Since 2026-10-08 (owner GO) the Mac blocks of `dashboard-text-v1.cells` and

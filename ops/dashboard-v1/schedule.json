@@ -35,7 +35,7 @@
       "display": "Mac Studio (M4 Max)",
       "identifier": "Mac16,9",
       "window": "any firing while no heavy export pipeline runs (unified-memory contention: the runner refuses and the job passes over the Mac until it is quiet)",
-      "expected_hours": 3.2,
+      "expected_hours": 3.8,
       "timeout_hours": 5,
       "env": {}
     },
@@ -65,8 +65,16 @@
           "min_free_gb": 13
         }
       ],
+      "extra_cells": [
+        {
+          "cells": "matrices/dashboard-ortgenai-v1-android-ort.cells",
+          "min_free_gb": 4,
+          "timeout_hours": 1,
+          "_doc": "ONNX Runtime GenAI, the two Qwen3 short-chat cells that give valid runs on this phone (owner GO 2026-10-09); runs as its own tagged session (-ort) after the set, whole or halves"
+        }
+      ],
       "window": "any firing; USB attached, screen on or off (read and stamped per launch); runs unmasked (devices/galaxy-s26.md)",
-      "expected_hours": 7.9,
+      "expected_hours": 8.2,
       "timeout_hours": 15,
       "env": {}
     },
