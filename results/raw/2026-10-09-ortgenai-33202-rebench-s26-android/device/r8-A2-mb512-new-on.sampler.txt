@@ -1,0 +1,28 @@
+CPUPOLICY policy0 hw=3628800 cap=3628800 cpus=0 1 2 3 4 5
+CPUPOLICY policy6 hw=4742400 cap=4742400 cpus=6 7
+START uptime=575391.57 battery_temp=334 thermal=0 online=0-7
+LAUNCH uptime=575391.79 pid=792 engine_pid=792 exe=/data/local/tmp/llmbench/ortgenai-33202/model_benchmark rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+TICK 575391.79 VmHWM:292768 VmRSS:292768 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=2745600/883200 bat=-
+CPUMAX 3628800 4742400 uptime=575391.79
+ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+ENV ORT_DISABLE_TELEMETRY=1
+ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+SOCKET fd=3 inode=14517942
+SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14517942
+TICK 575392.42 VmHWM:852632 VmRSS:716148 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=3628800/883200 bat=-
+TICK 575392.95 VmHWM:891372 VmRSS:891372 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=3628800/883200 bat=-
+TICK 575393.48 VmHWM:896108 VmRSS:816000 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=3628800/883200 bat=-
+TICK 575394.01 VmHWM:1332088 VmRSS:1330552 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,0,4,7 cur=3628800/4070400 bat=-
+CPUMAX 3628800 4070400 uptime=575394.01
+TICK 575394.54 VmHWM:1624200 VmRSS:1624200 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,7 cur=3628800/3859200 bat=-
+CPUMAX 3628800 4742400 uptime=575394.54
+EXIT_CODE=0 uptime=575395.07
+END battery_temp=334 thermal=0
+LOGCAT_LINES=5
+LOGCAT 10-09 11:48:23.661 I/GenAI   (  792): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+LOGCAT 10-09 11:48:23.663 W/libc    (  792): Access denied finding property "ro.mediatek.platform"
+LOGCAT 10-09 11:48:23.663 W/libc    (  792): Access denied finding property "ro.chipname"
+LOGCAT 10-09 11:48:23.664 I/GenAI   (  792): ORT API Version 26 was found.
+LOGCAT 10-09 11:48:23.664 I/GenAI   (  792): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release

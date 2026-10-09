@@ -1,0 +1,807 @@
+2026-10-09 11:43:25 r8 phase dry (no adb)
+2026-10-09 11:43:25 dry: release libonnxruntime-genai.so sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35 = MANIFEST
+2026-10-09 11:43:25 dry: release libmat.so sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f = MANIFEST
+2026-10-09 11:43:26 dry: release libonnxruntime.so sha256 df5d25c72a868dca773597c71e2000756d43fe4d70ade516d3693c54e12e0ada = MANIFEST
+2026-10-09 11:43:26 dry: release ortgenai_run sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f = MANIFEST
+2026-10-09 11:43:26 dry: release model_benchmark sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04 = MANIFEST
+2026-10-09 11:43:26 dry: new libonnxruntime.so sha256 9fa431b6527d0d5d04da0d18e54ad9d51d0ce92b857f17a5d7e41f3abf78ce4b (v1.30.0 + PR #33202, ROUND8)
+2026-10-09 11:43:26 dry: ortgenai_run_dl sha256 bf4a175e224cbb60860ebc58e290c1059310a3a4992d9aa35988fe314ecd012f (android/ortgenai/ortgenai_run.cpp sha256 5f83ba8c9c35d404807acc69417d1ac96720deb6bf02ebebef1d4d57b1015cb6)
+2026-10-09 11:43:26 dry: run_r8.sh sha256 165e5bcb4200223fb0809aaf36904e1101addb80e89f237c5c702e62f7a4f743; diag_s26.sh (sourced) sha256 8d421b9d8248f8bb56a985c26a0be4d4c2bcaa125d41776f4aac9d5a6b4d3f8f
+2026-10-09 11:43:26 dry: model chat_template.jinja 4168 bytes
+2026-10-09 11:43:26 dry: model config.json 8957 bytes
+2026-10-09 11:43:26 dry: model genai_config.json 1520 bytes
+2026-10-09 11:43:26 dry: model model.onnx 524589133 bytes
+2026-10-09 11:43:26 dry: model tokenizer.json 11422648 bytes
+2026-10-09 11:43:26 dry: model tokenizer_config.json 663 bytes
+2026-10-09 11:43:26 dry: prompt long-context-1024-gen256.txt sha256 f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426
+2026-10-09 11:43:26 dry: hold now: none; also: none
+2026-10-09 11:43:26 dry: plan A1 gate=full limit=180s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A1-mb512-old-on /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 180 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:43:26 dry: plan A2 gate=full limit=180s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A2-mb512-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 180 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:43:26 dry: plan A3 gate=full limit=180s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A3-mb512-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 180 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:43:26 dry: plan A4 gate=full limit=180s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A4-mb512-old-off /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 180 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:43:26 dry: plan A5 gate=full limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A5-mb1024p-old-off /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:43:26 dry: plan A6 gate=full limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A6-mb1024p-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:43:26 dry: plan A7 gate=full limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A7-mb1024p-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:43:26 dry: plan A8 gate=full limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A8-mb1024p-old-on /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:43:26 dry: plan B1 gate=full limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B1-run1k-old-on /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 11:43:26 dry: plan B2 gate=full limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B2-run1k-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 11:43:26 dry: plan B3 gate=full limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B3-run1k-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 11:43:26 dry: plan B4 gate=full limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B4-run1k-old-off /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 11:43:26 dry: plan B5 gate=light limit=120s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B5-dl-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 120 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B5-dl-new-on.d/logits.f32
+2026-10-09 11:43:26 dry: plan B6 gate=light limit=120s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B6-dl-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 120 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B6-dl-new-off.d/logits.f32
+2026-10-09 11:43:26 dry: plan B7 gate=light limit=120s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B7-dl-old-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai 120 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B7-dl-old-off.d/logits.f32
+2026-10-09 11:43:26 dry: plan B8 gate=light limit=180s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B8-dl-old-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai 180 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B8-dl-old-on.d/logits.f32
+2026-10-09 11:43:26 dry: PASS
+2026-10-09 11:44:06 keeper 39087: start: ortgenai_r8_A (~30 min), hold /Users/USER/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold, release file /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-release-A, hold max 1800s, deadline 15:44
+holder: none
+1. ortgenai_r8_A  edge-llm-bench-df  ~30 min  queued 2026-10-09 11:44:06 (no keeper waiting)
+hold acquired: /Users/USER/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold (owner pid 39087) at 11:44:06
+2026-10-09 11:44:08 keeper 39087: hold acquired: {"pid": 39087, "script": "ortgenai_r8_A", "device": "S26", "started": "2026-10-09 11:44:06"}
+2026-10-09 11:45:55 r8 block A: hold since 11:44:06, frame left 28 min 11 s
+2026-10-09 11:45:55 probe (A)
+2026-10-09 11:45:55 probe lock: free (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock)
+2026-10-09 11:45:55 probe hold: {"pid": 39087, "script": "ortgenai_r8_A", "device": "S26", "started": "2026-10-09 11:44:06"}
+2026-10-09 11:45:55 probe host drivers:  none (none on RFGL80R6A6H)
+2026-10-09 11:45:55 probe device engines: none
+2026-10-09 11:45:55 probe android: SM-S942Q / Android 16 / patch 2026-08-05 / samsung/m1qjpnx/m1q:16/BP4A.251205.006/S942QOPS1AZH9_SJP1AZH9:user/release-keys / uptime 575243.27 / cpus online 0-7
+2026-10-09 11:45:55 probe disk: /dev/block/dm-88 232019968 220748528  10964240  96% /data/user/0
+2026-10-09 11:45:55 probe new dir: ls: /data/local/tmp/llmbench/ortgenai-33202: No such file or directory;
+2026-10-09 11:45:55 probe model dir: ls: /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128: No such file or directory;
+2026-10-09 11:45:55 probe prompt: -rw-rw-rw- 1 shell shell 5219 2026-10-07 21:59 /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt
+2026-10-09 11:45:55 probe env through sh: Y=1 ORT_GQA_DISABLE_FLASH_ATTENTION=1 
+2026-10-09 11:45:56 old dir (before): libmat.so 8e758c33; libonnxruntime-genai.so 1922b6ef; libonnxruntime.so df5d25c7; model_benchmark 062bf05d; ortgenai_run 4e74dad3; run_diag.sh 48e55603; run_sampled.sh a8ebaa9c; 
+2026-10-09 11:45:56 probe old dir: the 5 runtime files = MANIFEST
+2026-10-09 11:45:56 probe state: thermal=0 battery=328dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5999MB wake=Dozing
+2026-10-09 11:45:56 campaign lock taken (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock, perl pid 46206)
+2026-10-09 11:45:56 push (A)
+2026-10-09 11:45:57 push /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so sha256 9fa431b6527d0d5d04da0d18e54ad9d51d0ce92b857f17a5d7e41f3abf78ce4b
+2026-10-09 11:45:57 copy /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so -> /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so, sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35 (= MANIFEST)
+2026-10-09 11:45:57 copy /data/local/tmp/llmbench/ortgenai/libmat.so -> /data/local/tmp/llmbench/ortgenai-33202/libmat.so, sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f (= MANIFEST)
+2026-10-09 11:45:57 copy /data/local/tmp/llmbench/ortgenai/model_benchmark -> /data/local/tmp/llmbench/ortgenai-33202/model_benchmark, sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04 (= MANIFEST)
+2026-10-09 11:45:58 copy /data/local/tmp/llmbench/ortgenai/ortgenai_run -> /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run, sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f (= MANIFEST)
+2026-10-09 11:45:58 push /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl sha256 bf4a175e224cbb60860ebc58e290c1059310a3a4992d9aa35988fe314ecd012f
+2026-10-09 11:45:58 push /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh sha256 165e5bcb4200223fb0809aaf36904e1101addb80e89f237c5c702e62f7a4f743
+2026-10-09 11:45:58 push model chat_template.jinja 4168 bytes
+2026-10-09 11:45:58 push model config.json 8957 bytes
+2026-10-09 11:45:58 push model genai_config.json 1520 bytes
+2026-10-09 11:46:14 push model model.onnx 524589133 bytes
+2026-10-09 11:46:14 push model tokenizer.json 11422648 bytes
+2026-10-09 11:46:14 push model tokenizer_config.json 663 bytes
+2026-10-09 11:46:14 push done; disk: /dev/block/dm-88 232019968 221346928  10365840  96% /data/user/0
+2026-10-09 11:46:14 gate pass (full): thermal=0 battery=329dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5985MB wake=Dozing
+2026-10-09 11:46:14 launch A1 r8-A1-mb512-old-on: limit=180s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A1-mb512-old-on /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 180 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:46:23 launch A1: EXIT_CODE=0
+2026-10-09 11:46:23 pulled A1: 3 log files; r8-A1-mb512-old-on.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  A1 | Batch size: 1, prompt tokens: 512, tokens to generate: 8
+  A1 | Model Creation Latency: 1450.81 ms
+  A1 | Generator Creation Latency: 86.9728 ms
+  A1 | Prompt processing (time to first token):
+  A1 | 	avg (us):       5.69027e+06
+  A1 | 	avg (tokens/s): 89.9781
+  A1 | 	p50 (us):       5.69027e+06
+  A1 | Token generation:
+  A1 | 	avg (us):       17506.1
+  A1 | 	avg (tokens/s): 57.123
+  A1 | 	p50 (us):       14953.5
+  A1 | Token sampling:
+  A1 | 	avg (us):       240.781
+  A1 | 	avg (tokens/s): 4153.15
+  A1 | 	p50 (us):       240.781
+  A1 | E2E generation (entire generation loop):
+  A1 | 	avg (ms):       5813.06
+  A1 | Peak working set size: 1717100544 bytes (1.60 GB)
+  A1 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A1 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A1 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+  A1 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+  A1 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A1 ~ LOGCAT 10-09 11:46:14.716 I/GenAI   (  566): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A1 ~ LOGCAT 10-09 11:46:14.817 I/GenAI   (  566): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  A1 ~ START uptime=575262.62 battery_temp=329 thermal=0 online=0-7
+  A1 ~ LAUNCH uptime=575262.84 pid=566 engine_pid=566 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+  A1 ~ CPUMAX 3628800 4742400 uptime=575262.84
+  A1 ~ SOCKET fd=3 inode=14510712
+  A1 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14510712
+  A1 ~ CPUMAX 3628800 4185600 uptime=575266.12
+  A1 ~ CPUMAX 3628800 4742400 uptime=575266.66
+  A1 ~ CPUMAX 3628800 4262400 uptime=575267.18
+  A1 ~ CPUMAX 3628800 4185600 uptime=575267.71
+  A1 ~ CPUMAX 3513600 3974400 uptime=575268.24
+  A1 ~ CPUMAX 3187200 3398400 uptime=575270.35
+  A1 ~ EXIT_CODE=0 uptime=575270.88
+  A1 ~ END battery_temp=329 thermal=0
+  A1 ~ LOGCAT_LINES=5
+  A1 ~ max Threads: 4
+2026-10-09 11:46:23 after A1: thermal=0 battery=329dC capped=policy0 policy6  policy0=3187200/3628800 policy6=3398400/4742400 level=79 bstatus=4 MemAvailable=6082MB wake=Dozing
+2026-10-09 11:46:23 pause 120s
+2026-10-09 11:48:23 gate pass (full): thermal=0 battery=334dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6071MB wake=Dozing
+2026-10-09 11:48:23 launch A2 r8-A2-mb512-new-on: limit=180s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A2-mb512-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 180 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:48:27 launch A2: EXIT_CODE=0
+2026-10-09 11:48:27 pulled A2: 3 log files; r8-A2-mb512-new-on.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  A2 | Batch size: 1, prompt tokens: 512, tokens to generate: 8
+  A2 | Model Creation Latency: 1445.01 ms
+  A2 | Generator Creation Latency: 86.9428 ms
+  A2 | Prompt processing (time to first token):
+  A2 | 	avg (us):       927443
+  A2 | 	avg (tokens/s): 552.055
+  A2 | 	p50 (us):       927443
+  A2 | Token generation:
+  A2 | 	avg (us):       14737.1
+  A2 | 	avg (tokens/s): 67.8559
+  A2 | 	p50 (us):       12446.6
+  A2 | Token sampling:
+  A2 | 	avg (us):       242.187
+  A2 | 	avg (tokens/s): 4129.04
+  A2 | 	p50 (us):       242.187
+  A2 | E2E generation (entire generation loop):
+  A2 | 	avg (ms):       1030.85
+  A2 | Peak working set size: 1674190848 bytes (1.56 GB)
+  A2 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A2 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A2 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  A2 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  A2 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A2 ~ LOGCAT 10-09 11:48:23.661 I/GenAI   (  792): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A2 ~ LOGCAT 10-09 11:48:23.664 I/GenAI   (  792): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  A2 ~ START uptime=575391.57 battery_temp=334 thermal=0 online=0-7
+  A2 ~ LAUNCH uptime=575391.79 pid=792 engine_pid=792 exe=/data/local/tmp/llmbench/ortgenai-33202/model_benchmark rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+  A2 ~ CPUMAX 3628800 4742400 uptime=575391.79
+  A2 ~ SOCKET fd=3 inode=14517942
+  A2 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14517942
+  A2 ~ CPUMAX 3628800 4070400 uptime=575394.01
+  A2 ~ CPUMAX 3628800 4742400 uptime=575394.54
+  A2 ~ EXIT_CODE=0 uptime=575395.07
+  A2 ~ END battery_temp=334 thermal=0
+  A2 ~ LOGCAT_LINES=5
+  A2 ~ max Threads: 4
+2026-10-09 11:48:27 after A2: thermal=0 battery=334dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6034MB wake=Dozing
+2026-10-09 11:48:27 pause 120s
+2026-10-09 11:50:27 gate pass (full): thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6106MB wake=Dozing
+2026-10-09 11:50:27 launch A3 r8-A3-mb512-new-off: limit=180s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A3-mb512-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 180 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:50:31 launch A3: EXIT_CODE=0
+2026-10-09 11:50:31 pulled A3: 3 log files; r8-A3-mb512-new-off.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  A3 | Batch size: 1, prompt tokens: 512, tokens to generate: 8
+  A3 | Model Creation Latency: 1467.89 ms
+  A3 | Generator Creation Latency: 87.2826 ms
+  A3 | Prompt processing (time to first token):
+  A3 | 	avg (us):       838838
+  A3 | 	avg (tokens/s): 610.369
+  A3 | 	p50 (us):       838838
+  A3 | Token generation:
+  A3 | 	avg (us):       19586.7
+  A3 | 	avg (tokens/s): 51.0551
+  A3 | 	p50 (us):       17387.1
+  A3 | Token sampling:
+  A3 | 	avg (us):       281.98
+  A3 | 	avg (tokens/s): 3546.35
+  A3 | 	p50 (us):       281.98
+  A3 | E2E generation (entire generation loop):
+  A3 | 	avg (ms):       976.229
+  A3 | Peak working set size: 1751359488 bytes (1.63 GB)
+  A3 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A3 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A3 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  A3 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  A3 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  A3 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A3 ~ LOGCAT 10-09 11:50:27.839 I/GenAI   (  975): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A3 ~ LOGCAT 10-09 11:50:27.842 I/GenAI   (  975): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  A3 ~ START uptime=575515.75 battery_temp=333 thermal=0 online=0-7
+  A3 ~ LAUNCH uptime=575515.97 pid=975 engine_pid=975 exe=/data/local/tmp/llmbench/ortgenai-33202/model_benchmark rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+  A3 ~ CPUMAX 3628800 4742400 uptime=575515.97
+  A3 ~ SOCKET fd=3 inode=14519772
+  A3 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14519772
+  A3 ~ CPUMAX 3628800 4339200 uptime=575518.19
+  A3 ~ CPUMAX 3628800 4742400 uptime=575518.72
+  A3 ~ EXIT_CODE=0 uptime=575519.29
+  A3 ~ END battery_temp=333 thermal=0
+  A3 ~ LOGCAT_LINES=5
+  A3 ~ max Threads: 4
+2026-10-09 11:50:31 after A3: thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6096MB wake=Dozing
+2026-10-09 11:50:31 pause 120s
+2026-10-09 11:52:31 gate pass (full): thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6083MB wake=Dozing
+2026-10-09 11:52:31 launch A4 r8-A4-mb512-old-off: limit=180s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A4-mb512-old-off /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 180 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+2026-10-09 11:52:35 launch A4: EXIT_CODE=0
+2026-10-09 11:52:35 pulled A4: 3 log files; r8-A4-mb512-old-off.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  A4 | Batch size: 1, prompt tokens: 512, tokens to generate: 8
+  A4 | Model Creation Latency: 1387.69 ms
+  A4 | Generator Creation Latency: 82.6539 ms
+  A4 | Prompt processing (time to first token):
+  A4 | 	avg (us):       839171
+  A4 | 	avg (tokens/s): 610.126
+  A4 | 	p50 (us):       839171
+  A4 | Token generation:
+  A4 | 	avg (us):       20240.6
+  A4 | 	avg (tokens/s): 49.4057
+  A4 | 	p50 (us):       17192.6
+  A4 | Token sampling:
+  A4 | 	avg (us):       278.281
+  A4 | 	avg (tokens/s): 3593.49
+  A4 | 	p50 (us):       278.281
+  A4 | E2E generation (entire generation loop):
+  A4 | 	avg (ms):       981.136
+  A4 | Peak working set size: 1795461120 bytes (1.67 GB)
+  A4 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A4 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A4 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+  A4 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  A4 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+  A4 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A4 ~ LOGCAT 10-09 11:52:32.055 I/GenAI   ( 1655): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A4 ~ LOGCAT 10-09 11:52:32.152 I/GenAI   ( 1655): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  A4 ~ START uptime=575639.96 battery_temp=333 thermal=0 online=0-7
+  A4 ~ LAUNCH uptime=575640.18 pid=1655 engine_pid=1655 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+  A4 ~ CPUMAX 3628800 4742400 uptime=575640.18
+  A4 ~ SOCKET fd=3 inode=14521889
+  A4 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14521889
+  A4 ~ EXIT_CODE=0 uptime=575643.50
+  A4 ~ END battery_temp=333 thermal=0
+  A4 ~ LOGCAT_LINES=5
+  A4 ~ max Threads: 4
+2026-10-09 11:52:35 after A4: thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6201MB wake=Dozing
+2026-10-09 11:52:35 pause 120s
+2026-10-09 11:54:36 gate pass (full): thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6224MB wake=Dozing
+2026-10-09 11:54:36 launch A5 r8-A5-mb1024p-old-off: limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A5-mb1024p-old-off /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:54:40 launch A5: EXIT_CODE=0
+2026-10-09 11:54:41 pulled A5: 3 log files; r8-A5-mb1024p-old-off.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: prefill_profile_2026-10-09_11-54-38_318.json 
+  A5 | Profiling will run on iteration index 0 (1-based: 1 of 1)
+  A5 | Batch size: 1, prompt tokens: 1024, tokens to generate: 8
+  A5 | Model Creation Latency: 1401.55 ms
+  A5 | Generator Creation Latency: 85.1102 ms
+  A5 | Prompt processing (time to first token):
+  A5 | 	avg (us):       1.90269e+06
+  A5 | 	avg (tokens/s): 538.187
+  A5 | 	p50 (us):       1.90269e+06
+  A5 | Token generation:
+  A5 | 	avg (us):       32504
+  A5 | 	avg (tokens/s): 30.7654
+  A5 | 	p50 (us):       26919.1
+  A5 | Token sampling:
+  A5 | 	avg (us):       451.563
+  A5 | 	avg (tokens/s): 2214.53
+  A5 | 	p50 (us):       451.563
+  A5 | E2E generation (entire generation loop):
+  A5 | 	avg (ms):       2130.67
+  A5 | Peak working set size: 2346283008 bytes (2.19 GB)
+  A5 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A5 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A5 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+  A5 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  A5 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+  A5 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A5 ~ LOGCAT 10-09 11:54:36.227 I/GenAI   ( 1950): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A5 ~ LOGCAT 10-09 11:54:36.329 I/GenAI   ( 1950): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  A5 ~ START uptime=575764.13 battery_temp=333 thermal=0 online=0-7
+  A5 ~ LAUNCH uptime=575764.35 pid=1950 engine_pid=1950 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+  A5 ~ CPUMAX 3628800 4742400 uptime=575764.35
+  A5 ~ SOCKET fd=3 inode=14527417
+  A5 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14527417
+  A5 ~ CPUMAX 3628800 4396800 uptime=575766.57
+  A5 ~ CPUMAX 3628800 4742400 uptime=575767.10
+  A5 ~ CPUMAX 3628800 3859200 uptime=575767.63
+  A5 ~ CPUMAX 3628800 4742400 uptime=575768.17
+  A5 ~ EXIT_CODE=0 uptime=575768.75
+  A5 ~ END battery_temp=333 thermal=0
+  A5 ~ LOGCAT_LINES=5
+  A5 ~ OUTDIR prefill_profile_2026-10-09_11-54-38_318.json 547940
+  A5 ~ max Threads: 4
+2026-10-09 11:54:41 after A5: thermal=0 battery=333dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6317MB wake=Dozing
+2026-10-09 11:54:41 pause 120s
+2026-10-09 11:56:41 gate pass (full): thermal=0 battery=334dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6258MB wake=Dozing
+2026-10-09 11:56:41 launch A6 r8-A6-mb1024p-new-off: limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A6-mb1024p-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:56:46 launch A6: EXIT_CODE=0
+2026-10-09 11:56:46 pulled A6: 3 log files; r8-A6-mb1024p-new-off.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: prefill_profile_2026-10-09_11-56-43_688.json 
+  A6 | Profiling will run on iteration index 0 (1-based: 1 of 1)
+  A6 | Batch size: 1, prompt tokens: 1024, tokens to generate: 8
+  A6 | Model Creation Latency: 1496.38 ms
+  A6 | Generator Creation Latency: 93.4394 ms
+  A6 | Prompt processing (time to first token):
+  A6 | 	avg (us):       1.85616e+06
+  A6 | 	avg (tokens/s): 551.675
+  A6 | 	p50 (us):       1.85616e+06
+  A6 | Token generation:
+  A6 | 	avg (us):       32390.8
+  A6 | 	avg (tokens/s): 30.873
+  A6 | 	p50 (us):       27476.3
+  A6 | Token sampling:
+  A6 | 	avg (us):       255.573
+  A6 | 	avg (tokens/s): 3912.78
+  A6 | 	p50 (us):       255.573
+  A6 | E2E generation (entire generation loop):
+  A6 | 	avg (ms):       2083.16
+  A6 | Peak working set size: 2307481600 bytes (2.15 GB)
+  A6 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A6 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A6 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  A6 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  A6 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  A6 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A6 ~ LOGCAT 10-09 11:56:41.557 I/GenAI   ( 2256): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A6 ~ LOGCAT 10-09 11:56:41.576 I/GenAI   ( 2256): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  A6 ~ START uptime=575889.45 battery_temp=334 thermal=0 online=0-7
+  A6 ~ LAUNCH uptime=575889.67 pid=2256 engine_pid=2256 exe=/data/local/tmp/llmbench/ortgenai-33202/model_benchmark rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+  A6 ~ CPUMAX 3628800 4742400 uptime=575889.67
+  A6 ~ SOCKET fd=3 inode=14531706
+  A6 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14531706
+  A6 ~ CPUMAX 3628800 4339200 uptime=575892.42
+  A6 ~ CPUMAX 3628800 3859200 uptime=575892.96
+  A6 ~ CPUMAX 3628800 4742400 uptime=575893.49
+  A6 ~ EXIT_CODE=0 uptime=575894.07
+  A6 ~ END battery_temp=334 thermal=0
+  A6 ~ LOGCAT_LINES=5
+  A6 ~ OUTDIR prefill_profile_2026-10-09_11-56-43_688.json 548036
+  A6 ~ max Threads: 4
+2026-10-09 11:56:46 after A6: thermal=0 battery=334dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6287MB wake=Dozing
+2026-10-09 11:56:46 pause 120s
+2026-10-09 11:58:46 gate pass (full): thermal=0 battery=334dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6294MB wake=Dozing
+2026-10-09 11:58:46 launch A7 r8-A7-mb1024p-new-on: limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A7-mb1024p-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 11:58:51 launch A7: EXIT_CODE=0
+2026-10-09 11:58:51 pulled A7: 3 log files; r8-A7-mb1024p-new-on.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: prefill_profile_2026-10-09_11-58-48_885.json 
+  A7 | Profiling will run on iteration index 0 (1-based: 1 of 1)
+  A7 | Batch size: 1, prompt tokens: 1024, tokens to generate: 8
+  A7 | Model Creation Latency: 1461.08 ms
+  A7 | Generator Creation Latency: 92.79 ms
+  A7 | Prompt processing (time to first token):
+  A7 | 	avg (us):       2.20901e+06
+  A7 | 	avg (tokens/s): 463.555
+  A7 | 	p50 (us):       2.20901e+06
+  A7 | Token generation:
+  A7 | 	avg (us):       19229.3
+  A7 | 	avg (tokens/s): 52.0041
+  A7 | 	p50 (us):       15100.1
+  A7 | Token sampling:
+  A7 | 	avg (us):       238.541
+  A7 | 	avg (tokens/s): 4192.15
+  A7 | 	p50 (us):       238.541
+  A7 | E2E generation (entire generation loop):
+  A7 | 	avg (ms):       2343.86
+  A7 | Peak working set size: 2043076608 bytes (1.90 GB)
+  A7 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A7 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A7 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  A7 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  A7 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A7 ~ LOGCAT 10-09 11:58:46.824 I/GenAI   ( 2471): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  A7 ~ LOGCAT 10-09 11:58:46.828 I/GenAI   ( 2471): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  A7 ~ START uptime=576014.73 battery_temp=334 thermal=0 online=0-7
+  A7 ~ LAUNCH uptime=576014.95 pid=2471 engine_pid=2471 exe=/data/local/tmp/llmbench/ortgenai-33202/model_benchmark rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+  A7 ~ CPUMAX 3628800 4742400 uptime=576014.95
+  A7 ~ SOCKET fd=3 inode=14531342
+  A7 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14531342
+  A7 ~ CPUMAX 3628800 4646400 uptime=576017.17
+  A7 ~ CPUMAX 3628800 4070400 uptime=576017.69
+  A7 ~ CPUMAX 3628800 3974400 uptime=576018.22
+  A7 ~ CPUMAX 3628800 3648000 uptime=576018.75
+  A7 ~ EXIT_CODE=0 uptime=576019.28
+  A7 ~ END battery_temp=334 thermal=0
+  A7 ~ LOGCAT_LINES=5
+  A7 ~ OUTDIR prefill_profile_2026-10-09_11-58-48_885.json 548015
+  A7 ~ max Threads: 4
+2026-10-09 11:58:51 after A7: thermal=0 battery=334dC capped=policy6  policy0=3628800/3628800 policy6=4512000/4742400 level=79 bstatus=4 MemAvailable=6253MB wake=Dozing
+2026-10-09 11:58:51 pause 120s
+2026-10-09 12:00:52 gate pass (full): thermal=0 battery=336dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6135MB wake=Dozing
+2026-10-09 12:00:52 launch A8 r8-A8-mb1024p-old-on: limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-A8-mb1024p-old-on /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+2026-10-09 12:01:23 launch A8: EXIT_CODE=0
+2026-10-09 12:01:23 pulled A8: 3 log files; r8-A8-mb1024p-old-on.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: prefill_profile_2026-10-09_12-00-54_274.json 
+  A8 | Profiling will run on iteration index 0 (1-based: 1 of 1)
+  A8 | Batch size: 1, prompt tokens: 1024, tokens to generate: 8
+  A8 | Model Creation Latency: 1445.39 ms
+  A8 | Generator Creation Latency: 88.7982 ms
+  A8 | Prompt processing (time to first token):
+  A8 | 	avg (us):       2.78167e+07
+  A8 | 	avg (tokens/s): 36.8125
+  A8 | 	p50 (us):       2.78167e+07
+  A8 | Token generation:
+  A8 | 	avg (us):       27827.3
+  A8 | 	avg (tokens/s): 35.936
+  A8 | 	p50 (us):       20102.7
+  A8 | Token sampling:
+  A8 | 	avg (us):       346.771
+  A8 | 	avg (tokens/s): 2883.75
+  A8 | 	p50 (us):       346.771
+  A8 | E2E generation (entire generation loop):
+  A8 | 	avg (ms):       28011.8
+  A8 | Peak working set size: 2078253056 bytes (1.94 GB)
+  A8 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A8 ~ ENV ORT_DISABLE_TELEMETRY=1
+  A8 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+  A8 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+  A8 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A8 ~ LOGCAT 10-09 12:00:52.100 I/GenAI   ( 3040): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  A8 ~ LOGCAT 10-09 12:00:52.234 I/GenAI   ( 3040): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  A8 ~ START uptime=576140.00 battery_temp=336 thermal=0 online=0-7
+  A8 ~ LAUNCH uptime=576140.22 pid=3040 engine_pid=3040 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+  A8 ~ CPUMAX 3628800 4742400 uptime=576140.22
+  A8 ~ SOCKET fd=3 inode=14539827
+  A8 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14539827
+  A8 ~ CPUMAX 3628800 4396800 uptime=576144.02
+  A8 ~ CPUMAX 3628800 4339200 uptime=576144.54
+  A8 ~ CPUMAX 3628800 3974400 uptime=576145.07
+  A8 ~ CPUMAX 3628800 4185600 uptime=576145.62
+  A8 ~ CPUMAX 3513600 4070400 uptime=576146.15
+  A8 ~ CPUMAX 3302400 3648000 uptime=576148.26
+  A8 ~ CPUMAX 3187200 3129600 uptime=576149.84
+  A8 ~ CPUMAX 2899200 2880000 uptime=576151.96
+  A8 ~ CPUMAX 2496000 2438400 uptime=576154.10
+  A8 ~ CPUMAX 2227200 2227200 uptime=576160.02
+  A8 ~ EXIT_CODE=0 uptime=576170.89
+  A8 ~ END battery_temp=357 thermal=0
+  A8 ~ LOGCAT_LINES=5
+  A8 ~ OUTDIR prefill_profile_2026-10-09_12-00-54_274.json 548918
+  A8 ~ max Threads: 4
+2026-10-09 12:01:23 after A8: thermal=0 battery=357dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=78 bstatus=2 MemAvailable=6162MB wake=Dozing
+2026-10-09 12:01:23 block A runs done; frame left 12 min
+2026-10-09 12:01:23 clean (A): device out/ files: r8-A1-mb512-old-on.d r8-A1-mb512-old-on.engine.txt r8-A1-mb512-old-on.sampler.txt r8-A2-mb512-new-on.d r8-A2-mb512-new-on.engine.txt r8-A2-mb512-new-on.sampler.txt r8-A3-mb512-new-off.d r8-A3-mb512-new-off.engine.txt r8-A3-mb512-new-off.sampler.txt r8-A4-mb512-old-off.d r8-A4-mb512-old-off.engine.txt r8-A4-mb512-old-off.sampler.txt r8-A5-mb1024p-old-off.d r8-A5-mb1024p-old-off.engine.txt r8-A5-mb1024p-old-off.sampler.txt r8-A6-mb1024p-new-off.d r8-A6-mb1024p-new-off.engine.txt r8-A6-mb1024p-new-off.sampler.txt r8-A7-mb1024p-new-on.d r8-A7-mb1024p-new-on.engine.txt r8-A7-mb1024p-new-on.sampler.txt r8-A8-mb1024p-old-on.d r8-A8-mb1024p-old-on.engine.txt r8-A8-mb1024p-old-on.sampler.txt 
+2026-10-09 12:01:23 clean (A): engines of this round before: none;
+2026-10-09 12:01:23 clean (A): model folder removed, out/ r8-A files removed; left: libmat.so libonnxruntime-genai.so libonnxruntime.so model_benchmark ortgenai_run ortgenai_run_dl run_r8.sh 
+2026-10-09 12:01:24 clean (A): disk /dev/block/dm-88 232019968 220823632  10889136  96% /data/user/0; engines: 
+2026-10-09 12:01:24 old dir (after): libmat.so 8e758c33; libonnxruntime-genai.so 1922b6ef; libonnxruntime.so df5d25c7; model_benchmark 062bf05d; ortgenai_run 4e74dad3; run_diag.sh 48e55603; run_sampled.sh a8ebaa9c; 
+2026-10-09 12:01:24 old dir unchanged (A): every file's sha256 and size the same before and after
+2026-10-09 12:01:24 release requested (/private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-release-A); exit code 0
+device hold removed
+2026-10-09 12:01:25 keeper 39087: hold returned (release file) after 1037 s; hold now: none
+2026-10-09 12:01:25 hold now: none
+2026-10-09 14:06:56 keeper 55775: start: ortgenai_r8_B (~30 min), hold /Users/USER/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold, release file /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-release-B, hold max 1800s, deadline 18:07
+holder: none
+1. ortgenai_r8_B  edge-llm-bench-df  ~30 min  queued 2026-10-09 14:06:56 (no keeper waiting)
+hold acquired: /Users/USER/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold (owner pid 55775) at 14:06:56
+2026-10-09 14:06:58 keeper 55775: hold acquired: {"pid": 55775, "script": "ortgenai_r8_B", "device": "S26", "started": "2026-10-09 14:06:56"}
+2026-10-09 14:07:03 r8 block B: hold since 14:06:56, frame left 29 min 53 s
+2026-10-09 14:07:03 probe (B)
+2026-10-09 14:07:03 probe lock: free (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock)
+2026-10-09 14:07:03 probe hold: {"pid": 55775, "script": "ortgenai_r8_B", "device": "S26", "started": "2026-10-09 14:06:56"}
+2026-10-09 14:07:03 probe host drivers:  none (none on RFGL80R6A6H)
+2026-10-09 14:07:04 probe device engines: none
+2026-10-09 14:07:04 probe android: SM-S942Q / Android 16 / patch 2026-08-05 / samsung/m1qjpnx/m1q:16/BP4A.251205.006/S942QOPS1AZH9_SJP1AZH9:user/release-keys / uptime 583712.06 / cpus online 0-7
+2026-10-09 14:07:04 probe disk: /dev/block/dm-88 232019968 220825664  10887104  96% /data/user/0
+2026-10-09 14:07:04 probe new dir: total 74348;-rw-rw-rw- 1 shell shell 28597536 2026-10-09 11:45 libmat.so;-rw-rw-rw- 1 shell shell  6673360 2026-10-09 11:45 libonnxruntime-genai.so;-rwxrwxrwx 1 shell shell 22604072 2026-10-09 11:28 libonnxruntime.so;-rwxr-xr-x 1 shell shell  6062400 2026-10-09 11:45 model_benchmark;-rwxr-xr-x 1 shell shell  6044016 2026-10-09 11:45 ortgenai_run;-rwxr-xr-x 1 shell shell  6057080 2026-10-09 11:28 ortgenai_run_dl;-rwxrwxrwx 1 shell shell     6522 2026-10-09 11:35 run_r8.sh;
+2026-10-09 14:07:04 probe model dir: ls: /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128: No such file or directory;
+2026-10-09 14:07:04 probe prompt: -rw-rw-rw- 1 shell shell 5219 2026-10-07 21:59 /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt
+2026-10-09 14:07:04 probe env through sh: Y=1 ORT_GQA_DISABLE_FLASH_ATTENTION=1 
+2026-10-09 14:07:04 old dir (before): libmat.so 8e758c33; libonnxruntime-genai.so 1922b6ef; libonnxruntime.so df5d25c7; model_benchmark 062bf05d; ortgenai_run 4e74dad3; run_diag.sh 48e55603; run_sampled.sh a8ebaa9c; 
+2026-10-09 14:07:04 probe old dir: the 5 runtime files = MANIFEST
+2026-10-09 14:07:04 probe state: thermal=0 battery=296dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5936MB wake=Dozing
+2026-10-09 14:07:05 campaign lock taken (/tmp/edge-llm-bench-android-RFGL80R6A6H.lock, perl pid 57169)
+2026-10-09 14:07:05 push (B)
+2026-10-09 14:07:05 push /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so present, sha256 9fa431b6527d0d5d04da0d18e54ad9d51d0ce92b857f17a5d7e41f3abf78ce4b
+2026-10-09 14:07:05 push /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so present, sha256 1922b6ef932ccd5995500f1c84850f286aac21f000f180e938d2783754adfb35
+2026-10-09 14:07:05 push /data/local/tmp/llmbench/ortgenai-33202/libmat.so present, sha256 8e758c3379d11a36feca50bb7bfa9553433fec08f27d5454f7b4e27beca6216f
+2026-10-09 14:07:05 push /data/local/tmp/llmbench/ortgenai-33202/model_benchmark present, sha256 062bf05d04b42cf057b26bbec639f72fc0b3869dc4f7aa765d3673726f72df04
+2026-10-09 14:07:06 push /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run present, sha256 4e74dad323302af41ab13e47c728490791d5d4e4318180790ddb42e0e1756a7f
+2026-10-09 14:07:06 push /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl present, sha256 bf4a175e224cbb60860ebc58e290c1059310a3a4992d9aa35988fe314ecd012f
+2026-10-09 14:07:06 push /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh present, sha256 165e5bcb4200223fb0809aaf36904e1101addb80e89f237c5c702e62f7a4f743
+2026-10-09 14:07:06 prompt /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt sha256 f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426
+2026-10-09 14:07:06 push model chat_template.jinja 4168 bytes
+2026-10-09 14:07:06 push model config.json 8957 bytes
+2026-10-09 14:07:06 push model genai_config.json 1520 bytes
+2026-10-09 14:07:22 push model model.onnx 524589133 bytes
+2026-10-09 14:07:22 push model tokenizer.json 11422648 bytes
+2026-10-09 14:07:22 push model tokenizer_config.json 663 bytes
+2026-10-09 14:07:22 push done; disk: /dev/block/dm-88 232019968 221349684  10363084  96% /data/user/0
+2026-10-09 14:07:22 gate pass (full): thermal=0 battery=296dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5910MB wake=Dozing
+2026-10-09 14:07:22 launch B1 r8-B1-run1k-old-on: limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B1-run1k-old-on /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 14:08:12 launch B1: EXIT_CODE=0
+2026-10-09 14:08:12 pulled B1: 3 log files; r8-B1-run1k-old-on.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  B1 | ORTGENAI prompt_tokens=1338 gen_tokens=256 prefill_ms=41154.485 ttft_ms=41154.719 decode_ms_total=5558.569 decode_tps=45.875 stop=budget max_length=2048 peak_rss_kb=2254784 seq_tokens=1594 last_token=40 load_ms=1377.417 generator_ms=92.038 chat_template=model ort_version=1.30.0 threads=default
+  B1 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai/libmat.so /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B1 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B1 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B1 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+  B1 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+  B1 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B1 ~ LOGCAT 10-09 14:07:22.794 I/GenAI   ( 8909): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B1 ~ LOGCAT 10-09 14:07:22.891 I/GenAI   ( 8909): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  B1 ~ START uptime=583730.70 battery_temp=296 thermal=0 online=0-7
+  B1 ~ LAUNCH uptime=583730.92 pid=8909 engine_pid=8909 exe=/data/local/tmp/llmbench/ortgenai/ortgenai_run rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+  B1 ~ CPUMAX 3628800 4742400 uptime=583730.92
+  B1 ~ SOCKET fd=3 inode=14564179
+  B1 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14564179
+  B1 ~ CPUMAX 3628800 4512000 uptime=583734.19
+  B1 ~ CPUMAX 3628800 4742400 uptime=583734.72
+  B1 ~ CPUMAX 3628800 4396800 uptime=583735.24
+  B1 ~ CPUMAX 3628800 4339200 uptime=583735.77
+  B1 ~ CPUMAX 3628800 4262400 uptime=583736.85
+  B1 ~ CPUMAX 3628800 4742400 uptime=583737.38
+  B1 ~ CPUMAX 3628800 4185600 uptime=583737.90
+  B1 ~ CPUMAX 3628800 4070400 uptime=583740.00
+  B1 ~ CPUMAX 3628800 4185600 uptime=583740.54
+  B1 ~ CPUMAX 3628800 4512000 uptime=583741.07
+  B1 ~ CPUMAX 3628800 4185600 uptime=583741.59
+  B1 ~ CPUMAX 3628800 4070400 uptime=583743.17
+  B1 ~ CPUMAX 3628800 4262400 uptime=583743.70
+  B1 ~ CPUMAX 3628800 3974400 uptime=583744.22
+  B1 ~ CPUMAX 3628800 4339200 uptime=583744.75
+  B1 ~ CPUMAX 3398400 3763200 uptime=583745.28
+  B1 ~ CPUMAX 3187200 3398400 uptime=583746.91
+  B1 ~ CPUMAX 3187200 3129600 uptime=583749.03
+  B1 ~ CPUMAX 2899200 2880000 uptime=583753.27
+  B1 ~ CPUMAX 2745600 2668800 uptime=583761.25
+  B1 ~ CPUMAX 2899200 2880000 uptime=583763.39
+  B1 ~ CPUMAX 2745600 2668800 uptime=583765.52
+  B1 ~ CPUMAX 2496000 2438400 uptime=583777.44
+  B1 ~ CPUMAX 2227200 2227200 uptime=583779.66
+  B1 ~ EXIT_CODE=0 uptime=583780.21
+  B1 ~ END battery_temp=342 thermal=0
+  B1 ~ LOGCAT_LINES=5
+  B1 ~ max Threads: 4
+2026-10-09 14:08:12 after B1: thermal=0 battery=342dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=4 MemAvailable=5979MB wake=Dozing
+2026-10-09 14:08:12 pause 120s
+2026-10-09 14:10:12 gate pass (full): thermal=0 battery=323dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5927MB wake=Dozing
+2026-10-09 14:10:12 launch B2 r8-B2-run1k-new-on: limit=300s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B2-run1k-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 14:10:23 launch B2: EXIT_CODE=0
+2026-10-09 14:10:23 pulled B2: 3 log files; r8-B2-run1k-new-on.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  B2 | ORTGENAI prompt_tokens=1338 gen_tokens=256 prefill_ms=3147.670 ttft_ms=3147.829 decode_ms_total=4595.324 decode_tps=55.491 stop=budget max_length=2048 peak_rss_kb=2215012 seq_tokens=1594 last_token=646 load_ms=1564.618 generator_ms=84.968 chat_template=model ort_version=1.30.0 threads=default
+  B2 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai-33202/libmat.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B2 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B2 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B2 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  B2 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  B2 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B2 ~ LOGCAT 10-09 14:10:12.996 I/GenAI   ( 9727): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B2 ~ LOGCAT 10-09 14:10:13.000 I/GenAI   ( 9727): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  B2 ~ START uptime=583900.90 battery_temp=323 thermal=0 online=0-7
+  B2 ~ LAUNCH uptime=583901.12 pid=9727 engine_pid=9727 exe=/data/local/tmp/llmbench/ortgenai-33202/ortgenai_run rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+  B2 ~ CPUMAX 3628800 4742400 uptime=583901.12
+  B2 ~ SOCKET fd=3 inode=14571104
+  B2 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14571104
+  B2 ~ CPUMAX 3628800 4185600 uptime=583903.34
+  B2 ~ CPUMAX 3628800 4742400 uptime=583903.87
+  B2 ~ CPUMAX 3628800 3859200 uptime=583904.39
+  B2 ~ CPUMAX 3628800 3763200 uptime=583905.45
+  B2 ~ CPUMAX 3398400 3398400 uptime=583905.98
+  B2 ~ CPUMAX 3513600 3974400 uptime=583906.51
+  B2 ~ CPUMAX 3513600 4185600 uptime=583907.06
+  B2 ~ CPUMAX 3187200 3398400 uptime=583908.15
+  B2 ~ CPUMAX 2745600 2668800 uptime=583910.33
+  B2 ~ EXIT_CODE=0 uptime=583911.42
+  B2 ~ END battery_temp=325 thermal=0
+  B2 ~ LOGCAT_LINES=5
+  B2 ~ max Threads: 4
+2026-10-09 14:10:23 after B2: thermal=0 battery=325dC capped=policy0 policy6  policy0=2745600/3628800 policy6=2668800/4742400 level=79 bstatus=4 MemAvailable=5941MB wake=Dozing
+2026-10-09 14:10:23 pause 120s
+2026-10-09 14:12:24 gate pass (full): thermal=0 battery=325dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5937MB wake=Dozing
+2026-10-09 14:12:24 launch B3 r8-B3-run1k-new-off: limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B3-run1k-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 300 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 14:12:40 launch B3: EXIT_CODE=0
+2026-10-09 14:12:40 pulled B3: 3 log files; r8-B3-run1k-new-off.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  B3 | ORTGENAI prompt_tokens=1338 gen_tokens=256 prefill_ms=2751.566 ttft_ms=2751.729 decode_ms_total=10656.449 decode_tps=23.929 stop=budget max_length=2048 peak_rss_kb=2447476 seq_tokens=1594 last_token=646 load_ms=1523.693 generator_ms=80.412 chat_template=model ort_version=1.30.0 threads=default
+  B3 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai-33202/libmat.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B3 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B3 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B3 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  B3 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  B3 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  B3 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B3 ~ LOGCAT 10-09 14:12:24.246 I/GenAI   ( 9979): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B3 ~ LOGCAT 10-09 14:12:24.250 I/GenAI   ( 9979): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  B3 ~ START uptime=584032.15 battery_temp=325 thermal=0 online=0-7
+  B3 ~ LAUNCH uptime=584032.37 pid=9979 engine_pid=9979 exe=/data/local/tmp/llmbench/ortgenai-33202/ortgenai_run rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+  B3 ~ CPUMAX 3628800 4742400 uptime=584032.37
+  B3 ~ SOCKET fd=3 inode=14579408
+  B3 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14579408
+  B3 ~ CPUMAX 3628800 4262400 uptime=584034.59
+  B3 ~ CPUMAX 3628800 4646400 uptime=584035.12
+  B3 ~ CPUMAX 3628800 3859200 uptime=584035.66
+  B3 ~ CPUMAX 3628800 4070400 uptime=584036.19
+  B3 ~ CPUMAX 3513600 3648000 uptime=584036.73
+  B3 ~ CPUMAX 3513600 4262400 uptime=584037.27
+  B3 ~ CPUMAX 3187200 3398400 uptime=584039.01
+  B3 ~ CPUMAX 2745600 2668800 uptime=584040.80
+  B3 ~ CPUMAX 2496000 2438400 uptime=584042.60
+  B3 ~ CPUMAX 2227200 2227200 uptime=584045.02
+  B3 ~ EXIT_CODE=0 uptime=584048.06
+  B3 ~ END battery_temp=329 thermal=0
+  B3 ~ LOGCAT_LINES=5
+  B3 ~ max Threads: 4
+2026-10-09 14:12:40 after B3: thermal=0 battery=329dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=4 MemAvailable=5907MB wake=Dozing
+2026-10-09 14:12:40 pause 120s
+2026-10-09 14:14:40 gate pass (full): thermal=0 battery=331dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5916MB wake=Dozing
+2026-10-09 14:14:40 launch B4 r8-B4-run1k-old-off: limit=300s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B4-run1k-old-off /data/local/tmp/llmbench/ortgenai /data/local/tmp/llmbench/ortgenai 300 /data/local/tmp/llmbench/ortgenai/ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+2026-10-09 14:14:56 launch B4: EXIT_CODE=0
+2026-10-09 14:14:56 pulled B4: 3 log files; r8-B4-run1k-old-off.d -> /Users/USER/code/edge-llm-bench-wt-ort-android/results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/device: 
+  B4 | ORTGENAI prompt_tokens=1338 gen_tokens=256 prefill_ms=2736.469 ttft_ms=2736.644 decode_ms_total=10322.234 decode_tps=24.704 stop=budget max_length=2048 peak_rss_kb=2488780 seq_tokens=1594 last_token=646 load_ms=1545.098 generator_ms=82.830 chat_template=model ort_version=1.30.0 threads=default
+  B4 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai/libmat.so /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B4 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B4 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B4 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+  B4 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  B4 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+  B4 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B4 ~ LOGCAT 10-09 14:14:40.885 I/GenAI   (10353): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B4 ~ LOGCAT 10-09 14:14:40.976 I/GenAI   (10353): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  B4 ~ START uptime=584168.79 battery_temp=331 thermal=0 online=0-7
+  B4 ~ LAUNCH uptime=584169.01 pid=10353 engine_pid=10353 exe=/data/local/tmp/llmbench/ortgenai/ortgenai_run rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=ortgenai_run -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 256 -ml 2048
+  B4 ~ CPUMAX 3628800 4742400 uptime=584169.01
+  B4 ~ SOCKET fd=3 inode=14584034
+  B4 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14584034
+  B4 ~ CPUMAX 3628800 4070400 uptime=584171.77
+  B4 ~ CPUMAX 3628800 3648000 uptime=584172.31
+  B4 ~ CPUMAX 3628800 4339200 uptime=584172.84
+  B4 ~ CPUMAX 3513600 3648000 uptime=584173.38
+  B4 ~ CPUMAX 3628800 4396800 uptime=584173.91
+  B4 ~ CPUMAX 3302400 3648000 uptime=584175.64
+  B4 ~ CPUMAX 2899200 2880000 uptime=584177.38
+  B4 ~ CPUMAX 2496000 2438400 uptime=584179.77
+  B4 ~ CPUMAX 2227200 2227200 uptime=584181.57
+  B4 ~ EXIT_CODE=0 uptime=584184.60
+  B4 ~ END battery_temp=331 thermal=0
+  B4 ~ LOGCAT_LINES=5
+  B4 ~ max Threads: 4
+2026-10-09 14:14:57 after B4: thermal=0 battery=345dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=4 MemAvailable=5914MB wake=Dozing
+2026-10-09 14:14:57 pause 30s
+2026-10-09 14:15:27 gate pass (light): thermal=0 battery=352dC capped=policy0 policy6  policy0=3513600/3628800 policy6=4262400/4742400 level=79 bstatus=4 MemAvailable=5927MB wake=Dozing
+2026-10-09 14:15:27 launch B5 r8-B5-dl-new-on: limit=120s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B5-dl-new-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 120 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B5-dl-new-on.d/logits.f32
+2026-10-09 14:15:33 launch B5: EXIT_CODE=0
+2026-10-09 14:15:34 pulled B5: 2 log files; r8-B5-dl-new-on.d -> /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-dumps: logits.f32 logits.f32.decode 
+  B5 | LOGITS_DUMP step=0 phase=prefill shape=1x1x151936 argmax=151667 sampled=151667 top5=151667:25.4677143,99692:19.8013649,32313:19.4138813,2245:19.0455112,1941:18.4744263
+  B5 | LOGITS_DUMP step=1 phase=decode shape=1x1x151936 argmax=198 sampled=198 top5=198:33.6027565,2303:20.7263088,271:19.2465897,38733:17.5043297,715:17.0295486
+  B5 | LOGITS_DUMP step=2 phase=decode shape=1x1x151936 argmax=32313 sampled=32313 top5=32313:23.9332371,71486:21.4749393,40:17.7573071,58:17.05163,785:16.9377346
+  B5 | LOGITS_DUMP step=3 phase=decode shape=1x1x151936 argmax=11 sampled=11 top5=11:28.361414,13:15.6095791,773:15.5542479,3837:14.6281624,1077:14.3031425
+  B5 | LOGITS_DUMP step=4 phase=decode shape=1x1x151936 argmax=279 sampled=279 top5=279:23.8162727,1077:23.7754574,773:23.4448338,358:21.7822647,1196:18.910183
+  B5 | LOGITS_DUMP step=5 phase=decode shape=1x1x151936 argmax=1196 sampled=1196 top5=1196:27.9153862,3383:23.2575531,3239:19.0829201,2266:19.0813522,1156:18.9357376
+  B5 | LOGITS_DUMP step=6 phase=decode shape=1x1x151936 argmax=6801 sampled=6801 top5=6801:23.9861412,3897:21.3273125,702:21.1598034,4588:19.2349281,374:19.0900402
+  B5 | LOGITS_DUMP step=7 phase=decode shape=1x1x151936 argmax=752 sampled=752 top5=752:24.9455223,311:21.9936409,264:21.2749958,220:19.9430847,458:18.4876194
+  B5 | LOGITS_DUMP_END steps=8 vocab=151936 files=/data/local/tmp/llmbench/ortgenai-33202/out/r8-B5-dl-new-on.d/logits.f32,/data/local/tmp/llmbench/ortgenai-33202/out/r8-B5-dl-new-on.d/logits.f32.decode
+  B5 | ORTGENAI prompt_tokens=1338 gen_tokens=8 prefill_ms=3215.224 ttft_ms=3217.907 decode_ms_total=160.567 decode_tps=43.596 stop=budget max_length=2048 peak_rss_kb=2214932 seq_tokens=1346 last_token=752 load_ms=1596.018 generator_ms=84.785 chat_template=model ort_version=1.30.0 threads=default
+  B5 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai-33202/libmat.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B5 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B5 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B5 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  B5 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  B5 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B5 ~ LOGCAT 10-09 14:15:27.410 I/GenAI   (10646): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B5 ~ LOGCAT 10-09 14:15:27.416 I/GenAI   (10646): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  B5 ~ START uptime=584215.31 battery_temp=352 thermal=0 online=0-7
+  B5 ~ LAUNCH uptime=584215.53 pid=10646 engine_pid=10646 exe=/data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B5-dl-new-on.d/logits.f32
+  B5 ~ CPUMAX 3513600 4262400 uptime=584215.53
+  B5 ~ SOCKET fd=3 inode=14585706
+  B5 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14585706
+  B5 ~ CPUMAX 3513600 4070400 uptime=584218.28
+  B5 ~ CPUMAX 3513600 4262400 uptime=584218.81
+  B5 ~ CPUMAX 3513600 3648000 uptime=584219.33
+  B5 ~ CPUMAX 3513600 4070400 uptime=584219.86
+  B5 ~ CPUMAX 3513600 3648000 uptime=584220.39
+  B5 ~ CPUMAX 3513600 3859200 uptime=584220.92
+  B5 ~ EXIT_CODE=0 uptime=584221.46
+  B5 ~ END battery_temp=349 thermal=0
+  B5 ~ LOGCAT_LINES=5
+  B5 ~ OUTDIR logits.f32 607744
+  B5 ~ OUTDIR logits.f32.decode 4254208
+  B5 ~ max Threads: 4
+2026-10-09 14:15:34 after B5: thermal=0 battery=349dC capped=policy0 policy6  policy0=3187200/3628800 policy6=3398400/4742400 level=79 bstatus=4 MemAvailable=5916MB wake=Dozing
+2026-10-09 14:15:34 pause 30s
+2026-10-09 14:16:04 gate pass (light): thermal=0 battery=351dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=5974MB wake=Dozing
+2026-10-09 14:16:04 launch B6 r8-B6-dl-new-off: limit=120s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B6-dl-new-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai-33202 120 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B6-dl-new-off.d/logits.f32
+2026-10-09 14:16:10 launch B6: EXIT_CODE=0
+2026-10-09 14:16:10 pulled B6: 2 log files; r8-B6-dl-new-off.d -> /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-dumps: logits.f32 logits.f32.decode 
+  B6 | LOGITS_DUMP step=0 phase=prefill shape=1x1x151936 argmax=151667 sampled=151667 top5=151667:25.659893,99692:20.6347961,32313:20.2544365,2245:18.7323437,93217:18.6461811
+  B6 | LOGITS_DUMP step=1 phase=decode shape=1x1x151936 argmax=198 sampled=198 top5=198:33.3894958,2303:20.4137154,271:19.2361298,26809:16.7755165,715:16.6745167
+  B6 | LOGITS_DUMP step=2 phase=decode shape=1x1x151936 argmax=32313 sampled=32313 top5=32313:23.9521942,71486:21.7597618,40:17.8506546,58:17.2067013,785:17.0433388
+  B6 | LOGITS_DUMP step=3 phase=decode shape=1x1x151936 argmax=11 sampled=11 top5=11:28.290493,13:15.9475222,773:15.6686573,1077:14.4862804,3837:14.4816551
+  B6 | LOGITS_DUMP step=4 phase=decode shape=1x1x151936 argmax=279 sampled=279 top5=279:23.5899754,1077:23.4915276,773:23.4673977,358:21.8926239,5916:18.7065926
+  B6 | LOGITS_DUMP step=5 phase=decode shape=1x1x151936 argmax=1196 sampled=1196 top5=1196:28.4202232,3383:23.5759392,2266:19.3399792,1156:19.301239,3239:19.1730194
+  B6 | LOGITS_DUMP step=6 phase=decode shape=1x1x151936 argmax=6801 sampled=6801 top5=6801:24.3294563,702:21.2566071,3897:21.0761032,374:19.4590454,4588:19.3529663
+  B6 | LOGITS_DUMP step=7 phase=decode shape=1x1x151936 argmax=752 sampled=752 top5=752:25.173048,311:22.379612,264:21.2862396,220:20.0603504,458:18.4842091
+  B6 | LOGITS_DUMP_END steps=8 vocab=151936 files=/data/local/tmp/llmbench/ortgenai-33202/out/r8-B6-dl-new-off.d/logits.f32,/data/local/tmp/llmbench/ortgenai-33202/out/r8-B6-dl-new-off.d/logits.f32.decode
+  B6 | ORTGENAI prompt_tokens=1338 gen_tokens=8 prefill_ms=2758.483 ttft_ms=2758.968 decode_ms_total=272.483 decode_tps=25.690 stop=budget max_length=2048 peak_rss_kb=2447664 seq_tokens=1346 last_token=752 load_ms=1449.293 generator_ms=86.819 chat_template=model ort_version=1.30.0 threads=default
+  B6 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai-33202/libmat.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B6 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B6 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B6 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  B6 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  B6 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  B6 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B6 ~ LOGCAT 10-09 14:16:04.422 I/GenAI   (10825): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+  B6 ~ LOGCAT 10-09 14:16:04.425 I/GenAI   (10825): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+  B6 ~ START uptime=584252.33 battery_temp=351 thermal=0 online=0-7
+  B6 ~ LAUNCH uptime=584252.55 pid=10825 engine_pid=10825 exe=/data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B6-dl-new-off.d/logits.f32
+  B6 ~ CPUMAX 3628800 4742400 uptime=584252.55
+  B6 ~ SOCKET fd=3 inode=14590698
+  B6 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14590698
+  B6 ~ CPUMAX 3628800 4262400 uptime=584254.77
+  B6 ~ CPUMAX 3628800 3974400 uptime=584255.30
+  B6 ~ CPUMAX 3513600 3648000 uptime=584255.83
+  B6 ~ CPUMAX 3628800 4339200 uptime=584256.36
+  B6 ~ CPUMAX 3513600 3398400 uptime=584256.90
+  B6 ~ CPUMAX 3628800 4646400 uptime=584257.43
+  B6 ~ EXIT_CODE=0 uptime=584257.97
+  B6 ~ END battery_temp=349 thermal=0
+  B6 ~ LOGCAT_LINES=5
+  B6 ~ OUTDIR logits.f32 607744
+  B6 ~ OUTDIR logits.f32.decode 4254208
+  B6 ~ max Threads: 4
+2026-10-09 14:16:10 after B6: thermal=0 battery=349dC capped=policy0 policy6  policy0=3398400/3628800 policy6=3859200/4742400 level=79 bstatus=4 MemAvailable=6041MB wake=Dozing
+2026-10-09 14:16:10 pause 30s
+2026-10-09 14:16:40 gate pass (light): thermal=0 battery=351dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6047MB wake=Dozing
+2026-10-09 14:16:41 launch B7 r8-B7-dl-old-off: limit=120s: ORT_GQA_DISABLE_FLASH_ATTENTION=1 sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B7-dl-old-off /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai 120 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B7-dl-old-off.d/logits.f32
+2026-10-09 14:16:46 launch B7: EXIT_CODE=0
+2026-10-09 14:16:47 pulled B7: 2 log files; r8-B7-dl-old-off.d -> /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-dumps: logits.f32 logits.f32.decode 
+  B7 | LOGITS_DUMP step=0 phase=prefill shape=1x1x151936 argmax=151667 sampled=151667 top5=151667:25.659893,99692:20.6347961,32313:20.2544365,2245:18.7323437,93217:18.6461811
+  B7 | LOGITS_DUMP step=1 phase=decode shape=1x1x151936 argmax=198 sampled=198 top5=198:33.3894958,2303:20.4137154,271:19.2361298,26809:16.7755165,715:16.6745167
+  B7 | LOGITS_DUMP step=2 phase=decode shape=1x1x151936 argmax=32313 sampled=32313 top5=32313:23.9521942,71486:21.7597618,40:17.8506546,58:17.2067013,785:17.0433388
+  B7 | LOGITS_DUMP step=3 phase=decode shape=1x1x151936 argmax=11 sampled=11 top5=11:28.290493,13:15.9475222,773:15.6686573,1077:14.4862804,3837:14.4816551
+  B7 | LOGITS_DUMP step=4 phase=decode shape=1x1x151936 argmax=279 sampled=279 top5=279:23.5899754,1077:23.4915276,773:23.4673977,358:21.8926239,5916:18.7065926
+  B7 | LOGITS_DUMP step=5 phase=decode shape=1x1x151936 argmax=1196 sampled=1196 top5=1196:28.4202232,3383:23.5759392,2266:19.3399792,1156:19.301239,3239:19.1730194
+  B7 | LOGITS_DUMP step=6 phase=decode shape=1x1x151936 argmax=6801 sampled=6801 top5=6801:24.3294563,702:21.2566071,3897:21.0761032,374:19.4590454,4588:19.3529663
+  B7 | LOGITS_DUMP step=7 phase=decode shape=1x1x151936 argmax=752 sampled=752 top5=752:25.173048,311:22.379612,264:21.2862396,220:20.0603504,458:18.4842091
+  B7 | LOGITS_DUMP_END steps=8 vocab=151936 files=/data/local/tmp/llmbench/ortgenai-33202/out/r8-B7-dl-old-off.d/logits.f32,/data/local/tmp/llmbench/ortgenai-33202/out/r8-B7-dl-old-off.d/logits.f32.decode
+  B7 | ORTGENAI prompt_tokens=1338 gen_tokens=8 prefill_ms=2785.005 ttft_ms=2785.465 decode_ms_total=277.313 decode_tps=25.242 stop=budget max_length=2048 peak_rss_kb=2488560 seq_tokens=1346 last_token=752 load_ms=1457.108 generator_ms=88.995 chat_template=model ort_version=1.30.0 threads=default
+  B7 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai-33202/libmat.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B7 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B7 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B7 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  B7 ~ ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+  B7 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  B7 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B7 ~ LOGCAT 10-09 14:16:41.049 I/GenAI   (10999): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B7 ~ LOGCAT 10-09 14:16:41.140 I/GenAI   (10999): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  B7 ~ START uptime=584288.96 battery_temp=351 thermal=0 online=0-7
+  B7 ~ LAUNCH uptime=584289.18 pid=10999 engine_pid=10999 exe=/data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai cmd=ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B7-dl-old-off.d/logits.f32
+  B7 ~ CPUMAX 3628800 4742400 uptime=584289.18
+  B7 ~ SOCKET fd=3 inode=14593657
+  B7 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14593657
+  B7 ~ CPUMAX 3628800 3859200 uptime=584293.01
+  B7 ~ CPUMAX 3628800 3648000 uptime=584293.54
+  B7 ~ CPUMAX 3513600 4185600 uptime=584294.07
+  B7 ~ EXIT_CODE=0 uptime=584294.64
+  B7 ~ END battery_temp=351 thermal=0
+  B7 ~ LOGCAT_LINES=5
+  B7 ~ OUTDIR logits.f32 607744
+  B7 ~ OUTDIR logits.f32.decode 4254208
+  B7 ~ max Threads: 4
+2026-10-09 14:16:47 after B7: thermal=0 battery=351dC capped=policy0 policy6  policy0=3513600/3628800 policy6=4185600/4742400 level=79 bstatus=4 MemAvailable=6006MB wake=Dozing
+2026-10-09 14:16:47 pause 30s
+2026-10-09 14:17:17 gate pass (light): thermal=0 battery=354dC capped=none policy0=3628800/3628800 policy6=4742400/4742400 level=79 bstatus=4 MemAvailable=6019MB wake=Dozing
+2026-10-09 14:17:17 launch B8 r8-B8-dl-old-on: limit=180s: sh /data/local/tmp/llmbench/ortgenai-33202/run_r8.sh r8-B8-dl-old-on /data/local/tmp/llmbench/ortgenai-33202 /data/local/tmp/llmbench/ortgenai 180 /data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B8-dl-old-on.d/logits.f32
+2026-10-09 14:18:12 launch B8: EXIT_CODE=0
+2026-10-09 14:18:12 pulled B8: 2 log files; r8-B8-dl-old-on.d -> /private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-dumps: logits.f32 logits.f32.decode 
+  B8 | LOGITS_DUMP step=0 phase=prefill shape=1x1x151936 argmax=151667 sampled=151667 top5=151667:25.7046432,32313:20.2327251,99692:20.1738701,2245:19.2398624,93217:18.8096142
+  B8 | LOGITS_DUMP step=1 phase=decode shape=1x1x151936 argmax=198 sampled=198 top5=198:33.4837418,2303:20.2405453,271:19.5305138,715:16.6960793,26809:16.5507774
+  B8 | LOGITS_DUMP step=2 phase=decode shape=1x1x151936 argmax=32313 sampled=32313 top5=32313:23.7105331,71486:21.3185291,58:18.0906525,40:17.7013302,9707:16.9102402
+  B8 | LOGITS_DUMP step=3 phase=decode shape=1x1x151936 argmax=11 sampled=11 top5=11:28.453598,773:15.8073959,13:15.3742514,3837:14.6778955,1077:14.4590893
+  B8 | LOGITS_DUMP step=4 phase=decode shape=1x1x151936 argmax=279 sampled=279 top5=279:23.7175503,1077:23.5278244,773:23.3781948,358:21.8911572,5916:19.0772591
+  B8 | LOGITS_DUMP step=5 phase=decode shape=1x1x151936 argmax=1196 sampled=1196 top5=1196:28.1650162,3383:23.3440495,2266:19.4693127,3239:19.1716824,1156:18.8762398
+  B8 | LOGITS_DUMP step=6 phase=decode shape=1x1x151936 argmax=6801 sampled=6801 top5=6801:24.1117897,702:21.1390533,3897:21.1197205,374:19.206522,4588:19.203228
+  B8 | LOGITS_DUMP step=7 phase=decode shape=1x1x151936 argmax=752 sampled=752 top5=752:25.0803814,311:21.9097977,264:20.9129658,220:19.7190895,458:18.2942066
+  B8 | LOGITS_DUMP_END steps=8 vocab=151936 files=/data/local/tmp/llmbench/ortgenai-33202/out/r8-B8-dl-old-on.d/logits.f32,/data/local/tmp/llmbench/ortgenai-33202/out/r8-B8-dl-old-on.d/logits.f32.decode
+  B8 | ORTGENAI prompt_tokens=1338 gen_tokens=8 prefill_ms=51928.226 ttft_ms=51928.960 decode_ms_total=224.937 decode_tps=31.120 stop=budget max_length=2048 peak_rss_kb=2254200 seq_tokens=1346 last_token=752 load_ms=1472.113 generator_ms=87.962 chat_template=model ort_version=1.30.0 threads=default
+  B8 | ORTGENAI_LIBS /data/local/tmp/llmbench/ortgenai-33202/libmat.so /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B8 ~ ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B8 ~ ENV ORT_DISABLE_TELEMETRY=1
+  B8 ~ ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+  B8 ~ ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+  B8 ~ ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B8 ~ LOGCAT 10-09 14:17:17.660 I/GenAI   (11178): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+  B8 ~ LOGCAT 10-09 14:17:17.750 I/GenAI   (11178): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
+  B8 ~ START uptime=584325.56 battery_temp=354 thermal=0 online=0-7
+  B8 ~ LAUNCH uptime=584325.79 pid=11178 engine_pid=11178 exe=/data/local/tmp/llmbench/ortgenai-33202/ortgenai_run_dl rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai cmd=ortgenai_run_dl -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --prompt_file /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -g 8 -ml 2048 --dump-logits /data/local/tmp/llmbench/ortgenai-33202/out/r8-B8-dl-old-on.d/logits.f32
+  B8 ~ CPUMAX 3628800 4742400 uptime=584325.79
+  B8 ~ SOCKET fd=3 inode=14596636
+  B8 ~ SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14596636
+  B8 ~ CPUMAX 3628800 4646400 uptime=584328.54
+  B8 ~ CPUMAX 3628800 4339200 uptime=584329.06
+  B8 ~ CPUMAX 3628800 4262400 uptime=584329.59
+  B8 ~ CPUMAX 3513600 3859200 uptime=584330.12
+  B8 ~ CPUMAX 3513600 4185600 uptime=584330.64
+  B8 ~ CPUMAX 3302400 3648000 uptime=584332.22
+  B8 ~ CPUMAX 2899200 2880000 uptime=584334.33
+  B8 ~ CPUMAX 2745600 2668800 uptime=584336.46
+  B8 ~ CPUMAX 2496000 2438400 uptime=584338.60
+  B8 ~ CPUMAX 2227200 2227200 uptime=584346.66
+  B8 ~ EXIT_CODE=0 uptime=584380.29
+  B8 ~ END battery_temp=376 thermal=0
+  B8 ~ LOGCAT_LINES=5
+  B8 ~ OUTDIR logits.f32 607744
+  B8 ~ OUTDIR logits.f32.decode 4254208
+  B8 ~ max Threads: 4
+2026-10-09 14:18:13 after B8: thermal=0 battery=376dC capped=policy0 policy6  policy0=2227200/3628800 policy6=2227200/4742400 level=79 bstatus=2 MemAvailable=6000MB wake=Dozing
+2026-10-09 14:18:13 block B runs done; frame left 18 min
+2026-10-09 14:18:13 clean (B): device out/ files: r8-B1-run1k-old-on.d r8-B1-run1k-old-on.engine.txt r8-B1-run1k-old-on.sampler.txt r8-B2-run1k-new-on.d r8-B2-run1k-new-on.engine.txt r8-B2-run1k-new-on.sampler.txt r8-B3-run1k-new-off.d r8-B3-run1k-new-off.engine.txt r8-B3-run1k-new-off.sampler.txt r8-B4-run1k-old-off.d r8-B4-run1k-old-off.engine.txt r8-B4-run1k-old-off.sampler.txt r8-B5-dl-new-on.d r8-B5-dl-new-on.engine.txt r8-B5-dl-new-on.sampler.txt r8-B6-dl-new-off.d r8-B6-dl-new-off.engine.txt r8-B6-dl-new-off.sampler.txt r8-B7-dl-old-off.d r8-B7-dl-old-off.engine.txt r8-B7-dl-old-off.sampler.txt r8-B8-dl-old-on.d r8-B8-dl-old-on.engine.txt r8-B8-dl-old-on.sampler.txt 
+2026-10-09 14:18:13 clean (B): engines of this round before: none;
+2026-10-09 14:18:13 clean (B): model folder removed, out/ r8-B files removed; left: libmat.so libonnxruntime-genai.so libonnxruntime.so model_benchmark ortgenai_run ortgenai_run_dl run_r8.sh 
+2026-10-09 14:18:13 clean (B): disk /dev/block/dm-88 232019968 220825680  10887088  96% /data/user/0; engines: 
+2026-10-09 14:18:14 old dir (after): libmat.so 8e758c33; libonnxruntime-genai.so 1922b6ef; libonnxruntime.so df5d25c7; model_benchmark 062bf05d; ortgenai_run 4e74dad3; run_diag.sh 48e55603; run_sampled.sh a8ebaa9c; 
+2026-10-09 14:18:14 old dir unchanged (B): every file's sha256 and size the same before and after
+2026-10-09 14:18:14 release requested (/private/tmp/claude-501/-Users-USER-code-edge-llm-bench-wt-ort-android/7618a5fa-b1aa-4245-8abb-93d721dbb278/scratchpad/r8-release-B); exit code 0
+device hold removed
+2026-10-09 14:18:15 keeper 55775: hold returned (release file) after 677 s; hold now: none
+2026-10-09 14:18:16 hold now: none

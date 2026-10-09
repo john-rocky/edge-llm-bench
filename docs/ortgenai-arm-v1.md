@@ -328,6 +328,19 @@ registry gains its entry. Until then the S26 1K cells read "no valid run": a
 50 s prefill at full load drops the CPU clock ceiling below the cpu-cap-rule
 line within a few seconds (`methodology/fairness-rules.md` §13).
 
+Re-measured on 2026-10-09 with the upstream fix,
+[microsoft/onnxruntime#33202](https://github.com/microsoft/onnxruntime/pull/33202)
+(merged into main as `40a7167d`, not in a release yet): `libonnxruntime.so`
+built from v1.30.0 plus the PR's commit, every other file of the runtime
+directory the same bytes, each form beside the release library in one sitting
+and one run. The 1,024-token prefill takes 2.2 s instead of 27.8 s, and the 1K
+task's 1,338-token prefill 3.1 s instead of 41.2 s. With the fix the flash path
+still prefills 11-19 % slower than with `ORT_GQA_DISABLE_FLASH_ATTENTION=1`, and
+decodes 256 tokens at 55.5 tok/s against 23.9. Without flash, the two libraries
+prefill within 2.5 % of each other and give bit-identical logits. Records:
+`results/raw/2026-10-09-ortgenai-33202-rebench-s26-android/` (`summary.json`,
+`logits_summary.json`; the raw logits stay out of the repo).
+
 ## Status (2026-10-08)
 
 Wired on the Mac, Android and the iPhone: cells, the drivers and the app adapter, the

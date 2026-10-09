@@ -1,0 +1,33 @@
+CPUPOLICY policy0 hw=3628800 cap=3628800 cpus=0 1 2 3 4 5
+CPUPOLICY policy6 hw=4742400 cap=4742400 cpus=6 7
+START uptime=575889.45 battery_temp=334 thermal=0 online=0-7
+LAUNCH uptime=575889.67 pid=2256 engine_pid=2256 exe=/data/local/tmp/llmbench/ortgenai-33202/model_benchmark rt=/data/local/tmp/llmbench/ortgenai-33202 ort=/data/local/tmp/llmbench/ortgenai-33202 cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 1024 --profile_prefill
+TICK 575889.67 VmHWM:218076 VmRSS:212184 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=4 cur=2496000/883200 bat=-
+CPUMAX 3628800 4742400 uptime=575889.67
+ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+ENV ORT_DISABLE_TELEMETRY=1
+ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai-33202
+ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime-genai.so
+ORTLIB /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+SOCKET fd=3 inode=14531706
+SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14531706
+TICK 575890.31 VmHWM:851724 VmRSS:710344 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=3628800/883200 bat=-
+TICK 575890.84 VmHWM:851724 VmRSS:729748 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=3628800/883200 bat=-
+TICK 575891.36 VmHWM:895188 VmRSS:815052 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=5 cur=3628800/883200 bat=-
+TICK 575891.89 VmHWM:1646848 VmRSS:1644692 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=7,5,1,6 cur=3628800/4185600 bat=-
+TICK 575892.42 VmHWM:1647276 VmRSS:1645128 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=7,5,1,6 cur=3628800/4742400 bat=-
+CPUMAX 3628800 4339200 uptime=575892.42
+TICK 575892.96 VmHWM:1647700 VmRSS:1645552 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=7,5,1,6 cur=3628800/3974400 bat=-
+CPUMAX 3628800 3859200 uptime=575892.96
+TICK 575893.49 VmHWM:2253400 VmRSS:1748132 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,5,7,4 cur=3628800/4742400 bat=-
+CPUMAX 3628800 4742400 uptime=575893.49
+EXIT_CODE=0 uptime=575894.07
+END battery_temp=334 thermal=0
+LOGCAT_LINES=5
+LOGCAT 10-09 11:56:41.557 I/GenAI   ( 2256): Attempting to dlopen /data/local/tmp/llmbench/ortgenai-33202/libonnxruntime.so
+LOGCAT 10-09 11:56:41.570 W/libc    ( 2256): Access denied finding property "ro.mediatek.platform"
+LOGCAT 10-09 11:56:41.571 W/libc    ( 2256): Access denied finding property "ro.chipname"
+LOGCAT 10-09 11:56:41.576 I/GenAI   ( 2256): ORT API Version 26 was found.
+LOGCAT 10-09 11:56:41.576 I/GenAI   ( 2256): ORT Version: 1.30.0. ORT Build Info: git-branch=r8-v1.30.0-pr33202, git-commit-id=ed0c6ba469, fp8-kv-cache=1, build type=Release
+OUTDIR prefill_profile_2026-10-09_11-56-43_688.json 548036

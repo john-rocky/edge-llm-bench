@@ -33,6 +33,19 @@
 // Exit 0 after a completed generation, 1 on an engine error, 2 on a usage
 // error (-g 0, an empty prompt, telemetry not disabled).
 //
+// --dump-logits <path> (a diagnostic, off by default; without it none of the
+// lines or files below exist): the logits every sampled token comes from,
+// read through OgaGenerator_GetLogits (the last position only, also for the
+// prompt pass) just before the GenerateNextToken that samples from them.
+// Step 0 (the prompt pass) goes to <path>, steps 1.. to <path>.decode, each
+// step as vocab float32 values in native byte order, and every step prints
+//   LOGITS_DUMP step= phase=prefill|decode shape= argmax= sampled= top5=<id:value,...>
+// then LOGITS_DUMP_END steps= vocab= files=. From step 1 on, GetLogits runs
+// that step's forward pass itself (v0.17.0 Generator::GetLogits computes
+// logits not yet computed, and the GenerateNextToken that follows only
+// samples): the same passes on the same inputs in the same order, so the
+// tokens do not change, and the read stays inside the step's timed span.
+//
 // Threads: without --threads the model loads through OgaCreateModel, so GenAI
 // picks the decoder's intra-op thread count itself (v0.17.0
 // src/models/model.cpp CreateSessionOptionsFromConfig:
@@ -56,6 +69,7 @@
 #include <dlfcn.h>
 #include <sys/resource.h>
 
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cstdint>
@@ -66,10 +80,13 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <numeric>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "ort_genai.h"
 
@@ -88,13 +105,14 @@ struct Options {
   long max_length = -1;
   long threads = -1;  // -1 = GenAI's own choice (no overlay)
   bool chat_template = true;
+  std::string dump_logits;  // empty = no dump
 };
 
 [[noreturn]] void Usage(const char* argv0, const std::string& error) {
   std::cerr << "Error: " << error << "\n"
             << "Usage: " << argv0
             << " -i <model dir> --prompt_file <path> -g <budget> -ml <max_length> [--threads N]"
-               " [--no-chat-template]\n";
+               " [--no-chat-template] [--dump-logits <path>]\n";
   std::exit(2);
 }
 
@@ -127,6 +145,9 @@ Options ParseOptions(int argc, char** argv) {
       opts.threads = ParsePositive(argv[0], arg, value());
     } else if (arg == "--no-chat-template") {
       opts.chat_template = false;
+    } else if (arg == "--dump-logits") {
+      opts.dump_logits = value();
+      if (opts.dump_logits.empty()) Usage(argv[0], "--dump-logits needs a path");
     } else {
       Usage(argv[0], "unknown option " + std::string(arg));
     }
@@ -205,6 +226,69 @@ std::string MappedEngineLibraries() {
   return out.empty() ? "-" : out;
 }
 
+// --dump-logits: Read() before the GenerateNextToken that samples from the
+// logits, Write() after it (the sampled token is known then).
+class LogitsDump {
+ public:
+  explicit LogitsDump(const std::string& path)
+      : path_{path}, prefill_{path, std::ios::binary}, decode_{path + ".decode", std::ios::binary} {
+    if (!prefill_ || !decode_) throw std::runtime_error("--dump-logits: cannot write " + path + " and " + path + ".decode");
+  }
+
+  void Read(OgaGenerator& generator) {
+    auto tensor = generator.GetLogits();
+    if (tensor->Type() != OgaElementType_float32) throw std::runtime_error("--dump-logits: the logits are not float32");
+    shape_ = tensor->Shape();
+    size_t count = 1;
+    for (const int64_t dim : shape_) count *= static_cast<size_t>(dim);
+    if (shape_.empty() || count != static_cast<size_t>(shape_.back()))
+      throw std::runtime_error("--dump-logits: expected the logits of one sequence, got shape " + ShapeText());
+    const auto* data = static_cast<const float*>(tensor->Data());
+    logits_.assign(data, data + count);
+  }
+
+  void Write(long step, int32_t sampled) {
+    auto& out = step == 0 ? prefill_ : decode_;
+    out.write(reinterpret_cast<const char*>(logits_.data()),
+              static_cast<std::streamsize>(logits_.size() * sizeof(float)));
+    if (!out) throw std::runtime_error("--dump-logits: write failed at step " + std::to_string(step));
+    std::vector<int32_t> ids(logits_.size());
+    std::iota(ids.begin(), ids.end(), 0);
+    const size_t top = std::min<size_t>(5, ids.size());
+    std::partial_sort(ids.begin(), ids.begin() + static_cast<std::ptrdiff_t>(top), ids.end(),
+                      [this](int32_t a, int32_t b) { return logits_[a] > logits_[b] || (logits_[a] == logits_[b] && a < b); });
+    std::ostringstream line;
+    line.precision(9);  // a float's value round-trips at 9 significant digits
+    line << "LOGITS_DUMP step=" << step << " phase=" << (step == 0 ? "prefill" : "decode") << " shape=" << ShapeText()
+         << " argmax=" << ids[0] << " sampled=" << sampled << " top5=";
+    for (size_t i = 0; i < top; ++i) line << (i ? "," : "") << ids[i] << ":" << logits_[ids[i]];
+    std::cout << line.str() << "\n";
+    ++steps_;
+  }
+
+  void Close() {
+    prefill_.close();
+    decode_.close();
+    if (!prefill_ || !decode_) throw std::runtime_error("--dump-logits: closing " + path_ + " failed");
+    std::cout << "LOGITS_DUMP_END steps=" << steps_ << " vocab=" << logits_.size() << " files=" << path_ << ","
+              << path_ << ".decode\n";
+  }
+
+ private:
+  std::string ShapeText() const {
+    std::string text;
+    for (const int64_t dim : shape_) text += (text.empty() ? "" : "x") + std::to_string(dim);
+    return text.empty() ? "-" : text;
+  }
+
+  std::string path_;
+  std::ofstream prefill_;
+  std::ofstream decode_;
+  std::vector<int64_t> shape_;
+  std::vector<float> logits_;
+  long steps_ = 0;
+};
+
 int Run(const Options& opts, const std::string& prompt) {
   const auto load_start = Clock::now();
   std::unique_ptr<OgaModel> model;
@@ -238,23 +322,30 @@ int Run(const Options& opts, const std::string& prompt) {
   const auto generator_start = Clock::now();
   auto generator = OgaGenerator::Create(*model, *params);
   const auto generator_time = Clock::now() - generator_start;
+  std::unique_ptr<LogitsDump> dump;
+  if (!opts.dump_logits.empty()) dump = std::make_unique<LogitsDump>(opts.dump_logits);
 
   const auto prefill_start = Clock::now();
   generator->AppendTokenSequences(*sequences);
   const auto prefill_end = Clock::now();
+  if (dump) dump->Read(*generator);
   generator->GenerateNextToken();
   bool done = generator->IsDone();
   const auto first_token_end = Clock::now();
+  if (dump) dump->Write(0, generator->GetNextTokens()[0]);
 
   long gen_tokens = 1;
   Clock::duration decode_time{};
   while (!done && gen_tokens < opts.budget) {
     const auto step_start = Clock::now();
+    if (dump) dump->Read(*generator);
     generator->GenerateNextToken();
     done = generator->IsDone();
     decode_time += Clock::now() - step_start;
+    if (dump) dump->Write(gen_tokens, generator->GetNextTokens()[0]);
     ++gen_tokens;
   }
+  if (dump) dump->Close();
 
   const size_t seq_tokens = generator->GetSequenceCount(0);
   const auto next_tokens = generator->GetNextTokens();

@@ -1,0 +1,27 @@
+CPUPOLICY policy0 hw=3628800 cap=3628800 cpus=0 1 2 3 4 5
+CPUPOLICY policy6 hw=4742400 cap=4742400 cpus=6 7
+START uptime=575639.96 battery_temp=333 thermal=0 online=0-7
+LAUNCH uptime=575640.18 pid=1655 engine_pid=1655 exe=/data/local/tmp/llmbench/ortgenai/model_benchmark rt=/data/local/tmp/llmbench/ortgenai ort=/data/local/tmp/llmbench/ortgenai cmd=model_benchmark -i /data/local/tmp/llmbench/models/onnx-community_Qwen3-0.6B-ONNX_cpu-int4-kld-block-128 --use_random_tokens -g 8 -ml 2048 -r 1 -w 0 -v -e cpu -l 512
+TICK 575640.18 VmHWM:252960 VmRSS:252960 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=0 cur=2496000/883200 bat=-
+CPUMAX 3628800 4742400 uptime=575640.18
+ENV ORT_LIB_PATH=/data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+ENV ORT_DISABLE_TELEMETRY=1
+ENV LD_LIBRARY_PATH=/data/local/tmp/llmbench/ortgenai
+ENV ORT_GQA_DISABLE_FLASH_ATTENTION=1
+ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime-genai.so
+ORTLIB /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+SOCKET fd=3 inode=14521889
+SOCKET_IN unix 0000000000000000: 00000002 00000000 00000000 0002 03 14521889
+TICK 575640.82 VmHWM:895380 VmRSS:755336 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=0 cur=3628800/883200 bat=-
+TICK 575641.35 VmHWM:934440 VmRSS:934440 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=0 cur=3628800/883200 bat=-
+TICK 575641.88 VmHWM:939176 VmRSS:859000 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=0 cur=3628800/883200 bat=-
+TICK 575642.41 VmHWM:1450516 VmRSS:1448980 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=0,4,7,6 cur=3628800/4512000 bat=-
+TICK 575642.94 VmHWM:1753380 VmRSS:1423864 Threads:4 Cpus_allowed_list:0-7 sockets=1 run=6,4,7,5 cur=3628800/4742400 bat=-
+EXIT_CODE=0 uptime=575643.50
+END battery_temp=333 thermal=0
+LOGCAT_LINES=5
+LOGCAT 10-09 11:52:32.055 I/GenAI   ( 1655): Attempting to dlopen /data/local/tmp/llmbench/ortgenai/libonnxruntime.so
+LOGCAT 10-09 11:52:32.151 W/libc    ( 1655): Access denied finding property "ro.mediatek.platform"
+LOGCAT 10-09 11:52:32.151 W/libc    ( 1655): Access denied finding property "ro.chipname"
+LOGCAT 10-09 11:52:32.152 I/GenAI   ( 1655): ORT API Version 26 was found.
+LOGCAT 10-09 11:52:32.152 I/GenAI   ( 1655): ORT Version: 1.30.0. ORT Build Info: git-branch=HEAD, git-commit-id=f2c39fe, fp8-kv-cache=1, build type=Release
