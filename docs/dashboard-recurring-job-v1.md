@@ -272,7 +272,9 @@ it is attached and free.
 A device entry may carry `extra_cells`: cells files measured on that device only (an arm that
 is valid on one phone and not another). After the set — the whole file or the storage halves —
 the job runs each as its own session, campaign `<base>-<tag>` with the tag taken from the file
-name as for a half, under its own `timeout_hours` (default 1) and `min_free_gb` (in halves mode
+name as for a half, under its own `timeout_hours` (default 1) and `min_free_gb`; the file starts with the
+platform's session anchor row (as every half does), because §4 re-judges each payload session by the anchor
+records inside its own campaign and a session without them is anchor-short, not admitted, and retried (in halves mode
 the other halves' pushed copies are rotated out first, as between halves). An explicit `--cells`
 retake never fans out into them. First use: the ONNX Runtime GenAI short-chat cells on the
 Galaxy S26 (`docs/dashboard-cells-v1.md`, "ONNX Runtime GenAI arm in the weekly set").
