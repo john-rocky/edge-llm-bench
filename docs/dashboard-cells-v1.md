@@ -825,9 +825,10 @@ and `long-context-1024-gen256` at `context-tokens=2048`, five models × npu /
 gpu, the weekly files' cooldowns), `matrices/dashboard-npu-protocol1024-v1-android-s26.cells`
 (`native-benchmark-1024x256`, five models × npu / gpu) and
 `matrices/dashboard-npu-litert-v1-android-s26.cells` (the LiteRT-LM NPU row:
-short-chat on Qwen3 0.6B; its 1K row and the other models' rows excluded). They
-are not in the weekly job's schedule; putting them there is a separate
-decision.
+short-chat on Qwen3 0.6B; its 1K row and the other models' rows excluded). The
+weekly job measures the short-chat rows only, since 2026-10-09 ("NPU and Android
+GPU rows in the weekly set" below); the 1K rows, the protocol file and the
+LiteRT-LM NPU row stay by-hand.
 
 ### LiteRT-LM on the NPU (arm `litert-lm-npu`, runner wired 2026-10-08)
 
@@ -947,6 +948,49 @@ night job installs nothing, and the pinned app build predates the ONNX Runtime a
 2026-10-08 sitting ran a by-hand build; `docs/ortgenai-arm-v1.md`). The Mac sitting grows by
 about 35 minutes (the 2026-10-08 sitting: 34 minutes for the 12 cells and their anchors;
 `expected_hours` 3.2 → 3.8), the S26 sitting by about 15 minutes (`expected_hours` 7.9 → 8.2).
+
+## NPU and Android GPU rows in the weekly set (2026-10-09)
+
+Since 2026-10-09 (owner GO) the Galaxy S26's weekly sitting ends with the short-chat rows of
+`matrices/dashboard-npu-v1-android-s26.cells`: `matrices/dashboard-npu-v1-android-s26-short.cells`
+holds the session anchor and those ten rows (five models × `llama.cpp-npu` / `llama.cpp-gpu`, the
+side build `b11469-snapdragon`), byte-identical to the plan file, which stays the file the rows
+come from and the team page reads. It runs through `devices.s26.extra_cells` in
+`ops/dashboard-v1/schedule.json` as its own session (`-npu`) after the ONNX Runtime one, and only
+while the side build is on the phone (`/data/local/tmp/llmbench/engines/b11469-snapdragon`,
+`android/README.md` "Side builds"); without it the job skips the session and runs the rest of the
+sitting (`docs/dashboard-recurring-job-v1.md` §3, "Per-device extra files").
+
+Why short-chat only. On the 2026-10-08 sitting a short-chat launch of these arms raised the
+battery −0.1 to +1.6 °C, a 1K launch of Qwen3 4B or Gemma 4 E2B +0.4 to +4.1 °C, and a llama-bench
+1024/256 launch of Qwen3 1.7B +4.7 / +6.4 °C (NPU / GPU); at 120 s cooldowns one llama-bench
+launch of Qwen3 1.7B took the battery from 34.0 to 40.4 °C, and four 1K launches of Qwen3 4B from
+32.5 to 38.9 °C. The job has no battery-temperature stop (the runner waits up to 600 s for thermal
+status 0 before a launch, then runs), so those cells stay by-hand sittings with their own cooling.
+
+Time, from that sitting's records (the job runs the default campaign mode: the anchor's three
+runs first, 120 s apart, then three rounds over the ten cells, each launch after its row's
+cooldown — 120 s for Qwen3 0.6B / 1.7B, 300 s for Gemma 4 E2B, Qwen3 4B, Gemma 4 E4B). Cooldowns:
+2 × 120 + 3 × (4 × 120 + 6 × 300) = 7,080 s. Launches: the wall time from one record to the next
+less the cooldown (the launch and the runner's work around it), median per cell, NPU / GPU —
+Qwen3 0.6B 6 / 9 s, 1.7B 9 / 14, Gemma 4 E2B 14 / 18, Qwen3 4B 17 / 22, Gemma 4 E4B 21 / 26; the
+anchor 4 — 156 s a round, 480 s in all. About 126 minutes, 2.1 h (2.2 with one gate retry: 180 s,
+then the cell's three runs 120 s apart); no model push (the storage halves have just pushed the
+five files). `expected_hours` 8.2 → 10.3 for the S26, the session's own `timeout_hours` 4
+(1.5 × 2.1, rounded up); a sitting that starts at 02:00 ends about 12:20.
+
+Storage: `min_free_gb` 7 is the room to push back the GGUF files a rotation between the halves can
+take away (Qwen3 1.7B, Gemma 4 E2B, Qwen3 4B: 6.6 GB as the job counts space, KiB / 10⁶, from the
+phone's `models/` listing of 2026-10-08), not the session's 11.8 GB footprint (the five files): a
+floor above what the halves leave free (13.9 GB after them on 2026-10-05) would rotate their
+LiteRT bundles and caches out every week (job doc §3).
+
+Expected each week, from the job's code path (not yet seen in a weekly session): the GPU's first
+Qwen3 4B and Gemma 4 E4B launch is labelled `firstEver` and pools into no number (n 2 of 3). The
+rotation before half a deletes halves b1 / b2's copies with their markers, the halves push those
+files again, and a re-push drops the file's markers too (`run_cell.push_verified`); the GPU marker
+is per model, while the OpenCL program cache it stands for is per build (`engines/<tag>/clcache`,
+which the rotation leaves alone). A marker per build is the open fix.
 
 ## ExecuTorch arm in the weekly set, Mac leg (2026-10-08)
 

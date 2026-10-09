@@ -33,12 +33,12 @@ stops where a human is needed:
 | step | what | on failure |
 |---|---|---|
 | choose (`auto` only) | the device to measure at this firing (§3): pending this week, attached, unheld, inside its window; oldest last-admitted first | a candidate whose preflight says busy or not ready is passed over for the next; every pending device busy → poll and choose again; nothing pending → exit 0 |
-| preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*`/`ortgenai_run`/`model_benchmark` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle, Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data` | busy → exit 3 and poll; not ready → exit 5, human |
+| preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*`/`ortgenai_run`/`model_benchmark` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle, Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data`; on a phone, the side builds the cells files launch (rows with `engine-build=<tag>`: the tool under `engines/<tag>/`, `android/README.md` "Side builds") | busy → exit 3 and poll; not ready → exit 5, human; a cells file whose side build is missing is skipped by itself and the rest runs (exit 5 only when no file is left, §5) |
 | hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job) | refused → busy |
 | reboot (opt-in) | on a phone whose entry carries `reboot_before`: when uptime exceeds `uptime_hours`, `adb reboot`, wait for `sys.boot_completed`, settle `settle_seconds`, `am kill-all`; uptime / MemAvailable / swap in use logged before and after (§3, the Pixel 8a memory finding) | not booted within `boot_timeout_seconds`, or the model directory unreadable (first unlock pending) → exit 5 |
 | phase A | `./bench matrix matrices/anchors.cells --platform P --campaign <base>-anchor` | timeout → exit 6 |
 | admission | the fresh primary anchor against the newest **admitted** session's anchor on the same device and the same engine build (§4) | not admitted → exit 4, retried once after a cooldown |
-| phase B | `./bench matrix matrices/dashboard-text-v1.cells --platform P --campaign <base>` — or one run per storage half on a phone whose free space is below the whole set (§3) | runner exit codes are recorded, never fatal: failed cells stay (`FAILURES.txt`) |
+| phase B | `./bench matrix matrices/dashboard-text-v1.cells --platform P --campaign <base>` — or one run per storage half on a phone whose free space is below the whole set (§3) — then the device's extra files, one session each (§3, "Per-device extra files") | runner exit codes are recorded, never fatal: failed cells stay (`FAILURES.txt`) |
 | close | `SESSION.json` in every campaign dir it created, one line in `logs/dashboard-job/ledger.tsv`, `DASHBOARD.md` re-rendered, hold released | — |
 
 Campaign names follow the first pass: `<date>-dashboard-v1-<device>[-<half>]-<platform>`
@@ -193,12 +193,15 @@ sitting length, hours (`docs/dashboard-cells-v1.md`, "Second task in the
 weekly set", has the derivation): Mac Studio 3.8 (the added 51 minutes of
 the 1K task measured; +1.0 for the ExecuTorch rows since 2026-10-08, "ExecuTorch
 arm in the weekly set, Mac leg"; +0.6 for the ONNX Runtime rows since 2026-10-09, "ONNX Runtime
-GenAI arm in the weekly set"), Galaxy S26 8.2 in three halves plus the ONNX Runtime session (9.3 with a gate retry per half),
+GenAI arm in the weekly set"), Galaxy S26 10.3 in three halves plus the ONNX Runtime session and,
+since 2026-10-09, the NPU / GPU session (+2.1, "NPU and Android GPU rows in the weekly set";
+11.5 with a gate retry per session),
 Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), iPhone 4.8 with every
 cell HOT-retried. `schedule.json` carries them as `expected_hours`, and
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×
 its longest half times three, because the job gives each half an equal share
-of the timeout.
+of the timeout; an extra file's session (below) runs under its own
+`timeout_hours` instead (S26: ONNX Runtime 1, NPU / GPU 4).
 
 Hold-file names differ between the sibling lanes (S26 `s2_npu_sweep/.device_hold`,
 iPhone `community_accel_work/.iphone_hold` and `.device_hold.iphone`, Pixel 8a
@@ -271,13 +274,33 @@ it is attached and free.
 
 A device entry may carry `extra_cells`: cells files measured on that device only (an arm that
 is valid on one phone and not another). After the set — the whole file or the storage halves —
-the job runs each as its own session, campaign `<base>-<tag>` with the tag taken from the file
-name as for a half, under its own `timeout_hours` (default 1) and `min_free_gb`; the file starts with the
+the job runs each as its own session, campaign `<base>-<tag>` with the tag the entry's `tag`, else
+taken from the file name as for a half, under its own `timeout_hours` (default 1) and `min_free_gb`; the file starts with the
 platform's session anchor row (as every half does), because §4 re-judges each payload session by the anchor
 records inside its own campaign and a session without them is anchor-short, not admitted, and retried (in halves mode
 the other halves' pushed copies are rotated out first, as between halves). An explicit `--cells`
 retake never fans out into them. First use: the ONNX Runtime GenAI short-chat cells on the
 Galaxy S26 (`docs/dashboard-cells-v1.md`, "ONNX Runtime GenAI arm in the weekly set").
+
+Second use (2026-10-09, owner GO): `matrices/dashboard-npu-v1-android-s26-short.cells`, the session
+anchor and the short-chat rows of the S26's NPU / GPU plan file (llama.cpp's Snapdragon side
+build), as the session `-npu` after the ONNX Runtime one: about 2.1 h, `timeout_hours` 4
+(`docs/dashboard-cells-v1.md`, "NPU and Android GPU rows in the weekly set", has the derivation).
+Its 1K and protocol rows stay by-hand: on 2026-10-08 one such launch raised the battery up to
+4.1 °C (1K) and 6.4 °C (llama-bench 1024/256) against at most 1.6 °C for a short-chat launch, and
+the job has no battery-temperature stop — the runner waits up to 600 s for thermal status 0
+before a launch, then runs. Its five GGUF files are the storage halves' own copies, so its
+`min_free_gb` (7) is the room to push back the three a rotation between the halves can take
+away (Qwen3 1.7B, Gemma 4 E2B, Qwen3 4B: 6.6 GB as the job counts space), not its 11.8 GB footprint: a floor above what
+the halves leave free (13.9 GB after them on 2026-10-05) would rotate their LiteRT bundles and
+caches out every week.
+
+A cells file with side-build rows (`engine-build=<tag>`) needs that build on the phone
+(`android/README.md`, "Side builds"; without it the runner stops each of those cells before its
+launch). The preflight lists the tools those rows launch with one `ls` under `engines/<tag>/`;
+a file whose build is missing gets no session and no rotation, the rest of the sitting runs,
+the verdict stays the sitting's, and the ledger reason names the file. A `--cells` retake of
+such a file alone is not ready (exit 5) before the hold is taken.
 
 ## 4. Session admission
 
@@ -341,6 +364,7 @@ began after the probe still marks that session `admitted: false`.
 | session | anchor short / collapse / thermal (§4) | refuse the sitting (exit 4); retry **once** after `abort_retry_after_minutes` (collapse 30, thermal 60) | anchor campaign + `SESSION.json admitted:false` | none |
 | session | whole-session timeout (`timeout_hours` per device) | exit 6; captured cells stand, missing cells keep last week's value in the table | records so far, `SESSION.json verdict:TIMEOUT` | look at the log |
 | session | the phone stops accepting launches mid-session (two consecutive CoreDevice launch refusals with nothing pulled — a lost USB session, a locked phone, a device no longer listed; added 2026-09-09 after the first iPhone firing cycled 13 cells through their cooldowns) | the iPhone runner ends the session at once (`DEVICE_LOST.txt`); the job records verdict DEVICE (exit 5), admission stays the anchor's, captured cells stand, missing cells keep last week's value | records so far, `DEVICE_LOST.txt`, `SESSION.json verdict:DEVICE` | replug / unlock; re-run the missing cells by hand |
+| session | a cells file's side build is not on the phone (rows with `engine-build=<tag>`; the preflight's `ls` of the tools they launch, §3 "Per-device extra files") | that file gets no session and no rotation; the rest of the sitting runs and keeps its verdict, the reason names the file; a `--cells` retake of that file alone exits 5 before the hold | ledger reason, sitting log | push the build (`android/README.md`, "Side builds"); a `--cells` retake of the file measures the week's rows, or the next weekly sitting does |
 | firing | device busy (hold, lock, foreign process, guard, frequency cap) | `auto`: passed over for the next pending device; when every pending device is busy, poll every `busy_poll_minutes` (15) for `busy_window_minutes` (120), then exit 3. An explicit device: exit 3 after the same polling | ledger line only (device `auto` when none ran) | none — the next firing tries again, or `./bench dashboard-job <device>` by hand |
 | firing | device not ready (absent, locked, no app, storage floor unmet, doctor FAIL) | `auto`: passed over for the firing, the other pending devices run; exit 5 only when nothing ran. An explicit device: exit 5, no retry | ledger line only | plug in / unlock / free storage; the next firing takes it, or run by hand |
 | week | a cell SHORT in 3 consecutive weekly passes with the same failure | nothing automatic | the three campaigns | convert the row to `exclude=<slug>` in the cells file (the reason is the datum) |
