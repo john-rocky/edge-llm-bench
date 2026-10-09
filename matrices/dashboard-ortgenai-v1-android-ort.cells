@@ -3,5 +3,7 @@
 # give valid runs on this phone; the 1K cells and the 4B cell run under a CPU clock cap there (cpu-cap-rule,
 # results/raw/2026-10-08-dashboard-ortgenai-v1-s26-*-android) until microsoft/onnxruntime#33196 lands.
 # Not for the Pixel 8a (never measured there).
+# The session anchor first, as in every Android half (the job re-judges each payload session by its own anchor records):
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 android onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
 android onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048

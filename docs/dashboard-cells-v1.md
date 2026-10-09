@@ -937,7 +937,7 @@ rows of `matrices/dashboard-ortgenai-v1.cells` (0.6B / 1.7B / 4B, short-chat and
 task at `context-tokens=2048`, the CPU EP and the WebGPU plugin EP, the engine default; one
 engine process per cell, run 1 cold, runs 2-4 warm). The Galaxy S26 measures only the two
 Qwen3 short-chat cells (0.6B, 1.7B), from `matrices/dashboard-ortgenai-v1-android-ort.cells`
-through `devices.s26.extra_cells` in `ops/dashboard-v1/schedule.json`: its 1K cells and the 4B
+through `devices.s26.extra_cells` in `ops/dashboard-v1/schedule.json` (the file starts with the session anchor row, the llama.cpp Qwen3 0.6B short-chat cell, as every Android half does: the job re-judges each payload session by the anchor records inside it): its 1K cells and the 4B
 cell ran under a CPU clock cap deeper than the 15 % line in every launch of the 2026-10-08
 sitting (cpu-cap-rule; the prefill cost is upstream, microsoft/onnxruntime#33196), so they stay
 by-hand until a release carries the fix. An `extra_cells` file runs after the set as its own
