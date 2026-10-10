@@ -358,5 +358,8 @@ dashboard measurements.
 Open: the 1.7B / 4B recipe entries; the protocol rows (`model_benchmark` on
 Android, a Mac entry); `streamed_bytes` for the six folders
 in `models/artifact-bytes.json` (the int8 embedding table is gathered per token,
-not streamed, and is still counted, so this arm's bandwidth column reads high);
-the weekly file (an owner decision).
+not streamed, and is still counted, so this arm's bandwidth column reads high).
+In the weekly set since 2026-10-09 (owner decision): the Mac's 12 Qwen3 cells, the Galaxy S26's
+two Qwen3 short-chat cells (its other cells stay by-hand under the cpu-cap-rule) and the iPhone 18
+Pro's six Qwen3 cells (its pinned app build carries the adapter since that day) —
+`docs/dashboard-cells-v1.md`, "ONNX Runtime GenAI arm in the weekly set".
