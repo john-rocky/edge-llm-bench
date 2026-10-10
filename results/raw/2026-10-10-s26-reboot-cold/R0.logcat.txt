@@ -1,0 +1,579 @@
+--------- beginning of main
+10-10 09:07:31.060  2750  2985 I thermal_core: pivot(AP) : 321, skin : 308
+10-10 09:07:31.060  2750  2985 I vendor.samsung.hardware.thermal-service: index = 13.200000
+10-10 09:07:31.060  2750  2985 I vendor.samsung.hardware.thermal-service: 9 / 10
+--------- beginning of system
+10-10 09:07:31.268  1462  1464 D io_stats: !@ ufs-boost: status(ON)
+10-10 09:07:31.296  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:sha256sum /data/local/tmp/s26-reboot-cold/gemma3-1b-it-int4.litertlm'
+10-10 09:07:31.330  1462  1464 D io_stats: !@ cpu-boost: status(ON), traffic_level(1), io_cpus(0x33), boosted_cpus(0x33), set_freq(2000000)
+10-10 09:07:31.622  1462  1462 D io_stats: !@   8,0 r 36201986 2169815076 w 7468413 1107213716 d 1607486 1062541652 f 178374 670944 iot 4233296 0 th 0 0 0 pt 0 inp 0 0 652139.428
+10-10 09:07:31.623  1462  1462 D io_stats: !@ Read_top(KB): emservice:normal(2486) 80
+10-10 09:07:31.623  1462  1462 D io_stats: !@ Write_top(KB): kworker/u33:2:/(20046) 129568 kworker/u33:1:/(17839) 81920 kworker/u33:5:/(14925) 28
+10-10 09:07:31.741  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:date '+%m-%d %H:%M:%S.000''
+10-10 09:07:31.776  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:rm -f /data/local/tmp/s26-reboot-cold/*_mldrift_*cache*.bin /data/local/tmp/s26-reboot-cold/*xnnpack*cache* /data/local/tmp/s26-reboot-cold/*.xnnpack_cache*'
+10-10 09:07:31.809  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:ls /data/local/tmp/s26-reboot-cold/*cache* 2>/dev/null | wc -l'
+10-10 09:07:31.844  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /proc/uptime'
+10-10 09:07:31.876  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /sys/class/thermal/thermal_zone69/temp /sys/class/thermal/thermal_zone59/temp /sys/class/kgsl/kgsl-3d0/clock_mhz'
+10-10 09:07:31.911  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cd /data/local/tmp/s26-reboot-cold && timeout 900 env LD_LIBRARY_PATH=/data/local/tmp/s26-reboot-cold ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/s26-reboot-cold/gemma-4-E2B-it.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=4096 --num_iterations=1 --report_peak_memory_footprint=true --metric_proto_file_path=/data/local/tmp/s26-reboot-cold/metrics-R0.pb; echo rc=$?'
+10-10 09:07:32.024 20104 20104 I native  : I0000 00:00:1791590852.024326   20104 litert_lm_lib.cc:505] Choose backend: gpu
+10-10 09:07:32.033 20104 20104 I native  : I0000 00:00:1791590852.033456   20104 litert_lm_lib.cc:661] executor_settings: backend: GPU
+10-10 09:07:32.033 20104 20104 I native  : backend_config:
+10-10 09:07:32.033 20104 20104 I native  : max_top_k: 64
+10-10 09:07:32.033 20104 20104 I native  : 
+10-10 09:07:32.033 20104 20104 I native  : max_tokens: 4096
+10-10 09:07:32.033 20104 20104 I native  : activation_data_type: Not set
+10-10 09:07:32.033 20104 20104 I native  : max_num_images: 0
+10-10 09:07:32.033 20104 20104 I native  : lora_rank: 0
+10-10 09:07:32.033 20104 20104 I native  : pad_token_id: -1
+10-10 09:07:32.033 20104 20104 I native  : cache_dir: 
+10-10 09:07:32.033 20104 20104 I native  : cache_file: Not set
+10-10 09:07:32.033 20104 20104 I native  : litert_dispatch_lib_dir: Not set
+10-10 09:07:32.033 20104 20104 I native  : model_assets: model_path: /data/local/tmp/s26-reboot-cold/gemma-4-E2B-it.litertlm
+10-10 09:07:32.033 20104 20104 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-10 09:07:32.033 20104 20104 I native  : 
+10-10 09:07:32.033 20104 20104 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-10 09:07:32.033 20104 20104 I native  : num_output_candidates: 1
+10-10 09:07:32.033 20104 20104 I native  : configure_magic_numbers: true
+10-10 09:07:32.033 20104 20104 I native  : verify_magic_numbers: false
+10-10 09:07:32.033 20104 20104 I native  : clear_kv_cache_before_prefill: true
+10-10 09:07:32.033 20104 20104 I native  : num_logits_to_print_after_decode: 0
+10-10 09:07:32.033 20104 20104 I native  : gpu_madvise_original_shared_tensors: true
+10-10 09:07:32.033 20104 20104 I native  : gpu_enable_metal_residency_set: false
+10-10 09:07:32.033 20104 20104 I native  : is_benchmark: true
+10-10 09:07:32.033 20104 20104 I native  : enable_profiling: false
+10-10 09:07:32.033 20104 20104 I native  : preferred_device_substr: 
+10-10 09:07:32.033 20104 20104 I native  : num_threads_to_upload: -1
+10-10 09:07:32.033 20104 20104 I native  : num_threads_to_compile: -1
+10-10 09:07:32.033 20104 20104 I native  : convert_weights_on_gpu: true
+10-10 09:07:32.033 20104 20104 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-10 09:07:32.033 20104 20104 I native  : optimize_shader_compilation: true
+10-10 09:07:32.033 20104 20104 I native  : cache_compiled_shaders_only: false
+10-10 09:07:32.033 20104 20104 I native  : share_constant_tensors: true
+10-10 09:07:32.033 20104 20104 I native  : sampler_handles_input: true
+10-10 09:07:32.033 20104 20104 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-10 09:07:32.033 20104 20104 I native  : hint_waiting_for_completion: Not set
+10-10 09:07:32.033 20104 20104 I native  : gpu_context_low_priority: Not set
+10-10 09:07:32.033 20104 20104 I native  : enable_speculative_decoding: false
+10-10 09:07:32.033 20104 20104 I native  : disable_delegate_clustering: false
+10-10 09:07:32.033 20104 20104 I native  : hint_kernel_batch_size: Not set
+10-10 09:07:32.033 20104 20104 I native  : error_on_invalid_sampled_token_id: false
+10-10 09:07:32.033 20104 20104 I native  : 
+10-10 09:07:32.033 20104 20104 I native  : 
+10-10 09:07:32.033 20104 20104 I native  : I0000 00:00:1791590852.033570   20104 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-10 09:07:32.033 20104 20104 I native  : I0000 00:00:1791590852.033601   20104 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-10 09:07:32.033 20104 20104 I native  : I0000 00:00:1791590852.033622   20104 litert_lm_lib.cc:697] Creating engine
+10-10 09:07:32.038 20104 20104 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-10 09:07:32.038 20104 20105 W native  : W0000 00:00:1791590852.038848   20105 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+10-10 09:07:32.038 20104 20104 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-10 09:07:32.038 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-10 09:07:32.039 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-10 09:07:32.039 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-10 09:07:32.042 20104 20104 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007902c0f680, name=GPU OpenCL
+10-10 09:07:32.042 20104 20104 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-10 09:07:32.042 20104 20104 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007902c0f450, name=CpuAccelerator
+10-10 09:07:32.042 20104 20104 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-10 09:07:32.061  2750  2985 I thermal_core: pivot(AP) : 323, skin : 308
+10-10 09:07:32.061  2750  2985 I vendor.samsung.hardware.thermal-service: index = 13.600000
+10-10 09:07:32.061  2750  2985 I vendor.samsung.hardware.thermal-service: 10 / 10
+10-10 09:07:32.078 13264 13843 I SDHMS:x : SIOP:: AP:323 BAT:289 USB:279 CHG:305 PA:314 WIFI:310 CF:303 BLK:0 SUBBAT:0 LRPTHM:305 SKIN:309 SKINF:309 SKINB:308 LRP:309 LRF:309 LRB:308 APT:308 APR:307 RCV:303 SPK:285 CHGF:307 CHGR:299 MEMF:309 MEMR:308 WIFIF:305 WIFIR:306 VAP:300 VWIFI:295 AMB2:260 NNP:290 OOD:56 AVGCUR:-13 POWER:-55
+10-10 09:07:32.078 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+10-10 09:07:32.078  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+10-10 09:07:32.079  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-10 09:07:32.079  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:32.079  2707  4681 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+10-10 09:07:32.079  2707  4681 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-10 09:07:32.079  2707  4681 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:32.079  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:32.079  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:32.079 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:32.079  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:32.079  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-10 09:07:32.079  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:32.079  2707  4681 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 30
+10-10 09:07:32.079  2707  4681 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-10 09:07:32.079  2707  4681 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:32.079  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:32.079  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:32.146 20104 20104 W native  : W0000 00:00:1791590852.146115   20104 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-10 09:07:32.146 20104 20104 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-10 09:07:32.146 20104 20104 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-10 09:07:32.146 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-10 09:07:32.146 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-10 09:07:32.146 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-10 09:07:32.147 20104 20104 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007902c0c7b0, name=GPU OpenCL
+10-10 09:07:32.147 20104 20104 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-10 09:07:32.147 20104 20104 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007902c0d1c0, name=CpuAccelerator
+10-10 09:07:32.147 20104 20104 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-10 09:07:32.147 20104 20104 W native  : W0000 00:00:1791590852.147181   20104 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+10-10 09:07:32.147 20104 20104 W native  : W0000 00:00:1791590852.147249   20104 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-10 09:07:32.147 20104 20104 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-10 09:07:32.148 20104 20104 I litert  : [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 4096
+10-10 09:07:32.148 20104 20104 I litert  : [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 4096
+10-10 09:07:32.149 20104 20104 I litert  : [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 4096
+10-10 09:07:32.150 20104 20104 I litert  : [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 4096
+10-10 09:07:32.150 20104 20104 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-10 09:07:32.150 20104 20104 I tflite  : Initialized TensorFlow Lite runtime.
+10-10 09:07:32.167 20104 20104 W libc    : Access denied finding property "ro.mediatek.platform"
+10-10 09:07:32.167 20104 20104 W libc    : Access denied finding property "ro.chipname"
+10-10 09:07:32.192 20104 20104 I native  : I0000 00:00:1791590852.192168   20104 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+10-10 09:07:32.192 20104 20104 I native  : I0000 00:00:1791590852.192312   20104 delegate_opencl.cc:605] options->kernel_batch_size: -1
+10-10 09:07:32.203 20104 20104 W libc    : Access denied finding property "ro.mediatek.platform"
+10-10 09:07:32.203 20104 20104 W libc    : Access denied finding property "ro.chipname"
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: QUALCOMM build                   : 87ff20b216, Ifbe74a3179
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Build Date                       : 03/26/26
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.50.19.18
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Local Branch                     : 
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.16.2.0.11.00.00.1195.535
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Remote Branch                    : NONE
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Build Config                     : C P 20.0.0 AArch64
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Driver Version                   : 0842.19.8
+10-10 09:07:32.243 20104 20104 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-10 09:07:32.244 20104 20104 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-10 09:07:32.246 20104 20104 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-10 09:07:32.251 20104 20104 I SnapAlloc: Graphics lib is available
+10-10 09:07:32.254 20104 20104 I AdrenoGLES-0: PFP: 0x01510594, ME: 0x01510025
+10-10 09:07:32.255 20104 20104 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-10 09:07:32.256 20104 20104 I AdrenoUtils: <ReadGpuID:1333>: Reading chip ID through GSL
+10-10 09:07:32.256 20104 20104 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-10 09:07:32.258 20104 20104 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-10 09:07:32.258 20104 20104 I tflite  : Loaded OpenCL library with dlopen.
+10-10 09:07:32.258 20104 20104 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-10 09:07:32.258 20104 20104 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-10 09:07:32.258 20104 20104 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-10 09:07:32.259 20104 20104 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-10 09:07:32.262 20104 20104 I tflite  : Replacing 2068 out of 2068 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+10-10 09:07:32.719  1462  1464 D io_stats: !@ cpu-boost: status(ON), traffic_level(2), io_cpus(0x3b), boosted_cpus(0x3b), set_freq(2000000)
+10-10 09:07:33.079  2750  2985 I thermal_core: pivot(AP) : 330, skin : 309
+10-10 09:07:33.079  2750  2985 I vendor.samsung.hardware.thermal-service: index = 15.200000
+10-10 09:07:33.079  2750  2985 I vendor.samsung.hardware.thermal-service: 1 / 10
+10-10 09:07:33.623  1462  1462 D io_stats: !@   8,0 r 36206348 2170304680 w 7468413 1107213716 d 1607486 1062541652 f 178374 670944 iot 4233568 0 th 0 0 0 pt 0 inp 0 0 652141.428
+10-10 09:07:33.756 20104 20104 I native  : I0000 00:00:1791590853.755709   20104 delegate_kernel.cc:336] Total 32 external tensors are used for delegate inputs and outputs
+10-10 09:07:33.756 20104 20104 I native  : I0000 00:00:1791590853.756143   20104 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-10 09:07:34.034  3448  4052 D MARsPolicyManager: triggerAction called!
+10-10 09:07:34.034  3448  4052 I NSLocationMonitor: getGPSUsingApps() called
+10-10 09:07:34.034 24500 24597 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-10 09:07:34.080  2750  2985 I thermal_core: pivot(AP) : 340, skin : 309
+10-10 09:07:34.080  2750  2985 I vendor.samsung.hardware.thermal-service: index = 18.600000
+10-10 09:07:34.080  2750  2985 I vendor.samsung.hardware.thermal-service: 2 / 10
+10-10 09:07:34.875  2779  2826 D HeatmapThread: ECT: FG batch read OK, samples=10
+10-10 09:07:34.875  2779  2826 D HeatmapThread: ECT: running ectMain for 10 samples
+10-10 09:07:34.878  2779  2826 D HeatmapThread: Heatmap currtime: 29859847 , prevtime: 29859819 , plugstarttime: 29848979 , prevv_dsoh_update_time: 29859819
+10-10 09:07:34.878  2779  2826 D HeatmapThread: Read detailed_heatmap from efs is: 6183 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14992 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 7087 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4350 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3823 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4229 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1128 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 693 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 460 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 317 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 346 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 624 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 565 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 18012 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 216 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 238 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 103 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 91 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 34 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 42 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 50 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 121 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+10-10 09:07:34.878  2779  2826 D HeatmapThread: Write Detailed Heatmap to efs is: 6183 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14992 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 7087 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4350 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3823 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4229 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1128 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 693 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 460 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 317 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 346 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 624 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 565 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 18013 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 216 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 238 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 103 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 91 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 34 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 42 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 50 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 121 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 15 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+10-10 09:07:34.878  2779  2826 D HeatmapThread: cam(heatmap) updating
+10-10 09:07:34.878  2779  2826 D HeatmapThread: ECT: process_fg_batch_and_run_ect start
+10-10 09:07:35.081  2750  2985 I thermal_core: pivot(AP) : 341, skin : 309
+10-10 09:07:35.081  2750  2985 I vendor.samsung.hardware.thermal-service: index = 22.400000
+10-10 09:07:35.081  2750  2985 I vendor.samsung.hardware.thermal-service: 3 / 10
+10-10 09:07:35.083 20104 20104 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-10 09:07:35.094 20104 20104 I native  : I0000 00:00:1791590855.094117   20104 delegate_kernel.cc:336] Total 31 external tensors are used for delegate inputs and outputs
+10-10 09:07:35.094 20104 20104 I native  : I0000 00:00:1791590855.094194   20104 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-10 09:07:35.623  1462  1462 D io_stats: !@   8,0 r 36206350 2170304696 w 7468418 1107213788 d 1607487 1062541656 f 178375 670946 iot 4233572 0 th 0 0 0 pt 0 inp 0 0 652143.429
+10-10 09:07:35.623  1462  1462 D io_stats: !@ Read_top(KB): timeout:normal(20104) 489612 heatmap:normal(2779) 4 sh:normal(20101) 4
+10-10 09:07:35.623  1462  1462 D io_stats: !@ Write_top(KB): jbd2/sda7-8:/(1431) 68 heatmap:normal(2779) 4
+10-10 09:07:36.082  2750  2985 I thermal_core: pivot(AP) : 342, skin : 309
+10-10 09:07:36.082  2750  2985 I vendor.samsung.hardware.thermal-service: index = 26.400000
+10-10 09:07:36.082  2750  2985 I vendor.samsung.hardware.thermal-service: 4 / 10
+10-10 09:07:36.480 20104 20104 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+10-10 09:07:36.491 20104 20104 I native  : I0000 00:00:1791590856.491386   20104 delegate_kernel.cc:336] Total 31 external tensors are used for delegate inputs and outputs
+10-10 09:07:36.491 20104 20104 I native  : I0000 00:00:1791590856.491461   20104 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-10 09:07:36.894  1462  1464 D io_stats: !@ cpu-boost: status(OFF), traffic_level(0), io_cpus(0x0), boosted_cpus(0x0), set_freq(0)
+10-10 09:07:37.083  2750  2985 I thermal_core: pivot(AP) : 344, skin : 309
+10-10 09:07:37.083  2750  2985 I vendor.samsung.hardware.thermal-service: index = 30.400000
+10-10 09:07:37.083  2750  2985 I vendor.samsung.hardware.thermal-service: 5 / 2
+10-10 09:07:37.099 13264 13843 I SDHMS:x : SIOP:: AP:344 BAT:290 USB:278 CHG:312 PA:333 WIFI:314 CF:306 BLK:0 SUBBAT:0 LRPTHM:312 SKIN:312 SKINF:312 SKINB:309 LRP:312 LRF:312 LRB:309 APT:311 APR:308 RCV:303 SPK:283 CHGF:309 CHGR:297 MEMF:312 MEMR:309 WIFIF:306 WIFIR:306 VAP:302 VWIFI:296 AMB2:259 NNP:292 OOD:55 AVGCUR:-13 POWER:-55
+10-10 09:07:37.100 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=28
+10-10 09:07:37.100  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=28
+10-10 09:07:37.100  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-10 09:07:37.100  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:37.100  2707  4681 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 28
+10-10 09:07:37.100  2707  4681 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-10 09:07:37.100  2707  4681 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:37.100  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:37.100  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:37.100 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:37.100  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:37.100  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-10 09:07:37.100  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:37.100  2707  4681 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 30
+10-10 09:07:37.100  2707  4681 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-10 09:07:37.100  2707  4681 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:37.100  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:37.100  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:37.334 20104 20104 I tflite  : Replacing 2243 out of 2243 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+10-10 09:07:37.358 20104 20104 I native  : I0000 00:00:1791590857.358715   20104 delegate_kernel.cc:336] Total 32 external tensors are used for delegate inputs and outputs
+10-10 09:07:37.358 20104 20104 I native  : I0000 00:00:1791590857.358808   20104 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-10 09:07:37.388 30016 30016 I wpa_supplicant: Heartbeat 3055
+10-10 09:07:37.624  1462  1462 D io_stats: !@   8,0 r 36206350 2170304696 w 7468444 1107225564 d 1607487 1062541656 f 178375 670948 iot 4233576 0 th 0 0 0 pt 0 inp 0 0 652145.429
+10-10 09:07:38.100  2750  2985 I thermal_core: pivot(AP) : 346, skin : 312
+10-10 09:07:38.100  2750  2985 I vendor.samsung.hardware.thermal-service: index = 33.000000
+10-10 09:07:38.100  2750  2985 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-10 09:07:38.464 20104 20104 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-10 09:07:38.464 20104 20104 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-10 09:07:38.464 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-10 09:07:38.465 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-10 09:07:38.465 20104 20104 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-10 09:07:38.465 20104 20104 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007902c42d00, name=GPU OpenCL
+10-10 09:07:38.465 20104 20104 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-10 09:07:38.465 20104 20104 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007902c51ef0, name=CpuAccelerator
+10-10 09:07:38.465 20104 20104 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-10 09:07:38.498 20104 20104 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-10 09:07:38.498 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+10-10 09:07:38.498 20104 20104 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-10 09:07:38.498 20104 20104 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-10 09:07:38.498 20104 20104 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-10 09:07:38.501 20104 20104 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-10 09:07:38.501 20104 20104 I tflite  : Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-10 09:07:38.501 20104 20104 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-10 09:07:38.501 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-10 09:07:38.501 20104 20104 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-10 09:07:38.501 20104 20104 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-10 09:07:38.501 20104 20104 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-10 09:07:38.501 20104 20104 I litert  : [compiled_model.cc:1813] Tracked constant output tensor eoa_embedding with locked address
+10-10 09:07:38.501 20104 20104 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-10 09:07:38.501 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-10 09:07:38.502 20104 20104 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-10 09:07:38.502 20104 20104 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-10 09:07:38.502 20104 20104 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-10 09:07:38.502 20104 20104 I litert  : [compiled_model.cc:1813] Tracked constant output tensor eoi_embedding with locked address
+10-10 09:07:38.521 20104 20104 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-10 09:07:38.521 20104 20104 I litert  : [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+10-10 09:07:38.521 20104 20104 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-10 09:07:38.521 20104 20104 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-10 09:07:38.521 20104 20104 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-10 09:07:38.615  1462  1464 D io_stats: !@ cpu-boost: status(ON), traffic_level(4), io_cpus(0x2a), boosted_cpus(0x2a), set_freq(2000000)
+10-10 09:07:38.627 20104 20104 I tflite  : Replacing 1 out of 42 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-10 09:07:38.628 20104 20104 I native  : I0000 00:00:1791590858.628308   20104 litert_lm_lib.cc:865] Creating conversation
+10-10 09:07:38.629 20104 20104 W native  : W0000 00:00:1791590858.629301   20104 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+10-10 09:07:38.629 20104 20104 I native  : I0000 00:00:1791590858.629398   20104 litert_lm_lib.cc:877] Running single-turn conversation
+10-10 09:07:39.016 20104 20104 W libc    : Access denied finding property "ro.mediatek.platform"
+10-10 09:07:39.016 20104 20104 W libc    : Access denied finding property "ro.chipname"
+10-10 09:07:39.040  3448  4052 D MARsPolicyManager: triggerAction called!
+10-10 09:07:39.040  3448  4052 I NSLocationMonitor: getGPSUsingApps() called
+10-10 09:07:39.040 24500 24597 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-10 09:07:39.101  2750  2985 I thermal_core: pivot(AP) : 359, skin : 312
+10-10 09:07:39.101  2750  2985 I vendor.samsung.hardware.thermal-service: index = 36.200000
+10-10 09:07:39.101  2750  2985 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-10 09:07:39.119 13264 13843 I SDHMS:x : SIOP:: AP:360 BAT:290 USB:279 CHG:318 PA:343 WIFI:316 CF:309 BLK:0 SUBBAT:0 LRPTHM:315 SKIN:313 SKINF:313 SKINB:309 LRP:313 LRF:313 LRB:309 APT:312 APR:308 RCV:303 SPK:282 CHGF:310 CHGR:296 MEMF:313 MEMR:309 WIFIF:306 WIFIR:306 VAP:304 VWIFI:297 AMB2:259 NNP:293 OOD:54 AVGCUR:-14 POWER:-59
+10-10 09:07:39.119 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=28
+10-10 09:07:39.119  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=28
+10-10 09:07:39.119  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-10 09:07:39.119  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:39.119  2707  2735 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 28
+10-10 09:07:39.119  2707  2735 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-10 09:07:39.119  2707  2735 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:39.119  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:39.119  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:39.119 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:39.119  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:39.119  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-10 09:07:39.119  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:39.120  2707  2735 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 30
+10-10 09:07:39.120  2707  2735 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-10 09:07:39.120  2707  2735 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:39.120  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:39.120  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:39.129  3448  5901 W DeviceStorageMonitorService: check(/data) oldLevel:1, newLevel:2 (usableBytes=3699970048)
+10-10 09:07:39.129  3448  5901 W DeviceStorageMonitorService: updateBroadcasts(/data) oldLevel:1, newLevel:2, seq:1
+10-10 09:07:39.132  3448  5901 E DeviceStorageMonitorService: updateBroadcasts(/data) sending intent : ACTION_DEVICE_STORAGE_WARNING_ON
+10-10 09:07:39.132  3448  5901 E DeviceStorageMonitorService: mUsableBytes : 3699970048, mUsableFileNode : 12696226
+10-10 09:07:39.132  3448  5901 D DeviceStorageMonitorService: Available File Node Number is [12695432]
+10-10 09:07:39.132  3448  5901 W DeviceStorageMonitorService: updateBroadcasts_filenode(/data) fn_oldLevel:0, fn_newLevel:0, seq:1
+10-10 09:07:39.133  3448  3905 D ActivityManager: sync unfroze 8508 com.sec.android.app.myfiles for 3
+10-10 09:07:39.134  8508  8540 W oid.app.myfiles: Monitor::Inflate: Install failed 0x23e2fc0
+10-10 09:07:39.135  3448  3905 I ActivityManager: Changes in 10137 19 to 11, 0 to 384
+10-10 09:07:39.145  8508  8508 I MyFiles : [0043/StorageMonitorReceiver] onReceive() ] action : com.samsung.intent.action.DEVICE_STORAGE_WARNING_ON, supportManageStorage : true
+10-10 09:07:39.146  8508  8508 I MyFiles : [0044/StorageUsageUtils   ] getStorageFreeSpace() ] path :  #G$E2XLlSSxI=  , storageFreeSpace : 3699970048
+10-10 09:07:39.150  8508  8508 I MyFiles : [0045/StorageUsageUtils   ] getStorageTotalSize() ] domainType : 0 , dataPartitionSize = new File( #G$E2XK5HUAG8VFpcuF5KH7xHWhfyAw== ).getTotalSpace() : 237588447232
+10-10 09:07:39.150  8508  8512 W oid.app.myfiles: Reducing the number of considered missed Gc histogram windows from 1454 to 100
+10-10 09:07:39.150  8508  8508 I MyFiles : [0046/StorageUsageUtils   ] correctionStorageSize() ] internalStorageSize : 245876981760 = dataPartitionSize : 237588447232 + systemPartitionSize ( #G$E2XK5KTAe4Xg== ) : 8288534528
+10-10 09:07:39.150  8508  8508 I MyFiles : [0047/StorageUsageUtils   ] getStorageTotalSize() ] domainType : 0 , storageTotalSize : 256000000000 bytes
+10-10 09:07:39.151  8508  8508 I MyFiles : [0048/StorageMonitorReceiver] onReceive() ] action : com.samsung.intent.action.DEVICE_STORAGE_WARNING_ON, freeSpace : 3.0 GiB, totalSize : 256 GB
+10-10 09:07:39.151  8508  8508 I MyFiles : [0049/NotificationMgr     ] cancelNotification() ]
+10-10 09:07:39.153  3448  3448 D EdgeLightingManager: hideForNotification : packageName = com.sec.android.app.myfiles
+10-10 09:07:39.153  3448  3448 D EdgeLightingPolicyManager:NotificationGroup: remove : sbn : StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))
+10-10 09:07:39.153  3448  3448 D EdgeLightingPolicyManager.NotificationGroup: group notification count : 5
+10-10 09:07:39.153  3448  3448 W CoverManager: getCoverState : This device is not supported cover
+10-10 09:07:39.153  3448  3448 E EdgeLightingClientManager: stopEdgeLightingInternal mHosts is null. pkg=com.sec.android.app.myfiles,reason=1
+10-10 09:07:39.154  8508  8508 I MyFiles : [0050/NotificationMgr     ] sendNotification() ]
+10-10 09:07:39.154  8508  8508 I NotificationManager: com.sec.android.app.myfiles: notify(102, My Files, Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0)) as user
+10-10 09:07:39.155  6111  6111 D InsignificantCoordinator: onEntryRemoved :0|com.sec.android.app.myfiles|102|My Files|10137 flags: 0 entrySize:0
+10-10 09:07:39.155  6111  6111 D PluginAODManager: onEntryRemoved: 
+10-10 09:07:39.155 22615 22615 I HoneySpace.NotificationListener: onNotificationRemoved sbn : StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0)), reason : 8
+10-10 09:07:39.155 22615 22794 I HoneySpace.NotificationListener: onNotificationRemoved com.sec.android.app.myfiles: 0|com.sec.android.app.myfiles|102|My Files|10137: 0
+10-10 09:07:39.156 22615 18449 I HoneySpace.PackageEventOperator: [AbsFolderViewModel|31] badge count is updated. com.sec.android.app.myfiles/.ui.MainActivity#UserHandle{0}|34 : 0
+10-10 09:07:39.156  3448  3448 D NotificationReminder: removeFromNotificationList record com.sec.android.app.myfiles
+10-10 09:07:39.156 22615 18448 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.youtube', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 5, badge provider: 20
+10-10 09:07:39.156  3448  7771 I ActivityManager: Changes in 10137 11 to 19, 384 to 0
+10-10 09:07:39.156 22615 18029 I HoneySpace.PackageEventOperator: [ApplistViewModel] badge count is updated. com.sec.android.app.myfiles/.ui.MainActivity#UserHandle{0}|34 : 0
+10-10 09:07:39.156 22615 18029 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.youtube', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 5, badge provider: 20
+10-10 09:07:39.156 22615 18029 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.apps.photos', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 7, badge provider: 0
+10-10 09:07:39.156 22615 18448 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.apps.photos', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 7, badge provider: 0
+10-10 09:07:39.157  3448 20568 D PerProcessNandswap$NandswapHandler: nandswap start for non-activity com.samsung.android.rubin.app(pid 10740) action:14 adj:100 type:1
+10-10 09:07:39.165  3448 20568 D PerProcessNandswap$NandswapHandler: nandswap end for non-activity com.samsung.android.rubin.app(pid 10740) ret:17179836416 adj:100
+10-10 09:07:39.173  6111  6111 D View    : semSetBlurInfo, blurInfo : null, com.android.systemui.statusbar.notification.row.NotificationBackgroundView{6dd3b1e V.ED..... ......ID 0,0-1020,481 #7e0a0165 com.android.systemui:id/backgroundNormal}
+10-10 09:07:39.173  6111  6111 D View    : semSetBlurInfo, blurInfo : null, com.android.systemui.statusbar.notification.row.NotificationBackgroundView{6dd3b1e V.ED..... ......ID 0,0-1020,481 #7e0a0165 com.android.systemui:id/backgroundNormal}
+10-10 09:07:39.173  6111  6111 D StackScroller: generateRemoveAnimation 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.173  6111  6111 D StackScroller: generateRemoveAnimation 0|com.sec.android.app.myfiles|102|My Files|10137 mIsExpanded true mAnimationsEnabled false
+10-10 09:07:39.173  6111  6111 D StackScroller: onViewRemovedInternal remove child without animation 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.174  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.174  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.174  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.175  6111  6111 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 12
+10-10 09:07:39.176  6111  6111 I AODNotificationManager: updateNotification() 
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 12
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.googlequicksearchbox|0|1521432767::a:snotification:[0x394,wx.f,NOTIFICATION]|10272
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.apps.photos|0|1521432767::SUMMARY::5d0e55489e677506e5c03fb27d72bbf2|10283
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.android.vending|0|0|com.android.vending|g:Aggregate_NormalNotificationSection|10268|0|com.android.vending|g:Aggregate_NormalNotificationSection
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.openai.chatgpt|0|0|com.openai.chatgpt|g:Aggregate_NormalNotificationSection|10387|0|com.openai.chatgpt|g:Aggregate_NormalNotificationSection
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.apps.photos|0|1521432767::a:LOCAL_BACKUP_NOTIFICATION_NEW_DEVICE_FOLDERS_DETECTED:com.google.android.apps.photos.backup.notifications:notifications:backup_multiple_new_folder|10283
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|-dy8n5GcOtEnb6VAaFqeXw::c1426678-f9ec-4f7f-80eb-3e6198167efb|10288
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.samsung.android.lool|2007|null|1000
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|wc58LDd96AQ::ece5218b-02f7-46f4-8301-1d167fb3d8b2|10288
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|qof3T-pbe-J3ncWroVopjA::14e9d6c6-3174-47bb-b3e0-cfb19d838768|10288
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|WQfr-mmR8q1GtHzh-dudGA::b36aa6c9-e324-49c4-8c29-b0939e9272a7|10288
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|feHRkqqFiR6gnaUf5NOG_g::2dac2bef-3937-433b-95be-4b15a5e5c1f6|10288
+10-10 09:07:39.176  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|jp.co.rakuten.mobile.rcs|2048231568|null|10373
+10-10 09:07:39.176  6111  6111 I AODNotificationManager: updateVisibleNotifications: 12
+10-10 09:07:39.176  6111  6111 D {OngoingChipAdapter}: updateVisibleIconCount: 12
+10-10 09:07:39.189  6111  6111 D SecKeyguardClockRepositoryImpl: setClockSize SMALL
+10-10 09:07:39.189  6111  6111 I SecKeyguardClockPositionAlgorithm: prepareClockContainerHeightChanging:
+10-10 09:07:39.189  6111  6111 I FaceWidget_updatePosition: updatePosition: faceWidgetPosition = Point(0, 247)
+10-10 09:07:39.189  6111  6111 D FaceWidgetPagesController: refreshViews() pending reason = CLOCK_POSITION_CHANGED
+10-10 09:07:39.189  6111  6111 I PluginFaceWidgetManager: isEditMode = false
+10-10 09:07:39.189  6111  6111 I NowBarItemManager: getVisibleList isScreenTurnedOn = false / aodShowState false shouldControlScreenOff false isLockTypeNone false visibleList size = 0 / expandedItem null
+10-10 09:07:39.189  6111  6111 D SecKeyguardClockRepositoryImpl: setClockSize SMALL
+10-10 09:07:39.189  6111  6111 I SecKeyguardClockPositionAlgorithm: prepareClockContainerHeightChanging:
+10-10 09:07:39.189  6111  6111 I FaceWidget_updatePosition: updatePosition: faceWidgetPosition = Point(0, 247)
+10-10 09:07:39.189  6111  6111 D FaceWidgetPagesController: refreshViews() pending reason = CLOCK_POSITION_CHANGED
+10-10 09:07:39.189  6111  6111 I PluginFaceWidgetManager: isEditMode = false
+10-10 09:07:39.189  6111  6111 I NowBarItemManager: getVisibleList isScreenTurnedOn = false / aodShowState false shouldControlScreenOff false isLockTypeNone false visibleList size = 0 / expandedItem null
+10-10 09:07:39.327 20104 20104 I tflite  : Loaded OpenCL library with dlopen.
+10-10 09:07:39.358  3448  3448 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-10 09:07:39.361  3448  5959 D BackgroundInstallControlService: Package event received: 0
+10-10 09:07:39.361  3448  3448 D NotificationReminder: addNotificationRecord record com.sec.android.app.myfiles
+10-10 09:07:39.362 22615 22794 I HoneySpace.NotificationListener: onNotificationPosted com.sec.android.app.myfiles: 0|com.sec.android.app.myfiles|102|My Files|10137: 0
+10-10 09:07:39.362 22615 22794 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.sec.android.app.myfiles', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-10 09:07:39.363 22615 18029 I HoneySpace.PackageEventOperator: [AbsFolderViewModel|31] badge count is updated. com.sec.android.app.myfiles/.ui.MainActivity#UserHandle{0}|34 : 1
+10-10 09:07:39.363 22615 18029 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.youtube', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 5, badge provider: 20
+10-10 09:07:39.363 22615 18029 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.apps.photos', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 7, badge provider: 0
+10-10 09:07:39.363 22615 18029 I HoneySpace.PackageEventOperator: [ApplistViewModel] badge count is updated. com.sec.android.app.myfiles/.ui.MainActivity#UserHandle{0}|34 : 1
+10-10 09:07:39.363  6111  6111 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.363 22615 18029 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.youtube', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 5, badge provider: 20
+10-10 09:07:39.363 22615 18029 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.google.android.apps.photos', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 7, badge provider: 0
+10-10 09:07:39.363  6111  6111 I {OngoingActivityController}: onEntryUpdated and OA data is empty. So update latest task info
+10-10 09:07:39.364  3448  7771 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+10-10 09:07:39.364  6111  6111 D PluginAODManager: onEntryAdded: 
+10-10 09:07:39.364  6111  6111 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.383  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.383  6111  6639 D View    : semSetBlurInfo, blurInfo : android.view.SemBlurInfo@663108 {BLUR_MODE_WINDOW, mBlurRadius = 300, mBackgroundBlurColor = 0, mCornerRadiusTL = 108.0, mCornerRadiusTR = 108.0, mCornerRadiusBL = 108.0, mCornerRadiusBR = 108.0, mClipRectLeft = 0, mClipRectTop = 0, mClipRectRight = 2147483647, mClipRectBottom = 2147483647, mColorCurve = android.view.SemBlurInfo$ColorCurve@2a380a1 {minX = 15.0, minY = 169.6, maxX = 235.0, maxY = 246.1, curveBias = 30.0, saturation = 0.55}}, com.android.systemui.statusbar.notification.row.NotificationBackgroundView{e5502c6 V.ED..... ......I. 0,0-0,0 #7e0a0165 com.android.systemui:id/backgroundNormal}
+10-10 09:07:39.384  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.384  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.384  6111  6111 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 12
+10-10 09:07:39.386  6111  6111 I AODNotificationManager: updateNotification() 
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 12
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.googlequicksearchbox|0|1521432767::a:snotification:[0x394,wx.f,NOTIFICATION]|10272
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.apps.photos|0|1521432767::SUMMARY::5d0e55489e677506e5c03fb27d72bbf2|10283
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.android.vending|0|0|com.android.vending|g:Aggregate_NormalNotificationSection|10268|0|com.android.vending|g:Aggregate_NormalNotificationSection
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.openai.chatgpt|0|0|com.openai.chatgpt|g:Aggregate_NormalNotificationSection|10387|0|com.openai.chatgpt|g:Aggregate_NormalNotificationSection
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.apps.photos|0|1521432767::a:LOCAL_BACKUP_NOTIFICATION_NEW_DEVICE_FOLDERS_DETECTED:com.google.android.apps.photos.backup.notifications:notifications:backup_multiple_new_folder|10283
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|-dy8n5GcOtEnb6VAaFqeXw::c1426678-f9ec-4f7f-80eb-3e6198167efb|10288
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.samsung.android.lool|2007|null|1000
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|wc58LDd96AQ::ece5218b-02f7-46f4-8301-1d167fb3d8b2|10288
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|qof3T-pbe-J3ncWroVopjA::14e9d6c6-3174-47bb-b3e0-cfb19d838768|10288
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|WQfr-mmR8q1GtHzh-dudGA::b36aa6c9-e324-49c4-8c29-b0939e9272a7|10288
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|feHRkqqFiR6gnaUf5NOG_g::2dac2bef-3937-433b-95be-4b15a5e5c1f6|10288
+10-10 09:07:39.386  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|jp.co.rakuten.mobile.rcs|2048231568|null|10373
+10-10 09:07:39.386  6111  6111 I AODNotificationManager: updateVisibleNotifications: 12
+10-10 09:07:39.397  6111  6111 D SecKeyguardClockRepositoryImpl: setClockSize SMALL
+10-10 09:07:39.398  6111  6111 I SecKeyguardClockPositionAlgorithm: prepareClockContainerHeightChanging:
+10-10 09:07:39.398  6111  6111 I FaceWidget_updatePosition: updatePosition: faceWidgetPosition = Point(0, 247)
+10-10 09:07:39.398  6111  6111 D FaceWidgetPagesController: refreshViews() pending reason = CLOCK_POSITION_CHANGED
+10-10 09:07:39.398  6111  6111 I PluginFaceWidgetManager: isEditMode = false
+10-10 09:07:39.398  6111  6111 I NowBarItemManager: getVisibleList isScreenTurnedOn = false / aodShowState false shouldControlScreenOff false isLockTypeNone false visibleList size = 0 / expandedItem null
+10-10 09:07:39.398  6111  6111 D SecKeyguardClockRepositoryImpl: setClockSize SMALL
+10-10 09:07:39.398  6111  6111 I SecKeyguardClockPositionAlgorithm: prepareClockContainerHeightChanging:
+10-10 09:07:39.398  6111  6111 I FaceWidget_updatePosition: updatePosition: faceWidgetPosition = Point(0, 247)
+10-10 09:07:39.398  6111  6111 D FaceWidgetPagesController: refreshViews() pending reason = CLOCK_POSITION_CHANGED
+10-10 09:07:39.398  6111  6111 I PluginFaceWidgetManager: isEditMode = false
+10-10 09:07:39.398  6111  6111 I NowBarItemManager: getVisibleList isScreenTurnedOn = false / aodShowState false shouldControlScreenOff false isLockTypeNone false visibleList size = 0 / expandedItem null
+10-10 09:07:39.400  6111  6639 W Paint   : The elegant text height cannot be turned off.
+10-10 09:07:39.403  2732  2941 I SnapAlloc: Using graphics libs for alignment calculations
+10-10 09:07:39.405  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.409  2732  2941 I SnapAlloc: Using graphics libs for alignment calculations
+10-10 09:07:39.414  6111  6111 I AppIconSolution: return adaptive icon for com.sec.android.app.myfiles, isNight = false
+10-10 09:07:39.416  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.418  6111  6111 D ExpandableNotifRow: mMaxSmallHeight different before reInflateViews mMaxSmallHeight: 216 mTempSmallHeight:0 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.418  6111  6111 D ExpandableNotifRow: mMaxSmallHeight different before reInflateViews mMaxSmallHeight: 216 mTempSmallHeight:0 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.418  6111  6111 D ExpandableNotifRow: mMaxSmallHeight different before reInflateViews mMaxSmallHeight: 216 mTempSmallHeight:0 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.418  6111  6111 D ExpandableNotifRow: mMaxSmallHeight different before reInflateViews mMaxSmallHeight: 216 mTempSmallHeight:0 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.418  6111  6111 D View    : semSetBlurInfo, blurInfo : android.view.SemBlurInfo@a1eac21 {BLUR_MODE_WINDOW, mBlurRadius = 300, mBackgroundBlurColor = 0, mCornerRadiusTL = 108.0, mCornerRadiusTR = 108.0, mCornerRadiusBL = 108.0, mCornerRadiusBR = 108.0, mClipRectLeft = 0, mClipRectTop = 0, mClipRectRight = 2147483647, mClipRectBottom = 2147483647, mColorCurve = android.view.SemBlurInfo$ColorCurve@a078846 {minX = 15.0, minY = 169.6, maxX = 235.0, maxY = 246.1, curveBias = 30.0, saturation = 0.55}}, com.android.systemui.statusbar.notification.row.NotificationBackgroundView{e5502c6 V.ED..... ......I. 0,0-0,0 #7e0a0165 com.android.systemui:id/backgroundNormal}
+10-10 09:07:39.419  6111  6111 I AppIconSolution: return adaptive icon for com.sec.android.app.myfiles, isNight = false
+10-10 09:07:39.436  6111  6111 D View    : semSetBlurInfo, blurInfo : android.view.SemBlurInfo@6395a1e {BLUR_MODE_WINDOW, mBlurRadius = 300, mBackgroundBlurColor = 0, mCornerRadiusTL = 108.0, mCornerRadiusTR = 108.0, mCornerRadiusBL = 108.0, mCornerRadiusBR = 108.0, mClipRectLeft = 0, mClipRectTop = 0, mClipRectRight = 2147483647, mClipRectBottom = 2147483647, mColorCurve = android.view.SemBlurInfo$ColorCurve@114b2ff {minX = 15.0, minY = 169.6, maxX = 235.0, maxY = 246.1, curveBias = 30.0, saturation = 0.55}}, com.android.systemui.statusbar.notification.row.NotificationBackgroundView{e5502c6 V.ED..... ......I. 0,0-0,0 #7e0a0165 com.android.systemui:id/backgroundNormal}
+10-10 09:07:39.436  6111  6254 I PluginActionManager[com.android.systemui.action.PLUGIN_NOTIFICATION_MENU_ROW]: Found 0 plugins
+10-10 09:07:39.436  6111  6111 D View    : semSetBlurInfo, blurInfo : android.view.SemBlurInfo@6395a1e {BLUR_MODE_WINDOW, mBlurRadius = 300, mBackgroundBlurColor = 0, mCornerRadiusTL = 108.0, mCornerRadiusTR = 108.0, mCornerRadiusBL = 108.0, mCornerRadiusBR = 108.0, mClipRectLeft = 0, mClipRectTop = 0, mClipRectRight = 2147483647, mClipRectBottom = 2147483647, mColorCurve = android.view.SemBlurInfo$ColorCurve@114b2ff {minX = 15.0, minY = 169.6, maxX = 235.0, maxY = 246.1, curveBias = 30.0, saturation = 0.55}}, com.android.systemui.statusbar.notification.row.NotificationBackgroundView{e5502c6 V.ED..... ......I. 0,0-0,0 #7e0a0165 com.android.systemui:id/backgroundNormal}
+10-10 09:07:39.437  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.438  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.438  6111  6111 I DateTimeView: getTimeFormat
+10-10 09:07:39.440  6111  6111 I BackgroundBlurDrawable: getBlurRegionsCopyForRT, size : 0
+10-10 09:07:39.440  6111  6111 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 13
+10-10 09:07:39.442  6111  6111 I AODNotificationManager: updateNotification() 
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 13
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.sec.android.app.myfiles|102|My Files|10137
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.googlequicksearchbox|0|1521432767::a:snotification:[0x394,wx.f,NOTIFICATION]|10272
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.apps.photos|0|1521432767::SUMMARY::5d0e55489e677506e5c03fb27d72bbf2|10283
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.android.vending|0|0|com.android.vending|g:Aggregate_NormalNotificationSection|10268|0|com.android.vending|g:Aggregate_NormalNotificationSection
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.openai.chatgpt|0|0|com.openai.chatgpt|g:Aggregate_NormalNotificationSection|10387|0|com.openai.chatgpt|g:Aggregate_NormalNotificationSection
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.apps.photos|0|1521432767::a:LOCAL_BACKUP_NOTIFICATION_NEW_DEVICE_FOLDERS_DETECTED:com.google.android.apps.photos.backup.notifications:notifications:backup_multiple_new_folder|10283
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|-dy8n5GcOtEnb6VAaFqeXw::c1426678-f9ec-4f7f-80eb-3e6198167efb|10288
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.samsung.android.lool|2007|null|1000
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|wc58LDd96AQ::ece5218b-02f7-46f4-8301-1d167fb3d8b2|10288
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|qof3T-pbe-J3ncWroVopjA::14e9d6c6-3174-47bb-b3e0-cfb19d838768|10288
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|WQfr-mmR8q1GtHzh-dudGA::b36aa6c9-e324-49c4-8c29-b0939e9272a7|10288
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|com.google.android.youtube|0|feHRkqqFiR6gnaUf5NOG_g::2dac2bef-3937-433b-95be-4b15a5e5c1f6|10288
+10-10 09:07:39.442  6111  6111 D PluginAODManager: onNotificationInfoUpdated() 0|jp.co.rakuten.mobile.rcs|2048231568|null|10373
+10-10 09:07:39.442  6111  6111 I AODNotificationManager: updateVisibleNotifications: 13
+10-10 09:07:39.443  6111  6111 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.sec.android.app.myfiles/0x66' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.sec.android.app.myfiles id=0x7f080300) visible user=0 ) visibleState=ICON iconColor=#fff79400 staticDrawableColor=#fff79400 decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#fff79400 notification=StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24715 android.view.ViewGroup.addViewInner:5669 android.view.ViewGroup.addView:5445 android.view.ViewGroup.addView:5417 
+10-10 09:07:39.443  6111  6111 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.sec.android.app.myfiles/0x66' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.sec.android.app.myfiles id=0x7f080300) visible user=0 ) visibleState=ICON iconColor=#fff79400 staticDrawableColor=#fff79400 decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#fff79400 notification=StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24715 android.view.ViewGroup.addViewInner:5669 android.view.ViewGroup.addView:5445 android.view.ViewGroup.addView:5385 
+10-10 09:07:39.443  6111  6111 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.sec.android.app.myfiles/0x66' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.sec.android.app.myfiles id=0x7f080300) visible user=0 ) visibleState=ICON iconColor=#0 staticDrawableColor=#0 decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#0 notification=StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24715 android.view.ViewGroup.addViewInner:5669 android.view.ViewGroup.addView:5445 android.view.ViewGroup.addView:5417 
+10-10 09:07:39.443  6111  6111 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.sec.android.app.myfiles/0x66' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.sec.android.app.myfiles id=0x7f080300) visible user=0 ) visibleState=ICON iconColor=#b3000000 staticDrawableColor=#b3000000 decorColor=#b3000000 animationStartColor=#0 currentSetColor=#b3000000 notification=StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24715 android.view.ViewGroup.addViewInner:5669 android.view.ViewGroup.addView:5445 android.view.ViewGroup.addView:5385 
+10-10 09:07:39.444  6111  6111 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.sec.android.app.myfiles/0x66' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.sec.android.app.myfiles id=0x7f080300) visible user=0 ) visibleState=ICON iconColor=#0 staticDrawableColor=#0 decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#0 notification=StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24715 android.view.ViewGroup.addViewInner:5669 android.view.ViewGroup.addView:5445 android.view.ViewGroup.addView:5417 
+10-10 09:07:39.444  6111  6111 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.sec.android.app.myfiles/0x66' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.sec.android.app.myfiles id=0x7f080300) visible user=0 ) visibleState=ICON iconColor=#ffffffff staticDrawableColor=#ffffffff decorColor=#ffffffff animationStartColor=#0 currentSetColor=#ffffffff notification=StatusBarNotification(pkg=com.sec.android.app.myfiles user=UserHandle{0} id=102 tag=My Files key=0|com.sec.android.app.myfiles|102|My Files|10137: Notification(channel=My Files shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|AUTO_CANCEL color=0xfff79400 category=CATEGORY_STATUS actions=1 vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24715 android.view.ViewGroup.addViewInner:5669 android.view.ViewGroup.addView:5445 android.view.ViewGroup.addView:5385 
+10-10 09:07:39.444  6111  6111 D {OngoingChipAdapter}: updateVisibleIconCount: 13
+10-10 09:07:39.452  6111  6111 D SecKeyguardClockRepositoryImpl: setClockSize SMALL
+10-10 09:07:39.453  6111  6111 I SecKeyguardClockPositionAlgorithm: prepareClockContainerHeightChanging:
+10-10 09:07:39.453  6111  6111 I FaceWidget_updatePosition: updatePosition: faceWidgetPosition = Point(0, 247)
+10-10 09:07:39.453  6111  6111 D FaceWidgetPagesController: refreshViews() pending reason = CLOCK_POSITION_CHANGED
+10-10 09:07:39.453  6111  6111 I PluginFaceWidgetManager: isEditMode = false
+10-10 09:07:39.453  6111  6111 I NowBarItemManager: getVisibleList isScreenTurnedOn = false / aodShowState false shouldControlScreenOff false isLockTypeNone false visibleList size = 0 / expandedItem null
+10-10 09:07:39.453  6111  6111 D SecKeyguardClockRepositoryImpl: setClockSize SMALL
+10-10 09:07:39.453  6111  6111 I SecKeyguardClockPositionAlgorithm: prepareClockContainerHeightChanging:
+10-10 09:07:39.453  6111  6111 I FaceWidget_updatePosition: updatePosition: faceWidgetPosition = Point(0, 247)
+10-10 09:07:39.453  6111  6111 D FaceWidgetPagesController: refreshViews() pending reason = CLOCK_POSITION_CHANGED
+10-10 09:07:39.453  6111  6111 I PluginFaceWidgetManager: isEditMode = false
+10-10 09:07:39.453  6111  6111 I NowBarItemManager: getVisibleList isScreenTurnedOn = false / aodShowState false shouldControlScreenOff false isLockTypeNone false visibleList size = 0 / expandedItem null
+10-10 09:07:39.624  1462  1462 D io_stats: !@   8,64 r 1 4 w 0 0 d 0 0 f 0 0 iot 0 0 th 0 0 0 pt 0 inp 0 0 652147.429
+10-10 09:07:39.624  1462  1462 D io_stats: !@   8,0 r 36207842 2170448952 w 7468444 1107225564 d 1607487 1062541656 f 178375 670948 iot 4233704 0 th 0 0 0 pt 0 inp 0 0 652147.429
+10-10 09:07:39.624  1462  1462 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(20104) 135352 oid.app.myfiles:high(8508) 6380 ndroid.systemui:top(6111) 1620
+10-10 09:07:39.624  1462  1462 D io_stats: !@ Write_top(KB): kworker/u33:5:/(14925) 11752 soft.appmanager:low(13115) 16 kworker/5:1:/(19486) 8
+10-10 09:07:39.624  1462  1462 D io_stats: !@ fuse-log: WORST (10137 17 0 1 0) TOTAL_LATENCY (10137 0 17 0 1) TOTAL_CNT (10137 1 17 1) 
+10-10 09:07:39.723  2779  2827 D HeatmapThread: Updated plugType via uevent: 2
+10-10 09:07:39.726  2750  2750 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+10-10 09:07:39.726  2748  2748 I sehhealth-service: updateLrpSysfs: write: 313
+10-10 09:07:39.726  2748  2797 E BatteryDump: !@new_battery_dump : 4201,-871,1300,1500,79,290,280,322,290,0,308,322,0,Not-charging,NO_CHARGING,Normal,Good,USB_CDP,2,Normal,0,0,0,9300,0x8000,0x11010000,0x0,0,0,561,v0005,0,0/0-0-0-0,0,0,0,0,0x0000,0x0000,0x00000000,0,0,0,0,0,0,12,4235,7857,990,0,
+10-10 09:07:40.119  2750  2985 I thermal_core: pivot(AP) : 376, skin : 313
+10-10 09:07:40.119  2750  2985 I vendor.samsung.hardware.thermal-service: index = 42.400000
+10-10 09:07:40.119  2750  2985 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-10 09:07:41.120  2750  2985 I thermal_core: pivot(AP) : 392, skin : 313
+10-10 09:07:41.120  2750  2985 I vendor.samsung.hardware.thermal-service: index = 51.600000
+10-10 09:07:41.120  2750  2985 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-10 09:07:41.137 13264 13843 I SDHMS:x : SIOP:: AP:392 BAT:291 USB:281 CHG:335 PA:386 WIFI:321 CF:312 BLK:0 SUBBAT:0 LRPTHM:319 SKIN:315 SKINF:315 SKINB:307 LRP:315 LRF:315 LRB:307 APT:313 APR:305 RCV:297 SPK:275 CHGF:311 CHGR:291 MEMF:315 MEMR:307 WIFIF:304 WIFIR:302 VAP:305 VWIFI:297 AMB2:260 NNP:294 OOD:55 AVGCUR:-14 POWER:-59
+10-10 09:07:41.137 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=28
+10-10 09:07:41.137  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=28
+10-10 09:07:41.138  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-10 09:07:41.138  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:41.138  2707  4681 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 28
+10-10 09:07:41.138  2707  4681 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-10 09:07:41.138  2707  4681 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:41.138  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:41.138  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:41.138 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:41.138  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:41.138  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-10 09:07:41.138  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:41.138  2707  2735 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 30
+10-10 09:07:41.138  2707  2735 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-10 09:07:41.138  2707  2735 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:41.139  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:41.139  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:41.413  1462  1464 D io_stats: !@ ufs-boost: status(OFF)
+10-10 09:07:41.553  2820  2820 I SurfaceFlinger: SFWD update time=652149358885750
+10-10 09:07:41.624  1462  1462 D io_stats: !@   8,0 r 36207843 2170448956 w 7468452 1107225612 d 1607488 1062541660 f 178375 670949 iot 4233708 0 th 0 0 0 pt 0 inp 0 0 652149.430
+10-10 09:07:41.726  1462  1464 D io_stats: !@ cpu-boost: status(OFF), traffic_level(0), io_cpus(0x0), boosted_cpus(0x0), set_freq(0)
+10-10 09:07:42.138  2750  2985 I thermal_core: pivot(AP) : 404, skin : 315
+10-10 09:07:42.138  2750  2985 I vendor.samsung.hardware.thermal-service: index = 62.400000
+10-10 09:07:42.138  2750  2985 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-10 09:07:42.703  3448  5890 D ConnectivityService: reportNetworkActive, notify 2 listeners
+10-10 09:07:43.139  2750  2985 I thermal_core: pivot(AP) : 412, skin : 315
+10-10 09:07:43.139  2750  2985 I vendor.samsung.hardware.thermal-service: index = 75.000000
+10-10 09:07:43.139  2750  2985 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-10 09:07:43.158 13264 13843 I SDHMS:x : SIOP:: AP:412 BAT:292 USB:281 CHG:353 PA:412 WIFI:329 CF:317 BLK:0 SUBBAT:0 LRPTHM:326 SKIN:317 SKINF:317 SKINB:308 LRP:317 LRF:317 LRB:308 APT:315 APR:305 RCV:296 SPK:270 CHGF:313 CHGR:287 MEMF:317 MEMR:308 WIFIF:304 WIFIR:301 VAP:307 VWIFI:298 AMB2:260 NNP:294 OOD:55 AVGCUR:-14 POWER:-59
+10-10 09:07:43.158 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=27
+10-10 09:07:43.159  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=27
+10-10 09:07:43.159  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-10 09:07:43.159  2707  2735 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:43.159  2707  2735 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 27
+10-10 09:07:43.159  2707  2735 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-10 09:07:43.159  2707  2735 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:43.160  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:43.160  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:43.160 13264 13843 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:43.161  2767  3645 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=30
+10-10 09:07:43.161  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-10 09:07:43.161  2707  4681 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-10 09:07:43.161  2707  4681 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 30
+10-10 09:07:43.161  2707  4681 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-10 09:07:43.161  2707  4681 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-10 09:07:43.162  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:43.162  2767  3645 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-10 09:07:43.625  1462  1462 D io_stats: !@   8,0 r 36207843 2170448956 w 7468464 1107232084 d 1607488 1062541660 f 178375 670949 iot 4233744 0 th 0 0 0 pt 0 inp 0 0 652151.430
+10-10 09:07:43.625  1462  1462 D io_stats: !@ Read_top(KB): vendor.samsung.:normal(2748) 4
+10-10 09:07:43.625  1462  1462 D io_stats: !@ Write_top(KB): kworker/u33:2:/(20046) 6472 jbd2/sda7-8:/(1431) 24 kworker/u33:5:/(14925) 16
+10-10 09:07:44.046  3448  4052 D MARsPolicyManager: triggerAction called!
+10-10 09:07:44.047  3448  4052 I NSLocationMonitor: getGPSUsingApps() called
+10-10 09:07:44.047 24500 24597 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-10 09:07:44.158  2750  2985 I thermal_core: pivot(AP) : 419, skin : 317
+10-10 09:07:44.158  2750  2985 I vendor.samsung.hardware.thermal-service: index = 86.000000
+10-10 09:07:44.158  2750  2985 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-10 09:07:44.162  3448  5890 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-10 09:07:44.164  3448  5890 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-10 09:07:44.164  3448  5890 D InetDiagMessage: Destroyed live tcp sockets for uids={10137} in 6ms
+10-10 09:07:44.166  3448  5890 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-10 09:07:44.167  3448  5890 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-10 09:07:44.167  3448  5890 D InetDiagMessage: Destroyed live tcp sockets for uids={20137} in 3ms
+10-10 09:07:44.622 20104 20104 I native  : I0000 00:00:1791590864.621914   20104 litert_lm_lib.cc:424] BenchmarkInfo:
+10-10 09:07:44.622 20104 20104 I native  :   Init Phases (7):
+10-10 09:07:44.622 20104 20104 I native  :     - Init Conversation: 0.12 ms
+10-10 09:07:44.622 20104 20104 I native  :     - Init Executor: 6589.35 ms
+10-10 09:07:44.622 20104 20104 I native  :     - Init LLM metadata: 0.58 ms
+10-10 09:07:44.622 20104 20104 I native  :     - Init Model assets: 4.48 ms
+10-10 09:07:44.622 20104 20104 I native  :     - Init Tokenizer: 66.25 ms
+10-10 09:07:44.622 20104 20104 I native  :     - Init Total: 6594.56 ms
+10-10 09:07:44.622 20104 20104 I native  : --------------------------------------------------
+10-10 09:07:44.622 20104 20104 I native  :   Time to first token: 0.38 s
+10-10 09:07:44.622 20104 20104 I native  : --------------------------------------------------
+10-10 09:07:44.623 20104 20104 I native  :   Prefill Turns (Total 1 turns):
+10-10 09:07:44.623 20104 20104 I native  :     Prefill Turn 1: Processed 1024 tokens in 357.760833ms duration.
+10-10 09:07:44.623 20104 20104 I native  :       Prefill Speed: 2862.25 tokens/sec.
+10-10 09:07:44.623 20104 20104 I native  : --------------------------------------------------
+10-10 09:07:44.623 20104 20104 I native  :   Decode Turns (Total 1 turns):
+10-10 09:07:44.623 20104 20104 I native  :     Decode Turn 1: Processed 256 tokens in 5.633850727s duration.
+10-10 09:07:44.623 20104 20104 I native  :       Decode Speed: 45.44 tokens/sec.
+10-10 09:07:44.623 20104 20104 I native  : --------------------------------------------------
+10-10 09:07:44.623 20104 20104 I native  :   TextToTokenIds Turns (Total 1 turns):
+10-10 09:07:44.623 20104 20104 I native  :     Turn 1: 29.427us, 1024 tokens
+10-10 09:07:44.623 20104 20104 I native  : --------------------------------------------------
+10-10 09:07:44.623 20104 20104 I native  : --------------------------------------------------
+10-10 09:07:44.650 20104 20104 I native  : I0000 00:00:1791590864.650127   20104 litert_lm_lib.cc:474] Peak system ram usage: 752.168MB.
+10-10 09:07:44.650 20104 20104 I native  : I0000 00:00:1791590864.650283   20104 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 770.22 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 788.705 MB
+10-10 09:07:44.650 20104 20104 I native  : I0000 00:00:1791590864.650530   20104 litert_lm_lib.cc:477] Peak private footprint: 752.168MB.
+10-10 09:07:44.819 20104 20104 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-10 09:07:44.819 20104 20104 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007902c0d1c0, name=CpuAccelerator
+10-10 09:07:44.819 20104 20104 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007902c0c7b0, name=GPU OpenCL
+10-10 09:07:44.857 20104 20104 I native  : I0000 00:00:1791590864.857511   20104 litert_lm_advanced_main.cc:181] Metrics written to: /data/local/tmp/s26-reboot-cold/metrics-R0.pb
+10-10 09:07:44.858 20104 20104 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007902c51ef0, name=CpuAccelerator
+10-10 09:07:44.858 20104 20104 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007902c42d00, name=GPU OpenCL
+10-10 09:07:44.878  2779  2826 D HeatmapThread: ECT: FG batch read OK, samples=10
+10-10 09:07:44.879  2779  2826 D HeatmapThread: ECT: running ectMain for 10 samples
+10-10 09:07:44.882  2779  2826 D HeatmapThread: Heatmap currtime: 29859847 , prevtime: 29859819 , plugstarttime: 29848979 , prevv_dsoh_update_time: 29859819
+10-10 09:07:44.882  2779  2826 D HeatmapThread: cam(heatmap) updating
+10-10 09:07:44.882  2779  2826 D HeatmapThread: ECT: process_fg_batch_and_run_ect start
+10-10 09:07:44.913  6955  6955 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-T' '10-10 09:07:31.000''
