@@ -457,6 +457,13 @@ Operator requirements before the first automated firing:
    with `launchctl bootout`. After changing the firing times in
    `schedule.json` and the template, re-render the plist and bootout +
    bootstrap it again — the loaded agent keeps its old times until then.
+6. The job runs in the checkout the LaunchAgent names (`cd __REPO__` in the
+   template; `~/code/edge-llm-bench` on the bench host) and never pulls: a
+   change to the cells files, `schedule.json` or the job's scripts reaches the
+   job only once that checkout is updated (`git pull --rebase --autostash`
+   there, after reading its uncommitted files — other lanes work in it). On
+   2026-10-10 it was fourteen commits behind main, three of them changes to
+   the weekly set.
 
 The first automated week is a rehearsal: read each morning's ledger line
 and `SESSION.json`, confirm the admission verdicts against the console logs,
