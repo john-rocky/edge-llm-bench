@@ -1,0 +1,94 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791689071.927247   30481 litert_lm_lib.cc:629] Choose backend: gpu
+I0000 00:00:1791689071.928906   30481 litert_lm_lib.cc:789] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: Not set
+
+I0000 00:00:1791689071.928984   30481 litert_lm_lib.cc:796] vision_executor_settings: not set
+I0000 00:00:1791689071.929048   30481 litert_lm_lib.cc:802] audio_executor_settings: not set
+I0000 00:00:1791689071.929074   30481 litert_lm_lib.cc:825] Creating engine
+W0000 00:00:1791689071.931945   30481 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1791689071.931981   30481 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1791689071.931972   30482 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1791689071.931998   30481 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791689071.932006   30481 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791689071.932006   30482 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1791689071.932016   30482 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000778140f830, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000778140ec60, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791689072.041248   30481 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000778140ebf0, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000778140f670, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=420, num_signatures=2
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=3191, num_inputs=88, num_outputs=84, num_ops=2334
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=3035, num_inputs=88, num_outputs=85, num_ops=2165
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 712 tensors of signature prefill_128 have been updated for magic number  32771 to target number 4096
+INFO: [magic_number_utils.cc:536] 720 tensors of signature decode have been updated for magic number  32771 to target number 4096
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791689072.089551   30481 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+I0000 00:00:1791689072.089705   30481 delegate_opencl.cc:606] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 2334 out of 2334 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+I0000 00:00:1791689074.829596   30481 delegate_kernel.cc:329] Total 85 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791689074.829857   30481 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 2165 out of 2165 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (decode).
+I0000 00:00:1791689076.743814   30481 delegate_kernel.cc:329] Total 85 external tensors are used for delegate inputs and outputs
+I0000 00:00:1791689076.744268   30481 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007781445a70, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077814454c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791689077.742128   30481 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1791689077.742266   30481 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1791689077.742297   30481 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1791689077.742329   30481 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1791689077.742369   30481 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1791689077.742397   30481 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1791689077.742424   30481 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1791689077.742452   30481 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+W0000 00:00:1791689077.742506   30481 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1791689077.742538   30481 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1791689077.742568   30481 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1791689077.742603   30481 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1791689077.742922   30481 litert_lm_lib.cc:1079] Creating conversation
+I0000 00:00:1791689077.743536   30481 litert_lm_lib.cc:1091] Running single-turn conversation
+Paris
+I0000 00:00:1791689078.369244   30481 litert_lm_lib.cc:179] Captured model output: Paris
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000778140f670, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000778140ebf0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000077814454c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007781445a70, name=LiteRT GPU

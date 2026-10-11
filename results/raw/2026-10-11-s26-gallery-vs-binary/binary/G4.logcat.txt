@@ -1,0 +1,493 @@
+--------- beginning of system
+10-11 12:05:38.004  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:6
+10-11 12:05:38.004  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:05:38.005  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:4
+10-11 12:05:38.005  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+--------- beginning of main
+10-11 12:05:38.006  2886  3930 I SemWifiIntelligentTrainingManager: Tr. cond. check: false / 1 (2) / false / 0 (1)
+10-11 12:05:38.006  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:6
+10-11 12:05:38.006  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:05:38.046  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:date '+%m-%d %H:%M:%S.000''
+10-11 12:05:38.093  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /proc/uptime'
+10-11 12:05:38.137  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq /sys/class/kgsl/kgsl-3d0/clock_mhz /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage; for z in 36 5 24 63 55; do cat /sys/class/thermal/thermal_zone$z/temp; done'
+10-11 12:05:38.249  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cd /data/local/tmp/s26-gallery-vs-binary && rm -f sample-G4.csv;  ( while :; do echo "$(date +%s) $(cut -d' ' -f1 /proc/uptime) $(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq /sys/class/kgsl/kgsl-3d0/clock_mhz /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage 2>/dev/null | tr '\n' ' ') $(for z in 36 5 24 63 55; do cat /sys/class/thermal/thermal_zone$z/temp; done | tr '\n' ' ')" >> /data/local/tmp/s26-gallery-vs-binary/sample-G4.csv; sleep 1; done ) >/dev/null 2>&1 </dev/null & SP=$!; timeout 900 env LD_LIBRARY_PATH=/data/local/tmp/s26-gallery-vs-binary ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/s26-gallery-vs-binary/gemma-4-E2B-it.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=4096 --num_iterations=1 --report_peak_memory_footprint=true --metric_proto_file_path=/data/local/tmp/s26-gallery-vs-binary/metrics-G4.pb; echo rc=$?; kill $SP 2>/dev/null;  echo remote_done'
+10-11 12:05:38.387  2113  2179 D HeatmapThread: ECT: FG batch read OK, samples=10
+10-11 12:05:38.388  2113  2179 D HeatmapThread: ECT: running ectMain for 10 samples
+10-11 12:05:38.392  2113  2179 D HeatmapThread: Heatmap currtime: 29861465 , prevtime: 29861440 , plugstarttime: 29859848 , prevv_dsoh_update_time: 29861440
+10-11 12:05:38.392  2113  2179 D HeatmapThread: cam(heatmap) updating
+10-11 12:05:38.392  2113  2179 D HeatmapThread: ECT: process_fg_batch_and_run_ect start
+10-11 12:05:38.400 27017 27017 I native  : I0000 00:00:1791687938.399937   27017 litert_lm_lib.cc:505] Choose backend: gpu
+10-11 12:05:38.400 27017 27017 I native  : I0000 00:00:1791687938.400478   27017 litert_lm_lib.cc:661] executor_settings: backend: GPU
+10-11 12:05:38.400 27017 27017 I native  : backend_config:
+10-11 12:05:38.400 27017 27017 I native  : max_top_k: 64
+10-11 12:05:38.400 27017 27017 I native  : 
+10-11 12:05:38.400 27017 27017 I native  : max_tokens: 4096
+10-11 12:05:38.400 27017 27017 I native  : activation_data_type: Not set
+10-11 12:05:38.400 27017 27017 I native  : max_num_images: 0
+10-11 12:05:38.400 27017 27017 I native  : lora_rank: 0
+10-11 12:05:38.400 27017 27017 I native  : pad_token_id: -1
+10-11 12:05:38.400 27017 27017 I native  : cache_dir: 
+10-11 12:05:38.400 27017 27017 I native  : cache_file: Not set
+10-11 12:05:38.400 27017 27017 I native  : litert_dispatch_lib_dir: Not set
+10-11 12:05:38.400 27017 27017 I native  : model_assets: model_path: /data/local/tmp/s26-gallery-vs-binary/gemma-4-E2B-it.litertlm
+10-11 12:05:38.400 27017 27017 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-11 12:05:38.400 27017 27017 I native  : 
+10-11 12:05:38.400 27017 27017 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-11 12:05:38.400 27017 27017 I native  : num_output_candidates: 1
+10-11 12:05:38.400 27017 27017 I native  : configure_magic_numbers: true
+10-11 12:05:38.400 27017 27017 I native  : verify_magic_numbers: false
+10-11 12:05:38.400 27017 27017 I native  : clear_kv_cache_before_prefill: true
+10-11 12:05:38.400 27017 27017 I native  : num_logits_to_print_after_decode: 0
+10-11 12:05:38.400 27017 27017 I native  : gpu_madvise_original_shared_tensors: true
+10-11 12:05:38.400 27017 27017 I native  : gpu_enable_metal_residency_set: false
+10-11 12:05:38.400 27017 27017 I native  : is_benchmark: true
+10-11 12:05:38.400 27017 27017 I native  : enable_profiling: false
+10-11 12:05:38.400 27017 27017 I native  : preferred_device_substr: 
+10-11 12:05:38.400 27017 27017 I native  : num_threads_to_upload: -1
+10-11 12:05:38.400 27017 27017 I native  : num_threads_to_compile: -1
+10-11 12:05:38.400 27017 27017 I native  : convert_weights_on_gpu: true
+10-11 12:05:38.400 27017 27017 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-11 12:05:38.400 27017 27017 I native  : optimize_shader_compilation: true
+10-11 12:05:38.400 27017 27017 I native  : cache_compiled_shaders_only: false
+10-11 12:05:38.400 27017 27017 I native  : share_constant_tensors: true
+10-11 12:05:38.400 27017 27017 I native  : sampler_handles_input: true
+10-11 12:05:38.400 27017 27017 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-11 12:05:38.400 27017 27017 I native  : hint_waiting_for_completion: Not set
+10-11 12:05:38.400 27017 27017 I native  : gpu_context_low_priority: Not set
+10-11 12:05:38.400 27017 27017 I native  : enable_speculative_decoding: false
+10-11 12:05:38.400 27017 27017 I native  : disable_delegate_clustering: false
+10-11 12:05:38.400 27017 27017 I native  : hint_kernel_batch_size: Not set
+10-11 12:05:38.400 27017 27017 I native  : error_on_invalid_sampled_token_id: false
+10-11 12:05:38.400 27017 27017 I native  : 
+10-11 12:05:38.400 27017 27017 I native  : 
+10-11 12:05:38.400 27017 27017 I native  : I0000 00:00:1791687938.400525   27017 litert_lm_lib.cc:668] vision_executor_settings: not set
+10-11 12:05:38.400 27017 27017 I native  : I0000 00:00:1791687938.400542   27017 litert_lm_lib.cc:674] audio_executor_settings: not set
+10-11 12:05:38.400 27017 27017 I native  : I0000 00:00:1791687938.400568   27017 litert_lm_lib.cc:697] Creating engine
+10-11 12:05:38.400 27017 27017 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:05:38.400 27017 27029 W native  : W0000 00:00:1791687938.400830   27029 litert_lm_loader.cc:311] Section not found: SP_Tokenizer
+10-11 12:05:38.400 27017 27017 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:05:38.400 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:05:38.401  2077  2993 I thermal_core: pivot(AP) : 335, skin : 333
+10-11 12:05:38.401  2077  2993 I vendor.samsung.hardware.thermal-service: index = 1.400000
+10-11 12:05:38.401  2077  2993 I vendor.samsung.hardware.thermal-service: 3 / 10
+10-11 12:05:38.401 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-11 12:05:38.401 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-11 12:05:38.402 27017 27017 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000773260e250, name=GPU OpenCL
+10-11 12:05:38.402 27017 27017 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-11 12:05:38.402 27017 27017 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000773260e090, name=CpuAccelerator
+10-11 12:05:38.402 27017 27017 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:05:38.533 27017 27017 W native  : W0000 00:00:1791687938.533035   27017 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-11 12:05:38.533 27017 27017 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:05:38.533 27017 27017 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:05:38.533 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:05:38.533 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-11 12:05:38.534 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-11 12:05:38.534 27017 27017 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000773260ad60, name=GPU OpenCL
+10-11 12:05:38.534 27017 27017 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-11 12:05:38.534 27017 27017 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000773260bbd0, name=CpuAccelerator
+10-11 12:05:38.534 27017 27017 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:05:38.534 27017 27017 W native  : W0000 00:00:1791687938.534720   27017 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+10-11 12:05:38.534 27017 27017 W native  : W0000 00:00:1791687938.534817   27017 litert_lm_loader.cc:311] Section not found: ExecutorMetadataProto
+10-11 12:05:38.534 27017 27017 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+10-11 12:05:38.535 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+10-11 12:05:38.535 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-11 12:05:38.535 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-11 12:05:38.535 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+10-11 12:05:38.535 27017 27017 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:05:38.535 27017 27017 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-11 12:05:38.536 27017 27017 I litert  : [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 4096
+10-11 12:05:38.536 27017 27017 I litert  : [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 4096
+10-11 12:05:38.537 27017 27017 I litert  : [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 4096
+10-11 12:05:38.538 27017 27017 I litert  : [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 4096
+10-11 12:05:38.538 27017 27017 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:05:38.539 27017 27017 I tflite  : Initialized TensorFlow Lite runtime.
+10-11 12:05:38.564 27017 27017 W libc    : Access denied finding property "ro.mediatek.platform"
+10-11 12:05:38.564 27017 27017 W libc    : Access denied finding property "ro.chipname"
+10-11 12:05:38.594 27017 27017 I native  : I0000 00:00:1791687938.594510   27017 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+10-11 12:05:38.594 27017 27017 I native  : I0000 00:00:1791687938.594683   27017 delegate_opencl.cc:605] options->kernel_batch_size: -1
+10-11 12:05:38.605 27017 27017 W libc    : Access denied finding property "ro.mediatek.platform"
+10-11 12:05:38.605 27017 27017 W libc    : Access denied finding property "ro.chipname"
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: QUALCOMM build                   : 87ff20b216, Ifbe74a3179
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Build Date                       : 03/26/26
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.50.19.18
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Local Branch                     : 
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.16.2.0.11.00.00.1195.535
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Remote Branch                    : NONE
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Build Config                     : C P 20.0.0 AArch64
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Driver Version                   : 0842.19.8
+10-11 12:05:38.657 27017 27017 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-11 12:05:38.658 27017 27017 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-11 12:05:38.659 27017 27017 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-11 12:05:38.665 27017 27017 I SnapAlloc: Graphics lib is available
+10-11 12:05:38.667 27017 27017 I AdrenoGLES-0: PFP: 0x01510594, ME: 0x01510025
+10-11 12:05:38.668 27017 27017 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-11 12:05:38.669 27017 27017 I AdrenoUtils: <ReadGpuID:1333>: Reading chip ID through GSL
+10-11 12:05:38.670 27017 27017 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-11 12:05:38.671 27017 27017 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-11 12:05:38.671 27017 27017 I tflite  : Loaded OpenCL library with dlopen.
+10-11 12:05:38.671 27017 27017 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-11 12:05:38.671 27017 27017 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-11 12:05:38.671 27017 27017 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-11 12:05:38.671 27017 27017 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-11 12:05:38.674 27017 27017 I tflite  : Replacing 2068 out of 2068 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+10-11 12:05:39.402  2077  2993 I thermal_core: pivot(AP) : 342, skin : 333
+10-11 12:05:39.402  2077  2993 I vendor.samsung.hardware.thermal-service: index = 3.200000
+10-11 12:05:39.402  2077  2993 I vendor.samsung.hardware.thermal-service: 4 / 10
+10-11 12:05:39.960 27017 27017 I native  : I0000 00:00:1791687939.960602   27017 delegate_kernel.cc:336] Total 32 external tensors are used for delegate inputs and outputs
+10-11 12:05:39.961 27017 27017 I native  : I0000 00:00:1791687939.961368   27017 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-11 12:05:40.005  2886  3084 D MARsPolicyManager: triggerAction called!
+10-11 12:05:40.005  2886  3084 I NSLocationMonitor: getGPSUsingApps() called
+10-11 12:05:40.006  5549  5595 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-11 12:05:40.079 27017 27017 I native  : I0000 00:00:1791687940.078980   27017 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-11 12:05:40.166 27017 27017 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-11 12:05:40.179 27017 27017 I native  : I0000 00:00:1791687940.179037   27017 delegate_kernel.cc:336] Total 31 external tensors are used for delegate inputs and outputs
+10-11 12:05:40.179 27017 27017 I native  : I0000 00:00:1791687940.179141   27017 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-11 12:05:40.267 27017 27017 I native  : I0000 00:00:1791687940.267792   27017 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-11 12:05:40.310 27017 27017 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+10-11 12:05:40.322 27017 27017 I native  : I0000 00:00:1791687940.322779   27017 delegate_kernel.cc:336] Total 31 external tensors are used for delegate inputs and outputs
+10-11 12:05:40.322 27017 27017 I native  : I0000 00:00:1791687940.322861   27017 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-11 12:05:40.385 27017 27017 I native  : I0000 00:00:1791687940.384985   27017 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-11 12:05:40.389 27017 27017 I tflite  : Replacing 2243 out of 2243 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+10-11 12:05:40.403  2077  2993 I thermal_core: pivot(AP) : 352, skin : 333
+10-11 12:05:40.403  2077  2993 I vendor.samsung.hardware.thermal-service: index = 7.000000
+10-11 12:05:40.403  2077  2993 I vendor.samsung.hardware.thermal-service: 5 / 10
+10-11 12:05:40.412 27017 27017 I native  : I0000 00:00:1791687940.412335   27017 delegate_kernel.cc:336] Total 32 external tensors are used for delegate inputs and outputs
+10-11 12:05:40.412 27017 27017 I native  : I0000 00:00:1791687940.412450   27017 delegate_kernel.cc:946] Initializing OpenCL-based API from serialized data.
+10-11 12:05:40.506 27017 27017 I native  : I0000 00:00:1791687940.506286   27017 delegate_kernel.cc:840] Initialized InferenceContext from serialized data.
+10-11 12:05:40.529 27017 27017 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:05:40.529 27017 27017 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:05:40.530 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:05:40.530 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).
+10-11 12:05:40.530 27017 27017 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtOpenClAccelerator.so).
+10-11 12:05:40.530 27017 27017 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007732641710, name=GPU OpenCL
+10-11 12:05:40.530 27017 27017 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtOpenClAccelerator.so) registered.
+10-11 12:05:40.530 27017 27017 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000773264f400, name=CpuAccelerator
+10-11 12:05:40.530 27017 27017 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:05:40.560 27017 27017 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-11 12:05:40.560 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+10-11 12:05:40.560 27017 27017 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:05:40.560 27017 27017 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-11 12:05:40.560 27017 27017 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:05:40.562 27017 27017 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-11 12:05:40.562 27017 27017 I tflite  : Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-11 12:05:40.562 27017 27017 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-11 12:05:40.562 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-11 12:05:40.562 27017 27017 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:05:40.562 27017 27017 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-11 12:05:40.562 27017 27017 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:05:40.563 27017 27017 I litert  : [compiled_model.cc:1813] Tracked constant output tensor eoa_embedding with locked address
+10-11 12:05:40.563 27017 27017 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-11 12:05:40.563 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-11 12:05:40.563 27017 27017 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:05:40.563 27017 27017 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-11 12:05:40.563 27017 27017 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:05:40.563 27017 27017 I litert  : [compiled_model.cc:1813] Tracked constant output tensor eoi_embedding with locked address
+10-11 12:05:40.576 27017 27017 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-11 12:05:40.576 27017 27017 I litert  : [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+10-11 12:05:40.576 27017 27017 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:05:40.576 27017 27017 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+10-11 12:05:40.577 27017 27017 I litert  : [compiled_model.cc:835] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:05:40.687 27017 27017 I tflite  : Replacing 1 out of 42 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-11 12:05:40.688 27017 27017 I native  : I0000 00:00:1791687940.688234   27017 litert_lm_lib.cc:865] Creating conversation
+10-11 12:05:40.689 27017 27017 W native  : W0000 00:00:1791687940.689274   27017 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+10-11 12:05:40.689 27017 27017 I native  : I0000 00:00:1791687940.689441   27017 litert_lm_lib.cc:877] Running single-turn conversation
+10-11 12:05:40.794  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:perfetto --detach=t2 -c /data/misc/perfetto-configs/llm_trace.pbtxt --txt -o /data/misc/perfetto-traces/t2.perfetto-trace 2>&1 | grep -v "No PTY" | tail -2; sleep 3; perfetto --attach=t2 --stop 2>&1 | tail -2; sleep 1; ls -la /data/misc/perfetto-traces/ 2>&1 | grep -v "^d\|total"; rm -f /data/misc/perfetto-traces/t2.perfetto-trace; dumpsys trust 2>/dev/null | grep -m1 -o "deviceLocked=[0-9]"'
+10-11 12:05:40.823 27059 27059 I perfetto:    perfetto_cmd.cc:1050 Connected to the Perfetto traced service, starting tracing
+10-11 12:05:40.825  2417  2417 I perfetto: ng_service_impl.cc:1199 Configured tracing session 1, #sources:5, duration:0 ms, #buffers:2, total buffer size:139264 KB, total sessions:1, uid:2000 session name: ""
+10-11 12:05:40.848  2409  2409 I perfetto:  probes_producer.cc:134 Ftrace setup (target_buf=1)
+10-11 12:05:40.848  2409  2409 I perfetto:          tracefs.cc:611 disabled ftrace in /sys/kernel/tracing/
+10-11 12:05:40.887  2409  2409 I perfetto:          tracefs.cc:608 enabled ftrace in /sys/kernel/tracing/
+10-11 12:05:40.940  2409  2409 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.health.IHealth/default
+10-11 12:05:40.941  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:05:40.943  2409  2409 W HidlServiceManagement: hwservicemanager is not supported on the device.
+10-11 12:05:40.943  2409  2409 I HidlServiceManagement: Trying to get transport of android.hardware.power.stats@1.0::IPowerStats/default without hwservicemanager
+10-11 12:05:40.943  2409  2409 E perfetto: power_data_source.cc:91 Failed to retrieve rail descriptors.
+10-11 12:05:41.033 27017 27017 W libc    : Access denied finding property "ro.mediatek.platform"
+10-11 12:05:41.033 27017 27017 W libc    : Access denied finding property "ro.chipname"
+10-11 12:05:41.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:05:41.154  2417  2417 E perfetto:    android_utils.cc:127 Unable to read ro.boot.hardware.revision
+10-11 12:05:41.154  2417  2417 E perfetto:    android_utils.cc:132 Unable to read ro.boot.hardware.ufs
+10-11 12:05:41.154  2417  2417 E perfetto:    android_utils.cc:137 Unable to read ro.boot.hardware.ddr
+10-11 12:05:41.154  2417  2417 E perfetto:    android_utils.cc:142 Unable to read init.svc.console
+10-11 12:05:41.347 27017 27017 I tflite  : Loaded OpenCL library with dlopen.
+10-11 12:05:41.386  1249  1249 D io_stats: !@   8,0 r 5031897 396628620 w 812087 58762708 d 183319 68939268 f 24106 83970 iot 465036 0 th 0 0 0 pt 0 inp 0 0 97022.233
+10-11 12:05:41.387  1249  1249 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(27017) 93688 traced_probes:normal(2409) 1712 traced:normal(2417) 228
+10-11 12:05:41.387  1249  1249 D io_stats: !@ Write_top(KB): f2fs_ckpt-254:7:/(5418) 84 kworker/5:2:/(24655) 80 jbd2/sda7-8:/(1237) 68
+10-11 12:05:41.404  2077  2993 I thermal_core: pivot(AP) : 372, skin : 333
+10-11 12:05:41.404  2077  2993 I vendor.samsung.hardware.thermal-service: index = 14.200000
+10-11 12:05:41.404  2077  2993 I vendor.samsung.hardware.thermal-service: 6 / 10
+10-11 12:05:42.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:05:42.406  2077  2993 I thermal_core: pivot(AP) : 390, skin : 333
+10-11 12:05:42.406  2077  2993 I vendor.samsung.hardware.thermal-service: index = 25.200000
+10-11 12:05:42.406  2077  2993 I vendor.samsung.hardware.thermal-service: 7 / 10
+10-11 12:05:43.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:05:43.407  2077  2993 I thermal_core: pivot(AP) : 404, skin : 333
+10-11 12:05:43.407  2077  2993 I vendor.samsung.hardware.thermal-service: index = 39.000000
+10-11 12:05:43.407  2077  2993 I vendor.samsung.hardware.thermal-service: 8 / 2
+10-11 12:05:43.427 13080 14343 I SDHMS:x : SIOP:: AP:404 BAT:317 USB:292 CHG:355 PA:403 WIFI:342 CF:335 BLK:0 SUBBAT:0 LRPTHM:339 SKIN:335 SKINF:335 SKINB:327 LRP:335 LRF:335 LRB:327 APT:333 APR:324 RCV:318 SPK:297 CHGF:332 CHGR:313 MEMF:335 MEMR:327 WIFIF:325 WIFIR:322 VAP:351 VWIFI:335 AMB2:254 NNP:322 OOD:39 AVGCUR:-26 POWER:-109
+10-11 12:05:43.428 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=30
+10-11 12:05:43.429  2099  5614 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=30
+10-11 12:05:43.430  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:05:43.430  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:05:43.430  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 30
+10-11 12:05:43.430  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:05:43.430  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:05:43.430  2099  5614 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:43.430  2099  5614 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:43.431 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=32
+10-11 12:05:43.431  2099  5614 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=32
+10-11 12:05:43.431  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:05:43.431  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:05:43.431  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 32
+10-11 12:05:43.431  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:05:43.431  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:05:43.432  2099  5614 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:43.432  2099  5614 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:43.845  2409  2409 I perfetto:  probes_producer.cc:505 Producer stop (id=1)
+10-11 12:05:43.848  2409  2409 I perfetto:          tracefs.cc:611 disabled ftrace in /sys/kernel/tracing/
+10-11 12:05:43.858  2409  2409 I perfetto:          tracefs.cc:611 disabled ftrace in /sys/kernel/tracing/
+10-11 12:05:43.858  2409  2409 I perfetto:  probes_producer.cc:505 Producer stop (id=2)
+10-11 12:05:43.858  2409  2409 I perfetto:  probes_producer.cc:505 Producer stop (id=3)
+10-11 12:05:43.858  2409  2409 I perfetto:  probes_producer.cc:505 Producer stop (id=4)
+10-11 12:05:43.859  2409  2409 I perfetto:  probes_producer.cc:505 Producer stop (id=5)
+10-11 12:05:43.868 27100 27100 I perfetto:    perfetto_cmd.cc:1208 Trace written into the output file
+10-11 12:05:43.868  2417  2417 I perfetto: ng_service_impl.cc:2888 Tracing session 1 ended, total sessions:0
+10-11 12:05:43.869  1249  1252 D io_stats: !@ ufs-boost: status(ON)
+10-11 12:05:44.427  2077  2993 I thermal_core: pivot(AP) : 416, skin : 335
+10-11 12:05:44.427  2077  2993 I vendor.samsung.hardware.thermal-service: index = 53.400000
+10-11 12:05:44.427  2077  2993 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-11 12:05:44.675  2886  3782 D ConnectivityService: reportNetworkActive, notify 2 listeners
+10-11 12:05:44.911 27118 27118 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: trust
+10-11 12:05:45.008  2886  3084 D MARsPolicyManager: triggerAction called!
+10-11 12:05:45.009  2886  3084 I NSLocationMonitor: getGPSUsingApps() called
+10-11 12:05:45.010  5549  5595 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-11 12:05:45.388  1249  1249 D io_stats: !@   8,0 r 5031897 396628620 w 812092 58765600 d 183319 68939268 f 24106 83970 iot 465040 0 th 0 0 0 pt 0 inp 0 0 97026.234
+10-11 12:05:45.388  1249  1249 D io_stats: !@ Write_top(KB): traced:normal(2417) 2888 kworker/u33:0:/(25618) 4
+10-11 12:05:45.428  2077  2993 I thermal_core: pivot(AP) : 426, skin : 335
+10-11 12:05:45.428  2077  2993 I vendor.samsung.hardware.thermal-service: index = 67.800000
+10-11 12:05:45.428  2077  2993 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-11 12:05:45.447 13080 14343 I SDHMS:x : SIOP:: AP:426 BAT:318 USB:292 CHG:373 PA:430 WIFI:350 CF:341 BLK:0 SUBBAT:0 LRPTHM:346 SKIN:338 SKINF:338 SKINB:328 LRP:338 LRF:338 LRB:328 APT:335 APR:325 RCV:316 SPK:292 CHGF:334 CHGR:310 MEMF:338 MEMR:328 WIFIF:325 WIFIR:321 VAP:352 VWIFI:335 AMB2:253 NNP:325 OOD:38 AVGCUR:-216 POWER:-913
+10-11 12:05:45.447 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+10-11 12:05:45.448  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+10-11 12:05:45.448  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:05:45.448  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:05:45.448  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+10-11 12:05:45.448  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:05:45.448  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:05:45.449  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:45.449  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:45.449 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=32
+10-11 12:05:45.449  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=32
+10-11 12:05:45.450  2027  2053 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:05:45.450  2027  2053 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:05:45.450  2027  2053 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 32
+10-11 12:05:45.450  2027  2053 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:05:45.450  2027  2053 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:05:45.450  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:45.451  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:46.048  2113  2180 D HeatmapThread: Updated plugType via uevent: 2
+10-11 12:05:46.052  2077  2077 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+10-11 12:05:46.052  2075  2075 I sehhealth-service: updateLrpSysfs: write: 338
+10-11 12:05:46.053  2075  2155 E BatteryDump: !@new_battery_dump : 4202,-1139,1500,1500,79,318,293,378,318,0,333,378,0,Not-charging,NO_CHARGING,Normal,Good,USB_CDP,2,Normal,0,0,0,9300,0x0,0x1010000,0x0,0,0,723,v0005,0,0/0-0-0-0,0,0,0,0,0x0000,0x0000,0x00000000,0,0,0,0,0,0,12,4234,7848,990,0,
+10-11 12:05:46.447  2077  2993 I thermal_core: pivot(AP) : 435, skin : 338
+10-11 12:05:46.448  2077  2993 I vendor.samsung.hardware.thermal-service: index = 79.400000
+10-11 12:05:46.448  2077  2993 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-11 12:05:46.707 27017 27017 I native  : I0000 00:00:1791687946.706862   27017 litert_lm_lib.cc:424] BenchmarkInfo:
+10-11 12:05:46.707 27017 27017 I native  :   Init Phases (7):
+10-11 12:05:46.707 27017 27017 I native  :     - Init Conversation: 0.19 ms
+10-11 12:05:46.707 27017 27017 I native  :     - Init Executor: 2287.29 ms
+10-11 12:05:46.707 27017 27017 I native  :     - Init LLM metadata: 0.05 ms
+10-11 12:05:46.707 27017 27017 I native  :     - Init Model assets: 0.03 ms
+10-11 12:05:46.707 27017 27017 I native  :     - Init Tokenizer: 79.10 ms
+10-11 12:05:46.707 27017 27017 I native  :     - Init Total: 2287.52 ms
+10-11 12:05:46.707 27017 27017 I native  : --------------------------------------------------
+10-11 12:05:46.708 27017 27017 I native  :   Time to first token: 0.34 s
+10-11 12:05:46.708 27017 27017 I native  : --------------------------------------------------
+10-11 12:05:46.708 27017 27017 I native  :   Prefill Turns (Total 1 turns):
+10-11 12:05:46.708 27017 27017 I native  :     Prefill Turn 1: Processed 1024 tokens in 321.744062ms duration.
+10-11 12:05:46.708 27017 27017 I native  :       Prefill Speed: 3182.65 tokens/sec.
+10-11 12:05:46.708 27017 27017 I native  : --------------------------------------------------
+10-11 12:05:46.708 27017 27017 I native  :   Decode Turns (Total 1 turns):
+10-11 12:05:46.708 27017 27017 I native  :     Decode Turn 1: Processed 256 tokens in 5.694352394s duration.
+10-11 12:05:46.708 27017 27017 I native  :       Decode Speed: 44.96 tokens/sec.
+10-11 12:05:46.708 27017 27017 I native  : --------------------------------------------------
+10-11 12:05:46.709 27017 27017 I native  :   TextToTokenIds Turns (Total 1 turns):
+10-11 12:05:46.709 27017 27017 I native  :     Turn 1: 26.25us, 1024 tokens
+10-11 12:05:46.709 27017 27017 I native  : --------------------------------------------------
+10-11 12:05:46.709 27017 27017 I native  : --------------------------------------------------
+10-11 12:05:46.715 27017 27017 I native  : I0000 00:00:1791687946.715347   27017 litert_lm_lib.cc:474] Peak system ram usage: 728.293MB.
+10-11 12:05:46.715 27017 27017 I native  : I0000 00:00:1791687946.715675   27017 litert_lm_lib.cc:475] Memory usage: max resident set size/physical footprint = 745.772 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 763.671 MB
+10-11 12:05:46.715 27017 27017 I native  : I0000 00:00:1791687946.715928   27017 litert_lm_lib.cc:477] Peak private footprint: 728.293MB.
+10-11 12:05:46.886 27017 27017 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-11 12:05:46.886 27017 27017 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000773260bbd0, name=CpuAccelerator
+10-11 12:05:46.886 27017 27017 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000773260ad60, name=GPU OpenCL
+10-11 12:05:46.926 27017 27017 I native  : I0000 00:00:1791687946.926726   27017 litert_lm_advanced_main.cc:181] Metrics written to: /data/local/tmp/s26-gallery-vs-binary/metrics-G4.pb
+10-11 12:05:46.927 27017 27017 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000773264f400, name=CpuAccelerator
+10-11 12:05:46.927 27017 27017 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007732641710, name=GPU OpenCL
+10-11 12:05:47.392  1249  1249 D io_stats: !@   8,64 r 1 4 w 0 0 d 0 0 f 0 0 iot 0 0 th 0 0 0 pt 0 inp 0 0 97028.238
+10-11 12:05:47.432 28322 28322 I wpa_supplicant: Heartbeat 8118
+10-11 12:05:47.453  2077  2993 I thermal_core: pivot(AP) : 425, skin : 338
+10-11 12:05:47.453  2077  2993 I vendor.samsung.hardware.thermal-service: index = 85.400000
+10-11 12:05:47.453  2077  2993 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-11 12:05:47.478 13080 14343 I SDHMS:x : SIOP:: AP:425 BAT:319 USB:290 CHG:382 PA:434 WIFI:360 CF:347 BLK:0 SUBBAT:0 LRPTHM:354 SKIN:340 SKINF:340 SKINB:332 LRP:340 LRF:340 LRB:332 APT:338 APR:329 RCV:320 SPK:289 CHGF:336 CHGR:310 MEMF:340 MEMR:332 WIFIF:328 WIFIR:325 VAP:354 VWIFI:336 AMB2:250 NNP:327 OOD:37 AVGCUR:-216 POWER:-913
+10-11 12:05:47.483 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+10-11 12:05:47.483  2006  2006 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-11 12:05:47.483  2006  2006 I sensors-hal: batch:376, android.sensor.light/51, period=200000000, max_latency=0 request completed
+10-11 12:05:47.483  2006  2006 I sensors-hal: activate:313, android.sensor.light/51 en=1
+10-11 12:05:47.483  2006  2006 I sensors-hal: acquire_session_interface:169, acquire_session_interface with sensor_id 32 , conn_type 0 
+10-11 12:05:47.483  2006  2006 I sensors-hal: acquire_session_interface:175, returning _shared_instance[SHARED_ON_CHANGE_NO_WAKEUP].session - non-wakeup
+10-11 12:05:47.483  2006  2006 I sensors-hal: acquire_shared_instance:209, re-use existing connection for type 0 
+10-11 12:05:47.483  2006  2006 I sensors-hal: setCallBacks:349, suid(low=3046173514946711665,high=5156882063447517846) is new. register callbacks
+10-11 12:05:47.483  2006  2006 I sensors-hal: send_sensor_config_request:661, dt=ambient_light: convert sample_period=200000000 to batch_period=200000
+10-11 12:05:47.483  2006  2006 I sensors-hal: send_sync_sensor_request:517, send sync request
+10-11 12:05:47.484  2886  2886 D SemWifiP2pGoPowerSave: GopsReceiver : received : com.samsung.intent.action.CHECK_SIOP_LEVEL
+10-11 12:05:47.484  2886  2886 I SemWifiP2pGoPowerSave: siop_level = -1
+10-11 12:05:47.484  2006  2006 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+10-11 12:05:47.484  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+10-11 12:05:47.484  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:05:47.484  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:05:47.484  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+10-11 12:05:47.484  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:05:47.484  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:05:47.485  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:47.485  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:47.485 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=32
+10-11 12:05:47.486  2006 12561 I sensors-hal: qsh_conn_resp_cb:980, resp_value = 0 for ambient_light 
+10-11 12:05:47.486  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=32
+10-11 12:05:47.486  2006  2006 I sensors-hal: send_sync_sensor_request:556, takes 2 ms to receive the response with 0
+10-11 12:05:47.486  2006  2006 I sensors-hal: activate:343, android.sensor.light/51 en=1 completed
+10-11 12:05:47.486  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:05:47.486  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:05:47.486  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 32
+10-11 12:05:47.486  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:05:47.486  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:05:47.486  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:47.486  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:05:47.487  2006  2006 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+10-11 12:05:47.487  2006  2006 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 1
+10-11 12:05:47.487  2006 27150 D SensorsFlicker: Als_common::sendCommand, send enable command
+10-11 12:05:47.488  2886  4011 D SemContextService: lock : registerCallback
+10-11 12:05:47.488  2886  4011 W CAE     : registerCallback(ContextAwareService.java:188) - [regi 01] Mutex is locked for TEST_FLAT_MOTION
+10-11 12:05:47.488  2886  4011 W CAE     : registerCallback(ContextAwareService.java:195) - [regi 04]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@69a40ce
+10-11 12:05:47.488  2886  4011 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@69a40ce
+10-11 12:05:47.488  2886  4011 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9
+10-11 12:05:47.489  2886  4011 V CAE     : start(ContextProvider.java:128)
+10-11 12:05:47.489  2886  4011 V CAE     : clear(TestFlatMotionRunner.java:126)
+10-11 12:05:47.489  2886  4011 V CAE     : enable(TestFlatMotionRunner.java:102)
+10-11 12:05:47.489  2886  3739 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-11 12:05:47.489  2886  3739 D SensorService: setSContextDataLocked 17b1
+10-11 12:05:47.489  2006  2006 I sensors-hal: inject_sensor_data:420, handle 1502 send inject
+10-11 12:05:47.489  2006  2006 I sensors-hal: sendContextData:329, sensor hal 4, (0xb1, 0x17, 0x0, 0x0)
+10-11 12:05:47.489  2006  2006 I sensors-hal: updateActiveSensors:417, enable:177, handle:8, algo:25231360
+10-11 12:05:47.490  2006  2006 I sensors-hal: is_restrict_mode:162, mode:normal
+10-11 12:05:47.490  2006  2006 I sensors-hal: sendContextData:108, device_position 4
+10-11 12:05:47.490  2006  2006 I sensors-hal: acquire_session_interface:169, acquire_session_interface with sensor_id 47 , conn_type 2 
+10-11 12:05:47.490  2006  2006 I sensors-hal: acquire_session_interface:179, returning _shared_instance[SHARED_SENSORHUBS].session
+10-11 12:05:47.490  2006  2006 I sensors-hal: acquire_shared_instance:209, re-use existing connection for type 2 
+10-11 12:05:47.490  2006  2006 I sensors-hal: setCallBacks:349, suid(low=11077485164857655296,high=1320970896291267344) is new. register callbacks
+10-11 12:05:47.490  2006  2006 I sensors-hal: create_sensor_config_request:48, device_position create_sensor_config_request
+10-11 12:05:47.490  2006  2006 I sensors-hal: send_sensor_config_request:661, dt=device_position: convert sample_period=0 to batch_period=0
+10-11 12:05:47.490  2006  2006 I sensors-hal: send_sync_sensor_request:517, send sync request
+10-11 12:05:47.490  2006  2006 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+10-11 12:05:47.491  2006  3737 I sensors-hal: qsh_conn_resp_cb:980, resp_value = 0 for device_position 
+10-11 12:05:47.492  2006  2006 I sensors-hal: send_sync_sensor_request:556, takes 1 ms to receive the response with 0
+10-11 12:05:47.492  2886  4011 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+10-11 12:05:47.492  2886  4011 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+10-11 12:05:47.494  2886  4011 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+10-11 12:05:47.494  2886  4011 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 1, serviceCount = 1, subCollectionCount = 0
+10-11 12:05:47.494  2886  4011 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+10-11 12:05:47.494  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : ACTIVITY_TRACKER_BATCH(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : PEDOMETER(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : SLOCATION_RUNNER(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : CH_LOC_TRIGGER(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : FREE_FALL_DETECTION(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : TEST_FLAT_MOTION(1)
+10-11 12:05:47.495  2886  4011 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : PEDOMETER_CURRENT_INFO(1)
+10-11 12:05:47.495  2886  4011 W CAE     : registerCallback(ContextAwareService.java:209) - [regi 02] Mutex is unlocked for TEST_FLAT_MOTION
+10-11 12:05:47.495  2886  4011 E SemContext.CaeProvider: setAttribute() : attribute is null!
+10-11 12:05:47.495  2886  4011 D SemContextService: 	.registerCallback : 6, client= com.sec.android.sdhms
+10-11 12:05:47.495  2886  4011 D SemContextService: unlock : registerCallback
+10-11 12:05:47.496  2886  4011 E SensorService: BigData:Pakage) 5 already enabled. 
+10-11 12:05:47.496 13080 13186 I n2      : limitCPUFreq:: freq = 4646400
+10-11 12:05:47.497 13080 13186 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/13080@3, type = 301993986
+10-11 12:05:47.497  2039  2170 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 85588989 [13080 / 3]  HINT :     list : [CPUMaxFreq / 4646400] 
+10-11 12:05:47.530  2006 12561 I sensors-hal: qsh_conn_event_cb:902, SCHED_FIFO(10) for qmi_cbk
+10-11 12:05:47.530  2006 12561 I sensors-hal: handle_sns_std_sensor_event:127, [SSC_LIGHT] A: 5(5),c:0,b:0,m:0x0,cl:0,l:5,s:-1,l0:960,l1:0,s0:0,s1:0,acl:1,opr:0.00,f(r):106,u(bl):100,if:106,sm:0,si:0,ps:5(N:8)
+10-11 12:05:47.567  2006  2006 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+10-11 12:05:47.569  2006  2006 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 0
+10-11 12:05:47.570  2006 27152 D SensorsFlicker: Als_common::sendCommand, send disable command
+10-11 12:05:47.701  2140  2140 I SurfaceFlinger: SFWD update time=97028547705277
+10-11 12:05:47.888  2006  3737 I sensors-hal: qsh_conn_event_cb:902, SCHED_FIFO(10) for qmi_cbk
+10-11 12:05:47.888  2006  3737 I sensors-hal: qsh_conn_event_cb:935, event[0] sensor:device_position  Wakeup, msg_id=1025, ts=1863064662048
+10-11 12:05:47.888  2006  3737 I sensors-hal: handle_sns_client_event:78, device_position_event: msgid:1025
+10-11 12:05:47.888  2006  3737 I sensors-hal: handle_sns_client_event:97, device_position_event: 1
+10-11 12:05:47.888  2006  3737 I sensors-hal: insert_awaking_events:881, smp2p_event, 46.device_position, msgid:1025
+10-11 12:05:47.892  2886  3739 D SensorService: setSContextDataLocked ints length 3 , byte length 5
+10-11 12:05:47.892  2886  3739 D SensorService: setSContextDataLocked 5030ec1
+10-11 12:05:47.892  2006  2006 I sensors-hal: inject_sensor_data:420, handle 1502 send inject
+10-11 12:05:47.892  2006  2006 I sensors-hal: sendContextData:329, sensor hal 5, (0xc1, 0xe, 0x3, 0x5)
+10-11 12:05:47.892  2006  2006 I sensors-hal: sendContextData:264, activities 5 c1, 1
+10-11 12:05:47.892  2006  2006 I sensors-hal: sendUserData:343, Activities cmd 0xc1 0xe
+10-11 12:05:47.892  2006  2006 I sensors-hal: sendUserData:355, Activities system time h 3 m 5 s 47
+10-11 12:05:47.892  2006  2006 I sensors-hal: create_send_context_data:46, sending create_send_context_data
+10-11 12:05:47.892  2006  2006 I sensors-hal: send_context_data:706, activities, 4914309220830019584, 1320970896291267344, msgid:700
+10-11 12:05:47.892  2006  2006 I sensors-hal: send_sync_sensor_request:517, send sync request
+10-11 12:05:47.892  2006  2006 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+10-11 12:05:47.893  2006  3737 I sensors-hal: qsh_conn_resp_cb:980, resp_value = 0 for activities 
+10-11 12:05:47.893  2006  2006 I sensors-hal: send_sync_sensor_request:556, takes 1 ms to receive the response with 0
+10-11 12:05:47.893  2006  2006 I sensors-hal: save_screen_data:475, no screen data, skip~~
+10-11 12:05:47.893  2006  2006 I sensors-hal: sendContextData:124, common_info 5
+10-11 12:05:47.893  2006  2006 I sensors-hal: sendUserData:147, CommonInfo 0xc1 0xe 0x3 0x5
+10-11 12:05:47.893  2006  2006 I sensors-hal: create_send_context_data:70, sending create_send_context_data
+10-11 12:05:47.894  2006  2006 I sensors-hal: send_context_data:706, common_info, 4914309147815575552, 1320970896291267344, msgid:700
+10-11 12:05:47.894  2006  2006 I sensors-hal: send_sync_sensor_request:517, send sync request
+10-11 12:05:47.894  2006  2006 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+10-11 12:05:47.894  2006  3737 I sensors-hal: qsh_conn_resp_cb:980, resp_value = 0 for common_info 
+10-11 12:05:47.895  2006  2006 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+10-11 12:05:47.895  2886  3735 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :4], AP_SLEEP
+10-11 12:05:47.895  2886  3735 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 4
+10-11 12:05:47.895  2886  3735 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 23, 1,
+10-11 12:05:47.895  2886  3735 D CAE     : display(ContextProvider.java:375) - ================= TEST_FLAT_MOTION =================
+10-11 12:05:47.895  2886  3735 I CAE     : display(ContextProvider.java:391) - Action=[1]
+10-11 12:05:47.896  2886  3732 D SemContextService: Service.updateContext() : service = Device Position
+10-11 12:05:47.896  2886 13628 D SemContextService: lock : unregisterCallback
+10-11 12:05:47.896  2886 13628 D SemContextService: Service.removeListenerLocked() : listener = com.samsung.android.hardware.context.SemContextService$Listener@360c87b, service = Device Position, used = 0
+10-11 12:05:47.896  2886 13628 W CAE     : unregisterCallback(ContextAwareService.java:230) - [unregi 01] Mutex is locked for TEST_FLAT_MOTION
+10-11 12:05:47.897  2886 13628 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@69a40ce
+10-11 12:05:47.897  2886 13628 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9
+10-11 12:05:47.897  2886 13628 V CAE     : stop(ContextProvider.java:155)
+10-11 12:05:47.897  2886 13628 V CAE     : clear(TestFlatMotionRunner.java:126)
+10-11 12:05:47.897  2886 13628 V CAE     : disable(TestFlatMotionRunner.java:115)
+10-11 12:05:47.897  2886  3739 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-11 12:05:47.897  2886  3739 D SensorService: setSContextDataLocked 17b2
+10-11 12:05:47.897  2006  2006 I sensors-hal: inject_sensor_data:420, handle 1502 send inject
+10-11 12:05:47.898  2006  2006 I sensors-hal: sendContextData:329, sensor hal 4, (0xb2, 0x17, 0x0, 0x0)
+10-11 12:05:47.898  2006  2006 I sensors-hal: updateActiveSensors:417, enable:178, handle:8, algo:25231616
+10-11 12:05:47.898  2006  2006 I sensors-hal: sendContextData:108, device_position 4
+10-11 12:05:47.898  2006  2006 I sensors-hal: send_sync_sensor_request:517, send sync request
+10-11 12:05:47.898  2006  2006 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+10-11 12:05:47.899  2006  3737 I sensors-hal: qsh_conn_resp_cb:980, resp_value = 0 for device_position 
+10-11 12:05:47.899  2006  2006 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+10-11 12:05:47.899  2886 13628 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+10-11 12:05:47.899  2886 13628 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+10-11 12:05:47.899  2886 13628 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+10-11 12:05:47.899  2886 13628 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 0, serviceCount = 0, subCollectionCount = 0
+10-11 12:05:47.900  2886 13628 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : ACTIVITY_TRACKER_BATCH(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : PEDOMETER(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : SLOCATION_RUNNER(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : CH_LOC_TRIGGER(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : FREE_FALL_DETECTION(1)
+10-11 12:05:47.900  2886 13628 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@9ae51c9, Service : PEDOMETER_CURRENT_INFO(1)
+10-11 12:05:47.900  2886 13628 W CAE     : unregisterCallback(ContextAwareService.java:251) - [unregi 02] Mutex is unlocked for TEST_FLAT_MOTION
+10-11 12:05:47.900  2886 13628 D SemContextService: 	.unregisterCallback : 6, client= com.sec.android.sdhms
+10-11 12:05:47.901  2886 13628 D SemContextService: unlock : unregisterCallback
+10-11 12:05:47.985  5806  5806 I adbd    : adbd service requested 'sync:'
+10-11 12:05:48.005  5806  5806 I adbd    : adbd service requested 'sync:'
+10-11 12:05:48.027  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-T' '10-11 12:05:38.000''

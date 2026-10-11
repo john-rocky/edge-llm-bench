@@ -1,0 +1,725 @@
+--------- beginning of main
+10-11 12:24:03.078  2077  2993 I thermal_core: pivot(AP) : 351, skin : 344
+10-11 12:24:03.078  2077  2993 I vendor.samsung.hardware.thermal-service: index = 7.800000
+10-11 12:24:03.078  2077  2993 I vendor.samsung.hardware.thermal-service: 6 / 10
+10-11 12:24:03.156  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:03.179  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:rm -f /data/local/tmp/s26-3577-v0180/*cache* /data/local/tmp/s26-3577-v0180/*mldrift* /data/local/tmp/s26-3577-v0180/*.bin'
+10-11 12:24:03.184  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:03.198  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:03.210  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:03.222  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:date '+%m-%d %H:%M:%S.000''
+10-11 12:24:03.252  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /proc/uptime'
+10-11 12:24:03.285  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq'
+10-11 12:24:03.326  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /sys/class/kgsl/kgsl-3d0/clock_mhz'
+10-11 12:24:03.380  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cd /data/local/tmp/s26-3577-v0180 && rm -f run_c2.log && ( timeout 1500 env LD_LIBRARY_PATH=/data/local/tmp/s26-3577-v0180 ./litert_lm_advanced_main --backend=cpu --sampler_backend=cpu --model_path=/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm --input_prompt='What is the capital of France?' > run_c2.log 2>&1 < /dev/null & P=$!; PEAK=0; while kill -0 $P 2>/dev/null; do V=$(awk '/VmHWM/{print $2}' /proc/$P/status 2>/dev/null); [ -n "$V" ] && [ "$V" -gt "$PEAK" ] && PEAK=$V; sleep 0.2; done; wait $P; echo EXIT=$?; echo PEAK_VmHWM_MB=$((PEAK/1024)) )'
+10-11 12:24:03.589 30370 30370 I native  : I0000 00:00:1791689043.589156   30370 litert_lm_lib.cc:629] Choose backend: cpu
+10-11 12:24:03.589 30370 30370 I native  : I0000 00:00:1791689043.589486   30370 litert_lm_lib.cc:789] executor_settings: backend: CPU
+10-11 12:24:03.589 30370 30370 I native  : backend_config:
+10-11 12:24:03.589 30370 30370 I native  : kv_increment_size: 16
+10-11 12:24:03.589 30370 30370 I native  : prefill_chunk_size: -1
+10-11 12:24:03.589 30370 30370 I native  : number_of_threads: 4
+10-11 12:24:03.589 30370 30370 I native  : enable_ynnpack: false
+10-11 12:24:03.589 30370 30370 I native  : 
+10-11 12:24:03.589 30370 30370 I native  : max_tokens: 0
+10-11 12:24:03.589 30370 30370 I native  : activation_data_type: Not set
+10-11 12:24:03.589 30370 30370 I native  : max_num_images: 0
+10-11 12:24:03.589 30370 30370 I native  : lora_rank: 0
+10-11 12:24:03.589 30370 30370 I native  : pad_token_id: -1
+10-11 12:24:03.589 30370 30370 I native  : cache_dir: 
+10-11 12:24:03.589 30370 30370 I native  : cache_file: Not set
+10-11 12:24:03.589 30370 30370 I native  : litert_dispatch_lib_dir: Not set
+10-11 12:24:03.589 30370 30370 I native  : model_assets: model_path: /data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm
+10-11 12:24:03.589 30370 30370 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-11 12:24:03.589 30370 30370 I native  : 
+10-11 12:24:03.589 30370 30370 I native  : advanced_settings: Not set
+10-11 12:24:03.589 30370 30370 I native  : 
+10-11 12:24:03.589 30370 30370 I native  : I0000 00:00:1791689043.589552   30370 litert_lm_lib.cc:796] vision_executor_settings: not set
+10-11 12:24:03.589 30370 30370 I native  : I0000 00:00:1791689043.589595   30370 litert_lm_lib.cc:802] audio_executor_settings: not set
+10-11 12:24:03.589 30370 30370 I native  : I0000 00:00:1791689043.589625   30370 litert_lm_lib.cc:825] Creating engine
+10-11 12:24:03.594 30370 30370 W native  : W0000 00:00:1791689043.594928   30370 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-11 12:24:03.594 30370 30370 W native  : W0000 00:00:1791689043.594942   30370 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-11 12:24:03.594 30370 30370 W native  : W0000 00:00:1791689043.594949   30370 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:24:03.594 30370 30370 W native  : W0000 00:00:1791689043.594955   30370 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:24:03.594 30370 30372 W native  : W0000 00:00:1791689043.594947   30372 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-11 12:24:03.594 30370 30372 W native  : W0000 00:00:1791689043.594972   30372 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-11 12:24:03.594 30370 30372 W native  : W0000 00:00:1791689043.594979   30372 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+10-11 12:24:03.595 30370 30370 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:24:03.595 30370 30370 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:24:03.595 30370 30370 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:24:03.599 30370 30370 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006e4bc0e350, name=LiteRT GPU
+10-11 12:24:03.599 30370 30370 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-11 12:24:03.599 30370 30370 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006e4bc0db70, name=CpuAccelerator
+10-11 12:24:03.599 30370 30370 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:24:03.712 30370 30370 W native  : W0000 00:00:1791689043.712692   30370 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-11 12:24:03.712 30370 30370 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:24:03.712 30370 30370 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:24:03.712 30370 30370 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:24:03.713 30370 30370 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006e4bc0e190, name=LiteRT GPU
+10-11 12:24:03.713 30370 30370 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-11 12:24:03.713 30370 30370 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006e4bc0c750, name=CpuAccelerator
+10-11 12:24:03.713 30370 30370 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:24:03.715 30370 30370 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=420, num_signatures=2
+10-11 12:24:03.716 30370 30370 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=3191, num_inputs=88, num_outputs=84, num_ops=2334
+10-11 12:24:03.716 30370 30370 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=3035, num_inputs=88, num_outputs=85, num_ops=2165
+10-11 12:24:03.716 30370 30370 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:24:03.716 30370 30370 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=4096, signature_prefix=null
+10-11 12:24:03.717 30370 30370 I litert  : [magic_number_utils.cc:536] 712 tensors of signature prefill_128 have been updated for magic number  32771 to target number 4096
+10-11 12:24:03.718 30370 30370 I litert  : [magic_number_utils.cc:536] 720 tensors of signature decode have been updated for magic number  32771 to target number 4096
+10-11 12:24:03.718 30370 30370 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:24:03.718 30370 30370 I tflite  : Initialized TensorFlow Lite runtime.
+10-11 12:24:03.729 30370 30370 W libc    : Access denied finding property "ro.mediatek.platform"
+10-11 12:24:03.729 30370 30370 W libc    : Access denied finding property "ro.chipname"
+10-11 12:24:03.745 30370 30370 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-11 12:24:03.745 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:03.745 30370 30370 I tflite  : XNNPack weight cache build for '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache' started.
+10-11 12:24:03.755 30370 30370 I tflite  : Replacing 2075 out of 2334 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 333 partitions for subgraph 0 (prefill_128).
+10-11 12:24:03.773 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:03.789 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:03.800 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:03.890 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:03.902 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:03.912 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.001 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.014 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.024 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.079  2077  2993 I thermal_core: pivot(AP) : 356, skin : 344
+10-11 12:24:04.079  2077  2993 I vendor.samsung.hardware.thermal-service: index = 8.600000
+10-11 12:24:04.079  2077  2993 I vendor.samsung.hardware.thermal-service: 7 / 10
+10-11 12:24:04.113 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.125 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.135 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:04.165  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:04.172  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:04.178  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:04.224 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.237 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.247 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+--------- beginning of system
+10-11 12:24:04.256  1249  1249 D io_stats: !@   8,0 r 5140990 406282368 w 825142 64281452 d 185006 71723748 f 24280 84826 iot 476468 0 th 0 0 0 pt 0 inp 0 0 98125.102
+10-11 12:24:04.337 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.350 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.354  1249  1252 D io_stats: !@ ufs-boost: status(ON)
+10-11 12:24:04.360 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.450 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.462 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.473 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.563 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.576 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.586 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.619  1249  1252 D io_stats: !@ cpu-boost: status(ON), traffic_level(2), io_cpus(0x33), boosted_cpus(0x33), set_freq(2000000)
+10-11 12:24:04.676 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.689 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.699 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.788 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.801 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.811 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.899 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.912 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:04.922 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.012 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.024 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.034 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.080  2077  2993 I thermal_core: pivot(AP) : 366, skin : 344
+10-11 12:24:05.080  2077  2993 I vendor.samsung.hardware.thermal-service: index = 11.200000
+10-11 12:24:05.080  2077  2993 I vendor.samsung.hardware.thermal-service: 8 / 10
+10-11 12:24:05.124 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.137 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.147 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:05.162  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:05.169  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:05.175  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:05.237 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.250 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.260 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.348 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.362 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.372 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.461 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.473 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.483 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.573 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.586 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.587  2886  3880 D UsbStatsMonitor: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 335007449094
+10-11 12:24:05.596 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.686 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.698 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.708 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.797 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.811 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.820 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.909 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.921 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:05.931 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.021 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.033 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.043 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.081  2077  2993 I thermal_core: pivot(AP) : 373, skin : 344
+10-11 12:24:06.081  2077  2993 I vendor.samsung.hardware.thermal-service: index = 15.400000
+10-11 12:24:06.081  2077  2993 I vendor.samsung.hardware.thermal-service: 9 / 10
+10-11 12:24:06.132 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.145 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:06.155 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.162  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:06.169  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:06.176  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:06.245 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.256  1249  1249 D io_stats: !@   8,0 r 5140990 406282368 w 825580 64692504 d 185006 71723748 f 24280 84826 iot 476572 0 th 0 0 0 pt 0 inp 0 0 98127.103
+10-11 12:24:06.256  1249  1249 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(30370) 10988 kworker/u33:3:/(13466) 208 kworker/1:0H:/(18852) 192
+10-11 12:24:06.256  1249  1249 D io_stats: !@ Write_top(KB): kworker/u33:3:/(13466) 445124 kworker/u33:6:/(21351) 65556
+10-11 12:24:06.257 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.267 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.357 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.369 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.379 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.468 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.481 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.491 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.580 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.593 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.603 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.694 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.706 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.716 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.806 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.819 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.830 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.919 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.932 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:06.942 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.032 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.045 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.055 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.082  2077  2993 I thermal_core: pivot(AP) : 378, skin : 344
+10-11 12:24:07.082  2077  2993 I vendor.samsung.hardware.thermal-service: index = 20.800000
+10-11 12:24:07.082  2077  2993 I vendor.samsung.hardware.thermal-service: 10 / 10
+10-11 12:24:07.099 13080 14343 I SDHMS:x : SIOP:: AP:378 BAT:328 USB:298 CHG:346 PA:362 WIFI:353 CF:347 BLK:0 SUBBAT:0 LRPTHM:348 SKIN:343 SKINF:343 SKINB:341 LRP:343 LRF:343 LRB:341 APT:343 APR:340 RCV:336 SPK:313 CHGF:341 CHGR:330 MEMF:343 MEMR:341 WIFIF:339 WIFIR:338 VAP:366 VWIFI:352 AMB2:255 NNP:331 OOD:34 AVGCUR:-32 POWER:-135
+10-11 12:24:07.099 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=31
+10-11 12:24:07.099  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=31
+10-11 12:24:07.100  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:24:07.100  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:24:07.100  2027  2052 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 31
+10-11 12:24:07.100  2027  2052 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:24:07.100  2027  2052 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:24:07.100  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:07.100  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:07.100 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=34
+10-11 12:24:07.100  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=34
+10-11 12:24:07.100  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:24:07.100  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:24:07.100  2027  2052 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 34
+10-11 12:24:07.100  2027  2052 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:24:07.100  2027  2052 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:24:07.100  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:07.100  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:07.146 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:07.158 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.163  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:07.169 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.170  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:07.177  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:07.259 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.271 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.281 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.372 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.384 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.394 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.485 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.489  2886  3084 D MARsPolicyManager: triggerAction called!
+10-11 12:24:07.490  2886  3084 I NSLocationMonitor: getGPSUsingApps() called
+10-11 12:24:07.491  5549  5579 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-11 12:24:07.498 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.508 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.599 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.611 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.621 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.713 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.726 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.736 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.826 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.839 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.849 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.939 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.952 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:07.963 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.053 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.065 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.075 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.100  2077  2993 I thermal_core: pivot(AP) : 382, skin : 343
+10-11 12:24:08.100  2077  2993 I vendor.samsung.hardware.thermal-service: index = 27.200000
+10-11 12:24:08.100  2077  2993 I vendor.samsung.hardware.thermal-service: 1 / 10
+10-11 12:24:08.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:08.163  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:08.166 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.170  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:08.177  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:08.179 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.190 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.256  1249  1249 D io_stats: !@   8,64 r 1 4 w 0 0 d 0 0 f 0 0 iot 0 0 th 0 0 0 pt 0 inp 0 0 98129.103
+10-11 12:24:08.256  1249  1249 D io_stats: !@   8,0 r 5140990 406282368 w 826019 65111808 d 185006 71723748 f 24280 84826 iot 476660 0 th 0 0 0 pt 0 inp 0 0 98129.103
+10-11 12:24:08.279 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.292 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.302 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.393 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.397 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.411 30370 30370 I tflite  : Replacing 1902 out of 2165 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 340 partitions for subgraph 1 (decode).
+10-11 12:24:08.440 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.450 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:08.459 28322 28322 I wpa_supplicant: Heartbeat 8228
+10-11 12:24:08.539 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:09.036  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:6
+10-11 12:24:09.036  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:24:09.037  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:4
+10-11 12:24:09.037  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:24:09.037  2886  3930 I SemWifiIntelligentTrainingManager: Tr. cond. check: false / 1 (2) / false / 0 (1)
+10-11 12:24:09.037  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:6
+10-11 12:24:09.037  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:24:09.101  2077  2993 I thermal_core: pivot(AP) : 383, skin : 343
+10-11 12:24:09.101  2077  2993 I vendor.samsung.hardware.thermal-service: index = 32.800000
+10-11 12:24:09.101  2077  2993 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-11 12:24:09.118 13080 14343 I SDHMS:x : SIOP:: AP:383 BAT:328 USB:297 CHG:348 PA:367 WIFI:354 CF:348 BLK:0 SUBBAT:0 LRPTHM:351 SKIN:344 SKINF:344 SKINB:341 LRP:344 LRF:344 LRB:341 APT:343 APR:340 RCV:336 SPK:313 CHGF:342 CHGR:329 MEMF:344 MEMR:341 WIFIF:340 WIFIR:338 VAP:366 VWIFI:352 AMB2:253 NNP:330 OOD:35 AVGCUR:-14 POWER:-59
+10-11 12:24:09.119 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=31
+10-11 12:24:09.119  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=31
+10-11 12:24:09.119  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:24:09.119  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:24:09.119  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 31
+10-11 12:24:09.119  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:24:09.119  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:24:09.119  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:09.120  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:09.120 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=34
+10-11 12:24:09.120  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=34
+10-11 12:24:09.120  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:24:09.120  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:24:09.120  2027  2052 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 34
+10-11 12:24:09.120  2027  2052 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:24:09.120  2027  2052 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:24:09.120  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:09.120  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:09.120 13080 13186 I n2      : limitCPUFreq:: freq = 4646400
+10-11 12:24:09.120 13080 13186 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/13080@3, type = 301993986
+10-11 12:24:09.120  2039  2170 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 85588989 [13080 / 3]  HINT :     list : [CPUMaxFreq / 4646400] 
+10-11 12:24:09.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:09.167  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:09.176  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:09.184  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:09.187  1249  1252 D io_stats: !@ cpu-boost: status(ON), traffic_level(5), io_cpus(0x31), boosted_cpus(0x33), set_freq(2000000)
+10-11 12:24:09.209 30370 30370 I tflite  : XNNPack weight cache: written to '/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm_1791682469_1306168768.xnnpack_cache'.
+10-11 12:24:09.209 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2 (odml.rms_norm.impl).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 3 (odml.cache_update.impl).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 4 (odml.runtime_bmm.impl).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 5 (odml.runtime_bmm.impl_0).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 6 (odml.rms_norm.impl_0).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 7 (odml.rms_norm.impl_1).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 8 (odml.cache_update.impl_0).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 9 (odml.runtime_bmm.impl_1).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 10 (odml.runtime_bmm.impl_2).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 11 (odml.rms_norm.impl_2).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 12 (odml.rms_norm.impl_3).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 13 (odml.cache_update.impl_1).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 14 (odml.runtime_bmm.impl_3).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 15 (odml.runtime_bmm.impl_4).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 16 (odml.rms_norm.impl_4).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 17 (odml.rms_norm.impl_5).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 18 (odml.cache_update.impl_2).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 19 (odml.runtime_bmm.impl_5).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 20 (odml.runtime_bmm.impl_6).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 21 (odml.rms_norm.impl_6).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 22 (odml.rms_norm.impl_7).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 23 (odml.cache_update.impl_3).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 24 (odml.runtime_bmm.impl_7).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 25 (odml.runtime_bmm.impl_8).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 26 (odml.rms_norm.impl_8).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 27 (odml.rms_norm.impl_9).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 28 (odml.cache_update.impl_4).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 29 (odml.runtime_bmm.impl_9).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 30 (odml.runtime_bmm.impl_10).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 31 (odml.rms_norm.impl_10).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 32 (odml.rms_norm.impl_11).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 33 (odml.cache_update.impl_5).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 34 (odml.runtime_bmm.impl_11).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 35 (odml.runtime_bmm.impl_12).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 36 (odml.rms_norm.impl_12).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 37 (odml.rms_norm.impl_13).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 38 (odml.cache_update.impl_6).
+10-11 12:24:09.211 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 39 (odml.runtime_bmm.impl_13).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 40 (odml.runtime_bmm.impl_14).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 41 (odml.rms_norm.impl_14).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 42 (odml.rms_norm.impl_15).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 43 (odml.cache_update.impl_7).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 44 (odml.runtime_bmm.impl_15).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 45 (odml.runtime_bmm.impl_16).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 46 (odml.rms_norm.impl_16).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 47 (odml.rms_norm.impl_17).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 48 (odml.cache_update.impl_8).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 49 (odml.runtime_bmm.impl_17).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 50 (odml.runtime_bmm.impl_18).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 51 (odml.rms_norm.impl_18).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 52 (odml.rms_norm.impl_19).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 53 (odml.cache_update.impl_9).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 54 (odml.runtime_bmm.impl_19).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 55 (odml.runtime_bmm.impl_20).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 56 (odml.rms_norm.impl_20).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 57 (odml.rms_norm.impl_21).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 58 (odml.cache_update.impl_10).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 59 (odml.runtime_bmm.impl_21).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 60 (odml.runtime_bmm.impl_22).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 61 (odml.rms_norm.impl_22).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 62 (odml.rms_norm.impl_23).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 63 (odml.cache_update.impl_11).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 64 (odml.runtime_bmm.impl_23).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 65 (odml.runtime_bmm.impl_24).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 66 (odml.rms_norm.impl_24).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 67 (odml.rms_norm.impl_25).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 68 (odml.cache_update.impl_12).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 69 (odml.runtime_bmm.impl_25).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 70 (odml.runtime_bmm.impl_26).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 71 (odml.rms_norm.impl_26).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 72 (odml.rms_norm.impl_27).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 73 (odml.cache_update.impl_13).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 74 (odml.runtime_bmm.impl_27).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 75 (odml.runtime_bmm.impl_28).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 76 (odml.rms_norm.impl_28).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 77 (odml.rms_norm.impl_29).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 78 (odml.cache_update.impl_14).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 79 (odml.runtime_bmm.impl_29).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 80 (odml.runtime_bmm.impl_30).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 81 (odml.rms_norm.impl_30).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 82 (odml.rms_norm.impl_31).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 83 (odml.cache_update.impl_15).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 84 (odml.runtime_bmm.impl_31).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 85 (odml.runtime_bmm.impl_32).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 86 (odml.rms_norm.impl_32).
+10-11 12:24:09.212 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 87 (odml.rms_norm.impl_33).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 88 (odml.cache_update.impl_16).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 89 (odml.runtime_bmm.impl_33).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 90 (odml.runtime_bmm.impl_34).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 91 (odml.rms_norm.impl_34).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 92 (odml.rms_norm.impl_35).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 93 (odml.cache_update.impl_17).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 94 (odml.runtime_bmm.impl_35).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 95 (odml.runtime_bmm.impl_36).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 96 (odml.rms_norm.impl_36).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 97 (odml.rms_norm.impl_37).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 98 (odml.cache_update.impl_18).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 99 (odml.runtime_bmm.impl_37).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 100 (odml.runtime_bmm.impl_38).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 101 (odml.rms_norm.impl_38).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 102 (odml.rms_norm.impl_39).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 103 (odml.cache_update.impl_19).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 104 (odml.runtime_bmm.impl_39).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 105 (odml.runtime_bmm.impl_40).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 106 (odml.rms_norm.impl_40).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 107 (odml.rms_norm.impl_41).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 108 (odml.cache_update.impl_20).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 109 (odml.runtime_bmm.impl_41).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 110 (odml.runtime_bmm.impl_42).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 111 (odml.rms_norm.impl_42).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 112 (odml.rms_norm.impl_43).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 113 (odml.cache_update.impl_21).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 114 (odml.runtime_bmm.impl_43).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 115 (odml.runtime_bmm.impl_44).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 116 (odml.rms_norm.impl_44).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 117 (odml.rms_norm.impl_45).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 118 (odml.cache_update.impl_22).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 119 (odml.runtime_bmm.impl_45).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 120 (odml.runtime_bmm.impl_46).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 121 (odml.rms_norm.impl_46).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 122 (odml.rms_norm.impl_47).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 123 (odml.cache_update.impl_23).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 124 (odml.runtime_bmm.impl_47).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 125 (odml.runtime_bmm.impl_48).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 126 (odml.rms_norm.impl_48).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 127 (odml.rms_norm.impl_49).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 128 (odml.cache_update.impl_24).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 129 (odml.runtime_bmm.impl_49).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 130 (odml.runtime_bmm.impl_50).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 131 (odml.rms_norm.impl_50).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 132 (odml.rms_norm.impl_51).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 133 (odml.cache_update.impl_25).
+10-11 12:24:09.213 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 134 (odml.runtime_bmm.impl_51).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 135 (odml.runtime_bmm.impl_52).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 136 (odml.rms_norm.impl_52).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 137 (odml.rms_norm.impl_53).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 138 (odml.cache_update.impl_26).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 139 (odml.runtime_bmm.impl_53).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 140 (odml.runtime_bmm.impl_54).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 141 (odml.rms_norm.impl_54).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 142 (odml.rms_norm.impl_55).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 143 (odml.cache_update.impl_27).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 144 (odml.runtime_bmm.impl_55).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 145 (odml.runtime_bmm.impl_56).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 146 (odml.rms_norm.impl_56).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 147 (odml.rms_norm.impl_57).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 148 (odml.cache_update.impl_28).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 149 (odml.runtime_bmm.impl_57).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 150 (odml.runtime_bmm.impl_58).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 151 (odml.rms_norm.impl_58).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 152 (odml.rms_norm.impl_59).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 153 (odml.cache_update.impl_29).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 154 (odml.runtime_bmm.impl_59).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 155 (odml.runtime_bmm.impl_60).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 156 (odml.rms_norm.impl_60).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 157 (odml.rms_norm.impl_61).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 158 (odml.cache_update.impl_30).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 159 (odml.runtime_bmm.impl_61).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 160 (odml.runtime_bmm.impl_62).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 161 (odml.rms_norm.impl_62).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 162 (odml.rms_norm.impl_63).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 163 (odml.cache_update.impl_31).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 164 (odml.runtime_bmm.impl_63).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 165 (odml.runtime_bmm.impl_64).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 166 (odml.rms_norm.impl_64).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 167 (odml.rms_norm.impl_65).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 168 (odml.cache_update.impl_32).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 169 (odml.runtime_bmm.impl_65).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 170 (odml.runtime_bmm.impl_66).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 171 (odml.rms_norm.impl_66).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 172 (odml.rms_norm.impl_67).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 173 (odml.cache_update.impl_33).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 174 (odml.runtime_bmm.impl_67).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 175 (odml.runtime_bmm.impl_68).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 176 (odml.rms_norm.impl_68).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 177 (odml.rms_norm.impl_69).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 178 (odml.cache_update.impl_34).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 179 (odml.runtime_bmm.impl_69).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 180 (odml.runtime_bmm.impl_70).
+10-11 12:24:09.214 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 181 (odml.rms_norm.impl_70).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 182 (odml.rms_norm.impl_71).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 183 (odml.cache_update.impl_35).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 184 (odml.runtime_bmm.impl_71).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 185 (odml.runtime_bmm.impl_72).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 186 (odml.rms_norm.impl_72).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 187 (odml.rms_norm.impl_73).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 188 (odml.cache_update.impl_36).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 189 (odml.runtime_bmm.impl_73).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 190 (odml.runtime_bmm.impl_74).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 191 (odml.rms_norm.impl_74).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 192 (odml.rms_norm.impl_75).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 193 (odml.cache_update.impl_37).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 194 (odml.runtime_bmm.impl_75).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 195 (odml.runtime_bmm.impl_76).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 196 (odml.rms_norm.impl_76).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 197 (odml.rms_norm.impl_77).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 198 (odml.cache_update.impl_38).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 199 (odml.runtime_bmm.impl_77).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 200 (odml.runtime_bmm.impl_78).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 201 (odml.rms_norm.impl_78).
+10-11 12:24:09.215 30370 30370 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 202 (odml.rms_norm.impl_79).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 280 (odml.cache_update.impl_55).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 281 (odml.runtime_bmm.impl_109).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 282 (odml.runtime_bmm.impl_110).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 283 (odml.rms_norm.impl_111).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 284 (odml.rms_norm.impl_112).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 285 (odml.cache_update.impl_56).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 286 (odml.runtime_bmm.impl_111).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 287 (odml.runtime_bmm.impl_112).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 288 (odml.rms_norm.impl_113).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 289 (odml.rms_norm.impl_114).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 290 (odml.cache_update.impl_57).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 291 (odml.runtime_bmm.impl_113).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 292 (odml.runtime_bmm.impl_114).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 293 (odml.rms_norm.impl_115).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 294 (odml.rms_norm.impl_116).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 295 (odml.cache_update.impl_58).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 296 (odml.runtime_bmm.impl_115).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 297 (odml.runtime_bmm.impl_116).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 298 (odml.rms_norm.impl_117).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 299 (odml.rms_norm.impl_118).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 300 (odml.cache_update.impl_59).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 301 (odml.runtime_bmm.impl_117).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 302 (odml.runtime_bmm.impl_118).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 303 (odml.rms_norm.impl_119).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 304 (odml.rms_norm.impl_120).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 305 (odml.cache_update.impl_60).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 306 (odml.runtime_bmm.impl_119).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 307 (odml.runtime_bmm.impl_120).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 308 (odml.rms_norm.impl_121).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 309 (odml.rms_norm.impl_122).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 310 (odml.cache_update.impl_61).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 311 (odml.runtime_bmm.impl_121).
+10-11 12:24:09.217 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 312 (odml.runtime_bmm.impl_122).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 313 (odml.rms_norm.impl_123).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 314 (odml.rms_norm.impl_124).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 315 (odml.cache_update.impl_62).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 316 (odml.runtime_bmm.impl_123).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 317 (odml.runtime_bmm.impl_124).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 318 (odml.rms_norm.impl_125).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 319 (odml.rms_norm.impl_126).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 320 (odml.cache_update.impl_63).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 321 (odml.runtime_bmm.impl_125).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 322 (odml.runtime_bmm.impl_126).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 323 (odml.rms_norm.impl_127).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 324 (odml.rms_norm.impl_128).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 325 (odml.cache_update.impl_64).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 326 (odml.runtime_bmm.impl_127).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 327 (odml.runtime_bmm.impl_128).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 328 (odml.rms_norm.impl_129).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 329 (odml.rms_norm.impl_130).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 330 (odml.cache_update.impl_65).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 331 (odml.runtime_bmm.impl_129).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 332 (odml.runtime_bmm.impl_130).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 333 (odml.rms_norm.impl_131).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 334 (odml.rms_norm.impl_132).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 335 (odml.cache_update.impl_66).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 336 (odml.runtime_bmm.impl_131).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 337 (odml.runtime_bmm.impl_132).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 338 (odml.rms_norm.impl_133).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 339 (odml.rms_norm.impl_134).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 340 (odml.cache_update.impl_67).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 341 (odml.runtime_bmm.impl_133).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 342 (odml.runtime_bmm.impl_134).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 343 (odml.rms_norm.impl_135).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 344 (odml.rms_norm.impl_136).
+10-11 12:24:09.218 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 345 (odml.cache_update.impl_68).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 346 (odml.runtime_bmm.impl_135).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 347 (odml.runtime_bmm.impl_136).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 348 (odml.rms_norm.impl_137).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 349 (odml.rms_norm.impl_138).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 350 (odml.cache_update.impl_69).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 351 (odml.runtime_bmm.impl_137).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 352 (odml.runtime_bmm.impl_138).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 353 (odml.rms_norm.impl_139).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 354 (odml.rms_norm.impl_140).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 355 (odml.cache_update.impl_70).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 356 (odml.runtime_bmm.impl_139).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 357 (odml.runtime_bmm.impl_140).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 358 (odml.rms_norm.impl_141).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 359 (odml.rms_norm.impl_142).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 360 (odml.cache_update.impl_71).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 361 (odml.runtime_bmm.impl_141).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 362 (odml.runtime_bmm.impl_142).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 363 (odml.rms_norm.impl_143).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 364 (odml.rms_norm.impl_144).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 365 (odml.cache_update.impl_72).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 366 (odml.runtime_bmm.impl_143).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 367 (odml.runtime_bmm.impl_144).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 368 (odml.rms_norm.impl_145).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 369 (odml.rms_norm.impl_146).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 370 (odml.cache_update.impl_73).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 371 (odml.runtime_bmm.impl_145).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 372 (odml.runtime_bmm.impl_146).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 373 (odml.rms_norm.impl_147).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 374 (odml.rms_norm.impl_148).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 375 (odml.cache_update.impl_74).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 376 (odml.runtime_bmm.impl_147).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 377 (odml.runtime_bmm.impl_148).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 378 (odml.rms_norm.impl_149).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 379 (odml.rms_norm.impl_150).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 380 (odml.cache_update.impl_75).
+10-11 12:24:09.219 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 381 (odml.runtime_bmm.impl_149).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 382 (odml.runtime_bmm.impl_150).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 383 (odml.rms_norm.impl_151).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 384 (odml.rms_norm.impl_152).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 385 (odml.cache_update.impl_76).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 386 (odml.runtime_bmm.impl_151).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 387 (odml.runtime_bmm.impl_152).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 388 (odml.rms_norm.impl_153).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 389 (odml.rms_norm.impl_154).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 390 (odml.cache_update.impl_77).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 391 (odml.runtime_bmm.impl_153).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 392 (odml.runtime_bmm.impl_154).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 393 (odml.rms_norm.impl_155).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 394 (odml.rms_norm.impl_156).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 395 (odml.cache_update.impl_78).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 396 (odml.runtime_bmm.impl_155).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 397 (odml.runtime_bmm.impl_156).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 398 (odml.rms_norm.impl_157).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 399 (odml.rms_norm.impl_158).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 400 (odml.cache_update.impl_79).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 401 (odml.runtime_bmm.impl_157).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 402 (odml.runtime_bmm.impl_158).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 403 (odml.rms_norm.impl_159).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 404 (odml.rms_norm.impl_160).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 405 (odml.cache_update.impl_80).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 406 (odml.runtime_bmm.impl_159).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 407 (odml.runtime_bmm.impl_160).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 408 (odml.rms_norm.impl_161).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 409 (odml.rms_norm.impl_162).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 410 (odml.cache_update.impl_81).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 411 (odml.runtime_bmm.impl_161).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 412 (odml.runtime_bmm.impl_162).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 413 (odml.rms_norm.impl_163).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 414 (odml.rms_norm.impl_164).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 415 (odml.cache_update.impl_82).
+10-11 12:24:09.220 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 416 (odml.runtime_bmm.impl_163).
+10-11 12:24:09.221 30370 30370 I tflite  : Replacing 2 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 417 (odml.runtime_bmm.impl_164).
+10-11 12:24:09.221 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 418 (odml.rms_norm.impl_165).
+10-11 12:24:09.221 30370 30370 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 419 (odml.rms_norm.impl_166).
+10-11 12:24:09.225 30370 30370 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:24:09.225 30370 30370 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:24:09.225 30370 30370 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:24:09.226 30370 30370 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006e4bc949a0, name=LiteRT GPU
+10-11 12:24:09.226 30370 30370 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-11 12:24:09.226 30370 30370 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006e4bc95880, name=CpuAccelerator
+10-11 12:24:09.226 30370 30370 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.294995   30370 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295099   30370 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295118   30370 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295133   30370 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295146   30370 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295166   30370 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295197   30370 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295223   30370 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295274   30370 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295304   30370 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295329   30370 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:24:09.295 30370 30370 W native  : W0000 00:00:1791689049.295363   30370 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:24:09.295 30370 30370 I native  : I0000 00:00:1791689049.295613   30370 litert_lm_lib.cc:1079] Creating conversation
+10-11 12:24:09.296 30370 30370 I native  : I0000 00:00:1791689049.296223   30370 litert_lm_lib.cc:1091] Running single-turn conversation
+10-11 12:24:09.322 30370 30434 I tflite  : Replacing 2946 out of 3206 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 167 partitions for subgraph 0 (prefill_128).
+10-11 12:24:09.528  2113  2179 D HeatmapThread: ECT: FG batch read OK, samples=10
+10-11 12:24:09.528  2113  2179 D HeatmapThread: ECT: running ectMain for 10 samples
+10-11 12:24:09.533  2113  2179 D HeatmapThread: Heatmap currtime: 29861483 , prevtime: 29861470 , plugstarttime: 29859848 , prevv_dsoh_update_time: 29861470
+10-11 12:24:09.533  2113  2179 D HeatmapThread: cam(heatmap) updating
+10-11 12:24:09.533  2113  2179 D HeatmapThread: ECT: process_fg_batch_and_run_ect start
+10-11 12:24:10.119  2077  2993 I thermal_core: pivot(AP) : 396, skin : 344
+10-11 12:24:10.119  2077  2993 I vendor.samsung.hardware.thermal-service: index = 38.800000
+10-11 12:24:10.119  2077  2993 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-11 12:24:10.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:10.166  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:10.176  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:10.187  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:10.257  1249  1249 D io_stats: !@   8,0 r 5141030 406283788 w 826217 65293220 d 185007 71723752 f 24282 84828 iot 476724 0 th 0 0 0 pt 0 inp 0 0 98131.103
+10-11 12:24:10.257  1249  1249 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(30370) 1420
+10-11 12:24:10.257  1249  1249 D io_stats: !@ Write_top(KB): kworker/u33:3:/(13466) 419304 kworker/u33:6:/(21351) 181340 jbd2/sda7-8:/(1237) 68
+10-11 12:24:10.366 30370 30434 I tflite  : Replacing 2706 out of 2968 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 170 partitions for subgraph 1 (decode).
+10-11 12:24:11.022 30370 30370 I native  : I0000 00:00:1791689051.022407   30370 litert_lm_lib.cc:179] Captured model output: The capital of France is Paris.
+10-11 12:24:11.094 30370 30370 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400006e4bc0c750, name=CpuAccelerator
+10-11 12:24:11.094 30370 30370 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400006e4bc0e190, name=LiteRT GPU
+10-11 12:24:11.109 30370 30370 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400006e4bc95880, name=CpuAccelerator
+10-11 12:24:11.109 30370 30370 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400006e4bc949a0, name=LiteRT GPU
+10-11 12:24:11.120  2077  2993 I thermal_core: pivot(AP) : 416, skin : 344
+10-11 12:24:11.120  2077  2993 I vendor.samsung.hardware.thermal-service: index = 47.400000
+10-11 12:24:11.120  2077  2993 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-11 12:24:11.137 13080 14343 I SDHMS:x : SIOP:: AP:416 BAT:328 USB:298 CHG:360 PA:403 WIFI:358 CF:351 BLK:0 SUBBAT:0 LRPTHM:358 SKIN:346 SKINF:346 SKINB:340 LRP:346 LRF:346 LRB:340 APT:345 APR:338 RCV:332 SPK:308 CHGF:343 CHGR:325 MEMF:346 MEMR:340 WIFIF:338 WIFIR:335 VAP:367 VWIFI:352 AMB2:254 NNP:329 OOD:35 AVGCUR:-14 POWER:-59
+10-11 12:24:11.138 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=31
+10-11 12:24:11.138  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=31
+10-11 12:24:11.138  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:24:11.138  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:24:11.138  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 31
+10-11 12:24:11.138  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:24:11.138  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:24:11.138  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:11.138  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:11.139 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=33
+10-11 12:24:11.139  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=33
+10-11 12:24:11.139  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:24:11.139  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:24:11.139  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 33
+10-11 12:24:11.139  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:24:11.139  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:24:11.139  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:11.139  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:24:11.139 13080 13186 I n2      : limitCPUFreq:: freq = 4512000
+10-11 12:24:11.139 13080 13186 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/13080@3, type = 301993986
+10-11 12:24:11.139  2039  2170 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 85588989 [13080 / 3]  HINT :     list : [CPUMaxFreq / 4512000] 
+10-11 12:24:11.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:11.171  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:11.180  5806  5806 I adbd    : adbd service requested 'sync:'
+10-11 12:24:11.180  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:11.189  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:24:11.203  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-T' '10-11 12:24:03.000''

@@ -1,0 +1,260 @@
+--------- beginning of main
+10-11 12:23:35.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:35.166  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:35.176  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:35.177  1984 28530 I vendor.qti.bluetooth@1.0-ibs_handler: DeviceSleep: TX Awake, Sending SLEEP_IND
+10-11 12:23:35.177  1984 28530 D vendor.qti.bluetooth@1.0-ibs_handler: SerialClockVote: vote for UART CLK OFF
+10-11 12:23:35.183  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:date '+%m-%d %H:%M:%S.000''
+10-11 12:23:35.186  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:35.216  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /proc/uptime'
+10-11 12:23:35.267  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq'
+10-11 12:23:35.309  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cat /sys/class/kgsl/kgsl-3d0/clock_mhz'
+10-11 12:23:35.327  1984 28261 D vendor.qti.bluetooth@1.0-wake_lock: Release wakelock is released 
+10-11 12:23:35.357  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color,raw:cd /data/local/tmp/s26-3577-v0180 && rm -f run_g2.log && ( timeout 1500 env LD_LIBRARY_PATH=/data/local/tmp/s26-3577-v0180 ./litert_lm_advanced_main --backend=gpu --sampler_backend=cpu --model_path=/data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm --input_prompt='What is the capital of France?' > run_g2.log 2>&1 < /dev/null & P=$!; PEAK=0; while kill -0 $P 2>/dev/null; do V=$(awk '/VmHWM/{print $2}' /proc/$P/status 2>/dev/null); [ -n "$V" ] && [ "$V" -gt "$PEAK" ] && PEAK=$V; sleep 0.2; done; wait $P; echo EXIT=$?; echo PEAK_VmHWM_MB=$((PEAK/1024)) )'
+10-11 12:23:35.522 30256 30256 I native  : I0000 00:00:1791689015.522241   30256 litert_lm_lib.cc:629] Choose backend: gpu
+10-11 12:23:35.527 30256 30256 I native  : I0000 00:00:1791689015.527546   30256 litert_lm_lib.cc:789] executor_settings: backend: GPU
+10-11 12:23:35.527 30256 30256 I native  : backend_config:
+10-11 12:23:35.527 30256 30256 I native  : max_top_k: 64
+10-11 12:23:35.527 30256 30256 I native  : 
+10-11 12:23:35.527 30256 30256 I native  : max_tokens: 0
+10-11 12:23:35.527 30256 30256 I native  : activation_data_type: Not set
+10-11 12:23:35.527 30256 30256 I native  : max_num_images: 0
+10-11 12:23:35.527 30256 30256 I native  : lora_rank: 0
+10-11 12:23:35.527 30256 30256 I native  : pad_token_id: -1
+10-11 12:23:35.527 30256 30256 I native  : cache_dir: 
+10-11 12:23:35.527 30256 30256 I native  : cache_file: Not set
+10-11 12:23:35.527 30256 30256 I native  : litert_dispatch_lib_dir: Not set
+10-11 12:23:35.527 30256 30256 I native  : model_assets: model_path: /data/local/tmp/s26-3577-v0180/minicpm5-2b_dynamic_wi4c_hr_afp32_fp32act.litertlm
+10-11 12:23:35.527 30256 30256 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-11 12:23:35.527 30256 30256 I native  : 
+10-11 12:23:35.527 30256 30256 I native  : advanced_settings: Not set
+10-11 12:23:35.527 30256 30256 I native  : 
+10-11 12:23:35.527 30256 30256 I native  : I0000 00:00:1791689015.527618   30256 litert_lm_lib.cc:796] vision_executor_settings: not set
+10-11 12:23:35.527 30256 30256 I native  : I0000 00:00:1791689015.527643   30256 litert_lm_lib.cc:802] audio_executor_settings: not set
+10-11 12:23:35.527 30256 30256 I native  : I0000 00:00:1791689015.527650   30256 litert_lm_lib.cc:825] Creating engine
+10-11 12:23:35.528 30256 30256 W native  : W0000 00:00:1791689015.528214   30256 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-11 12:23:35.528 30256 30256 W native  : W0000 00:00:1791689015.528227   30256 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-11 12:23:35.528 30256 30256 W native  : W0000 00:00:1791689015.528232   30256 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:23:35.528 30256 30256 W native  : W0000 00:00:1791689015.528238   30256 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:23:35.528 30256 30258 W native  : W0000 00:00:1791689015.528233   30258 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-11 12:23:35.528 30256 30258 W native  : W0000 00:00:1791689015.528258   30258 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-11 12:23:35.528 30256 30258 W native  : W0000 00:00:1791689015.528265   30258 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+10-11 12:23:35.528 30256 30256 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:23:35.528 30256 30256 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:23:35.528 30256 30256 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:23:35.530 30256 30256 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000743560af00, name=LiteRT GPU
+10-11 12:23:35.530 30256 30256 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-11 12:23:35.530 30256 30256 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000743560abf0, name=CpuAccelerator
+10-11 12:23:35.530 30256 30256 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:23:35.642 30256 30256 W native  : W0000 00:00:1791689015.642584   30256 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-11 12:23:35.642 30256 30256 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:23:35.642 30256 30256 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:23:35.642 30256 30256 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:23:35.643 30256 30256 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000743560afe0, name=LiteRT GPU
+10-11 12:23:35.643 30256 30256 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-11 12:23:35.643 30256 30256 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000743560b590, name=CpuAccelerator
+10-11 12:23:35.643 30256 30256 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:23:35.645 30256 30256 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=420, num_signatures=2
+10-11 12:23:35.645 30256 30256 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=3191, num_inputs=88, num_outputs=84, num_ops=2334
+10-11 12:23:35.645 30256 30256 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=1, num_tensors=3035, num_inputs=88, num_outputs=85, num_ops=2165
+10-11 12:23:35.646 30256 30256 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-11 12:23:35.646 30256 30256 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=4096, signature_prefix=null
+10-11 12:23:35.647 30256 30256 I litert  : [magic_number_utils.cc:536] 712 tensors of signature prefill_128 have been updated for magic number  32771 to target number 4096
+10-11 12:23:35.648 30256 30256 I litert  : [magic_number_utils.cc:536] 720 tensors of signature decode have been updated for magic number  32771 to target number 4096
+10-11 12:23:35.648 30256 30256 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-11 12:23:35.648 30256 30256 I tflite  : Initialized TensorFlow Lite runtime.
+10-11 12:23:35.662 30256 30256 W libc    : Access denied finding property "ro.mediatek.platform"
+10-11 12:23:35.662 30256 30256 W libc    : Access denied finding property "ro.chipname"
+10-11 12:23:35.687 30256 30256 I native  : I0000 00:00:1791689015.687235   30256 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+10-11 12:23:35.687 30256 30256 I native  : I0000 00:00:1791689015.687316   30256 delegate_opencl.cc:606] options->kernel_batch_size: -1
+10-11 12:23:35.687 30256 30256 W libc    : Access denied finding property "ro.mediatek.platform"
+10-11 12:23:35.687 30256 30256 W libc    : Access denied finding property "ro.chipname"
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: QUALCOMM build                   : 87ff20b216, Ifbe74a3179
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Build Date                       : 03/26/26
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.50.19.18
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Local Branch                     : 
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.16.2.0.11.00.00.1195.535
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Remote Branch                    : NONE
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Build Config                     : C P 20.0.0 AArch64
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Driver Version                   : 0842.19.8
+10-11 12:23:35.735 30256 30256 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-11 12:23:35.736 30256 30256 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-11 12:23:35.738 30256 30256 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-11 12:23:35.747 30256 30256 I SnapAlloc: Graphics lib is available
+10-11 12:23:35.750 30256 30256 I AdrenoGLES-0: PFP: 0x01510594, ME: 0x01510025
+10-11 12:23:35.751 30256 30256 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-11 12:23:35.752 30256 30256 I AdrenoUtils: <ReadGpuID:1333>: Reading chip ID through GSL
+10-11 12:23:35.753 30256 30256 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-11 12:23:35.754 30256 30256 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-11 12:23:35.754 30256 30256 I tflite  : Loaded OpenCL library with dlopen.
+10-11 12:23:35.755 30256 30256 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-11 12:23:35.755 30256 30256 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-11 12:23:35.755 30256 30256 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-11 12:23:35.755 30256 30256 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-11 12:23:35.759 30256 30256 I tflite  : Replacing 2334 out of 2334 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+10-11 12:23:35.882  2077  2993 I thermal_core: pivot(AP) : 355, skin : 344
+10-11 12:23:35.882  2077  2993 I vendor.samsung.hardware.thermal-service: index = 9.200000
+10-11 12:23:35.882  2077  2993 I vendor.samsung.hardware.thermal-service: 3 / 10
+10-11 12:23:36.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:36.164  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:36.172  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:36.181  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+--------- beginning of system
+10-11 12:23:36.245  1249  1249 D io_stats: !@   8,0 r 5130297 405045088 w 824820 64159028 d 184901 70597332 f 24276 84807 iot 475652 0 th 0 0 0 pt 0 inp 0 0 98097.091
+10-11 12:23:36.536  1249  1252 D io_stats: !@ cpu-boost: status(ON), traffic_level(1), io_cpus(0x39), boosted_cpus(0x39), set_freq(2000000)
+10-11 12:23:36.729  1249  1252 D io_stats: !@ cpu-boost: status(ON), traffic_level(4), io_cpus(0x3b), boosted_cpus(0x3b), set_freq(2000000)
+10-11 12:23:36.883  2077  2993 I thermal_core: pivot(AP) : 365, skin : 344
+10-11 12:23:36.883  2077  2993 I vendor.samsung.hardware.thermal-service: index = 11.600000
+10-11 12:23:36.883  2077  2993 I vendor.samsung.hardware.thermal-service: 4 / 10
+10-11 12:23:37.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:37.164  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:37.172  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:37.180  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:37.417  2886  3084 D MARsPolicyManager: triggerAction called!
+10-11 12:23:37.418  2886  3084 I NSLocationMonitor: getGPSUsingApps() called
+10-11 12:23:37.418  5549  5579 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-11 12:23:37.884  2077  2993 I thermal_core: pivot(AP) : 375, skin : 344
+10-11 12:23:37.884  2077  2993 I vendor.samsung.hardware.thermal-service: index = 16.200000
+10-11 12:23:37.884  2077  2993 I vendor.samsung.hardware.thermal-service: 5 / 10
+10-11 12:23:38.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:38.166  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:38.176  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:38.183  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:38.245  1249  1249 D io_stats: !@   8,64 r 1 4 w 0 0 d 0 0 f 0 0 iot 0 0 th 0 0 0 pt 0 inp 0 0 98099.091
+10-11 12:23:38.245  1249  1249 D io_stats: !@   8,0 r 5139082 406117332 w 824825 64161604 d 184901 70597332 f 24276 84807 iot 476140 0 th 0 0 0 pt 0 inp 0 0 98099.092
+10-11 12:23:38.245  1249  1249 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(30256) 1082792 kworker/u33:6:/(21351) 164 kworker/u33:2:/(28963) 112
+10-11 12:23:38.245  1249  1249 D io_stats: !@ Write_top(KB): kworker/u33:2:/(28963) 2576 jbd2/sda7-8:/(1237) 24 kworker/u33:6:/(21351) 16
+10-11 12:23:38.428 28322 28322 I wpa_supplicant: Heartbeat 8225
+10-11 12:23:38.606 30256 30256 I native  : I0000 00:00:1791689018.606139   30256 delegate_kernel.cc:329] Total 85 external tensors are used for delegate inputs and outputs
+10-11 12:23:38.606 30256 30256 I native  : I0000 00:00:1791689018.606422   30256 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-11 12:23:38.885  2077  2993 I thermal_core: pivot(AP) : 382, skin : 344
+10-11 12:23:38.885  2077  2993 I vendor.samsung.hardware.thermal-service: index = 22.000000
+10-11 12:23:38.885  2077  2993 I vendor.samsung.hardware.thermal-service: 6 / 10
+10-11 12:23:39.030  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:6
+10-11 12:23:39.030  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:23:39.031  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:4
+10-11 12:23:39.031  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:23:39.031  2886  3930 I SemWifiIntelligentTrainingManager: Tr. cond. check: false / 1 (2) / false / 0 (1)
+10-11 12:23:39.031  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:6
+10-11 12:23:39.031  2886  3930 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-11 12:23:39.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:39.163  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:39.169  5800  5800 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.libs.gmscorelogger.service.START dat=chimera-action:/... xflg=0x4 cmp=com.google.android.gms/.chimera.PersistentDirectBootAwareApiService }
+10-11 12:23:39.171  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:39.178  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:39.501  2113  2179 D HeatmapThread: ECT: FG batch read OK, samples=10
+10-11 12:23:39.501  2113  2179 D HeatmapThread: ECT: running ectMain for 10 samples
+10-11 12:23:39.504  2113  2179 D HeatmapThread: Heatmap currtime: 29861483 , prevtime: 29861470 , plugstarttime: 29859848 , prevv_dsoh_update_time: 29861470
+10-11 12:23:39.504  2113  2179 D HeatmapThread: cam(heatmap) updating
+10-11 12:23:39.504  2113  2179 D HeatmapThread: ECT: process_fg_batch_and_run_ect start
+10-11 12:23:39.886  2077  2993 I thermal_core: pivot(AP) : 382, skin : 344
+10-11 12:23:39.886  2077  2993 I vendor.samsung.hardware.thermal-service: index = 27.800000
+10-11 12:23:39.886  2077  2993 I vendor.samsung.hardware.thermal-service: 7 / 10
+10-11 12:23:39.956 30256 30256 I tflite  : Replacing 2165 out of 2165 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (decode).
+10-11 12:23:40.154  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:40.163  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:40.170  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:40.177  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:40.203  1249  1252 D io_stats: !@ cpu-boost: status(ON), traffic_level(1), io_cpus(0xb9), boosted_cpus(0xbb), set_freq(2000000)
+10-11 12:23:40.245  1249  1249 D io_stats: !@   8,0 r 5140211 406261336 w 824835 64161704 d 184902 70597336 f 24276 84809 iot 476212 0 th 0 0 0 pt 0 inp 1 0 98101.092
+10-11 12:23:40.503 30256 30256 I native  : I0000 00:00:1791689020.503147   30256 delegate_kernel.cc:329] Total 85 external tensors are used for delegate inputs and outputs
+10-11 12:23:40.503 30256 30256 I native  : I0000 00:00:1791689020.503209   30256 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-11 12:23:40.887  2077  2993 I thermal_core: pivot(AP) : 387, skin : 344
+10-11 12:23:40.887  2077  2993 I vendor.samsung.hardware.thermal-service: index = 34.200000
+10-11 12:23:40.887  2077  2993 I vendor.samsung.hardware.thermal-service: 8 / 2
+10-11 12:23:40.904 13080 14343 I SDHMS:x : SIOP:: AP:386 BAT:328 USB:297 CHG:353 PA:377 WIFI:355 CF:349 BLK:0 SUBBAT:0 LRPTHM:352 SKIN:344 SKINF:344 SKINB:340 LRP:344 LRF:344 LRB:340 APT:343 APR:339 RCV:335 SPK:311 CHGF:342 CHGR:328 MEMF:344 MEMR:340 WIFIF:339 WIFIR:337 VAP:364 VWIFI:351 AMB2:255 NNP:332 OOD:34 AVGCUR:-36 POWER:-152
+10-11 12:23:40.905 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=31
+10-11 12:23:40.905  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=31
+10-11 12:23:40.906  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:23:40.906  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:23:40.906  2027  2052 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 31
+10-11 12:23:40.906  2027  2052 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:23:40.906  2027  2052 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:23:40.906  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:40.906  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:40.906 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=34
+10-11 12:23:40.906  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=34
+10-11 12:23:40.906  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:23:40.906  2027  2052 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:23:40.906  2027  2052 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 34
+10-11 12:23:40.906  2027  2052 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:23:40.906  2027  2052 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:23:40.906  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:40.906  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:41.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:41.165  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:41.174  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:41.182  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:41.243  2113  2180 D HeatmapThread: Updated plugType via uevent: 2
+10-11 12:23:41.244  2077  2077 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+10-11 12:23:41.244  2075  2075 I sehhealth-service: updateLrpSysfs: write: 344
+10-11 12:23:41.245  2075  2155 E BatteryDump: !@new_battery_dump : 4236,17,1500,1500,79,328,297,353,328,0,346,353,0,Not-charging,NO_CHARGING,Normal,Good,USB_CDP,2,Normal,0,0,0,9300,0x0,0x1010000,0x0,0,0,463,v0005,0,0/0-0-0-0,0,0,0,0,0x0000,0x0000,0x00000000,0,0,0,0,0,0,12,4237,7891,990,0,
+10-11 12:23:41.252 30256 30256 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-11 12:23:41.252 30256 30256 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-11 12:23:41.252 30256 30256 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-11 12:23:41.252 30256 30256 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007435640f80, name=LiteRT GPU
+10-11 12:23:41.252 30256 30256 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-11 12:23:41.252 30256 30256 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007435643590, name=CpuAccelerator
+10-11 12:23:41.252 30256 30256 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-11 12:23:41.540 30256 30256 W native  : W0000 00:00:1791689021.540910   30256 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541057   30256 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541093   30256 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541114   30256 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541147   30256 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541161   30256 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541167   30256 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541171   30256 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541205   30256 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541211   30256 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541216   30256 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:23:41.541 30256 30256 W native  : W0000 00:00:1791689021.541221   30256 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-11 12:23:41.541 30256 30256 I native  : I0000 00:00:1791689021.541481   30256 litert_lm_lib.cc:1079] Creating conversation
+10-11 12:23:41.542 30256 30256 I native  : I0000 00:00:1791689021.542118   30256 litert_lm_lib.cc:1091] Running single-turn conversation
+10-11 12:23:41.905  2077  2993 I thermal_core: pivot(AP) : 395, skin : 344
+10-11 12:23:41.905  2077  2993 I vendor.samsung.hardware.thermal-service: index = 40.200000
+10-11 12:23:41.905  2077  2993 I vendor.samsung.hardware.thermal-service: 1 / 2
+10-11 12:23:42.155  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:42.169  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:42.180  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:42.189  2075  2075 I health-service: [api] getHealthInfo() (u:9999 p:2409)
+10-11 12:23:42.246  1249  1249 D io_stats: !@   8,0 r 5140290 406270300 w 824837 64161712 d 184902 70597336 f 24276 84809 iot 476220 0 th 0 0 0 pt 0 inp 0 0 98103.092
+10-11 12:23:42.246  1249  1249 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(30256) 152928 awk:normal(30323) 36 ewlogd:normal(2404) 4
+10-11 12:23:42.246  1249  1249 D io_stats: !@ Write_top(KB): jbd2/sda7-8:/(1237) 68 kworker/u33:3:/(13466) 28 vendor.samsung.:normal(2075) 8
+10-11 12:23:42.426  2886  3084 D MARsPolicyManager: triggerAction called!
+10-11 12:23:42.427  2886  3084 I NSLocationMonitor: getGPSUsingApps() called
+10-11 12:23:42.428  5549  5579 I NSLocationManager_FLP: getGPSUsingApps, No change
+10-11 12:23:42.584 30256 30256 I native  : I0000 00:00:1791689022.584846   30256 litert_lm_lib.cc:179] Captured model output: The capital of France is Paris.
+10-11 12:23:42.756 30256 30256 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-11 12:23:42.756 30256 30256 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000743560b590, name=CpuAccelerator
+10-11 12:23:42.756 30256 30256 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000743560afe0, name=LiteRT GPU
+10-11 12:23:42.794 30256 30256 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007435643590, name=CpuAccelerator
+10-11 12:23:42.794 30256 30256 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007435640f80, name=LiteRT GPU
+10-11 12:23:42.910  2077  2993 I thermal_core: pivot(AP) : 415, skin : 344
+10-11 12:23:42.910  2077  2993 I vendor.samsung.hardware.thermal-service: index = 48.200000
+10-11 12:23:42.910  2077  2993 I vendor.samsung.hardware.thermal-service: 2 / 2
+10-11 12:23:42.931 13080 14343 I SDHMS:x : SIOP:: AP:414 BAT:328 USB:297 CHG:366 PA:409 WIFI:359 CF:351 BLK:0 SUBBAT:0 LRPTHM:356 SKIN:346 SKINF:346 SKINB:339 LRP:346 LRF:346 LRB:339 APT:344 APR:337 RCV:330 SPK:305 CHGF:343 CHGR:323 MEMF:346 MEMR:339 WIFIF:337 WIFIR:334 VAP:365 VWIFI:351 AMB2:254 NNP:333 OOD:33 AVGCUR:-36 POWER:-152
+10-11 12:23:42.931 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=31
+10-11 12:23:42.932  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=31
+10-11 12:23:42.932  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-11 12:23:42.933  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:23:42.933  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 31
+10-11 12:23:42.933  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+10-11 12:23:42.933  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:23:42.933  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:42.933  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:42.933 13080 14343 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=33
+10-11 12:23:42.934  2099 23688 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=33
+10-11 12:23:42.934  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-11 12:23:42.934  2027  2027 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-11 12:23:42.934  2027  2027 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 33
+10-11 12:23:42.934  2027  2027 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+10-11 12:23:42.934  2027  2027 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+10-11 12:23:42.934  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:42.934  2099 23688 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+10-11 12:23:42.935 13080 13186 I n2      : limitCPUFreq:: freq = 4608000
+10-11 12:23:42.935 13080 13186 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/13080@3, type = 301993986
+10-11 12:23:42.935  2039  2170 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 85588989 [13080 / 3]  HINT :     list : [CPUMaxFreq / 4608000] 
+10-11 12:23:42.983  5806  5806 I adbd    : adbd service requested 'sync:'
+10-11 12:23:43.006  5806  5806 I adbd    : adbd service requested 'shell,v2,TERM=xterm-256color:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-T' '10-11 12:23:35.000''
