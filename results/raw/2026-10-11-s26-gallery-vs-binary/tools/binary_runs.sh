@@ -93,7 +93,12 @@ run_one() { # tag backend key cold|cached
     pf_start="perfetto --detach=$tag -c /data/misc/perfetto-configs/llm_trace.pbtxt --txt -o /data/misc/perfetto-traces/$tag.perfetto-trace > $DEV/$tag.perfetto-start.txt 2>&1 </dev/null; sleep 2;"
     pf_stop="sleep 1; perfetto --attach=$tag --stop > $DEV/$tag.perfetto-stop.txt 2>&1 </dev/null;"
   fi
-  say "START $tag backend=$be model=$model mode=$mode caches_before=$caches_before traced=$traced uptime=$(A shell cat /proc/uptime | tr -d '\r' | cut -d' ' -f1) sample: $(dtemp)"
+  if [ -n "${COOL_MC:-}" ]; then   # optional cool-down to COOL_MC m°C (max of gpuss-0 / cpu-0-0-0 / cpu-1-0-0), at most COOL_MAX_S seconds
+    local t0=$(date +%s) z
+    while :; do z=$(A shell "cat /sys/class/thermal/thermal_zone36/temp /sys/class/thermal/thermal_zone5/temp /sys/class/thermal/thermal_zone24/temp" | tr -d '\r' | sort -n | tail -1); [ "$z" -le "$COOL_MC" ] && break; [ $(( $(date +%s) - t0 )) -ge "${COOL_MAX_S:-300}" ] && { say "cool-down limit reached at $z m°C"; break; }; sleep 10; done
+    say "cool-down for $tag: zones max $z m°C after $(( $(date +%s) - t0 )) s"
+  fi
+  say "START $tag backend=$be model=$model mode=$mode caches_before=$caches_before traced=$traced screen=$(A shell dumpsys power | tr -d '\r' | grep -m1 -o 'mWakefulness=[A-Za-z]*') uptime=$(A shell cat /proc/uptime | tr -d '\r' | cut -d' ' -f1) sample: $(dtemp)"
   A shell "cd $DEV && rm -f sample-$tag.csv; $pf_start ( while :; do echo \"\$(date +%s) \$(cut -d' ' -f1 /proc/uptime) \$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq /sys/devices/system/cpu/cpufreq/policy6/scaling_cur_freq /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq /sys/class/kgsl/kgsl-3d0/clock_mhz /sys/class/kgsl/kgsl-3d0/gpu_busy_percentage 2>/dev/null | tr '\n' ' ') \$(for z in $ZONES; do cat /sys/class/thermal/thermal_zone\$z/temp; done | tr '\n' ' ')\" >> $DEV/sample-$tag.csv; sleep 1; done ) >/dev/null 2>&1 </dev/null & SP=\$!; timeout 900 env LD_LIBRARY_PATH=$DEV ./litert_lm_advanced_main --backend=$be --model_path=$DEV/$model --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=4096 --num_iterations=1 --report_peak_memory_footprint=true --metric_proto_file_path=$DEV/metrics-$tag.pb; echo rc=\$?; kill \$SP 2>/dev/null; $pf_stop echo remote_done" > "$OUT/$tag.stdout.txt" 2>&1
   local rc=$(grep -o 'rc=[0-9]*' "$OUT/$tag.stdout.txt" | tail -1)
   if [ "$traced" = 1 ]; then

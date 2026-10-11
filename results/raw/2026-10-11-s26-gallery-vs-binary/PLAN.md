@@ -40,3 +40,15 @@ the binary come from its stdout lines (`Prefill Speed`, `Decode Speed`, `Time To
 max clock, GPU clock and busy %, thermal zones gpuss-0, cpu-0-0-0, cpu-1-0-0, battery, sys-therm-0) runs beside every
 binary process; the Perfetto traces (`../2026-10-11-s26-perfetto/`) hold the same for the app sessions.
 Not rows of `results/summary`; not added to any leaderboard data.
+
+## Outcome (2026-10-11, two sittings)
+
+- `binary/table.md` — the morning's binary processes, screen off (G1–G4, C1–C4, P1–P4; P4 is not a cached process).
+- `gallery/table.md` + `gallery/README.md` — six Gallery sessions, 15:20–15:58 JST, screen on, after the phone was
+  unlocked (E2B GPU ×2, E2B CPU ×1, G3 CPU ×2, G3 GPU ×1; per-run values from the app's series sheets).
+- `binary-pass3/table.md` — the binary pairs of the same sitting, screen on (Q1 / Q2 E2B GPU cold / cached, Q3 cold and
+  Q4 / Q5 cached G3 CPU), all traced.
+- Perfetto: `../2026-10-11-s26-perfetto/` (P1–P4, Q1–Q5, the Gallery session E2B-gpu-1).
+- The sequence differed from the plan above in three places: the Gallery sessions ran after the morning's binary
+  processes (the phone was locked until 14:56); the binary pairs were taken again with the screen on (`binary-pass3/`)
+  so that both sides of the table share the screen state; the #3577 leg ran in the morning (`../2026-10-11-s26-3577-v0180/`).

@@ -1,0 +1,39 @@
+[2026-10-11 15:56:19] app locales: Locales for com.google.ai.edge.gallery for user 0 are [en-US]; system: ja-JP
+[2026-10-11 15:56:19] SESSION G3-cpu-1: model=Gemma3-1B-IT accel=CPU prefill=1024 decode=256 runs=3 uptime=110860.24 gpu_mhz=222 cpu7_max=4742400 thermal=Thermal Status: 0
+[2026-10-11 15:56:28] tap 'drawer' at (84,207)
+[2026-10-11 15:56:32] tap 'Models' at (705,429)
+[2026-10-11 15:56:49] model item <TextView text='Gemma3-1B-IT' desc='' [96,1159][442,1231]>; benchmark button <TextView text='Benchmark' desc='' [229,1687][491,1759]>
+[2026-10-11 15:56:49] tap 'Benchmark button' at (360,1723)
+[2026-10-11 15:56:52] screenshot ui-bench-G3-cpu-1-0.png (146265 bytes)
+[2026-10-11 15:56:54] tap 'accelerator CPU' at (402,483)
+[2026-10-11 15:56:57] tap Prefill tokens field at (912,736)
+[2026-10-11 15:57:03] set 'Prefill tokens' -> 1024: field reads '1024'; all fields ['1024', '256', '3']
+[2026-10-11 15:57:05] tap Decode tokens field at (912,965)
+[2026-10-11 15:57:10] set 'Decode tokens' -> 256: field reads '256'; all fields ['1024', '256', '3']
+[2026-10-11 15:57:13] tap Number of runs field at (912,1194)
+[2026-10-11 15:57:18] set 'Number of runs' -> 3: field reads '3'; all fields ['1024', '256', '3']
+[2026-10-11 15:57:18] screenshot ui-bench-G3-cpu-1-1.png (149163 bytes)
+[2026-10-11 15:57:21] limit line: ["Ensure that the sum of prefill and decode tokens remains under the model's maximum token limit (1280 vs 4096)"]
+[2026-10-11 15:57:21] fields verified: prefill/decode/runs = ['1024', '256', '3']
+[2026-10-11 15:57:21] tap 'Benchmark (run)' at (834,2076)
+[2026-10-11 15:57:24] perfetto started: 
+[2026-10-11 15:57:26] sampler started for G3-cpu-1 (client pid 34182)
+[2026-10-11 15:57:28] tap 'Continue' at (808,1351)
+[2026-10-11 15:58:07] runs done: 3/3 in 39 s (card 2026-10-11 15:57:28)
+[2026-10-11 15:58:11] sampler stopped for G3-cpu-1: 42 samples
+[2026-10-11 15:58:13] perfetto trace: /Users/USER/code/edge-llm-bench/results/raw/2026-10-11-s26-perfetto/traces/G3-cpu-1.perfetto-trace MISSING bytes
+[2026-10-11 15:58:13] logcat: 7385 lines, 3864 benchmark-related
+[2026-10-11 15:58:15] screenshot ui-results-G3-cpu-1.png (220443 bytes)
+[2026-10-11 15:58:15] tap 'Prefill speed value (series sheet)' at (700,1455)
+[2026-10-11 15:58:19] screenshot ui-series-G3-cpu-1-prefill_tok_s.png (181091 bytes)
+[2026-10-11 15:58:19] Prefill speed: {'avg': '741.15', 'median': '719.89', 'min': '556.85', 'max': '946.71'} per-run (graph order) [946.71, 719.89, 556.85]
+[2026-10-11 15:58:20] tap 'Decode speed value (series sheet)' at (699,1575)
+[2026-10-11 15:58:24] screenshot ui-series-G3-cpu-1-decode_tok_s.png (182781 bytes)
+[2026-10-11 15:58:24] Decode speed: {'avg': '40.54', 'median': '38.20', 'min': '36.08', 'max': '47.33'} per-run (graph order) [47.33, 38.2, 36.08]
+[2026-10-11 15:58:25] tap 'Time to first token value (series sheet)' at (682,1707)
+[2026-10-11 15:58:29] screenshot ui-series-G3-cpu-1-ttft_s.png (178059 bytes)
+[2026-10-11 15:58:29] Time to first token: {'avg': '1.47', 'median': '1.45', 'min': '1.10', 'max': '1.87'} per-run (graph order) [1.1, 1.45, 1.87]
+[2026-10-11 15:58:30] tap 'Steady init time value (series sheet)' at (707,1947)
+[2026-10-11 15:58:34] screenshot ui-series-G3-cpu-1-steady_init_ms.png (180454 bytes)
+[2026-10-11 15:58:34] Steady init time: {'avg': '685.23', 'median': '685.23', 'min': '597.70', 'max': '772.75'} per-run (graph order) [597.7, 772.75]
+[2026-10-11 15:58:35] SESSION G3-cpu-1 END; results in G3-cpu-1.results-ui.json

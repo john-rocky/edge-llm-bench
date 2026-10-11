@@ -38,6 +38,8 @@ def tw(tp, track_sql, t0, t1):
 def main():
   ap = argparse.ArgumentParser()
   ap.add_argument("trace"); ap.add_argument("--process", default=""); ap.add_argument("--json", default="")
+  ap.add_argument("--from-log", default="", help="move the window's start to the process's first log line containing this text (e.g. 'Creating LiteRT environment': the engine's first line of the session)")
+  ap.add_argument("--thread", default="", help="window = first to last sched slice of the process's threads whose name contains this (e.g. execution_threa for an app session: the engine's executor threads live only while an engine does)")
   a = ap.parse_args()
   tp = TraceProcessor(trace=a.trace)
   res = {"trace": a.trace, "process": a.process}
@@ -56,6 +58,25 @@ def main():
       res["threads"] = rows(tp, f"""
         select t.tid as tid, t.name as name, sum(s.dur) / 1e9 as cpu_s from sched_slice s join thread t using(utid)
         where t.upid = {upid} group by t.utid order by cpu_s desc limit 10""")
+      if a.thread:
+        tw_rows = rows(tp, f"""
+          select min(s.ts) as first_ts, max(s.ts + s.dur) as last_ts, count(distinct t.utid) as n_threads, sum(s.dur) / 1e9 as cpu_s
+          from sched_slice s join thread t using(utid) where t.upid = {upid} and t.name like '%{a.thread}%'""")
+        if tw_rows and tw_rows[0]["first_ts"] is not None:
+          t0, t1 = tw_rows[0]["first_ts"], tw_rows[0]["last_ts"]
+          res["thread_window"] = dict(thread=a.thread, **tw_rows[0])
+          res["process_cpu_s_in_window"] = rows(tp, f"""
+            select sum(min(s.ts + s.dur, {t1}) - max(s.ts, {t0})) / 1e9 as cpu_s from sched_slice s join thread t using(utid)
+            where t.upid = {upid} and s.ts < {t1} and s.ts + s.dur > {t0}""")[0]["cpu_s"]
+  if a.process and a.from_log and res.get("process_rows"):
+    fl = rows(tp, f"""select min(l.ts) as ts from android_logs l join thread t using(utid) where t.upid = {res["process_rows"][0]["upid"]} and l.msg like '%{a.from_log}%'""")
+    if fl and fl[0]["ts"] is not None and fl[0]["ts"] < t1:
+      res["from_log"] = dict(text=a.from_log, ts=fl[0]["ts"], moved_start_s=(t0 - fl[0]["ts"]) / 1e9)
+      t0 = fl[0]["ts"]
+      upid = res["process_rows"][0]["upid"]
+      res["process_cpu_s_in_window"] = rows(tp, f"""
+        select sum(min(s.ts + s.dur, {t1}) - max(s.ts, {t0})) / 1e9 as cpu_s from sched_slice s join thread t using(utid)
+        where t.upid = {upid} and s.ts < {t1} and s.ts + s.dur > {t0}""")[0]["cpu_s"]
   res["window_s"] = (t1 - t0) / 1e9
   res["cpu_freq_khz"] = tw(tp, "select id, cpu as grp from cpu_counter_track where name = 'cpufreq'", t0, t1)
   res["gpu_freq_khz"] = tw(tp, "select id, 'gpu' as grp from gpu_counter_track where name = 'gpufreq'", t0, t1)
