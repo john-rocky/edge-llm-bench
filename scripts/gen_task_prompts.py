@@ -8,6 +8,10 @@ Sources of truth being mirrored:
                          long-context-1024-gen256 = forceLongOutput, maxTokens 256
                          long-context-2048-gen256 = explicit 27 blocks, maxTokens 256
 
+Android only (no Swift task): long-context-2048-gen256-noref = the same 27 blocks
+with a tail that calls them filler and asks from the model's own knowledge
+(NOREF_TAIL), maxTokens 256.
+
 The Android CLI drivers feed these files via --input_prompt_file / llama-cli -f.
 If a Swift task changes, regenerate and commit; a follow-up iOS unit test can
 assert the Swift-built prompts hash to the same values.
@@ -24,10 +28,12 @@ LOREM = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus bib
 TOKENS_PER_BLOCK = 55
 
 
-def long_context(target_tokens, force_long_output, blocks=None):
+def long_context(target_tokens, force_long_output, blocks=None, tail=None):
     blocks = blocks if blocks is not None else max(1, target_tokens // TOKENS_PER_BLOCK)
     pieces = [f"[{i}] {LOREM}" for i in range(blocks)]
-    if force_long_output:
+    if tail is not None:
+        pieces.append("\n\n" + tail)
+    elif force_long_output:
         pieces.append("\n\nUsing the passage above as context, list 25 distinct things "
                       "on-device AI lets a phone do that a cloud model cannot. Number every item "
                       "and give each one two full sentences of explanation. Do not stop early.")
@@ -36,11 +42,22 @@ def long_context(target_tokens, force_long_output, blocks=None):
     return "\n".join(pieces)
 
 
+# The 2048 task's tail asks "using the passage above": on the Galaxy S26 GPU (v0.16.0) Gemma 4
+# E4B refuses the lorem blocks in 50-61 tokens and E2B stops at 93 tokens at an 8,192
+# allocation (results/raw/2026-09-24-dashboard-longctx-v1-s26-android-gpu-retake/text_check.md),
+# so its decode rates are taken over different answer lengths. This tail asks for the same list
+# from the model's own knowledge. A tail change is a new task id once a record carries this one.
+NOREF_TAIL = ("The numbered blocks above are filler text and carry no information; do not summarize "
+              "or evaluate them. From your own knowledge, list 25 distinct things on-device AI lets "
+              "a phone do that a cloud model cannot. Number every item and give each one two full "
+              "sentences of explanation. Do not stop early.")
+
 PROMPTS = {
     # task id -> (text, decode budget the task pins)
     "short-chat": ("Explain what on-device AI means in simple terms.", 128),
     "long-context-1024-gen256": (long_context(1024, True), 256),
     "long-context-2048-gen256": (long_context(2048, True, blocks=27), 256),
+    "long-context-2048-gen256-noref": (long_context(2048, True, blocks=27, tail=NOREF_TAIL), 256),
 }
 
 # EnduranceChatTask.turnPrompts mirrored verbatim (methodology/endurance.md;

@@ -1,0 +1,98 @@
+CPUPOLICY policy0 3628800 0 1 2 3 4 5
+CPUPOLICY policy6 4742400 6 7
+CPUMAX 3628800 4742400
+VmHWM:	    4332 kB
+VmRSS:	    4332 kB
+Cpus_allowed_list:	0-7
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1791762496.658879   23141 litert_lm_lib.cc:499] Choose backend: gpu
+I0000 00:00:1791762496.677542   23141 litert_lm_lib.cc:652] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 4096
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_gemma-4-E4B-it-litert-lm_gemma-4-E4B-it.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+attention_mask_settings:
+attention_mask_policy: Causal
+local_attention_mask_policy: Not set
+sliding_window_size: Not set
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1791762496.677627   23141 litert_lm_lib.cc:659] vision_executor_settings: not set
+I0000 00:00:1791762496.677645   23141 litert_lm_lib.cc:665] audio_executor_settings: not set
+I0000 00:00:1791762496.677663   23141 litert_lm_lib.cc:688] Creating engine
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006fffa0b7d0, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006fffa0c850, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791762496.928184   23141 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.
+INFO: [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006fffa0cc10, name=LiteRT GPU
+INFO: [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006fffa0cd30, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1791762496.928577   23141 litert_lm_loader.cc:291] Section not found: 	
+W0000 00:00:1791762496.928667   23141 litert_lm_loader.cc:291] Section not found: 	
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1340, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=3514, num_inputs=53, num_outputs=50, num_ops=2712
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=3606, num_inputs=53, num_outputs=50, num_ops=2801
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 577 tensors of signature decode have been updated for magic number  32003 to target number 4096
+INFO: [magic_number_utils.cc:536] 426 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 4096
+INFO: [magic_number_utils.cc:536] 426 tensors of signature prefill_128 have been updated for magic number  32003 to target number 4096
+INFO: [magic_number_utils.cc:536] 581 tensors of signature verify have been updated for magic number  32003 to target number 4096
+INFO: [compiled_model.cc:815] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1791762497.007351   23141 delegate_opencl.cc:603] options->hint_waiting_for_completion: false
+I0000 00:00:1791762497.007439   23141 delegate_opencl.cc:605] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:220] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:283] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 2712 out of 2712 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+EXIT_CODE=124

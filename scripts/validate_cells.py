@@ -33,6 +33,9 @@ RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             "onnxruntime-genai"}
 TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
+         # the 2048 blocks with a tail that calls them filler (Android only;
+         # scripts/gen_task_prompts.py NOREF_TAIL)
+         "long-context-2048-gen256-noref",
          "long-context-3k",
          "long-context-8k", "long-context-32k", "cactus-parity", "sustained",
          "energy", "quality", "lifecycle",

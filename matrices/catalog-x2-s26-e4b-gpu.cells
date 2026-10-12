@@ -1,0 +1,17 @@
+# Catalog X2, Galaxy S26 RFGL80R6A6H (2026-10-12): Gemma 4 E4B, LiteRT-LM GPU (OpenCL), filled prompt of
+# task long-context-2048-gen256-noref (the 27 blocks of long-context-2048-gen256 with a tail that calls them
+# filler), answer cap 256, allocated KV 2304 / 4096 / 8192. Own session; never pooled with other sittings.
+# CAMPAIGN=2026-10-12-catalog-x2-s26-android-e4b-gpu ROUNDS=6 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK=
+# BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_SITTING=1 BENCH_DRIVER_START_EPOCH=<hold start>
+# BENCH_SESSION_DEADLINE=<hold start + 2400> python3 android/bench/run_campaign.py THIS.cells [--dry-run]
+# Second sitting: CAMPAIGN=2026-10-12-catalog-x2-s26-android-e4b-gpu-retake, deadline hold start + 2520.
+# One launch/cell/round; the full order reverses on even rounds; anchor once per round (llama.cpp b8999
+# Qwen3-0.6B Q4_K_M short-chat, admitted against the 2026-09-14 S26 reference 105.6 tok/s, 5 % rule).
+# LiteRT-LM v0.16.0 litert_lm_advanced_main (witness = pin), two Conversations in one engine (cold, warm),
+# engine-default sampler. Screen off (stay_on_while_plugged_in 0, Dozing) as in the 2026-09-24 GPU re-take.
+# Standard Gemma file (wNa8o8), not the -gpu file.
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=1 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=2304 file=gemma-4-E4B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=4096 file=gemma-4-E4B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=8192 file=gemma-4-E4B-it.litertlm

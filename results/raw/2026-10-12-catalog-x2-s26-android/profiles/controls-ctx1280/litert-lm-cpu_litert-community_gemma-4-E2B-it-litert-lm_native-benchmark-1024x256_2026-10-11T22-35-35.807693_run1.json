@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "d7862277-1f37-4a13-98c4-a23113ab5a29",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-community/gemma-4-E2B-it-litert-lm",
+    "quantization": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
+    "file": "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+    "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-11T22:35:35Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.8,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3628.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4742.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 1280,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 4.6,
+    "exitCode": 13
+  },
+  "metrics": {
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 238.03125,
+    "memoryPeakResidentMB": 404.875,
+    "firstEver": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256_2026-10-11T22-35-35.807693_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024"
+  }
+}

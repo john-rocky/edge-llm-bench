@@ -1,0 +1,10 @@
+# Catalog X2, Galaxy S26 RFGL80R6A6H (2026-10-12): per-op profile of the LiteRT-LM CPU (XNNPACK) path of
+# Gemma 4 E2B across the allocated KV. One control + one --enable_profiling twin per size (run_profile.py);
+# prefill 1024 / decode 256 as in catalog K5's own profile (1280 = 1024 + 256). Controls land in
+# profiles/controls-ctx<N>/, outside the summary layer; a profiled run's rate is never a speed row.
+# CAMPAIGN=2026-10-12-catalog-x2-s26-android BENCH_ANDROID_SERIAL=RFGL80R6A6H BENCH_CPU_MASK= COOLDOWN=60
+# THERMAL_WAIT=600 python3 android/bench/run_profile.py THIS.cells --max-num-tokens 1280,4096,8192
+# Ran 2026-10-12 as above, then the same with --max-num-tokens 2304: this bundle's v0.16.0 CPU path refuses
+# 1280 with the 1024-token prefill (DYNAMIC_UPDATE_SLICE prepare, exit 13; profiles/FAILURES.txt).
+
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=cpu file=gemma-4-E2B-it.litertlm runs=1

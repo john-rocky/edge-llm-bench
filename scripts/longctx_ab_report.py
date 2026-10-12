@@ -16,6 +16,15 @@ here pools across campaigns (one sitting per call).
 """
 import argparse, csv, glob, json, os, statistics, sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_summary import cpu_cap_drop_of  # noqa: E402
+from render_leaderboard import CPU_CAP_EXEMPT_ARMS  # noqa: E402
+
+# cpu-cap-rule (methodology/fairness-rules.md §13): on an accelerator arm (CPU_CAP_EXEMPT_ARMS) a
+# record whose only flags are the CPU cap's keeps its rate, marked ◇ with the engine CPUs' largest
+# ceiling fall (build_summary.cpu_cap_drop_of); on every other arm any flag still voids the rate.
+CAP_FLAGS = {"cpu-capped", "cpu-capped-at-start"}
+
 
 def load(campaign, task, review=None):
     rows = []
@@ -58,7 +67,10 @@ def load(campaign, task, review=None):
                 "thermal": m.get("peakThermalState") or m.get("initialThermalState"),
                 "thermal_flag": c.get("initialThermalNonNominal", False),
             })
-            if flags:
+            if flags and set(flags) <= CAP_FLAGS and d.get("runtime") in CPU_CAP_EXEMPT_ARMS:
+                rows[-1]["flags"] = ["◇" + f for f in flags]   # pooled, marked
+                rows[-1]["cap_drop"] = cpu_cap_drop_of(d)
+            elif flags:
                 for metric in ("decode", "prefill", "ttft_ms", "mem_peak"):
                     rows[-1][metric] = None
     return rows
@@ -133,6 +145,11 @@ def main():
             therm = sorted({r["thermal"] for r in g}, key=str)
             flags = sorted({flag for r in g for flag in r["flags"]} |
                            ({"non-nominal-start"} if any(r["thermal_flag"] for r in g) else set()))
+            drops = [float(r["cap_drop"]) for r in g if r.get("cap_drop") not in (None, "")]
+            capped = sum(1 for r in g if any(f.startswith("◇") for f in r["flags"]))
+            if capped:
+                flags = [f + (f" {capped}/{len(g)} records, ceiling fall ≤ {max(drops):.1f} %" if drops else f" {capped}/{len(g)}")
+                         if f == "◇cpu-capped" else f for f in flags]
             if ctx == ctxs[0]:
                 base = dec[0] if dec else None
             delta = f"{(dec[0] / base - 1) * 100:+.1f}%" if (dec and base) else "—"
@@ -153,7 +170,9 @@ def main():
                         "rss_med": rss[0] if rss else None, "rss_min": rss[1] if rss else None,
                         "rss_max": rss[2] if rss else None, "rss_n": rss[3] if rss else 0,
                         "rss_basis": g[0]["mem_basis"], "records": len(g),
-                        "flagged_records": sum(bool(r["flags"]) for r in g)})
+                        "flagged_records": sum(bool(r["flags"]) for r in g),
+                        "cap_pooled_records": capped,
+                        "cap_drop_max_pct": max(drops) if drops else None})
         print("\nRSS basis: " + "; ".join(sorted({r["mem_basis"] for r in sel if (r["arm"], r["model"], r["artifact"]) == (arm, model, artifact)})))
         for target in (4096, 8192):
             entry = next((r for r in out if (r["arm"], r["model"], r["artifact"], r["ctx"]) == (arm, model, artifact, target)), None)

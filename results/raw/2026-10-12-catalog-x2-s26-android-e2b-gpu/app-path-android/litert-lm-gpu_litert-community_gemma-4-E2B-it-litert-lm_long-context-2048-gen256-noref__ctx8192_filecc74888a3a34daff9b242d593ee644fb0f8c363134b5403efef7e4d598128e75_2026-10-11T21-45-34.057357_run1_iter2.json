@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "53fc588d-2ba7-467a-94cf-236ca552bbaf",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.16.0",
+  "engineArtifact": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+  "model": {
+    "id": "litert-community/gemma-4-E2B-it-litert-lm",
+    "quantization": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
+    "file": "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+    "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c"
+  },
+  "task": "long-context-2048-gen256-noref",
+  "timestamp": "2026-10-11T21:45:34Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3187.2,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 3129.6,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 8192,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "Dozing",
+    "screenSource": "env",
+    "elapsedSeconds": 24.6,
+    "exitCode": 0,
+    "roundIndex": 6,
+    "launchIndex": 21,
+    "launchID": "dab3b22c-bc2a-4de2-9ef4-ddcf5ec93083",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 36.0,
+    "batteryTemperatureFinalC": 36.8,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-2048-gen256-noref.txt --max_num_tokens=8192 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+    "allocationWitnessTokens": [
+      8192
+    ],
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 2,
+    "regime": "warm",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 1146,
+      "distinctWords": 140,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "2b1a983e5ccb7df117dc882c76de090229e64fbb490389e3bf84e9df9f05b147"
+  },
+  "metrics": {
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 807.96484375,
+    "memoryPeakResidentMB": 814.66796875,
+    "firstTokenLatencyMS": 870.0,
+    "promptTokensPerSecond": 1982.86,
+    "decodeTokensPerSecond": 25.49,
+    "promptTokenCount": 1654,
+    "generatedTokenCount": 256,
+    "coldRun": false
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-2048-gen256-noref__ctx8192_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-10-11T21-45-34.057357_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "decodedText": "litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-2048-gen256-noref__ctx8192_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75_2026-10-11T21-45-34.057357_run1_iter2.decoded.txt"
+  }
+}

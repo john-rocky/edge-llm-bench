@@ -344,7 +344,7 @@ def main():
     if rounds is not None and rounds < 1:
         ap.error("ROUNDS must be positive")
     anchors, payload, skipped = parse_cells(cells_file)
-    if rounds is None and any(c["task"] == "long-context-2048-gen256" for c in anchors + payload):
+    if rounds is None and any(c["task"].startswith("long-context-2048-gen256") for c in anchors + payload):
         ap.error("long-context-2048-gen256 requires opt-in ROUNDS=N")
     if args.dry_run:
         if rounds is None:

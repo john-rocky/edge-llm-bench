@@ -1,0 +1,10 @@
+# Catalog X2, Galaxy S26 RFGL80R6A6H (2026-10-12): n=1 prompt probe for task long-context-2048-gen256-noref,
+# hold 1 (E4B). Never pooled: after the run app-path-android/ moves to probe-records/ (outside the summary layer).
+# PASS = both iterations 254-256 generated tokens, the decoded text on task, 0 x "Invalid decode".
+# CAMPAIGN=2026-10-12-catalog-x2-s26-android-prompt-probe ROUNDS=1 COOLDOWN=30 THERMAL_WAIT=600 BENCH_CPU_MASK=
+# BENCH_ANDROID_SERIAL=RFGL80R6A6H python3 android/bench/run_campaign.py THIS.cells [--dry-run]
+# LiteRT-LM v0.16.0 litert_lm_advanced_main, two Conversations in one engine (cold, warm), engine-default sampler,
+# output cap 256 (budgets.tsv). Standard Gemma file (wNa8o8), not the -gpu file.
+
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=2304 file=gemma-4-E4B-it.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=8192 file=gemma-4-E4B-it.litertlm

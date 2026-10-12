@@ -538,6 +538,31 @@ Reading (single-arm facts; the cross-arm standing stays local):
 Android and iPhone legs of the same column: not yet (devices off adb since
 09-15; the iPhone needs the `--litert-backend` plumbing in the app driver).
 
+### Long-context column, S26 leg: the two open cells (2026-10-12)
+
+The S26 leg (`results/raw/2026-09-2*-dashboard-longctx-v1-s26-android-*`) left
+two LiteRT-LM cells open; both were measured on 2026-10-12 with v0.16.0
+`litert_lm_advanced_main`, screen off, no reboot
+(`results/raw/2026-10-12-catalog-x2-s26-android/README.md`):
+
+- GPU decode at a constant answer length. Under `long-context-2048-gen256`
+  Gemma 4 E4B refused the lorem blocks in 50–61 tokens and E2B stopped at 93
+  tokens at 8,192, so the new task `long-context-2048-gen256-noref` keeps the
+  27 blocks with a tail that calls them filler: every answer is 256 tokens,
+  0 `Invalid decode`. From 2,304 to 8,192, E2B decode stays within ±1.2 %
+  (warm 25.6 / 25.8 / 25.3 tok/s, 6 rounds); E4B is within 3 % at 4,096 and
+  3.9–5.0 % lower at 8,192 (cold, two sittings of 4 rounds, never pooled).
+  Prefill falls 31 % (E2B) and 19 % (E4B) at 8,192.
+- CPU per-op profile (E2B, `--enable_profiling`, prefill 1,024 / decode 256):
+  the attention batch matmul `Batch Matrix Multiply (NC, F32, QC8W)` over the
+  rank-4 INT8 KV cache grows 4.73 → 6.55 → 16.98 ms per decode step at
+  2,304 / 4,096 / 8,192, with Softmax, `SELECT_V2` and the INT8 `Convert`
+  beside it; the weight GEMVs stay flat to 4,096. `--max_num_tokens=1280`
+  with the 1,024-token prefill is refused at prepare (exit 13).
+- Every GPU launch is `cpu-capped` and pools, marked ◇ (fairness rules §13;
+  `scripts/longctx_ab_report.py` keeps such records since this lane); the
+  three sittings' anchors were admitted (1.003 / 1.000 / 1.015).
+
 ## Second task in the weekly set: p1024 / d256 / ctx 2048 (2026-10-06)
 
 Open question 3 is answered for the weekly job: since 2026-10-06 every sitting
