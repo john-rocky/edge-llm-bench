@@ -15,7 +15,8 @@ LiteRT-LM GPU run's 31.4 % fall counted on an accelerator arm),
 the executorch arm (the runner of the model's family on a
 staged own export: inputs pushed, the runner's stderr read apart from its stdout, its stats
 recomputed, the record and its summary row; BENCH_SITTING=1's pin check per runner; the Mac
-writer's record from a stored launch),
+writer's record from a stored launch), BENCH_SITTING=1's pin check of LiteRT-LM's flat build
+against engine-pins.json android_pins (the field of the launched tool),
 and the ONNX Runtime GenAI cells (a GenAI folder pushed file by
 file once per campaign and removed when it ends, ortgenai_run's report parsed with
 its unknown keys kept, the witness over the binary and its three libraries, the 1K
@@ -2152,6 +2153,57 @@ def main():
        and mac["provenance"]["definitions"] == parsers.EXECUTORCH_DEFINITIONS["llama_main"],
        f"Mac writer: the r1 cold launch's record (decode 110.63, ru_maxrss 1198.0 MiB, v1.5.1 by the "
        f"lock's sha; schema {'validated' if not unchecked else 'not checked here: ' + unchecked})")
+
+    # BENCH_SITTING=1 on LiteRT-LM's flat build (2026-10-15): the expected tag is the registry's
+    # current Android pin (engine-pins.json android_pins), the field the launched tool's —
+    # litert_lm_advanced_main for a native-benchmark- row, litert_lm_main for a prompt task (the
+    # check read litert_lm_advanced_main_sha256 for both, against a literal v0.16.0, before). The
+    # pin's build passes and stamps it; another registered tag's build stops with rc 5, no launch.
+    reg = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))
+    lt_tag = reg["android_pins"]["litert-lm"]
+    other_tag = next(t for t, e in reg["litert-lm"].items()
+                     if t != lt_tag and e.get("litert_lm_main_sha256") and e.get("litert_lm_advanced_main_sha256"))
+    flat_saved = {n: open(os.path.join(dev, n)).read() for n in ("litert_lm_main", "litert_lm_advanced_main")}
+
+    def put_flat(tag):
+        for n in ("litert_lm_main", "litert_lm_advanced_main"):
+            with open(os.path.join(dev, n), "w") as fh:
+                fh.write("sha256=" + reg["litert-lm"][tag][n + "_sha256"])
+
+    def litert_sitting(task, out, extra=()):
+        return subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime",
+                               "litert-lm", "--backend", "gpu", "--model-id", "fake/model", "--file", litert_model,
+                               "--task", task, "--runs", "1", "--out", out, *extra],
+                              env=dict(env, BENCH_SITTING="1"), capture_output=True, text=True)
+    engine_calls = os.path.join(state, "engine_calls")
+    print(f"--- litert-lm under BENCH_SITTING=1 (android_pins: {lt_tag})")
+    put_flat(lt_tag)
+    out_ok = os.path.join(tmp, "lt-sitting")
+    p_b = litert_sitting("native-benchmark-1024x256", out_ok, ("--context-tokens", "2048"))
+    p_s = litert_sitting("short-chat", out_ok)
+    got = sorted((r["task"], r["engineVersion"], r["engineArtifact"]) for _, r in records(out_ok, "litert-lm-gpu_"))
+    ok(p_b.returncode == 0 and "PIN MISMATCH" not in p_b.stdout
+       and ("native-benchmark-1024x256", lt_tag, reg["litert-lm"][lt_tag]["litert_lm_advanced_main_sha256"]) in got,
+       f"sitting: the {lt_tag} litert_lm_advanced_main (android_pins) passes the pin check on a native-benchmark row "
+       f"and stamps {lt_tag} (rc {p_b.returncode}, got {got}, {p_b.stdout.strip()[-160:]!r})")
+    ok(p_s.returncode == 0 and "PIN MISMATCH" not in p_s.stdout
+       and ("short-chat", lt_tag, reg["litert-lm"][lt_tag]["litert_lm_main_sha256"]) in got,
+       f"sitting: a short-chat row launches litert_lm_main and passes against litert_lm_main_sha256 of {lt_tag} "
+       f"(rc {p_s.returncode}, got {got}, {p_s.stdout.strip()[-160:]!r})")
+    put_flat(other_tag)
+    n_lt = len(open(engine_calls).read().splitlines()) if os.path.exists(engine_calls) else 0
+    out_bad = os.path.join(tmp, "lt-sitting-other")
+    p = litert_sitting("native-benchmark-1024x256", out_bad, ("--context-tokens", "2048"))
+    n_lt_after = len(open(engine_calls).read().splitlines()) if os.path.exists(engine_calls) else 0
+    ok(p.returncode == 5 and f"PIN MISMATCH before launch: litert_lm_advanced_main {other_tag} " in p.stdout
+       and f"(expected {lt_tag} litert_lm_advanced_main_sha256 " in p.stdout
+       and n_lt_after == n_lt and not records(out_bad, "litert-lm-gpu_"),
+       f"sitting: the {other_tag} build on a phone pinned to {lt_tag} stops with rc 5 before any launch, the line "
+       f"names the expected tag and field, no record (rc {p.returncode}, engine shells {n_lt_after - n_lt}, "
+       f"{p.stdout.strip()[-200:]!r})")
+    for n, text in flat_saved.items():
+        with open(os.path.join(dev, n), "w") as fh:
+            fh.write(text)
 
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")

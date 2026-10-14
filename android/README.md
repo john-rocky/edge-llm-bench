@@ -48,14 +48,27 @@ LITERTLM_TAG=v0.17.0 android/scripts/build_litert_lm_main.sh   # bazel source bu
 
 ## Push runtime to the device
 
+LiteRT-LM (the tag in `android/engine-pins.json` `android_pins`, v0.18.0 since 2026-10-15):
+
+```bash
+android/scripts/deploy_litert_lm_android.sh v0.18.0 <serial> --reset-caches
+```
+
+It pushes `litert_lm_main`, `litert_lm_advanced_main` and the seven GPU `.so` files to the flat
+`/data/local/tmp/llmbench/`, compares the phone's sha256 of all nine with the tag's pin (exit 1 on
+any mismatch: the witness reads the tools' sha only, so a stale `.so` would otherwise go unseen),
+and with `--reset-caches` deletes every LiteRT-LM bundle's engine caches and firstEver markers on
+the phone (the same paths the dashboard job's storage rotation deletes; models and records stay).
+`--check` compares without pushing.
+
+llama.cpp:
+
 ```bash
 adb shell mkdir -p /data/local/tmp/llmbench
-adb push android/bin/v0.17.0/litert_lm_main /data/local/tmp/llmbench/
-adb push android/bin/v0.17.0/*.so /data/local/tmp/llmbench/        # GPU backend
 adb push android/bin/llama-b8999/llama-cli /data/local/tmp/llmbench/
 adb push android/bin/llama-b8999/llama-bench /data/local/tmp/llmbench/
 adb push android/bin/llama-b8999/*.so /data/local/tmp/llmbench/    # shared-lib build
-adb shell chmod +x /data/local/tmp/llmbench/litert_lm_main /data/local/tmp/llmbench/llama-*
+adb shell chmod +x /data/local/tmp/llmbench/llama-*
 ```
 
 Models are HF-downloaded on the host and pushed on first use by the driver.

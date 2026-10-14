@@ -1,0 +1,13 @@
+# Release-triggered pass of 2026-10-15 (docs/dashboard-recurring-job-v1.md section 2): the Android
+# LiteRT-LM pin moves from v0.16.0 to v0.18.0 (android/engine-pins.json android_pins). One slot of that
+# pass on the Galaxy S26: the session anchor row, then the rows below, each byte-identical to its
+# weekly-set source (runs, cooldown, context-tokens and every other option unchanged).
+# Source: matrices/dashboard-text-v1-android-a.cells line 10 (anchor); matrices/dashboard-text-v1-android-a.cells line(s) 14, 15
+# Estimate: 36.6 min (anchors.cells phase 11.0 + this file's anchor row 5.9 + 3 x the slowest launch of each row in the 2026-10-14 Galaxy S26 weekly sitting + 1.0 job overhead)
+# Run, inside the device hold a keeper took (the job neither takes nor releases it):
+#   python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-0180-s26-s2.cells --suffix 0180-s2 --once --hold-held-by <keeper pid>
+# (scripts/dashboard_job.py itself: the ./bench dashboard-job wrapper does not forward --hold-held-by)
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048

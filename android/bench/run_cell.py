@@ -244,6 +244,21 @@ def load_pins(serial=None):
         return json.load(fh)
 
 
+# the launched tool -> (engine, the pins field of its sha256); any other tool is a llama.cpp one
+KEY_BY_BIN = {"litert_lm_main": ("litert-lm", "litert_lm_main_sha256"),
+              "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
+              "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
+              "llama-cli": ("llama.cpp", "llama_cli_sha256"),
+              "llama-bench": ("llama.cpp", "llama_bench_sha256"),
+              "ortgenai/ortgenai_run": ("onnxruntime-genai", "ortgenai_run_sha256"),
+              "ortgenai/model_benchmark": ("onnxruntime-genai", "model_benchmark_sha256")}
+
+
+def pin_key(binname):
+    """(engine, pins field) of the tool a launch runs (KEY_BY_BIN)."""
+    return KEY_BY_BIN.get(binname) or ("llama.cpp", binname.replace("-", "_") + "_sha256")
+
+
 def observed_engine(binname, pins, serial, engine_dir=None):
     """Stamp the OBSERVED on-device binary, matched by sha256 against the pins
     registry — never 'the newest pin' (registry/witness rule: the binary that
@@ -255,14 +270,7 @@ def observed_engine(binname, pins, serial, engine_dir=None):
     tool is a 7 KB launcher; LiteRT-LM's NPU path runs in the Qualcomm dispatch and QNN
     libraries), so a lib that differs from the pin stamps 'unknown' whatever the tool
     says. A side build that is not on the device stops the cell before any launch."""
-    key_by_bin = {"litert_lm_main": ("litert-lm", "litert_lm_main_sha256"),
-                  "litert_lm_advanced_main": ("litert-lm", "litert_lm_advanced_main_sha256"),
-                  "litert_lm_endurance_main": ("litert-lm", "litert_lm_endurance_main_sha256"),
-                  "llama-cli": ("llama.cpp", "llama_cli_sha256"),
-                  "llama-bench": ("llama.cpp", "llama_bench_sha256"),
-                  "ortgenai/ortgenai_run": ("onnxruntime-genai", "ortgenai_run_sha256"),
-                  "ortgenai/model_benchmark": ("onnxruntime-genai", "model_benchmark_sha256")}
-    engine, field = key_by_bin.get(binname) or ("llama.cpp", binname.replace("-", "_") + "_sha256")
+    engine, field = pin_key(binname)
     if not engine_dir:
         out = adb(["shell", f"sha256sum {DEV_DIR}/{binname}"], serial)
     else:
@@ -1137,24 +1145,26 @@ def main():
         # libraries + Maven's onnxruntime-android); the witness stays the tag's shas
         engine_version = pins.get(args.runtime, {}).get(engine_tag, {}).get("engine_version", engine_tag)
     if os.environ.get("BENCH_SITTING") == "1":
-        # the expected build: the cell's side build, else the pin; llama.cpp's field follows
-        # the tool (a llama-bench cell compared llama-bench's sha with llama_cli_sha256 and
-        # always stopped here before 2026-10-07); a build the registry does not hold stops too.
-        # executorch (no --engine-build): the tag's pin, one sha per runner and build as
-        # observed_engine reads it — <runner>_sha256 for the XNNPACK build,
-        # <runner>_<backend>_sha256 for executorch-<tag>-<backend>/ (every executorch cell
-        # stopped here before 2026-10-08)
-        expected_version = args.engine_build or ("v0.16.0" if args.runtime == "litert-lm"
-                                                 else "0.17.0" if ort else "v1.5.1" if et else "b8999")
-        expected_field = ("litert_lm_advanced_main_sha256" if args.runtime == "litert-lm"
-                          else "ortgenai_run_sha256" if ort else binname.replace("-", "_") + "_sha256")
+        # the expected build: the cell's side build, else the engine's current Android pin
+        # (engine-pins.json android_pins: one place, bumped by hand); the field follows the
+        # launched tool as observed_engine reads it (a llama-bench cell compared llama-bench's
+        # sha with llama_cli_sha256 and always stopped here before 2026-10-07; a litert_lm_main
+        # short-chat cell compared it with litert_lm_advanced_main_sha256, and the tag was a
+        # literal v0.16.0, before 2026-10-15); a build the registry does not hold stops too.
+        # executorch (no --engine-build): the tag's pin, one sha per runner and build —
+        # <runner>_sha256 for the XNNPACK build, <runner>_<backend>_sha256 for
+        # executorch-<tag>-<backend>/ (every executorch cell stopped here before 2026-10-08)
+        expected_version = args.engine_build or pins.get("android_pins", {}).get(args.runtime)
+        expected_field = pin_key(binname)[1]
         if et:
             runner = binname.split("/", 1)[1]
             expected_field = (f"{runner}_sha256" if args.backend == "xnnpack"
                               else f"{runner}_{args.backend}_sha256")
         pinned = pins.get(args.runtime, {}).get(expected_version, {}).get(expected_field)
-        if engine_tag != expected_version or engine_artifact != pinned:
-            print(f"PIN MISMATCH before launch: {binname} {engine_version} {engine_artifact}", flush=True)
+        if not expected_version or engine_tag != expected_version or engine_artifact != pinned:
+            print(f"PIN MISMATCH before launch: {binname} {engine_version} {engine_artifact} "
+                  f"(expected {expected_version or 'no android_pins entry for ' + args.runtime} "
+                  f"{expected_field} {pinned})", flush=True)
             return 5
     paired = context_prompt(args.runtime, args.task, args.context_tokens)
     extended = paired or args.round_index is not None or (

@@ -101,6 +101,19 @@ already exists; it produces the anchor-normalized verdicts and
 `results/summary/history.csv`. The weekly slot that follows becomes the
 first ordinary session on the new pin.
 
+The 2026-10-15 Android LiteRT-LM bump (v0.16.0 → v0.18.0, `android/engine-pins.json`
+`android_pins`): on the Galaxy S26 the Gemma 4 E2B GPU protocol cell read 25.9 tok/s decode at
+1024 / 256 on v0.16.0, while 0.18-era builds read 44–47 on the same phone and file
+(`results/raw/2026-10-11-s26-gallery-vs-binary`). Its pass runs the weekly set's LiteRT-LM rows
+(and the Gemma 4 E2B protocol rows) as slot cells files, `matrices/dashboard-0180-<device>-<slot>.cells`:
+the session anchor row plus one or two rows byte-identical to their weekly source, each slot
+estimated at 45 minutes or less from the previous weekly sitting's launch times. A keeper queues
+for the phone and takes its hold, then runs
+`python3 scripts/dashboard_job.py <device> --cells <slot file> --suffix 0180-<slot> --once --hold-held-by <keeper pid>`
+inside it and releases the hold when the job ends, so every slot is an ordinary sitting:
+preflight, the anchors phase, admission exactly as in the weekly job, SESSION.json and a ledger
+line. The weekly sittings that follow run on the new pin.
+
 Host-only checks (no device): `./bench release-watch` is already a one-shot
 command and can ride the morning standup; an artifact-identity watch (sha256
 of the pinned files on the Hub — the proposal's "alert on hash change even
@@ -177,6 +190,10 @@ bench host's):
 | Pixel 8a | any firing; USB, screen on or off (read and stamped per launch), `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
 | iPhone 17 Pro | the 05:30 firing only, after ≥4 h without a record (the only all-nominal sittings so far); unlocked (Auto-Lock Never), plugged or charged | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
 | iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | as the iPhone 17 Pro: the 05:30 firing only, after ≥4 h without a record; unlocked (Auto-Lock Never) | no sitting yet | as the iPhone 17 Pro; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
+
+On the Galaxy S26 and the Pixel 8a the job installs nothing on the phone: the flat engine build in
+`/data/local/tmp/llmbench` is replaced by hand with `android/scripts/deploy_litert_lm_android.sh`,
+which also resets the engine caches and markers.
 
 Wall times are the span from the session's first to last record in
 `results/summary/device-runs.csv` for the 2026-09-05 campaigns; the Android

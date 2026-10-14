@@ -33,16 +33,23 @@
             "CLiteRTLM_mac.xcframework.zip": "sha256:83efd536485c9d58fcd7fb7d4556ddb16ca46bb775b0449d08d9825c6836c1a4"
           },
           "note": "Registered 2026-09-10 from the v0.17.0 Package.swift binaryTarget checksums (release published 2026-09-09). The comparison ran the same cells file twice on the Mac: once on the standing v0.16.0 yardstick (.build/dd-mac) and once on a second yardstick built from Vendored/LiteRT-LM re-vendored at v0.17.0 (same local benchmark(maxNumTokens:) patch, applies cleanly) into .build/dd-mac-0170 and selected per campaign with YS_BIN + BENCH_ENGINE_PINS_FILE (pins file stamped from the v0.17.0 checkout). Each campaign carries its own anchor. default_tag stays v0.16.0: a pin bump is an owner decision (release-watch informs). Rows stamp the observed engine (witness)."
+        },
+        "2026-10-15 Android dashboard pin (flat build on the phones)": {
+          "tag": "v0.18.0",
+          "note": "The Android dashboard cells run v0.18.0 from 2026-10-15 (arms.litert-lm.android below; android/engine-pins.json android_pins). No release artifact: the Android binary is built from source at the tag. This row is what release-watch reads as the pinned tag (it takes the newest capture tag)."
         }
       },
       "android": {
-        "built_by": "android/scripts/build_litert_lm_main.sh (bazel + NDK r28b+; releases ship no Android binary, verified v0.14-v0.16)",
+        "built_by": "android/scripts/build_litert_lm_main.sh (bazel + NDK r28b+; releases ship no Android binary, verified v0.14-v0.16 and v0.18.0)",
         "macos_host_flag": "--enable_platform_specific_config (rules_rust E0463 otherwise; google-ai-edge/LiteRT-LM#3247)",
-        "tag_built": "v0.16.0",
-        "observed": "v0.16.0",
-        "litert_lm_main_sha256": "37d6b9d65fbbb11331873fabf097bf2488324f96797ab4d08f09b336d5b1898d",
+        "tag": "v0.18.0",
+        "since": "2026-10-15",
+        "note": "Android dashboard pin since 2026-10-15 (v0.16.0 before): the Galaxy S26 Gemma 4 E2B GPU protocol cell read 25.9 tok/s decode at 1024/256 on v0.16.0 while 0.18-era builds of LiteRT-LM read 44-47 on the same phone and file (results/raw/2026-10-11-s26-gallery-vs-binary). The endurance cells stay on v0.16.0 (not in the weekly set): litert_lm_endurance_main_sha256 below is the v0.16.0 build.",
+        "tag_built": "v0.18.0",
+        "observed": "v0.18.0",
+        "litert_lm_main_sha256": "54832c4992f932aec76e85be546b63dcb1e2820236d76c8f38d66c0ecc62774a",
         "gpu_so_count": 7,
-        "litert_lm_advanced_main_sha256": "e5de2d9054695632c24dd3342c03cdb9afc15d15ce4c7628779ce9b083e27fde",
+        "litert_lm_advanced_main_sha256": "cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815",
         "note_advanced_main": "synthetic PxD rows need litert_lm_advanced_main — only it consumes --benchmark_prefill/decode_tokens (verified in source AND on device: plain main ran its ~20-token default prompt regardless of the flags)",
         "litert_lm_endurance_main_sha256": "791d0f17ac6f010bbf248a205637bf9da76d0420dc95b44bdc955527bf52d567",
         "endurance_driver_source_sha256": "46fb3bff85c9e5f1979020a1ee66c0825372a65341d571cf5d09197af2adfb3d",

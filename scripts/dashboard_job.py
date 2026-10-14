@@ -42,6 +42,11 @@ on different devices run side by side, a second run on a device already being
 measured exits 3 at once, and `auto` holds .choose.lock while it picks so two
 autos never pick the same device.
 
+--hold-held-by <pid> (one device, never `auto`): the device hold is already taken by that live
+pid (a keeper script that queued for the phone through the sibling lane's queue); the job
+checks that the hold file names it, neither acquires nor releases the hold, and stops with
+exit 2 when the pid is dead or the hold names another pid.
+
 What the job never does: commit, push, edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
 phone between halves (the host HF cache is the source), together with their
@@ -109,6 +114,14 @@ class Busy(Exception):
 
 class NotReady(Exception):
     """Needs a human (exit 5)."""
+
+
+class ConfigError(Exception):
+    """The invocation cannot run as given (exit 2)."""
+
+
+# --hold-held-by: the pid that took the device hold for this sitting (None = the job takes it)
+HOLD_KEEPER = None
 
 
 # ---------------------------------------------------------------- utilities
@@ -201,11 +214,38 @@ def check_holds(dev, dry):
             continue
         if not h:
             raise Busy(f"unowned hold present: {path}")
+        if HOLD_KEEPER is not None and same_pid(h.get("pid"), HOLD_KEEPER):
+            log(f"hold kept by keeper pid {HOLD_KEEPER} at {path} — the sitting's own")
+            continue
         if h.get("pid") not in (None, os.getpid()) and pid_alive(h.get("pid")):
             raise Busy(f"device held by pid {h.get('pid')} ({h.get('script')}) "
                        f"since {h.get('started')}: {path}")
         log(f"stale hold from pid {h.get('pid')} ({h.get('script')}) at {path} — "
             "not live; the acquire step will clear it" + (" [dry-run]" if dry else ""))
+
+
+def same_pid(a, b):
+    try:
+        return int(a) == int(b)
+    except (TypeError, ValueError):
+        return False
+
+
+def keeper_hold_problem(dev, pid):
+    """--hold-held-by <pid>: why that pid's hold cannot stand for the job's own, or None.
+    The pid must be alive and the device's hold file (schedule.json "hold") must name it."""
+    if not pid_alive(pid):
+        return f"keeper pid {pid} is not alive"
+    path = dev.get("hold")
+    if not path:
+        return "this device has no hold file in schedule.json"
+    h = read_hold(path)
+    if h is None:
+        return f"no hold at {expand(path)} (the keeper must hold it before the job starts)"
+    if not same_pid(h.get("pid"), pid):
+        return (f"the hold at {expand(path)} belongs to pid {h.get('pid')} ({h.get('script')}), "
+                f"not to {pid}")
+    return None
 
 
 def adb_cmd(serial, *args):
@@ -817,11 +857,23 @@ def attempt(schedule, key, dev, attempt_no, args):
     log(f"=== slot {key} ({dev['display']}, {platform}) attempt {attempt_no} campaign base {base}"
         + (" [dry-run]" if dry else ""))
 
+    if HOLD_KEEPER is not None:
+        # judged before the preflight, in a dry run too: the preflight's hold check reads
+        # the keeper's hold as the sitting's own only once it is known to be the keeper's
+        problem = keeper_hold_problem(dev, HOLD_KEEPER)
+        if problem:
+            raise ConfigError(f"--hold-held-by {HOLD_KEEPER}: {problem}")
+        log(f"--hold-held-by {HOLD_KEEPER}: the keeper holds {expand(dev.get('hold'))}")
     info = PREFLIGHT[platform](dev, dry, phase_b_files(schedule, dev, args.cells))  # raises Busy / NotReady
     log("preflight ok")
     if dry:
         log("plan:")
-    hold = None if dry else hold_acquire(schedule, dev)
+    if HOLD_KEEPER is not None:
+        hold = None
+        log(f"hold kept by keeper pid {HOLD_KEEPER} (not acquired / not released by the job)"
+            + (" [dry-run]" if dry else ""))
+    else:
+        hold = None if dry else hold_acquire(schedule, dev)
     created = []
     try:
         # a phone past its uptime limit is rebooted here, under the hold
@@ -977,6 +1029,8 @@ def attempt(schedule, key, dev, attempt_no, args):
             reason += "; skipped, side build not on the phone: " + ", ".join(no_build)
         return worst, reason, last_rel
     finally:
+        if HOLD_KEEPER is not None:
+            log(f"hold kept by keeper pid {HOLD_KEEPER} (not acquired / not released by the job)")
         hold_release(hold)
 
 
@@ -1225,7 +1279,15 @@ def main():
                     help="preflight and print the plan; take no hold, capture nothing")
     ap.add_argument("--once", action="store_true",
                     help="no busy polling / abort retry — one attempt")
+    ap.add_argument("--hold-held-by", type=int, metavar="PID",
+                    help="the device hold is held by this live pid (a keeper that queued for the "
+                         "phone): the job neither acquires nor releases it; exit 2 when the pid is "
+                         "dead or the hold names another pid. Not with auto")
     args = ap.parse_args()
+    if args.hold_held_by is not None and args.device == "auto":
+        ap.error("--hold-held-by names one device's hold: not with auto")
+    global HOLD_KEEPER
+    HOLD_KEEPER = args.hold_held_by
 
     try:
         schedule = json.load(open(args.schedule))
@@ -1294,6 +1356,9 @@ def main():
         except NotReady as e:
             code, reason = EXIT_DEVICE, str(e)
             log(f"DEVICE: {e}")
+        except ConfigError as e:
+            code, reason = EXIT_CONFIG, str(e)
+            log(f"CONFIG: {e}")
         if auto and not pinned and code in (EXIT_BUSY, EXIT_DEVICE):
             # pass over this device now; a busy one is reconsidered after the poll
             tried[key] = ("busy" if code == EXIT_BUSY else "not-ready", reason)

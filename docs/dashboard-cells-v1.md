@@ -230,7 +230,7 @@ design.
 
 | Arm | Platforms | In v1 | Status |
 |---|---|---|---|
-| LiteRT-LM v0.16.0 | Android, iPhone, Mac | yes | pinned (`environment.lock.json`); Android binary built from source at the tag — releases ship none |
+| LiteRT-LM | Android, iPhone, Mac | yes | v0.18.0 on Android since 2026-10-15 (v0.16.0 until the 2026-10-14 sittings) and on the Mac since 2026-10-11; the iPhone 18 Pro's pinned app build stays on v0.16.0; pinned in `android/engine-pins.json` `android_pins` / `environment.lock.json`; Android binary built from source at the tag — releases ship none |
 | MLX (`mlx-swift-lm` @ 60bd0d7) | iPhone, Mac | yes | Gemma 4 loads only at the 2026-07-06 re-upload revision of the mlx-community repos, which is HF main today |
 | llama.cpp b8999 | Android, iPhone, Mac | yes | Android: official CPU-only binary; the NPU (Hexagon) and Adreno GPU (OpenCL) rows run the release's official Snapdragon asset as a side build — section "NPU and Android GPU rows" below; Apple: arm wired, no rows in this repo yet |
 | Core AI (Apple) | iPhone, Mac | v2 (2026-09-08) | own exports, side-loaded; Qwen3 0.6B/1.7B/4B rows active, the Gemma 4 rows `exclude=` because their per-layer-embedding bundles need the unpublished engine patch — "Core AI arm (v2)" below |

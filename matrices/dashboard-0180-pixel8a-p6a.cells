@@ -1,0 +1,12 @@
+# Release-triggered pass of 2026-10-15 (docs/dashboard-recurring-job-v1.md section 2): the Android
+# LiteRT-LM pin moves from v0.16.0 to v0.18.0 (android/engine-pins.json android_pins). One slot of that
+# pass on the Pixel 8a: the session anchor row, then the rows below, each byte-identical to its
+# weekly-set source (runs, cooldown, context-tokens and every other option unchanged).
+# Source: matrices/dashboard-text-v1-android-a.cells line 10 (anchor); matrices/dashboard-text-v1-android-a.cells line(s) 22
+# Estimate: 35.2 min (anchors.cells phase 11.9 + this file's anchor row 5.0 + 3 x the slowest launch of each row in the 2026-10-13 Pixel 8a weekly sitting + 1.0 job overhead); +5.5 on a reboot
+# Run, inside the device hold a keeper took (the job neither takes nor releases it):
+#   python3 scripts/dashboard_job.py pixel8a --cells matrices/dashboard-0180-pixel8a-p6a.cells --suffix 0180-p6a --once --hold-held-by <keeper pid>
+# (scripts/dashboard_job.py itself: the ./bench dashboard-job wrapper does not forward --hold-held-by)
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm

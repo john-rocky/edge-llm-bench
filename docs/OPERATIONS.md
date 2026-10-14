@@ -39,8 +39,15 @@ loudly instead of rebuilding the summary and looking like a capture.
      rebuild the app (`bootstrap.sh` + the xcodebuild command in `CLAUDE.md`)
      and the Mac CLI (`scripts/build_yardstick_mac.sh`) **on real hardware** —
      there is no CI build (hosted runners lack the required Xcode).
-   - Android: `LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh`,
-     push per `android/README.md`. Then attach `android/bin/<tag>/` (+ a full
+   - Android: `LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh`
+     (it writes the tag's `android/engine-pins.json` entry), then
+     `android/scripts/deploy_litert_lm_android.sh <tag> <serial> --reset-caches` on every
+     phone: it pushes the two tools and the seven `.so` files to the flat
+     `/data/local/tmp/llmbench/`, compares the phone's sha256 of all nine with the pin
+     (exit 1 on any mismatch) and deletes the bundles' engine caches with their firstEver
+     markers; `--check` later compares without pushing. Bump the tag in
+     `android/engine-pins.json` `android_pins` (what `BENCH_SITTING=1`'s pin check expects)
+     and `environment.lock.json` `arms.litert-lm.android`. Then attach `android/bin/<tag>/` (+ a full
      SHA256SUMS) to a GitHub release `android-litert-lm-<tag>` — upstream
      ships no Android binary, so the release asset is what lets anyone else
      skip the bazel+NDK build.
