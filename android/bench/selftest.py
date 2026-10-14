@@ -328,6 +328,9 @@ def shell(cmd):
     if cmd.startswith("sha256sum"):
         # every device path named; a stand-in for a real engine file holds the sha256sum
         # the phone would print for it ("sha256=<hex>": the side build's pinned files)
+        # (every call logged in STATE/sha256sum_log: a test counts the phone's hashing)
+        with open(os.path.join(STATE, "sha256sum_log"), "a") as fh:
+            fh.write(cmd + "\\n")
         status = 0
         for arg in cmd.split()[1:]:
             if not arg.startswith(DEV):
@@ -340,7 +343,22 @@ def shell(cmd):
             data = open(p, "rb").read()
             digest = data[7:71].decode() if data.startswith(b"sha256=") else hashlib.sha256(data).hexdigest()
             print(digest + "  " + arg)
-        return 0 if "|| true" in cmd else status
+        return 0 if ("|| true" in cmd or "; true" in cmd) else status
+    if cmd.startswith("stat -c '%%s %%Y' "):
+        # run_cell.device_file_state: size and mtime (absent file: nothing), then the
+        # <file>.sha256 marker when the command cats it
+        p = mp(cmd.split()[4])
+        if os.path.exists(p):
+            print("%%d %%d" %% (os.path.getsize(p), int(os.path.getmtime(p))))
+        if "; cat " in cmd and os.path.exists(p + ".sha256"):
+            sys.stdout.write(open(p + ".sha256").read())
+        return 0
+    if cmd.startswith("echo '") and "' > " + DEV in cmd:
+        # run_cell.push_verified writes the <file>.sha256 marker
+        text, path = re.match(r"echo '([^']*)' > (\\S+)$", cmd).groups()
+        with open(mp(path), "w") as fh:
+            fh.write(text + "\\n")
+        return 0
     if cmd.startswith("stat -c %%s"):
         p = mp(cmd.split()[-1])
         if not os.path.exists(p):
@@ -623,7 +641,8 @@ NPU_REGISTERED = [
     "subgraph 1 (decode)."]
 # The key layout of a CPU llama.cpp record (no backend=) as the runner wrote it at 3d5655c,
 # before the side builds: top-level keys and one level below, in order — a legacy cell, and
-# a round-mode launch. The side-build wiring must not move a key of the CPU arm.
+# a round-mode launch. The side-build wiring must not move a key of the CPU arm. One key
+# was added at the end on purpose: provenance.modelShaSource (2026-10-15, push_verified).
 CPU_LLAMA_KEYS = {
     "legacy": "schemaVersion id runtime engineVersion engineArtifact model.id model.quantization "
               "model.file model.sha256 task timestamp device.modelIdentifier device.systemName "
@@ -635,7 +654,7 @@ CPU_LLAMA_KEYS = {
               "conditions.exitCode metrics.promptTokensPerSecond metrics.decodeTokensPerSecond "
               "metrics.coldRun metrics.harnessStamp metrics.initialThermalState metrics.finalThermalState "
               "metrics.memoryMedianResidentMB metrics.memoryPeakResidentMB provenance.rawLog "
-              "provenance.harness provenance.rssBasis".split(),
+              "provenance.harness provenance.rssBasis provenance.modelShaSource".split(),
     "round": "schemaVersion id runtime engineVersion engineArtifact model.id model.quantization "
              "model.file model.sha256 task timestamp device.modelIdentifier device.systemName "
              "device.systemVersion device.securityPatch device.soc device.product device.batteryLevel "
@@ -652,7 +671,7 @@ CPU_LLAMA_KEYS = {
              "metrics.promptTokensPerSecond metrics.decodeTokensPerSecond metrics.coldRun "
              "metrics.harnessStamp metrics.initialThermalState metrics.finalThermalState "
              "metrics.memoryMedianResidentMB metrics.memoryPeakResidentMB provenance.rawLog "
-             "provenance.harness provenance.rssBasis".split(),
+             "provenance.harness provenance.rssBasis provenance.modelShaSource".split(),
 }
 
 
@@ -769,6 +788,83 @@ def main():
     marker = glob.glob(os.path.join(dev, "markers", "*.gpu.cachebuilt"))
     ok(len(marker) == 1, "on-device cache marker written after first clean run")
     ok(not os.path.exists(os.path.join(out_a, "FLAGGED.txt")), "clean capture not flagged")
+
+    # --- push_verified by sha256 (2026-10-15): a same-size copy whose bytes differ is pushed
+    # again (the Hub's metadata-only updates of 2026-10-11 never reached the Pixel 8a under the
+    # size check), the phone's sha256 is cached in <file>.sha256 by size and mtime, and the
+    # record's model.sha256 is the sha checked on the phone
+    print("--- push_verified (sha256 on the phone, the <file>.sha256 marker)")
+    sha_model = os.path.join(tmp, "sha_model.litertlm")
+    with open(sha_model, "w") as fh:
+        fh.write("weights v2 of sha_model")
+    sha_want = hashlib.sha256(open(sha_model, "rb").read()).hexdigest()
+    sha_rel = "/data/local/tmp/llmbench/models/fake_sha_sha_model.litertlm"
+    sha_dev = os.path.join(dev, "models", "fake_sha_sha_model.litertlm")
+    sha_marker = sha_dev + ".sha256"
+    os.makedirs(os.path.dirname(sha_dev), exist_ok=True)
+    with open(sha_dev, "w") as fh:  # the old copy: the same size, other bytes, no marker
+        fh.write("weights v1 of sha_model")
+    with open(sha_dev + "_1788555801_23.xnnpack_cache", "w") as fh:
+        fh.write("the old copy's engine cache")
+    os.makedirs(os.path.join(dev, "markers"), exist_ok=True)
+    open(os.path.join(dev, "markers", "fake_sha_sha_model.litertlm.cpu.cachebuilt"), "w").close()
+
+    def sha_cell(tag):
+        """One bare run_cell launch of the cell; -> (rc, records, the phone's sha256sum calls
+        on the model, pushes of the model)."""
+        for name in ("sha256sum_log", "push_log"):
+            if os.path.exists(os.path.join(state, name)):
+                os.remove(os.path.join(state, name))
+        schedule([30.0])
+        out = os.path.join(tmp, "sha-" + tag)
+        rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"),
+                              "--runtime", "litert-lm", "--backend", "cpu", "--model-id", "fake/sha",
+                              "--file", sha_model, "--task", "short-chat", "--runs", "1",
+                              "--out", out, "--serial", "FAKESELF"], env=env)
+        logged = lambda name: ([ln for ln in open(os.path.join(state, name)).read().splitlines() if sha_rel in ln]
+                               if os.path.exists(os.path.join(state, name)) else [])
+        return rc, records(out, "litert-lm-cpu_"), logged("sha256sum_log"), logged("push_log")
+
+    def sha_marker_text():
+        return open(sha_marker).read().split() if os.path.exists(sha_marker) else None
+
+    def sha_stat():
+        return [str(os.path.getsize(sha_dev)), str(int(os.path.getmtime(sha_dev)))]
+
+    # (a) same size, other bytes, no marker: hashed, pushed again, hashed after the push
+    assert os.path.getsize(sha_dev) == os.path.getsize(sha_model)
+    rc, recs, hashed, pushed = sha_cell("a")
+    ok(rc == 0 and pushed == [sha_rel] and len(hashed) == 2
+       and open(sha_dev, "rb").read() == open(sha_model, "rb").read(),
+       f"push_verified: a same-size copy with other bytes is hashed, pushed again and hashed after "
+       f"(rc {rc}, pushes {len(pushed)}, sha256sum calls {len(hashed)})")
+    ok(sha_marker_text() == sha_stat() + [sha_want],
+       f"the push writes <file>.sha256 = size, mtime, sha256 of the copy (got {sha_marker_text()})")
+    ok(not os.path.exists(sha_dev + "_1788555801_23.xnnpack_cache")
+       and len(recs) == 1 and recs[0][1]["metrics"].get("firstEver") is True,
+       "the re-push drops the old copy's engine cache and firstEver marker: run 1 is labelled firstEver")
+    ok(len(recs) == 1 and recs[0][1]["model"]["sha256"] == sha_want
+       and recs[0][1]["provenance"].get("modelShaSource") == "device",
+       "the record's model.sha256 is the sha checked on the phone (= host), modelShaSource device")
+
+    # (b) the marker matches stat: no sha256sum, no push
+    rc, recs, hashed, pushed = sha_cell("b")
+    ok(rc == 0 and hashed == [] and pushed == [] and len(recs) == 1
+       and recs[0][1]["model"]["sha256"] == sha_want and recs[0][1]["provenance"].get("modelShaSource") == "device",
+       f"push_verified: a marker that matches size and mtime is trusted, no sha256sum, no push "
+       f"(sha256sum calls {len(hashed)}, pushes {len(pushed)})")
+
+    # (c) the marker's mtime is not the file's: one sha256sum, equal -> marker rewritten, no push
+    size_s, mtime_s = sha_stat()
+    with open(sha_marker, "w") as fh:
+        fh.write(f"{size_s} {int(mtime_s) + 1} {sha_want}\n")
+    rc, recs, hashed, pushed = sha_cell("c")
+    ok(rc == 0 and len(hashed) == 1 and pushed == [] and sha_marker_text() == sha_stat() + [sha_want]
+       and len(recs) == 1 and recs[0][1]["model"]["sha256"] == sha_want,
+       f"push_verified: a marker of another mtime -> one sha256sum, equal, the marker rewritten, no push "
+       f"(sha256sum calls {len(hashed)}, pushes {len(pushed)}, marker {sha_marker_text()})")
+    for f in glob.glob(sha_dev + "*") + glob.glob(os.path.join(dev, "markers", "fake_sha_*")):
+        os.remove(f)
 
     # --- campaign B: same model again (marker persists) + collapsed round ---
     cells_b = os.path.join(tmp, "b.cells")

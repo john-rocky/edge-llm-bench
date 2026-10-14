@@ -386,37 +386,95 @@ def ensure_model(model_id, file_hint, runtime, serial):
     return dev_path, local
 
 
-def push_verified(local, dev_path, serial):
-    """Push unless the on-device file already matches the LOCAL SIZE. A bare
-    existence check kept a truncated file forever after a mid-push USB drop
-    (measured: 188 MB of a 1.8 GB .litertlm -> every run died on bad magic)."""
-    want = os.path.getsize(local)
-    have = subprocess.run(["adb"] + (["-s", serial] if serial else []) +
-                          ["shell", f"stat -c %s {dev_path}"],
-                          capture_output=True, text=True,
-                          **({"timeout": 30} if os.environ.get("BENCH_SITTING") == "1" else {}))
+# dev_path -> the sha256 push_verified checked the phone holds there (this process): the
+# record's model.sha256 (main)
+DEVICE_SHA = {}
+
+
+def is_sha256(text):
+    return len(text) == 64 and all(c in "0123456789abcdef" for c in text)
+
+
+def device_file_state(dev_path, serial):
+    """One shell: the file's (size, mtime) on the phone, None when it is absent, and its
+    sha256 marker <dev_path>.sha256 ("<size> <mtime> <sha256>", written by push_verified
+    only) as (size, mtime, sha256), None when absent or unreadable."""
+    out = adb(["shell", f"stat -c '%s %Y' {dev_path} 2>/dev/null; cat {dev_path}.sha256 2>/dev/null; true"],
+              serial)
+    stat = marker = None
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and stat is None and all(p.isdigit() for p in parts):
+            stat = (int(parts[0]), int(parts[1]))
+        elif len(parts) == 3 and parts[0].isdigit() and parts[1].isdigit() and is_sha256(parts[2]):
+            marker = (int(parts[0]), int(parts[1]), parts[2])
+    return stat, marker
+
+
+def device_sha256(dev_path, serial):
+    """The phone's sha256sum of one file (the whole file is read), None when it prints none."""
+    out = adb(["shell", f"sha256sum {dev_path} 2>/dev/null; true"], serial, timeout=900).split()
+    return out[0] if out and is_sha256(out[0]) else None
+
+
+def push_verified(local, dev_path, serial, want_sha=None):
+    """Push unless the phone already holds the LOCAL BYTES (sha256); returns that sha256,
+    the one checked on the phone, and keeps it in DEVICE_SHA for the record.
+
+    The phone's sha256 is cached in <dev_path>.sha256 ("<size> <mtime> <sha256>") and
+    trusted while stat still reads that size and mtime; otherwise the phone hashes the file
+    once. A size check (before 2026-10-15) kept a same-size file whose bytes had changed:
+    the Hub's metadata-only updates of 2026-10-11 (Qwen3 1.7B, a new chat template, the
+    byte size unchanged) never reached the Pixel 8a, whose records named the host file's new
+    sha. A bare existence check (before that) kept a truncated file forever after a
+    mid-push USB drop (measured: 188 MB of a 1.8 GB .litertlm -> every run died on bad
+    magic). want_sha = the host file's sha256 when the caller holds it already."""
+    want_sha = want_sha or sha256_file(local)
     if STRICT_SMOKE:
+        want = os.path.getsize(local)
+        have = subprocess.run(["adb"] + (["-s", serial] if serial else []) +
+                              ["shell", f"stat -c %s {dev_path}"],
+                              capture_output=True, text=True,
+                              **({"timeout": 30} if os.environ.get("BENCH_SITTING") == "1" else {}))
         if have.returncode or have.stdout.strip() != str(want):
             raise SystemExit(f"strict smoke requires pre-staged matching model: {dev_path}")
-        if adb(["shell", f"sha256sum {dev_path}"], serial).split()[0] != sha256_file(local):
+        if adb(["shell", f"sha256sum {dev_path}"], serial).split()[0] != want_sha:
             raise SystemExit(f"strict smoke model hash mismatch: {dev_path}")
-        return
-    if have.returncode == 0 and have.stdout.strip() == str(want):
-        return
-    adb(["shell", "mkdir", "-p", f"{DEV_DIR}/models"], serial)
+        DEVICE_SHA[dev_path] = want_sha
+        return want_sha
+    stat, marker = device_file_state(dev_path, serial)
+    if stat and marker and marker[:2] == stat:
+        if marker[2] == want_sha:
+            DEVICE_SHA[dev_path] = want_sha
+            return want_sha
+        # the marker still describes this copy: other bytes than the host's -> re-push
+    elif stat:
+        # never hashed at this size and mtime (no marker, or the file changed since)
+        if device_sha256(dev_path, serial) == want_sha:
+            adb(["shell", f"echo '{stat[0]} {stat[1]} {want_sha}' > {dev_path}.sha256"], serial)
+            DEVICE_SHA[dev_path] = want_sha
+            return want_sha
+    adb(["shell", "mkdir", "-p", os.path.dirname(dev_path)], serial)
     # A real (re)push means the engine caches that lived beside the old copy
     # are gone or stale, so this artifact's firstEver markers must go too —
     # otherwise the next run 1 rebuilds the cache with the marker still saying
     # "built" and pools as the engine's speed. Observed on the Pixel 8a
     # (2026-09-07): 10 markers present, 7 of their bundles deleted between the
-    # split dashboard sessions to free storage.
-    adb(["shell", f"rm -f {DEV_DIR}/markers/{os.path.basename(dev_path)}.*.cachebuilt"], serial)
-    print(f"pushing {os.path.basename(local)} ({want >> 20} MB) …", file=sys.stderr)
+    # split dashboard sessions to free storage. The old copy's engine caches
+    # (<file>_<mtime>_<size>…, the globs dashboard_job.android_rotate deletes) and its
+    # sha256 marker go with them.
+    adb(["shell", f"rm -f {dev_path}.sha256 {dev_path}_* "
+                  f"{DEV_DIR}/markers/{os.path.basename(dev_path)}.*.cachebuilt"], serial)
+    print(f"pushing {os.path.basename(local)} ({os.path.getsize(local) >> 20} MB) …", file=sys.stderr)
     adb(["push", local, dev_path], serial, timeout=1800)
-    out = adb(["shell", f"stat -c %s {dev_path}"], serial).strip()
-    if out != str(want):
-        raise SystemExit(f"push verification failed: device has {out} bytes, "
-                         f"local is {want} — check the USB connection")
+    have = device_sha256(dev_path, serial)
+    stat, _ = device_file_state(dev_path, serial)
+    if have != want_sha or not stat:
+        raise SystemExit(f"push verification failed: device sha256 {have}, local {want_sha} "
+                         f"({dev_path}) — check the USB connection")
+    adb(["shell", f"echo '{stat[0]} {stat[1]} {want_sha}' > {dev_path}.sha256"], serial)
+    DEVICE_SHA[dev_path] = want_sha
+    return want_sha
 
 
 def ortgenai_dev_dir(model_id, folder):
@@ -449,11 +507,12 @@ def push_ortgenai_folder(local, files, dev_dir, serial):
     """Push every file of the folder on its own, from its resolved path: an HF cache
     snapshot holds symlinks into blobs/, and a directory push carries the links, not the
     bytes (adb walks a pushed directory with lstat; not verified on a device).
-    push_verified skips a file the device already holds at the same size and checks the
-    size after a push, model.onnx and model.onnx.data included."""
+    push_verified skips a file the device already holds with the same sha256 and checks the
+    sha256 after a push, model.onnx and model.onnx.data included."""
     adb(["shell", "mkdir", "-p", dev_dir], serial)
     for name in files:
-        push_verified(os.path.realpath(os.path.join(local, name)), f"{dev_dir}/{name}", serial)
+        push_verified(os.path.realpath(os.path.join(local, name)), f"{dev_dir}/{name}", serial,
+                      want_sha=files[name]["sha256"])
 
 
 def remove_ortgenai_folder(dev_dir, serial):
@@ -1117,7 +1176,13 @@ def main():
         model_dev, model_local = ensure_model(args.model_id, args.file, args.runtime, args.serial)
     if et:
         args.file = cell_file
-    model_sha = ort_model["sha256"] if ort else sha256_file(model_local)
+    # model.sha256 = the sha256 push_verified checked on the phone (since 2026-10-15; before,
+    # the host file's, which a same-size copy on the phone need not match). Only a caller that
+    # stubs ensure_model (test_longctx.py) leaves none: the host file's, named as such.
+    model_sha = DEVICE_SHA.get(f"{model_dev}/model.onnx" if ort else model_dev)
+    model_sha_source = "device"
+    if model_sha is None:
+        model_sha, model_sha_source = (ort_model["sha256"] if ort else sha256_file(model_local)), "host"
     prompt_dev = budget = prompt_text = None
     if not args.task.startswith("native-benchmark-"):
         prompt_dev, budget = push_prompt(args.task, args.serial)
@@ -1363,7 +1428,8 @@ def main():
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
                            "rssBasis": RSS_BASIS + (LITERT_NPU_RSS_NOTE if litert_npu
-                                                    else SIDE_RSS_NOTE if engine_dir else "")},
+                                                    else SIDE_RSS_NOTE if engine_dir else ""),
+                           "modelShaSource": model_sha_source},
         }
         if et:
             rec["model"].update(et_fields["model"])

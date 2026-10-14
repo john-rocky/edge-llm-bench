@@ -437,6 +437,38 @@ all fail renders `— (text check failed: …)` in place of a rate, every week,
 without an `exclude=`. Human step: read the stored text before the campaign
 is committed.
 
+Model bytes on the phone (correction, 2026-10-15): until 2026-10-15
+`run_cell.push_verified` skipped the push when the phone's copy had the host
+file's size, and the record's `model.sha256` was the host file's. The Hub
+update of `litert-community/Qwen3-1.7B` on 2026-10-11 (commit 87603f0f,
+LlmMetadata for litert-lm 0.18.0: a chat template with content parts,
+weights unchanged) changed both files at the same byte size —
+`Qwen3_1.7B.litertlm` 66064a4e… → 362ec1c9… (2,056,729,520 bytes),
+`Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` 2eeffef7… → 2a72330b…
+(977,184,032 bytes) — so it never reached the Pixel 8a: the Qwen3 1.7B
+records of its 2026-10-13 sitting and of the campaigns
+`2026-10-15-dashboard-v1-pixel8a-0180-p3a-android` / `-p3b-android` name the
+new sha but ran the copy pushed on 2026-09-05 (the phone's sha256sum on
+2026-10-15: 66064a4e… and 2eeffef7…, the old files; deleted then, the later
+campaigns pushed the new ones). The same day's
+`qwen3_4b_mixed_int4.litertlm` update (f0794bc7… → 569fe029…) changed the size (2,659,057,664 → 2,659,053,760 bytes) and was
+pushed; on the Galaxy S26 the 2026-10-11 sitting's rotation had deleted the
+copies, and its 2026-10-14 sitting pushed all three new files (job log).
+The template and the engine must match: on v0.16.0 the old template received
+the prompt (Prefill Turn 1 = 19 tokens for short-chat, 1,338 for the 1024
+task) and the new one did not (8 tokens for both tasks, the reply unrelated to
+the question: the S26 2026-10-14 Qwen3 1.7B and 4B rows); on v0.18.0 the old
+template drops it (8 tokens, the Pixel 8a `…-0180-p3a-android` rows). The
+S26 2026-10-14 1024 rows fail the text check; short-chat rows carry no text
+check.
+Since 2026-10-15 `push_verified` compares sha256: the phone's sha is cached
+in `<file>.sha256` (`<size> <mtime> <sha256>`, trusted while `stat` reads
+that size and mtime, otherwise the phone hashes the file once), a copy with
+other bytes is pushed again (its engine caches and firstEver markers go with
+it), and `model.sha256` is the sha checked on the phone
+(`provenance.modelShaSource: "device"`). Rotation and `deploy_litert_lm_android.sh
+--reset-caches` delete the marker with the copy's other `<file>.*` files.
+
 ## 6. Outputs and where they live
 
 | artifact | path | committed? |
