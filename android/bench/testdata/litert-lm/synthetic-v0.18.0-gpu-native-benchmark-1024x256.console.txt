@@ -1,0 +1,46 @@
+synthetic, from litert_lm_lib.cc v0.18.0; replace with a measured log
+(the form of `litert_lm_advanced_main --backend=gpu --benchmark --benchmark_prefill_tokens=1024
+--benchmark_decode_tokens=256 --async=false --max_num_tokens=2048`, --num_iterations at its default 1:
+LogBenchmarkInfo puts the first line on a glog line and the rest NoPrefix, no reply is printed or
+captured while benchmark_prefill_tokens is not 0, no Aggregated block for one iteration; the values
+are made up)
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792000000.000001   20000 litert_lm_lib.cc:629] Choose backend: gpu
+I0000 00:00:1792000000.000002   20000 litert_lm_lib.cc:789] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 2048
+is_benchmark: true
+
+I0000 00:00:1792000000.000003   20000 litert_lm_lib.cc:825] Creating engine
+VERBOSE: Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+I0000 00:00:1792000005.000000   20000 litert_lm_lib.cc:1079] Creating conversation
+I0000 00:00:1792000005.000100   20000 litert_lm_lib.cc:1091] Running single-turn conversation
+I0000 00:00:1792000016.500000   20000 litert_lm_lib.cc:429] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.05 ms
+    - Init Executor: 5000.00 ms
+    - Init LLM metadata: 0.03 ms
+    - Init Model assets: 0.04 ms
+    - Init Tokenizer: 500.00 ms
+    - Init Total: 5000.10 ms
+--------------------------------------------------
+  Time to first token: 1.25 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 1.024s duration.
+      Prefill Speed: 1000.00 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 10.24s duration.
+      Decode Speed: 25.00 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 30us, 1024 tokens
+--------------------------------------------------
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400000000000001, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400000000000002, name=LiteRT GPU
+EXIT_CODE=0

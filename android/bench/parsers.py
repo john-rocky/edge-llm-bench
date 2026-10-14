@@ -3,6 +3,22 @@
 Formats verified against the v0.16.0 sources (runtime/framework/io_types.cc
 BenchmarkInfo operator<<) and llama.cpp b8999. Absent metrics stay absent —
 never derived, never defaulted (a fabricated field is worse than a hole).
+
+LiteRT-LM's BenchmarkInfo per path and release (RE_BENCHMARK_INFO, cut_aggregated;
+fixtures in testdata/litert-lm):
+  short-chat, litert_lm_main, v0.16.0 and v0.18.0: one "BenchmarkInfo:" at column zero
+    (std::cout), the reply streamed before it, no aggregate.
+  1K, advanced_main --num_iterations=2, v0.16.0: "BenchmarkInfo:" at column zero per
+    iteration (NoPrefix), each after the reply that iteration printed.
+  1K, v0.18.0: the marker on a glog line ("I0000 … litert_lm_lib.cc:429] BenchmarkInfo:",
+    the rest NoPrefix) per iteration; before it the reply, then the same reply again on a
+    glog line ("litert_lm_lib.cc:179] Captured model output: …"); after the last iteration
+    "litert_lm_lib.cc:584] Aggregated BenchmarkInfo (median of 2 iterations):" with the same
+    labels — not an iteration and never a metric source.
+  protocol, advanced_main --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256,
+    v0.16.0: one column-zero marker, no reply; v0.18.0 (from litert_lm_lib.cc, not yet
+    measured): one glog-prefixed marker, no reply, no echo, no aggregate (it is printed
+    only for more than one iteration).
 """
 import hashlib
 import json
@@ -18,6 +34,16 @@ RE_DECODE = re.compile(r"Decode Speed: ([\d.]+) tokens/sec")
 RE_PREFILL_TOKENS = re.compile(r"Prefill Turn \d+: Processed (\d+) tokens")
 RE_DECODE_TOKENS = re.compile(r"Decode Turn \d+: Processed (\d+) tokens")
 RE_PEAK_MEM = re.compile(r"[Pp]eak memory.*?([\d.]+) *(MB|GB|bytes)")
+# BenchmarkInfo's first line, at column zero (v0.16.0) or after a glog prefix (v0.18.0
+# advanced_main: "I0000 00:00:1791995755.386647   10550 litert_lm_lib.cc:429] BenchmarkInfo:")
+GLOG_PREFIX = r"(?:[IWEF]\d{4} [^\n]*\] )?"
+RE_BENCHMARK_INFO = re.compile(r"(?m)^" + GLOG_PREFIX + r"BenchmarkInfo:\s*$")
+# v0.18.0 advanced_main's median over its iterations, after the last one, with the
+# per-iteration labels (litert_lm_lib.cc LogAggregatedMetrics)
+RE_AGGREGATED_BENCHMARK_INFO = re.compile(r"(?m)^" + GLOG_PREFIX + r"Aggregated BenchmarkInfo\b")
+# v0.18.0 advanced_main's second copy of the printed reply (litert_lm_lib.cc
+# CheckExpectedOutput: "I0000 … litert_lm_lib.cc:179] Captured model output: <reply>")
+RE_CAPTURED_OUTPUT = re.compile(r"(?m)^[IWEF]\d{4} [^\n]*\] Captured model output: ")
 
 # llama-cli perf lines. b8999's -st mode prints the bracket summary
 # "[ Prompt: 217.7 t/s | Generation: 20.6 t/s ]" (no token counts — those stay
@@ -36,8 +62,17 @@ def _last_float(rx, text):
     return float(hits[-1]) if hits else None
 
 
+def cut_aggregated(text):
+    """The console before an Aggregated BenchmarkInfo block (v0.18.0): its median carries
+    the per-iteration labels, so a last-hit regex past it reads the median as a run."""
+    agg = RE_AGGREGATED_BENCHMARK_INFO.search(text)
+    return text[:agg.start()] if agg else text
+
+
 def parse_litert(text):
-    """litert_lm_main console -> metrics dict (BenchmarkResult field names)."""
+    """litert_lm_main console -> metrics dict (BenchmarkResult field names), from the
+    per-call BenchmarkInfo only (never the Aggregated block)."""
+    text = cut_aggregated(text)
     m = {}
     ttft = _last_float(RE_TTFT, text)
     if ttft is not None:
@@ -65,12 +100,13 @@ def parse_litert(text):
 def parse_litert_iterations(text):
     """One BenchmarkInfo per fresh Conversation in advanced_main's loop.
 
-    NoPrefix logging prints the marker at column zero (v0.16.0 io_types.cc).
+    The marker is at column zero (v0.16.0 NoPrefix) or on a glog line (v0.18.0);
+    v0.18.0's Aggregated block after the last iteration is not one (cut_aggregated).
     Never feed the whole multi-iteration log to parse_litert: it sums counts.
     A missing marker is missing evidence, not a fabricated generation.
     """
     return [parse_litert(block) for block in
-            re.split(r"(?m)^BenchmarkInfo:\s*$", text)[1:]]
+            RE_BENCHMARK_INFO.split(cut_aggregated(text))[1:]]
 
 
 def context_prompt_results(text, context_tokens, budget):
@@ -109,15 +145,21 @@ def context_prompt_texts(text):
 
     Preserve whitespace-only output. The region includes CLI separator newlines;
     character counts are not token counts. This extracts text, not engine rates.
+    v0.18.0 logs the reply once more after printing it ("Captured model output: …", see
+    the module doc); that copy is the text there, the printed one with its log lines is not.
     """
     outputs = []
+    text = cut_aggregated(text)
     for start in re.finditer(r"^.* Running single-turn conversation\s*$", text, re.M):
-        stop = re.search(r"^BenchmarkInfo:\s*$", text[start.end():], re.M)
+        stop = RE_BENCHMARK_INFO.search(text[start.end():])
         if not stop:
             continue
         end = start.end() + stop.start()
         prefix = text[start.end():end]
-        if "[thought]" in prefix:
+        echo = list(RE_CAPTURED_OUTPUT.finditer(prefix))
+        if echo:
+            offset = echo[-1].end()
+        elif "[thought]" in prefix:
             offset = prefix.index("[thought]")
         else:
             traces = list(re.finditer(r"^external/[^\n]+:\d+[ \t]*$", prefix, re.M))
@@ -408,7 +450,7 @@ def litert_reply(text):
     if not start:
         return ""
     out = out[start.end():]
-    stop = re.search(r"^BenchmarkInfo:\s*$", out, re.M)
+    stop = RE_BENCHMARK_INFO.search(out)
     out = out[:stop.start()] if stop else out
     kept = []
     for line in out.splitlines():

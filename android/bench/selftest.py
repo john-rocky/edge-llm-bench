@@ -17,6 +17,8 @@ staged own export: inputs pushed, the runner's stderr read apart from its stdout
 recomputed, the record and its summary row; BENCH_SITTING=1's pin check per runner; the Mac
 writer's record from a stored launch), BENCH_SITTING=1's pin check of LiteRT-LM's flat build
 against engine-pins.json android_pins (the field of the launched tool),
+the parsers on LiteRT-LM v0.18.0's consoles (testdata/litert-lm: glog-prefixed
+BenchmarkInfo, the reply echo, the Aggregated block read as no iteration),
 and the ONNX Runtime GenAI cells (a GenAI folder pushed file by
 file once per campaign and removed when it ends, ortgenai_run's report parsed with
 its unknown keys kept, the witness over the binary and its three libraries, the 1K
@@ -1821,6 +1823,54 @@ def main():
        and litert_reply("no conversation started") == "",
        "litert_reply on the build's own consoles (no BenchmarkInfo, QNN lines, a thought channel; the "
        "HW-cache-update garbage fails the screen)")
+
+    # LiteRT-LM v0.18.0's consoles (android/bench/testdata/litert-lm): advanced_main prints
+    # BenchmarkInfo on a glog line, echoes the reply on another and ends with an Aggregated
+    # block of medians under the same labels; the parsers read the per-call blocks only
+    lfx = os.path.join(ROOT, "android", "bench", "testdata", "litert-lm")
+    lrd = lambda name: open(os.path.join(lfx, name), encoding="utf-8").read()
+    rounded = lambda m: {k: round(v, 6) for k, v in m.items()}
+    k1 = lrd("pixel8a-v0.18.0-gpu-qwen3-0.6b-long-context-1024-gen256.console.txt")
+    its, k1_checks = parsers.context_prompt_results(k1, 2048, 256)
+    ok([rounded(m) for m in its] == [
+        {"firstTokenLatencyMS": 510.0, "promptTokensPerSecond": 19.17, "decodeTokensPerSecond": 22.49,
+         "promptTokenCount": 9, "generatedTokenCount": 256},
+        {"firstTokenLatencyMS": 500.0, "promptTokensPerSecond": 19.71, "decodeTokensPerSecond": 24.3,
+         "promptTokenCount": 9, "generatedTokenCount": 249}]
+       and k1_checks == {"allocationWitnessTokens": [2048], "invalidDecodeCount": 0, "protocolFlags": []},
+       f"v0.18.0 1K: two iterations from the glog-prefixed markers (the Aggregated block is not a third, "
+       f"and its medians 0.51 s / 19.44 / 23.39 fill nothing), prefill 9 / 9, decode 256 / 249 tokens, "
+       f"no flag (got {its} {k1_checks})")
+    k1_texts = parsers.context_prompt_texts(k1)
+    ok(len(k1_texts) == 2
+       and k1_texts[0].startswith('<think>\nOkay, let\'s see. The user mentioned "radios"')
+       and k1_texts[0].endswith("It's commonly")
+       and k1_texts[0].count("It looks like you might be referring") == 1
+       and k1_texts[1].startswith("<think>\nOkay, the user is asking for help")
+       and k1_texts[1].endswith("tailor my response effectively.")
+       and not any("litert_lm_lib.cc" in t or "Loaded OpenCL" in t for t in k1_texts),
+       f"v0.18.0 1K: each iteration's text is the engine's 'Captured model output' copy, once, "
+       f"no log line in it (got {[t[:60] + ' … ' + t[-30:] for t in k1_texts]})")
+    ok(rounded(parsers.parse_litert(lrd("pixel8a-v0.18.0-gpu-qwen3-0.6b-short-chat.console.txt"))) == {
+        "firstTokenLatencyMS": 530.0, "promptTokensPerSecond": 18.7, "decodeTokensPerSecond": 22.66,
+        "promptTokenCount": 9, "generatedTokenCount": 297},
+       "v0.18.0 short-chat (litert_lm_main, column-zero marker): the values of its stored record "
+       "(results/raw/2026-10-15-dashboard-v1-pixel8a-0180-p1-android)")
+    proto = lrd("synthetic-v0.18.0-gpu-native-benchmark-1024x256.console.txt")
+    per_call = {"firstTokenLatencyMS": 1250.0, "promptTokensPerSecond": 1000.0, "decodeTokensPerSecond": 25.0,
+                "promptTokenCount": 1024, "generatedTokenCount": 256}
+    # the block LogAggregatedMetrics prints after more than one iteration, other values
+    agg = ("I0000 00:00:1792000016.600000   20000 litert_lm_lib.cc:584] Aggregated BenchmarkInfo "
+           "(median of 2 iterations):\n  Time to first token: 9.99 s\n"
+           "--------------------------------------------------\n"
+           "    Prefill Turn 1:\n      Prefill Speed: 1.11 tokens/sec.\n"
+           "    Decode Turn 1:\n      Decode Speed: 2.22 tokens/sec.\n"
+           "--------------------------------------------------\n")
+    ok(rounded(parsers.parse_litert(proto)) == per_call
+       and rounded(parsers.parse_litert(proto.replace("EXIT_CODE=0", agg + "EXIT_CODE=0"))) == per_call
+       and len(parsers.parse_litert_iterations(proto)) == 1,
+       "v0.18.0 protocol (synthetic, from litert_lm_lib.cc): the per-call BenchmarkInfo's values, the "
+       "same with an Aggregated block after it")
 
     # the cells grammar of the side builds (validate_cells) and the runner's refusals
     sys.path.insert(0, os.path.join(ROOT, "scripts"))

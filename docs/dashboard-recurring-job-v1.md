@@ -112,7 +112,10 @@ for the phone and takes its hold, then runs
 `python3 scripts/dashboard_job.py <device> --cells <slot file> --suffix 0180-<slot> --once --hold-held-by <keeper pid>`
 inside it and releases the hold when the job ends, so every slot is an ordinary sitting:
 preflight, the anchors phase, admission exactly as in the weekly job, SESSION.json and a ledger
-line. The weekly sittings that follow run on the new pin.
+line. The weekly sittings that follow run on the new pin. v0.18.0's `litert_lm_advanced_main`
+prints `BenchmarkInfo:` on a glog line and an aggregated block (`Aggregated BenchmarkInfo`, the
+median over the iterations) after the iterations; `android/bench/parsers.py` reads both forms
+since 2026-10-15 and never takes a value from the aggregated block.
 
 Host-only checks (no device): `./bench release-watch` is already a one-shot
 command and can ride the morning standup; an artifact-identity watch (sha256
