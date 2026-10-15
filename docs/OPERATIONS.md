@@ -236,6 +236,131 @@ times, edit `schedule.json` `slots` and the template together, re-render the
 plist and `launchctl bootout` + `bootstrap` it (the running agent keeps the
 old times until then).
 
+## Runbook: run cells on DDP (a lab phone, no adb)
+
+What the route pushes, runs and records, and how its rows differ from an
+attached phone's: `docs/ddp-integration.md`, "Route C as `bench matrix --ddp`".
+One `--ddp <id>` invocation turns the cells file's Android LiteRT-LM rows into
+Device Run sessions of at most 8 jobs on that catalog id; a session is billed
+to the Cloud project it runs in.
+
+Prerequisites (the host never talks to a phone, so no adb and no gtimeout;
+a Linux host such as a Cloudtop or gLinux machine has what the route calls,
+though every session so far was driven from a Mac, 2026-10-15):
+
+- gcloud, signed in (`gcloud auth login`); the driver calls only
+  `gcloud auth print-access-token`, `gcloud storage ls` and `gcloud storage cp`
+  (no `beta` component; listing the catalog with
+  `gcloud beta device-run devices list` needs it).
+- An account that can create Device Run sessions in the project (the API
+  enabled once: `gcloud services enable devicerun.googleapis.com --project <p>`)
+  and read and write the bucket. The sessions so far used the project's own
+  Device Run bucket (`gs://<project>-devicerun`, the name `gcloud beta device-run`
+  creates); a bucket outside the session's project is untried.
+- python3 >= 3.10 (`./bench doctor` checks the version) with `huggingface_hub`
+  (`python3 -m pip install huggingface_hub`); a gated Hub repo needs a token on
+  the host.
+- The pinned LiteRT-LM Android files in `android/bin/<tag>/` (the tag is
+  `android/engine-pins.json` `android_pins`), or in `$BENCH_ANDROID_BIN_DIR/<tag>/`:
+  the release asset `android-litert-lm-<tag>` ("Engine acquisition" in
+  `android/README.md`) or a source build. The driver checks all 9 files against
+  the pins before it uploads anything.
+
+1. **Dry run.**
+   `./bench matrix <cells> --ddp <id> --dry-run --project <p> --bucket gs://<b>`.
+   Read the skipped rows and their reasons, then per job the cell, `runs`,
+   the cooldown, `executionTimeout` (3600 s by default), the per-run timeout,
+   the pushes (bytes, sha256, bucket object) and the estimate, then per
+   session the request body. The summary line's `deviceMinutes` is a sum over
+   the jobs: the platform runs a session's jobs side by side (8 units at once
+   on 2026-10-15), so the wall time is near the longest job, not the sum.
+   On a fresh host the models show `"uncached"`; the billed run downloads them.
+2. **GO.** The project owner approves the spend before anything is posted:
+   how many sessions (one POST each), how many jobs, `executionTimeout` per
+   job, and the bytes to upload (`uploadBytes`; objects already in the bucket
+   are not uploaded again).
+3. **Billed run.** Drivers for two ids may run side by side; start the
+   second once the first has posted (the first's uploads are then in the
+   bucket, so the second uploads nothing twice):
+   ```bash
+   mkdir -p ~/ddp-logs
+   nohup "$PWD/bench" matrix <cells> --ddp <id> --campaign <date>-ddp-<id> \
+       --project <p> --bucket gs://<b> > ~/ddp-logs/<date>-ddp-<id>.log 2>&1 &
+   ```
+   The campaign dir is `results/raw/<date>-ddp-<id>-android/`. `bench` starts
+   the driver by its full path, so `pgrep -f "$PWD/android/ddp/run_ddp.py"`
+   finds this checkout's driver (a bare `bench matrix` pattern also matches
+   other lanes' drivers). The exit code is 0 when every run is clean, 1 when a
+   run is not (`app-path-android/FAILURES.txt`) or the driver stopped on an
+   error it prints (a sha mismatch; a 4xx answer, kept in `ddp/error-<n>.json`),
+   2 when it refused to start (no android rows in the file, or the campaign
+   dir already holds records).
+4. **Poll and resume.** The driver polls the operation every 30 s and logs
+   "not done" until the session ends (`ddp/operation-<n>.json` is rewritten at
+   each poll), then pulls and writes the records. If the driver stops while a
+   session runs, poll that session without a second POST:
+   `android/ddp/run_ddp.py <cells> --device <id> --campaign <date>-ddp-<id>-android --project <p> --bucket gs://<b> --resume <operation name>`
+   (the name is in `ddp/operation-create-<n>.json`). It polls, pulls and
+   records that session, then submits the plan's later sessions as usual (they
+   are billed), and appends the skip lines to `SKIPPED.txt` once more.
+   `android/ddp/run_ddp.py --records-only results/raw/<campaign>` writes the
+   records again from what was pulled, with no network.
+5. **Read the outputs.** `ddp/session-<n>.json`: the session, every job and
+   every execution `PASSED`; no `ddp/error-<n>.json`; `app-path-android/` holds
+   jobs × runs records (× 2 for a 1K cell) and no `FAILURES.txt`. In the
+   records: `engineVersion` is the pins tag, not `unknown (…)` (the witness);
+   `model.sha256` is the plan's; no `provenance.ddpMissing`;
+   `conditions.ddp.serial` / `buildFingerprint` name the unit of each job;
+   `conditions.protocolFlags` (`cpu-capped`, `cpu-capped-at-start`) and the
+   summary's `cpu_cap_drop_pct` say whether a run pools (cpu-cap-rule);
+   `conditions.thermalRawStatus` → `thermalRawStatusFinal` and
+   `thermalGateTimedOut`; `conditions.engineCache` for every run after a
+   job's first; a 1K record's `conditions.textCheck`, and a short-chat raw
+   log's reply text (the rate never reads it).
+6. **Summary from the git index.** `bench` rebuilt `results/summary/` from
+   this checkout's disk; put it back (`git checkout -- results/summary`),
+   stage the campaign dir by its path without the execution-level
+   `logcat.txt` files (the unit's whole log, 0.3–14.5 MB each on 2026-10-15;
+   the campaigns so far keep them on disk and in the bucket only):
+   `git add -- <campaign dir> ':(exclude)<campaign dir>/ddp/*/logcat.txt'`
+   (the per-run `run<i>_logcat.txt` files stay staged); check that
+   `git diff --cached --name-only` lists only that dir, then rebuild the
+   summary from the index as in `CLAUDE.md`
+   (`d=$(mktemp -d) && git checkout-index -a --prefix="$d/" && python3 "$d/scripts/build_summary.py" && cp "$d"/results/summary/* results/summary/ && rm -rf "$d"`)
+   and stage `results/summary/`. The new rows carry the device
+   `<model> (DDP <id>)`.
+7. **Hygiene.** `ddp/scrub.json` counts what `android/ddp/scrub.py` replaced
+   in each pulled logcat (SSIDs, hashes, IPv6, MACs, BSSID parts, private IPv4,
+   SIM / device ids); the original bytes are in `<campaign dir>/ddp-raw/`,
+   which `.gitignore` keeps out: never `git add -f` it. The staged files carry
+   no host user name (`git grep -l --cached "$(basename "$HOME")" -- <campaign dir>`
+   prints nothing).
+8. **Commit** the campaign dir and `results/summary/` by explicit path (never
+   `git add -A`), with a message that states what ran and what reproduced and
+   no ordering of runtimes or devices.
+
+Measured (2026-10-15, `results/raw/2026-10-15-ddp-backend-dev/ROUND2.md`,
+`ROUND3.md`): the smoke session (1 job of 2 runs on `akita-35`) took 22.6 min,
+of which 2.9 min of pushes and a 10-min thermal gate before run 2; the slice
+sessions (8 jobs of 3 runs each, side by side) took 37 min on `akita-35` and
+30 min on `m1q-36`, with 110 and 194 device-minutes in their executions (the
+`m1q-36` figure holds 24 CPU-cap waits of 300 s, since set to 0 s for that id).
+From the POST to the records on disk: 24 min (smoke), 38 min (both slice
+sessions). Uploads: 2.21 GB the first time (12 objects), 3.57 GB more for the
+slice's two new models and its prompt; the second slice driver found all 15
+objects in the bucket and uploaded nothing.
+
+Cost: the device time is in the session report's job and execution
+`startTime` / `endTime` (`ddp/session-<n>.json`); what a device-minute costs is
+in the project's billing. The session's output folder in the Cloud Console is
+`https://console.cloud.google.com/storage/browser/<bucket>/automation/sessions/<session id>/`.
+
+A person decides: the GO for every billed session, a pin bump and the release
+asset that goes with it (the driver pushes the tag `android_pins` names, and
+only after the sha check), and any cleanup of the bucket (the driver never
+deletes; inputs stay under `automation/inputs/edge-llm-bench/`, session
+outputs under `automation/sessions/`).
+
 ## Runbook: add a model
 
 1. Speed axis: add a `ModelInfo` per runtime to
