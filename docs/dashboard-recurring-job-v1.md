@@ -268,7 +268,7 @@ shape on 2026-10-15: the job's own S26 sitting made the Pixel 8a report busy
 for the whole sitting, because a `run_campaign.py` driver names its phone
 only in its environment (the `bench` wrapper hands it `BENCH_ANDROID_SERIAL`
 and `CAMPAIGN` there, not in argv). The preflight now reads that one
-variable out of the driver's environment (`ps -E`; nothing else of it is
+variable out of the driver's environment (`ps -E` on macOS, `/proc/<pid>/environ` on Linux; nothing else of it is
 kept or logged), so the job's sittings on two phones run side by side; a
 driver that names no phone either way still counts as busy.
 

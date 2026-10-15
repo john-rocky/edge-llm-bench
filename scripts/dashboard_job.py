@@ -203,8 +203,17 @@ def driver_serial(pid):
     """The phone a host campaign driver drives, read from its environment: the bench
     wrapper hands run_campaign.py its phone (BENCH_ANDROID_SERIAL) and campaign (CAMPAIGN)
     through the environment, not argv. None when the process is gone or names no phone.
-    Only that one variable is taken from `ps -E`; nothing else of the environment is kept
-    or logged (it carries the shell's secrets)."""
+    Only that one variable is taken (`/proc/<pid>/environ` on Linux, `ps -E` on macOS);
+    nothing else of the environment is kept or logged (it carries the shell's secrets)."""
+    if os.path.isdir("/proc"):
+        try:
+            with open(f"/proc/{pid}/environ", "rb") as fh:
+                for item in fh.read().split(b"\0"):
+                    if item.startswith(b"BENCH_ANDROID_SERIAL="):
+                        return item.split(b"=", 1)[1].decode(errors="replace") or None
+        except OSError:
+            pass
+        return None
     rc, out = sh(["ps", "-E", "-o", "command=", "-p", str(pid)])
     if rc != 0:
         return None
