@@ -1,0 +1,81 @@
+# Artificial Analysis set on the iPhone 17 Pro (2026-10-15): the 23 models of Artificial Analysis's mobile
+# benchmark that have a .litertlm in litert-community, on LiteRT-LM v0.18.0, Metal GPU. The iPhone 17 Pro is
+# the phone Artificial Analysis measures on; its llama.cpp rows (Q4_K_M, 1,024-token prompt, 256-token reply)
+# are its own, published numbers, never pooled with these.
+# Per model, in slot order (matrices/dashboard-aa-v1-ios-i<N>.cells): a short-chat row (runs=2: the task record
+# that scripts/bench_matrix_iphone.sh hands the native importer as --like, and the reply text of the bundle on
+# this engine), then the protocol row = LiteRT-LM's own benchmark(): prefill forced to 1024 tokens, decode 256,
+# context 2048 (methodology/agreed-protocol-gemma4.md), runs = the runner default (4 calls in one launch, call 1
+# cold), the console line imported into app-path-native/. Models of 1.7B parameters and up: cooldown=300.
+# File per repo = ModelCatalog.liteRTLM's primaryFile (the int4 file where the repo has one; the five entries that
+# predate this set are unchanged). Gemma 4 12B (6.88 GB file) runs: whether it loads in the app's memory on a
+# 12 GB phone is not known, and a failed load stays as the cell's record (failed-runs-stay).
+# Anchors = the two rows of matrices/anchors.cells (the job runs that file first, and every slot file starts with them).
+
+# ---- anchors ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
+
+# ---- i1: Gemma 4 E2B, Gemma 4 E4B ----
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i2: LFM2.5-350M, LFM2-700M, LFM2 2.6B (new cards) ----
+ios litert-lm litert-community/LFM2.5-350M short-chat backend=gpu runs=2
+ios litert-lm litert-community/LFM2.5-350M native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/LFM2-700M short-chat backend=gpu runs=2
+ios litert-lm litert-community/LFM2-700M native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/LFM2-2.6B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/LFM2-2.6B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i3: LFM2-2.6B-Exp, G9v3-3B (new cards) ----
+ios litert-lm litert-community/LFM2-2.6B-Exp short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/LFM2-2.6B-Exp native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+ios litert-lm litert-community/G9v3-3B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/G9v3-3B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i4: Granite 4.0 Micro (new card), LFM2.5-2.6B ----
+ios litert-lm litert-community/granite-4.0-micro short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/granite-4.0-micro native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+ios litert-lm litert-community/LFM2.5-2.6B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/LFM2.5-2.6B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i5: Gemma 3 270M, Granite 4.0 350M, Granite 4.0 H 350M, Granite 4.0 H 1B, LFM2.5-230M ----
+ios litert-lm litert-community/gemma-3-270m-it short-chat backend=gpu runs=2
+ios litert-lm litert-community/gemma-3-270m-it native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/granite-4.0-350m-litert-lm short-chat backend=gpu runs=2
+ios litert-lm litert-community/granite-4.0-350m-litert-lm native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/granite-4.0-h-350m short-chat backend=gpu runs=2
+ios litert-lm litert-community/granite-4.0-h-350m native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/granite-4.0-h-1b short-chat backend=gpu runs=2
+ios litert-lm litert-community/granite-4.0-h-1b native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/LFM2.5-230M short-chat backend=gpu runs=2
+ios litert-lm litert-community/LFM2.5-230M native-benchmark-1024x256 backend=gpu context-tokens=2048
+
+# ---- i6: LFM2.5-1.2B-Instruct, MiniCPM5-1B, Qwen3.5 0.8B, Qwen3.5 2B ----
+ios litert-lm litert-community/LFM2.5-1.2B-Instruct short-chat backend=gpu runs=2
+ios litert-lm litert-community/LFM2.5-1.2B-Instruct native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/MiniCPM5-1B short-chat backend=gpu runs=2
+ios litert-lm litert-community/MiniCPM5-1B native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/Qwen3.5-0.8B short-chat backend=gpu runs=2
+ios litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=gpu context-tokens=2048
+ios litert-lm litert-community/Qwen3.5-2B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Qwen3.5-2B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i7: Llama 3.2 3B, Ministral 3 3B ----
+ios litert-lm litert-community/Llama-3.2-3B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Llama-3.2-3B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+ios litert-lm litert-community/Ministral-3-3B-Instruct-2512 short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Ministral-3-3B-Instruct-2512 native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i8: Nanbeige4.2-3B, Qwen3.5 4B ----
+ios litert-lm litert-community/Nanbeige4.2-3B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Nanbeige4.2-3B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+ios litert-lm litert-community/Qwen3.5-4B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Qwen3.5-4B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048
+
+# ---- i9: Gemma 4 12B ----
+ios litert-lm litert-community/gemma-4-12B-it-litert-lm short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/gemma-4-12B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048

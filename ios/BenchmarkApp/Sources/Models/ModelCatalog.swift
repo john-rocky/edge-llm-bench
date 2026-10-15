@@ -1053,6 +1053,200 @@ public enum ModelCatalog {
             hfFilePatterns: ["*.litertlm"],
             primaryFile: "model.litertlm"
         ),
+
+        // --- Artificial Analysis mobile set (2026-10-15) ---
+        // The litert-community repos of the models on Artificial Analysis's mobile benchmark
+        // that the catalog did not carry yet (matrices/dashboard-aa-v1-ios.cells; the other five
+        // of the 23 — Gemma 4 E2B / E4B / 12B, LFM2.5-1.2B-Instruct, MiniCPM5-1B — are the
+        // entries above, unchanged). One file per repo: the int4 file where the repo has one
+        // (nearest to the Q4_K_M GGUF that Artificial Analysis runs), else the repo's own file,
+        // the GPU variant where the card names one for the GPU. Labels are the card's recipe
+        // words (quant-label-rule); sizes are the Hub byte sizes of 2026-10-15; parameterCountB
+        // follows the model's name. Gemma 3 270M and Llama 3.2 3B are gated repos: the app has
+        // no Hub token, so their file is side-loaded into
+        // Documents/models/litert-lm/<hfRepoId "/" -> "__">/ (HFDownloader uses that folder).
+        ModelInfo(
+            id: "litert-community/LFM2.5-350M",
+            displayName: "LFM2.5-350M (.litertlm, int4)",
+            quantization: "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding",
+            parameterCountB: 0.35,
+            onDiskSizeMB: 248,
+            hfRepoId: "litert-community/LFM2.5-350M",
+            hfFilePatterns: ["LFM2.5-350M_int4.litertlm"],
+            primaryFile: "LFM2.5-350M_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/LFM2-700M",
+            displayName: "LFM2-700M (.litertlm, int4)",
+            quantization: "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding, convs float",
+            parameterCountB: 0.7,
+            onDiskSizeMB: 481,
+            hfRepoId: "litert-community/LFM2-700M",
+            hfFilePatterns: ["LFM2-700M_int4.litertlm"],
+            primaryFile: "LFM2-700M_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/LFM2-2.6B",
+            displayName: "LFM2 2.6B (.litertlm, int4)",
+            quantization: "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding",
+            parameterCountB: 2.6,
+            onDiskSizeMB: 1530,
+            hfRepoId: "litert-community/LFM2-2.6B",
+            hfFilePatterns: ["LFM2-2.6B_int4.litertlm"],
+            primaryFile: "LFM2-2.6B_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/LFM2-2.6B-Exp",
+            displayName: "LFM2-2.6B-Exp (.litertlm, int4)",
+            quantization: "int4 blockwise-32 + OCTAV on linears, int8 lm_head + embedding",
+            parameterCountB: 2.6,
+            onDiskSizeMB: 1530,
+            hfRepoId: "litert-community/LFM2-2.6B-Exp",
+            hfFilePatterns: ["LFM2-2.6B-Exp_int4.litertlm"],
+            primaryFile: "LFM2-2.6B-Exp_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/G9v3-3B",
+            displayName: "G9v3-3B (.litertlm, int4)",
+            quantization: "GPTQ int4 (group 128) as blockwise-128 int4 on linears, int8 lm_head + embedding; GPU activations fp16",
+            parameterCountB: 3.0,
+            onDiskSizeMB: 1834,
+            hfRepoId: "litert-community/G9v3-3B",
+            hfFilePatterns: ["G9v3-3B_int4.litertlm"],
+            primaryFile: "G9v3-3B_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/granite-4.0-micro",
+            displayName: "Granite 4.0 Micro (.litertlm, int4)",
+            quantization: "int4 blockwise-32 + OCTAV on linears, int8 embedding",
+            parameterCountB: 3.0,
+            onDiskSizeMB: 2198,
+            hfRepoId: "litert-community/granite-4.0-micro",
+            hfFilePatterns: ["granite-4.0-micro_int4.litertlm"],
+            primaryFile: "granite-4.0-micro_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/gemma-3-270m-it",
+            displayName: "Gemma 3 270M (.litertlm, q8)",
+            quantization: "q8 (file name gemma3-270m-it-q8)",
+            parameterCountB: 0.27,
+            onDiskSizeMB: 304,
+            hfRepoId: "litert-community/gemma-3-270m-it",
+            hfFilePatterns: ["gemma3-270m-it-q8.litertlm"],
+            primaryFile: "gemma3-270m-it-q8.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/granite-4.0-350m-litert-lm",
+            displayName: "Granite 4.0 350M (.litertlm, q8)",
+            quantization: "int8 dynamic weights, fp32 activations (dynamic_wi8_afp32)",
+            parameterCountB: 0.35,
+            onDiskSizeMB: 468,
+            hfRepoId: "litert-community/granite-4.0-350m-litert-lm",
+            hfFilePatterns: ["granite-4.0-350m_q8_ekv1280.litertlm"],
+            primaryFile: "granite-4.0-350m_q8_ekv1280.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/granite-4.0-h-350m",
+            displayName: "Granite 4.0 H 350M (.litertlm, int8 GPU file)",
+            quantization: "int8 dynamic weight-only (linears + embedding), rank-4 selective scan, fp32 activations declared",
+            parameterCountB: 0.35,
+            onDiskSizeMB: 481,
+            hfRepoId: "litert-community/granite-4.0-h-350m",
+            hfFilePatterns: ["granite-4.0-h-350m_int8_gpu.litertlm"],
+            primaryFile: "granite-4.0-h-350m_int8_gpu.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/granite-4.0-h-1b",
+            displayName: "Granite 4.0 H 1B (.litertlm, int8)",
+            quantization: "int8 dynamic on linears + embedding (convs and the selective scan float)",
+            parameterCountB: 1.0,
+            onDiskSizeMB: 1683,
+            hfRepoId: "litert-community/granite-4.0-h-1b",
+            hfFilePatterns: ["granite-4.0-h-1b_int8.litertlm"],
+            primaryFile: "granite-4.0-h-1b_int8.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/LFM2.5-230M",
+            displayName: "LFM2.5-230M (.litertlm, int4)",
+            quantization: "int4 blockwise-32 + OCTAV on linears, int8 embedding",
+            parameterCountB: 0.23,
+            onDiskSizeMB: 177,
+            hfRepoId: "litert-community/LFM2.5-230M",
+            hfFilePatterns: ["LFM2.5-230M_int4.litertlm"],
+            primaryFile: "LFM2.5-230M_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/LFM2.5-2.6B",
+            displayName: "LFM2.5-2.6B (.litertlm, int4, thinking)",
+            quantization: "int4 blockwise-32 + OCTAV linears, int8 embedding, convs float",
+            parameterCountB: 2.6,
+            onDiskSizeMB: 1668,
+            hfRepoId: "litert-community/LFM2.5-2.6B",
+            hfFilePatterns: ["LFM2.5-2.6B_int4.litertlm"],
+            primaryFile: "LFM2.5-2.6B_int4.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/Llama-3.2-3B",
+            displayName: "Llama 3.2 3B (.litertlm, mixed int4 GPU)",
+            quantization: "TorchAO mixed INT4 (blockwise-32 linears, int8 embedding), float KV",
+            parameterCountB: 3.2,
+            onDiskSizeMB: 2208,
+            hfRepoId: "litert-community/Llama-3.2-3B",
+            hfFilePatterns: ["llama3_2_3b_mixed_int4_gpu.litertlm"],
+            primaryFile: "llama3_2_3b_mixed_int4_gpu.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/Ministral-3-3B-Instruct-2512",
+            displayName: "Ministral 3 3B (.litertlm, int4)",
+            quantization: "int4 blockwise-32, symmetric, OCTAV; tied embedding/lm_head int8",
+            parameterCountB: 3.0,
+            onDiskSizeMB: 2343,
+            hfRepoId: "litert-community/Ministral-3-3B-Instruct-2512",
+            hfFilePatterns: ["Ministral-3-3B-Instruct-2512_q4_block32_ekv4096.litertlm"],
+            primaryFile: "Ministral-3-3B-Instruct-2512_q4_block32_ekv4096.litertlm"
+        ),
+        // Nanbeige4.2-3B: both files carry the same int4 weights; the card names
+        // model_fp32act.litertlm as the one that runs on the GPU (model.litertlm emits <unk>).
+        ModelInfo(
+            id: "litert-community/Nanbeige4.2-3B",
+            displayName: "Nanbeige4.2-3B (.litertlm, int4, fp32 activations, thinking)",
+            quantization: "int4 blockwise-32 + OCTAV, int8 embedding; fp32 activations declared",
+            parameterCountB: 3.0,
+            onDiskSizeMB: 2579,
+            hfRepoId: "litert-community/Nanbeige4.2-3B",
+            hfFilePatterns: ["model_fp32act.litertlm"],
+            primaryFile: "model_fp32act.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/Qwen3.5-0.8B",
+            displayName: "Qwen3.5 0.8B (.litertlm, int8)",
+            quantization: "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float)",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 965,
+            hfRepoId: "litert-community/Qwen3.5-0.8B",
+            hfFilePatterns: ["Qwen3.5-0.8B_int8.litertlm"],
+            primaryFile: "Qwen3.5-0.8B_int8.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/Qwen3.5-2B",
+            displayName: "Qwen3.5 2B (.litertlm, int8)",
+            quantization: "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float), fp32 activations declared",
+            parameterCountB: 2.0,
+            onDiskSizeMB: 2120,
+            hfRepoId: "litert-community/Qwen3.5-2B",
+            hfFilePatterns: ["Qwen3.5-2B_int8.litertlm"],
+            primaryFile: "Qwen3.5-2B_int8.litertlm"
+        ),
+        ModelInfo(
+            id: "litert-community/Qwen3.5-4B",
+            displayName: "Qwen3.5 4B (.litertlm, mixed int4)",
+            quantization: "Mixed INT4: int4 blockwise-32 on linears, int8 embedding + lm_head, fp32 activations declared",
+            parameterCountB: 4.0,
+            onDiskSizeMB: 2754,
+            hfRepoId: "litert-community/Qwen3.5-4B",
+            hfFilePatterns: ["Qwen3.5-4B_mixed_int4.litertlm"],
+            primaryFile: "Qwen3.5-4B_mixed_int4.litertlm"
+        ),
     ]
 
     /// Back-compat alias. The adapter and earlier call sites refer to this

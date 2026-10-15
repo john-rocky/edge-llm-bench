@@ -1063,6 +1063,23 @@ Before this, the bench table read protocol cells by the platform's regime (an Ap
 cold runs only showed no number, an Android llama-bench cell likewise) and the team page by
 "cold where the cold pool has runs".
 
+## Artificial Analysis set on the iPhone 17 Pro (2026-10-15)
+
+`matrices/dashboard-aa-v1-ios.cells` measures the 23 models of Artificial Analysis's mobile benchmark
+that have a `.litertlm` in litert-community, on the iPhone 17 Pro: the phone Artificial Analysis
+measures on, so the rows sit on the same hardware as its published llama.cpp numbers (its own
+numbers, never pooled with these). Engine = LiteRT-LM v0.18.0 on the Metal GPU, in a separate build
+of the app (bundle id `com.daisukemajima.llmbench`) beside the phone's other bench builds; regime =
+the protocol row (`native-benchmark-1024x256`, prefill 1024, decode 256, context 2048, four
+`benchmark()` calls in one launch, call 1 cold), each preceded by a two-run `short-chat` row of the
+same model: the task record the native importer needs (`--like`) and the reply text of that bundle
+on this engine. One file per repo, named by `ModelCatalog.liteRTLM` (the int4 file where the repo
+has one); the two gated repos (Gemma 3 270M, Llama 3.2 3B) are side-loaded, since the app holds no
+Hub token. The set runs as nine slot files (`dashboard-aa-v1-ios-i1` … `-i9`, each estimated under 45 minutes,
+Gemma 4 E2B and E4B first) through `scripts/dashboard_job.py iphone17pro --cells <slot>`, with the
+models fetched beforehand; Gemma 4 12B (a 6.88 GB file) is run, and a load that does not fit the
+app's memory stays as that cell's record.
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`
