@@ -42,6 +42,20 @@ lane found no published route for them (not verified beyond that check).
   `model_benchmark`. Pins: `android/engine-pins.json` "onnxruntime-genai"
   "0.17.0" — `ortgenai_run` and the three libraries are the witness; a library
   that is not the pin's stamps `unknown`. Device layout: `android/README.md`.
+- Android pin and main's source (2026-10-15): the pinned `ortgenai_run`
+  (`ortgenai_run_sha256` 4e74dad3…) was built from `android/ortgenai/ortgenai_run.cpp`
+  as of commit f44b573 (`ortgenai_run_source_sha256` 3ab781f6…). Main has carried a
+  different source since 114a32e (2026-10-09, `--dump-logits`), so
+  `android/ortgenai/build_android.sh` run from main writes an `ortgenai_run` that is
+  not the pin's into `android/bin/ortgenai-0.17.0/`, and with `BENCH_SITTING=1`
+  `run_cell` then stops every ORT launch (`PIN MISMATCH before launch`). For the
+  pinned bytes, keep a copy of a pinned build and check its five sha256 values
+  against the pins entry, or rebuild: f44b573's source saved as `ortgenai_run.cpp`
+  (the binary keeps the source file's basename in its FILE symbol), NDK
+  29.0.13113456 named with `ANDROID_NDK_HOME` (the script's default is the newest
+  NDK installed), and the script's clang line give a byte-identical `ortgenai_run`
+  (checked 2026-10-15). Moving the pin to main's source is a pin bump, an owner
+  decision.
 - iPhone: the release `onnxruntime-genai-ios-0.17.0.zip` (XCFramework; sha256 in
   `environment.lock.json`), vendored by `ios/BenchmarkApp/scripts/fetch_ortgenai_xcframework.sh`.
   The ios-arm64 framework is a dynamic library that carries ONNX Runtime — 1.26.0, as its
@@ -159,9 +173,16 @@ process that runs with telemetry on may send them. Any process that imports
 
 A `long-context-*` run carries `conditions.textCheck` =
 `android/bench/parsers.text_integrity` of its decoded text, the screen the
-LiteRT-LM context-prompt launches carry; a short-chat run is screened like every
-Apple arm, by the runner's post-capture gate (`cell_gate.degenerate` on
-`outputSample`). The bar is the same for every arm and is not raised for this
+LiteRT-LM context-prompt launches carry; a short-chat run on the Mac or the iPhone is
+screened like every Apple arm, by the runner's post-capture gate
+(`cell_gate.degenerate` on `outputSample`). An Android record has no
+`outputSample` (the Android runner fills it only for the ExecuTorch arm), and
+`degenerate` does not judge a sample under 60 characters, an empty one included,
+so the gate does not see an Android short-chat run's text: read the run's
+`*.decoded.txt` (`provenance.decodedText`). The 2026-10-15 Pixel 8a short-chat
+runs were read that way: each is on topic (the model's thinking about the
+prompt, cut at the 128-token budget), and the three runs of a cell carry the
+same text. The bar is the same for every arm and is not raised for this
 one. A reader should know one thing it does not catch: on the CPU folder the
 0.6B model's greedy 1K thinking ends in a loop of one or two sentences over its
 last ~70 tokens (read on the Mac and on the Galaxy S26, 2026-10-07); the screen

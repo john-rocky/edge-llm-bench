@@ -117,6 +117,31 @@ prints `BenchmarkInfo:` on a glog line and an aggregated block (`Aggregated Benc
 median over the iterations) after the iterations; `android/bench/parsers.py` reads both forms
 since 2026-10-15 and never takes a value from the aggregated block.
 
+A lane's coverage sitting takes the same route outside the weekly firings (2026-10-15, the Pixel 8a
+ONNX Runtime GenAI cells, `results/raw/2026-10-15-dashboard-v1-pixel8a-ortgenai-*`). Each slot is a
+cells file with the session anchor row and one or two payload rows, each byte-identical to its
+source (`matrices/dashboard-ortgenai-v1-android-ort.cells` line 7 for the anchor,
+`matrices/dashboard-ortgenai-v1.cells` for the payload), sized so that one hold lasts 45 minutes or
+less. The lane's keeper queues first (`queue_cli.py enqueue`, then `wait`), takes the hold, pushes
+the arm's runtime directory when the arm needs one, and runs
+`BENCH_SITTING=1 python3 scripts/dashboard_job.py <device> --cells <slot file> --suffix <lane>-<slot> --once --hold-held-by <keeper pid>`
+inside the hold; it releases the hold when the job ends and removes what it pushed. The job does
+not set `BENCH_SITTING` itself; with it set, `run_cell` checks every launch against `android_pins`
+and stops a build that is not the pin (`PIN MISMATCH before launch`). The job's `reboot_before`
+runs as in a weekly sitting. Before it queues, the keeper reads the CPU clock ceilings only to log
+them: on a phone that sessions use back to back, that reading is often another sitting's load
+(three of the six keeper starts on 2026-10-15 read capped there, each while another sitting ran or
+right after one), so a keeper that waits there for full clocks stays out of line. It waits inside
+the hold instead: idle, one read a minute for up to 10 minutes against the cpu-cap-rule's 15 %
+line, then it releases, waits 15 minutes and queues again. On 2026-10-15 the cap had lifted when
+the hold came or one minute into it. The job's own preflight line (a ceiling under 0.6 × the
+hardware maximum: busy, exit 3 under `--once`) still applies, and the preflight reads a host
+`run_campaign.py` as a driver on this phone unless it names another one (`--serial` in
+`run_cell.py`'s argv, or `BENCH_ANDROID_SERIAL` in the driver's environment, read since
+2026-10-15): a by-hand driver without the variable makes every phone busy. On 2026-10-15 five such
+holds took 27 to 40 minutes each (anchors phase 11.5–16.9 min, payload 15.2–25.8 min), and all
+ten sessions were admitted.
+
 Host-only checks (no device): `./bench release-watch` is already a one-shot
 command and can ride the morning standup; an artifact-identity watch (sha256
 of the pinned files on the Hub — the proposal's "alert on hash change even
