@@ -199,6 +199,19 @@ def pgrep(pattern):
     return lines
 
 
+def driver_serial(pid):
+    """The phone a host campaign driver drives, read from its environment: the bench
+    wrapper hands run_campaign.py its phone (BENCH_ANDROID_SERIAL) and campaign (CAMPAIGN)
+    through the environment, not argv. None when the process is gone or names no phone.
+    Only that one variable is taken from `ps -E`; nothing else of the environment is kept
+    or logged (it carries the shell's secrets)."""
+    rc, out = sh(["ps", "-E", "-o", "command=", "-p", str(pid)])
+    if rc != 0:
+        return None
+    m = re.search(r"(?:^|\s)BENCH_ANDROID_SERIAL=(\S+)", out)
+    return m.group(1) if m else None
+
+
 # ---------------------------------------------------------------- preflight
 
 def check_holds(dev, dry):
@@ -426,10 +439,13 @@ def preflight_android(dev, dry, cells_files=()):
     if state != "device":
         raise NotReady(f"{serial} adb state {state!r} — authorize USB debugging")
     for ln in pgrep("run_campaign.py|run_cell.py"):
-        # run_cell.py names its phone (--serial); a campaign driver does not,
-        # so an unattributed driver counts as busy (conservative)
+        # run_cell.py names its phone in argv (--serial); a campaign driver names it only
+        # in its environment (driver_serial), so the job's own sitting on another phone
+        # made this phone report busy (2026-10-15, Pixel 8a during an S26 sitting). A
+        # driver that names no phone either way counts as busy (conservative).
         m = re.search(r"--serial\s+(\S+)", ln)
-        if m and m.group(1) != serial:
+        other = m.group(1) if m else driver_serial(int(ln.split(None, 1)[0]))
+        if other and other != serial:
             continue
         raise Busy(f"host driver running: {ln.strip()[:160]}")
     # the campaign lock (run_campaign.py takes it for real; this is a probe)

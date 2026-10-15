@@ -33,7 +33,7 @@ stops where a human is needed:
 | step | what | on failure |
 |---|---|---|
 | choose (`auto` only) | the device to measure at this firing (§3): pending this week, attached, unheld, inside its window; oldest last-admitted first | a candidate whose preflight says busy or not ready is passed over for the next; every pending device busy → poll and choose again; nothing pending → exit 0 |
-| preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*`/`ortgenai_run`/`model_benchmark` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle, Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data`; on a phone, the side builds the cells files launch (rows with `engine-build=<tag>`: the tool under `engines/<tag>/`, `android/README.md` "Side builds") | busy → exit 3 and poll; not ready → exit 5, human; a cells file whose side build is missing is skipped by itself and the rest runs (exit 5 only when no file is left, §5) |
+| preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*`/`ortgenai_run`/`model_benchmark` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle (a `run_campaign.py` / `run_cell.py` driver on the host counts as this phone's unless it names another phone: `run_cell.py --serial` in argv, a campaign driver's `BENCH_ANDROID_SERIAL` in its environment), Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data`; on a phone, the side builds the cells files launch (rows with `engine-build=<tag>`: the tool under `engines/<tag>/`, `android/README.md` "Side builds") | busy → exit 3 and poll; not ready → exit 5, human; a cells file whose side build is missing is skipped by itself and the rest runs (exit 5 only when no file is left, §5) |
 | hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job) | refused → busy |
 | reboot (opt-in) | on a phone whose entry carries `reboot_before`: when uptime exceeds `uptime_hours`, `adb reboot`, wait for `sys.boot_completed`, settle `settle_seconds`, `am kill-all`; uptime / MemAvailable / swap in use logged before and after (§3, the Pixel 8a memory finding) | not booted within `boot_timeout_seconds`, or the model directory unreadable (first unlock pending) → exit 5 |
 | phase A | `./bench matrix matrices/anchors.cells --platform P --campaign <base>-anchor` | timeout → exit 6 |
@@ -238,7 +238,14 @@ preflight found the file absent or its pid dead. That JSON line says
 `.device_hold` (dropped 2026-09-08): one Pixel gate script used that name and
 made the Pixel report busy whenever the S26 was in use; a Pixel gate script
 that takes only the S26's name is now caught by the foreign-engine-process
-check on the phone, not by the hold.
+check on the phone, not by the hold. The host-driver check had the same
+shape on 2026-10-15: the job's own S26 sitting made the Pixel 8a report busy
+for the whole sitting, because a `run_campaign.py` driver names its phone
+only in its environment (the `bench` wrapper hands it `BENCH_ANDROID_SERIAL`
+and `CAMPAIGN` there, not in argv). The preflight now reads that one
+variable out of the driver's environment (`ps -E`; nothing else of it is
+kept or logged), so the job's sittings on two phones run side by side; a
+driver that names no phone either way still counts as busy.
 
 Storage on phones is the binding constraint, not memory. The whole Android
 set needs about 28 GB on the device (models plus LiteRT's XNNPACK/ML Drift

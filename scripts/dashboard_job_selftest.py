@@ -21,6 +21,7 @@ import datetime
 import io
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -409,6 +410,35 @@ def main():
        and dj.side_build_tools(half) == [] and dj.side_build_tools(side) == [tool],
        "the tool each side-build row launches: llama-bench for a native benchmark, llama-cli for a "
        "prompt, the flat LiteRT-LM NPU tool; none for an excluded row or a file without side builds")
+    # host drivers: run_cell.py names its phone in argv (--serial); a campaign driver names it
+    # only in its environment (BENCH_ANDROID_SERIAL, read by driver_serial), and one that names
+    # no phone either way counts as busy
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"], env={**os.environ, "BENCH_ANDROID_SERIAL": "FAKE-XYZ"})
+    plain = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"], env={k: v for k, v in os.environ.items()
+                                                  if k != "BENCH_ANDROID_SERIAL"})
+    try:
+        ok(dj.driver_serial(child.pid) == "FAKE-XYZ" and dj.driver_serial(plain.pid) is None,
+           "driver_serial reads BENCH_ANDROID_SERIAL out of a live process's environment, None without it")
+    finally:
+        child.kill(); plain.kill(); child.wait(); plain.wait()
+    ok(dj.driver_serial(child.pid) is None, "driver_serial of a process that is gone: None")
+    real_driver_serial = dj.driver_serial
+    drv = "91288 python3 android/bench/run_campaign.py matrices/x.cells"
+    for line, env_serial, busy, what in [
+            (drv, "OTHER-PHONE", False, "the job's own campaign driver on another phone"),
+            (drv, "FAKE-S", True, "a campaign driver on this phone"),
+            (drv, None, True, "a campaign driver that names no phone"),
+            ("91288 python3 android/bench/run_cell.py --serial OTHER-PHONE x", "FAKE-S", False,
+             "run_cell.py on another phone (argv wins)"),
+            ("91288 python3 android/bench/run_cell.py --serial FAKE-S x", None, True, "run_cell.py on this phone")]:
+        dj.pgrep = lambda pattern, _l=(line,): list(_l)
+        dj.driver_serial = lambda pid, _s=env_serial: _s if pid == 91288 else None
+        try:
+            dj.preflight_android(s26, True, [half])
+            ok(not busy, f"host driver, {what}: the phone is not busy")
+        except dj.Busy as e:
+            ok(busy, f"host driver, {what}: busy ({e})")
+    dj.driver_serial = real_driver_serial
     dj.pgrep = real_pgrep
     lock = "/tmp/edge-llm-bench-android-FAKE-S.lock"   # the preflight's campaign-lock probe
     if os.path.exists(lock):
