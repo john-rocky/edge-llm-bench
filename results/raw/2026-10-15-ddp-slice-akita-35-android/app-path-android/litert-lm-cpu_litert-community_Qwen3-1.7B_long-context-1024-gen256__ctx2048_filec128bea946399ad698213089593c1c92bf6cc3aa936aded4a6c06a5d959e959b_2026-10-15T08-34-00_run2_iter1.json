@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "31eccefd-c660-4338-afa5-7587a83b5f74",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.18.0",
+  "engineArtifact": "cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815",
+  "model": {
+    "id": "litert-community/Qwen3-1.7B",
+    "quantization": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
+    "file": "litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm",
+    "sha256": "362ec1c906a49bbe1e68b118fdb789b70a713063b00ac914043cbda03bcf3d9a"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-15T08:34:00Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "15",
+    "securityPatch": "2025-04-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 0.79,
+    "batteryState": "charging",
+    "ddp": {
+      "deviceId": "akita-35",
+      "buildFingerprint": "google/akita/akita:15/BP1A.250405.007.B1/13240308:user/release-keys",
+      "serial": "45231JEKB09042"
+    }
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1704,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 2367,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 2914,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 119.5,
+    "exitCode": 0,
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "68d1da88-1c24-4c31-a4bb-dc98fa3a5fc5",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 29.2,
+    "batteryTemperatureFinalC": 30.2,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+    "allocationWitnessTokens": [
+      2048
+    ],
+    "invalidDecodeCount": 0,
+    "protocolFlags": [],
+    "ddp": {
+      "sessionId": "session-d5585b53",
+      "jobId": "96c48c96-faa5-4430-8207-97be9a30853f",
+      "executionId": "eacdb0a1-4a01-4bb8-b05b-5edf1366e772",
+      "deviceId": "akita-35",
+      "deviceKey": "pixel8a",
+      "buildFingerprint": "google/akita/akita:15/BP1A.250405.007.B1/13240308:user/release-keys",
+      "serial": "45231JEKB09042",
+      "product": "akita",
+      "jobStartTime": "2026-10-15T08:27:14.185Z",
+      "jobEndTime": "2026-10-15T08:40:04.143Z",
+      "executionStartTime": "2026-10-15T08:29:33.498Z",
+      "executionEndTime": "2026-10-15T08:40:01.106Z",
+      "executionTimeout": "3600s",
+      "resultType": "PASSED",
+      "runIndex": 2
+    },
+    "iterationIndex": 1,
+    "regime": "cold",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 983,
+      "distinctWords": 120,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "0bd4a647b272053b06e9bb82e55158e3d1c8f244cae0db8582fed33a589b7f0c"
+  },
+  "metrics": {
+    "harnessStamp": "2026-08-android-cli-v1+ddp-route-c",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 3063.84765625,
+    "memoryPeakResidentMB": 3075.74609375,
+    "firstTokenLatencyMS": 15770.0,
+    "promptTokensPerSecond": 85.64,
+    "decodeTokensPerSecond": 6.89,
+    "promptTokenCount": 1338,
+    "generatedTokenCount": 256,
+    "coldRun": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-1.7B_long-context-1024-gen256__ctx2048_filec128bea946399ad698213089593c1c92bf6cc3aa936aded4a6c06a5d959e959b_2026-10-15T08-34-00_run2.log",
+    "harness": "android/ddp/run_ddp.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "ddpSessionDir": "ddp/session-d5585b53/j03-cpu-Qwen3-1-7B-long-context-1024-gen256/execution-eacdb0a1-4a01-4bb8-b05b-5edf1366e772",
+    "wrapper": "android/ddp/ddp_cell.sh",
+    "wrapperSha256": "8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656",
+    "decodedText": "litert-lm-cpu_litert-community_Qwen3-1.7B_long-context-1024-gen256__ctx2048_filec128bea946399ad698213089593c1c92bf6cc3aa936aded4a6c06a5d959e959b_2026-10-15T08-34-00_run2_iter1.decoded.txt"
+  }
+}
