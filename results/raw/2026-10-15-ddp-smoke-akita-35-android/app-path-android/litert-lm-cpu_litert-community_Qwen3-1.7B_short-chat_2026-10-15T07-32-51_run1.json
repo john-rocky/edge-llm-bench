@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "06ff7cb7-db9f-4f8f-b63b-46c995a0d8cb",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.18.0",
+  "engineArtifact": "54832c4992f932aec76e85be546b63dcb1e2820236d76c8f38d66c0ecc62774a",
+  "model": {
+    "id": "litert-community/Qwen3-1.7B",
+    "quantization": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
+    "file": "litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm",
+    "sha256": "362ec1c906a49bbe1e68b118fdb789b70a713063b00ac914043cbda03bcf3d9a"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-10-15T07:32:51Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "15",
+    "securityPatch": "2025-04-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 0.79,
+    "batteryState": "charging",
+    "ddp": {
+      "deviceId": "akita-35",
+      "buildFingerprint": "google/akita/akita:15/BP1A.250405.007.B1/13240308:user/release-keys",
+      "serial": "45231JEKB00879"
+    }
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 955,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 712,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 880,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": "bundle-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 1,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 205.7,
+    "exitCode": 0,
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "cd50b687-5479-43a5-8f76-c0b8c999b216",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 36.7,
+    "batteryTemperatureFinalC": 39.1,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 128,
+    "engineCommand": "./litert_lm_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "ddp": {
+      "sessionId": "session-5f9e1050",
+      "jobId": "5408fa43-d5f6-46a2-a7b5-de2d9ef94e2b",
+      "executionId": "e878f8d7-25c4-4766-a1cd-460392727a95",
+      "deviceId": "akita-35",
+      "deviceKey": "pixel8a",
+      "buildFingerprint": "google/akita/akita:15/BP1A.250405.007.B1/13240308:user/release-keys",
+      "serial": "45231JEKB00879",
+      "product": "akita",
+      "jobStartTime": "2026-10-15T07:29:22.172Z",
+      "jobEndTime": "2026-10-15T07:51:49.946Z",
+      "executionStartTime": "2026-10-15T07:32:13.908Z",
+      "executionEndTime": "2026-10-15T07:51:44.372Z",
+      "executionTimeout": "3600s",
+      "resultType": "PASSED",
+      "runIndex": 1
+    },
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 3620.0,
+    "promptTokensPerSecond": 5.62,
+    "decodeTokensPerSecond": 4.13,
+    "promptTokenCount": 19,
+    "generatedTokenCount": 790,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+ddp-route-c",
+    "initialThermalState": "nominal",
+    "finalThermalState": "light",
+    "memoryMedianResidentMB": 3107.25,
+    "memoryPeakResidentMB": 3111.41015625,
+    "firstEver": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-1.7B_short-chat_2026-10-15T07-32-51_run1.log",
+    "harness": "android/ddp/run_ddp.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "ddpSessionDir": "ddp/session-5f9e1050/j01-cpu-Qwen3-1-7B-short-chat/execution-e878f8d7-25c4-4766-a1cd-460392727a95",
+    "wrapper": "android/ddp/ddp_cell.sh",
+    "wrapperSha256": "8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656"
+  }
+}
