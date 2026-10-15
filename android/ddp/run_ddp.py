@@ -5,6 +5,7 @@ the static wrapper android/ddp/ddp_cell.sh, our own LiteRT-LM build; docs/ddp-in
 
   CAMPAIGN=<name>-android android/ddp/run_ddp.py <cells> --device akita-35 --dry-run
   CAMPAIGN=<name>-android android/ddp/run_ddp.py <cells> --device akita-35        # billed
+  android/ddp/run_ddp.py --records-only results/raw/<campaign>     # records again from the pulled output
 
 (a) rows: run_campaign.parse_cells, android only; skipped with a reason (printed, SKIPPED.txt):
     a runtime other than litert-lm, exclude= / manual=, a side build (backend=npu / engine-build=),
@@ -13,16 +14,22 @@ the static wrapper android/ddp/ddp_cell.sh, our own LiteRT-LM build; docs/ddp-in
     no schedule key.
 (b) one job per row = runs= launches of run_campaign.planned_command's engine command on one
     unit, inside the attached-phone route's sampler shell (run_cell.sampler_shell, built by the wrapper);
-    one session per <= --jobs-per-session jobs.
+    one session per <= --jobs-per-session jobs; the CPU-cap wait before each run = the id's
+    cpucapWaitSeconds in devices.json (absent: the attached-phone route's run_cell.CPUCAP_WAIT, 300 s).
 (c) pushes: the 9 engine files of android_pins' tag (each checked against engine-pins.json),
     the model (HF cache), the prompt; the wrapper is the job's binary; bucket objects are
-    content-addressed under automation/inputs/edge-llm-bench/.
-(d) request bodies (the 2026-09-17 session's shape).
+    content-addressed under <--bucket>/automation/inputs/edge-llm-bench/.
+(d) request bodies (the 2026-09-17 session's shape), POSTed to --project's sessions.
 (e) not with --dry-run: missing objects uploaded (gcloud storage ls / cp), one POST per session,
     the operation polled every --poll-seconds, the session read and pulled (gcloud storage cp -r)
-    into <campaign>/ddp/, records written by android/ddp/record.py into app-path-android/.
+    into <campaign>/ddp/, every pulled logcat scrubbed of the lab network's identifiers
+    (android/ddp/scrub.py; the originals in <campaign>/ddp-raw/, gitignored; the counts in
+    ddp/scrub.json), records written by android/ddp/record.py into app-path-android/.
 --dry-run prints (a)-(d) and an estimate as JSON lines and one table, and runs no subprocess:
 no gcloud, no network (the model is looked up in the local HF cache only).
+--records-only <campaign dir> runs (e)'s last two steps again on what the campaign's sessions
+pulled (ddp/plan-<n>.json, ddp/session-<n>.json, ddp/<session>/): no network; the records,
+raw logs and decoded texts of the plans' cells are removed and written again (same ids and names).
 """
 import argparse
 import datetime
@@ -44,12 +51,17 @@ sys.path.insert(0, HERE)
 import run_campaign  # noqa: E402
 import run_cell  # noqa: E402
 import record  # noqa: E402
+import scrub  # noqa: E402
 
 DEVICES = os.path.join(HERE, "devices.json")
 WRAPPER = os.path.join(HERE, "ddp_cell.sh")
 SCHEDULE = run_campaign.SCHEDULE
 INPUTS = "automation/inputs/edge-llm-bench"
 OUTPUT_DIR = f"{run_cell.DEV_DIR}/ddp-out"
+# D12: the pulled logcats (per run and per execution), scrubbed in place; the originals under
+# <campaign>/RAW_DIR/<the same path below ddp/> (.gitignore results/raw/*/ddp-raw/)
+LOGCAT = re.compile(r"^(?:run[0-9]+_logcat|logcat)\.txt$")
+RAW_DIR = "ddp-raw"
 # job displayName / session displayName: <= 63 bytes, ^[A-Za-z0-9][A-Za-z0-9-_ ]*$ (REST reference,
 # docs/ddp-integration.md; the SDK contract's docstring prints the regex without its brackets)
 NAME_MAX = 63
@@ -99,6 +111,12 @@ def device_entry(device_id):
                          f"{os.path.relpath(SCHEDULE, ROOT)}")
     entry["cpuMask"] = (sched.get(key, {}).get("cpu_mask") or "") if key else ""
     entry["identifier"] = sched.get(key, {}).get("identifier") if key else None
+    # D14: the wrapper's CPU-cap wait before each run, per id (absent: the attached-phone route's)
+    wait = entry.get("cpucapWaitSeconds", run_cell.CPUCAP_WAIT)
+    if isinstance(wait, bool) or not isinstance(wait, int) or wait < 0:
+        raise SystemExit(f"{device_id}: cpucapWaitSeconds {wait!r} in {os.path.relpath(DEVICES, ROOT)} "
+                         "is not a whole number of seconds >= 0")
+    entry["cpucapWait"] = wait
     return entry
 
 
@@ -267,7 +285,7 @@ def plan(cells_file, device_id, campaign, args):
         wargs = [f"--runs={runs}", f"--cooldown={cooldown}", f"--mask={mask or 'none'}", f"--env={env}",
                  f"--binname={binname}", f"--dir={run_cell.DEV_DIR}", f"--output_dir={OUTPUT_DIR}",
                  f"--timeout={per_run}", f"--thermal_wait={run_campaign.THERMAL_WAIT}",
-                 f"--cpucap_wait={run_cell.CPUCAP_WAIT}", f"--budget={args.job_timeout - PULL_MARGIN}",
+                 f"--cpucap_wait={dev['cpucapWait']}", f"--budget={args.job_timeout - PULL_MARGIN}",
                  f"--cell={stem}", f"--command={core}"]
         labels = {"harness": "edge-llm-bench", "campaign": label_value(campaign), "cell": label_value(stem),
                   "runtime": label_value(arm), "model": label_value(cell["model_id"].replace("/", "--")),
@@ -285,7 +303,7 @@ def plan(cells_file, device_id, campaign, args):
             "budget": budget, "maxTokens": max_tokens,
             "paired": run_cell.context_prompt(cell["runtime"], cell["task"], ctx),
             "binname": binname, "sampler": sampler, "command": core, "env": env, "mask": mask,
-            "runs": runs, "cooldown": cooldown, "perRunTimeout": per_run,
+            "runs": runs, "cooldown": cooldown, "perRunTimeout": per_run, "cpucapWait": dev["cpucapWait"],
             "executionTimeout": args.job_timeout, "deviceId": device_id, "deviceKey": key,
             "engineTag": tag, "args": wargs, "labels": labels, "push": push, "wrapper": wrapper,
             "modelDevice": model_dev, "promptDevice": prompt_dev,
@@ -300,6 +318,7 @@ def plan(cells_file, device_id, campaign, args):
         sessions.append({"index": s, "displayName": name, "jobs": chunk,
                          "request": request_body(name, chunk, args.bucket)})
     return {"device": dict(dev, deviceId=device_id), "engineTag": tag, "campaign": campaign,
+            "project": getattr(args, "project", None), "bucket": args.bucket,
             "skips": skips, "jobs": jobs, "sessions": sessions, "wrapper": wrapper}
 
 
@@ -356,7 +375,9 @@ def print_plan(p):
     print(json.dumps({"summary": {"device": p["device"]["deviceId"], "scheduleKey": p["device"].get("scheduleKey"),
                                   "engine": p["engineTag"], "campaign": p["campaign"], "jobs": len(p["jobs"]),
                                   "sessions": len(p["sessions"]), "skipped": len(p["skips"]),
-                                  "deviceMinutes": round(sum(j["estimate"]["jobSeconds"] for j in p["jobs"]) / 60, 1)}}))
+                                  "deviceMinutes": round(sum(j["estimate"]["jobSeconds"] for j in p["jobs"]) / 60, 1),
+                                  "project": p["project"], "bucket": p["bucket"],
+                                  "cpucapWaitSeconds": p["device"]["cpucapWait"]}}))
     print()
     head = ("job", "s", "cell", "runs", "cool", "t/run", "exec", "est s", "push MB")
     rows = [(str(j["index"]), str(j["session"]), j["cellId"], str(j["runs"]), str(j["cooldown"]),
@@ -449,24 +470,122 @@ def run_session(s, campaign_dir, args, operation=None):
     write_json(os.path.join(ddp, f"session-{n}.json"), session)
     session_id = target.rsplit("/", 1)[-1]
     gcloud(["storage", "cp", "-r", f"{args.bucket}/automation/sessions/{session_id}", ddp])
+    total = scrub_campaign(campaign_dir)
+    print(f"session {n}: pulled logcats scrubbed ({total['files']} files, "
+          + ", ".join(f"{k} {total[k]}" for k in scrub.KINDS) + f"; originals in {RAW_DIR}/)", flush=True)
     return session if isinstance(session, dict) and "sessionReport" in session else op.get("response", {})
+
+
+def scrub_campaign(campaign_dir):
+    """D12: every pulled logcat under <campaign>/ddp/ (run<i>_logcat.txt, the executions' logcat.txt)
+    scrubbed in place by android/ddp/scrub.py with the SSIDs any of them names; each original kept once
+    in <campaign>/ddp-raw/<the same path below ddp/> (never overwritten: a second scrub reads it, so the
+    files and counts stay those of the pulled bytes); ddp/scrub.json = the counts per file.
+    -> the totals (+ "files")."""
+    ddp = os.path.join(campaign_dir, "ddp")
+    files = sorted(p for p in glob.glob(os.path.join(ddp, "**", "*.txt"), recursive=True)
+                   if LOGCAT.match(os.path.basename(p)))
+    raw_dirs = {p: os.path.join(campaign_dir, RAW_DIR, os.path.relpath(os.path.dirname(p), ddp)) for p in files}
+    ssids = set()
+    for p in files:
+        ssids |= scrub.ssid_values(scrub.original_text(p, raw_dirs[p]))
+    entries, total = {}, dict.fromkeys(scrub.KINDS, 0)
+    for p in files:
+        counts = scrub.scrub_file(p, raw_dirs[p], ssids)
+        for k in scrub.KINDS:
+            total[k] += counts[k]
+        entries[os.path.relpath(p, ddp)] = {**counts, "replaced": sum(counts.values()),
+                                            "rawSha256": scrub.sha256_of(os.path.join(raw_dirs[p], os.path.basename(p)))}
+    total.update(replaced=sum(total.values()), files=len(files))
+    write_json(os.path.join(ddp, "scrub.json"), {
+        "_doc": ("D12: the lab network's identifiers replaced in the pulled logcats by android/ddp/scrub.py "
+                 "(kinds and their replacement: ssid <lab-ssid>, hash <hash>, ip6 <ip6>, mac <mac>, mac-part "
+                 "<mac-part>, ip <ip>, id <id>); files: path below ddp/ -> replacements per kind, rawSha256 = "
+                 f"sha256 of the file's bytes before the scrub, kept in {RAW_DIR}/<the same path> beside ddp/ "
+                 "(gitignored, never committed). No number is read from a logcat."),
+        "kinds": list(scrub.KINDS), "files": entries, "total": total})
+    return total
+
+
+def records_only(campaign_dir):
+    """--records-only: the records of a DDP campaign dir written again from what its sessions pulled
+    (ddp/plan-<n>.json, ddp/session-<n>.json or operation-<n>.json's response, ddp/<session>/), no
+    network: the logcats scrubbed (scrub_campaign), then every record, raw log, decoded text and
+    FAILURES.txt of the plans' cells in app-path-android/ removed and written again by record.py
+    (same pull -> same ids and file names). SKIPPED.txt stays. -> exit code (1 = a run not clean)."""
+    campaign_dir = os.path.abspath(campaign_dir)
+    ddp = os.path.join(campaign_dir, "ddp")
+    numbered = sorted((int(m.group(1)), p) for p in glob.glob(os.path.join(ddp, "plan-*.json"))
+                      for m in [re.search(r"plan-([0-9]+)\.json$", p)] if m)
+    if not numbered:
+        raise SystemExit(f"{ddp}: no plan-<n>.json — not a DDP campaign dir")
+    items = []
+    for n, path in numbered:
+        session = None
+        if os.path.isfile(os.path.join(ddp, f"session-{n}.json")):
+            session = load_json(os.path.join(ddp, f"session-{n}.json"))
+        if not (isinstance(session, dict) and "sessionReport" in session):
+            op_path = os.path.join(ddp, f"operation-{n}.json")
+            session = (load_json(op_path).get("response") or {}) if os.path.isfile(op_path) else {}
+        if "sessionReport" not in session:
+            raise SystemExit(f"{ddp}: session {n} has no session report (session-{n}.json, operation-{n}.json) "
+                             "— nothing removed, nothing written")
+        items.append((n, load_json(path), session))
+    total = scrub_campaign(campaign_dir)
+    print(f"logcats scrubbed: {total['files']} files, " + ", ".join(f"{k} {total[k]}" for k in scrub.KINDS)
+          + f" (ddp/scrub.json; originals in {RAW_DIR}/)")
+    out_dir = os.path.join(campaign_dir, "app-path-android")
+    os.makedirs(out_dir, exist_ok=True)
+    stems = sorted({j["stem"] for _, s, _ in items for j in s["jobs"]})
+
+    def derived():
+        return sorted(f for f in os.listdir(out_dir)
+                      if f == "FAILURES.txt" or any(f.startswith(stem + "_") for stem in stems))
+    old = derived()
+    for f in old:
+        os.remove(os.path.join(out_dir, f))
+    failed = 0
+    for n, s, session in items:
+        written, notes = record.write_session(s, session, campaign_dir, out_dir)
+        for line in notes:
+            print(line)
+        failed += sum(1 for _, clean in written if not clean)
+    new = derived()
+    print(json.dumps({"recordsOnly": os.path.relpath(campaign_dir, ROOT), "sessions": len(items),
+                      "removed": len(old), "written": len(new), "records": sum(f.endswith(".json") for f in new),
+                      "notWrittenAgain": sorted(set(old) - set(new)), "newNames": sorted(set(new) - set(old))}))
+    return 1 if failed else 0
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cells")
-    ap.add_argument("--device", required=True, help="DDP catalog id (android/ddp/devices.json)")
+    ap.add_argument("cells", nargs="?")
+    ap.add_argument("--device", help="DDP catalog id (android/ddp/devices.json)")
     ap.add_argument("--campaign", help="campaign dir name (default: env CAMPAIGN, else <date>-ddp-<id>-android)")
     ap.add_argument("--dry-run", action="store_true", help="plan, request bodies and estimate; no subprocess")
     ap.add_argument("--jobs-per-session", type=int, default=8)
     ap.add_argument("--job-timeout", type=int, default=3600, help="executionTimeout per job, s (API: 60-10800)")
     ap.add_argument("--resume", help="an operation name to poll instead of POSTing its session")
+    ap.add_argument("--records-only", metavar="CAMPAIGN_DIR",
+                    help="records again from a campaign dir's pulled output (no network); takes nothing else")
     ap.add_argument("--bin-dir", default=run_cell.ANDROID_BIN_DIR, help="holds <tag>/<engine files>")
-    ap.add_argument("--bucket", default="gs://litert-edge-portal-devicerun")
-    ap.add_argument("--project", default="litert-edge-portal")
+    ap.add_argument("--bucket", default="gs://litert-edge-portal-devicerun",
+                    help="gs://<bucket>[/<prefix>] for the inputs and the session outputs")
+    ap.add_argument("--project", default="litert-edge-portal", help="the Cloud project of the sessions")
     ap.add_argument("--endpoint", default="https://devicerun.googleapis.com/v1alpha")
     ap.add_argument("--poll-seconds", type=float, default=30)
     args = ap.parse_args()
+    if args.records_only:
+        if args.cells or args.device or args.dry_run or args.resume or args.campaign:
+            ap.error("--records-only takes the campaign dir alone")
+        return records_only(args.records_only)
+    if not args.cells or not args.device:
+        ap.error("a cells file and --device are required (or --records-only <campaign dir>)")
+    args.bucket = args.bucket.rstrip("/")
+    if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
+        ap.error(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")
+    if not args.project or re.search(r"[/\s]", args.project):
+        ap.error(f"--project {args.project!r}: a Cloud project id")
     if not 60 <= args.job_timeout <= 10800:
         ap.error("--job-timeout must be within the API's [1 min, 3 hours]")
     if not 1 <= args.jobs_per_session <= 8:

@@ -3,6 +3,7 @@
 
   ./bench matrix  <cells-file> [--platform mac|iphone|android] [--campaign NAME]
   ./bench matrix  <cells-file> --ddp <DDP device id> [--campaign NAME] [--dry-run]   # android/ddp/run_ddp.py
+                  [--project <Cloud project>] [--bucket gs://<bucket>]   # default: run_ddp.py's
   ./bench regress <cells-file> --engine <arm> [--version vX] --baseline <selector>
                   [--platform ...] [--campaign NAME]
   ./bench profile <cells-file> [--campaign NAME] [--max-num-tokens A,B,C] [--allow-large-context]
@@ -84,6 +85,7 @@ def do_ddp(args):
     campaign = f"{args.campaign or datetime.date.today().isoformat() + '-ddp-' + args.ddp}-android"
     cmd = [PY, os.path.join(ROOT, "android", "ddp", "run_ddp.py"), args.cells, "--device", args.ddp,
            "--campaign", campaign] + (["--dry-run"] if args.dry_run else [])
+    cmd += (["--project", args.project] if args.project else []) + (["--bucket", args.bucket] if args.bucket else [])
     rc = run(cmd, env={"CAMPAIGN": campaign})
     if args.dry_run:
         return rc
@@ -96,6 +98,9 @@ def do_matrix(args):
         return do_ddp(args)
     if getattr(args, "dry_run", False):
         print("error: matrix --dry-run is for --ddp only", file=sys.stderr)
+        return 2
+    if getattr(args, "project", None) or getattr(args, "bucket", None):
+        print("error: matrix --project / --bucket are for --ddp only", file=sys.stderr)
         return 2
     if run([PY, os.path.join(ROOT, "scripts", "validate_cells.py"), args.cells]):
         return 2
@@ -174,6 +179,9 @@ def main():
                    help="run the android LiteRT-LM rows on a DDP lab phone (android/ddp/devices.json)")
     m.add_argument("--dry-run", action="store_true",
                    help="with --ddp: print jobs, sessions, pushes, args, timeouts and the estimate; no network")
+    m.add_argument("--project", help="with --ddp: the Cloud project the sessions run in (default: run_ddp.py's)")
+    m.add_argument("--bucket", help="with --ddp: gs://<bucket> for the inputs and session outputs "
+                                    "(default: run_ddp.py's)")
 
     p = sub.add_parser("profile", help="LiteRT-LM per-op profiling: a control + --enable_profiling "
                                        "pair per android native-benchmark cell -> profiles/PROFILE.md")

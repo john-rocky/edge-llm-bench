@@ -8,19 +8,26 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
    session), m1q-36 (16 jobs, 2 sessions) and caiman-35 (no schedule key); skip reasons with their
    key; each job's --command= = run_campaign.planned_command's engine command, --env / --mask apart;
    the request against the API contract's field names and limits; the engine files against the
-   pins (one changed byte stops the plan); bench matrix --ddp --dry-run with a gcloud on PATH that
-   must never run.
+   pins (one changed byte stops the plan); the CPU-cap wait per id (devices.json cpucapWaitSeconds:
+   m1q-36 0, akita-35 the default 300); --project / --bucket in the plan and the request; bench
+   matrix --ddp --dry-run with a gcloud on PATH that must never run, its summary line naming the
+   project and bucket passed.
 2. the wrapper: --print_shell = run_cell.sampler_shell for every planned job, the command arg
    whole or split at its spaces; a host run with stand-in device tools (runs, files, exit codes, a
    failing and a timed-out engine, the budget, bad args; always exit 0).
 3. the attached-phone route's FAKESELF campaign (android/bench/selftest.py's fake device tool, round mode)
    for the record layout the DDP records must carry.
 4. the billed path against a fake gcloud (a temp dir as the bucket) and a fake Device Run REST
-   server: upload of the missing objects only, one POST per session, poll, session, pull, records;
-   a 4xx body kept verbatim; the records' keys, witness, model sha, conditions.ddp, raw log, the
-   1K cell's two iterations and text check, firstEver; the witness of a changed sha.
+   server: upload of the missing objects only, one POST per session, poll, session, pull, the pulled
+   logcats scrubbed (no lab string left beside ddp/, the originals in ddp-raw/, ddp/scrub.json's
+   counts), records; a 4xx body kept verbatim; the records' keys, witness, model sha, conditions.ddp,
+   conditions.engineCache (built / loaded / GPU not-loaded / GPU loaded / absent), raw log, the 1K
+   cell's two iterations and text check, firstEver, the uuid5 ids; --records-only writes the same
+   files again; the witness of a changed sha.
 5. scripts/build_summary.py into a temp dir: the device column of a DDP row, never the attached
    phone's; render_leaderboard's tree key and arm_row apart; render_dashboard's devices_for.
+6. android/ddp/scrub.py: each rule on one line and what it keeps; the file form (the original copied
+   once, a second scrub writing the same bytes and counts, bytes that are not UTF-8 kept); the CLI.
 """
 import contextlib
 import copy
@@ -51,6 +58,7 @@ import run_campaign  # noqa: E402
 import run_cell  # noqa: E402
 import run_ddp  # noqa: E402
 import record  # noqa: E402
+import scrub  # noqa: E402
 
 DASHBOARD = os.path.join(ROOT, "matrices", "dashboard-text-v1.cells")
 FIXTURES = os.path.join(ROOT, "android", "bench", "testdata", "litert-lm")
@@ -126,7 +134,7 @@ def write(path, text, mode=0o644):
 
 def plan_args(bin_dir, **kw):
     return Namespace(bin_dir=bin_dir, job_timeout=kw.get("job_timeout", 3600), jobs_per_session=8,
-                     dry_run=kw.get("dry_run", True), bucket=BUCKET)
+                     dry_run=kw.get("dry_run", True), bucket=BUCKET, project=PROJECT)
 
 
 # ---------------------------------------------------------------- 1. plan
@@ -204,6 +212,31 @@ def check_plan(tmp, bin_dir):
                 "litert_lm_advanced_main": pins["litert_lm_advanced_main_sha256"], **pins["so_files"]}
     got_sha = {f["name"]: f["sha256"] for f in j1["push"] if f["kind"] == "engine"}
     ok(got_sha == want_sha, "the 9 engine files' sha256 = android/engine-pins.json litert-lm v0.18.0")
+    # D14: the CPU-cap wait is the id's cpucapWaitSeconds (m1q-36 0), else the attached-phone route's 300 s
+    default_wait = 300 if "CPUCAP_WAIT" not in os.environ else run_cell.CPUCAP_WAIT
+    waits = {dev: sorted({a for j in plans[dev]["jobs"] for a in j["args"] if a.startswith("--cpucap_wait=")})
+             for dev in plans}
+    ok(waits == {"m1q-36": ["--cpucap_wait=0"], "akita-35": [f"--cpucap_wait={default_wait}"],
+                 "caiman-35": [f"--cpucap_wait={default_wait}"]}
+       and plans["m1q-36"]["device"]["cpucapWait"] == 0
+       and f"--thermal_wait={run_campaign.THERMAL_WAIT}" in plans["m1q-36"]["jobs"][0]["args"],
+       f"cpu-cap wait per id: m1q-36 --cpucap_wait=0 (devices.json), akita-35 / caiman-35 {default_wait} (absent key); "
+       f"thermal gate unchanged ({waits})")
+    bad_wait = {"_doc": "", "x-1": {"scheduleKey": None, "display": "X", "product": "x", "cpucapWaitSeconds": -1}}
+    devices_json = os.path.join(tmp, "devices-bad.json")
+    json.dump(bad_wait, open(devices_json, "w"))
+    with patch.object(run_ddp, "DEVICES", devices_json):
+        try:
+            run_ddp.device_entry("x-1")
+            refused = None
+        except SystemExit as exc:
+            refused = str(exc)
+    ok(refused is not None and "cpucapWaitSeconds" in refused, f"a negative cpucapWaitSeconds stops the plan ({refused})")
+    # --project / --bucket: in the plan and in every path of the request
+    paths = [v for s in plans["akita-35"]["sessions"] for v in re.findall(r'"path": "([^"]+)"', json.dumps(s["request"]))]
+    ok(plans["akita-35"]["project"] == PROJECT and plans["akita-35"]["bucket"] == BUCKET and paths
+       and all(v.startswith(BUCKET + "/automation/") for v in paths),
+       f"the plan carries --project / --bucket; every request path is under {BUCKET}/automation/ ({len(paths)} paths)")
     # one changed byte in one engine file stops the plan before anything else
     bad_bin = os.path.join(tmp, "bad-bin")
     shutil.copytree(os.path.join(bin_dir, "v0.18.0"), os.path.join(bad_bin, "v0.18.0"))
@@ -245,6 +278,26 @@ def check_bench_dry_run(tmp, bin_dir):
                         env=env, capture_output=True, text=True)
     ok(r2.returncode == 2 and "--dry-run is for --ddp only" in r2.stderr,
        f"bench matrix --dry-run without --ddp refuses (rc {r2.returncode})")
+    # another team's project and bucket: through bench to run_ddp, in the summary line and the request
+    r3 = subprocess.run([sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD, "--ddp", "m1q-36",
+                         "--dry-run", "--campaign", "selftest-dry-other", "--project", "other-team-project",
+                         "--bucket", "gs://other-team-bucket/"], env=env, capture_output=True, text=True)
+    summary = next((json.loads(x)["summary"] for x in r3.stdout.splitlines() if x.startswith('{"summary"')), {})
+    sessions = [json.loads(x) for x in r3.stdout.splitlines() if x.startswith('{"session"')]
+    ok(r3.returncode == 0 and summary.get("project") == "other-team-project"
+       and summary.get("bucket") == "gs://other-team-bucket" and summary.get("cpucapWaitSeconds") == 0
+       and sessions and all('"gs://other-team-bucket/automation/' in json.dumps(s["request"])
+                            and "litert-edge-portal" not in json.dumps(s["request"]) for s in sessions),
+       f"bench --ddp m1q-36 --dry-run --project other-team-project --bucket gs://other-team-bucket/: the summary line "
+       f"names both (trailing / dropped) and cpucapWaitSeconds 0, every request path in that bucket "
+       f"(rc {r3.returncode}, {summary})")
+    r4 = subprocess.run([sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD, "--project", "x"],
+                        env=env, capture_output=True, text=True)
+    r5 = subprocess.run([sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD, "--ddp", "akita-35",
+                         "--dry-run", "--bucket", "other-team-bucket"], env=env, capture_output=True, text=True)
+    ok(r4.returncode == 2 and "for --ddp only" in r4.stderr and r5.returncode != 0 and "gs://<bucket>" in r5.stderr,
+       f"--project without --ddp refuses (rc {r4.returncode}); a --bucket without gs:// refuses (rc {r5.returncode})")
+    ok(not os.path.exists(marker), "none of the dry runs ran gcloud")
 
 
 # ---------------------------------------------------------------- 2. the wrapper
@@ -508,10 +561,50 @@ else:
 '''
 
 
+# a lab unit's logcat lines, one rule of android/ddp/scrub.py each (documentation / test values only:
+# RFC 7042 MAC 00:00:5e:00:53:xx, RFC 3849 2001:db8::/32, RFC 4193 fd.., test PLMN 001-01, the IMEI
+# example 490154203237518), then a line of what stays
+FAKE_HASH_SSID = hashlib.sha256(b"fake-lab-ssid-01").hexdigest()
+FAKE_HASH_BSSID = hashlib.sha256(b"00:00:5e:00:53:42").hexdigest()
+FAKE_LAB_LOGCAT = (
+    '10-15 03:00:01.100  1000  1100 I WifiClientModeImpl: SSID: "fake-lab-ssid-01", BSSID: 00:00:5e:00:53:42, '
+    'MAC: 02:00:00:00:00:00, Security type: 2\n'
+    '10-15 03:00:01.200  1000  1100 D WifiService: getSsid():"fake-lab-ssid-01",networkId=1\n'
+    '10-15 03:00:01.300  1000  1100 I SemWifiCoex: connected pBssid:00:00:5e, rssi:-50 freq:5180\n'
+    f'10-15 03:00:01.400  1000  1100 I MobileWips: detected [ssid: {FAKE_HASH_SSID}, bssid: {FAKE_HASH_BSSID}]\n'
+    '10-15 03:00:01.500  1000  1100 I SemWifi: BSSID: 00:00:5e:**:**:42, MAC: 02:00:00:00:00:00\n'
+    '10-15 03:00:01.600  1000  1100 D DhcpClient: lease 10.123.45.67/22 gateway 10.123.44.1 dns 172.20.33.44 '
+    '192.168.77.88 mask 255.255.255.0\n'
+    '10-15 03:00:01.700  1000  1100 D ApfFilter: RA prefix 2001:db8:abcd:12::/64 dns fd12:3456:789a:1::53 '
+    'from fe80::200:5eff:fe00:5342%wlan0\n'
+    '10-15 03:00:01.800  1000  1100 I Telephony: iccid=89001012012341234012 imei: 490154203237518 '
+    'imsi=001010123456789\n'
+    '10-15 03:00:01.900  1000  1100 I Keep: SSID: <unknown ssid> lo ::1 any :: 0.0.0.0 dns 8.8.8.8 '
+    'zero 00:00:00:00:00:00 rand 02:00:00:00:00:00 epoch 1792058400\n')
+FAKE_LAB_EXEC = '10-15 03:00:02.000  1000  1100 I WifiConfigManager: SSID: "fake-lab-ssid-02" saved\n'
+FAKE_LAB_RUN = '10-15 03:00:02.000  1000  1100 D WifiScanner: roam candidate fake-lab-ssid-02 rssi -61\n'
+# per logcat: the common lines + one ssid (quoted in the execution's, bare in a run's: known from the session)
+FAKE_LAB_COUNTS = {"ssid": 3, "hash": 2, "ip6": 3, "mac": 2, "mac-part": 1, "ip": 4, "id": 3}
+FAKE_LAB_STRINGS = ["fake-lab-ssid-01", "fake-lab-ssid-02", "00:00:5e:00:53:42", "pBssid:00:00:5e", FAKE_HASH_SSID,
+                    FAKE_HASH_BSSID, "00:00:5e:**:**:42", "10.123.45.67", "10.123.44.1", "172.20.33.44",
+                    "192.168.77.88", "2001:db8:abcd:12", "fd12:3456:789a:1", "fe80::200:5eff:fe00:5342",
+                    "89001012012341234012", "490154203237518", "001010123456789"]
+FAKE_LAB_KEPT = ["02:00:00:00:00:00", "00:00:00:00:00:00", " ::1 ", " :: ", "8.8.8.8", "255.255.255.0",
+                 "<unknown ssid>", "0.0.0.0", "epoch 1792058400"]
+# the cache lines of a LiteRT-LM raw log (android/ddp/record.py engine_cache), as the v0.18.0 CLI prints them
+XNNPACK_BUILD_LINE = ("VERBOSE: XNNPack weight cache build for '/data/local/tmp/llmbench/models/"
+                      "litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm_1792058400_29.xnnpack_cache' started.\n")
+XNNPACK_LOADED_LINE = ("VERBOSE: XNNPack weight cache loaded from '/data/local/tmp/llmbench/models/"
+                       "litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm_1792058400_29.xnnpack_cache'.\n")
+GPU_LOADED_LINE = ("I0000 00:00:1792058700.100000    4242 delegate_kernel.cc:866] Initialized InferenceContext "
+                   "from serialized data.\n")
+
+
 def synthesize_session(st, sid, body):
     """The unit's side of one session: what ddp_cell.sh would leave in ddp-out for each job (the
-    FAKESELF sampler lines + a v0.18.0 fixture console per run, provenance with the pushed objects'
-    shas), in the fake bucket; -> the Session resource."""
+    FAKESELF sampler lines + a v0.18.0 fixture console per run with the run's cache lines, provenance
+    with the pushed objects' shas, logcats with the lab network's identifiers), in the fake bucket;
+    -> the Session resource."""
     jobs = []
     for jc in body["sessionConfig"]["jobConfigs"]:
         a = {}
@@ -535,6 +628,8 @@ def synthesize_session(st, sid, body):
         prov += [f"arg: {x}" for x in argv] + ["sha256:"] + [f"{s}  {d}" for d, s in sha.items()]
         write(os.path.join(out, "provenance.txt"), "\n".join(prov) + "\n")
         fixture = LONG_FIXTURE if a["binname"] == "litert_lm_advanced_main" else SHORT_FIXTURE
+        gpu = "--backend=gpu" in a["command"]
+        console = open(fixture).read()
         t0 = 1792058400
         for i in range(1, int(a["runs"]) + 1):
             start = t0 + (i - 1) * 300
@@ -546,13 +641,20 @@ def synthesize_session(st, sid, body):
                   f"start_battery_begin\n{batt}start_battery_end\nend_epoch={start + 41}\n"
                   f"end_ns={start + 41}023456789\nend_thermal=Thermal Status: 1\nend_wakefulness=  mWakefulness=Dozing\n"
                   f"end_stay_on=0\nend_battery_begin\n{batt.replace('301', '322')}end_battery_end\n")
-            write(os.path.join(out, f"run{i}.log"), st["sampler_head"] + open(fixture).read())
+            # CPU: run 1 builds the XNNPACK weight cache, later runs load it; GPU (the 1K fixture holds no
+            # cache line): run 1 compiles, later runs load the serialized InferenceContext
+            if gpu:
+                cache = GPU_LOADED_LINE if i > 1 else ""
+            else:
+                cache = XNNPACK_LOADED_LINE if i > 1 else XNNPACK_BUILD_LINE
+            write(os.path.join(out, f"run{i}.log"),
+                  st["sampler_head"] + console.replace("===ENGINE_OUTPUT===\n", "===ENGINE_OUTPUT===\n" + cache, 1))
             write(os.path.join(out, f"run{i}.err"), "")
             write(os.path.join(out, f"run{i}.exit"), "0\n")
             write(os.path.join(out, f"run{i}.engine.txt"), engine_lines(fixture))
-            write(os.path.join(out, f"run{i}_logcat.txt"), "fake logcat\n")
+            write(os.path.join(out, f"run{i}_logcat.txt"), FAKE_LAB_LOGCAT + FAKE_LAB_RUN)
         write(os.path.join(out, "wrapper.log"), "fake wrapper log\n")
-        write(os.path.join(base, "logcat.txt"), "whole-device logcat\n")
+        write(os.path.join(base, "logcat.txt"), FAKE_LAB_LOGCAT + FAKE_LAB_EXEC)
         files = sorted(glob.glob(os.path.join(base, "**", "*"), recursive=True))
         outputs = [{"gcsOutputFile": {"path": "gs://fake-bucket/" + os.path.relpath(f, os.path.join(st["bucket_root"], "fake-bucket"))}}
                    for f in files if os.path.isfile(f)]
@@ -689,7 +791,8 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
     required = all(r.get("schemaVersion") == 1 and r.get("runtime") and r.get("task") and r.get("timestamp")
                    and r.get("model", {}).get("id") and r.get("model", {}).get("quantization") for r in recs.values())
     ok(bool(recs) and required, "every record carries result.v1's required keys")
-    added = {"conditions.ddp", "device.ddp", "provenance.ddpSessionDir", "provenance.wrapper", "provenance.wrapperSha256"}
+    added = {"conditions.ddp", "conditions.engineCache", "device.ddp", "provenance.ddpSessionDir", "provenance.wrapper",
+             "provenance.wrapperSha256"}
     for label, ddp_rec, att_rec in (("short-chat", short[0][1] if short else None, att_short[0] if att_short else None),
                                     ("1K iteration 1", long_[0][1] if long_ else None,
                                      next((r for r in att_long if r["conditions"].get("iterationIndex") == 1), None))):
@@ -740,6 +843,10 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
     first = sorted((n, r["metrics"].get("firstEver")) for n, r in short + long_)
     want_first = [(n, True if ("_run1" in n and "_iter2" not in n) else None) for n, _ in first]
     ok(first == want_first, f"firstEver on run 1 only (its iteration 1 in the 1K cell) ({[f for _, f in first]})")
+    check_engine_cache(short, long_)
+    check_ids(recs)
+    check_pull_scrub(campaign, os.path.join(bucket_root, "fake-bucket", "automation", "sessions"))
+    check_records_only(campaign, rc)
     # a re-run uploads nothing: every object is in the bucket now
     with patch.object(run_ddp, "model_file", fake_model):
         rc2, _ = run_driver([cells, "--campaign", "selftest-ddp-again-android"] + common, env)
@@ -799,8 +906,122 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
         record.records_for_execution(job, copy_dir, tout, meta)
         got = [json.load(open(f))["engineVersion"] for f in glob.glob(os.path.join(tout, "*.json"))]
         ok(got and all(g.startswith(want) for g in got), f"provenance sha of {victim} changed -> {got[:1]}")
+    # a CPU run whose raw log holds no XNNPACK cache line: "absent", and the reason in provenance.ddpMissing
+    copy_dir = os.path.join(tmp, "no-cache-line")
+    shutil.copytree(os.path.join(ddp, rel), copy_dir)
+    run1 = glob.glob(os.path.join(copy_dir, "artifacts", "**", "run1.log"), recursive=True)[0]
+    write(run1, "".join(x for x in open(run1).read().splitlines(True) if record.XNNPACK_BUILT not in x))
+    tout = os.path.join(tmp, "no-cache-line-out")
+    os.makedirs(tout)
+    record.records_for_execution(job, copy_dir, tout, dict(meta, ddpSessionDir=f"ddp/{rel}"))
+    r1 = [json.load(open(f)) for f in glob.glob(os.path.join(tout, "*_run1.json"))]
+    ok(len(r1) == 1 and r1[0]["conditions"]["engineCache"] == {"xnnpackWeightCache": "absent", "gpuCache": "absent"}
+       and any("run1.log has neither" in m for m in r1[0]["provenance"].get("ddpMissing", [])),
+       f"a CPU run with neither XNNPACK cache line: engineCache absent / absent, the reason in provenance.ddpMissing "
+       f"({[r['provenance'].get('ddpMissing') for r in r1]})")
     server.shutdown()
     return out
+
+
+def check_engine_cache(short, long_):
+    """conditions.engineCache of the billed path's records: the CPU cell's run 1 built / run 2 loaded the
+    XNNPACK weight cache; the GPU cell's run 1 compiled (not-loaded) / run 2 loaded the InferenceContext."""
+    got = sorted((r["runtime"], r["conditions"]["ddp"]["runIndex"], r["conditions"].get("iterationIndex"),
+                  json.dumps(r["conditions"].get("engineCache"), sort_keys=True)) for _, r in short + long_)
+
+    def cache(xnnpack, gpu):
+        return json.dumps({"xnnpackWeightCache": xnnpack, "gpuCache": gpu}, sort_keys=True)
+    want = sorted([("litert-lm-cpu", 1, 1, cache("built", "absent")), ("litert-lm-cpu", 2, 1, cache("loaded", "absent"))]
+                  + [("litert-lm-gpu", 1, k, cache("absent", "not-loaded")) for k in (1, 2)]
+                  + [("litert-lm-gpu", 2, k, cache("absent", "loaded")) for k in (1, 2)])
+    ok(got == want and not any("ddpMissing" in r["provenance"] for _, r in short + long_),
+       f"conditions.engineCache from the raw log: CPU run 1 built, run 2 loaded (gpuCache absent); GPU run 1 "
+       f"not-loaded, run 2 loaded (xnnpack absent), both iterations of a 1K launch alike; no ddpMissing ({got})")
+
+
+def check_ids(recs):
+    """D13: id = uuid5(URL, edge-llm-bench/ddp/<session>/<job>/<execution>/run<i>/iter<k>), launchID the
+    same without /iter<k>."""
+    bad = []
+    for name, r in recs.items():
+        c = r["conditions"]
+        d = c["ddp"]
+        base = f"edge-llm-bench/ddp/{d['sessionId']}/{d['jobId']}/{d['executionId']}/run{d['runIndex']}"
+        if (r["id"] != str(uuid.uuid5(uuid.NAMESPACE_URL, f"{base}/iter{c['iterationIndex']}"))
+                or c["launchID"] != str(uuid.uuid5(uuid.NAMESPACE_URL, base))):
+            bad.append(name)
+    ids = [r["id"] for r in recs.values()]
+    ok(recs and not bad and len(set(ids)) == len(ids),
+       f"record id = uuid5(URL, edge-llm-bench/ddp/<session>/<job>/<execution>/run<i>/iter<k>), conditions.launchID "
+       f"= the same without /iter<k>; {len(ids)} ids, all distinct (differ: {bad[:2]})")
+
+
+def check_pull_scrub(campaign, bucket_sessions):
+    """D12 after the pull: the lab strings gone from the campaign dir except ddp-raw/, which holds the
+    logcats as pulled; ddp/scrub.json's counts."""
+    ddp = os.path.join(campaign, "ddp")
+    raw = os.path.join(campaign, run_ddp.RAW_DIR)
+    logcats = sorted(p for p in glob.glob(os.path.join(ddp, "**", "*.txt"), recursive=True)
+                     if run_ddp.LOGCAT.match(os.path.basename(p)))
+    leaks = []
+    for p in glob.glob(os.path.join(campaign, "**", "*"), recursive=True):
+        if os.path.isfile(p) and not p.startswith(raw + os.sep):
+            text = open(p, errors="replace").read()
+            leaks += [(os.path.relpath(p, campaign), s) for s in FAKE_LAB_STRINGS if s in text]
+    raw_files = glob.glob(os.path.join(raw, "**", "*.txt"), recursive=True)
+    raw_text = "".join(open(p, errors="replace").read() for p in raw_files)
+    as_pulled = all(os.path.exists(os.path.join(raw, os.path.relpath(p, ddp)))
+                    and open(os.path.join(raw, os.path.relpath(p, ddp)), "rb").read()
+                    == open(os.path.join(bucket_sessions, os.path.relpath(p, ddp)), "rb").read() for p in logcats)
+    kept = all(all(k in open(p).read() for k in FAKE_LAB_KEPT) for p in logcats)
+    lines = all(open(p).read().count("\n") == open(os.path.join(raw, os.path.relpath(p, ddp))).read().count("\n")
+                for p in logcats)
+    ok(len(logcats) == 6 and len(raw_files) == 6 and not leaks and all(s in raw_text for s in FAKE_LAB_STRINGS)
+       and as_pulled and kept and lines,
+       f"after the pull: none of the {len(FAKE_LAB_STRINGS)} lab strings anywhere in the campaign dir beside "
+       f"{run_ddp.RAW_DIR}/, which holds the 6 logcats (2 jobs x 2 runs + 2 executions) byte for byte as pulled; "
+       f"what stays stays; line counts kept ({len(logcats)} logcats, {len(raw_files)} copies, leaks {leaks[:2]})")
+    path = os.path.join(ddp, "scrub.json")
+    js = json.load(open(path)) if os.path.exists(path) else {"files": {}, "total": {}}
+    files = js["files"]
+    per_file = sum(FAKE_LAB_COUNTS.values())
+    ok(sorted(files) == sorted(os.path.relpath(p, ddp) for p in logcats)
+       and all({k: e.get(k) for k in scrub.KINDS} == FAKE_LAB_COUNTS and e.get("replaced") == per_file
+               and e.get("rawSha256") == run_cell.sha256_file(os.path.join(raw, f)) for f, e in files.items())
+       and {k: js["total"].get(k) for k in scrub.KINDS} == {k: 6 * v for k, v in FAKE_LAB_COUNTS.items()}
+       and js["total"].get("files") == 6,
+       f"ddp/scrub.json: one entry per logcat with {FAKE_LAB_COUNTS} ({per_file}), rawSha256 = its {run_ddp.RAW_DIR}/ "
+       f"copy, totals x 6 ({js['total']})")
+    ok("results/raw/*/ddp-raw/" in open(os.path.join(ROOT, ".gitignore")).read().splitlines(),
+       ".gitignore keeps every campaign's ddp-raw/ out of git (results/raw/*/ddp-raw/)")
+
+
+def snapshot(root):
+    out = {}
+    for p in sorted(glob.glob(os.path.join(root, "**", "*"), recursive=True)):
+        if os.path.isfile(p):
+            out[os.path.relpath(p, root)] = open(p, "rb").read()
+    return out
+
+
+def check_records_only(campaign, rc_billed):
+    """--records-only on the billed path's campaign dir: no subprocess, no network, every file the same,
+    the billed run's exit code (1 there: the fixture's 1K runs are not clean, FAILURES.txt)."""
+    before = snapshot(campaign)
+    with patch.object(subprocess, "run", side_effect=AssertionError("subprocess in --records-only")), \
+            patch.object(subprocess, "Popen", side_effect=AssertionError("subprocess in --records-only")), \
+            patch.object(run_ddp.urllib.request, "urlopen", side_effect=AssertionError("network in --records-only")):
+        rc, printed = run_driver(["--records-only", campaign], {})
+    after = snapshot(campaign)
+    line = next((json.loads(x) for x in printed.splitlines() if x.startswith('{"recordsOnly"')), {})
+    changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
+    ok(rc == rc_billed and not changed and line.get("removed") == line.get("written") and line.get("records") == 6
+       and not line.get("notWrittenAgain") and not line.get("newNames"),
+       f"--records-only <campaign>: no subprocess, no network; the 6 records, their raw logs and decoded texts and "
+       f"FAILURES.txt written again, the logcats, ddp-raw/ and scrub.json, all byte for byte as before; the billed "
+       f"run's exit code (rc {rc} / {rc_billed}, changed {changed[:3]}, {line})")
+    rc2, _ = run_driver(["--records-only", campaign, "--device", "akita-35"], {})
+    ok(isinstance(rc2, SystemExit) and rc2.code == 2, f"--records-only with another argument refuses ({rc2!r})")
 
 
 # ---------------------------------------------------------------- 5. summary
@@ -842,6 +1063,97 @@ def check_summary(sum_root, att_out):
        f"render_dashboard.devices_for: the DDP unit is a column of its own after the schedule's phones ({cols})")
 
 
+# ---------------------------------------------------------------- 6. scrub.py
+
+SCRUB_TOKENS = {"ssid": "<lab-ssid>", "hash": "<hash>", "ip6": "<ip6>", "mac": "<mac>", "mac-part": "<mac-part>",
+                "ip": "<ip>", "id": "<id>"}
+
+
+def check_scrub(tmp):
+    print("--- 6. android/ddp/scrub.py: each rule, what stays, the file form, the CLI")
+    h1, h2 = FAKE_HASH_SSID, FAKE_HASH_BSSID
+    cases = [  # (line, the line after the scrub, SSIDs known from the session's other logcats)
+        ('I Wifi: SSID: "fake-lab-ssid-01" connected', 'I Wifi: SSID: "<lab-ssid>" connected', ()),
+        ('D Wifi: getSsid():"fake-lab-ssid-01",networkId=1', 'D Wifi: getSsid():"<lab-ssid>",networkId=1', ()),
+        ('D Wifi: ssid="ab" short', 'D Wifi: ssid="<lab-ssid>" short', ()),
+        ("D Wifi: ssid=fake-lab-ssid-03, freq=5180", "D Wifi: ssid=<lab-ssid>, freq=5180", ()),
+        ("D Scan: roam candidate fake-lab-ssid-02 rssi -61", "D Scan: roam candidate <lab-ssid> rssi -61",
+         ("fake-lab-ssid-02",)),
+        (f"I MobileWips: [ssid: {h1}, bssid: {h2}]", "I MobileWips: [ssid: <hash>, bssid: <hash>]", ()),
+        ("I Wips: bssid=0123456789abcdef0123 seen", "I Wips: bssid=<hash> seen", ()),
+        ("D Apf: prefix 2001:db8:abcd:12::/64 from fe80::200:5eff:fe00:5342%wlan0",
+         "D Apf: prefix <ip6>/64 from <ip6>%wlan0", ()),
+        ("D Dns: server fd12:3456:789a:1::53 port 53", "D Dns: server <ip6> port 53", ()),
+        ("I Wifi: BSSID: 00:00:5e:00:53:42, MAC: 02:00:00:00:00:00", "I Wifi: BSSID: <mac>, MAC: 02:00:00:00:00:00", ()),
+        ("I SemWifi: BSSID: 00:00:5e:**:**:42 zero 00:00:00:00:00:00", "I SemWifi: BSSID: <mac> zero 00:00:00:00:00:00",
+         ()),
+        ("I Wifi: BSSID:00:00:5E:00:53:42 joined", "I Wifi: BSSID:<mac> joined", ()),
+        ("I SemWifiCoex: pBssid:00:00:5e, rssi:-50", "I SemWifiCoex: pBssid:<mac-part>, rssi:-50", ()),
+        ("D Dhcp: lease 10.123.45.67/22 dns 172.20.33.44 192.168.77.88 8.8.8.8 mask 255.255.255.0",
+         "D Dhcp: lease <ip>/22 dns <ip> <ip> 8.8.8.8 mask 255.255.255.0", ()),
+        ("I Tel: iccid=89001012012341234012 imei: 490154203237518", "I Tel: iccid=<id> imei: <id>", ()),
+        ("I Keep: SSID: <unknown ssid> lo ::1 any :: 0.0.0.0 zero 00:00:00:00:00:00 epoch 1792058400", None, ()),
+        (f"I Model: sha256 {h1} bytes 12345678901", None, ()),
+    ]
+    bad = []
+    for line, want, ssids in cases:
+        want = line if want is None else want
+        got, counts = scrub.scrub_text(line + "\n", ssids)
+        if got != want + "\n" or counts != {k: want.count(t) for k, t in SCRUB_TOKENS.items()}:
+            bad.append((line[:40], got, counts))
+    ok(not bad, f"scrub_text: {len(cases)} lines, each rule (ssid quoted / ssid() / short / bare / known from the "
+                f"session, hash, ip6, mac incl. star-masked, mac-part, ip, id) and what stays, counted per kind "
+                f"({bad[:1]})")
+    text = FAKE_LAB_LOGCAT + FAKE_LAB_RUN
+    got, counts = scrub.scrub_text(text, {"fake-lab-ssid-02"})
+    ok(counts == FAKE_LAB_COUNTS and got.count("\n") == text.count("\n")
+       and not [s for s in FAKE_LAB_STRINGS if s in got] and all(k in got for k in FAKE_LAB_KEPT),
+       f"the fake lab logcat: {counts}, line count kept, no lab string left, what stays stays")
+    # the file form: the original copied once, the scrub of the original written; bytes outside UTF-8 kept
+    d = os.path.join(tmp, "scrub-files")
+    f1 = os.path.join(d, "a", "run1_logcat.txt")
+    original = b"\xff\xfe not utf-8\n" + (FAKE_LAB_LOGCAT + FAKE_LAB_RUN).encode()
+    os.makedirs(os.path.dirname(f1))
+    open(f1, "wb").write(original)
+    raw_dir = os.path.join(d, "raw", "a")
+    c1 = scrub.scrub_file(f1, raw_dir, {"fake-lab-ssid-02"})
+    after1 = open(f1, "rb").read()
+    c2 = scrub.scrub_file(f1, raw_dir, {"fake-lab-ssid-02"})
+    raw_copy = open(os.path.join(raw_dir, "run1_logcat.txt"), "rb").read()
+    ok(c1 == c2 == FAKE_LAB_COUNTS and raw_copy == original and open(f1, "rb").read() == after1
+       and after1.startswith(b"\xff\xfe not utf-8\n") and b"fake-lab-ssid-01" not in after1,
+       "scrub_file: the original in the raw dir, the scrub over the file; a second scrub reads the copy: the same "
+       "bytes and counts, the copy untouched; bytes outside UTF-8 kept")
+    try:
+        scrub.scrub_file(f1, os.path.dirname(f1))
+        refused = False
+    except ValueError:
+        refused = True
+    ok(refused and open(f1, "rb").read() == after1, "scrub_file refuses a raw dir that is the file's own directory")
+    # the CLI (./android/ddp/scrub.py --raw-dir <dir> <file>...): the supervisor's route for files outside a pull
+    f2 = os.path.join(d, "b", "logcat.txt")
+    f3 = os.path.join(d, "b", "run2_logcat.txt")
+    write(f2, FAKE_LAB_LOGCAT + FAKE_LAB_EXEC)
+    write(f3, FAKE_LAB_LOGCAT + FAKE_LAB_RUN)
+    cli_raw = os.path.join(d, "cli-raw")
+    r = subprocess.run([sys.executable, os.path.join(HERE, "scrub.py"), "--raw-dir", cli_raw, f2, f3],
+                       capture_output=True, text=True)
+    lines = [json.loads(x) for x in r.stdout.splitlines() if x.startswith("{")]
+    ok(r.returncode == 0 and len(lines) == 2 and all(x["counts"] == FAKE_LAB_COUNTS for x in lines)
+       and os.path.exists(os.path.join(cli_raw, "logcat.txt")) and "fake-lab-ssid-02" not in open(f3).read()
+       and os.access(os.path.join(HERE, "scrub.py"), os.X_OK),
+       f"scrub.py --raw-dir <dir> <file> <file>: one JSON line per file with its counts, originals in the dir, the "
+       f"SSID that only the execution's logcat quotes taken out of the run's too; executable "
+       f"(rc {r.returncode}, {[x['counts'] for x in lines]}, {r.stderr[-200:]!r})")
+    r2 = subprocess.run([sys.executable, os.path.join(HERE, "scrub.py"), "--raw-dir", cli_raw,
+                         os.path.join(d, "b", "missing.txt")], capture_output=True, text=True)
+    write(os.path.join(d, "c", "run1_logcat.txt"), "x\n")
+    r3 = subprocess.run([sys.executable, os.path.join(HERE, "scrub.py"), "--raw-dir", cli_raw, f1,
+                         os.path.join(d, "c", "run1_logcat.txt")], capture_output=True, text=True)
+    ok(r2.returncode == 2 and r3.returncode == 2 and "one call per directory" in r3.stderr,
+       f"the CLI refuses a missing file (rc {r2.returncode}) and two files of one name (rc {r3.returncode})")
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="ddp-selftest-")
     bin_dir = os.environ.get("BENCH_ANDROID_BIN_DIR") or run_cell.ANDROID_BIN_DIR
@@ -862,6 +1174,7 @@ def main():
     att_out, att_short, att_long, head = attached_records(tmp, raw_root, models)
     check_billed_path(tmp, raw_root, bin_dir, models, head, att_short, att_long)
     check_summary(sum_root, att_out)
+    check_scrub(tmp)
     if _fails:
         print(f"\n{len(_fails)} of {_count[0]} check(s) failed; temp dir kept: {tmp}")
         return 1
