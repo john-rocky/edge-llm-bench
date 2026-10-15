@@ -863,8 +863,12 @@ def launch_env(engine_dir=None, backend=None, runtime="llama.cpp"):
     return env + f" GGML_HEXAGON_OPPOLL=1 GGML_OPENCL_KERNEL_CACHE_DIR={engine_dir}/clcache"
 
 
-def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=.", sockets=False):
-    """One engine process with an RSS sampler wrapped around it on-device.
+def sampler_shell(cmd, binname, output_file, env="LD_LIBRARY_PATH=.", taskset_prefix="",
+                  timeout_prefix="", sockets=False):
+    """The on-device shell of one launch: the engine in the background with its output in
+    output_file, the RSS / CPU (/ socket) sampler around it, then ===ENGINE_OUTPUT===, the
+    output and EXIT_CODE=. run_once sends it over adb; android/ddp/ddp_cell.sh builds the
+    same string from its job args on a DDP unit (its selftest checks the two byte for byte).
 
     $! is the backgrounded subshell, not the engine (measured: sampling it
     reads ~1.7 MB forever) — resolve the real pid with pgrep -n on the binary
@@ -876,8 +880,6 @@ def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=.", sockets=Fal
     # Absolute paths only: `cd X && engine & rest` backgrounds the WHOLE
     # `cd && engine` list in mksh, so `rest` never inherits the cd (measured:
     # cat looked for run_out.txt in the wrong cwd while the engine ran fine).
-    taskset_prefix = f"taskset {CPU_MASK} " if CPU_MASK else ""
-    output_file = f"{DEV_DIR}/run_out_{uuid.uuid4().hex}.txt" if STRICT_SMOKE else f"{DEV_DIR}/run_out.txt"
     # VmHWM is the kernel's high-water mark, so a peak between two 0.5 s
     # VmRSS reads is not lost; Cpus_allowed_list is where the engine may run
     # (LiteRT-LM sets its own affinity, 4-8 on the Pixel 8a's Tensor G3)
@@ -897,19 +899,26 @@ def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=.", sockets=Fal
                  "if grep -qE \" $i( |\\$)\" /proc/$epid/net/unix 2>/dev/null; then k=unix; "
                  "elif cat /proc/$epid/net/tcp /proc/$epid/net/tcp6 /proc/$epid/net/udp /proc/$epid/net/udp6 "
                  "2>/dev/null | grep -qE \" $i( |\\$)\"; then k=inet; fi; echo \"SOCKET $i $k\";; esac;; esac; done; ")
+    return (f"cd {DEV_DIR} && {env} {taskset_prefix}{timeout_prefix}{cmd} "
+            f">{output_file} 2>&1 </dev/null & pid=$!; " + cpu_head + cpu_tick +
+            f"sleep 1; epid=$(pgrep -n -f {binname}); [ -z \"$epid\" ] && epid=$pid; "
+            "sk=; while kill -0 $pid 2>/dev/null; do "
+            f"{rss_command} /proc/$epid/status 2>/dev/null; " + (sock_tick if sockets else "") + cpu_tick
+            + "sleep 0.5; done; "
+            f"wait $pid; ec=$?; echo ===ENGINE_OUTPUT===; cat {output_file}; echo EXIT_CODE=$ec")
+
+
+def run_once(cmd, binname, serial, timeout, env="LD_LIBRARY_PATH=.", sockets=False):
+    """One engine process with an RSS sampler wrapped around it on-device (sampler_shell)."""
+    taskset_prefix = f"taskset {CPU_MASK} " if CPU_MASK else ""
+    output_file = f"{DEV_DIR}/run_out_{uuid.uuid4().hex}.txt" if STRICT_SMOKE else f"{DEV_DIR}/run_out.txt"
     timeout_prefix = ""
     if os.environ.get("BENCH_SESSION_DEADLINE"):
         remaining = float(os.environ["BENCH_SESSION_DEADLINE"]) - time.time()
         # Native timeout bounds only this launch's child, including USB loss.
         timeout_prefix = f"timeout -k 2 {max(1, int(min(timeout, remaining - 8)))} "
         timeout = min(timeout, max(1, remaining - 2))
-    shell = (f"cd {DEV_DIR} && {env} {taskset_prefix}{timeout_prefix}{cmd} "
-             f">{output_file} 2>&1 </dev/null & pid=$!; " + cpu_head + cpu_tick +
-             f"sleep 1; epid=$(pgrep -n -f {binname}); [ -z \"$epid\" ] && epid=$pid; "
-             "sk=; while kill -0 $pid 2>/dev/null; do "
-             f"{rss_command} /proc/$epid/status 2>/dev/null; " + (sock_tick if sockets else "") + cpu_tick
-             + "sleep 0.5; done; "
-             f"wait $pid; ec=$?; echo ===ENGINE_OUTPUT===; cat {output_file}; echo EXIT_CODE=$ec")
+    shell = sampler_shell(cmd, binname, output_file, env, taskset_prefix, timeout_prefix, sockets)
     if STRICT_SMOKE:
         shell = "set -C; " + shell  # refuse even an accidental output-path collision
     try:
@@ -1020,8 +1029,9 @@ def cpu_reads(console):
     return policies, maxes, allowed
 
 
-def cpu_conditions(console):
-    """cpu-cap-rule for one launch -> (conditions, capped).
+def cpu_conditions(console, mask=None):
+    """cpu-cap-rule for one launch -> (conditions, capped). mask = the launch's CPU mask
+    (hex, "" = none; CPU_MASK when not given: a DDP job names its own, android/ddp/record.py).
 
     conditions.cpusAllowedList = the engine's last Cpus_allowed_list read: where it was
     allowed to run, which conditions.cpuAffinity (the launch mask) is not when the engine
@@ -1038,9 +1048,10 @@ def cpu_conditions(console):
     if freq:
         conditions["cpuMaxFreqMHz"] = freq
     engine_cpus = set().union(*(cpu_set(a) for a in allowed))
-    if not engine_cpus and CPU_MASK:
+    mask = CPU_MASK if mask is None else mask
+    if not engine_cpus and mask:
         try:
-            mask = int(CPU_MASK, 16)
+            mask = int(mask, 16)
             engine_cpus = {c for c in range(mask.bit_length()) if mask >> c & 1}
         except ValueError:
             pass

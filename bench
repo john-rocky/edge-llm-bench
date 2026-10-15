@@ -2,6 +2,7 @@
 """bench — the operations entrypoint for the standing matrix.
 
   ./bench matrix  <cells-file> [--platform mac|iphone|android] [--campaign NAME]
+  ./bench matrix  <cells-file> --ddp <DDP device id> [--campaign NAME] [--dry-run]   # android/ddp/run_ddp.py
   ./bench regress <cells-file> --engine <arm> [--version vX] --baseline <selector>
                   [--platform ...] [--campaign NAME]
   ./bench profile <cells-file> [--campaign NAME] [--max-num-tokens A,B,C] [--allow-large-context]
@@ -65,7 +66,37 @@ def postprocess():
     return rc
 
 
+def do_ddp(args):
+    """matrix --ddp: the file's Android LiteRT-LM rows as Developer Device Platform sessions
+    (android/ddp/run_ddp.py); --dry-run prints the plan, calls no network and builds no summary."""
+    sys.stdout.reconfigure(line_buffering=True)  # the `$ cmd` lines before the runner's output in a file
+    if run([PY, os.path.join(ROOT, "scripts", "validate_cells.py"), args.cells]):
+        return 2
+    if args.platform and set(args.platform) != {"android"}:
+        print("error: --ddp runs android rows only (drop --platform)", file=sys.stderr)
+        return 2
+    present = cells_platforms(args.cells)
+    for token in sorted(present - {"android"}):
+        print(f"skip: {token} rows are not run on DDP")
+    if "android" not in present:
+        print(f"error: no android cells in {args.cells} — nothing to run on DDP", file=sys.stderr)
+        return 2
+    campaign = f"{args.campaign or datetime.date.today().isoformat() + '-ddp-' + args.ddp}-android"
+    cmd = [PY, os.path.join(ROOT, "android", "ddp", "run_ddp.py"), args.cells, "--device", args.ddp,
+           "--campaign", campaign] + (["--dry-run"] if args.dry_run else [])
+    rc = run(cmd, env={"CAMPAIGN": campaign})
+    if args.dry_run:
+        return rc
+    rc |= postprocess()
+    return rc
+
+
 def do_matrix(args):
+    if getattr(args, "ddp", None):
+        return do_ddp(args)
+    if getattr(args, "dry_run", False):
+        print("error: matrix --dry-run is for --ddp only", file=sys.stderr)
+        return 2
     if run([PY, os.path.join(ROOT, "scripts", "validate_cells.py"), args.cells]):
         return 2
     present = cells_platforms(args.cells)
@@ -139,6 +170,10 @@ def main():
     m.add_argument("cells")
     m.add_argument("--platform", action="append", choices=list(RUNNERS))
     m.add_argument("--campaign")
+    m.add_argument("--ddp", metavar="DEVICE_ID",
+                   help="run the android LiteRT-LM rows on a DDP lab phone (android/ddp/devices.json)")
+    m.add_argument("--dry-run", action="store_true",
+                   help="with --ddp: print jobs, sessions, pushes, args, timeouts and the estimate; no network")
 
     p = sub.add_parser("profile", help="LiteRT-LM per-op profiling: a control + --enable_profiling "
                                        "pair per android native-benchmark cell -> profiles/PROFILE.md")
