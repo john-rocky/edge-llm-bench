@@ -73,6 +73,25 @@ adb shell chmod +x /data/local/tmp/llmbench/llama-*
 
 Models are HF-downloaded on the host and pushed on first use by the driver.
 
+## DDP lab phones (`android/ddp/`, no adb)
+
+`./bench matrix <cells> --ddp <device id> --project <p> --bucket gs://<b>` runs
+the file's LiteRT-LM rows (the flat build above, no side build) on a Developer
+Device Platform lab phone instead of an attached one: `android/ddp/run_ddp.py`
+uploads the same 9 engine files (from `android/bin/<tag>/` or
+`$BENCH_ANDROID_BIN_DIR/<tag>/`, each checked against `android/engine-pins.json`),
+the model and the prompt to the bucket, and submits Device Run sessions whose job
+binary is the wrapper `android/ddp/ddp_cell.sh`, which runs `run_cell.py`'s
+on-device sampler shell on the unit; `android/ddp/record.py` turns the pulled
+output into the same schema-v1 records. The engine files come from the release
+`android-litert-lm-<tag>` ("Engine acquisition" above; the release for the pinned
+tag is published with the pin bump) or the source build. Verify the path with
+no network and no billing: `android/ddp/selftest.py`, with the pinned engine
+files in place (a fake gcloud, a temp dir as the bucket, a fake Device Run
+server). Setup on a fresh machine: the README section "Run the Android cells on
+a Developer Device Platform phone"; details: `docs/ddp-integration.md`;
+runbook: `docs/OPERATIONS.md` "Run cells on DDP".
+
 ## Side builds (llama.cpp on the NPU and the Adreno GPU, LiteRT-LM on the NPU)
 
 The `llama.cpp-npu` / `llama.cpp-gpu` rows (cells `backend=npu|gpu
