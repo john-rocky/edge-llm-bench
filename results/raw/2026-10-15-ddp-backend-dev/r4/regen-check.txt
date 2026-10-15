@@ -1,0 +1,109 @@
+# r4 step 5: records written again from the pulled output (run_ddp.py --records-only) vs HEAD 9ae798b
+
+Per campaign: record files at HEAD and on disk, the key paths that changed (+ = added), metrics
+equal (the record's whole `metrics` object, == in Python; the jq check follows below), the other derived
+files byte for byte, the ids against uuid5(URL, edge-llm-bench/ddp/<session>/<job>/<execution>/run<i>/iter<k>).
+
+## 2026-10-15-ddp-smoke-akita-35-android
+- record files: HEAD 2, disk 2, same names: True; all files of app-path-android: HEAD 5, disk 5, same names: True
+- 2 record(s) changed exactly at: +conditions.engineCache, conditions.launchID, id
+- metrics different: 0 []
+- other derived files (raw logs, decoded texts, SKIPPED.txt) different from HEAD: 0 []
+- ids: 2, distinct 2, off the uuid5 rule 0
+
+## 2026-10-15-ddp-slice-akita-35-android
+- record files: HEAD 36, disk 36, same names: True; all files of app-path-android: HEAD 85, disk 85, same names: True
+- 36 record(s) changed exactly at: +conditions.engineCache, conditions.launchID, id
+- metrics different: 0 []
+- other derived files (raw logs, decoded texts, SKIPPED.txt) different from HEAD: 0 []
+- ids: 36, distinct 36, off the uuid5 rule 0
+
+## 2026-10-15-ddp-slice-m1q-36-android
+- record files: HEAD 36, disk 36, same names: True; all files of app-path-android: HEAD 85, disk 85, same names: True
+- 36 record(s) changed exactly at: +conditions.engineCache, conditions.launchID, id
+- metrics different: 0 []
+- other derived files (raw logs, decoded texts, SKIPPED.txt) different from HEAD: 0 []
+- ids: 36, distinct 36, off the uuid5 rule 0
+
+Total: 74 records, metrics different 0, other derived files different 0, ids off the rule 0.
+
+## conditions.engineCache per launch (one row per run; a 1K launch's two iteration records alike)
+
+| campaign | job | run | runtime | xnnpackWeightCache | gpuCache | firstEver | ddpMissing |
+|---|---|---|---|---|---|---|---|
+| slice-akita-35 | j01-cpu-Qwen3-1-7B-short-chat | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-akita-35 | j01-cpu-Qwen3-1-7B-short-chat | 2 | litert-lm-cpu | built | absent | None |  |
+| slice-akita-35 | j01-cpu-Qwen3-1-7B-short-chat | 3 | litert-lm-cpu | built | absent | None |  |
+| slice-akita-35 | j02-gpu-Qwen3-1-7B-short-chat | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-akita-35 | j02-gpu-Qwen3-1-7B-short-chat | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-akita-35 | j02-gpu-Qwen3-1-7B-short-chat | 3 | litert-lm-gpu | absent | loaded | None |  |
+| slice-akita-35 | j03-cpu-Qwen3-1-7B-long-context-1024-gen256 | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-akita-35 | j03-cpu-Qwen3-1-7B-long-context-1024-gen256 | 2 | litert-lm-cpu | built | absent | None |  |
+| slice-akita-35 | j03-cpu-Qwen3-1-7B-long-context-1024-gen256 | 3 | litert-lm-cpu | loaded | absent | None |  |
+| slice-akita-35 | j04-gpu-Qwen3-1-7B-long-context-1024-gen256 | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-akita-35 | j04-gpu-Qwen3-1-7B-long-context-1024-gen256 | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-akita-35 | j04-gpu-Qwen3-1-7B-long-context-1024-gen256 | 3 | litert-lm-gpu | absent | loaded | None |  |
+| slice-akita-35 | j05-cpu-gemma-4-E2B-it-litert-lm-short-chat | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-akita-35 | j05-cpu-gemma-4-E2B-it-litert-lm-short-chat | 2 | litert-lm-cpu | built | absent | None |  |
+| slice-akita-35 | j05-cpu-gemma-4-E2B-it-litert-lm-short-chat | 3 | litert-lm-cpu | built | absent | None |  |
+| slice-akita-35 | j06-gpu-gemma-4-E2B-it-litert-lm-short-chat | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-akita-35 | j06-gpu-gemma-4-E2B-it-litert-lm-short-chat | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-akita-35 | j06-gpu-gemma-4-E2B-it-litert-lm-short-chat | 3 | litert-lm-gpu | absent | not-loaded | None |  |
+| slice-akita-35 | j07-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-akita-35 | j07-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 2 | litert-lm-cpu | loaded | absent | None |  |
+| slice-akita-35 | j07-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 3 | litert-lm-cpu | loaded | absent | None |  |
+| slice-akita-35 | j08-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-akita-35 | j08-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-akita-35 | j08-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 3 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j01-cpu-Qwen3-1-7B-short-chat | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-m1q-36 | j01-cpu-Qwen3-1-7B-short-chat | 2 | litert-lm-cpu | loaded | absent | None |  |
+| slice-m1q-36 | j01-cpu-Qwen3-1-7B-short-chat | 3 | litert-lm-cpu | built | absent | None |  |
+| slice-m1q-36 | j02-gpu-Qwen3-1-7B-short-chat | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-m1q-36 | j02-gpu-Qwen3-1-7B-short-chat | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j02-gpu-Qwen3-1-7B-short-chat | 3 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j03-cpu-Qwen3-1-7B-long-context-1024-gen256 | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-m1q-36 | j03-cpu-Qwen3-1-7B-long-context-1024-gen256 | 2 | litert-lm-cpu | loaded | absent | None |  |
+| slice-m1q-36 | j03-cpu-Qwen3-1-7B-long-context-1024-gen256 | 3 | litert-lm-cpu | built | absent | None |  |
+| slice-m1q-36 | j04-gpu-Qwen3-1-7B-long-context-1024-gen256 | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-m1q-36 | j04-gpu-Qwen3-1-7B-long-context-1024-gen256 | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j04-gpu-Qwen3-1-7B-long-context-1024-gen256 | 3 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j05-cpu-gemma-4-E2B-it-litert-lm-short-chat | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-m1q-36 | j05-cpu-gemma-4-E2B-it-litert-lm-short-chat | 2 | litert-lm-cpu | loaded | absent | None |  |
+| slice-m1q-36 | j05-cpu-gemma-4-E2B-it-litert-lm-short-chat | 3 | litert-lm-cpu | loaded | absent | None |  |
+| slice-m1q-36 | j06-gpu-gemma-4-E2B-it-litert-lm-short-chat | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-m1q-36 | j06-gpu-gemma-4-E2B-it-litert-lm-short-chat | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j06-gpu-gemma-4-E2B-it-litert-lm-short-chat | 3 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j07-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 1 | litert-lm-cpu | built | absent | True |  |
+| slice-m1q-36 | j07-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 2 | litert-lm-cpu | loaded | absent | None |  |
+| slice-m1q-36 | j07-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 3 | litert-lm-cpu | loaded | absent | None |  |
+| slice-m1q-36 | j08-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 1 | litert-lm-gpu | absent | not-loaded | True |  |
+| slice-m1q-36 | j08-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 2 | litert-lm-gpu | absent | loaded | None |  |
+| slice-m1q-36 | j08-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256 | 3 | litert-lm-gpu | absent | loaded | None |  |
+| smoke-akita-35 | j01-cpu-Qwen3-1-7B-short-chat | 1 | litert-lm-cpu | built | absent | True |  |
+| smoke-akita-35 | j01-cpu-Qwen3-1-7B-short-chat | 2 | litert-lm-cpu | loaded | absent | None |  |
+
+## engineCache counts per campaign
+
+- 2026-10-15-ddp-smoke-akita-35-android: launches 2 — xnnpack built / gpu absent: 1, xnnpack loaded / gpu absent: 1; records 2 — xnnpack built / gpu absent: 1, xnnpack loaded / gpu absent: 1
+- 2026-10-15-ddp-slice-akita-35-android: launches 24 — xnnpack absent / gpu loaded: 7, xnnpack absent / gpu not-loaded: 5, xnnpack built / gpu absent: 9, xnnpack loaded / gpu absent: 3; records 36 — xnnpack absent / gpu loaded: 11, xnnpack absent / gpu not-loaded: 7, xnnpack built / gpu absent: 12, xnnpack loaded / gpu absent: 6
+- 2026-10-15-ddp-slice-m1q-36-android: launches 24 — xnnpack absent / gpu loaded: 8, xnnpack absent / gpu not-loaded: 4, xnnpack built / gpu absent: 6, xnnpack loaded / gpu absent: 6; records 36 — xnnpack absent / gpu loaded: 12, xnnpack absent / gpu not-loaded: 6, xnnpack built / gpu absent: 9, xnnpack loaded / gpu absent: 9
+
+## jq cross-check (jq-1.8.1, per record: git show HEAD:<record> vs the file on disk)
+
+jq -S, HEAD vs disk, 74 records: .metrics different in 0; the record without id, conditions.launchID and conditions.engineCache different in 0
+
+## every file of the three campaign dirs, before vs after the regeneration (sha256 manifests; ddp-raw/ left out)
+
+files before 541, after 544 (ddp-raw/ left out)
+- slice-akita-35: changed 8 execution logcat.txt (not committed)
+- slice-akita-35: changed 36 record .json
+- slice-akita-35: new 1 scrub.json
+- slice-m1q-36: changed 8 execution logcat.txt (not committed)
+- slice-m1q-36: changed 9 per-run logcat
+- slice-m1q-36: changed 36 record .json
+- slice-m1q-36: new 1 scrub.json
+- smoke-akita-35: changed 1 execution logcat.txt (not committed)
+- smoke-akita-35: changed 2 per-run logcat
+- smoke-akita-35: changed 2 record .json
+- smoke-akita-35: new 1 scrub.json
+ddp-raw copies equal to the logcats' bytes before the regeneration: 67 of 67 []
