@@ -2,7 +2,7 @@
 """Device-free, network-free selftest of the DDP backend (android/ddp/; design:
 results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
 
-  BENCH_ANDROID_BIN_DIR=<dir with v0.18.0/> ./android/ddp/selftest.py   # exit 0 = pass; temp kept on failure
+  BENCH_ANDROID_BIN_DIR=<dir with <pinned tag>/> ./android/ddp/selftest.py   # exit 0 = pass; temp kept on failure
 
 1. plan (no subprocess, no network): matrices/dashboard-text-v1.cells on akita-35 (8 jobs, 1
    session), m1q-36 (16 jobs, 2 sessions) and caiman-35 (no schedule key); skip reasons with their
@@ -58,6 +58,8 @@ import run_campaign  # noqa: E402
 import run_cell  # noqa: E402
 import run_ddp  # noqa: E402
 import record  # noqa: E402
+
+TAG = run_cell.load_pins()["android_pins"]["litert-lm"]  # the pinned LiteRT-LM Android tag (android/engine-pins.json)
 import scrub  # noqa: E402
 
 DASHBOARD = os.path.join(ROOT, "matrices", "dashboard-text-v1.cells")
@@ -216,11 +218,11 @@ def check_plan(tmp, bin_dir, models):
     ok(len(j1["push"]) == 11 and [f["kind"] for f in j1["push"]].count("engine") == 9
        and j1["wrapper"]["object"].endswith("/ddp_cell.sh") and all(f["sha256"] in f["object"] for f in j1["push"]),
        "push = 9 engine files + model + prompt, content-addressed objects; the wrapper is the job's binary")
-    pins = run_cell.load_pins()["litert-lm"]["v0.18.0"]
+    pins = run_cell.load_pins()["litert-lm"][TAG]
     want_sha = {"litert_lm_main": pins["litert_lm_main_sha256"],
                 "litert_lm_advanced_main": pins["litert_lm_advanced_main_sha256"], **pins["so_files"]}
     got_sha = {f["name"]: f["sha256"] for f in j1["push"] if f["kind"] == "engine"}
-    ok(got_sha == want_sha, "the 9 engine files' sha256 = android/engine-pins.json litert-lm v0.18.0")
+    ok(got_sha == want_sha, f"the 9 engine files' sha256 = android/engine-pins.json litert-lm {TAG}")
     # D14: the CPU-cap wait is the id's cpucapWaitSeconds (m1q-36 0), else the attached-phone route's 300 s
     default_wait = 300 if "CPUCAP_WAIT" not in os.environ else run_cell.CPUCAP_WAIT
     waits = {dev: sorted({a for j in plans[dev]["jobs"] for a in j["args"] if a.startswith("--cpucap_wait=")})
@@ -248,8 +250,8 @@ def check_plan(tmp, bin_dir, models):
        f"the plan carries --project / --bucket; every request path is under {BUCKET}/automation/ ({len(paths)} paths)")
     # one changed byte in one engine file stops the plan before anything else
     bad_bin = os.path.join(tmp, "bad-bin")
-    shutil.copytree(os.path.join(bin_dir, "v0.18.0"), os.path.join(bad_bin, "v0.18.0"))
-    victim = os.path.join(bad_bin, "v0.18.0", "libLiteRtOpenClAccelerator.so")
+    shutil.copytree(os.path.join(bin_dir, TAG), os.path.join(bad_bin, TAG))
+    victim = os.path.join(bad_bin, TAG, "libLiteRtOpenClAccelerator.so")
     os.chmod(victim, 0o644)
     with open(victim, "r+b") as fh:
         fh.seek(1000)
@@ -811,12 +813,12 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
         d, a = set(key_layout(ddp_rec)), set(key_layout(att_rec))
         ok(d >= a and d - a == added, f"{label}: DDP record keys ⊇ the attached-phone record's; added only "
                                       f"{sorted(added)} (missing {sorted(a - d)}, extra {sorted(d - a - added)})")
-    pins = run_cell.load_pins()["litert-lm"]["v0.18.0"]
+    pins = run_cell.load_pins()["litert-lm"][TAG]
     s1 = short[0][1] if short else {}
     l1 = long_[0][1] if long_ else {}
-    ok(s1.get("engineVersion") == "v0.18.0" and s1.get("engineArtifact") == pins["litert_lm_main_sha256"]
-       and l1.get("engineVersion") == "v0.18.0" and l1.get("engineArtifact") == pins["litert_lm_advanced_main_sha256"],
-       "witness: v0.18.0 + the launched tool's sha, read from the unit's provenance.txt")
+    ok(s1.get("engineVersion") == TAG and s1.get("engineArtifact") == pins["litert_lm_main_sha256"]
+       and l1.get("engineVersion") == TAG and l1.get("engineArtifact") == pins["litert_lm_advanced_main_sha256"],
+       f"witness: {TAG} + the launched tool's sha, read from the unit's provenance.txt")
     want_model = run_cell.sha256_file(models["Qwen3_1.7B.litertlm"])
     ok(s1.get("model", {}).get("sha256") == want_model and s1.get("provenance", {}).get("modelShaSource") == "device"
        and s1.get("model", {}).get("file") == "litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm",
@@ -898,7 +900,7 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
     jr = session["sessionReport"]["jobReports"][0]
     ex, rel = record.execution_dirs("session-test0001", jr)[0]
     for victim, want in (("libLiteRtOpenClAccelerator.so",
-                          "unknown (on-device v0.18.0 litert_lm_main with lib libLiteRtOpenClAccelerator.so unmatched"),
+                          f"unknown (on-device {TAG} litert_lm_main with lib libLiteRtOpenClAccelerator.so unmatched"),
                          ("litert_lm_main", "unknown (on-device litert_lm_main sha unmatched")):
         copy_dir = os.path.join(tmp, f"tamper-{victim}")
         shutil.copytree(os.path.join(ddp, rel), copy_dir)
@@ -1166,8 +1168,8 @@ def check_scrub(tmp):
 def main():
     tmp = tempfile.mkdtemp(prefix="ddp-selftest-")
     bin_dir = os.environ.get("BENCH_ANDROID_BIN_DIR") or run_cell.ANDROID_BIN_DIR
-    if not os.path.isdir(os.path.join(bin_dir, "v0.18.0")):
-        print(f"FAIL: {bin_dir}/v0.18.0 missing — set BENCH_ANDROID_BIN_DIR to the dir that holds the pinned build")
+    if not os.path.isdir(os.path.join(bin_dir, TAG)):
+        print(f"FAIL: {bin_dir}/{TAG} missing — set BENCH_ANDROID_BIN_DIR to the dir that holds the pinned build")
         return 1
     sum_root = os.path.join(tmp, "sumroot")
     raw_root = os.path.join(sum_root, "results", "raw")
