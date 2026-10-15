@@ -101,9 +101,11 @@ def exclude_on(cell):
     return {key: reason for key in keys.split(",")}
 
 
-def skip_on_device(anchors, payload, serial):
+def skip_on_device(anchors, payload, serial, device_key=None):
     """Take out the cells whose exclude-on= names the device with this serial
-    (its schedule.json key). -> (anchors, payload, [(cell, key, reason)]). A key
+    (its schedule.json key), or the key itself when the caller names it
+    (device_key: android/ddp/run_ddp.py, whose DDP unit has no serial here).
+    -> (anchors, payload, [(cell, key, reason)]). A key
     the schedule does not know stops the driver before any device call: it
     cannot tell which phone the key means (validate_cells.py fails it first)."""
     named = {key for c in anchors + payload for key in exclude_on(c)}
@@ -115,7 +117,8 @@ def skip_on_device(anchors, payload, serial):
     if unknown:
         raise SystemExit(f"exclude-on: device key(s) {', '.join(unknown)} not in "
                          f"{os.path.relpath(SCHEDULE, ROOT)} — refusing to guess the device")
-    here = {key for key, dev in devices.items() if serial and dev.get("serial") == serial}
+    here = ({device_key} if device_key else
+            {key for key, dev in devices.items() if serial and dev.get("serial") == serial})
     kept, out = ([], []), []
     for group, keep in zip((anchors, payload), kept):
         for c in group:

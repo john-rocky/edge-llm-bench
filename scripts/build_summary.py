@@ -301,6 +301,8 @@ def iter_device_records():
 
 
 def build_device():
+    """device-runs.csv. A DDP lab unit's record (device.ddp, android/ddp/record.py) gets the
+    device "<modelIdentifier> (DDP <catalog id>)", never the attached phone's identifier."""
     rows = []
     for f, d in iter_device_records():
         m, dev, model = d.get("metrics", {}), d.get("device", {}), d.get("model", {})
@@ -345,8 +347,9 @@ def build_device():
             # long-context column measures one cell at several allocations,
             # and a derived row without this axis would pool them.
             "context_tokens": context_tokens_of(d, m),
-            "device": DEVICE_ALIASES.get(dev.get("modelIdentifier"),
-                                         dev.get("modelIdentifier")),
+            "device": (f"{dev.get('modelIdentifier')} (DDP {dev['ddp'].get('deviceId')})"
+                       if isinstance(dev.get("ddp"), dict) else
+                       DEVICE_ALIASES.get(dev.get("modelIdentifier"), dev.get("modelIdentifier"))),
             "os_version": dev.get("systemVersion"),
             # peak memory (2026-10-06), appended so every earlier column keeps
             # its position: the phys_footprint high-water of the Apple sampler
