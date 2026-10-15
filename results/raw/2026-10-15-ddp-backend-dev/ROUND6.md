@@ -1,0 +1,53 @@
+# D6 DDP backend — round 6 (Opus 5.5, lane close; no device, no billing, no code or docs change)
+
+Launch: `~/code/standup/launch/2026-10-15-D6-dashboard-ddp-backend-opus-r6.md`. Worktree
+`~/code/edge-llm-bench-wt-ddp`, branch `ddp-backend`, HEAD f2b64fa at start (below it 94d4ff5 / 0f9e551 / 0ed15f0 /
+6c0b894 / 1d6c7ad / 0ee7a28). Lane close record: `LANE_CLOSE.md` (this dir). No adb, no local phone, no hold, no DDP
+session, no bucket access.
+
+## 経過
+
+- 20:12 launch read in full; `git log --oneline -7` = f2b64fa … 0ee7a28 as the launch lists, `git status --porcelain | grep -v '^??'` empty, `git status --short results/summary` empty; next: the prerequisite files
+- 20:18 prerequisites read (LANE.md §0 + r4 corrections, D1–D15, round table, thread promises, GO log; ROUND1.md–ROUND5.md; the handoff §0–§7; DESIGN.md; skill opus-rounds "lane close round" + "効率化の public 反映"; memory MEMORY.md and the files to fold into; knowledge/litert.md tail); the rewrite checked read-only: `git diff --stat backup/ddp-backend-2026-10-15-pre-rewrite ddp-backend` = the workflow + `r2/table.md` + `r3/table.md`, old → new per commit (`git diff --stat`): 6efe1b2 → 6c0b894 (r2 table + 2 per-run logcats), 9ae798b → 0ed15f0 (2 tables + 11 per-run logcats), 9179dbd → 0f9e551 and 099d76b → 94d4ff5 (2 tables); standings-word count in the two tables 0; a Mac timing window of another lane is live (`aa-b2-m38b-bench-clean-gpu timing`, since 20:14:08); next: step 0
+- 20:19 step 0 done: `LANE_CLOSE.md` with the speed-ladder n-a line first; next: step 1, the handoff §6 and §0 / §3 / §7
+- 20:26 step 1 done: handoff §6 rewritten as 84 one-fact lines (訂正 33 / 罠と袋小路 38 / op 13; ROUND1–5 + LANE §0 with its r4 corrections + this round's CI finding), §4 turned into a pointer to §6 (its 19 lines are in §6 with their round tags), §0 + 4 lines (the rewrite old → new, the backup branch, difference % kept out of the public repo, the CI step), §3 + the supervisor's 20:0x line and the remaining GOs with the new SHAs and the CI decision, §7 updated, the header and the `K/LANE.md` references → LANE (the new path), §2's "(§4 r2)" → "(§6 訂正 r2)"; §5 byte-equal to the staged copy (`cmp`); old SHAs only on the two §0 lines that say 旧; re-staged by path (`A`, no worktree diff); next: step 2 / 2b
+- 20:27 step 2: `/litert-data` not run (no gate JSON, no compat device-run rows), its line goes into `LANE_CLOSE.md`; step 2b: litert-samples upstream/main (2026-10-14, read with `git show`, nothing written there) holds `skills/benchmark-on-ddp/SKILL.md` (the DDP skill) beside the launch's candidate `skills/on-device-verification/SKILL.md` (CompiledModel parity); the own repo has `skills/run-edge-llm-bench/SKILL.md` with no DDP text; the slice's `ddp/session-1.json` names only the device id (no serial); draft `r6/public-reflection-draft.md` written (A own skill section, B benchmark-on-ddp Watch-for bullets, C / D none with reasons, E the knowledge line); next: step 3, lane memory
+- 20:30 step 3 done: memory (edge-llm-bench slug) new `ddp-job-is-its-own-unit.md` (2,031 B) and `ddp-logcat-carries-lab-network-ids.md` (1,741 B), `litertlm-xnnpack-cache-name-jitter.md` rewritten (1,979 B: engineCache, same-name rebuild, GPU skip, the litert-cli touch); candidate (d) not written (`mac-quiet-window-leaks.md` already says the hook reads heredocs); `MEMORY.md` + 2 lines, 1 line rewritten (10,406 → 10,753 B); every `[[link]]` of the three files resolves; next: step 3b
+- 20:32 step 3b done: `knowledge/litert.md` + 1 line at the end; only that line staged (index blob = the index copy + the line, `git update-index --cacheinfo`), because the file carries another session's unstaged line (the rope-fp16-3913 line) that `git add` would have swept in; assets behind `quiet_wait.py` (waited 0 s, scratch `assets.sh`): `set … knowledge done` rc 0, `set … repo hold` (note refreshed: new SHAs, the rewrite done, the CI step) rc 0, `lint` = HOLD 3/6 (`r6/assets-lint.log`, rc 3), `render` rc 0; the three files differ from their pre-run copies in this row only; staged by path; next: step 4
+- 20:33 step 4 done: `dry-run/android-selftest.done` / `.log` deleted (untracked; sha256 + size in `D6_deleted_paths.txt`), `LANE.md` moved to `~/code/standup/handoffs/2026-10-15-D6-dashboard-ddp-backend-LANE.md` (sha256 equal before / after) and staged there; `git status --porcelain` shows no `dry-run/` path and no `LANE.md`; next: step 5, `LANE_CLOSE.md`
+- 20:34 step 5 done: `LANE_CLOSE.md` (speed-ladder n-a line first, the litert-data line, the public-reflection table, the diff list, what was kept and why, the standup staged list); kept counts re-read (17 untracked execution `logcat.txt`, `ddp-raw/` 3 / 32 / 32 files, all three ignored); next: round close sections, lint, step 6 (commit)
+- 20:36 round close sections written, `round_close_lint.sh` PASS; hygiene greps on the five paths: host user name 0, lab-network shapes 0, standings words 0 (one "against" in the draft reworded), old SHAs only on lines that say old / 旧; step 6: the index was empty, the five paths staged by name (`git diff --cached --name-only` = these five), committed on `ddp-backend` with a one-sentence English subject, no attribution line, author and committer rockyshikoku@gmail.com, not pushed, `git status --short results/summary` empty (this line amended into the same commit); next: the commit hash into the handoff (header, §3, §7) and its re-staging, scratch deleted, step 7 the report
+
+## 訂正
+
+- Step 3b's `git -C ~/code/standup add knowledge/litert.md …` would have staged another session's unstaged line in that file (the 2026-10-15 rope-fp16-3913 line) along with this lane's: only this lane's line is staged (the index copy plus the line, `git hash-object -w` + `git update-index --cacheinfo`), the other line stays unstaged — `git -C ~/code/standup diff --cached knowledge/litert.md` (1 added line) and `git -C ~/code/standup diff knowledge/litert.md` (the other line).
+- The launch's public-reflection candidate `skills/on-device-verification` is the CompiledModel parity skill; litert-samples upstream/main also holds `skills/benchmark-on-ddp` (the DDP skill) and this repo holds `skills/run-edge-llm-bench` (no DDP text): the proposals are A (own skill section) and B (benchmark-on-ddp "Watch for" bullets), on-device-verification none with its reason — `r6/public-reflection-draft.md`; `git -C ~/code/litert-samples show upstream/main:skills/benchmark-on-ddp/SKILL.md`.
+- The launch says f2b64fa runs the DDP selftest in CI "no device, no network": as written the step exits 1 on a GitHub runner — `main` returns 1 with "FAIL: …/v0.18.0 missing" when `<BENCH_ANDROID_BIN_DIR or android/bin>/v0.18.0` is absent (`android/ddp/selftest.py` 1158–1162), `android/bin/` is gitignored (`.gitignore` 61) with no tracked file, and `.github/workflows/data-pipeline.yml` has no step that puts the pinned binaries there (the release asset is not published yet). Read, not run; handoff §0 / §3 / §7.
+- Memory candidate (d) ("the quiet-window hook reads heredoc bodies") is already in `mac-quiet-window-leaks.md` ("The hook reads whole commands (heredocs, paths …)"): not written again.
+- The handoff's §0 already held LANE §0.1–§0.6 (round 5) and §4 the round corrections; §6 now holds all of them with round tags, §4 became a pointer to §6, §0 kept its lines (the launch adds to it) — the handoff.
+- `MEMORY.md` was 10,406 B before this round, over the global 10 KB index bar; with the two new lines it is 10,753 B (62 lines). Other entries not trimmed (outside this round) — `~/.claude/projects/-Users-USER-code-edge-llm-bench/memory/MEMORY.md`.
+
+## 罠と袋小路
+
+- `cd <K dir> && ls` in this round's first Bash calls moved the session's cwd (round 1's trap again; a later `cd ~/code/standup && …` was reset by the harness): absolute paths and `git -C` only.
+- A git wildcard pathspec matches whole paths, not directory prefixes: `git status --porcelain -- 'results/raw/2026-10-15-ddp-*-android'` listed 0 of the 17 untracked execution logcats; a plain `git status --porcelain --untracked-files=all | grep` and `find` gave 17. Append `/**` or use a literal prefix.
+- A first public-reflection sentence said the unit's serial is "in the job's outputs": true only through this lane's wrapper (`provenance.txt`); the DDP session report names only the device id (`ddp/session-1.json`). Read the platform's own output before writing a sentence for another tool's users.
+- BSD sed rejects `sed '1,/^---$/{/^---$/!d}'` ("extra characters at the end of d command"): strip a frontmatter with awk.
+- The quiet-window hook exempts any command that names `quiet_wait.py`: the assets `set` / `lint` / `render` (a python word plus `bench` in the row id) went through one `quiet_wait.py -- sh <script>` call; the window had closed (waited 0 s).
+
+## op と delegate の観察
+
+なし(端末なし)。この round は何も測っていない。
+
+## 使った環境
+
+- Python 3.14.6 (Homebrew through the pyenv shim; only `assets.py` behind `quiet_wait.py` and `assets.py --help`), git 2.54.0 (Apple Git-157), jq 1.8.1, Google Cloud SDK 587.0.0 (alpha / beta 2026.09.25; only `gcloud --version`), macOS 27.0.
+- Worktree `~/code/edge-llm-bench-wt-ddp`, branch `ddp-backend`, HEAD f2b64fa at start; `~/code/standup` (index only, no commit); `~/code/litert-samples` read with `git show upstream/main:…` (no fetch, no checkout); `~/.cache/uv/…/litert_cli/commands/benchmark/ddp.py` read.
+- No device, no adb, no hold, no DDP session, no bucket access. A Mac timing window of another lane at the start (`aa-b2-m38b-bench-clean-gpu`, since 20:14:08), closed by 20:32.
+
+## 残した file
+
+- This round's commit: `ROUND6.md` (this file), `LANE_CLOSE.md` (speed-ladder n-a line, litert-data line, public reflection, diff list, kept files), `D6_deleted_paths.txt` (the two deleted paths with size and sha256; the LANE.md move), `r6/assets-lint.log` (the assets lint), `r6/public-reflection-draft.md` (draft texts A / B, none for C / D, E).
+- Outside the repo: memory `ddp-job-is-its-own-unit.md` (new), `ddp-logcat-carries-lab-network-ids.md` (new), `litertlm-xnnpack-cache-name-jitter.md` (rewritten), `MEMORY.md`; `~/code/standup` staged: the handoff, `handoffs/2026-10-15-D6-dashboard-ddp-backend-LANE.md` (moved from here), `knowledge/litert.md` (this lane's line only), `tools/assets/assets.jsonl`, `state/assets.md`, `knowledge/assets-ledger.md`.
+- Deleted: `dry-run/android-selftest.done`, `dry-run/android-selftest.log` (`D6_deleted_paths.txt`).
+- Scratch (消してよい, deleted at the end of the round): this session's scratchpad (`s6.md`, `handoff.new.md`, `handoff.idx.md`, `s5.*`, `s12.*`, `kline.md`, `litert.idx.md`, `assets.sh`, `assets.out`, `assets.qw.log`, `assets.done`, `pre/`).
