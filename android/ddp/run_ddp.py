@@ -175,7 +175,12 @@ def model_file(model_id, filename, dry_run):
     checks the size against the Hub's (run_cell.ensure_model's guard)."""
     if dry_run:
         os.environ["HF_HUB_OFFLINE"] = "1"
-    from huggingface_hub import hf_hub_download
+    try:
+        from huggingface_hub import hf_hub_download
+    except ImportError:  # a host without the package: a dry run still plans, a real run cannot download
+        if dry_run:
+            return {"local": None, "bytes": None, "sha256": None, "uncached": "huggingface_hub not installed"}
+        raise SystemExit(f"{model_id} {filename}: huggingface_hub is not installed (pip install huggingface_hub)")
     try:
         local = hf_hub_download(model_id, filename, local_files_only=dry_run)
     except Exception as exc:  # noqa: BLE001 — the cache miss of a dry run, or a failed download

@@ -139,11 +139,20 @@ def plan_args(bin_dir, **kw):
 
 # ---------------------------------------------------------------- 1. plan
 
-def check_plan(tmp, bin_dir):
-    print("--- 1. plan: dashboard cells on akita-35 / m1q-36 / caiman-35 (no subprocess, no network)")
+def check_plan(tmp, bin_dir, models):
+    print("--- 1. plan: dashboard cells on akita-35 / m1q-36 / caiman-35 (no subprocess, no network, no HF cache)")
     plans = {}
+
+    def fake_model(model_id, filename, dry_run):  # a selftest file per model name, never the HF cache
+        path = models.get(filename)
+        if path is None:
+            path = models[filename] = os.path.join(tmp, "models", filename)
+            write(path, f"weights of {filename}\n")
+        return {"local": path, "bytes": os.path.getsize(path), "sha256": run_cell.sha256_file(path)}
+
     with patch.object(subprocess, "run", side_effect=AssertionError("subprocess in a plan")), \
-            patch.object(subprocess, "Popen", side_effect=AssertionError("subprocess in a plan")):
+            patch.object(subprocess, "Popen", side_effect=AssertionError("subprocess in a plan")), \
+            patch.object(run_ddp, "model_file", fake_model):
         for dev in ("akita-35", "m1q-36", "caiman-35"):
             plans[dev] = run_ddp.plan(DASHBOARD, dev, f"selftest-{dev}-android", plan_args(bin_dir))
     want = {"akita-35": (8, 1, 10, 12, "pixel8a"), "m1q-36": (16, 2, 10, 4, "s26"), "caiman-35": (8, 1, 10, 0, None)}
@@ -1167,7 +1176,7 @@ def main():
     for name in ("Qwen3_1.7B.litertlm", "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"):
         models[name] = os.path.join(tmp, "models", name)
         write(models[name], f"weights of {name}\n")
-    plans = check_plan(tmp, bin_dir)
+    plans = check_plan(tmp, bin_dir, models)
     check_bench_dry_run(tmp, bin_dir)
     check_wrapper_strings(plans)
     check_wrapper_host_run(tmp)
