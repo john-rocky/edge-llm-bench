@@ -60,6 +60,8 @@ jobs:
           python-version: "3.11"
       - run: python android/bench/selftest.py
       - run: python android/bench/test_longctx1024.py
+      - name: DDP driver selftest (fake gcloud and a fake Device Run server; no device, no network)
+        run: python android/ddp/selftest.py
       - name: dashboard job device choice (fake adb, temp holds; no results/raw touched)
         run: python scripts/dashboard_job_selftest.py
 
@@ -72,9 +74,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: py_compile all python
-        run: python -m py_compile scripts/*.py android/bench/*.py bench
+        run: python -m py_compile scripts/*.py android/bench/*.py android/ddp/*.py bench
       - name: bash -n all shell scripts
-        run: for f in scripts/*.sh android/scripts/*.sh ios/BenchmarkApp/scripts/*.sh; do bash -n "$f" || exit 1; done
+        run: for f in scripts/*.sh android/scripts/*.sh android/ddp/*.sh ios/BenchmarkApp/scripts/*.sh; do bash -n "$f" || exit 1; done
 
   # NOTE: no Xcode build job — the app/tool require the iOS 27 / macOS 27 SDK
   # (Xcode 27 beta), which GitHub-hosted runners do not ship. Builds are
