@@ -60,8 +60,14 @@ jobs:
           python-version: "3.11"
       - run: python android/bench/selftest.py
       - run: python android/bench/test_longctx1024.py
-      - name: DDP driver selftest (fake gcloud and a fake Device Run server; no device, no network)
-        run: python android/ddp/selftest.py
+      - name: pinned LiteRT-LM Android binaries from the release asset (the README's lines; the DDP selftest checks them against android/engine-pins.json)
+        run: |
+          TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))["android_pins"]["litert-lm"])')
+          mkdir -p "$RUNNER_TEMP/android-bin"
+          curl -fL "https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz" \
+            | tar xz -C "$RUNNER_TEMP/android-bin" && mv "$RUNNER_TEMP/android-bin/litert-lm-$TAG-android-arm64" "$RUNNER_TEMP/android-bin/$TAG"
+      - name: DDP driver selftest (fake gcloud and a fake Device Run server; no device, no network beyond the asset above)
+        run: BENCH_ANDROID_BIN_DIR="$RUNNER_TEMP/android-bin" python android/ddp/selftest.py
       - name: dashboard job device choice (fake adb, temp holds; no results/raw touched)
         run: python scripts/dashboard_job_selftest.py
 
