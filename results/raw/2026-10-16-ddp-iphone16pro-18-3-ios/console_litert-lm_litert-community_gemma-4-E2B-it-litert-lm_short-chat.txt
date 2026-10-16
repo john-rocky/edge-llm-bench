@@ -1,0 +1,722 @@
+=== DDP session session-2af96355-979f-444b-a3ba-9259d5863dd4: iphone16pro-18-3, litert-lm, litert-community/gemma-4-E2B-it-litert-lm, short-chat, runs=4 ===
+YARDSTICK_NOTE litert_backend=gpu
+YARDSTICK_METAL_DEVICE name=Apple A18 Pro GPU registry_id=4294968529
+YARDSTICK_BEGIN runtime=litert-lm model=litert-community/gemma-4-E2B-it-litert-lm task=short-chat runs=4
+2026-10-16 03:26:29.463034-0700 BenchmarkAppDDP[661:19491] [ExperimentalFlags] EXPERIMENTAL: LiteRTLM: Opting into experimental APIs....
+W0000 00:00:1792146389.467135   19506 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300b99920, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300b9c840, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300b9b1e0, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300b9b240, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792146389.666428   19491 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+W0000 00:00:1792146389.666482   19491 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 672
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 672
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 672
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 672
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+2026-10-16 03:26:29.669263-0700 BenchmarkAppDDP[661:19491] Initialized TensorFlow Lite runtime.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1792146389.716598   19491 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:398] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1792146389.717307   19491 gpu_backend_metal.mm:114] Metal Residency Set successfully initialized.
+2026-10-16 03:26:29.957447-0700 BenchmarkAppDDP[661:19491] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-16 03:26:29.957490-0700 BenchmarkAppDDP[661:19491] Errors found! Invalidating cache...
+2026-10-16 03:26:29.980436-0700 BenchmarkAppDDP[661:19491] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-16 03:26:29.980462-0700 BenchmarkAppDDP[661:19491] Errors found! Invalidating cache...
+I0000 00:00:1792146394.005934   19491 delegate_kernel.cc:329] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792146394.005975   19491 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+2026-10-16 03:26:34.234577-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:34.262318-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:34.325501-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:34.348614-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:34.374175-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:34.838659-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:34.892027-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:42:7: warning: unused variable 'false_z' [-Wunused-variable]
+  int false_z = args.U.cmp_int4_2.z == 1 ? 0 : Z;
+      ^
+2026-10-16 03:26:35.081322-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:41:7: warning: unused variable 'false_z' [-Wunused-variable]
+  int false_z = args.U.cmp_int4_1.z == 1 ? 0 : Z;
+      ^
+program_source:52:7: warning: unused variable 'cond_z' [-Wunused-variable]
+  int cond_z = args.U.cmp_int4_0.x == 1 ? 0 : Z;
+      ^
+2026-10-16 03:26:35.089487-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.113612-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.189780-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.221533-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.246831-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.292214-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.421819-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+I0000 00:00:1792146395.577996   19491 delegate_kernel.cc:329] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792146395.578008   19491 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+2026-10-16 03:26:35.737477-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:40:7: warning: unused variable 'slice_coord_TMP' [-Wunused-variable]
+  int slice_coord_TMP = (src_c) / 4;
+      ^
+2026-10-16 03:26:35.749648-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.758736-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:52:7: warning: unused variable 'W' [-Wunused-variable]
+  int W = spatial_linear % args.U.cmp_int4_2.w;
+      ^
+program_source:53:7: warning: unused variable 'H' [-Wunused-variable]
+  int H = spatial_linear / args.U.cmp_int4_2.w;
+      ^
+2026-10-16 03:26:35.782718-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:24:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:35.803726-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.809544-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.838682-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.849601-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.860877-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:52:7: warning: unused variable 'W' [-Wunused-variable]
+  int W = spatial_linear % args.U.cmp_int4_2.w;
+      ^
+program_source:53:7: warning: unused variable 'H' [-Wunused-variable]
+  int H = spatial_linear / args.U.cmp_int4_2.w;
+      ^
+2026-10-16 03:26:35.873472-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.877751-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:35.889598-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:57:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.900586-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:57:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:35.994870-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:40:7: warning: unused variable 'slice_coord_TMP' [-Wunused-variable]
+  int slice_coord_TMP = (src_c) / 4;
+      ^
+2026-10-16 03:26:36.006625-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.026376-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.087347-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:23:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.212292-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:53:7: warning: unused variable 'W' [-Wunused-variable]
+  int W = spatial_linear % args.U.cmp_int4_3.x;
+      ^
+program_source:54:7: warning: unused variable 'H' [-Wunused-variable]
+  int H = spatial_linear / args.U.cmp_int4_3.x;
+      ^
+2026-10-16 03:26:36.230014-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:26:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.242064-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.267009-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:53:7: warning: unused variable 'W' [-Wunused-variable]
+  int W = spatial_linear % args.U.cmp_int4_3.x;
+      ^
+program_source:54:7: warning: unused variable 'H' [-Wunused-variable]
+  int H = spatial_linear / args.U.cmp_int4_3.x;
+      ^
+2026-10-16 03:26:36.287995-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:25:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.303385-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.311457-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.332710-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:25:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.360123-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:36.384336-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:25:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.434187-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:28:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.494068-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.498692-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.508072-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.515915-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.524030-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:23:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.535749-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.543470-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+I0000 00:00:1792146396.681571   19491 delegate_kernel.cc:329] Total 31 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792146396.681584   19491 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+2026-10-16 03:26:36.786983-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.802901-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:26:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.826721-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.830286-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.841064-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:36.864137-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:26:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.888558-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.899241-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:26:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:36.914745-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.920559-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:36.930109-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.934214-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.942485-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:23:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.954099-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.975215-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:36.983306-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.006890-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:27:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:37.038239-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:37.064587-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:27:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:37.110146-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:30:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:37.144314-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:27:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:37.174973-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:59:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:37.202720-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.207215-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.210626-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.214608-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.222595-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:23:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.234537-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.242230-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+I0000 00:00:1792146397.322388   19491 delegate_kernel.cc:329] Total 32 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792146397.322400   19491 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+2026-10-16 03:26:37.576008-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.596582-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.600370-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.630885-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.657000-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.663351-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:58:9: warning: unused variable 'variance' [-Wunused-variable]
+  float variance = max(0.0f, mean_sq - mean * mean);
+        ^
+2026-10-16 03:26:37.672764-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.676869-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.685071-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:23:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.698097-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:36:7: warning: unused variable 'W' [-Wunused-variable]
+  int W = spatial_linear % args.U.cmp_int4_2.x;
+      ^
+program_source:37:7: warning: unused variable 'H' [-Wunused-variable]
+  int H = spatial_linear / args.U.cmp_int4_2.x;
+      ^
+2026-10-16 03:26:37.710068-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:29:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:37.720958-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.758720-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:25:7: warning: unused variable 'w_batch_id' [-Wunused-variable]
+  int w_batch_id = DST_Y;
+      ^
+2026-10-16 03:26:37.772051-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.780221-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.956394-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.980843-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:18:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.984535-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.988478-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:37.996596-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:23:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:38.008988-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:16:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:38.016666-0700 BenchmarkAppDDP[661:19491] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:17:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300b2ee20, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300b2fc00, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+2026-10-16 03:26:38.279116-0700 BenchmarkAppDDP[661:19491] Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1856] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1856] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1792146398.514292   19494 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+W0000 00:00:1792146399.243957   19541 sampler_factory.cc:572] Metal sampler not available, falling back to statically linked C API.
+2026-10-16 03:26:39.263824-0700 BenchmarkAppDDP[661:19541] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:13:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:39.326707-0700 BenchmarkAppDDP[661:19541] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:13:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:39.334162-0700 BenchmarkAppDDP[661:19541] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:13:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+2026-10-16 03:26:39.391979-0700 BenchmarkAppDDP[661:19541] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:20:7: warning: unused variable 'B' [-Wunused-variable]
+  int B = BW % 1;
+      ^
+2026-10-16 03:26:39.398451-0700 BenchmarkAppDDP[661:19541] [Metal Compiler Warning] Warning: Compilation succeeded with: 
+
+program_source:13:28: warning: unused variable 'r_s_b' [-Wunused-variable]
+  int r_s_x, r_s_y, r_s_s, r_s_b;
+                           ^
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=49.12 decode_tok_s_wall=48.74 ttft_ms=954 prefill_tok_s=69.2 prefill_tok_s_wall=21.0 prompt_tokens=20 peak_mb=705 median_mb=705 median_resident_mb=1526 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+W0000 00:00:1792146411.209783   19493 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=49.88 decode_tok_s_wall=49.49 ttft_ms=153 prefill_tok_s=183.1 prefill_tok_s_wall=130.3 prompt_tokens=20 peak_mb=712 median_mb=712 median_resident_mb=1553 ctx=672 tokens=128 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+W0000 00:00:1792146425.079804   19493 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=29.83 decode_tok_s_wall=29.60 ttft_ms=243 prefill_tok_s=114.1 prefill_tok_s_wall=82.4 prompt_tokens=20 peak_mb=712 median_mb=712 median_resident_mb=1553 ctx=672 tokens=128 thermal_initial=serious thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+W0000 00:00:1792146447.542616   19494 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=24.65 decode_tok_s_wall=24.46 ttft_ms=282 prefill_tok_s=99.2 prefill_tok_s_wall=71.0 prompt_tokens=20 peak_mb=713 median_mb=713 median_resident_mb=1554 ctx=672 tokens=128 thermal_initial=serious thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+=== DDP session session-869a5c6a-46ff-45c5-83a8-6d511476e383: iphone16pro-18-3, litert-lm-cpu, litert-community/gemma-4-E2B-it-litert-lm, short-chat, runs=4 ===
+YARDSTICK_NOTE litert_backend=cpu
+YARDSTICK_METAL_DEVICE name=Apple A18 Pro GPU registry_id=4294968314
+YARDSTICK_BEGIN runtime=litert-lm model=litert-community/gemma-4-E2B-it-litert-lm task=short-chat runs=4
+2026-10-16 03:27:15.681861-0700 BenchmarkAppDDP[707:19878] [ExperimentalFlags] EXPERIMENTAL: LiteRTLM: Opting into experimental APIs....
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+W0000 00:00:1792146435.683854   19894 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300968a80, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x30096c1e0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300968c60, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x300968d20, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792146435.895062   19878 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+W0000 00:00:1792146435.895124   19878 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 672
+INFO: [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 672
+INFO: [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 672
+INFO: [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 672
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+2026-10-16 03:27:15.897878-0700 BenchmarkAppDDP[707:19878] Initialized TensorFlow Lite runtime.
+INFO: Initialized TensorFlow Lite runtime.
+2026-10-16 03:27:15.918409-0700 BenchmarkAppDDP[707:19878] Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x30091d800, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x30091d8c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1856] Tracked constant output tensor eoa_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: [compiled_model.cc:1856] Tracked constant output tensor eoi_embedding with locked address
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=672, signature_prefix=null
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+W0000 00:00:1792146440.378683   19883 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=26.54 decode_tok_s_wall=26.34 ttft_ms=728 prefill_tok_s=37.1 prefill_tok_s_wall=27.5 prompt_tokens=20 peak_mb=374 median_mb=374 median_resident_mb=2058 ctx=672 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+W0000 00:00:1792146463.496821   19877 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=24.65 decode_tok_s_wall=24.46 ttft_ms=225 prefill_tok_s=136.5 prefill_tok_s_wall=88.9 prompt_tokens=20 peak_mb=376 median_mb=376 median_resident_mb=2082 ctx=672 tokens=128 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+W0000 00:00:1792146487.758182   20012 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=23.07 decode_tok_s_wall=22.89 ttft_ms=260 prefill_tok_s=114.6 prefill_tok_s_wall=76.9 prompt_tokens=20 peak_mb=377 median_mb=377 median_resident_mb=2083 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+W0000 00:00:1792146513.201752   19872 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=22.51 decode_tok_s_wall=22.34 ttft_ms=265 prefill_tok_s=112.3 prefill_tok_s_wall=75.4 prompt_tokens=20 peak_mb=378 median_mb=378 median_resident_mb=2084 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
