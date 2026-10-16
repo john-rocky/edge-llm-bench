@@ -1,0 +1,53 @@
+Rebase of build-from-ref onto origin/main, 2026-10-16 19:52:25-19:55:01 JST (git reflog) (round 5, step 1)
+
+base before: 0efecb01   origin/main: 5ae1538c (7 commits ahead of the base: f811d624, c5ef7507, 1eec49f4,
+5cc6bf97, 1c01475b, ca63a893, 5ae1538c)   branch before: 71f0fc84   branch after: c3333470
+
+commit (before -> after)   conflicted file: how it was resolved
+ebe86aa8 -> c1e0b1bf   android/ddp/selftest.py (3 hunks): both sides kept. Docstring item 1 = main's model_file
+                       sentence, then this branch's --engine-build sentence; main's check_model_file (section
+                       "1c") first, then this branch's section, renamed "1c" -> "1d" (its comment line and its
+                       print header; both branches had named theirs 1c); main() calls check_model_file(tmp)
+                       then check_engine_build(tmp, bin_dir, models). Selftest at this commit: 93 checks, rc 0
+                       (main's 76 + this branch's 17).
+                       Auto-merged, both sides kept (checked by grep): README.md (this branch's --engine-build
+                       sentence, then main's selftest paragraph), android/README.md, android/ddp/run_ddp.py
+                       (main's model_file = the sha256 of the file's bytes + the Hub LFS check; this branch's
+                       --engine-build in the docstring, ENGINE_BUILD, engine_files, plan, main), bench (main's
+                       doctor --platform ddp; this branch's --engine-build), docs/OPERATIONS.md,
+                       docs/ddp-integration.md.
+                       Message: "android/ddp/selftest.py 73 -> 90 checks" -> "76 -> 93 checks" (the counts on
+                       the new parent); nothing else changed.
+53116e9c -> 52017e9b   results/summary/README.md, results/summary/device-runs.csv: main's version taken, then
+                       rebuilt from the git index (CLAUDE.md's command, temp tree in the session scratchpad,
+                       behind quiet_wait): +6 rows, all of results/raw/2026-10-16-ddp-buildref-{akita-35,m1q-36}-android,
+                       4487 -> 4493 lines, README count 4486 -> 4492 records, nothing else changed.
+                       Message: "(4483 -> 4489 lines)" -> "(4487 -> 4493 lines)".
+57abb167 -> 8effea70   no conflict.
+71f0fc84 -> c3333470   results/summary/README.md, results/summary/device-runs.csv: the same way: +16 rows, all of
+                       results/raw/2026-10-16-ddp-iphone16pro-18-3-ios, 4493 -> 4509 lines.
+                       Message: "(4489 -> 4505 lines)" -> "(4493 -> 4509 lines)".
+
+After: git log --oneline origin/main..HEAD = 4 commits, the order kept; author and committer
+unchanged on all 4. git diff 71f0fc84 HEAD outside results/raw = main's 13 files
+plus the selftest merge (section label and docstring); results/raw: 126 files added, all main's, none of
+this branch's changed. Blobs identical before and after: android/scripts/pins_add.py,
+android/scripts/build_litert_lm_main.sh, android/engine-pins.json, ios/ddp/{run_ddp_ios_lm.py, selftest.py,
+README.md}, .github/workflows/data-pipeline.yml.
+
+Second rebase, 2026-10-16 20:22:03-20:22:45 JST, git reflog (origin/main moved at 20:02:18, after the first rebase: d6077c6b, another
+lane's 54 summary rows of 10 DDP m1q-36 sessions; seen at 20:18 with `git rev-parse origin/main`, then fetched):
+this round's staged work set aside as a temporary WIP commit, `git rebase origin/main`, the WIP commit undone with
+`git reset --soft HEAD~1` (its changes staged again; no stash).
+
+commit (before -> after)   conflict: resolution
+c1e0b1bf -> 0a999b8f   none.
+52017e9b -> 81a86209   results/summary/{README.md, device-runs.csv}: main's taken, rebuilt from the git index: +6 rows of
+                       the two buildref campaigns, 4541 -> 4547 lines. Message "(4487 -> 4493 lines)" -> "(4541 -> 4547 lines)".
+8effea70 -> a60cdb82   none.
+c3333470 -> c57c17b8   results/summary/README.md (device-runs.csv merged by git): rebuilt from the git index all the same:
+                       +16 rows of the iOS DDP campaign, 4547 -> 4563 lines (the rebuilt CSV = git's merge byte for byte).
+                       Message "(4493 -> 4509 lines)" -> "(4547 -> 4563 lines)".
+WIP (this round)       none; reset --soft.
+
+After: git log --oneline origin/main..HEAD = 0a999b8f, 81a86209, a60cdb82, c57c17b8 (+ this round's commit), the order kept.

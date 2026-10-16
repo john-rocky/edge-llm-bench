@@ -16,7 +16,7 @@ results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md).
    records.txt (not a stale one) with device.ddp and conditions.ddp and every other key as the app
    wrote it, the console under the attached runner's name, ddp/<session>/ and ddp-raw/<session>/;
    --records-only writes the same files again; exit 4 (job failed), 5 (no record), 3 (no gcloud),
-   2 (not an iPhone; a collected session of another cell).
+   2 (not an iPhone; a collected session of another cell); plan.json writes the home directory as ~.
 4. scripts/build_summary.py into a temp dir: the device column of a DDP iPhone row, never the
    attached iPhone's.
 """
@@ -493,6 +493,22 @@ def check_billed(tmp, archive, shas):
     ok(r.returncode == 0 and len(glob.glob(os.path.join(tmp, "raw", "selftest-ios-ddp-collect", "device-jsonl", "*.json"))) == 4
        and not any("sessions submit" in c for c in gcloud_calls(tmp)),
        f"--collect of the cell's session: rc 0, 4 records, nothing submitted ({r.returncode}; {r.stderr[-200:]!r})")
+    # plan.json is committed: the same billed run with HOME = the temp dir that holds the campaign
+    stage_fake(tmp, describe_json())
+    stage_execution(tmp, recs, stale)
+    r = driver(["--device", DEVICE, "--model-id", "litert-community/Qwen3-1.7B", "--backend", "gpu", "--archive",
+                archive, "--campaign", "selftest-ios-ddp-home", "--project", PROJECT, "--bucket", BUCKET],
+               env_for(tmp, extra={"HOME": tmp}))
+    path = os.path.join(tmp, "raw", "selftest-ios-ddp-home", "ddp", SID, "plan.json")
+    text = open(path).read() if os.path.exists(path) else ""
+    plan = json.loads(text) if text else {}
+    ok(r.returncode == 0 and text and tmp not in text and os.path.expanduser("~") not in text
+       and not re.search(r"/(Users|home)/", text)
+       and plan.get("campaignDir") == "~/raw/selftest-ios-ddp-home"
+       and plan.get("argsFile", "").startswith("~/raw/selftest-ios-ddp-home/ddp/args-")
+       and [x.get("source") for x in plan.get("push", [])][1:] == [plan.get("argsFile")],
+       f"plan.json with HOME = the temp dir: the campaign dir, the argv file and its push source start with ~; "
+       f"no home path, no /(Users|home)/ path ({r.returncode}; {plan.get('campaignDir')}, {plan.get('argsFile')})")
     return camp, template
 
 

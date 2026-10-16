@@ -1,0 +1,72 @@
+quiet_wait: waited 0 s, running: python3 ios/ddp/selftest.py
+--- 1. ios/ddp/models.json against ModelCatalog.swift (ModelCatalog.liteRTLM)
+  ok  models.json holds the three D1 ids (['litert-community/Qwen3-1.7B', 'litert-community/Qwen3-1.7B/int8', 'litert-community/gemma-4-E2B-it-litert-lm'])
+  ok  litert-community/Qwen3-1.7B: hfRepoId / file = the catalog's (litert-community/Qwen3-1.7B, Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm)
+  ok  litert-community/Qwen3-1.7B/int8: hfRepoId / file = the catalog's (litert-community/Qwen3-1.7B, Qwen3_1.7B.litertlm)
+  ok  litert-community/gemma-4-E2B-it-litert-lm: hfRepoId / file = the catalog's (litert-community/gemma-4-E2B-it-litert-lm, gemma-4-E2B-it.litertlm)
+--- 2. --dry-run: the command, the app's argv, the refusals; gcloud never runs
+  ok  bench_matrix_iphone.sh DRY_RUN printed 4 launches (rc 0, 4; '')
+  ok  litert-community/Qwen3-1.7B gpu: rc 0, a sessions submit xctest command (rc 0, '')
+  ok  litert-community/Qwen3-1.7B gpu: --device, --test = the archive's content-addressed object (gs://fake-bucket/automation/inputs/edge-llm-bench/ios-xctest/f28201b099fc959efc9c8bd5d32f8a70d488b08d73d7ef126d86c7fef131de11/BenchmarkApp-ddp-xctest.zip)
+  ok  litert-community/Qwen3-1.7B gpu: push 2 = the gs:// model object named by the blob's sha256 -> the app's model dir, the argv file -> Documents/yardstick_args.json (['gs://fake-bucket/automation/inputs/edge-llm-bench/models/93329492803fcd5a965e508ca1fd76870285dfab4f00a6f3dd99b65336b2d58e/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/models/litert-lm/litert-community__Qwen3-1.7B/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm', '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ios-ddp-selftest-9jrmh_yi/raw/selftest-ios-ddp/ddp/args-fe4fda8614ea.json=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/yardstick_args.json'])
+  ok  litert-community/Qwen3-1.7B gpu: pull 2 paths, --xctest-timeout 15m, --xcode-version xcode-26-2, --async, the project
+  ok  litert-community/Qwen3-1.7B gpu: 9 labels in the GCP label form (runtime, engine, deviceid, backend, run) ({'harness': 'edge-llm-bench', 'campaign': 'selftest-ios-ddp', 'runtime': 'litert-lm', 'model': 'litert-community--qwen3-1-7b', 'task': 'short-chat', 'backend': 'gpu', 'deviceid': 'iphone16pro-18-3', 'engine': 'v0-18-0', 'run': 'fe4fda8614ea'})
+  ok  litert-community/Qwen3-1.7B gpu: the app's argv = bench_matrix_iphone.sh's devicectl argv (['--yardstick-autorun', '--runtime', 'litert-lm', '--model-id', 'litert-community/Qwen3-1.7B', '--task', 'short-chat', '--runs', '4', '--litert-backend', 'gpu'])
+  ok  litert-community/Qwen3-1.7B gpu: no home path in the printed plan
+  ok  litert-community/Qwen3-1.7B/int8 cpu: rc 0, a sessions submit xctest command (rc 0, '')
+  ok  litert-community/Qwen3-1.7B/int8 cpu: --device, --test = the archive's content-addressed object (gs://fake-bucket/automation/inputs/edge-llm-bench/ios-xctest/f28201b099fc959efc9c8bd5d32f8a70d488b08d73d7ef126d86c7fef131de11/BenchmarkApp-ddp-xctest.zip)
+  ok  litert-community/Qwen3-1.7B/int8 cpu: push 2 = the gs:// model object named by the blob's sha256 -> the app's model dir, the argv file -> Documents/yardstick_args.json (['gs://fake-bucket/automation/inputs/edge-llm-bench/models/bd616953c3246c3bcc35ea1f65da03300b56556f8dd963f7463eba0f7e26ca77/Qwen3_1.7B.litertlm=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/models/litert-lm/litert-community__Qwen3-1.7B/Qwen3_1.7B.litertlm', '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ios-ddp-selftest-9jrmh_yi/raw/selftest-ios-ddp/ddp/args-ecaf72b33bbb.json=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/yardstick_args.json'])
+  ok  litert-community/Qwen3-1.7B/int8 cpu: pull 2 paths, --xctest-timeout 30m, --xcode-version xcode-26-2, --async, the project
+  ok  litert-community/Qwen3-1.7B/int8 cpu: 9 labels in the GCP label form (runtime, engine, deviceid, backend, run) ({'harness': 'edge-llm-bench', 'campaign': 'selftest-ios-ddp', 'runtime': 'litert-lm-cpu', 'model': 'litert-community--qwen3-1-7b--int8', 'task': 'short-chat', 'backend': 'cpu', 'deviceid': 'iphone16pro-18-3', 'engine': 'v0-18-0', 'run': 'ecaf72b33bbb'})
+  ok  litert-community/Qwen3-1.7B/int8 cpu: the app's argv = bench_matrix_iphone.sh's devicectl argv (['--yardstick-autorun', '--runtime', 'litert-lm', '--model-id', 'litert-community/Qwen3-1.7B/int8', '--task', 'short-chat', '--runs', '4', '--litert-backend', 'cpu'])
+  ok  litert-community/Qwen3-1.7B/int8 cpu: no home path in the printed plan
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: rc 0, a sessions submit xctest command (rc 0, '')
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: --device, --test = the archive's content-addressed object (gs://fake-bucket/automation/inputs/edge-llm-bench/ios-xctest/f28201b099fc959efc9c8bd5d32f8a70d488b08d73d7ef126d86c7fef131de11/BenchmarkApp-ddp-xctest.zip)
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: push 2 = the gs:// model object named by the blob's sha256 -> the app's model dir, the argv file -> Documents/yardstick_args.json (['gs://fake-bucket/automation/inputs/edge-llm-bench/models/fb572d0891064e10eae3bab4127d9a187f6140bb0c03b22ae6d3cb4239130bbb/gemma-4-E2B-it.litertlm=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/models/litert-lm/litert-community__gemma-4-E2B-it-litert-lm/gemma-4-E2B-it.litertlm', '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ios-ddp-selftest-9jrmh_yi/raw/selftest-ios-ddp/ddp/args-7a95af7e807f.json=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/yardstick_args.json'])
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: pull 2 paths, --xctest-timeout 15m, --xcode-version xcode-26-2, --async, the project
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: 9 labels in the GCP label form (runtime, engine, deviceid, backend, run) ({'harness': 'edge-llm-bench', 'campaign': 'selftest-ios-ddp', 'runtime': 'litert-lm', 'model': 'litert-community--gemma-4-e2b-it-litert-lm', 'task': 'short-chat', 'backend': 'gpu', 'deviceid': 'iphone16pro-18-3', 'engine': 'v0-18-0', 'run': '7a95af7e807f'})
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: the app's argv = bench_matrix_iphone.sh's devicectl argv (['--yardstick-autorun', '--runtime', 'litert-lm', '--model-id', 'litert-community/gemma-4-E2B-it-litert-lm', '--task', 'short-chat', '--runs', '4', '--litert-backend', 'gpu'])
+  ok  litert-community/gemma-4-E2B-it-litert-lm gpu: no home path in the printed plan
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: rc 0, a sessions submit xctest command (rc 0, '')
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: --device, --test = the archive's content-addressed object (gs://fake-bucket/automation/inputs/edge-llm-bench/ios-xctest/f28201b099fc959efc9c8bd5d32f8a70d488b08d73d7ef126d86c7fef131de11/BenchmarkApp-ddp-xctest.zip)
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: push 2 = the gs:// model object named by the blob's sha256 -> the app's model dir, the argv file -> Documents/yardstick_args.json (['gs://fake-bucket/automation/inputs/edge-llm-bench/models/fb572d0891064e10eae3bab4127d9a187f6140bb0c03b22ae6d3cb4239130bbb/gemma-4-E2B-it.litertlm=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/models/litert-lm/litert-community__gemma-4-E2B-it-litert-lm/gemma-4-E2B-it.litertlm', '/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ios-ddp-selftest-9jrmh_yi/raw/selftest-ios-ddp/ddp/args-a97085881ed2.json=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/yardstick_args.json'])
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: pull 2 paths, --xctest-timeout 30m, --xcode-version xcode-26-2, --async, the project
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: 9 labels in the GCP label form (runtime, engine, deviceid, backend, run) ({'harness': 'edge-llm-bench', 'campaign': 'selftest-ios-ddp', 'runtime': 'litert-lm-cpu', 'model': 'litert-community--gemma-4-e2b-it-litert-lm', 'task': 'short-chat', 'backend': 'cpu', 'deviceid': 'iphone16pro-18-3', 'engine': 'v0-18-0', 'run': 'a97085881ed2'})
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: the app's argv = bench_matrix_iphone.sh's devicectl argv (['--yardstick-autorun', '--runtime', 'litert-lm', '--model-id', 'litert-community/gemma-4-E2B-it-litert-lm', '--task', 'short-chat', '--runs', '4', '--litert-backend', 'cpu'])
+  ok  litert-community/gemma-4-E2B-it-litert-lm cpu: no home path in the printed plan
+  ok  four dry runs called gcloud 0 times ([])
+  ok  --flat-model-push -> Documents/<file>; --context-tokens before --litert-backend; --timeout 45m (gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/fb572d0891064e10eae3bab4127d9a187f6140bb0c03b22ae6d3cb4239130bbb/gemma-4-E2B-it.litertlm=com.iosllmbenchmark.benchmarkapp.ddp:/Documents/gemma-4-E2B-it.litertlm)
+  ok  without huggingface_hub the dry run reads the cache's refs/main -> blob (93329492803fcd5a965e508ca1fd76870285dfab4f00a6f3dd99b65336b2d58e)
+  ok  an .xctestrun of FormatVersion 2 (TestConfigurations[].TestTargets[]) gives the bundle id too
+  ok  exit 2 for a model id not in models.json (2: 'p/models.json (litert-community/Qwen3-1.7B, litert-community/Qwen3-1.7B/int8, litert-community/gemma-4-E2B-it-litert-lm)')
+  ok  exit 2 for --timeout 2h (2: "run_ddp_ios_lm.py: --timeout '2h' is not between 1m and 1h (the lab's --xctest-timeout range)")
+  ok  exit 2 for --timeout 0m (2: "run_ddp_ios_lm.py: --timeout '0m' is not between 1m and 1h (the lab's --xctest-timeout range)")
+  ok  exit 2 for no archive (2: 'var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ios-ddp-selftest-9jrmh_yi/missing.zip; run ios/ddp/build_xctest.sh first')
+  ok  exit 2 for an archive without a manifest (2: 'ifest.zip is not an archive from ios/ddp/build_xctest.sh (no manifest with a TestHostBundleIdentifier, or no BUILD_INFO)')
+  ok  exit 2 for an archive without BUILD_INFO (2: '-info.zip is not an archive from ios/ddp/build_xctest.sh (no manifest with a TestHostBundleIdentifier, or no BUILD_INFO)')
+  ok  exit 2 for --runs 0 (2: 'run_ddp_ios_lm.py: --runs 0: at least 1')
+  ok  exit 2 for a device id that is not a catalog id (2)
+  ok  --records-only with other flags: exit 2 (2)
+  ok  the refusals called gcloud 0 times
+--- 3. the billed path against a stand-in gcloud: upload, submit, wait, pull, records
+  ok  rc 0 (0; '')
+  ok  uploads: the archive only (the model object was in the bucket) (['storage cp /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ios-ddp-selftest-9jrmh_yi/BenchmarkApp-ddp-xctest.zip gs://fake-bucket/automation/inputs/edge-llm-bench/ios-xctest/f28201b099fc959efc9c8bd5d32f8a70d488b08d73d7ef126d86c7fef131de11/BenchmarkApp-ddp-xctest.zip'])
+  ok  one submission with the gs:// model push and the project
+  ok  the session found by its run label, described, its execution pulled (8 calls)
+  ok  device-jsonl/ = the 4 records named in records.txt, not the stale one (['litert-lm_litert-community_Qwen3-1.7B_short-chat_2026-10-17T00-02-05Z.json', 'litert-lm_litert-community_Qwen3-1.7B_short-chat_2026-10-17T00-02-20Z.json', 'litert-lm_litert-community_Qwen3-1.7B_short-chat_2026-10-17T00-02-34Z.json', 'litert-lm_litert-community_Qwen3-1.7B_short-chat_2026-10-17T00-02-49Z.json'])
+  ok  each record: device.ddp {deviceId, displayName, osVersion}, conditions.ddp (session, job, execution, timeout, Xcode, result, runIndex 1-4 in timestamp order, model sha, BUILD_INFO, argv); every other key as the app wrote it; id kept
+  ok  console under bench_matrix_iphone.sh's name, one header (console_litert-lm_litert-community_Qwen3-1_7B_short-chat.txt)
+  ok  ddp/session-0123abcd/ holds the plan (no host path), the session, the argv, console, records.txt, yardstick.done (['args.json', 'console.txt', 'ddp_session.json', 'plan.json', 'records.txt', 'yardstick.done'])
+  ok  ddp-raw/<session>/ holds the pulled tree and the lab's logs; the argv file moved into the session dir
+  ok  --records-only (no gcloud on PATH) writes the same files, the console not appended twice (0; '')
+  ok  a FAILED job: exit 4, records written, junit's tail shown (4)
+  ok  a passed job with no record: exit 5 (5; 'run_ddp_ios_lm.py: the job passed but no record came back (a run past --xctest-timeout 15m leaves this too)\n')
+  ok  no gcloud: exit 3 (3)
+  ok  a catalog id that is not an iPhone: exit 2 (2)
+  ok  --collect of another cell's session: exit 2, nothing submitted (2)
+  ok  --collect of the cell's session: rc 0, 4 records, nothing submitted (0; '')
+--- 4. build_summary into a temp dir: the DDP iPhone row's device column, never the attached iPhone's
+  ok  device column 'iPhone17,1 (DDP iphone16pro-18-3)', platform ios, engine v0.18.0 (['iPhone17,1 (DDP iphone16pro-18-3)'])
+  ok  the attached iPhone's record keeps its own device (['iPhone17,1'])
+
+ios ddp selftest OK (65 checks)
