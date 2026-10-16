@@ -1,0 +1,105 @@
+
+## step copy-ci | start 2026-10-16 16:37:09 JST | h_copy_into_clone android/ddp/run_ddp.py android/ddp/selftest.py
+## android/ddp/run_ddp.py sha256 worktree e19903a00a99f26a6e1f3e5704f312dfb9ef88268dbaf9c34ab710a5122d776b clone e19903a00a99f26a6e1f3e5704f312dfb9ef88268dbaf9c34ab710a5122d776b
+## android/ddp/selftest.py sha256 worktree c81b46a6022f29e5c89caed27c661cbbb5fc14346485923b14b436043d3ddb53 clone c81b46a6022f29e5c89caed27c661cbbb5fc14346485923b14b436043d3ddb53
+## step copy-ci | end 2026-10-16 16:37:09 JST | rc 0 | 0 s
+
+## step selftest-no-hub | start 2026-10-16 16:37:09 JST | dexec dev r2b-selftest-no-hub.sh
+## Python 3.12.3 (/usr/bin/python3); huggingface_hub importable: no
+--- 1. plan: dashboard cells on akita-35 / m1q-36 / caiman-35 (no subprocess, no network, no HF cache)
+  ok  akita-35: 8 jobs in 1 session(s) (want 8 / 1)
+  ok  akita-35: skips = 10 llama.cpp rows + 12 exclude-on rows with key pixel8a (got 10 + 12: ['pixel8a'])
+  ok  m1q-36: 16 jobs in 2 session(s) (want 16 / 2)
+  ok  m1q-36: skips = 10 llama.cpp rows + 4 exclude-on rows with key s26 (got 10 + 4: ['s26'])
+  ok  caiman-35: 8 jobs in 1 session(s) (want 8 / 1)
+  ok  caiman-35: skips = 10 llama.cpp rows + 0 exclude-on rows with key None (got 10 + 0: [])
+  ok  caiman-35 (no schedule key): the 12 litert-lm rows with an exclude-on skip as ddp-device-key-unknown, no mask (got 12)
+  ok  every job's --command= = planned_command's engine command, --env / --binname / --mask / --dir apart (mask = the schedule key's cpu_mask) ([])
+  ok  requests: contract field names only, push <= 50, pull = [/data/local/tmp/llmbench/ddp-out], labels <= 16 (key <= 32 B, value <= 1024 B), displayName <= 63 B and the regex, executionTimeout '<n>s' in 60..10800, args <= 100, one action per type, --command= last ([])
+  ok  push = 9 engine files + model + prompt, content-addressed objects; the wrapper is the job's binary
+  ok  the 9 engine files' sha256 = android/engine-pins.json litert-lm v0.18.0
+  ok  cpu-cap wait per id: m1q-36 --cpucap_wait=0 (devices.json), akita-35 / caiman-35 300 (absent key); thermal gate unchanged ({'akita-35': ['--cpucap_wait=300'], 'm1q-36': ['--cpucap_wait=0'], 'caiman-35': ['--cpucap_wait=300']})
+  ok  a negative cpucapWaitSeconds stops the plan (x-1: cpucapWaitSeconds -1 in ../../../tmp/ddp-selftest-gej9ih5b/devices-bad.json is not a whole number of seconds >= 0)
+  ok  the plan carries --project / --bucket; every request path is under gs://fake-bucket/automation/ (97 paths)
+  ok  an engine file one byte off its pin stops the plan, naming it (/tmp/ddp-selftest-gej9ih5b/bad-bin/v0.18.0/libLiteRtOpenClAccelerator.so: sha256 2f16ac2fbefaa5aa6f319d0b644fee2b896b3a98f2d025ebc53e6b592b33411c is not the pin's dfc714a0b59d5e1bf5155db7533070bf13da28574a3bc52396a4ba22d23d893c (android/engine-pins.json litert-lm v0.18.0) — nothing is pushed)
+--- 1b. bench matrix --ddp --dry-run: no gcloud, other platforms skipped, no summary
+  ok  bench --ddp akita-35 --dry-run: rc 0, ios / mac rows skipped, 8 jobs (rc 0, '')
+  ok  the dry run never ran gcloud (a gcloud first on PATH that records calls)
+  ok  the dry run rebuilt no summary
+  ok  bench matrix --dry-run without --ddp refuses (rc 2)
+  ok  bench --ddp m1q-36 --dry-run --project other-team-project --bucket gs://other-team-bucket/: the summary line names both (trailing / dropped) and cpucapWaitSeconds 0, every request path in that bucket (rc 0, {'device': 'm1q-36', 'scheduleKey': 's26', 'engine': 'v0.18.0', 'campaign': 'selftest-dry-other-android', 'jobs': 16, 'sessions': 2, 'skipped': 14, 'deviceMinutes': 622.6, 'project': 'other-team-project', 'bucket': 'gs://other-team-bucket', 'cpucapWaitSeconds': 0})
+  ok  --project without --ddp refuses (rc 2); a --bucket without gs:// refuses (rc 2)
+  ok  none of the dry runs ran gcloud
+--- 1c. model_file: the sha256 of the file, not the cache blob's name (a fake huggingface_hub, no network)
+  ok  dry run on a blob named by a 64-hex string that is not its sha256: sha256 = the file's hash, local = the blob, from the cache only (local_files_only, HF_HUB_OFFLINE=1) (b882ac1d1542…, (True, '1'))
+  ok  billed path: the hash = the Hub's LFS sha256 passes; a file the Hub gives no LFS sha256 passes on the size alone
+  ok  billed path: a hash other than the Hub's LFS sha256 stops it, naming both (/tmp/ddp-selftest-gej9ih5b/hf-cache/hub/blobs/d6/d6cc8580465c859f2f5c5406fa48c1ac7792de2cb5252a8905275022122bf593: sha256 b882ac1d1542b8af0534c3311a0a20b978bc26d6c7ecceb5e24b73da11bd204d, the Hub's LFS sha256 is a3ead5eedad5df82318c51685dbc1c147a36d1ff8584fc82de6b08d0bf63a795 (poisoned cache?))
+--- 2. ddp_cell.sh --print_shell = run_cell.sampler_shell, every planned job, arg whole or split
+  ok  48 wrapper strings byte-equal to sampler_shell (differ: [])
+--- 2b. ddp_cell.sh on this host with stand-in device tools
+  ok  2 runs: exit 0, each run<i>.log = sampler output, ===ENGINE_OUTPUT===, the engine's output, EXIT_CODE=0 (rc 0, '')
+  ok  provenance.txt: getprop values, every arg (13), sha256 of the engine, model and prompt files (13 args, 5 shas)
+  ok  run1.state: start / end epoch, thermal, battery, screen and the gate results read back ({'run': '1', 'thermal_gate_waited_s': '0', 'thermal_gate_timed_out': '0', 'cpucap_waited_s': '0', 'cpucap_timed_out': '0', 'cpucap_caps': ''})
+  ok  run<i>.exit (0), run<i>.engine.txt, run<i>_logcat.txt, wrapper.log written
+  ok  --command= split at its spaces into separate args runs the same engine command
+  ok  an engine that exits 3: EXIT_CODE=3, run1.exit 3, the wrapper still exits 0 (rc 0)
+  ok  an engine past --timeout: timeout ends it (exit 124 in run1.exit), the wrapper exits 0 (rc 0)
+  ok  --budget 100 s with a 20 s run timeout and a 30 s cooldown: run 1 runs, run 2 is not started (run2.skipped)
+  ok  a unit at thermal status 2: the gate times out after --thermal_wait, the run still runs, recorded
+  ok  no --command: no run, the reason in wrapper.log, exit 0
+--- 3. the attached-phone route's FAKESELF campaign (round mode) for the record layout
+  ok  FAKESELF campaign: 1 short-chat record + 2 iteration records of the 1K launch (rc 0, 1 + 2; 'pushing Qwen3_1.7B.litertlm (0 MB) …\npushing Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm (0 MB) …\n')
+  ok  the FAKESELF console's sampler lines (CPUPOLICY, VmHWM / VmRSS / Cpus_allowed_list, CPUMAX) taken for the fake unit
+--- 4. the billed path against a fake gcloud and a fake Device Run server
+  ok  one POST for the session's 2 jobs; 14 objects uploaded (9 engine, 2 models, 2 prompts, the wrapper) (rc 1, posts 1, uploads 14)
+  ok  ddp/request-1.json = the body POSTed; every call carried the gcloud token (4 calls)
+  ok  polled until done (ddp/operation-1.json), ddp/session-1.json, the session pulled into ddp/session-test0001/
+  ok  SKIPPED.txt names the llama.cpp row and its reason
+  ok  records: 2 short-chat runs, 2 x 2 iterations of the 1K cell (got 2 + 4)
+  ok  every record carries result.v1's required keys
+  ok  short-chat: DDP record keys ⊇ the attached-phone record's; added only ['conditions.ddp', 'conditions.engineCache', 'device.ddp', 'provenance.ddpSessionDir', 'provenance.wrapper', 'provenance.wrapperSha256'] (missing [], extra [])
+  ok  1K iteration 1: DDP record keys ⊇ the attached-phone record's; added only ['conditions.ddp', 'conditions.engineCache', 'device.ddp', 'provenance.ddpSessionDir', 'provenance.wrapper', 'provenance.wrapperSha256'] (missing [], extra [])
+  ok  witness: v0.18.0 + the launched tool's sha, read from the unit's provenance.txt
+  ok  model.sha256 = the provenance.txt sha of the pushed model, modelShaSource device, file = the device name
+  ok  conditions.ddp: all 15 fields from the session report and the unit; device.ddp ({'sessionId': 'session-test0001', 'jobId': '00000000-0000-0000-0000-0000000003e8', 'executionId': '00000000-0000-0000-0000-000000000001', 'deviceId': 'akita-35', 'deviceKey': 'pixel8a', 'buildFingerprint': 'google/akita/akita:16/FAKE.251005.001/7:user/release-keys', 'serial': 'FAKEDDP0001', 'product': 'akita', 'jobStartTime': '2026-10-15T10:00:00.000Z', 'jobEndTime': '2026-10-15T10:20:00.000Z', 'executionStartTime': '2026-10-15T10:01:00.000Z', 'executionEndTime': '2026-10-15T10:19:00.000Z', 'executionTimeout': '3600s', 'resultType': 'PASSED', 'runIndex': 1})
+  ok  provenance.rawLog = a copy of the pulled run1.log beside the record; ddpSessionDir names the execution
+  ok  cpuAffinity = the applied mask, harnessStamp +ddp-route-c, screen / elapsed (ns) / battery / thermal from run1.state
+  ok  1K cell: per run a cold and a warm record, each with textCheck and its .decoded.txt ([(1, 'cold'), (1, 'cold'), (2, 'warm'), (2, 'warm')])
+  ok  firstEver on run 1 only (its iteration 1 in the 1K cell) ([True, None, True, None, None, None])
+  ok  conditions.engineCache from the raw log: CPU run 1 built, run 2 loaded (gpuCache absent); GPU run 1 not-loaded, run 2 loaded (xnnpack absent), both iterations of a 1K launch alike; no ddpMissing ([('litert-lm-cpu', 1, 1, '{"gpuCache": "absent", "xnnpackWeightCache": "built"}'), ('litert-lm-cpu', 2, 1, '{"gpuCache": "absent", "xnnpackWeightCache": "loaded"}'), ('litert-lm-gpu', 1, 1, '{"gpuCache": "not-loaded", "xnnpackWeightCache": "absent"}'), ('litert-lm-gpu', 1, 2, '{"gpuCache": "not-loaded", "xnnpackWeightCache": "absent"}'), ('litert-lm-gpu', 2, 1, '{"gpuCache": "loaded", "xnnpackWeightCache": "absent"}'), ('litert-lm-gpu', 2, 2, '{"gpuCache": "loaded", "xnnpackWeightCache": "absent"}')])usage: run_ddp.py [-h] [--device DEVICE] [--campaign CAMPAIGN] [--dry-run]
+                  [--jobs-per-session JOBS_PER_SESSION]
+                  [--job-timeout JOB_TIMEOUT] [--resume RESUME]
+                  [--records-only CAMPAIGN_DIR] [--bin-dir BIN_DIR]
+                  [--bucket BUCKET] [--project PROJECT] [--endpoint ENDPOINT]
+                  [--poll-seconds POLL_SECONDS]
+                  [cells]
+run_ddp.py: error: --records-only takes the campaign dir alone
+
+  ok  record id = uuid5(URL, edge-llm-bench/ddp/<session>/<job>/<execution>/run<i>/iter<k>), conditions.launchID = the same without /iter<k>; 6 ids, all distinct (differ: [])
+  ok  after the pull: none of the 17 lab strings anywhere in the campaign dir beside ddp-raw/, which holds the 6 logcats (2 jobs x 2 runs + 2 executions) byte for byte as pulled; what stays stays; line counts kept (6 logcats, 6 copies, leaks [])
+  ok  ddp/scrub.json: one entry per logcat with {'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3} (18), rawSha256 = its ddp-raw/ copy, totals x 6 ({'ssid': 18, 'hash': 12, 'ip6': 18, 'mac': 12, 'mac-part': 6, 'ip': 24, 'id': 18, 'replaced': 108, 'files': 6})
+  ok  .gitignore keeps every campaign's ddp-raw/ out of git (results/raw/*/ddp-raw/)
+  ok  --records-only <campaign>: no subprocess, no network; the 6 records, their raw logs and decoded texts and FAILURES.txt written again, the logcats, ddp-raw/ and scrub.json, all byte for byte as before; the billed run's exit code (rc 1 / 1, changed [], {'recordsOnly': '../../../tmp/ddp-selftest-gej9ih5b/sumroot/results/raw/selftest-ddp-akita-35-android', 'sessions': 1, 'removed': 15, 'written': 15, 'records': 6, 'notWrittenAgain': [], 'newNames': []})
+  ok  --records-only with another argument refuses (SystemExit(2))
+  ok  a second campaign checks the 14 objects (storage ls) and uploads none (rc 1)
+  ok  a 400 to the POST: the driver stops, ddp/error-1.json holds the body verbatim, no record (session 1: POST answered 400; body in /tmp/ddp-selftest-gej9ih5b/sumroot/results/raw/selftest-ddp-rejected-android/ddp/error-1.json)
+  ok  --resume <operation>: no new POST, the session polled, pulled and recorded (rc 1, 6 records)
+  ok  ddp/plan-1.json (what the records are built from) carries no host path
+  ok  provenance sha of libLiteRtOpenClAccelerator.so changed -> ['unknown (on-device v0.18.0 litert_lm_main with lib libLiteRtOpenClAccelerator.so unmatched in android/engine-pins.json)']
+  ok  provenance sha of litert_lm_main changed -> ['unknown (on-device litert_lm_main sha unmatched in android/engine-pins.json)']
+  ok  a CPU run with neither XNNPACK cache line: engineCache absent / absent, the reason in provenance.ddpMissing ([["conditions.engineCache.xnnpackWeightCache: run1.log has neither 'weight cache build for' nor 'weight cache loaded from'"]])
+--- 5. build_summary into a temp dir: the DDP row's device column, never the attached phone's
+  ok  device column: DDP rows 'Pixel 8a (DDP akita-35)', the attached phone's 'Pixel 8a' (['Pixel 8a (DDP akita-35)'], ['Pixel 8a'])
+  ok  render_leaderboard: the same cell under two (platform, device) keys, one arm_row each, no pooling ([('android', 'Pixel 8a'), ('android', 'Pixel 8a (DDP akita-35)')])
+  ok  render_dashboard.devices_for: the DDP unit is a column of its own after the schedule's phones (['SM-S942Q', 'Pixel 8a', 'Pixel 8a (DDP akita-35)'])
+--- 6. android/ddp/scrub.py: each rule, what stays, the file form, the CLI
+  ok  scrub_text: 17 lines, each rule (ssid quoted / ssid() / short / bare / known from the session, hash, ip6, mac incl. star-masked, mac-part, ip, id) and what stays, counted per kind ([])
+  ok  the fake lab logcat: {'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3}, line count kept, no lab string left, what stays stays
+  ok  scrub_file: the original in the raw dir, the scrub over the file; a second scrub reads the copy: the same bytes and counts, the copy untouched; bytes outside UTF-8 kept
+  ok  scrub_file refuses a raw dir that is the file's own directory
+  ok  scrub.py --raw-dir <dir> <file> <file>: one JSON line per file with its counts, originals in the dir, the SSID that only the execution's logcat quotes taken out of the run's too; executable (rc 0, [{'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3}, {'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3}], '')
+  ok  the CLI refuses a missing file (rc 2) and two files of one name (rc 2)
+
+ddp selftest OK (76 checks)
+## /usr/bin/python3 android/ddp/selftest.py exit=0
+## step selftest-no-hub | end 2026-10-16 16:37:26 JST | rc 0 | 17 s

@@ -1,7 +1,7 @@
 #!/bin/bash
 # D3S4 r1 / r2 / r2b driver: the container steps of the Linux first run, one after another; each step starts only after
 # the Mac measurement window is closed (quiet_wait.py before every step) and appends its output to K/linux/<log>.
-#   bash run_steps.sh [main|verify|r2-dry|r2-session|r2-after|r2b-dry|r2b-session]
+#   bash run_steps.sh [main|verify|r2-dry|r2-session|r2-after|r2b-dry|r2b-session|r2b-ci]
 #   START_AT=<step> resumes the phase at that step; ONLY="<step> <step>" runs just those steps.
 # Writes K/linux/steps.tsv (step, start, end, seconds, rc, log), K/linux/STOPPED_AT (a fatal step that failed),
 # K/linux/FAILED_STEPS (non-fatal steps that failed) and, always last, K/linux/run_steps.done.
@@ -242,6 +242,11 @@ case "$PHASE" in
     step mac-selftest-final ../r2b/mac-selftest.log 1 h_mac_selftest
     step session-b 14-session-b.log 0 dexec dev r2b-session-b.sh
     step copy-out-b 14-session-b.log 0 h_copy_out 2026-10-16-ddp-linux-first-run-b-akita-35-android
+    ;;
+  r2b-ci)  # the selftest without huggingface_hub (CI's setup): the system python3, the committed bytes in the clone
+    ensure_up || finish "container $C not up" 1
+    step copy-ci 15-selftest-no-hub.log 1 h_copy_into_clone android/ddp/run_ddp.py android/ddp/selftest.py
+    step selftest-no-hub 15-selftest-no-hub.log 0 dexec dev r2b-selftest-no-hub.sh
     ;;
   *) finish "unknown phase $PHASE" 2 ;;
 esac

@@ -3,8 +3,9 @@
 The README section "Run the Android cells on a Developer Device Platform phone" was run as written on a
 clean Linux machine (an Ubuntu 24.04 container), as a normal user, from a fresh clone of GitHub `main` to a
 billed Device Run session on a lab Pixel 8a (`akita-35`) that passed. The machine had no adb and no phone. Every
-number below is copied from the log or file named on its row (`linux/` and `r2/` beside this file; the session's
-own files in `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/`). README line numbers are those of
+number below is copied from the log or file named on its row (`linux/`, `r2/` and `r2b/` beside this file; the
+sessions' own files in `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/` and
+`results/raw/2026-10-16-ddp-linux-first-run-b-akita-35-android/`). README line numbers are those of
 this commit: the quickstart at the top moved the section down 17 lines (18 from step 2 on), so the runs of
 round 1 at 0efecb0 read the same commands 17 or 18 lines higher.
 
@@ -33,6 +34,9 @@ round 1 at 0efecb0 read the same commands 17 or 18 lines higher.
     (README.md:24-39; its commands are lines of table 2), the `python3-venv` package named in step 1
     (README.md:132; finding 4), the venv form of the `huggingface_hub` install in docs/OPERATIONS.md (finding 3),
     and `./bench doctor --platform ddp` (finding 2).
+  - round 2b (`linux/12-selftest-fix.log`, `linux/13-dryrun-fix.log`, `linux/14-session-b.log`, `r2b/`):
+    `android/ddp/run_ddp.py` keys the model by the sha256 of its bytes (finding 6); the selftest, the dry run and
+    the billed run of README step 4 ran again on the fixed files.
 
 ## Environment
 
@@ -160,11 +164,19 @@ curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-
    buffering, `doctor` does not). Not changed here.
 6. huggingface_hub 2.2.0 names the cache blob of a file the Hub stores with Xet by the file's xet hash, not by its
    sha256: the session's model came to `blobs/41/4194181f…`; the Hub's `paths-info` for the file gives
-   `xetHash` 4194181f… and `lfs.oid` 2a72330b… (last commit 2026-10-11). `android/ddp/run_ddp.py` (`model_file`,
-   lines 190-191) takes a 64-hex blob name for the sha256, so the plan, the request and the bucket key carry
-   4194181f…, and the run uploaded the model's 977,184,032 B once more under `models/4194181f…/` (the D6 runs
-   had left it under `models/2a72330b…/`; nothing was overwritten). The records are right: their `model.sha256`
-   is what the wrapper read on the unit, 2a72330b…. Not changed here.
+   `xetHash` 4194181f… and `lfs.oid` 2a72330b… (last commit 2026-10-11); huggingface_hub 1.8.0 names the blob by
+   the Hub's `x-linked-etag`, the LFS sha256, which is why the Mac's runs never showed this (`r2b/hub-headers.log`).
+   `android/ddp/run_ddp.py` (`model_file`, lines 190-191 at 26ef70a4) took a 64-hex blob name for the sha256, so
+   the plan, the request and the bucket key carried 4194181f…, and the run uploaded the model's 977,184,032 B once
+   more under `models/4194181f…/` (the D6 runs had left it under `models/2a72330b…/`; nothing was overwritten). The
+   records are right: their `model.sha256` is what the wrapper read on the unit, 2a72330b…. Fixed in commit
+   8e4ddad4: `model_file` hashes the file and no longer reads the blob's name, and a billed run also checks the hash
+   against the Hub's LFS sha256; the selftest runs `model_file` itself on a fake cache of this layout (76 checks,
+   exit 0 with huggingface_hub and without it, as CI runs it: `linux/12-selftest-fix.log`, `linux/15-selftest-no-hub.log`).
+   Run again in this container (round 2b, `r2b/session-b.md`): the dry run keys the model `models/2a72330b…/`, and a
+   second billed session, `session-b1179d6d` (PASSED, 360 s from the command to the records, in
+   `results/raw/2026-10-16-ddp-linux-first-run-b-akita-35-android/`), found all 12 inputs in the bucket and
+   uploaded nothing. The object under `models/4194181f…/` is still in the bucket (the driver deletes nothing).
 
 ## Not exercised here
 
@@ -178,8 +190,10 @@ curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-
 ## Log hygiene
 
 No log carries a token, an account name or a gcloud credential file name. In the driver's own output files
-(`linux/run_steps.out`, `linux/run_steps-verify.out`, `linux/run_steps-r2.out`, `linux/quiet_wait.log`) the Mac
-home directory is redacted to `USER` and other projects' lock labels to `<another lane's window>`, and so is the
-Mac home directory in `doctor-ddp-mac.log`; one bucket prefix that is not this route's is redacted in
-`linux/02-gcloud.log`. `linux/10-session.log` names this route's own project, bucket objects and operation, as
-the committed DDP campaign files do.
+(`linux/run_steps.out`, `linux/run_steps-verify.out`, `linux/run_steps-r2.out`, `linux/run_steps-r2b.out`,
+`linux/quiet_wait.log`) the Mac home directory is redacted to `USER` and other projects' lock labels to
+`<another lane's window>`, and so is the Mac home directory in `doctor-ddp-mac.log` and in round 2b's Mac logs
+(`r2b/hub-probe-mac.log`, `r2b/mac-selftest.log`, `r2b/mac-dryrun.log`); one bucket prefix that is not this
+route's is redacted in `linux/02-gcloud.log`. `linux/10-session.log` and `linux/14-session-b.log` name this route's
+own project, bucket objects and operation, as the committed DDP campaign files do; `linux/14-session-b.log` lists
+the gcloud commands of its run by name and the arguments of `storage cp` only, nothing of the sign-in commands.
