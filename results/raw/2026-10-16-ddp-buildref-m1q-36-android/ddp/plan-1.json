@@ -1,0 +1,179 @@
+{
+  "index": 1,
+  "displayName": "elb-2026-10-16-ddp-buildref-m1q-36-android-s1",
+  "jobs": [
+    {
+      "index": 1,
+      "displayName": "j01-gpu-Qwen3-1-7B-short-chat",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/Qwen3-1.7B",
+        "task": "short-chat",
+        "opts": {
+          "backend": "gpu",
+          "file": "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+          "runs": "3"
+        }
+      },
+      "cellId": "litert-lm-gpu litert-community/Qwen3-1.7B short-chat context-tokens=default file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+      "stem": "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat",
+      "arm": "litert-lm-gpu",
+      "runtime": "litert-lm",
+      "backend": "gpu",
+      "modelId": "litert-community/Qwen3-1.7B",
+      "file": "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+      "task": "short-chat",
+      "contextTokens": null,
+      "ctxNote": "bundle-default",
+      "budget": 128,
+      "maxTokens": null,
+      "paired": false,
+      "binname": "litert_lm_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 120,
+      "perRunTimeout": 1080,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "main-16ab54914",
+      "args": [
+        "--runs=3",
+        "--cooldown=120",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=1080",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat",
+        "--command=./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-10-16-ddp-buildref-m1q-36-android",
+        "cell": "litert-lm-gpu_litert-community_qwen3-1-7b_short-chat",
+        "runtime": "litert-lm-gpu",
+        "model": "litert-community--qwen3-1-7b",
+        "task": "short-chat",
+        "backend": "gpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "main-16ab54914"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 41467496,
+          "sha256": "320bee39d3ec8a34d959abe5008724e100a159deca50ffadef1f64c6a2cf0584",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/320bee39d3ec8a34d959abe5008724e100a159deca50ffadef1f64c6a2cf0584/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 41811504,
+          "sha256": "164a7469f4a8a331eecd80df56596b089ffd262266b6b5f31f85eb6de785d744",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/164a7469f4a8a331eecd80df56596b089ffd262266b6b5f31f85eb6de785d744/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3466064,
+          "sha256": "c9a77bc7cea1d93d57b08250df94453d7c8f41147c443701a2092fe835448575",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/c9a77bc7cea1d93d57b08250df94453d7c8f41147c443701a2092fe835448575/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3220296,
+          "sha256": "7c747af05556b649b6fcb2d6daca7ab93211337b9cf8036c5d1d4150af36ced3",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/7c747af05556b649b6fcb2d6daca7ab93211337b9cf8036c5d1d4150af36ced3/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtTopKOpenClSampler.so",
+          "bytes": 11746224,
+          "sha256": "d52762b58dc837f232af4d1489f8e6aef5374775c7c02f0acf7469e49ef14d9c",
+          "device": "/data/local/tmp/llmbench/libLiteRtTopKOpenClSampler.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/d52762b58dc837f232af4d1489f8e6aef5374775c7c02f0acf7469e49ef14d9c/libLiteRtTopKOpenClSampler.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtTopKWebGpuSampler.so",
+          "bytes": 11729144,
+          "sha256": "8c991913fedb17f07f85cd831bb44ac445964c7904703235aa2b63a0da059095",
+          "device": "/data/local/tmp/llmbench/libLiteRtTopKWebGpuSampler.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/8c991913fedb17f07f85cd831bb44ac445964c7904703235aa2b63a0da059095/libLiteRtTopKWebGpuSampler.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3253072,
+          "sha256": "174329e79465f99e0afee2e41c10f0f7abffc38db8c7842e9c98efa82439c3be",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/174329e79465f99e0afee2e41c10f0f7abffc38db8c7842e9c98efa82439c3be/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19735152,
+          "sha256": "01f672db983411871aaae0590e8ab470592e6a83cd1c7b28c7820daaa1670767",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/main-16ab54914/01f672db983411871aaae0590e8ab470592e6a83cd1c7b28c7820daaa1670767/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+          "bytes": 977184032,
+          "sha256": "2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8",
+          "device": "/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "short-chat.txt",
+          "bytes": 48,
+          "sha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+          "device": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50/short-chat.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 9266,
+        "sha256": "8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656",
+        "object": "automation/inputs/edge-llm-bench/wrapper/8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+      "estimate": {
+        "elapsedSeconds": 600,
+        "basis": "no local run at main-16ab54914: default 600 s",
+        "jobSeconds": 3240,
+        "overTimeout": false
+      },
+      "session": 1
+    }
+  ]
+}

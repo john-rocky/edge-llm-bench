@@ -1,0 +1,89 @@
+# K/r2/build-out.txt — android/bin/main-16ab54914 after the build (2026-10-16 15:3x JST); home = ~, owner column = USER
+## ls -la android/bin/main-16ab54914
+total 304440
+drwxr-xr-x@ 13 USER  staff       416 Oct 16 15:30 .
+drwxr-xr-x@  4 USER  staff       128 Oct 16 15:30 ..
+-rw-r--r--@  1 USER  staff       346 Oct 16 15:30 BUILD_INFO
+-rwxr-xr-x@  1 USER  staff  19415656 Oct 16 15:30 libGemmaModelConstraintProvider.so
+-rwxr-xr-x@  1 USER  staff   3466064 Oct 16 15:30 libLiteRtGpuAccelerator.so
+-rwxr-xr-x@  1 USER  staff   3220296 Oct 16 15:30 libLiteRtOpenClAccelerator.so
+-rwxr-xr-x@  1 USER  staff  11746224 Oct 16 15:30 libLiteRtTopKOpenClSampler.so
+-rwxr-xr-x@  1 USER  staff  11729144 Oct 16 15:30 libLiteRtTopKWebGpuSampler.so
+-rwxr-xr-x@  1 USER  staff   3253072 Oct 16 15:30 libLiteRtWebGpuAccelerator.so
+-rw-r--r--@  1 USER  staff  19735152 Oct 16 15:30 libwebgpu_dawn.so
+-r-xr-xr-x@  1 USER  staff  41811504 Oct 16 15:30 litert_lm_advanced_main
+-r-xr-xr-x@  1 USER  staff  41467496 Oct 16 15:30 litert_lm_main
+-rw-r--r--@  1 USER  staff       833 Oct 16 15:30 SHA256SUMS
+## ls -la android/bin
+total 0
+drwxr-xr-x@  4 USER  staff  128 Oct 16 15:30 .
+drwxr-xr-x@ 12 USER  staff  384 Oct 16 15:30 ..
+drwxr-xr-x@ 13 USER  staff  416 Oct 16 15:30 main-16ab54914
+lrwxr-xr-x@  1 USER  staff   60 Oct 16 15:25 v0.18.0 -> ~/code/edge-llm-bench/android/bin/v0.18.0
+## SHA256SUMS (9 lines)
+320bee39d3ec8a34d959abe5008724e100a159deca50ffadef1f64c6a2cf0584  litert_lm_main
+164a7469f4a8a331eecd80df56596b089ffd262266b6b5f31f85eb6de785d744  litert_lm_advanced_main
+c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783  libGemmaModelConstraintProvider.so
+c9a77bc7cea1d93d57b08250df94453d7c8f41147c443701a2092fe835448575  libLiteRtGpuAccelerator.so
+7c747af05556b649b6fcb2d6daca7ab93211337b9cf8036c5d1d4150af36ced3  libLiteRtOpenClAccelerator.so
+d52762b58dc837f232af4d1489f8e6aef5374775c7c02f0acf7469e49ef14d9c  libLiteRtTopKOpenClSampler.so
+8c991913fedb17f07f85cd831bb44ac445964c7904703235aa2b63a0da059095  libLiteRtTopKWebGpuSampler.so
+174329e79465f99e0afee2e41c10f0f7abffc38db8c7842e9c98efa82439c3be  libLiteRtWebGpuAccelerator.so
+01f672db983411871aaae0590e8ab470592e6a83cd1c7b28c7820daaa1670767  libwebgpu_dawn.so
+## shasum -a 256 -c SHA256SUMS
+litert_lm_main: OK
+litert_lm_advanced_main: OK
+libGemmaModelConstraintProvider.so: OK
+libLiteRtGpuAccelerator.so: OK
+libLiteRtOpenClAccelerator.so: OK
+libLiteRtTopKOpenClSampler.so: OK
+libLiteRtTopKWebGpuSampler.so: OK
+libLiteRtWebGpuAccelerator.so: OK
+libwebgpu_dawn.so: OK
+## BUILD_INFO
+requested=main
+label=main-16ab54914
+commit=16ab5491492f21722aea7b6440ecb797c2e25031
+describe=16ab549
+commit_date=2026-10-15T22:43:05-07:00
+subject=Add self-contained C++ SpanishG2p for Kokoro TTS (es).
+remote=https://github.com/google-ai-edge/LiteRT-LM.git
+ndk=29.0.13113456
+bazel=7.6.1
+bazelisk=1.29.0
+built=2026-10-16T06:30:13Z
+host_arch=arm64
+## grep -c of lines holding a home path or the user name in BUILD_INFO
+0
+## git diff android/engine-pins.json
+diff --git a/android/engine-pins.json b/android/engine-pins.json
+index 4eff139..e10fdd9 100644
+--- a/android/engine-pins.json
++++ b/android/engine-pins.json
+@@ -111,6 +111,22 @@
+       },
+       "built": "android/scripts/build_litert_lm_main.sh at tag v0.18.0 (bazel source build, 2026-10-07; the release ships no Android binary)",
+       "note": "Android dashboard pin since 2026-10-15 (v0.16.0 before): the Galaxy S26 Gemma 4 E2B GPU protocol cell read 25.9 tok/s decode at 1024/256 on v0.16.0 while 0.18-era builds of LiteRT-LM read 44-47 on the same phone and file (results/raw/2026-10-11-s26-gallery-vs-binary); the model card's figure is of that class"
++    },
++    "main-16ab54914": {
++      "requested_tag": "main",
++      "observed": "16ab549",
++      "litert_lm_main_sha256": "320bee39d3ec8a34d959abe5008724e100a159deca50ffadef1f64c6a2cf0584",
++      "litert_lm_advanced_main_sha256": "164a7469f4a8a331eecd80df56596b089ffd262266b6b5f31f85eb6de785d744",
++      "so_files": {
++        "libGemmaModelConstraintProvider.so": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
++        "libLiteRtGpuAccelerator.so": "c9a77bc7cea1d93d57b08250df94453d7c8f41147c443701a2092fe835448575",
++        "libLiteRtOpenClAccelerator.so": "7c747af05556b649b6fcb2d6daca7ab93211337b9cf8036c5d1d4150af36ced3",
++        "libLiteRtTopKOpenClSampler.so": "d52762b58dc837f232af4d1489f8e6aef5374775c7c02f0acf7469e49ef14d9c",
++        "libLiteRtTopKWebGpuSampler.so": "8c991913fedb17f07f85cd831bb44ac445964c7904703235aa2b63a0da059095",
++        "libLiteRtWebGpuAccelerator.so": "174329e79465f99e0afee2e41c10f0f7abffc38db8c7842e9c98efa82439c3be",
++        "libwebgpu_dawn.so": "01f672db983411871aaae0590e8ab470592e6a83cd1c7b28c7820daaa1670767"
++      },
++      "built": "android/scripts/build_litert_lm_main.sh at main-16ab54914 (bazel source build, 2026-10-16; commit 16ab5491492f21722aea7b6440ecb797c2e25031)"
+     }
+   },
+   "litertlm-android": {
+
+## android_pins (HEAD, worktree)
+v0.18.0
+v0.18.0
