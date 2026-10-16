@@ -75,5 +75,9 @@ Before a commit, the home directory in `ddp/<session>/plan.json` (the argv file,
 `scripts/build_summary.py` reads `device-jsonl/` and names the device `<modelIdentifier> (DDP <catalog
 id>)`, so a lab unit never pools with an attached phone.
 
+The records are gated as the attached-iPhone runner gates its own (`scripts/cell_gate.py`): the four first
+captures of 2026-10-16 (`results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/`) are HOT, so they sit in
+`device-jsonl-flagged/` with `FLAGGED.txt`, outside the summary, until a retake.
+
 `selftest.py` runs without a device or the network: the dry runs, a stand-in gcloud for the billed
 path and its failure exits, `--records-only`, and the summary's device column.

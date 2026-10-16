@@ -221,7 +221,8 @@ billing.
 an attached phone's: [`docs/ddp-integration.md`](docs/ddp-integration.md),
 "Route C as `bench matrix --ddp`". The step-by-step runbook (resume, checking
 the outputs, committing): [`docs/OPERATIONS.md`](docs/OPERATIONS.md), "Run
-cells on DDP".
+cells on DDP". The iPhone app's LiteRT-LM rows run on a DDP iPhone through
+XCTest: [`ios/ddp/README.md`](ios/ddp/README.md).
 
 ## What keeps the numbers honest
 

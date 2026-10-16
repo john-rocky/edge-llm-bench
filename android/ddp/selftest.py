@@ -32,7 +32,10 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
    cell's two iterations and text check, firstEver, the uuid5 ids; --records-only writes the same
    files again; the witness of a changed sha.
 5. scripts/build_summary.py into a temp dir: the device column of a DDP row, never the attached
-   phone's; render_leaderboard's tree key and arm_row apart; render_dashboard's devices_for.
+   phone's; render_leaderboard's tree key and arm_row apart; render_dashboard's devices_for. Then
+   render_leaderboard.latest_session on a temp summary of those columns: a cell that mixes version tags
+   and a label keeps the newest tag's session (arm_row and render_dashboard.build too), a label-only
+   cell keeps timestamp order.
 6. android/ddp/scrub.py: each rule on one line and what it keeps; the file form (the original copied
    once, a second scrub writing the same bytes and counts, bytes that are not UTF-8 kept); the CLI.
 """
@@ -1378,6 +1381,61 @@ def check_summary(sum_root, att_out):
        f"render_dashboard.devices_for: the DDP unit is a column of its own after the schedule's phones ({cols})")
 
 
+def check_latest_session(tmp, sum_root):
+    print("--- 5b. render_leaderboard.latest_session on a temp summary: a cell that mixes version tags and a label "
+          "keeps the newest tag's session; a label-only cell keeps timestamp order; render_dashboard the same")
+    import datetime
+    import render_leaderboard
+    import render_dashboard
+    with open(os.path.join(sum_root, "summary", "device-runs.csv")) as fh:
+        fields = csv.DictReader(fh).fieldnames  # build_summary's columns (section 5's temp summary)
+    model, name = "litert-community/Qwen3-1.7B", "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+    # one cell per DDP device column; its sessions in capture order: (campaign, engine_version, day). In (a) the
+    # older tag runs after the newer one (a baseline re-measured) and a label after both.
+    cells = {"a": [("a-v0180", TAG, "2026-10-01"), ("a-v0170", "v0.17.0", "2026-10-02"), ("a-label", LABEL, "2026-10-03")],
+             "b": [("b-label1", "main-111111111", "2026-10-01"), ("b-label2", "pr42-222222222", "2026-10-02")],
+             "c": [("c-v0180", TAG, "2026-10-01"), ("c-label", LABEL, "2026-10-02")]}
+    camp = lambda s: f"results/raw/selftest-latest-{s}-android"  # noqa: E731
+    dev = lambda c: f"Pixel 8a (DDP selftest-{c})"  # noqa: E731
+    rows = []
+    for c, sessions in cells.items():
+        for s, engine, day in sessions:
+            for run in (1, 2):
+                r = dict.fromkeys(fields, "")
+                r.update(platform="android", device=dev(c), runtime="litert-lm-gpu", model_id=model, task="short-chat",
+                         campaign=camp(s), timestamp=f"{day}T0{run}:00:00Z", engine_version=engine,
+                         first_ever="False", cold_run="True", decode_tps="20.0")
+                rows.append(r)
+    path = os.path.join(tmp, "latest-session", "summary", "device-runs.csv")
+    os.makedirs(os.path.dirname(path))
+    with open(path, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+    by_cell = {}
+    for r in csv.DictReader(open(path)):
+        by_cell.setdefault(r["device"], []).append(r)
+    cells_file = os.path.join(tmp, "latest-session", "one.cells")
+    write(cells_file, f"android litert-lm {model} short-chat backend=gpu file={name}\n")
+    with patch.object(render_dashboard, "SUMMARY_CSV", path):
+        out, _ = render_dashboard.build(cells_file, os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json"), 10,
+                                        datetime.date(2026, 10, 16))
+    dash = {rec["device"]: rec["campaign"] for rec in out}
+
+    def picked(c):
+        sess, _ = render_leaderboard.latest_session(by_cell[dev(c)])
+        return sorted({r["campaign"] for r in sess}), render_leaderboard.arm_row(by_cell[dev(c)]), dash.get(dev(c))
+    for c, want, why in (
+            ("a", "a-v0180", f"{TAG} and v0.17.0 (captured later) and the label {LABEL} (captured last): the newest "
+                             f"tag's session"),
+            ("b", "b-label2", "two labels only (main-111111111, then pr42-222222222): the newest session, timestamp order"),
+            ("c", "c-v0180", f"{TAG}, then the label {LABEL}: the tag's session, never the label's")):
+        sess, arm, d = picked(c)
+        ok(sess == [camp(want)] and arm["campaign"] == camp(want) and d == camp(want),
+           f"cell {c}, {why}: latest_session, arm_row and render_dashboard.build all take {camp(want)} "
+           f"({sess}, {arm['campaign']}, {d}; engine {arm['engine']})")
+
+
 # ---------------------------------------------------------------- 6. scrub.py
 
 SCRUB_TOKENS = {"ssid": "<lab-ssid>", "hash": "<hash>", "ip6": "<ip6>", "mac": "<mac>", "mac-part": "<mac-part>",
@@ -1491,6 +1549,7 @@ def main():
     att_out, att_short, att_long, head = attached_records(tmp, raw_root, models)
     check_billed_path(tmp, raw_root, bin_dir, models, head, att_short, att_long)
     check_summary(sum_root, att_out)
+    check_latest_session(tmp, sum_root)
     check_scrub(tmp)
     if _fails:
         print(f"\n{len(_fails)} of {_count[0]} check(s) failed; temp dir kept: {tmp}")

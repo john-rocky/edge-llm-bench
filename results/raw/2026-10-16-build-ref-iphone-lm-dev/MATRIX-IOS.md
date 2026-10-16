@@ -17,6 +17,8 @@ Values only. A lab row is one DDP session = one job on one lab unit (`iphone16pr
 
 The rows differ in engine (v0.18.0 / v0.16.0), device (a lab iPhone 16 Pro / the attached iPhone 17 Pro) and iOS (18.3.2 / 27.0): read side by side only; no row pools with another.
 
+The four lab rows are first captures, and the home runner's thermal gate (`scripts/cell_gate.py`, `--ok-thermal nominal`) calls each HOT: their 16 records moved to `results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/device-jsonl-flagged/` (`FLAGGED.txt`, round 5) and are no longer in `results/summary/`; a retake with a thermal wait before run 1 is the next round.
+
 ## Notes
 
 - Witness of every lab record (16): `engineVersion` v0.18.0, `engineArtifact` `CLiteRTLM.xcframework.zip@v0.18.0 sha256:d765b99592d4…`, `device.modelIdentifier` iPhone17,1, `systemVersion` 18.3.2, `buildConfiguration` Release, `device.ddp` = {iphone16pro-18-3, "iPhone 16 Pro", 18.3}, `conditions.ddp.resultType` PASSED, archive sha256 f13173b4…, Xcode `xcode-26-2`; summary device column `iPhone17,1 (DDP iphone16pro-18-3)`.

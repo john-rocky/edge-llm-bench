@@ -1,0 +1,28 @@
+Round 5 selftests, the CI data-pipeline checks that read the changed code, on the final tree (branch build-from-ref
+= 4 commits on origin/main d6077c6b + this round's staged changes, summary rebuilt from the git index),
+2026-10-16 20:23-20:25 JST, python3 3.14.6, huggingface_hub 1.8.0, behind quiet_wait (waited 0 s).
+Format: end time, exit code, seconds, name: command -> the log's last line. Every exit code is 0.
+
+20:23:50 rc=0 39s android-ddp-selftest: env BENCH_ANDROID_BIN_DIR=~/code/edge-llm-bench-wt-buildref/android/bin python3 android/ddp/selftest.py -> ddp selftest OK (96 checks)
+20:23:54 rc=0 4s ios-ddp-selftest: python3 ios/ddp/selftest.py -> ios ddp selftest OK (66 checks)
+20:25:33 rc=0 99s android-bench-selftest: python3 android/bench/selftest.py -> selftest OK
+20:25:34 rc=0 1s android-bench-longctx: python3 android/bench/test_longctx1024.py -> OK
+20:25:34 rc=0 0s test-render-rules: python3 scripts/test_render_rules.py -> OK
+20:25:34 rc=0 0s test-import-native-benchmark: python3 scripts/test_import_native_benchmark.py -> OK
+20:25:38 rc=0 4s dashboard-job-selftest: python3 scripts/dashboard_job_selftest.py -> selftest OK
+20:25:38 rc=0 0s render-dashboard-check: python3 scripts/render_dashboard.py --check -> rendered 299 device-cells from 138 file cells into /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/dashboard-check-dtg7
+20:25:38 rc=0 0s validate-cells: sh -c python3 scripts/validate_cells.py matrices/*.cells && python3 scripts/validate_cells.py --require-anchor matrices/release-regression-*.cells matrices/anchors.cells -> OK matrices/anchors.cells
+20:25:39 rc=0 1s py-compile: sh -c python3 -m py_compile scripts/*.py android/bench/*.py android/ddp/*.py android/scripts/pins_add.py ios/ddp/*.py bench && echo "py_compile OK ($(ls scripts/*.py android/bench/*.py android/ddp/*.py android/scripts/pins_add.py ios/ddp/*.py bench | wc -l | tr -d " ") files)" -> py_compile OK (57 files)
+20:25:39 rc=0 0s bash-n: sh -c for f in scripts/*.sh android/scripts/*.sh android/ddp/*.sh ios/BenchmarkApp/scripts/*.sh ios/ddp/*.sh; do bash -n "$f" || exit 1; done && echo "bash -n OK" -> bash -n OK
+batch done
+
+check counts: android/ddp/selftest.py 96 ok / 0 FAIL; ios/ddp/selftest.py 66 ok / 0 FAIL; android/bench/selftest.py 245 ok / 0 FAIL
+
+Earlier runs this round (the same items, all exit 0): after the first rebase (19:55-19:57: DDP 93, iOS 65,
+android/bench OK, py_compile 57 files), after the latest_session change (20:02-20:04, batch 1: DDP 96, iOS 65, the rest OK),
+after the plan.json change (20:15-20:17, batch 2: DDP 96, iOS 66, the rest OK), and this final run after the second rebase.
+Logs of this run: K/r5/ddp-selftest.log, K/r5/ios-selftest.log, K/r5/android-selftest.log (copies of the final run).
+
+20:27:57 rc=0 ios-ddp-selftest again after its plan.json check was rewritten without a home-prefix literal
+(`re.search(r"/(Users|home)/", text)`): py_compile of ios/ddp/selftest.py rc 0, "ios ddp selftest OK (66 checks)"
+(K/r5/ios-selftest.log is this run).
