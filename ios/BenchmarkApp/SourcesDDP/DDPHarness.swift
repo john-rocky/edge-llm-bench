@@ -25,8 +25,9 @@ public struct DDPOutcome: Sendable {
 /// (scripts/bench_matrix_iphone.sh) gives the app after `--`; after it, the lab pulls
 /// Documents/results/ and Documents/out/. One call runs the app's own headless path
 /// (`HeadlessAutoRun.specFromLaunchArgs` -> `HeadlessRun.runAll`) once, in this process, and writes
-/// Documents/out/console.txt (this process's stdout and stderr while it ran), records.txt (the
-/// files the run added to Documents/results/) and yardstick.done (the exit code).
+/// Documents/out/console.txt (this process's stdout and stderr while it ran), thermal_gate.txt (the
+/// wait before run 1), records.txt (the files the run added to Documents/results/) and
+/// yardstick.done (the exit code).
 public enum DDPHarness {
     /// Documents/<argsFile>: the run's arguments.
     public static let argsFile = "yardstick_args.json"
@@ -102,6 +103,9 @@ public enum DDPHarness {
         } else {
             let runtime = MediaPipeRuntime(backend: MediaPipeRuntime.launchBackend)
             kept.append(runtime)
+            let gate = await waitForNominalThermal(maxSeconds: 600, pollSeconds: 30, log: log)
+            write("waited_s=\(gate.waited)\nstate=\(gate.state)\ntimed_out=\(gate.timedOut ? 1 : 0)\n",
+                  to: out.appendingPathComponent("thermal_gate.txt"))
             let before = resultFiles()
             let ended = ExitCode()
             await HeadlessRun(spec: spec, runtime: runtime, log: log, finish: { ended.value = $0 }).runAll()
@@ -112,6 +116,37 @@ public enum DDPHarness {
         tee.stop()
         write("\(code)\n", to: out.appendingPathComponent("yardstick.done"))
         return DDPOutcome(code: code, failure: nil, runs: spec.runs, newFiles: added)
+    }
+
+    /// Waits before run 1 until the unit's thermal state is nominal, as the Android lab wrapper does
+    /// (android/ddp/ddp_cell.sh gate_thermal): the state read every `pollSeconds`, for at most
+    /// `maxSeconds`; a wait that runs out is noted and the run goes on. The lab picks the unit, so a
+    /// unit that is still warm cools here, inside the --xctest-timeout. Fixed values of the lab build.
+    @MainActor
+    private static func waitForNominalThermal(maxSeconds: Int, pollSeconds: Int,
+                                              log: @MainActor (String) -> Void) async
+        -> (waited: Int, state: String, timedOut: Bool) {
+        let start = Date()
+        var state = ProcessInfo.processInfo.thermalState
+        if state != .nominal {
+            log("YARDSTICK_NOTE thermal_gate state=\(ThermalMonitor.describe(state)) waiting max_s=\(maxSeconds) poll_s=\(pollSeconds)")
+        }
+        var timedOut = false
+        while state != .nominal {
+            let elapsed = Int(Date().timeIntervalSince(start))
+            if elapsed >= maxSeconds {
+                timedOut = true
+                break
+            }
+            let pause = UInt64(min(pollSeconds, maxSeconds - elapsed))
+            // a cancelled sleep must not turn the wait into a busy loop: stop waiting, run
+            guard (try? await Task.sleep(nanoseconds: pause * 1_000_000_000)) != nil else { break }
+            state = ProcessInfo.processInfo.thermalState
+        }
+        let waited = Int(Date().timeIntervalSince(start).rounded())
+        let described = ThermalMonitor.describe(state)
+        log("YARDSTICK_NOTE thermal_gate waited_s=\(waited) state=\(described)" + (timedOut ? " timed_out=1" : ""))
+        return (waited, described, timedOut)
     }
 
     /// Documents/out/, emptied: nothing from an earlier run may pass as this run's output.
