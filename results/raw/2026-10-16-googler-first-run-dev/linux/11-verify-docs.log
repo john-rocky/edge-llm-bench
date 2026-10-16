@@ -1,0 +1,257 @@
+
+## step copy-docs | start 2026-10-16 15:55:10 JST | h_copy_into_clone README.md docs/OPERATIONS.md
+## README.md sha256 worktree dd18e0388099273e801100c858a5507e8d6d9b1b1466f2bc1eeb799e25e2e039 clone dd18e0388099273e801100c858a5507e8d6d9b1b1466f2bc1eeb799e25e2e039
+## docs/OPERATIONS.md sha256 worktree 84c4c7430c2e63aa1d504ff71cbdac5a0d1f3e2cef3c32ba0158fb9aadceda50 clone 84c4c7430c2e63aa1d504ff71cbdac5a0d1f3e2cef3c32ba0158fb9aadceda50
+## step copy-docs | end 2026-10-16 15:55:10 JST | rc 0 | 0 s
+
+## step verify-docs | start 2026-10-16 15:55:10 JST | dexec dev 98-verify-docs.sh
+## the quickstart as README.md prints it:
+
+- Needs: no phone and no adb; gcloud signed in, a Cloud project with the Device Run API enabled and a bucket in it you can read and write, and python3 >= 3.10 with `huggingface_hub` (step 1 of the DDP section below).
+- Clone: `git clone https://github.com/john-rocky/edge-llm-bench && cd edge-llm-bench`
+- Put the pinned LiteRT-LM Android files in place (the lines of step 2 below; 7 s with the clone on a fresh Ubuntu 24.04, 2026-10-16):
+  ```bash
+  TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))["android_pins"]["litert-lm"])')
+  mkdir -p android/bin
+  curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz \
+    | tar xz -C android/bin && mv android/bin/litert-lm-$TAG-android-arm64 android/bin/$TAG
+  ```
+- Check: `./bench doctor --platform ddp` (gcloud and its sign-in, `huggingface_hub`, the 9 engine files) and `./android/ddp/selftest.py` (no network, nothing billed; 17 s).
+- Run, billed to your project (8 jobs in one session, 37 min on 2026-10-15): `./bench matrix matrices/dashboard-text-v1.cells --ddp akita-35 --project <your project> --bucket gs://<your bucket>`
+- A first check of one job and two runs: the same command on `matrices/ddp-first-run.cells` (7 min from the command to the records on 2026-10-16).
+- Read: the records in `results/raw/<date>-ddp-akita-35-android/app-path-android/*.json`; in `results/summary/device-runs.csv` their device is `Pixel 8a (DDP akita-35)`.
+- More: "Run the Android cells on a Developer Device Platform phone" below (the dry run, the cost, what this route does not carry).
+
+## run: ./bench doctor --platform ddp
+  ok  python 3.12
+warn  matplotlib (charts)     pip install matplotlib — only generate_charts.py needs it
+warn  HF auth                 public models download anonymously; gated ones (Gemma) need `hf auth login`
+  ok  disk free 57 GB
+warn  onnxruntime-genai venv  no python at /home/dev/.venvs/ortgenai-0.17.1/bin/python - the onnxruntime-genai cells log SKIPPED; python3 -m venv that dir and pip install onnxruntime-genai==0.17.1 onnxruntime==1.30.0 onnxruntime-ep-webgpu==0.4.0 huggingface_hub onnx jsonschema (docs/ortgenai-arm-v1.md)
+warn  xcodebuild              install Xcode (27 beta era; see docs/OPERATIONS.md)
+warn  gtimeout (coreutils)    brew install coreutils — litert teardown hangs need it
+warn  devicectl               xcrun devicectl failed — Xcode command line tools?
+warn  adb                     install platform-tools
+  ok  gcloud                  /usr/bin/gcloud
+  ok  gcloud sign-in
+  ok  huggingface_hub         2.2.0
+  ok  ddp engine files        v0.18.0: 9 files = android/engine-pins.json, in /home/dev/edge-llm-bench/android/bin/v0.18.0
+
+ready
+
+$ /home/dev/elb-venv/bin/python3 /home/dev/edge-llm-bench/scripts/doctor.py --platform ddp
+## ./bench doctor --platform ddp exit=0
+
+## run: ./android/ddp/selftest.py
+--- 1. plan: dashboard cells on akita-35 / m1q-36 / caiman-35 (no subprocess, no network, no HF cache)
+  ok  akita-35: 8 jobs in 1 session(s) (want 8 / 1)
+  ok  akita-35: skips = 10 llama.cpp rows + 12 exclude-on rows with key pixel8a (got 10 + 12: ['pixel8a'])
+  ok  m1q-36: 16 jobs in 2 session(s) (want 16 / 2)
+  ok  m1q-36: skips = 10 llama.cpp rows + 4 exclude-on rows with key s26 (got 10 + 4: ['s26'])
+  ok  caiman-35: 8 jobs in 1 session(s) (want 8 / 1)
+  ok  caiman-35: skips = 10 llama.cpp rows + 0 exclude-on rows with key None (got 10 + 0: [])
+  ok  caiman-35 (no schedule key): the 12 litert-lm rows with an exclude-on skip as ddp-device-key-unknown, no mask (got 12)
+  ok  every job's --command= = planned_command's engine command, --env / --binname / --mask / --dir apart (mask = the schedule key's cpu_mask) ([])
+  ok  requests: contract field names only, push <= 50, pull = [/data/local/tmp/llmbench/ddp-out], labels <= 16 (key <= 32 B, value <= 1024 B), displayName <= 63 B and the regex, executionTimeout '<n>s' in 60..10800, args <= 100, one action per type, --command= last ([])
+  ok  push = 9 engine files + model + prompt, content-addressed objects; the wrapper is the job's binary
+  ok  the 9 engine files' sha256 = android/engine-pins.json litert-lm v0.18.0
+  ok  cpu-cap wait per id: m1q-36 --cpucap_wait=0 (devices.json), akita-35 / caiman-35 300 (absent key); thermal gate unchanged ({'akita-35': ['--cpucap_wait=300'], 'm1q-36': ['--cpucap_wait=0'], 'caiman-35': ['--cpucap_wait=300']})
+  ok  a negative cpucapWaitSeconds stops the plan (x-1: cpucapWaitSeconds -1 in ../../../tmp/ddp-selftest-qg_5s5md/devices-bad.json is not a whole number of seconds >= 0)
+  ok  the plan carries --project / --bucket; every request path is under gs://fake-bucket/automation/ (97 paths)
+  ok  an engine file one byte off its pin stops the plan, naming it (/tmp/ddp-selftest-qg_5s5md/bad-bin/v0.18.0/libLiteRtOpenClAccelerator.so: sha256 2f16ac2fbefaa5aa6f319d0b644fee2b896b3a98f2d025ebc53e6b592b33411c is not the pin's dfc714a0b59d5e1bf5155db7533070bf13da28574a3bc52396a4ba22d23d893c (android/engine-pins.json litert-lm v0.18.0) — nothing is pushed)
+--- 1b. bench matrix --ddp --dry-run: no gcloud, other platforms skipped, no summary
+  ok  bench --ddp akita-35 --dry-run: rc 0, ios / mac rows skipped, 8 jobs (rc 0, '')
+  ok  the dry run never ran gcloud (a gcloud first on PATH that records calls)
+  ok  the dry run rebuilt no summary
+  ok  bench matrix --dry-run without --ddp refuses (rc 2)
+  ok  bench --ddp m1q-36 --dry-run --project other-team-project --bucket gs://other-team-bucket/: the summary line names both (trailing / dropped) and cpucapWaitSeconds 0, every request path in that bucket (rc 0, {'device': 'm1q-36', 'scheduleKey': 's26', 'engine': 'v0.18.0', 'campaign': 'selftest-dry-other-android', 'jobs': 16, 'sessions': 2, 'skipped': 14, 'deviceMinutes': 622.6, 'project': 'other-team-project', 'bucket': 'gs://other-team-bucket', 'cpucapWaitSeconds': 0})
+  ok  --project without --ddp refuses (rc 2); a --bucket without gs:// refuses (rc 2)
+  ok  none of the dry runs ran gcloud
+--- 2. ddp_cell.sh --print_shell = run_cell.sampler_shell, every planned job, arg whole or split
+  ok  48 wrapper strings byte-equal to sampler_shell (differ: [])
+--- 2b. ddp_cell.sh on this host with stand-in device tools
+  ok  2 runs: exit 0, each run<i>.log = sampler output, ===ENGINE_OUTPUT===, the engine's output, EXIT_CODE=0 (rc 0, '')
+  ok  provenance.txt: getprop values, every arg (13), sha256 of the engine, model and prompt files (13 args, 5 shas)
+  ok  run1.state: start / end epoch, thermal, battery, screen and the gate results read back ({'run': '1', 'thermal_gate_waited_s': '0', 'thermal_gate_timed_out': '0', 'cpucap_waited_s': '0', 'cpucap_timed_out': '0', 'cpucap_caps': ''})
+  ok  run<i>.exit (0), run<i>.engine.txt, run<i>_logcat.txt, wrapper.log written
+  ok  --command= split at its spaces into separate args runs the same engine command
+  ok  an engine that exits 3: EXIT_CODE=3, run1.exit 3, the wrapper still exits 0 (rc 0)
+  ok  an engine past --timeout: timeout ends it (exit 124 in run1.exit), the wrapper exits 0 (rc 0)
+  ok  --budget 100 s with a 20 s run timeout and a 30 s cooldown: run 1 runs, run 2 is not started (run2.skipped)
+  ok  a unit at thermal status 2: the gate times out after --thermal_wait, the run still runs, recorded
+  ok  no --command: no run, the reason in wrapper.log, exit 0
+--- 3. the attached-phone route's FAKESELF campaign (round mode) for the record layout
+  ok  FAKESELF campaign: 1 short-chat record + 2 iteration records of the 1K launch (rc 0, 1 + 2; 'pushing Qwen3_1.7B.litertlm (0 MB) …\npushing Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm (0 MB) …\n')
+  ok  the FAKESELF console's sampler lines (CPUPOLICY, VmHWM / VmRSS / Cpus_allowed_list, CPUMAX) taken for the fake unit
+--- 4. the billed path against a fake gcloud and a fake Device Run server
+  ok  one POST for the session's 2 jobs; 14 objects uploaded (9 engine, 2 models, 2 prompts, the wrapper) (rc 1, posts 1, uploads 14)
+  ok  ddp/request-1.json = the body POSTed; every call carried the gcloud token (4 calls)
+  ok  polled until done (ddp/operation-1.json), ddp/session-1.json, the session pulled into ddp/session-test0001/
+  ok  SKIPPED.txt names the llama.cpp row and its reason
+  ok  records: 2 short-chat runs, 2 x 2 iterations of the 1K cell (got 2 + 4)
+  ok  every record carries result.v1's required keys
+  ok  short-chat: DDP record keys ⊇ the attached-phone record's; added only ['conditions.ddp', 'conditions.engineCache', 'device.ddp', 'provenance.ddpSessionDir', 'provenance.wrapper', 'provenance.wrapperSha256'] (missing [], extra [])
+  ok  1K iteration 1: DDP record keys ⊇ the attached-phone record's; added only ['conditions.ddp', 'conditions.engineCache', 'device.ddp', 'provenance.ddpSessionDir', 'provenance.wrapper', 'provenance.wrapperSha256'] (missing [], extra [])
+  ok  witness: v0.18.0 + the launched tool's sha, read from the unit's provenance.txt
+  ok  model.sha256 = the provenance.txt sha of the pushed model, modelShaSource device, file = the device name
+  ok  conditions.ddp: all 15 fields from the session report and the unit; device.ddp ({'sessionId': 'session-test0001', 'jobId': '00000000-0000-0000-0000-0000000003e8', 'executionId': '00000000-0000-0000-0000-000000000001', 'deviceId': 'akita-35', 'deviceKey': 'pixel8a', 'buildFingerprint': 'google/akita/akita:16/FAKE.251005.001/7:user/release-keys', 'serial': 'FAKEDDP0001', 'product': 'akita', 'jobStartTime': '2026-10-15T10:00:00.000Z', 'jobEndTime': '2026-10-15T10:20:00.000Z', 'executionStartTime': '2026-10-15T10:01:00.000Z', 'executionEndTime': '2026-10-15T10:19:00.000Z', 'executionTimeout': '3600s', 'resultType': 'PASSED', 'runIndex': 1})
+  ok  provenance.rawLog = a copy of the pulled run1.log beside the record; ddpSessionDir names the execution
+  ok  cpuAffinity = the applied mask, harnessStamp +ddp-route-c, screen / elapsed (ns) / battery / thermal from run1.state
+  ok  1K cell: per run a cold and a warm record, each with textCheck and its .decoded.txt ([(1, 'cold'), (1, 'cold'), (2, 'warm'), (2, 'warm')])
+  ok  firstEver on run 1 only (its iteration 1 in the 1K cell) ([True, None, True, None, None, None])
+  ok  conditions.engineCache from the raw log: CPU run 1 built, run 2 loaded (gpuCache absent); GPU run 1 not-loaded, run 2 loaded (xnnpack absent), both iterations of a 1K launch alike; no ddpMissing ([('litert-lm-cpu', 1, 1, '{"gpuCache": "absent", "xnnpackWeightCache": "built"}'), ('litert-lm-cpu', 2, 1, '{"gpuCache": "absent", "xnnpackWeightCache": "loaded"}'), ('litert-lm-gpu', 1, 1, '{"gpuCache": "not-loaded", "xnnpackWeightCache": "absent"}'), ('litert-lm-gpu', 1, 2, '{"gpuCache": "not-loaded", "xnnpackWeightCache": "absent"}'), ('litert-lm-gpu', 2, 1, '{"gpuCache": "loaded", "xnnpackWeightCache": "absent"}'), ('litert-lm-gpu', 2, 2, '{"gpuCache": "loaded", "xnnpackWeightCache": "absent"}')])
+  ok  record id = uuid5(URL, edge-llm-bench/ddp/<session>/<job>/<execution>/run<i>/iter<k>), conditions.launchID = the same without /iter<k>; 6 ids, all distinct (differ: [])
+  ok  after the pull: none of the 17 lab strings anywhere in the campaign dir beside ddp-raw/, which holds the 6 logcats (2 jobs x 2 runs + 2 executions) byte for byte as pulled; what stays stays; line counts kept (6 logcats, 6 copies, leaks [])usage: run_ddp.py [-h] [--device DEVICE] [--campaign CAMPAIGN] [--dry-run]
+                  [--jobs-per-session JOBS_PER_SESSION]
+                  [--job-timeout JOB_TIMEOUT] [--resume RESUME]
+                  [--records-only CAMPAIGN_DIR] [--bin-dir BIN_DIR]
+                  [--bucket BUCKET] [--project PROJECT] [--endpoint ENDPOINT]
+                  [--poll-seconds POLL_SECONDS]
+                  [cells]
+run_ddp.py: error: --records-only takes the campaign dir alone
+
+  ok  ddp/scrub.json: one entry per logcat with {'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3} (18), rawSha256 = its ddp-raw/ copy, totals x 6 ({'ssid': 18, 'hash': 12, 'ip6': 18, 'mac': 12, 'mac-part': 6, 'ip': 24, 'id': 18, 'replaced': 108, 'files': 6})
+  ok  .gitignore keeps every campaign's ddp-raw/ out of git (results/raw/*/ddp-raw/)
+  ok  --records-only <campaign>: no subprocess, no network; the 6 records, their raw logs and decoded texts and FAILURES.txt written again, the logcats, ddp-raw/ and scrub.json, all byte for byte as before; the billed run's exit code (rc 1 / 1, changed [], {'recordsOnly': '../../../tmp/ddp-selftest-qg_5s5md/sumroot/results/raw/selftest-ddp-akita-35-android', 'sessions': 1, 'removed': 15, 'written': 15, 'records': 6, 'notWrittenAgain': [], 'newNames': []})
+  ok  --records-only with another argument refuses (SystemExit(2))
+  ok  a second campaign checks the 14 objects (storage ls) and uploads none (rc 1)
+  ok  a 400 to the POST: the driver stops, ddp/error-1.json holds the body verbatim, no record (session 1: POST answered 400; body in /tmp/ddp-selftest-qg_5s5md/sumroot/results/raw/selftest-ddp-rejected-android/ddp/error-1.json)
+  ok  --resume <operation>: no new POST, the session polled, pulled and recorded (rc 1, 6 records)
+  ok  ddp/plan-1.json (what the records are built from) carries no host path
+  ok  provenance sha of libLiteRtOpenClAccelerator.so changed -> ['unknown (on-device v0.18.0 litert_lm_main with lib libLiteRtOpenClAccelerator.so unmatched in android/engine-pins.json)']
+  ok  provenance sha of litert_lm_main changed -> ['unknown (on-device litert_lm_main sha unmatched in android/engine-pins.json)']
+  ok  a CPU run with neither XNNPACK cache line: engineCache absent / absent, the reason in provenance.ddpMissing ([["conditions.engineCache.xnnpackWeightCache: run1.log has neither 'weight cache build for' nor 'weight cache loaded from'"]])
+--- 5. build_summary into a temp dir: the DDP row's device column, never the attached phone's
+  ok  device column: DDP rows 'Pixel 8a (DDP akita-35)', the attached phone's 'Pixel 8a' (['Pixel 8a (DDP akita-35)'], ['Pixel 8a'])
+  ok  render_leaderboard: the same cell under two (platform, device) keys, one arm_row each, no pooling ([('android', 'Pixel 8a'), ('android', 'Pixel 8a (DDP akita-35)')])
+  ok  render_dashboard.devices_for: the DDP unit is a column of its own after the schedule's phones (['SM-S942Q', 'Pixel 8a', 'Pixel 8a (DDP akita-35)'])
+--- 6. android/ddp/scrub.py: each rule, what stays, the file form, the CLI
+  ok  scrub_text: 17 lines, each rule (ssid quoted / ssid() / short / bare / known from the session, hash, ip6, mac incl. star-masked, mac-part, ip, id) and what stays, counted per kind ([])
+  ok  the fake lab logcat: {'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3}, line count kept, no lab string left, what stays stays
+  ok  scrub_file: the original in the raw dir, the scrub over the file; a second scrub reads the copy: the same bytes and counts, the copy untouched; bytes outside UTF-8 kept
+  ok  scrub_file refuses a raw dir that is the file's own directory
+  ok  scrub.py --raw-dir <dir> <file> <file>: one JSON line per file with its counts, originals in the dir, the SSID that only the execution's logcat quotes taken out of the run's too; executable (rc 0, [{'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3}, {'ssid': 3, 'hash': 2, 'ip6': 3, 'mac': 2, 'mac-part': 1, 'ip': 4, 'id': 3}], '')
+  ok  the CLI refuses a missing file (rc 2) and two files of one name (rc 2)
+
+ddp selftest OK (73 checks)
+## ./android/ddp/selftest.py exit=0
+
+## README step 1 phrase: sudo apt install python3-venv
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+python3-venv is already the newest version (3.12.3-0ubuntu2.1).
+0 upgraded, 0 newly installed, 0 to remove and 4 not upgraded.
+## exit=0
+
+## docs/OPERATIONS.md prerequisites, the huggingface_hub line: python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub
+## step verify-docs | end 2026-10-16 15:55:28 JST | rc 0 | 18 s
+
+## step fresh-venv | start 2026-10-16 15:55:28 JST | h_fresh_venv
+image ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55 linux/arm64
+debconf: delaying package configuration, since apt-utils is not installed
+## Ubuntu 24.04.5 LTS, Python 3.12.3; python3-venv installed: no; python3-pip installed: no
+## python3 -m venv before python3-venv: rc=1
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  python3-pip-whl python3-setuptools-whl python3.12-venv
+The following NEW packages will be installed:
+  python3-pip-whl python3-setuptools-whl python3-venv python3.12-venv
+0 upgraded, 4 newly installed, 0 to remove and 4 not upgraded.
+Need to get 2430 kB of archives.
+After this operation, 2783 kB of additional disk space will be used.
+Do you want to continue? [Y/n] Get:1 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 python3-pip-whl all 24.0+dfsg-1ubuntu1.3 [1707 kB]
+Get:2 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 python3-setuptools-whl all 68.1.2-2ubuntu1.2 [716 kB]
+Get:3 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 python3.12-venv arm64 3.12.3-1ubuntu0.17 [5684 B]
+Get:4 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 python3-venv arm64 3.12.3-0ubuntu2.1 [1032 B]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 2430 kB in 3s (766 kB/s)
+Selecting previously unselected package python3-pip-whl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6251 files and directories currently installed.)
+Preparing to unpack .../python3-pip-whl_24.0+dfsg-1ubuntu1.3_all.deb ...
+Unpacking python3-pip-whl (24.0+dfsg-1ubuntu1.3) ...
+Selecting previously unselected package python3-setuptools-whl.
+Preparing to unpack .../python3-setuptools-whl_68.1.2-2ubuntu1.2_all.deb ...
+Unpacking python3-setuptools-whl (68.1.2-2ubuntu1.2) ...
+Selecting previously unselected package python3.12-venv.
+Preparing to unpack .../python3.12-venv_3.12.3-1ubuntu0.17_arm64.deb ...
+Unpacking python3.12-venv (3.12.3-1ubuntu0.17) ...
+Selecting previously unselected package python3-venv.
+Preparing to unpack .../python3-venv_3.12.3-0ubuntu2.1_arm64.deb ...
+Unpacking python3-venv (3.12.3-0ubuntu2.1) ...
+Setting up python3-setuptools-whl (68.1.2-2ubuntu1.2) ...
+Setting up python3-pip-whl (24.0+dfsg-1ubuntu1.3) ...
+Setting up python3.12-venv (3.12.3-1ubuntu0.17) ...
+Setting up python3-venv (3.12.3-0ubuntu2.1) ...
+## sudo apt install python3-venv: rc=0
+Collecting huggingface_hub
+  Downloading huggingface_hub-2.2.0-py3-none-any.whl.metadata (16 kB)
+Collecting click<9.0.0,>=8.4.2 (from huggingface_hub)
+  Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting filelock>=3.10.0 (from huggingface_hub)
+  Downloading filelock-4.2.0-py3-none-any.whl.metadata (2.0 kB)
+Collecting fsspec>=2023.5.0 (from huggingface_hub)
+  Downloading fsspec-2026.9.0-py3-none-any.whl.metadata (10 kB)
+Collecting hf-xet<2.0.0,>=1.6.0 (from huggingface_hub)
+  Downloading hf_xet-1.7.0-cp38-abi3-manylinux_2_28_aarch64.whl.metadata (4.9 kB)
+Collecting httpx2<3,>=2.0.0 (from huggingface_hub)
+  Downloading httpx2-2.13.1-py3-none-any.whl.metadata (9.8 kB)
+Collecting packaging>=20.9 (from huggingface_hub)
+  Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting pyyaml>=5.1 (from huggingface_hub)
+  Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (2.4 kB)
+Collecting tqdm>=4.42.1 (from huggingface_hub)
+  Downloading tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.4/57.4 kB 4.8 MB/s eta 0:00:00
+Collecting typing-extensions>=4.1.0 (from huggingface_hub)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting anyio>=4.10 (from httpx2<3,>=2.0.0->huggingface_hub)
+  Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+Collecting httpcore2==2.13.1 (from httpx2<3,>=2.0.0->huggingface_hub)
+  Downloading httpcore2-2.13.1-py3-none-any.whl.metadata (26 kB)
+Collecting idna>=3.18 (from httpx2<3,>=2.0.0->huggingface_hub)
+  Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting truststore>=0.10 (from httpx2<3,>=2.0.0->huggingface_hub)
+  Downloading truststore-0.10.5-py3-none-any.whl.metadata (4.5 kB)
+Collecting h11>=0.16 (from httpcore2==2.13.1->httpx2<3,>=2.0.0->huggingface_hub)
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Downloading huggingface_hub-2.2.0-py3-none-any.whl (839 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 839.9/839.9 kB 20.5 MB/s eta 0:00:00
+Downloading click-8.5.0-py3-none-any.whl (125 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 125.3/125.3 kB 18.4 MB/s eta 0:00:00
+Downloading filelock-4.2.0-py3-none-any.whl (135 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.0/135.0 kB 19.9 MB/s eta 0:00:00
+Downloading fsspec-2026.9.0-py3-none-any.whl (221 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.7/221.7 kB 26.5 MB/s eta 0:00:00
+Downloading hf_xet-1.7.0-cp38-abi3-manylinux_2_28_aarch64.whl (4.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 42.6 MB/s eta 0:00:00
+Downloading httpx2-2.13.1-py3-none-any.whl (95 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 95.6/95.6 kB 17.9 MB/s eta 0:00:00
+Downloading httpcore2-2.13.1-py3-none-any.whl (83 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 83.4/83.4 kB 4.3 MB/s eta 0:00:00
+Downloading packaging-26.3-py3-none-any.whl (129 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 130.0/130.0 kB 7.2 MB/s eta 0:00:00
+Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (775 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 775.1/775.1 kB 33.5 MB/s eta 0:00:00
+Downloading tqdm-4.70.1-py3-none-any.whl (80 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.2/80.2 kB 13.9 MB/s eta 0:00:00
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 4.4 MB/s eta 0:00:00
+Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 132.1/132.1 kB 22.0 MB/s eta 0:00:00
+Downloading idna-3.20-py3-none-any.whl (69 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.6/69.6 kB 8.9 MB/s eta 0:00:00
+Downloading truststore-0.10.5-py3-none-any.whl (19 kB)
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Installing collected packages: typing-extensions, truststore, tqdm, pyyaml, packaging, idna, hf-xet, h11, fsspec, filelock, click, httpcore2, anyio, httpx2, huggingface_hub
+Successfully installed anyio-4.15.1 click-8.5.0 filelock-4.2.0 fsspec-2026.9.0 h11-0.16.0 hf-xet-1.7.0 httpcore2-2.13.1 httpx2-2.13.1 huggingface_hub-2.2.0 idna-3.20 packaging-26.3 pyyaml-6.0.3 tqdm-4.70.1 truststore-0.10.5 typing-extensions-4.16.0
+## README.md:114 rc=0; huggingface_hub 2.2.0; python3-venv installed: yes; python3-pip installed: no
+## step fresh-venv | end 2026-10-16 15:55:52 JST | rc 0 | 24 s

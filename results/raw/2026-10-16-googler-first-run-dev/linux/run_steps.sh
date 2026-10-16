@@ -1,7 +1,7 @@
 #!/bin/bash
-# D3S4 r1 driver: the container steps of the Linux first run, one after another; each step starts only after the
+# D3S4 r1 / r2 driver: the container steps of the Linux first run, one after another; each step starts only after the
 # Mac measurement window is closed (quiet_wait.py before every step) and appends its output to K/linux/<log>.
-#   bash run_steps.sh [main|verify]
+#   bash run_steps.sh [main|verify|r2-dry|r2-session|r2-after]
 #   START_AT=<step> resumes the phase at that step; ONLY="<step> <step>" runs just those steps.
 # Writes K/linux/steps.tsv (step, start, end, seconds, rc, log), K/linux/STOPPED_AT (a fatal step that failed),
 # K/linux/FAILED_STEPS (non-fatal steps that failed) and, always last, K/linux/run_steps.done.
@@ -110,6 +110,41 @@ h_copy_readmes() {  # the worktree's fixed READMEs into the clone, to run their 
       "$(docker exec -u dev "$C" sha256sum "/home/dev/edge-llm-bench/$f" | cut -d' ' -f1)"
   done
 }
+h_copy_into_clone() {  # r2: h_copy_into_clone <path>...: the worktree's files into the clone, owned by dev
+  for f in "$@"; do
+    docker cp "$WT/$f" "$C:/home/dev/edge-llm-bench/$f" || return 1
+    docker exec -u root "$C" chown dev:dev "/home/dev/edge-llm-bench/$f" || return 1
+    printf '## %s sha256 worktree %s clone %s\n' "$f" "$(shasum -a 256 < "$WT/$f" | cut -d' ' -f1)" \
+      "$(docker exec -u dev "$C" sha256sum "/home/dev/edge-llm-bench/$f" | cut -d' ' -f1)"
+  done
+}
+h_doctor_mac() {  # r2: the worktree's `bench doctor --platform ddp` on the Mac -> K/doctor-ddp-mac.log (user name ->
+  # USER); adb left off PATH, so the doctor reaches no attached phone (no phone in this round); the pinned engine
+  # files are the main checkout's (the worktree has no android/bin)
+  local p rc out=$K/doctor-ddp-mac.log
+  p=$(printf '%s' "$PATH" | tr ':' '\n' | grep -v '/platform-tools$' | paste -sd: -)
+  {
+    printf '## %s; python3 = %s (%s); adb on PATH: %s\n' "$(stamp)" "$(PATH=$p command -v python3)" \
+      "$(PATH=$p python3 --version 2>&1)" "$(PATH=$p command -v adb || echo none)"
+    printf '## BENCH_ANDROID_BIN_DIR=%s\n' "$HOME/code/edge-llm-bench/android/bin"
+    PATH=$p BENCH_ANDROID_BIN_DIR=$HOME/code/edge-llm-bench/android/bin "$WT/bench" doctor --platform ddp 2>&1
+    rc=$?
+    printf '## %s bench doctor --platform ddp exit=%s\n' "$(stamp)" "$rc"
+  } > "$out.tmp"
+  sed "s/$(id -un)/USER/g" "$out.tmp" > "$out" && rm -f "$out.tmp"
+  printf '## written %s (exit %s)\n' "${out#"$WT"/}" "$rc"
+  return "$rc"
+}
+h_fresh_venv() {  # r2: 99-fresh-venv.sh in a throwaway ubuntu:24.04 container (removed when it exits)
+  docker image inspect ubuntu:24.04 --format 'image {{index .RepoDigests 0}} {{.Os}}/{{.Architecture}}'
+  docker run --rm -i --memory 2g ubuntu:24.04 bash -s < "$L/steps/99-fresh-venv.sh"
+}
+h_clone_state() {  # r2: the clone's copies of r1's changed files = the worktree's committed ones
+  for f in README.md android/README.md matrices/ddp-first-run.cells; do
+    printf '## %s sha256 worktree HEAD %s clone %s\n' "$f" "$(git -C "$WT" show "HEAD:$f" | shasum -a 256 | cut -d' ' -f1)" \
+      "$(docker exec -u dev "$C" sha256sum "/home/dev/edge-llm-bench/$f" | cut -d' ' -f1)"
+  done
+}
 
 # ---------------------------------------------------------------- phases
 case "$PHASE" in
@@ -139,6 +174,27 @@ case "$PHASE" in
     ensure_up || finish "container $C not up" 1
     step copy-readmes 10-verify-readme.log 1 h_copy_readmes
     step verify-readme 10-verify-readme.log 0 dexec dev 90-verify-readme.sh
+    ;;
+  r2-dry)
+    ensure_up || finish "container $C not up" 1
+    step clone-state 09-dryrun-before-session.log 1 h_clone_state
+    step before-session 09-dryrun-before-session.log 1 dexec dev 91-before-session.sh
+    step dryrun-before-session 09-dryrun-before-session.log 1 dexec dev 92-dryrun-before-session.sh
+    ;;
+  r2-session)
+    ensure_up || finish "container $C not up" 1
+    step session 10-session.log 0 dexec dev 95-session.sh
+    ;;
+  r2-after)
+    ensure_up || finish "container $C not up" 1
+    step model-blob 10-session.log 0 dexec dev 93-model-blob.sh
+    step doctor-before 08-doctor-ddp.log 1 dexec dev 96-doctor-before.sh
+    step copy-doctor 08-doctor-ddp.log 1 h_copy_into_clone bench scripts/doctor.py
+    step doctor-ddp 08-doctor-ddp.log 0 dexec dev 97-doctor-ddp.sh
+    step doctor-mac 08-doctor-ddp.log 0 h_doctor_mac
+    step copy-docs 11-verify-docs.log 1 h_copy_into_clone README.md docs/OPERATIONS.md
+    step verify-docs 11-verify-docs.log 0 dexec dev 98-verify-docs.sh
+    step fresh-venv 11-verify-docs.log 0 h_fresh_venv
     ;;
   *) finish "unknown phase $PHASE" 2 ;;
 esac

@@ -21,6 +21,23 @@ python3 scripts/build_summary.py && python3 scripts/render_leaderboard.py
 # -> LEADERBOARD.md (local, gitignored)
 ```
 
+## Quickstart: the Android cells on a DDP lab phone
+
+- Needs: no phone and no adb; gcloud signed in, a Cloud project with the Device Run API enabled and a bucket in it you can read and write, and python3 >= 3.10 with `huggingface_hub` (step 1 of the DDP section below).
+- Clone: `git clone https://github.com/john-rocky/edge-llm-bench && cd edge-llm-bench`
+- Put the pinned LiteRT-LM Android files in place (the lines of step 2 below; 7 s with the clone on a fresh Ubuntu 24.04, 2026-10-16):
+  ```bash
+  TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))["android_pins"]["litert-lm"])')
+  mkdir -p android/bin
+  curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz \
+    | tar xz -C android/bin && mv android/bin/litert-lm-$TAG-android-arm64 android/bin/$TAG
+  ```
+- Check: `./bench doctor --platform ddp` (gcloud and its sign-in, `huggingface_hub`, the 9 engine files) and `./android/ddp/selftest.py` (no network, nothing billed; 17 s).
+- Run, billed to your project (8 jobs in one session, 37 min on 2026-10-15): `./bench matrix matrices/dashboard-text-v1.cells --ddp akita-35 --project <your project> --bucket gs://<your bucket>`
+- A first check of one job and two runs: the same command on `matrices/ddp-first-run.cells` (7 min from the command to the records on 2026-10-16).
+- Read: the records in `results/raw/<date>-ddp-akita-35-android/app-path-android/*.json`; in `results/summary/device-runs.csv` their device is `Pixel 8a (DDP akita-35)`.
+- More: "Run the Android cells on a Developer Device Platform phone" below (the dry run, the cost, what this route does not carry).
+
 ## The loop
 
 ```bash
@@ -111,7 +128,8 @@ Android SDK.
   are this repo's own project and bucket, so pass `--project` and `--bucket`.
 - python3 >= 3.10 as `python3` on the PATH (`bench` starts with
   `#!/usr/bin/env python3`) and `huggingface_hub`, for instance in a venv:
-  `python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub`.
+  `python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub`
+  (a stock Debian / Ubuntu needs the `python3-venv` package first: `sudo apt install python3-venv`).
   A gated model repo needs your Hugging Face token on the host.
 - The pinned LiteRT-LM Android binaries: the 9 files (`litert_lm_main`,
   `litert_lm_advanced_main`, 7 GPU `.so`) of the tag that
