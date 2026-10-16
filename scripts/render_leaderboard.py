@@ -118,8 +118,14 @@ def latest_session(rows):
     after the new one (the v0.15.0 baseline rehearsal ran after the v0.16.0
     capture), so pure timestamp order would crown the baseline. When every
     engine string in the cell is a comparable version tag, the newest engine
-    wins before the newest session; hash/opaque engines keep timestamp order."""
+    wins before the newest session; hash/opaque engines keep timestamp order.
+    A cell that mixes version tags and labels keeps its tag rows first: a build
+    registered under a label (`bench matrix --ddp --engine-build`) never crowns
+    a standing cell; its rows stay in the summary."""
     engines = {r["engine_version"] or "" for r in rows}
+    tags = {e for e in engines if _VERSION_TAG.match(e)}
+    if tags and tags != engines:
+        rows, engines = [r for r in rows if (r["engine_version"] or "") in tags], tags
     if len(engines) > 1 and all(_VERSION_TAG.match(e) for e in engines):
         top = max(engines, key=lambda e: [int(x) for x in re.findall(r"\d+", e)])
         rows = [r for r in rows if (r["engine_version"] or "") == top]

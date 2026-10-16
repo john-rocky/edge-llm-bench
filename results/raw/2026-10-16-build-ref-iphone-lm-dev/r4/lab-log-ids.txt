@@ -1,0 +1,60 @@
+# 2026-10-16 19:15:55 JST identifier shapes in the lab's files of session-70a0e2dc-9c0f-4232-babf-77a7c15ceb49 (cell 1), kinds and counts only, no value written
+# files: <campaign>/ddp-raw/<session>/system.log and junit.xml (gitignored, not staged), and the pulled console.txt (staged as ddp/<session>/console.txt)
+# counter: K/r4/labids.py (regex shapes; a shape is not proof of an identifier: the six-pair and :: forms also match hex dumps and C++ scopes such as add::)
+$ python3 -I K/r4/labids.py system.log junit.xml artifacts/console.txt
+## system.log: 180285 lines, 18788627 chars
+MAC (six pairs): 3014 matches, 369 distinct, 3013 lines
+MAC (star-masked): 0 matches, 0 distinct, 3013 lines
+IPv6 (full): 6 matches, 1 distinct, 6 lines
+IPv6 (:: form): 424 matches, 11 distinct, 424 lines
+e-mail: 12 matches, 9 distinct, 12 lines
+UDID (40 hex): 294 matches, 5 distinct, 157 lines
+UDID (8-16 hex): 3 matches, 1 distinct, 3 lines
+UUID (8-4-4-4-12): 4075 matches, 333 distinct, 3259 lines
+IPv4 private (10/8, 172.16/12, 192.168/16, 169.254/16, 100.64/10): 36 matches, 2 distinct
+IPv4 other (public or a dotted version string; not split): 0 matches, 0 distinct
+IPv4 loopback / 0.0.0.0: 0 matches
+keyword 'SSID': 26 lines
+keyword 'BSSID': 11 lines
+keyword 'serial': 57 lines
+keyword 'UDID': 1 lines
+keyword 'hostname': 119 lines
+keyword 'ECID': 1 lines
+keyword 'IMEI': 3 lines
+keyword 'phone number': 7 lines
+keyword 'Wi-Fi': 3 lines
+keyword 'WiFi': 2535 lines
+keyword 'AppleID': 4 lines
+keyword '.local': 4 lines
+## junit.xml: 7 lines, 344 chars
+MAC (six pairs): 0 matches, 0 distinct, 0 lines
+MAC (star-masked): 0 matches, 0 distinct, 0 lines
+IPv6 (full): 0 matches, 0 distinct, 0 lines
+IPv6 (:: form): 0 matches, 0 distinct, 0 lines
+e-mail: 0 matches, 0 distinct, 0 lines
+UDID (40 hex): 0 matches, 0 distinct, 0 lines
+UDID (8-16 hex): 0 matches, 0 distinct, 0 lines
+UUID (8-4-4-4-12): 0 matches, 0 distinct, 0 lines
+IPv4 private (10/8, 172.16/12, 192.168/16, 169.254/16, 100.64/10): 0 matches, 0 distinct
+IPv4 other (public or a dotted version string; not split): 0 matches, 0 distinct
+IPv4 loopback / 0.0.0.0: 0 matches
+keyword 'hostname': 1 lines
+## console.txt: 352 lines, 23188 chars
+MAC (six pairs): 0 matches, 0 distinct, 0 lines
+MAC (star-masked): 0 matches, 0 distinct, 0 lines
+IPv6 (full): 0 matches, 0 distinct, 0 lines
+IPv6 (:: form): 0 matches, 0 distinct, 0 lines
+e-mail: 0 matches, 0 distinct, 0 lines
+UDID (40 hex): 0 matches, 0 distinct, 0 lines
+UDID (8-16 hex): 0 matches, 0 distinct, 0 lines
+UUID (8-4-4-4-12): 0 matches, 0 distinct, 0 lines
+IPv4 private (10/8, 172.16/12, 192.168/16, 169.254/16, 100.64/10): 0 matches, 0 distinct
+IPv4 other (public or a dotted version string; not split): 0 matches, 0 distinct
+IPv4 loopback / 0.0.0.0: 0 matches
+keyword 'serial': 3 lines
+keyword 'device name': 1 lines
+
+# context, no values: system.log = the unit's whole syslog for the session (180,285 lines, every process); its first line is a bracketed header carrying an 8-16 hex string (the iOS UDID shape); MAC-shape lines by process: kernel 2772, wifid 234, rapportd 2, unattributed 5; the 12 e-mail shapes have two-label domains, none an Apple / iCloud domain; keyword lines: SSID 26, BSSID 11, hostname 119, IMEI 3, ECID 1, phone number 7, AppleID 4, WiFi 2535.
+# console.txt (committed): the three 'serial' lines are the engine's 'Initializing Metal-based API from serialized data.' and the 'device name' line is YARDSTICK_METAL_DEVICE name=Apple A18 Pro GPU (the GPU's name) = no identifier.
+# verdict: system.log carries the unit's UDID shape, network ids (MAC shapes, private IPv4, IPv6, SSID / BSSID lines) and e-mail shapes -> it stays in the gitignored ddp-raw/ (as the Android logcats); junit.xml has none; nothing from either is staged.
+# junit.xml's one 'hostname' line is the attribute hostname='localhost' (testcase testHeadlessRun, time 80.442 s) = no identifier.

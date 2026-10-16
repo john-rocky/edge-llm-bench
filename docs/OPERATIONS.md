@@ -269,6 +269,14 @@ ran on 2026-10-16: `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/
   the release asset `android-litert-lm-<tag>` ("Engine acquisition" in
   `android/README.md`) or a source build. The driver checks all 9 files against
   the pins before it uploads anything.
+- A build that is not the pin (LiteRT-LM main, a pull request, a build made
+  elsewhere): its files in `$BENCH_ANDROID_BIN_DIR/<label>/` and its entry
+  `litert-lm.<label>` in `android/engine-pins.json`
+  (`android/scripts/build_litert_lm_main.sh` with `LITERTLM_REF`, or
+  `android/scripts/pins_add.py`; `android/README.md`, "Build from head or a
+  PR"), then `--engine-build <label>` on the dry run and on the billed run.
+  `android_pins` stays as it is (a pin bump: "Runbook: an engine shipped a
+  release").
 
 1. **Dry run.**
    `./bench matrix <cells> --ddp <id> --dry-run --project <p> --bucket gs://<b>`.
@@ -342,6 +350,21 @@ ran on 2026-10-16: `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/
 8. **Commit** the campaign dir and `results/summary/` by explicit path (never
    `git add -A`), with a message that states what ran and what reproduced and
    no ordering of runtimes or devices.
+
+**The iPhone app's LiteRT-LM rows on a DDP iPhone** (`ios/ddp/`, XCTest; what
+it builds, pushes and records: `docs/ddp-integration.md`, "The LiteRT-LM rows
+on a DDP iPhone"). Build the archive once per change of `ios/BenchmarkApp`:
+`DEVELOPMENT_TEAM=<team> BUNDLE_ID=<an App ID whose profile carries the two memory entitlements> DEVELOPER_DIR=<Xcode 26> ios/ddp/build_xctest.sh`
+(after `Vendored/LiteRT-LM` is in place, `ios/ddp/README.md`); dry-run each
+cell, `ios/ddp/run_ddp_ios_lm.py --device iphone16pro-18-3 --model-id <id> --backend gpu|cpu --project <p> --bucket gs://<b> --dry-run`,
+then run the same without `--dry-run` (one session per cell; exit 0 = passed
+and written, 4 = the job did not pass). The records land in
+`results/raw/<campaign>/device-jsonl/` (default campaign
+`<date>-ddp-<id>-ios`). Gate each cell's records as the attached-iPhone runner
+does, `scripts/cell_gate.py --runs <n> <the cell's records>`: a capture the gate
+calls HOT, SPREAD, DEAD or COLLAPSE moves to `device-jsonl-flagged/` with one
+`FLAGGED.txt` line and is taken again in a later session. Then steps 6 to 8
+above, with `ddp-raw/` (the lab's `system.log` and `junit.xml`) left out.
 
 Measured (2026-10-15, `results/raw/2026-10-15-ddp-backend-dev/ROUND2.md`,
 `ROUND3.md`): the smoke session (1 job of 2 runs on `akita-35`) took 22.6 min,

@@ -1,0 +1,55 @@
+quiet_wait: waited 0 s, running: ~/code/edge-llm-bench-wt-buildref/ios/ddp/run_ddp_ios_lm.py --device iphone16pro-18-3 --model-id lite
+{"plan": {"device": "iphone16pro-18-3", "modelId": "litert-community/Qwen3-1.7B", "file": "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm", "backend": "gpu", "recordRuntime": "litert-lm", "task": "short-chat", "runs": 4, "contextTokens": null, "timeout": "15m", "xcodeVersion": "xcode-26-2", "bundleId": "com.example.CoreMLLLMChat", "campaign": "2026-10-16-ddp-iphone16pro-18-3-ios", "run": "c640c4a8c599"}}
+{"args": ["--yardstick-autorun", "--runtime", "litert-lm", "--model-id", "litert-community/Qwen3-1.7B", "--task", "short-chat", "--runs", "4", "--litert-backend", "gpu"]}
+{"model": {"local": "~/.cache/huggingface/hub/models--litert-community--Qwen3-1.7B/blobs/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8", "bytes": 977184032, "sha256": "2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8", "object": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm", "uncached": null}}
+{"archive": {"local": "ios/ddp/out/BenchmarkApp-ddp-xctest.zip", "bytes": 46928974, "sha256": "f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b", "manifest": "BenchmarkAppDDP_iphoneos26.1-arm64.xctestrun", "object": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/ios-xctest/f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b/BenchmarkApp-ddp-xctest.zip", "buildInfo": {"litert_lm": "v0.18.0", "litert_lm_artifact": "CLiteRTLM.xcframework.zip@v0.18.0 sha256:d765b99592d4ec3d0c9e2bd69469454af06c834861340672da1891c0c121c347", "app": "com.example.CoreMLLLMChat (BenchmarkAppDDP, Release, iOS 18.0 floor)", "xcode": "Xcode 26.1.1 Build version 17B100", "sdk": "iphoneos26.1", "commit": "53116e9cc8b75aa44716027f7c9b4b93ed916616", "ios_benchmarkapp_tree": "11a1e82f32902267432fdb855855d3e1d86bd804", "built": "2026-10-16T09:27:57Z", "host_arch": "arm64"}}}
+{"push": [{"source": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm", "dest": "com.example.CoreMLLLMChat:/Documents/models/litert-lm/litert-community__Qwen3-1.7B/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"}, {"source": "results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ddp/args-c640c4a8c599.json", "dest": "com.example.CoreMLLLMChat:/Documents/yardstick_args.json"}]}
+{"pull": ["com.example.CoreMLLLMChat:/Documents/results", "com.example.CoreMLLLMChat:/Documents/out"]}
+{"labels": {"harness": "edge-llm-bench", "campaign": "2026-10-16-ddp-iphone16pro-18-3-ios", "runtime": "litert-lm", "model": "litert-community--qwen3-1-7b", "task": "short-chat", "backend": "gpu", "deviceid": "iphone16pro-18-3", "engine": "v0-18-0", "run": "c640c4a8c599"}, "count": 9}
+{"command": ["gcloud", "beta", "device-run", "sessions", "submit", "xctest", "--device=iphone16pro-18-3", "--test=gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/ios-xctest/f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b/BenchmarkApp-ddp-xctest.zip", "--other-files-to-push=gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm=com.example.CoreMLLLMChat:/Documents/models/litert-lm/litert-community__Qwen3-1.7B/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm,results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ddp/args-c640c4a8c599.json=com.example.CoreMLLLMChat:/Documents/yardstick_args.json", "--paths-to-pull=com.example.CoreMLLLMChat:/Documents/results,com.example.CoreMLLLMChat:/Documents/out", "--xctest-timeout=15m", "--xcode-version=xcode-26-2", "--labels=harness=edge-llm-bench,campaign=2026-10-16-ddp-iphone16pro-18-3-ios,runtime=litert-lm,model=litert-community--qwen3-1-7b,task=short-chat,backend=gpu,deviceid=iphone16pro-18-3,engine=v0-18-0,run=c640c4a8c599", "--async", "--format=json", "--project=litert-edge-portal"]}
+
+| field | value |
+|---|---|
+| device | iphone16pro-18-3 |
+| model | litert-community/Qwen3-1.7B — Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm (977,184,032 bytes, sha256 2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8) |
+| backend / record runtime | gpu / litert-lm |
+| task / runs / context | short-chat / 4 / derived by the app |
+| push 1 (model) | gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm → com.example.CoreMLLLMChat:/Documents/models/litert-lm/litert-community__Qwen3-1.7B/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm |
+| push 2 (argv) | results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ddp/args-c640c4a8c599.json → com.example.CoreMLLLMChat:/Documents/yardstick_args.json |
+| pull | com.example.CoreMLLLMChat:/Documents/results, com.example.CoreMLLLMChat:/Documents/out |
+| --xctest-timeout | 15m |
+| --xcode-version | xcode-26-2 |
+| labels (9) | harness=edge-llm-bench, campaign=2026-10-16-ddp-iphone16pro-18-3-ios, runtime=litert-lm, model=litert-community--qwen3-1-7b, task=short-chat, backend=gpu, deviceid=iphone16pro-18-3, engine=v0-18-0, run=c640c4a8c599 |
+| archive | ios/ddp/out/BenchmarkApp-ddp-xctest.zip (46,928,974 bytes, sha256 f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b) → gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/ios-xctest/f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b/BenchmarkApp-ddp-xctest.zip |
+| archive BUILD_INFO | litert_lm=v0.18.0, CLiteRTLM.xcframework.zip@v0.18.0 sha256:d765b99592d4ec3d0c9e2bd69469454af06c834861340672da1891c0c121c347, Xcode 26.1.1 Build version 17B100 |
+| records | results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/device-jsonl/, console_litert-lm_litert-community_Qwen3-1_7B_short-chat.txt |
+
+# gcloud beta device-run sessions submit xctest --device=iphone16pro-18-3 --test=gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/ios-xctest/f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b/BenchmarkApp-ddp-xctest.zip --other-files-to-push=gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm=com.example.CoreMLLLMChat:/Documents/models/litert-lm/litert-community__Qwen3-1.7B/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm,results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ddp/args-c640c4a8c599.json=com.example.CoreMLLLMChat:/Documents/yardstick_args.json --paths-to-pull=com.example.CoreMLLLMChat:/Documents/results,com.example.CoreMLLLMChat:/Documents/out --xctest-timeout=15m --xcode-version=xcode-26-2 --labels=harness=edge-llm-bench,campaign=2026-10-16-ddp-iphone16pro-18-3-ios,runtime=litert-lm,model=litert-community--qwen3-1-7b,task=short-chat,backend=gpu,deviceid=iphone16pro-18-3,engine=v0-18-0,run=c640c4a8c599 --async --format=json --project=litert-edge-portal
+in bucket: gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+uploading ios/ddp/out/BenchmarkApp-ddp-xctest.zip (46,928,974 bytes) -> gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/ios-xctest/f13173b431cbf1613f1d1ca3fb9fbb82be4d3caba7ee1a0d77a003ac1ad7130b/BenchmarkApp-ddp-xctest.zip
+# session session-70a0e2dc-9c0f-4232-babf-77a7c15ceb49; `gcloud beta device-run sessions cancel session-70a0e2dc-9c0f-4232-babf-77a7c15ceb49` stops it
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+# RUNNING; next check in 30 s
+
+job job-000: PASSED
+  YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=44.37 decode_tok_s_wall=44.04 ttft_ms=1589 prefill_tok_s=17.0 prefill_tok_s_wall=12.0 prompt_tokens=19 peak_mb=590 median_mb=590 median_resident_mb=1412 ctx=
+  YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=44.68 decode_tok_s_wall=44.34 ttft_ms=360 prefill_tok_s=81.8 prefill_tok_s_wall=52.8 prompt_tokens=19 peak_mb=590 median_mb=590 median_resident_mb=1414 ctx=6
+  YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=44.03 decode_tok_s_wall=43.69 ttft_ms=369 prefill_tok_s=79.4 prefill_tok_s_wall=51.4 prompt_tokens=19 peak_mb=591 median_mb=591 median_resident_mb=1414 ctx=6
+  YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=31.57 decode_tok_s_wall=31.32 ttft_ms=761 prefill_tok_s=33.8 prefill_tok_s_wall=25.0 prompt_tokens=19 peak_mb=592 median_mb=592 median_resident_mb=1415 ctx=6
+  YARDSTICK_ALL_DONE
+4 record(s) -> results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/device-jsonl; yardstick.done 0; session files results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/ddp/session-70a0e2dc-9c0f-4232-babf-77a7c15ceb49

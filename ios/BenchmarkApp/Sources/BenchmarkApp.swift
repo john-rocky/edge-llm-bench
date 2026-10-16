@@ -9,6 +9,9 @@ import Darwin   // exit(), fflush(), stdout
 import Metal    // MTLCreateSystemDefaultDevice() for the YARDSTICK_METAL_DEVICE line
 #endif
 
+// The lab build (project-ddp.yml) compiles this file with BENCH_DDP_LAB: it has its own @main
+// (SourcesDDP/DDPApp.swift) and the LiteRT-LM runtime only, and keeps HeadlessAutoRun and HeadlessRun.
+#if !BENCH_DDP_LAB
 @main
 struct BenchmarkApp: App {
     @StateObject private var session = AppSession()
@@ -154,6 +157,7 @@ final class AppSession: ObservableObject {
         }
     }
 }
+#endif
 
 /// Used when a runtime can never become available at this iOS version.
 public final class UnavailableRuntime: LLMRuntime, @unchecked Sendable {
@@ -351,6 +355,7 @@ enum HeadlessAutoRun {
     }
 }
 
+#if !BENCH_DDP_LAB
 /// UI-less driver view. Shows a scrolling log on-device (handy when watching
 /// the phone) while running the benchmark and emitting machine-readable
 /// sentinel lines to stdout for the external driver.
@@ -394,7 +399,25 @@ struct HeadlessRunnerView: View {
     }
 
     private func runAll() async {
-        let runtime = session.runtime(for: spec.runtime)
+        await HeadlessRun(spec: spec, runtime: session.runtime(for: spec.runtime),
+                          log: { log($0) }, finish: { await finish($0) }).runAll()
+    }
+}
+#endif
+
+/// The headless run without its view: the view above hands it the runtime, its printer and its
+/// exit; the lab build's harness (SourcesDDP/DDPHarness.swift, an XCTest's entry) hands it a
+/// printer that also writes Documents/out/ and a finish that keeps the code instead of exiting.
+@MainActor
+struct HeadlessRun {
+    let spec: HeadlessAutoRun.Spec
+    let runtime: any LLMRuntime
+    /// Prints one YARDSTICK_* line to stdout (and wherever the caller shows it).
+    let log: @MainActor (String) -> Void
+    /// Ends the run with its exit code; every call is the last thing its path does.
+    let finish: @MainActor (Int32) async -> Void
+
+    func runAll() async {
         guard runtime.isAvailable else {
             await log("YARDSTICK_FATAL runtime=\(spec.runtime.rawValue) not_available")
             await finish(2)

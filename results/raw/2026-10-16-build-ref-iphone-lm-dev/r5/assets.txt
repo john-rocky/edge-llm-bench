@@ -1,0 +1,23 @@
+$ python3 tools/assets/assets.py list tool | grep edge-llm-bench
+edge-llm-bench-ddp-backend               tool     4/6  edge-llm-bench: bench matrix --ddp (Device Run backend)
+edge-llm-bench-build-ref                 tool     2/6  edge-llm-bench: LiteRT-LM Android build from a git ref + --engine-build on DDP
+edge-llm-bench-ddp-ios                   tool     2/6  edge-llm-bench: LiteRT-LM rows on a DDP iPhone (ios/ddp XCTest build)
+
+$ python3 tools/assets/assets.py lint edge-llm-bench-build-ref
+HOLD edge-llm-bench-build-ref [tool] 2/6 done — open: repo=hold(Draft PR to john-rocky/edge-llm-bench main waits f), skill=todo(skills/run-edge-llm-bench: add the --engine-build ), article=hold(waits on the user: no article before the PR merges), knowledge=todo(the lane close writes the knowledge/litert.md poin)
+     next: 
+exit 3
+
+$ python3 tools/assets/assets.py lint edge-llm-bench-ddp-ios
+HOLD edge-llm-bench-ddp-ios [tool] 2/6 done — open: repo=hold(Draft PR to john-rocky/edge-llm-bench main waits f), skill=todo(skills/run-edge-llm-bench: add the DDP iPhone step), article=hold(waits on the user: no article before the PR merges), knowledge=todo(the lane close writes the knowledge/litert.md poin)
+     next: 
+exit 3
+
+$ git -C ~/code/standup diff --stat tools/assets/assets.jsonl state/assets.md
+ state/assets.md           | 4 +++-
+ tools/assets/assets.jsonl | 2 ++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+assets.jsonl against the copy taken before the adds (20:12), lines added / removed:
+2
+0
