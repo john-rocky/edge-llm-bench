@@ -11,7 +11,10 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
    pins (one changed byte stops the plan); the CPU-cap wait per id (devices.json cpucapWaitSeconds:
    m1q-36 0, akita-35 the default 300); --project / --bucket in the plan and the request; bench
    matrix --ddp --dry-run with a gcloud on PATH that must never run, its summary line naming the
-   project and bucket passed.
+   project and bucket passed; run_ddp.model_file itself on a fake HF cache whose snapshot links to a
+   blob named by a 64-hex string that is not the file's sha256 (huggingface_hub 2.2.0 names a
+   Xet-stored file's blob by its xet hash), through a fake huggingface_hub module (no package, no
+   network): the sha256 is the file's, a billed run passes on the Hub's LFS sha256 and stops on another.
 2. the wrapper: --print_shell = run_cell.sampler_shell for every planned job, the command arg
    whole or split at its spaces; a host run with stand-in device tools (runs, files, exit codes, a
    failing and a timed-out engine, the budget, bad args; always exit 0).
@@ -45,6 +48,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import types
 import uuid
 from argparse import Namespace
 from unittest.mock import patch
@@ -309,6 +313,57 @@ def check_bench_dry_run(tmp, bin_dir):
     ok(r4.returncode == 2 and "for --ddp only" in r4.stderr and r5.returncode != 0 and "gs://<bucket>" in r5.stderr,
        f"--project without --ddp refuses (rc {r4.returncode}); a --bucket without gs:// refuses (rc {r5.returncode})")
     ok(not os.path.exists(marker), "none of the dry runs ran gcloud")
+
+
+def check_model_file(tmp):
+    print("--- 1c. model_file: the sha256 of the file, not the cache blob's name (a fake huggingface_hub, no network)")
+    # the HF cache as huggingface_hub 2.2.0 wrote a Xet-stored file (2026-10-16): the snapshot links to the shared
+    # hub/blobs/<2 hex>/<xet hash>, a 64-hex name that is not the sha256 of the bytes
+    model_id, filename = "litert-community/Qwen3-1.7B", "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+    hub_dir = os.path.join(tmp, "hf-cache", "hub")
+    xet = hashlib.sha256(b"a xet hash, not the sha256 of the bytes").hexdigest()
+    blob = os.path.join(hub_dir, "blobs", xet[:2], xet)
+    write(blob, f"weights of {filename} in a fake HF cache\n")
+    snap = os.path.join(hub_dir, "models--" + model_id.replace("/", "--"), "snapshots", "0" * 40, filename)
+    os.makedirs(os.path.dirname(snap))
+    os.symlink(os.path.relpath(blob, os.path.dirname(snap)), snap)
+    sha, size = run_cell.sha256_file(blob), os.path.getsize(blob)
+    other = hashlib.sha256(b"other bytes").hexdigest()
+    hub_lfs, calls = [sha], []
+
+    def hf_hub_download(repo_id, name, local_files_only=False):
+        calls.append((repo_id, name, local_files_only, os.environ.get("HF_HUB_OFFLINE")))
+        return snap
+
+    class HfApi:
+        def model_info(self, repo_id, files_metadata=False):
+            lfs = types.SimpleNamespace(sha256=hub_lfs[0], size=size) if hub_lfs[0] else None
+            return types.SimpleNamespace(siblings=[types.SimpleNamespace(rfilename=filename, size=size, lfs=lfs)])
+
+    hub = types.ModuleType("huggingface_hub")
+    hub.hf_hub_download, hub.HfApi = hf_hub_download, HfApi
+    with patch.dict(sys.modules, {"huggingface_hub": hub}), patch.dict(os.environ):
+        os.environ.pop("HF_HUB_OFFLINE", None)
+        dry = run_ddp.model_file(model_id, filename, True)
+        os.environ.pop("HF_HUB_OFFLINE", None)
+        billed = run_ddp.model_file(model_id, filename, False)
+        hub_lfs[0] = None
+        no_lfs = run_ddp.model_file(model_id, filename, False)
+        hub_lfs[0] = other
+        try:
+            run_ddp.model_file(model_id, filename, False)
+            stopped = None
+        except SystemExit as exc:
+            stopped = str(exc)
+    ok(dry == {"local": os.path.realpath(blob), "bytes": size, "sha256": sha} and sha != xet
+       and calls[0] == (model_id, filename, True, "1"),
+       f"dry run on a blob named by a 64-hex string that is not its sha256: sha256 = the file's hash, local = the "
+       f"blob, from the cache only (local_files_only, HF_HUB_OFFLINE=1) ({str(dry.get('sha256'))[:12]}…, "
+       f"{calls[0][2:] if calls else None})")
+    ok(billed == dry and no_lfs == dry and [c[2] for c in calls[1:]] == [False, False, False],
+       "billed path: the hash = the Hub's LFS sha256 passes; a file the Hub gives no LFS sha256 passes on the size alone")
+    ok(stopped is not None and f"sha256 {sha}" in stopped and f"the Hub's LFS sha256 is {other}" in stopped,
+       f"billed path: a hash other than the Hub's LFS sha256 stops it, naming both ({stopped})")
 
 
 # ---------------------------------------------------------------- 2. the wrapper
@@ -1180,6 +1235,7 @@ def main():
         write(models[name], f"weights of {name}\n")
     plans = check_plan(tmp, bin_dir, models)
     check_bench_dry_run(tmp, bin_dir)
+    check_model_file(tmp)
     check_wrapper_strings(plans)
     check_wrapper_host_run(tmp)
     att_out, att_short, att_long, head = attached_records(tmp, raw_root, models)

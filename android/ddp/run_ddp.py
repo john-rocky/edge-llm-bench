@@ -170,9 +170,12 @@ def engine_files(bin_dir, tag, pins):
 
 
 def model_file(model_id, filename, dry_run):
-    """The model's local file and sha256: the HF cache blob, whose name is the LFS sha256.
-    A dry run reads the cache only (uncached = no sha, no size); a real run downloads and
-    checks the size against the Hub's (run_cell.ensure_model's guard)."""
+    """The model's local file (the HF cache blob) and the sha256 of its bytes, which the plan and
+    the bucket key carry. The blob's name is the LFS sha256 on older huggingface_hub and the xet
+    hash on newer ones (2.2.0, for a file the Hub stores with Xet), so the file is hashed.
+    A dry run reads the cache only (uncached = no sha, no size); a real run downloads, checks the
+    size against the Hub's (run_cell.ensure_model's guard) and the hash against the Hub's LFS
+    sha256 when the file has one (a poisoned or truncated cache stops the run)."""
     if dry_run:
         os.environ["HF_HUB_OFFLINE"] = "1"
     try:
@@ -187,16 +190,20 @@ def model_file(model_id, filename, dry_run):
         if dry_run:
             return {"local": None, "bytes": None, "sha256": None, "uncached": f"{type(exc).__name__}"}
         raise SystemExit(f"{model_id} {filename}: download failed: {exc}")
-    blob = os.path.basename(os.path.realpath(local))
-    sha = blob if run_cell.is_sha256(blob) else sha256_file(local)
+    local = os.path.realpath(local)
+    sha = sha256_file(local)
     size = os.path.getsize(local)
     if not dry_run:
         from huggingface_hub import HfApi
         info = HfApi().model_info(model_id, files_metadata=True)
-        declared = next((f.size for f in info.siblings if f.rfilename == filename), None)
+        entry = next((f for f in info.siblings if f.rfilename == filename), None)
+        declared = entry.size if entry else None
         if declared is not None and declared != size:
             raise SystemExit(f"{local}: {size} bytes, the Hub declares {declared} (poisoned cache?)")
-    return {"local": os.path.realpath(local), "bytes": size, "sha256": sha}
+        lfs = getattr(entry.lfs, "sha256", None) if entry and entry.lfs else None
+        if lfs and lfs != sha:
+            raise SystemExit(f"{local}: sha256 {sha}, the Hub's LFS sha256 is {lfs} (poisoned cache?)")
+    return {"local": local, "bytes": size, "sha256": sha}
 
 
 def elapsed_basis(cell, stem, identifier, tag):

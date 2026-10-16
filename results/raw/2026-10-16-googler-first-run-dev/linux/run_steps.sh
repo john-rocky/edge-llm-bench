@@ -1,7 +1,7 @@
 #!/bin/bash
-# D3S4 r1 / r2 driver: the container steps of the Linux first run, one after another; each step starts only after the
-# Mac measurement window is closed (quiet_wait.py before every step) and appends its output to K/linux/<log>.
-#   bash run_steps.sh [main|verify|r2-dry|r2-session|r2-after]
+# D3S4 r1 / r2 / r2b driver: the container steps of the Linux first run, one after another; each step starts only after
+# the Mac measurement window is closed (quiet_wait.py before every step) and appends its output to K/linux/<log>.
+#   bash run_steps.sh [main|verify|r2-dry|r2-session|r2-after|r2b-dry|r2b-session]
 #   START_AT=<step> resumes the phase at that step; ONLY="<step> <step>" runs just those steps.
 # Writes K/linux/steps.tsv (step, start, end, seconds, rc, log), K/linux/STOPPED_AT (a fatal step that failed),
 # K/linux/FAILED_STEPS (non-fatal steps that failed) and, always last, K/linux/run_steps.done.
@@ -145,6 +145,34 @@ h_clone_state() {  # r2: the clone's copies of r1's changed files = the worktree
       "$(docker exec -u dev "$C" sha256sum "/home/dev/edge-llm-bench/$f" | cut -d' ' -f1)"
   done
 }
+h_mac() {  # r2b: h_mac <command...>: a Mac command from the worktree with the main checkout's engine files (the
+  # worktree has no android/bin); the user name -> USER in what it prints
+  local rc u t=$L/.h_mac.out
+  u=$(id -un)
+  (cd "$WT" && BENCH_ANDROID_BIN_DIR=$HOME/code/edge-llm-bench/android/bin "$@") > "$t" 2>&1
+  rc=$?
+  printf '## BENCH_ANDROID_BIN_DIR=%s; python3 = %s\n' "$HOME/code/edge-llm-bench/android/bin" "$(command -v python3)" \
+    | sed "s/$u/USER/g"
+  sed "s/$u/USER/g" "$t"; rm -f "$t"
+  printf '## exit=%s\n' "$rc"
+  return "$rc"
+}
+h_mac_probe() { h_mac python3 "$L/steps/r2b-hub-probe.py"; }
+h_mac_selftest() {  # the sha256 of the two changed files first: the bytes the selftest ran
+  printf '## sha256 android/ddp/run_ddp.py %s, android/ddp/selftest.py %s\n' \
+    "$(shasum -a 256 < "$WT/android/ddp/run_ddp.py" | cut -d' ' -f1)" "$(shasum -a 256 < "$WT/android/ddp/selftest.py" | cut -d' ' -f1)"
+  h_mac ./android/ddp/selftest.py
+}
+h_mac_dryrun() {  # README step 3's dry run, the absolute path of the worktree's bench
+  h_mac "$WT/bench" matrix matrices/ddp-first-run.cells --ddp akita-35 --dry-run \
+    --project litert-edge-portal --bucket gs://litert-edge-portal-devicerun
+}
+h_copy_out() {  # r2b: h_copy_out <campaign dir>: the clone's campaign dir into the worktree's results/raw/ (once)
+  if [ -e "$WT/results/raw/$1" ]; then echo "## $1 is in the worktree already: not copied"; return 1; fi
+  docker cp "$C:/home/dev/edge-llm-bench/results/raw/$1" "$WT/results/raw/" || return 1
+  printf '## copied results/raw/%s: %s files, %s\n' "$1" "$(find "$WT/results/raw/$1" -type f | wc -l | tr -d ' ')" \
+    "$(du -sh "$WT/results/raw/$1" | cut -f1)"
+}
 
 # ---------------------------------------------------------------- phases
 case "$PHASE" in
@@ -195,6 +223,25 @@ case "$PHASE" in
     step copy-docs 11-verify-docs.log 1 h_copy_into_clone README.md docs/OPERATIONS.md
     step verify-docs 11-verify-docs.log 0 dexec dev 98-verify-docs.sh
     step fresh-venv 11-verify-docs.log 0 h_fresh_venv
+    ;;
+  r2b-dry)  # the model sha fix: the Mac first (huggingface_hub 1.8.0), then the container (2.2.0, the xet-named blob)
+    step mac-hub-probe ../r2b/hub-probe-mac.log 0 h_mac_probe
+    step mac-selftest ../r2b/mac-selftest.log 0 h_mac_selftest
+    step mac-dryrun ../r2b/mac-dryrun.log 0 h_mac_dryrun
+    ensure_up || finish "container $C not up" 1
+    step copy-fix 12-selftest-fix.log 1 h_copy_into_clone android/ddp/run_ddp.py android/ddp/selftest.py
+    step hub-probe ../r2b/hub-probe-container.log 0 dexec dev r2b-hub-probe.sh
+    step selftest-fix 12-selftest-fix.log 0 dexec dev 50-selftest.sh
+    step model-blob-fix 13-dryrun-fix.log 0 dexec dev 93-model-blob.sh
+    step dryrun-fix 13-dryrun-fix.log 0 dexec dev 92-dryrun-before-session.sh
+    ;;
+  r2b-session)  # the final bytes' selftest on both hosts first (fatal: no session without it), then the session
+    ensure_up || finish "container $C not up" 1
+    step copy-final 12-selftest-fix.log 1 h_copy_into_clone android/ddp/run_ddp.py android/ddp/selftest.py
+    step selftest-final 12-selftest-fix.log 1 dexec dev 50-selftest.sh
+    step mac-selftest-final ../r2b/mac-selftest.log 1 h_mac_selftest
+    step session-b 14-session-b.log 0 dexec dev r2b-session-b.sh
+    step copy-out-b 14-session-b.log 0 h_copy_out 2026-10-16-ddp-linux-first-run-b-akita-35-android
     ;;
   *) finish "unknown phase $PHASE" 2 ;;
 esac
