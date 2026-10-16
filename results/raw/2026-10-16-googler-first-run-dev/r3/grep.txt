@@ -1,0 +1,75 @@
+# Round 3 public-text greps, 2026-10-16 18:32:20 JST (launch step 6; final, before the commit)
+#
+# Patterns, case-insensitive (grep -i -E), run over the added lines of each object:
+#   rank   = faster|slower|\bvs\b|beats|wins|leads|outperform|%   (a % hit is read: a difference % is removed)
+#   lab    = ssid|bssid|[0-9a-f]{2}(:[0-9a-f]{2}){5}
+#   corp   = cloudtop\.|corp\.google|go/|cl/[0-9]|critique|buganizer|b/[0-9]
+#   attrib = Co-Authored|Generated with|claude\.ai
+#   user   = the Mac user name (basename of $HOME)
+#   blank  = \[ , __ , <your   (CLOUDTOP_STEPS.md and REPLY_MATERIALS.md only)
+# This file quotes the patterns, so it is not scanned itself.
+#
+== litert-samples: git diff upstream/main..HEAD -U0, added lines (HEAD edfe9307)
+skills/benchmark-on-ddp/SKILL.md (10 added lines)
+  rank   0
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+== edge-llm-bench: git diff fa032eb2 -U0 -- skills/ (working tree), added lines
+skills/ (43 added lines)
+  rank   1
+      hit: 27:+  the summary's `cpu_cap_drop_pct` is the fall. A CPU-arm run past 15 % pools
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+== edge-llm-bench: this round's new K files, every line (r3/grep.txt itself excluded: it quotes the patterns)
+results/raw/2026-10-16-googler-first-run-dev/ROUND3.md (136 added lines)
+  rank   0
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+results/raw/2026-10-16-googler-first-run-dev/CLOUDTOP_STEPS.md (60 added lines)
+  rank   0
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+results/raw/2026-10-16-googler-first-run-dev/REPLY_MATERIALS.md (38 added lines)
+  rank   0
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+results/raw/2026-10-16-googler-first-run-dev/r3/pr-body.md (38 added lines)
+  rank   0
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+results/raw/2026-10-16-googler-first-run-dev/r3/litert-cli-ddp-check.md (18 added lines)
+  rank   0
+  lab    0
+  corp   0
+  attrib 0
+  user   0
+== blank checks
+results/raw/2026-10-16-googler-first-run-dev/CLOUDTOP_STEPS.md (60 lines)
+  blank [      1
+      hit: 18:    TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))["android_pins"]["litert-lm"])')
+  blank __     0
+  blank <your  0
+results/raw/2026-10-16-googler-first-run-dev/REPLY_MATERIALS.md (38 lines)
+  blank [      0
+  blank __     0
+  blank <your  0
+#
+# Reading of the hits (both kept):
+# - skills/ rank 1, "past 15 % pools": the cpu-cap-rule's line (render_leaderboard.CPU_CAP_MAX_DROP_PCT = 15,
+#   CLAUDE.md:39-41), a threshold of one run's own clock fall; not a difference between runs, devices or routes.
+# - CLOUDTOP_STEPS.md blank "[" 1, line 18: the TAG line of step 2, README.md:145 byte for byte (as run in
+#   linux/steps/30-readme2-clone.sh): Python subscripts, not a blank to fill. Step 2's other lines are README.md:146-148
+#   byte for byte, step 3's venv line README.md:131, step 1's clone line README.md:144.
+# Everything else: 0.

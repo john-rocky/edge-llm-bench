@@ -1,6 +1,6 @@
 ---
 name: run-edge-llm-bench
-description: Measure a LiteRT-LM bundle's prefill and decode speed, resident memory and thermal state on a connected Android phone or a Mac with edge-llm-bench, ad hoc - write the cells, run them, read the stored record. Use when asked to measure a .litertlm bundle on a real device now, to measure a bundle that is not published yet (side-loaded file), to repeat a measurement at a newer LiteRT-LM build, or to trace a quoted number back to its raw record. iPhone cells use the same file once the app is installed (a GUI signing step).
+description: Measure a LiteRT-LM bundle's prefill and decode speed, resident memory and thermal state on a connected Android phone or a Mac, or on a Developer Device Platform lab phone with no adb, with edge-llm-bench, ad hoc - write the cells, run them, read the stored record. Use when asked to measure a .litertlm bundle on a real device now, to measure a bundle that is not published yet (side-loaded file), to repeat a measurement at a newer LiteRT-LM build, or to trace a quoted number back to its raw record. iPhone cells use the same file once the app is installed (a GUI signing step).
 ---
 
 # Run edge-llm-bench ad hoc
@@ -143,6 +143,41 @@ drives Android; the Mac pair, run directly from the CLI built at the tag, is in
   - register it in `android/engine-pins.json` so the row names its tag. The
   pin in `environment.lock.json` stays; moving it is a decision.
 
+## Lab phones without adb (Developer Device Platform)
+
+The Android LiteRT-LM cells also run on a DDP lab phone, billed to your Cloud
+project, with no phone attached. Read the dry run (one job per cell, at most 8
+per session, the pushes, an estimate) before the billed run:
+
+```bash
+./bench matrix matrices/ddp-first-run.cells --ddp akita-35 --dry-run --project <your project> --bucket gs://<your bucket>
+./bench matrix matrices/ddp-first-run.cells --ddp akita-35 --campaign <name> --project <your project> --bucket gs://<your bucket>
+```
+
+The host needs gcloud signed in, a project with the Device Run API enabled and
+a bucket you can write, python3 >= 3.10 with `huggingface_hub`, and the pinned
+engine files (README DDP section, step 2). `./bench doctor --platform ddp`
+checks gcloud, its sign-in, `huggingface_hub` and the 9 engine files; the README
+"Quickstart: the Android cells on a DDP lab phone" lists the whole route.
+
+- **One job is one lab unit and a sitting of its own.** A session's jobs start
+  together on different units (`conditions.ddp.serial`); DDP has no anchor, and
+  the summary names the device `<model> (DDP <id>)`, so these rows never pool
+  with an attached phone's.
+- **Read the cap marks.** `conditions.protocolFlags` carries `cpu-capped` (an
+  engine CPU's ceiling sat below its hardware maximum) and `cpu-capped-at-start`;
+  the summary's `cpu_cap_drop_pct` is the fall. A CPU-arm run past 15 % pools
+  into no number (cpu-cap-rule); a GPU-arm run pools with its mark. The wait
+  before each run is per id: `cpucapWaitSeconds` in `android/ddp/devices.json`.
+- **Fields only a DDP record carries:** `device.ddp` and `conditions.ddp`
+  (session, job and execution ids, build fingerprint, serial),
+  `conditions.engineCache` (what the engine caches did in that run; a later run
+  can rebuild one, which `firstEver` does not show), `provenance.ddpSessionDir`.
+- **Pulled logcats carry the lab network's identifiers.** The driver replaces
+  them at pull time (originals in the campaign's gitignored `ddp-raw/`); leave
+  the execution-level `logcat.txt` out of the commit. Runbook:
+  `docs/OPERATIONS.md`, "Runbook: run cells on DDP (a lab phone, no adb)".
+
 ## Symptoms
 
 | What you see | What it is, what to do |
@@ -174,4 +209,8 @@ results/regression-reports/<date>-<engine>-<version>/        report.md  verdicts
 ```
 
 Tested on: Pixel 8a (Android 16, LiteRT-LM v0.16.0 pinned binary, cpu and gpu) and a
-Mac Studio M4 Max (macOS 27, v0.16.0 vendored), 2026-09-12. [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) on [LiteRT](https://github.com/google-ai-edge/litert).
+Mac Studio M4 Max (macOS 27, v0.16.0 vendored), 2026-09-12. DDP lab phones, v0.18.0
+pinned binary: `akita-35` (Pixel 8a) and `m1q-36` (Galaxy S26), cpu and gpu,
+`session-d5585b53` and `session-9002dfea` from a Mac, 2026-10-15; `akita-35`, gpu,
+`session-17997931` and `session-b1179d6d` from an Ubuntu 24.04 container with no adb,
+2026-10-16. [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) on [LiteRT](https://github.com/google-ai-edge/litert).
