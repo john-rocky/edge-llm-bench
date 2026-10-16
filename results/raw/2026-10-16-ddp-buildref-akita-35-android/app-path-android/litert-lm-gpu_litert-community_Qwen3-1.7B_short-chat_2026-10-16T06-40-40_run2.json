@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "3d88463e-826c-545b-ac17-6e5c47b8e453",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "main-16ab54914",
+  "engineArtifact": "320bee39d3ec8a34d959abe5008724e100a159deca50ffadef1f64c6a2cf0584",
+  "model": {
+    "id": "litert-community/Qwen3-1.7B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+    "file": "litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-10-16T06:40:40Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "15",
+    "securityPatch": "2025-04-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 0.79,
+    "batteryState": "charging",
+    "ddp": {
+      "deviceId": "akita-35",
+      "buildFingerprint": "google/akita/akita:15/BP1A.250405.007.B1/13240308:user/release-keys",
+      "serial": "45231JEKB16401"
+    }
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1704,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 2367,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 2914,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": "bundle-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 43.2,
+    "exitCode": 0,
+    "engineCache": {
+      "xnnpackWeightCache": "absent",
+      "gpuCache": "loaded"
+    },
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "1a4e5141-5244-524c-b7ab-2058545793b9",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 26.3,
+    "batteryTemperatureFinalC": 26.4,
+    "batteryLevelFinal": 0.79,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 128,
+    "engineCommand": "./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [],
+    "ddp": {
+      "sessionId": "session-733dfb76",
+      "jobId": "e8357a23-6f48-4b5b-ab86-0f51de5d6c80",
+      "executionId": "b8a5425d-f9b9-4f7f-a398-eb5a6bc4d95f",
+      "deviceId": "akita-35",
+      "deviceKey": "pixel8a",
+      "buildFingerprint": "google/akita/akita:15/BP1A.250405.007.B1/13240308:user/release-keys",
+      "serial": "45231JEKB16401",
+      "product": "akita",
+      "jobStartTime": "2026-10-16T06:35:18.776Z",
+      "jobEndTime": "2026-10-16T06:44:18.109Z",
+      "executionStartTime": "2026-10-16T06:37:29.068Z",
+      "executionEndTime": "2026-10-16T06:44:14.990Z",
+      "executionTimeout": "3600s",
+      "resultType": "PASSED",
+      "runIndex": 2
+    },
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 730.0,
+    "promptTokensPerSecond": 102.57,
+    "decodeTokensPerSecond": 20.42,
+    "promptTokenCount": 152,
+    "generatedTokenCount": 650,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+ddp-route-c",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 2168.40234375,
+    "memoryPeakResidentMB": 2168.54296875
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-16T06-40-40_run2.log",
+    "harness": "android/ddp/run_ddp.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "ddpSessionDir": "ddp/session-733dfb76/j01-gpu-Qwen3-1-7B-short-chat/execution-cbbaef9b-d3cd-4992-aa04-d3126fb32e66",
+    "wrapper": "android/ddp/ddp_cell.sh",
+    "wrapperSha256": "8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656"
+  }
+}
