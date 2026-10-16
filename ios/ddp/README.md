@@ -70,6 +70,8 @@ interrupted.
 | `results/raw/<campaign>/ddp/<session>/` | `plan.json`, `ddp_session.json`, `args.json`, `console.txt`, `records.txt`, `yardstick.done` |
 | `results/raw/<campaign>/ddp-raw/<session>/` | the pulled tree as the lab returned it, with its `system.log` and `junit.xml` (gitignored) |
 
+Before a commit, the home directory in `ddp/<session>/plan.json` (the argv file, the campaign directory and the argv push source are absolute host paths there) is written as `~`, and `ddp-raw/` stays out: the lab's `system.log` is the unit's whole syslog, with its UDID, MAC and IP addresses and Wi-Fi network names.
+
 `scripts/build_summary.py` reads `device-jsonl/` and names the device `<modelIdentifier> (DDP <catalog
 id>)`, so a lab unit never pools with an attached phone.
 
