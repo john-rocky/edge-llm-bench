@@ -1,0 +1,327 @@
+{
+  "name": "projects/litert-edge-portal/locations/global/sessions/session-58e76ce1",
+  "sessionConfig": {
+    "displayName": "elb-2026-10-16-dashboard-v1-s26-0180-s10-ddp-m1q-36-android-s1",
+    "jobConfigs": [
+      {
+        "displayName": "j01-gpu-Qwen3-4B-short-chat",
+        "action": {
+          "androidNativeBinary": {
+            "androidNativeBinary": {
+              "gcsInputFile": {
+                "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/wrapper/8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656/ddp_cell.sh"
+              }
+            },
+            "executionTimeout": "3600s",
+            "args": [
+              "--runs=3",
+              "--cooldown=300",
+              "--mask=none",
+              "--env=LD_LIBRARY_PATH=.",
+              "--binname=litert_lm_main",
+              "--dir=/data/local/tmp/llmbench",
+              "--output_dir=/data/local/tmp/llmbench/ddp-out",
+              "--timeout=960",
+              "--thermal_wait=600",
+              "--cpucap_wait=0",
+              "--budget=3480",
+              "--cell=litert-lm-gpu_litert-community_Qwen3-4B_short-chat",
+              "--command=./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false"
+            ]
+          }
+        },
+        "allocationConfig": {
+          "deviceConfigs": [
+            {
+              "requirement": {
+                "deviceId": "m1q-36"
+              },
+              "actions": [
+                {
+                  "androidPushFiles": {
+                    "fileConfigs": [
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/54832c4992f932aec76e85be546b63dcb1e2820236d76c8f38d66c0ecc62774a/litert_lm_main"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/litert_lm_main"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815/litert_lm_advanced_main"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/litert_lm_advanced_main"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/f2aa38cecc5c728050652ffdbaed4c6f2d444e098e1ca3ecf8b85be46baae5b9/libGemmaModelConstraintProvider.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/75ee49f6f31faf44b3b5ac54f15d58abd75438bc9e2f9abcf47f24279d337bc8/libLiteRtGpuAccelerator.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/dfc714a0b59d5e1bf5155db7533070bf13da28574a3bc52396a4ba22d23d893c/libLiteRtOpenClAccelerator.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/0f77c888ad2a2ae044e189fd0fb87844c47fe46c8e68a677e6f204dac1096e24/libLiteRtTopKOpenClSampler.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtTopKOpenClSampler.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/1ab8e8b49d3c7e4fa64c5a50f58d507de2db7936e4b8fc0d008782724aa5862c/libLiteRtTopKWebGpuSampler.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtTopKWebGpuSampler.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/57f8bd360a4293c57703d097a26ffa2dc89ee1884573289fdaf455f3098a6cdc/libLiteRtWebGpuAccelerator.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.18.0/657b2beb6456d50d7f6c86b315d5c2e97ad5a3870b134bcfcc2aa682ef467977/libwebgpu_dawn.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/libwebgpu_dawn.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/569fe029f51e55b6377f98ebd7f6d26431bc73e1d632034f5389f2fd720da701/qwen3_4b_mixed_int4.litertlm"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/prompts/870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50/short-chat.txt"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/prompts/short-chat.txt"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "androidPullFiles": {
+                    "paths": [
+                      "/data/local/tmp/llmbench/ddp-out"
+                    ]
+                  }
+                },
+                {
+                  "androidLogcat": {}
+                }
+              ]
+            }
+          ]
+        },
+        "labels": {
+          "harness": "edge-llm-bench",
+          "campaign": "2026-10-16-dashboard-v1-s26-0180-s10-ddp-m1q-36-android",
+          "cell": "litert-lm-gpu_litert-community_qwen3-4b_short-chat",
+          "runtime": "litert-lm-gpu",
+          "model": "litert-community--qwen3-4b",
+          "task": "short-chat",
+          "backend": "gpu",
+          "devicekey": "s26",
+          "deviceid": "m1q-36",
+          "engine": "v0-18-0"
+        }
+      }
+    ],
+    "outputDirectoryConfig": {
+      "gcsOutputDirectory": {
+        "path": "gs://litert-edge-portal-devicerun/automation/sessions"
+      }
+    }
+  },
+  "sessionReport": {
+    "id": "5d6d28e2-ce8f-409b-826a-5f8bbebfa24b",
+    "jobReports": [
+      {
+        "id": "dbff6a4c-9688-4e72-8628-abfc7b8feeb7",
+        "displayName": "j01-gpu-Qwen3-4B-short-chat",
+        "executionReports": [
+          {
+            "id": "49ed6bdb-4cd7-4d01-991e-792925067859",
+            "displayName": "execution-49ed6bdb-4cd7-4d01-991e-792925067859",
+            "startTime": "2026-10-16T09:57:47.356Z",
+            "endTime": "2026-10-16T10:12:56.379Z",
+            "status": {
+              "statusType": "DONE"
+            },
+            "result": {
+              "resultType": "PASSED"
+            },
+            "outputFiles": [
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/wrapper.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run2_logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run2.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run3.engine.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run3.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run1.err"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run2.engine.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run3.state"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run3.exit"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run1_logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run1.state"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/provenance.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run1.engine.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run3.err"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run2.exit"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run1.exit"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run3_logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run1.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run2.err"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-58e76ce1/j01-gpu-Qwen3-4B-short-chat/execution-49ed6bdb-4cd7-4d01-991e-792925067859/artifacts/data/local/tmp/llmbench/ddp-out/run2.state"
+                }
+              }
+            ]
+          }
+        ],
+        "startTime": "2026-10-16T09:55:40.837Z",
+        "endTime": "2026-10-16T10:12:59.753Z",
+        "status": {
+          "statusType": "DONE"
+        },
+        "result": {
+          "resultType": "PASSED"
+        },
+        "labels": {
+          "deviceid": "m1q-36",
+          "model": "litert-community--qwen3-4b",
+          "campaign": "2026-10-16-dashboard-v1-s26-0180-s10-ddp-m1q-36-android",
+          "devicekey": "s26",
+          "harness": "edge-llm-bench",
+          "cell": "litert-lm-gpu_litert-community_qwen3-4b_short-chat",
+          "task": "short-chat",
+          "runtime": "litert-lm-gpu",
+          "backend": "gpu",
+          "engine": "v0-18-0"
+        }
+      }
+    ],
+    "startTime": "2026-10-16T09:55:37.685Z",
+    "endTime": "2026-10-16T10:13:02.955Z",
+    "status": {
+      "statusType": "DONE"
+    },
+    "result": {
+      "resultType": "PASSED"
+    }
+  },
+  "createTime": "2026-10-16T09:55:34.689868884Z"
+}

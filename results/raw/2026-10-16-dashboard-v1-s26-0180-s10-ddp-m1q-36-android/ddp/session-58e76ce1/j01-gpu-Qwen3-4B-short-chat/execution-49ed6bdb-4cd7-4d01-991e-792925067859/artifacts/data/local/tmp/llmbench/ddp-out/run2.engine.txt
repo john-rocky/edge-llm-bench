@@ -1,0 +1,84 @@
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795980f600, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795980fb40, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795980fd70, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795980ff30, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1792145110.979578   13350 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+I0000 00:00:1792145110.979631   13350 delegate_opencl.cc:606] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 1753 out of 1753 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+I0000 00:00:1792145122.319678   13350 delegate_kernel.cc:329] Total 73 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792145122.319879   13350 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1680 out of 1680 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (main).
+I0000 00:00:1792145125.145249   13350 delegate_kernel.cc:329] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792145125.145405   13350 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959826900, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000079598392f0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+input_prompt: Explain what on-device AI means in simple terms.
+INFO: Loaded OpenCL library with dlopen.
+
+
+**On-device AI** means that artificial intelligence (AI) runs directly on your device (like a smartphone, tablet, or smart speaker) instead of relying on a remote server or the cloud. Here's a simple breakdown:
+
+- **What it is**: Your device (phone, tablet, etc.) uses its own power to process AI tasks, not sending data to the internet.  
+- **How it works**: Imagine your phone uses a built-in AI chip to recognize your voice, translate text, or detect objects in a photo—without sending the data to the cloud.  
+- **Why it matters**:  
+  - **Privacy**: Your data stays on your device, so it doesn’t travel to the internet.  
+  - **Speed**: It works instantly, even without Wi-Fi.  
+  - **No internet needed**: You can use it offline.  
+- **Examples**:  
+  - A voice assistant (like Siri) understanding your voice without sending your data to a server.  
+  - A camera app identifying objects in real time without uploading the image.  
+- **Why it’s useful**: It’s great for tasks that need quick responses (like translating text on the fly) and keeps your data safe.  
+
+In short, on-device AI lets your device do the work itself, keeping your data private and making things faster! 😊
+
+BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 14968.46 ms
+    - Init LLM metadata: 0.08 ms
+    - Init Model assets: 0.02 ms
+    - Init Tokenizer: 275.09 ms
+    - Init Total: 14968.89 ms
+--------------------------------------------------
+  Time to first token: 0.87 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 19 tokens in 812.201562ms duration.
+      Prefill Speed: 23.39 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 1039 tokens in 58.353532269s duration.
+      Decode Speed: 17.81 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 818.021us, 19 tokens
+--------------------------------------------------
+--------------------------------------------------
+
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000795980ff30, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000795980fd70, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000079598392f0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007959826900, name=LiteRT GPU
