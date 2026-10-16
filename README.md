@@ -137,6 +137,15 @@ records carry its sha256 in `engineArtifact`). Before anything is uploaded,
 the driver checks each of the 9 files against the sha256 that
 `android/engine-pins.json` pins for the tag.
 
+Then check the checkout with no network and nothing billed: the selftest runs
+the plan, the job wrapper, the billed path and the records against a fake
+gcloud, a temp dir as the bucket and a fake Device Run server on localhost, and
+checks the 9 files against `android/engine-pins.json`.
+
+```bash
+./android/ddp/selftest.py      # last line: ddp selftest OK (<N> checks); exit 0
+```
+
 **3. Dry run** (no gcloud call, no network, nothing billed): the jobs, the
 sessions, the pushes with their sizes and sha256, the timeouts and an
 estimate of the device-minutes. It already checks the 9 engine files.

@@ -23,9 +23,10 @@ Fast path — no build, no bazel/NDK (prebuilt at the pinned tag, hashes match
 the lockfile):
 
 ```bash
+TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))["android_pins"]["litert-lm"])')
 mkdir -p android/bin
-curl -L https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-v0.17.0/litert-lm-v0.17.0-android-arm64.tar.gz \
-  | tar xz -C android/bin && mv android/bin/litert-lm-v0.17.0-android-arm64 android/bin/v0.17.0
+curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz \
+  | tar xz -C android/bin && mv android/bin/litert-lm-$TAG-android-arm64 android/bin/$TAG
 android/scripts/fetch_llama_android.sh                         # official b8999 android tar
 ```
 
