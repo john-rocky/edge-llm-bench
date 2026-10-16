@@ -1,0 +1,26 @@
+$ LITERTLM_REF=main LITERTLM_DRY_RUN=1 android/scripts/build_litert_lm_main.sh   # 2026-10-16 15:11:37 JST
+== NDK: ~/Library/Android/sdk/ndk/29.0.13113456
+requested=main
+label=main-16ab54914
+commit=16ab5491492f21722aea7b6440ecb797c2e25031
+resolved=git ls-remote https://github.com/google-ai-edge/LiteRT-LM.git refs/heads/main
+src=~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914
+out=~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914
+== fetching LiteRT-LM main (16ab5491492f21722aea7b6440ecb797c2e25031) -> ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914
++ mkdir -p ~/.cache/apple-silicon-llm-bench
++ git init -q ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914
++ git -C ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914 remote add origin https://github.com/google-ai-edge/LiteRT-LM.git
++ git -C ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914 fetch --depth 1 origin refs/heads/main
++ git -C ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914 checkout -q --detach FETCH_HEAD
+== bazel build (android_arm64) — first build takes 10-20 min
++ (cd ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914 && bazelisk build --config=android_arm64 --enable_platform_specific_config //runtime/engine:litert_lm_main //runtime/engine:litert_lm_advanced_main)
++ mkdir -p ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914/bazel-bin/runtime/engine/litert_lm_main ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914/litert_lm_main
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914/bazel-bin/runtime/engine/litert_lm_advanced_main ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914/litert_lm_advanced_main
++ chmod +x ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914/litert_lm_main ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914/litert_lm_advanced_main
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-main-16ab54914/prebuilt/android_arm64/*.so ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914/
++ (cd ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914 && shasum -a 256 litert_lm_main litert_lm_advanced_main *.so | tee SHA256SUMS)
++ BUILD_INFO -> ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914/BUILD_INFO (requested label commit describe commit_date subject remote ndk bazel bazelisk built host_arch)
++ python3 ~/code/edge-llm-bench-wt-buildref/android/scripts/pins_add.py main-16ab54914 ~/code/edge-llm-bench-wt-buildref/android/bin/main-16ab54914 --requested main --observed '<git describe --tags --always of the checkout>' --note 'android/scripts/build_litert_lm_main.sh at main-16ab54914 (bazel source build, 2026-10-16; commit 16ab5491492f21722aea7b6440ecb797c2e25031)' --replace
+== dry run: nothing cloned, fetched, built or written
+rc=0

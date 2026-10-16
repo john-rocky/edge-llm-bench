@@ -315,6 +315,14 @@ ran on 2026-10-16: `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/
   the release asset `android-litert-lm-<tag>` ("Engine acquisition" in
   `android/README.md`) or a source build. The driver checks all 9 files against
   the pins before it uploads anything.
+- A build that is not the pin (LiteRT-LM main, a pull request, a build made
+  elsewhere): its files in `$BENCH_ANDROID_BIN_DIR/<label>/` and its entry
+  `litert-lm.<label>` in `android/engine-pins.json`
+  (`android/scripts/build_litert_lm_main.sh` with `LITERTLM_REF`, or
+  `android/scripts/pins_add.py`; `android/README.md`, "Build from head or a
+  PR"), then `--engine-build <label>` on the dry run and on the billed run.
+  `android_pins` stays as it is (a pin bump: "Runbook: an engine shipped a
+  release").
 
 1. **Dry run.**
    `./bench matrix <cells> --ddp <id> --dry-run --project <p> --bucket gs://<b>`.

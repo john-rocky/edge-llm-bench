@@ -1,0 +1,10 @@
+$ BENCH_ANDROID_BIN_DIR=~/code/edge-llm-bench/android/bin ~/code/edge-llm-bench-wt-buildref/bench matrix matrices/dashboard-text-v1.cells --ddp akita-35 --dry-run --engine-build main-ee3661364 --project litert-edge-portal --bucket gs://litert-edge-portal-devicerun   # 2026-10-16 15:13:23 JST
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 ~/code/edge-llm-bench-wt-buildref/scripts/validate_cells.py matrices/dashboard-text-v1.cells
+OK matrices/dashboard-text-v1.cells
+skip: ios rows are not run on DDP
+skip: mac rows are not run on DDP
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 ~/code/edge-llm-bench-wt-buildref/android/ddp/run_ddp.py matrices/dashboard-text-v1.cells --device akita-35 --campaign 2026-10-16-ddp-akita-35-android --dry-run --project litert-edge-portal --bucket gs://litert-edge-portal-devicerun --engine-build main-ee3661364
+android/engine-pins.json has no litert-lm main-ee3661364 entry — android/scripts/pins_add.py main-ee3661364 <dir>/main-ee3661364 writes it from the build's files
+rc=1
