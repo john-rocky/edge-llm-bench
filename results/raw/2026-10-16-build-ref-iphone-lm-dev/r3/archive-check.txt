@@ -1,0 +1,87 @@
+# 2026-10-16 18:29:08 JST archive checks (home -> ~)
+## unzip -l (top entries)
+Release-iphoneos/BenchmarkAppDDP.app/PlugIns/BenchmarkAppDDPTests.xctest/
+Release-iphoneos/BenchmarkAppDDP.app/engine-pins.json
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/XCUnit.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/XCTAutomationSupport.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/XCUIAutomation.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/CLiteRTLM.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/XCTestSupport.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/XCTest.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/XCTestCore.framework/
+Release-iphoneos/BenchmarkAppDDP.app/Frameworks/Testing.framework/
+Release-iphoneos/BenchmarkAppDDP.app/embedded.mobileprovision
+Release-iphoneos/BenchmarkAppDDP.app/BenchmarkAppDDP
+Release-iphoneos/BenchmarkAppDDP.app/Info.plist
+BenchmarkAppDDP_iphoneos26.1-arm64.xctestrun
+BUILD_INFO
+entries: 164496760                     421 files
+## BUILD_INFO
+litert_lm=v0.18.0
+litert_lm_artifact=CLiteRTLM.xcframework.zip@v0.18.0 sha256:d765b99592d4ec3d0c9e2bd69469454af06c834861340672da1891c0c121c347
+app=com.example.CoreMLLLMChat (BenchmarkAppDDP, Release, iOS 18.0 floor)
+xcode=Xcode 26.1.1 Build version 17B100
+sdk=iphoneos26.1
+commit=53116e9cc8b75aa44716027f7c9b4b93ed916616
+ios_benchmarkapp_tree=11a1e82f32902267432fdb855855d3e1d86bd804
+built=2026-10-16T09:27:57Z
+host_arch=arm64
+## app Frameworks/
+CLiteRTLM.framework
+libXCTestBundleInject.dylib
+libXCTestSwiftSupport.dylib
+Testing.framework
+XCTAutomationSupport.framework
+XCTest.framework
+XCTestCore.framework
+XCTestSupport.framework
+XCUIAutomation.framework
+XCUnit.framework
+## PlugIns/
+BenchmarkAppDDPTests.xctest
+BenchmarkAppDDPTests.xctest.dSYM
+## engine-pins.json in the app
+{
+    "litert-lm": {
+        "version": "v0.18.0",
+        "artifact": "CLiteRTLM.xcframework.zip@v0.18.0 sha256:d765b99592d4ec3d0c9e2bd69469454af06c834861340672da1891c0c121c347",
+        "artifact_mac": "CLiteRTLM_mac.xcframework.zip@v0.18.0 sha256:5f6ee68d95eeccb084c6e66d5ee47255e3020fa0fb29696dd0301ae26d6cfb4f"
+    },
+    "mlx-swift": {
+        "version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    }
+}
+## codesign -d --entitlements - (app)
+{
+  "application-identifier" => "MFN25KNUGJ.com.example.CoreMLLLMChat"
+  "com.apple.developer.kernel.extended-virtual-addressing" => true
+  "com.apple.developer.kernel.increased-memory-limit" => true
+  "com.apple.developer.team-identifier" => "MFN25KNUGJ"
+  "get-task-allow" => true
+}
+## embedded.mobileprovision
+Name = iOS Team Provisioning Profile: com.example.CoreMLLLMChat
+UUID = ed451d4d-1f84-43cc-9ebd-c8db07e4dad5
+TeamIdentifier.0 = MFN25KNUGJ
+ExpirationDate = 2027-09-25T08:50:08Z
+Entitlements.application-identifier = MFN25KNUGJ.com.example.CoreMLLLMChat
+Entitlements.com\.apple\.developer\.kernel\.increased-memory-limit = true
+Entitlements.com\.apple\.developer\.kernel\.extended-virtual-addressing = true
+Entitlements.get-task-allow = true
+## .xctestrun
+    "FormatVersion" => 1
+    "TestBundlePath" => "__TESTHOST__/PlugIns/BenchmarkAppDDPTests.xctest"
+    "TestHostBundleIdentifier" => "com.example.CoreMLLLMChat"
+    "TestHostPath" => "__TESTROOT__/Release-iphoneos/BenchmarkAppDDP.app"
+## test bundle signature
+Identifier=com.example.CoreMLLLMChat.tests
+Format=bundle with Mach-O thin (arm64)
+TeamIdentifier=MFN25KNUGJ
+## CLiteRTLM: the embedded binary against the v0.18.0 xcframework (code signatures removed from copies)
+xcframework slices: Info.plist ios-arm64 ios-arm64-simulator 
+artifact ios-arm64 binary bytes: 61591392
+embedded binary bytes: 62091056
+unsigned sha256 artifact: 02d99220cba485d5a781dcb64d92025211c22aefe55fab6fab4f973fad6e51be
+unsigned sha256 embedded: 8dcd1ea220fee5bc59e0fcb105f39d490bc04e3830484d59c65f863779b0ba95
+SwiftPM cache zip (v0.18.0 CLiteRTLM.xcframework.zip): sha256 d765b99592d4ec3d0c9e2bd69469454af06c834861340672da1891c0c121c347, 124129650 bytes
+LC_UUID: xcframework ios-arm64 = embedded = 8B273118-4378-385E-9C99-F71DD8ED7642 (dwarfdump --uuid; the embedded copy is code-signed, so its bytes differ)

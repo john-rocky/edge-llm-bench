@@ -1,0 +1,23 @@
+# key lines of the xcodebuild log (trimmed; home -> ~, user, signing-identity and phone names -> USER, UDIDs -> <udid>; the full log is not committed)
+quiet_hold: window taken after 60 s wait: d2d1-r3-xcodebuild timing pid 26811 since 2026-10-16T16:40:07+0900
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild build-for-testing -project ~/code/edge-llm-bench-wt-buildref/ios/BenchmarkApp/BenchmarkApp-ddp.xcodeproj -scheme BenchmarkAppDDP -destination generic/platform=iOS -derivedDataPath ~/code/edge-llm-bench-wt-buildref/ios/ddp/out/build -allowProvisioningUpdates DEVELOPMENT_TEAM=MFN25KNUGJ
+Build settings from command line:
+    DEVELOPMENT_TEAM = MFN25KNUGJ
+Checking out 1.7.3 of package ‘swift-asn1’
+Checking out 0.13.0 of package ‘swift-huggingface’
+Checking out 4.5.2 of package ‘swift-crypto’
+Checking out 1.5.1 of package ‘EventSource’
+Invalid Exclude '~/code/edge-llm-bench-wt-buildref/ios/BenchmarkApp/Vendored/LiteRT-LM/swift/device_tests': File not found.
+Resolved source packages:
+  LiteRTLM: ~/code/edge-llm-bench-wt-buildref/ios/BenchmarkApp/Vendored/LiteRT-LM
+  swift-huggingface: https://github.com/huggingface/swift-huggingface @ 0.13.0
+  EventSource: https://github.com/mattt/EventSource.git @ 1.5.1
+  swift-asn1: https://github.com/apple/swift-asn1.git @ 1.7.3
+  swift-crypto: https://github.com/apple/swift-crypto.git @ 4.5.2
+xcodebuild: error: Unable to find a destination matching the provided destination specifier:
+		{ platform:iOS, arch:undefined_arch, id:<udid>, name:USER’s iPhone, error:iOS 26.1 is not installed. Please download and install the platform from Xcode > Settings > Components. }
+		{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device, error:iOS 26.1 is not installed. Please download and install the platform from Xcode > Settings > Components. }
+quiet_hold: window released after 11 s, rc=70
+# warnings: 0 (in ios/BenchmarkApp: 0)
+# undefined symbols listed: 0

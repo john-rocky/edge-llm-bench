@@ -1,0 +1,136 @@
+# The lab build of the bench app: the LiteRT-LM arm only, iOS 18.0 floor, and an XCTest target, for
+# Developer Device Platform's iPhones (iphone16pro-18-3 runs iOS 18.3; the app targets of project.yml
+# and project-ios26.yml start at 27.0 and 26.0). DDP runs iOS as XCTest: Tests/DDP runs the app's own
+# headless path (HeadlessAutoRun + HeadlessRun in Sources/BenchmarkApp.swift) once per session.
+# ios/ddp/build_xctest.sh builds the archive (Xcode 26.1.1: mlx-swift 0.31.6 needs Swift tools 6.3,
+# so no MLX here); ios/ddp/run_ddp_ios_lm.py submits it.
+#
+#   xcodegen generate --spec project-ddp.yml   (writes BenchmarkApp-ddp.xcodeproj)
+#
+# Vendored/LiteRT-LM = the tag v0.18.0 checkout + patches/litert-lm-swift-benchmark-maxnumtokens.patch
+# (scripts/bootstrap.sh step 3 with LITERTLM_TAG=v0.18.0). The other arms are not compiled: their
+# adapters and the app shell (BenchmarkApp's @main, AppSession, HeadlessRunnerView) are left out by
+# the source list and by BENCH_DDP_LAB; CoreAIRuntime.swift compiles to its canImport stub.
+name: BenchmarkApp-ddp
+options:
+  bundleIdPrefix: com.iosllmbenchmark
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: minimal
+    # The app's bundle id; the test bundle's is derived from it. build_xctest.sh sets it from
+    # BUNDLE_ID, and run_ddp_ios_lm.py reads it back from the archive's .xctestrun.
+    DDP_BUNDLE_ID: com.iosllmbenchmark.benchmarkapp.ddp
+
+packages:
+  swift-huggingface:
+    url: https://github.com/huggingface/swift-huggingface
+    from: "0.8.1"
+  LiteRT-LM:
+    # Local path, as in project.yml (SwiftPM accepts the package's unsafe -all_load only from a
+    # local package). Vendored/ is git-ignored.
+    path: Vendored/LiteRT-LM
+
+targets:
+  BenchmarkAppDDP:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Sources/BenchmarkApp.swift
+      - path: Sources/Benchmark
+      - path: Sources/Models
+      - path: Sources/Runtimes/LLMRuntime.swift
+      - path: Sources/Runtimes/HFDownloader.swift
+      - path: Sources/Runtimes/MediaPipeRuntime.swift
+      - path: Sources/Runtimes/CoreAIRuntime.swift
+      - path: SourcesDDP
+      # Observed engine pins, as in project.yml: written by the pre-build phase below.
+      - path: Vendored/engine-pins.json
+        buildPhase: resources
+        optional: true
+    info:
+      path: SourcesDDP/Info.plist
+      properties:
+        CFBundleDisplayName: LLM Bench DDP
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "1"
+        NSCameraUsageDescription: "Used to benchmark live vision-language model inference (VLM) on the camera feed."
+        UILaunchScreen: {}
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes:
+          - processing
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DDP_BUNDLE_ID)
+        CODE_SIGN_ENTITLEMENTS: BenchmarkApp.entitlements
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_STRICT_CONCURRENCY: minimal
+        OTHER_LDFLAGS: "-ObjC"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) BENCH_DDP_LAB"
+    preBuildScripts:
+      # The app's phase (project.yml): the declared output orders it before Copy Bundle Resources.
+      - name: Stamp engine pins
+        script: '"$SRCROOT/scripts/stamp_engine_pins.sh"'
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - $(SRCROOT)/Vendored/engine-pins.json
+    dependencies:
+      - package: swift-huggingface
+        product: HuggingFace
+      - package: LiteRT-LM
+        product: LiteRTLM
+
+  # The headless run as an XCTest hosted by the app (Tests/DDP/DDPBenchmarkTests.swift): it imports
+  # the app module and calls its public DDPHarness, so it links nothing of its own.
+  BenchmarkAppDDPTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Tests/DDP
+    dependencies:
+      - target: BenchmarkAppDDP
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DDP_BUNDLE_ID).tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  BenchmarkAppDDP:
+    build:
+      targets:
+        BenchmarkAppDDP: all
+        BenchmarkAppDDPTests: [test]
+    run:
+      config: Release
+    test:
+      # Release, so the archive build_xctest.sh sends to the lab is the build the rows come from.
+      config: Release
+      targets:
+        - BenchmarkAppDDPTests
+    profile:
+      config: Release
+    analyze:
+      config: Release
+    archive:
+      config: Release
