@@ -1,0 +1,45 @@
+# D3S4 Googler first run: intermediate files deleted at lane close (round 4, 2026-10-16). Kept items and their
+# reasons: LANE_CLOSE.md "diff 一覧".
+
+## container elb-googler-first-run (docker rm, 2026-10-16 18:49:51 JST, rc 0; docker context colima)
+# id 81743fa000ec52b303202110e3db14e4920b15b478eb9b58c81d38cd45b0f677, created 2026-10-16T06:08:00Z from ubuntu:24.04
+# (534baea6a22c, kept), --memory 6g, no mounts; writable layer 2.769 GB (docker system df: containers 2.769 GB -> 0 B).
+# Carried out before the rm: K/linux/ (55 files, all tracked), both campaign dirs (29 files each in the container =
+# the worktree's copies, diff -r identical; 25 of them tracked each), the environment's versions (LINUX_FIRST_RUN.md).
+# docker diff: 82,720 paths over the image (A = added, C = changed, D = deleted), by top level:
+/home/dev/edge-llm-bench           12,188 A   the clone of GitHub main 0efecb0 with this change's files copied in; its
+                                              two 2026-10-16-ddp-linux-first-run-* campaign dirs = the worktree's
+/home/dev/elb-venv                  2,332 A   README step 1's venv (Python 3.12.3, huggingface_hub 2.2.0, hf-xet 1.7.0)
+/home/dev/.cache/huggingface           26 A   the HF cache: the model's blob blobs/41/4194181f… (977,184,032 B; the
+                                              same bytes are on the Hub and in the bucket under models/2a72330b…/)
+/home/dev/.cache/pip                  284 A   pip's download cache
+/home/dev/.config/gcloud               92 A   the gcloud sign-in copy (r1, without logs/ and the ADC file) and the
+                                              logs gcloud wrote in the container (counted in K/linux/14-session-b.log)
+/home/dev/doctor-before.txt             1 A   doctor's output at 0efecb0 (in K/linux/08-doctor-ddp.log)
+/home/dev/doctor-after.txt              1 A   doctor's output with this change (in K/linux/08-doctor-ddp.log)
+/home/dev/.bashrc .profile .bash_logout 3 A   useradd's skeleton
+/home/dev, /home                      1 A, 1 C
+/home/ubuntu                            1 D   the image's user, removed by userdel -r (r1)
+/tmp/r2b-session.out, r2b-gcloud-{before,after,new}.txt
+                                        4 A   r2b's tee of the session and gcloud log lists (summed up in
+                                              K/linux/14-session-b.log)
+/opt/elb-steps                         29 A   copies of K/linux/steps/ (committed)
+/usr                          66,539 A, 49 C  apt: sudo, git, curl, ca-certificates, gnupg, python3, python3-venv,
+                                              python3-pip, google-cloud-cli 589.0.0-0 and their dependencies
+/etc                             379 A, 23 C  the same packages' files, /etc/sudoers.d/dev, the gcloud apt source
+/var                             728 A, 33 C  apt lists and state, logs
+/run                              1 A, 1 C
+
+## round 4's scratchpad (this session's; 67 files, 9.7 MB; deleted 18:58 JST, the commit message right after the commit)
+pre/assets.jsonl, pre/assets.md, pre/assets-ledger.md   the three ledger files before the assets step (the diff is in
+                                                         LANE_CLOSE.md "diff 一覧")
+assets_r4.sh, assets_r4.log                              the assets step (set, set, render, lint) and its output (copied
+                                                         into LANE_CLOSE.md)
+docker-diff.txt                                          the container's 82,720 changed paths (summed up above)
+diff-2026-10-16-ddp-linux-first-run-{,b-}akita-35-android.txt
+                                                         diff -r of the copies below against this tree (empty = identical)
+from-container/2026-10-16-ddp-linux-first-run-{,b-}akita-35-android/
+                                                         the two campaign dirs copied out of the container (29 files each)
+commit-msg.txt                                           this round's commit message
+# The scratchpads of rounds 1, 2, 2b and 3 (and one unused session dir of this round's start) held 0 files: each round
+# deleted its own.
