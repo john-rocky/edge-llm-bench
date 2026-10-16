@@ -536,6 +536,11 @@ def lay_out(session_dir: pathlib.Path) -> dict:
     device_ddp = {"deviceId": p["device"], "displayName": catalog.get("displayName"),
                   "osVersion": catalog.get("osVersion")}
     cond = ddp_conditions(sid, p, session)
+    gate = parse_build_info(index["thermal_gate.txt"].read_text()) if "thermal_gate.txt" in index else {}
+    if gate:  # DDPHarness.waitForNominalThermal: the wait before run 1 (Documents/out/thermal_gate.txt)
+        waited = gate.get("waited_s", "")
+        cond.update(thermalGateWaitedSeconds=int(waited) if waited.isdigit() else None,
+                    thermalGateTimedOut=gate.get("timed_out") == "1", thermalGateState=gate.get("state"))
     out = campaign_dir / "device-jsonl"
     records = []
     for name in names:

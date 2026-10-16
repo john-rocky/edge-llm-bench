@@ -17,7 +17,12 @@ app's process (`HeadlessAutoRun.specFromLaunchArgs` → `HeadlessRun.runAll` in
 `Documents/results/*.json` (the app's records, unchanged) and `Documents/out/`: `console.txt` (the
 process's stdout and stderr during the run), `records.txt` (the records the run added) and
 `yardstick.done` (the exit code). The test fails when the run ends with a code other than 0 or adds
-fewer records than `--runs`.
+fewer records than `--runs`. Before run 1 the test waits until the unit's thermal state is nominal
+(`ProcessInfo.thermalState`, read every 30 s for at most 600 s, as `android/ddp/ddp_cell.sh` waits on
+Android; a wait that runs out is logged and the run goes on), writes the wait to
+`Documents/out/thermal_gate.txt`, and the driver copies it into each record's `conditions.ddp`
+(`thermalGateWaitedSeconds`, `thermalGateTimedOut`, `thermalGateState`); the wait counts inside
+`--xctest-timeout`.
 
 ```bash
 # Vendored/LiteRT-LM: the tag's checkout + the maxNumTokens patch (scripts/bootstrap.sh step 3)
@@ -77,7 +82,8 @@ id>)`, so a lab unit never pools with an attached phone.
 
 The records are gated as the attached-iPhone runner gates its own (`scripts/cell_gate.py`): the four first
 captures of 2026-10-16 (`results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/`) are HOT, so they sit in
-`device-jsonl-flagged/` with `FLAGGED.txt`, outside the summary, until a retake.
+`device-jsonl-flagged/` with `FLAGGED.txt`, outside the summary; their retakes stand in `device-jsonl/`,
+with a `FLAGGED.txt` line for each retake the gate calls HOT.
 
 `selftest.py` runs without a device or the network: the dry runs, a stand-in gcloud for the billed
 path and its failure exits, `--records-only`, and the summary's device column.

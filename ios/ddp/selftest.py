@@ -16,7 +16,8 @@ results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md).
    records.txt (not a stale one) with device.ddp and conditions.ddp and every other key as the app
    wrote it, the console under the attached runner's name, ddp/<session>/ and ddp-raw/<session>/;
    --records-only writes the same files again; exit 4 (job failed), 5 (no record), 3 (no gcloud),
-   2 (not an iPhone; a collected session of another cell); plan.json writes the home directory as ~.
+   2 (not an iPhone; a collected session of another cell); thermal_gate.txt (the harness's wait
+   before run 1) -> three keys of conditions.ddp; plan.json writes the home directory as ~.
 4. scripts/build_summary.py into a temp dir: the device column of a DDP iPhone row, never the
    attached iPhone's.
 """
@@ -353,7 +354,7 @@ def fixture_records(template):
     return recs[:4], recs[4]
 
 
-def stage_execution(tmp, recs, stale, records_txt=True, done="0"):
+def stage_execution(tmp, recs, stale, records_txt=True, done="0", gate=None):
     fake = os.path.join(tmp, "fake")
     art = os.path.join(fake, "execution", "artifacts")
     shutil.rmtree(os.path.join(fake, "execution"), ignore_errors=True)
@@ -363,6 +364,8 @@ def stage_execution(tmp, recs, stale, records_txt=True, done="0"):
         write(os.path.join(art, "records.txt"), "".join(n + "\n" for n, _ in recs))
     if done is not None:
         write(os.path.join(art, "yardstick.done"), done + "\n")
+    if gate is not None:  # DDPHarness's Documents/out/thermal_gate.txt
+        write(os.path.join(art, "thermal_gate.txt"), gate)
     write(os.path.join(art, "console.txt"), "YARDSTICK_METAL_DEVICE name=Apple A18 Pro GPU registry_id=1\n"
           "YARDSTICK_BEGIN runtime=litert-lm model=litert-community/Qwen3-1.7B task=short-chat runs=4\n"
           + "".join(f"YARDSTICK_RUN_OK run={i}\n" for i in range(1, 5)) + "YARDSTICK_ALL_DONE\n")
@@ -397,7 +400,7 @@ def check_billed(tmp, archive, shas):
     template = json.load(open(TEMPLATE))
     recs, stale = fixture_records(template)
     stage_fake(tmp, describe_json())
-    stage_execution(tmp, recs, stale)
+    stage_execution(tmp, recs, stale, gate="waited_s=600\nstate=serious\ntimed_out=1\n")
     sha, _ = shas["litert-community/Qwen3-1.7B"]
     model_obj = f"automation/inputs/edge-llm-bench/models/{sha}/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
     write(os.path.join(tmp, "fake", "bucket", "fake-bucket", model_obj), "already there\n")  # the model is in the bucket
@@ -463,6 +466,7 @@ def check_billed(tmp, archive, shas):
        f"the console not appended twice ({r2.returncode}; {r2.stderr[-200:]!r})")
     # exit 4: the job did not pass; its records are still written
     stage_fake(tmp, describe_json(result="FAILED"))
+    stage_execution(tmp, recs, stale, gate="waited_s=0\nstate=nominal\ntimed_out=0\n")
     r = billed(tmp, archive, "selftest-ios-ddp-failed")
     ok(r.returncode == 4 and len(glob.glob(os.path.join(tmp, "raw", "selftest-ios-ddp-failed", "device-jsonl", "*.json"))) == 4
        and "<testsuites>" in r.stderr, f"a FAILED job: exit 4, records written, junit's tail shown ({r.returncode})")
@@ -493,6 +497,18 @@ def check_billed(tmp, archive, shas):
     ok(r.returncode == 0 and len(glob.glob(os.path.join(tmp, "raw", "selftest-ios-ddp-collect", "device-jsonl", "*.json"))) == 4
        and not any("sessions submit" in c for c in gcloud_calls(tmp)),
        f"--collect of the cell's session: rc 0, 4 records, nothing submitted ({r.returncode}; {r.stderr[-200:]!r})")
+    # Documents/out/thermal_gate.txt (DDPHarness's wait before run 1) -> 3 keys of every record's conditions.ddp
+    gates = {c: [((json.load(open(f)).get("conditions") or {}).get("ddp") or {})
+                 for f in sorted(glob.glob(os.path.join(tmp, "raw", c, "device-jsonl", "*.json")))]
+             for c in ("selftest-ios-ddp", "selftest-ios-ddp-failed", "selftest-ios-ddp-collect")}
+    keys = ("thermalGateWaitedSeconds", "thermalGateTimedOut", "thermalGateState")
+    ok([len(v) for v in gates.values()] == [4, 4, 4]
+       and all(tuple(g.get(k) for k in keys) == (600, True, "serious") for g in gates["selftest-ios-ddp"])
+       and all(tuple(g.get(k) for k in keys) == (0, False, "nominal") for g in gates["selftest-ios-ddp-failed"])
+       and not any(k in g for g in gates["selftest-ios-ddp-collect"] for k in keys),
+       "thermal_gate.txt -> conditions.ddp thermalGateWaitedSeconds / thermalGateTimedOut / thermalGateState in "
+       "every record (600, true, serious; 0, false, nominal); a session without the file: none of the 3 keys "
+       f"({ {c: [tuple(g.get(k) for k in keys) for g in v][:1] for c, v in gates.items()} })")
     # plan.json is committed: the same billed run with HOME = the temp dir that holds the campaign
     stage_fake(tmp, describe_json())
     stage_execution(tmp, recs, stale)
