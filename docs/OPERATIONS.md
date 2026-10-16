@@ -245,8 +245,9 @@ Device Run sessions of at most 8 jobs on that catalog id; a session is billed
 to the Cloud project it runs in.
 
 Prerequisites (the host never talks to a phone, so no adb and no gtimeout;
-a Linux host such as a Cloudtop or gLinux machine has what the route calls,
-though every session so far was driven from a Mac, 2026-10-15):
+a Linux host such as a Cloudtop or gLinux machine has what the route calls;
+the first session from a Linux host, an Ubuntu 24.04 container with no adb,
+ran on 2026-10-16: `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/`):
 
 - gcloud, signed in (`gcloud auth login`); the driver calls only
   `gcloud auth print-access-token`, `gcloud storage ls` and `gcloud storage cp`
@@ -257,9 +258,12 @@ though every session so far was driven from a Mac, 2026-10-15):
   and read and write the bucket. The sessions so far used the project's own
   Device Run bucket (`gs://<project>-devicerun`, the name `gcloud beta device-run`
   creates); a bucket outside the session's project is untried.
-- python3 >= 3.10 (`./bench doctor` checks the version) with `huggingface_hub`
-  (`python3 -m pip install huggingface_hub`); a gated Hub repo needs a token on
-  the host.
+- python3 >= 3.10 with `huggingface_hub`, in a venv as README step 1 has it
+  (`python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub`;
+  outside a venv, Ubuntu 24.04's pip stops with `externally-managed-environment`);
+  a gated Hub repo needs a token on the host. `./bench doctor --platform ddp`
+  checks the python version, gcloud and its sign-in, `huggingface_hub` and the
+  9 engine files below (not the project's API or the bucket).
 - The pinned LiteRT-LM Android files in `android/bin/<tag>/` (the tag is
   `android/engine-pins.json` `android_pins`), or in `$BENCH_ANDROID_BIN_DIR/<tag>/`:
   the release asset `android-litert-lm-<tag>` ("Engine acquisition" in

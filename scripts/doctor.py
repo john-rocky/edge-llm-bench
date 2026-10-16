@@ -10,6 +10,7 @@ with zero cells run.
 
   ./bench doctor                       # common + mac; device lanes best-effort
   ./bench doctor --platform iphone     # device absence is then a failure
+  ./bench doctor --platform ddp        # DDP lab phones: gcloud, huggingface_hub, the pinned engine files
 
 Exit 1 if any required check fails.
 """
@@ -233,10 +234,49 @@ def check_android(required):
               sha[:12] + ("" if known else " — sha not in android/engine-pins.json; rows will stamp 'unknown'"))
 
 
+# ---------- ddp ----------
+
+def check_ddp(required):
+    # `bench matrix --ddp` (README "Run the Android cells on a Developer Device Platform phone"): no adb, no
+    # phone; the host needs gcloud signed in, huggingface_hub and the pinned LiteRT-LM Android files.
+    lvl = FAIL if required else WARN
+    gcloud = which("gcloud")
+    if not gcloud:
+        check(lvl, "gcloud", "install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install")
+    else:
+        check(OK, "gcloud", gcloud)
+        try:  # the exit code only: the token is never read
+            rc = subprocess.run(["gcloud", "auth", "print-access-token"], stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL, timeout=20).returncode
+        except (OSError, subprocess.TimeoutExpired):
+            rc = 1
+        check(OK if rc == 0 else lvl, "gcloud sign-in",
+              "" if rc == 0 else "gcloud auth login (gcloud auth print-access-token failed)")
+    try:
+        import huggingface_hub
+        check(OK, "huggingface_hub", huggingface_hub.__version__)
+    except ImportError:
+        check(lvl, "huggingface_hub", "python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && "
+                                      "pip install huggingface_hub (the driver downloads the models on the host)")
+    sys.path.insert(0, os.path.join(ROOT, "android", "ddp"))
+    try:  # the driver's own check, the one it runs before any upload
+        import run_ddp
+        pins = run_ddp.run_cell.load_pins()
+        tag = pins.get("android_pins", {}).get("litert-lm")
+        files = run_ddp.engine_files(run_ddp.run_cell.ANDROID_BIN_DIR, tag, pins)
+        check(OK, "ddp engine files", f"{tag}: {len(files)} files = android/engine-pins.json, in "
+                                      f"{os.path.join(run_ddp.run_cell.ANDROID_BIN_DIR, tag)}")
+    except SystemExit as e:
+        check(lvl, "ddp engine files", f"{e}; fix: the TAG= and curl lines of README "
+                                       "\"Run the Android cells on a Developer Device Platform phone\", step 2")
+    except Exception as e:  # noqa: BLE001 — a driver that does not load is reported, not raised
+        check(lvl, "ddp engine files", f"android/ddp/run_ddp.py did not load: {e!r}")
+
+
 def main():
     ap = argparse.ArgumentParser(prog="bench doctor")
     ap.add_argument("--platform", action="append",
-                    choices=["mac", "iphone", "android"],
+                    choices=["mac", "iphone", "android", "ddp"],
                     help="lane(s) to require; default: check all, require none but common")
     args = ap.parse_args()
     req = set(args.platform or [])
@@ -245,6 +285,7 @@ def main():
     check_mac("mac" in req or not req and sys.platform == "darwin")
     check_iphone("iphone" in req)
     check_android("android" in req)
+    check_ddp("ddp" in req)
 
     width = max(len(n) for _, n, _ in _RESULTS)
     icon = {OK: "  ok ", WARN: "warn ", FAIL: "FAIL ", SKIP: "skip "}

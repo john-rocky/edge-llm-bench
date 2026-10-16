@@ -202,7 +202,7 @@ def main():
     sub.add_parser("release-watch", help="compare upstream releases vs environment.lock.json pins")
 
     d = sub.add_parser("doctor", help="preflight: what is missing, with the fix command")
-    d.add_argument("--platform", action="append", choices=list(RUNNERS))
+    d.add_argument("--platform", action="append", choices=list(RUNNERS) + ["ddp"])
 
     db = sub.add_parser("dashboard", help="render DASHBOARD.md + .dashboard/ (local, gitignored)")
     db.add_argument("--cells", help="cells file (default: matrices/dashboard-text-v1.cells)")
