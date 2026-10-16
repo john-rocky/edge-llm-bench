@@ -1,0 +1,26 @@
+$ LITERTLM_REF=pr/4015 LITERTLM_DRY_RUN=1 android/scripts/build_litert_lm_main.sh   # 2026-10-16 15:11:38 JST
+== NDK: ~/Library/Android/sdk/ndk/29.0.13113456
+requested=pr/4015
+label=pr4015-8a4d77a20
+commit=8a4d77a20a99c4c1db22be68e0be0a99a261520c
+resolved=git ls-remote https://github.com/google-ai-edge/LiteRT-LM.git refs/pull/4015/head
+src=~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20
+out=~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20
+== fetching LiteRT-LM pr/4015 (8a4d77a20a99c4c1db22be68e0be0a99a261520c) -> ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20
++ mkdir -p ~/.cache/apple-silicon-llm-bench
++ git init -q ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20
++ git -C ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20 remote add origin https://github.com/google-ai-edge/LiteRT-LM.git
++ git -C ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20 fetch --depth 1 origin refs/pull/4015/head
++ git -C ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20 checkout -q --detach FETCH_HEAD
+== bazel build (android_arm64) — first build takes 10-20 min
++ (cd ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20 && bazelisk build --config=android_arm64 --enable_platform_specific_config //runtime/engine:litert_lm_main //runtime/engine:litert_lm_advanced_main)
++ mkdir -p ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20/bazel-bin/runtime/engine/litert_lm_main ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20/litert_lm_main
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20/bazel-bin/runtime/engine/litert_lm_advanced_main ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20/litert_lm_advanced_main
++ chmod +x ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20/litert_lm_main ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20/litert_lm_advanced_main
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-pr4015-8a4d77a20/prebuilt/android_arm64/*.so ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20/
++ (cd ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20 && shasum -a 256 litert_lm_main litert_lm_advanced_main *.so | tee SHA256SUMS)
++ BUILD_INFO -> ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20/BUILD_INFO (requested label commit describe commit_date subject remote ndk bazel bazelisk built host_arch)
++ python3 ~/code/edge-llm-bench-wt-buildref/android/scripts/pins_add.py pr4015-8a4d77a20 ~/code/edge-llm-bench-wt-buildref/android/bin/pr4015-8a4d77a20 --requested pr/4015 --observed '<git describe --tags --always of the checkout>' --note 'android/scripts/build_litert_lm_main.sh at pr4015-8a4d77a20 (bazel source build, 2026-10-16; commit 8a4d77a20a99c4c1db22be68e0be0a99a261520c)' --replace
+== dry run: nothing cloned, fetched, built or written
+rc=0

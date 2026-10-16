@@ -89,7 +89,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: py_compile all python
-        run: python -m py_compile scripts/*.py android/bench/*.py android/ddp/*.py bench
+        run: python -m py_compile scripts/*.py android/bench/*.py android/ddp/*.py android/scripts/pins_add.py bench
       - name: bash -n all shell scripts
         run: for f in scripts/*.sh android/scripts/*.sh android/ddp/*.sh ios/BenchmarkApp/scripts/*.sh; do bash -n "$f" || exit 1; done
 
