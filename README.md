@@ -153,7 +153,9 @@ builds the tag from source (bazelisk; it writes that build's sha256 into
 `android/engine-pins.json`, so the driver's check passes with it and the
 records carry its sha256 in `engineArtifact`). Before anything is uploaded,
 the driver checks each of the 9 files against the sha256 that
-`android/engine-pins.json` pins for the tag.
+`android/engine-pins.json` pins for the tag. LiteRT-LM main, a pull request or
+a build made elsewhere runs with `--engine-build <label>` instead:
+[`android/README.md`](android/README.md), "Build from head or a PR".
 
 Then check the checkout with no network and nothing billed: the selftest runs
 the plan, the job wrapper, the billed path and the records against a fake

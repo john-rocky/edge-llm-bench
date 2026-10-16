@@ -4,6 +4,7 @@
   ./bench matrix  <cells-file> [--platform mac|iphone|android] [--campaign NAME]
   ./bench matrix  <cells-file> --ddp <DDP device id> [--campaign NAME] [--dry-run]   # android/ddp/run_ddp.py
                   [--project <Cloud project>] [--bucket gs://<bucket>]   # default: run_ddp.py's
+                  [--engine-build <label>]   # a litert-lm pins entry instead of android_pins' tag
   ./bench regress <cells-file> --engine <arm> [--version vX] --baseline <selector>
                   [--platform ...] [--campaign NAME]
   ./bench profile <cells-file> [--campaign NAME] [--max-num-tokens A,B,C] [--allow-large-context]
@@ -86,6 +87,7 @@ def do_ddp(args):
     cmd = [PY, os.path.join(ROOT, "android", "ddp", "run_ddp.py"), args.cells, "--device", args.ddp,
            "--campaign", campaign] + (["--dry-run"] if args.dry_run else [])
     cmd += (["--project", args.project] if args.project else []) + (["--bucket", args.bucket] if args.bucket else [])
+    cmd += ["--engine-build", args.engine_build] if args.engine_build else []
     rc = run(cmd, env={"CAMPAIGN": campaign})
     if args.dry_run:
         return rc
@@ -101,6 +103,10 @@ def do_matrix(args):
         return 2
     if getattr(args, "project", None) or getattr(args, "bucket", None):
         print("error: matrix --project / --bucket are for --ddp only", file=sys.stderr)
+        return 2
+    if getattr(args, "engine_build", None):
+        print("error: matrix --engine-build is for --ddp only (an attached phone runs android_pins' tag: "
+              "android/README.md, \"Build from head or a PR\")", file=sys.stderr)
         return 2
     if run([PY, os.path.join(ROOT, "scripts", "validate_cells.py"), args.cells]):
         return 2
@@ -182,6 +188,9 @@ def main():
     m.add_argument("--project", help="with --ddp: the Cloud project the sessions run in (default: run_ddp.py's)")
     m.add_argument("--bucket", help="with --ddp: gs://<bucket> for the inputs and session outputs "
                                     "(default: run_ddp.py's)")
+    m.add_argument("--engine-build", metavar="LABEL",
+                   help="with --ddp: the LiteRT-LM build android/engine-pins.json names litert-lm.LABEL, from "
+                        "$BENCH_ANDROID_BIN_DIR/LABEL/, instead of android_pins' tag (android/scripts/pins_add.py)")
 
     p = sub.add_parser("profile", help="LiteRT-LM per-op profiling: a control + --enable_profiling "
                                        "pair per android native-benchmark cell -> profiles/PROFILE.md")

@@ -1,0 +1,43 @@
+check lines of the HEAD run: 73; of the worktree run less section 1c: 73; section 1c: 17
+diff of the two (sections and check lines; values that hold temp paths or run times can differ):
+14c14
+<   ok  a negative cpucapWaitSeconds stops the plan (x-1: cpucapWaitSeconds -1 in ../../../../../../../var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-cglcg01k/devices-bad.json is not a whole number of seconds >= 0)
+---
+>   ok  a negative cpucapWaitSeconds stops the plan (x-1: cpucapWaitSeconds -1 in ../../../../var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-ym9humrp/devices-bad.json is not a whole number of seconds >= 0)
+16c16
+<   ok  an engine file one byte off its pin stops the plan, naming it (/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-cglcg01k/bad-bin/v0.18.0/libLiteRtOpenClAccelerator.so: sha256 2f16ac2fbefaa5aa6f319d0b644fee2b896b3a98f2d025ebc53e6b592b33411c is not the pin's dfc714a0b59d5e1bf5155db7533070bf13da28574a3bc52396a4ba22d23d893c (android/engine-pins.json litert-lm v0.18.0) — nothing is pushed)
+---
+>   ok  an engine file one byte off its pin stops the plan, naming it (/var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-ym9humrp/bad-bin/v0.18.0/libLiteRtOpenClAccelerator.so: sha256 2f16ac2fbefaa5aa6f319d0b644fee2b896b3a98f2d025ebc53e6b592b33411c is not the pin's dfc714a0b59d5e1bf5155db7533070bf13da28574a3bc52396a4ba22d23d893c (android/engine-pins.json litert-lm v0.18.0) — nothing is pushed)
+22c22
+<   ok  bench --ddp m1q-36 --dry-run --project other-team-project --bucket gs://other-team-bucket/: the summary line names both (trailing / dropped) and cpucapWaitSeconds 0, every request path in that bucket (rc 0, {'device': 'm1q-36', 'scheduleKey': 's26', 'engine': 'v0.18.0', 'campaign': 'selftest-dry-other-android', 'jobs': 16, 'sessions': 2, 'skipped': 14, 'deviceMinutes': 936.0, 'project': 'other-team-project', 'bucket': 'gs://other-team-bucket', 'cpucapWaitSeconds': 0})
+---
+>   ok  bench --ddp m1q-36 --dry-run --project other-team-project --bucket gs://other-team-bucket/: the summary line names both (trailing / dropped) and cpucapWaitSeconds 0, every request path in that bucket (rc 0, {'device': 'm1q-36', 'scheduleKey': 's26', 'engine': 'v0.18.0', 'campaign': 'selftest-dry-other-android', 'jobs': 16, 'sessions': 2, 'skipped': 14, 'deviceMinutes': 622.6, 'project': 'other-team-project', 'bucket': 'gs://other-team-bucket', 'cpucapWaitSeconds': 0})
+62c62
+<   ok  --records-only <campaign>: no subprocess, no network; the 6 records, their raw logs and decoded texts and FAILURES.txt written again, the logcats, ddp-raw/ and scrub.json, all byte for byte as before; the billed run's exit code (rc 1 / 1, changed [], {'recordsOnly': '../../../../../../../var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-cglcg01k/sumroot/results/raw/selftest-ddp-akita-35-android', 'sessions': 1, 'removed': 15, 'written': 15, 'records': 6, 'notWrittenAgain': [], 'newNames': []})
+---
+>   ok  --records-only <campaign>: no subprocess, no network; the 6 records, their raw logs and decoded texts and FAILURES.txt written again, the logcats, ddp-raw/ and scrub.json, all byte for byte as before; the billed run's exit code (rc 1 / 1, changed [], {'recordsOnly': '../../../../var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-ym9humrp/sumroot/results/raw/selftest-ddp-akita-35-android', 'sessions': 1, 'removed': 15, 'written': 15, 'records': 6, 'notWrittenAgain': [], 'newNames': []})
+65c65
+<   ok  a 400 to the POST: the driver stops, ddp/error-1.json holds the body verbatim, no record (session 1: POST answered 400; body in /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-cglcg01k/sumroot/results/raw/selftest-ddp-rejected-android/ddp/error-1.json)
+---
+>   ok  a 400 to the POST: the driver stops, ddp/error-1.json holds the body verbatim, no record (session 1: POST answered 400; body in /var/folders/pn/y692nwgx6_s29gl7m57dhtkh0000gn/T/ddp-selftest-ym9humrp/sumroot/results/raw/selftest-ddp-rejected-android/ddp/error-1.json)
+diff rc=1
+
+section 1c:
+--- 1c. --engine-build main-012345678: android/scripts/pins_add.py writes the entry into a copy of the pins; the plan, the witness and bench read it; build_litert_lm_main.sh's dry run with a stand-in git
+  ok  pins_add.py --dry-run: rc 0, {label: entry} on stdout with the 9 sha256 hashlib reads of the stand-in files, the pins file unchanged (rc 0)
+  ok  pins_add.py: rc 0, 'pins: main-012345678 added (7 so files)'; the entry = the 9 sha256 under the other entries' keys; android_pins, the other engines and the 5 litert-lm entries before it unchanged (json.dumps(sort_keys=True) per key), the file less the entry = the original bytes, its ending included
+  ok  the same label again: rc 2 naming --replace, nothing written (rc 2); --replace: rc 0, the entry written over in its place (rc 0)
+  ok  a dir without litert_lm_main (the T1c kit's shape): rc 2, stderr names it, nothing written (rc 2)
+  ok  a git-lfs pointer in place of libGemmaModelConstraintProvider.so: rc 2, stderr names the file, nothing written (rc 2)
+  ok  label bad/label: rc 2, nothing written (rc 2)
+  ok  plan(engine_build=main-012345678) on akita-35: engineTag and every job's labels.engine the label, the 9 engine pushes from <bin-dir>/main-012345678/ with the entry's sha256, objects engines/litert-lm/main-012345678/<sha256>/<name> (8 jobs)
+  ok  plan(engine_build=None) with the label in the pins: android_pins' v0.18.0 and its files, as before
+  ok  plan(engine_build='nope'): stops naming android/scripts/pins_add.py (android/engine-pins.json has no litert-lm nope entry — android/scripts/pins_add.py nope <dir>/nope writes it from the build's files)
+  ok  record.witness of the unit's sha256: main-012345678 for either tool; one .so off -> unknown (on-device main-012345678 litert_lm_main with lib libGemmaMode
+  ok  bench --ddp akita-35 --dry-run --engine-build v0.18.0: run_ddp.py started with --engine-build v0.18.0, the summary line's engine v0.18.0, 8 jobs (rc 0)
+  ok  bench --ddp --engine-build main-012345678 with the real pins: the driver stops naming android/scripts/pins_add.py (rc 1)
+  ok  --engine-build without --ddp refuses (rc 2); --engine-build bad/label refuses (rc 2); no gcloud call, no summary rebuilt
+  ok  pins_add.py compiles, bash -n build_litert_lm_main.sh passes, both executable (True, '')
+  ok  build_litert_lm_main.sh LITERTLM_DRY_RUN=1 with a stand-in git: main, a branch with a slash, pr/42, a full sha in capitals, a short sha (a ref's tip), an annotated tag (its peeled commit), a tag via LITERTLM_REF -> their labels and commits; both variables or an unknown ref -> exit 1; the pr/42 run prints its fetch, src and pins_add lines ([])
+  ok  the dry runs called git ls-remote only (7 calls), never bazelisk, and created nothing under HOME or android/bin ([])
+  ok  android/engine-pins.json itself unchanged by every check above

@@ -1,0 +1,20 @@
+$ LITERTLM_TAG=v0.18.0 LITERTLM_DRY_RUN=1 android/scripts/build_litert_lm_main.sh   # 2026-10-16 15:11:38 JST
+== NDK: ~/Library/Android/sdk/ndk/29.0.13113456
+requested=v0.18.0
+label=v0.18.0
+commit=b2f686e2ed4718fb84ec398a61dd59ca0f0aff27
+resolved=git ls-remote https://github.com/google-ai-edge/LiteRT-LM.git refs/tags/v0.18.0
+src=~/.cache/apple-silicon-llm-bench/litert-lm-v0.18.0 (exists: built as it is)
+out=~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0
+== bazel build (android_arm64) — first build takes 10-20 min
++ (cd ~/.cache/apple-silicon-llm-bench/litert-lm-v0.18.0 && bazelisk build --config=android_arm64 --enable_platform_specific_config //runtime/engine:litert_lm_main //runtime/engine:litert_lm_advanced_main)
++ mkdir -p ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-v0.18.0/bazel-bin/runtime/engine/litert_lm_main ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0/litert_lm_main
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-v0.18.0/bazel-bin/runtime/engine/litert_lm_advanced_main ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0/litert_lm_advanced_main
++ chmod +x ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0/litert_lm_main ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0/litert_lm_advanced_main
++ cp -f ~/.cache/apple-silicon-llm-bench/litert-lm-v0.18.0/prebuilt/android_arm64/*.so ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0/
++ (cd ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0 && shasum -a 256 litert_lm_main litert_lm_advanced_main *.so | tee SHA256SUMS)
++ BUILD_INFO -> ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0/BUILD_INFO (requested label commit describe commit_date subject remote ndk bazel bazelisk built host_arch)
++ python3 ~/code/edge-llm-bench-wt-buildref/android/scripts/pins_add.py v0.18.0 ~/code/edge-llm-bench-wt-buildref/android/bin/v0.18.0 --requested v0.18.0 --observed '<git describe --tags --always of the checkout>' --note 'android/scripts/build_litert_lm_main.sh at v0.18.0 (bazel source build, 2026-10-16; commit b2f686e2ed4718fb84ec398a61dd59ca0f0aff27)' --replace
+== dry run: nothing cloned, fetched, built or written
+rc=0
