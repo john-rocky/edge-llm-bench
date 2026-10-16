@@ -455,6 +455,19 @@ def execution_prefix(job: dict):
 
 # ---------------------------------------------------------------- records
 
+def home_as_tilde(obj):
+    """obj with the home directory written as ~ in every string: plan.json is committed, and the argv file,
+    the campaign directory and the argv push source are host paths."""
+    home = os.path.expanduser("~").rstrip(os.sep)
+    if isinstance(obj, str):
+        return obj.replace(home + os.sep, "~" + os.sep) if home else obj
+    if isinstance(obj, dict):
+        return {k: home_as_tilde(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [home_as_tilde(v) for v in obj]
+    return obj
+
+
 def write_json(path: pathlib.Path, obj) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as fh:
@@ -661,7 +674,7 @@ def main() -> int:
         session_dir.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(p["argsFile"], session_dir / "args.json")
         os.remove(p["argsFile"])
-        plan_out = json.loads(json.dumps(p))
+        plan_out = home_as_tilde(json.loads(json.dumps(p)))
         for part in ("model", "archive"):
             plan_out[part].pop("local", None)  # host paths stay out of the campaign dir
         plan_out["sessionId"] = sid
