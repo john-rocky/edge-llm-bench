@@ -8,7 +8,8 @@ this harness without prior knowledge of the repo. Same format as the skills in
 
 * [`run-edge-llm-bench/`](run-edge-llm-bench/) — Measure a
   [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) bundle on a
-  connected Android phone or a Mac, ad hoc: write the cells, run them, read the
+  connected Android phone or a Mac, or on a Developer Device Platform lab phone
+  with no adb, ad hoc: write the cells, run them, read the
   stored record; side-load a bundle that is not published yet, or measure a
   build newer than the pin; profile the decode step per op on Android
   (`./bench profile`, [`docs/profiling-subcommand-design.md`](../docs/profiling-subcommand-design.md)).
