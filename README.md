@@ -221,6 +221,27 @@ an attached phone's: [`docs/ddp-integration.md`](docs/ddp-integration.md),
 the outputs, committing): [`docs/OPERATIONS.md`](docs/OPERATIONS.md), "Run
 cells on DDP".
 
+**One command: the autopilot.** `./bench autopilot` runs steps 3 to 5 and what
+follows them on the bench host every night: the checks and the plan, the billed
+run, the check of the records, one local commit of the campaign dir and
+`results/summary` when every rule passes (`REVIEW.md` in the dir when one does
+not), the local `DASHBOARD.md`, the red points of the team page's regression
+rule and the pending retake and bisect requests; its last screen says what to
+do next.
+
+```bash
+./bench autopilot --ddp akita-35 --dry-run --project <your project> --bucket gs://<your bucket>
+```
+
+The dry run calls no network and bills nothing; without `--dry-run` it is the
+billed run, `--no-commit` stops after the check, `--cells` replaces
+`matrices/ddp-first-run.cells` (one job, two runs; `m1q-36` takes its weekly
+file). The commit is made with git's `user.name` and `user.email`. Left out on
+your host: the private team page, any push (the commit stays local), retakes
+(they run on the bench host's attached phones) and the bisect itself
+(`scripts/engine_bisect.py` comes after PR #4). Design:
+[`docs/dashboard-autopilot-v1.md`](docs/dashboard-autopilot-v1.md), section 10.
+
 ## What keeps the numbers honest
 
 - **The recipe is part of every row.** Arms run their own best available

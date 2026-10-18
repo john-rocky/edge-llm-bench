@@ -160,6 +160,11 @@ engine files (README DDP section, step 2). `./bench doctor --platform ddp`
 checks gcloud, its sign-in, `huggingface_hub` and the 9 engine files; the README
 "Quickstart: the Android cells on a DDP lab phone" lists the whole route.
 
+One command does the run and what follows it: `./bench autopilot --ddp <id> --project <p> --bucket gs://<b>`
+(`--dry-run` first: no network) runs the nightly job's lab-unit sitting, checks it, commits it locally when
+every rule passes (`REVIEW.md` otherwise; `--no-commit` stops at the check), renders `DASHBOARD.md`, prints
+the red points and pending requests, and ends on one screen of next steps (`docs/dashboard-autopilot-v1.md` §10).
+
 - **One job is one lab unit and a sitting of its own.** A session's jobs start
   together on different units (`conditions.ddp.serial`); DDP has no anchor, and
   the summary names the device `<model> (DDP <id>)`, so these rows never pool

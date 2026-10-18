@@ -390,3 +390,73 @@ the Regression section's two models, which no earlier DDP sitting on the page co
 settles it (its check reading a stand-in cell against the phone's own newest point, or no stand-in for
 the Regression section's cells), a lab-unit sitting newer than the phone's own fails that check, and the
 post leaves the page uncommitted (the bench commit stands; the ledger says `FAIL check_regression`).
+
+## 10. Stage 5: the one command on a host with no phone
+
+A Googler's workstation (gLinux or gMac: no adb, no phone, a Cloud project of their own) runs a
+Developer Device Platform lab unit's sitting and what follows it as the bench host's nightly job
+does, with one command (§9, the job's weekly lab-unit slot, is stage 4; this command calls its code).
+
+```bash
+./bench autopilot --ddp <id> [--project <p>] [--bucket gs://<b>] [--cells <file>] [--runs N]
+        [--suffix S] [--dry-run] [--no-commit]
+#   exit 0 = committed (or nothing new), or a dry run whose plan holds; 1 = the check held, or a
+#   step after the commit failed; else the sitting's own exit (2 config, 3 a sitting already
+#   running on the key, 5 not ready or no record, 6 timeout)
+```
+
+```
+autopilot.py main()
+  lab_unit()    schedule.json's entry whose ddp_id is <id> (s26-ddp for m1q-36), else one made from
+                android/ddp/devices.json: key <scheduleKey>-ddp (the product without one), identifier =
+                the device string the summary gives the id's rows, "<ro.product.model> (DDP <id>)"
+                (no row yet: the catalog's display, a guess where the unit's model name differs), cells
+                = --cells, else matrices/dashboard-ddp-v1-android-<scheduleKey>.cells when it exists,
+                else matrices/ddp-first-run.cells; --runs N: a copy with runs=N (logs/autopilot/cells/)
+  1 sitting     dashboard_job.ddp_slot(): check_ddp, the plan within ddp_max_sessions, bench matrix
+                --ddp, SESSION.json, the ledger line; its log logs/dashboard-job/<date>-<key>.log
+  2 post        dashboard_post.main() over the sitting's dir, in this process (its row on the screen,
+                its output in logs/autopilot/<campaign>/post.txt)
+  3 table       scripts/render_dashboard.py -> DASHBOARD.md, .dashboard/ (this unit's cells listed)
+  4 red         scripts/regression_watch.py --json --markdown (no --compare: no page on the host)
+  5 requests    logs/dashboard-job/retakes.json, bisect-requests.json: the pending entries, each
+                request's engine_bisect.py command or why it has none, whether the tool is here
+  one screen    printed, at the end of the job log, logs/autopilot/<campaign>/summary.txt
+```
+
+**Where it departs from the job.** Each is a wrapper in `scripts/autopilot.py` around the job's
+functions (`job_overrides`); `scripts/dashboard_job.py` is unchanged.
+
+- The switch's `ddp_weekly` is not read: it turns the bench host's nightly lab-unit slot on and off
+  and goes false once a Googler runs the DDP set on their side, the day this command is the route; a
+  run by hand is its own go. `ddp_max_sessions` still caps the plan before anything is billed.
+- `--project` / `--bucket` reach `bench matrix --ddp` as `BENCH_DDP_PROJECT` / `BENCH_DDP_BUCKET`:
+  the job's plan and run pass neither flag, and `bench matrix --ddp` reads the variables when its
+  flags are absent (the plan's summary line names the project and bucket it uses).
+- A host without `gtimeout` (GNU coreutils' name on macOS; Linux calls it `timeout`) gets GNU
+  timeout under the job's name, `logs/autopilot/bin/gtimeout`, first on PATH.
+- `--dry-run` calls no network and bills nothing: the doctor's DDP checks run in process without
+  `gcloud auth print-access-token`, which can refresh the token over the network (its line reads
+  `SKIP gcloud sign-in not checked in a dry run`; the run checks it before the plan); the plan reads
+  the local Hugging Face cache only; the post and the table are printed, not run; the red points are
+  computed from local files; nothing is written but a `--runs` copy.
+- `--no-commit` runs the post's own `--dry-run` over the sitting: the check and the message it would
+  commit; nothing is scrubbed, committed or written.
+
+**What the host needs.** README "Run the Android cells on a Developer Device Platform phone", steps
+1 and 2 (gcloud signed in, a project with the Device Run API enabled and a bucket in it, python3 >=
+3.10 with `huggingface_hub`, the pinned engine files), and git's `user.name` and `user.email`, which
+the post's commit is made with.
+
+**Left out on a host of its own.**
+
+- The private team page: the post builds it only where the switch's `page_repo` holds a `build.py`;
+  elsewhere its line reads `skipped: no build.py in <dir>`.
+- Any push or publish: the switch's keys are all off, so the commit stays local.
+- Retakes: a red point's retake is a sitting of the bench host's attached phone, run by its job.
+- The bisect: a request's command runs `scripts/engine_bisect.py` (stage 3b, branch
+  `bench-autopilot-bisect`, on top of PR #4's LiteRT-LM Android builds from a git ref); without the
+  tool in the checkout the screen says so.
+- Red points of the sitting itself: a lab unit's rows make no series of the page's rule (m1q-36's
+  are the page's stand-in rows, which its regression leaves out; akita-35's device is not one of
+  the page's devices), so the red points are the page's, from the attached phones' sittings.
