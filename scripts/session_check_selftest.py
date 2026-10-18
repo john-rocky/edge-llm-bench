@@ -58,6 +58,7 @@ MAC_BLOCK = LOCK["arms"]["litert-lm"].get("mac") or {}
 LITERT_MAC = MAC_BLOCK.get("tag") or LITERT_APPLE
 MLX = LOCK["arms"]["mlx-swift-lm"]["revision"]
 LLAMA = LOCK["arms"]["llama.cpp"]["tag"]
+LLAMA_MODEL = "unsloth/Qwen3-1.7B-GGUF/Q4_K_M"
 
 
 def release(tag):
@@ -309,27 +310,28 @@ def main():
        "a SPREAD retry is a note (renders ⚠), the LEVEL retry the one flagged finding")
 
     print("--- the text screen: a Mac / iPhone text cell's reply proxies per run go into text_screen.json, a note")
-    litert = f"litert-lm litert-community/Qwen3-1.7B short-chat ({LITERT_MAC})"
+    # a llama.cpp cell, so the screen's cases read no LiteRT-LM pin (engine-stamp, pin-drift)
+    llama = f"llama.cpp {LLAMA_MODEL} short-chat ({LLAMA})"
     mlx = f"mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat ({MLX})"
-    off_recs = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK)
+    off_recs = cell("llama.cpp", LLAMA_MODEL, LLAMA, sample=OFF_TASK)
     t1a = anchor_dir(raw, "2099-09-01-dashboard-v1-m4max-anchor-mac")
     t1p = payload_dir(raw, "2099-09-01-dashboard-v1-m4max-mac", os.path.basename(t1a), records=off_recs)
     rc, res, out = run([t1a, t1p], history=hist)
     r = res[os.path.basename(t1p)]
     s = screen_of(t1p) or {"cells": {}}
-    c = s["cells"].get(litert, {})
+    c = s["cells"].get(llama, {})
     ok(rc == 0 and r["verdict"] == "PASS" and not any(f["rule"].startswith("reply-") for f in r["findings"])
-       and f"screened text-fail: {litert} (reply-off-task): the page shows the cell as text-fail" in r["notes"],
+       and f"screened text-fail: {llama} (reply-off-task): the page shows the cell as text-fail" in r["notes"],
        f"4 of 4 off-task replies on the Mac: no reply-off-task finding, the note, PASS ({sorted(rules(r))}, exit {rc})")
     ok(s.get("schema") == "text-screen.v1" and s.get("rules") == ["reply-empty", "reply-loop", "reply-off-task"]
-       and set(s["cells"]) == {litert, mlx} and c.get("verdict") == "FAIL" and c.get("rules") == ["reply-off-task"]
+       and set(s["cells"]) == {llama, mlx} and c.get("verdict") == "FAIL" and c.get("rules") == ["reply-off-task"]
        and (c.get("runs"), c.get("runs_off")) == (4, 4) and c.get("run_rules") == {x["id"]: ["reply-off-task"] for x in off_recs}
        and c.get("sample", "").startswith("Sure! Here is a short story") and "4 of 4 replies name none" in c.get("detail", "")
        and s["cells"][mlx]["verdict"] == "PASS" and set(map(tuple, s["cells"][mlx]["run_rules"].values())) == {()}
        and s.get("written_by", "").startswith("scripts/session_check.py ") and s.get("written_at"),
        f"text_screen.json: the cell FAIL (reply-off-task, 4 of 4, each run by its record id, a sample), the MLX "
        f"cell PASS (every run []), who wrote it and when ({sorted(s['cells'])})")
-    ok(r["text_screen"] and r["text_screen"]["state"] == "written" and [x["cell"] for x in r["text_screen"]["text_fail"]] == [litert]
+    ok(r["text_screen"] and r["text_screen"]["state"] == "written" and [x["cell"] for x in r["text_screen"]["text_fail"]] == [llama]
        and "text screen: written text_screen.json (2 cells, 1 text-fail: " in out
        and (screen_of(t1a) or {}).get("cells", {}).keys() == {mlx},
        "the result and the output line say written, with the cell; the anchor phase has its own file")
@@ -340,55 +342,55 @@ def main():
        and (os.stat(path).st_mtime_ns, open(path, "rb").read()) == before,
        "checked again with the same records: unchanged, the file not touched (mtime and bytes)")
     with open(os.path.join(tmp, "allow-reply.tsv"), "w") as fh:
-        fh.write(f"reply-off-task\t*\t{litert}\t0123abcd\tthe bundle's template\n")
+        fh.write(f"reply-off-task\t*\t{llama}\t0123abcd\tthe replies answer another question\n")
     rc, res, out = run([t1a, t1p], history=hist, allow=os.path.join(tmp, "allow-reply.tsv"))
     r = res[os.path.basename(t1p)]
     ok(r["verdict"] == "PASS" and not rules(r, live=False) & {"reply-off-task"} and any(n.startswith("screened") for n in r["notes"]),
        "an allow-list line for the screened rule finds no finding to excuse (the screen marks the runs)")
 
     print("--- the text screen: --no-text-screen writes nothing and judges as if it were written")
-    loop_recs = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample="on-device AI " * 40)
+    loop_recs = cell("llama.cpp", LLAMA_MODEL, LLAMA, sample="on-device AI " * 40)
     t2a = anchor_dir(raw, "2099-09-02-dashboard-v1-m4max-anchor-mac")
     t2p = payload_dir(raw, "2099-09-02-dashboard-v1-m4max-mac", os.path.basename(t2a), records=loop_recs)
     rc, res, out = run([t2a, t2p], "--no-text-screen", history=hist)
     r = res[os.path.basename(t2p)]
     ok(rc == 0 and r["verdict"] == "PASS" and screen_of(t2p) is None and screen_of(t2a) is None
        and r["text_screen"]["state"] == "would write"
-       and f"screened text-fail: {litert} (reply-empty, reply-loop): the page shows the cell as text-fail "
+       and f"screened text-fail: {llama} (reply-empty, reply-loop): the page shows the cell as text-fail "
            f"(text_screen.json not written: --no-text-screen)" in r["notes"] and "would write text_screen.json" in out,
        f"a looping cell under --no-text-screen: no file in either dir, the note says not written, PASS "
        f"({r['text_screen']['state']}, exit {rc})")
     rc, res, out = run([t2a, t2p], history=hist)
     loop_path = os.path.join(t2p, "text_screen.json")
     before = open(loop_path, "rb").read()
-    write_jsonl(t2p, "litert-lm_litert-community_Qwen3-1_7B_short-chat.jsonl",
-                cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC))
+    write_jsonl(t2p, "litert-lm_litert-community_Qwen3-1_7B_short-chat.jsonl",     # the file payload_dir wrote them to
+                cell("llama.cpp", LLAMA_MODEL, LLAMA))
     rc, res, out = run([t2a, t2p], "--no-text-screen", history=hist)
     r = res[os.path.basename(t2p)]
     ok(r["text_screen"]["state"] == "would rewrite" and open(loop_path, "rb").read() == before and r["verdict"] == "PASS",
        "records replaced after the file was written: --no-text-screen says would rewrite and leaves the file as it was")
     rc, res, out = run([t2a, t2p], history=hist)
     ok(res[os.path.basename(t2p)]["text_screen"]["state"] == "rewritten"
-       and screen_of(t2p)["cells"][litert]["verdict"] == "PASS", "checked without the flag: rewritten, the cell PASS")
+       and screen_of(t2p)["cells"][llama]["verdict"] == "PASS", "checked without the flag: rewritten, the cell PASS")
 
     print("--- the text screen: one run of four off; a dir it cannot write; a failed run without a record id")
-    part = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC)
+    part = cell("llama.cpp", LLAMA_MODEL, LLAMA)
     part[2]["outputSample"] = ""
     t3a = anchor_dir(raw, "2099-09-03-dashboard-v1-m4max-anchor-mac")
     t3p = payload_dir(raw, "2099-09-03-dashboard-v1-m4max-mac", os.path.basename(t3a), records=part)
     rc, res, out = run([t3a, t3p], history=hist)
     r = res[os.path.basename(t3p)]
-    c = (screen_of(t3p) or {"cells": {}})["cells"].get(litert, {})
+    c = (screen_of(t3p) or {"cells": {}})["cells"].get(llama, {})
     ok(r["verdict"] == "PASS" and (c.get("verdict"), c.get("runs"), c.get("runs_off")) == ("FAIL", 4, 1)
        and c.get("run_rules") == {x["id"]: (["reply-empty"] if i == 2 else []) for i, x in enumerate(part)}
-       and f"screened text-fail: {litert} (reply-empty): 1 of 4 runs, which the page leaves out of the cell's number" in r["notes"],
+       and f"screened text-fail: {llama} (reply-empty): 1 of 4 runs, which the page leaves out of the cell's number" in r["notes"],
        f"one empty reply of four: the cell FAIL with 1 of 4 runs off, only that run marked, PASS ({c.get('runs_off')})")
     if hasattr(os, "geteuid") and os.geteuid() == 0:
         print("  skip  running as root: a read-only dir does not stop the write")
     else:
         t4a = anchor_dir(raw, "2099-09-04-dashboard-v1-m4max-anchor-mac")
         t4p = payload_dir(raw, "2099-09-04-dashboard-v1-m4max-mac", os.path.basename(t4a),
-                          records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK))
+                          records=cell("llama.cpp", LLAMA_MODEL, LLAMA, sample=OFF_TASK))
         os.chmod(t4p, 0o555)
         try:
             rc, res, out = run([t4a, t4p], history=hist)
@@ -397,7 +399,7 @@ def main():
         r = res[os.path.basename(t4p)]
         ok(r["verdict"] == "HOLD" and rules(r) == {"reply-off-task"} and r["text_screen"]["state"].startswith("not written")
            and screen_of(t4p) is None, f"a dir the file cannot be written in: reply-off-task stays HOLD ({r['text_screen']['state'][:40]})")
-    noid = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK)
+    noid = cell("llama.cpp", LLAMA_MODEL, LLAMA, sample=OFF_TASK)
     for x in noid:
         x.pop("id")
     t5a = anchor_dir(raw, "2099-09-05-dashboard-v1-m4max-anchor-mac")
@@ -405,7 +407,7 @@ def main():
     rc, res, out = run([t5a, t5p], history=hist)
     r = res[os.path.basename(t5p)]
     ok(r["verdict"] == "HOLD" and rules(r) == {"reply-off-task"}
-       and (screen_of(t5p) or {"cells": {}})["cells"].get(litert, {}).get("run_rules") == {},
+       and (screen_of(t5p) or {"cells": {}})["cells"].get(llama, {}).get("run_rules") == {},
        f"failed runs without a record id: the file names none of them, the cell keeps its HOLD ({sorted(rules(r))})")
 
     print("--- FAIL: one rule each")
@@ -456,7 +458,7 @@ def main():
     r = res[name]
     ok(r["verdict"] == "PASS" and rules(r) == set() and len(rules(r, live=False)) == 3,
        f"three allow-listed findings: PASS, still listed with their commit ({sorted(rules(r, live=False))})")
-    ok(all(f["allowed_by"]["commit"] == "0123abcd" for f in r["findings"]), "each names the allowing commit")
+    ok(all((f["allowed_by"] or {}).get("commit") == "0123abcd" for f in r["findings"]), "each names the allowing commit")
     with open(allow, "w") as fh:
         fh.write("failures\tx\t*\tnot-a-hash\treason\n")
     rc, res, out = run([aa, pp], history=hist, allow=allow)
@@ -638,7 +640,7 @@ def main():
         ok(rc == 2 and "never allow-listed" in out, f"an allow-list line for {rule}: exit 2 (got {rc})")
 
     print("--- the text screen: build_summary reads it into text_check, per run by record id")
-    late = mac_record("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK, minutes=9)
+    late = mac_record("llama.cpp", LLAMA_MODEL, LLAMA, sample=OFF_TASK, minutes=9)
     write_jsonl(t1p, "litert-lm_litert-community_Qwen3-1_7B_short-chat_late.jsonl", [late])
     summary_out = os.path.join(tmp, "summary")
     os.makedirs(summary_out)
@@ -648,12 +650,12 @@ def main():
         rows = list(csv.DictReader(fh))
     got = lambda d, rt: sorted(r["text_check"] for r in rows if r["campaign"] == f"results/raw/{os.path.basename(d)}"
                                 and r["runtime"] == rt)
-    ok(got(t1p, "litert-lm") == ["", "FAIL:reply-off-task", "FAIL:reply-off-task", "FAIL:reply-off-task", "FAIL:reply-off-task"]
+    ok(got(t1p, "llama.cpp") == ["", "FAIL:reply-off-task", "FAIL:reply-off-task", "FAIL:reply-off-task", "FAIL:reply-off-task"]
        and got(t1p, "mlx-swift") == ["PASS:screen"] * 4,
        f"the off-task cell's runs FAIL:reply-off-task, a run the file does not name '', the MLX runs PASS:screen "
-       f"({got(t1p, 'litert-lm')})")
-    ok(got(t3p, "litert-lm") == ["FAIL:reply-empty", "PASS:screen", "PASS:screen", "PASS:screen"]
-       and got(t2a, "mlx-swift") == ["PASS:screen"] * 4 and got(t5p, "litert-lm") == [""] * 4
+       f"({got(t1p, 'llama.cpp')})")
+    ok(got(t3p, "llama.cpp") == ["FAIL:reply-empty", "PASS:screen", "PASS:screen", "PASS:screen"]
+       and got(t2a, "mlx-swift") == ["PASS:screen"] * 4 and got(t5p, "llama.cpp") == [""] * 4
        and got(unit, "litert-lm-gpu") == [""] * 3 and got(off_unit, "litert-lm-gpu") == [""] * 3,
        "one run of four FAIL; a dir whose file names no run, and the Android dirs (no file), read ''")
     ok(got(ip, "litert-lm") == ["PASS:screen"] * 4 and set((screen_of(ip) or {"cells": {}})["cells"]) == {
