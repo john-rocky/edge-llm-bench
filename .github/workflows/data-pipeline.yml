@@ -72,6 +72,8 @@ jobs:
         run: python scripts/dashboard_job_selftest.py
       - name: session checker verdicts (synthetic campaign dirs in a temp dir; no device, network or git history)
         run: python scripts/session_check_selftest.py
+      - name: post-sitting step (temp git checkouts, stub page repo, local bare remotes; no device, no network)
+        run: python scripts/dashboard_post_selftest.py
 
   scripts-compile:
     name: every script parses

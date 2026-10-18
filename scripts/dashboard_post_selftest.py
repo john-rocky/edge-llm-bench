@@ -1,0 +1,465 @@
+#!/usr/bin/env python3
+"""Device- and network-free selftest of scripts/dashboard_post.py (CI).
+
+Builds a temp bench checkout (git; its own stub scripts/build_summary.py, one summary row per
+record file; a local bare remote) holding synthetic dashboard-job sittings that
+scripts/session_check.py passes, beside another lane's staged record, an untracked campaign dir,
+an untracked file and an unstaged edit; and a stub page repo (build.py writing the bench summary
+into every page file, the four checks as stubs that PASS unless FAKE_PAGE_FAIL names them,
+tools/publish_gcs.sh writing a marker; a local bare remote). Pins:
+
+  (i)    the commit carries the sitting's dirs and results/summary only: the other lane's staged
+         file stays staged, the untracked ones untracked, the unstaged edit unstaged
+  (ii)   the message is the results commits' one line, with no word the commit-msg hook refuses
+  (iii)  the committed summary is the tree's own (HEAD + the dirs), and the page was built from it
+  (iv)   switch off: nothing pushed, nothing published, the ledger says what would have been
+  (v)    one switch on: only that push reaches its remote; a push that would carry a commit this
+         step did not make is refused; publish runs on its own switch only
+  (vi)   a HOLD sitting: no commit, REVIEW.md in each dir, a ledger line, exit 1
+  (vii)  a merge in progress: no commit; posted again once it is gone
+  (viii) the name scrub rewrites text files only; a JSON record keeps every number
+  and: a page check FAIL (the bench commit stands, the page repo untouched), --allow-subset,
+  --dry-run (nothing written), the lock, a post over dirs already committed.
+
+  python3 scripts/dashboard_post_selftest.py     # exit 0 = pass
+"""
+import fcntl
+import getpass
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import uuid
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+POST = os.path.join(ROOT, "scripts", "dashboard_post.py")
+USER = getpass.getuser()
+ON_TASK = ("On-device AI means the model runs on your phone itself instead of a cloud server, so it "
+           "works offline, answers quickly and keeps your private data local on the device.")
+# the one-line results message (dashboard_post.commit_message)
+MSG_RE = re.compile(r"^results \d{4}-\d\d-\d\d .+ \(.+\), .+: \d+/\d+ cells of \S+ in one dashboard-job sitting "
+                    r"\d\d:\d\d–\d\d:\d\d \S+ \(anchor admitted.+\); text check .+; cpu-capped counted "
+                    r"\d+/\d+, past the line \d+; FAILURES: .+; results/summary rebuilt from the git index "
+                    r"\(\d+ -> \d+ lines\)$")
+
+STUB_BUILD_SUMMARY = '''#!/usr/bin/env python3
+"""Stub summary builder: one row per record file under results/raw of this tree."""
+import glob, os
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+rows = sorted(os.path.relpath(p, ROOT) for p in glob.glob(os.path.join(ROOT, "results", "raw", "*", "*.jsonl")))
+os.makedirs(os.path.join(ROOT, "results", "summary"), exist_ok=True)
+with open(os.path.join(ROOT, "results", "summary", "device-runs.csv"), "w") as fh:
+    fh.write("campaign,file\\n" + "".join(f"{os.path.dirname(p)},{os.path.basename(p)}\\n" for p in rows))
+'''
+STUB_PAGE_BUILD = '''#!/usr/bin/env python3
+"""Stub page build: every page file carries the bench summary it was built from."""
+import argparse, os
+ap = argparse.ArgumentParser()
+ap.add_argument("--out-dir", required=True)
+a = ap.parse_args()
+summary = open(os.path.join(os.environ["EDGE_LLM_BENCH"], "results", "summary", "device-runs.csv")).read()
+os.makedirs(a.out_dir, exist_ok=True)
+for n in ("index.html", "cells.json", "regression.json", "regression.csv", "aa.json", "aa.csv"):
+    open(os.path.join(a.out_dir, n), "w").write(n + "\\n" + summary)
+open(os.path.join(a.out_dir, "cells.csv"), "w").write(summary)
+print("wrote", a.out_dir)
+'''
+STUB_CHECK = '''#!/usr/bin/env python3
+import os, sys
+name = os.path.splitext(os.path.basename(__file__))[0]
+dist = sys.argv[sys.argv.index("--dist") + 1]
+if os.environ.get("FAKE_PAGE_FAIL") == name or not os.path.exists(os.path.join(dist, "index.html")):
+    print("  FAIL stub"); print("FAIL (1)"); sys.exit(1)
+if name == "render_check":
+    open(os.path.join(dist, "screenshot-overview.png"), "wb").write(b"png " + open(os.path.join(dist, "index.html"), "rb").read())
+print("PASS")
+'''
+STUB_PUBLISH = '''#!/usr/bin/env bash
+here="$(cd "$(dirname "$0")/.." && pwd)"
+python3 -c 'import hashlib, sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$here/dist/index.html" >> "$here/../published.txt"
+'''
+
+_fails = []
+
+
+def ok(cond, msg):
+    print(("  ok  " if cond else "  FAIL ") + msg)
+    if not cond:
+        _fails.append(msg)
+
+
+def sh(cwd, *cmd, check=True):
+    p = subprocess.run(list(cmd), cwd=cwd, capture_output=True, text=True,
+                       env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")})
+    if check and p.returncode != 0:
+        raise RuntimeError(f"{' '.join(cmd)} in {cwd}: {p.stdout}{p.stderr}")
+    return p.stdout.strip()
+
+
+def write(path, text, mode="w"):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, mode) as fh:
+        fh.write(text)
+
+
+def new_repo(path, remote):
+    os.makedirs(path)
+    sh(path, "git", "init", "-q", "-b", "main")
+    for k, v in (("user.email", "selftest@example.com"), ("user.name", "selftest"), ("commit.gpgsign", "false")):
+        sh(path, "git", "config", k, v)
+    sh(os.path.dirname(remote), "git", "init", "-q", "--bare", remote)
+    sh(path, "git", "remote", "add", "origin", remote)
+
+
+def commit_paths(path, msg, *paths):
+    sh(path, "git", "add", "--", *paths)
+    sh(path, "git", "commit", "-q", "-m", msg)
+    sh(path, "git", "push", "-q", "origin", "main")
+
+
+def remote_main(remote):
+    return sh(os.path.dirname(remote), "git", "--git-dir", remote, "rev-parse", "refs/heads/main")
+
+
+# ---------------------------------------------------------------- synthetic sittings
+
+def mac_record(runtime, model, engine, i, **extra):
+    rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "runtime": runtime, "engineVersion": engine,
+           "model": {"id": model, "quantization": "4bit"}, "task": "short-chat",
+           "timestamp": f"2026-10-01T17:0{i}:00Z",
+           "device": {"modelIdentifier": "Mac16,9", "systemName": "macOS", "buildConfiguration": "Release"},
+           "parameters": {"maxTokens": 128},
+           "metrics": {"decodeTokensPerSecond": 500.0 + i, "promptTokenCount": 19, "generatedTokenCount": 128,
+                       "coldRun": i == 0, "initialThermalState": "nominal"},
+           "outputSample": ON_TASK}
+    rec.update(extra)
+    return rec
+
+
+def cell_file(d, runtime, model, engine, n=4):
+    write(os.path.join(d, f"{runtime}_{model.replace('/', '_')}_short-chat.jsonl"),
+          "".join(json.dumps(mac_record(runtime, model, engine, i)) + "\n" for i in range(n)))
+
+
+def session(d, phase, date, anchor_phase=None, reference=None, **over):
+    s = {"schema": "dashboard-job-session.v1", "job": "dashboard-v1", "phase": phase,
+         "campaign": f"results/raw/{os.path.basename(d)}", "device_key": "m4max",
+         "device_display": "Mac Studio (M4 Max)", "device_identifier": "Mac16,9", "platform": "mac",
+         "attempt": 1, "started": f"{date} 02:00:04", "ended": f"{date} 03:1{'0' if phase == 'anchor' else '9'}:30",
+         "admitted": True, "verdict": "ADMITTED" if phase == "anchor" else "COMPLETED",
+         "reason": "anchor nominal, first session on this device" if not reference
+         else "anchor nominal, ratio 0.980 vs reference (v0.0.1)", "runner_exit": 0,
+         "anchor": {"regime": "warm", "anchors": [
+             {"cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat", "primary": True, "median": 500.0,
+              "n": 3, "thermal": ["nominal"], "engine_version": "abc1234",
+              "reference": {"campaign": f"results/raw/{reference}", "median": 510.0} if reference else None,
+              "ratio": 0.98 if reference else None}]}}
+    if phase == "payload":
+        s.update(anchor_phase=f"results/raw/{anchor_phase}", cells="matrices/dashboard-text-v1.cells",
+                 cells_expected=2, cells_with_records=2)
+    s.update(over)
+    write(os.path.join(d, "SESSION.json"), json.dumps(s, indent=1))
+
+
+def sitting(raw, n, payloads=("",), reference=None, names=False, failures=False):
+    """One sitting of day n: its anchor phase and payloads -> [results/raw/<name>, …] (anchor first)."""
+    date = f"2026-10-{n:02d}"
+    base = f"{date}-dashboard-v1-m4max"
+    anchor = f"{base}-anchor-mac"
+    d = os.path.join(raw, anchor)
+    session(d, "anchor", date, reference=reference if isinstance(reference, str) else None)
+    cell_file(d, "mlx-swift", "mlx-community/Qwen3-0.6B-4bit", "abc1234")
+    out = [anchor]
+    for tag in payloads:
+        name = f"{base}{'-' + tag if tag else ''}-mac"
+        d = os.path.join(raw, name)
+        ref = reference
+        if isinstance(reference, dict):
+            ref = reference.get(tag)
+        session(d, "payload", date, anchor_phase=anchor, reference=ref)
+        cell_file(d, "mlx-swift", "mlx-community/Qwen3-0.6B-4bit", "abc1234")
+        cell_file(d, "litert-lm", "litert-community/Qwen3-1.7B", "v0.0.1")
+        if names:
+            rec = mac_record("litert-lm", "litert-community/Qwen3-1.7B", "v0.0.1", 9,
+                             provenance={"command": f"/Users/{USER}/code/edge-llm-bench/.build/yardstick run",
+                                         "trace": f"/private/var/tmp/_bazel_{USER}/x"})
+            write(os.path.join(d, "app-path-mac", "litert-lm_extra_run9.json"), json.dumps(rec, indent=1))
+            write(os.path.join(d, "console.txt"),
+                  f"yardstick: /Users/{USER}/code/edge-llm-bench/.build/dd-mac/yardstick\n"
+                  f"appended to /private/tmp/x/-Users-{USER}-code-edge-llm-bench/s.jsonl\n"
+                  f"-rw-r--r--  1 {USER}  staff  4096 Oct  1 02:00 model.bin\n")
+            write(os.path.join(d, "sampler.dat"), b"\x00\x01" + f"/Users/{USER}/bin".encode() + b"\x00", "wb")
+        if failures:
+            write(os.path.join(d, "FAILURES.txt"), "FAIL litert-lm litert-community/Qwen3-1.7B short-chat rc=1\n")
+        out.append(name)
+    return ["results/raw/" + x for x in out]
+
+
+# ---------------------------------------------------------------- main
+
+def main():
+    tmp = tempfile.mkdtemp(prefix="dashboard-post-selftest-")
+    bench, page = os.path.join(tmp, "bench"), os.path.join(tmp, "page")
+    bench_remote, page_remote = os.path.join(tmp, "bench.git"), os.path.join(tmp, "page.git")
+    raw = os.path.join(bench, "results", "raw")
+    ledger_path = os.path.join(bench, "logs", "dashboard-job", "autopilot-ledger.tsv")
+    marker = os.path.join(tmp, "published.txt")
+
+    new_repo(bench, bench_remote)
+    write(os.path.join(bench, ".gitignore"), "/logs/\n")
+    write(os.path.join(bench, "README.md"), "bench\n")
+    write(os.path.join(bench, "scripts", "build_summary.py"), STUB_BUILD_SUMMARY)
+    sh(bench, sys.executable, "scripts/build_summary.py")
+    commit_paths(bench, "initial", ".gitignore", "README.md", "scripts", "results/summary")
+    new_repo(page, page_remote)
+    write(os.path.join(page, "build.py"), STUB_PAGE_BUILD)
+    for c in ("check_against_bench_dashboard", "check_regression", "check_aa", "render_check"):
+        write(os.path.join(page, "tools", c + ".py"), STUB_CHECK)
+    write(os.path.join(page, "tools", "publish_gcs.sh"), STUB_PUBLISH)
+    for n in ("index.html", "cells.csv", "cells.json", "regression.json", "regression.csv", "aa.json", "aa.csv",
+              "screenshot-overview.png"):
+        write(os.path.join(page, "dist", n), "old\n")
+    commit_paths(page, "dist: the first page", "build.py", "tools", "dist")
+    bench0, page0 = remote_main(bench_remote), remote_main(page_remote)
+
+    switches = {}
+    for name, on in (("off", ()), ("bench", ("push_bench",)), ("page", ("push_page",)),
+                     ("publish", ("publish",))):
+        sw = {k: k in on for k in ("push_bench", "push_page", "publish")}
+        sw["page_repo"] = page
+        switches[name] = os.path.join(tmp, f"switch-{name}.json")
+        write(switches[name], json.dumps(sw))
+
+    # another lane's work in the same checkout: a staged record, an untracked campaign dir, an
+    # untracked file, an unstaged edit — none of it belongs in the post's commit or summary
+    write(os.path.join(raw, "2026-09-30-other-lane-staged-mac", "rec.jsonl"), "{}\n")
+    sh(bench, "git", "add", "--", "results/raw/2026-09-30-other-lane-staged-mac")
+    write(os.path.join(raw, "2026-09-30-other-lane-untracked-mac", "rec.jsonl"), "{}\n")
+    write(os.path.join(bench, "notes-other-lane.txt"), "mine\n")
+    write(os.path.join(bench, "README.md"), "bench, edited by another lane\n")
+
+    def post(dirs, switch="off", *extra, env=None):
+        cmd = [sys.executable, POST] + [os.path.join(bench, d) for d in dirs] + ["--switch", switches[switch]] + list(extra)
+        p = subprocess.run(cmd, cwd=bench, capture_output=True, text=True,
+                           env=dict({k: v for k, v in os.environ.items() if not k.startswith("GIT_")}, **(env or {})))
+        return p.returncode, p.stdout + p.stderr
+
+    def head():
+        return sh(bench, "git", "rev-parse", "HEAD")
+
+    def ledger():
+        if not os.path.exists(ledger_path):
+            return []
+        with open(ledger_path) as fh:
+            lines = fh.read().splitlines()
+        cols = lines[0].split("\t")
+        return [dict(zip(cols, ln.split("\t"))) for ln in lines[1:]]
+
+    def committed_files(rev="HEAD"):
+        return set(sh(bench, "git", "show", "--name-only", "--format=", rev).splitlines())
+
+    def staged():
+        return set(sh(bench, "git", "diff", "--cached", "--name-only").splitlines())
+
+    def status():
+        p = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"], cwd=bench,
+                           capture_output=True, text=True)
+        return p.stdout.splitlines()     # not stripped: " M" keeps its leading space
+
+    other_state = {"?? notes-other-lane.txt", "?? results/raw/2026-09-30-other-lane-untracked-mac/rec.jsonl",
+                   " M README.md", "A  results/raw/2026-09-30-other-lane-staged-mac/rec.jsonl"}
+
+    def others_intact(when):
+        st = set(status())
+        ok(other_state <= st, f"{when}: the other lane's staged record still staged, its untracked files "
+                              f"untracked, its edit unstaged ({sorted(other_state - st) or 'all there'})")
+
+    print("--- --dry-run: the plan and the message, nothing written")
+    s1 = sitting(raw, 1, names=True)
+    console = os.path.join(bench, s1[1], "console.txt")
+    before_console = open(console).read()
+    h0 = head()
+    rc, out = post(s1, "off", "--dry-run")
+    ok(rc == 0 and "message: results 2026-10-01 Mac Studio (M4 Max) (Mac16,9)" in out,
+       f"dry run exit {rc}, the message printed")
+    ok(head() == h0 and not os.path.exists(ledger_path) and open(console).read() == before_console
+       and not any(os.path.exists(os.path.join(bench, d, "REVIEW.md")) for d in s1),
+       "dry run: HEAD, the files (no scrub), the ledger and REVIEW.md untouched")
+
+    print("--- (i)-(iv), (viii): a PASS sitting with the switch off")
+    rec_path = os.path.join(bench, s1[1], "app-path-mac", "litert-lm_extra_run9.json")
+    rec_before = json.load(open(rec_path))
+    dat_path = os.path.join(bench, s1[1], "sampler.dat")
+    dat_before = open(dat_path, "rb").read()
+    rc, out = post(s1, "off")
+    ok(rc == 0, f"exit {rc}")
+    ok(sh(bench, "git", "rev-parse", "HEAD~1") == h0, "one commit on top of the HEAD it started from")
+    files = committed_files()
+    want = {p for d in s1 for p in sh(bench, "git", "ls-files", "--", d).splitlines()} | {"results/summary/device-runs.csv"}
+    ok(files == want and all(f.startswith(tuple(s1)) or f == "results/summary/device-runs.csv" for f in files),
+       f"(i) the commit carries the sitting's {len(want) - 1} files and the summary, nothing else")
+    others_intact("(i)")
+    msg = sh(bench, "git", "log", "-1", "--format=%B").strip()
+    ok("\n" not in msg and MSG_RE.match(msg) is not None, f"(ii) one line in the results commits' form: {msg[:150]}…")
+    ok(not re.search(r"claude|anthropic|co-authored-by", msg, re.I), "(ii) no word the commit-msg hook refuses")
+    ok("Mac Studio (M4 Max) (Mac16,9), litert-lm: v0.0.1, mlx-swift: abc1234: 2/2 cells of "
+       "matrices/dashboard-text-v1.cells in one dashboard-job sitting 02:00–03:19" in msg
+       and "(anchor admitted: anchor nominal, first session on this device; thermal nominal)" in msg
+       and "text check 0/0 (no run carries one); cpu-capped counted 0/13, past the line 0; FAILURES: none" in msg
+       and msg.endswith("results/summary rebuilt from the git index (1 -> 4 lines)"),
+       "(ii) device, arms and stamps, cells, times, admission, text check, caps, failures, summary lines")
+    summary = sh(bench, "git", "show", "HEAD:results/summary/device-runs.csv")
+    ok(all(d in summary for d in s1) and "other-lane" not in summary,
+       "(iii) the committed summary holds the sitting's records and none of the other lane's (staged or untracked)")
+    ok(open(os.path.join(bench, "results/summary/device-runs.csv")).read().strip() == summary,
+       "(iii) the checkout's results/summary is the committed one")
+    page_head = sh(page, "git", "log", "-1", "--format=%s")
+    page_cells = sh(page, "git", "show", "HEAD:dist/cells.csv")
+    ok(page_head.startswith(f"dist: the page from the bench at {head()[:8]} — the 2026-10-01 Mac Studio (M4 Max)")
+       and page_head.endswith("checks: check_against_bench_dashboard, check_regression, check_aa, render_check PASS"),
+       f"(iii) the page repo's commit names the bench commit: {page_head[:110]}…")
+    ok(page_cells.strip() == summary and sh(page, "git", "status", "--porcelain") == "",
+       "(iii) the page was built from the commit's tree (its cells = that summary); the page repo is clean")
+    ok(remote_main(bench_remote) == bench0 and remote_main(page_remote) == page0 and not os.path.exists(marker),
+       "(iv) switch off: neither remote moved, nothing published")
+    row = ledger()[-1]
+    idx = hashlib.sha256(open(os.path.join(page, "dist", "index.html"), "rb").read()).hexdigest()
+    ok(row["push_bench"].startswith(f"would push bench {bench0[:8]}..{head()[:8]} (1 commit)")
+       and row["push_page"].startswith("would push page ") and row["publish"] == f"would publish dist/index.html sha256 {idx}",
+       f"(iv) the ledger says what would have been pushed and published: {row['push_bench']} | {row['push_page']} | {row['publish'][:40]}…")
+    ok(row["bench_commit"] == head() and row["summary_lines"] == "1 -> 4" and row["page_commit"] == sh(page, "git", "rev-parse", "HEAD")
+       and "=PASS" in row["check"] and all(row[k] for k in ("started", "ended", "dirs", "page")),
+       "the ledger line: dirs, verdicts, bench commit, summary lines, page build + checks, page commit")
+    rec_after = json.load(open(rec_path))
+    ok(rec_after["metrics"] == rec_before["metrics"] and rec_after["id"] == rec_before["id"]
+       and rec_after["provenance"]["command"] == "/Users/USER/code/edge-llm-bench/.build/yardstick run"
+       and rec_after["provenance"]["trace"] == "/private/var/tmp/_bazel_USER/x",
+       "(viii) the JSON record: every number as it was, the paths read USER")
+    text = open(console).read()
+    ok(all(form in text for form in ("/Users/USER/code", "-Users-USER-code", "USER  staff"))
+       and f"/Users/{USER}/" not in text and f"-Users-{USER}-" not in text
+       and not re.search(r"(?<![A-Za-z0-9])" + re.escape(USER) + r"\s+staff", text),
+       "(viii) the text file: the path, the scratchpad form and the ls owner column read USER")
+    ok(open(dat_path, "rb").read() == dat_before, "(viii) the binary file left byte for byte")
+
+    print("--- (v) one switch on: only that push or publish")
+    s2 = sitting(raw, 2, reference=os.path.basename(s1[0]))
+    rc, out = post(s2, "bench")
+    ok(rc == 0 and remote_main(bench_remote) == head() and remote_main(page_remote) == page0 and not os.path.exists(marker),
+       f"push_bench on: the bench remote is at HEAD (both post commits), the page remote and publish untouched (exit {rc})")
+    msg = sh(bench, "git", "log", "-1", "--format=%B").strip()
+    ok(f"anchor admitted at ratio 0.980 vs {os.path.basename(s1[0])}, thermal nominal; the payload's own anchor rows at 0.980" in msg,
+       "the admission ratio and its reference campaign in the message")
+    write(os.path.join(bench, "other-lane-commit.txt"), "x\n")
+    sh(bench, "git", "add", "--", "other-lane-commit.txt")
+    sh(bench, "git", "commit", "-q", "-m", "another lane's local commit", "--", "other-lane-commit.txt")
+    s3 = sitting(raw, 3)
+    pushed = remote_main(bench_remote)
+    rc, out = post(s3, "bench")
+    row = ledger()[-1]
+    ok(rc == 1 and remote_main(bench_remote) == pushed and row["push_bench"].startswith("push refused")
+       and "not made by this step" in row["push_bench"],
+       f"push_bench on with another lane's local commit in between: refused, the remote unchanged ({row['push_bench'][:90]})")
+    s4 = sitting(raw, 4)
+    rc, out = post(s4, "page")
+    ok(rc == 0 and remote_main(page_remote) == sh(page, "git", "rev-parse", "HEAD") and remote_main(bench_remote) == pushed
+       and not os.path.exists(marker), f"push_page on: the page remote is at the page HEAD, the bench remote unchanged (exit {rc})")
+    s5 = sitting(raw, 5)
+    page_remote_now = remote_main(page_remote)
+    rc, out = post(s5, "publish")
+    idx = hashlib.sha256(open(os.path.join(page, "dist", "index.html"), "rb").read()).hexdigest()
+    ok(rc == 0 and os.path.exists(marker) and open(marker).read().split() == [idx]
+       and remote_main(page_remote) == page_remote_now and remote_main(bench_remote) == pushed,
+       f"publish on: the publish script ran once on the committed dist/index.html, no push (exit {rc})")
+
+    print("--- (vi) a HOLD sitting: nothing committed")
+    h = head()
+    h1 = sitting(raw, 6, failures=True)
+    rc, out = post(h1, "off")
+    row = ledger()[-1]
+    reviews = [os.path.join(bench, d, "REVIEW.md") for d in h1]
+    ok(rc == 1 and head() == h and not row["bench_commit"] and "=HOLD" in row["check"] and row["note"].startswith("held:"),
+       f"exit {rc}, HEAD unchanged, the ledger line says held ({row['check']})")
+    ok(all(os.path.exists(p) for p in reviews) and "`failures`" in open(reviews[1]).read()
+       and "read FAILURES.txt" in open(reviews[1]).read() and "HOLD" in open(reviews[0]).read(),
+       "REVIEW.md in each dir: the rule id, its detail, what a person does")
+    others_intact("(vi)")
+
+    print("--- (vii) a merge in progress: nothing committed, then posted once it is gone")
+    m1 = sitting(raw, 7)
+    merge_head = sh(bench, "git", "rev-parse", "--git-path", "MERGE_HEAD")
+    merge_head = merge_head if os.path.isabs(merge_head) else os.path.join(bench, merge_head)
+    write(merge_head, head() + "\n")
+    rc, out = post(m1, "off")
+    row = ledger()[-1]
+    ok(rc == 1 and head() == h and "MERGE_HEAD" in row["note"] and os.path.exists(os.path.join(bench, m1[0], "REVIEW.md")),
+       f"MERGE_HEAD present: exit {rc}, no commit, the ledger names it, REVIEW.md written")
+    os.remove(merge_head)
+    rc, out = post(m1, "off")
+    ok(rc == 0 and sh(bench, "git", "rev-parse", "HEAD~1") == h
+       and not any(os.path.exists(os.path.join(bench, d, "REVIEW.md")) for d in m1)
+       and not any(f.endswith("REVIEW.md") for f in committed_files()),
+       "posted again without it: committed, the REVIEW.md it had written gone and not in the commit")
+
+    print("--- a page check FAIL: the bench commit stands, the page repo is left as it was")
+    f1 = sitting(raw, 8)
+    page_before = sh(page, "git", "rev-parse", "HEAD")
+    h = head()
+    rc, out = post(f1, "off", env={"FAKE_PAGE_FAIL": "check_aa"})
+    row = ledger()[-1]
+    ok(rc == 1 and sh(bench, "git", "rev-parse", "HEAD~1") == h and sh(page, "git", "rev-parse", "HEAD") == page_before
+       and "FAIL check_aa" in row["page"] and not row["page_commit"] and sh(page, "git", "status", "--porcelain") == "",
+       f"exit {rc}: bench committed, page not, the ledger says FAIL check_aa ({row['page'][:80]})")
+
+    print("--- --allow-subset: a sitting's dirs left out are named; a payload without its anchor still holds")
+    a1 = sitting(raw, 9, payloads=("x", "y"), reference={"y": "2026-10-09-dashboard-v1-m4max-x-mac"})
+    anchor, x, y = a1
+    h = head()
+    rc, out = post([x], "off", "--allow-subset")
+    ok(rc == 1 and head() == h, "a payload alone (its anchor phase neither committed nor given): held")
+    rc, out = post([anchor, y], "off")
+    ok(rc == 1 and head() == h, "anchor + one payload without --allow-subset: held (pair-incomplete, reference-uncommitted)")
+    rc, out = post([anchor, y], "off", "--allow-subset")
+    msg = sh(bench, "git", "log", "-1", "--format=%B").strip()
+    files = committed_files()
+    ok(rc == 0 and any(f.startswith(anchor + "/") for f in files) and any(f.startswith(y + "/") for f in files)
+       and not any(f.startswith(x + "/") for f in files),
+       f"with --allow-subset: the anchor and that payload committed, the other payload not (exit {rc})")
+    ok("not in this commit (--allow-subset): 2026-10-09-dashboard-v1-m4max-x-mac (a payload of the same anchor "
+       "phase, and the admission reference of 2026-10-09-dashboard-v1-m4max-y-mac); results/summary" in msg
+       and MSG_RE.match(msg) is not None, "the message names the left-out dir and what it is to the committed ones")
+
+    print("--- the lock: one post at a time")
+    s6 = sitting(raw, 10)
+    lock = open(os.path.join(bench, "logs", "dashboard-job", ".post.lock"), "a+")
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    lock.seek(0); lock.truncate(); lock.write("4242"); lock.flush()
+    h = head()
+    rc, out = post(s6, "off", "--lock-timeout", "1")
+    row = ledger()[-1]
+    ok(rc == 1 and head() == h and "busy" in row["note"] and "4242" in row["note"], f"lock held: exit {rc}, {row['note']}")
+    fcntl.flock(lock, fcntl.LOCK_UN); lock.close()
+
+    print("--- dirs already committed: nothing to commit, exit 0")
+    rc, out = post(s1, "off")
+    ok(rc == 0 and head() == h and "nothing to commit" in ledger()[-1]["note"], f"exit {rc}: {ledger()[-1]['note']}")
+
+    print("--- usage")
+    rc, out = post([os.path.join("results", "raw", "no-such-dir")], "off")
+    ok(rc == 2, f"a path that is not a directory: exit 2 (got {rc})")
+    others_intact("at the end")
+
+    if _fails:
+        print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
+        return 1
+    shutil.rmtree(tmp)
+    print("\nselftest OK")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -48,7 +48,13 @@ pid (a keeper script that queued for the phone through the sibling lane's queue)
 checks that the hold file names it, neither acquires nor releases the hold, and stops with
 exit 2 when the pid is dead or the hold names another pid.
 
-What the job never does: commit, push, edit a cells file, delete a raw record.
+After the ledger line, outside the hold, a sitting that exits 0 is handed to
+scripts/dashboard_post.py (docs/dashboard-autopilot-v1.md): it commits the sitting's
+campaign dirs locally when every one passes scripts/session_check.py, rebuilds
+results/summary from the git index into the same commit and the private page from
+that commit, and pushes or publishes only what ops/autopilot/switch.json turns on;
+its exit code never changes the sitting's. A dry run prints that command only.
+What the job never does: edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
 phone between halves (the host HF cache is the source), together with their
 engine caches and firstEver markers — the markers must go with the caches, or
@@ -73,6 +79,9 @@ from render_dashboard import CSV_PLATFORM, REGIME, load_admission, load_cells  #
 
 PY = sys.executable
 SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
+# the step after a sitting that exits 0 (docs/dashboard-autopilot-v1.md): check, commit, page
+POST = os.path.join(ROOT, "scripts", "dashboard_post.py")
+POST_TIMEOUT_S = 3600
 LOG_DIR = os.path.join(ROOT, "logs", "dashboard-job")
 SUMMARY_CSV = os.path.join(ROOT, "results", "summary", "device-runs.csv")
 # a dashboard session's campaign (design §1): <date>-dashboard-v1-<device>[-<half>]-<plat>;
@@ -869,9 +878,40 @@ def ledger(row):
                             "exit", "minutes", "attempt")) + "\n")
 
 
+def post_sitting(code, dirs, dry):
+    """Hand a sitting that exited 0 to scripts/dashboard_post.py over the campaign dirs it wrote
+    SESSION.json in (docs/dashboard-autopilot-v1.md) -> the command, or None when there is
+    nothing to hand over (another exit code, no dir). A dry run prints the command and runs
+    nothing. The post's output goes to this job log; its exit code, a HOLD or a failure is one
+    line here and its own ledger line (logs/dashboard-job/autopilot-ledger.tsv), never the
+    sitting's exit code or ledger line."""
+    if code != EXIT_OK or not dirs:
+        return None
+    cmd = [PY, POST] + list(dirs)
+    log("post: $ " + " ".join(cmd) + ("   [dry-run: printed, not run]" if dry else ""))
+    if dry:
+        return cmd
+    try:
+        p = subprocess.run(cmd, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT,
+                           timeout=POST_TIMEOUT_S, env=dict(os.environ, PYTHONUNBUFFERED="1"))
+        rc = p.returncode
+    except subprocess.TimeoutExpired:
+        rc = 124
+    except OSError as e:
+        log(f"post did not start: {e}")
+        rc = 127
+    what = {0: "committed, or nothing new", 1: "held, or a step after the commit failed", 2: "usage",
+            124: f"killed after {POST_TIMEOUT_S} s"}.get(rc, "?")
+    log(f"post exit {rc} ({what}; logs/dashboard-job/autopilot-ledger.tsv) — the sitting's exit "
+        f"{code} stands")
+    return cmd
+
+
 # ---------------------------------------------------------------- one attempt
 
 def attempt(schedule, key, dev, attempt_no, args):
+    """One sitting -> (exit code, reason, the last campaign dir, the campaign dirs it wrote
+    SESSION.json in — a dry run: the ones it would; what main() hands to the post step)."""
     platform = dev["platform"]
     date = datetime.date.today().isoformat()
     suffix = ("-" + args.suffix.strip("-")) if args.suffix else ""   # always one leading dash
@@ -901,6 +941,11 @@ def attempt(schedule, key, dev, attempt_no, args):
     else:
         hold = None if dry else hold_acquire(schedule, dev)
     created = []
+    planned = []    # a dry run: the campaign dirs the sitting would create
+
+    def sitting_dirs():
+        return (list(planned) if dry else
+                [d for d in created if os.path.exists(os.path.join(ROOT, d, "SESSION.json"))])
     try:
         # a phone past its uptime limit is rebooted here, under the hold
         # (reboot_before, opt-in per device; §3) — then the state a reboot
@@ -914,6 +959,7 @@ def attempt(schedule, key, dev, attempt_no, args):
         anchor_rel = campaign_rel(anchor_camp, platform)
         rc = run_matrix(schedule["anchors"], platform, anchor_camp, env, 45 * 60, dry)
         if dry:
+            planned.append(anchor_rel)
             log(f"  admission would read {anchor_rel} against the newest admitted session "
                 "on the same engine build")
         else:
@@ -924,7 +970,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                                            "reason": "anchor phase timed out",
                                            "device_key": key, "started": started,
                                            "ended": time.strftime("%F %T")})
-                return EXIT_TIMEOUT, "anchor phase timed out", anchor_rel
+                return EXIT_TIMEOUT, "anchor phase timed out", anchor_rel, sitting_dirs()
             admitted, reason, details = admit(schedule, dev, anchor_rel, platform)
             write_session(anchor_rel, {"campaign": anchor_rel, "phase": "anchor",
                                        "cells": schedule["anchors"], "device_key": key,
@@ -938,7 +984,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                                        "runner_exit": rc, **campaign_notes(anchor_rel)})
             log(f"admission: {'ADMITTED' if admitted else 'ABORTED'} — {reason}")
             if not admitted:
-                return EXIT_ABORTED, reason, anchor_rel
+                return EXIT_ABORTED, reason, anchor_rel, sitting_dirs()
 
         # --- phase B: the payload, whole or in storage halves
         halves = None
@@ -1002,6 +1048,7 @@ def attempt(schedule, key, dev, attempt_no, args):
             previous.append(cells_file)
             last_rel = rel_path
             if dry:
+                planned.append(rel_path)
                 continue
             if halves:
                 # the measured storage floors (design §3, §7): what this half
@@ -1053,7 +1100,7 @@ def attempt(schedule, key, dev, attempt_no, args):
         reason = "ok" if worst == EXIT_OK else VERDICT_NAME[worst].lower()
         if no_build:
             reason += "; skipped, side build not on the phone: " + ", ".join(no_build)
-        return worst, reason, last_rel
+        return worst, reason, last_rel, sitting_dirs()
     finally:
         if HOLD_KEEPER is not None:
             log(f"hold kept by keeper pid {HOLD_KEEPER} (not acquired / not released by the job)")
@@ -1340,6 +1387,7 @@ def main():
     abort_wait = retry.get("abort_retry_after_minutes", {})
     t0 = time.time()
     attempt_no, code, reason, camp = 1, EXIT_CONFIG, "", ""
+    sitting = []      # the campaign dirs of the last attempt (its SESSION.json dirs), for the post step
     started = time.strftime("%F %T")
     tried = {}        # auto: key -> (state, detail) for devices passed over this firing
     pinned = False    # auto: an abort retry stays on the device it aborted on
@@ -1378,8 +1426,9 @@ def main():
                 break
             open_log(key)
             log(f"auto chose {key} (the decision is in {datetime.date.today().isoformat()}-auto.log)")
+        sitting = []
         try:
-            code, reason, camp = attempt(schedule, key, dev, attempt_no, args)
+            code, reason, camp, sitting = attempt(schedule, key, dev, attempt_no, args)
         except Busy as e:
             code, reason = EXIT_BUSY, str(e)
             log(f"BUSY: {e}")
@@ -1423,6 +1472,9 @@ def main():
                 "exit": code, "minutes": round((time.time() - t0) / 60, 1),
                 "attempt": attempt_no})
     log(f"=== done: {VERDICT_NAME.get(code, code)} ({reason}) exit {code}")
+    # after the ledger line and outside the hold (attempt() released it): the sitting's
+    # campaign dirs to the post step; nothing it does changes `code` or the line above
+    post_sitting(code, sitting, args.dry_run)
     return code
 
 

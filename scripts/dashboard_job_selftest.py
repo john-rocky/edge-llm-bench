@@ -11,7 +11,10 @@ pin session admission (§4): the reference is the newest admitted session
 whose anchor ran the same engine build, none = first session on that build.
 Last, a dry-run sitting on a fake phone pins the side-build check: a cells
 file whose engine-build=<tag> build is not on the phone is skipped by itself
-and the rest of the sitting runs.
+and the rest of the sitting runs; and the post step's place: a dry-run
+sitting that exits 0 prints the scripts/dashboard_post.py command over the
+campaign dirs it would create, after its done line, and any other exit
+prints none.
 
   python3 scripts/dashboard_job_selftest.py     # exit 0 = pass
 """
@@ -19,6 +22,7 @@ import argparse
 import contextlib
 import datetime
 import io
+import json
 import os
 import shutil
 import subprocess
@@ -383,7 +387,7 @@ def main():
         args = argparse.Namespace(suffix=None, dry_run=True, cells=cells)
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
-            code, reason, _ = dj.attempt(sched, "s26", s26, 1, args)
+            code, reason, _, _ = dj.attempt(sched, "s26", s26, 1, args)
         return code, reason, buf.getvalue()
 
     def matrix_line(text, cells, camp):
@@ -414,6 +418,49 @@ def main():
     except dj.NotReady as e:
         ok("side build not on the phone" in str(e),
            f"a --cells retake of a side-build file whose build is absent: device not ready ({e})")
+
+    print("--- post: a sitting that exits 0 hands the campaign dirs it wrote SESSION.json in to "
+          "scripts/dashboard_post.py after its ledger line (a dry run prints the command); any other exit hands none")
+    sched_path = os.path.join(tmp, "schedule-post.json")
+    with open(sched_path, "w") as fh:
+        json.dump(dict(sched, devices={"s26": s26}), fh)
+
+    def job(*argv):
+        buf = io.StringIO()
+        saved = sys.argv
+        sys.argv = ["dashboard_job.py", *argv, "--schedule", sched_path]
+        try:
+            with contextlib.redirect_stdout(buf):
+                code = dj.main()
+        finally:
+            sys.argv = saved
+        return code, buf.getvalue().splitlines()
+
+    want = [f"results/raw/{base}-anchor-android", f"results/raw/{base}-h1-android"]
+    code, lines = job("s26", "--dry-run")
+    posts = [i for i, ln in enumerate(lines) if "post: $ " in ln]
+    done = [i for i, ln in enumerate(lines) if "=== done: OK" in ln]
+    ok(code == dj.EXIT_OK and len(posts) == 1 and done and posts[0] > done[0]
+       and lines[posts[0]].endswith(f" {dj.POST} {want[0]} {want[1]}   [dry-run: printed, not run]"),
+       "a dry-run sitting that exits 0: one post command after its done line, over the anchor phase and the "
+       "half it would create (the skipped side-build file has no dir)")
+    attached()
+    code, lines = job("s26", "--dry-run")
+    ok(code == dj.EXIT_DEVICE and not any("post: $ " in ln for ln in lines),
+       f"the phone not attached (exit {code}): no post command")
+    attached("FAKE-S")
+    with contextlib.redirect_stdout(io.StringIO()):
+        none = [dj.post_sitting(c, want, True) for c in (dj.EXIT_ABORTED, dj.EXIT_TIMEOUT, dj.EXIT_DEVICE,
+                                                          dj.EXIT_BUSY, dj.EXIT_CONFIG)]
+        empty = dj.post_sitting(dj.EXIT_OK, [], True)
+        cmd = dj.post_sitting(dj.EXIT_OK, want, True)
+    ok(none == [None] * 5 and empty is None and cmd == [dj.PY, dj.POST] + want,
+       "post_sitting builds the command for exit 0 with dirs only (aborted, timeout, device, busy, config: none)")
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        cmd = dj.post_sitting(dj.EXIT_OK, ["results/raw/no-such-campaign-android"], False)
+    ok(cmd is not None and "post exit 2 (usage;" in buf.getvalue() and "the sitting's exit 0 stands" in buf.getvalue(),
+       "a run (not dry) whose post fails: one line with its exit, the sitting's exit unchanged")
     proto = cells_file("proto-android-x.cells",
                        "android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 backend=npu "
                        "engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf",
