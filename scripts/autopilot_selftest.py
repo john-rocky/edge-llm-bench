@@ -41,7 +41,7 @@ ON_TASK = ("On-device AI means the model runs on your phone itself instead of a 
 # the lab unit's `bench` in the temp checkout: `matrix <cells> --ddp <id> --campaign <c> --dry-run` prints the
 # plan's JSON lines as android/ddp/run_ddp.py does (dashboard_job.ddp_plan reads them); without --dry-run it
 # leaves the campaign dir a DDP sitting leaves (ddp/session-1.json, a per-run logcat, one record per run with
-# its raw log; FAKE_GEN generated tokens, FAKE_RECORDS=0 none) and rebuilds the summary, then exits
+# its raw log; FAKE_TEXT=FAIL a text check that failed on every run, FAKE_RECORDS=0 none) and rebuilds the summary, then exits
 # FAKE_BENCH_RC. Every call is a line in bench-calls.jsonl, with the project and bucket it was handed.
 FAKE_BENCH = r'''#!__PYTHON__
 import json, os, subprocess, sys
@@ -91,11 +91,12 @@ if os.environ.get("FAKE_RECORDS") != "0":
                    "device": {"modelIdentifier": os.environ.get("FAKE_MODEL", "Fake 8a"), "systemName": "Android",
                               "ddp": {"deviceId": ddp_id, "serial": "FAKEUNIT1"}},
                    "parameters": {"maxTokens": 128},
-                   "metrics": {"decodeTokensPerSecond": 20.0, "promptTokenCount": 19,
-                               "generatedTokenCount": int(os.environ.get("FAKE_GEN", "128")),
+                   "metrics": {"decodeTokensPerSecond": 20.0, "promptTokenCount": 19, "generatedTokenCount": 128,
                                "coldRun": True, "firstEver": i == 0},
                    "conditions": {"protocolFlags": [], "ddp": {"sessionId": "session-fake0001", "deviceId": ddp_id}},
                    "provenance": {"rawLog": log, "modelShaSource": "device"}}
+            if os.environ.get("FAKE_TEXT") == "FAIL":
+                rec["conditions"]["textCheck"] = {"status": "FAIL", "flags": ["off-task"]}
             json.dump(rec, open(os.path.join(app, f"{arm}_run{i + 1}.json"), "w"))
 subprocess.run([sys.executable, os.path.join(HERE, "scripts", "build_summary.py")], check=True)
 sys.exit(int(os.environ.get("FAKE_BENCH_RC", "0")))
@@ -438,18 +439,19 @@ def main():
         ok(s36.get("device_identifier") == "SM-F (DDP fake-36)" and s36.get("cells") == "matrices/dashboard-ddp-v1-android-sam.cells",
            "fake-36 ran as its schedule entry (identifier, cells)")
 
-        os.environ["FAKE_GEN"] = "600"
+        # a text-check FAIL holds whatever the allow-list carries (a line there excuses the DDP route's gen-budget)
+        os.environ["FAKE_TEXT"] = "FAIL"
         code, lines = run_autopilot(ap, "--ddp", "fake-35", "--suffix", "hold", "--runs", "1")
-        os.environ.pop("FAKE_GEN")
+        os.environ.pop("FAKE_TEXT")
         relh = f"results/raw/{c35}-hold-android"
         sh = json.load(open(os.path.join(top, relh, "SESSION.json")))
         recs = [f for f in os.listdir(os.path.join(top, relh, "app-path-android")) if f.endswith(".json")]
         ok(code == 1 and git(top, "rev-parse", "HEAD") == head1 and os.path.isfile(os.path.join(top, relh, "REVIEW.md"))
-           and has(lines, "check     HOLD (rules: gen-budget)")
+           and has(lines, "check     HOLD (rules: text-fail)")
            and has(lines, "commit    none (held: a sitting is committed whole or not at all)")
-           and has(lines, "next      gen-budget: " + dp.ACTION["gen-budget"])
+           and has(lines, "next      text-fail: " + dp.ACTION["text-fail"])
            and has(lines, f"read {relh}/REVIEW.md"),
-           f"a HOLD (generated past the budget): exit 1, no commit, REVIEW.md, the rule and what a person does ({code})")
+           f"a HOLD (the text check failed): exit 1, no commit, REVIEW.md, the rule and what a person does ({code})")
         ok(len(recs) == 1 and sh.get("cells", "").startswith("logs/autopilot/cells/ddp-first-run-runs1.cells")
            and "runs=1" in open(os.path.join(top, sh["cells"])).read(),
            f"--runs 1: a copy of the cells file with runs=1, one record ({sh.get('cells')}, {len(recs)} records)")
