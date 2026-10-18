@@ -36,8 +36,7 @@ a 256-token answer, three allocations, paired rounds, cold and warm read apart.
   same 27 `[i]`-tagged lorem blocks as `long-context-2048-gen256`, then the tail of `scripts/gen_task_prompts.py`
   `NOREF_TAIL` ("The numbered blocks above are filler text … From your own knowledge, list 25 distinct things …").
   Byte-identical to `prompts/text/long-context-2048-gen256-noref.txt` (7,822 bytes, sha256 3e3f17a3941f25300adc2097…,
-  checked by compiling the task on the Mac: `tools/` has no copy of that check; the hash was printed by a scratch
-  `swiftc` build of `LongContextTask.swift` on 2026-10-17 19:40); 1,654 prompt tokens as the engine counts them (every
+  checked by compiling the task source alone on the Mac, `tools/prompt-hash-check/`, 2026-10-17 19:40); 1,654 prompt tokens as the engine counts them (every
   record, the S26 leg's count); budget 256 (`prompts/text/budgets.tsv`).
 - Output cap: `output-cap=engine` (new cell key, this commit: `--litert-output-cap engine` →
   `MediaPipeRuntime.engineOutputCap`): the engine stops at 256 through `sendMessageStream(maxOutputTokens:)`, as the
@@ -243,7 +242,8 @@ Re-run of the readouts on 2026-10-18 reproduces every table above from the store
 
 - `README.md` — this file; `catalog-x2-diff.md` — the proposed write-back to the catalog's X2 / K5 rows and summaries
   (not applied).
-- `tools/round_driver.sh`, `tools/with_hold.sh`, `tools/ladder.py` — the driver, the hold wrapper, the readout.
+- `tools/round_driver.sh`, `tools/with_hold.sh`, `tools/ladder.py` — the driver, the hold wrapper, the readout;
+  `tools/prompt-hash-check/` — the Swift task's prompt against the generated file.
 - `device-state/hold<1-6>.log` — the six holds; `device-state/hold1-install.txt` — the app install.
 - `../2026-10-17-catalog-x2-iphone18pro-ios-prompt-probe/` — the n = 1 probes (never pooled).
 - `../2026-10-17-catalog-x2-iphone18pro-ios-{e2b-gpu,e4b-gpu,e2b-cpu,e4b-cpu,e4b-cpu-s2}/` — the sittings
