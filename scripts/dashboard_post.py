@@ -757,15 +757,20 @@ def page_commit(repo, page_out, msg_for, tmp):
 def cell_numbers(text):
     """The page's cells.csv -> {cell: 'number' where the page shows a decode value (status measured),
     else the status's first word (cpu-capped, text-fail, excluded, no-decode, not measured)}; None
-    for a file without the status column."""
+    for a file without the status column. A cell is (device, arm, model id, task, file), and its
+    context only where the page has that cell at several allocations (a ladder): elsewhere the
+    context column is what the cell's pooled runs recorded, which moves with the sitting (the
+    Galaxy S26 llama.cpp Gemma 4 E4B short-chat cell: 4096 from its 09-14 sitting, none from its
+    10-14 one, whose runs all left the pool under the cpu-cap rule)."""
     rows = list(csv.DictReader(io.StringIO(text or "")))
     if not rows or "status" not in rows[0]:
         return None
+    base = [tuple(r.get(k) or "" for k in ("device", "arm", "model_id", "task", "artifact_file")) for r in rows]
+    many = {k for k, n in collections.Counter(base).items() if n > 1}
     out = {}
-    for r in rows:
-        key = tuple(r.get(k) or "" for k in ("device", "arm", "model_id", "task", "context_tokens", "artifact_file"))
+    for k, r in zip(base, rows):
         kind = (r.get("status") or "").split(":", 1)[0]
-        out[key] = "number" if kind == "measured" else kind
+        out[k + ((r.get("context_tokens") or "",) if k in many else ())] = "number" if kind == "measured" else kind
     return out
 
 

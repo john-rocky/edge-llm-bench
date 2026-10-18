@@ -487,6 +487,10 @@ def main():
     ok(dp.number_changes(before, after) == "cells with a number before and none now: 1 (cpu-capped 1), the reverse: 1"
        and dp.number_changes("campaign,file\nx,y\n", after) is None,
        "the page's number changes: a cell that lost its number by its new status, one that gained it; none without a status column")
+    ladder = cols + "S,a,m5,t,2048,f,1,measured\nS,a,m5,t,4096,f,1,measured\nS,a,m6,t,4096,f,1,measured\n"
+    later = cols + "S,a,m5,t,2048,f,1,measured\nS,a,m5,t,4096,f,,cpu-capped:y\nS,a,m6,t,,f,,text-fail:z\n"
+    ok(dp.number_changes(ladder, later) == "cells with a number before and none now: 2 (cpu-capped 1, text-fail 1), the reverse: 0",
+       "a cell is its context only on a ladder: a recorded context that moved (4096 -> none) is still the same cell")
     ok("cells with a number before and none now: 1 (cpu-capped 1)" in dp.page_message(
         "0" * 40, {"start": None, "display": "D", "ident": "I", "end": None}, set(), {"r"}, [],
         dp.number_changes(before, after)), "the phrase in the page commit's message")
