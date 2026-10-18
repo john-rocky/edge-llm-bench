@@ -4,7 +4,8 @@ Status: written 2026-10-18 (stage 1 of the bench-autopilot lane); wired into the
 Code: `scripts/session_check.py`; selftest `scripts/session_check_selftest.py` (CI, data
 pipeline); allow-list `ops/session-check/allow-list.tsv`. Validation record:
 `results/raw/2026-10-18-bench-autopilot-dev/ROUND1.md`; the team rules `pin-drift` and
-`protocol-off` (2026-10-19): `ROUND8.md` there.
+`protocol-off` (2026-10-19): `ROUND8.md` there; the text screen (`text_screen.json`, 2026-10-19):
+`ROUND10.md` there.
 
 Until 2026-10-18 the dashboard job (`scripts/dashboard_job.py`, `docs/dashboard-recurring-job-v1.md`)
 never committed: a person read each campaign dir it made and committed it with a message that says
@@ -24,12 +25,16 @@ python3 scripts/session_check.py results/raw/<campaign>... [--json <out>] [--mar
 #   --history <csv>   prompt-token history (default: results/summary/device-runs.csv at git HEAD)
 #   --ledger / --job-logs   default: <repo>/logs/dashboard-job/{ledger.tsv,*.log}
 #   --user <name>     the account name to look for in paths (default: this account)
+#   --no-text-screen  write no text_screen.json; judge the dirs as if it were written
 ```
 
-It reads only: the dirs, the git index and HEAD of the repo that holds them, the pin registries
+It reads: the dirs, the git index and HEAD of the repo that holds them, the pin registries
 as they were committed when the sitting ran (`git log` of `android/engine-pins.json` and
-`environment.lock.json`), and the job's logs and ledger. No device, no network, nothing written
-but `--json` / `--markdown`. 77 dirs take about 12 s on the Mac Studio.
+`environment.lock.json`), and the job's logs and ledger. No device, no network. It writes, besides
+`--json` / `--markdown`, one file: `text_screen.json` in a job dir with Mac / iPhone text cells
+(below, "The text screen"), only when its content changed; `--no-text-screen` writes nothing (a dry
+run, or dirs that are not this checkout's to change: another lane's backlog). 77 dirs take about
+12 s on the Mac Studio.
 
 ## What it reads per dir
 
@@ -57,7 +62,8 @@ but `--json` / `--markdown`. 77 dirs take about 12 s on the Mac Studio.
   `android/bench/parsers.litert_reply`, llama-cli after its prompt echo and backspace spinner up
   to `[ Prompt: … ]` (else `parsers.llama_cli_reply`), ONNX Runtime GenAI between
   `[OUTPUT BEGIN]` and `[OUTPUT END]`. Protocol cells (`native-benchmark-*`, benchmark mode)
-  decode no text and have none.
+  decode no text and have none. A Mac / iPhone text cell's replies go into the text screen
+  (below); an Android cell's into the `reply-*` rules.
 
 ## Rules
 
@@ -84,7 +90,7 @@ that sets it. A finding carries the rule id and a detail; one finding per cell o
 | `engine-stamp` | HOLD | CLAUDE.md (rows stamp the observed engine, which may differ from the registry); edab6ed9, 0efecb01, d6077c6b, e3010721 ("every LiteRT-LM record stamps v0.18.0"); dad937b1 / f36512ae (the Mac's LiteRT-LM: `arms.litert-lm.mac`); the iPhones' `arms.litert-lm.ios`, 2026-10-19 (ROUND8.md) | `engineVersion`; `android_pins` (since d33ffa53, else the lock's Android tags) and `environment.lock.json` as committed at the sitting's first record; the Mac's LiteRT-LM reads `arms.litert-lm.mac` for a sitting on or after its `since` day (the campaign name's date; a block registered after the fact is taken from the newest registry, and the finding names the commit), the iPhones' LiteRT-LM `arms.litert-lm.ios` the same way (since 2026-10-19, registered that day), else `default_tag` | each arm's records carry one stamp, and it is the registry's pin (a whole version token of the stamp). Side builds (`llama.cpp-npu/-gpu`, `litert-lm-npu`) and arms without a registry entry are notes |
 | `prompt-tokens` | HOLD | edab6ed9 ("Prefill Turn 1: 9 tokens; v0.16.0: 20 / 1339"), d6077c6b ("the short-chat prompt reaches the engine whole … 19 tokens Qwen3, 20 Gemma 4 … 1338 / 1106"), e3010721 (20); job doc §4 "Model bytes on the phone" (8 tokens) | `metrics.promptTokenCount`; the committed summary | every count equals the mode of the committed history for the same platform, build, arm, model and task (admitted campaigns, text-check FAIL rows and this sitting left out). No history at all: a note, not a HOLD |
 | `prompt-newtag` | HOLD | edab6ed9 (the first v0.18.0 sitting read 9 where v0.16.0 read 20) | as above | with no history on this build, the count is within 10 % of some other build's mode. In the committed history the largest difference between builds for one cell is 5 % (Qwen3 4B short-chat 20 → 19, v0.16.0 → v0.18.0); a prompt that did not reach the engine reads 55 % low |
-| `reply-empty` / `reply-loop` / `reply-off-task` | HOLD | e3010721 ("the replies read as answers to the prompt"), edab6ed9 ("answer the question"); fairness-rules §12 (`parsers.text_integrity`: empty, off the task's subject, repetition loop) and §4 (a loop is a failed run); 6dbaa099 (`cell_gate` DEGENERATE) | the reply of each run (above), for cells the runner's own text check did not judge | `text_integrity` raises no flag and `cell_gate.degenerate` is false. The task prompts' subject is on-device AI, so a reply naming none of its terms is off the prompt |
+| `reply-empty` / `reply-loop` / `reply-off-task` | HOLD on Android; on the Mac and the iPhone a note (the text screen, `text_screen.json`) | e3010721 ("the replies read as answers to the prompt"), edab6ed9 ("answer the question"); fairness-rules §12 (`parsers.text_integrity`: empty, off the task's subject, repetition loop) and §4 (a loop is a failed run); 6dbaa099 (`cell_gate` DEGENERATE); the note, 2026-10-19: 8ac9b8bb (the 2026-10-12 Mac sitting's two failing cells set aside by hand, which left the page with those cells' older numbers) and the team's review of that day (a number that disappears from the page instead of being marked leaves its comparisons one-sided: a failed run is marked, not dropped) | the reply of each run (above), for cells the runner's own text check did not judge | `text_integrity` raises no flag and `cell_gate.degenerate` is false. The task prompts' subject is on-device AI, so a reply naming none of its terms is off the prompt. A Mac / iPhone cell that fails is a note, "screened text-fail: `<cell>` (`<rules>`): the page shows the cell as text-fail" (or "`<k>` of `<n>` runs, which the page leaves out of the cell's number"), once `text_screen.json` carries its runs; it stays HOLD when the file is not written (a write that fails) or a failed run has no record id |
 | `gen-budget` | HOLD | 8bd4cd71 (thought-channel tokens decoded past the 128 / 256 cap: the rate's window held them); b6ddcb2c (`litert_lm_main` v0.16.0 ignores `--max_output_tokens`) | `generatedTokenCount` vs `parameters.maxTokens` / `conditions.outputTokenBudget` | no run past its budget (where the record names one) |
 | `invalid-decode` | HOLD | aaf64c5e ("invalid decode results at normal throughput"); ee240588 ("0 Invalid decode"); schema `vlInvalidDecodeLines` ("any > 0 voids the rate") | `conditions.invalidDecodeCount`, `metrics.vlInvalidDecodeLines`, `Invalid decode` lines of the run's log | none |
 | `model-sha-source` | HOLD | job doc §4 "Model bytes on the phone (correction, 2026-10-15)"; f41b3661 (`push_verified` hashes the phone's copy); 0efecb01, d6077c6b ("modelShaSource device") | Android records after f41b3661: `provenance.modelShaSource` | `device` (the bytes on the phone were hashed) |
@@ -111,6 +117,10 @@ a finding no commit explains stays HOLD or FAIL, and the round records it (ROUND
 An excused finding is still printed, with its commit. A malformed line (not five fields, no hash,
 a bad regex) is a usage error, exit 2.
 
+A `reply-*` line excuses only Android findings now: on the Mac and the iPhone the screen marks the
+failed runs instead and leaves no finding for the line to match (the e3010721 line still serves the
+Android v0.18.0 sittings; its iPhone 17 Pro matches find nothing once those dirs are screened).
+
 `pin-drift` and `protocol-off` take no line: a line naming either is malformed (exit 2). A cell
 of an older LiteRT-LM release, or off the agreed protocol, is never a number of the page; the fix
 is the pin bump (a person decides) and a re-measurement, not an excuse.
@@ -121,6 +131,40 @@ turn empty on every v0.18.0 sitting, e3010721 / edab6ed9; `gen-budget` on a DDP 
 LiteRT-LM short-chat cells at v0.18.0, dad937b1: the DDP records name the `--max_output_tokens`
 budget that `litert_lm_main` decodes past, the attached route's records name none), and per-dir
 lines for committed sittings whose commit message explained the finding.
+
+## The text screen (`text_screen.json`, 2026-10-19)
+
+The Mac and iPhone runners store each run's reply (`outputSample`) and write no text check; the
+Android runner writes `conditions.textCheck` from the stored decoded text (fairness-rules §12). So
+the checker screens every run of a Mac / iPhone text cell (`short-chat`, `long-context-*`) whose
+records carry no `conditions.textCheck` with the `reply-*` proxies and keeps the verdicts beside the
+records, in `<campaign dir>/text_screen.json`:
+
+```json
+{"schema": "text-screen.v1", "written_at": "…", "written_by": "scripts/session_check.py <commit>",
+ "about": "…", "rules": ["reply-empty", "reply-loop", "reply-off-task"],
+ "cells": {"<arm> <model> <task> (<engine>)": {"verdict": "FAIL", "rules": ["reply-off-task"],
+           "runs": 4, "runs_off": 4, "detail": "4 of 4 replies name none of …", "sample": "<160 chars>",
+           "run_rules": {"<record id>": ["reply-off-task"], …}}}}
+```
+
+- **Per run.** `run_rules` names every screened run by its record id: `[]` = passed. A cell's
+  `verdict` is FAIL when one of its runs failed (`runs_off` of `runs`). The cell key is the
+  findings' (`build_summary.cell_key_of`).
+- **What reads it.** `scripts/build_summary.py` fills the summary's `text_check` of a record without
+  `conditions.textCheck` from its dir's file: `FAIL:<rules>` or `PASS:screen`, empty for a run the
+  file does not name. From there the Android rule applies unchanged: `render_leaderboard.arm_row`
+  keeps a FAIL run out of every number, and a cell whose runs all failed is `text-fail` on the
+  dashboard and the team page, the reason in place of the rate — the number is marked, never quietly
+  missing.
+- **Deterministic.** The file is a function of the records (and the checker): written only when
+  `schema`, `about`, `rules` or `cells` changed (`written_at` / `written_by` alone never rewrite it,
+  and its mtime stays), removed when the dir has no cell left to screen. Delete it and check again to
+  get it back. Android dirs never get one: there the runner's check is the rule and `reply-*` holds.
+- **The post** writes it in the real run, commits it with the dir, and names the text-fail cells in
+  the message (`docs/dashboard-autopilot-v1.md` §12); `--dry-run` checks with `--no-text-screen`.
+- **What stays a person's** is unchanged: the screen is lexical, and the markdown still lists one
+  reply per cell to read; its "Text screen" section lists the text-fail cells per dir.
 
 ## A person reads
 

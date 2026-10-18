@@ -2,7 +2,8 @@
 
 Status: written 2026-10-18 (stage 2 of the bench-autopilot lane; stage 3a, the regression
 response, the same day: §8; stage 4, the Developer Device Platform weekly slot, the same day: §9;
-the team-protocol rules in the checker and the message guard, 2026-10-19: §11);
+the team-protocol rules in the checker and the message guard, 2026-10-19: §11; the text screen for
+the Mac and iPhone, the same day: §12);
 the push and publish keys of the switch are off (nothing is pushed or published). Code:
 `scripts/dashboard_post.py`, `scripts/regression_watch.py`; selftests
 `scripts/dashboard_post_selftest.py`, `scripts/regression_watch_selftest.py` (CI, data
@@ -36,6 +37,8 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
   scrub()           /Users/<name> ... -> USER in the dirs' text files
   check()           scripts/session_check.py <dirs> --json   -- any dir not PASS -->
                                                   REVIEW.md in each dir, ledger line, exit 1
+                    (it writes text_screen.json in a dir with Mac / iPhone text cells, §12;
+                    --dry-run: --no-text-screen)
   git_busy()        MERGE_HEAD / rebase-merge / rebase-apply / CHERRY_PICK_HEAD / REVERT_HEAD,
                     detached HEAD                               -- busy --> held, exit 1
   build_tree()      temp index = HEAD + the dirs -> exported tree -> its build_summary.py
@@ -89,12 +92,14 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
 - **The message** is one line in the results commits' form: `results <date> <device display>
   (<identifier>), <arm>: <engine stamps>, …: <n>/<N> cells of <cells file>, … in one
   dashboard-job sitting <start>–<end> <tz> (anchor admitted at ratio <R> to reference <reference campaign>,
-  thermal <states>; the payload's own anchor rows at <R>); text check <k>/<N>; cpu-capped counted
+  thermal <states>; the payload's own anchor rows at <R>); text check <k>/<N>[; text screen: none |
+  text screen: <n> cells text-fail (<arm> <model> <task> <k>/<N> runs, …)]; cpu-capped counted
   <k>/<N>, past the line <k>; FAILURES: <lines or none>[; gate retries kept: <k>][; SKIPPED: <k>]
   [; not in this commit (--allow-subset): <dir> (<what it is to the committed dirs>)]; results/summary
   rebuilt from the git index (<A> -> <B> lines)`. An admission with no ratio (the first session on
   a build) reads `anchor admitted: <reason>; thermal <states>`; a sitting with no text check
-  (Apple) reads `text check 0/0 (no run carries one)`. It states what ran; it orders no runtime
+  (Apple) reads `text check 0/0 (no run carries one)`; the text screen phrase (§12) is there when a
+  cell was screened (an Android sitting has none). It states what ran; it orders no runtime
   against another (§6 of the job doc). A message with a word the commit-msg hook refuses is never
   written (held). Nor is one with a percentage or a standing word (`%`, `vs`, `faster`, `slower`,
   `than`, `beats`, `leads`, `outperforms`; case-insensitive): the public repo's text carries no
@@ -527,3 +532,36 @@ message with a percentage or a standing word is never committed.
 
 Validation record: `results/raw/2026-10-18-bench-autopilot-dev/ROUND8.md` (the committed sittings,
 the backlog on the main checkout, the selftests).
+
+## 12. Text screen for the Mac and iPhone (2026-10-19)
+
+**Why.** The Mac and iPhone runners write no text check, so a run whose reply was broken reached the
+page as a plain decode number. The 2026-10-12 Mac sitting had two such cells (the llama.cpp Gemma 4
+E4B GGUF 1K-task replies were the prompt's own numbered skeleton, the MLX Gemma 4 E4B OptiQ ones
+refused the lorem blocks, 4 of 4 runs each); their records were set aside by hand (8ac9b8bb), which
+left the page with those cells' older numbers. The team's review the same day: a number that
+disappears from the page instead of being marked leaves the page's comparisons one-sided without saying
+why. A broken run is to be marked, not dropped.
+
+**What is written.** The checker (`docs/session-check-v1.md`, "The text screen") writes
+`text_screen.json` in each job dir with Mac / iPhone text cells whose records carry no runner text
+check: the `reply-*` proxies' verdict per run, by record id. The post's real run writes it and the
+commit carries it with the dir (`build_tree` adds the dir whole); the summary rebuilt in the
+commit's tree reads it into `text_check` (`FAIL:<rules>`, `PASS:screen`); the page shows a cell whose
+runs all failed as `text-fail` with the reason, as it does an Android cell, and a cell with some runs
+failed keeps a number from the others. The checker's `reply-*` finding on such a cell is a note, so
+the screen does not hold the sitting; the message says `text screen: none`, or names the text-fail
+cells with their runs off. `--dry-run` writes no file and prints what it would.
+
+**Android differs.** Its runner checks the stored decoded text at capture time and writes
+`conditions.textCheck` into the record; the checker leaves those cells alone, writes no
+`text_screen.json` for an Android dir, and an Android cell the runner did not check still holds on
+`reply-*`.
+
+**What a person reads** is unchanged: the screen is lexical (PASS means on the subject, not
+correct), and the checker's markdown lists one reply per cell. A cell that is text-fail by the screen
+while a person reads the reply as a good answer is a defect of the screen (fairness-rules §12), fixed
+in its code (`android/bench/parsers.text_integrity`, `scripts/cell_gate.degenerate`), never a reason to
+quote the rate.
+
+Validation record: `results/raw/2026-10-18-bench-autopilot-dev/ROUND10.md`.

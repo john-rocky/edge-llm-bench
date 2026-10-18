@@ -5,17 +5,23 @@ Builds synthetic campaign dirs under a temp results/raw (no git work tree there,
 counts as one the commit would carry), with records stamped by the pin registry on disk, a
 history csv handed in with --history and no job logs, and pins the verdicts: a clean Mac
 anchor + payload pair PASS; one HOLD per rule it exercises (partial, TIMEOUT, FAILURES,
-LEVEL, text check, prompt tokens, reply proxies, engine stamp, account name); one FAIL per rule
-(refused at admission, no SESSION.json, stopped sitting, weights, engine binary, credential,
-execution-level DDP logcat); the team rules: pin-drift (an iPhone LiteRT-LM cell older than the
-newest release a platform's pin names, FAIL; the day before those pins' since days, none; a stamp
-that is no release tag, a note) and protocol-off (a protocol cell at context 1056, prompt 1023 or
-decode 128 and a 1K text cell at context 672, FAIL; MLX's 2523, llama-bench without a context and
-the context ladder, none); an allow-list line turning a HOLD into a PASS, and a malformed one or a
-line for either team rule exiting 2; the payload / anchor pair with one half missing; the exit codes.
+LEVEL, text check, prompt tokens, an Android lab unit's off-task reply, engine stamp, account
+name); one FAIL per rule (refused at admission, no SESSION.json, stopped sitting, weights, engine
+binary, credential, execution-level DDP logcat); the team rules: pin-drift (an iPhone LiteRT-LM
+cell older than the newest release a platform's pin names, FAIL; the day before those pins' since
+days, none; a stamp that is no release tag, a note) and protocol-off (a protocol cell at context
+1056, prompt 1023 or decode 128 and a 1K text cell at context 672, FAIL; MLX's 2523, llama-bench
+without a context and the context ladder, none); the text screen (a Mac / iPhone cell's off-task,
+looping or empty replies: text_screen.json per run by record id, a note and PASS; the file left
+alone when nothing changed; --no-text-screen writes nothing and judges alike; a cell with one run
+off; a dir it cannot write and a failed run without an id keep the HOLD; an allow-list line for
+the screened rule finds nothing; build_summary reads the file into text_check); an allow-list
+line turning a HOLD into a PASS, and a malformed one or a line for either team rule exiting 2; the
+payload / anchor pair with one half missing; the exit codes.
 
   python3 scripts/session_check_selftest.py     # exit 0 = pass
 """
+import csv
 import datetime
 import json
 import os
@@ -25,9 +31,12 @@ import subprocess
 import sys
 import tempfile
 import uuid
+from unittest.mock import patch
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECK = os.path.join(ROOT, "scripts", "session_check.py")
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import build_summary  # noqa: E402
 
 
 def committed(rel):
@@ -180,6 +189,53 @@ def protocol_record(runtime, model, engine, i, task="native-benchmark-1024x256",
     return rec
 
 
+def ddp_unit(raw, name, reply=ON_TASK):
+    """A lab unit's job sitting (dashboard_job.py ddp_sitting): three litert-lm-gpu short-chat runs over
+    one engine log whose reply is `reply`, a run logcat, the job's SESSION.json."""
+    unit = campaign(raw, name)
+    app = os.path.join(unit, "app-path-android")
+    os.makedirs(app)
+    log_name = "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2099-07-01T00-00-00_run1.log"
+    with open(os.path.join(app, log_name), "w") as fh:
+        fh.write("===ENGINE_OUTPUT===\ninput_prompt: What does on-device AI mean?\n" + reply
+                 + "\nBenchmarkInfo:\n  Prefill Turn 1: Processed 19 tokens\n")
+    for i in range(3):
+        rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "runtime": "litert-lm-gpu",
+               "engineVersion": PINS["litert-lm"], "model": {"id": "litert-community/Qwen3-1.7B"},
+               "task": "short-chat", "timestamp": now(i),
+               "device": {"modelIdentifier": "SM-S942U1", "systemName": "Android",
+                          "ddp": {"deviceId": "m1q-36", "serial": "FAKEUNIT1"}},
+               "parameters": {"maxTokens": 128},
+               "metrics": {"decodeTokensPerSecond": 20.0, "promptTokenCount": 19, "generatedTokenCount": 128,
+                           "coldRun": True, "firstEver": i == 0},
+               "conditions": {"protocolFlags": ["cpu-capped", "cpu-capped-at-start"],
+                              "ddp": {"sessionId": "session-fake0001", "deviceId": "m1q-36"}},
+               "provenance": {"rawLog": log_name, "modelShaSource": "device"}}
+        with open(os.path.join(app, f"run{i + 1}.json"), "w") as fh:
+            json.dump(rec, fh)
+    with open(os.path.join(app, "SKIPPED.txt"), "w") as fh:
+        fh.write("CELL_SKIP litert-lm-cpu litert-community/Qwen3-0.6B short-chat exclude-on=s26 reason=x\n")
+    os.makedirs(os.path.join(unit, "ddp", "session-fake0001", "j01"))
+    with open(os.path.join(unit, "ddp", "session-fake0001", "j01", "run1_logcat.txt"), "w") as fh:
+        fh.write("01-01 00:00:00 I litert: engine loaded\n")
+    with open(os.path.join(unit, "SESSION.json"), "w") as fh:
+        json.dump({"schema": "dashboard-job-session.v1", "job": "dashboard-v1", "phase": "payload",
+                   "campaign": f"results/raw/{os.path.basename(unit)}", "device_key": "s26-ddp",
+                   "device_identifier": "SM-S942U1 (DDP m1q-36)", "platform": "ddp", "attempt": 1,
+                   "started": "2099-07-01 02:00:00", "ended": "2099-07-01 03:00:00", "admitted": True,
+                   "verdict": "COMPLETED", "reason": "ddp lab unit: no session anchor; each run carries its "
+                   "cap marks and the text check", "anchor": None, "runner_exit": 0,
+                   "cells_expected": 1, "cells_with_records": 1,
+                   "ddp": {"id": "m1q-36", "sessions": ["session-fake0001"], "jobs": 1, "device_minutes": 9.5}},
+                  fh, indent=1)
+    return unit
+
+
+def screen_of(d):
+    p = os.path.join(d, "text_screen.json")
+    return json.load(open(p, encoding="utf-8")) if os.path.exists(p) else None
+
+
 def run(dirs, *extra, history=None, allow=None):
     out = tempfile.mktemp(suffix=".json")
     cmd = [sys.executable, CHECK] + dirs + ["--json", out, "--user", "testuser", "-q",
@@ -223,10 +279,6 @@ def main():
         "partial": dict(cells_with_records=1),
         "verdict": dict(verdict="TIMEOUT", runner_exit=124),
         "prompt-tokens": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, prompt=8)),
-        "reply-off-task": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC,
-                                            sample=OFF_TASK)),
-        "reply-loop": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC,
-                                        sample="on-device AI " * 40)),
         "engine-stamp": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", "v9.9.9")),
         "gen-budget": dict(records=[dict(r, metrics=dict(r["metrics"], generatedTokenCount=579))
                                     for r in cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC)]),
@@ -255,6 +307,106 @@ def main():
        f"a FAILURES line, a LEVEL retry and the account name in a path: HOLD ({sorted(rules(r))})")
     ok(any("SPREAD" in n for n in r["notes"]) and sum(f["rule"] == "flagged" for f in r["findings"]) == 1,
        "a SPREAD retry is a note (renders ⚠), the LEVEL retry the one flagged finding")
+
+    print("--- the text screen: a Mac / iPhone text cell's reply proxies per run go into text_screen.json, a note")
+    litert = f"litert-lm litert-community/Qwen3-1.7B short-chat ({LITERT_MAC})"
+    mlx = f"mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat ({MLX})"
+    off_recs = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK)
+    t1a = anchor_dir(raw, "2099-09-01-dashboard-v1-m4max-anchor-mac")
+    t1p = payload_dir(raw, "2099-09-01-dashboard-v1-m4max-mac", os.path.basename(t1a), records=off_recs)
+    rc, res, out = run([t1a, t1p], history=hist)
+    r = res[os.path.basename(t1p)]
+    s = screen_of(t1p) or {"cells": {}}
+    c = s["cells"].get(litert, {})
+    ok(rc == 0 and r["verdict"] == "PASS" and not any(f["rule"].startswith("reply-") for f in r["findings"])
+       and f"screened text-fail: {litert} (reply-off-task): the page shows the cell as text-fail" in r["notes"],
+       f"4 of 4 off-task replies on the Mac: no reply-off-task finding, the note, PASS ({sorted(rules(r))}, exit {rc})")
+    ok(s.get("schema") == "text-screen.v1" and s.get("rules") == ["reply-empty", "reply-loop", "reply-off-task"]
+       and set(s["cells"]) == {litert, mlx} and c.get("verdict") == "FAIL" and c.get("rules") == ["reply-off-task"]
+       and (c.get("runs"), c.get("runs_off")) == (4, 4) and c.get("run_rules") == {x["id"]: ["reply-off-task"] for x in off_recs}
+       and c.get("sample", "").startswith("Sure! Here is a short story") and "4 of 4 replies name none" in c.get("detail", "")
+       and s["cells"][mlx]["verdict"] == "PASS" and set(map(tuple, s["cells"][mlx]["run_rules"].values())) == {()}
+       and s.get("written_by", "").startswith("scripts/session_check.py ") and s.get("written_at"),
+       f"text_screen.json: the cell FAIL (reply-off-task, 4 of 4, each run by its record id, a sample), the MLX "
+       f"cell PASS (every run []), who wrote it and when ({sorted(s['cells'])})")
+    ok(r["text_screen"] and r["text_screen"]["state"] == "written" and [x["cell"] for x in r["text_screen"]["text_fail"]] == [litert]
+       and "text screen: written text_screen.json (2 cells, 1 text-fail: " in out
+       and (screen_of(t1a) or {}).get("cells", {}).keys() == {mlx},
+       "the result and the output line say written, with the cell; the anchor phase has its own file")
+    path = os.path.join(t1p, "text_screen.json")
+    before = (os.stat(path).st_mtime_ns, open(path, "rb").read())
+    rc, res, out = run([t1a, t1p], history=hist)
+    ok(res[os.path.basename(t1p)]["text_screen"]["state"] == "unchanged"
+       and (os.stat(path).st_mtime_ns, open(path, "rb").read()) == before,
+       "checked again with the same records: unchanged, the file not touched (mtime and bytes)")
+    with open(os.path.join(tmp, "allow-reply.tsv"), "w") as fh:
+        fh.write(f"reply-off-task\t*\t{litert}\t0123abcd\tthe bundle's template\n")
+    rc, res, out = run([t1a, t1p], history=hist, allow=os.path.join(tmp, "allow-reply.tsv"))
+    r = res[os.path.basename(t1p)]
+    ok(r["verdict"] == "PASS" and not rules(r, live=False) & {"reply-off-task"} and any(n.startswith("screened") for n in r["notes"]),
+       "an allow-list line for the screened rule finds no finding to excuse (the screen marks the runs)")
+
+    print("--- the text screen: --no-text-screen writes nothing and judges as if it were written")
+    loop_recs = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample="on-device AI " * 40)
+    t2a = anchor_dir(raw, "2099-09-02-dashboard-v1-m4max-anchor-mac")
+    t2p = payload_dir(raw, "2099-09-02-dashboard-v1-m4max-mac", os.path.basename(t2a), records=loop_recs)
+    rc, res, out = run([t2a, t2p], "--no-text-screen", history=hist)
+    r = res[os.path.basename(t2p)]
+    ok(rc == 0 and r["verdict"] == "PASS" and screen_of(t2p) is None and screen_of(t2a) is None
+       and r["text_screen"]["state"] == "would write"
+       and f"screened text-fail: {litert} (reply-empty, reply-loop): the page shows the cell as text-fail "
+           f"(text_screen.json not written: --no-text-screen)" in r["notes"] and "would write text_screen.json" in out,
+       f"a looping cell under --no-text-screen: no file in either dir, the note says not written, PASS "
+       f"({r['text_screen']['state']}, exit {rc})")
+    rc, res, out = run([t2a, t2p], history=hist)
+    loop_path = os.path.join(t2p, "text_screen.json")
+    before = open(loop_path, "rb").read()
+    write_jsonl(t2p, "litert-lm_litert-community_Qwen3-1_7B_short-chat.jsonl",
+                cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC))
+    rc, res, out = run([t2a, t2p], "--no-text-screen", history=hist)
+    r = res[os.path.basename(t2p)]
+    ok(r["text_screen"]["state"] == "would rewrite" and open(loop_path, "rb").read() == before and r["verdict"] == "PASS",
+       "records replaced after the file was written: --no-text-screen says would rewrite and leaves the file as it was")
+    rc, res, out = run([t2a, t2p], history=hist)
+    ok(res[os.path.basename(t2p)]["text_screen"]["state"] == "rewritten"
+       and screen_of(t2p)["cells"][litert]["verdict"] == "PASS", "checked without the flag: rewritten, the cell PASS")
+
+    print("--- the text screen: one run of four off; a dir it cannot write; a failed run without a record id")
+    part = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC)
+    part[2]["outputSample"] = ""
+    t3a = anchor_dir(raw, "2099-09-03-dashboard-v1-m4max-anchor-mac")
+    t3p = payload_dir(raw, "2099-09-03-dashboard-v1-m4max-mac", os.path.basename(t3a), records=part)
+    rc, res, out = run([t3a, t3p], history=hist)
+    r = res[os.path.basename(t3p)]
+    c = (screen_of(t3p) or {"cells": {}})["cells"].get(litert, {})
+    ok(r["verdict"] == "PASS" and (c.get("verdict"), c.get("runs"), c.get("runs_off")) == ("FAIL", 4, 1)
+       and c.get("run_rules") == {x["id"]: (["reply-empty"] if i == 2 else []) for i, x in enumerate(part)}
+       and f"screened text-fail: {litert} (reply-empty): 1 of 4 runs, which the page leaves out of the cell's number" in r["notes"],
+       f"one empty reply of four: the cell FAIL with 1 of 4 runs off, only that run marked, PASS ({c.get('runs_off')})")
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        print("  skip  running as root: a read-only dir does not stop the write")
+    else:
+        t4a = anchor_dir(raw, "2099-09-04-dashboard-v1-m4max-anchor-mac")
+        t4p = payload_dir(raw, "2099-09-04-dashboard-v1-m4max-mac", os.path.basename(t4a),
+                          records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK))
+        os.chmod(t4p, 0o555)
+        try:
+            rc, res, out = run([t4a, t4p], history=hist)
+        finally:
+            os.chmod(t4p, 0o755)
+        r = res[os.path.basename(t4p)]
+        ok(r["verdict"] == "HOLD" and rules(r) == {"reply-off-task"} and r["text_screen"]["state"].startswith("not written")
+           and screen_of(t4p) is None, f"a dir the file cannot be written in: reply-off-task stays HOLD ({r['text_screen']['state'][:40]})")
+    noid = cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK)
+    for x in noid:
+        x.pop("id")
+    t5a = anchor_dir(raw, "2099-09-05-dashboard-v1-m4max-anchor-mac")
+    t5p = payload_dir(raw, "2099-09-05-dashboard-v1-m4max-mac", os.path.basename(t5a), records=noid)
+    rc, res, out = run([t5a, t5p], history=hist)
+    r = res[os.path.basename(t5p)]
+    ok(r["verdict"] == "HOLD" and rules(r) == {"reply-off-task"}
+       and (screen_of(t5p) or {"cells": {}})["cells"].get(litert, {}).get("run_rules") == {},
+       f"failed runs without a record id: the file names none of them, the cell keeps its HOLD ({sorted(rules(r))})")
 
     print("--- FAIL: one rule each")
     ra = anchor_dir(raw, "2099-04-01-dashboard-v1-m4max-anchor-mac")
@@ -326,46 +478,18 @@ def main():
     ok(rc == 0 and all(r["verdict"] == "PASS" for r in res.values()), "the same two checked together: PASS")
 
     print("--- a lab unit's job sitting (DDP, SESSION.json of the job): the job-session rules, no pair rules")
-    unit = campaign(raw, "2099-07-01-dashboard-v1-s26-ddp-m1q-36-android")
-    app = os.path.join(unit, "app-path-android")
-    os.makedirs(app)
-    log_name = "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2099-07-01T00-00-00_run1.log"
-    with open(os.path.join(app, log_name), "w") as fh:
-        fh.write("===ENGINE_OUTPUT===\ninput_prompt: What does on-device AI mean?\n" + ON_TASK
-                 + "\nBenchmarkInfo:\n  Prefill Turn 1: Processed 19 tokens\n")
-    for i in range(3):
-        rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "runtime": "litert-lm-gpu",
-               "engineVersion": PINS["litert-lm"], "model": {"id": "litert-community/Qwen3-1.7B"},
-               "task": "short-chat", "timestamp": now(i),
-               "device": {"modelIdentifier": "SM-S942U1", "systemName": "Android",
-                          "ddp": {"deviceId": "m1q-36", "serial": "FAKEUNIT1"}},
-               "parameters": {"maxTokens": 128},
-               "metrics": {"decodeTokensPerSecond": 20.0, "promptTokenCount": 19, "generatedTokenCount": 128,
-                           "coldRun": True, "firstEver": i == 0},
-               "conditions": {"protocolFlags": ["cpu-capped", "cpu-capped-at-start"],
-                              "ddp": {"sessionId": "session-fake0001", "deviceId": "m1q-36"}},
-               "provenance": {"rawLog": log_name, "modelShaSource": "device"}}
-        with open(os.path.join(app, f"run{i + 1}.json"), "w") as fh:
-            json.dump(rec, fh)
-    with open(os.path.join(app, "SKIPPED.txt"), "w") as fh:
-        fh.write("CELL_SKIP litert-lm-cpu litert-community/Qwen3-0.6B short-chat exclude-on=s26 reason=x\n")
-    os.makedirs(os.path.join(unit, "ddp", "session-fake0001", "j01"))
-    with open(os.path.join(unit, "ddp", "session-fake0001", "j01", "run1_logcat.txt"), "w") as fh:
-        fh.write("01-01 00:00:00 I litert: engine loaded\n")
-    with open(os.path.join(unit, "SESSION.json"), "w") as fh:
-        json.dump({"schema": "dashboard-job-session.v1", "job": "dashboard-v1", "phase": "payload",
-                   "campaign": f"results/raw/{os.path.basename(unit)}", "device_key": "s26-ddp",
-                   "device_identifier": "SM-S942U1 (DDP m1q-36)", "platform": "ddp", "attempt": 1,
-                   "started": "2099-07-01 02:00:00", "ended": "2099-07-01 03:00:00", "admitted": True,
-                   "verdict": "COMPLETED", "reason": "ddp lab unit: no session anchor; each run carries its "
-                   "cap marks and the text check", "anchor": None, "runner_exit": 0,
-                   "cells_expected": 1, "cells_with_records": 1,
-                   "ddp": {"id": "m1q-36", "sessions": ["session-fake0001"], "jobs": 1, "device_minutes": 9.5}},
-                  fh, indent=1)
+    unit = ddp_unit(raw, "2099-07-01-dashboard-v1-s26-ddp-m1q-36-android")
     rc, res, out = run([unit], history=hist)
     r = res[os.path.basename(unit)]
     ok(r["kind"] == "job payload (ddp)" and "not-job" not in rules(r) and r["verdict"] == "PASS" and rc == 0,
        f"kind job payload (ddp), no not-job, PASS ({r['kind']}, {sorted(rules(r))}, exit {rc})")
+    off_unit = ddp_unit(raw, "2099-07-02-dashboard-v1-s26-ddp-m1q-36-android", reply=OFF_TASK)
+    rc, res, out = run([off_unit], history=hist)
+    r = res[os.path.basename(off_unit)]
+    ok(r["verdict"] == "HOLD" and rules(r) == {"reply-off-task"} and r["text_screen"] is None
+       and not os.path.exists(os.path.join(off_unit, "text_screen.json")),
+       f"an Android cell the runner did not check with an off-task reply: HOLD reply-off-task, no text screen "
+       f"(the runner's check is the rule there) ({sorted(rules(r))})")
     ok(any(n.startswith("pair rules n/a") for n in r["notes"]) and any(n.startswith("cpu-cap: a lab unit")
                                                                         for n in r["notes"]),
        "the pair rules are n/a and the lab unit's caps are a note, never a verdict")
@@ -512,6 +636,29 @@ def main():
             fh.write(f"{rule}\t2099-*\t*\t0123abcd\tthe older release is fine here\n")
         rc, res, out = run([ia, ip], history=hist, allow=allow)
         ok(rc == 2 and "never allow-listed" in out, f"an allow-list line for {rule}: exit 2 (got {rc})")
+
+    print("--- the text screen: build_summary reads it into text_check, per run by record id")
+    late = mac_record("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, sample=OFF_TASK, minutes=9)
+    write_jsonl(t1p, "litert-lm_litert-community_Qwen3-1_7B_short-chat_late.jsonl", [late])
+    summary_out = os.path.join(tmp, "summary")
+    os.makedirs(summary_out)
+    with patch.object(build_summary, "ROOT", tmp), patch.object(build_summary, "OUT", summary_out):
+        csv_path, _ = build_summary.build_device()
+    with open(csv_path, newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    got = lambda d, rt: sorted(r["text_check"] for r in rows if r["campaign"] == f"results/raw/{os.path.basename(d)}"
+                                and r["runtime"] == rt)
+    ok(got(t1p, "litert-lm") == ["", "FAIL:reply-off-task", "FAIL:reply-off-task", "FAIL:reply-off-task", "FAIL:reply-off-task"]
+       and got(t1p, "mlx-swift") == ["PASS:screen"] * 4,
+       f"the off-task cell's runs FAIL:reply-off-task, a run the file does not name '', the MLX runs PASS:screen "
+       f"({got(t1p, 'litert-lm')})")
+    ok(got(t3p, "litert-lm") == ["FAIL:reply-empty", "PASS:screen", "PASS:screen", "PASS:screen"]
+       and got(t2a, "mlx-swift") == ["PASS:screen"] * 4 and got(t5p, "litert-lm") == [""] * 4
+       and got(unit, "litert-lm-gpu") == [""] * 3 and got(off_unit, "litert-lm-gpu") == [""] * 3,
+       "one run of four FAIL; a dir whose file names no run, and the Android dirs (no file), read ''")
+    ok(got(ip, "litert-lm") == ["PASS:screen"] * 4 and set((screen_of(ip) or {"cells": {}})["cells"]) == {
+        f"litert-lm litert-community/Qwen3-1.7B short-chat ({OLD})", mlx},
+       "an iPhone payload's text cells are screened alike (its FAIL on pin-drift aside): PASS:screen")
 
     print("--- usage")
     rc, res, out = run([os.path.join(raw, "no-such-dir")], history=hist)
