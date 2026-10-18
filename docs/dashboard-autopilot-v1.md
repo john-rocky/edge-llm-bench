@@ -1,7 +1,8 @@
 # Dashboard autopilot v1 — what follows a sitting: check, commit, page
 
 Status: written 2026-10-18 (stage 2 of the bench-autopilot lane; stage 3a, the regression
-response, the same day: §8; stage 4, the Developer Device Platform weekly slot, the same day: §9);
+response, the same day: §8; stage 4, the Developer Device Platform weekly slot, the same day: §9;
+the team-protocol rules in the checker and the message guard, 2026-10-19: §11);
 the push and publish keys of the switch are off (nothing is pushed or published). Code:
 `scripts/dashboard_post.py`, `scripts/regression_watch.py`; selftests
 `scripts/dashboard_post_selftest.py`, `scripts/regression_watch_selftest.py` (CI, data
@@ -39,7 +40,8 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
                     detached HEAD                               -- busy --> held, exit 1
   build_tree()      temp index = HEAD + the dirs -> exported tree -> its build_summary.py
                     -> results/summary into the temp index
-  commit_message()  one line, generated; REFUSED_WORDS checked
+  commit_message()  one line, generated; REFUSED_WORDS checked, then STANDING_WORDS ('%', vs,
+                    faster, slower, than, beats, leads, outperforms) -- one found --> held, exit 1
   commit_index()    pre-commit + commit-msg hooks, commit-tree, update-ref compare-and-swap
                     (HEAD moved meanwhile -> build again on the new HEAD, three tries);
                     the checkout's index takes the new HEAD's entries for those paths only
@@ -86,7 +88,7 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
   commit-msg hooks run as `git commit` runs them (`git hook run`).
 - **The message** is one line in the results commits' form: `results <date> <device display>
   (<identifier>), <arm>: <engine stamps>, …: <n>/<N> cells of <cells file>, … in one
-  dashboard-job sitting <start>–<end> <tz> (anchor admitted at ratio <R> vs <reference campaign>,
+  dashboard-job sitting <start>–<end> <tz> (anchor admitted at ratio <R> to reference <reference campaign>,
   thermal <states>; the payload's own anchor rows at <R>); text check <k>/<N>; cpu-capped counted
   <k>/<N>, past the line <k>; FAILURES: <lines or none>[; gate retries kept: <k>][; SKIPPED: <k>]
   [; not in this commit (--allow-subset): <dir> (<what it is to the committed dirs>)]; results/summary
@@ -94,7 +96,13 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
   a build) reads `anchor admitted: <reason>; thermal <states>`; a sitting with no text check
   (Apple) reads `text check 0/0 (no run carries one)`. It states what ran; it orders no runtime
   against another (§6 of the job doc). A message with a word the commit-msg hook refuses is never
-  written (held).
+  written (held). Nor is one with a percentage or a standing word (`%`, `vs`, `faster`, `slower`,
+  `than`, `beats`, `leads`, `outperforms`; case-insensitive): the public repo's text carries no
+  standings and no lab-unit-to-attached difference in percent. That hold is the generator's fault,
+  not the dirs': one ledger line, exit 1, no `REVIEW.md`; a passing message logs
+  `message guard: … OK`. Words reach the message from the records and `SESSION.json` (the
+  admission `reason` verbatim when the anchor has no ratio, the `FAILURES.txt` lines), so the
+  guard reads the whole line, not only the generator's own words.
 - **The name scrub** replaces the account name by `USER` in the forms the checker's `user-name`
   rule reads (`/Users/<name>`, `/home/<name>`, `-Users-<name>-`, `_bazel_<name>`, an `ls` owner
   column), as people did before each commit (d25a9985, 8208edff, dde2149e, ceeaa362). Text files
@@ -169,7 +177,8 @@ message, as before, or stays uncommitted.
 
 - A HOLD or FAIL: read the dir's `REVIEW.md` (and `session_check.py --markdown` for one reply per
   cell), then fix and post again, commit by hand with the reason, or leave it on disk. An
-  allow-list line goes in only with the commit whose message gives the reason.
+  allow-list line goes in only with the commit whose message gives the reason. A `pin-drift` or
+  `protocol-off` FAIL takes none: the pin bump and a re-measurement (§11).
 - The switch: each key is turned on by a person; nothing else turns it on.
 - A refused push: `origin/main` moved, or the checkout's `main` holds another lane's commit —
   rebase in a worktree, or push `<sha>:main` by hand once `git log origin/main..<sha>` lists
@@ -471,3 +480,50 @@ above as the dry run (no gcloud command); then two billed sittings on `akita-35`
 allow-list line (63ec5615) and its `.gitignore` line for an execution's own `logcat.txt` (6e3d5908) applied in the
 clone: the first's job FAILED on its unit before its second run (held FAIL, nothing committed; why the run stopped is
 not known from the pulled files), the second PASSED, was committed in the clone and came out as a bundle.
+
+## 11. Team-protocol rules (2026-10-19)
+
+Two of the checker's rules (`docs/session-check-v1.md`, "Rules") carry the team's measurement rules.
+Either finding makes the dir FAIL: the post commits nothing of the sitting (§2), so none of its cells
+reaches the page through this step.
+
+- **`pin-drift`**: a LiteRT-LM cell (`litert-lm`, `litert-lm-cpu`, `litert-lm-gpu`) whose records
+  stamp a release older than the newest one a platform's pin names on the sitting's day:
+  `environment.lock.json` `arms.litert-lm.default_tag`, its platform blocks from their `since` days
+  (the Mac's v0.18.0 since 2026-10-12, Android's v0.18.0 since 2026-10-15, the iPhones' v0.18.0
+  since 2026-10-19), and `android/engine-pins.json`. On the page such a cell reads as the device's
+  speed while it is the older release's: the lock's `arms.litert-lm.android.note` records the Galaxy
+  S26 Gemma 4 E2B GPU protocol cell at 25.9 tok/s decode on v0.16.0 and 44–47 on 0.18-era builds,
+  same phone and file.
+- **`protocol-off`**: a LiteRT-LM headline cell off the agreed protocol
+  (`methodology/agreed-protocol-gemma4.md`, "The spec"): the protocol cell
+  `native-benchmark-1024x256` with a context other than 2048, a prompt other than 1024 or a decode
+  other than 256 tokens, or the overview workload `long-context-1024-gen256` with a context other
+  than 2048; a run with no recorded context counts as off.
+
+**The fix** is the pin bump and a re-measurement: the bump is a person's decision (release-watch
+informs, CLAUDE.md); a sitting whose LiteRT-LM records stamp the newest pinned release passes the
+rule. An off-protocol cell is measured again at the protocol. Neither rule takes an allow-list line
+(`session_check.py` exits 2 on one). The FAILed dirs stay on disk, uncommitted (a post writes its
+`REVIEW.md` in them).
+
+**Cells already on the page.** The rule judges a sitting by the pins of its own day, at commit time;
+it does not reach into committed records. The committed iPhone 18 Pro LiteRT-LM rows of
+2026-10-06..09 stamp v0.16.0 and were taken before any platform's pin moved, so a cell whose newest
+sitting is one of them keeps its committed number; whether the page marks or leaves out a cell whose
+release is older than another platform's current pin is the page repo's decision, not this step's.
+
+**The iPhone 18 Pro's weekly sitting.** Its app stamped v0.16.0 through 2026-10-17 (`default_tag`,
+which the iPhones read before their block): those sittings pass `engine-stamp` and FAIL `pin-drift`
+(the 2026-10-15 and 2026-10-17 sittings on the main checkout's disk read so). The lock's
+`arms.litert-lm.ios` (v0.18.0 since 2026-10-19, the app rebuilt on v0.18.0, registered that day) is
+its pin from 2026-10-19 on: `engine-stamp` and `pin-drift` read a sitting of that day or later against
+v0.18.0. `default_tag` stays v0.16.0, so the earlier sittings read as before. The block counts for a
+sitting whose first record is newer than the commit that carries it (the checker reads the registry
+as committed then); unlike the Mac's block it is not taken back to earlier commits.
+
+**The message guard** (§2) is the same rule set's third part, in the post: a generated commit
+message with a percentage or a standing word is never committed.
+
+Validation record: `results/raw/2026-10-18-bench-autopilot-dev/ROUND8.md` (the committed sittings,
+the backlog on the main checkout, the selftests).

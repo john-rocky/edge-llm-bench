@@ -7,14 +7,19 @@ history csv handed in with --history and no job logs, and pins the verdicts: a c
 anchor + payload pair PASS; one HOLD per rule it exercises (partial, TIMEOUT, FAILURES,
 LEVEL, text check, prompt tokens, reply proxies, engine stamp, account name); one FAIL per rule
 (refused at admission, no SESSION.json, stopped sitting, weights, engine binary, credential,
-execution-level DDP logcat); an allow-list line turning a HOLD into a PASS and a malformed one
-exiting 2; the payload / anchor pair with one half missing; the exit codes.
+execution-level DDP logcat); the team rules: pin-drift (an iPhone LiteRT-LM cell older than the
+newest release a platform's pin names, FAIL; the day before those pins' since days, none; a stamp
+that is no release tag, a note) and protocol-off (a protocol cell at context 1056, prompt 1023 or
+decode 128 and a 1K text cell at context 672, FAIL; MLX's 2523, llama-bench without a context and
+the context ladder, none); an allow-list line turning a HOLD into a PASS, and a malformed one or a
+line for either team rule exiting 2; the payload / anchor pair with one half missing; the exit codes.
 
   python3 scripts/session_check_selftest.py     # exit 0 = pass
 """
 import datetime
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -43,6 +48,23 @@ LITERT_APPLE = LOCK["arms"]["litert-lm"]["default_tag"]
 MAC_BLOCK = LOCK["arms"]["litert-lm"].get("mac") or {}
 LITERT_MAC = MAC_BLOCK.get("tag") or LITERT_APPLE
 MLX = LOCK["arms"]["mlx-swift-lm"]["revision"]
+LLAMA = LOCK["arms"]["llama.cpp"]["tag"]
+
+
+def release(tag):
+    m = re.fullmatch(r"v?(\d+)\.(\d+)(?:\.(\d+))?", str(tag or ""))
+    return tuple(int(g or 0) for g in m.groups()) if m else None
+
+
+# the LiteRT-LM pins (default_tag, the lock's platform blocks with their since days, the Android pins
+# file) and the newest release among them: what pin-drift reads for the 2099 dirs below, every since past
+PIN_BLOCKS = [(b.get("tag") or b.get("tag_built"), b.get("since")) for k, b in LOCK["arms"]["litert-lm"].items()
+              if k in ("mac", "android", "ios") and isinstance(b, dict)]
+IOS_BLOCK = LOCK["arms"]["litert-lm"].get("ios") or {}
+NEWEST = max((t for t in [LITERT_APPLE, PINS.get("litert-lm")] + [t for t, _ in PIN_BLOCKS] if release(t)), key=release)
+# a stamp older than NEWEST: the iPhones' default_tag while a platform's pin is ahead of it
+OLD = LITERT_APPLE if release(LITERT_APPLE) < release(NEWEST) else "v0.0.1"
+IOS_DEVICE = {"modelIdentifier": "iPhone18,2", "systemName": "iOS", "buildConfiguration": "Release"}
 ON_TASK = ("On-device AI means the model runs on your phone itself instead of a cloud server, so it "
            "works offline, answers quickly and keeps your private data local on the device.")
 OFF_TASK = ("Sure! Here is a short story about a dragon who learns to bake bread in a small village "
@@ -123,6 +145,39 @@ def payload_dir(raw, name, anchor, records=None, **over):
     write_jsonl(d, "litert-lm_litert-community_Qwen3-1_7B_short-chat.jsonl",
                 records or cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC))
     return d
+
+
+GEMMA = "litert-community/gemma-4-E2B-it-litert-lm"
+
+
+def ios_anchor(raw, name):
+    d = campaign(raw, name)
+    session(d, "anchor")
+    write_jsonl(d, "mlx-swift_mlx-community_Qwen3-0_6B-4bit_short-chat.jsonl",
+                [dict(r, device=dict(IOS_DEVICE)) for r in cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX)])
+    return d
+
+
+def ios_payload(raw, name, anchor, engine):
+    """An iPhone sitting's payload: the MLX cell and a LiteRT-LM cell stamping `engine`."""
+    d = campaign(raw, name)
+    session(d, "payload", os.path.basename(anchor))
+    for rt, model, eng in (("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX),
+                           ("litert-lm", "litert-community/Qwen3-1.7B", engine)):
+        write_jsonl(d, f"{rt}_{model.replace('/', '_')}_short-chat.jsonl",
+                    [dict(r, device=dict(IOS_DEVICE)) for r in cell(rt, model, eng)])
+    return d
+
+
+def protocol_record(runtime, model, engine, i, task="native-benchmark-1024x256", ctx=2048, prompt=1024, gen=256):
+    """A Mac record of a headline cell: metrics.contextTokensConfigured (absent when ctx is None), the
+    prompt and generated token counts, a 256-token budget."""
+    rec = mac_record(runtime, model, engine, task=task, prompt=prompt, cold=(i == 0), minutes=i,
+                     parameters={"maxTokens": 256})
+    rec["metrics"]["generatedTokenCount"] = gen
+    if ctx is not None:
+        rec["metrics"]["contextTokensConfigured"] = ctx
+    return rec
 
 
 def run(dirs, *extra, history=None, allow=None):
@@ -335,9 +390,10 @@ def main():
         rc, res, out = run([ma, mp], history=hist)
         r = res[os.path.basename(mp)]
         stamp = [f["detail"] for f in r["findings"] if f["rule"] == "engine-stamp"]
-        ok(r["verdict"] == "HOLD" and stamp and "arms.litert-lm.mac.tag" in stamp[0] and LITERT_MAC in stamp[0],
-           f"a Mac sitting after since stamping default_tag {LITERT_APPLE}: HOLD engine-stamp against the "
-           f"Mac block's {LITERT_MAC} ({stamp[:1]})")
+        ok(stamp and "arms.litert-lm.mac.tag" in stamp[0] and LITERT_MAC in stamp[0]
+           and r["verdict"] == "FAIL" and "pin-drift" in rules(r),
+           f"a Mac sitting after since stamping default_tag {LITERT_APPLE}: engine-stamp against the "
+           f"Mac block's {LITERT_MAC}, and FAIL pin-drift ({stamp[:1]}, {sorted(rules(r))})")
         before = (datetime.date.fromisoformat(MAC_BLOCK["since"]) - datetime.timedelta(days=1)).isoformat()
         ba = anchor_dir(raw, f"{before}-dashboard-v1-m4max-anchor-mac")
         bp = payload_dir(raw, f"{before}-dashboard-v1-m4max-mac", os.path.basename(ba),
@@ -350,11 +406,112 @@ def main():
                          f"short-chat,19,\n")
         rc, res, out = run([ba, bp], history=hist_old)
         r = res[os.path.basename(bp)]
-        ok(r["verdict"] == "PASS" and "engine-stamp" not in rules(r),
-           f"a Mac sitting the day before since ({before}) stamping default_tag {LITERT_APPLE}: PASS "
-           f"({sorted(rules(r))})")
+        ok(r["verdict"] == "PASS" and "engine-stamp" not in rules(r) and "pin-drift" not in rules(r),
+           f"a Mac sitting the day before since ({before}) stamping default_tag {LITERT_APPLE}: PASS, no "
+           f"engine-stamp, no pin-drift ({sorted(rules(r))})")
     else:
         print("  skip  the lock has no arms.litert-lm.mac block with another tag and a since day")
+
+    print("--- pin-drift: a LiteRT-LM cell older than the newest release a platform's pin names that day FAILs")
+    ia = ios_anchor(raw, "2099-08-01-dashboard-v1-iphone18pro-anchor-ios")
+    ip = ios_payload(raw, "2099-08-01-dashboard-v1-iphone18pro-ios", ia, OLD)
+    rc, res, out = run([ia, ip], history=hist)
+    r = res[os.path.basename(ip)]
+    drift = [f["detail"] for f in r["findings"] if f["rule"] == "pin-drift"]
+    ok(r["verdict"] == "FAIL" and len(drift) == 1 and drift[0].startswith(f"ios litert-lm: stamps {OLD} x4;")
+       and f": {NEWEST} (" in drift[0] and rc == 1,
+       f"an iPhone sitting stamping {OLD} with {NEWEST} pinned on another platform: FAIL pin-drift, one "
+       f"finding per platform and arm ({drift[:1]})")
+    ok(res[os.path.basename(ia)]["verdict"] == "PASS", "its anchor phase without a LiteRT-LM cell: PASS")
+    newer = [s for t, s in PIN_BLOCKS if release(t) and release(t) > release(OLD)]
+    android_block = any(k == "android" for k in LOCK["arms"]["litert-lm"])
+    if OLD == LITERT_APPLE and newer and all(newer) and (android_block or release(PINS.get("litert-lm")) <= release(OLD)):
+        before = (min(datetime.date.fromisoformat(s) for s in newer) - datetime.timedelta(days=1)).isoformat()
+        ba = ios_anchor(raw, f"{before}-dashboard-v1-iphone18pro-anchor-ios")
+        bp = ios_payload(raw, f"{before}-dashboard-v1-iphone18pro-ios", ba, OLD)
+        rc, res, out = run([ba, bp], history=hist)
+        r = res[os.path.basename(bp)]
+        ok("pin-drift" not in rules(r) and r["verdict"] == "PASS",
+           f"the same the day before the first since of a newer pin ({before}): no pin-drift ({sorted(rules(r))})")
+    else:
+        print("  skip  no platform pin newer than default_tag with a since day")
+    na = anchor_dir(raw, "2099-08-02-dashboard-v1-m4max-anchor-mac")
+    np_ = payload_dir(raw, "2099-08-02-dashboard-v1-m4max-mac", os.path.basename(na),
+                      records=cell("litert-lm", "litert-community/Qwen3-1.7B", "main@1dadd00c"))
+    rc, res, out = run([na, np_], history=hist)
+    r = res[os.path.basename(np_)]
+    ok("pin-drift" not in rules(r) and r["verdict"] == "HOLD"
+       and any("main@1dadd00c: not a release tag, not compared" in n for n in r["notes"]),
+       f"a stamp that is no release tag: a note, never pin-drift (engine-stamp holds it: {sorted(rules(r))})")
+
+    print("--- the iPhones' LiteRT-LM pin: arms.litert-lm.ios from its since day, default_tag before it")
+    if IOS_BLOCK.get("tag") and IOS_BLOCK.get("since") and release(IOS_BLOCK["tag"]) == release(NEWEST) \
+            and release(LITERT_APPLE) < release(NEWEST):
+        since = datetime.date.fromisoformat(IOS_BLOCK["since"])
+        sa = ios_anchor(raw, f"{since.isoformat()}-dashboard-v1-iphone18pro-anchor-ios")
+        sp = ios_payload(raw, f"{since.isoformat()}-dashboard-v1-iphone18pro-ios", sa, IOS_BLOCK["tag"])
+        rc, res, out = run([sa, sp], history=hist)
+        r = res[os.path.basename(sp)]
+        ok(r["verdict"] == "PASS" and not ({"engine-stamp", "pin-drift"} & rules(r)),
+           f"an iPhone sitting on the ios block's since day ({since}) stamping its {IOS_BLOCK['tag']}: no "
+           f"engine-stamp, no pin-drift, PASS ({sorted(rules(r))})")
+        day = since - datetime.timedelta(days=1)
+        ahead = [s for t, s in PIN_BLOCKS if release(t) and release(t) > release(LITERT_APPLE) and s
+                 and datetime.date.fromisoformat(s) <= day]
+        if ahead:
+            da = ios_anchor(raw, f"{day.isoformat()}-dashboard-v1-iphone18pro-anchor-ios")
+            dp_ = ios_payload(raw, f"{day.isoformat()}-dashboard-v1-iphone18pro-ios", da, LITERT_APPLE)
+            rc, res, out = run([da, dp_], history=hist)
+            r = res[os.path.basename(dp_)]
+            ok(r["verdict"] == "FAIL" and "engine-stamp" not in rules(r) and "pin-drift" in rules(r),
+               f"the day before ({day}) stamping default_tag {LITERT_APPLE}: its registry pin, no engine-stamp; "
+               f"a newer pin on another platform since {min(ahead)}: FAIL pin-drift ({sorted(rules(r))})")
+        else:
+            print("  skip  no other platform's newer pin applies the day before the ios block's since")
+    else:
+        print("  skip  the lock has no arms.litert-lm.ios block at the newest release with a since day")
+
+    print("--- protocol-off: a LiteRT-LM headline cell off the agreed protocol FAILs; other arms and tasks are not read")
+    pa = anchor_dir(raw, "2099-08-03-dashboard-v1-m4max-anchor-mac")
+    pp = payload_dir(raw, "2099-08-03-dashboard-v1-m4max-mac", os.path.basename(pa))
+    native = [protocol_record("litert-lm", GEMMA, LITERT_MAC, i, **kw) for i, kw in
+              enumerate(({}, {"ctx": 1056}, {"prompt": 1023}, {"gen": 128}))]
+    write_jsonl(pp, "litert-lm_gemma_native-benchmark-1024x256.jsonl", native)
+    write_jsonl(pp, "litert-lm_gemma_long-context-1024-gen256.jsonl",
+                [protocol_record("litert-lm", GEMMA, LITERT_MAC, i, task="long-context-1024-gen256", ctx=672)
+                 for i in range(4)])
+    rc, res, out = run([pa, pp], history=hist)
+    r = res[os.path.basename(pp)]
+    off = sorted(f["detail"] for f in r["findings"] if f["rule"] == "protocol-off")
+    ok(r["verdict"] == "FAIL" and len(off) == 2
+       and any("native-benchmark-1024x256" in d and "3 of 4 runs" in d and "context 1056 x1; prompt 1023 x1; "
+               "generated 128 x1" in d for d in off)
+       and any("long-context-1024-gen256" in d and "4 of 4 runs" in d and "context 672 x4" in d for d in off),
+       f"a protocol cell at context 1056, prompt 1023, decode 128 and a 1K text cell at context 672: FAIL "
+       f"protocol-off, one finding per cell ({off})")
+    qa = anchor_dir(raw, "2099-08-04-dashboard-v1-m4max-anchor-mac")
+    qp = payload_dir(raw, "2099-08-04-dashboard-v1-m4max-mac", os.path.basename(qa))
+    write_jsonl(qp, "mlx-swift_gemma_long-context-1024-gen256.jsonl",
+                [protocol_record("mlx-swift", "mlx-community/gemma-4-e2b-it-4bit", MLX, i,
+                                 task="long-context-1024-gen256", ctx=2523) for i in range(4)])
+    write_jsonl(qp, "llama.cpp_gemma_native-benchmark-1024x256.jsonl",
+                [protocol_record("llama.cpp", "unsloth/gemma-4-E2B-it-GGUF/Q4_K_M", LLAMA, i, ctx=None)
+                 for i in range(4)])
+    write_jsonl(qp, "litert-lm_gemma_long-context-2048-gen256.jsonl",
+                [protocol_record("litert-lm", GEMMA, LITERT_MAC, i, task="long-context-2048-gen256", ctx=4096)
+                 for i in range(4)])
+    rc, res, out = run([qa, qp], history=hist)
+    r = res[os.path.basename(qp)]
+    ok(r["verdict"] == "PASS" and "protocol-off" not in rules(r, live=False),
+       f"MLX's 1K text cell at 2523, llama-bench's protocol cell without a context, the LiteRT-LM context "
+       f"ladder at 4096 and the short-chat cells: no protocol-off, PASS ({sorted(rules(r, live=False))})")
+
+    print("--- the team rules take no allow-list line")
+    for rule in ("pin-drift", "protocol-off"):
+        with open(allow, "w") as fh:
+            fh.write(f"{rule}\t2099-*\t*\t0123abcd\tthe older release is fine here\n")
+        rc, res, out = run([ia, ip], history=hist, allow=allow)
+        ok(rc == 2 and "never allow-listed" in out, f"an allow-list line for {rule}: exit 2 (got {rc})")
 
     print("--- usage")
     rc, res, out = run([os.path.join(raw, "no-such-dir")], history=hist)

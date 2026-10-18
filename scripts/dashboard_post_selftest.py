@@ -11,6 +11,8 @@ tools/publish_gcs.sh writing a marker; a local bare remote). Pins:
   (i)    the commit carries the sitting's dirs and results/summary only: the other lane's staged
          file stays staged, the untracked ones untracked, the unstaged edit unstaged
   (ii)   the message is the results commits' one line, with no word the commit-msg hook refuses
+         and no percentage or standing word; a sitting whose message would carry one (an anchor
+         reason with '%', 'faster', 'than') is not committed: a ledger line, exit 1, no REVIEW.md
   (iii)  the committed summary is the tree's own (HEAD + the dirs), and the page was built from it
   (iv)   switch off: nothing pushed, nothing published, the ledger says what would have been
   (v)    one switch on: only that push reaches its remote; a push that would carry a commit this
@@ -371,8 +373,11 @@ def main():
     ok(rc == 0 and remote_main(bench_remote) == head() and remote_main(page_remote) == page0 and not os.path.exists(marker),
        f"push_bench on: the bench remote is at HEAD (both post commits), the page remote and publish untouched (exit {rc})")
     msg = sh(bench, "git", "log", "-1", "--format=%B").strip()
-    ok(f"anchor admitted at ratio 0.980 vs {os.path.basename(s1[0])}, thermal nominal; the payload's own anchor rows at 0.980" in msg,
+    ok(f"anchor admitted at ratio 0.980 to reference {os.path.basename(s1[0])}, thermal nominal; the payload's own anchor rows at 0.980" in msg,
        "the admission ratio and its reference campaign in the message")
+    import dashboard_post as dp
+    ok(not dp.STANDING_WORDS.search(msg) and re.search(r"message guard: no '%' and no standing word .*: OK", out),
+       "no percentage and no standing word in the message, and the guard's OK line in the output")
     write(os.path.join(bench, "other-lane-commit.txt"), "x\n")
     sh(bench, "git", "add", "--", "other-lane-commit.txt")
     sh(bench, "git", "commit", "-q", "-m", "another lane's local commit", "--", "other-lane-commit.txt")
@@ -423,6 +428,24 @@ def main():
        and not any(os.path.exists(os.path.join(bench, d, "REVIEW.md")) for d in m1)
        and not any(f.endswith("REVIEW.md") for f in committed_files()),
        "posted again without it: committed, the REVIEW.md it had written gone and not in the commit")
+
+    print("--- the message guard: a percentage or a standing word in the generated message is never committed")
+    g1 = sitting(raw, 13)
+    anchor_session = os.path.join(bench, g1[0], "SESSION.json")
+    s = json.load(open(anchor_session))
+    s["reason"] = "anchor nominal, 3% faster than the newest session"
+    write(anchor_session, json.dumps(s, indent=1))
+    h = head()
+    rc, out = post(g1, "off")
+    row = ledger()[-1]
+    ok(rc == 1 and head() == h and not row["bench_commit"] and "=PASS" in row["check"]
+       and "a percentage or a standing word (%, faster, than)" in row["note"]
+       and not any(os.path.exists(os.path.join(bench, d, "REVIEW.md")) for d in g1),
+       f"every dir PASS, the message carries the anchor's reason with '%', 'faster' and 'than': exit {rc}, "
+       f"HEAD unchanged, the ledger line says why, no REVIEW.md ({row['note'][:120]})")
+    rc, out = post(g1, "off", "--dry-run")
+    ok(rc == 1 and head() == h and "held: the generated message carries a percentage" in out,
+       f"--dry-run: the same hold (exit {rc})")
 
     print("--- a page check FAIL: the bench commit stands, the page repo is left as it was")
     f1 = sitting(raw, 8)
@@ -515,7 +538,8 @@ def main():
        and "(2 Device Run sessions session-aaaa0001, session-bbbb0002, 2 jobs, 21.4 device-min; no session anchor: "
            "a lab unit's runs carry their own cap marks and text check)" in msg
        and "cpu-capped counted 3/6 (litert-lm-gpu 3), past the line 3 (litert-lm-cpu 3; a lab unit starts capped: "
-           "no number)" in msg and "SKIPPED: 1 lines" in msg and not dp.REFUSED_WORDS.search(msg), msg)
+           "no number)" in msg and "SKIPPED: 1 lines" in msg and not dp.REFUSED_WORDS.search(msg)
+       and not dp.STANDING_WORDS.search(msg), msg)
     ok("the 2026-10-18 Galaxy S26 lab units on the Developer Device Platform (DDP m1q-36, SM-S942U1, 2 units) "
        "dashboard-job sitting" in dp.page_message("0" * 40, facts, set(), {"r"}, []),
        "the page commit's message names the lab units the same way")

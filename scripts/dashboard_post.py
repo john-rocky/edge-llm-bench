@@ -24,7 +24,9 @@ repo it commits to. In this order:
            a generated message; the tree committed is the one checked (commit-tree, then
            update-ref compare-and-swap: a HEAD that moved meanwhile is taken again from the top),
            so other lanes' staged and untracked files stay as they are; refused while a merge,
-           rebase, cherry-pick or revert is in progress
+           rebase, cherry-pick or revert is in progress; a generated message with a percentage or
+           a standing word (vs, faster, slower, than, beats, leads, outperforms) is never committed:
+           held, one ledger line, exit 1, no REVIEW.md (the generator is at fault, not the dirs)
   page     the private page (switch page_repo) built from the commit's own tree into --page-out,
            its four checks; every one PASS -> dist/ committed in the page repo the same way; the
            cells that had a number on the page before and have none now (and the reverse) go into
@@ -90,6 +92,10 @@ RED_SCRIPT = os.path.join("scripts", "regression_watch.py")
 # the words the commit-msg hook every repo under ~/code carries refuses (standup
 # tools/git-hooks/commit-msg); the message is checked before the hook sees it
 REFUSED_WORDS = re.compile(r"claude|anthropic", re.I)
+# a percentage or a standing word: the public repo's text carries no standings (CLAUDE.md
+# "Cross-runtime standings stay LOCAL"; no DDP-to-attached difference in percent), so a generated
+# message with one is never committed — a defect of commit_message, not of the dirs (no REVIEW.md)
+STANDING_WORDS = re.compile(r"%|\b(?:vs\.?|faster|slower|than|beats|leads|outperforms)\b", re.I)
 # an operation in progress: a commit now would land in the middle of it
 GIT_BUSY = ("MERGE_HEAD", "rebase-merge", "rebase-apply", "CHERRY_PICK_HEAD", "REVERT_HEAD")
 REVIEW = "REVIEW.md"
@@ -117,6 +123,8 @@ ACTION = {
     "flagged": "LEVEL: a targeted retake; DEGENERATE: read the sample, never quote the rate (job doc §5)",
     "text-fail": "read the stored text of the failing runs before the numbers enter the record (fairness-rules §12)",
     "engine-stamp": "the records stamp an engine off the pin registry: a pin bump (a person decides) or a stale registry",
+    "pin-drift": "an older LiteRT-LM release than another platform's pin that day: bump this platform's pin (a person decides) and re-measure; never allow-listed",
+    "protocol-off": "a LiteRT-LM headline cell off the agreed protocol (context 2048; the protocol cell 1024 / 256): re-measure it at the protocol; never allow-listed",
     "prompt-tokens": "the prompt did not reach the engine whole: read the run's log (Prefill Turn 1) and the bundle's chat template",
     "prompt-newtag": "first sitting on this build, prompt count far from other builds': read the log before the numbers count",
     "reply-empty": "read the replies (session_check.py --markdown lists one per cell)",
@@ -621,7 +629,7 @@ def anchor_text(f):
     thermal = ", ".join(p.get("thermal") or []) or "?"
     ref = os.path.basename((p.get("reference") or {}).get("campaign") or "")
     if p.get("ratio") and ref:
-        text = f"anchor admitted at ratio {p['ratio']:.3f} vs {ref}, thermal {thermal}"
+        text = f"anchor admitted at ratio {p['ratio']:.3f} to reference {ref}, thermal {thermal}"
     else:
         text = f"anchor admitted: {a.get('reason') or '?'}; thermal {thermal}"
     own = [f"{r:.3f}" for r in f["payload_ratios"] if r]
@@ -632,7 +640,8 @@ def anchor_text(f):
 
 def commit_message(f, lines_a, lines_b, waived):
     """One line, as the results commits read (1798483f, e3010721): what ran, the admission, the
-    text check, the CPU caps, the failures, the summary rebuild. No runtime against another."""
+    text check, the CPU caps, the failures, the summary rebuild. No runtime against another, no
+    percentage, no standing word (post() refuses a message with one: STANDING_WORDS)."""
     arms = ", ".join(f"{arm}: {' / '.join(sorted(c))}" for arm, c in sorted(f["stamps"].items())) or "no records"
     cells = ", ".join(f"{have}/{exp} cells of {name}" for name, have, exp in f["cells"]) or "the anchor phase only"
     text = (f"text check {f['text_pass']}/{f['text_n']}" if f["text_n"]
@@ -1018,6 +1027,13 @@ def post(top, dirs, sw, args, row, tmp):
         log("held: " + why)
         return 1
 
+    def hold_message(why):
+        """The generated message is at fault, not the dirs: held, the ledger line, no REVIEW.md."""
+        notes.append("held: " + why)
+        row["note"] = "; ".join(notes)
+        log("held: " + why)
+        return 1
+
     busy = git_busy(top)
     if busy:
         return hold_git(f"a {busy} is in progress in the checkout: post again when it is done")
@@ -1044,6 +1060,13 @@ def post(top, dirs, sw, args, row, tmp):
         if bad:
             return hold_git(f"the generated message carries a word the commit-msg hook refuses ({bad[0]})")
         log("message: " + msg.strip())
+        standing = [m.group(0) for m in STANDING_WORDS.finditer(msg)]
+        if standing:
+            return hold_message(f"the generated message carries a percentage or a standing word "
+                                f"({', '.join(sorted(set(standing)))}): the public repo's text carries no "
+                                f"standings; fix commit_message or the text it copies (the dirs are not at fault)")
+        log("message guard: no '%' and no standing word (vs, faster, slower, than, beats, leads, "
+            "outperforms): OK")
         if args.dry_run:
             row["summary_lines"] = f"{lines_a} -> {lines_b}"
             page_step(sw, tree, args.page_out or os.path.join(top, PAGE_OUT_DEFAULT), row, True)
