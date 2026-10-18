@@ -1,0 +1,232 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792333023.537196   15758 litert_lm_lib.cc:629] Choose backend: cpu
+I0000 00:00:1792333023.537594   15758 litert_lm_lib.cc:789] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1792333023.537891   15758 litert_lm_lib.cc:796] vision_executor_settings: not set
+I0000 00:00:1792333023.537920   15758 litert_lm_lib.cc:802] audio_executor_settings: not set
+I0000 00:00:1792333023.537948   15758 litert_lm_lib.cc:825] Creating engine
+W0000 00:00:1792333023.551254   15758 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792333023.551273   15759 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792333023.551303   15759 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792333023.551311   15759 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+W0000 00:00:1792333023.551318   15758 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792333023.551364   15758 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792333023.551403   15758 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c11614200, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c11613320, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c116132b0, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c11611fe0, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792333023.589816   15758 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+W0000 00:00:1792333023.589874   15758 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: XNNPack weight cache loaded from '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792332536_2659053760.xnnpack_cache'.
+VERBOSE: Replacing 1493 out of 1753 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 357 partitions for subgraph 0 (main).
+VERBOSE: Replacing 1415 out of 1680 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 364 partitions for subgraph 1 (main).
+VERBOSE: Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2 (main).
+VERBOSE: Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3 (main).
+VERBOSE: Replacing 1 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 4 (main).
+VERBOSE: Replacing 1 out of 11 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 5 (main).
+VERBOSE: Replacing 1 out of 9 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 6 (main).
+VERBOSE: Replacing 1 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 7 (main).
+VERBOSE: Replacing 1 out of 11 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 8 (main).
+VERBOSE: Replacing 1 out of 9 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 9 (main).
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c11661970, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c11662700, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792333025.636337   15758 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792333025.636362   15758 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1792333025.636369   15758 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792333025.636372   15758 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1792333025.636376   15758 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792333025.636379   15758 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1792333025.636383   15758 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792333025.636386   15758 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+W0000 00:00:1792333025.636409   15758 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792333025.636413   15758 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792333025.636417   15758 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792333025.636426   15758 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1792333025.641308   15758 litert_lm_lib.cc:1079] Creating conversation
+I0000 00:00:1792333025.643927   15758 litert_lm_lib.cc:1091] Running single-turn conversation
+VERBOSE: Replacing 2451 out of 3165 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 213 partitions for subgraph 0 (main).
+VERBOSE: Replacing 2393 out of 3125 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 218 partitions for subgraph 1 (main).
+[thought] Okay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Let me start by recalling what on-device AI means. It's AI that runs directly on the phone, not relying on cloud servers. So, the main differences would be things like offline functionality, privacy, speed, and data security.
+
+First, I need to think of scenarios where a phone can't connect to the cloud. For example, if the phone is in an area with no internet, on-device AI would still work. That's a key point. So the first item could be about offline functionality.
+
+Next, privacy. On-device AI doesn't send data to the cloud, so users can keep their data local. That's a big advantage. Then, real-time processing. Since the phone processes data locally, there's no delay, which is important for things like voice commands or instant translations.
+
+Battery life is another factor. Cloud models require internet, which uses more power. On-device AI is more efficient, so better battery life. Also, data security. If the phone is on a public network, sending data to the cloud could be a risk. On-device processing keeps data safe.
+
+Latency is important for applications like gaming[/thought]
+I0000 00:00:1792333105.360527   15758 litert_lm_lib.cc:179] Captured model output: Okay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Let me start by recalling what on-device AI means. It's AI that runs directly on the phone, not relying on cloud servers. So, the main differences would be things like offline functionality, privacy, speed, and data security.
+
+First, I need to think of scenarios where a phone can't connect to the cloud. For example, if the phone is in an area with no internet, on-device AI would still work. That's a key point. So the first item could be about offline functionality.
+
+Next, privacy. On-device AI doesn't send data to the cloud, so users can keep their data local. That's a big advantage. Then, real-time processing. Since the phone processes data locally, there's no delay, which is important for things like voice commands or instant translations.
+
+Battery life is another factor. Cloud models require internet, which uses more power. On-device AI is more efficient, so better battery life. Also, data security. If the phone is on a public network, sending data to the cloud could be a risk. On-device processing keeps data safe.
+
+Latency is important for applications like gaming
+
+I0000 00:00:1792333105.360627   15758 litert_lm_lib.cc:429] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 2084.96 ms
+    - Init LLM metadata: 0.11 ms
+    - Init Model assets: 12.98 ms
+    - Init Tokenizer: 266.95 ms
+    - Init Total: 2103.26 ms
+--------------------------------------------------
+  Time to first token: 21.94 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1338 tokens in 21.718004575s duration.
+      Prefill Speed: 61.61 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 57.994246957s duration.
+      Decode Speed: 4.41 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 1.25276ms, 1338 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1792333105.360737   15758 litert_lm_lib.cc:1079] Creating conversation
+I0000 00:00:1792333105.364556   15758 litert_lm_lib.cc:1091] Running single-turn conversation
+[thought] Okay, the user is asking for 25 distinct things that on-device AI can do that cloud models can't. Let me start by understanding the context. The provided passages are all Lorem ipsum text, so they’re just placeholder content. The user wants a list of 25 points, each with two sentences. 
+
+First, I need to think about the key differences between on-device AI and cloud AI. On-device AI runs locally, so it doesn't need internet, which is a big advantage. Privacy is a major factor here. Also, latency is lower, which is important for real-time applications.
+
+Let me brainstorm some points. Maybe things like local processing, no internet dependency, privacy, faster response, offline use, device resources, battery life, customization, no need for cloud storage, local data, security, reduced latency, better performance, no data transmission, user control, etc. 
+
+Wait, the user specified 25 items. I need to make sure each is distinct. Let me list them out. For example:
+
+1. Local processing without internet
+2. Privacy protection
+3. Faster response times
+4. Offline functionality
+5. No data transmission
+6. Battery efficiency
+7. Customization
+8. Real-time processing[/thought]
+I0000 00:00:1792333193.238907   15758 litert_lm_lib.cc:179] Captured model output: Okay, the user is asking for 25 distinct things that on-device AI can do that cloud models can't. Let me start by understanding the context. The provided passages are all Lorem ipsum text, so they’re just placeholder content. The user wants a list of 25 points, each with two sentences. 
+
+First, I need to think about the key differences between on-device AI and cloud AI. On-device AI runs locally, so it doesn't need internet, which is a big advantage. Privacy is a major factor here. Also, latency is lower, which is important for real-time applications.
+
+Let me brainstorm some points. Maybe things like local processing, no internet dependency, privacy, faster response, offline use, device resources, battery life, customization, no need for cloud storage, local data, security, reduced latency, better performance, no data transmission, user control, etc. 
+
+Wait, the user specified 25 items. I need to make sure each is distinct. Let me list them out. For example:
+
+1. Local processing without internet
+2. Privacy protection
+3. Faster response times
+4. Offline functionality
+5. No data transmission
+6. Battery efficiency
+7. Customization
+8. Real-time processing
+
+I0000 00:00:1792333193.239810   15758 litert_lm_lib.cc:429] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 2084.96 ms
+    - Init LLM metadata: 0.11 ms
+    - Init Model assets: 12.98 ms
+    - Init Tokenizer: 266.95 ms
+    - Init Total: 2103.26 ms
+--------------------------------------------------
+  Time to first token: 23.64 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1338 tokens in 23.384688949s duration.
+      Prefill Speed: 57.22 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 1m4.4797356s duration.
+      Decode Speed: 3.97 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 4.237187ms, 1338 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1792333193.239923   15758 litert_lm_lib.cc:584] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 2084.96 ms
+    - Init LLM metadata: 0.11 ms
+    - Init Model assets: 12.98 ms
+    - Init Session: 0.01 ms
+    - Init Tokenizer: 266.95 ms
+    - Init Total: 2103.26 ms
+--------------------------------------------------
+  Time to first token: 22.79 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 59.41 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 4.19 tokens/sec.
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c11611fe0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c116132b0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c11662700, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c11661970, name=LiteRT GPU
