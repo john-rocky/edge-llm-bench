@@ -1,0 +1,42 @@
+I tokenizers:regex.cpp:40] Registering override fallback regex
+I 00:00:00.001006 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.001029 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.001036 executorch:cpuinfo_utils.cpp:167] Number of efficient cores 0
+I 00:00:00.001040 executorch:main.cpp:159] Resetting threadpool with num threads = 16
+I 00:00:00.001044 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.001049 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.001053 executorch:cpuinfo_utils.cpp:167] Number of efficient cores 0
+I 00:00:00.001140 executorch:threadpool.cpp:66] Resetting threadpool to 16 threads.
+I 00:00:00.001145 executorch:runner.cpp:69] Creating LLaMa runner: model_path=/Users/USER/code/edge-llm-bench/models/executorch/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte, tokenizer_path=/Users/USER/code/edge-llm-bench/models/executorch/tokenizer.json
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1791757669.725145 1644992 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+I 00:00:00.143054 executorch:llm_runner_helper.cpp:55] Loaded json tokenizer
+I 00:00:00.143099 executorch:llm_runner_helper.cpp:258] Reading metadata from model
+I 00:00:00.148145 executorch:llm_runner_helper.cpp:137] Metadata: use_sdpa_with_kv_cache = 1
+I 00:00:00.148155 executorch:llm_runner_helper.cpp:137] Metadata: use_kv_cache = 1
+I 00:00:00.148159 executorch:llm_runner_helper.cpp:137] Metadata: get_max_context_len = 2048
+I 00:00:00.148163 executorch:llm_runner_helper.cpp:137] Metadata: get_max_seq_len = 2048
+I 00:00:00.148166 executorch:llm_runner_helper.cpp:137] Metadata: enable_dynamic_shape = 1
+I 00:00:00.148171 executorch:llm_runner_helper.cpp:179] eos_id = 151645
+I 00:00:00.148177 executorch:llm_runner_helper.cpp:294] Using method: forward
+I 00:00:00.230298 executorch:text_llm_runner.cpp:86] Doing a warmup run...
+I 00:00:01.184666 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:01.184826 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 256, given pos_ 1338, num_prompt_tokens 1338, max_context_len 2048
+I 00:00:03.311501 executorch:text_llm_runner.cpp:272] Warmup run finished!
+I 00:00:03.311538 executorch:text_llm_runner.cpp:92] RSS after loading model: 0.000000 MiB (0 if unsupported)
+I 00:00:04.256649 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:04.256829 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 256, given pos_ 1338, num_prompt_tokens 1338, max_context_len 2048
+I 00:00:04.256842 executorch:text_llm_runner.cpp:231] RSS after prompt prefill: 0.000000 MiB (0 if unsupported)
+I 00:00:06.404691 executorch:text_llm_runner.cpp:261] RSS after finishing text generation: 0.000000 MiB (0 if unsupported)
+I 00:00:06.404699 executorch:text_llm_runner.cpp:264] Max new tokens 256 reached!
+I 00:00:06.404707 executorch:stats.h:179] 	Prompt Tokens: 1338    Generated Tokens: 255
+I 00:00:06.404710 executorch:stats.h:185] 	Model Load Time:		0.082000 (seconds)
+I 00:00:06.404713 executorch:stats.h:194] 	Total inference time:		3.093000 (seconds)		 Rate: 	82.444229 (tokens/second)
+I 00:00:06.404716 executorch:stats.h:203] 		Prompt evaluation:	0.945000 (seconds)		 Rate: 	1415.873016 (tokens/second)
+I 00:00:06.404718 executorch:stats.h:215] 		Generated 255 tokens:	2.148000 (seconds)		 Rate: 	118.715084 (tokens/second)
+I 00:00:06.404733 executorch:stats.h:223] 	Time to first generated token:	0.945000 (seconds)
+I 00:00:06.404735 executorch:stats.h:230] 	Sampling time over 1593 tokens:	0.037000 (seconds)
