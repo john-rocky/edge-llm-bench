@@ -76,6 +76,8 @@ jobs:
         run: python scripts/dashboard_post_selftest.py
       - name: regression response (the page's red rule on a synthetic tree, retakes, bisect requests, the job's retake sitting; fake adb, no device, no network)
         run: python scripts/regression_watch_selftest.py
+      - name: the one command on a DDP lab unit (bench autopilot --ddp; the dry run through the real plan with gcloud, adb, xcrun and curl trapped, sittings against a fake bench in a temp git checkout; no device, no network)
+        run: BENCH_ANDROID_BIN_DIR="$RUNNER_TEMP/android-bin" python scripts/autopilot_selftest.py
 
   scripts-compile:
     name: every script parses

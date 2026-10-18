@@ -3,7 +3,10 @@
 
   ./bench matrix  <cells-file> [--platform mac|iphone|android] [--campaign NAME]
   ./bench matrix  <cells-file> --ddp <DDP device id> [--campaign NAME] [--dry-run]   # android/ddp/run_ddp.py
-                  [--project <Cloud project>] [--bucket gs://<bucket>]   # default: run_ddp.py's
+                  [--project <Cloud project>] [--bucket gs://<bucket>]   # default: $BENCH_DDP_PROJECT /
+                                                                         # $BENCH_DDP_BUCKET, else run_ddp.py's
+  ./bench autopilot --ddp <DDP device id> [--project <p>] [--bucket gs://<b>] [--cells FILE] [--runs N]
+                  [--dry-run] [--no-commit]   # one lab-unit sitting by hand, end to end (scripts/autopilot.py)
   ./bench regress <cells-file> --engine <arm> [--version vX] --baseline <selector>
                   [--platform ...] [--campaign NAME]
   ./bench profile <cells-file> [--campaign NAME] [--max-num-tokens A,B,C] [--allow-large-context]
@@ -21,6 +24,10 @@ regression_report (exit 1 on REGRESSION). manual=1 cells (energy) are never
 run here — the unplug discipline is a human step (docs/OPERATIONS.md).
 dashboard-job = preflight -> anchors -> session admission -> matrix ->
 SESSION.json -> dashboard render; exit codes in scripts/dashboard_job.py.
+autopilot = a Developer Device Platform lab unit's sitting (the job's own) ->
+check and local commit (scripts/dashboard_post.py) -> DASHBOARD.md -> the
+team page's red points -> the retake / bisect requests, on a host with no
+phone; docs/dashboard-autopilot-v1.md section 10.
 """
 import argparse
 import datetime
@@ -85,7 +92,11 @@ def do_ddp(args):
     campaign = f"{args.campaign or datetime.date.today().isoformat() + '-ddp-' + args.ddp}-android"
     cmd = [PY, os.path.join(ROOT, "android", "ddp", "run_ddp.py"), args.cells, "--device", args.ddp,
            "--campaign", campaign] + (["--dry-run"] if args.dry_run else [])
-    cmd += (["--project", args.project] if args.project else []) + (["--bucket", args.bucket] if args.bucket else [])
+    # a caller that cannot pass the flags (scripts/autopilot.py, through dashboard_job.py) sets them in
+    # the environment; the plan's summary line names the project and bucket the run uses
+    project = args.project or os.environ.get("BENCH_DDP_PROJECT")
+    bucket = args.bucket or os.environ.get("BENCH_DDP_BUCKET")
+    cmd += (["--project", project] if project else []) + (["--bucket", bucket] if bucket else [])
     rc = run(cmd, env={"CAMPAIGN": campaign})
     if args.dry_run:
         return rc
@@ -179,9 +190,10 @@ def main():
                    help="run the android LiteRT-LM rows on a DDP lab phone (android/ddp/devices.json)")
     m.add_argument("--dry-run", action="store_true",
                    help="with --ddp: print jobs, sessions, pushes, args, timeouts and the estimate; no network")
-    m.add_argument("--project", help="with --ddp: the Cloud project the sessions run in (default: run_ddp.py's)")
+    m.add_argument("--project", help="with --ddp: the Cloud project the sessions run in "
+                                     "(default: $BENCH_DDP_PROJECT, else run_ddp.py's)")
     m.add_argument("--bucket", help="with --ddp: gs://<bucket> for the inputs and session outputs "
-                                    "(default: run_ddp.py's)")
+                                    "(default: $BENCH_DDP_BUCKET, else run_ddp.py's)")
 
     p = sub.add_parser("profile", help="LiteRT-LM per-op profiling: a control + --enable_profiling "
                                        "pair per android native-benchmark cell -> profiles/PROFILE.md")
@@ -215,6 +227,18 @@ def main():
     dj.add_argument("--cells", help="override the cells file")
     dj.add_argument("--suffix", help="campaign-name suffix for a same-day retake (e.g. -retake)")
 
+    au = sub.add_parser("autopilot", help="one DDP lab-unit sitting by hand, end to end: the sitting, the "
+                                          "check and local commit, DASHBOARD.md, the red points, the requests")
+    au.add_argument("--ddp", required=True, metavar="DEVICE_ID", help="a DDP catalog id (android/ddp/devices.json)")
+    au.add_argument("--project", help="the Cloud project the sessions are billed to (default: run_ddp.py's)")
+    au.add_argument("--bucket", help="gs://<bucket> for the inputs and session outputs (default: run_ddp.py's)")
+    au.add_argument("--cells", help="the cells file (default: the lab unit's weekly file, else "
+                                    "matrices/ddp-first-run.cells)")
+    au.add_argument("--runs", type=int, help="runs= of every row (a copy of the cells file)")
+    au.add_argument("--suffix", help="campaign-name suffix for a second sitting the same day")
+    au.add_argument("--dry-run", action="store_true", help="print every step's plan; no network, nothing billed")
+    au.add_argument("--no-commit", action="store_true", help="the sitting and the check; nothing committed")
+
     args = ap.parse_args()
     if args.cmd == "matrix":
         return do_matrix(args)
@@ -245,6 +269,16 @@ def main():
         if args.suffix:
             cmd.append(f"--suffix={args.suffix}")   # `=` form: a suffix may start with '-'
 
+        return run(cmd)
+    if args.cmd == "autopilot":
+        sys.stdout.reconfigure(line_buffering=True)  # the `$ cmd` line before the steps' output in a file
+        cmd = [PY, os.path.join(ROOT, "scripts", "autopilot.py"), "--ddp", args.ddp]
+        for flag in ("project", "bucket", "cells", "suffix"):
+            if getattr(args, flag):
+                cmd.append(f"--{flag}={getattr(args, flag)}")
+        if args.runs is not None:
+            cmd += ["--runs", str(args.runs)]
+        cmd += (["--dry-run"] if args.dry_run else []) + (["--no-commit"] if args.no_commit else [])
         return run(cmd)
     return run([PY, os.path.join(ROOT, "scripts", "release_watch.py")])
 
