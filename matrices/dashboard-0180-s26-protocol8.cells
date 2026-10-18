@@ -1,0 +1,20 @@
+# Galaxy S26, LiteRT-LM protocol cells on the v0.18.0 pin (owner decision 2026-10-19: the page carries the current
+# release only; the eight cells below still came from the 2026-10-06 v0.16.0 sittings, the Gemma 4 E2B pair was re-measured
+# 2026-10-15 in dashboard-0180-s26-s8a / s8b). The session anchor row, then the rows below, each byte-identical to its
+# source line (file=, backend, cooldown, context-tokens unchanged; exclude-on=pixel8a is inert on this phone).
+# Source: matrices/dashboard-text-v1-android-a.cells line 10 (anchor); matrices/dashboard-protocol1024-v1-android.cells,
+# the eight litert-lm native-benchmark-1024x256 rows other than Gemma 4 E2B.
+# Protocol: methodology/agreed-protocol-gemma4.md "The spec" (prefill forced to exactly 1024, decode 256, context 2048).
+# Run by hand through the job route (it takes the device hold itself, runs anchors.cells, admits, posts):
+#   python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-0180-s26-protocol8.cells --suffix 0180-protocol8 --once
+
+# ---- android ----
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
