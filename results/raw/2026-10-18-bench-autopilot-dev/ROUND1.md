@@ -95,7 +95,9 @@ selftest OK
 
 ## commit
 
-(下の 2 行目を commit 後に書く)
+- `f132add5` (branch `bench-autopilot`、明示 path 7 file: scripts/session_check.py、scripts/session_check_selftest.py、docs/session-check-v1.md、ops/session-check/allow-list.tsv、.github/workflows/data-pipeline.yml、K/ROUND1.md、K/backlog_table.md)。帰属行なし、push なし。
+- この ROUND1.md の commit hash と round close を足した 2 本目 (下の経過の最終行)。
+- CI の予行: `git clone --depth 1 --branch bench-autopilot` (commit 1 本、shallow) で `env -i` + python 3.11.13: session_check_selftest OK、dashboard_job_selftest OK、py_compile OK、build_summary 後の results/summary 差分なし。
 
 ## 提案
 
@@ -117,6 +119,7 @@ selftest OK
 - 19:57 allow-list (25 lines): (a) PASS 77 / HOLD 11, the 11 not explained by their adding commit → 訂正; backlog first pass 12 s; fixed my own false hits (llama-cli spinner + truncated echo read as a loop, a README "not committed" about traces/ read as a stopped sitting, ORT's buildConfiguration string read as Debug); account name made HOLD (hygiene, not a secret); binaries by magic made FAIL.
 - 20:03 (b) all as expected; selftest written, PASS; next: docs/session-check-v1.md, the backlog table, the CI step, the commit.
 - 20:10 review pass over the checker (Android registry before android_pins, Invalid decode counted once per log), every rule row given a commit hash (33 hashes, all resolve), selftests on python 3.11 / 3.12 / 3.14, backlog table written; next: commit, shallow-clone CI rehearsal, round close.
+- 20:14 committed f132add5 (7 paths); shallow-clone CI rehearsal on python 3.11 passed; round_close_lint next, then the report to the supervisor.
 
 ## 訂正
 - launch「payload 54 dir + anchor dir」→ SESSION.json を持つ commit 済み -dashboard-v1- dir は payload 45 + anchor 43 = 88 (111 dir 中; 残り 23 = 09-05 first pass 11、10-07 llama retake 2、10-16 DDP 10)。証拠: `git ls-files results/raw | grep -- -dashboard-v1-`。
