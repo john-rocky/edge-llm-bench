@@ -533,12 +533,16 @@ def sitting_facts(top, dirs):
     ends = [t for t in (parse_time(sess[d].get("ended")) for d in dirs) if t]
     stamps = collections.defaultdict(collections.Counter)
     runs = text_n = text_pass = capped_in = capped_past = 0
+    arms_in, arms_past, units = collections.Counter(), collections.Counter(), set()
     for d in dirs:
         for _, rec in load_records(os.path.join(top, d)):
             if rec is None:
                 continue
             runs += 1
             stamps[rec.get("runtime") or "?"][rec.get("engineVersion") or "unstamped"] += 1
+            unit = ((rec.get("device") or {}).get("ddp") or {}).get("serial")
+            if unit:
+                units.add(unit)
             cond = rec.get("conditions") or {}
             tc = cond.get("textCheck")
             if isinstance(tc, dict):
@@ -549,8 +553,10 @@ def sitting_facts(top, dirs):
                 drop = cpu_cap_drop_of(rec)
                 if rec.get("runtime") in CPU_CAP_EXEMPT_ARMS or (drop and float(drop) <= CPU_CAP_MAX_DROP_PCT):
                     capped_in += 1
+                    arms_in[rec.get("runtime") or "?"] += 1
                 else:
                     capped_past += 1
+                    arms_past[rec.get("runtime") or "?"] += 1
     anchors = [sess[d] for d in order if sess[d].get("phase") == "anchor"]
     payloads = [sess[d] for d in order if sess[d].get("phase") == "payload"]
     flagged = [ln for d in dirs for ln in read_lines(os.path.join(top, d), "FLAGGED.txt")]
@@ -559,7 +565,11 @@ def sitting_facts(top, dirs):
         "ident": first.get("device_identifier") or "?",
         "start": min(starts) if starts else None, "end": max(ends) if ends else None,
         "stamps": stamps, "runs": runs, "text_n": text_n, "text_pass": text_pass,
-        "capped_in": capped_in, "capped_past": capped_past,
+        "capped_in": capped_in, "capped_past": capped_past, "arms_in": arms_in, "arms_past": arms_past,
+        # a Developer Device Platform lab unit's sitting (dashboard_job.py ddp_sitting): its Device Run
+        # sessions, and the units (serials) its records name
+        "ddp": next((s.get("ddp") for s in payloads if isinstance(s.get("ddp"), dict)), None),
+        "units": len(units),
         "cells": [(s.get("cells") or "?", s.get("cells_with_records"), s.get("cells_expected")) for s in payloads],
         "anchor": anchors[0] if anchors else None,
         "anchor_phase": os.path.basename((payloads[0] if payloads else {}).get("anchor_phase") or ""),
@@ -579,7 +589,31 @@ def when_text(start, end):
     return f"{start:%H:%M}–{end:%Y-%m-%d %H:%M} {tz}".strip()
 
 
+def device_text(f):
+    """The device as the messages name it, "<display> (<identifier>)"; a lab unit's sitting names the
+    platform, the pool, the units' model and how many units its records name."""
+    d = f.get("ddp")
+    if not d:
+        return f"{f['display']} ({f['ident']})"
+    strip = lambda x: re.sub(r"\s*\(DDP [^)]*\)$", "", x or "?")
+    n = f.get("units") or 0
+    return (f"{strip(f['display'])} lab units on the Developer Device Platform (DDP {d.get('id')}, "
+            f"{strip(f['ident'])}" + (f", {n} unit{'' if n == 1 else 's'}" if n else "") + ")")
+
+
+def ddp_text(f):
+    """A lab unit's sitting in place of the anchor's admission: its Device Run sessions, jobs and device
+    minutes, and why it has no anchor."""
+    d = f["ddp"]
+    ids = d.get("sessions") or []
+    return (f"{len(ids)} Device Run session{'' if len(ids) == 1 else 's'} {', '.join(ids) or '(none)'}, "
+            f"{d.get('jobs')} jobs, {d.get('device_minutes')} device-min; no session anchor: a lab unit's "
+            f"runs carry their own cap marks and text check")
+
+
 def anchor_text(f):
+    if f.get("ddp"):
+        return ddp_text(f)
     a = f["anchor"]
     if a is None:
         return f"anchor phase {f['anchor_phase'] or '?'} committed before"
@@ -604,12 +638,16 @@ def commit_message(f, lines_a, lines_b, waived):
     text = (f"text check {f['text_pass']}/{f['text_n']}" if f["text_n"]
             else "text check 0/0 (no run carries one)")
     caps = f"cpu-capped counted {f['capped_in']}/{f['runs']}, past the line {f['capped_past']}"
+    if f.get("ddp"):
+        per_arm = lambda c: ", ".join(f"{a} {n}" for a, n in sorted(c.items())) or "none"
+        caps = (f"cpu-capped counted {f['capped_in']}/{f['runs']} ({per_arm(f['arms_in'])}), past the line "
+                f"{f['capped_past']} ({per_arm(f['arms_past'])}; a lab unit starts capped: no number)")
     fails = f["failures"]
     fail_text = ("none" if not fails else "; ".join(short(x, 90) for x in fails[:2])
                  + (f" and {len(fails) - 2} more" if len(fails) > 2 else ""))
     start = f["start"]
     msg = (f"results {start:%Y-%m-%d} " if start else "results ") + (
-        f"{f['display']} ({f['ident']}), {arms}: {cells} in one dashboard-job sitting "
+        f"{device_text(f)}, {arms}: {cells} in one dashboard-job sitting "
         f"{when_text(f['start'], f['end'])} ({anchor_text(f)}); {text}; {caps}; FAILURES: {fail_text}")
     retries = [ln for ln in f["flagged"] if not re.search(r"\b(LEVEL|DEGENERATE|GATE_ERROR)\b", ln)]
     if retries:
@@ -634,7 +672,7 @@ def page_message(bench_sha, f, rows_old, rows_new, checks, numbers=None):
     names = ", ".join(c for c, _, _ in checks)
     return (f"dist: the page from the bench at {bench_sha[:8]} — the {start:%Y-%m-%d} " if start else
             f"dist: the page from the bench at {bench_sha[:8]} — the ") + (
-        f"{f['display']} ({f['ident']}) dashboard-job sitting {when_text(f['start'], f['end'])} committed there; "
+        f"{device_text(f)} dashboard-job sitting {when_text(f['start'], f['end'])} committed there; "
         f"cells.csv {added} rows added, {removed} removed ({len(rows_new)} rows)"
         + (f"; {numbers}" if numbers else "") + f"; checks: {names} PASS\n")
 

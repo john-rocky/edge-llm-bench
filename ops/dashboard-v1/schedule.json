@@ -3,7 +3,7 @@
   "cells": "matrices/dashboard-text-v1.cells",
   "anchors": "matrices/anchors.cells",
   "stale_days": 10,
-  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week; a firing with nothing pending exits 0. A device whose entry says `auto`: false is never chosen by `auto` (its report line reads by-hand): it is measured only by `./bench dashboard-job <key>`, by hand, in a window the owner offers.",
+  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week; a firing with nothing pending exits 0. A Developer Device Platform lab unit (platform ddp) is not the firing's device: no device on this host, so its weekly sitting runs after the firing's attached-device sitting (or at a firing with none), docs/dashboard-autopilot-v1.md section 9. A device whose entry says `auto`: false is never chosen by `auto` (its report line reads by-hand): it is measured only by `./bench dashboard-job <key>`, by hand, in a window the owner offers.",
   "slots": [
     {
       "at": "02:00",
@@ -152,6 +152,16 @@
       "env": {
         "CELL_TIMEOUT": "3600"
       }
+    },
+    "s26-ddp": {
+      "platform": "ddp",
+      "display": "Galaxy S26 (DDP m1q-36)",
+      "identifier": "SM-S942U1 (DDP m1q-36)",
+      "ddp_id": "m1q-36",
+      "cells": "matrices/dashboard-ddp-v1-android-s26.cells",
+      "window": "any firing, after the attached device's sitting (a lab unit on Google's Developer Device Platform: no device, no hold, no reboot and no anchor phase on this host, so it never takes the firing's one device) or at a firing with none; once a week: no admitted session since Monday, and no sitting this week that ran Device Run sessions and was not admitted (a person looks before another is billed). Only while ops/autopilot/switch.json ddp_weekly is true (user 2026-10-16: no per-session GO for DDP; set it false when a Googler runs the weekly DDP set on their side) and the plan's Device Run sessions are within its ddp_max_sessions. identifier = the device string build_summary gives a lab unit's records (the team page's STAND_IN key); the rows run on whichever units of the m1q-36 pool the sessions get (android/ddp/devices.json). expected_hours / timeout_hours: the 2026-10-16 pass ran 12 of these jobs in 151 device-min, the jobs of one session side by side on several units (92 min wall in three streams); the 16 jobs here are 2 sessions, about 3.2 device-hours, longer when the pool has fewer free units",
+      "expected_hours": 1.5,
+      "timeout_hours": 5
     }
   }
 }

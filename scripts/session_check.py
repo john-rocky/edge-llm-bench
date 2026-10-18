@@ -13,6 +13,8 @@ docs/session-check-v1.md. Verdicts:
   HOLD  a person decides: a timeout, a partial sitting, a FAILURES / LEVEL / DEGENERATE line,
         a text-check FAIL, an engine stamp off the registry, a prompt that did not reach the
         engine whole, a reply that fails the machine proxies, a dir that is not a job campaign
+        (a DDP dir is a job campaign when the job's SESSION.json names it: a lab unit's sitting,
+        kind "job payload (ddp)", read by the job-session rules without the anchor-pair ones)
   FAIL  do not commit: refused at admission, a stopped sitting's quarantine, no SESSION.json
         in a dir the job made, an unscrubbed or execution-level DDP logcat, model weights, a
         trace or an engine binary, a credential, a payload whose anchor phase is gone
@@ -54,6 +56,9 @@ from scrub import scrub_text  # noqa: E402
 ALLOW_LIST = os.path.join(ROOT, "ops", "session-check", "allow-list.tsv")
 SESSION_SCHEMA = "dashboard-job-session.v1"
 JOB = "dashboard-v1"            # the "job" value scripts/dashboard_job.py write_session stamps
+# a Developer Device Platform lab unit's sitting the job ran (dashboard_job.py ddp_sitting): no anchor
+# phase, its runs carry their own cap marks and text check (docs/dashboard-autopilot-v1.md §9)
+JOB_DDP = "job payload (ddp)"
 DASHBOARD_CAMPAIGN = "-dashboard-v1-"
 ANCHOR_CAMPAIGN_RE = re.compile(r"-dashboard-v1-.*-anchor-")
 STOPPED_RE = re.compile(r"-stopped(-|$)")
@@ -89,6 +94,11 @@ PROTOCOL_TASK_PREFIX = "native-benchmark-"
 # the rules whose finding means "do not commit"; every other rule's finding is a HOLD
 FAIL_RULES = {"session-missing", "not-admitted", "stopped-sitting", "logcat-unscrubbed",
               "big-file", "secret", "pair-broken"}
+# platform blocks of environment.lock.json registered after the fact: the newest registry's block,
+# with the date it became true (`since`), covers a sitting on or after that date that the registry
+# of its day did not know (arms.litert-lm.mac: the Mac yardstick stamps v0.18.0 from the
+# 2026-10-12 sitting on, registered 2026-10-18)
+REGISTERED_LATER = (("litert-lm", "mac"),)
 
 
 # ---------------------------------------------------------------- small helpers
@@ -183,10 +193,13 @@ class Repo:
             self._history = list(csv.DictReader(io.StringIO(text))) if text else []
         return self._history
 
-    def registry_at(self, when):
+    def registry_at(self, when, day=None):
         """(android pins, environment.lock.json, where) as committed at the newest change at or
         before `when` (the sitting's first record), read from git history; the files on disk
-        when the history is not there (a shallow CI clone, a dir outside git)."""
+        when the history is not there (a shallow CI clone, a dir outside git). A platform block
+        registered after the fact (REGISTERED_LATER: it names the date it became true, `since`)
+        is taken from the newest registry into one of a day that did not have it, for a sitting
+        on or after that date (`day`, sitting_day); `where` says so."""
         base = self.top or ROOT
         if self._registry_commits is None:
             self._registry_commits = []
@@ -199,6 +212,24 @@ class Repo:
                     self._registry_commits.append((t, sha))
             self._registry_commits.sort(reverse=True)
         commit = next((sha for t, sha in self._registry_commits if when and t <= when), None)
+        pins, lock, where = self.registry_of(commit)
+        newest = self._registry_commits[0][1] if self._registry_commits else None
+        if newest == commit:
+            return pins, lock, where
+        _, last, last_where = self.registry_of(newest)
+        for arm, plat in REGISTERED_LATER:
+            block = (((last.get("arms") or {}).get(arm) or {}).get(plat)) or {}
+            have = (((lock.get("arms") or {}).get(arm) or {}).get(plat))
+            if have or not block_applies(block, day):
+                continue
+            lock = dict(lock, arms=dict(lock.get("arms") or {}))
+            lock["arms"][arm] = dict(lock["arms"].get(arm) or {}, **{plat: block})
+            where += f"; arms.{arm}.{plat} as registered at {last_where} (since {block.get('since')})"
+        return pins, lock, where
+
+    def registry_of(self, commit):
+        """(android pins, environment.lock.json, where) at a commit, or on disk (commit None)."""
+        base = self.top or ROOT
         key = commit or "disk"
         if key not in self._registry:
             def load(rel):
@@ -304,13 +335,14 @@ def read_session(d):
 
 
 def kind_of(name, d, session, records, job_campaigns):
-    """job payload / job anchor / job (stopped) / hand run / DDP / dev."""
+    """job payload / job anchor / job payload (ddp) / job (stopped) / hand run / DDP / dev."""
     if name.endswith("-dev"):
         return "dev"
     if (os.path.isdir(os.path.join(d, "ddp")) or os.path.isdir(os.path.join(d, "ddp-session"))
             or "-ddp-" in name
             or any(isinstance((r.get("device") or {}).get("ddp"), dict) for _, r in records if r)):
-        return "DDP"
+        # the job's lab-unit sitting closes with its SESSION.json; a DDP dir without one ran by hand
+        return JOB_DDP if session is not None and session.get("job") == JOB else "DDP"
     if STOPPED_RE.search(name):
         return "job (stopped)"
     if session is not None and session.get("job") == JOB:
@@ -416,8 +448,34 @@ def resolve_raw_log(path, rec, d, top):
     return log, next((c for c in cands if os.path.isfile(c)), None)
 
 
-def registry_pin(platform, runtime, pins, lock):
-    """(pin, registry key) the registry names for a record's arm, or (None, why)."""
+def sitting_day(name, when):
+    """The local date a sitting ran: the YYYY-MM-DD its campaign name starts with (the job names a
+    sitting by its local day), else its first record's date on this host; None without either."""
+    m = re.match(r"(\d{4}-\d{2}-\d{2})-", name or "")
+    if m:
+        try:
+            return datetime.date.fromisoformat(m.group(1))
+        except ValueError:
+            pass
+    return when.astimezone().date() if when else None
+
+
+def block_applies(block, day):
+    """A registry block with a tag applies to a sitting on or after its `since` day (YYYY-MM-DD);
+    without a since, or a sitting day, always."""
+    if not block or not block.get("tag"):
+        return False
+    try:
+        since = datetime.date.fromisoformat(str(block.get("since")))
+    except ValueError:
+        return True
+    return day is None or day >= since
+
+
+def registry_pin(platform, runtime, pins, lock, day=None):
+    """(pin, registry key) the registry names for a record's arm, or (None, why). The Mac's LiteRT-LM
+    is arms.litert-lm.mac when the lock has that block and the sitting's day (sitting_day) is on or
+    after its since day; the iPhone's, and the Mac's without it, default_tag."""
     arms = (lock or {}).get("arms") or {}
     if platform == "android":
         ap = (pins or {}).get("android_pins") or {}
@@ -438,7 +496,11 @@ def registry_pin(platform, runtime, pins, lock):
                 return pin, f"environment.lock.json arms.{key} (android)"
         return None, "no registry entry"
     if runtime in ("litert-lm", "litert-lm-cpu"):
-        return (arms.get("litert-lm") or {}).get("default_tag"), "environment.lock.json arms.litert-lm.default_tag"
+        litert = arms.get("litert-lm") or {}
+        mac = litert.get("mac") or {}
+        if platform == "mac" and block_applies(mac, day):
+            return mac["tag"], f"environment.lock.json arms.litert-lm.mac.tag (since {mac.get('since')})"
+        return litert.get("default_tag"), "environment.lock.json arms.litert-lm.default_tag"
     if runtime == "llama.cpp":
         return (arms.get("llama.cpp") or {}).get("tag"), "environment.lock.json arms.llama.cpp.tag"
     if runtime == "mlx-swift":
@@ -564,7 +626,7 @@ class Check:
         for p, r in self.records:
             if r is None:
                 self.add("record-unreadable", f"{os.path.relpath(p, self.path)} does not parse")
-        if self.kind in ("job anchor", "job payload"):
+        if self.kind in ("job anchor", "job payload", JOB_DDP):
             self.check_job(recs)
         elif self.kind != "job (stopped)":
             self.add("not-job", f"{self.kind}: not a dashboard job campaign; a person reviews it "
@@ -583,7 +645,7 @@ class Check:
                     (f"/Users/{user}", f"/home/{user}", f"-Users-{user}-", f"_bazel_{user}")] if user else []
         if user:
             user_res.append(re.compile(r"(?<![A-Za-z0-9])" + re.escape(user) + r"\s+(staff|wheel|admin)\b"))
-        ddp = self.kind == "DDP"
+        ddp = self.kind in ("DDP", JOB_DDP)
         named = []
         for rel, p, mode in files:
             if mode == "ignored":
@@ -682,7 +744,12 @@ class Check:
             self.note(f"SKIPPED: {short(line, 160)}")
         if "non-nominal start" in reason:
             self.note(f"admission: {short(reason, 160)}")
-        self.check_pair(s)
+        if self.kind == JOB_DDP:
+            # a lab unit's sitting has no anchor phase and no admission reference: the pair rules are n/a
+            self.note("pair rules n/a: a DDP lab unit's sitting has no anchor phase (SESSION.json anchor "
+                      "null); its runs carry their own cap marks and text check")
+        else:
+            self.check_pair(s)
 
     @staticmethod
     def cell_records(line, recs):
@@ -764,7 +831,8 @@ class Check:
         if not recs:
             return
         when = min((t for t in (parse_time(r.get("timestamp")) for _, r in recs) if t), default=None)
-        pins, lock, where = self.repo.registry_at(when)
+        day = sitting_day(self.name, when)
+        pins, lock, where = self.repo.registry_at(when, day)
         hist = self.history_index()
         by_cell = collections.defaultdict(list)
         for p, r in recs:
@@ -799,7 +867,7 @@ class Check:
             self.add("raw-log-missing", f"{len(raw_missing)} records name a rawLog that is not on disk "
                                         f"(first: {raw_missing[0]})")
         for (plat, rt), c in sorted(stamps.items()):
-            pin, src = registry_pin(plat, rt, pins, lock)
+            pin, src = registry_pin(plat, rt, pins, lock, day)
             have = ", ".join(f"{v} x{n}" for v, n in c.most_common())
             if len(c) > 1:
                 self.add("engine-stamp", f"{plat} {rt}: one session, {len(c)} engine stamps ({have})")
@@ -808,6 +876,10 @@ class Check:
             elif not all(stamp_matches(v, pin) for v in c):
                 self.add("engine-stamp", f"{plat} {rt}: stamps {have}; registry {pin} ({src} at {where})")
         self.note_caps(recs)
+        if self.kind == JOB_DDP:
+            self.note("cpu-cap: a lab unit holds its CPU clock ceilings below the line from the start "
+                      "(android/ddp/devices.json): its CPU runs pool into no number, its GPU runs count "
+                      "marked; the renderer's cpu-cap-rule decides, never a verdict here")
 
     def check_cell_text(self, cell, items, task):
         """text-fail, the reply proxies, gen-budget, invalid-decode: one finding per cell."""

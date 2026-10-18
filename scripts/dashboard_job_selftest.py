@@ -96,6 +96,29 @@ if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
 '''
 
+# the lab unit's `bench` in a temp ROOT (the job's doctor and plan probes are faked in the selftest):
+# `matrix <cells> --ddp <id> --campaign <c>` leaves the campaign dir a DDP run leaves (ddp/session-1.json
+# with two jobs' execution times, SKIPPED.txt) and exits FAKE_BENCH_RC
+FAKE_BENCH = '''#!/usr/bin/env python3
+import json, os, sys
+a = sys.argv[1:]
+if a[:1] == ["matrix"] and "--ddp" in a and "--dry-run" not in a:
+    d = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results", "raw",
+                     a[a.index("--campaign") + 1] + "-android")
+    os.makedirs(os.path.join(d, "ddp"))
+    os.makedirs(os.path.join(d, "app-path-android"))
+    job = lambda name, start, end: {"displayName": name, "result": {"resultType": "PASSED"},
+                                    "executionReports": [{"startTime": start, "endTime": end}]}
+    with open(os.path.join(d, "ddp", "session-1.json"), "w") as fh:
+        json.dump({"name": "projects/p/locations/global/sessions/session-fake0001",
+                   "sessionReport": {"jobReports": [
+                       job("j01", "2099-01-01T00:00:00.5Z", "2099-01-01T00:09:30.5Z"),
+                       job("j02", "2099-01-01T00:00:00Z", "2099-01-01T00:05:00.123456789Z")]}}, fh)
+    with open(os.path.join(d, "app-path-android", "SKIPPED.txt"), "w") as fh:
+        fh.write("CELL_SKIP litert-lm-cpu m/B short-chat exclude-on=s26 reason=x\\n")
+    sys.exit(int(os.environ.get("FAKE_BENCH_RC", "0")))
+'''
+
 _fails = []
 
 
@@ -520,6 +543,209 @@ def main():
         except dj.Busy as e:
             ok(busy, f"host driver, {what}: busy ({e})")
     dj.driver_serial = real_driver_serial
+
+    print("--- a DDP lab unit (stage 4): never the firing's device; its weekly sitting after the attached "
+          "device's, on the switch, once a week (doctor and plan faked, a gcloud that must never run on PATH)")
+    # the DDP route's own selftest (android/ddp/selftest.py) runs the plan and a faked billed path on the
+    # pinned engine files; here CI has neither them nor an HF cache: the job's two probes are faked, and a
+    # gcloud first on PATH records any call (its 1b trap): the job itself never calls gcloud
+    dj.pgrep = lambda pattern: []   # the host-driver cases above left a busy driver in place
+    gcalls = os.path.join(state, "gcloud-calls.txt")
+    with open(os.path.join(bin_dir, "gcloud"), "w") as fh:
+        fh.write(f"#!/bin/sh\necho \"$@\" >> {gcalls}\nexit 1\n")
+    os.chmod(os.path.join(bin_dir, "gcloud"), 0o755)
+    switch = os.path.join(tmp, "switch.json")
+    real_switch, real_doctor, real_plan = dj.SWITCH, dj.ddp_doctor, dj.ddp_plan
+    dj.SWITCH = switch
+
+    def set_switch(on=True, cap=16):
+        with open(switch, "w") as fh:
+            json.dump({"push_bench": False, "ddp_weekly": on, "ddp_max_sessions": cap}, fh)
+
+    doctor = {"rc": 0}
+    plans = []
+
+    def fake_plan(cells, ddp_id, campaign):
+        plans.append((cells, ddp_id, campaign))
+        return {"cells": [("litert-lm-cpu", "m/A", "short-chat"), ("litert-lm-gpu", "m/A", "short-chat")],
+                "skips": ["litert-lm-cpu m/B short-chat: x (exclude-on s26)"], "jobs": 2,
+                "sessions": doctor.get("sessions", 1), "skipped": 1, "device_minutes": 30.0,
+                "engine": "v0.18.0", "upload_objects": 12, "upload_bytes": 3e9, "uncached": []}
+    dj.ddp_doctor = lambda: (doctor["rc"], "  ok  gcloud\n" if not doctor["rc"] else "FAIL gcloud sign-in  gcloud auth login\n")
+    dj.ddp_plan = fake_plan
+    unit_cells = cells_file("unit-android.cells",
+                            "android litert-lm m/A short-chat backend=cpu file=a.litertlm",
+                            "android litert-lm m/A short-chat backend=gpu file=a.litertlm")
+    unit = {"platform": "ddp", "display": "Fake lab unit", "identifier": "FakeU (DDP fake-1)",
+            "ddp_id": "fake-1", "cells": unit_cells, "timeout_hours": 2}
+    sched_ddp = os.path.join(tmp, "schedule-ddp.json")
+    with open(sched_ddp, "w") as fh:
+        json.dump(dict(sched, devices={"s26": s26, "unit": unit}), fh)
+    today = datetime.date.today().isoformat()
+    ucamp = f"{today}-dashboard-v1-unit-fake-1"
+
+    def job_ddp(*argv):
+        buf = io.StringIO()
+        saved = sys.argv
+        sys.argv = ["dashboard_job.py", *argv, "--schedule", sched_ddp]
+        try:
+            with contextlib.redirect_stdout(buf):
+                code = dj.main()
+        finally:
+            sys.argv = saved
+        return code, buf.getvalue().splitlines()
+
+    def at(lines, text):
+        return next((i for i, ln in enumerate(lines) if text in ln), None)
+
+    attached("FAKE-A", "FAKE-B")
+    sched_units = dict(schedule, devices=dict(schedule["devices"], unit=unit))
+    k3, _, rep3 = dj.resolve_device(sched_units, "auto", now=now, rows=older_a, admitted={}, retakes={}, skip=set())
+    rep3 = {e["key"]: e for e in rep3}
+    ok(k3 == "alpha" and rep3["unit"]["state"] == "ddp" and "after the attached device's sitting" in rep3["unit"]["detail"],
+       f"auto: the lab unit (never measured) is no candidate, alpha is chosen ({k3}; unit: {rep3['unit']['detail']})")
+
+    set_switch(True)
+    attached("FAKE-S")
+    code, lines = job_ddp("auto", "--dry-run")
+    i_done, i_ddp = at(lines, "=== done: OK"), at(lines, "ddp: unit (Fake lab unit): due: never measured")
+    i_slot = at(lines, f"=== slot unit (Fake lab unit, DDP fake-1) campaign {ucamp}")
+    i_mat = at(lines, f"bench matrix {unit_cells} --ddp fake-1 --campaign {ucamp}")
+    posts = [i for i, ln in enumerate(lines) if "post: $ " in ln]
+    ok(code == dj.EXIT_OK and None not in (i_done, i_ddp, i_slot, i_mat) and i_done < i_ddp < i_slot < i_mat
+       and len(posts) == 2 and posts[1] > i_mat and lines[posts[1]].endswith(
+           f" {dj.POST} results/raw/{ucamp}-android   [dry-run: printed, not run]"),
+       f"auto --dry-run: s26's sitting, its done line and post, then `ddp: unit … due`, the unit's bench matrix "
+       f"--ddp line and its post over results/raw/{ucamp}-android (exit {code})")
+    ok(any("gtimeout --kill-after=60 7200 " in ln and "--ddp fake-1" in ln for ln in lines),
+       "the lab unit's sitting runs under its timeout_hours (2 h)")
+    ok(any("ddp plan: 2 jobs in 1 Device Run sessions on fake-1" in ln for ln in lines)
+       and any("ddp skip: litert-lm-cpu m/B short-chat" in ln for ln in lines),
+       "the plan's jobs, sessions and skipped rows are logged before anything runs")
+    attached()
+    code, lines = job_ddp("auto", "--dry-run")
+    ok(code == dj.EXIT_DEVICE and at(lines, "-> no device to measure now") is not None
+       and at(lines, f"bench matrix {unit_cells} --ddp fake-1") is not None,
+       f"no attached device (s26 not visible, exit {code}): the lab unit's sitting still runs after the choice")
+    attached("FAKE-S")
+    code, lines = job_ddp("auto", "--dry-run", "--no-ddp")
+    ok(code == dj.EXIT_OK and not any("ddp:" in ln or "--ddp" in ln for ln in lines),
+       "--no-ddp: no ddp: line, no lab-unit sitting")
+    set_switch(False)
+    code, lines = job_ddp("auto", "--dry-run")
+    ok(at(lines, "ddp: unit (Fake lab unit): off: ops/autopilot/switch.json ddp_weekly is not true") is not None
+       and at(lines, "--ddp fake-1") is None,
+       "ddp_weekly false: one `ddp: … off` line, no lab-unit sitting")
+    code, lines = job_ddp("unit", "--dry-run")
+    ok(code == dj.EXIT_CONFIG and at(lines, "ddp_weekly is not true") is not None and at(lines, "--ddp fake-1") is None,
+       f"ddp_weekly false: the lab unit by hand refuses too (exit {code}, CONFIG)")
+    set_switch(True)
+    code, lines = job_ddp("unit", "--dry-run")
+    ok(code == dj.EXIT_OK and at(lines, f"bench matrix {unit_cells} --ddp fake-1 --campaign {ucamp}") is not None
+       and at(lines, "SESSION.json would read admitted true") is not None,
+       f"the lab unit by hand (dashboard_job.py unit): its sitting, exit {code}")
+    set_switch(True, cap=1)
+    doctor["sessions"] = 2
+    code, lines = job_ddp("unit", "--dry-run")
+    ok(code == dj.EXIT_CONFIG and at(lines, "the plan needs 2 Device Run sessions") is not None
+       and at(lines, "--ddp fake-1 --campaign") is None,
+       f"a plan over ddp_max_sessions (2 > 1): nothing started, exit {code}")
+    doctor.update(sessions=1, rc=1)
+    set_switch(True)
+    n_plans = len(plans)
+    code, lines = job_ddp("unit", "--dry-run")
+    ok(code == dj.EXIT_DEVICE and at(lines, "doctor (check_ddp) FAILED: FAIL gcloud sign-in") is not None
+       and len(plans) == n_plans, f"the doctor FAILs (gcloud signed out): exit {code}, no plan, no sitting")
+    doctor["rc"] = 0
+
+    print("--- the lab unit's week: due, done (an admitted session since Monday), tried (a billed sitting "
+          "this week not admitted), off, by hand")
+    urow = lambda camp, **d: dict(row(camp, "FakeU (DDP fake-1)", **d), platform="android")
+    sess_of = lambda rows: dj.device_sessions({"devices": {"unit": unit}}, rows, {}, set()).get("unit") or []
+    due, why = dj.ddp_due("unit", unit, now, sess_of([urow("d9-dashboard-v1-unit-fake-1-android", days=9)]), True, None)
+    ok(due and why.startswith("due: last admitted"), f"last admitted 9 days ago: {why}")
+    due, why = dj.ddp_due("unit", unit, now, sess_of([urow("now-dashboard-v1-unit-fake-1-android", minutes=40)]), True, None)
+    ok(not due and why.startswith("done this week"), f"an admitted session 40 min ago: {why}")
+    due, why = dj.ddp_due("unit", unit, now, sess_of([urow("now-dashboard-v1-unit-fake-1-android", minutes=40)]), True, None)
+    rows_refused = [urow("now-dashboard-v1-unit-fake-1-android", minutes=40)]
+    due, why = dj.ddp_due("unit", unit, now, dj.device_sessions({"devices": {"unit": unit}}, rows_refused,
+                          {"results/raw/now-dashboard-v1-unit-fake-1-android": False}, set()).get("unit") or [],
+                          True, ("now-dashboard-v1-unit-fake-1-android", "DEVICE", "no record"))
+    ok(not due and "was not admitted" in why and "a person looks" in why, f"a billed sitting this week, not admitted: {why}")
+    due, why = dj.ddp_due("unit", unit, now, [], False, None)
+    ok(not due and why.startswith("off:"), f"the switch off: {why}")
+    due, why = dj.ddp_due("unit", dict(unit, auto=False), now, [], True, None)
+    ok(not due and "by hand" in why, f"auto: false: {why}")
+    traw = os.path.join(tmp, "troot", "results", "raw")
+    for name, started, adm, sessions in (("a-dashboard-v1-unit-fake-1-android", now - datetime.timedelta(hours=1), False, ["s-1"]),
+                                         ("b-dashboard-v1-unit-fake-1-r-android", now - datetime.timedelta(days=9), False, ["s-2"]),
+                                         ("c-dashboard-v1-unit-fake-1-x-android", now - datetime.timedelta(hours=2), False, []),
+                                         ("d-dashboard-v1-unit-fake-1-y-android", now - datetime.timedelta(hours=3), True, ["s-3"])):
+        os.makedirs(os.path.join(traw, name))
+        with open(os.path.join(traw, name, "SESSION.json"), "w") as fh:
+            json.dump({"started": started.strftime("%Y-%m-%d %H:%M:%S"), "admitted": adm, "verdict": "DEVICE",
+                       "reason": "no record", "ddp": {"sessions": sessions}}, fh)
+    tried = dj.ddp_tried("unit", dj.week_start(now), root=os.path.join(tmp, "troot"))
+    ok(tried and tried[0] == "a-dashboard-v1-unit-fake-1-android",
+       f"ddp_tried: this week's sitting that ran sessions and was not admitted (not last week's, not one that "
+       f"posted none, not an admitted one): {tried}")
+
+    print("--- the lab unit's sitting, run against a fake bench in a temp ROOT: SESSION.json, ledger line, post")
+    froot = os.path.join(tmp, "froot")
+    os.makedirs(os.path.join(froot, "results", "raw"))
+    with open(os.path.join(froot, "bench"), "w") as fh:
+        fh.write(FAKE_BENCH)
+    os.chmod(os.path.join(froot, "bench"), 0o755)
+    with open(os.path.join(bin_dir, "gtimeout"), "w") as fh:   # GNU coreutils' name on macOS; CI has none
+        fh.write("#!/bin/sh\nshift 2\nexec \"$@\"\n")
+    os.chmod(os.path.join(bin_dir, "gtimeout"), 0o755)
+    fake_post = os.path.join(tmp, "fake_post.py")
+    with open(fake_post, "w") as fh:
+        fh.write(f"import sys\nopen({os.path.join(state, 'post-argv.txt')!r}, 'a').write(' '.join(sys.argv[1:]) + '\\n')\n")
+    real_root, real_post, real_rows = dj.ROOT, dj.POST, dj.load_rows
+    dj.ROOT, dj.POST = froot, fake_post
+    urel = f"results/raw/{ucamp}-android"
+    dj.load_rows = lambda path=None: [{"campaign": urel, "device": "FakeU (DDP fake-1)", "runtime": "litert-lm-gpu",
+                                       "model_id": "m/A", "task": "short-chat"}]
+    pdir = os.path.join(tmp, "pages")
+    code, lines = job_ddp("unit", "--once", "--post-page-out", pdir, "--no-page-commit")
+    dj._unlock(".job.lock.unit")    # main() keeps its device lock to the process's end
+    sjson = os.path.join(froot, urel, "SESSION.json")
+    sdoc = json.load(open(sjson)) if os.path.exists(sjson) else {}
+    ok(code == dj.EXIT_OK and sdoc.get("admitted") is True and sdoc.get("reason") == dj.DDP_REASON
+       and sdoc.get("anchor", "x") is None and sdoc.get("platform") == "ddp" and sdoc.get("job") == "dashboard-v1",
+       f"exit {code}; SESSION.json admitted true, the lab unit's reason, anchor null, platform ddp")
+    d = sdoc.get("ddp") or {}
+    ok(d.get("id") == "fake-1" and d.get("sessions") == ["session-fake0001"] and d.get("jobs") == 2
+       and d.get("device_minutes") == 14.5 and d.get("plan", {}).get("sessions") == 1,
+       f"ddp: the unit id, the session the dir pulled, 2 jobs, 9.5 + 5.0 device-min (nanosecond times read): {d}")
+    ok(sdoc.get("cells_expected") == 2 and sdoc.get("cells_with_records") == 1 and sdoc.get("skipped"),
+       f"cells: the plan's 2 jobs, 1 with records (the summary's rows of the campaign and the unit); SKIPPED kept "
+       f"({sdoc.get('cells_with_records')}/{sdoc.get('cells_expected')})")
+    led = open(os.path.join(dj.LOG_DIR, "ledger.tsv")).read().splitlines()
+    ok(led and led[-1].split("\t")[2:5] == ["unit", urel, "OK"], f"one ledger line: {led[-1].split(chr(9))[2:5]}")
+    argv_post = open(os.path.join(state, "post-argv.txt")).read().split() if os.path.exists(
+        os.path.join(state, "post-argv.txt")) else []
+    ok(argv_post == ["--page-out", os.path.join(pdir, f"{ucamp}-android"), "--no-page-commit", urel],
+       f"the post over the dir, with --page-out <dir>/<campaign> and --no-page-commit passed through: {argv_post}")
+    code, lines = job_ddp("unit", "--once")
+    dj._unlock(".job.lock.unit")
+    ok(code == dj.EXIT_CONFIG and at(lines, "holds a sitting already") is not None,
+       f"a second sitting the same day without --suffix: refused before the doctor (exit {code})")
+    dj.load_rows = lambda path=None: []
+    os.environ["FAKE_BENCH_RC"] = "1"
+    code, lines = job_ddp("unit", "--once", "--suffix", "r2")
+    dj._unlock(".job.lock.unit")
+    os.environ.pop("FAKE_BENCH_RC")
+    s2 = json.load(open(os.path.join(froot, f"results/raw/{ucamp}-r2-android", "SESSION.json")))
+    ok(code == dj.EXIT_DEVICE and s2.get("admitted") is False and s2["reason"].startswith("no record (bench matrix --ddp exit 1")
+       and s2.get("runner_exit") == 1, f"no record written: admitted false, exit {code} (DEVICE), no post")
+    ok(open(os.path.join(state, "post-argv.txt")).read().count("\n") == 1, "no post after the sitting that wrote nothing")
+    dj.ROOT, dj.POST, dj.load_rows = real_root, real_post, real_rows
+    dj.SWITCH, dj.ddp_doctor, dj.ddp_plan = real_switch, real_doctor, real_plan
+    ok(not os.path.exists(gcalls), "no gcloud call in any of it (the trap first on PATH)")
+    os.remove(os.path.join(bin_dir, "gcloud"))
+
     dj.pgrep = real_pgrep
     lock = "/tmp/edge-llm-bench-android-FAKE-S.lock"   # the preflight's campaign-lock probe
     if os.path.exists(lock):

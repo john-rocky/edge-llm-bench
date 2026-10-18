@@ -23,9 +23,25 @@ import uuid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECK = os.path.join(ROOT, "scripts", "session_check.py")
-LOCK = json.load(open(os.path.join(ROOT, "environment.lock.json")))
+
+
+def committed(rel):
+    """A registry file as the checker reads it for these dirs (outside a git work tree: the repo's
+    newest commit of it, HEAD's), else the file on disk (no git)."""
+    p = subprocess.run(["git", "-C", ROOT, "show", f"HEAD:{rel}"], capture_output=True, text=True)
+    try:
+        return json.loads(p.stdout) if p.returncode == 0 else json.load(open(os.path.join(ROOT, rel)))
+    except ValueError:
+        return json.load(open(os.path.join(ROOT, rel)))
+
+
+LOCK = committed("environment.lock.json")
 PINS = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))["android_pins"]
 LITERT_APPLE = LOCK["arms"]["litert-lm"]["default_tag"]
+# the Mac's LiteRT-LM pin (arms.litert-lm.mac, for a sitting on or after its since day; the dirs here are
+# dated 2099), else default_tag: every record below is a Mac record
+MAC_BLOCK = LOCK["arms"]["litert-lm"].get("mac") or {}
+LITERT_MAC = MAC_BLOCK.get("tag") or LITERT_APPLE
 MLX = LOCK["arms"]["mlx-swift-lm"]["revision"]
 ON_TASK = ("On-device AI means the model runs on your phone itself instead of a cloud server, so it "
            "works offline, answers quickly and keeps your private data local on the device.")
@@ -105,7 +121,7 @@ def payload_dir(raw, name, anchor, records=None, **over):
     write_jsonl(d, "mlx-swift_mlx-community_Qwen3-0_6B-4bit_short-chat.jsonl",
                 cell("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX))
     write_jsonl(d, "litert-lm_litert-community_Qwen3-1_7B_short-chat.jsonl",
-                records or cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE))
+                records or cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC))
     return d
 
 
@@ -134,7 +150,7 @@ def main():
     with open(hist, "w") as fh:
         fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check\n")
         for i in range(3):
-            fh.write(f"results/raw/old-{i}-mac,mac,{LITERT_APPLE},litert-lm,litert-community/Qwen3-1.7B,"
+            fh.write(f"results/raw/old-{i}-mac,mac,{LITERT_MAC},litert-lm,litert-community/Qwen3-1.7B,"
                      f"short-chat,19,\n")
 
     print("--- PASS: a clean Mac anchor + payload pair, the prompt as the history reads it")
@@ -151,14 +167,14 @@ def main():
     holds = {
         "partial": dict(cells_with_records=1),
         "verdict": dict(verdict="TIMEOUT", runner_exit=124),
-        "prompt-tokens": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE, prompt=8)),
-        "reply-off-task": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE,
+        "prompt-tokens": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC, prompt=8)),
+        "reply-off-task": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC,
                                             sample=OFF_TASK)),
-        "reply-loop": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE,
+        "reply-loop": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC,
                                         sample="on-device AI " * 40)),
         "engine-stamp": dict(records=cell("litert-lm", "litert-community/Qwen3-1.7B", "v9.9.9")),
         "gen-budget": dict(records=[dict(r, metrics=dict(r["metrics"], generatedTokenCount=579))
-                                    for r in cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE)]),
+                                    for r in cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC)]),
     }
     for i, (rule, kw) in enumerate(holds.items()):
         aa = anchor_dir(raw, f"2099-02-{i + 1:02d}-dashboard-v1-m4max-anchor-mac")
@@ -191,7 +207,7 @@ def main():
                      admitted=False, reason="anchor-collapse")
     nosess = campaign(raw, "2099-04-02-dashboard-v1-m4max-mac")
     write_jsonl(nosess, "litert-lm_litert-community_Qwen3-1_7B_short-chat.jsonl",
-                cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE))
+                cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_MAC))
     stopped = campaign(raw, "2099-04-03-m4max-i1-stopped-0155-mac")
     sa = anchor_dir(raw, "2099-04-04-dashboard-v1-m4max-anchor-mac")
     sp = payload_dir(raw, "2099-04-04-dashboard-v1-m4max-mac", os.path.basename(sa))
@@ -253,6 +269,92 @@ def main():
        "a payload checked without its (uncommitted) anchor phase: HOLD pair-incomplete")
     rc, res, out = run([xa, xp], history=hist)
     ok(rc == 0 and all(r["verdict"] == "PASS" for r in res.values()), "the same two checked together: PASS")
+
+    print("--- a lab unit's job sitting (DDP, SESSION.json of the job): the job-session rules, no pair rules")
+    unit = campaign(raw, "2099-07-01-dashboard-v1-s26-ddp-m1q-36-android")
+    app = os.path.join(unit, "app-path-android")
+    os.makedirs(app)
+    log_name = "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2099-07-01T00-00-00_run1.log"
+    with open(os.path.join(app, log_name), "w") as fh:
+        fh.write("===ENGINE_OUTPUT===\ninput_prompt: What does on-device AI mean?\n" + ON_TASK
+                 + "\nBenchmarkInfo:\n  Prefill Turn 1: Processed 19 tokens\n")
+    for i in range(3):
+        rec = {"schemaVersion": 1, "id": str(uuid.uuid4()), "runtime": "litert-lm-gpu",
+               "engineVersion": PINS["litert-lm"], "model": {"id": "litert-community/Qwen3-1.7B"},
+               "task": "short-chat", "timestamp": now(i),
+               "device": {"modelIdentifier": "SM-S942U1", "systemName": "Android",
+                          "ddp": {"deviceId": "m1q-36", "serial": "FAKEUNIT1"}},
+               "parameters": {"maxTokens": 128},
+               "metrics": {"decodeTokensPerSecond": 20.0, "promptTokenCount": 19, "generatedTokenCount": 128,
+                           "coldRun": True, "firstEver": i == 0},
+               "conditions": {"protocolFlags": ["cpu-capped", "cpu-capped-at-start"],
+                              "ddp": {"sessionId": "session-fake0001", "deviceId": "m1q-36"}},
+               "provenance": {"rawLog": log_name, "modelShaSource": "device"}}
+        with open(os.path.join(app, f"run{i + 1}.json"), "w") as fh:
+            json.dump(rec, fh)
+    with open(os.path.join(app, "SKIPPED.txt"), "w") as fh:
+        fh.write("CELL_SKIP litert-lm-cpu litert-community/Qwen3-0.6B short-chat exclude-on=s26 reason=x\n")
+    os.makedirs(os.path.join(unit, "ddp", "session-fake0001", "j01"))
+    with open(os.path.join(unit, "ddp", "session-fake0001", "j01", "run1_logcat.txt"), "w") as fh:
+        fh.write("01-01 00:00:00 I litert: engine loaded\n")
+    with open(os.path.join(unit, "SESSION.json"), "w") as fh:
+        json.dump({"schema": "dashboard-job-session.v1", "job": "dashboard-v1", "phase": "payload",
+                   "campaign": f"results/raw/{os.path.basename(unit)}", "device_key": "s26-ddp",
+                   "device_identifier": "SM-S942U1 (DDP m1q-36)", "platform": "ddp", "attempt": 1,
+                   "started": "2099-07-01 02:00:00", "ended": "2099-07-01 03:00:00", "admitted": True,
+                   "verdict": "COMPLETED", "reason": "ddp lab unit: no session anchor; each run carries its "
+                   "cap marks and the text check", "anchor": None, "runner_exit": 0,
+                   "cells_expected": 1, "cells_with_records": 1,
+                   "ddp": {"id": "m1q-36", "sessions": ["session-fake0001"], "jobs": 1, "device_minutes": 9.5}},
+                  fh, indent=1)
+    rc, res, out = run([unit], history=hist)
+    r = res[os.path.basename(unit)]
+    ok(r["kind"] == "job payload (ddp)" and "not-job" not in rules(r) and r["verdict"] == "PASS" and rc == 0,
+       f"kind job payload (ddp), no not-job, PASS ({r['kind']}, {sorted(rules(r))}, exit {rc})")
+    ok(any(n.startswith("pair rules n/a") for n in r["notes"]) and any(n.startswith("cpu-cap: a lab unit")
+                                                                        for n in r["notes"]),
+       "the pair rules are n/a and the lab unit's caps are a note, never a verdict")
+    ex = os.path.join(unit, "ddp", "session-fake0001", "j01", "execution-abc")
+    os.makedirs(ex)
+    with open(os.path.join(ex, "logcat.txt"), "w") as fh:
+        fh.write("01-01 00:00:00 I litert: engine loaded\n")
+    with open(os.path.join(unit, "SESSION.json")) as fh:
+        sess = json.load(fh)
+    with open(os.path.join(unit, "SESSION.json"), "w") as fh:
+        json.dump(dict(sess, cells_with_records=0), fh)
+    rc, res, out = run([unit], history=hist)
+    r = res[os.path.basename(unit)]
+    ok(r["verdict"] == "FAIL" and {"logcat-unscrubbed", "partial"} <= rules(r),
+       f"its execution-level logcat.txt still FAILs, a cell without records still holds ({sorted(rules(r))})")
+
+    print("--- the Mac's LiteRT-LM pin: arms.litert-lm.mac from its since day, default_tag before it")
+    if LITERT_MAC != LITERT_APPLE and MAC_BLOCK.get("since"):
+        ma = anchor_dir(raw, "2099-06-01-dashboard-v1-m4max-anchor-mac")
+        mp = payload_dir(raw, "2099-06-01-dashboard-v1-m4max-mac", os.path.basename(ma),
+                         records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE))
+        rc, res, out = run([ma, mp], history=hist)
+        r = res[os.path.basename(mp)]
+        stamp = [f["detail"] for f in r["findings"] if f["rule"] == "engine-stamp"]
+        ok(r["verdict"] == "HOLD" and stamp and "arms.litert-lm.mac.tag" in stamp[0] and LITERT_MAC in stamp[0],
+           f"a Mac sitting after since stamping default_tag {LITERT_APPLE}: HOLD engine-stamp against the "
+           f"Mac block's {LITERT_MAC} ({stamp[:1]})")
+        before = (datetime.date.fromisoformat(MAC_BLOCK["since"]) - datetime.timedelta(days=1)).isoformat()
+        ba = anchor_dir(raw, f"{before}-dashboard-v1-m4max-anchor-mac")
+        bp = payload_dir(raw, f"{before}-dashboard-v1-m4max-mac", os.path.basename(ba),
+                         records=cell("litert-lm", "litert-community/Qwen3-1.7B", LITERT_APPLE))
+        hist_old = os.path.join(tmp, "device-runs-old.csv")
+        with open(hist_old, "w") as fh:
+            fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check\n")
+            for i in range(3):
+                fh.write(f"results/raw/old-{i}-mac,mac,{LITERT_APPLE},litert-lm,litert-community/Qwen3-1.7B,"
+                         f"short-chat,19,\n")
+        rc, res, out = run([ba, bp], history=hist_old)
+        r = res[os.path.basename(bp)]
+        ok(r["verdict"] == "PASS" and "engine-stamp" not in rules(r),
+           f"a Mac sitting the day before since ({before}) stamping default_tag {LITERT_APPLE}: PASS "
+           f"({sorted(rules(r))})")
+    else:
+        print("  skip  the lock has no arms.litert-lm.mac block with another tag and a since day")
 
     print("--- usage")
     rc, res, out = run([os.path.join(raw, "no-such-dir")], history=hist)

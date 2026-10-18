@@ -495,6 +495,31 @@ def main():
         "0" * 40, {"start": None, "display": "D", "ident": "I", "end": None}, set(), {"r"}, [],
         dp.number_changes(before, after)), "the phrase in the page commit's message")
 
+    print("--- a DDP lab unit's sitting: the message names the platform, the pool, the units, the sessions and the caps")
+    import collections as _c
+    import datetime
+    facts = {"display": "Galaxy S26 (DDP m1q-36)", "ident": "SM-S942U1 (DDP m1q-36)",
+             "start": datetime.datetime(2026, 10, 18, 22, 30).astimezone(),
+             "end": datetime.datetime(2026, 10, 18, 23, 50).astimezone(),
+             "stamps": {"litert-lm-cpu": _c.Counter({"v0.18.0": 3}), "litert-lm-gpu": _c.Counter({"v0.18.0": 3})},
+             "runs": 6, "text_n": 2, "text_pass": 2, "capped_in": 3, "capped_past": 3,
+             "arms_in": _c.Counter({"litert-lm-gpu": 3}), "arms_past": _c.Counter({"litert-lm-cpu": 3}),
+             "cells": [("matrices/dashboard-ddp-v1-android-s26.cells", 2, 2)], "anchor": None, "anchor_phase": "",
+             "payload_ratios": [], "failures": [], "flagged": [], "skipped": ["CELL_SKIP x reason=y"],
+             "ddp": {"id": "m1q-36", "sessions": ["session-aaaa0001", "session-bbbb0002"], "jobs": 2,
+                     "device_minutes": 21.4}, "units": 2}
+    msg = dp.commit_message(facts, 4537, 4591, [])
+    ok(msg.startswith("results 2026-10-18 Galaxy S26 lab units on the Developer Device Platform (DDP m1q-36, "
+                      "SM-S942U1, 2 units), litert-lm-cpu: v0.18.0, litert-lm-gpu: v0.18.0: 2/2 cells of "
+                      "matrices/dashboard-ddp-v1-android-s26.cells in one dashboard-job sitting ")
+       and "(2 Device Run sessions session-aaaa0001, session-bbbb0002, 2 jobs, 21.4 device-min; no session anchor: "
+           "a lab unit's runs carry their own cap marks and text check)" in msg
+       and "cpu-capped counted 3/6 (litert-lm-gpu 3), past the line 3 (litert-lm-cpu 3; a lab unit starts capped: "
+           "no number)" in msg and "SKIPPED: 1 lines" in msg and not dp.REFUSED_WORDS.search(msg), msg)
+    ok("the 2026-10-18 Galaxy S26 lab units on the Developer Device Platform (DDP m1q-36, SM-S942U1, 2 units) "
+       "dashboard-job sitting" in dp.page_message("0" * 40, facts, set(), {"r"}, []),
+       "the page commit's message names the lab units the same way")
+
     print("--- usage")
     rc, out = post([os.path.join("results", "raw", "no-such-dir")], "off")
     ok(rc == 2, f"a path that is not a directory: exit 2 (got {rc})")

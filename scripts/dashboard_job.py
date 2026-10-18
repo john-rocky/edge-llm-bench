@@ -64,6 +64,18 @@ and post; an android native-benchmark retake row adds `./bench profile`'s pair i
 campaign. `auto` takes a device whose weekly set is done when a retake of it is pending, and a
 device with a pending retake before the others; the week counts weekly sets only (a retake
 sitting's SESSION.json names its retakes). --cells (a run by hand) and --no-retake take none.
+
+A Developer Device Platform lab unit (schedule.json platform "ddp", docs/dashboard-autopilot-v1.md
+§9) has no device on this host, so `auto` never takes it as the firing's one device: after the
+attached device's sitting (or at a firing with none) each lab unit whose weekly sitting is due runs
+one (`ddp: …` lines in the auto log): ops/autopilot/switch.json ddp_weekly on, the checks `bench
+doctor --platform ddp` requires (scripts/doctor.py check_ddp alone: no phone of this host is listed or
+touched), the plan of `bench matrix --ddp --dry-run` within the switch's ddp_max_sessions (nothing is
+billed past it), then `bench matrix <cells> --ddp <id>`. No hold, no reboot, no anchor
+phase: SESSION.json is admitted when the sitting wrote records (each run carries its cap marks and
+the text check), then the ledger line and the post as any sitting. Once a week: an admitted session
+since Monday, or a sitting this week that ran Device Run sessions and was not admitted, ends the
+week's slot. --no-ddp skips it; `dashboard_job.py <its key>` runs it by hand.
 What the job never does: edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
 phone between halves (the host HF cache is the source), together with their
@@ -75,6 +87,7 @@ import collections
 import csv
 import datetime
 import fcntl
+import glob
 import json
 import os
 import re
@@ -101,8 +114,9 @@ SUMMARY_CSV = os.path.join(ROOT, "results", "summary", "device-runs.csv")
 # the admission probe is <date>-dashboard-v1-<device>-anchor-<plat> and is not a session
 DASHBOARD_CAMPAIGN = "-dashboard-v1-"
 ANCHOR_CAMPAIGN_RE = r"-dashboard-v1-.*-anchor-"
-# bench --platform name -> cells-file platform token (= campaign dir suffix)
-PLATFORM_TOKEN = {"mac": "mac", "iphone": "ios", "android": "android"}
+# bench --platform name -> cells-file platform token (= campaign dir suffix); a DDP lab unit runs the
+# android rows (bench matrix --ddp writes <campaign>-android)
+PLATFORM_TOKEN = {"mac": "mac", "iphone": "ios", "android": "android", "ddp": "android"}
 ANDROID_DEV_DIR = "/data/local/tmp/llmbench"
 # the Mac runner's own guard (scripts/bench_matrix_mac.sh heavy_guard), replicated so the
 # job reports BUSY and polls instead of letting `bench matrix` fail once and give up the
@@ -608,10 +622,11 @@ def hold_release(h):
 
 # ---------------------------------------------------------------- capture
 
-def run_matrix(cells, platform, campaign, env, timeout_s, dry):
+def run_matrix(cells, platform, campaign, env, timeout_s, dry, ddp=None):
+    # a lab unit (ddp = its catalog id): the android rows as Device Run sessions, android/ddp/run_ddp.py
+    target = ["--ddp", ddp] if ddp else ["--platform", platform]
     cmd = ["gtimeout", "--kill-after=60", str(int(timeout_s)),
-           os.path.join(ROOT, "bench"), "matrix", cells, "--platform", platform,
-           "--campaign", campaign]
+           os.path.join(ROOT, "bench"), "matrix", cells] + target + ["--campaign", campaign]
     log("$ " + " ".join(cmd) + "   env: " + " ".join(f"{k}={v!r}" for k, v in env.items()))
     if dry:
         return 0
@@ -910,16 +925,28 @@ def ledger(row):
                             "exit", "minutes", "attempt")) + "\n")
 
 
-def post_sitting(code, dirs, dry):
+def post_args(args, dirs):
+    """The post's options a run by hand passes through: --post-page-out DIR -> --page-out
+    DIR/<the sitting's last campaign> (the post builds into an empty or new dir), --no-page-commit."""
+    out = []
+    if getattr(args, "post_page_out", None) and dirs:
+        out += ["--page-out", os.path.join(os.path.abspath(os.path.expanduser(args.post_page_out)),
+                                           os.path.basename(dirs[-1]))]
+    if getattr(args, "no_page_commit", False):
+        out.append("--no-page-commit")
+    return out
+
+
+def post_sitting(code, dirs, dry, extra=()):
     """Hand a sitting that exited 0 to scripts/dashboard_post.py over the campaign dirs it wrote
     SESSION.json in (docs/dashboard-autopilot-v1.md) -> the command, or None when there is
     nothing to hand over (another exit code, no dir). A dry run prints the command and runs
     nothing. The post's output goes to this job log; its exit code, a HOLD or a failure is one
     line here and its own ledger line (logs/dashboard-job/autopilot-ledger.tsv), never the
-    sitting's exit code or ledger line."""
+    sitting's exit code or ledger line. `extra`: post_args."""
     if code != EXIT_OK or not dirs:
         return None
-    cmd = [PY, POST] + list(dirs)
+    cmd = [PY, POST] + list(extra) + list(dirs)
     log("post: $ " + " ".join(cmd) + ("   [dry-run: printed, not run]" if dry else ""))
     if dry:
         return cmd
@@ -1197,8 +1224,331 @@ def retake_sitting(schedule, key, dev, args):
                 "verdict": VERDICT_NAME.get(code, str(code)), "reason": f"retake {', '.join(ids)}: {reason}",
                 "exit": code, "minutes": round((time.time() - t0) / 60, 1), "attempt": 1})
     log(f"=== retake done: {VERDICT_NAME.get(code, code)} ({reason}) exit {code}")
-    post_sitting(code, sitting, args.dry_run)
+    post_sitting(code, sitting, args.dry_run, post_args(args, sitting))
     return code
+
+
+# ---------------------------------------------------------------- DDP lab units (docs/dashboard-autopilot-v1.md §9)
+
+# the autopilot's switch: ddp_weekly turns the lab-unit slot on (user 2026-10-16: no per-session GO;
+# off when a Googler runs the weekly DDP set on their side), ddp_max_sessions caps the Device Run
+# sessions one sitting may start (the plan's count, read before any is billed)
+SWITCH = os.path.join(ROOT, "ops", "autopilot", "switch.json")
+DDP_REASON = "ddp lab unit: no session anchor; each run carries its cap marks and the text check"
+
+
+def load_switch(path=None):
+    """(ddp_weekly, ddp_max_sessions) of the switch (default SWITCH): only true turns the slot on; the
+    cap is a whole number >= 0 (absent or anything else: 0, no session); no file = off. ConfigError
+    when it does not parse."""
+    path = path or SWITCH
+    try:
+        with open(path) as fh:
+            raw = json.load(fh)
+    except FileNotFoundError:
+        raw = {}
+    except (OSError, ValueError) as e:
+        raise ConfigError(f"switch unreadable: {path}: {e}")
+    if not isinstance(raw, dict):
+        raise ConfigError(f"switch is not a JSON object: {path}")
+    cap = raw.get("ddp_max_sessions")
+    cap = cap if isinstance(cap, int) and not isinstance(cap, bool) and cap >= 0 else 0
+    return raw.get("ddp_weekly") is True, cap
+
+
+def one_line(text, n=400):
+    """A reason for the ledger (one TSV field): whitespace runs to one space, the last n characters."""
+    text = " ".join(str(text or "").split())
+    return text if len(text) <= n else "…" + text[-(n - 1):]
+
+
+def log_tail(n=3):
+    """The last lines of this sitting's log (a runner prints into it through the pipe), for a reason."""
+    if not _LOG:
+        return ""
+    try:
+        with open(_LOG.name, errors="replace") as fh:
+            lines = [ln.strip() for ln in fh if ln.strip()]
+    except OSError:
+        return ""
+    return one_line(" | ".join(lines[-n:]))
+
+
+def ddp_doctor():
+    """(rc, output) of the checks `bench doctor --platform ddp` makes required, alone (scripts/doctor.py
+    check_ddp): gcloud on PATH and signed in (its exit code only, the token is never read),
+    huggingface_hub, the pinned engine files (BENCH_ANDROID_BIN_DIR, else android/bin). Not the whole
+    doctor: it also lists `adb devices` and `xcrun devicectl list devices`, and with one Android phone
+    attached runs `adb -s <serial> shell sha256sum …` on it, which a lab unit's sitting must not do to a
+    phone another sitting may be measuring."""
+    code = ("import sys; sys.path.insert(0, sys.argv[1]); import doctor; doctor.check_ddp(True); "
+            "[print(f'{s:4}  {n}  {d}'.rstrip()) for s, n, d in doctor._RESULTS]; "
+            "sys.exit(1 if any(s == doctor.FAIL for s, _, _ in doctor._RESULTS) else 0)")
+    return sh([PY, "-c", code, os.path.join(ROOT, "scripts")], timeout=180)
+
+
+def ddp_plan(cells, ddp_id, campaign):
+    """The plan `bench matrix <cells> --ddp <id> --dry-run` prints (android/ddp/run_ddp.py: no gcloud,
+    no network, the models looked up in the local HF cache only) -> {jobs, sessions, skipped, cells:
+    (arm, model id, task) per job, skips, upload_objects, upload_bytes, uncached, device_minutes (run_ddp's
+    own estimate), engine}; ConfigError with the output's tail when it prints no summary."""
+    rc, out = sh([os.path.join(ROOT, "bench"), "matrix", cells, "--ddp", ddp_id, "--campaign", campaign,
+                  "--dry-run"], timeout=900)
+    plan, summary, upload = {"cells": [], "skips": []}, None, {}
+    for ln in out.splitlines():
+        if not ln.startswith("{"):
+            continue
+        try:
+            d = json.loads(ln)
+        except ValueError:
+            continue
+        if "job" in d:
+            plan["cells"].append(tuple(d["cell"].split()[:3]))
+        elif "skip" in d:
+            plan["skips"].append(f"{d['skip']}: {d.get('reason')}"
+                                 + (f" (exclude-on {d['excludeOn']})" if d.get("excludeOn") else ""))
+        elif "uploadCandidates" in d:
+            upload = d
+        elif "summary" in d:
+            summary = d["summary"]
+    if rc != 0 or summary is None:
+        raise ConfigError(f"the DDP plan (bench matrix {cells} --ddp {ddp_id} --dry-run) exit {rc}: "
+                          + one_line(" | ".join(out.strip().splitlines()[-4:])))
+    plan.update(jobs=summary.get("jobs", 0), sessions=summary.get("sessions", 0),
+                skipped=summary.get("skipped", 0), device_minutes=summary.get("deviceMinutes"),
+                engine=summary.get("engine"), upload_objects=len(upload.get("uploadCandidates") or []),
+                upload_bytes=upload.get("uploadBytes") or 0, uncached=upload.get("uncached") or [])
+    return plan
+
+
+def ddp_time(text):
+    """A Device Run API time ("2026-10-16T09:27:28.344Z", up to nanoseconds) -> aware datetime, or None."""
+    m = re.match(r"(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(\.\d+)?Z$", text or "")
+    if not m:
+        return None
+    return datetime.datetime.fromisoformat(m.group(1) + (m.group(2) or ".0")[:7] + "+00:00")
+
+
+def ddp_facts(rel):
+    """The Device Run sessions a lab unit's campaign dir pulled (ddp/session-<n>.json, else the response
+    in ddp/operation-<n>.json, as run_ddp.py reads them back) -> {sessions: [ids], jobs, device_minutes:
+    the executions' start -> end summed, results: {resultType: jobs}}."""
+    found = {}
+    for p in glob.glob(os.path.join(ROOT, rel, "ddp", "*.json")):
+        m = re.fullmatch(r"(session|operation)-(\d+)\.json", os.path.basename(p))
+        if m:
+            found.setdefault(int(m.group(2)), {})[m.group(1)] = p
+    sessions, jobs, secs, results = [], 0, 0.0, collections.Counter()
+    for n in sorted(found):
+        doc = {}
+        for kind in ("session", "operation"):
+            try:
+                with open(found[n][kind]) as fh:
+                    d = json.load(fh)
+            except (KeyError, OSError, ValueError):
+                continue
+            d = (d.get("response") or {}) if kind == "operation" and isinstance(d, dict) else d
+            if isinstance(d, dict) and "sessionReport" in d:
+                doc = d
+                break
+        if not doc:
+            continue
+        sessions.append((doc.get("name") or "").rsplit("/", 1)[-1] or f"session {n}")
+        for j in (doc.get("sessionReport") or {}).get("jobReports") or []:
+            jobs += 1
+            results[(j.get("result") or {}).get("resultType") or "?"] += 1
+            for e in j.get("executionReports") or []:
+                a, b = ddp_time(e.get("startTime")), ddp_time(e.get("endTime"))
+                if a and b:
+                    secs += (b - a).total_seconds()
+    return {"sessions": sessions, "jobs": jobs, "device_minutes": round(secs / 60, 1), "results": dict(results)}
+
+
+def ddp_tried(key, monday, root=None):
+    """The newest sitting of lab unit `key` started since `monday` that ran Device Run sessions and was
+    not admitted (its SESSION.json) -> (dir name, verdict, reason), or None: one billed attempt a week,
+    the next waits for a person."""
+    best = None
+    for f in glob.glob(os.path.join(root or ROOT, "results", "raw", f"*-dashboard-v1-{key}-*", "SESSION.json")):
+        try:
+            with open(f) as fh:
+                s = json.load(fh)
+            t = datetime.datetime.strptime(s.get("started") or "", "%Y-%m-%d %H:%M:%S").astimezone()
+        except (OSError, ValueError, AttributeError):
+            continue
+        if s.get("admitted", True) or not (s.get("ddp") or {}).get("sessions") or t < monday:
+            continue
+        if best is None or t > best[0]:
+            best = (t, os.path.basename(os.path.dirname(f)), s.get("verdict"), s.get("reason"))
+    return best[1:] if best else None
+
+
+def ddp_due(key, dev, now, sessions, switch_on, tried):
+    """(due, why) of a lab unit's weekly sitting at this firing (`sessions`: device_sessions of the unit,
+    newest first; `tried`: ddp_tried). Not due: by hand only, the switch off, an admitted session since
+    Monday, a sitting this week that ran Device Run sessions and was not admitted."""
+    monday = week_start(now)
+    last = sessions[0] if sessions else None
+    if dev.get("auto") is False:
+        return False, "auto: false, by hand only"
+    if not switch_on:
+        return False, ("off: ops/autopilot/switch.json ddp_weekly is not true (a Googler runs the DDP set "
+                       f"on their side); by hand: dashboard_job.py {key}")
+    if last and last[0] >= monday:
+        return False, f"done this week: admitted {last[0]:%F %H:%M} {last[1]}"
+    if tried:
+        return False, (f"{tried[0]} ran Device Run sessions this week and was not admitted ({tried[1]}: "
+                       f"{one_line(tried[2], 120)}): a person looks before another sitting is billed; "
+                       f"by hand: dashboard_job.py {key}")
+    return True, ("due: " + (f"last admitted {last[0]:%F %H:%M} {last[1]}" if last else "never measured")
+                  + f", none since Mon {monday:%F}")
+
+
+def ddp_sitting(schedule, key, dev, args, cells=None, suffix=None):
+    """One sitting of a Developer Device Platform lab unit -> (exit code, reason, campaign dir, the dirs
+    it wrote SESSION.json in; a dry run: the one it would). No hold, no reboot, no anchor phase: the
+    switch (ddp_weekly), the doctor's DDP checks (ddp_doctor), the plan (its Device Run sessions within
+    ddp_max_sessions: nothing is billed past the cap), then `bench matrix <cells> --ddp <id>` under
+    gtimeout timeout_hours (it uploads what the bucket lacks, runs the sessions one after another, pulls,
+    scrubs the logcats, writes the records, rebuilds the summary), then SESSION.json: admitted when the
+    sitting wrote records (DDP_REASON; anchor null), the sessions, jobs and device minutes."""
+    dry = args.dry_run
+    ddp_id, cells = dev.get("ddp_id"), cells or dev.get("cells")
+    if not ddp_id or not cells:
+        raise ConfigError(f"schedule.json {key}: a ddp device needs ddp_id and cells")
+    camp = (f"{datetime.date.today().isoformat()}-dashboard-v1-{key}-{ddp_id}"
+            + (("-" + suffix.strip("-")) if suffix else ""))
+    rel = campaign_rel(camp, "ddp")
+    started = time.strftime("%F %T")
+    log(f"=== slot {key} ({dev['display']}, DDP {ddp_id}) campaign {camp}" + (" [dry-run]" if dry else ""))
+    on, cap = load_switch()
+    if not on:
+        raise ConfigError("ops/autopilot/switch.json ddp_weekly is not true: the lab-unit slot is off "
+                          "(docs/dashboard-autopilot-v1.md §9)")
+    if os.path.exists(os.path.join(ROOT, rel, "SESSION.json")) or glob.glob(
+            os.path.join(ROOT, rel, "app-path-android", "*.json")):
+        raise ConfigError(f"{rel} holds a sitting already: a second one today takes --suffix")
+    rc, out = ddp_doctor()
+    if rc != 0:
+        fails = [ln.strip() for ln in out.splitlines() if ln.strip().startswith("FAIL")]
+        raise NotReady("doctor (check_ddp) FAILED: " + one_line(" | ".join(fails) or out))
+    log("doctor (check_ddp): ready")
+    for ln in out.splitlines():
+        if ln.strip():
+            log("  " + ln.strip())
+    plan = ddp_plan(cells, ddp_id, camp)
+    log(f"ddp plan: {plan['jobs']} jobs in {plan['sessions']} Device Run sessions on {ddp_id} (engine "
+        f"{plan['engine']}), {plan['skipped']} rows skipped; {plan['upload_objects']} upload candidates, "
+        f"{plan['upload_bytes'] / 1e9:.2f} GB (the run uploads what the bucket lacks); run_ddp's estimate "
+        f"{plan['device_minutes']} device-min; cap {cap} sessions (ops/autopilot/switch.json ddp_max_sessions)")
+    for s in plan["skips"]:
+        log(f"  ddp skip: {s}")
+    if plan["uncached"]:
+        log(f"  not in the local HF cache (the run downloads them): {', '.join(plan['uncached'])}")
+    if not plan["jobs"]:
+        raise ConfigError(f"no row of {cells} runs on DDP")
+    if plan["sessions"] > cap:
+        raise ConfigError(f"the plan needs {plan['sessions']} Device Run sessions, ops/autopilot/switch.json "
+                          f"ddp_max_sessions is {cap}: nothing started")
+    if dry:
+        log("plan:")
+    rc = run_matrix(cells, "ddp", camp, {}, float(dev.get("timeout_hours", 6)) * 3600, dry, ddp=ddp_id)
+    if dry:
+        log(f"  SESSION.json would read admitted true once the sitting writes records ({DDP_REASON}), anchor "
+            "null, ddp {id, sessions, jobs, device_minutes}")
+        return EXIT_OK, "ok", rel, [rel]
+    if not os.path.isdir(os.path.join(ROOT, rel)):
+        why = f"bench matrix --ddp exit {rc} before its campaign dir: no Device Run session ({log_tail()})"
+        return (EXIT_TIMEOUT if rc == 124 else EXIT_DEVICE), why, rel, []
+    facts = ddp_facts(rel)
+    want = set(plan["cells"])
+    have = {(r["runtime"], r["model_id"], r["task"]) for r in load_rows()
+            if r["campaign"] == rel and r["device"] == dev["identifier"]} & want
+    admitted = bool(have)
+    reason = DDP_REASON if admitted else f"no record (bench matrix --ddp exit {rc}: {log_tail()})"
+    write_session(rel, {"campaign": rel, "phase": "payload", "cells": cells, "device_key": key,
+                        "device_display": dev["display"], "device_identifier": dev["identifier"],
+                        "platform": "ddp", "attempt": 1, "started": started, "ended": time.strftime("%F %T"),
+                        "admitted": admitted, "verdict": "TIMEOUT" if rc == 124 else "COMPLETED",
+                        "reason": reason, "anchor": None, "runner_exit": rc,
+                        "cells_expected": len(want), "cells_with_records": len(have),
+                        "ddp": {"id": ddp_id, "sessions": facts["sessions"], "jobs": facts["jobs"],
+                                "device_minutes": facts["device_minutes"], "results": facts["results"],
+                                "plan": {"sessions": plan["sessions"], "jobs": plan["jobs"],
+                                         "device_minutes_estimate": plan["device_minutes"]}},
+                        **campaign_notes(rel)})
+    log(f"ddp: {len(facts['sessions'])} Device Run sessions ({', '.join(facts['sessions']) or 'none'}), "
+        f"{facts['jobs']} jobs {facts['results']}, {facts['device_minutes']} device-min; {len(have)} of "
+        f"{len(want)} cells with records")
+    log(f"render_dashboard exit {sh([PY, os.path.join(ROOT, 'scripts', 'render_dashboard.py')], timeout=300)[0]}")
+    if rc == 124:
+        return EXIT_TIMEOUT, "timeout", rel, [rel]
+    if not admitted:
+        return EXIT_DEVICE, reason, rel, [rel]
+    return EXIT_OK, "ok" if rc == 0 else f"ok; bench matrix --ddp exit {rc}", rel, [rel]
+
+
+def ddp_slot(schedule, key, dev, args, cells=None, suffix=None):
+    """A lab unit's sitting with its close: the ledger line, the done line, then the post over its dir
+    when it exits 0 (no hold to release first) -> its exit code."""
+    t0, started = time.time(), time.strftime("%F %T")
+    code, reason, camp, sitting = EXIT_CONFIG, "", "", []
+    try:
+        code, reason, camp, sitting = ddp_sitting(schedule, key, dev, args, cells, suffix)
+    except NotReady as e:
+        code, reason = EXIT_DEVICE, str(e)
+        log(f"DEVICE: {e}")
+    except ConfigError as e:
+        code, reason = EXIT_CONFIG, str(e)
+        log(f"CONFIG: {e}")
+    if not args.dry_run:
+        ledger({"started": started, "ended": time.strftime("%F %T"), "device": key, "campaign": camp or "",
+                "verdict": VERDICT_NAME.get(code, str(code)), "reason": one_line(reason), "exit": code,
+                "minutes": round((time.time() - t0) / 60, 1), "attempt": 1})
+    log(f"=== done: {VERDICT_NAME.get(code, code)} ({reason}) exit {code}")
+    post_sitting(code, sitting, args.dry_run, post_args(args, sitting))
+    return code
+
+
+def ddp_after(schedule, args, now=None, rows=None, admitted=None, tried=None):
+    """auto, after the attached device's sitting (or at a firing with none): each lab unit (platform
+    ddp) whose weekly sitting is due (ddp_due) runs one, one after another; never the firing's device.
+    `ddp: …` lines in the auto log say what was decided; a sitting logs to <date>-<key>.log. `tried`:
+    key -> ddp_tried (default: read from results/raw). -> {key: exit code} of the sittings run."""
+    units = {k: d for k, d in schedule.get("devices", {}).items() if d.get("platform") == "ddp"}
+    if not units:
+        return {}
+    open_log("auto")
+    try:
+        on, _ = load_switch()
+    except ConfigError as e:
+        log(f"ddp: {e}; no lab-unit sitting")
+        return {}
+    now = now or datetime.datetime.now().astimezone()
+    rows = load_rows() if rows is None else rows
+    admitted = load_admission() if admitted is None else admitted
+    sessions = device_sessions({"devices": units}, rows, admitted, regression_watch.retake_sitting_dirs(ROOT))
+    out = {}
+    for key, dev in units.items():
+        t = tried.get(key) if tried is not None else ddp_tried(key, week_start(now))
+        due, why = ddp_due(key, dev, now, sessions.get(key) or [], on, t)
+        log(f"ddp: {key} ({dev['display']}): {why}")
+        if not due:
+            continue
+        if not args.dry_run:
+            other = device_lock(key)
+            if other:
+                log(f"ddp: {key}: a sitting is running on it (pid {other}); none started")
+                continue
+        log(f"ddp: {key}: its sitting starts now (log {datetime.date.today().isoformat()}-{key}.log)")
+        open_log(key)
+        try:
+            out[key] = ddp_slot(schedule, key, dev, args)
+        finally:
+            _unlock(f".job.lock.{key}")
+            open_log("auto")
+        log(f"ddp: {key}: {VERDICT_NAME.get(out[key], out[key])}, exit {out[key]}")
+    return out
 
 
 # ---------------------------------------------------------------- auto: which device now
@@ -1290,13 +1640,14 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     record; the Mac only while no heavy pipeline runs), ordered by the age of
     their last admitted session, oldest first (never measured = oldest; ties
     in schedule order); an entry with `auto: false` is never a candidate (by hand
-    only, state by-hand). A device with a pending retake (`retakes`: key -> count,
+    only, state by-hand), nor is a lab unit (platform ddp, state ddp: main() decides
+    its sitting after the attached device's, ddp_after). A device with a pending retake (`retakes`: key -> count,
     default logs/dashboard-job/retakes.json) is a candidate though its weekly set
     is done (weekly_done in its report entry: the firing runs the retake only), and
     those devices go first; the autopilot's retake sittings (`skip`, default the
     SESSION.json files that name retakes) are not weekly sessions. `exclude` maps
     keys already tried this firing to (state, detail). The report has one dict per
-    device — key, state (done / by-hand / candidate / busy / not-ready / waiting),
+    device — key, state (done / by-hand / ddp / candidate / busy / not-ready / waiting),
     detail, last, weekly_done — for the log."""
     devices = schedule.get("devices", {})
     if key != "auto":
@@ -1320,6 +1671,11 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
         report.append(entry)
         if dev.get("auto") is False:
             entry.update(state="by-hand", detail=f"auto: false, by hand only; {entry['detail']}")
+            continue
+        if dev.get("platform") == "ddp":
+            # a lab unit uses no device on this host: never the firing's one device
+            entry.update(state="ddp", detail=f"lab unit, decided after the attached device's sitting; "
+                                             f"{entry['detail']}")
             continue
         pending = retakes.get(k, 0)
         retake_text = f"{pending} retake{'s' if pending != 1 else ''} pending"
@@ -1469,6 +1825,13 @@ def main():
                     help="no busy polling / abort retry — one attempt")
     ap.add_argument("--no-retake", action="store_true",
                     help="run no pending retake of the device before its weekly set (--cells implies it)")
+    ap.add_argument("--no-ddp", action="store_true",
+                    help="auto: no lab-unit (DDP) sitting after the attached device's")
+    ap.add_argument("--post-page-out", metavar="DIR",
+                    help="the post builds the page into DIR/<the sitting's last campaign> "
+                         "(scripts/dashboard_post.py --page-out)")
+    ap.add_argument("--no-page-commit", action="store_true",
+                    help="the post commits nothing in the page repo (scripts/dashboard_post.py --no-page-commit)")
     ap.add_argument("--hold-held-by", type=int, metavar="PID",
                     help="the device hold is held by this live pid (a keeper that queued for the "
                          "phone): the job neither acquires nor releases it; exit 2 when the pid is "
@@ -1486,12 +1849,17 @@ def main():
         return EXIT_CONFIG
     auto = args.device == "auto"
     key, dev, _ = resolve_device(schedule, args.device)
+    if not auto and dev.get("platform") == "ddp" and HOLD_KEEPER is not None:
+        ap.error("--hold-held-by: a lab unit (platform ddp) has no hold")
     if not args.dry_run and not auto:
         other = device_lock(key)
         if other:
             print(f"a dashboard sitting is already running on {key} (pid {other}); exit {EXIT_BUSY}")
             return EXIT_BUSY
     open_log("auto" if auto else key)
+    if not auto and dev.get("platform") == "ddp":
+        # a lab unit by hand: its sitting, ledger line and post (no retake, no busy poll, one attempt)
+        return ddp_slot(schedule, key, dev, args, cells=args.cells, suffix=args.suffix)
 
     retry = schedule.get("retry", {})
     poll = float(retry.get("busy_poll_minutes", 15)) * 60
@@ -1610,7 +1978,12 @@ def main():
     log(f"=== done: {VERDICT_NAME.get(code, code)} ({reason}) exit {code}")
     # after the ledger line and outside the hold (attempt() released it): the sitting's
     # campaign dirs to the post step; nothing it does changes `code` or the line above
-    post_sitting(code, sitting, args.dry_run)
+    post_sitting(code, sitting, args.dry_run, post_args(args, sitting))
+    if auto and not args.no_ddp:
+        # the lab units after the attached device's sitting: that device is free again first
+        if key:
+            _unlock(f".job.lock.{key}")
+        ddp_after(schedule, args)
     return code
 
 
