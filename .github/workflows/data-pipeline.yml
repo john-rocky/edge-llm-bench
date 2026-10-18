@@ -70,6 +70,8 @@ jobs:
         run: BENCH_ANDROID_BIN_DIR="$RUNNER_TEMP/android-bin" python android/ddp/selftest.py
       - name: dashboard job device choice (fake adb, temp holds; no results/raw touched)
         run: python scripts/dashboard_job_selftest.py
+      - name: session checker verdicts (synthetic campaign dirs in a temp dir; no device, network or git history)
+        run: python scripts/session_check_selftest.py
 
   scripts-compile:
     name: every script parses

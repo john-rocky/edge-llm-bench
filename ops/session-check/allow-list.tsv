@@ -1,0 +1,37 @@
+# scripts/session_check.py allow-list: one excused finding per line, five tab-separated fields.
+#   rule    the rule id (docs/session-check-v1.md)
+#   dir     a glob on the campaign dir name (* = any dir)
+#   match   * , a substring of the finding detail, or re:<regex> searched in it
+#   commit  the commit whose message gives the reason (a hash, 7-40 hex)
+#   reason  the reason, in a few words
+# A line goes in only when that commit message states the reason; a finding no commit explains
+# stays HOLD or FAIL. Never widen a rule here: an excused finding is still listed in the output.
+#
+# known exceptions, any dir
+failures	*-mac	re:^FAIL llama\.cpp .*\(cell records in the dir: [1-9]	c7b60c2b	Mac llama.cpp cells record their runs, then abort in llama b8999's Metal teardown; the runner writes FAIL by exit code and the rows stand (docs/OPERATIONS.md, Known limits)
+reply-off-task	*	litert-community/Qwen3-0.6B short-chat (v0.18.0)	e3010721	the Qwen3 0.6B LiteRT-LM bundle's chat template predates 0.18: the user turn reaches the engine empty (9 prompt tokens, edab6ed9) and the reply answers no question, in every v0.18.0 sitting
+prompt-newtag	*	litert-community/Qwen3-0.6B short-chat (v0.18.0)	e3010721	the same bundle: 9 prompt tokens on v0.18.0 where v0.16.0 read 20
+#
+# per dir: the commit that added the dir says why
+failures	2026-09-08-dashboard-v1-pixel8a-anchor-android	rc=1	936c5ca3	the LiteRT anchor's third run was lost when the phone dropped off USB; not gating, its two records stand
+partial	2026-09-09-dashboard-v1-iphone17pro-ios	*	65a36964	4 of 17 cells recorded before the phone stopped accepting launches (CoreDeviceError 4016 at 06:42)
+partial	2026-09-09-dashboard-v1-iphone17pro-retake-ios	*	69131de8	stopped by hand at a cell boundary, cells_with_records 4 of 14; the other 10 cells in a resume file
+runner-exit	2026-09-09-dashboard-v1-iphone17pro-retake-ios	runner_exit 241	69131de8	runner exit 241 = SIGTERM, the stop by hand
+partial	2026-09-09-dashboard-v1-iphone17pro-retake2-ios	*	f324cb89	stopped at a cell boundary when the owner went out, 2 cells recorded
+runner-exit	2026-09-09-dashboard-v1-iphone17pro-retake2-ios	runner_exit 241	f324cb89	the same stop by hand
+runner-exit	2026-09-14-dashboard-v1-s26-android	runner_exit 1	90c96a11	the phone left the adb bus between 04:45 and 04:53: bench matrix exit 1, the last 7 cells n=2
+partial	2026-09-21-dashboard-v1-m4max-mac	*	178f0750	the three Core AI cells loadFailed (malformed metadata.json under the staged bundle dir), MLX gemma-4-e2b had no config.json in the HF cache
+failures	2026-09-21-dashboard-v1-m4max-mac	re:^FAIL (core-ai|mlx-swift) 	178f0750	the same four cells
+partial	2026-09-22-dashboard-v1-m4max-mac	*	178f0750	the three Core AI cells loadFailed (malformed metadata.json under the staged bundle dir)
+failures	2026-09-22-dashboard-v1-m4max-mac	FAIL core-ai 	178f0750	the same three cells
+partial	2026-10-06-dashboard-v1-m4max-protocol1024-mac	*	43fe4ffb	the YARDSTICK_NATIVE_OK lines were lifted into app-path-native/ after the close (5 cells x 4 launches); the job counted the cells before the import
+partial	2026-10-07-dashboard-v1-pixel8a-a-android	*	46235e36	the weekly job ran until the phone dropped off USB
+runner-exit	2026-10-07-dashboard-v1-pixel8a-a-android	runner_exit 1	46235e36	the same drop off USB
+failures	2026-10-07-dashboard-v1-pixel8a-a-android	llama.cpp unsloth/gemma-4-E2B-it-GGUF	46235e36	the llama.cpp Gemma 4 E2B records of this half are quarantined (slow state under the charging CPU cap) and retaken in -a-llama-retake-e2b-android
+failures	2026-10-15-dashboard-v1-pixel8a-0180-p2b-android	*	edab6ed9	p2b's six records fail the text check (the bundle's template empties the user turn on v0.18.0); kept as evidence
+text-fail	2026-10-15-dashboard-v1-pixel8a-0180-p2b-android	*	edab6ed9	the same six records
+prompt-tokens	2026-10-15-dashboard-v1-pixel8a-0180-p3a-android	*	edab6ed9	the phone still held the 2026-09-05 bytes (size-only push check): the cpu prompt reached the engine empty (8 tokens); kept as evidence, re-run as p3a-r2
+reply-off-task	2026-10-15-dashboard-v1-pixel8a-0180-p3a-android	*	edab6ed9	the same empty prompt
+failures	2026-10-15-dashboard-v1-pixel8a-0180-p3b-android	*	edab6ed9	the same stale bytes: gpu 'Failed to apply template' in every launch; kept as evidence, re-run as p3b-r2
+reply-off-task	2026-10-15-dashboard-v1-pixel8a-0180-p3b-android	*	edab6ed9	the same launches (the reply text is the template error)
+engine-stamp	2026-10-17-dashboard-v1-iphone17pro-0180-aa-i1-*	ios litert-lm: stamps v0.18.0	e3010721	the AA lane's app build 6f4010d9 runs the LiteRT-LM v0.18.0 Swift package; every LiteRT-LM record stamps v0.18.0
