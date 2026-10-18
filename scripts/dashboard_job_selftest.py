@@ -141,7 +141,7 @@ def main():
     os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
 
     import dashboard_job as dj
-REAL_PGREP = dj.pgrep   # the module's own; later cases replace dj.pgrep with fakes
+    REAL_PGREP = dj.pgrep   # the module's own; later cases replace dj.pgrep with fakes
 
     # the per-device job locks live under LOG_DIR; keep the selftest's probes and
     # its held lock inside the temp dir, never under logs/dashboard-job
