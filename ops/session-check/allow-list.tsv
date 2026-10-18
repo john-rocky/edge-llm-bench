@@ -11,6 +11,7 @@
 failures	*-mac	re:^FAIL llama\.cpp .*\(cell records in the dir: [1-9]	c7b60c2b	Mac llama.cpp cells record their runs, then abort in llama b8999's Metal teardown; the runner writes FAIL by exit code and the rows stand (docs/OPERATIONS.md, Known limits)
 reply-off-task	*	litert-community/Qwen3-0.6B short-chat (v0.18.0)	e3010721	the Qwen3 0.6B LiteRT-LM bundle's chat template predates 0.18: the user turn reaches the engine empty (9 prompt tokens, edab6ed9) and the reply answers no question, in every v0.18.0 sitting
 prompt-newtag	*	litert-community/Qwen3-0.6B short-chat (v0.18.0)	e3010721	the same bundle: 9 prompt tokens on v0.18.0 where v0.16.0 read 20
+gen-budget	*-dashboard-v1-*-ddp-*-android	re:^litert-lm-(cpu|gpu) \S+ short-chat \(v0\.18\.0\): 	dad937b1	litert_lm_main decodes past --max_output_tokens (b6ddcb2c on v0.16.0; v0.18.0 the same, DDP 536-1039 and attached 566-790 tokens): only the DDP route's records name the budget, so only its short-chat cells meet the rule
 #
 # per dir: the commit that added the dir says why
 failures	2026-09-08-dashboard-v1-pixel8a-anchor-android	rc=1	936c5ca3	the LiteRT anchor's third run was lost when the phone dropped off USB; not gating, its two records stand
