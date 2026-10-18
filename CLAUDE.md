@@ -79,13 +79,13 @@ an NPU / GPU arm's capped run pools at any fall, marked with it:
   (unified-memory contention) — that guard is correct; don't bypass it.
 - **The dashboard recurring job is live** (launchd `com.edge-llm-bench.dashboard-v1`:
   every night at 02:00 and 05:30 it measures the first free device — Mac, S26,
-  Pixel 8a, or the iPhone 17 Pro (05:30 firing only) — that has no admitted session
+  Pixel 8a, or the iPhone 18 Pro (05:30 firing only; the 17 Pro is by hand only) — that has no admitted session
   since Monday; each device once a week, 1.5–4.5 h a sitting; `./bench dashboard-job
   auto --dry-run` shows which device the next firing would take). It takes the
   sibling hold and backs off from a busy device — do the same for it: read
   `logs/dashboard-job/ledger.tsv` and the hold before touching a phone at night,
-  never start a second matrix driver on a device it is measuring, and let a person
-  leave the commit to the post step: since 2026-10-18 a sitting that exits 0 is read by
+  never start a second matrix driver on a device it is measuring, and leave the
+  commit to the post step: since 2026-10-18 a sitting that exits 0 is read by
   `scripts/session_check.py` and, when every dir passes, committed locally by
   `scripts/dashboard_post.py` (ledger `logs/dashboard-job/autopilot-ledger.tsv`; push and
   publish stay behind `ops/autopilot/switch.json`, all off); a HOLD or FAIL dir carries
