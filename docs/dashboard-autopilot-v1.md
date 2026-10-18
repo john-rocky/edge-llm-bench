@@ -1,13 +1,14 @@
 # Dashboard autopilot v1 — what follows a sitting: check, commit, page
 
 Status: written 2026-10-18 (stage 2 of the bench-autopilot lane; stage 3a, the regression
-response, the same day: §8); the switch is off (nothing is pushed or published). Code:
+response, the same day: §8; stage 4, the Developer Device Platform weekly slot, the same day: §9);
+the push and publish keys of the switch are off (nothing is pushed or published). Code:
 `scripts/dashboard_post.py`, `scripts/regression_watch.py`; selftests
 `scripts/dashboard_post_selftest.py`, `scripts/regression_watch_selftest.py` (CI, data
 pipeline); switch `ops/autopilot/switch.json`; the page's regression rule as copied
 `ops/autopilot/regression-watch.json`; ledger `logs/dashboard-job/autopilot-ledger.tsv`.
 Validation records: `results/raw/2026-10-18-bench-autopilot-dev/ROUND3.md` (the post step),
-`ROUND4.md` (the regression response). The checker it runs: `docs/session-check-v1.md`. The job it
+`ROUND4.md` (the regression response), `ROUND5.md` (the DDP weekly slot). The checker it runs: `docs/session-check-v1.md`. The job it
 follows: `docs/dashboard-recurring-job-v1.md`.
 
 ```bash
@@ -117,10 +118,11 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
 
 ## 3. The switch
 
-`ops/autopilot/switch.json` (committed all off):
+`ops/autopilot/switch.json` (the push and publish keys committed off):
 
 ```json
-{"push_bench": false, "push_page": false, "publish": false, "page_repo": "~/code/litert-bench-dashboard"}
+{"push_bench": false, "push_page": false, "publish": false, "page_repo": "~/code/litert-bench-dashboard",
+ "ddp_weekly": true, "ddp_max_sessions": 16}
 ```
 
 | key | on (`true`) | off (anything else, or no file) |
@@ -129,9 +131,13 @@ dashboard_post.py main()                       one at a time (logs/dashboard-job
 | `push_page` | `git -C <page repo> push origin <page commit>:main`, same rule | ledger: `would push page <origin/main>..<commit> (…)` |
 | `publish` | `<page repo>/tools/publish_gcs.sh` after a page commit of this post | ledger: `would publish dist/index.html sha256 <…>` |
 | `page_repo` | the page repo to build and commit | none: the page step is skipped |
+| `ddp_weekly` | the job's weekly Developer Device Platform sitting runs (§9) | no lab-unit sitting, by `auto` or by hand |
+| `ddp_max_sessions` | the Device Run sessions one lab-unit sitting may start (its plan's count, before any is billed) | absent or not a whole number: 0, no sitting |
 
 Off is the default. Turning a key on is a person's decision (the owner's), one key at a time;
-the ledger's `would …` lines are what each key would have done on the nights before.
+the ledger's `would …` lines are what each key would have done on the nights before. `ddp_weekly`
+is on since 2026-10-18 on the user's word of 2026-10-16 (DDP sessions need no GO each); it goes
+off when a Googler runs the weekly DDP set on their side (§9).
 
 ## 4. The ledger
 
@@ -180,7 +186,8 @@ message, as before, or stays uncommitted.
 
 - The bisect itself and the issue: §8 writes a bisect request and the draft beside it; running the
   request (`scripts/engine_bisect.py`, stage 3b, billed lab sessions) and posting the draft are a
-  person's GO. The Developer Device Platform weekly slot (stage 4) is not in the schedule yet.
+  person's GO. The Developer Device Platform weekly slot (stage 4) is §9; a red point of the lab
+  unit and a retake on it are not covered (its rows are no page red point, §9).
 - A `.gz` log and other binary files are not scrubbed (the checker does not read them either).
 - The job's dry run prints the post command only after a preflight that passes; on a host whose
   `bench doctor` fails the sitting exits 5 before it (the selftest pins the line with a fake phone).
@@ -287,3 +294,99 @@ the route and the row); posting a draft (the GO); a retake that stays red on the
 an `unjudged` or `abandoned` retake (read the sittings); `red: mismatch` (the page's rule moved:
 bring `ops/autopilot/regression-watch.json` and `regression_watch.py` to `build.py` again, then
 `--compare` until it says equal).
+
+## 9. Stage 4: the Developer Device Platform weekly slot
+
+The weekly set's Android LiteRT-LM rows also run about once a week (at most once in six days) on Google's lab Galaxy S26 units, with
+no person in the loop up to the page's input (the commit): `ops/dashboard-v1/schedule.json` device
+`s26-ddp` (platform `ddp`, pool `m1q-36` of SM-S942U1 phones, `android/ddp/devices.json`), cells
+`matrices/dashboard-ddp-v1-android-s26.cells` = the 20 `android litert-lm` rows of
+`matrices/dashboard-text-v1.cells` byte for byte (the four Qwen3 0.6B rows are skipped on s26 by
+their `exclude-on`, as on the attached phone), run by `bench matrix <cells> --ddp m1q-36`
+(`android/ddp/run_ddp.py`: one row = one job of `runs=` launches on one unit, at most 8 jobs a
+Device Run session, the jobs of a session side by side on several units; 16 jobs = 2 sessions).
+
+```bash
+python3 scripts/dashboard_job.py s26-ddp [--dry-run] [--once] [--suffix <s>] [--post-page-out <dir>] [--no-page-commit]
+python3 scripts/dashboard_job.py auto [--no-ddp]      # the lab unit after the attached device's sitting
+```
+
+**When.** At either firing, after the attached device's sitting (its ledger line and post), or at a
+firing with no device to measure: a lab unit uses no device of this host, so it never takes the
+firing's one device and never waits for one (`ddp: …` lines in the auto log; the sitting's own log
+is `<date>-s26-ddp.log`). At most once in the entry's `interval_days` (6): an admitted session of the
+unit that ended in the last 6 days means not due, and so does a sitting in them that ran Device Run
+sessions and was not admitted (one billed attempt a window; the next is a person's, by hand). A
+rolling window, not the attached devices' Monday week: a sitting on a Sunday night is not repeated
+by the Monday 02:00 firing (the supervisor's change of 2026-10-18; the first real sitting ran on a
+Sunday night); the next one comes at the first firing at least six days after it, after that
+firing's attached sitting, so the slot recurs every six to seven days. `--no-ddp` skips it at a firing;
+`dashboard_job.py s26-ddp` runs it by hand (no week check, as for any explicit key; a second sitting
+the same day takes `--suffix`).
+
+**The switch.** `ddp_weekly` true turns the slot on (the user's word of 2026-10-16: the DDP sessions
+need no GO each). When a Googler runs the weekly DDP set on their side (stage 5's one command), set
+it false: the slot stops, by `auto` and by hand. `ddp_max_sessions` (16) caps the sitting: the plan
+of `bench matrix --ddp --dry-run` (no gcloud, no network) counts the Device Run sessions before
+anything is billed, and a plan over the cap starts nothing (exit 2).
+
+**The sitting.** No hold, no reboot, no anchor phase. Preflight: `scripts/doctor.py`'s `check_ddp`
+alone (gcloud on PATH and signed in, huggingface_hub, the pinned engine files in
+`BENCH_ANDROID_BIN_DIR`, else `android/bin`) — not the whole `bench doctor`, which lists `adb
+devices` and `xcrun devicectl list devices` and, with one Android phone attached, runs `adb -s
+<serial> shell sha256sum` on it, a phone another sitting may be measuring. Then the plan, then
+`gtimeout timeout_hours bench matrix <cells> --ddp m1q-36 --campaign
+<date>-dashboard-v1-s26-ddp-m1q-36` (uploads what the bucket lacks, runs the sessions one after
+another, pulls, scrubs the logcats, writes the records, rebuilds the summary), then `SESSION.json`
+in `results/raw/<date>-dashboard-v1-s26-ddp-m1q-36-android/`: `platform: ddp`, `admitted: true` when
+the sitting wrote records, reason `ddp lab unit: no session anchor; each run carries its cap marks
+and the text check`, `anchor: null`, `cells_expected` = the plan's jobs, `ddp: {id, sessions, jobs,
+device_minutes, results, plan}`; then the ledger line and the post. Exit 5 when nothing was recorded
+(the platform refused: auth, quota, no unit; `SESSION.json` says `no record` when the dir exists),
+6 at the timeout. `timeout_hours` (5) bounds the host side only: a session already posted keeps
+running on the platform and its output stays in the bucket (`run_ddp.py --resume <operation>` with
+the name in `ddp/operation-create-<n>.json` pulls it).
+
+**No anchor, what it means.** Nothing compares the sitting with an earlier one before it is
+admitted (each job may land on another unit and firmware build, and DDP has no session anchor): each
+run stands on its own marks — `cpu-capped` / `cpu-capped-at-start` with the clock ceilings it read,
+the text check on the 1K task, the unit's build fingerprint and serial (`device.ddp`,
+`conditions.ddp`). The summary names the device `SM-S942U1 (DDP m1q-36)`, so these rows never pool
+with the attached Galaxy S26's.
+
+**The checker.** A DDP dir with the job's `SESSION.json` is kind `job payload (ddp)`: the
+job-session rules (verdict, runner exit, partial against the plan's jobs, FAILURES, the text check,
+the engine stamp against `android_pins`, prompt tokens against the committed history, the reply
+proxies, the model hashed on the unit), the pair rules n/a, the caps a note; the logcat rules as for
+every DDP dir (an execution-level `logcat.txt` fails). A DDP dir without one (a run by hand, the
+2026-10-16 pass) stays `not-job`. The DDP short-chat records name the budget the route passes
+(`--max_output_tokens=128`, `conditions.outputTokenBudget`) and `litert_lm_main` decodes past it
+(b6ddcb2c on v0.16.0, the same on v0.18.0); the attached route's records name none, so `gen-budget`
+meets the DDP short-chat cells only (ROUND5).
+
+**The page.** The page's `STAND_IN` puts the lab unit's GPU rows into the Galaxy S26 panel's GPU
+cells while its sitting is the newest (marked lab, the unit on hover); its CPU rows never stand in:
+the lab units hold their CPU clock ceilings below the cpu-cap line from the start (`android/ddp/devices.json`),
+so the CPU jobs are recorded and give no number. The page's Regression section follows the phone's
+own sittings and `regression_watch.py` the same (stand-in rows out): a DDP sitting makes no red
+point and queues no retake. A series of the lab unit's own (the unit as a device of the definitions,
+no `--compare`) is later; a red point there would route its bisect to the same pool (`ddp:m1q-36`).
+
+**Cost.** About 190-210 device-minutes a week (2026-10-16: 12 of the 16 jobs took 151.4; Gemma 4
+E2B's 4 jobs had not run on DDP), about an hour of wall time when the pool has free units.
+
+**The first sitting, 2026-10-18** (`results/raw/2026-10-18-bench-autopilot-dev/ROUND5.md`). By hand
+(`dashboard_job.py s26-ddp --once`, the page built into a scratch dir, not committed): 2 Device Run
+sessions (`session-03ab291b` 15.3 min, `session-e314180b` 25.2 min; the 8 jobs of each started together
+once 8 units were free), 16 jobs PASSED, 193.0 device-min, 72 records on 16 units of one build
+fingerprint, 42.9 min for the sitting. The first post held: every execution's own `logcat.txt` (the
+unit's whole log) was in the dir, which the checker fails (`logcat-unscrubbed`) and people had kept out
+by hand; `.gitignore` keeps them out since (6e3d5908), and the post again committed the dir and the
+summary rebuilt from the git index (0c82ff22, 4739 -> 4811 lines). The page built from that commit
+passed three of its four checks; `check_regression` failed on the Galaxy S26 GPU Gemma 4 E2B cells
+(short chat, the 1K task): their newest sitting is now the lab unit's (STAND_IN), and the Regression
+section, which follows the phone's own sittings, has no point of that campaign. Gemma 4 E2B is one of
+the Regression section's two models, which no earlier DDP sitting on the page covered. Until the page
+settles it (its check reading a stand-in cell against the phone's own newest point, or no stand-in for
+the Regression section's cells), a lab-unit sitting newer than the phone's own fails that check, and the
+post leaves the page uncommitted (the bench commit stands; the ledger says `FAIL check_regression`).

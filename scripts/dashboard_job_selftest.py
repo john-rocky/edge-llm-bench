@@ -658,20 +658,21 @@ def main():
        and len(plans) == n_plans, f"the doctor FAILs (gcloud signed out): exit {code}, no plan, no sitting")
     doctor["rc"] = 0
 
-    print("--- the lab unit's week: due, done (an admitted session since Monday), tried (a billed sitting "
-          "this week not admitted), off, by hand")
+    print("--- the lab unit's window (interval_days, 6): due, done (an admitted session in the last 6 days), "
+          "tried (a billed sitting in them not admitted), off, by hand")
     urow = lambda camp, **d: dict(row(camp, "FakeU (DDP fake-1)", **d), platform="android")
     sess_of = lambda rows: dj.device_sessions({"devices": {"unit": unit}}, rows, {}, set()).get("unit") or []
     due, why = dj.ddp_due("unit", unit, now, sess_of([urow("d9-dashboard-v1-unit-fake-1-android", days=9)]), True, None)
     ok(due and why.startswith("due: last admitted"), f"last admitted 9 days ago: {why}")
     due, why = dj.ddp_due("unit", unit, now, sess_of([urow("now-dashboard-v1-unit-fake-1-android", minutes=40)]), True, None)
-    ok(not due and why.startswith("done this week"), f"an admitted session 40 min ago: {why}")
+    ok(not due and why.startswith("done: admitted") and why.endswith("within 6 days"),
+       f"an admitted session 40 min ago: {why}")
     due, why = dj.ddp_due("unit", unit, now, sess_of([urow("now-dashboard-v1-unit-fake-1-android", minutes=40)]), True, None)
     rows_refused = [urow("now-dashboard-v1-unit-fake-1-android", minutes=40)]
     due, why = dj.ddp_due("unit", unit, now, dj.device_sessions({"devices": {"unit": unit}}, rows_refused,
                           {"results/raw/now-dashboard-v1-unit-fake-1-android": False}, set()).get("unit") or [],
                           True, ("now-dashboard-v1-unit-fake-1-android", "DEVICE", "no record"))
-    ok(not due and "was not admitted" in why and "a person looks" in why, f"a billed sitting this week, not admitted: {why}")
+    ok(not due and "was not admitted" in why and "a person looks" in why, f"a billed sitting in the window, not admitted: {why}")
     due, why = dj.ddp_due("unit", unit, now, [], False, None)
     ok(not due and why.startswith("off:"), f"the switch off: {why}")
     due, why = dj.ddp_due("unit", dict(unit, auto=False), now, [], True, None)
@@ -685,10 +686,27 @@ def main():
         with open(os.path.join(traw, name, "SESSION.json"), "w") as fh:
             json.dump({"started": started.strftime("%Y-%m-%d %H:%M:%S"), "admitted": adm, "verdict": "DEVICE",
                        "reason": "no record", "ddp": {"sessions": sessions}}, fh)
-    tried = dj.ddp_tried("unit", dj.week_start(now), root=os.path.join(tmp, "troot"))
+    tried = dj.ddp_tried("unit", dj.ddp_window(unit, now)[1], root=os.path.join(tmp, "troot"))
     ok(tried and tried[0] == "a-dashboard-v1-unit-fake-1-android",
-       f"ddp_tried: this week's sitting that ran sessions and was not admitted (not last week's, not one that "
+       f"ddp_tried: the window's sitting that ran sessions and was not admitted (not one 9 days old, not one that "
        f"posted none, not an admitted one): {tried}")
+
+    # the rolling window, not the attached devices' Monday week: a Sunday-night sitting is not repeated
+    # by the Monday 02:00 firing (the 2026-10-18 real sitting ran on a Sunday night)
+    mon = datetime.datetime(2026, 10, 19, 2, 0).astimezone()
+
+    def urow_at(t):
+        return {"campaign": "results/raw/x-dashboard-v1-unit-fake-1-android", "platform": "android",
+                "device": "FakeU (DDP fake-1)",
+                "timestamp": t.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    due, why = dj.ddp_due("unit", unit, mon, sess_of([urow_at(mon - datetime.timedelta(hours=2, minutes=30))]), True, None)
+    ok(not due and why.endswith("within 6 days"),
+       f"a sitting that ended Sunday 23:30: the Monday 02:00 firing does not repeat it ({why})")
+    due, why = dj.ddp_due("unit", unit, mon, sess_of([urow_at(mon - datetime.timedelta(days=6, hours=1))]), True, None)
+    ok(due and why.endswith("none in the last 6 days"), f"6 days and an hour before the firing: due ({why})")
+    due, why = dj.ddp_due("unit", dict(unit, interval_days=3), mon,
+                          sess_of([urow_at(mon - datetime.timedelta(days=4))]), True, None)
+    ok(due and why.endswith("none in the last 3 days"), f"interval_days 3 in the entry: 4 days ago is due ({why})")
 
     print("--- the lab unit's sitting, run against a fake bench in a temp ROOT: SESSION.json, ledger line, post")
     froot = os.path.join(tmp, "froot")

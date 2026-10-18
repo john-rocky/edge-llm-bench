@@ -35,8 +35,12 @@ but `--json` / `--markdown`. 77 dirs take about 12 s on the Mac Studio.
 - **Kind.** `job anchor` / `job payload`: a `SESSION.json` with `schema`
   `dashboard-job-session.v1` and `job` `dashboard-v1` (what `write_session` stamps), or a
   `-dashboard-v1-` dir with no `SESSION.json` whose campaign a job log names (`--campaign <name>`;
-  without job logs the name decides). `DDP`: a `ddp/` or `ddp-session/` subdir, `-ddp-` in the
-  name, or records with `device.ddp`. `dev`: a name ending in `-dev`. `job (stopped)`: `-stopped-`
+  without job logs the name decides). `job payload (ddp)`: a DDP dir (below) with the job's
+  `SESSION.json` — the weekly lab-unit sitting of `dashboard_job.py` (`docs/dashboard-autopilot-v1.md`
+  §9): the job-session rules, with `pair-broken` / `pair-incomplete` / `reference-uncommitted` n/a (no
+  anchor phase; a note says so) and the lab unit's caps a note. `DDP`: a `ddp/` or `ddp-session/`
+  subdir, `-ddp-` in the name, or records with `device.ddp`, with no job `SESSION.json` (a run by
+  hand). `dev`: a name ending in `-dev`. `job (stopped)`: `-stopped-`
   in the name. Everything else is a `hand run`, including hand sittings that wrote a
   `SESSION.json` with another `job` text.
 - **Records** — what `scripts/build_summary.py` reads: `app-path*/*.json` and
@@ -74,7 +78,7 @@ that sets it. A finding carries the rule id and a detail; one finding per cell o
 | `failures` | HOLD | job doc §6 (a person reads `FAILURES.txt`); 936c5ca3, 178f0750 | `FAILURES.txt` (dir and `app-path-android/`); the line's cell's record count | no line. Known exception (allow-list): the Mac llama.cpp teardown abort after the runs (c7b60c2b), when the cell has records |
 | `flagged` | HOLD | job doc §5 table: LEVEL → "a targeted retake", DEGENERATE → "read the sample … never quote the rate"; b6ddcb2c (GATE_ERROR = a gate that crashed) | `FLAGGED.txt` | no LEVEL / DEGENERATE / GATE_ERROR line and no line outside the `GATE_FAIL` form. A HOT / SPREAD / DEAD / COLLAPSE retry is a note: §5 gives it no human step, the table renders it ⚠ |
 | `text-fail` | HOLD | c6498ccd (job doc §5 "Decoded-text check": "read the stored text before the campaign is committed"; fairness-rules §12); edab6ed9 | `conditions.textCheck` | no run FAIL |
-| `engine-stamp` | HOLD | CLAUDE.md (rows stamp the observed engine, which may differ from the registry); edab6ed9, 0efecb01, d6077c6b, e3010721 ("every LiteRT-LM record stamps v0.18.0") | `engineVersion`; `android_pins` (since d33ffa53, else the lock's Android tags) and `environment.lock.json` as committed at the sitting's first record | each arm's records carry one stamp, and it is the registry's pin (a whole version token of the stamp). Side builds (`llama.cpp-npu/-gpu`, `litert-lm-npu`) and arms without a registry entry are notes |
+| `engine-stamp` | HOLD | CLAUDE.md (rows stamp the observed engine, which may differ from the registry); edab6ed9, 0efecb01, d6077c6b, e3010721 ("every LiteRT-LM record stamps v0.18.0"); dad937b1 / f36512ae (the Mac's LiteRT-LM: `arms.litert-lm.mac`) | `engineVersion`; `android_pins` (since d33ffa53, else the lock's Android tags) and `environment.lock.json` as committed at the sitting's first record; the Mac's LiteRT-LM reads `arms.litert-lm.mac` for a sitting on or after its `since` day (the campaign name's date; a block registered after the fact is taken from the newest registry, and the finding names the commit), the iPhones `default_tag` | each arm's records carry one stamp, and it is the registry's pin (a whole version token of the stamp). Side builds (`llama.cpp-npu/-gpu`, `litert-lm-npu`) and arms without a registry entry are notes |
 | `prompt-tokens` | HOLD | edab6ed9 ("Prefill Turn 1: 9 tokens; v0.16.0: 20 / 1339"), d6077c6b ("the short-chat prompt reaches the engine whole … 19 tokens Qwen3, 20 Gemma 4 … 1338 / 1106"), e3010721 (20); job doc §4 "Model bytes on the phone" (8 tokens) | `metrics.promptTokenCount`; the committed summary | every count equals the mode of the committed history for the same platform, build, arm, model and task (admitted campaigns, text-check FAIL rows and this sitting left out). No history at all: a note, not a HOLD |
 | `prompt-newtag` | HOLD | edab6ed9 (the first v0.18.0 sitting read 9 where v0.16.0 read 20) | as above | with no history on this build, the count is within 10 % of some other build's mode. In the committed history the largest difference between builds for one cell is 5 % (Qwen3 4B short-chat 20 → 19, v0.16.0 → v0.18.0); a prompt that did not reach the engine reads 55 % low |
 | `reply-empty` / `reply-loop` / `reply-off-task` | HOLD | e3010721 ("the replies read as answers to the prompt"), edab6ed9 ("answer the question"); fairness-rules §12 (`parsers.text_integrity`: empty, off the task's subject, repetition loop) and §4 (a loop is a failed run); 6dbaa099 (`cell_gate` DEGENERATE) | the reply of each run (above), for cells the runner's own text check did not judge | `text_integrity` raises no flag and `cell_gate.degenerate` is false. The task prompts' subject is on-device AI, so a reply naming none of its terms is off the prompt |
@@ -106,8 +110,10 @@ a bad regex) is a usage error, exit 2.
 
 Two kinds of lines: known exceptions that hold for any dir (the Mac llama.cpp teardown abort,
 c7b60c2b; the Qwen3 0.6B LiteRT-LM bundle whose chat template predates 0.18 and leaves the user
-turn empty on every v0.18.0 sitting, e3010721 / edab6ed9), and per-dir lines for committed
-sittings whose commit message explained the finding.
+turn empty on every v0.18.0 sitting, e3010721 / edab6ed9; `gen-budget` on a DDP sitting's
+LiteRT-LM short-chat cells at v0.18.0, dad937b1: the DDP records name the `--max_output_tokens`
+budget that `litert_lm_main` decodes past, the attached route's records name none), and per-dir
+lines for committed sittings whose commit message explained the finding.
 
 ## A person reads
 

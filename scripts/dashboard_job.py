@@ -73,9 +73,11 @@ doctor --platform ddp` requires (scripts/doctor.py check_ddp alone: no phone of 
 touched), the plan of `bench matrix --ddp --dry-run` within the switch's ddp_max_sessions (nothing is
 billed past it), then `bench matrix <cells> --ddp <id>`. No hold, no reboot, no anchor
 phase: SESSION.json is admitted when the sitting wrote records (each run carries its cap marks and
-the text check), then the ledger line and the post as any sitting. Once a week: an admitted session
-since Monday, or a sitting this week that ran Device Run sessions and was not admitted, ends the
-week's slot. --no-ddp skips it; `dashboard_job.py <its key>` runs it by hand.
+the text check), then the ledger line and the post as any sitting. At most once in its entry's
+interval_days (6): an admitted session of the unit in the last 6 days, or a sitting in them that
+ran Device Run sessions and was not admitted, means not due (not the attached devices' Monday week:
+a Sunday-night sitting is not repeated at Monday 02:00). --no-ddp skips it; `dashboard_job.py <its
+key>` runs it by hand.
 What the job never does: edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
 phone between halves (the host HF cache is the source), together with their
@@ -1235,6 +1237,10 @@ def retake_sitting(schedule, key, dev, args):
 # sessions one sitting may start (the plan's count, read before any is billed)
 SWITCH = os.path.join(ROOT, "ops", "autopilot", "switch.json")
 DDP_REASON = "ddp lab unit: no session anchor; each run carries its cap marks and the text check"
+# a lab unit's sitting is due when no admitted session of it ended in this many days before the firing
+# (schedule.json interval_days overrides): a rolling window, not the attached devices' Monday week, so a
+# Sunday-night sitting is not repeated by the Monday 02:00 firing (supervisor, 2026-10-18 r5)
+DDP_INTERVAL_DAYS = 6
 
 
 def load_switch(path=None):
@@ -1364,10 +1370,17 @@ def ddp_facts(rel):
     return {"sessions": sessions, "jobs": jobs, "device_minutes": round(secs / 60, 1), "results": dict(results)}
 
 
+def ddp_window(dev, now):
+    """(days, start) of a lab unit's window at `now`: its interval_days (DDP_INTERVAL_DAYS), and now
+    minus that many days."""
+    days = float(dev.get("interval_days", DDP_INTERVAL_DAYS))
+    return days, now - datetime.timedelta(days=days)
+
+
 def ddp_tried(key, monday, root=None):
-    """The newest sitting of lab unit `key` started since `monday` that ran Device Run sessions and was
-    not admitted (its SESSION.json) -> (dir name, verdict, reason), or None: one billed attempt a week,
-    the next waits for a person."""
+    """The newest sitting of lab unit `key` started since `monday` (the window's start, ddp_window) that
+    ran Device Run sessions and was not admitted (its SESSION.json) -> (dir name, verdict, reason), or
+    None: one billed attempt a window, the next waits for a person."""
     best = None
     for f in glob.glob(os.path.join(root or ROOT, "results", "raw", f"*-dashboard-v1-{key}-*", "SESSION.json")):
         try:
@@ -1384,24 +1397,25 @@ def ddp_tried(key, monday, root=None):
 
 
 def ddp_due(key, dev, now, sessions, switch_on, tried):
-    """(due, why) of a lab unit's weekly sitting at this firing (`sessions`: device_sessions of the unit,
-    newest first; `tried`: ddp_tried). Not due: by hand only, the switch off, an admitted session since
-    Monday, a sitting this week that ran Device Run sessions and was not admitted."""
-    monday = week_start(now)
+    """(due, why) of a lab unit's sitting at this firing (`sessions`: device_sessions of the unit, newest
+    first; `tried`: ddp_tried over the same window). Not due: by hand only, the switch off, an admitted
+    session in the last interval_days days (ddp_window), a sitting in them that ran Device Run sessions
+    and was not admitted."""
+    days, start = ddp_window(dev, now)
     last = sessions[0] if sessions else None
     if dev.get("auto") is False:
         return False, "auto: false, by hand only"
     if not switch_on:
         return False, ("off: ops/autopilot/switch.json ddp_weekly is not true (a Googler runs the DDP set "
                        f"on their side); by hand: dashboard_job.py {key}")
-    if last and last[0] >= monday:
-        return False, f"done this week: admitted {last[0]:%F %H:%M} {last[1]}"
+    if last and last[0] >= start:
+        return False, f"done: admitted {last[0]:%F %H:%M} {last[1]}, within {days:g} days"
     if tried:
-        return False, (f"{tried[0]} ran Device Run sessions this week and was not admitted ({tried[1]}: "
+        return False, (f"{tried[0]} ran Device Run sessions in the last {days:g} days and was not admitted ({tried[1]}: "
                        f"{one_line(tried[2], 120)}): a person looks before another sitting is billed; "
                        f"by hand: dashboard_job.py {key}")
     return True, ("due: " + (f"last admitted {last[0]:%F %H:%M} {last[1]}" if last else "never measured")
-                  + f", none since Mon {monday:%F}")
+                  + f", none in the last {days:g} days")
 
 
 def ddp_sitting(schedule, key, dev, args, cells=None, suffix=None):
@@ -1530,7 +1544,7 @@ def ddp_after(schedule, args, now=None, rows=None, admitted=None, tried=None):
     sessions = device_sessions({"devices": units}, rows, admitted, regression_watch.retake_sitting_dirs(ROOT))
     out = {}
     for key, dev in units.items():
-        t = tried.get(key) if tried is not None else ddp_tried(key, week_start(now))
+        t = tried.get(key) if tried is not None else ddp_tried(key, ddp_window(dev, now)[1])
         due, why = ddp_due(key, dev, now, sessions.get(key) or [], on, t)
         log(f"ddp: {key} ({dev['display']}): {why}")
         if not due:

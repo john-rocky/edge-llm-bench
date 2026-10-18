@@ -177,6 +177,14 @@ checks gcloud, its sign-in, `huggingface_hub` and the 9 engine files; the README
   them at pull time (originals in the campaign's gitignored `ddp-raw/`); leave
   the execution-level `logcat.txt` out of the commit. Runbook:
   `docs/OPERATIONS.md`, "Runbook: run cells on DDP (a lab phone, no adb)".
+- **The dashboard job has a weekly DDP slot.** `ops/dashboard-v1/schedule.json`
+  device `s26-ddp` runs the weekly set's LiteRT-LM rows on `m1q-36` after the
+  night's attached sitting, at most once in 6 days, with no person in the loop
+  (`python3 scripts/dashboard_job.py s26-ddp --dry-run` prints the plan;
+  `docs/dashboard-autopilot-v1.md` §9).
+- **The switch.** `ops/autopilot/switch.json` `ddp_weekly` turns that slot on and
+  `ddp_max_sessions` caps one sitting's sessions; set `ddp_weekly` false when you
+  run the weekly DDP set on your side, so the two do not both bill it.
 
 ## Symptoms
 
