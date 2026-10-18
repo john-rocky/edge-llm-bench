@@ -145,6 +145,10 @@ that passed every timing check.
   quote the rate. Paths without a stored decoded text (the plain `litert_lm_main`
   short-chat launch, llama-cli) are not checked by this rule; on the Apple lanes the cell
   gate's `DEGENERATE` screens `outputSample` for repetition loops (§4).
+- The Mac and iPhone runners write no `conditions.textCheck`, so the session checker screens each
+  run's stored reply with the same tests when the sitting is checked for its commit and keeps the
+  verdicts beside the records in the campaign dir's `text_screen.json`, which the summary reads into
+  `text_check` (`FAIL:<rules>` / `PASS:screen`; `docs/session-check-v1.md`, "The text screen").
 
 ## 13. A run during which the phone capped the engine's CPU clock by more than 15 % is not a measurement  <!-- slug: cpu-cap-rule -->
 

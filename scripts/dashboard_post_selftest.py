@@ -12,7 +12,9 @@ tools/publish_gcs.sh writing a marker; a local bare remote). Pins:
          file stays staged, the untracked ones untracked, the unstaged edit unstaged
   (ii)   the message is the results commits' one line, with no word the commit-msg hook refuses
          and no percentage or standing word; a sitting whose message would carry one (an anchor
-         reason with '%', 'faster', 'than') is not committed: a ledger line, exit 1, no REVIEW.md
+         reason with '%', 'faster', 'than') is not committed: a ledger line, exit 1, no REVIEW.md;
+         the checker's text_screen.json goes into the commit and the message names its text-fail
+         cells (none: 'text screen: none'); --dry-run writes no text_screen.json
   (iii)  the committed summary is the tree's own (HEAD + the dirs), and the page was built from it
   (iv)   switch off: nothing pushed, nothing published, the ledger says what would have been
   (v)    one switch on: only that push reaches its remote; a push that would carry a commit this
@@ -46,6 +48,8 @@ POST = os.path.join(ROOT, "scripts", "dashboard_post.py")
 USER = getpass.getuser()
 ON_TASK = ("On-device AI means the model runs on your phone itself instead of a cloud server, so it "
            "works offline, answers quickly and keeps your private data local on the device.")
+OFF_TASK = ("Sure! Here is a short story about a dragon who learns to bake bread in a small village "
+            "near the mountains, and the baker who teaches him patience and kindness every morning.")
 # the one-line results message (dashboard_post.commit_message)
 MSG_RE = re.compile(r"^results \d{4}-\d\d-\d\d .+ \(.+\), .+: \d+/\d+ cells of \S+ in one dashboard-job sitting "
                     r"\d\d:\d\d–\d\d:\d\d \S+ \(anchor admitted.+\); text check .+; cpu-capped counted "
@@ -161,9 +165,9 @@ def mac_record(runtime, model, engine, i, **extra):
     return rec
 
 
-def cell_file(d, runtime, model, engine, n=4):
+def cell_file(d, runtime, model, engine, n=4, **extra):
     write(os.path.join(d, f"{runtime}_{model.replace('/', '_')}_short-chat.jsonl"),
-          "".join(json.dumps(mac_record(runtime, model, engine, i)) + "\n" for i in range(n)))
+          "".join(json.dumps(mac_record(runtime, model, engine, i, **extra)) + "\n" for i in range(n)))
 
 
 def session(d, phase, date, anchor_phase=None, reference=None, **over):
@@ -186,8 +190,9 @@ def session(d, phase, date, anchor_phase=None, reference=None, **over):
     write(os.path.join(d, "SESSION.json"), json.dumps(s, indent=1))
 
 
-def sitting(raw, n, payloads=("",), reference=None, names=False, failures=False):
-    """One sitting of day n: its anchor phase and payloads -> [results/raw/<name>, …] (anchor first)."""
+def sitting(raw, n, payloads=("",), reference=None, names=False, failures=False, off_task=False):
+    """One sitting of day n: its anchor phase and payloads -> [results/raw/<name>, …] (anchor first);
+    off_task: the payloads' LiteRT-LM replies answer another question (the text screen fails them)."""
     date = f"2026-10-{n:02d}"
     base = f"{date}-dashboard-v1-m4max"
     anchor = f"{base}-anchor-mac"
@@ -203,7 +208,8 @@ def sitting(raw, n, payloads=("",), reference=None, names=False, failures=False)
             ref = reference.get(tag)
         session(d, "payload", date, anchor_phase=anchor, reference=ref)
         cell_file(d, "mlx-swift", "mlx-community/Qwen3-0.6B-4bit", "abc1234")
-        cell_file(d, "litert-lm", "litert-community/Qwen3-1.7B", "v0.0.1")
+        cell_file(d, "litert-lm", "litert-community/Qwen3-1.7B", "v0.0.1",
+                  **({"outputSample": OFF_TASK} if off_task else {}))
         if names:
             rec = mac_record("litert-lm", "litert-community/Qwen3-1.7B", "v0.0.1", 9,
                              provenance={"command": f"/Users/{USER}/code/edge-llm-bench/.build/yardstick run",
@@ -308,8 +314,10 @@ def main():
     ok(rc == 0 and "message: results 2026-10-01 Mac Studio (M4 Max) (Mac16,9)" in out,
        f"dry run exit {rc}, the message printed")
     ok(head() == h0 and not os.path.exists(ledger_path) and open(console).read() == before_console
-       and not any(os.path.exists(os.path.join(bench, d, "REVIEW.md")) for d in s1),
-       "dry run: HEAD, the files (no scrub), the ledger and REVIEW.md untouched")
+       and not any(os.path.exists(os.path.join(bench, d, n)) for d in s1 for n in ("REVIEW.md", "text_screen.json"))
+       and "would write text_screen.json" in out,
+       "dry run: HEAD, the files (no scrub), the ledger, REVIEW.md and text_screen.json untouched (the checker's "
+       "--no-text-screen: 'would write')")
 
     print("--- (i)-(iv), (viii): a PASS sitting with the switch off")
     rec_path = os.path.join(bench, s1[1], "app-path-mac", "litert-lm_extra_run9.json")
@@ -321,8 +329,10 @@ def main():
     ok(sh(bench, "git", "rev-parse", "HEAD~1") == h0, "one commit on top of the HEAD it started from")
     files = committed_files()
     want = {p for d in s1 for p in sh(bench, "git", "ls-files", "--", d).splitlines()} | {"results/summary/device-runs.csv"}
-    ok(files == want and all(f.startswith(tuple(s1)) or f == "results/summary/device-runs.csv" for f in files),
-       f"(i) the commit carries the sitting's {len(want) - 1} files and the summary, nothing else")
+    ok(files == want and all(f.startswith(tuple(s1)) or f == "results/summary/device-runs.csv" for f in files)
+       and {f"{d}/text_screen.json" for d in s1} <= files,
+       f"(i) the commit carries the sitting's {len(want) - 1} files (each dir's text_screen.json among them) and "
+       f"the summary, nothing else")
     others_intact("(i)")
     msg = sh(bench, "git", "log", "-1", "--format=%B").strip()
     ok("\n" not in msg and MSG_RE.match(msg) is not None, f"(ii) one line in the results commits' form: {msg[:150]}…")
@@ -330,7 +340,8 @@ def main():
     ok("Mac Studio (M4 Max) (Mac16,9), litert-lm: v0.0.1, mlx-swift: abc1234: 2/2 cells of "
        "matrices/dashboard-text-v1.cells in one dashboard-job sitting 02:00–03:19" in msg
        and "(anchor admitted: anchor nominal, first session on this device; thermal nominal)" in msg
-       and "text check 0/0 (no run carries one); cpu-capped counted 0/13, past the line 0; FAILURES: none" in msg
+       and "text check 0/0 (no run carries one); text screen: none; cpu-capped counted 0/13, past the line 0; "
+           "FAILURES: none" in msg
        and msg.endswith("results/summary rebuilt from the git index (1 -> 4 lines)"),
        "(ii) device, arms and stamps, cells, times, admission, text check, caps, failures, summary lines")
     summary = sh(bench, "git", "show", "HEAD:results/summary/device-runs.csv")
@@ -446,6 +457,25 @@ def main():
     rc, out = post(g1, "off", "--dry-run")
     ok(rc == 1 and head() == h and "held: the generated message carries a percentage" in out,
        f"--dry-run: the same hold (exit {rc})")
+
+    print("--- the text screen: a sitting's off-task cell is committed with its text_screen.json, named in the message")
+    t1 = sitting(raw, 14, off_task=True)
+    h = head()
+    phrase = "text screen: 1 cell text-fail (litert-lm litert-community/Qwen3-1.7B short-chat 4/4 runs)"
+    rc, out = post(t1, "off", "--dry-run")
+    ok(rc == 0 and head() == h and not any(os.path.exists(os.path.join(bench, d, "text_screen.json")) for d in t1)
+       and phrase in out and "would write text_screen.json (2 cells, 1 text-fail" in out,
+       f"--dry-run: PASS, no file written, the message and the checker's line say what it would carry (exit {rc})")
+    rc, out = post(t1, "off")
+    msg = sh(bench, "git", "log", "-1", "--format=%B").strip()
+    files = committed_files()
+    screen = json.loads(sh(bench, "git", "show", f"HEAD:{t1[1]}/text_screen.json"))
+    ok(rc == 0 and sh(bench, "git", "rev-parse", "HEAD~1") == h and {f"{d}/text_screen.json" for d in t1} <= files
+       and screen["cells"]["litert-lm litert-community/Qwen3-1.7B short-chat (v0.0.1)"]["verdict"] == "FAIL",
+       f"committed: both dirs' text_screen.json in the commit, the cell FAIL in it (exit {rc})")
+    ok(f"text check 0/0 (no run carries one); {phrase}; cpu-capped counted" in msg and MSG_RE.match(msg) is not None
+       and not dp.STANDING_WORDS.search(msg) and re.search(r"message guard: no '%' and no standing word .*: OK", out),
+       f"the message names the cell, its runs off and no percentage or standing word: {msg[:60]}…")
 
     print("--- a page check FAIL: the bench commit stands, the page repo is left as it was")
     f1 = sitting(raw, 8)

@@ -14,7 +14,9 @@ repo it commits to. In this order:
            user-name rule reads (/Users/<name>, /home/<name>, -Users-<name>-, _bazel_<name>, ls
            owner columns), as people did before each commit (d25a9985..ceeaa362); nothing else
            changes, and a JSON file must parse to the same values with only those strings changed
-  check    scripts/session_check.py over the dirs. Every dir PASS, or nothing is committed: a
+  check    scripts/session_check.py over the dirs; it writes text_screen.json in a dir with Mac /
+           iPhone text cells (the reply proxies' verdict per run, which the commit carries and the
+           summary reads into text_check). Every dir PASS, or nothing is committed: a
            REVIEW.md in each dir (rule ids, details, what a person does), one ledger line, exit 1.
            The default takes a sitting whole (the checker's pair rules hold an anchor phase whose
            payload is missing); --allow-subset commits the dirs given while the sitting's other
@@ -43,8 +45,8 @@ repo it commits to. In this order:
 Exit codes: 0 committed (or nothing new to commit) and every later step as the switch and the
 flags allow; 1 held (nothing committed) or a step after the commit failed (the ledger names it);
 2 usage. Ledger: logs/dashboard-job/autopilot-ledger.tsv. One post at a time
-(logs/dashboard-job/.post.lock). --dry-run writes nothing (no scrub, no REVIEW.md, no ledger, no
-commit, no page) and prints the plan.
+(logs/dashboard-job/.post.lock). --dry-run writes nothing (no scrub, no text_screen.json: the
+checker's --no-text-screen, no REVIEW.md, no ledger, no commit, no page) and prints the plan.
 """
 import argparse
 import collections
@@ -389,12 +391,16 @@ def scrub(top, dirs, user, dry):
 
 # ---------------------------------------------------------------- check
 
-def check(top, dirs, user, tmp):
-    """scripts/session_check.py over the dirs -> its JSON (dirs[], summary); Usage on its exit 2."""
+def check(top, dirs, user, tmp, screen=True):
+    """scripts/session_check.py over the dirs -> its JSON (dirs[], summary); Usage on its exit 2.
+    screen False (--dry-run): --no-text-screen, the checker writes no text_screen.json and judges
+    the dirs as if it had (its output says "would write")."""
     out = os.path.join(tmp, "check.json")
     # --user "" turns the checker's user-name rule off (make_context)
     cmd = [sys.executable, CHECKER] + [os.path.join(top, d) for d in dirs] + ["--json", out, "-q",
                                                                               "--user", user or ""]
+    if not screen:
+        cmd.append("--no-text-screen")
     p = subprocess.run(cmd, cwd=top, capture_output=True, text=True, timeout=1800)
     for ln in (p.stdout or "").splitlines():
         log("check: " + ln)
@@ -531,9 +537,26 @@ def primary_anchor(s):
     return next((a for a in ((s.get("anchor") or {}).get("anchors") or []) if a.get("primary")), None) or {}
 
 
-def sitting_facts(top, dirs):
+def screen_facts(results):
+    """The text screen of the checker's results (session_check.py text_screen): the cells it screened
+    and those whose runs failed it, one per arm, model and task across the dirs (an anchor phase and
+    its payload can hold the same cell)."""
+    cells, fail = 0, collections.OrderedDict()
+    for r in results or []:
+        ts = r.get("text_screen") or {}
+        cells += ts.get("cells") or 0
+        for x in ts.get("text_fail") or []:
+            k = (x.get("arm"), x.get("model"), x.get("task"))
+            have = fail.setdefault(k, [0, 0])
+            have[0] += x.get("runs_off") or 0
+            have[1] += x.get("runs") or 0
+    return {"cells": cells, "fail": [(*k, off, n) for k, (off, n) in fail.items()]}
+
+
+def sitting_facts(top, dirs, results=None):
     """What the commit message says, read from the dirs: SESSION.json (device, cells, times, the
-    admission) and the records (engine stamps, the text check, CPU caps)."""
+    admission), the records (engine stamps, the text check, CPU caps) and the checker's results (the
+    text screen)."""
     sess = {d: read_session(os.path.join(top, d)) or {} for d in dirs}
     order = sorted(dirs, key=lambda d: sess[d].get("phase") != "anchor")    # anchor phases first
     first = sess[order[0]]
@@ -585,6 +608,7 @@ def sitting_facts(top, dirs):
         "failures": [ln for d in dirs for ln in read_lines(os.path.join(top, d), "FAILURES.txt")],
         "flagged": flagged,
         "skipped": [ln for d in dirs for ln in read_lines(os.path.join(top, d), "SKIPPED.txt")],
+        "screen": screen_facts(results),
     }
 
 
@@ -638,14 +662,30 @@ def anchor_text(f):
     return text
 
 
+def screen_phrase(s):
+    """The text screen in the message: 'text screen: none', or 'text screen: N cells text-fail (<arm>
+    <model> <task> <k>/<n> runs, …)'; '' when no cell was screened (an Android sitting: its runner
+    checks the text)."""
+    if not s or not s.get("cells"):
+        return ""
+    if not s["fail"]:
+        return "text screen: none"
+    n = len(s["fail"])
+    return (f"text screen: {n} cell{'' if n == 1 else 's'} text-fail ("
+            + ", ".join(f"{arm} {model} {task} {off}/{runs} runs" for arm, model, task, off, runs in s["fail"]) + ")")
+
+
 def commit_message(f, lines_a, lines_b, waived):
     """One line, as the results commits read (1798483f, e3010721): what ran, the admission, the
-    text check, the CPU caps, the failures, the summary rebuild. No runtime against another, no
-    percentage, no standing word (post() refuses a message with one: STANDING_WORDS)."""
+    text check, the text screen, the CPU caps, the failures, the summary rebuild. No runtime against
+    another, no percentage, no standing word (post() refuses a message with one: STANDING_WORDS)."""
     arms = ", ".join(f"{arm}: {' / '.join(sorted(c))}" for arm, c in sorted(f["stamps"].items())) or "no records"
     cells = ", ".join(f"{have}/{exp} cells of {name}" for name, have, exp in f["cells"]) or "the anchor phase only"
     text = (f"text check {f['text_pass']}/{f['text_n']}" if f["text_n"]
             else "text check 0/0 (no run carries one)")
+    screen = screen_phrase(f.get("screen"))
+    if screen:
+        text += "; " + screen
     caps = f"cpu-capped counted {f['capped_in']}/{f['runs']}, past the line {f['capped_past']}"
     if f.get("ddp"):
         per_arm = lambda c: ", ".join(f"{a} {n}" for a, n in sorted(c.items())) or "none"
@@ -997,7 +1037,7 @@ def post(top, dirs, sw, args, row, tmp):
         check_user = ""
         log("dry-run: the user-name rule is read as the scrub would leave the dirs")
 
-    result = check(top, dirs, check_user, tmp)
+    result = check(top, dirs, check_user, tmp, screen=not args.dry_run)
     results = result["dirs"]
     waived = waive_subset(top, results, dirs) if args.allow_subset else []
     verdicts = {r["name"]: verdict_of(r) for r in results}
@@ -1054,7 +1094,7 @@ def post(top, dirs, sw, args, row, tmp):
             row["note"] = "; ".join(notes)
             log(notes[-1])
             return 0
-        facts = sitting_facts(top, dirs)
+        facts = sitting_facts(top, dirs, results)
         msg = commit_message(facts, lines_a, lines_b, waived)
         bad = REFUSED_WORDS.findall(msg)
         if bad:
