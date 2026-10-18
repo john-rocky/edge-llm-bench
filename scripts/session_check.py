@@ -17,7 +17,10 @@ docs/session-check-v1.md. Verdicts:
         kind "job payload (ddp)", read by the job-session rules without the anchor-pair ones)
   FAIL  do not commit: refused at admission, a stopped sitting's quarantine, no SESSION.json
         in a dir the job made, an unscrubbed or execution-level DDP logcat, model weights, a
-        trace or an engine binary, a credential, a payload whose anchor phase is gone
+        trace or an engine binary, a credential, a payload whose anchor phase is gone, a LiteRT-LM
+        cell of an older release than the newest one a platform's pin names on the sitting's day
+        (pin-drift), a LiteRT-LM headline cell off the agreed protocol (protocol-off: context 2048;
+        the protocol cell also prefill 1024 and decode 256). These two take no allow-list line
 
 Exit 0 = every dir PASS, 1 = a HOLD or a FAIL, 2 = usage. Reads only: the dirs, the git index
 and HEAD of the repo that holds them (tracked files, the committed results/summary as the
@@ -45,7 +48,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 sys.path.insert(0, os.path.join(ROOT, "android", "ddp"))
-from build_summary import cpu_cap_drop_of, platform_of  # noqa: E402
+from build_summary import context_tokens_of, cpu_cap_drop_of, platform_of  # noqa: E402
 from cell_gate import degenerate  # noqa: E402
 from dashboard_job import anchor_cells, session_stats  # noqa: E402
 from parsers import (RE_LLAMA_BRACKET, RE_LLAMA_LOG, RE_ORTGENAI_OUTPUT, litert_reply,  # noqa: E402
@@ -91,9 +94,24 @@ SECRET_RES = [
 # prompts' subject is on-device AI, so a reply without its terms is off the prompt
 TEXT_TASKS = ("short-chat", "long-context-")
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
+# the agreed protocol (methodology/agreed-protocol-gemma4.md "The spec"): LiteRT-LM's benchmark() at
+# exactly 1024 prefill and 256 decode tokens with the context forced to 2048, and the page's overview
+# workload, the cross-arm 1K task, at the same forced context (protocol-off)
+PROTOCOL_CELL = "native-benchmark-1024x256"
+HEADLINE_TEXT_TASK = "long-context-1024-gen256"
+PROTOCOL_CONTEXT, PROTOCOL_PREFILL, PROTOCOL_DECODE = 2048, 1024, 256
+# LiteRT-LM's arms on the release build (registry_pin leaves litert-lm-npu out: a side build)
+LITERT_RUNTIMES = ("litert-lm", "litert-lm-cpu", "litert-lm-gpu")
+# the platform blocks of environment.lock.json arms.litert-lm, each a pin from its since day (before
+# the ios block's since the iPhones read default_tag)
+LITERT_PIN_BLOCKS = ("mac", "android", "ios")
+# a LiteRT-LM release tag (v0.18.0); main@1dadd00c, main-20260821-selfbuilt and the like are not
+RELEASE_TAG_RE = re.compile(r"v?(\d+)\.(\d+)(?:\.(\d+))?")
 # the rules whose finding means "do not commit"; every other rule's finding is a HOLD
 FAIL_RULES = {"session-missing", "not-admitted", "stopped-sitting", "logcat-unscrubbed",
-              "big-file", "secret", "pair-broken"}
+              "big-file", "secret", "pair-broken", "pin-drift", "protocol-off"}
+# the team's rules take no allow-list line: the fix is the pin bump and a re-measurement
+NO_ALLOW_RULES = ("pin-drift", "protocol-off")
 # platform blocks of environment.lock.json registered after the fact: the newest registry's block,
 # with the date it became true (`since`), covers a sitting on or after that date that the registry
 # of its day did not know (arms.litert-lm.mac: the Mac yardstick stamps v0.18.0 from the
@@ -474,8 +492,8 @@ def block_applies(block, day):
 
 def registry_pin(platform, runtime, pins, lock, day=None):
     """(pin, registry key) the registry names for a record's arm, or (None, why). The Mac's LiteRT-LM
-    is arms.litert-lm.mac when the lock has that block and the sitting's day (sitting_day) is on or
-    after its since day; the iPhone's, and the Mac's without it, default_tag."""
+    is arms.litert-lm.mac and the iPhone's arms.litert-lm.ios when the lock has that block and the
+    sitting's day (sitting_day) is on or after its since day; without it, default_tag."""
     arms = (lock or {}).get("arms") or {}
     if platform == "android":
         ap = (pins or {}).get("android_pins") or {}
@@ -497,10 +515,10 @@ def registry_pin(platform, runtime, pins, lock, day=None):
         return None, "no registry entry"
     if runtime in ("litert-lm", "litert-lm-cpu"):
         litert = arms.get("litert-lm") or {}
-        mac = litert.get("mac") or {}
-        if platform == "mac" and block_applies(mac, day):
-            at = f", registered at {mac['registered_at']}" if mac.get("registered_at") else ""
-            return mac["tag"], f"environment.lock.json arms.litert-lm.mac.tag (since {mac.get('since')}{at})"
+        block = (litert.get(platform) or {}) if platform in ("mac", "ios") else {}
+        if block_applies(block, day):
+            at = f", registered at {block['registered_at']}" if block.get("registered_at") else ""
+            return block["tag"], f"environment.lock.json arms.litert-lm.{platform}.tag (since {block.get('since')}{at})"
         return litert.get("default_tag"), "environment.lock.json arms.litert-lm.default_tag"
     if runtime == "llama.cpp":
         return (arms.get("llama.cpp") or {}).get("tag"), "environment.lock.json arms.llama.cpp.tag"
@@ -532,12 +550,69 @@ def stamp_matches(stamp, pin):
     return re.search(r"(?<![0-9A-Za-z.])v?" + p + r"(?![0-9A-Za-z])", stamp or "") is not None
 
 
+def release_of(tag):
+    """A LiteRT-LM release tag (v0.18.0, 0.18.0, v0.18) -> (0, 18, 0), compared as numbers; None for a
+    stamp that is not one (main@1dadd00c, main-20260821-selfbuilt, litertlm-android:0.17.0)."""
+    m = RELEASE_TAG_RE.fullmatch(str(tag or "").strip())
+    return tuple(int(g or 0) for g in m.groups()) if m else None
+
+
+def newest_litert(pins, lock, day):
+    """(release, tag, [where]) of the newest LiteRT-LM release a platform's pin names on a sitting's
+    day, and notes; (None, None, [], notes) when the registry names none. The pins: the lock's
+    arms.litert-lm.default_tag, each of its platform blocks (mac, ios, android) that applies on the
+    day (block_applies: its since day), and android/engine-pins.json android_pins.litert-lm, which the
+    lock's android block mirrors (the pins file's _doc): it counts from that block's since day, and
+    when the two name different tags the higher is the Android pin, and a note says so."""
+    litert = ((lock or {}).get("arms") or {}).get("litert-lm") or {}
+    pinned = ((pins or {}).get("android_pins") or {}).get("litert-lm")
+    cands, notes = [], []
+    if release_of(litert.get("default_tag")):
+        cands.append((litert["default_tag"], "environment.lock.json arms.litert-lm.default_tag"))
+    for plat in LITERT_PIN_BLOCKS:
+        block = litert.get(plat)
+        if not isinstance(block, dict):
+            continue
+        # before d33ffa53 the android block named its build tag_built, not tag (registry_pin)
+        tag = block.get("tag") or (block.get("tag_built") if plat == "android" else None)
+        where = f"environment.lock.json arms.litert-lm.{plat}.tag"
+        if plat == "android" and pinned and pinned != tag:
+            hi = max((t for t in (tag, pinned) if release_of(t)), key=release_of, default=None)
+            notes.append(f"the Android LiteRT-LM pin: android/engine-pins.json android_pins.litert-lm "
+                         f"{pinned} and {where} {tag} differ; the higher, {hi}, counts")
+            if hi == pinned:
+                tag, where = pinned, "android/engine-pins.json android_pins.litert-lm"
+        if release_of(tag) and block_applies(dict(block, tag=tag), day):
+            since = f" since {block['since']}" if block.get("since") else ""
+            at = f", registered at {block['registered_at']}" if block.get("registered_at") else ""
+            cands.append((tag, where + since + at))
+    if release_of(pinned) and not isinstance(litert.get("android"), dict):
+        cands.append((pinned, "android/engine-pins.json android_pins.litert-lm"))
+    if not cands:
+        return None, None, [], notes
+    best = max(release_of(t) for t, _ in cands)
+    tag = next(t for t, _ in cands if release_of(t) == best)
+    return best, tag, [w for t, w in cands if release_of(t) == best], notes
+
+
+def as_count(v):
+    """A token count from a record field (an int, or digits in a string), else None."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return int(v) if float(v).is_integer() else v
+    if isinstance(v, str) and v.strip().isdigit():
+        return int(v)
+    return None
+
+
 # ---------------------------------------------------------------- allow-list
 
 def load_allow_list(path):
     """[{rule, dir, match, commit, reason, line}] from the TSV; raises ValueError on a malformed
     line (exit 2): every line names its rule, its dir glob, its detail substring (or *), the
-    commit whose message gives the reason, and the reason."""
+    commit whose message gives the reason, and the reason. A line for pin-drift or protocol-off
+    is malformed too: those two are never excused here."""
     entries = []
     if not path or not os.path.exists(path):
         return entries
@@ -550,6 +625,9 @@ def load_allow_list(path):
             if len(parts) != 5 or not all(p.strip() for p in parts):
                 raise ValueError(f"{path}:{n}: want 5 tab-separated fields (rule, dir, match, commit, reason)")
             rule, dirglob, match, commit, reason = (p.strip() for p in parts)
+            if rule in NO_ALLOW_RULES:
+                raise ValueError(f"{path}:{n}: rule {rule}: pin-drift and protocol-off are never "
+                                 f"allow-listed; the fix is the pin bump and a re-measurement")
             if not re.fullmatch(r"[0-9a-f]{7,40}", commit):
                 raise ValueError(f"{path}:{n}: commit {commit!r} is not a hash")
             if match.startswith("re:"):
@@ -855,6 +933,7 @@ class Check:
                     raw_missing.append(os.path.relpath(p, self.path))
             self.check_cell_text(cell, items, task)
             self.check_cell_counts(cell, items, plat, rt, task, hist)
+            self.check_cell_protocol(cell, items, rt, task)
             if plat == "android" and sha_fix:
                 late = [r for _, r in items if (parse_time(r.get("timestamp")) or sha_fix) >= sha_fix
                         and (r.get("provenance") or {}).get("modelShaSource") != "device"]
@@ -876,6 +955,7 @@ class Check:
                 self.note(f"engine {plat} {rt}: {have}; registry: {src}")
             elif not all(stamp_matches(v, pin) for v in c):
                 self.add("engine-stamp", f"{plat} {rt}: stamps {have}; registry {pin} ({src} at {where})")
+        self.check_pin_drift(stamps, pins, lock, where, day)
         self.note_caps(recs)
         if self.kind == JOB_DDP:
             self.note("cpu-cap: a lab unit holds its CPU clock ceilings below the line from the start "
@@ -976,6 +1056,68 @@ class Check:
         else:
             self.note(f"prompt history: none on this build for {cell}; prompt {mine} tokens matches "
                       + ", ".join(f"{e} {m}" for e, m in sorted(modes.items())))
+
+    def check_pin_drift(self, stamps, pins, lock, where, day):
+        """pin-drift: a LiteRT-LM arm's records stamp an older release than the newest one a
+        platform's pin names on the sitting's day (newest_litert): on the page that cell would read
+        as the device's speed (environment.lock.json arms.litert-lm.android.note: the Galaxy S26
+        protocol cell read 25.9 tok/s decode on v0.16.0 and 44-47 on 0.18-era builds, same phone and
+        file). One finding per platform and arm; a stamp that is no release tag is a note."""
+        arms = [(plat, rt, c) for (plat, rt), c in sorted(stamps.items()) if rt in LITERT_RUNTIMES
+                and not registry_pin(plat, rt, pins, lock, day)[1].startswith("side build")]
+        if not arms:
+            return
+        best, tag, sources, notes = newest_litert(pins, lock, day)
+        for text in notes:
+            self.note(text)
+        if best is None:
+            self.note(f"pin-drift: the registry ({where}) names no LiteRT-LM release; not compared")
+            return
+        for plat, rt, c in arms:
+            loose = sorted(v for v in c if release_of(v) is None)
+            if loose:
+                self.note(f"pin-drift: {plat} {rt} stamps {', '.join(loose)}: not a release tag, not "
+                          f"compared")
+            if any(release_of(v) is not None and release_of(v) < best for v in c):
+                have = ", ".join(f"{v} x{n}" for v, n in c.most_common())
+                self.add("pin-drift", f"{plat} {rt}: stamps {have}; the newest LiteRT-LM release a "
+                                      f"platform's pin names on {day or 'the sitting day'}: {tag} "
+                                      f"({'; '.join(sources)}; registry at {where}): an older "
+                                      f"release's cell is no number of the page")
+
+    def check_cell_protocol(self, cell, items, rt, task):
+        """protocol-off: a LiteRT-LM headline cell off the agreed protocol (methodology/agreed-
+        protocol-gemma4.md "The spec"): every run's context 2048 (the summary's context_tokens:
+        build_summary.context_tokens_of), and the protocol cell's runs 1024 prompt and 256 generated
+        tokens. One finding per cell; a run without a context is off. Other arms (MLX sizes its KV
+        as it goes, llama-bench sets its own), short-chat and the context ladder are not read."""
+        if rt not in LITERT_RUNTIMES or task not in (PROTOCOL_CELL, HEADLINE_TEXT_TASK):
+            return
+        want = {"context": PROTOCOL_CONTEXT}
+        if task == PROTOCOL_CELL:
+            want.update(prompt=PROTOCOL_PREFILL, generated=PROTOCOL_DECODE)
+        off = collections.defaultdict(collections.Counter)
+        runs_off = 0
+        for _, r in items:
+            m, c = r.get("metrics") or {}, r.get("conditions") or {}
+            raw_ctx = m.get("contextTokensConfigured")
+            raw_ctx = c.get("contextTokens") if raw_ctx in (None, "") else raw_ctx
+            got = {"context": (as_count(context_tokens_of(r, m)), raw_ctx),
+                   "prompt": (as_count(m.get("promptTokenCount")), m.get("promptTokenCount")),
+                   "generated": (as_count(m.get("generatedTokenCount")), m.get("generatedTokenCount"))}
+            miss = False
+            for axis, value in want.items():
+                n, raw = got[axis]
+                if n != value:
+                    off[axis][str(n if n is not None else (raw if raw not in (None, "") else "none"))] += 1
+                    miss = True
+            runs_off += miss
+        if runs_off:
+            spec = ", ".join(f"{axis} {value}" for axis, value in want.items())
+            found = "; ".join(f"{axis} " + ", ".join(f"{v} x{n}" for v, n in sorted(off[axis].items()))
+                              for axis in want if axis in off)
+            self.add("protocol-off", f"{cell}: {runs_off} of {len(items)} runs off the agreed protocol "
+                                     f"({spec}): {found}")
 
     def history_index(self):
         """(platform, engine, runtime, model, task) -> [(prompt tokens, campaign dir name)] over the
