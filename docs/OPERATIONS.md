@@ -51,6 +51,14 @@ loudly instead of rebuilding the summary and looking like a capture.
      SHA256SUMS) to a GitHub release `android-litert-lm-<tag>` — upstream
      ships no Android binary, so the release asset is what lets anyone else
      skip the bazel+NDK build.
+   - Before the first sitting on the new tag, run one launch of each Android
+     runner path (short chat, the 1024-token text task, the 1024/256 protocol
+     pair) on one phone, add its console to `android/bench/testdata/litert-lm/`
+     with a selftest case, and read its `Prefill Turn 1` line against the
+     prompt's token count. v0.18.0 printed `BenchmarkInfo:` on a glog-prefixed
+     line and added an `Aggregated BenchmarkInfo` block, which the parser of
+     the previous version read as zero iterations on the 1024-token task: null
+     token counts, an empty text and a failed text check (fixed in 8874bce).
    - ONNX Runtime GenAI: Android = the versions and sha256s at the top of
      `android/ortgenai/build_android.sh`, then push `android/bin/ortgenai-<version>/`
      to `/data/local/tmp/llmbench/ortgenai/` per `android/README.md` ("ONNX Runtime
