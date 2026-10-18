@@ -4,9 +4,11 @@
 # (cooldown and context-tokens unchanged).
 # Source: matrices/dashboard-text-v1.cells line 199 (anchor) and lines 201, 207, 214, 220, 227, 233, 240, 246, 253, 259
 # (short-chat and long-context-1024-gen256 of Qwen3 0.6B / 1.7B / 4B and Gemma 4 E2B / E4B).
-# Needs the yardstick built on the b11721 xcframework (Vendored/llama.xcframework + its .tag, then
-# scripts/build_yardstick_mac.sh): its records stamp engineVersion b11721, engineArtifact llama-b11721-xcframework.zip.
-# Run through the job route in a Mac window (no heavy export pipeline; the job runs anchors.cells, admits, posts):
+# Needs the b11721 yardstick: .build/dd-mac-b11721 (2026-10-19, built from the iPhone 18 Pro's side tree
+# .build/dd-ios-0180-18pro/src; the main tree's Core AI adapter does not compile against its coreai-models 0.2.0), which
+# loads llama.framework UUID 843E7D68 and stamps from that tree's Vendored/engine-pins.json: engineVersion b11721,
+# engineArtifact llama-b11721-xcframework.zip. Run through the job route in a Mac window once the job's Mac route uses
+# that build and pins file (no heavy export pipeline; the job runs anchors.cells, admits, posts):
 #   python3 scripts/dashboard_job.py m4max --cells matrices/dashboard-llama-b11721-mac.cells --suffix llama-b11721 --once
 
 # ---- mac ----
