@@ -199,7 +199,8 @@ class Repo:
         when the history is not there (a shallow CI clone, a dir outside git). A platform block
         registered after the fact (REGISTERED_LATER: it names the date it became true, `since`)
         is taken from the newest registry into one of a day that did not have it, for a sitting
-        on or after that date (`day`, sitting_day); `where` says so."""
+        on or after that date (`day`, sitting_day); the block names the commit it came from
+        (`registered_at`), which registry_pin says when it reads the block."""
         base = self.top or ROOT
         if self._registry_commits is None:
             self._registry_commits = []
@@ -223,8 +224,7 @@ class Repo:
             if have or not block_applies(block, day):
                 continue
             lock = dict(lock, arms=dict(lock.get("arms") or {}))
-            lock["arms"][arm] = dict(lock["arms"].get(arm) or {}, **{plat: block})
-            where += f"; arms.{arm}.{plat} as registered at {last_where} (since {block.get('since')})"
+            lock["arms"][arm] = dict(lock["arms"].get(arm) or {}, **{plat: dict(block, registered_at=last_where)})
         return pins, lock, where
 
     def registry_of(self, commit):
@@ -499,7 +499,8 @@ def registry_pin(platform, runtime, pins, lock, day=None):
         litert = arms.get("litert-lm") or {}
         mac = litert.get("mac") or {}
         if platform == "mac" and block_applies(mac, day):
-            return mac["tag"], f"environment.lock.json arms.litert-lm.mac.tag (since {mac.get('since')})"
+            at = f", registered at {mac['registered_at']}" if mac.get("registered_at") else ""
+            return mac["tag"], f"environment.lock.json arms.litert-lm.mac.tag (since {mac.get('since')}{at})"
         return litert.get("default_tag"), "environment.lock.json arms.litert-lm.default_tag"
     if runtime == "llama.cpp":
         return (arms.get("llama.cpp") or {}).get("tag"), "environment.lock.json arms.llama.cpp.tag"
