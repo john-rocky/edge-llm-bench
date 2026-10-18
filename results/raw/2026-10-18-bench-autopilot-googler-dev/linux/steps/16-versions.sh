@@ -1,0 +1,12 @@
+# Versions for LINUX_FIRST_RUN.md "Environment", as dev.
+. /etc/os-release; printf 'os=%s\n' "$PRETTY_NAME"
+printf 'arch=%s kernel=%s\n' "$(uname -m)" "$(uname -r)"
+printf 'python3=%s (%s)\n' "$(python3 --version 2>&1)" "$(command -v python3)"
+printf 'pip3 (system)=%s\n' "$(pip3 --version 2>&1)"
+printf 'git=%s\n' "$(git --version)"
+printf 'curl=%s\n' "$(curl --version | head -1)"
+printf 'tar=%s\n' "$(tar --version | head -1)"
+printf 'sh -> %s, bash %s\n' "$(readlink -f /bin/sh)" "$BASH_VERSION"
+printf 'sudo=%s\n' "$(sudo -V | head -1)"
+printf 'gcloud=%s\n' "$(gcloud --version 2>&1 | head -1)"
+printf 'LANG=%s user=%s uid=%s HOME=%s\n' "${LANG:-unset}" "$(id -un)" "$(id -u)" "$HOME"

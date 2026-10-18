@@ -1,0 +1,41 @@
+
+## step dryrun | start 2026-10-18 23:33:20 JST | dexec dev 60-dryrun.sh
+## README.md, the autopilot block as written:
+./bench autopilot --ddp akita-35 --dry-run --project <your project> --bucket gs://<your bucket>
+## run, the two placeholders filled:
+./bench autopilot --ddp akita-35 --dry-run --project litert-edge-portal --bucket gs://litert-edge-portal-devicerun
+
+$ /home/dev/elb-venv/bin/python3 /home/dev/edge-llm-bench/scripts/autopilot.py --ddp akita-35 --project=litert-edge-portal --bucket=gs://litert-edge-portal-devicerun --dry-run
+[2026-10-18 14:33:21] autopilot: lab unit Pixel 8a (DDP akita-35), key pixel8a-ddp, cells matrices/ddp-first-run.cells, project litert-edge-portal, bucket gs://litert-edge-portal-devicerun [dry-run: no network, nothing billed]
+[2026-10-18 14:33:21] autopilot: steps: 1 sitting -> 2 post (scrub, check, local commit) -> 3 table -> 4 red points -> 5 requests
+[2026-10-18 14:33:21] autopilot: no schedule.json entry for akita-35: key pixel8a-ddp made here
+[2026-10-18 14:33:21] autopilot: switch: ddp_max_sessions 16 caps the plan (ops/autopilot/switch.json); its ddp_weekly (true) is the bench host's nightly slot, not read by a run by hand
+[2026-10-18 14:33:21] autopilot: gtimeout: none on PATH; GNU timeout /usr/bin/timeout under that name (logs/autopilot/bin/gtimeout, linked by the run)
+[2026-10-18 14:33:21] === slot pixel8a-ddp (Pixel 8a (DDP akita-35), DDP akita-35) campaign 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35 [dry-run]
+[2026-10-18 14:33:21] doctor (check_ddp): ready
+[2026-10-18 14:33:21]   OK    gcloud  /usr/bin/gcloud
+[2026-10-18 14:33:21]   SKIP  gcloud sign-in  not checked in a dry run: gcloud auth print-access-token can refresh the token over the network (the run checks it first)
+[2026-10-18 14:33:21]   OK    huggingface_hub  2.2.0
+[2026-10-18 14:33:21]   OK    ddp engine files  v0.18.0: 9 files = android/engine-pins.json, in /home/dev/edge-llm-bench/android/bin/v0.18.0
+[2026-10-18 14:33:22] ddp plan: 1 jobs in 1 Device Run sessions on akita-35 (engine v0.18.0), 0 rows skipped; 12 upload candidates, 1.13 GB (the run uploads what the bucket lacks); run_ddp's estimate 9.0 device-min; cap 16 sessions (ops/autopilot/switch.json ddp_max_sessions)
+[2026-10-18 14:33:22] plan:
+[2026-10-18 14:33:22] $ gtimeout --kill-after=60 21600 /home/dev/edge-llm-bench/bench matrix matrices/ddp-first-run.cells --ddp akita-35 --campaign 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35   env: 
+[2026-10-18 14:33:22]   SESSION.json would read admitted true once the sitting writes records (ddp lab unit: no session anchor; each run carries its cap marks and the text check), anchor null, ddp {id, sessions, jobs, device_minutes}
+[2026-10-18 14:33:22] === done: OK (ok) exit 0
+[2026-10-18 14:33:22] autopilot: 2 post: printed in the summary below (the dir does not exist in a dry run)
+[2026-10-18 14:33:22] autopilot: 3 table: scripts/render_dashboard.py
+[2026-10-18 14:33:22] autopilot: 4 red: scripts/regression_watch.py
+[2026-10-18 14:33:22] autopilot: 5 requests: logs/dashboard-job/retakes.json, bisect-requests.json
+
+=== autopilot: Pixel 8a (DDP akita-35), key pixel8a-ddp [dry-run: nothing billed, nothing written]
+sitting   OK — results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+post      would run scripts/dashboard_post.py over the dir: the scrub, scripts/session_check.py, a local commit of the dir + results/summary from the git index when it passes
+          page skipped: no build.py in /home/dev/code/litert-bench-dashboard; push_bench / push_page / publish off / off / off
+table     would render DASHBOARD.md and .dashboard/ (scripts/render_dashboard.py; local, gitignored)
+red       regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+          8 red points, 0 of them this sitting's (a lab unit's rows make no series of the page's rule)
+requests  retakes pending 0, bisect requests pending 0 (logs/dashboard-job/retakes.json, logs/dashboard-job/bisect-requests.json)
+          scripts/engine_bisect.py is not in this checkout: it comes after PR #4 (LiteRT-LM Android builds from a git ref), with the bisect commit on top of it
+next      the run, billed to litert-edge-portal: ./bench autopilot --ddp akita-35 --project litert-edge-portal --bucket gs://litert-edge-portal-devicerun
+## dry run exit=0; gcloud log files before/after 5/5; results/raw entries 320/320; files under logs/ 0/0; git status --porcelain lines 0/0
+## step dryrun | end 2026-10-18 23:33:22 JST | rc 0 | 2 s

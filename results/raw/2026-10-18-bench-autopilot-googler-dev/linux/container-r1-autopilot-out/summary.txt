@@ -1,0 +1,20 @@
+2026-10-18 14:42:13 UTC
+=== autopilot: Pixel 8a (DDP akita-35), key pixel8a-ddp
+sitting   OK (ok; bench matrix --ddp exit 1) — results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+          Device Run sessions session-4b783529; 1 jobs {'FAILED': 1}, 1.5 device-min; 1 of 1 cells with records
+check     FAIL (rules: failures, logcat-unscrubbed, runner-exit)
+commit    none (held: a sitting is committed whole or not at all)
+summary   results/summary/device-runs.csv 4740 lines on disk (bench matrix rebuilt it from this checkout's results/raw; not committed)
+table     wrote DASHBOARD.md and .dashboard/dashboard-v1.{csv,json}: 144 measured of 299 device-cells, 84 stale
+          this sitting's cells on it: no-decode 1
+          litert-lm-gpu Qwen 3 1.7B short-chat: no-decode
+red       regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+          8 red points, 0 of them this sitting's (a lab unit's rows make no series of the page's rule)
+requests  retakes pending 0, bisect requests pending 0 (logs/dashboard-job/retakes.json, logs/dashboard-job/bisect-requests.json)
+          scripts/engine_bisect.py is not in this checkout: it comes after PR #4 (LiteRT-LM Android builds from a git ref), with the bisect commit on top of it
+log       logs/dashboard-job/2026-10-18-pixel8a-ddp.log; logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ (summary.txt, post.txt, red.json, red.md)
+next      failures: read FAILURES.txt and the cell's log: re-run the cell, or commit by hand with the reason
+next      logcat-unscrubbed: scrub the logcat (android/ddp/scrub.py), keep execution-level logcat.txt out, post again
+next      runner-exit: read the job log's tail for the runner's exit before calling the sitting clean
+next      read results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/REVIEW.md (each finding and what a person does), then post again: python3 scripts/dashboard_post.py results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+next      results/summary/ on disk holds this sitting's rows: `git checkout -- results/summary` gives HEAD's back

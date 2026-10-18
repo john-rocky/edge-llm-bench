@@ -460,3 +460,14 @@ the post's commit is made with.
 - Red points of the sitting itself: a lab unit's rows make no series of the page's rule (m1q-36's
   are the page's stand-in rows, which its regression leaves out; akita-35's device is not one of
   the page's devices), so the red points are the page's, from the attached phones' sittings.
+
+**From a clean Ubuntu 24.04 container** (2026-10-18, colima's `ubuntu:24.04`, aarch64; record
+`results/raw/2026-10-18-bench-autopilot-googler-dev/ROUND6.md`): README steps 1 and 2 (the gcloud CLI by Google's apt
+route, the venv, the release asset), this branch cloned from a bundle of a checkout (GitHub does not hold the
+branch), git's identity set (without it `git commit-tree` stops: "unable to auto-detect email address"), the model's
+Hugging Face cache entry copied in (huggingface_hub 2.2.0 read the 1.8.0 layout and downloaded nothing);
+`./bench doctor --platform ddp` ready; the selftests with the system python3 and no `huggingface_hub`; the README line
+above as the dry run (no gcloud command); then two billed sittings on `akita-35`, with bench-autopilot's gen-budget
+allow-list line (63ec5615) and its `.gitignore` line for an execution's own `logcat.txt` (6e3d5908) applied in the
+clone: the first's job FAILED on its unit before its second run (held FAIL, nothing committed; why the run stopped is
+not known from the pulled files), the second PASSED, was committed in the clone and came out as a bundle.

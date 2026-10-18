@@ -1,0 +1,20 @@
+# The retake (the supervisor's go, 23:5x JST): the billed command of 70-session.sh with --suffix r2 (the r1 sitting's
+# dir holds a sitting already): one Device Run session, one job, two runs on akita-35, billed to litert-edge-portal; as
+# dev, from the clone (63ec5615 and 6e3d5908 applied), in step 1's venv. Nothing is expected to be uploaded. After the
+# run: the gcloud commands of the run from gcloud's own log files (command names; the arguments of storage cp only).
+. ~/elb-venv/bin/activate
+cd ~/edge-llm-bench || exit 1
+G=~/.config/gcloud/logs
+find "$G" -type f -name '*.log' 2>/dev/null | sort > /tmp/g-before.txt
+date -u '+## start %F %T UTC'
+./bench autopilot --ddp akita-35 --cells matrices/ddp-first-run.cells --project litert-edge-portal --bucket gs://litert-edge-portal-devicerun --suffix r2
+rc=$?
+date -u '+## end %F %T UTC'
+printf '## ./bench autopilot exit=%s\n' "$rc"
+find "$G" -type f -name '*.log' 2>/dev/null | sort > /tmp/g-after.txt
+comm -13 /tmp/g-before.txt /tmp/g-after.txt > /tmp/g-new.txt
+printf '## gcloud log files written during the run: %s; the commands they ran, by name:\n' "$(wc -l < /tmp/g-new.txt)"
+xargs -r grep -h -o 'Running \[gcloud\.[a-z.-]*\]' < /tmp/g-new.txt | sort | uniq -c
+printf '## every gcloud storage cp of the run, with its arguments:\n'
+xargs -r grep -h 'Running \[gcloud\.storage\.cp\]' < /tmp/g-new.txt | sed -E 's/^.*(Running )/\1/'
+exit "$rc"

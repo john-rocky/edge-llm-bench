@@ -1,0 +1,269 @@
+
+## step after | start 2026-10-18 23:47:10 JST | dexec dev 80-after.sh
+## HEAD 85e90e21b96d9324e924d8f1cf47db06307f7eef; the bundle base 7edc798dc03ed6a86cb628d3fc5e64be8c817b90
+## commits on top of the base:
+85e90e21 session-check allow-list: gen-budget on the LiteRT-LM short-chat cells at v0.18.0 of a Developer Device Platform sitting (dir glob *-dashboard-v1-*-ddp-*-android), excused by dad937b1, whose message gives the reason: the DDP route passes --max_output_tokens=128 and records it as conditions.outputTokenBudget, litert_lm_main decodes past it (b6ddcb2c on v0.16.0; on v0.18.0 the 2026-10-16 DD
+## git log -1 --stat:
+commit 85e90e21b96d9324e924d8f1cf47db06307f7eef
+Author: john-rocky <rockyshikoku@gmail.com>
+Date:   2026-10-18T14:38:29+00:00
+
+    session-check allow-list: gen-budget on the LiteRT-LM short-chat cells at v0.18.0 of a Developer Device Platform sitting (dir glob *-dashboard-v1-*-ddp-*-android), excused by dad937b1, whose message gives the reason: the DDP route passes --max_output_tokens=128 and records it as conditions.outputTokenBudget, litert_lm_main decodes past it (b6ddcb2c on v0.16.0; on v0.18.0 the 2026-10-16 DDP sho
+
+ ops/session-check/allow-list.tsv | 1 +
+ 1 file changed, 1 insertion(+)
+## git status --short:
+ M results/summary/README.md
+ M results/summary/device-runs.csv
+?? results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/
+## campaign dir: results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/REVIEW.md
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/SESSION.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/app-path-android
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/app-path-android/FAILURES.txt
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/app-path-android/SKIPPED.txt
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/app-path-android/litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-18T14-40-38_run1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/app-path-android/litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-18T14-40-38_run1.log
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp-raw
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp-raw/session-4b783529
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/operation-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/operation-create-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/plan-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/request-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/scrub.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/session-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp/session-4b783529
+## results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/REVIEW.md:
+<!-- written by scripts/dashboard_post.py for a person; removed when the dir is committed -->
+# REVIEW: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android — FAIL
+
+Held by scripts/dashboard_post.py at 2026-10-18 14:42 UTC: nothing of this sitting was committed.
+
+Why: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android FAIL (rules: failures, logcat-unscrubbed, runner-exit); a sitting is committed whole or not at all
+
+The dirs of this post: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android FAIL
+
+| severity | rule | detail | what a person does |
+|---|---|---|---|
+| FAIL | `logcat-unscrubbed` | ddp/session-4b783529/j01-gpu-Qwen3-1-7B-short-chat/execution-5935005c-7bd5-4ebe-a12a-b3392904aa64/logcat.txt (untracked): the execution-level logcat.txt stays out of every commit | scrub the logcat (android/ddp/scrub.py), keep execution-level logcat.txt out, post again |
+| HOLD | `runner-exit` | runner_exit 1 | read the job log's tail for the runner's exit before calling the sitting clean |
+| HOLD | `failures` | litert-lm-gpu litert-community/Qwen3-1.7B short-chat context-tokens=default file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm ddp=akita-35 session=session-4b783529 job=j01-gpu-Qwen3-1-7B-short-chat execution=5935005c-7bd5-4ebe-a12a-b3392904aa64 result=FAILED clean=1/2 (cell records in the dir: 1) | read FAILURES.txt and the cell's log: re-run the cell, or commit by hand with the reason |
+
+Not holding:
+- `gen-budget`: litert-lm-gpu litert-community/Qwen3-1.7B short-chat (v0.18.0): 1 of 1 runs generated past the budget (526>128) — allowed by dad937b1 (litert_lm_main decodes past --max_output_tokens (b6ddcb2c on v0.16.0; v0.18.0 the same, DDP 536-1039 and attached 566-790 tokens): only the DDP route's records name the budget, so only its short-chat cells meet the rule)
+
+Post again once it is fixed (the allow-list takes a line only when a commit message gives the reason):
+
+    python3 scripts/dashboard_post.py results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+
+A dir that cannot pass is committed by hand with the reason in the message (docs/dashboard-recurring-job-v1.md §6), or stays uncommitted.
+## logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/summary.txt:
+2026-10-18 14:42:13 UTC
+=== autopilot: Pixel 8a (DDP akita-35), key pixel8a-ddp
+sitting   OK (ok; bench matrix --ddp exit 1) — results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+          Device Run sessions session-4b783529; 1 jobs {'FAILED': 1}, 1.5 device-min; 1 of 1 cells with records
+check     FAIL (rules: failures, logcat-unscrubbed, runner-exit)
+commit    none (held: a sitting is committed whole or not at all)
+summary   results/summary/device-runs.csv 4740 lines on disk (bench matrix rebuilt it from this checkout's results/raw; not committed)
+table     wrote DASHBOARD.md and .dashboard/dashboard-v1.{csv,json}: 144 measured of 299 device-cells, 84 stale
+          this sitting's cells on it: no-decode 1
+          litert-lm-gpu Qwen 3 1.7B short-chat: no-decode
+red       regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+          8 red points, 0 of them this sitting's (a lab unit's rows make no series of the page's rule)
+requests  retakes pending 0, bisect requests pending 0 (logs/dashboard-job/retakes.json, logs/dashboard-job/bisect-requests.json)
+          scripts/engine_bisect.py is not in this checkout: it comes after PR #4 (LiteRT-LM Android builds from a git ref), with the bisect commit on top of it
+log       logs/dashboard-job/2026-10-18-pixel8a-ddp.log; logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ (summary.txt, post.txt, red.json, red.md)
+next      failures: read FAILURES.txt and the cell's log: re-run the cell, or commit by hand with the reason
+next      logcat-unscrubbed: scrub the logcat (android/ddp/scrub.py), keep execution-level logcat.txt out, post again
+next      runner-exit: read the job log's tail for the runner's exit before calling the sitting clean
+next      read results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/REVIEW.md (each finding and what a person does), then post again: python3 scripts/dashboard_post.py results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+next      results/summary/ on disk holds this sitting's rows: `git checkout -- results/summary` gives HEAD's back
+## logs/dashboard-job/ledger.tsv (last line):
+2026-10-18 14:38:52	2026-10-18 14:42:13	pixel8a-ddp	results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android	OK	ok; bench matrix --ddp exit 1	0	3.3	1
+## logs/dashboard-job/autopilot-ledger.tsv (last line):
+2026-10-18 14:42:13	2026-10-18 14:42:13	2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android	2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android=FAIL								held: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android FAIL (rules: failures, logcat-unscrubbed, runner-exit); a sitting is committed whole or not at all
+## results/summary/device-runs.csv lines: 4740
+The bundle contains this ref:
+85e90e21b96d9324e924d8f1cf47db06307f7eef refs/heads/bench-autopilot-googler
+The bundle requires this ref:
+7edc798dc03ed6a86cb628d3fc5e64be8c817b90 
+The bundle uses this hash algorithm: sha1
+/tmp/autopilot-commit.bundle is okay
+## step after | end 2026-10-18 23:47:10 JST | rc 0 | 0 s
+
+## step copy-after | start 2026-10-18 23:47:10 JST | h_copy_after
+## campaign results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+## autopilot-commit-r1.bundle: 1777 bytes, sha256 8a527a7bcb554a02d2481a2cb175193bc6ba6fce426b84207b0090fe4de875a7
+/Users/USER/code/edge-llm-bench-wt-autopilot-googler/results/raw/2026-10-18-bench-autopilot-googler-dev/autopilot-commit-r1.bundle is okay
+The bundle contains this ref:
+85e90e21b96d9324e924d8f1cf47db06307f7eef refs/heads/bench-autopilot-googler
+The bundle requires this ref:
+7edc798dc03ed6a86cb628d3fc5e64be8c817b90 
+The bundle uses this hash algorithm: sha1
+## host: git fetch <bundle> bench-autopilot-googler -> FETCH_HEAD 85e90e21b96d9324e924d8f1cf47db06307f7eef (no branch moved)
+commit 85e90e21b96d9324e924d8f1cf47db06307f7eef
+Author: john-rocky <rockyshikoku@gmail.com>
+Date:   2026-10-18T14:38:29Z
+
+    session-check allow-list: gen-budget on the LiteRT-LM short-chat cells at v0.18.0 of a Developer Device Platform sitting (dir glob *-dashboard-v1-*-ddp-*-android), excused by dad937b1, whose message gives the reason: the DDP route passes --max_output_tokens=128 and records it as conditions.outputTokenBudget, litert_lm_main decodes past it (b6ddcb2c on v0.16.0; on v0.18.0 the 2026-10-16 DDP sho
+
+ ops/session-check/allow-list.tsv | 1 +
+ 1 file changed, 1 insertion(+)
+## copied logs/dashboard-job/2026-10-18-pixel8a-ddp.log
+## copied logs/dashboard-job/ledger.tsv
+## copied logs/dashboard-job/autopilot-ledger.tsv
+## copied logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/
+## step copy-after | end 2026-10-18 23:47:10 JST | rc 0 | 0 s
+
+## step r1-tar | start 2026-10-18 23:53:32 JST | h_r1_tar
+## campaign-r1.tar: 33 members, ddp-raw members 0
+## container-campaign-r1.tar: 378880 bytes
+## step r1-tar | end 2026-10-18 23:53:32 JST | rc 0 | 0 s
+
+## step after | start 2026-10-18 23:53:32 JST | dexec dev 80-after.sh
+## HEAD 9e310521b24fefe5bba5e8f05fc89f815cf24b7a; before the sitting 88d41b29ac0b878e881c42051efe04780e546113; the bundle base 7edc798dc03ed6a86cb628d3fc5e64be8c817b90
+## commits on top of the base:
+9e310521 results 2026-10-18 Pixel 8a lab units on the Developer Device Platform (DDP akita-35, Pixel 8a, 1 unit), litert-lm-gpu: v0.18.0: 1/1 cells of matrices/ddp-first-run.cells in one dashboard-job sitting 14:47–14:52 UTC (1 Device Run session session-f53347c2, 1 jobs, 3.7 device-min; no session anchor: a lab unit's runs carry their own cap marks and text check); text check 0/0 (no run carrie
+88d41b29 .gitignore: a Device Run execution's own logcat.txt (results/raw/*/ddp/*/*/execution-*/logcat.txt, the lab unit's whole log with lines outside the runs) stays on disk and out of every commit, the rule for what d6077c6b and the earlier DDP campaigns kept out by hand (f231ad66 scrubs every pulled logcat and keeps the original bytes in the ignored ddp-raw/); each run's logcat stays committed
+85e90e21 session-check allow-list: gen-budget on the LiteRT-LM short-chat cells at v0.18.0 of a Developer Device Platform sitting (dir glob *-dashboard-v1-*-ddp-*-android), excused by dad937b1, whose message gives the reason: the DDP route passes --max_output_tokens=128 and records it as conditions.outputTokenBudget, litert_lm_main decodes past it (b6ddcb2c on v0.16.0; on v0.18.0 the 2026-10-16 DD
+## git log -1 --stat:
+commit 9e310521b24fefe5bba5e8f05fc89f815cf24b7a
+Author: dev (container) <dev@container.invalid>
+Date:   2026-10-18T14:52:48+00:00
+
+    results 2026-10-18 Pixel 8a lab units on the Developer Device Platform (DDP akita-35, Pixel 8a, 1 unit), litert-lm-gpu: v0.18.0: 1/1 cells of matrices/ddp-first-run.cells in one dashboard-job sitting 14:47–14:52 UTC (1 Device Run session session-f53347c2, 1 jobs, 3.7 device-min; no session anchor: a lab unit's runs carry their own cap marks and text check); text check 0/0 (no run carries one
+
+ .../SESSION.json                                   |  37 ++
+ .../app-path-android/SKIPPED.txt                   |   0
+ ...3-1.7B_short-chat_2026-10-18T14-48-44_run1.json | 121 +++++
+ ...n3-1.7B_short-chat_2026-10-18T14-48-44_run1.log | 321 +++++++++++++
+ ...3-1.7B_short-chat_2026-10-18T14-51-28_run2.json | 120 +++++
+ ...n3-1.7B_short-chat_2026-10-18T14-51-28_run2.log | 282 +++++++++++
+ .../ddp/operation-1.json                           | 312 +++++++++++++
+ .../ddp/operation-create-1.json                    |  12 +
+ .../ddp/plan-1.json                                | 179 +++++++
+ .../ddp/request-1.json                             | 167 +++++++
+ .../ddp/scrub.json                                 |  58 +++
+ .../ddp/session-1.json                             | 297 ++++++++++++
+ .../data/local/tmp/llmbench/ddp-out/provenance.txt |  44 ++
+ .../local/tmp/llmbench/ddp-out/run1.engine.txt     |  84 ++++
+ .../data/local/tmp/llmbench/ddp-out/run1.err       |   0
+ .../data/local/tmp/llmbench/ddp-out/run1.exit      |   1 +
+ .../data/local/tmp/llmbench/ddp-out/run1.log       | 321 +++++++++++++
+ .../data/local/tmp/llmbench/ddp-out/run1.state     |  64 +++
+ .../local/tmp/llmbench/ddp-out/run1_logcat.txt     | 405 ++++++++++++++++
+ .../local/tmp/llmbench/ddp-out/run2.engine.txt     |  87 ++++
+ .../data/local/tmp/llmbench/ddp-out/run2.err       |   0
+ .../data/local/tmp/llmbench/ddp-out/run2.exit      |   1 +
+ .../data/local/tmp/llmbench/ddp-out/run2.log       | 282 +++++++++++
+ .../data/local/tmp/llmbench/ddp-out/run2.state     |  64 +++
+ .../local/tmp/llmbench/ddp-out/run2_logcat.txt     | 520 +++++++++++++++++++++
+ .../data/local/tmp/llmbench/ddp-out/wrapper.log    |  23 +
+ results/summary/README.md                          |   2 +-
+ results/summary/device-runs.csv                    |   2 +
+ 28 files changed, 3805 insertions(+), 1 deletion(-)
+## git status --short:
+?? results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/
+## campaign dir: results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/SESSION.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/app-path-android
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/app-path-android/SKIPPED.txt
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/app-path-android/litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-18T14-48-44_run1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/app-path-android/litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-18T14-48-44_run1.log
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/app-path-android/litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-18T14-51-28_run2.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/app-path-android/litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-18T14-51-28_run2.log
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp-raw
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp-raw/session-f53347c2
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/operation-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/operation-create-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/plan-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/request-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/scrub.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/session-1.json
+  results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp/session-f53347c2
+## logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/summary.txt:
+2026-10-18 14:52:49 UTC
+=== autopilot: Pixel 8a (DDP akita-35), key pixel8a-ddp
+sitting   OK — results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android
+          Device Run sessions session-f53347c2; 1 jobs {'PASSED': 1}, 3.7 device-min; 1 of 1 cells with records
+check     PASS
+commit    9e310521b24f on bench-autopilot-googler (local), push: would push: no origin/main to push onto
+summary   results/summary/device-runs.csv 4739 -> 4741 lines (the commit)
+page      skipped: no build.py in /home/dev/code/litert-bench-dashboard
+post red  no red point in this sitting (8 on the page)
+table     wrote DASHBOARD.md and .dashboard/dashboard-v1.{csv,json}: 145 measured of 299 device-cells, 84 stale
+          this sitting's cells on it: measured 1
+          litert-lm-gpu Qwen 3 1.7B short-chat: measured, decode 19.8 tok/s (n=1)
+red       regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+          8 red points, 0 of them this sitting's (a lab unit's rows make no series of the page's rule)
+requests  retakes pending 0, bisect requests pending 0 (logs/dashboard-job/retakes.json, logs/dashboard-job/bisect-requests.json)
+          scripts/engine_bisect.py is not in this checkout: it comes after PR #4 (LiteRT-LM Android builds from a git ref), with the bisect commit on top of it
+log       logs/dashboard-job/2026-10-18-pixel8a-ddp.log; logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ (summary.txt, post.txt, red.json, red.md)
+next      the commit is local: git show --stat 9e310521b24f
+## logs/dashboard-job/ledger.tsv (last line):
+2026-10-18 14:47:20	2026-10-18 14:52:47	pixel8a-ddp	results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android	OK	ok	0	5.5	1
+## logs/dashboard-job/autopilot-ledger.tsv (last line):
+2026-10-18 14:52:47	2026-10-18 14:52:48	2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android	2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android=PASS	9e310521b24fefe5bba5e8f05fc89f815cf24b7a	4739 -> 4741	skipped: no build.py in /home/dev/code/litert-bench-dashboard		would push: no origin/main to push onto	no page commit to push	nothing to publish (no page committed by this step)	red: no red point in this sitting (8 on the page)
+## results/summary/device-runs.csv lines: 4741
+/tmp/autopilot-commit.bundle is okay
+The bundle contains this ref:
+9e310521b24fefe5bba5e8f05fc89f815cf24b7a refs/heads/bench-autopilot-googler
+The bundle requires this ref:
+7edc798dc03ed6a86cb628d3fc5e64be8c817b90 
+The bundle uses this hash algorithm: sha1
+## step after | end 2026-10-18 23:53:32 JST | rc 0 | 0 s
+
+## step copy-after | start 2026-10-18 23:53:32 JST | h_copy_after
+## campaign results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android
+## autopilot-commit-r2.bundle: 40595 bytes, sha256 97b8c3f2c6473123b785b86ecb5a0367efb0fb52163c618c970fb9fa7c2b425b
+/Users/USER/code/edge-llm-bench-wt-autopilot-googler/results/raw/2026-10-18-bench-autopilot-googler-dev/autopilot-commit-r2.bundle is okay
+The bundle contains this ref:
+9e310521b24fefe5bba5e8f05fc89f815cf24b7a refs/heads/bench-autopilot-googler
+The bundle requires this ref:
+7edc798dc03ed6a86cb628d3fc5e64be8c817b90 
+The bundle uses this hash algorithm: sha1
+## host: git fetch <bundle> bench-autopilot-googler -> FETCH_HEAD 9e310521b24fefe5bba5e8f05fc89f815cf24b7a (no branch moved)
+commit 9e310521b24fefe5bba5e8f05fc89f815cf24b7a
+Author: dev (container) <dev@container.invalid>
+Date:   2026-10-18T14:52:48Z
+
+    results 2026-10-18 Pixel 8a lab units on the Developer Device Platform (DDP akita-35, Pixel 8a, 1 unit), litert-lm-gpu: v0.18.0: 1/1 cells of matrices/ddp-first-run.cells in one dashboard-job sitting 14:47–14:52 UTC (1 Device Run session session-f53347c2, 1 jobs, 3.7 device-min; no session anchor: a lab unit's runs carry their own cap marks and text check); text check 0/0 (no run carries one);
+
+ .../SESSION.json                                   |  37 ++
+ .../app-path-android/SKIPPED.txt                   |   0
+ ...3-1.7B_short-chat_2026-10-18T14-48-44_run1.json | 121 +++++
+ ...n3-1.7B_short-chat_2026-10-18T14-48-44_run1.log | 321 +++++++++++++
+ ...3-1.7B_short-chat_2026-10-18T14-51-28_run2.json | 120 +++++
+ ...n3-1.7B_short-chat_2026-10-18T14-51-28_run2.log | 282 +++++++++++
+ .../ddp/operation-1.json                           | 312 +++++++++++++
+ .../ddp/operation-create-1.json                    |  12 +
+ .../ddp/plan-1.json                                | 179 +++++++
+ .../ddp/request-1.json                             | 167 +++++++
+ .../ddp/scrub.json                                 |  58 +++
+ .../ddp/session-1.json                             | 297 ++++++++++++
+ .../data/local/tmp/llmbench/ddp-out/provenance.txt |  44 ++
+ .../local/tmp/llmbench/ddp-out/run1.engine.txt     |  84 ++++
+ .../data/local/tmp/llmbench/ddp-out/run1.err       |   0
+ .../data/local/tmp/llmbench/ddp-out/run1.exit      |   1 +
+ .../data/local/tmp/llmbench/ddp-out/run1.log       | 321 +++++++++++++
+ .../data/local/tmp/llmbench/ddp-out/run1.state     |  64 +++
+ .../local/tmp/llmbench/ddp-out/run1_logcat.txt     | 405 ++++++++++++++++
+ .../local/tmp/llmbench/ddp-out/run2.engine.txt     |  87 ++++
+ .../data/local/tmp/llmbench/ddp-out/run2.err       |   0
+ .../data/local/tmp/llmbench/ddp-out/run2.exit      |   1 +
+ .../data/local/tmp/llmbench/ddp-out/run2.log       | 282 +++++++++++
+ .../data/local/tmp/llmbench/ddp-out/run2.state     |  64 +++
+ .../local/tmp/llmbench/ddp-out/run2_logcat.txt     | 520 +++++++++++++++++++++
+ .../data/local/tmp/llmbench/ddp-out/wrapper.log    |  23 +
+ results/summary/README.md                          |   2 +-
+ results/summary/device-runs.csv                    |   2 +
+ 28 files changed, 3805 insertions(+), 1 deletion(-)
+## copied logs/dashboard-job/2026-10-18-pixel8a-ddp.log
+## copied logs/dashboard-job/ledger.tsv
+## copied logs/dashboard-job/autopilot-ledger.tsv
+## copied logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/
+## step copy-after | end 2026-10-18 23:53:32 JST | rc 0 | 0 s

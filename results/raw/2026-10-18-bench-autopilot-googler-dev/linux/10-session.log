@@ -1,0 +1,63 @@
+
+## step session | start 2026-10-18 23:38:52 JST | dexec dev 70-session.sh
+## start 2026-10-18 14:38:52 UTC
+
+$ /home/dev/elb-venv/bin/python3 /home/dev/edge-llm-bench/scripts/autopilot.py --ddp akita-35 --project=litert-edge-portal --bucket=gs://litert-edge-portal-devicerun --cells=matrices/ddp-first-run.cells
+[2026-10-18 14:38:52] autopilot: lab unit Pixel 8a (DDP akita-35), key pixel8a-ddp, cells matrices/ddp-first-run.cells, project litert-edge-portal, bucket gs://litert-edge-portal-devicerun
+[2026-10-18 14:38:52] autopilot: steps: 1 sitting -> 2 post (scrub, check, local commit) -> 3 table -> 4 red points -> 5 requests
+[2026-10-18 14:38:52] autopilot: no schedule.json entry for akita-35: key pixel8a-ddp made here
+[2026-10-18 14:38:52] autopilot: switch: ddp_max_sessions 16 caps the plan (ops/autopilot/switch.json); its ddp_weekly (true) is the bench host's nightly slot, not read by a run by hand
+[2026-10-18 14:38:52] autopilot: gtimeout: none on PATH; GNU timeout /usr/bin/timeout under that name (logs/autopilot/bin/gtimeout)
+[2026-10-18 14:38:52] autopilot: the run's output: logs/dashboard-job/2026-10-18-pixel8a-ddp.log
+[2026-10-18 14:38:52] === slot pixel8a-ddp (Pixel 8a (DDP akita-35), DDP akita-35) campaign 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35
+[2026-10-18 14:38:53] doctor (check_ddp): ready
+[2026-10-18 14:38:53]   OK    gcloud  /usr/bin/gcloud
+[2026-10-18 14:38:53]   OK    gcloud sign-in
+[2026-10-18 14:38:53]   OK    huggingface_hub  2.2.0
+[2026-10-18 14:38:53]   OK    ddp engine files  v0.18.0: 9 files = android/engine-pins.json, in /home/dev/edge-llm-bench/android/bin/v0.18.0
+[2026-10-18 14:38:53] ddp plan: 1 jobs in 1 Device Run sessions on akita-35 (engine v0.18.0), 0 rows skipped; 12 upload candidates, 1.13 GB (the run uploads what the bucket lacks); run_ddp's estimate 9.0 device-min; cap 16 sessions (ops/autopilot/switch.json ddp_max_sessions)
+[2026-10-18 14:38:53] $ gtimeout --kill-after=60 21600 /home/dev/edge-llm-bench/bench matrix matrices/ddp-first-run.cells --ddp akita-35 --campaign 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35   env: 
+[2026-10-18 14:42:13] bench matrix exit 1
+[2026-10-18 14:42:13] wrote results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/SESSION.json (admitted=True, verdict=COMPLETED)
+[2026-10-18 14:42:13] ddp: 1 Device Run sessions (session-4b783529), 1 jobs {'FAILED': 1}, 1.5 device-min; 1 of 1 cells with records
+[2026-10-18 14:42:13] render_dashboard exit 0
+[2026-10-18 14:42:13] === done: OK (ok; bench matrix --ddp exit 1) exit 0
+[2026-10-18 14:42:13] autopilot: 2 post: scripts/dashboard_post.py results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+[2026-10-18 14:42:13] post: 1 dirs in /home/dev/edge-llm-bench: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android; switch push_bench off, push_page off, publish off, page repo /home/dev/code/litert-bench-dashboard
+[2026-10-18 14:42:13] post: scrub: the account name -> USER in 0 files (0 places)
+[2026-10-18 14:42:13] post: check: FAIL  2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android  (job payload (ddp))  failures, logcat-unscrubbed, runner-exit
+[2026-10-18 14:42:13] post: check: PASS 0  HOLD 0  FAIL 1  of 1
+[2026-10-18 14:42:13] post: held: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android FAIL (rules: failures, logcat-unscrubbed, runner-exit); a sitting is committed whole or not at all; REVIEW.md in 1 dirs
+[2026-10-18 14:42:13] post: exit 1; held: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android FAIL (rules: failures, logcat-unscrubbed, runner-exit); a sitting is committed whole or not at all
+[2026-10-18 14:42:13] autopilot: 3 table: scripts/render_dashboard.py
+[2026-10-18 14:42:13] autopilot: 4 red: scripts/regression_watch.py --json --markdown
+[2026-10-18 14:42:13] autopilot: 5 requests: logs/dashboard-job/retakes.json, bisect-requests.json
+
+=== autopilot: Pixel 8a (DDP akita-35), key pixel8a-ddp
+sitting   OK (ok; bench matrix --ddp exit 1) — results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+          Device Run sessions session-4b783529; 1 jobs {'FAILED': 1}, 1.5 device-min; 1 of 1 cells with records
+check     FAIL (rules: failures, logcat-unscrubbed, runner-exit)
+commit    none (held: a sitting is committed whole or not at all)
+summary   results/summary/device-runs.csv 4740 lines on disk (bench matrix rebuilt it from this checkout's results/raw; not committed)
+table     wrote DASHBOARD.md and .dashboard/dashboard-v1.{csv,json}: 144 measured of 299 device-cells, 84 stale
+          this sitting's cells on it: no-decode 1
+          litert-lm-gpu Qwen 3 1.7B short-chat: no-decode
+red       regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+          8 red points, 0 of them this sitting's (a lab unit's rows make no series of the page's rule)
+requests  retakes pending 0, bisect requests pending 0 (logs/dashboard-job/retakes.json, logs/dashboard-job/bisect-requests.json)
+          scripts/engine_bisect.py is not in this checkout: it comes after PR #4 (LiteRT-LM Android builds from a git ref), with the bisect commit on top of it
+log       logs/dashboard-job/2026-10-18-pixel8a-ddp.log; logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ (summary.txt, post.txt, red.json, red.md)
+next      failures: read FAILURES.txt and the cell's log: re-run the cell, or commit by hand with the reason
+next      logcat-unscrubbed: scrub the logcat (android/ddp/scrub.py), keep execution-level logcat.txt out, post again
+next      runner-exit: read the job log's tail for the runner's exit before calling the sitting clean
+next      read results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/REVIEW.md (each finding and what a person does), then post again: python3 scripts/dashboard_post.py results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android
+next      results/summary/ on disk holds this sitting's rows: `git checkout -- results/summary` gives HEAD's back
+## end 2026-10-18 14:42:13 UTC
+## ./bench autopilot exit=1
+## gcloud log files written during the run: 23; the commands they ran, by name:
+     10 Running [gcloud.auth.print-access-token]
+      1 Running [gcloud.storage.cp]
+     12 Running [gcloud.storage.ls]
+## every gcloud storage cp of the run, with its arguments:
+Running [gcloud.storage.cp] with arguments: [-R: "True", DESTINATION: "/home/dev/edge-llm-bench/results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-android/ddp", SOURCE:1: "['gs://litert-edge-portal-devicerun/automation/sessions/session-4b783529']"]
+## step session | end 2026-10-18 23:42:13 JST | rc 1 | 201 s

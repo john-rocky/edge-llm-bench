@@ -1,0 +1,77 @@
+
+## step session-r2 | start 2026-10-18 23:47:20 JST | dexec dev 71-session-r2.sh
+## start 2026-10-18 14:47:20 UTC
+
+$ /home/dev/elb-venv/bin/python3 /home/dev/edge-llm-bench/scripts/autopilot.py --ddp akita-35 --project=litert-edge-portal --bucket=gs://litert-edge-portal-devicerun --cells=matrices/ddp-first-run.cells --suffix=r2
+[2026-10-18 14:47:20] autopilot: lab unit Pixel 8a (DDP akita-35), key pixel8a-ddp, cells matrices/ddp-first-run.cells, project litert-edge-portal, bucket gs://litert-edge-portal-devicerun
+[2026-10-18 14:47:20] autopilot: steps: 1 sitting -> 2 post (scrub, check, local commit) -> 3 table -> 4 red points -> 5 requests
+[2026-10-18 14:47:20] autopilot: no schedule.json entry for akita-35: key pixel8a-ddp made here
+[2026-10-18 14:47:20] autopilot: switch: ddp_max_sessions 16 caps the plan (ops/autopilot/switch.json); its ddp_weekly (true) is the bench host's nightly slot, not read by a run by hand
+[2026-10-18 14:47:20] autopilot: gtimeout: none on PATH; GNU timeout /usr/bin/timeout under that name (logs/autopilot/bin/gtimeout)
+[2026-10-18 14:47:20] autopilot: the run's output: logs/dashboard-job/2026-10-18-pixel8a-ddp.log
+[2026-10-18 14:47:20] === slot pixel8a-ddp (Pixel 8a (DDP akita-35), DDP akita-35) campaign 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2
+[2026-10-18 14:47:20] doctor (check_ddp): ready
+[2026-10-18 14:47:20]   OK    gcloud  /usr/bin/gcloud
+[2026-10-18 14:47:20]   OK    gcloud sign-in
+[2026-10-18 14:47:20]   OK    huggingface_hub  2.2.0
+[2026-10-18 14:47:20]   OK    ddp engine files  v0.18.0: 9 files = android/engine-pins.json, in /home/dev/edge-llm-bench/android/bin/v0.18.0
+[2026-10-18 14:47:20] ddp plan: 1 jobs in 1 Device Run sessions on akita-35 (engine v0.18.0), 0 rows skipped; 12 upload candidates, 1.13 GB (the run uploads what the bucket lacks); run_ddp's estimate 9.0 device-min; cap 16 sessions (ops/autopilot/switch.json ddp_max_sessions)
+[2026-10-18 14:47:20] $ gtimeout --kill-after=60 21600 /home/dev/edge-llm-bench/bench matrix matrices/ddp-first-run.cells --ddp akita-35 --campaign 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2   env: 
+[2026-10-18 14:52:47] bench matrix exit 0
+[2026-10-18 14:52:47] wrote results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/SESSION.json (admitted=True, verdict=COMPLETED)
+[2026-10-18 14:52:47] ddp: 1 Device Run sessions (session-f53347c2), 1 jobs {'PASSED': 1}, 3.7 device-min; 1 of 1 cells with records
+[2026-10-18 14:52:47] render_dashboard exit 0
+[2026-10-18 14:52:47] === done: OK (ok) exit 0
+[2026-10-18 14:52:47] autopilot: 2 post: scripts/dashboard_post.py results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android
+[2026-10-18 14:52:47] post: 1 dirs in /home/dev/edge-llm-bench: 2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android; switch push_bench off, push_page off, publish off, page repo /home/dev/code/litert-bench-dashboard
+[2026-10-18 14:52:47] post: scrub: the account name -> USER in 0 files (0 places)
+[2026-10-18 14:52:47] post: check: PASS  2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android  (job payload (ddp))
+[2026-10-18 14:52:47] post: check: PASS 1  HOLD 0  FAIL 0  of 1
+[2026-10-18 14:52:48] post: message: results 2026-10-18 Pixel 8a lab units on the Developer Device Platform (DDP akita-35, Pixel 8a, 1 unit), litert-lm-gpu: v0.18.0: 1/1 cells of matrices/ddp-first-run.cells in one dashboard-job sitting 14:47–14:52 UTC (1 Device Run session session-f53347c2, 1 jobs, 3.7 device-min; no session anchor: a lab unit's runs carry their own cap marks and text check); text check 0/0 (no run carries one); cpu-capped counted 0/2 (none), past the line 0 (none; a lab unit starts capped: no number); FAILURES: none; results/summary rebuilt from the git index (4739 -> 4741 lines)
+[2026-10-18 14:52:48] post: committed 9e310521 on bench-autopilot-googler: 1 dirs + results/summary (4739 -> 4741 lines)
+[2026-10-18 14:52:48] post: skipped: no build.py in /home/dev/code/litert-bench-dashboard
+[2026-10-18 14:52:48] post:   red | regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+[2026-10-18 14:52:48] post:   red |   red  SM-S942Q | Gemma 4 E2B | short-chat | CPU | 2026-09-08-dashboard-v1-s26-android | prefill -12.00 % vs 2026-09-05-dashboard-v1-android | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Mac16,9 | Qwen 3 0.6B | short-chat | GPU | 2026-10-06-dashboard-v1-m4max-protocol1024-mac | prefill -6.01 % vs 2026-09-22-dashboard-v1-m4max-mac | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Mac16,9 | Gemma 4 E2B | short-chat | GPU | 2026-09-14-dashboard-v1-m4max-mac | prefill -37.25 % vs 2026-09-08-dashboard-v1-m4max-mac | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Mac16,9 | Gemma 4 E2B | short-chat | GPU | 2026-09-21-dashboard-v1-m4max-mac | mem -24.71 % vs 2026-09-14-dashboard-v1-m4max-mac | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Pixel 8a | Gemma 4 E2B | short-chat | CPU | 2026-09-08-dashboard-v1-pixel8a-a-android | prefill -19.82 % vs 2026-09-05-dashboard-v1-pixel8a-a2-android | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Pixel 8a | Gemma 4 E2B | short-chat | CPU | 2026-10-07-dashboard-v1-pixel8a-a-android | decode -9.30 % vs 2026-09-08-dashboard-v1-pixel8a-a-android | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Pixel 8a | Gemma 4 E2B | short-chat | GPU | 2026-09-08-dashboard-v1-pixel8a-a-android | prefill -9.97 % vs 2026-09-05-dashboard-v1-pixel8a-a2-android | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   red  Pixel 8a | Gemma 4 E2B | short-chat | GPU | 2026-10-07-dashboard-v1-pixel8a-a-android | prefill -9.92 % vs 2026-09-08-dashboard-v1-pixel8a-a-android | engine v0.16.0 -> v0.16.0 | not the cell newest
+[2026-10-18 14:52:48] post:   red |   respond: no red point in this sitting (8 on the page)
+[2026-10-18 14:52:48] post: red: no red point in this sitting (8 on the page)
+[2026-10-18 14:52:48] post: push_bench: would push: no origin/main to push onto
+[2026-10-18 14:52:48] post: push_page: no page commit to push
+[2026-10-18 14:52:48] post: publish: nothing to publish (no page committed by this step)
+[2026-10-18 14:52:48] post: exit 0: committed 9e310521; red: no red point in this sitting (8 on the page)
+[2026-10-18 14:52:48] autopilot: 3 table: scripts/render_dashboard.py
+[2026-10-18 14:52:49] autopilot: 4 red: scripts/regression_watch.py --json --markdown
+[2026-10-18 14:52:49] autopilot: 5 requests: logs/dashboard-job/retakes.json, bisect-requests.json
+
+=== autopilot: Pixel 8a (DDP akita-35), key pixel8a-ddp
+sitting   OK — results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android
+          Device Run sessions session-f53347c2; 1 jobs {'PASSED': 1}, 3.7 device-min; 1 of 1 cells with records
+check     PASS
+commit    9e310521b24f on bench-autopilot-googler (local), push: would push: no origin/main to push onto
+summary   results/summary/device-runs.csv 4739 -> 4741 lines (the commit)
+page      skipped: no build.py in /home/dev/code/litert-bench-dashboard
+post red  no red point in this sitting (8 on the page)
+table     wrote DASHBOARD.md and .dashboard/dashboard-v1.{csv,json}: 145 measured of 299 device-cells, 84 stale
+          this sitting's cells on it: measured 1
+          litert-lm-gpu Qwen 3 1.7B short-chat: measured, decode 19.8 tok/s (n=1)
+red       regression: 29 series, 78 sittings (64 shown), red points decode 1 / prefill 6 / memory 1, regime changes 4
+          8 red points, 0 of them this sitting's (a lab unit's rows make no series of the page's rule)
+requests  retakes pending 0, bisect requests pending 0 (logs/dashboard-job/retakes.json, logs/dashboard-job/bisect-requests.json)
+          scripts/engine_bisect.py is not in this checkout: it comes after PR #4 (LiteRT-LM Android builds from a git ref), with the bisect commit on top of it
+log       logs/dashboard-job/2026-10-18-pixel8a-ddp.log; logs/autopilot/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ (summary.txt, post.txt, red.json, red.md)
+next      the commit is local: git show --stat 9e310521b24f
+## end 2026-10-18 14:52:49 UTC
+## ./bench autopilot exit=0
+## gcloud log files written during the run: 27; the commands they ran, by name:
+     14 Running [gcloud.auth.print-access-token]
+      1 Running [gcloud.storage.cp]
+     12 Running [gcloud.storage.ls]
+## every gcloud storage cp of the run, with its arguments:
+Running [gcloud.storage.cp] with arguments: [-R: "True", DESTINATION: "/home/dev/edge-llm-bench/results/raw/2026-10-18-dashboard-v1-pixel8a-ddp-akita-35-r2-android/ddp", SOURCE:1: "['gs://litert-edge-portal-devicerun/automation/sessions/session-f53347c2']"]
+## step session-r2 | end 2026-10-18 23:52:49 JST | rc 0 | 329 s

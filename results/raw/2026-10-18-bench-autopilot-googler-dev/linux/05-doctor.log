@@ -1,0 +1,22 @@
+
+## step doctor | start 2026-10-18 23:32:57 JST | dexec dev 40-doctor.sh
+## adb: none; xcrun: none; gtimeout: none; timeout: /usr/bin/timeout
+  ok  python 3.12
+warn  matplotlib (charts)     pip install matplotlib — only generate_charts.py needs it
+warn  HF auth                 public models download anonymously; gated ones (Gemma) need `hf auth login`
+  ok  disk free 57 GB
+warn  onnxruntime-genai venv  no python at /home/dev/.venvs/ortgenai-0.17.1/bin/python - the onnxruntime-genai cells log SKIPPED; python3 -m venv that dir and pip install onnxruntime-genai==0.17.1 onnxruntime==1.30.0 onnxruntime-ep-webgpu==0.4.0 huggingface_hub onnx jsonschema (docs/ortgenai-arm-v1.md)
+warn  xcodebuild              install Xcode (27 beta era; see docs/OPERATIONS.md)
+warn  gtimeout (coreutils)    brew install coreutils — litert teardown hangs need it
+warn  devicectl               xcrun devicectl failed — Xcode command line tools?
+warn  adb                     install platform-tools
+  ok  gcloud                  /usr/bin/gcloud
+  ok  gcloud sign-in
+  ok  huggingface_hub         2.2.0
+  ok  ddp engine files        v0.18.0: 9 files = android/engine-pins.json, in /home/dev/edge-llm-bench/android/bin/v0.18.0
+
+ready
+
+$ /home/dev/elb-venv/bin/python3 /home/dev/edge-llm-bench/scripts/doctor.py --platform ddp
+## ./bench doctor --platform ddp exit=0
+## step doctor | end 2026-10-18 23:32:57 JST | rc 0 | 0 s
