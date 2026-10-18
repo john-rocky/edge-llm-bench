@@ -85,7 +85,11 @@ an NPU / GPU arm's capped run pools at any fall, marked with it:
   sibling hold and backs off from a busy device — do the same for it: read
   `logs/dashboard-job/ledger.tsv` and the hold before touching a phone at night,
   never start a second matrix driver on a device it is measuring, and let a person
-  review `SESSION.json` and commit; the job never commits. Design and rerun rules:
+  leave the commit to the post step: since 2026-10-18 a sitting that exits 0 is read by
+  `scripts/session_check.py` and, when every dir passes, committed locally by
+  `scripts/dashboard_post.py` (ledger `logs/dashboard-job/autopilot-ledger.tsv`; push and
+  publish stay behind `ops/autopilot/switch.json`, all off); a HOLD or FAIL dir carries
+  `REVIEW.md` and waits for a person (`docs/dashboard-autopilot-v1.md`). Design and rerun rules:
   `docs/dashboard-recurring-job-v1.md`.
 
 ## Where a human is required (do not try to automate)

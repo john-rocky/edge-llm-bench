@@ -1,14 +1,15 @@
 # Session checker v1 — the commit review of a job sitting, as code
 
-Status: written 2026-10-18 (stage 1 of the bench-autopilot lane), not yet wired into the job.
+Status: written 2026-10-18 (stage 1 of the bench-autopilot lane); wired into the job the same day by the post step (`scripts/dashboard_post.py`, `docs/dashboard-autopilot-v1.md`).
 Code: `scripts/session_check.py`; selftest `scripts/session_check_selftest.py` (CI, data
 pipeline); allow-list `ops/session-check/allow-list.tsv`. Validation record:
 `results/raw/2026-10-18-bench-autopilot-dev/ROUND1.md`.
 
-The dashboard job (`scripts/dashboard_job.py`, `docs/dashboard-recurring-job-v1.md`) never
-commits: a person reads each campaign dir it made and commits it with a message that says what
-ran and what reproduced (§6 of the job doc). This checker does that reading for the points the
-212 commits under `results/raw` show people checked, and says per dir:
+Until 2026-10-18 the dashboard job (`scripts/dashboard_job.py`, `docs/dashboard-recurring-job-v1.md`)
+never committed: a person read each campaign dir it made and committed it with a message that says
+what ran and what reproduced (§6 of the job doc). This checker does that reading for the points the
+212 commits under `results/raw` show people checked, and says per dir (the post step,
+`scripts/dashboard_post.py`, commits a sitting whose every dir is PASS):
 
 | verdict | meaning |
 |---|---|
