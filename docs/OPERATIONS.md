@@ -79,7 +79,15 @@ loudly instead of rebuilding the summary and looking like a capture.
        `Vendored/llama.xcframework.tag`: `stamp_engine_pins.sh` reads only that sidecar, so a
        side build tree with its own copy of the file (`.build/dd-ios-0180-18pro/src`) needs it
        too. Then `scripts/build_yardstick_mac.sh` and the app build; records stamp
-       `engineVersion <tag>`, `engineArtifact llama-<tag>-xcframework.zip`.
+       `engineVersion <tag>`, `engineArtifact llama-<tag>-xcframework.zip`. The stamp is the
+       pins file the build's pre-build script wrote into its own tree, not the binary: read
+       what the binary loads (`otool -L`, `DYLD_PRINT_LIBRARIES=1 yardstick version`, the
+       loaded dylib's sha256) before a registry line. On 2026-10-19 the main tree's
+       `CoreAIRuntime.swift` did not compile against its `Vendored/coreai-models` (0.2.0), so
+       the b11721 yardstick was built from the iPhone 18 Pro's side tree
+       (`.build/dd-ios-0180-18pro/src`, Core AI stock 1.0.0-10-gbd3c539) into
+       `.build/dd-mac-b11721`; its records stamp from that tree's `Vendored/engine-pins.json`
+       (`BENCH_ENGINE_PINS_FILE`).
      - Android: `LLAMA_TAG=<tag> android/scripts/fetch_llama_android.sh` pins the tools and their
        libs (`so_files`), then push the tools and every `.so` to each phone's flat dir and read
        the witness line (`android/README.md`, "Push runtime to the device"). From b10903 on the
@@ -541,8 +549,11 @@ outputs under `automation/sessions/`).
   text weights (2026-09-06). The iOS row carries `exclude=app-killed-at-model-load-sigkill`.
 - **Mac llama.cpp cells abort at exit, after their runs.** Every llama.cpp
   cell on the Mac completes and records its runs, then yardstick aborts in
-  llama b8999's Metal teardown (`ggml_metal_rsets_free` -> `ggml_abort`);
-  the runner writes `FAIL` to FAILURES.txt by exit code. The rows stand.
+  llama.cpp's Metal teardown (`ggml_metal_rsets_free` -> `ggml_abort`, from
+  `ggml_metal_device_free` in a static destructor during `exit`): b8999, and
+  b11721 the same (2026-10-19 smoke, crash reports
+  `yardstick-2026-10-19-060022.ips` / `-060518.ips`); the runner writes `FAIL`
+  to FAILURES.txt by exit code. The rows stand.
 - **Short-chat prefill is not comparable across arms.** On a ~20-token prompt
   the prefill figure is dominated by fixed per-call overhead and ranks the
   arms differently from decode; the 1024-token task is the prefill

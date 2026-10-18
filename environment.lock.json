@@ -77,7 +77,7 @@
       "artifact_sha256": "9efc8f94a7fb54abb4931bac484a025417cee5bbf8e15ba49b4d9ddef997460f",
       "tag": "b11721",
       "since": "2026-10-19",
-      "note": "The pin from 2026-10-19 on (b8999 before, under previous): owner decision 2026-10-19, the comparison arms are measured on their current release too. b11721 is the newest b-build that day with the xcframework, android-arm64 and macos-arm64 assets (published 2026-10-18T18:04Z), 2722 commits after b8999. Upstream also tags versioned releases that carry release notes and no binaries (v0.7.0, 2026-10-15: the commit of b11669, its one asset nightly-tag.txt says so; b11721 is 52 commits after it), which scripts/release_watch.py skips. The xcframework holds ios-arm64 and macos-arm64_x86_64 only (b8999's also had the simulator, tvOS and visionOS slices). scripts/session_check.py registry_pin reads previous.tag for a sitting before since.",
+      "note": "The pin from 2026-10-19 on (b8999 before, under previous): owner decision 2026-10-19, the comparison arms are measured on their current release too. b11721 is the newest b-build that day with the xcframework, android-arm64 and macos-arm64 assets (published 2026-10-18T18:04Z), 2722 commits after b8999. Upstream also tags versioned releases that carry release notes and no binaries (v0.7.0, 2026-10-15: the commit of b11669, its one asset nightly-tag.txt says so; b11721 is 52 commits after it), which scripts/release_watch.py skips. The xcframework holds ios-arm64 and macos-arm64_x86_64 only (b8999's also had the simulator, tvOS and visionOS slices). scripts/session_check.py registry_pin reads previous.tag for a sitting before since. Mac smoke 2026-10-19 (r9): b11721 still aborts in the Metal teardown at exit after the records are written (ggml_metal_rsets_free, as b8999), and the llama.cpp Gemma 4 E4B 1K reply is the same list skeleton as on b8999.",
       "android": {
         "artifact": "llama-b11721-bin-android-arm64.tar.gz",
         "artifact_sha256": "94502b60b23f1cbc651e7d9720dacdc5b974686f9a61cf337d0611c1c1b9850f",
@@ -89,7 +89,7 @@
       "mac": {
         "tag": "b11721",
         "since": "2026-10-19",
-        "note": "The Mac yardstick on b11721 is the 2026-10-19 build in .build/dd-mac-b11721 (r9); the job's .build/dd-mac (2026-09-18) links b8999 until the job's Mac route moves to the new build. scripts/session_check.py reads this block for a Mac sitting on or after since, and takes it from the newest registry for a sitting that began before it was committed (REGISTERED_LATER)."
+        "note": "The Mac yardstick on b11721 is the 2026-10-19 build in .build/dd-mac-b11721 (r9), built from the iPhone 18 Pro's side tree .build/dd-ios-0180-18pro/src (the main tree's CoreAIRuntime.swift does not compile against its coreai-models 0.2.0 checkout): it loads llama.framework UUID 843E7D68 (b11721's macOS slice) and libCLiteRTLM_mac.dylib sha256 9526db9e (v0.18.0), Core AI stock 1.0.0-10-gbd3c539, and stamps from that tree's Vendored/engine-pins.json; the job's Mac route moved to it on 2026-10-19 06:10 (.build/dd-mac = this build, the 2026-09-18 build kept as .build/dd-mac-0918-litert0160-llama8999; the main tree's Vendored/engine-pins.json = the side tree's). scripts/session_check.py reads this block for a Mac sitting on or after since, and takes it from the newest registry for a sitting that began before it was committed (REGISTERED_LATER)."
       },
       "ios": {
         "tag": "b8999",
