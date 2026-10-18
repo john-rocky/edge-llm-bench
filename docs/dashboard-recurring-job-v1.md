@@ -176,14 +176,19 @@ devices and their per-device conditions are `devices` in the same file.
    firing) and only after `auto_idle_hours` (4) since its last record from
    the phone in the accumulation layer — the all-nominal sittings so far
    came after that much idle. Use of the phone by a sibling lane that leaves
-   no record here is invisible beyond its hold file.
+   no record here is invisible beyond its hold file. An entry with
+   `auto: false` is never a candidate (its report line reads `by-hand`): it
+   is measured only by `./bench dashboard-job <key>`, by hand, in a window
+   the owner offers. The iPhone 17 Pro is that entry since 2026-10-18 (the
+   owner's daily phone, not a bench device; the bench iPhone is the 18 Pro).
 3. **Oldest first.** Among the available pending devices, the one whose last
    admitted session is oldest; a device never measured is oldest of all;
-   ties fall to `schedule.json` order (m4max, s26, pixel8a, iphone17pro,
-   iphone18pro). Two iPhones pending in the same 05:30 window are two
-   candidates of one firing: one is chosen, and the other waits for a later
-   05:30 — a firing measures one device, and a second iPhone sitting beside a
-   running one is refused at preflight (`bench_matrix_iphone` running = busy).
+   ties fall to `schedule.json` order (m4max, s26, pixel8a, iphone18pro;
+   iphone17pro is `auto: false`). Two iPhone entries pending in the same 05:30
+   window would be two candidates of one firing: one is chosen, and the other
+   waits for a later 05:30 — a firing measures one device, and a second iPhone
+   sitting beside a running one is refused at preflight (`bench_matrix_iphone`
+   running = busy).
 
 The chosen device then runs the full preflight (§1). Busy there (a driver,
 the campaign lock, a foreign engine process, a frequency cap) passes it over
@@ -216,8 +221,8 @@ bench host's):
 | Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry); v2 set 1 h 04 min (18 cells × 4 runs, 1 gate retry, 2026-09-08) | `bench doctor --platform mac` green, no yardstick running; Core AI bundles staged (advisory, `doctor` warns) | none (host); side by side with a phone sitting since 2026-09-08 (§3) |
 | Galaxy S26 | any firing; USB, screen on or off (read and stamped per launch), unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
 | Pixel 8a | any firing; USB, screen on or off (read and stamped per launch), `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
-| iPhone 17 Pro | the 05:30 firing only, after ≥4 h without a record (the only all-nominal sittings so far); unlocked (Auto-Lock Never), plugged or charged | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
-| iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | as the iPhone 17 Pro: the 05:30 firing only, after ≥4 h without a record; unlocked (Auto-Lock Never) | no sitting yet | as the iPhone 17 Pro; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
+| iPhone 17 Pro | never by `auto` (`auto: false` since 2026-10-18: the owner's daily phone, not a bench device); by hand, `./bench dashboard-job iphone17pro`, in a window the owner offers — plugged, unlocked (Auto-Lock Never), one hold at a time | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
+| iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | the 05:30 firing only (`auto_window` 05:00–08:00), after ≥4 h without a record; unlocked (Auto-Lock Never) | no sitting yet | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
 
 On the Galaxy S26 and the Pixel 8a the job installs nothing on the phone: the flat engine build in
 `/data/local/tmp/llmbench` is replaced by hand with `android/scripts/deploy_litert_lm_android.sh`,
@@ -297,7 +302,11 @@ every later run 0.9-1.6, with the same engine, OS, recipe and thermal state;
 nine minutes after a reboot plus `am kill-all` the same cell read 5.1 / 5.0 /
 5.4. The mechanism is not measured (the records carry no page-fault
 counter); the remedy is. A device entry may therefore carry `reboot_before`
-(the Pixel 8a does: `uptime_hours` 2, `settle_seconds` 300): after the hold
+(no entry does now; the Pixel 8a's did from 2026-09-09 to 2026-10-17 —
+`uptime_hours` 2, `settle_seconds` 300 — and lost it because the phone has a
+PIN: after an unattended reboot it stays RUNNING_LOCKED, the model directory
+unreadable, until a person types the PIN, which cost a day each on
+2026-10-15 and 2026-10-16): after the hold
 is taken and before the anchor probe, a phone past the uptime limit is
 rebooted, waited for, settled, and its background apps dropped, with the
 memory figures logged before and after so every sitting adds a data point.
@@ -654,12 +663,13 @@ was not); the 1.7B / 4B Core AI cells fell inside the unreachable window.
   in the weekly set"; estimated device time per sitting: §3). It roughly
   doubles a sitting; `expected_hours` / `timeout_hours` in `schedule.json`
   carry the estimate until the first sittings replace it.
-- The iPhone 17 Pro entry's `udid` is its CoreDevice identifier, while the
-  current `devicectl list devices` prints UDIDs, so `iphone_attached` never
-  matches it and every firing reports the phone "not available to
-  devicectl", attached or not (found 2026-10-06). The entry is left as it
-  is; whether the 17 Pro rejoins the rotation is the owner's call (the bench
-  iPhone is the 18 Pro, whose entry carries its UDID).
+- The iPhone 17 Pro is `auto: false` since 2026-10-18 (the owner's daily
+  phone, not a bench device; the bench iPhone is the 18 Pro). Its entry stays
+  for the by-hand route (`./bench dashboard-job iphone17pro` in a window the
+  owner offers), its `udid` now the UDID `devicectl list devices` prints;
+  until then the entry carried the CoreDevice identifier, which
+  `iphone_attached` never matched (found 2026-10-06), so every 05:30 firing
+  reported the phone "not available to devicectl", attached or not.
 - Follow-ups found while building this: the iPhone runner has no per-device
   lock (the Android runner's `flock` pattern would close the gap the hold
   files only partly cover); the iPhone runner's default `APP` is the retired

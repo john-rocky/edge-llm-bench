@@ -3,7 +3,7 @@
   "cells": "matrices/dashboard-text-v1.cells",
   "anchors": "matrices/anchors.cells",
   "stale_days": 10,
-  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week; a firing with nothing pending exits 0.",
+  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week; a firing with nothing pending exits 0. A device whose entry says `auto`: false is never chosen by `auto` (its report line reads by-hand): it is measured only by `./bench dashboard-job <key>`, by hand, in a window the owner offers.",
   "slots": [
     {
       "at": "02:00",
@@ -119,15 +119,14 @@
       "platform": "iphone",
       "display": "iPhone 17 Pro",
       "identifier": "iPhone18,1",
-      "udid": "A6F3E849-1947-5202-9AD1-9C881CA58EEF",
+      "auto": false,
+      "udid": "00008150-0018713A0207801C",
       "app": "com.daisukemajima.llmbench",
       "hold": "~/code/litertlm-convert/community_accel_work/.iphone_hold",
       "hold_also_check": [
         "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.iphone"
       ],
-      "auto_window": "05:00-08:00",
-      "auto_idle_hours": 4,
-      "window": "the 05:30 firing only (auto_window 05:00-08:00 local) and only after 4 h without a record from the phone (auto_idle_hours); the phone must be unlocked (Auto-Lock Never) or the headless launch is refused, and a plugged phone in a warm room reports 'fair' (admitted only through the anchor rule)",
+      "window": "by hand only (auto: false, owner 2026-10-18: the owner's daily phone, not a bench device; the bench iPhone is the 18 Pro). `./bench dashboard-job iphone17pro` inside a window the owner offers, the phone plugged and unlocked (Auto-Lock Never), one hold at a time; a plugged phone in a warm room reports 'fair' (admitted only through the anchor rule). udid is the UDID `devicectl list devices` prints (until 2026-10-18 the entry carried the CoreDevice id, which iphone_attached never matched: docs/dashboard-recurring-job-v1.md section 9)",
       "expected_hours": 4.8,
       "timeout_hours": 8,
       "env": {

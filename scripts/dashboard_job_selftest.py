@@ -180,6 +180,23 @@ def main():
     key, rep = choose([row("d14-dashboard-v1-beta-android", "FakeB", days=14)])
     ok(key == "alpha", f"a device never measured counts as oldest: chose {key}")
 
+    print("--- an entry with auto: false is never chosen by auto, however old; the explicit key still resolves")
+    schedule["devices"]["hand"] = {"platform": "android", "display": "Fake H", "identifier": "FakeH",
+                                   "serial": "FAKE-H", "hold": os.path.join(tmp, "hold_hand"), "auto": False}
+    attached("FAKE-A", "FAKE-B", "FAKE-H")
+    key, rep = choose(older_a)
+    ok(key == "alpha" and rep["hand"]["state"] == "by-hand",
+       f"hand (never measured, attached, unheld) is passed over: chose {key} ({rep['hand']['detail']})")
+    key, rep = choose(older_a + [row("now-dashboard-v1-alpha-android", "FakeA", minutes=20),
+                                 row("now-dashboard-v1-beta-android", "FakeB", minutes=30)])
+    ok(key is None and rep["hand"]["state"] == "by-hand",
+       f"alpha and beta done this week, hand pending -> nothing to measure (chose {key})")
+    k2, d2, rep2 = dj.resolve_device(schedule, "hand")
+    ok(k2 == "hand" and d2["serial"] == "FAKE-H" and rep2 == [],
+       "the explicit key resolves the by-hand device")
+    del schedule["devices"]["hand"]
+    attached("FAKE-A", "FAKE-B")
+
     print("--- a device whose sitting is running (its .job.lock.<key> held) is busy; others still go")
     import fcntl
     os.makedirs(dj.LOG_DIR, exist_ok=True)

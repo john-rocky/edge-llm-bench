@@ -11,7 +11,8 @@ schedule.json "slots" — chooses the device: among the devices with no admitted
 dashboard session since Monday 00:00 local, the attached, unheld ones (the iPhone
 only inside its `auto_window` after `auto_idle_hours` without a record, the Mac only
 while no heavy export pipeline runs), the one whose last admitted session is the
-oldest (never measured = oldest; ties in schedule order). A candidate whose
+oldest (never measured = oldest; ties in schedule order); an entry with `auto: false`
+is never chosen (by hand only: `./bench dashboard-job <key>`). A candidate whose
 preflight says busy or not ready is passed over for the next one; when every
 pending device is busy the firing polls per "retry" and chooses again. Each
 device is measured once a week; a firing with nothing pending exits 0 and leaves
@@ -1145,9 +1146,10 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     ones (the iPhone only inside its auto_window after auto_idle_hours without a
     record; the Mac only while no heavy pipeline runs), ordered by the age of
     their last admitted session, oldest first (never measured = oldest; ties
-    in schedule order). `exclude` maps keys already tried this firing to
+    in schedule order); an entry with `auto: false` is never a candidate (by hand
+    only, state by-hand). `exclude` maps keys already tried this firing to
     (state, detail). The report has one dict per device — key, state (done /
-    candidate / busy / not-ready / waiting), detail, last — for the log."""
+    by-hand / candidate / busy / not-ready / waiting), detail, last — for the log."""
     devices = schedule.get("devices", {})
     if key != "auto":
         dev = devices.get(key)
@@ -1166,6 +1168,9 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
         entry = {"key": k, "last": last[0] if last else None, "state": "candidate",
                  "detail": (f"last admitted {last[0]:%F %H:%M}" if last else "never measured")}
         report.append(entry)
+        if dev.get("auto") is False:
+            entry.update(state="by-hand", detail=f"auto: false, by hand only; {entry['detail']}")
+            continue
         if last and last[0] >= monday:
             entry.update(state="done", detail=f"admitted {last[0]:%F %H:%M} {last[1]}")
             continue
