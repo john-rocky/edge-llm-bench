@@ -161,7 +161,7 @@ def check_plan(tmp, bin_dir, models):
             patch.object(run_ddp, "model_file", fake_model):
         for dev in ("akita-35", "m1q-36", "caiman-35"):
             plans[dev] = run_ddp.plan(DASHBOARD, dev, f"selftest-{dev}-android", plan_args(bin_dir))
-    want = {"akita-35": (8, 1, 10, 12, "pixel8a"), "m1q-36": (16, 2, 10, 4, "s26"), "caiman-35": (8, 1, 10, 0, None)}
+    want = {"akita-35": (12, 2, 10, 8, "pixel8a"), "m1q-36": (20, 3, 10, 0, None), "caiman-35": (12, 2, 10, 0, None)}
     for dev, (jobs, sessions, rt, on, key) in want.items():
         p = plans[dev]
         reasons = [r for _, r, _ in p["skips"]]
@@ -173,8 +173,8 @@ def check_plan(tmp, bin_dir, models):
            f"{dev}: skips = {rt} llama.cpp rows + {on} exclude-on rows with key {key} "
            f"(got {reasons.count('runtime-not-wired-on-ddp')} + {len(keyed)}: {sorted({k for _, k in keyed})})")
     unk = [r for _, r, _ in plans["caiman-35"]["skips"] if r == "ddp-device-key-unknown"]
-    ok(len(unk) == 12 and all(j["mask"] == "" for j in plans["caiman-35"]["jobs"]),
-       f"caiman-35 (no schedule key): the 12 litert-lm rows with an exclude-on skip as ddp-device-key-unknown, "
+    ok(len(unk) == 8 and all(j["mask"] == "" for j in plans["caiman-35"]["jobs"]),
+       f"caiman-35 (no schedule key): the 8 litert-lm rows with an exclude-on skip as ddp-device-key-unknown, "
        f"no mask (got {len(unk)})")
     sched = run_ddp.load_json(run_ddp.SCHEDULE)["devices"]
     bad_cmd, bad_req = [], []
@@ -385,7 +385,7 @@ def check_wrapper_strings(plans):
                 n += 1
                 if got != want:
                     bad.append((dev, j["displayName"], split))
-    ok(not bad and n == 48, f"{n} wrapper strings byte-equal to sampler_shell (differ: {bad[:2]})")
+    ok(not bad and n == 64, f"{n} wrapper strings byte-equal to sampler_shell (differ: {bad[:2]})")
 
 
 FAKE_DEVICE_TOOLS = {

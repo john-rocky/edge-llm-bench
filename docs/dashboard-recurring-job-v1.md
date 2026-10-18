@@ -150,6 +150,16 @@ hardware maximum: busy, exit 3 under `--once`) still applies, and the preflight 
 holds took 27 to 40 minutes each (anchors phase 11.5–16.9 min, payload 15.2–25.8 min), and all
 ten sessions were admitted.
 
+A bundle replacement is re-measured the same way (2026-10-19): when a page row's file changes with no
+engine bump, the moved rows run as cells files of the session anchor row and those rows byte for byte,
+each an ordinary sitting through `scripts/dashboard_job.py <device> --cells <file> --suffix <name> --once`.
+The Qwen3 0.6B LiteRT-LM rows that left `qwen3_0_6b_mixed_int4.litertlm` (its template drops the user
+turn on LiteRT-LM v0.18.0, google-ai-edge/LiteRT-LM#3688) for `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`
+run as `matrices/dashboard-q06-dynamic-android.cells` (Galaxy S26, Pixel 8a) and
+`matrices/dashboard-q06-dynamic-ios.cells` (iPhone), `--suffix q06-dynamic`; the rows, the anchors and
+the DDP slot's growth (16 jobs in 2 sessions to 20 in 3) are in docs/dashboard-cells-v1.md "Qwen3 0.6B
+LiteRT-LM file (2026-10-19)".
+
 Host-only checks (no device): `./bench release-watch` is already a one-shot
 command and can ride the morning standup; an artifact-identity watch (sha256
 of the pinned files on the Hub — the proposal's "alert on hash change even

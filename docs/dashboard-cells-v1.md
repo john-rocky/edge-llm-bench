@@ -55,7 +55,7 @@ verified 2026-07-18, catalog comment).
 
 | Model | LiteRT-LM file (cpu / gpu) | llama.cpp GGUF | rows so far (both devices) |
 |---|---|---|---|
-| Qwen3 0.6B | `qwen3_0_6b_mixed_int4.litertlm` (both) | `Qwen3-0.6B-Q4_K_M.gguf` (session anchor) | all three |
+| Qwen3 0.6B | `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` (both; `qwen3_0_6b_mixed_int4.litertlm` until 2026-10-19, section "Qwen3 0.6B LiteRT-LM file (2026-10-19)") | `Qwen3-0.6B-Q4_K_M.gguf` (session anchor) | all three |
 | Qwen3 1.7B | `Qwen3_1.7B.litertlm` (INT8) / `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` | `Qwen3-1.7B-Q4_K_M.gguf` | none |
 | Gemma 4 E2B | `gemma-4-E2B-it.litertlm` (both) | `gemma-4-E2B-it-Q4_K_M.gguf` | LiteRT gpu |
 | Qwen3 4B | `qwen3_4b_mixed_int4.litertlm` (both) | `Qwen3-4B-Q4_K_M.gguf` | none |
@@ -75,7 +75,7 @@ this id keep their recorded values and are read with this note.
 
 | Model | LiteRT-LM | MLX | llama.cpp | Core AI (v2, own export) | rows so far (iPhone / Mac), v1 arms |
 |---|---|---|---|---|---|
-| Qwen3 0.6B | `litert-community/Qwen3-0.6B` | `mlx-community/Qwen3-0.6B-4bit` (session anchor) | `unsloth/Qwen3-0.6B-GGUF/Q4_K_M` (new catalog entry) | `core-ai/qwen3-0.6b-4bit-gpu` — INT4 dynamic, macOS-27-era export (the 26-era one decodes garbage; below) | LiteRT, MLX / LiteRT, MLX |
+| Qwen3 0.6B | `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32` (`litert-community/Qwen3-0.6B` until 2026-10-19 and for the LiteRT-LM session anchor, section "Qwen3 0.6B LiteRT-LM file (2026-10-19)") | `mlx-community/Qwen3-0.6B-4bit` (session anchor) | `unsloth/Qwen3-0.6B-GGUF/Q4_K_M` (new catalog entry) | `core-ai/qwen3-0.6b-4bit-gpu` — INT4 dynamic, macOS-27-era export (the 26-era one decodes garbage; below) | LiteRT, MLX / LiteRT, MLX |
 | Qwen3 1.7B | `litert-community/Qwen3-1.7B` (new catalog entry) | `mlx-community/Qwen3-1.7B-4bit` | `unsloth/Qwen3-1.7B-GGUF/Q4_K_M` (new catalog entry) | `core-ai/qwen3-1.7b-gpu` — INT4 dynamic | none |
 | Gemma 4 E2B | `litert-community/gemma-4-E2B-it-litert-lm` | `mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit` | `unsloth/gemma-4-E2B-it-GGUF/Q4_K_M` | `core-ai/gemma4-e2b-gpu` — `exclude=ple-bundle-needs-unpublished-engine-patch` | LiteRT / LiteRT |
 | Qwen3 4B | `litert-community/Qwen3-4B` | `mlx-community/Qwen3-4B-4bit` | `unsloth/Qwen3-4B-GGUF/Q4_K_M` | `core-ai/qwen3-4b-gpu` — INT4 dynamic | LiteRT / none |
@@ -1080,11 +1080,87 @@ Gemma 4 E2B and E4B first) through `scripts/dashboard_job.py iphone17pro --cells
 models fetched beforehand; Gemma 4 12B (a 6.88 GB file) is run, and a load that does not fit the
 app's memory stays as that cell's record.
 
+## Qwen3 0.6B LiteRT-LM file (2026-10-19)
+
+Since 2026-10-19 the page's Qwen3 0.6B LiteRT-LM rows (short-chat, `long-context-1024-gen256` and
+`native-benchmark-1024x256`, CPU and GPU, every platform) run `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`
+from litert-community/Qwen3-0.6B: dynamic INT4 weights in blocks of 32, FP32 activations, the GPU-graph
+build (Hub blob sha256 `03e7da1e…2856`, 344,671,744 B, hashed from the bytes in the Mac's Hub cache).
+Until then they ran `qwen3_0_6b_mixed_int4.litertlm` (sha256 `7900eb4e…22c1`). That file's embedded chat
+template predates LiteRT-LM 0.18, and on v0.18.0 the engine drops the user turn: its own log reads
+`Prefill Turn 1: Processed 9 tokens` whatever the prompt (the 2026-10-15 Pixel 8a `0180-p1` / `p2b`
+dirs; all seven S26 anchors phases since, 3 of 3 launches each, the last
+`2026-10-19-dashboard-v1-s26-0180-protocol8-anchor-android`), the same mechanism as
+google-ai-edge/LiteRT-LM#3688. The 2026-10-15 exclusion of that file's Android
+chat rows (`exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688`,
+0ee7a28f) is resolved by the new file: the moved rows no longer carry it.
+
+Two candidates were probed on the Galaxy S26, GPU short-chat, one launch each (2026-10-19 05:10 and
+05:13 JST, `results/raw/2026-10-19-probe-q06-s26-android-android/`): a check that the prompt arrives,
+not a session.
+
+| File | `Prefill Turn 1` | decode tok/s | prefill tok/s (that line) | peak resident MB |
+|---|---|---|---|---|
+| `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` | 19 tokens in 98.4 ms | 76.5 | 193 | 861 |
+| `Qwen3-0.6B.litertlm` (dynamic INT8) | 19 tokens in 181.8 ms | 25.7 | 104 | 753 |
+
+The rows took the wi4b32 file: it keeps them at INT4 and is the family of the Qwen3 1.7B GPU row's
+`Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm`.
+
+- Android (Galaxy S26, Pixel 8a, the DDP lab units): only `file=` changed. The model id stays
+  `litert-community/Qwen3-0.6B`, since the runner fetches `hf_hub_download(model_id, file)` and the id
+  is the Hub repo; the quantization label is `android/bench/run_cell.py` `ANDROID_QUANT_LABELS`'s "INT4
+  (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)". Rows in `dashboard-text-v1.cells`,
+  `dashboard-text-v1-android-a.cells`, `dashboard-longctx1024-v1-android-a.cells`,
+  `dashboard-protocol1024-v1-android.cells` and `dashboard-ddp-v1-android-s26.cells`.
+- The Android LiteRT-LM session anchor moved with them (`anchors.cells` and the `anchor=1` rows of the
+  1K and protocol files). A page cell and its series select rows by device, arm, model id, task and
+  context, not by file (`scripts/render_dashboard.py` `build`, the team page's `build.py`), so an anchor
+  on the old file would put that file's number into the GPU short-chat page cell whenever an anchors
+  phase is newer than that cell's payload, and the series would alternate between two files. The
+  LiteRT-LM anchor does not gate admission: `dashboard_job.anchor_cells` sorts the non-litert arm first
+  and `admit()` judges that one only. A regression pair across 2026-10-19 that is normalized through the
+  Android LiteRT-LM anchor (a llama.cpp bump on Android) compares two files.
+- DDP: the four rows now run on m1q-36 too, so the weekly DDP slot grows from 16 jobs in 2 sessions to
+  20 jobs in 3 (at most 8 jobs a session). The two GPU rows give page numbers; the two CPU rows give
+  none, as the lab units hold their CPU clock ceilings below the cpu-cap-rule line (the file's header).
+- Mac and iPhone: the rows name a catalog id, not a file. The catalog already had
+  `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32` for this file (`ModelCatalog.swift`; label "INT4
+  (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)", the Android label's string; the Mac
+  long-context ladder's id since 2026-09-18), and the 12 page rows moved to it:
+  `dashboard-text-v1.cells` 4, `dashboard-longctx1024-v1.cells` 2, `dashboard-protocol1024-v1.cells` 2,
+  `dashboard-coreai-v1-mac.cells` 2, `dashboard-coreai-v1-ios.cells` 2. The catalog is unchanged, so
+  neither the app nor the yardstick needs a rebuild. The Mac and iPhone LiteRT-LM anchors keep
+  `litert-community/Qwen3-0.6B` (the mixed INT4 file), a key apart from the page rows. A page cell under
+  the new id stays empty until that id's first session: the old id's sessions belong to another key.
+  Both ids share hfRepoId `litert-community/Qwen3-0.6B`, so the app looks for either file in
+  `Documents/models/litert-lm/litert-community__Qwen3-0.6B/` and downloads nothing while that directory
+  holds a file (`HFDownloader.snapshot`): on a phone that ran the old file, put
+  `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` there before the first sitting.
+- Text: the Android runner checks the decoded text of the 1K rows, not of short-chat (`run_cell.py`,
+  text-check-rule). This file's text failed on the S26 GPU at the 2K prefill
+  (`exclude=s26-gpu-garbage-text-at-2k-prefill` in `dashboard-longctx-v1-android-s26.cells`, v0.16.0),
+  and its 1.7B sibling at the 1K prefill (open question 8); a 1K GPU row that fails the same way shows as
+  text-fail, not as a rate. The probe read the prompt-token count only.
+- Unchanged: the Mac and iPhone LiteRT-LM anchors (above), the dated one-off files (`dashboard-0180-*`,
+  `catalog-*`), the 2K ladders (their measured 0.6B rows already ran the wi4b32 file; their mixed INT4
+  rows are `exclude=` rows for its 2,048-entry KV), `release-regression-litert.cells` (its baseline
+  campaigns ran the old file), `android-first-session.cells`, `apple-warm-matrix.cells`,
+  `endurance-mac.cells` and the examples.
+
+The re-measurement takes the release-triggered pass's route (`docs/dashboard-recurring-job-v1.md`
+section 2): `matrices/dashboard-q06-dynamic-android.cells` (Galaxy S26, Pixel 8a) and
+`matrices/dashboard-q06-dynamic-ios.cells` (iPhone), each the session anchor row and the moved rows
+byte for byte; the Mac's next sitting of these files measures the new id. If litert-community publishes
+a re-export of the mixed INT4 file, one v0.18.0 launch's `Prefill Turn 1` line shows whether the user
+turn arrives; moving back is the same edit in reverse and a re-measurement.
+
 ## Open questions for the LiteRT team
 
-1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`
-   (continuity with the existing rows and anchors); the repo now also ships
-   `Qwen3-0.6B_dynamic_wi4b32_afp32` (the GPU-graph build, 0.33 GB). 1.7B
+1. Qwen3 LiteRT artifacts per backend. 0.6B rows used `qwen3_0_6b_mixed_int4`
+   (continuity with the existing rows and anchors) until 2026-10-19; since then
+   they run `Qwen3-0.6B_dynamic_wi4b32_afp32` (the GPU-graph build, 0.33 GB) on
+   both backends (section "Qwen3 0.6B LiteRT-LM file (2026-10-19)"). 1.7B
    follows the card: wi4b32 on GPU, INT8 on CPU. Preference?
 2. The Gemma 4 `-gpu.litertlm` variants published 2026-08-07 (E2B 2.0 GB, E4B
    2.97 GB) are undocumented on the cards; the GPU rows keep the standard

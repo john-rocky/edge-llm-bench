@@ -3,14 +3,17 @@
 # llama.cpp = llama-bench -p 1024 -n 256 -o json (no context flag: llama-bench sizes its own context, recorded as llama-bench-managed; repetitions and warmup are llama-bench's defaults), one launch per run, coldRun false.
 # MLX has no Android arm; on Apple devices only LiteRT-LM has a forced-prefill entry (matrices/dashboard-protocol1024-v1.cells).
 # Prepared 2026-10-06 (round m3 of the dashboard first-tab lane); same artifacts (file=), backends and cooldowns as the weekly set (matrices/dashboard-text-v1-android-*.cells); anchors = matrices/anchors.cells.
+# 2026-10-19: the Qwen3 0.6B LiteRT-LM rows moved from qwen3_0_6b_mixed_int4.litertlm (its template drops the user
+# turn on LiteRT-LM v0.18.0, google-ai-edge/LiteRT-LM#3688) to Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (dynamic
+# INT4, block-32 weights, FP32 act); the LiteRT-LM anchor row moved with them (matrices/anchors.cells).
 
 
 # ---- android ----
-android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 
-android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
-android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
 android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 file=Qwen3-0.6B-Q4_K_M.gguf
 
 android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048

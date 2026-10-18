@@ -3,12 +3,17 @@
 # One launch = one measurement: the native path ignores --runs and prints one YARDSTICK_NATIVE_OK line (Mac: appended to the cell's .jsonl; iPhone: console only), not a schema-v1 record; scripts/import_native_benchmark.py lifts the line into JSON.
 # MLX and llama.cpp have no forced-prefill entry on Apple devices (agreed-protocol-gemma4.md deviation 6) = no Apple rows for them; llama-bench is the Android counterpart (matrices/dashboard-protocol1024-v1-android.cells).
 # Prepared 2026-10-06 (round m3 of the dashboard first-tab lane); same model set, catalog ids and cooldowns as matrices/dashboard-longctx1024-v1.cells; anchors = matrices/anchors.cells.
+# 2026-10-19: the Mac and iPhone Qwen3 0.6B LiteRT-LM rows (not the anchors) moved from the catalog id
+# litert-community/Qwen3-0.6B (qwen3_0_6b_mixed_int4.litertlm; its template drops the user turn on LiteRT-LM
+# v0.18.0, google-ai-edge/LiteRT-LM#3688) to litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
+# (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm: dynamic INT4, block-32 weights, FP32 act); the anchor rows keep
+# litert-community/Qwen3-0.6B.
 
 
 # ---- mac ----
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
-mac litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 context-tokens=2048
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 context-tokens=2048
 mac litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 context-tokens=2048
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048
 mac litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 cooldown=300 context-tokens=2048
@@ -17,7 +22,7 @@ mac litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x25
 # ---- ios ----
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
-ios litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 context-tokens=2048
 ios litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 context-tokens=2048
 ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048
 ios litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 cooldown=300 context-tokens=2048

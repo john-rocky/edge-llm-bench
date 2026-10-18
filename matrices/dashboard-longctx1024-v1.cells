@@ -11,13 +11,18 @@
 # is the KV allocation fixed at export; without runs=4 (the Mac runner's default).
 # Prepared 2026-10-06 for the first 1024/256 sittings (owner decision 12:3x JST: the dashboard's
 # headline workload). Each file starts with the platform's session anchors (matrices/anchors.cells).
+# 2026-10-19: the Mac and iPhone Qwen3 0.6B LiteRT-LM rows (not the anchors) moved from the catalog id
+# litert-community/Qwen3-0.6B (qwen3_0_6b_mixed_int4.litertlm; its template drops the user turn on LiteRT-LM
+# v0.18.0, google-ai-edge/LiteRT-LM#3688) to litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
+# (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm: dynamic INT4, block-32 weights, FP32 act); the anchor rows keep
+# litert-community/Qwen3-0.6B.
 
 
 # ---- mac ----
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
-mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
 mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
 mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
@@ -54,7 +59,7 @@ mac onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 back
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
-ios litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
 ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
 ios mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
 ios litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
