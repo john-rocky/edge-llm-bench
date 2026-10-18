@@ -490,10 +490,22 @@ def block_applies(block, day):
     return day is None or day >= since
 
 
+def llama_before(arms, day):
+    """(pin, registry key) of llama.cpp for a sitting before arms.llama.cpp.since: the pin it
+    replaced (previous.tag), on every platform; None from the since day on, or without one."""
+    llama = arms.get("llama.cpp") or {}
+    prev = (llama.get("previous") or {}).get("tag")
+    if prev and not block_applies(llama, day):
+        return prev, f"environment.lock.json arms.llama.cpp.previous.tag (before {llama.get('since')})"
+    return None
+
+
 def registry_pin(platform, runtime, pins, lock, day=None):
     """(pin, registry key) the registry names for a record's arm, or (None, why). The Mac's LiteRT-LM
     is arms.litert-lm.mac and the iPhone's arms.litert-lm.ios when the lock has that block and the
-    sitting's day (sitting_day) is on or after its since day; without it, default_tag."""
+    sitting's day (sitting_day) is on or after its since day; without it, default_tag. llama.cpp
+    (every platform) is arms.llama.cpp.tag / android_pins from the lock's since day on, its
+    previous.tag before it (llama_before)."""
     arms = (lock or {}).get("arms") or {}
     if platform == "android":
         ap = (pins or {}).get("android_pins") or {}
@@ -502,6 +514,8 @@ def registry_pin(platform, runtime, pins, lock, day=None):
         for prefix, key in (("litert-lm", "litert-lm"), ("llama.cpp", "llama.cpp"),
                             ("onnxruntime-genai", "onnxruntime-genai"), ("executorch", "executorch")):
             if runtime == prefix or runtime.startswith(prefix + "-"):
+                if key == "llama.cpp" and llama_before(arms, day):
+                    return llama_before(arms, day)
                 if ap.get(key):
                     return ap[key], f"android/engine-pins.json android_pins.{key}"
                 # before android_pins (2026-10-15, d33ffa53) the lock carried the Android pins
@@ -521,7 +535,9 @@ def registry_pin(platform, runtime, pins, lock, day=None):
             return block["tag"], f"environment.lock.json arms.litert-lm.{platform}.tag (since {block.get('since')}{at})"
         return litert.get("default_tag"), "environment.lock.json arms.litert-lm.default_tag"
     if runtime == "llama.cpp":
-        return (arms.get("llama.cpp") or {}).get("tag"), "environment.lock.json arms.llama.cpp.tag"
+        llama = arms.get("llama.cpp") or {}
+        since = f" (since {llama['since']})" if llama.get("since") else ""
+        return llama_before(arms, day) or (llama.get("tag"), "environment.lock.json arms.llama.cpp.tag" + since)
     if runtime == "mlx-swift":
         return (arms.get("mlx-swift-lm") or {}).get("revision"), "environment.lock.json arms.mlx-swift-lm.revision"
     if runtime == "core-ai":

@@ -27,7 +27,7 @@ TAG=$(python3 -c 'import json; print(json.load(open("android/engine-pins.json"))
 mkdir -p android/bin
 curl -fL https://github.com/john-rocky/edge-llm-bench/releases/download/android-litert-lm-$TAG/litert-lm-$TAG-android-arm64.tar.gz \
   | tar xz -C android/bin && mv android/bin/litert-lm-$TAG-android-arm64 android/bin/$TAG
-android/scripts/fetch_llama_android.sh                         # official b8999 android tar
+android/scripts/fetch_llama_android.sh                         # official b11721 android tar
 ```
 
 Per-release source build (what produced that archive; needed for tags with no
@@ -42,8 +42,8 @@ LITERTLM_TAG=v0.17.0 android/scripts/build_litert_lm_main.sh   # bazel source bu
   is a per-release source build into `android/bin/<tag>/` (binary + GPU `.so`
   set). On a macOS host the build needs `--enable_platform_specific_config`
   (encoded in the script; upstream google-ai-edge/LiteRT-LM#3247).
-- llama.cpp ships an official `android-arm64` artifact at the same `b8999` tag
-  the Apple arm pins — no build (official-sdk rule). CPU-only.
+- llama.cpp ships an official `android-arm64` artifact at the same `b11721` tag
+  the Apple arm pins (since 2026-10-19; `b8999` before) — no build (official-sdk rule). CPU-only.
 - Both record sha256 pins in `android/engine-pins.json`; every result row
   carries `engineVersion`/`engineArtifact` from there.
 
@@ -62,15 +62,24 @@ and with `--reset-caches` deletes every LiteRT-LM bundle's engine caches and fir
 the phone (the same paths the dashboard job's storage rotation deletes; models and records stay).
 `--check` compares without pushing.
 
-llama.cpp:
+llama.cpp (the tag in `android/engine-pins.json` `android_pins`, b11721 since 2026-10-19):
 
 ```bash
-adb shell mkdir -p /data/local/tmp/llmbench
-adb push android/bin/llama-b8999/llama-cli /data/local/tmp/llmbench/
-adb push android/bin/llama-b8999/llama-bench /data/local/tmp/llmbench/
-adb push android/bin/llama-b8999/*.so /data/local/tmp/llmbench/    # shared-lib build
-adb shell chmod +x /data/local/tmp/llmbench/llama-*
+T=b11721 S=<serial>
+adb -s $S shell mkdir -p /data/local/tmp/llmbench
+adb -s $S push android/bin/llama-$T/llama-cli android/bin/llama-$T/llama-bench /data/local/tmp/llmbench/
+adb -s $S push android/bin/llama-$T/*.so /data/local/tmp/llmbench/    # every lib: the engine
+adb -s $S shell chmod +x /data/local/tmp/llmbench/llama-cli /data/local/tmp/llmbench/llama-bench
+python3 -c 'import sys; sys.path.insert(0, "android/bench"); import run_cell as r
+for t in ("llama-cli", "llama-bench"): print(t, r.observed_engine(t, r.load_pins(), sys.argv[1])[0])' $S
 ```
+
+Push every `.so`: from b10903 on the two tools are 7 KB launchers that load the engine
+from the libraries beside them, and b11721's launchers are byte-identical to b10903's.
+The last line is the witness a cell stamps (`run_cell.observed_engine`): it hashes the
+tools and every lib of the pin's `so_files` (the tools' DT_NEEDED libraries and the CPU
+backend variants) on the phone and must print the tag for both tools; a lib left from
+another build prints `unknown (… with lib <name> …)`.
 
 Models are HF-downloaded on the host and pushed on first use by the driver.
 

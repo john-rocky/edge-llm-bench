@@ -1080,6 +1080,21 @@ Gemma 4 E2B and E4B first) through `scripts/dashboard_job.py iphone17pro --cells
 models fetched beforehand; Gemma 4 12B (a 6.88 GB file) is run, and a load that does not fit the
 app's memory stays as that cell's record.
 
+## llama.cpp on b11721 (2026-10-19)
+
+The llama.cpp pin moved from b8999 to b11721 on every platform (owner decision 2026-10-19: the
+comparison arms are measured on their current release too; `environment.lock.json` `arms.llama.cpp`,
+`android/engine-pins.json`). The re-measure runs from three cells files, each holding its platform's
+session anchor row and the weekly set's ten llama.cpp rows (short-chat and the 1K text task of the five
+models), byte-identical to their sources: `matrices/dashboard-llama-b11721-mac.cells` and
+`-ios.cells` (`matrices/dashboard-text-v1.cells`), `-android.cells` (the a / b1 / b2 halves; its first row
+is the Android session anchor, a llama.cpp row, and the Pixel 8a skips the 4B-class rows by their
+exclude-on, as in the weekly set). Each runs as one job-route sitting per device
+(`docs/dashboard-recurring-job-v1.md` section 2). The Apple builds stamp the xcframework's tag sidecar;
+on Android, where b11721's CPU tools are the same 7 KB launchers as b10903's, the witness also matches
+the libraries the pin lists (`so_files`) in the flat directory, and a phone holding another build's
+libraries stamps `unknown`.
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows use `qwen3_0_6b_mixed_int4`

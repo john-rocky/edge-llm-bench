@@ -11,7 +11,9 @@ execution-level DDP logcat); the team rules: pin-drift (an iPhone LiteRT-LM cell
 newest release a platform's pin names, FAIL; the day before those pins' since days, none; a stamp
 that is no release tag, a note) and protocol-off (a protocol cell at context 1056, prompt 1023 or
 decode 128 and a 1K text cell at context 672, FAIL; MLX's 2523, llama-bench without a context and
-the context ladder, none); an allow-list line turning a HOLD into a PASS, and a malformed one or a
+the context ladder, none); llama.cpp's pin from the lock's since day on, its previous tag before it
+(registry_pin on each platform, and a Mac sitting either side of the day); an allow-list line
+turning a HOLD into a PASS, and a malformed one or a
 line for either team rule exiting 2; the payload / anchor pair with one half missing; the exit codes.
 
   python3 scripts/session_check_selftest.py     # exit 0 = pass
@@ -470,6 +472,41 @@ def main():
             print("  skip  no other platform's newer pin applies the day before the ios block's since")
     else:
         print("  skip  the lock has no arms.litert-lm.ios block at the newest release with a since day")
+
+    print("--- llama.cpp's pin: arms.llama.cpp.tag from its since day, previous.tag before it (every platform)")
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import session_check
+    lock = {"arms": {"llama.cpp": {"tag": "b2", "since": "2099-03-02", "previous": {"tag": "b1"}}}}
+    pins = {"android_pins": {"llama.cpp": "b2"}}
+    got = [session_check.registry_pin(plat, "llama.cpp", pins, lock, datetime.date.fromisoformat(d))[0]
+           for plat in ("mac", "ios", "android") for d in ("2099-03-01", "2099-03-02")]
+    ok(got == ["b1", "b2"] * 3, f"registry_pin: previous.tag the day before since, the pin from since on, on the "
+                                f"Mac, the iPhone and Android (android_pins) (got {got})")
+    old = {"arms": {"llama.cpp": {"tag": "b1"}}}
+    ok(session_check.registry_pin("android", "llama.cpp", {"android_pins": {"llama.cpp": "b1"}}, old,
+                                  datetime.date(2099, 3, 1))[0] == "b1"
+       and session_check.registry_pin("mac", "llama.cpp", {}, old, datetime.date(2099, 3, 1))[0] == "b1",
+       "registry_pin: a lock without since or previous reads the tag (the registry before 2026-10-19)")
+    llama = LOCK["arms"]["llama.cpp"]
+    prev = (llama.get("previous") or {}).get("tag")
+    if prev and prev != LLAMA and llama.get("since"):
+        since = datetime.date.fromisoformat(llama["since"])
+        gguf = "unsloth/Qwen3-0.6B-GGUF/Q4_K_M"
+        for i, (day, stamp, want) in enumerate(((since - datetime.timedelta(days=1), prev, False),
+                                                (since, prev, True), (since, LLAMA, False))):
+            la = anchor_dir(raw, f"{day.isoformat()}-dashboard-v1-m4max-llama{i}-anchor-mac")
+            lp = payload_dir(raw, f"{day.isoformat()}-dashboard-v1-m4max-llama{i}-mac", os.path.basename(la))
+            write_jsonl(lp, "llama.cpp_unsloth_Qwen3-0_6B-GGUF_Q4_K_M_short-chat.jsonl", cell("llama.cpp", gguf, stamp))
+            rc, res, out = run([la, lp], history=hist)
+            r = res[os.path.basename(lp)]
+            stamp_f = [f["detail"] for f in r["findings"] if f["rule"] == "engine-stamp"
+                       and f["detail"].startswith("mac llama.cpp:")]
+            ok(bool(stamp_f) == want and (not want or (f"registry {LLAMA} (environment.lock.json arms.llama.cpp.tag "
+                                                       f"(since {llama['since']})" in stamp_f[0])),
+               f"a Mac sitting on {day} stamping {stamp}: " + ("engine-stamp against the pin" if want else
+                                                              "no engine-stamp") + f" ({stamp_f[:1]})")
+    else:
+        print("  skip  the committed lock has no arms.llama.cpp since day with a previous tag")
 
     print("--- protocol-off: a LiteRT-LM headline cell off the agreed protocol FAILs; other arms and tasks are not read")
     pa = anchor_dir(raw, "2099-08-03-dashboard-v1-m4max-anchor-mac")

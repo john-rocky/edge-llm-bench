@@ -125,6 +125,14 @@ prints `BenchmarkInfo:` on a glog line and an aggregated block (`Aggregated Benc
 median over the iterations) after the iterations; `android/bench/parsers.py` reads both forms
 since 2026-10-15 and never takes a value from the aggregated block.
 
+The 2026-10-19 llama.cpp bump (b8999 → b11721, owner decision that day: the comparison arms are measured
+on their current release too) takes the same route with one cells file per platform,
+`matrices/dashboard-llama-b11721-{mac,ios,android}.cells` (the session anchor row and the weekly set's ten
+llama.cpp rows, byte-identical; the Pixel 8a skips the four 4B-class rows by their exclude-on), one
+`dashboard_job.py <device> --cells <file> --suffix llama-b11721 --once` sitting per device. On Android the
+session anchor is itself a llama.cpp row, so each phone's first sitting on b11721 is the build's first
+session there (§4: no same-build reference; a hot start is refused).
+
 A lane's coverage sitting takes the same route outside the weekly firings (2026-10-15, the Pixel 8a
 ONNX Runtime GenAI cells, `results/raw/2026-10-15-dashboard-v1-pixel8a-ortgenai-*`). Each slot is a
 cells file with the session anchor row and one or two payload rows, each byte-identical to its

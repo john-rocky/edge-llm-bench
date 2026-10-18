@@ -68,13 +68,28 @@
     },
     "llama.cpp": {
       "source": "https://github.com/ggml-org/llama.cpp",
-      "artifact": "llama-b8999-xcframework.zip (release binary)",
-      "tag": "b8999",
+      "artifact": "llama-b11721-xcframework.zip (release binary)",
+      "artifact_sha256": "9efc8f94a7fb54abb4931bac484a025417cee5bbf8e15ba49b4d9ddef997460f",
+      "tag": "b11721",
+      "since": "2026-10-19",
+      "note": "The pin from 2026-10-19 on (b8999 before, under previous): owner decision 2026-10-19, the comparison arms are measured on their current release too. b11721 is the newest b-build that day with the xcframework, android-arm64 and macos-arm64 assets (published 2026-10-18T18:04Z), 2722 commits after b8999. Upstream also tags versioned releases that carry release notes and no binaries (v0.7.0, 2026-10-15: the commit of b11669, its one asset nightly-tag.txt says so; b11721 is 52 commits after it), which scripts/release_watch.py skips. The xcframework holds ios-arm64 and macos-arm64_x86_64 only (b8999's also had the simulator, tvOS and visionOS slices). scripts/session_check.py registry_pin reads previous.tag for a sitting before since.",
       "android": {
-        "artifact": "llama-b8999-bin-android-arm64.tar.gz",
-        "note": "official release binary at the same tag as the Apple arm (official-sdk rule); CPU-only — GPU needs a custom NDK build (phase 2, disclosed n/a)",
-        "llama_bench_sha256": "abb8870353a06bb464c0730fcf31cb569b4e9d70859a80a9bfd083be85e26f7c",
-        "llama_cli_sha256": "a84df7c76613fdcf291bdb2d4e0dddc4a41f0d6901552908ba640fe93fbd4753"
+        "artifact": "llama-b11721-bin-android-arm64.tar.gz",
+        "artifact_sha256": "94502b60b23f1cbc651e7d9720dacdc5b974686f9a61cf337d0611c1c1b9850f",
+        "since": "2026-10-19",
+        "note": "official release binary at the same tag as the Apple arm (official-sdk rule); CPU-only — GPU needs a custom NDK build (phase 2, disclosed n/a). The two tools are 7 KB launchers byte-identical to b10903's: the witness (android/bench/run_cell.py observed_engine) tells the builds apart by the libs they load, android/engine-pins.json llama.cpp.b11721.so_files",
+        "llama_bench_sha256": "3298b48a78f09dd20b8b8995d70b18eddc9fa7e4e120f20fae55b24d6b5ac867",
+        "llama_cli_sha256": "edf21345a3abf767656767d8644f809e132e7ad2f94b906a04e9a3ee618849c3"
+      },
+      "previous": {
+        "tag": "b8999",
+        "until": "2026-10-18",
+        "artifact": "llama-b8999-xcframework.zip (release binary)",
+        "android": {
+          "artifact": "llama-b8999-bin-android-arm64.tar.gz",
+          "llama_bench_sha256": "abb8870353a06bb464c0730fcf31cb569b4e9d70859a80a9bfd083be85e26f7c",
+          "llama_cli_sha256": "a84df7c76613fdcf291bdb2d4e0dddc4a41f0d6901552908ba640fe93fbd4753"
+        }
       }
     },
     "mlx-swift-lm": {

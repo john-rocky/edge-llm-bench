@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # Fetch the OFFICIAL llama.cpp Android binary at the same tag the Apple arm pins.
 #
-# b8999 (environment.lock.json -> arms."llama.cpp".tag) ships
-# llama-<tag>-bin-android-arm64.tar.gz in its GitHub release — an official
-# artifact (fairness rule: prefer the official runtime SDK), so no NDK build.
-# That build is CPU-only (no OpenCL/Vulkan): the `llama.cpp` arm.
+# b11721 (environment.lock.json -> arms."llama.cpp".tag, since 2026-10-19; b8999
+# before) ships llama-<tag>-bin-android-arm64.tar.gz in its GitHub release — an
+# official artifact (fairness rule: prefer the official runtime SDK), so no NDK
+# build. That build is CPU-only (no OpenCL/Vulkan): the `llama.cpp` arm. Its
+# llama-cli / llama-bench are 7 KB launchers (from b10903 on; b11721's are
+# byte-identical to b10903's): the pin also records the libs they load
+# (so_files: their DT_NEEDED closure in the tar + the CPU backend variants ggml
+# picks from at run time), which the witness checks beside the tools on the
+# device (run_cell.observed_engine).
 #
 # LLAMA_FLAVOR=snapdragon fetches the release's Snapdragon asset instead,
 # llama-<tag>-bin-android-arm64-snapdragon.tar.gz: the same tools with the
@@ -18,12 +23,12 @@
 # hashes it and (re)writes its pin.
 #
 # Env:
-#   LLAMA_TAG     release tag (default: b8999 — keep in lockstep with the Apple arm)
+#   LLAMA_TAG     release tag (default: b11721 — keep in lockstep with the Apple arm)
 #   LLAMA_FLAVOR  empty (the CPU-only asset) or snapdragon
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-TAG="${LLAMA_TAG:-b8999}"
+TAG="${LLAMA_TAG:-b11721}"
 FLAVOR="${LLAMA_FLAVOR:-}"
 case "$FLAVOR" in
   "")
@@ -64,12 +69,40 @@ else
 fi
 
 python3 - "$REPO_ROOT" "$TAG" "$OUT" "$TAR" "$PIN" "$TOOLS" "$FLAVOR" <<'PY'
-import json, os, sys, hashlib
+import json, os, sys, hashlib, struct
 root, tag, out, tar, pin, tools, flavor = sys.argv[1:8]
 pins_path = os.path.join(root, "android", "engine-pins.json")
 pins = json.load(open(pins_path)) if os.path.exists(pins_path) else {}
 def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
+def dt_needed(p):
+    # the DT_NEEDED names of an ELF64 little-endian file (PT_DYNAMIC, its string table
+    # mapped through the PT_LOAD segments)
+    data = open(p, "rb").read()
+    if data[:4] != b"\x7fELF" or data[4] != 2 or data[5] != 1:
+        return []
+    phoff, = struct.unpack_from("<Q", data, 0x20)
+    phentsize, phnum = struct.unpack_from("<HH", data, 0x36)
+    loads, dyn = [], None
+    for i in range(phnum):
+        p_type, _, off, vaddr, _, filesz, _, _ = struct.unpack_from("<IIQQQQQQ", data, phoff + i * phentsize)
+        if p_type == 1:
+            loads.append((vaddr, off, filesz))
+        elif p_type == 2:
+            dyn = (off, filesz)
+    if not dyn:
+        return []
+    needed, strtab = [], None
+    for at in range(dyn[0], dyn[0] + dyn[1], 16):
+        d_tag, val = struct.unpack_from("<qQ", data, at)
+        if d_tag == 0:
+            break
+        if d_tag == 1:
+            needed.append(val)
+        elif d_tag == 5:
+            strtab = val
+    base = next(strtab - va + off for va, off, size in loads if va <= strtab < va + size)
+    return [data[base + n:data.index(b"\0", base + n)].decode() for n in needed]
 entry = {
     "artifact": tar,
     "llama_bench_sha256": sha(os.path.join(tools, "llama-bench")),
@@ -79,6 +112,21 @@ if flavor == "snapdragon":
     libs = ["libggml-hexagon.so", "libggml-htp-v81.so", "libggml-opencl.so", "libggml-cpu.so",
             "libllama.so", "libllama-cli-impl.so", "libllama-bench-impl.so"]
     entry["so_files"] = {name: sha(os.path.join(out, "lib", name)) for name in libs}
+else:
+    # the libs the two tools load from the flat dir: their DT_NEEDED closure inside the tar
+    # (system libs are not in it) and every CPU backend variant (ggml dlopens the best one)
+    libs, todo = [], ["llama-cli", "llama-bench"]
+    while todo:
+        for name in dt_needed(os.path.join(out, todo.pop(0))):
+            if name not in libs and os.path.isfile(os.path.join(out, name)):
+                libs.append(name)
+                todo.append(name)
+    libs += [f for f in os.listdir(out) if f.startswith("libggml-cpu") and f.endswith(".so")]
+    entry["so_files"] = {name: sha(os.path.join(out, name)) for name in sorted(libs)}
+    with open(os.path.join(out, "SHA256SUMS"), "a") as fh:
+        for name, digest in entry["so_files"].items():
+            fh.write(f"{digest}  {name}\n")
+            print(f"{digest}  {name}")
 pins.setdefault("llama.cpp", {})[pin] = entry
 json.dump(pins, open(pins_path, "w"), indent=2)
 print(f"pins updated: {pins_path} (llama.cpp {pin})")
