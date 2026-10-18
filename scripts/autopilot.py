@@ -293,8 +293,9 @@ def post_step(dirs, dry_run, out_dir):
 
 
 def table_step(dry, campaign):
-    """scripts/render_dashboard.py -> (its line, this campaign's cells on the table: [(arm, model, task,
-    status, decode, n)])."""
+    """scripts/render_dashboard.py -> (its line, the table's cells whose newest sitting is this campaign:
+    [(arm, model, task, status, decode, n)]). The unit's column holds every cell of the weekly set, most
+    of them never run on a lab unit (status missing): only this sitting's are listed."""
     script = os.path.join(ROOT, "scripts", "render_dashboard.py")
     if dry:
         return "would render DASHBOARD.md and .dashboard/ (scripts/render_dashboard.py; local, gitignored)", []
@@ -302,12 +303,11 @@ def table_step(dry, campaign):
     line = (out.strip().splitlines() or ["(no output)"])[-1]
     if rc != 0:
         return f"render_dashboard.py exit {rc}: {line}", []
-    devs = {r["device"] for r in dj.load_rows() if r["campaign"] == campaign}
     cells = []
     try:
         with open(os.path.join(ROOT, ".dashboard", "dashboard-v1.csv"), newline="") as fh:
             for r in csv.DictReader(fh):
-                if r.get("device") in devs:
+                if r.get("campaign") == campaign:
                     cells.append((r.get("arm"), r.get("model"), r.get("task"), (r.get("status") or "?").split(":")[0],
                                   r.get("decode_tps"), r.get("n")))
     except OSError:
@@ -468,9 +468,10 @@ def screen(args, key, unit, code, kept, post, table, red, reqs):
     if table is not None:
         line, cells = table
         L.append(f"table     {line}")
-        if cells:
+        if not dry:
             by = collections.Counter(c[3] for c in cells)
-            L.append("          this unit's cells: " + ", ".join(f"{k} {v}" for k, v in sorted(by.items())))
+            L.append("          this sitting's cells on it: " + (", ".join(f"{k} {v}" for k, v in sorted(by.items()))
+                                                                 or "none (no cell's newest sitting is this one)"))
             for arm, model, task, status, dec, n in cells[:4]:
                 L.append(f"          {arm} {model} {task}: {status}" + (f", decode {dec} tok/s (n={n})" if dec else ""))
     if red is not None:

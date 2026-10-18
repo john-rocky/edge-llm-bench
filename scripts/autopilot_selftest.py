@@ -15,7 +15,7 @@
 4. sittings against a fake `bench` in a temp git checkout (its own stub summary builder, table and red
    script, a switch whose page repo does not exist; a PATH without gtimeout, where a stand-in for GNU
    timeout is linked under that name): SESSION.json, the post's commit of the dir and the summary, the page
-   skipped in one line, the table's cells of the unit, the red points, the pending retake and bisect request
+   skipped in one line, the table's cells of the sitting, the red points, the pending retake and bisect request
    with its command and the line for a missing scripts/engine_bisect.py, the one screen's lines, exit 0;
    --no-commit (the check, no commit, exit 0); a HOLD (no commit, REVIEW.md, the rule and what a person
    does, exit 1); a second sitting the same day without --suffix (exit 2, the suffix named); no record
@@ -401,7 +401,7 @@ def main():
                       "          Device Run sessions session-fake0001; 1 jobs", "check     PASS",
                       f"commit    {sha[:12]} on main (local), push: ", "summary   results/summary/device-runs.csv ",
                       f"page      skipped: no build.py in {no_page}",
-                      "table     wrote DASHBOARD.md", "          this unit's cells: measured 1",
+                      "table     wrote DASHBOARD.md", "          this sitting's cells on it: measured 1",
                       "red       regression: 2 series", "          1 red points, 0 of them this sitting's",
                       "requests  retakes pending 1, bisect requests pending 1",
                       "retake 2026-10-15-pixel8a-gemma4e2b-gpu-short-chat: Pixel 8a Gemma 4 E2B GPU short-chat",
