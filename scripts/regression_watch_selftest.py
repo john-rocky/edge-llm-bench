@@ -386,7 +386,11 @@ def main():
     ok(rows_written == real_anchors + [cpu_entry["row"]] and "# again: the same cell as another retake row" in text,
        "two retakes of one cell: one row (validate_cells refuses a cell twice in a file)")
     real_rows, real_adm = dj.load_rows, dj.load_admission
-    t = (datetime.datetime.now().astimezone() - datetime.timedelta(minutes=40)).astimezone(datetime.timezone.utc)
+    # the job's auto path reads the real clock: a row 40 min old is "done this week" except in the first 40 min
+    # after Monday 00:00 local, so the row is stamped no earlier than one minute into this week (found 2026-10-19 00:02)
+    real_now = datetime.datetime.now().astimezone()
+    t = max(real_now - datetime.timedelta(minutes=40),
+            dj.week_start(real_now) + datetime.timedelta(minutes=1)).astimezone(datetime.timezone.utc)
     done_rows = [{"campaign": f"results/raw/{base}-android", "platform": "android", "device": "FakeS",
                   "timestamp": t.strftime("%Y-%m-%dT%H:%M:%SZ")}]
     dj.load_rows, dj.load_admission = (lambda path=None: done_rows), (lambda: {})
