@@ -121,3 +121,4 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   five selftests OK in main; switch: push / publish false, ddp_weekly true.
 - Open for the GO letter: P's check_regression needs the stand-in rule (a P change) before the page can be committed by
   the post step on nights when the lab unit's sitting is the S26 Gemma 4 E2B GPU cells' newest.
+- 00:5x correction: the r6 commits on main are 7bcf856c..eee9dfdb (the rebase of b910eb2f..a8d6c810); 14cdba05 written at 00:0x was a mid-rebase hash, not a main ancestor. Lane close r7 = cca803b4 (K + K3) and 53f0f226 (K2/LANE.md on bench-autopilot-bisect); handoff ~/code/standup/handoffs/2026-10-19-bench-autopilot.md; 34 intermediate paths (17.3 GB) deleted per K/bench_autopilot_deleted_paths.txt; the three worktrees stay (their ignored ddp-raw / execution logcats are moved into the main tree before any worktree remove).
