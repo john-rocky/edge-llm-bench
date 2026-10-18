@@ -40,9 +40,14 @@
         }
       },
       "mac": {
-        "tag": "v0.16.0",
-        "since": "2026-09-18",
-        "note": "Withdrawn 2026-10-19: the block registered 2026-10-18 said v0.18.0 since 2026-10-12. The dashboard job's Mac yardstick (.build/dd-mac/Build/Products/Release/yardstick, built 2026-09-18 05:00) links @rpath/libCLiteRTLM_mac.dylib and the dylib beside it is the v0.16.0 artifact's (142,807,744 bytes, dated 2026-08-11, sha256 ae31a93f...); the v0.18.0 dylib exists only in .build/dd-mac-0180 (2026-10-07), which the job never ran. The engineVersion v0.18.0 the Mac LiteRT-LM records stamp from 2026-10-12 on comes from BENCH_ENGINE_PINS_FILE = ios/BenchmarkApp/Vendored/engine-pins.json (written 2026-10-07 by the dd-mac-0180 build's pre-build stamp), not from the loaded binary: the 2026-10-12, 10-16 and 10-19 Mac LiteRT-LM rows are v0.16.0 measurements. This block names what ran (v0.16.0 since the 2026-09-18 build) so the session checker holds those stamps (engine-stamp) until the rebuilt yardstick replaces .build/dd-mac; then this block moves to the new tag with that day. Found by round r9 (results/raw/2026-10-18-bench-autopilot-dev/ROUND9.md), confirmed by the supervisor with otool -L and the dylib's sha."
+        "tag": "v0.18.0",
+        "since": "2026-10-19",
+        "previous": {
+          "tag": "v0.16.0",
+          "since": "2026-09-18",
+          "note": "Withdrawn 2026-10-19: the block registered 2026-10-18 said v0.18.0 since 2026-10-12. The dashboard job's Mac yardstick (.build/dd-mac/Build/Products/Release/yardstick, built 2026-09-18 05:00) links @rpath/libCLiteRTLM_mac.dylib and the dylib beside it is the v0.16.0 artifact's (142,807,744 bytes, dated 2026-08-11, sha256 ae31a93f...); the v0.18.0 dylib exists only in .build/dd-mac-0180 (2026-10-07), which the job never ran. The engineVersion v0.18.0 the Mac LiteRT-LM records stamp from 2026-10-12 on comes from BENCH_ENGINE_PINS_FILE = ios/BenchmarkApp/Vendored/engine-pins.json (written 2026-10-07 by the dd-mac-0180 build's pre-build stamp), not from the loaded binary: the 2026-10-12, 10-16 and 10-19 Mac LiteRT-LM rows are v0.16.0 measurements. This block names what ran (v0.16.0 since the 2026-09-18 build) so the session checker holds those stamps (engine-stamp) until the rebuilt yardstick replaces .build/dd-mac; then this block moves to the new tag with that day. Found by round r9 (results/raw/2026-10-18-bench-autopilot-dev/ROUND9.md), confirmed by the supervisor with otool -L and the dylib's sha."
+        },
+        "note": "From the 2026-10-19 rebuild on: .build/dd-mac is the yardstick built that day with the vendored LiteRT-LM v0.18.0 (the dylib beside it, sha256 9526db9ee35e7eb4..., is the v0.18.0 artifact's; proven by one smoke launch with DYLD_PRINT_LIBRARIES before the switch) and llama.cpp b11721; the 2026-09-18 yardstick (v0.16.0 dylib) is kept as .build/dd-mac-0918-litert0160-llama8999. The 2026-10-19 02:00 sitting still ran the old binary (its records stamp v0.18.0 from the pins file and hold on engine-stamp, prompt-tokens, partial, failures); the first sitting on this build is the by-hand weekly started after this registration."
       },
       "ios": {
         "tag": "v0.18.0",
@@ -108,7 +113,7 @@
     },
     "coreai-models": {
       "source": "https://github.com/apple/coreai-models",
-      "tag": "0.2.0",
+      "tag": "1.0.0-10-gbd3c539",
       "caveat": "PLE models (Gemma-4 E2B/E4B) additionally require the unpublished local patch coreai-pipelined-static-inputs.patch (COREAI_STATIC_INPUTS) — this arm is NOT independently reproducible yet; see gap audit.",
       "captures": {
         "2026-08-15 muse-glimmer-30b 3-way (Mac)": {
@@ -131,7 +136,9 @@
         "ids": "core-ai/<model>-stock-ctx2048 -> bundle folder stock_<model>_ctx2048 (CoreAIRuntime.bundleSpec, scripts/bench_matrix_mac.sh coreai_folder)",
         "compute_unit": "Neural Engine: the runner specializes Apple's chunked-static bundles for it and no public option selects another unit",
         "note": "Gemma 4's per-layer-embedding table is metadata.json auxiliary_assets.per_layer_embeddings since #332 (the runner validates assets only, so a bundle exported before #332 fails this pin's asset check). Records stamp runtime core-ai-ane (CoreAIRuntime.recordRuntimeLabel); cells matrices/dashboard-coreai-v1-{ios,mac}.cells; docs/coreai-arm-v1.md."
-      }
+      },
+      "tag_before_2026_10_19": "0.2.0",
+      "tag_note": "From the 2026-10-19 rebuild on, the Mac yardstick links the stock coreai-models checkout bd3c539 (git describe 1.0.0-10-gbd3c539, the same checkout the iPhone app has run since 2026-10-17); the 0.2.0 checkout with the static-inputs patch ended with the 2026-09-18 yardstick (the caveat below describes that arm). The core-ai runtime rows stamp this describe through the pins file."
     },
     "executorch": {
       "source": "https://github.com/pytorch/executorch",
