@@ -19,7 +19,10 @@ tools/publish_gcs.sh writing a marker; a local bare remote). Pins:
   (vii)  a merge in progress: no commit; posted again once it is gone
   (viii) the name scrub rewrites text files only; a JSON record keeps every number
   and: a page check FAIL (the bench commit stands, the page repo untouched), --allow-subset,
-  --dry-run (nothing written), the lock, a post over dirs already committed.
+  --dry-run (nothing written), the lock, a post over dirs already committed; the red segment (a
+  stub scripts/regression_watch.py in the commit's tree: run over the sitting's dirs and the page
+  build's regression.json, its mismatch and notes in the ledger note, the exit code unchanged,
+  --dry-run passed on) and the page's number changes (cells.csv statuses before and after).
 
   python3 scripts/dashboard_post_selftest.py     # exit 0 = pass
 """
@@ -36,6 +39,7 @@ import tempfile
 import uuid
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
 POST = os.path.join(ROOT, "scripts", "dashboard_post.py")
 USER = getpass.getuser()
 ON_TASK = ("On-device AI means the model runs on your phone itself instead of a cloud server, so it "
@@ -77,6 +81,21 @@ if os.environ.get("FAKE_PAGE_FAIL") == name or not os.path.exists(os.path.join(d
 if name == "render_check":
     open(os.path.join(dist, "screenshot-overview.png"), "wb").write(b"png " + open(os.path.join(dist, "index.html"), "rb").read())
 print("PASS")
+'''
+# the red segment's script as the commit's tree carries it: the JSON a real one writes (FAKE_RED=mismatch:
+# the page's red set differs), and the arguments it was given
+STUB_RED = '''#!/usr/bin/env python3
+import json, os, sys
+a = sys.argv[1:]
+names = a[a.index("--respond") + 1:a.index("--state-dir")]
+cmp = None
+if "--compare" in a:
+    same = os.environ.get("FAKE_RED") != "mismatch"
+    cmp = {"equal": same, "red": {"bench": 1, "page": 1 if same else 0}, "counts": {"series": {"bench": 1, "page": 1}}}
+note = "stub red over " + " ".join(names) + (" with --dry-run" if "--dry-run" in a else "") + (
+    " and --compare" if cmp else "") + " into " + os.path.basename(os.path.dirname(a[a.index("--state-dir") + 1]))
+json.dump({"compare": cmp, "respond": {"notes": [note]}}, open(a[a.index("--json") + 1], "w"))
+print("stub red segment")
 '''
 STUB_PUBLISH = '''#!/usr/bin/env bash
 here="$(cd "$(dirname "$0")/.." && pwd)"
@@ -447,6 +466,30 @@ def main():
     print("--- dirs already committed: nothing to commit, exit 0")
     rc, out = post(s1, "off")
     ok(rc == 0 and head() == h and "nothing to commit" in ledger()[-1]["note"], f"exit {rc}: {ledger()[-1]['note']}")
+
+    print("--- the red segment: the commit's own scripts/regression_watch.py, after the page; its note, never the exit code")
+    write(os.path.join(bench, "scripts", "regression_watch.py"), STUB_RED)
+    sh(bench, "git", "add", "--", "scripts/regression_watch.py")
+    sh(bench, "git", "commit", "-q", "-m", "the red stub", "--", "scripts/regression_watch.py")
+    r1 = sitting(raw, 11)
+    rc, out = post(r1, "off", "--dry-run")
+    ok(rc == 0 and "red: stub red over " + " ".join(os.path.basename(d) for d in r1) + " with --dry-run into logs" in out,
+       "--dry-run: the red segment runs over the sitting's dirs with --dry-run, the state dir is the checkout's logs/")
+    rc, out = post(r1, "off", env={"FAKE_RED": "mismatch"})
+    row = ledger()[-1]
+    ok(rc == 0 and row["bench_commit"] == head() and "red: mismatch with the page's regression.json (red: bench 1, page 0;" in row["note"]
+       and "and --compare into logs" in row["note"],
+       f"a red set that differs from the page build's: 'red: mismatch' in the note, exit {rc}, committed")
+    import dashboard_post as dp
+    cols = "device,arm,model_id,task,context_tokens,artifact_file,decode_tps,status\n"
+    before = cols + "S,a,m1,t,,f,1,measured\nS,a,m2,t,,f,1,measured\nS,a,m3,t,,f,,excluded:x\nS,a,m4,t,,f,,cpu-capped:y\n"
+    after = cols + "S,a,m1,t,,f,,cpu-capped:z\nS,a,m2,t,,f,1,measured\nS,a,m3,t,,f,1,measured\nS,a,m4,t,,f,,cpu-capped:y\n"
+    ok(dp.number_changes(before, after) == "cells with a number before and none now: 1 (cpu-capped 1), the reverse: 1"
+       and dp.number_changes("campaign,file\nx,y\n", after) is None,
+       "the page's number changes: a cell that lost its number by its new status, one that gained it; none without a status column")
+    ok("cells with a number before and none now: 1 (cpu-capped 1)" in dp.page_message(
+        "0" * 40, {"start": None, "display": "D", "ident": "I", "end": None}, set(), {"r"}, [],
+        dp.number_changes(before, after)), "the phrase in the page commit's message")
 
     print("--- usage")
     rc, out = post([os.path.join("results", "raw", "no-such-dir")], "off")

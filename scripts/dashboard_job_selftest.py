@@ -14,7 +14,9 @@ file whose engine-build=<tag> build is not on the phone is skipped by itself
 and the rest of the sitting runs; and the post step's place: a dry-run
 sitting that exits 0 prints the scripts/dashboard_post.py command over the
 campaign dirs it would create, after its done line, and any other exit
-prints none.
+prints none. A pending retake (stage 3a) makes a device done this week a
+candidate again, ahead of the others, and a retake sitting is not the week's
+session (the retake sitting itself: scripts/regression_watch_selftest.py).
 
   python3 scripts/dashboard_job_selftest.py     # exit 0 = pass
 """
@@ -228,6 +230,21 @@ def main():
     probe = older_b + [row("now-dashboard-v1-beta-anchor-android", "FakeB", minutes=30)]
     key, rep = choose(probe)
     ok(key == "beta", f"the anchor probe alone is not a session: chose {key}")
+
+    print("--- a pending retake: the device is a candidate though its weekly set is done, and goes first")
+    week = older_b + [row("now-dashboard-v1-beta-android", "FakeB", minutes=30)]
+    key, _, rep = dj.resolve_device(schedule, "auto", now=now, rows=week, admitted={}, retakes={"beta": 2}, skip=set())
+    rep = {e["key"]: e for e in rep}
+    ok(key == "beta" and rep["beta"].get("weekly_done") is True and "2 retakes pending" in rep["beta"]["detail"],
+       f"beta done this week, 2 retakes pending: chosen before alpha's weekly set ({rep['beta']['detail']})")
+    retake = "now-dashboard-v1-beta-retake-x-android"
+    key, _, rep = dj.resolve_device(schedule, "auto", now=now, rows=older_b + [row(retake, "FakeB", minutes=30)],
+                                    admitted={}, retakes={}, skip={f"results/raw/{retake}"})
+    rep = {e["key"]: e for e in rep}
+    ok(key == "beta" and rep["beta"]["state"] == "candidate"
+       and rep["beta"]["detail"].startswith("last admitted ") and "retake" not in rep["beta"]["detail"],
+       f"beta's retake sitting this week is not its weekly session: a candidate on its 21-day-old session, "
+       f"chosen as the oldest ({key}: {rep['beta']['detail']})")
 
     print("--- held or detached devices are passed over")
     with open(hold_b, "w") as fh:

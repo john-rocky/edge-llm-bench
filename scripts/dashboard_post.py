@@ -26,7 +26,14 @@ repo it commits to. In this order:
            so other lanes' staged and untracked files stay as they are; refused while a merge,
            rebase, cherry-pick or revert is in progress
   page     the private page (switch page_repo) built from the commit's own tree into --page-out,
-           its four checks; every one PASS -> dist/ committed in the page repo the same way
+           its four checks; every one PASS -> dist/ committed in the page repo the same way; the
+           cells that had a number on the page before and have none now (and the reverse) go into
+           the page message and the ledger note
+  red      the commit's own scripts/regression_watch.py over its summary, the page's rule
+           (docs/dashboard-autopilot-v1.md §8): this sitting's red points become retakes, a retake
+           sitting's verdict a bisect request (logs/dashboard-job/retakes.json,
+           bisect-requests.json); the page build's regression.json must hold the same red points
+           ("red: mismatch" in the ledger note otherwise); it never changes the exit code
   switch   push the bench, push the page, publish — each only when ops/autopilot/switch.json says
            true, and a push only of commits this step made; while false, the ledger line says
            what it would have pushed or published
@@ -78,6 +85,8 @@ PAGE_CHECKS = ("tools/check_against_bench_dashboard.py", "tools/check_regression
                "tools/check_aa.py", "tools/render_check.py")
 PAGE_DATA = ("index.html", "cells.csv", "cells.json", "regression.json", "regression.csv",
              "aa.json", "aa.csv")
+# the red segment: the commit's tree's own copy of the page's regression rule
+RED_SCRIPT = os.path.join("scripts", "regression_watch.py")
 # the words the commit-msg hook every repo under ~/code carries refuses (standup
 # tools/git-hooks/commit-msg); the message is checked before the hook sees it
 REFUSED_WORDS = re.compile(r"claude|anthropic", re.I)
@@ -617,7 +626,7 @@ def commit_message(f, lines_a, lines_b, waived):
     return msg + f"; results/summary rebuilt from the git index ({lines_a} -> {lines_b} lines)\n"
 
 
-def page_message(bench_sha, f, rows_old, rows_new, checks):
+def page_message(bench_sha, f, rows_old, rows_new, checks, numbers=None):
     """The page repo's dist commits read "dist: the page from the bench at <sha> — …" (8100b64)."""
     added = len(rows_new - rows_old)
     removed = len(rows_old - rows_new)
@@ -626,7 +635,8 @@ def page_message(bench_sha, f, rows_old, rows_new, checks):
     return (f"dist: the page from the bench at {bench_sha[:8]} — the {start:%Y-%m-%d} " if start else
             f"dist: the page from the bench at {bench_sha[:8]} — the ") + (
         f"{f['display']} ({f['ident']}) dashboard-job sitting {when_text(f['start'], f['end'])} committed there; "
-        f"cells.csv {added} rows added, {removed} removed ({len(rows_new)} rows); checks: {names} PASS\n")
+        f"cells.csv {added} rows added, {removed} removed ({len(rows_new)} rows)"
+        + (f"; {numbers}" if numbers else "") + f"; checks: {names} PASS\n")
 
 
 # ---------------------------------------------------------------- the page
@@ -742,6 +752,81 @@ def page_commit(repo, page_out, msg_for, tmp):
         fh.write(msg)
     sha, why = commit_index(repo, index, head, branch, msg_file, ["dist"])
     return (sha, None) if sha else undo(why)
+
+
+def cell_numbers(text):
+    """The page's cells.csv -> {cell: 'number' where the page shows a decode value (status measured),
+    else the status's first word (cpu-capped, text-fail, excluded, no-decode, not measured)}; None
+    for a file without the status column."""
+    rows = list(csv.DictReader(io.StringIO(text or "")))
+    if not rows or "status" not in rows[0]:
+        return None
+    out = {}
+    for r in rows:
+        key = tuple(r.get(k) or "" for k in ("device", "arm", "model_id", "task", "context_tokens", "artifact_file"))
+        kind = (r.get("status") or "").split(":", 1)[0]
+        out[key] = "number" if kind == "measured" else kind
+    return out
+
+
+def number_changes(old_text, new_text):
+    """One phrase: the cells (in both pages) that had a number on the page committed before and have
+    none in this build, by their new status, and the reverse — a night that empties cells reads so
+    in the morning, whatever the checker said. None when either page has no status column."""
+    old, new = cell_numbers(old_text), cell_numbers(new_text)
+    if old is None or new is None:
+        return None
+    both = [k for k in new if k in old]
+    lost = collections.Counter(new[k] for k in both if old[k] == "number" and new[k] != "number")
+    gained = sum(1 for k in both if new[k] == "number" and old[k] != "number")
+    return (f"cells with a number before and none now: {sum(lost.values())}"
+            + (f" ({', '.join(f'{k} {v}' for k, v in sorted(lost.items()))})" if lost else "")
+            + f", the reverse: {gained}")
+
+
+def red_step(top, tree, page_out, dirs, dry, tmp):
+    """The red segment (docs/dashboard-autopilot-v1.md §8): the commit's own tree's
+    scripts/regression_watch.py over its summary with this sitting's dirs -> the ledger note's phrase.
+    The state it writes (retakes, bisect requests, drafts) goes under this checkout's
+    logs/dashboard-job/; with a page build, its regression.json is compared. Nothing here changes
+    the post's exit code: a mismatch or an error is the phrase."""
+    script = os.path.join(tree, RED_SCRIPT)
+    if not os.path.isfile(script):
+        return f"red: skipped (no {RED_SCRIPT} in the commit's tree)"
+    out = os.path.join(tmp, "red.json")
+    cmd = ([sys.executable, script, "--root", tree, "--respond"] + [os.path.basename(d) for d in dirs]
+           + ["--state-dir", os.path.join(top, LOG_REL), "--json", out])
+    page_json = os.path.join(page_out, "regression.json") if page_out else None
+    if page_json and os.path.isfile(page_json):
+        cmd += ["--compare", page_json]
+    if dry:
+        cmd.append("--dry-run")
+    try:
+        p = subprocess.run(cmd, cwd=tree, capture_output=True, text=True, timeout=600,
+                           env=dict(os.environ, PYTHONDONTWRITEBYTECODE="1"))
+        rc, text = p.returncode, ((p.stdout or "") + (p.stderr or "")).strip()
+    except subprocess.TimeoutExpired:
+        return "red: error (regression_watch.py ran past 600 s)"
+    except OSError as e:
+        return f"red: error (regression_watch.py did not start: {e})"
+    for ln in text.splitlines():
+        log(f"  red | {ln}")
+    if rc == 2 or not os.path.isfile(out):
+        return f"red: error (regression_watch.py exit {rc}: {short(text.splitlines()[-1] if text else '', 160)})"
+    try:
+        with open(out) as fh:
+            doc = json.load(fh)
+        cmp, resp = doc.get("compare"), doc.get("respond") or {}
+    except (OSError, ValueError, AttributeError) as e:
+        return f"red: error (its output unreadable: {e})"
+    parts = []
+    if cmp is not None:
+        parts.append(f"page and bench agree ({cmp['red']['page']} red points)" if cmp["equal"] else
+                     f"mismatch with the page's regression.json (red: bench {cmp['red']['bench']}, page "
+                     f"{cmp['red']['page']}; " + ", ".join(f"{k} {v['bench']} / {v['page']}"
+                                                          for k, v in cmp["counts"].items()) + ")")
+    parts += resp.get("notes") or []
+    return "red: " + "; ".join(parts) + (" (dry-run: nothing written)" if dry else "")
 
 
 # ---------------------------------------------------------------- the switch
@@ -919,6 +1004,8 @@ def post(top, dirs, sw, args, row, tmp):
         if args.dry_run:
             row["summary_lines"] = f"{lines_a} -> {lines_b}"
             page_step(sw, tree, args.page_out or os.path.join(top, PAGE_OUT_DEFAULT), row, True)
+            notes.append(red_step(top, tree, None, dirs, True, work))
+            log(notes[-1])
             for key in SWITCH_KEYS:
                 row[key] = f"{'on' if sw[key] else 'off'} (dry-run)"
             row["note"] = "; ".join(notes + ["dry-run: nothing written"])
@@ -944,6 +1031,14 @@ def post(top, dirs, sw, args, row, tmp):
     os.makedirs(page_out, exist_ok=True)
     passed, checks, repo = page_step(sw, tree, page_out, row, False)
     page_sha = None
+    numbers = None
+    if repo and os.path.isfile(os.path.join(page_out, "cells.csv")):
+        rc_old, old_cells = git(repo, "show", "HEAD:dist/cells.csv")
+        with open(os.path.join(page_out, "cells.csv")) as fh:
+            numbers = number_changes(old_cells, fh.read()) if rc_old == 0 else None
+        if numbers:
+            notes.append(f"page cells: {numbers}")
+            log(notes[-1])
     if repo and not passed:
         code = 1
         notes.append("page: not committed (a check failed; the bench commit stands)")
@@ -952,7 +1047,7 @@ def post(top, dirs, sw, args, row, tmp):
         notes.append(f"page: built and checked in {page_out}, not committed (--no-page-commit)")
     elif passed:
         page_sha, why = page_commit(repo, page_out,
-                                    lambda old, new: page_message(sha, facts, old, new, checks[1:]), tmp)
+                                    lambda old, new: page_message(sha, facts, old, new, checks[1:], numbers), tmp)
         row["page_commit"] = page_sha or ""
         if page_sha:
             log(f"page committed {page_sha[:8]} in {repo}")
@@ -961,6 +1056,8 @@ def post(top, dirs, sw, args, row, tmp):
             log(f"page not committed: {why}")
             if not why.startswith("unchanged"):
                 code = 1
+    notes.append(red_step(top, tree, page_out if repo else None, dirs, False, tmp))
+    log(notes[-1])
     row["push_bench"] = push(top, sha, ledger_commits(top, "bench_commit") | {sha}, sw["push_bench"], "bench")
     row["push_page"] = (push(repo, page_sha, ledger_commits(top, "page_commit") | {page_sha}, sw["push_page"], "page")
                         if page_sha else "no page commit to push")

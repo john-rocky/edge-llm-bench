@@ -1,0 +1,49 @@
+{
+ "_doc": "The private team page's regression rule, copied for scripts/regression_watch.py (docs/dashboard-autopilot-v1.md section 8): the constants of litert-bench-dashboard build.py at its commit 8100b64 (the page built from the bench at e3010721), read out of that module, not retyped. Each key names its source line in build.py: subject = SUBJECT (l.199); subject_arms = the arms RUNTIME (l.191-197, l.217, l.231) maps to the subject (build_regression keeps RUNTIME[arm] == SUBJECT only, l.1265); devices = REGRESSION_DEVICES (l.350) with each device's platform from PANELS (l.159-165); models = REGRESSION_MODELS (l.352, model row labels, render_dashboard.model_row); tasks = REGRESSION_TASKS (l.353, NATIVE_TASK l.81); metrics = REGRESSION_METRICS (l.354) with the better direction of METRICS (l.311-316; diff_pct l.812 turns a lower-is-better value into a rate); cell_files = CELL_FILES (l.104-124, l.134-135, l.142-143) in order, [file, task, only]: each file read for that task only, only = the device identifiers the file is for (null = every device of its platform), the first definition of a (platform, arm, model id, task, context, file) key winning (load_cell_defs l.400); optional_cell_files = OPTIONAL_CELL_FILES (l.126-128, l.136, l.144: a missing one is skipped, another missing file is an error); backend = BACKEND (l.254-306), the subject arms' column, keyed '<platform> <arm>'; stand_in = STAND_IN (l.177-180), a lab unit's device string -> the panel phone it stands in for (stand_in_rows l.384 re-keys its accelerator rows and drops the rest; build_regression skips every stand-in row, l.1254); page_campaigns_contain = the weekly-sittings filter of load_rows (l.366-381, campaign dir names containing 'dashboard'). Not copied, because the bench is their source: the threshold (render_leaderboard.SPREAD_FLAG, which build.py imports), the aggregation (render_leaderboard.arm_row, latest_session), the regime (render_dashboard.headline_regime), exclusions (render_dashboard.exclusion with the schedule.json keys of device_keys) and model_row. Restated in scripts/regression_watch.py, with their lines: headline (l.517), NO_NUMBER and headline_status (l.533-555), regression_value (l.1232), diff_pct (l.812), build_regression (l.1239-1359). When build.py changes these, this file and that code change with it; regression_watch.py --compare <page>/dist/regression.json (and the post step's red segment, every night) says when they disagree.",
+ "source": {"repo": "litert-bench-dashboard", "commit": "8100b64", "file": "build.py"},
+ "subject": "LiteRT-LM",
+ "subject_arms": ["litert-lm", "litert-lm-cpu", "litert-lm-gpu", "litert-lm-npu"],
+ "devices": [["SM-S942Q", "android"], ["iPhone19,2", "ios"], ["Mac16,9", "mac"], ["Pixel 8a", "android"]],
+ "models": ["Qwen 3 0.6B", "Gemma 4 E2B"],
+ "tasks": ["long-context-1024-gen256", "short-chat", "native-benchmark-1024x256"],
+ "metrics": [["decode_tps", "higher"], ["prefill_tps", "higher"], ["mem_peak_mb", "lower"]],
+ "cell_files": [
+  ["dashboard-longctx1024-v1.cells", "long-context-1024-gen256", null],
+  ["dashboard-longctx1024-v1-android-a.cells", "long-context-1024-gen256", null],
+  ["dashboard-longctx1024-v1-android-b1.cells", "long-context-1024-gen256", null],
+  ["dashboard-longctx1024-v1-android-b2.cells", "long-context-1024-gen256", null],
+  ["dashboard-text-v1.cells", "short-chat", null],
+  ["dashboard-longctx-v1.cells", "long-context-2048-gen256", null],
+  ["dashboard-longctx-v1-android-s26.cells", "long-context-2048-gen256", ["SM-S942Q"]],
+  ["dashboard-protocol1024-v1.cells", "native-benchmark-1024x256", null],
+  ["dashboard-protocol1024-v1-android.cells", "native-benchmark-1024x256", null],
+  ["dashboard-npu-v1-android-s26.cells", "short-chat", ["SM-S942Q"]],
+  ["dashboard-npu-v1-android-s26.cells", "long-context-1024-gen256", ["SM-S942Q"]],
+  ["dashboard-npu-protocol1024-v1-android-s26.cells", "native-benchmark-1024x256", ["SM-S942Q"]],
+  ["dashboard-npu-litert-v1-android-s26.cells", "short-chat", ["SM-S942Q"]],
+  ["dashboard-ortgenai-v1.cells", "short-chat", null],
+  ["dashboard-ortgenai-v1.cells", "long-context-1024-gen256", null],
+  ["dashboard-executorch-v1-android.cells", "short-chat", null],
+  ["dashboard-executorch-v1-android.cells", "long-context-1024-gen256", null],
+  ["dashboard-executorch-v1-mac.cells", "short-chat", null],
+  ["dashboard-executorch-v1-mac.cells", "long-context-1024-gen256", null],
+  ["dashboard-executorch-v1-ios.cells", "short-chat", null],
+  ["dashboard-executorch-v1-ios.cells", "long-context-1024-gen256", null],
+  ["dashboard-coreai-v1-ios.cells", "long-context-1024-gen256", null],
+  ["dashboard-coreai-v1-ios.cells", "native-benchmark-1024x256", null],
+  ["dashboard-coreai-v1-mac.cells", "long-context-1024-gen256", null],
+  ["dashboard-coreai-v1-mac.cells", "native-benchmark-1024x256", null]
+ ],
+ "optional_cell_files": [
+  "dashboard-coreai-v1-ios.cells", "dashboard-coreai-v1-mac.cells", "dashboard-executorch-v1-android.cells",
+  "dashboard-executorch-v1-ios.cells", "dashboard-executorch-v1-mac.cells", "dashboard-npu-litert-v1-android-s26.cells",
+  "dashboard-npu-protocol1024-v1-android-s26.cells", "dashboard-npu-v1-android-s26.cells", "dashboard-ortgenai-v1.cells",
+  "dashboard-protocol1024-v1-android.cells", "dashboard-protocol1024-v1.cells"
+ ],
+ "backend": {
+  "android litert-lm-cpu": "CPU", "android litert-lm-gpu": "GPU", "android litert-lm-npu": "NPU",
+  "mac litert-lm": "GPU", "ios litert-lm": "GPU", "mac litert-lm-cpu": "CPU"
+ },
+ "stand_in": {"SM-S942U1 (DDP m1q-36)": "SM-S942Q"},
+ "page_campaigns_contain": "dashboard"
+}

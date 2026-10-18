@@ -54,6 +54,16 @@ campaign dirs locally when every one passes scripts/session_check.py, rebuilds
 results/summary from the git index into the same commit and the private page from
 that commit, and pushes or publishes only what ops/autopilot/switch.json turns on;
 its exit code never changes the sitting's. A dry run prints that command only.
+
+Before a device's weekly set, its pending retakes (logs/dashboard-job/retakes.json: a red point of
+the team page's rule that the post step found in a sitting, scripts/regression_watch.py) run as
+one sitting of their own (docs/dashboard-autopilot-v1.md §8): the platform's rows of the anchors
+file and each retake's row byte for byte in logs/dashboard-job/retake-<date>-<device>.cells,
+campaign suffix retake-<slug>, the same preflight, hold, admission and close, its own ledger line
+and post; an android native-benchmark retake row adds `./bench profile`'s pair in the same
+campaign. `auto` takes a device whose weekly set is done when a retake of it is pending, and a
+device with a pending retake before the others; the week counts weekly sets only (a retake
+sitting's SESSION.json names its retakes). --cells (a run by hand) and --no-retake take none.
 What the job never does: edit a cells file, delete a raw record.
 The one destructive step is deleting pushed MODEL COPIES on a storage-limited
 phone between halves (the host HF cache is the source), together with their
@@ -76,12 +86,15 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from render_dashboard import CSV_PLATFORM, REGIME, load_admission, load_cells  # noqa: E402
+import regression_watch  # noqa: E402
 
 PY = sys.executable
 SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
 # the step after a sitting that exits 0 (docs/dashboard-autopilot-v1.md): check, commit, page
 POST = os.path.join(ROOT, "scripts", "dashboard_post.py")
 POST_TIMEOUT_S = 3600
+# a retake's per-op profile pair (`./bench profile`, android/bench/run_profile.py): control + twin
+PROFILE_TIMEOUT_S = 3600
 LOG_DIR = os.path.join(ROOT, "logs", "dashboard-job")
 SUMMARY_CSV = os.path.join(ROOT, "results", "summary", "device-runs.csv")
 # a dashboard session's campaign (design §1): <date>-dashboard-v1-<device>[-<half>]-<plat>;
@@ -613,6 +626,25 @@ def run_matrix(cells, platform, campaign, env, timeout_s, dry):
     return p.returncode
 
 
+def run_profile(cells, campaign, env, timeout_s, dry):
+    """A retake's per-op profile (docs/dashboard-autopilot-v1.md §8): `./bench profile <cells>
+    --campaign <campaign>` writes, per android litert-lm native-benchmark row of the file, a control
+    run and its --enable_profiling twin into <campaign>-android/profiles/ (android/bench/run_profile.py,
+    docs/profiling-subcommand-design.md); the control's record is an ordinary speed run of the same
+    sitting, the profiled twin's never is; the file's other rows are listed in profiles/SKIPPED.txt."""
+    cmd = ["gtimeout", "--kill-after=60", str(int(timeout_s)),
+           os.path.join(ROOT, "bench"), "profile", cells, "--campaign", campaign]
+    log("$ " + " ".join(cmd) + "   env: " + " ".join(f"{k}={v!r}" for k, v in env.items()))
+    if dry:
+        return 0
+    e = dict(os.environ)
+    e.update(env)
+    e["PYTHONUNBUFFERED"] = "1"
+    p = subprocess.run(cmd, env=e, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT)
+    log(f"bench profile exit {p.returncode}")
+    return p.returncode
+
+
 def device_env(dev):
     env = dict(dev.get("env", {}))
     if dev["platform"] == "android":
@@ -1045,6 +1077,10 @@ def attempt(schedule, key, dev, attempt_no, args):
             session_timeout = (float(extras[cells_file].get("timeout_hours", 1)) * 3600
                                if cells_file in extras else timeout_s)
             rc = run_matrix(cells_file, platform, camp, env, session_timeout, dry)
+            prof_rc = None
+            if getattr(args, "profile", False) and platform == "android" and rc != 124:
+                # a retake's native-benchmark row: the per-op pair in the same campaign, under the hold
+                prof_rc = run_profile(cells_file, camp, env, PROFILE_TIMEOUT_S, dry)
             previous.append(cells_file)
             last_rel = rel_path
             if dry:
@@ -1087,6 +1123,9 @@ def attempt(schedule, key, dev, attempt_no, args):
                                      "anchor_phase": anchor_rel, "runner_exit": rc,
                                      "cells_expected": expected, "cells_with_records": have,
                                      **({"device_lost": lost} if lost else {}),
+                                     **({"retake": args.retake} if getattr(args, "retake", None) else {}),
+                                     **({"profile": {"exit": prof_rc, "dir": f"{rel_path}/profiles"}}
+                                        if prof_rc is not None else {}),
                                      **campaign_notes(rel_path)})
             if rc == 124:
                 worst = max(worst, EXIT_TIMEOUT)
@@ -1105,6 +1144,61 @@ def attempt(schedule, key, dev, attempt_no, args):
         if HOLD_KEEPER is not None:
             log(f"hold kept by keeper pid {HOLD_KEEPER} (not acquired / not released by the job)")
         hold_release(hold)
+
+
+def retake_sitting(schedule, key, dev, args):
+    """The device's pending retakes as one sitting before its weekly set (docs/dashboard-autopilot-v1.md
+    §8) -> its exit code, or None when it has none. The cells file is generated per sitting
+    (regression_watch.retake_cells_text: the platform's anchor rows, then each retake's row byte for
+    byte), the sitting is attempt() with that file and the suffix retake-<slug> (its own campaign, a
+    single-file sitting), and it closes as a sitting does: its ledger line, then the post step, which
+    judges it (the red segment). Exit 0 marks the retakes done with the payload campaign; another
+    exit counts an attempt (abandoned after regression_watch.RETAKE_MAX_ATTEMPTS). A dry run writes
+    the generated cells file its plan names and changes no retake state."""
+    date = datetime.date.today().isoformat()
+    try:
+        entries = regression_watch.pending_retakes(LOG_DIR, key, write=not args.dry_run)
+        if not entries:
+            return None
+        path, slug, rows = regression_watch.write_retake_cells(ROOT, LOG_DIR, schedule["anchors"],
+                                                               PLATFORM_TOKEN[dev["platform"]], key, entries, date)
+    except (regression_watch.Config, OSError, ValueError, KeyError) as e:
+        # the retake state is the autopilot's, never a reason to skip the weekly set
+        log(f"WARN retake state unusable, no retake this sitting: {e}")
+        return None
+    rel = os.path.relpath(path, ROOT)
+    ids = [e["id"] for e in entries]
+    profile, why = regression_watch.profile_plan(dev["platform"], entries)
+    rargs = argparse.Namespace(**dict(vars(args), cells=rel, suffix=f"retake-{slug}", profile=profile,
+                                      retake={"ids": ids, "cells_file": rel, "rows": rows}))
+    log(f"=== retake: {len(ids)} pending for {key} ({', '.join(ids)}): one sitting over {rel} before the "
+        "weekly set" + (" [dry-run]" if args.dry_run else ""))
+    log(f"retake profile: {why}")
+    t0, started = time.time(), time.strftime("%F %T")
+    code, reason, camp, sitting = EXIT_CONFIG, "", "", []
+    try:
+        code, reason, camp, sitting = attempt(schedule, key, dev, 1, rargs)
+    except Busy as e:
+        code, reason = EXIT_BUSY, str(e)
+        log(f"BUSY: {e}")
+    except NotReady as e:
+        code, reason = EXIT_DEVICE, str(e)
+        log(f"DEVICE: {e}")
+    except ConfigError as e:
+        code, reason = EXIT_CONFIG, str(e)
+        log(f"CONFIG: {e}")
+    if not args.dry_run:
+        try:
+            regression_watch.finish_retakes(LOG_DIR, ids, code, reason, camp or "", cells_file=rel,
+                                            suffix=rargs.suffix)
+        except (regression_watch.Config, OSError) as e:
+            log(f"WARN retake state not updated ({e}): the retakes stay as they were")
+        ledger({"started": started, "ended": time.strftime("%F %T"), "device": key, "campaign": camp or "",
+                "verdict": VERDICT_NAME.get(code, str(code)), "reason": f"retake {', '.join(ids)}: {reason}",
+                "exit": code, "minutes": round((time.time() - t0) / 60, 1), "attempt": 1})
+    log(f"=== retake done: {VERDICT_NAME.get(code, code)} ({reason}) exit {code}")
+    post_sitting(code, sitting, args.dry_run)
+    return code
 
 
 # ---------------------------------------------------------------- auto: which device now
@@ -1132,20 +1226,21 @@ def week_start(now):
     return monday.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def device_sessions(schedule, rows, admitted):
+def device_sessions(schedule, rows, admitted, skip=()):
     """key -> [(ended, campaign)] of the device's admitted dashboard sessions,
     newest first. A session is a `-dashboard-v1-` campaign that is not the
     anchor probe, matched on the device's identifier and platform, whose
     SESSION.json does not say admitted:false (absent = admitted, as in
     render_dashboard); its time is its last record's. Hand-run first passes
-    count the same way as the job's own sittings."""
+    count the same way as the job's own sittings; the autopilot's retake
+    sittings (`skip`: their SESSION.json names the retakes) do not."""
     out = {}
     for key, dev in schedule.get("devices", {}).items():
         plat = CSV_PLATFORM[PLATFORM_TOKEN[dev["platform"]]]
         ended = {}
         for r in rows:
             camp = r["campaign"]
-            if (DASHBOARD_CAMPAIGN not in camp or re.search(ANCHOR_CAMPAIGN_RE, camp)
+            if (DASHBOARD_CAMPAIGN not in camp or re.search(ANCHOR_CAMPAIGN_RE, camp) or camp in skip
                     or r["platform"] != plat or r["device"] != dev["identifier"]
                     or not admitted.get(camp, True)):
                 continue
@@ -1185,7 +1280,8 @@ def outside_window(dev, now):
     return f"outside its window {w}"
 
 
-def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=None):
+def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=None, retakes=None,
+                   skip=None):
     """(key, dev, report). An explicit key resolves as given (report []).
 
     `auto`: the device to measure at this firing — among the devices with no
@@ -1194,9 +1290,14 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     record; the Mac only while no heavy pipeline runs), ordered by the age of
     their last admitted session, oldest first (never measured = oldest; ties
     in schedule order); an entry with `auto: false` is never a candidate (by hand
-    only, state by-hand). `exclude` maps keys already tried this firing to
-    (state, detail). The report has one dict per device — key, state (done /
-    by-hand / candidate / busy / not-ready / waiting), detail, last — for the log."""
+    only, state by-hand). A device with a pending retake (`retakes`: key -> count,
+    default logs/dashboard-job/retakes.json) is a candidate though its weekly set
+    is done (weekly_done in its report entry: the firing runs the retake only), and
+    those devices go first; the autopilot's retake sittings (`skip`, default the
+    SESSION.json files that name retakes) are not weekly sessions. `exclude` maps
+    keys already tried this firing to (state, detail). The report has one dict per
+    device — key, state (done / by-hand / candidate / busy / not-ready / waiting),
+    detail, last, weekly_done — for the log."""
     devices = schedule.get("devices", {})
     if key != "auto":
         dev = devices.get(key)
@@ -1207,7 +1308,9 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     rows = load_rows() if rows is None else rows
     admitted = load_admission() if admitted is None else admitted
     exclude = exclude or {}
-    sessions = device_sessions(schedule, rows, admitted)
+    retakes = regression_watch.pending_counts(LOG_DIR) if retakes is None else retakes
+    skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
+    sessions = device_sessions(schedule, rows, admitted, skip)
     monday = week_start(now)
     report, ranked = [], []
     for i, (k, dev) in enumerate(devices.items()):
@@ -1218,9 +1321,16 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
         if dev.get("auto") is False:
             entry.update(state="by-hand", detail=f"auto: false, by hand only; {entry['detail']}")
             continue
+        pending = retakes.get(k, 0)
+        retake_text = f"{pending} retake{'s' if pending != 1 else ''} pending"
         if last and last[0] >= monday:
-            entry.update(state="done", detail=f"admitted {last[0]:%F %H:%M} {last[1]}")
-            continue
+            if not pending:
+                entry.update(state="done", detail=f"admitted {last[0]:%F %H:%M} {last[1]}")
+                continue
+            entry.update(weekly_done=True,
+                         detail=f"{retake_text}; weekly set done ({last[0]:%F %H:%M} {last[1]})")
+        elif pending:
+            entry["detail"] += f"; {retake_text}"
         if k in exclude:
             entry.update(state=exclude[k][0], detail=exclude[k][1])
             continue
@@ -1253,7 +1363,8 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
         elif dev["platform"] == "iphone" and not iphone_attached(dev["udid"]):
             entry.update(state="not-ready", detail=f"not available to devicectl; {entry['detail']}")
             continue
-        ranked.append(((1, last[0].timestamp(), i) if last else (0, 0, i), k))
+        # a pending retake first (the next firing re-measures a red cell), then the oldest
+        ranked.append(((0 if pending else 1,) + ((1, last[0].timestamp(), i) if last else (0, 0, i)), k))
     if not ranked:
         return None, None, report
     chosen = min(ranked)[1]
@@ -1356,6 +1467,8 @@ def main():
                     help="preflight and print the plan; take no hold, capture nothing")
     ap.add_argument("--once", action="store_true",
                     help="no busy polling / abort retry — one attempt")
+    ap.add_argument("--no-retake", action="store_true",
+                    help="run no pending retake of the device before its weekly set (--cells implies it)")
     ap.add_argument("--hold-held-by", type=int, metavar="PID",
                     help="the device hold is held by this live pid (a keeper that queued for the "
                          "phone): the job neither acquires nor releases it; exit 2 when the pid is "
@@ -1391,12 +1504,16 @@ def main():
     started = time.strftime("%F %T")
     tried = {}        # auto: key -> (state, detail) for devices passed over this firing
     pinned = False    # auto: an abort retry stays on the device it aborted on
+    retaken = set()   # devices whose pending retakes this firing has run (one retake sitting each)
+    retake_only = False   # auto chose a device for its retake: its weekly set is done this week
+    own_ledger = False    # the retake sitting wrote the firing's ledger line; nothing else ran
     while True:
         if auto and not pinned:
             now = datetime.datetime.now().astimezone()
             if not args.dry_run:
                 choose_lock()
-            key, dev, report = resolve_device(schedule, "auto", exclude=tried, now=now)
+            key, dev, report = resolve_device(schedule, "auto", exclude=tried, now=now,
+                                              retakes={} if (args.cells or args.no_retake) else None)
             if key and not args.dry_run:
                 other = device_lock(key)
                 if other:  # taken between the probe and now: pass it over
@@ -1426,6 +1543,25 @@ def main():
                 break
             open_log(key)
             log(f"auto chose {key} (the decision is in {datetime.date.today().isoformat()}-auto.log)")
+            retake_only = any(e["key"] == key and e.get("weekly_done") for e in report)
+        if key not in retaken and not (args.cells or args.no_retake):
+            # stage 3a: the device's pending retakes as their own sitting before its weekly set
+            retaken.add(key)
+            rcode = retake_sitting(schedule, key, dev, args)
+            if rcode == EXIT_BUSY:
+                retaken.discard(key)    # taken again with the device, after the busy poll
+            if rcode in (EXIT_BUSY, EXIT_DEVICE) and auto and not pinned:
+                tried[key] = ("busy" if rcode == EXIT_BUSY else "not-ready",
+                              f"its retake sitting: {VERDICT_NAME[rcode]}")
+                _unlock(f".job.lock.{key}")
+                open_log("auto")
+                continue
+            if retake_only:
+                code = EXIT_OK if rcode is None else rcode
+                reason = ("the retake sitting only: the weekly set is done this week" if rcode is not None
+                          else "nothing to retake (expired, or the retake state unusable: the log says which)")
+                camp, sitting, own_ledger = "", [], True
+                break
         sitting = []
         try:
             code, reason, camp, sitting = attempt(schedule, key, dev, attempt_no, args)
@@ -1466,7 +1602,7 @@ def main():
         break
     ended = time.strftime("%F %T")
     # a firing that found nothing pending is the normal nightly case: log only
-    if not args.dry_run and not (auto and not key and code == EXIT_OK):
+    if not args.dry_run and not own_ledger and not (auto and not key and code == EXIT_OK):
         ledger({"started": started, "ended": ended, "device": key or "auto", "campaign": camp or "",
                 "verdict": VERDICT_NAME.get(code, str(code)), "reason": reason,
                 "exit": code, "minutes": round((time.time() - t0) / 60, 1),
