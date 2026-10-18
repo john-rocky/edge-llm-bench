@@ -115,8 +115,9 @@ NO_ALLOW_RULES = ("pin-drift", "protocol-off")
 # platform blocks of environment.lock.json registered after the fact: the newest registry's block,
 # with the date it became true (`since`), covers a sitting on or after that date that the registry
 # of its day did not know (arms.litert-lm.mac: the Mac yardstick stamps v0.18.0 from the
-# 2026-10-12 sitting on, registered 2026-10-18)
-REGISTERED_LATER = (("litert-lm", "mac"),)
+# 2026-10-12 sitting on, registered 2026-10-18; arms.llama.cpp.mac: the b11721 yardstick from 2026-10-19,
+# whose sittings can begin before the block's commit reaches the tree that checks them)
+REGISTERED_LATER = (("litert-lm", "mac"), ("llama.cpp", "mac"))
 
 
 # ---------------------------------------------------------------- small helpers
@@ -504,8 +505,10 @@ def registry_pin(platform, runtime, pins, lock, day=None):
     """(pin, registry key) the registry names for a record's arm, or (None, why). The Mac's LiteRT-LM
     is arms.litert-lm.mac and the iPhone's arms.litert-lm.ios when the lock has that block and the
     sitting's day (sitting_day) is on or after its since day; without it, default_tag. llama.cpp
-    (every platform) is arms.llama.cpp.tag / android_pins from the lock's since day on, its
-    previous.tag before it (llama_before)."""
+    reads the same way: the Mac's and the iPhones' arms.llama.cpp.mac / .ios when the block applies
+    (block_applies; a block without since always does), else arms.llama.cpp.tag from the lock's
+    since day on and its previous.tag before it (llama_before); Android, android_pins from that
+    since day on and previous.tag before it."""
     arms = (lock or {}).get("arms") or {}
     if platform == "android":
         ap = (pins or {}).get("android_pins") or {}
@@ -536,6 +539,11 @@ def registry_pin(platform, runtime, pins, lock, day=None):
         return litert.get("default_tag"), "environment.lock.json arms.litert-lm.default_tag"
     if runtime == "llama.cpp":
         llama = arms.get("llama.cpp") or {}
+        block = (llama.get(platform) or {}) if platform in ("mac", "ios") else {}
+        if block_applies(block, day):
+            since = f" (since {block['since']})" if block.get("since") else ""
+            at = f", registered at {block['registered_at']}" if block.get("registered_at") else ""
+            return block["tag"], f"environment.lock.json arms.llama.cpp.{platform}.tag{since}{at}"
         since = f" (since {llama['since']})" if llama.get("since") else ""
         return llama_before(arms, day) or (llama.get("tag"), "environment.lock.json arms.llama.cpp.tag" + since)
     if runtime == "mlx-swift":

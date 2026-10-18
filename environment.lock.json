@@ -81,6 +81,15 @@
         "llama_bench_sha256": "3298b48a78f09dd20b8b8995d70b18eddc9fa7e4e120f20fae55b24d6b5ac867",
         "llama_cli_sha256": "edf21345a3abf767656767d8644f809e132e7ad2f94b906a04e9a3ee618849c3"
       },
+      "mac": {
+        "tag": "b11721",
+        "since": "2026-10-19",
+        "note": "The Mac yardstick on b11721 is the 2026-10-19 build in .build/dd-mac-b11721 (r9); the job's .build/dd-mac (2026-09-18) links b8999 until the job's Mac route moves to the new build. scripts/session_check.py reads this block for a Mac sitting on or after since, and takes it from the newest registry for a sitting that began before it was committed (REGISTERED_LATER)."
+      },
+      "ios": {
+        "tag": "b8999",
+        "note": "The iPhones' apps link b8999 (the iPhone 18 Pro's weekly app, the 2026-10-17 build of .build/dd-ios-0180-18pro; the iPhone 17 Pro's app). The 18 Pro's app rebuilt on b11721 (2026-10-19, r9) is installed after its sitting; from that day this block reads {tag b11721, since <that day>}."
+      },
       "previous": {
         "tag": "b8999",
         "until": "2026-10-18",

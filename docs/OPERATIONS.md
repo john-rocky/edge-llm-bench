@@ -68,8 +68,11 @@ loudly instead of rebuilding the summary and looking like a capture.
      versioned one. Pin that b-build:
      - Registry: `environment.lock.json` `arms.llama.cpp` (tag, `since`, the artifacts and their
        sha256, the replaced pin under `previous`, which `scripts/session_check.py` reads for a
-       sitting before `since`), `android/engine-pins.json` `android_pins`, and the default tag
-       in `ios/BenchmarkApp/scripts/bootstrap.sh` and `android/scripts/fetch_llama_android.sh`.
+       sitting before `since`; a platform block `mac` / `ios` with its own `since` for each
+       build that moves on its own day, as `arms.litert-lm` has: on 2026-10-19 the Mac moved
+       with its yardstick build and the iPhones stayed on b8999 until the 18 Pro's app was
+       installed), `android/engine-pins.json` `android_pins`, and the default tag in
+       `ios/BenchmarkApp/scripts/bootstrap.sh` and `android/scripts/fetch_llama_android.sh`.
      - iPhone / Mac: unzip the release's `llama-<tag>-xcframework.zip` (it holds
        `build-apple/llama.xcframework`) into `ios/BenchmarkApp/Vendored/llama.xcframework`, the
        old one renamed to `llama.xcframework.<old tag>`, and write the tag into
