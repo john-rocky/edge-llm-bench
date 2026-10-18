@@ -59,6 +59,36 @@ loudly instead of rebuilding the summary and looking like a capture.
      line and added an `Aggregated BenchmarkInfo` block, which the parser of
      the previous version read as zero iterations on the 1024-token task: null
      token counts, an empty text and a failed text check (fixed in 8874bce).
+   - llama.cpp (worked example 2026-10-19, b8999 -> b11721). Upstream publishes two kinds
+     of release: the b-builds (GitHub prereleases, several a day, with the binaries) and
+     versioned releases with notes and no binaries (v0.7.0 on 2026-10-15 is the commit of
+     b11669; its one asset, `nightly-tag.txt`, says so). `./bench release-watch` reads the
+     newest b-build that carries the xcframework, android-arm64 and macos-arm64 assets
+     (`scripts/release_watch.py` `latest_with_assets`); `releases/latest` would name the
+     versioned one. Pin that b-build:
+     - Registry: `environment.lock.json` `arms.llama.cpp` (tag, `since`, the artifacts and their
+       sha256, the replaced pin under `previous`, which `scripts/session_check.py` reads for a
+       sitting before `since`; a platform block `mac` / `ios` with its own `since` for each
+       build that moves on its own day, as `arms.litert-lm` has: on 2026-10-19 the Mac moved
+       with its yardstick build and the iPhones stayed on b8999 until the 18 Pro's app was
+       installed), `android/engine-pins.json` `android_pins`, and the default tag in
+       `ios/BenchmarkApp/scripts/bootstrap.sh` and `android/scripts/fetch_llama_android.sh`.
+     - iPhone / Mac: unzip the release's `llama-<tag>-xcframework.zip` (it holds
+       `build-apple/llama.xcframework`) into `ios/BenchmarkApp/Vendored/llama.xcframework`, the
+       old one renamed to `llama.xcframework.<old tag>`, and write the tag into
+       `Vendored/llama.xcframework.tag`: `stamp_engine_pins.sh` reads only that sidecar, so a
+       side build tree with its own copy of the file (`.build/dd-ios-0180-18pro/src`) needs it
+       too. Then `scripts/build_yardstick_mac.sh` and the app build; records stamp
+       `engineVersion <tag>`, `engineArtifact llama-<tag>-xcframework.zip`.
+     - Android: `LLAMA_TAG=<tag> android/scripts/fetch_llama_android.sh` pins the tools and their
+       libs (`so_files`), then push the tools and every `.so` to each phone's flat dir and read
+       the witness line (`android/README.md`, "Push runtime to the device"). From b10903 on the
+       tools are 7 KB launchers (b11721's byte-identical to b10903's): the witness tells the
+       builds apart by the libs, and a lib left from the old build stamps `unknown`.
+     - Re-measure the arm's weekly rows through the job route: the session anchor row and the
+       arm's rows of the weekly set, byte-identical (`matrices/dashboard-llama-<tag>-{mac,ios,android}.cells`).
+       The Android session anchor is the llama.cpp row, so a phone's first sitting on the new
+       build has no same-build reference (`dashboard_job.admit`: admitted when nominal).
    - ONNX Runtime GenAI: Android = the versions and sha256s at the top of
      `android/ortgenai/build_android.sh`, then push `android/bin/ortgenai-<version>/`
      to `/data/local/tmp/llmbench/ortgenai/` per `android/README.md` ("ONNX Runtime

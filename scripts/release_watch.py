@@ -26,6 +26,24 @@ def latest_release(repo):
     return d.get("tag_name") if d else None
 
 
+# the llama.cpp release assets the bench runs (iPhone + Mac, Android) and the Mac CLI tar
+LLAMA_ASSETS = ("llama-{tag}-xcframework.zip", "llama-{tag}-bin-android-arm64.tar.gz",
+                "llama-{tag}-bin-macos-arm64.tar.gz")
+
+
+def latest_with_assets(repo, names):
+    """The newest release (published_at) that carries every asset in `names` (with {tag} filled in).
+    llama.cpp publishes two kinds: the b-builds, prereleases with the binaries, and versioned
+    releases (v0.7.0, 2026-10-15) with release notes and a nightly-tag.txt naming the b-build they
+    are (b11669); releases/latest returns the versioned one, which has nothing to install."""
+    d = gh_json(["api", f"repos/{repo}/releases?per_page=40"])
+    if not isinstance(d, list):
+        return None
+    full = [r for r in d if {n.format(tag=r.get("tag_name")) for n in names}
+            <= {a.get("name") for a in r.get("assets") or []}]
+    return max(full, key=lambda r: r.get("published_at") or "")["tag_name"] if full else None
+
+
 def main():
     lock = json.load(open(os.path.join(ROOT, "environment.lock.json")))
     arms = lock["arms"]
@@ -40,10 +58,11 @@ def main():
                  "--engine litert-lm  (bump LITERTLM_TAG in bootstrap.sh first)"))
 
     rows.append(("llama.cpp", "ggml-org/llama.cpp",
-                 latest_release("ggml-org/llama.cpp"),
+                 latest_with_assets("ggml-org/llama.cpp", LLAMA_ASSETS),
                  arms.get("llama.cpp", {}).get("tag"),
-                 "bump arms.llama.cpp in environment.lock.json + bootstrap; "
-                 "android: android/scripts/fetch_llama_android.sh"))
+                 "docs/OPERATIONS.md 'An engine shipped a release', llama.cpp: the lock, "
+                 "android/engine-pins.json, the Vendored xcframework + .tag, "
+                 "android/scripts/fetch_llama_android.sh"))
 
     coreai = arms.get("coreai-models", {})
     rows.append(("core-ai", "apple/coreai-models",

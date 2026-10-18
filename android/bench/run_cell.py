@@ -269,7 +269,15 @@ def observed_engine(binname, pins, serial, engine_dir=None):
     match its pin's so_files as well: there the engine is the shared libs (llama.cpp's
     tool is a 7 KB launcher; LiteRT-LM's NPU path runs in the Qualcomm dispatch and QNN
     libraries), so a lib that differs from the pin stamps 'unknown' whatever the tool
-    says. A side build that is not on the device stops the cell before any launch."""
+    says. A side build that is not on the device stops the cell before any launch.
+
+    llama.cpp's flat build is read the same way since 2026-10-19: from b10903 on the
+    release's CPU asset ships the tools as 7 KB launchers too, and b11721's are
+    byte-identical to b10903's, so a pin's so_files (beside the tools in {DEV_DIR}) tell
+    the builds apart. Every entry whose tool sha matches is tried, its libs hashed in one
+    pass; the first whose libs all match is the stamp, none -> 'unknown' naming each
+    candidate's unmatched libs. An entry without so_files matches on the tool alone (b8999:
+    the tools carry the engine)."""
     engine, field = pin_key(binname)
     if not engine_dir:
         out = adb(["shell", f"sha256sum {DEV_DIR}/{binname}"], serial)
@@ -290,23 +298,31 @@ def observed_engine(binname, pins, serial, engine_dir=None):
             if entry.get(field) == sha:
                 return tag, sha
         return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
-    for tag, entry in pins.get(engine, {}).items():
-        if entry.get(field) == sha:
-            libs = entry.get("so_files") if (engine_dir or engine == "onnxruntime-genai") else None
-            if libs:
-                # a side build's pinned libs sit where SIDE_DIRS says; the ORT GenAI runtime
-                # dir holds them beside ortgenai_run (the engine is the libraries there too)
-                paths = {name: (side_path(engine_dir, SIDE_DIRS[engine][1], name) if engine_dir
-                                else f"{DEV_DIR}/{os.path.dirname(binname)}/{name}") for name in libs}
-                got = adb(["shell", "sha256sum " + " ".join(paths[name] for name in sorted(libs))
-                           + " 2>&1 || true"], serial)
-                on_device = {parts[1]: parts[0] for parts in
-                             (line.split() for line in got.splitlines()) if len(parts) == 2}
-                bad = [name for name in sorted(libs) if on_device.get(paths[name]) != libs[name]]
-                if bad:
-                    return (f"unknown (on-device {tag} {binname} with lib {', '.join(bad)} "
-                            "unmatched in android/engine-pins.json)"), sha
+    matched = [(tag, entry) for tag, entry in pins.get(engine, {}).items() if entry.get(field) == sha]
+    with_libs = bool(engine_dir) or engine in ("onnxruntime-genai", "llama.cpp")
+    paths = {}
+    for tag, entry in matched:
+        for name in (entry.get("so_files") or {}) if with_libs else ():
+            # a side build's pinned libs sit where SIDE_DIRS says; the ORT GenAI runtime
+            # dir holds them beside ortgenai_run, llama.cpp's flat build beside its tools
+            # (the engine is the libraries there too)
+            paths[(tag, name)] = (side_path(engine_dir, SIDE_DIRS[engine][1], name) if engine_dir
+                                  else f"{DEV_DIR}/{name}" if engine == "llama.cpp"
+                                  else f"{DEV_DIR}/{os.path.dirname(binname)}/{name}")
+    on_device = {}
+    if paths:
+        got = adb(["shell", "sha256sum " + " ".join(sorted(set(paths.values()))) + " 2>&1 || true"], serial)
+        on_device = {parts[1]: parts[0] for parts in
+                     (line.split() for line in got.splitlines()) if len(parts) == 2}
+    misses = []
+    for tag, entry in matched:
+        libs = (entry.get("so_files") or {}) if with_libs else {}
+        bad = [name for name in sorted(libs) if on_device.get(paths[(tag, name)]) != libs[name]]
+        if not bad:
             return tag, sha
+        misses.append(f"on-device {tag} {binname} with lib {', '.join(bad)}")
+    if misses:
+        return f"unknown ({'; '.join(misses)} unmatched in android/engine-pins.json)", sha
     return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
 
 

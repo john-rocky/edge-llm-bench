@@ -1,0 +1,29 @@
+# Galaxy S26 and Pixel 8a, the llama.cpp text cells on the b11721 pin (owner decision 2026-10-19: the comparison arms
+# are measured on their current release too; llama.cpp b8999 -> b11721, android/engine-pins.json android_pins and
+# environment.lock.json arms.llama.cpp since 2026-10-19). The first row is the session anchor and also the Qwen3 0.6B
+# short-chat measurement (the Android anchor is the llama.cpp row); then the other nine llama.cpp rows, each
+# byte-identical to its source line (file=, cooldown, context-tokens and exclude-on unchanged).
+# Source: matrices/dashboard-text-v1-android-a.cells lines 10 (anchor), 13, 18, 21, 24, 27;
+# matrices/dashboard-text-v1-android-b1.cells lines 16, 19; matrices/dashboard-text-v1-android-b2.cells lines 16, 19.
+# One file for both phones: the Pixel 8a skips the four Qwen3 4B / Gemma 4 E4B rows (exclude-on=pixel8a, as in the
+# weekly set). Single-file mode does no storage rotation: the phone holds the GGUF files it runs (the weekly halves'
+# copies; the job's preflight reads the free space).
+# Needs b11721 in the phone's flat /data/local/tmp/llmbench (android/README.md, 'Push runtime to the device'): the
+# witness matches the tools and the libs of android/engine-pins.json llama.cpp.b11721. The first sitting on b11721 is
+# that build's first session on the phone (admission: no same-build reference; a hot start is refused).
+# Run through the job route, once this file's run_cell.py witness and pins are on main; BENCH_SITTING=1 stops a launch
+# whose build is not android_pins.llama.cpp (PIN MISMATCH, docs/dashboard-recurring-job-v1.md section 2):
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-llama-b11721-android.cells --suffix llama-b11721 --once
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/dashboard-llama-b11721-android.cells --suffix llama-b11721 --once
+
+# ---- android ----
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-1024-gen256 file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/Qwen3-1.7B-GGUF short-chat file=Qwen3-1.7B-Q4_K_M.gguf
+android llama.cpp unsloth/Qwen3-1.7B-GGUF long-context-1024-gen256 file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/Qwen3-4B-GGUF short-chat cooldown=300 file=Qwen3-4B-Q4_K_M.gguf exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android llama.cpp unsloth/Qwen3-4B-GGUF long-context-1024-gen256 cooldown=300 file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash

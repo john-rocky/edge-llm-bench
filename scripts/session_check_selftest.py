@@ -17,11 +17,13 @@ alone when nothing changed; --no-text-screen writes nothing and judges alike; a 
 off; a dir it cannot write and a failed run without an id keep the HOLD; an allow-list line for
 the screened rule finds nothing; build_summary reads the file into text_check); an allow-list
 line turning a HOLD into a PASS, and a malformed one or a line for either team rule exiting 2; the
-payload / anchor pair with one half missing; the exit codes.
+payload / anchor pair with one half missing; the exit codes; llama.cpp's pin per platform since the
+2026-10-19 bump (registry_pin with the Mac and iPhone blocks, the since day and the previous tag;
+a Mac sitting on either side of the Mac block's day, an iPhone sitting on the iPhones' block).
 
 It passes whichever platform's LiteRT-LM pin lags the others (a release-triggered pass moves one
-platform at a time): the generic cases carry a llama.cpp cell (one tag on every platform, no
-LiteRT-LM pin read); protocol-off, the rule only LiteRT-LM cells meet, is built on LEADER, a
+platform at a time): the generic cases carry a Mac llama.cpp cell stamped with the Mac's llama.cpp
+pin (llama_pin_of, no LiteRT-LM pin read); protocol-off, the rule only LiteRT-LM cells meet, is built on LEADER, a
 platform whose pin is the newest release, so its cells stamp the pin the registry holds them to and
 the newest (neither engine-stamp nor pin-drift); the lab unit runs the GPU arm while the Android
 pin is the newest, else the NPU side build, which no pin rule reads. Every case checks the dir's
@@ -66,7 +68,7 @@ LITERT_APPLE = LITERT["default_tag"]
 MAC_BLOCK = LITERT.get("mac") or {}
 LITERT_MAC = MAC_BLOCK.get("tag") or LITERT_APPLE
 MLX = LOCK["arms"]["mlx-swift-lm"]["revision"]
-LLAMA = LOCK["arms"]["llama.cpp"]["tag"]
+LLAMA_ARM = LOCK["arms"]["llama.cpp"]
 LLAMA_MODEL = "unsloth/Qwen3-1.7B-GGUF/Q4_K_M"
 
 
@@ -99,6 +101,25 @@ def pin_of(platform, day=None):
     if block.get("tag") and applies(block, day):
         return block["tag"], f"arms.litert-lm.{platform}.tag"
     return LITERT_APPLE, "arms.litert-lm.default_tag"
+
+
+def llama_pin_of(platform, day=None):
+    """(llama.cpp pin, where) a platform's records are held to on `day` (session_check.registry_pin): the
+    Mac's and the iPhones' arms.llama.cpp block when it applies, else arms.llama.cpp.tag (Android: the
+    pins file) from the lock's since day and previous.tag before it."""
+    block = (LLAMA_ARM.get(platform) or {}) if platform in ("mac", "ios") else {}
+    if block.get("tag") and applies(block, day):
+        return block["tag"], f"arms.llama.cpp.{platform}.tag"
+    prev = (LLAMA_ARM.get("previous") or {}).get("tag")
+    if prev and not applies(LLAMA_ARM, day):
+        return prev, "arms.llama.cpp.previous.tag"
+    if platform == "android":
+        return PINS.get("llama.cpp"), "android_pins.llama.cpp"
+    return LLAMA_ARM.get("tag"), "arms.llama.cpp.tag"
+
+
+# the generic cases' llama.cpp cell is a Mac cell: it stamps the Mac's llama.cpp pin on the 2099 dirs
+LLAMA = llama_pin_of("mac")[0]
 
 
 def newest(day=None):
@@ -789,6 +810,72 @@ def main():
             print("  skip  no other platform's newer pin applies the day before the ios block's since")
     else:
         print("  skip  the lock has no arms.litert-lm.ios block at the newest release with a since day")
+
+    print("--- llama.cpp's pin per platform: the Mac and iPhone blocks, the lock's since day, previous.tag before it")
+    import session_check  # noqa: E402
+    l_pins = {"android_pins": {"llama.cpp": "b2"}}
+    l_lock = {"arms": {"llama.cpp": {"tag": "b2", "since": "2099-03-02", "previous": {"tag": "b1"}}}}
+    got = [session_check.registry_pin(plat, "llama.cpp", l_pins, l_lock, datetime.date.fromisoformat(d))[0]
+           for plat in ("mac", "ios", "android") for d in ("2099-03-01", "2099-03-02")]
+    ok(got == ["b1", "b2"] * 3, f"registry_pin: previous.tag the day before since, the pin from since on, on the "
+                                f"Mac, the iPhone and Android (android_pins) (got {got})")
+    l_blocks = {"arms": {"llama.cpp": dict(l_lock["arms"]["llama.cpp"], mac={"tag": "b2", "since": "2099-03-02"},
+                                           ios={"tag": "b1"})}}
+    got = {plat: session_check.registry_pin(plat, "llama.cpp", l_pins, l_blocks, datetime.date(2099, 3, 2))
+           for plat in ("mac", "ios", "android")}
+    ok(got["mac"] == ("b2", "environment.lock.json arms.llama.cpp.mac.tag (since 2099-03-02)")
+       and got["ios"] == ("b1", "environment.lock.json arms.llama.cpp.ios.tag")
+       and got["android"] == ("b2", "android/engine-pins.json android_pins.llama.cpp"),
+       f"registry_pin with platform blocks: the Mac reads arms.llama.cpp.mac from its since day, the iPhones "
+       f"arms.llama.cpp.ios (no since: always), Android android_pins (got {got})")
+    ok(session_check.registry_pin("mac", "llama.cpp", l_pins, l_blocks, datetime.date(2099, 3, 1))[0] == "b1",
+       "registry_pin: the day before the Mac block's since day reads previous.tag")
+    l_old = {"arms": {"llama.cpp": {"tag": "b1"}}}
+    ok(session_check.registry_pin("android", "llama.cpp", {"android_pins": {"llama.cpp": "b1"}}, l_old,
+                                  datetime.date(2099, 3, 1))[0] == "b1"
+       and session_check.registry_pin("mac", "llama.cpp", {}, l_old, datetime.date(2099, 3, 1))[0] == "b1",
+       "registry_pin: a lock without since or previous reads the tag (the registry before 2026-10-19)")
+    # the committed lock: Mac sittings on either side of the Mac block's day, iPhone sittings on the iPhones' block
+    gguf = "unsloth/Qwen3-0.6B-GGUF/Q4_K_M"
+    l_since = day_of((LLAMA_ARM.get("mac") or {}).get("since") or LLAMA_ARM.get("since"))
+    l_prev = (LLAMA_ARM.get("previous") or {}).get("tag")
+    if l_since and l_prev and l_prev != LLAMA:
+        for i, (day, stamp) in enumerate(((l_since - datetime.timedelta(days=1), l_prev), (l_since, l_prev),
+                                          (l_since, LLAMA))):
+            pin, where = llama_pin_of("mac", day)
+            want = stamp != pin
+            la = anchor_dir(raw, f"{day.isoformat()}-dashboard-v1-m4max-llama{i}-anchor-mac")
+            lp = payload_dir(raw, f"{day.isoformat()}-dashboard-v1-m4max-llama{i}-mac", os.path.basename(la),
+                             records=cell("llama.cpp", gguf, stamp))
+            rc, res, out = run([la, lp], history=hist)
+            r = res[os.path.basename(lp)]
+            stamp_f = [f["detail"] for f in r["findings"] if f["rule"] == "engine-stamp"
+                       and f["detail"].startswith("mac llama.cpp:")]
+            ok(r["verdict"] == ("HOLD" if want else "PASS") and clean(r, {"engine-stamp"} if want else set(), pin=True)
+               and (not want or f"registry {pin} (environment.lock.json {where}" in stamp_f[0]),
+               f"a Mac sitting on {day} stamping {stamp}: " + (f"engine-stamp against {where} {pin}" if want else
+                                                              f"PASS on {where} {pin}") + f" ({stamp_f[:1]})")
+        ios_pin, ios_where = llama_pin_of("ios", l_since)
+        stamps = [ios_pin] + ([LLAMA_ARM["tag"]] if LLAMA_ARM.get("tag") != ios_pin else [])
+        for i, stamp in enumerate(stamps):
+            want = stamp != ios_pin
+            ia_ = ios_anchor(raw, f"{l_since.isoformat()}-dashboard-v1-iphone18pro-llama{i}-anchor-ios")
+            ip_ = campaign(raw, f"{l_since.isoformat()}-dashboard-v1-iphone18pro-llama{i}-ios")
+            session(ip_, "payload", os.path.basename(ia_))
+            for rt, model, eng in (("mlx-swift", "mlx-community/Qwen3-0.6B-4bit", MLX), ("llama.cpp", gguf, stamp)):
+                c = [dict(r, device=dict(IOS_DEVICE)) for r in cell(rt, model, eng)]
+                write_jsonl(ip_, jsonl_of(c), c)
+            rc, res, out = run([ia_, ip_], history=hist)
+            r = res[os.path.basename(ip_)]
+            stamp_f = [f["detail"] for f in r["findings"] if f["rule"] == "engine-stamp"
+                       and f["detail"].startswith("ios llama.cpp:")]
+            ok(r["verdict"] == ("HOLD" if want else "PASS") and clean(r, {"engine-stamp"} if want else set(), pin=True)
+               and (not want or f"registry {ios_pin} (environment.lock.json {ios_where}" in stamp_f[0]),
+               f"an iPhone sitting on {l_since} stamping {stamp}: " + (f"engine-stamp against {ios_where} {ios_pin}"
+                                                                     if want else f"PASS on {ios_where} {ios_pin}")
+               + f" ({stamp_f[:1]})")
+    else:
+        print("  skip  the committed lock has no llama.cpp since day with a previous tag apart from the pin")
 
     print(f"--- protocol-off: a LiteRT-LM headline cell off the agreed protocol FAILs; other arms and tasks are "
           f"not read (the LiteRT-LM cells on LEADER, {LEADER_PLATFORM})")

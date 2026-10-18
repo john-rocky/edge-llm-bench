@@ -2351,6 +2351,70 @@ def main():
         with open(os.path.join(dev, n), "w") as fh:
             fh.write(text)
 
+    # llama.cpp's flat build (2026-10-19): from b10903 on the CPU asset's llama-cli is a 7 KB launcher, and
+    # b11721's is byte-identical to b10903's, so the witness reads the pin's so_files beside it in the flat
+    # dir. The pinned build's launcher and libs stamp the pin and pass BENCH_SITTING=1; the same launcher
+    # with the other pin's libs reads that pin (the libs tell the two entries apart) and stops with rc 5;
+    # one lib off the pin stamps 'unknown', naming the lib.
+    ll_tag = reg["android_pins"]["llama.cpp"]
+    ll_pin = reg["llama.cpp"][ll_tag]
+    twin = next((t for t, e in reg["llama.cpp"].items() if t != ll_tag and e.get("so_files")
+                 and e.get("llama_cli_sha256") == ll_pin["llama_cli_sha256"]), None)
+    ll_saved = open(os.path.join(dev, "llama-cli")).read()
+    ll_libs = sorted({lib for e in reg["llama.cpp"].values() if "llama_cli_sha256" in e
+                      for lib in e.get("so_files", {})})
+
+    def put_llama(tag, off=()):
+        """The flat dir as a phone holding `tag`'s llama-cli and libs; a lib named in `off` holds other bytes."""
+        e = reg["llama.cpp"][tag]
+        with open(os.path.join(dev, "llama-cli"), "w") as fh:
+            fh.write("sha256=" + e["llama_cli_sha256"])
+        for lib, digest in e.get("so_files", {}).items():
+            with open(os.path.join(dev, lib), "w") as fh:
+                fh.write(("a stale " + lib) if lib in off else ("sha256=" + digest))
+
+    def llama_cell(out, sitting):
+        return subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), "--runtime",
+                               "llama.cpp", "--model-id", "fake/gguf", "--file", gguf_model, "--task", "short-chat",
+                               "--runs", "1", "--out", out],
+                              env=dict(env, BENCH_SITTING="1") if sitting else env, capture_output=True, text=True)
+    print(f"--- llama.cpp's flat build: launcher + libs (android_pins: {ll_tag}; the same launcher: {twin})")
+    if ll_pin.get("so_files") and twin:
+        put_llama(ll_tag)
+        out_ll = os.path.join(tmp, "ll-sitting")
+        p = llama_cell(out_ll, True)
+        got = [(r["engineVersion"], r["engineArtifact"]) for _, r in records(out_ll, "llama.cpp_")]
+        ok(p.returncode == 0 and "PIN MISMATCH" not in p.stdout and got == [(ll_tag, ll_pin["llama_cli_sha256"])],
+           f"sitting: {ll_tag}'s llama-cli and its {len(ll_pin['so_files'])} libs in the flat dir stamp {ll_tag} "
+           f"and pass the pin check (rc {p.returncode}, got {got}, {p.stdout.strip()[-160:]!r})")
+        put_llama(twin)
+        n_ll = len(open(engine_calls).read().splitlines()) if os.path.exists(engine_calls) else 0
+        out_tw = os.path.join(tmp, "ll-sitting-twin")
+        p = llama_cell(out_tw, True)
+        n_ll_after = len(open(engine_calls).read().splitlines()) if os.path.exists(engine_calls) else 0
+        ok(p.returncode == 5 and f"PIN MISMATCH before launch: llama-cli {twin} " in p.stdout
+           and f"(expected {ll_tag} llama_cli_sha256 " in p.stdout and n_ll_after == n_ll
+           and not records(out_tw, "llama.cpp_"),
+           f"sitting: the same launcher with {twin}'s libs reads {twin} and stops with rc 5 before any launch, "
+           f"no record (rc {p.returncode}, engine shells {n_ll_after - n_ll}, {p.stdout.strip()[-200:]!r})")
+        put_llama(ll_tag, off=("libllama.so",))
+        out_off = os.path.join(tmp, "ll-bare-off")
+        p = llama_cell(out_off, False)
+        got = [r["engineVersion"] for _, r in records(out_off, "llama.cpp_")]
+        named = f"on-device {ll_tag} llama-cli with lib libllama.so"
+        ok(p.returncode == 0 and len(got) == 1 and got[0].startswith("unknown (")
+           and any(named + tail in got[0] for tail in ("; ", " unmatched in android/engine-pins.json)")),
+           f"one lib off the pin ({ll_tag}'s libllama.so) stamps 'unknown' and names that lib alone for {ll_tag} "
+           f"(got {got})")
+    else:
+        ok(False, f"android_pins.llama.cpp {ll_tag} has so_files and another pin shares its launcher "
+                  f"(so_files {bool(ll_pin.get('so_files'))}, twin {twin})")
+    with open(os.path.join(dev, "llama-cli"), "w") as fh:
+        fh.write(ll_saved)
+    for lib in ll_libs:
+        if os.path.exists(os.path.join(dev, lib)):
+            os.remove(os.path.join(dev, lib))
+
     rc = subprocess.call([sys.executable, os.path.join(ROOT, "android", "bench", "test_longctx.py")])
     ok(rc == 0, "long-context device-free unit checks")
     if _fails:

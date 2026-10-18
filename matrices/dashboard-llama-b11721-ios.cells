@@ -1,0 +1,24 @@
+# iPhone 18 Pro, the llama.cpp text cells on the b11721 pin (owner decision 2026-10-19: the comparison arms are
+# measured on their current release too; llama.cpp b8999 -> b11721, environment.lock.json arms.llama.cpp since
+# 2026-10-19). The session anchor row, then the ten llama.cpp rows, each byte-identical to its source line
+# (cooldown and context-tokens unchanged).
+# Source: matrices/dashboard-text-v1.cells line 120 (anchor) and lines 122, 126, 131, 135, 140, 144, 149, 153, 162, 166
+# (short-chat and long-context-1024-gen256 of Qwen3 0.6B / 1.7B / 4B and Gemma 4 E2B / E4B).
+# Needs the app built on the b11721 xcframework and installed (its bundled engine-pins.json names llama.cpp b11721:
+# records stamp engineVersion b11721, engineArtifact llama-b11721-xcframework.zip).
+# Run through the job route after the phone's weekly sitting and the install (the job takes the hold, runs
+# anchors.cells, admits, posts):
+#   python3 scripts/dashboard_job.py iphone18pro --cells matrices/dashboard-llama-b11721-ios.cells --suffix llama-b11721 --once
+
+# ---- ios ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+ios llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
+ios llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M short-chat cooldown=300
+ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
+ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
