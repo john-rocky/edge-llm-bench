@@ -73,7 +73,7 @@ ANCHORS = "\n".join([
     "# selftest anchors",
     "mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3",
     "mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3",
-    "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm",
+    "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
     "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf",
 ]) + "\n"
 

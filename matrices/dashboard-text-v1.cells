@@ -38,6 +38,11 @@
 #   ./bench matrix matrices/dashboard-text-v1.cells --platform mac
 # Apple arms: the three catalog entries added 2026-09-05 (litert Qwen3-1.7B,
 # llama.cpp Qwen3-0.6B/1.7B) need a rebuilt app / yardstick before they run.
+# 2026-10-19: the Qwen3 0.6B LiteRT-LM rows moved off qwen3_0_6b_mixed_int4.litertlm (its template drops the user
+# turn on LiteRT-LM v0.18.0, google-ai-edge/LiteRT-LM#3688) to Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (dynamic
+# INT4, block-32 weights, FP32 act): the Android rows by file=, their exclude-on=pixel8a,s26 for #3688 dropped; the
+# Mac and iPhone rows by the catalog id litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32. The session anchor rows
+# here are unchanged (matrices/anchors.cells moved its Android LiteRT-LM anchor too).
 
 # =========================== Android ===========================
 # litert backend is arm identity (litert-lm-cpu / litert-lm-gpu never pool);
@@ -57,11 +62,11 @@
 
 # --- Qwen3-0.6B ---
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
-android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=qwen3_0_6b_mixed_int4.litertlm exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688
-android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=qwen3_0_6b_mixed_int4.litertlm exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-1024-gen256 file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048
-android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688
-android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
 
 # --- Qwen3-1.7B (litert-community: INT8 file since 2026-06-25, wi4b32 GPU build since 2026-08-05) ---
 android litert-lm litert-community/Qwen3-1.7B short-chat backend=cpu file=Qwen3_1.7B.litertlm
@@ -118,11 +123,11 @@ android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=
 
 # --- Qwen3-0.6B ---
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
-ios litert-lm litert-community/Qwen3-0.6B short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
 ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
 ios core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
-ios litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
 ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
 
 # --- Qwen3-1.7B ---
@@ -197,13 +202,13 @@ ios onnxruntime-genai onnx-community/Qwen3-4B-ONNX long-context-1024-gen256 back
 
 # --- Qwen3-0.6B ---
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
-mac litert-lm litert-community/Qwen3-0.6B short-chat
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
 mac core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
 mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
 mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
-mac litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 context-tokens=2048
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
 mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
 mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
 mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048

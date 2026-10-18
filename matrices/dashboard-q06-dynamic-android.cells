@@ -1,0 +1,19 @@
+# 2026-10-19 re-measurement of the Qwen3 0.6B LiteRT-LM page rows on Android after they moved from
+# qwen3_0_6b_mixed_int4.litertlm (its template drops the user turn on LiteRT-LM v0.18.0,
+# google-ai-edge/LiteRT-LM#3688) to Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (dynamic INT4, block-32 weights, FP32
+# act), taken the way a release-triggered pass is (docs/dashboard-recurring-job-v1.md section 2): the session anchor
+# row of matrices/dashboard-text-v1-android-a.cells, then six rows byte-identical to their weekly source (short-chat:
+# matrices/dashboard-text-v1.cells; long-context-1024-gen256: matrices/dashboard-longctx1024-v1-android-a.cells;
+# native-benchmark-1024x256: matrices/dashboard-protocol1024-v1-android.cells). No 4B-class row, so the file runs as
+# is on the Galaxy S26 and on the Pixel 8a. The job's anchors phase runs matrices/anchors.cells first, as in every
+# sitting; its Android LiteRT-LM anchor moved to the same file.
+#   python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-q06-dynamic-android.cells --suffix q06-dynamic --once
+#   python3 scripts/dashboard_job.py pixel8a --cells matrices/dashboard-q06-dynamic-android.cells --suffix q06-dynamic --once
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048

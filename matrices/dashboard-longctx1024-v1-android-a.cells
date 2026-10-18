@@ -9,14 +9,18 @@
 # flag). exclude= rows are kept from the short-chat set with their reason (failed-runs-stay).
 # Prepared 2026-10-06 for the first 1024/256 sittings (owner decision 12:3x JST: the dashboard's
 # headline workload). Each file starts with the platform's session anchors (matrices/anchors.cells).
+# 2026-10-19: the Qwen3 0.6B LiteRT-LM rows moved from qwen3_0_6b_mixed_int4.litertlm (its template drops the user
+# turn on LiteRT-LM v0.18.0, google-ai-edge/LiteRT-LM#3688) to Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (dynamic
+# INT4, block-32 weights, FP32 act); their exclude-on=pixel8a,s26 for #3688 is dropped, and the LiteRT-LM anchor row
+# moved with them (matrices/anchors.cells).
 
 
 # ---- android, storage half a (mirror of dashboard-text-v1-android-a.cells) ----
-android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 android llama.cpp unsloth/Qwen3-0.6B-GGUF long-context-1024-gen256 file=Qwen3-0.6B-Q4_K_M.gguf context-tokens=2048
-android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688
-android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a,s26:hub-bundle-chat-template-predates-litert-lm-018-prompt-dropped-issue-3688
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
 android litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048
 android litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
 android llama.cpp unsloth/Qwen3-1.7B-GGUF long-context-1024-gen256 file=Qwen3-1.7B-Q4_K_M.gguf context-tokens=2048

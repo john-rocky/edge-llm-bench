@@ -1,0 +1,20 @@
+# 2026-10-19 re-measurement of the Qwen3 0.6B LiteRT-LM page rows on the iPhone after they moved from the catalog id
+# litert-community/Qwen3-0.6B (qwen3_0_6b_mixed_int4.litertlm; its template drops the user turn on LiteRT-LM
+# v0.18.0, google-ai-edge/LiteRT-LM#3688) to litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
+# (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm: dynamic INT4, block-32 weights, FP32 act), taken the way a
+# release-triggered pass is (docs/dashboard-recurring-job-v1.md section 2): the iPhone session anchor row of
+# matrices/dashboard-text-v1.cells, then three rows byte-identical to their weekly source (short-chat:
+# matrices/dashboard-text-v1.cells; long-context-1024-gen256: matrices/dashboard-longctx1024-v1.cells;
+# native-benchmark-1024x256: matrices/dashboard-protocol1024-v1.cells), the task rows before the native row (the
+# native import takes this campaign's task record of the same arm and model as --like, scripts/bench_matrix_iphone.sh
+# native_import). The iPhone LiteRT-LM anchor
+# keeps litert-community/Qwen3-0.6B (matrices/anchors.cells). Both catalog ids share hfRepoId
+# litert-community/Qwen3-0.6B, so the app looks in Documents/models/litert-lm/litert-community__Qwen3-0.6B/ and
+# downloads nothing while that directory holds a file: Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm has to be put there
+# before the sitting (HFDownloader.snapshot).
+#   python3 scripts/dashboard_job.py iphone18pro --cells matrices/dashboard-q06-dynamic-ios.cells --suffix q06-dynamic --once
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 context-tokens=2048

@@ -4,6 +4,15 @@
 # Two anchors per platform where two arms exist, so the diff tool can pick an
 # anchor whose runtime differs from the engine under test (an anchor measured
 # by the engine being bumped is confounded).
+# 2026-10-19: the Android LiteRT-LM anchor moved from qwen3_0_6b_mixed_int4.litertlm (its template drops the user
+# turn on LiteRT-LM v0.18.0, google-ai-edge/LiteRT-LM#3688) to Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (dynamic
+# INT4, block-32 weights, FP32 act), with the weekly Android rows. A page cell and its series select rows by arm,
+# model id and task, not by file, so an old-file anchor would put its number into the GPU short-chat page cell
+# whenever an anchors phase is newer than that cell's payload. It does not gate admission (scripts/dashboard_job.py
+# anchor_cells: the primary anchor is the non-litert arm); a regression pair across this date normalized through it
+# (a llama.cpp bump on Android) compares two files. The Mac and iPhone LiteRT-LM anchors keep
+# litert-community/Qwen3-0.6B: their page rows moved to the catalog id
+# litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32.
 
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
@@ -11,5 +20,5 @@ ios litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3
 
-android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=qwen3_0_6b_mixed_int4.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
