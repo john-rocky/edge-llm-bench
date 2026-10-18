@@ -289,6 +289,9 @@ cmd_run(){
     [ -n "$ctx" ] && extra+=(--context-tokens "$ctx")
     [ -n "$maxtok" ] && extra+=(--max-tokens "$maxtok")
     [ -n "$counters" ] && extra+=(--litert-engine-counters "$counters")
+    local outcap
+    outcap="$(cell_opt output-cap "" ${opts[@]+"${opts[@]}"})"   # litert-lm: engine|drain (MediaPipeRuntime.engineOutputCap)
+    [ -n "$outcap" ] && [ "$rt" = litert-lm ] && extra+=(--litert-output-cap "$outcap")
     local be
     be="$(cell_opt backend "" ${opts[@]+"${opts[@]}"})"   # arm identity
     # litert-lm: the app's --litert-backend cpu|gpu. executorch: the delegate is the build's

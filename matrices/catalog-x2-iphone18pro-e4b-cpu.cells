@@ -1,0 +1,22 @@
+# Catalog X2, iPhone 18 Pro (iPhone19,2 / A20 Pro, UDID 00008160-000038CA02C00036; 2026-10-17): Gemma 4 E4B,
+# LiteRT-LM XNNPACK CPU, filled prompt of task long-context-2048-gen256-noref (the 27 blocks of
+# long-context-2048-gen256 with a tail that calls them filler; LongContextTask.norefTail = NOREF_TAIL), answer
+# cap 256 stopped by the engine (output-cap=engine, as the Android CLI's --max_output_tokens; the dashboard's
+# iOS cells keep the default drain path), allocated KV 2304 / 4096 / 8192. Own session; never pooled with
+# other sittings.
+# Driver (round mode; the iPhone runner has none): results/raw/2026-10-17-catalog-x2-iphone18pro-ios/tools/round_driver.sh
+#   ROUNDS=6 COOLDOWN=60 BENCH_UDID=00008160-000038CA02C00036 APP=com.example.CoreMLLLMChat
+#   tools/round_driver.sh THIS.cells 2026-10-17-catalog-x2-iphone18pro-ios-e4b-cpu <hold deadline epoch>
+# One launch per cell per round (runs=2: run 1 cold, run 2 warm, one engine, a fresh Conversation each);
+# the full order reverses on even rounds; the anchor row (matrices/anchors.cells, the primary one) at the head
+# and the tail of the sitting, admitted against the 2026-10-17 r2 session of this phone (SESSION.json, 5 % rule).
+# App: BenchmarkApp (com.example.CoreMLLLMChat 0.2.0, Release) built from this commit's Sources with the
+# LiteRT-LM v0.18.0 Swift package (CLiteRTLM.xcframework.zip@v0.18.0); the GPU accelerator is the launch log's
+# RegisterAccelerator line (Metal). Standard Gemma file (wNa8o8).
+# Each cell of the same cells file may be run on its own: `./bench matrix THIS.cells --platform iphone` runs
+# the rows once in file order (no rounds); the ladder above needs the driver.
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=cpu context-tokens=2304 runs=2 output-cap=engine
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=cpu context-tokens=4096 runs=2 output-cap=engine
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=cpu context-tokens=8192 runs=2 output-cap=engine

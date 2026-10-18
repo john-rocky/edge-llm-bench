@@ -46,6 +46,12 @@ public enum BenchmarkTaskCatalog {
         // for every sweep id.
         LongContextTask(id: "long-context-2048-gen256", targetTokens: 2048, maxTokens: 256,
                         forceLongOutput: true, blocks: 27),
+        // The same 27 blocks with a tail that calls them filler and asks the list from the
+        // model's own knowledge (`LongContextTask.norefTail` = scripts/gen_task_prompts.py
+        // NOREF_TAIL; the Android drivers' task since 2026-10-12, catalog X2). Same budget;
+        // the tail is part of the task id, so its records never pool with the task above.
+        LongContextTask(id: "long-context-2048-gen256-noref", targetTokens: 2048, maxTokens: 256,
+                        forceLongOutput: true, blocks: 27, tail: LongContextTask.norefTail),
         LongContextTask(),                                              // ~2K
         LongContextTask(id: "long-context-3k", targetTokens: 3072),     // near the 4096 ctx ceiling (room for 128 decode)
         LongContextTask(id: "long-context-8k", targetTokens: 8192),

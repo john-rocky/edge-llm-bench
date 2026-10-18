@@ -264,6 +264,13 @@ enum HeadlessAutoRun {
             print("YARDSTICK_NOTE litert_backend=\(be)")
         }
         if value("--litert-send-mode") == "sync" { MediaPipeRuntime.debugSyncSend = true }
+        // `--litert-output-cap engine|drain`: where a LiteRT-LM task run stops at the output
+        // budget (see MediaPipeRuntime.engineOutputCap). drain = the default, the dashboard's path.
+        if let cap = value("--litert-output-cap") {
+            guard cap == "engine" || cap == "drain" else { fatal("bad --litert-output-cap '\(cap)' — expected engine or drain") }
+            MediaPipeRuntime.engineOutputCap = (cap == "engine")
+            print("YARDSTICK_NOTE litert_output_cap=\(cap)")
+        }
         // `--litert-engine-counters off`: do not enable the engine's benchmark flag (see
         // MediaPipeRuntime.loadModel); the record then carries wall-clock rates only.
         if let counters = value("--litert-engine-counters") {

@@ -33,8 +33,8 @@ RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             "onnxruntime-genai"}
 TASKS = {"short-chat", "long-context-512", "long-context-1024",
          "long-context-1024-gen256", "long-context-2048-gen256", "long-context",
-         # the 2048 blocks with a tail that calls them filler (Android only;
-         # scripts/gen_task_prompts.py NOREF_TAIL)
+         # the 2048 blocks with a tail that calls them filler (scripts/gen_task_prompts.py
+         # NOREF_TAIL; the Swift catalog has it since 2026-10-17)
          "long-context-2048-gen256-noref",
          "long-context-3k",
          "long-context-8k", "long-context-32k", "cactus-parity", "sustained",
@@ -58,7 +58,12 @@ ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
 STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
-            "engine-build", "revision"}
+            "engine-build", "revision",
+            # litert-lm on the iPhone: where a task run stops at its output budget — engine (the
+            # engine's maxOutputTokens, counters over exactly the budget, as the Android CLI's
+            # --max_output_tokens rows) or drain (the default: the app caps and drains the stream)
+            "output-cap"}
+OUTPUT_CAPS = {"engine", "drain"}
 BACKENDS = {"cpu", "gpu", "npu"}
 # the backends of the Mac / iPhone LiteRT-LM rows and of the asr / vl instruments
 CPU_GPU = {"cpu", "gpu"}
@@ -144,6 +149,8 @@ def parse_line(line):
                 raise ValueError(f"backend={v!r} (want {'|'.join(sorted(BACKENDS_OF.get(rt, BACKENDS)))})")
             if k == "exclude-on":
                 parse_exclude_on(v)
+            if k == "output-cap" and v not in OUTPUT_CAPS:
+                raise ValueError(f"output-cap={v!r} (want {'|'.join(sorted(OUTPUT_CAPS))})")
         else:
             raise ValueError(f"unknown option key {k!r}")
         opts[k] = v

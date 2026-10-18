@@ -68,6 +68,14 @@ public actor MediaPipeRuntime: LLMRuntime {
     public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
     /// Diagnostic: also send each prompt through the non-streaming API and log the reply.
     public nonisolated(unsafe) static var debugSyncSend = false
+    /// `--litert-output-cap engine`: ask the engine to stop at the task's output budget
+    /// (`sendMessageStream(_:maxOutputTokens:)`, v0.16+ API) instead of letting it run on to its
+    /// context bound after the app's cap (the DRAIN branch in `runGenerate`). The engine's decode
+    /// counters then cover exactly the budget, as the Android CLI's `--max_output_tokens` rows do,
+    /// and a launch at an 8,192-token allocation does not decode thousands of uncounted tokens
+    /// between run 1 and run 2 (catalog X2's iPhone leg, 2026-10-17). Default off: the dashboard's
+    /// iOS cells keep the drain path and the wall-clock decode rate under a cap, unchanged.
+    public nonisolated(unsafe) static var engineOutputCap = false
     public let kind: RuntimeKind = .mediaPipe
     public let isAvailable: Bool = true
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.liteRTLM
@@ -563,7 +571,11 @@ public actor MediaPipeRuntime: LLMRuntime {
             }
         }
 
-        for try await chunk in conversation.sendMessageStream(Message(prompt)) {
+        // `engineOutputCap`: the engine stops at the budget itself (nil = the stock unbounded
+        // stream, capped and drained below as before).
+        for try await chunk in conversation.sendMessageStream(
+            Message(prompt), maxOutputTokens: Self.engineOutputCap ? parameters.maxTokens : nil
+        ) {
             try Task.checkCancellation()
             if capped {
                 // Cap reached: DRAIN the stream silently instead of breaking out.
@@ -628,7 +640,9 @@ public actor MediaPipeRuntime: LLMRuntime {
         // engine's context bound, so its decode turn covers more tokens than the
         // cap. Capped → decode falls back to chunk-count + wall-clock.
         let bench = try? conversation.getBenchmarkInfo()
-        let decodeBench = capped ? nil : bench
+        // Under `engineOutputCap` the engine's own turn ended at the budget, so its decode
+        // counters describe exactly the measured tokens and are kept.
+        let decodeBench = (capped && !Self.engineOutputCap) ? nil : bench
         let decodeTokens = (decodeBench.map { $0.lastDecodeTokenCount } ?? 0) > 0
             ? decodeBench!.lastDecodeTokenCount : tokenCount
         let promptTokens = bench?.lastPrefillTokenCount ?? 0

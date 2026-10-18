@@ -8,9 +8,10 @@ Sources of truth being mirrored:
                          long-context-1024-gen256 = forceLongOutput, maxTokens 256
                          long-context-2048-gen256 = explicit 27 blocks, maxTokens 256
 
-Android only (no Swift task): long-context-2048-gen256-noref = the same 27 blocks
-with a tail that calls them filler and asks from the model's own knowledge
-(NOREF_TAIL), maxTokens 256.
+long-context-2048-gen256-noref = the same 27 blocks with a tail that calls them
+filler and asks from the model's own knowledge (NOREF_TAIL), maxTokens 256; Android
+drivers read the file, the Swift catalog builds it (LongContextTask.norefTail, since
+2026-10-17 for catalog X2's iPhone leg).
 
 The Android CLI drivers feed these files via --input_prompt_file / llama-cli -f.
 If a Swift task changes, regenerate and commit; a follow-up iOS unit test can

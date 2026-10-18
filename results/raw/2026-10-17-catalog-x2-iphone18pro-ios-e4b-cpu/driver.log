@@ -1,0 +1,113 @@
+[21:36:02] sitting: 1 anchor row(s), 3 ladder row(s), 4 round(s), deadline 22:19:01
+[21:36:02] LAUNCH r0 #1 mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat runs=3 ctx=-   (timeout 900s)
+[21:36:16]   -> rc=0 RUN_OK=3 thermal fair->fair records: mlx-swift_mlx-community_Qwen3-0.6B-4bit_short-chat_2026-10-17T12-36-04Z.json;mlx-swift_mlx-community_Qwen3-0.6B-4bit_short-chat_2026-10-17T12-36-06Z.json;mlx-swift_mlx-community_Qwen3-0.6B-4bit_short-chat_2026-10-17T12-36-05Z.json
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=221.33 decode_tok_s_wall=219.63 ttft_ms=34 prefill_tok_s=612.9 prefill_tok_s_wall=556.2 prompt_tokens=19 peak_mb=490 median_mb=490 median_resident_mb=495 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=220.10 decode_tok_s_wall=218.40 ttft_ms=31 prefill_tok_s=642.4 prefill_tok_s_wall=620.8 prompt_tokens=19 peak_mb=491 median_mb=491 median_resident_mb=496 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=219.81 decode_tok_s_wall=218.12 ttft_ms=31 prefill_tok_s=639.4 prefill_tok_s_wall=615.2 prompt_tokens=19 peak_mb=492 median_mb=490 median_resident_mb=497 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+[21:36:16] cooldown 120s
+[21:38:16] === round 1 (21:38:16)
+[21:38:16] LAUNCH r1 #2 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=2304 --context-tokens 2304 --litert-backend cpu --litert-output-cap engine  (timeout 900s)
+[21:39:13]   -> rc=0 RUN_OK=2 thermal nominal->fair records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-38-41Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-39-05Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3391
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x12d3c3ae0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x130918f00, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13a83a0a0, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=14.42 decode_tok_s_wall=14.52 ttft_ms=4635 prefill_tok_s=372.7 prefill_tok_s_wall=356.8 prompt_tokens=1654 peak_mb=947 median_mb=935 median_resident_mb=5435 ctx=2304 tokens=256 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3391
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=13.75 decode_tok_s_wall=13.81 ttft_ms=4921 prefill_tok_s=347.2 prefill_tok_s_wall=336.1 prompt_tokens=1654 peak_mb=945 median_mb=931 median_resident_mb=5455 ctx=2304 tokens=256 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+[21:39:13] cooldown 120s
+[21:41:13] LAUNCH r1 #3 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=4096 --context-tokens 4096 --litert-backend cpu --litert-output-cap engine  (timeout 900s)
+[21:42:15]   -> rc=0 RUN_OK=2 thermal fair->serious records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-41-38Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-42-05Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1170ede60, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11ad86d00, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1238d0480, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=13.56 decode_tok_s_wall=13.66 ttft_ms=5460 prefill_tok_s=314.7 prefill_tok_s_wall=302.9 prompt_tokens=1654 peak_mb=1057 median_mb=986 median_resident_mb=3396 ctx=4096 tokens=256 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=12.05 decode_tok_s_wall=12.10 ttft_ms=5820 prefill_tok_s=292.4 prefill_tok_s_wall=284.2 prompt_tokens=1654 peak_mb=996 median_mb=987 median_resident_mb=3417 ctx=4096 tokens=256 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+[21:42:15] cooldown 360s
+[21:48:15] LAUNCH r1 #4 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=8192 --context-tokens 8192 --litert-backend cpu --litert-output-cap engine  (timeout 900s)
+[21:49:27]   -> rc=0 RUN_OK=2 thermal fair->serious records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-49-16Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-48-45Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1132069a0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11ab717a0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x124f9aa00, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=11.78 decode_tok_s_wall=12.14 ttft_ms=8563 prefill_tok_s=211.2 prefill_tok_s_wall=193.2 prompt_tokens=1654 peak_mb=1629 median_mb=1629 median_resident_mb=4024 ctx=8192 tokens=256 thermal_initial=fair thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=11.25 decode_tok_s_wall=11.30 ttft_ms=7806 prefill_tok_s=216.9 prefill_tok_s_wall=211.9 prompt_tokens=1654 peak_mb=1631 median_mb=1615 median_resident_mb=4039 ctx=8192 tokens=256 thermal_initial=nominal thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+[21:49:27] cooldown 360s
+[21:55:27] === round 2 (21:55:27)
+[21:55:27] LAUNCH r2 #5 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=8192 --context-tokens 8192 --litert-backend cpu --litert-output-cap engine  (timeout 900s)
+[21:56:36]   -> rc=0 RUN_OK=2 thermal nominal->fair records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-56-25Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-55-55Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1183c3000, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11c927660, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1254959e0, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=12.25 decode_tok_s_wall=12.33 ttft_ms=7297 prefill_tok_s=233.7 prefill_tok_s_wall=226.7 prompt_tokens=1654 peak_mb=1629 median_mb=1610 median_resident_mb=4018 ctx=8192 tokens=256 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=11.75 decode_tok_s_wall=11.80 ttft_ms=7796 prefill_tok_s=217.2 prefill_tok_s_wall=212.2 prompt_tokens=1654 peak_mb=1621 median_mb=1621 median_resident_mb=4048 ctx=8192 tokens=256 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+[21:56:36] cooldown 120s
+[21:58:36] LAUNCH r2 #6 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=4096 --context-tokens 4096 --litert-backend cpu --litert-output-cap engine  (timeout 900s)
+[21:59:38]   -> rc=0 RUN_OK=2 thermal fair->serious records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-59-28Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T12-59-01Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x113fda820, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x118559140, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x12101a0a0, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=13.57 decode_tok_s_wall=13.66 ttft_ms=5459 prefill_tok_s=314.6 prefill_tok_s_wall=303.0 prompt_tokens=1654 peak_mb=1111 median_mb=987 median_resident_mb=3396 ctx=4096 tokens=256 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=12.08 decode_tok_s_wall=12.12 ttft_ms=5828 prefill_tok_s=292.1 prefill_tok_s_wall=283.8 prompt_tokens=1654 peak_mb=997 median_mb=988 median_resident_mb=3416 ctx=4096 tokens=256 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+[21:59:38] cooldown 360s
+[22:05:38] LAUNCH r2 #7 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=2304 --context-tokens 2304 --litert-backend cpu --litert-output-cap engine  (timeout 893s)
+[22:06:36]   -> rc=0 RUN_OK=2 thermal nominal->fair records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T13-06-25Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T13-06-01Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3391
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1313de460, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1349119e0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x13d373120, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=14.50 decode_tok_s_wall=14.61 ttft_ms=4582 prefill_tok_s=377.1 prefill_tok_s_wall=361.0 prompt_tokens=1654 peak_mb=788 median_mb=769 median_resident_mb=3178 ctx=2304 tokens=256 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3391
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=13.78 decode_tok_s_wall=13.84 ttft_ms=4931 prefill_tok_s=346.7 prefill_tok_s_wall=335.4 prompt_tokens=1654 peak_mb=779 median_mb=771 median_resident_mb=3202 ctx=2304 tokens=256 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+[22:06:36] cooldown 120s
+[22:08:36] === round 3 (22:08:36)
+[22:08:36] LAUNCH r3 #8 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=2304 --context-tokens 2304 --litert-backend cpu --litert-output-cap engine  (timeout 715s)
+[22:09:33]   -> rc=0 RUN_OK=2 thermal fair->fair records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T13-08-59Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T13-09-23Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3391
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x10fa1b060, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1188edaa0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x121757120, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=14.43 decode_tok_s_wall=14.53 ttft_ms=4612 prefill_tok_s=374.4 prefill_tok_s_wall=358.6 prompt_tokens=1654 peak_mb=789 median_mb=767 median_resident_mb=3178 ctx=2304 tokens=256 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_WARN context_tokens_forced=2304 below_estimate=3391
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=13.23 decode_tok_s_wall=13.28 ttft_ms=4926 prefill_tok_s=346.9 prefill_tok_s_wall=335.8 prompt_tokens=1654 peak_mb=778 median_mb=767 median_resident_mb=3199 ctx=2304 tokens=256 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+[22:09:33] cooldown 120s
+[22:11:33] LAUNCH r3 #9 litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref runs=2 ctx=4096 --context-tokens 4096 --litert-backend cpu --litert-output-cap engine  (timeout 538s)
+[22:12:37]   -> rc=0 RUN_OK=2 thermal fair->serious records: litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T13-11-58Z.json;litert-lm-cpu_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_2026-10-17T13-12-27Z.json
+     YARDSTICK_NOTE litert_backend=cpu
+     YARDSTICK_NOTE litert_output_cap=engine
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x14b3e63a0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x14e9991a0, name=GPU Metal
+     INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x157446100, name=GPU Metal
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=13.51 decode_tok_s_wall=13.60 ttft_ms=5473 prefill_tok_s=313.9 prefill_tok_s_wall=302.2 prompt_tokens=1654 peak_mb=1057 median_mb=987 median_resident_mb=3396 ctx=4096 tokens=256 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=11.31 decode_tok_s_wall=11.35 ttft_ms=5855 prefill_tok_s=290.9 prefill_tok_s_wall=282.5 prompt_tokens=1654 peak_mb=997 median_mb=987 median_resident_mb=3416 ctx=4096 tokens=256 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+[22:12:37] cooldown 360s
+[22:18:37] DEADLINE: litert-lm_litert-community_gemma-4-E4B-it-litert-lm_long-context-2048-gen256-noref_8192 would end after the deadline (est 75s) — not launched
+[22:18:37] LAUNCH r99 #11 mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat runs=3 ctx=-   (timeout 114s)
+[22:18:53]   -> rc=0 RUN_OK=3 thermal fair->fair records: mlx-swift_mlx-community_Qwen3-0.6B-4bit_short-chat_2026-10-17T13-18-40Z.json;mlx-swift_mlx-community_Qwen3-0.6B-4bit_short-chat_2026-10-17T13-18-41Z.json;mlx-swift_mlx-community_Qwen3-0.6B-4bit_short-chat_2026-10-17T13-18-39Z.json
+     YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968486
+     YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=221.70 decode_tok_s_wall=219.98 ttft_ms=38 prefill_tok_s=580.0 prefill_tok_s_wall=496.6 prompt_tokens=19 peak_mb=490 median_mb=490 median_resident_mb=495 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=221.24 decode_tok_s_wall=219.53 ttft_ms=29 prefill_tok_s=679.1 prefill_tok_s_wall=663.1 prompt_tokens=19 peak_mb=491 median_mb=491 median_resident_mb=497 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+     YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=220.81 decode_tok_s_wall=219.11 ttft_ms=31 prefill_tok_s=642.3 prefill_tok_s_wall=620.6 prompt_tokens=19 peak_mb=492 median_mb=492 median_resident_mb=497 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+[22:18:54] done: 22 records in device-jsonl/

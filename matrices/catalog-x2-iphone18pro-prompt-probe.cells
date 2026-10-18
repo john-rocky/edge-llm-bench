@@ -1,0 +1,11 @@
+# Catalog X2, iPhone 18 Pro (2026-10-17): n=1 prompt probe of task long-context-2048-gen256-noref on the
+# rebuilt app (LiteRT-LM v0.18.0, output-cap=engine), the first launches of this build on the phone. Never
+# pooled: the records stay in results/raw/2026-10-17-catalog-x2-iphone18pro-ios-prompt-probe/ (outside the
+# ladder campaigns). PASS = both runs 254-256 generated tokens, the outputSample on task, promptTokenCount
+# the same across the allocations, the record stamps v0.18.0 and buildConfiguration Release.
+# The driver passes --purge-engine-cache on these launches: the phone's tmp/ holds the Metal program and
+# weight caches the v0.16.0 build wrote (keyed on the model file only), so this build writes its own first.
+# Driver: results/raw/2026-10-17-catalog-x2-iphone18pro-ios/tools/round_driver.sh with ROUNDS=1 PURGE=1.
+
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=8192 runs=2 output-cap=engine
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-2048-gen256-noref backend=gpu context-tokens=8192 runs=2 output-cap=engine

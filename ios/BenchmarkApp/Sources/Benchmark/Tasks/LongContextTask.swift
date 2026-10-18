@@ -31,16 +31,36 @@ public struct LongContextTask: BenchmarkTask {
     /// wants a decode rate has to keep the model generating for the whole budget.
     private let forceLongOutput: Bool
 
+    /// An explicit tail after the filler blocks, replacing the two built-in ones. `nil` keeps
+    /// the `forceLongOutput` choice.
+    private let tail: String?
+
+    /// The tail of `long-context-2048-gen256-noref`, byte-identical to `NOREF_TAIL` in
+    /// `scripts/gen_task_prompts.py` (the Android drivers read the generated file). The
+    /// "passage above" tail asks the model to use the lorem blocks: on the Galaxy S26 GPU
+    /// (LiteRT-LM v0.16.0) Gemma 4 E4B refused them in 50–61 tokens and E2B stopped at 93
+    /// tokens at an 8,192-token allocation, so those decode rates were taken over different
+    /// answer lengths (`results/raw/2026-09-24-dashboard-longctx-v1-s26-android-gpu-retake/`).
+    /// This tail calls the blocks filler and asks the same list from the model's own knowledge;
+    /// both bundles then fill the 256-token budget (catalog X2, `results/raw/2026-10-12-catalog-x2-s26-android/`).
+    public static let norefTail = "The numbered blocks above are filler text and carry no information; do not summarize "
+        + "or evaluate them. From your own knowledge, list 25 distinct things on-device AI lets "
+        + "a phone do that a cloud model cannot. Number every item and give each one two full "
+        + "sentences of explanation. Do not stop early."
+
     /// - Parameter blocks: explicit filler-block count, overriding the `targetTokens /
     ///   tokensPerBlock` estimate. The nominal 55 tokens/block under-counts the real
     ///   tokenizer output (the 18-block `long-context-1024-gen256` prompt reads 1,339 Qwen3
     ///   / 1,106 Gemma-4 tokens), so a task that wants its *measured* prompt near the label
     ///   sets the block count from a measured count instead of the estimate.
+    /// - Parameter tail: an explicit instruction after the blocks (see `norefTail`); `nil`
+    ///   keeps the `forceLongOutput` tail or the one-sentence tail.
     public init(id: String = "long-context", targetTokens: Int = 2048, maxTokens: Int = 128,
-                forceLongOutput: Bool = false, blocks: Int? = nil) {
+                forceLongOutput: Bool = false, blocks: Int? = nil, tail: String? = nil) {
         self.id = id
         self.blocks = blocks ?? max(1, targetTokens / Self.tokensPerBlock)
         self.forceLongOutput = forceLongOutput
+        self.tail = tail
         let approx = targetTokens >= 1000 ? "~\(targetTokens / 1000)K" : "~\(targetTokens)"
         self.title = "Long-context prefill (\(approx) tok)"
         self.summary = "\(approx)-token prompt, \(maxTokens)-token output. "
@@ -59,7 +79,9 @@ public struct LongContextTask: BenchmarkTask {
         for index in 0 ..< blocks {
             pieces.append("[\(index)] \(lorem)")
         }
-        if forceLongOutput {
+        if let tail {
+            pieces.append("\n\n" + tail)
+        } else if forceLongOutput {
             // Enumerated, self-continuing instruction: the model keeps producing until the
             // token budget stops it, which is what makes decode-at-depth measurable.
             pieces.append("\n\nUsing the passage above as context, list 25 distinct things "
