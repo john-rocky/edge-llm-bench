@@ -60,6 +60,11 @@ results/raw/**/pulled/
 !results/raw/**/*.log
 android/bin/
 results/raw/*/ddp-raw/
+# DDP: a Device Run execution's own logcat.txt (ddp/<session>/<job>/execution-<id>/logcat.txt, the unit's whole
+# log, lines outside the runs included) stays on disk and out of every commit, as d6077c6b and the earlier DDP
+# campaigns kept it out by hand (f231ad66 scrubs every pulled logcat, the original bytes in ddp-raw/); each run's
+# logcat (run<i>_logcat.txt, scrubbed) is committed with the records
+results/raw/*/ddp/*/*/execution-*/logcat.txt
 
 # Harness-only public framing: rendered cross-runtime standings and comparison
 # charts stay LOCAL (render any time from the shipped raw). The public repo

@@ -520,6 +520,63 @@ def main():
        "dashboard-job sitting" in dp.page_message("0" * 40, facts, set(), {"r"}, []),
        "the page commit's message names the lab units the same way")
 
+    print("--- a DDP lab unit's job sitting: its executions' own logcat.txt stays on disk and out of the commit "
+          "(the repo's .gitignore line), its runs' logcats go in")
+    unit = "2026-10-12-dashboard-v1-s26-ddp-m1q-36-android"
+    ud = os.path.join(raw, unit)
+    exe = os.path.join(ud, "ddp", "session-fake0001", "j01-gpu-x-short-chat", "execution-fake")
+    run_logcat = os.path.join(exe, "artifacts", "data", "local", "tmp", "llmbench", "ddp-out", "run1_logcat.txt")
+    write(run_logcat, "10-12 13:47:01.000  1000  1100 I litert: engine loaded\n")
+    write(os.path.join(exe, "logcat.txt"), "10-12 13:47:00.000  1000  1100 I ActivityManager: unit log\n")
+    log_name = "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-12T13-47-00_run1.log"
+    write(os.path.join(ud, "app-path-android", log_name),
+          "===ENGINE_OUTPUT===\ninput_prompt: What does on-device AI mean?\n" + ON_TASK + "\nBenchmarkInfo:\n")
+    for i in range(3):
+        write(os.path.join(ud, "app-path-android", f"run{i + 1}.json"), json.dumps({
+            "schemaVersion": 1, "id": str(uuid.uuid4()), "runtime": "litert-lm-gpu", "engineVersion": "v0.0.1",
+            "model": {"id": "litert-community/Qwen3-1.7B"}, "task": "short-chat",
+            "timestamp": f"2026-10-12T13:4{i}:00Z",
+            "device": {"modelIdentifier": "SM-S942U1", "systemName": "Android",
+                       "ddp": {"deviceId": "m1q-36", "serial": "FAKEUNIT1"}},
+            "metrics": {"decodeTokensPerSecond": 20.0 + i, "promptTokenCount": 19, "generatedTokenCount": 120,
+                        "coldRun": True, "firstEver": i == 0},
+            "conditions": {"protocolFlags": ["cpu-capped", "cpu-capped-at-start"]},
+            "provenance": {"rawLog": log_name, "modelShaSource": "device"}}))
+    write(os.path.join(ud, "SESSION.json"), json.dumps({
+        "schema": "dashboard-job-session.v1", "job": "dashboard-v1", "phase": "payload",
+        "campaign": f"results/raw/{unit}", "device_key": "s26-ddp", "device_display": "Galaxy S26 (DDP m1q-36)",
+        "device_identifier": "SM-S942U1 (DDP m1q-36)", "platform": "ddp", "attempt": 1,
+        "started": "2026-10-12 22:46:21", "ended": "2026-10-12 23:29:13", "admitted": True, "verdict": "COMPLETED",
+        "reason": "ddp lab unit: no session anchor; each run carries its cap marks and the text check",
+        "anchor": None, "runner_exit": 0, "cells": "matrices/dashboard-ddp-v1-android-s26.cells",
+        "cells_expected": 1, "cells_with_records": 1,
+        "ddp": {"id": "m1q-36", "sessions": ["session-fake0001"], "jobs": 1, "device_minutes": 5.8}}, indent=1))
+    before = head()
+    rc, out = post(["results/raw/" + unit])
+    held = ledger()[-1]
+    ok(rc == 1 and head() == before and held["check"] == f"{unit}=FAIL" and "logcat-unscrubbed" in held["note"],
+       f"without the line: the execution's logcat.txt holds the sitting (FAIL logcat-unscrubbed), nothing committed (exit {rc})")
+    rules = [ln for ln in open(os.path.join(ROOT, ".gitignore")).read().splitlines()
+             if ln.startswith("results/raw/") and "/ddp/" in ln and ln.endswith("logcat.txt")]
+    with open(os.path.join(bench, ".gitignore")) as fh:
+        kept = fh.read()
+    write(os.path.join(bench, ".gitignore"), kept + "".join(r + "\n" for r in rules))
+    rc, out = post(["results/raw/" + unit])
+    done = ledger()[-1]
+    files = committed_files()
+    rel = lambda p: os.path.relpath(p, bench)
+    ok(len(rules) == 1 and rc == 0 and done["check"] == f"{unit}=PASS" and head() != before
+       and rel(run_logcat) in files and rel(os.path.join(ud, "SESSION.json")) in files
+       and rel(os.path.join(exe, "logcat.txt")) not in files and os.path.exists(os.path.join(exe, "logcat.txt"))
+       and not os.path.exists(os.path.join(ud, "REVIEW.md")),
+       f"with the repo's line ({rules}): PASS and committed; the run's logcat in the commit, the execution's "
+       f"logcat.txt on disk only, the held post's REVIEW.md gone (exit {rc}, {done['check']})")
+    msg = sh(bench, "git", "log", "-1", "--format=%s")
+    ok(msg.startswith("results 2026-10-12 Galaxy S26 lab units on the Developer Device Platform (DDP m1q-36, SM-S942U1, "
+                      "1 unit), litert-lm-gpu: v0.0.1: 1/1 cells of matrices/dashboard-ddp-v1-android-s26.cells")
+       and "1 Device Run session session-fake0001, 1 jobs, 5.8 device-min" in msg, msg[:160])
+    write(os.path.join(bench, ".gitignore"), kept)
+
     print("--- usage")
     rc, out = post([os.path.join("results", "raw", "no-such-dir")], "off")
     ok(rc == 2, f"a path that is not a directory: exit 2 (got {rc})")
