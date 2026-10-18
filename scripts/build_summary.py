@@ -118,18 +118,67 @@ def context_tokens_of(d, m):
     return int(v)
 
 
-def text_check_of(d):
+# the session checker's text screen of a campaign dir's Mac / iPhone text cells (2026-10-19):
+# <campaign dir>/text_screen.json, written by scripts/session_check.py, read into text_check
+TEXT_SCREEN = "text_screen.json"
+TEXT_SCREEN_SCHEMA = "text-screen.v1"
+
+
+def cell_key_of(d):
+    """A cell as scripts/session_check.py names it in its findings and keys it in text_screen.json:
+    arm, model, task and the engine build the record stamps."""
+    return (f"{d.get('runtime')} {(d.get('model') or {}).get('id')} {d.get('task')} "
+            f"({d.get('engineVersion') or 'unstamped'})")
+
+
+def campaign_dir_of(f):
+    """The results/raw/<campaign> dir a record file lies in, at any depth, or None for a flat
+    results/raw/*.jsonl file."""
+    parts = os.path.abspath(f).split(os.sep)
+    for i in range(len(parts) - 3, 0, -1):
+        if parts[i] == "raw" and parts[i - 1] == "results":
+            return os.sep.join(parts[:i + 2])
+    return None
+
+
+def text_screen_of(f, cache):
+    """The text_screen.json of the campaign dir a record file lies in, or None (a flat file, no
+    sidecar, one that does not parse or names another schema); read once per dir."""
+    d = campaign_dir_of(f)
+    if d is None:
+        return None
+    if d not in cache:
+        try:
+            with open(os.path.join(d, TEXT_SCREEN), encoding="utf-8") as fh:
+                s = json.load(fh)
+        except (OSError, ValueError):
+            s = None
+        cache[d] = s if isinstance(s, dict) and s.get("schema") == TEXT_SCREEN_SCHEMA else None
+    return cache[d]
+
+
+def text_check_of(d, screen=None):
     """conditions.textCheck as the summary's text_check (text-check-rule): "PASS",
     "FAIL:<flag>,<flag>" (the flags android/bench/parsers.text_integrity raised), or ""
-    when the run's decoded text was not checked. A FAIL run stays a row here;
-    render_leaderboard.arm_row keeps it out of every metric pool."""
+    when the run's decoded text was not checked. A record without conditions.textCheck (the
+    Mac and iPhone runners write none) reads its campaign dir's text_screen.json (`screen`):
+    "FAIL:<rule>,<rule>" (the session checker's reply-empty / reply-loop / reply-off-task)
+    or "PASS:screen" for a run the screen names by record id under the record's cell, ""
+    for one it does not name. A FAIL run stays a row here; render_leaderboard.arm_row keeps
+    it out of every metric pool."""
     c = d.get("conditions")
     tc = c.get("textCheck") if isinstance(c, dict) else None
-    if not isinstance(tc, dict):
+    if isinstance(tc, dict):
+        if tc.get("status") == "FAIL":
+            return "FAIL:" + ",".join(tc.get("flags") or [])
+        return "PASS" if tc.get("status") == "PASS" else ""
+    cells = screen.get("cells") if isinstance(screen, dict) else None
+    cell = cells.get(cell_key_of(d)) if isinstance(cells, dict) else None
+    runs = cell.get("run_rules") if isinstance(cell, dict) else None
+    rules = runs.get(str(d["id"])) if isinstance(runs, dict) and d.get("id") else None
+    if not isinstance(rules, list):
         return ""
-    if tc.get("status") == "FAIL":
-        return "FAIL:" + ",".join(tc.get("flags") or [])
-    return "PASS" if tc.get("status") == "PASS" else ""
+    return "FAIL:" + ",".join(rules) if rules else "PASS:screen"
 
 
 def cpu_cap_of(d):
@@ -304,6 +353,7 @@ def build_device():
     """device-runs.csv. A DDP lab unit's record (device.ddp, android/ddp/record.py) gets the
     device "<modelIdentifier> (DDP <catalog id>)", never the attached phone's identifier."""
     rows = []
+    screens = {}    # campaign dir -> its text_screen.json (text_screen_of)
     for f, d in iter_device_records():
         m, dev, model = d.get("metrics", {}), d.get("device", {}), d.get("model", {})
         if not m:
@@ -359,8 +409,9 @@ def build_device():
             "mem_footprint_peak_mb": m.get("memoryPeakDuringDecodeMB"),
             "mem_resident_peak_mb": m.get("memoryPeakResidentMB"),
             # the decoded-text verdict (2026-10-06), appended last like the peaks:
-            # a FAIL run is a row, never a measurement (text-check-rule)
-            "text_check": text_check_of(d),
+            # a FAIL run is a row, never a measurement (text-check-rule); a Mac / iPhone
+            # run's from its dir's text_screen.json (2026-10-19)
+            "text_check": text_check_of(d, text_screen_of(f, screens)),
             # the CPU frequency cap during the run (2026-10-07), appended after it:
             # a capped run is a row, never a measurement (cpu-cap-rule)
             "cpu_capped": cpu_capped,
@@ -446,7 +497,15 @@ def main():
             "`text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:\n"
             "`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a\n"
             "`FAIL` run stays a row here and in raw but pools into no number\n"
-            "(`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).\n\n"
+            "(`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).\n"
+            "A Mac or iPhone record carries no `conditions.textCheck`: its `text_check` comes from\n"
+            "the campaign dir's `text_screen.json` (2026-10-19), the session checker's screen of each\n"
+            "run's reply (`scripts/session_check.py`): `FAIL:<rules>` (`reply-empty`, `reply-loop`,\n"
+            "`reply-off-task`) or `PASS:screen` per record id, empty for a run the file does not name.\n"
+            "Unlike the Android runner's check, written into the record at capture time from the\n"
+            "stored decoded text, the screen runs on the sitting's dir before its commit and is kept\n"
+            "beside the records (the same lexical tests, `android/bench/parsers.text_integrity`,\n"
+            "and the cell gate's loop test).\n\n"
             "`cpu_capped` / `cpu_max_freq` (after `text_check`, 2026-10-07) are the CPU frequency\n"
             "cap the Android runner read during the run: `cpu_capped` = `true` when a cpufreq\n"
             "policy of the engine's CPUs sat below its hardware maximum (the record's\n"

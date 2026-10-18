@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "7b6360c7-694b-4e08-b04e-f9c6f449d534",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.18.0",
+  "engineArtifact": "cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815",
+  "model": {
+    "id": "litert-community/Qwen3-4B",
+    "quantization": "INT4 (mixed, blockwise gs32)",
+    "file": "litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+    "sha256": "569fe029f51e55b6377f98ebd7f6d26431bc73e1d632034f5389f2fd720da701"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-18T19:18:25Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2112,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 2112,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 93.1,
+    "exitCode": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ]
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 17430.0,
+    "promptTokensPerSecond": 59.71,
+    "decodeTokensPerSecond": 3.51,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 4269.36328125,
+    "memoryPeakResidentMB": 6710.19921875
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-4B_native-benchmark-1024x256_2026-10-18T19-18-25.767984_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}

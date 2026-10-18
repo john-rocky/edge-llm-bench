@@ -3,6 +3,7 @@
 as code: PASS / HOLD / FAIL per dir.
 
   python3 scripts/session_check.py <campaign dir>... [--json <out>] [--markdown <out>]
+                                   [--no-text-screen]
   python3 scripts/session_check.py results/raw/2026-10-15-dashboard-v1-pixel8a-0180-p4{-anchor,}-android
 
 Rules, their sources (commit hashes, doc sections) and the allow-list format:
@@ -12,7 +13,9 @@ docs/session-check-v1.md. Verdicts:
         (ops/session-check/allow-list.tsv: rule, dir glob, detail substring, commit, reason)
   HOLD  a person decides: a timeout, a partial sitting, a FAILURES / LEVEL / DEGENERATE line,
         a text-check FAIL, an engine stamp off the registry, a prompt that did not reach the
-        engine whole, a reply that fails the machine proxies, a dir that is not a job campaign
+        engine whole, an Android reply that fails the machine proxies (a Mac / iPhone reply
+        that fails them is screened into text_screen.json instead, a note), a dir that is not
+        a job campaign
         (a DDP dir is a job campaign when the job's SESSION.json names it: a lab unit's sitting,
         kind "job payload (ddp)", read by the job-session rules without the anchor-pair ones)
   FAIL  do not commit: refused at admission, a stopped sitting's quarantine, no SESSION.json
@@ -22,10 +25,14 @@ docs/session-check-v1.md. Verdicts:
         (pin-drift), a LiteRT-LM headline cell off the agreed protocol (protocol-off: context 2048;
         the protocol cell also prefill 1024 and decode 256). These two take no allow-list line
 
-Exit 0 = every dir PASS, 1 = a HOLD or a FAIL, 2 = usage. Reads only: the dirs, the git index
-and HEAD of the repo that holds them (tracked files, the committed results/summary as the
-history of prompt token counts), the pin registries as they stood when the sitting ran, and the
-job's logs and ledger under logs/dashboard-job/. Needs no device and no network.
+Exit 0 = every dir PASS, 1 = a HOLD or a FAIL, 2 = usage. Reads: the dirs, the git index and
+HEAD of the repo that holds them (tracked files, the committed results/summary as the history of
+prompt token counts), the pin registries as they stood when the sitting ran, and the job's logs
+and ledger under logs/dashboard-job/. Needs no device and no network. Writes, besides --json /
+--markdown, one file: text_screen.json in a job dir with Mac / iPhone text cells the runner did
+not check (the text screen: the reply proxies' verdict per run, which results/summary reads into
+text_check), only when its content changed; --no-text-screen writes nothing and judges the dirs
+as if it were written.
 
 What stays a person's: reading one reply per cell. The markdown output lists one sample per
 cell with text; no verdict reads it (docs/session-check-v1.md, "A person reads").
@@ -48,7 +55,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 sys.path.insert(0, os.path.join(ROOT, "android", "ddp"))
-from build_summary import context_tokens_of, cpu_cap_drop_of, platform_of  # noqa: E402
+from build_summary import (TEXT_SCREEN, TEXT_SCREEN_SCHEMA, cell_key_of, context_tokens_of,  # noqa: E402
+                           cpu_cap_drop_of, platform_of)
 from cell_gate import degenerate  # noqa: E402
 from dashboard_job import anchor_cells, session_stats  # noqa: E402
 from parsers import (RE_LLAMA_BRACKET, RE_LLAMA_LOG, RE_ORTGENAI_OUTPUT, litert_reply,  # noqa: E402
@@ -93,6 +101,17 @@ SECRET_RES = [
 # the reply proxies' text screen is the Android runner's own (fairness-rules §12): the task
 # prompts' subject is on-device AI, so a reply without its terms is off the prompt
 TEXT_TASKS = ("short-chat", "long-context-")
+REPLY_RULES = ("reply-empty", "reply-loop", "reply-off-task")
+# the text screen (2026-10-19): the Mac and iPhone runners check no decoded text, so their text cells'
+# proxy verdicts go per run into <dir>/text_screen.json, which build_summary reads into text_check
+# and the page shows as text-fail (a broken run marked, not its number dropped from the page); an
+# Android cell the runner did not check keeps its reply-* findings (the runner's check is the rule)
+SCREEN_PLATFORMS = ("mac", "ios")
+# what a changed screen is: every key but written_at / written_by
+SCREEN_CONTENT = ("schema", "about", "rules", "cells")
+SCREEN_ABOUT = ("scripts/session_check.py's text screen of this dir's Mac / iPhone text cells without a "
+                "runner text check: the reply proxies per run (run_rules, by record id; [] = passed), "
+                "read by scripts/build_summary.py into results/summary text_check (docs/session-check-v1.md)")
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
 # the agreed protocol (methodology/agreed-protocol-gemma4.md "The spec"): LiteRT-LM's benchmark() at
 # exactly 1024 prefill and 256 decode tokens with the context forced to 2048, and the page's overview
@@ -158,9 +177,37 @@ def parse_time(text):
 
 
 def cell_of(r):
-    """A cell as findings name it: arm, model, task and the engine build its records stamp."""
-    return (f"{r.get('runtime')} {(r.get('model') or {}).get('id')} {r.get('task')} "
-            f"({r.get('engineVersion') or 'unstamped'})")
+    """A cell as findings name it: arm, model, task and the engine build its records stamp; the key
+    of text_screen.json's cells too (build_summary.cell_key_of, which reads them back)."""
+    return cell_key_of(r)
+
+
+def reply_rules(text):
+    """The reply proxies one run's reply fails, in REPLY_RULES order (fairness-rules §12:
+    parsers.text_integrity's empty and off-subject screens, its loop screen or cell_gate.degenerate)."""
+    fl = text_integrity(text)["flags"]
+    return [rule for rule, hit in (("reply-empty", "text-empty-or-degenerate" in fl),
+                                   ("reply-loop", degenerate(text, 0.5) or "text-repetition-loop" in fl),
+                                   ("reply-off-task", bool(text.strip()) and "text-off-task-screen" in fl))
+            if hit]
+
+
+def read_screen(path):
+    """A dir's text_screen.json when it parses and names TEXT_SCREEN_SCHEMA, else None."""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            s = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    return s if isinstance(s, dict) and s.get("schema") == TEXT_SCREEN_SCHEMA else None
+
+
+def checker_version():
+    """The commit of this file (its last), + local edits when the checkout's copy differs."""
+    rc, out = run(["git", "-C", ROOT, "log", "-1", "--format=%h", "--", "scripts/session_check.py"])
+    sha = out.strip() if rc == 0 and out.strip() else "uncommitted"
+    rc, _ = run(["git", "-C", ROOT, "diff", "--quiet", "HEAD", "--", "scripts/session_check.py"])
+    return sha + (" + local edits" if rc == 1 else "")
 
 
 def short(text, n=100):
@@ -689,6 +736,8 @@ class Check:
         self.notes = []
         self.samples = []
         self.texts = {}
+        self.screen = {}            # cell -> its screened runs (check_cell_text), for text_screen.json
+        self.screen_result = None   # what screen_out did with the file
 
     def add(self, rule, detail):
         self.findings.append({"rule": rule, "severity": "FAIL" if rule in FAIL_RULES else "HOLD",
@@ -809,6 +858,7 @@ class Check:
         else:
             self.check_session(s, recs)
         self.check_records(recs)
+        self.screen_out()
 
     def check_session(self, s, recs):
         phase = s.get("phase")
@@ -955,7 +1005,7 @@ class Check:
                 log, found = resolve_raw_log(p, r, self.path, self.repo.top)
                 if log and not found:
                     raw_missing.append(os.path.relpath(p, self.path))
-            self.check_cell_text(cell, items, task)
+            self.check_cell_text(cell, items, task, plat)
             self.check_cell_counts(cell, items, plat, rt, task, hist)
             self.check_cell_protocol(cell, items, rt, task)
             if plat == "android" and sha_fix:
@@ -986,8 +1036,9 @@ class Check:
                       "(android/ddp/devices.json): its CPU runs pool into no number, its GPU runs count "
                       "marked; the renderer's cpu-cap-rule decides, never a verdict here")
 
-    def check_cell_text(self, cell, items, task):
-        """text-fail, the reply proxies, gen-budget, invalid-decode: one finding per cell."""
+    def check_cell_text(self, cell, items, task, plat):
+        """text-fail, the reply proxies, gen-budget, invalid-decode: one finding per cell. The reply
+        proxies of a Mac / iPhone cell the runner did not check go to the text screen (screen_out)."""
         checked = [r for _, r in items if isinstance((r.get("conditions") or {}).get("textCheck"), dict)]
         fails = [r for r in checked if r["conditions"]["textCheck"].get("status") == "FAIL"]
         if fails:
@@ -1026,18 +1077,90 @@ class Check:
         self.samples.append({"cell": cell, "source": src, "text": short(text, 160)})
         if checked:
             return      # the runner's own text check judged these runs (text-fail above)
-        screens = [(t or "", text_integrity(t or "")["flags"]) for _, t, _ in replies]
-        empty = sum(1 for _, fl in screens if "text-empty-or-degenerate" in fl)
-        loop = sum(1 for t, fl in screens if degenerate(t, 0.5) or "text-repetition-loop" in fl)
-        off = sum(1 for t, fl in screens if t.strip() and "text-off-task-screen" in fl)
-        n = len(replies)
-        if empty:
-            self.add("reply-empty", f"{cell}: {empty} of {n} replies empty or near-empty")
-        if loop:
-            self.add("reply-loop", f"{cell}: {loop} of {n} replies a repetition loop")
-        if off:
-            self.add("reply-off-task", f"{cell}: {off} of {n} replies name none of the prompt's subject "
-                                       f"terms (sample: {short(text, 60)!r})")
+        runs = [(r, reply_rules(t or "")) for _, t, r in replies]
+        n = len(runs)
+        hits = collections.Counter(rule for _, hit in runs for rule in hit)
+        words = {"reply-empty": "empty or near-empty", "reply-loop": "a repetition loop",
+                 "reply-off-task": f"name none of the prompt's subject terms (sample: {short(text, 60)!r})"}
+        found = [(rule, f"{hits[rule]} of {n} replies {words[rule]}") for rule in REPLY_RULES if hits[rule]]
+        if plat in SCREEN_PLATFORMS:
+            r0 = items[0][1]
+            self.screen[cell] = {"runs": runs, "found": found, "sample": short(text, 160),
+                                 "arm": r0.get("runtime"), "model": (r0.get("model") or {}).get("id"), "task": task}
+            return
+        for rule, detail in found:
+            self.add(rule, f"{cell}: {detail}")
+
+    def screen_out(self):
+        """The text screen: <dir>/text_screen.json holds the reply proxies' verdict of every run of the
+        dir's Mac / iPhone text cells the runner did not check (check_cell_text), per cell (cell_of)
+        and record id (run_rules; [] = passed); build_summary reads it into text_check, so a failed
+        run pools into no number and a cell whose runs all failed shows text-fail on the page. The
+        file is written only when its content (SCREEN_CONTENT) changed, never under --no-text-screen,
+        and removed when no cell is left to screen. A failing cell is then a note, not a HOLD; it
+        keeps its reply-* findings when the file does not carry it (not written, or a failed run
+        without a record id)."""
+        path = os.path.join(self.path, TEXT_SCREEN)
+        old = read_screen(path)
+        write = self.ctx["write_screen"]
+        cells = {}
+        for cell in sorted(self.screen):
+            e = self.screen[cell]
+            off = [hit for _, hit in e["runs"] if hit]
+            n = len(e["runs"])
+            cells[cell] = {"verdict": "FAIL" if off else "PASS",
+                           "rules": [rule for rule in REPLY_RULES if any(rule in hit for hit in off)],
+                           "runs": n, "runs_off": len(off),
+                           "detail": "; ".join(d for _, d in e["found"]) or f"{n} of {n} replies pass the screen",
+                           "sample": e["sample"],
+                           "run_rules": {str(r["id"]): hit for r, hit in sorted(e["runs"], key=lambda x: str(x[0].get("id")))
+                                         if r.get("id")}}
+        if not cells:
+            state = None if old is None else ("removed" if write else "would remove")
+            if state == "removed":
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    state = f"not removed ({e})"
+        else:
+            doc = {"schema": TEXT_SCREEN_SCHEMA,
+                   "written_at": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
+                   "written_by": f"scripts/session_check.py {self.ctx['version']}",
+                   "about": SCREEN_ABOUT, "rules": list(REPLY_RULES), "cells": cells}
+            if old is not None and all(old.get(k) == doc[k] for k in SCREEN_CONTENT):
+                state = "unchanged"
+            elif not write:
+                state = "would write" if old is None else "would rewrite"
+            else:
+                try:
+                    with open(path + ".tmp", "w", encoding="utf-8") as fh:
+                        fh.write(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+                    os.replace(path + ".tmp", path)
+                    state = "written" if old is None else "rewritten"
+                except OSError as e:
+                    state = f"not written ({e})"
+        as_if = (state or "").startswith("would")
+        carried = state in ("unchanged", "written", "rewritten", "would write", "would rewrite")
+        fails = [c for c in cells if cells[c]["verdict"] == "FAIL"]
+        for cell in fails:
+            c, e = cells[cell], self.screen[cell]
+            if not carried or any(hit and not r.get("id") for r, hit in e["runs"]):
+                for rule, detail in e["found"]:
+                    self.add(rule, f"{cell}: {detail}")
+                continue
+            # the runs arm_row would pool: cache-build (firstEver) runs never do
+            pooled = [hit for r, hit in e["runs"] if not (r.get("metrics") or {}).get("firstEver")]
+            effect = ("the page shows the cell as text-fail" if pooled and all(pooled) else
+                      f"{c['runs_off']} of {c['runs']} runs, which the page leaves out of the cell's number"
+                      if pooled else "its runs are cache-build runs, which pool into no number either way")
+            self.note(f"screened text-fail: {cell} ({', '.join(c['rules'])}): {effect}"
+                      + (" (text_screen.json not written: --no-text-screen)" if as_if else ""))
+        if state is not None:
+            self.screen_result = {"file": TEXT_SCREEN, "state": state, "cells": len(cells),
+                                  "text_fail": [{"cell": k, "arm": self.screen[k]["arm"], "model": self.screen[k]["model"],
+                                                 "task": self.screen[k]["task"], "rules": cells[k]["rules"],
+                                                 "runs": cells[k]["runs"], "runs_off": cells[k]["runs_off"]}
+                                                for k in fails]}
 
     def check_cell_counts(self, cell, items, plat, rt, task, hist):
         """The prompt reached the engine whole: its token count is the committed history's for the
@@ -1221,6 +1344,10 @@ class Check:
             "records": len([1 for _, r in self.records if r is not None]),
             "ledger": ({k: led.get(k) for k in ("started", "device", "campaign", "verdict", "reason",
                                                  "exit", "minutes", "attempt")} if led else None),
+            # text_screen.json: what this run did with it (written / rewritten / unchanged / would
+            # write / would rewrite / removed / would remove / not written (why)), its cells, its
+            # text-fail cells; None for a dir with no cell to screen and no file
+            "text_screen": self.screen_result,
         }
 
 
@@ -1265,7 +1392,8 @@ def make_context(args, names):
     return {"repos": {}, "allow": load_allow_list(args.allow_list), "history": args.history,
             "ledger": args.ledger, "job_logs": args.job_logs, "names": names,
             "sessions": sessions, "admission": admission, "sitting_of": sitting_of,
-            "hist_cache": {}, "sha_fix": sha_fix, "user": user if user not in ("", "USER") else None}
+            "hist_cache": {}, "sha_fix": sha_fix, "user": user if user not in ("", "USER") else None,
+            "write_screen": args.text_screen, "version": checker_version()}
 
 
 # ---------------------------------------------------------------- output
@@ -1274,6 +1402,13 @@ def ledger_text(led):
     if not led:
         return "—"
     return f"{led['started']} {led['device']} {led['verdict']} ({short(led['reason'], 40)}) exit {led['exit']}"
+
+
+def screen_text(ts):
+    """One line: what a run did with a dir's text_screen.json, its cells and text-fail cells."""
+    fails = ", ".join(f"{x['cell']} {x['runs_off']}/{x['runs']}" for x in ts["text_fail"])
+    return (f"text screen: {ts['state']} {ts['file']} ({ts['cells']} cells, {len(ts['text_fail'])} text-fail"
+            + (f": {fails}" if fails else "") + ")")
 
 
 def render_markdown(results):
@@ -1299,6 +1434,16 @@ def render_markdown(results):
         for f in r["findings"]:
             tail = f" — allowed by {f['allowed_by']['commit']} ({f['allowed_by']['reason']})" if f["allowed_by"] else ""
             L.append(f"  - {f['severity']} `{f['rule']}`: {f['detail']}{tail}")
+    screened = [r for r in results if r.get("text_screen")]
+    if screened:
+        L += ["", "## Text screen", "",
+              f"`{TEXT_SCREEN}` per dir: the reply proxies' verdict per run of its Mac / iPhone text cells "
+              "(results/summary reads it into text_check; a cell whose runs all fail shows text-fail on the page).", ""]
+        for r in screened:
+            ts = r["text_screen"]
+            L.append(f"- `{r['name']}` — {ts['state']}: {ts['cells']} cells, {len(ts['text_fail'])} text-fail")
+            for x in ts["text_fail"]:
+                L.append(f"  - text-fail {x['cell']}: {', '.join(x['rules'])} ({x['runs_off']} of {x['runs']} runs)")
     L += ["", "## A person reads one reply per cell", "",
           "No verdict reads these: the proxies above screen them, a person reads them.", ""]
     for r in results:
@@ -1322,6 +1467,10 @@ def main(argv=None):
     ap.add_argument("--ledger", help="the job ledger (default: <repo>/logs/dashboard-job/ledger.tsv)")
     ap.add_argument("--job-logs", help="the job's log dir (default: <repo>/logs/dashboard-job)")
     ap.add_argument("--user", help="the account name to look for in paths (default: this account)")
+    ap.add_argument("--text-screen", action=argparse.BooleanOptionalAction, default=True,
+                    help="write text_screen.json in each job dir with Mac / iPhone text cells the runner did "
+                         "not check (default); --no-text-screen writes nothing and judges the dirs as if it "
+                         "were written (a dry run, a check of dirs that are not this checkout's to change)")
     ap.add_argument("-q", "--quiet", action="store_true", help="one line per dir, no findings")
     args = ap.parse_args(argv)
     missing = [d for d in args.dirs if not os.path.isdir(d)]
@@ -1340,6 +1489,8 @@ def main(argv=None):
             for f in r["findings"]:
                 tail = f"  [allowed: {f['allowed_by']['commit']}]" if f["allowed_by"] else ""
                 print(f"        {f['severity']} {f['rule']}: {f['detail']}{tail}")
+        if r["text_screen"]:
+            print("        " + screen_text(r["text_screen"]))
     total = collections.Counter(r["verdict"] for r in results)
     print(f"PASS {total['PASS']}  HOLD {total['HOLD']}  FAIL {total['FAIL']}  of {len(results)}")
     if args.json:

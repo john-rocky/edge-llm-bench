@@ -6,7 +6,7 @@ for querying, regression tracking, and leaderboard export — regenerate any
 time with `python3 scripts/build_summary.py`.
 
 - `quality.csv` — 0 GSM8K report rows (all historical schema variants normalized)
-- `device-runs.csv` — 5035 per-run device records (speed / memory / energy cells)
+- `device-runs.csv` — 5076 per-run device records (speed / memory / energy cells)
 - `history.csv` — 32 regression verdicts flattened from `results/regression-reports/*/verdicts.json`
 
 Engine version is absent from pre-v1 rows (see the gap audit). Builds from
@@ -29,6 +29,14 @@ from 2026-10-06; its earlier rows carry a peak only from the
 `PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a
 `FAIL` run stays a row here and in raw but pools into no number
 (`render_leaderboard.arm_row`; `methodology/fairness-rules.md` text-check-rule).
+A Mac or iPhone record carries no `conditions.textCheck`: its `text_check` comes from
+the campaign dir's `text_screen.json` (2026-10-19), the session checker's screen of each
+run's reply (`scripts/session_check.py`): `FAIL:<rules>` (`reply-empty`, `reply-loop`,
+`reply-off-task`) or `PASS:screen` per record id, empty for a run the file does not name.
+Unlike the Android runner's check, written into the record at capture time from the
+stored decoded text, the screen runs on the sitting's dir before its commit and is kept
+beside the records (the same lexical tests, `android/bench/parsers.text_integrity`,
+and the cell gate's loop test).
 
 `cpu_capped` / `cpu_max_freq` (after `text_check`, 2026-10-07) are the CPU frequency
 cap the Android runner read during the run: `cpu_capped` = `true` when a cpufreq
