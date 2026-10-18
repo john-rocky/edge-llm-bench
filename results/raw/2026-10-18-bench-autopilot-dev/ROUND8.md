@@ -60,7 +60,7 @@ PINS と LOCK の android block は d33ffa53 と dad937b1 で同じ v0.18.0 = �
 
 | command | 前 | 後 | exit |
 |---|---|---|---|
-| `python3 scripts/session_check_selftest.py` | 39 | 49 (worktree では commit 前 47 + skip 1: iOS の 2 case は commit された LOCK を読む; LOCK を commit した scratch clone で 49 / skip 0; commit 後の結果は経過の最終行) | 0 |
+| `python3 scripts/session_check_selftest.py` | 39 | 49 (commit 4d5b60b1 の後、skip 0; commit 前の worktree では 47 + skip 1 = iOS の 2 case は commit された LOCK を読む) | 0 |
 | `python3 scripts/dashboard_post_selftest.py` | 48 | 51 | 0 |
 | `python3 scripts/dashboard_job_selftest.py` | 89 | 89 | 0 |
 | `python3 scripts/regression_watch_selftest.py` | 50 | 50 | 0 |
@@ -140,7 +140,8 @@ guard の行と前後:
 
 ## commit
 
-(経過の最終行に hash)
+- `4d5b60b1` (branch `bench-autopilot`、2026-10-19 03:17:25、author / committer john-rocky <rockyshikoku@gmail.com>): 明示 path 10 本 (`scripts/session_check.py`、`scripts/session_check_selftest.py`、`scripts/dashboard_post.py`、`scripts/dashboard_post_selftest.py`、`docs/session-check-v1.md`、`docs/dashboard-autopilot-v1.md`、`environment.lock.json` (監督の追加)、`K/ROUND8.md`、`K/committed_check_r8.md`、`K/backlog_table_r8.md`)。`git diff --cached --name-only` で 10 本だけを確かめてから commit。message に帰属行なし、"claude" / "anthropic" なし、`%` と順位の語なし (grep)。push なし、merge なし。
+- この経過の最終行・commit hash を足した 2 本目 (`K/ROUND8.md` だけ)。
 
 ## 提案
 
@@ -148,8 +149,9 @@ guard の行と前後:
 2. **他の runtime に広げるなら読む物**: llama.cpp = `arms.llama.cpp.tag` と PINS `android_pins.llama.cpp` (今は両方 b8999; side build `engine-build=` は外す)、ONNX Runtime GenAI = Mac の `arms.onnxruntime-genai.mac.packages` と Android の release_zip / AAR の版、ExecuTorch = `arms.executorch.tag`。MLX は revision (commit) で release tag がない = 比べられない (note)。protocol-off を広げるなら llama.cpp の 1K task の `context_tokens` (deviation 5 で llama.cpp は `--context-tokens` を守る) が候補、MLX は強制できない (deviation 5) ので外のまま。
 3. **ios block と REGISTERED_LATER**: merge を rebase でやるなら `("litert-lm", "ios")` を `REGISTERED_LATER` に足すと、merge 前に始まった 10-19 の iPhone sitting も v0.18.0 で読める。監督の指定どおり今は入れていない。
 4. **LOCK の mac block の note** は「The iPhones stay on default_tag」と書いたまま (10-18 まで正しい)。次に LOCK を触る時に 1 文。
-5. **PINS と LOCK の android が違う時の note** の分岐は実データでも selftest でも通っていない (両方 v0.18.0)。次に Android の pin を動かす commit で一度読む。
-6. 夜の job の Mac で LiteRT-LM GPU の Gemma 4 E2B cell が 2 回とも初回 SPREAD (下の op の節)。この lane の外。
+5. **`registered at` の表記**: `registry_at()` は後から登録した block に「最新の registry commit」の hash を付ける。4d5b60b1 が main に入ると、10-12..10-14 の sitting の engine-stamp / pin-drift の detail の mac block は `registered at 4d5b60b1` と読める (block を足したのは dad937b1)。判定も allow-list の一致も変わらない (allow-list に `registered at` を含む行はない)。直すなら block を最初に持った commit を名指す。
+6. **PINS と LOCK の android が違う時の note** の分岐は実データでも selftest でも通っていない (両方 v0.18.0)。次に Android の pin を動かす commit で一度読む。
+7. 夜の job の Mac で LiteRT-LM GPU の Gemma 4 E2B cell が 2 回とも初回 SPREAD (下の op の節)。この lane の外。
 
 ## 経過
 
@@ -160,6 +162,8 @@ guard の行と前後:
 - 03:01:58-03:01:59 scratch clone for (d) (`git clone --shared --no-checkout`, `read-tree HEAD`, the s8a pair `git rm --cached` + one scratch commit there, the pair copied in untracked); `run_bcd.sh` in the background: waits for the night log's `=== cooldown` line, then (b), (c) at normal priority and (d) under `taskpolicy -b`. Table generator written and tried on the 02:5x outputs.
 - 03:05:25-03:06:02 (b) (c) (d) ran in the cooldown after the night job's 03:01:25 cell (its retry ended 03:05:21): (b) 116 dirs 10.54 s, (c) the same 69 dirs 6.36 s, (d) exit 0 in 20.44 s. Night job read (records, read only): the Mac's LiteRT-LM Gemma 4 E2B cells tripped SPREAD 32.2 (02:42:42 short chat) and 18.4 (03:01:25 1K) on their first attempts and kept their retries; none of my commands ran during those runs (my runs: 02:45:11-22, 02:48:23-54, 02:52:15-26, 02:53:12-18, 02:59:23-54, 03:00-03:01 before the 03:01:25 cell, 03:01:58-59 after its last run at 03:01:53; the gate lines and the record times are in the night log and the sitting's jsonl). Next: the tables.
 - 03:06-03:10 the supervisor's addition arrived (iOS block, user's decision 2026-10-19): LOCK `arms.litert-lm.ios`, `registry_pin()`, selftest 2 cases, docs. The checker and its selftest read the lock from git, so the iOS cases print `skip` in this worktree until the commit; in a scratch clone with the edit committed (`git clone --shared --no-checkout` + `checkout HEAD -- scripts android ops matrices methodology docs environment.lock.json .gitignore`, this round's files copied in, one scratch commit at 03:10:40): selftest OK, 49 checks, 0 skips. (b) re-run with the iOS-aware checker (03:11:3x, in the cooldown after a 03:10:21 MLX cell that failed to load): identical to 03:05. Selftests 03:12:04-03:12:35 (after checking the night log read `=== cooldown`): 47 + 1 skip / 51 / 89 / 50 / 58, all exit 0. Next: ROUND8, the tables into K, the commit.
+- 03:13-03:17 ROUND8 and the round close written (lint PASS); the two tables generated from the 03:05 outputs; the account name and the session scratchpad's path in no K file (grep). Commit `4d5b60b1` (03:17:25, the 10 paths). Next: verify after the commit.
+- 03:18:07-03:18:27 (in the cooldown after the night job's 03:15:32 llama.cpp 1K cell): `session_check_selftest.py` 49 checks, 0 fail, 0 skip (the iOS cases now read the committed block); (b) 116 dirs and (c) 69 dirs re-run with the committed checker and registry: the same verdicts and findings in every dir as at 03:05 (the backlog reads the main tree's registry history, where 4d5b60b1 is not yet: its labels still read dad937b1). Scratch clones deleted. Next: the second commit (this file), the report.
 
 ## 訂正
 
@@ -198,4 +202,4 @@ guard の行と前後:
 
 - `K/ROUND8.md` (この file)、`K/committed_check_r8.md` ((b) の 116 行の表と集計)、`K/backlog_table_r8.md` ((c) の 69 行の表と突き合わせ) — commit。
 - 変更した code / docs / LOCK: `scripts/session_check.py`、`scripts/session_check_selftest.py`、`scripts/dashboard_post.py`、`scripts/dashboard_post_selftest.py`、`docs/session-check-v1.md`、`docs/dashboard-autopilot-v1.md`、`environment.lock.json` — commit。
-- session の scratchpad (git の外): check の JSON / markdown / out (`committed_before|after|r8|r8b`、`backlog_after|r8`、`ddp1016_after`)、selftest の出力、`run_bcd.sh`、`make_tables.py`、`diffcheck.py`、`bcd.status`、`d_dryrun.out` [消してよい]; scratch clone 2 つ `postclone/`、`stclone/` と `posttmp/` [消してよい: round の最後に消す]。
+- session の scratchpad (git の外): check の JSON / markdown / out (`committed_before|after|r8|r8b`、`backlog_after|r8`、`ddp1016_after`)、selftest の出力、`run_bcd.sh`、`make_tables.py`、`diffcheck.py`、`bcd.status`、`d_dryrun.out` [消してよい]; scratch clone 2 つ `postclone/` (3.5 MB)、`stclone/` (4.6 MB) と `posttmp/` は 03:18 に消した。
