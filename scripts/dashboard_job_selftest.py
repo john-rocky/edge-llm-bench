@@ -141,6 +141,8 @@ def main():
     os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
 
     import dashboard_job as dj
+REAL_PGREP = dj.pgrep   # the module's own; later cases replace dj.pgrep with fakes
+
     # the per-device job locks live under LOG_DIR; keep the selftest's probes and
     # its held lock inside the temp dir, never under logs/dashboard-job
     dj.LOG_DIR = os.path.join(tmp, "logs")
@@ -526,6 +528,20 @@ def main():
     finally:
         child.kill(); plain.kill(); child.wait(); plain.wait()
     ok(dj.driver_serial(child.pid) is None, "driver_serial of a process that is gone: None")
+    # pgrep(): one record per matched pid; a Claude session's multi-line prompt argument whose later
+    # line starts with a number is not a process (2026-10-19 05:49: "3 asset ..." read as pid 3)
+    real_sh = dj.sh
+    fake_fl = ("82049 /Users/USER/.local/bin/claude --session-id x --dangerously-skip-permissions run text\n"
+               "## stop\n3 asset lines, bench matrix smoke / run_campaign.py named here\n"
+               "91288 python3 android/bench/run_campaign.py matrices/x.cells\n")
+    dj.sh = lambda cmd, **kw: ((0, fake_fl) if cmd[:2] == ["pgrep", "-fl"] else (0, "82049\n91288\n")
+                               if cmd[:2] == ["pgrep", "-f"] else real_sh(cmd, **kw))
+    try:
+        got = REAL_PGREP("run_campaign.py")
+        ok(got == ["91288 python3 android/bench/run_campaign.py matrices/x.cells"],
+           f"pgrep: the agent CLI's prompt lines are not drivers, even one that starts with a number ({got})")
+    finally:
+        dj.sh = real_sh
     real_driver_serial = dj.driver_serial
     drv = "91288 python3 android/bench/run_campaign.py matrices/x.cells"
     for line, env_serial, busy, what in [

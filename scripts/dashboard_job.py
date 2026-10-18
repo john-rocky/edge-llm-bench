@@ -224,12 +224,18 @@ def pgrep(pattern):
     that names run_cell.py is not run_cell.py running — a live Claude session
     crashed this probe with ValueError on 2026-09-13)."""
     rc, out = sh(["pgrep", "-fl", pattern])
+    rc2, ids = sh(["pgrep", "-f", pattern])
+    # the pids pgrep matched: a record of the -fl output starts with one of them, once; any other
+    # line that starts with a number is argv text (2026-10-19: a Claude session's prompt argument
+    # carried a line "3 asset ...", read as pid 3's command and reported as a host driver)
+    pids = {p for p in ids.split() if p.isdigit()}
     mine = {os.getpid(), os.getppid()}
     lines = []
     for ln in out.splitlines():
         parts = ln.split(None, 2)
-        if len(parts) < 2 or not parts[0].isdigit():
+        if len(parts) < 2 or not parts[0].isdigit() or parts[0] not in pids:
             continue
+        pids.discard(parts[0])
         if int(parts[0]) in mine or "dashboard_job.py" in ln:
             continue
         if os.path.basename(parts[1]) == "claude":
