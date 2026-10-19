@@ -147,11 +147,36 @@ EOF
       [ "$got" = "$2" ] || { say "FAIL the candidate's place hashes $got after putting $1 (want $2)"; return 1; }
       say "OK the candidate's place holds $(basename "$1") ($got)"
     }
+    # the first launch after an install dies in the scene-create watchdog (memory bench-app-install-must-be-release):
+    # one throwaway launch first
+    t_install=$(date -u +%Y-%m-%dT%H-%M-%S)
+    gtimeout --kill-after=30 300 xcrun devicectl device process launch --console --terminate-existing --device "$UDID" "$APPID" \
+      -- --yardstick-autorun --runtime mlx-swift --model-id mlx-community/Qwen3-0.6B-4bit --task short-chat --runs 1 \
+      < /dev/null > "$OUT/throwaway.txt" 2>&1
+    say "throwaway launch: $(grep -c YARDSTICK_RUN_OK "$OUT/throwaway.txt") RUN_OK line(s)"
     smoke d_graph0921_meta018 litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
     smoke b_graph0805_meta018 litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018
     put "$IN_0805" "$SHA_0805" && smoke a_graph0805_meta0805 litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018
     put "$DIAG_C" "$SHA_C" && smoke c_graph0921_meta0805 litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018
     put "$CAND" "$SHA" || { say "FAIL the candidate is not back in its place: no sitting until it is"; exit 1; }
+    # the records the slot made (newer than the install): build configuration, arm, prompt tokens
+    mkdir -p "$OUT/records"
+    xcrun devicectl device copy from --device "$UDID" --domain-type appDataContainer --domain-identifier "$APPID" \
+      --source Documents/results --destination "$OUT/records" > "$OUT/records-copy.txt" 2>&1
+    python3 -I - "$OUT/records" "$t_install" <<'EOF'
+import glob, json, os, sys
+for f in sorted(glob.glob(os.path.join(sys.argv[1], "**", "*.json"), recursive=True)):
+    if os.path.basename(f).rsplit("_", 1)[-1][:19] < sys.argv[2]:
+        continue
+    try:
+        r = json.load(open(f))
+    except Exception:
+        continue
+    m = r.get("metrics", {})
+    print(f"    record {os.path.basename(f)[:90]}: {r.get('runtime')} {r['model'].get('id')} "
+          f"build {r.get('device', {}).get('buildConfiguration')} prompt {m.get('promptTokenCount')} "
+          f"gen {m.get('generatedTokenCount')} decode {m.get('decodeTokensPerSecond')}")
+EOF
     say "DONE ios-push"
   ) 2>&1 | tee -a "$OUT/ios-push.log"
   rc=${PIPESTATUS[0]}
