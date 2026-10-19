@@ -1,0 +1,32 @@
+# Mac Studio (M4 Max), 2026-10-19: which mlx-community bundle the page's MLX Gemma 4 rows run. The team's point
+# (2026-10-19 10:2x): the page runs mlx-community/gemma-4-{e2b,e4b}-it-qat-OptiQ-4bit, while the bundles people
+# download are gemma-4-{e2b,e4b}-it-4bit and gemma-4-{E2B,E4B}-it-qat-mobile; the speed is measured here, in one
+# sitting, not read off download counts or bytes. Hub cards and configs (read 2026-10-19):
+#   qat-OptiQ-4bit  QAT base (google/gemma-4-E*B-it-qat-q4_0-unquantized), mlx-optiq per-layer 4 / 8 bit, g64,
+#                   5.24 bits per weight (E2B card)
+#   4bit            PTQ: mlx_vlm.convert of google/gemma-4-E*B-it, uniform 4 bit affine g64
+#   qat-mobile      Google's mobile schema (config quantization_config quant_method "gemma": 2 / 4 / 8 bit weights,
+#                   per-channel weight_scale, static input / output activation scales); the card states no quantization
+# Rule (supervisor 2026-10-19, docs/dashboard-cells-v1.md "MLX Gemma 4 file (2026-10-19)"): the page's file is of the
+# QAT class, the class of the page's comparison partner (the LiteRT-LM Gemma 4 bundles, wNa8o8 QAT); among the QAT
+# bundles that load and pass the text check, the fastest warm decode, and within 5 % the one with the most 30-day
+# downloads. The PTQ 4bit rows are measured for the table, not for the page (ModelCatalog.swift: GSM8K 78 % for the
+# E2B PTQ build, 87 % for the QAT build). The qat-mobile rows are exclude=: mlx-swift-lm 60bd0d7 reads the `quantization` key only and does
+# not load these bundles (one launch each, 10:31 / 10:32: NOTES-qat-mobile-load.txt in the campaign dir).
+# Source: matrices/dashboard-text-v1.cells line 204 (anchor); lines 237 and 263 (the 1K rows: cooldown=300; runs=4
+# is the runner's default there, written out here). File order alternates: E2B OptiQ first, E4B 4bit first.
+#   DD_MAC=<yardstick build> BENCH_ENGINE_PINS_FILE=<its pins file> python3 ~/code/standup/tools/quiet/quiet_hold.py \
+#     r14-mlx-gemma4-file -- ./bench matrix <this file> --platform mac --campaign 2026-10-19-mlx-gemma4-file-mac
+
+# ---- mac ----
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+
+# --- Gemma 4 E2B ---
+mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 runs=4
+mac mlx-swift mlx-community/gemma-4-e2b-it-4bit long-context-1024-gen256 cooldown=300 runs=4
+mac mlx-swift mlx-community/gemma-4-E2B-it-qat-mobile long-context-1024-gen256 cooldown=300 runs=4 exclude=quant-method-gemma-mobile-schema-not-loadable-by-mlx-swift-lm-60bd0d7
+
+# --- Gemma 4 E4B ---
+mac mlx-swift mlx-community/gemma-4-e4b-it-4bit long-context-1024-gen256 cooldown=300 runs=4
+mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 runs=4
+mac mlx-swift mlx-community/gemma-4-E4B-it-qat-mobile long-context-1024-gen256 cooldown=300 runs=4 exclude=quant-method-gemma-mobile-schema-not-loadable-by-mlx-swift-lm-60bd0d7
