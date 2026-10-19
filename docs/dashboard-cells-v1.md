@@ -1256,9 +1256,11 @@ LiteRT-LM Gemma 4 bundles, Google's wNa8o8 QAT mobile schema). Among the QAT bun
 mlx-swift-lm loads and whose 1K replies pass the text check (text-check-rule; on the Mac, the session
 checker's text screen), the page takes the one with the fastest warm decode on `long-context-1024-gen256` in
 one sitting (`render_leaderboard.arm_row`'s warm median). Two within 5 % of each other go to the one with more
-30-day downloads (the Hub API's `downloads`, read on the day of the sitting). A PTQ build is measured for the
-table and is no candidate (`ModelCatalog.swift`: the E2B PTQ build scored 78 % and the QAT build 87 % on GSM8K,
-n = 100). A bundle the pinned runtime cannot load stays in the table with its error.
+30-day downloads (the Hub API's `downloads`, read on the day of the sitting). A PTQ build is the page's second MLX
+row, not a candidate for this one: its class is in the row's name (subsection "2 rows from 2026-10-19" below). A
+bundle the pinned runtime cannot load stays in the table with its error.
+(Until 2026-10-19 11:4x the rule read: "A PTQ build is measured for the table and is no candidate
+(`ModelCatalog.swift`: the E2B PTQ build scored 78 % and the QAT build 87 % on GSM8K, n = 100).")
 
 The bundles (Hub main and the 30-day downloads as read 2026-10-19 10:23 JST; bytes = every `*.safetensors` file
 the yardstick downloads, each one's sha256 hashed from the bytes in the Mac's Hub cache and equal to the Hub's
@@ -1319,11 +1321,50 @@ fails the text check enters no column (text-check-rule).
 
 Decision: the page keeps OptiQ for both models, measured and kept. It is the only QAT bundle that loads, so the
 5 % and download steps did not come into play. The E2B rows keep their number; the E4B 1K cell keeps its
-text-fail mark (the model declines the lorem passage, not an engine fault). No cells file changes. The PTQ
-4bit rows above are the speed of that class; the rule keeps them off the page. If a newer mlx-swift-lm loads
+text-fail mark (the model declines the lorem passage, not an engine fault). No cells file changed for these rows.
+The PTQ 4bit rows above are the speed of that class; since 2026-10-19 they are the page's second MLX row (below;
+this paragraph first said "the rule keeps them off the page"). If a newer mlx-swift-lm loads
 `quant_method: gemma` (`./bench release-watch` lists mlx-swift-lm drift), the qat-mobile rows of
 `matrices/mlx-gemma4-file-mac.cells` lose their `exclude=` and run as candidates of the QAT class, in the
 schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own sitting.
+
+### 2 rows from 2026-10-19 (owner decision via code-2d)
+
+Decision (2026-10-19 11:4x, code-2d for the owner): the page's MLX Gemma 4 has two rows per model and platform, the
+QAT OptiQ row the rule above picks and the PTQ row `mlx-community/gemma-4-{e2b,e4b}-it-4bit`, each with its class in
+its name. Why:
+
+- The page's llama.cpp Gemma 4 rows run a PTQ file too (unsloth `Q4_K_M`; Google's QAT GGUF does not load as shipped,
+  `matrices/dashboard-text-v1.cells`, the note above the Android Gemma 4 E2B rows).
+- The PTQ bundles are the ones people download: 24,394 (E2B) and 31,114 (E4B) downloads in 30 days, against OptiQ's
+  956 and 2,475, about 25 and 13 times as many (the bundle table above, read 2026-10-19 10:23 JST).
+- The speed a developer gets from MLX's most downloaded Gemma 4 builds is not left off the page; the class
+  difference shows in the name instead of in a missing row.
+
+Rows: in `matrices/dashboard-text-v1.cells` (short-chat and `long-context-1024-gen256`) and
+`matrices/dashboard-longctx1024-v1.cells` (`long-context-1024-gen256`), every Mac and iPhone OptiQ row has the PTQ row
+right after it, with the same options. The iPhone E4B PTQ rows carry no `exclude=` (the OptiQ E4B rows keep
+`exclude=app-killed-at-model-load-sigkill`): their first sitting shows whether the phone loads 5.1 GB of weights.
+Each Apple sitting gains four cells at `cooldown=300`.
+
+Names (`scripts/bench_common.py` `LOGICAL_MODELS`, before the generic Gemma 4 patterns): `Gemma 4 E2B (QAT OptiQ)`,
+`Gemma 4 E2B (PTQ 4bit)`, `Gemma 4 E4B (QAT OptiQ)`, `Gemma 4 E4B (PTQ 4bit)`. In the bench's table
+(`scripts/render_dashboard.py`) they are the MLX rows' labels: two artifacts of one arm share a model row, so
+`load_cells` gives both their full names, as for the CQ4 lineages; the LiteRT-LM and llama.cpp cells stay on the
+`Gemma 4 E2B` / `Gemma 4 E4B` rows.
+
+Undo: remove the PTQ rows from the two cells files. The names can stay; they label the PTQ ids only and keep the
+E4B OptiQ build apart from the generic pattern, as the E2B one has been.
+
+Numbers so far: the Mac's PTQ figures are the table above (one hand-run sitting,
+`results/raw/2026-10-19-mlx-gemma4-file-mac/`). The page reads the weekly sittings, so its Mac PTQ cells read "not
+measured" until the Mac's next weekly sitting runs the new rows. The iPhone 18 Pro's first PTQ sitting runs through
+the job route with `matrices/mlx-gemma4-file-ios.cells` (the session anchor row, then the E2B OptiQ, E2B 4bit and
+E4B 4bit rows of both tasks, byte-identical to the weekly rows), campaign
+`results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-ios/` (anchor phase `…-mlx-ptq-anchor-ios/`). The two 4bit
+bundles are copied over USB from the Mac's Hub cache into the app's own Hub cache first, so no cell downloads over
+Wi-Fi: the app's MLX loader (swift-huggingface `HubClient`) reads
+`Library/Caches/huggingface/hub/models--mlx-community--<repo>/refs/main` and `snapshots/<rev>/` in the app's container.
 
 ## Open questions for the LiteRT team
 
@@ -1345,6 +1386,8 @@ schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own si
 6. iPhone MLX E4B: the QAT OptiQ build (6.5 GB) is killed at load on the
    iPhone 17 Pro; use the 5.1 GB PTQ 4-bit build for that one row (a different
    recipe from the Mac's MLX row, disclosed), or leave the cell as the finding?
+   (2026-10-19: both — the OptiQ row stays with its reason and the PTQ row runs beside it on every Apple
+   device; section "MLX Gemma 4 file (2026-10-19)".)
 7. Long-context cells on the `mixed_int4` Qwen3 files: their 2,048-entry KV
    cannot hold a 2K prompt plus a 256-token reply, and `maxNumTokens` above
    the exported size runs with invalid decode results instead of an error

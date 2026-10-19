@@ -16,6 +16,9 @@
 # v0.18.0, google-ai-edge/LiteRT-LM#3688) to litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32
 # (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm: dynamic INT4, block-32 weights, FP32 act); the anchor rows keep
 # litert-community/Qwen3-0.6B.
+# 2026-10-19 (owner decision via code-2d): every MLX Gemma 4 QAT OptiQ row has a PTQ row right after it,
+# mlx-community/gemma-4-{e2b,e4b}-it-4bit with the same options (the iPhone E4B one without exclude=), named QAT OptiQ /
+# PTQ 4bit (docs/dashboard-cells-v1.md "MLX Gemma 4 file (2026-10-19)"). Undo: remove the PTQ rows.
 
 
 # ---- mac ----
@@ -33,6 +36,7 @@ mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-con
 mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
 mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+mac mlx-swift mlx-community/gemma-4-e2b-it-4bit long-context-1024-gen256 cooldown=300
 mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
 mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
@@ -43,6 +47,7 @@ mac executorch own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-conte
 mac executorch own-export/Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-4B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048
 mac litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+mac mlx-swift mlx-community/gemma-4-e4b-it-4bit long-context-1024-gen256 cooldown=300
 mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
 mac executorch own-export/gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E4B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
 mac executorch own-export/gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E4B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
@@ -67,12 +72,14 @@ ios litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-token
 ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
 ios litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 ios mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+ios mlx-swift mlx-community/gemma-4-e2b-it-4bit long-context-1024-gen256 cooldown=300
 ios llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
 ios mlx-swift mlx-community/Qwen3-4B-4bit long-context-1024-gen256 cooldown=300
 ios litert-lm litert-community/Qwen3-4B long-context-1024-gen256 cooldown=300 context-tokens=2048
 ios llama.cpp unsloth/Qwen3-4B-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
 ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
 ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 exclude=app-killed-at-model-load-sigkill
+ios mlx-swift mlx-community/gemma-4-e4b-it-4bit long-context-1024-gen256 cooldown=300
 ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
 # ONNX Runtime GenAI (weekly since 2026-10-09 with the iPhone 18 Pro's pinned build that carries the adapter):
 # the three Qwen3 1K rows of matrices/dashboard-ortgenai-v1.cells, the twins of the iPhone short-chat rows in
