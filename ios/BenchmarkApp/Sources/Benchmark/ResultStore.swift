@@ -54,7 +54,9 @@ public actor ResultStore {
 
     private func filename(for result: BenchmarkResult) -> String {
         let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate]
+        // fractional seconds: two runs that end in the same second (MLX Qwen3 0.6B short-chat, ~0.6 s a run)
+        // overwrote each other on the phone and the anchor phase read 2 of 3 records (2026-10-19 12:45)
+        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withFractionalSeconds]
         let stamp = formatter.string(from: result.timestamp)
             .replacingOccurrences(of: ":", with: "-")
         return "\(result.runtime)_\(result.model.id.replacingOccurrences(of: "/", with: "_"))_\(result.task)_\(stamp)"
