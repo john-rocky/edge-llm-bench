@@ -271,21 +271,47 @@ def driver_serial(pid):
     return driver_env(pid, "BENCH_ANDROID_SERIAL")
 
 
-def iphone_runner_busy(udid):
+def other_phone_held(dev):
+    """The key of another schedule device whose live hold sits in this device's sibling hold files
+    (the lanes' .iphone_hold names its phone), or None."""
+    mine = device_key_of(dev)
+    for path in dev.get("hold_also_check", []):
+        h = read_hold(path)
+        if not h or not pid_alive(h.get("pid")):
+            continue
+        other = KNOWN_DEVICES.get(str(h.get("device") or "").strip().lower())
+        if other is not None and mine is not None and other != mine:
+            return other
+    return None
+
+
+def iphone_runner_busy(udid, dev):
     """Why a live iPhone runner (scripts/bench_matrix_iphone.sh) makes this phone busy, or None.
-    The runner takes its phone from BENCH_UDID (the job's run_matrix env): one that names another
-    phone shares only the host (2026-10-19 12:36: the 17 Pro's AA lane's runner held the 18 Pro's
-    job at exit 3); one that names this phone, or none, is busy."""
+    The runner's phone is BENCH_UDID or DEV in its environment (the job's run_matrix env; the
+    runner's own default) when that can be read; macOS shows another session's environment as
+    empty, and then a live sibling hold that names another phone (other_phone_held) is taken as
+    that runner's phone. A runner on another phone shares only the host (2026-10-19 12:36: the
+    17 Pro's AA lane's runner held the 18 Pro's job at exit 3); one on this phone, or on no phone
+    anyone can name, is busy."""
+    mine = device_key_of(dev) or KNOWN_DEVICES.get(udid.lower())
     for ln in pgrep("bench_matrix_iphone"):
         pid = ln.split(None, 1)[0]
         try:
-            other = driver_env(int(pid), "BENCH_UDID")
+            named = driver_env(int(pid), "BENCH_UDID") or driver_env(int(pid), "DEV")
         except ValueError:
-            other = None
-        if other and other != udid:
-            log(f"bench_matrix_iphone.sh pid {pid} drives {other}: another phone's runner, not this one's")
+            named = None
+        other = KNOWN_DEVICES.get(str(named or "").strip().lower())
+        if named and other is None and named != udid:
+            other = "?"            # a device string the schedule does not know
+        if other is None:
+            other = other_phone_held(dev)
+            how = "the live sibling hold names" if other else ""
+        else:
+            how = "its environment names"
+        if other not in (None, "?") and mine is not None and other != mine:
+            log(f"bench_matrix_iphone.sh pid {pid}: {how} {other} — another phone's runner, not this one's")
             continue
-        return f"bench_matrix_iphone.sh is running (pid {pid}, device {other or 'unknown'})"
+        return f"bench_matrix_iphone.sh is running (pid {pid}, device {named or other or 'unknown'})"
     return None
 
 
@@ -299,13 +325,13 @@ KNOWN_DEVICES = {}
 def register_devices(schedule):
     KNOWN_DEVICES.clear()
     for key, d in (schedule.get("devices") or {}).items():
-        for name in (key, d.get("display"), d.get("identifier"), d.get("serial"), d.get("udid")):
+        for name in (key, d.get("display"), d.get("identifier"), d.get("serial"), d.get("udid"), d.get("coredevice")):
             if name:
                 KNOWN_DEVICES[str(name).strip().lower()] = key
 
 
 def device_key_of(dev):
-    for name in (dev.get("key"), dev.get("identifier"), dev.get("serial"), dev.get("udid"), dev.get("display")):
+    for name in (dev.get("key"), dev.get("identifier"), dev.get("serial"), dev.get("udid"), dev.get("coredevice"), dev.get("display")):
         if name and str(name).strip().lower() in KNOWN_DEVICES:
             return KNOWN_DEVICES[str(name).strip().lower()]
     return None
@@ -613,7 +639,7 @@ def preflight_iphone(dev, dry, cells_files=()):
                        "(the runner's default is the retired app)")
     if not iphone_attached(udid):
         raise NotReady(f"{udid} not available to devicectl — connect + trust the phone")
-    busy = iphone_runner_busy(udid)
+    busy = iphone_runner_busy(udid, dev)
     if busy:
         raise Busy(busy)
     check_holds(dev, dry)

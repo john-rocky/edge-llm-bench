@@ -810,13 +810,25 @@ def main():
     # iphone_runner_busy: a runner that drives another phone (BENCH_UDID) shares only the host
     real_pgrep_i, real_env_i = dj.pgrep, dj.driver_env
     dj.pgrep = lambda pattern: ["4242 bash scripts/bench_matrix_iphone.sh run matrices/x.cells"]
+    dj.register_devices({"devices": {"p18": {"display": "iPhone 18 Pro", "udid": "00008160-MINE", "coredevice": "C7A7-MINE"},
+                                     "p17": {"display": "iPhone 17 Pro", "udid": "00008150-OTHER"}}})
+    rdev = {"display": "iPhone 18 Pro", "udid": "00008160-MINE", "hold_also_check": [other]}
     outcomes = []
-    for env_udid in ("00008150-OTHER", "00008160-MINE", None):
+    for env_udid, hold in (("00008150-OTHER", None), ("00008160-MINE", None), ("C7A7-MINE", None), ("UNKNOWN-ID", None),
+                           (None, {"pid": live, "script": "x-17pro", "device": "iPhone 17 Pro"}),
+                           (None, {"pid": live, "script": "x-18pro", "device": "iPhone 18 Pro"}), (None, None)):
         dj.driver_env = lambda pid, var, _u=env_udid: _u if var == "BENCH_UDID" else None
-        outcomes.append("busy" if dj.iphone_runner_busy("00008160-MINE") else "free")
+        if hold is None:
+            if os.path.exists(other):
+                os.remove(other)
+        else:
+            with open(other, "w") as fh:
+                json.dump(hold, fh)
+        outcomes.append("busy" if dj.iphone_runner_busy("00008160-MINE", rdev) else "free")
     dj.pgrep, dj.driver_env = real_pgrep_i, real_env_i
-    ok(outcomes == ["free", "busy", "busy"],
-       f"iphone_runner_busy: another phone's runner is not busy, this phone's and an unnamed one are ({outcomes})")
+    ok(outcomes == ["free", "busy", "busy", "busy", "free", "busy", "busy"],
+       f"iphone_runner_busy: the runner's phone from its environment (another phone free; this phone by udid or coredevice, "
+       f"an unknown id: busy), else from the live sibling hold (another phone free; this phone or no hold: busy) ({outcomes})")
 
     # cells_with_records: a row exclude-on= names for the device is not expected of it (the runner skips it
     # with a CELL_SKIP line and no record); other devices still expect it (Pixel 8a 2026-10-19: every sitting
