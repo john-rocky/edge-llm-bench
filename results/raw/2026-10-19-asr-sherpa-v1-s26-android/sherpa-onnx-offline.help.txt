@@ -1,0 +1,226 @@
+/k2-fsa/sherpa-onnx/sherpa-onnx/csrc/parse-options.cc:PrintUsage:415 
+
+Speech recognition using non-streaming models with sherpa-onnx.
+
+Usage:
+
+(1) Transducer from icefall
+
+See https://k2-fsa.github.io/sherpa/onnx/pretrained_models/offline-transducer/index.html
+
+  ./bin/sherpa-onnx-offline \
+    --tokens=/path/to/tokens.txt \
+    --encoder=/path/to/encoder.onnx \
+    --decoder=/path/to/decoder.onnx \
+    --joiner=/path/to/joiner.onnx \
+    --num-threads=1 \
+    --decoding-method=greedy_search \
+    /path/to/foo.wav [bar.wav foobar.wav ...]
+
+
+(2) Paraformer from FunASR
+
+See https://k2-fsa.github.io/sherpa/onnx/pretrained_models/offline-paraformer/index.html
+
+  ./bin/sherpa-onnx-offline \
+    --tokens=/path/to/tokens.txt \
+    --paraformer=/path/to/model.onnx \
+    --num-threads=1 \
+    --decoding-method=greedy_search \
+    /path/to/foo.wav [bar.wav foobar.wav ...]
+
+(3) Moonshine models
+
+See https://k2-fsa.github.io/sherpa/onnx/moonshine/index.html
+
+  ./bin/sherpa-onnx-offline \
+    --moonshine-preprocessor=/Users/fangjun/open-source/sherpa-onnx/scripts/moonshine/preprocess.onnx \
+    --moonshine-encoder=/Users/fangjun/open-source/sherpa-onnx/scripts/moonshine/encode.int8.onnx \
+    --moonshine-uncached-decoder=/Users/fangjun/open-source/sherpa-onnx/scripts/moonshine/uncached_decode.int8.onnx \
+    --moonshine-cached-decoder=/Users/fangjun/open-source/sherpa-onnx/scripts/moonshine/cached_decode.int8.onnx \
+    --tokens=/Users/fangjun/open-source/sherpa-onnx/scripts/moonshine/tokens.txt \
+    --num-threads=1 \
+    /path/to/foo.wav [bar.wav foobar.wav ...]
+
+(4) Whisper models
+
+See https://k2-fsa.github.io/sherpa/onnx/pretrained_models/whisper/tiny.en.html
+
+  ./bin/sherpa-onnx-offline \
+    --whisper-encoder=./sherpa-onnx-whisper-base.en/base.en-encoder.int8.onnx \
+    --whisper-decoder=./sherpa-onnx-whisper-base.en/base.en-decoder.int8.onnx \
+    --tokens=./sherpa-onnx-whisper-base.en/base.en-tokens.txt \
+    --num-threads=1 \
+    /path/to/foo.wav [bar.wav foobar.wav ...]
+
+(5) NeMo CTC models
+
+See https://k2-fsa.github.io/sherpa/onnx/pretrained_models/offline-ctc/index.html
+
+  ./bin/sherpa-onnx-offline \
+    --tokens=./sherpa-onnx-nemo-ctc-en-conformer-medium/tokens.txt \
+    --nemo-ctc-model=./sherpa-onnx-nemo-ctc-en-conformer-medium/model.onnx \
+    --num-threads=2 \
+    --decoding-method=greedy_search \
+    --debug=false \
+    ./sherpa-onnx-nemo-ctc-en-conformer-medium/test_wavs/0.wav \
+    ./sherpa-onnx-nemo-ctc-en-conformer-medium/test_wavs/1.wav \
+    ./sherpa-onnx-nemo-ctc-en-conformer-medium/test_wavs/8k.wav
+
+(6) TDNN CTC model for the yesno recipe from icefall
+
+See https://k2-fsa.github.io/sherpa/onnx/pretrained_models/offline-ctc/yesno/index.html
+      //
+  ./build/bin/sherpa-onnx-offline \
+    --sample-rate=8000 \
+    --feat-dim=23 \
+    --tokens=./sherpa-onnx-tdnn-yesno/tokens.txt \
+    --tdnn-model=./sherpa-onnx-tdnn-yesno/model-epoch-14-avg-2.onnx \
+    ./sherpa-onnx-tdnn-yesno/test_wavs/0_0_0_1_0_0_0_1.wav \
+    ./sherpa-onnx-tdnn-yesno/test_wavs/0_0_1_0_0_0_1_0.wav
+
+(7) FunASR-nano models
+
+See https://github.com/FunAudioLLM/Fun-ASR-Nano-2512
+
+  ./bin/sherpa-onnx-offline \
+    --funasr-nano-encoder-adaptor=/path/to/encoder_adaptor.onnx \
+    --funasr-nano-llm=/path/to/llm.onnx \
+    --funasr-nano-tokenizer=/path/to/Qwen3-0.6B \
+    --funasr-nano-embedding=/path/to/embedding.onnx \
+    /path/to/foo.wav [bar.wav foobar.wav ...]
+
+Note: It supports decoding multiple files in batches
+
+foo.wav should be of single channel, 16-bit PCM encoded wave file; its
+sampling rate can be arbitrary and does not need to be 16kHz.
+
+Please refer to
+https://k2-fsa.github.io/sherpa/onnx/pretrained_models/index.html
+for a list of pre-trained models to download.
+
+Options:
+  --hotwords-file             : The file containing hotwords, one words/phrases per line, For example: HELLO WORLD你好世界 (string, default = "")
+  --max-active-paths          : Used only when decoding_method is modified_beam_search (int, default = 4)
+  --decoding-method           : decoding method,Valid values: greedy_search, modified_beam_search. modified_beam_search is applicable only for transducer models. (string, default = "greedy_search")
+  --hr-lexicon                : Path to lexicon.txt used by HomophoneReplacer. (string, default = "")
+  --hr-dict-dir               : Not used. You don't need to provide a value for it (string, default = "")
+  --ctc.max-active            : Decoder max active states.  Larger->slower; more accurate (int, default = 3000)
+  --ctc.graph                 : Path to H.fst, HL.fst, or HLG.fst (string, default = "")
+  --lodr-backoff-id           : ID of the backoff in the LODR FST. -1 means autodetect (int, default = -1)
+  --lodr-fst                  : Path to LODR FST model. (string, default = "")
+  --lm-scale                  : LM scale. (float, default = 0.5)
+  --modeling-unit             : The modeling unit of the model, commonly used units are bpe, bbpe, cjkchar, cjkchar+bpe, etc. Currently, it is needed only when hotwords are provided, we need it to encode the hotwords into token sequence. (string, default = "cjkchar")
+  --model-type                : Specify it to reduce model initialization time. Valid values are: transducer, paraformer, nemo_ctc, whisper, tdnn, zipformer2_ctc, telespeech_ctc, fire_red_asr.All other values lead to loading the model twice. (string, default = "")
+  --debug                     : true to print model information while loading it. (bool, default = false)
+  --lm                        : Path to LM model. (string, default = "")
+  --qwen3-asr-max-new-tokens  : Maximum number of new tokens to generate for Qwen3-ASR (int, default = 128)
+  --num-threads               : Number of threads to run the neural network (int, default = 2)
+  --tokens                    : Path to tokens.txt (string, default = "")
+  --funasr-nano-language      : Language for transcription (empty string means None) (string, default = "")
+  --qwen3-asr-hotwords        : Optional comma-separated hotwords (UTF-8, ASCII ','), e.g. "foo,bar,baz". (string, default = "")
+  --blank-penalty             : The penalty applied on blank symbol during decoding. Note: It is a positive value. Increasing value will lead to lower deletion at the costof higher insertions. Currently only applicable for transducer models. (float, default = 0)
+  --bpe-vocab                 : The vocabulary generated by google's sentencepiece program. It is a file has two columns, one is the token, the other is the log probability, you can get it from the directory where your bpe model is generated. Only used when hotwords provided and the modeling unit is bpe, bbpe, or cjkchar+bpe (string, default = "")
+  --qwen3-asr-decoder         : Path to decoder.onnx for Qwen3-ASR (KV cache mode) (string, default = "")
+  --funasr-nano-user-prompt   : User prompt template for FunASR-nano (string, default = "语音转写：")
+  --funasr-nano-system-prompt : System prompt for FunASR-nano (string, default = "You are a helpful assistant.")
+  --qwen3-asr-temperature     : Sampling temperature for Qwen3-ASR (float, default = 1e-06)
+  --fire-red-asr-ctc          : Path to model.onnx from FireRedASR CTC. Please see https://k2-fsa.github.io/sherpa/onnx/FireRedAsr/pretrained.html for available FireRedASR CTC models (string, default = "")
+  --decoder                   : Path to decoder.onnx (string, default = "")
+  --funasr-nano-embedding     : Path to embedding.onnx for FunASR-nano (string, default = "")
+  --omnilingual-asr-model     : Path to Omnilingual ASR CTC model (string, default = "")
+  --cohere-transcribe-use-itn : true to enable inverse text normalization. false to disable inverse text normalization (bool, default = true)
+  --cohere-transcribe-language : The spoken language in the input audio file. It supports 14 languages. Example values: ar, de, el, en, es, fr, it, ja, ko, nl, pl, pt, vi, zh. You have to provide exactly one language (string, default = "")
+  --cohere-transcribe-decoder : Path to onnx decoder of Cohere Transcribe (string, default = "")
+  --dither                    : Dithering constant (0.0 means no dither). By default the audio samples are in range [-1,+1], so 0.00003 is a good value, equivalent to the default 1.0 from kaldi (float, default = 0)
+  --canary-src-lang           : Valid values: en, de, es, fr. If empty, default to use en (string, default = "")
+  --cohere-transcribe-use-punct : true to enable punctuations. false to disable punctuations (bool, default = true)
+  --lodr-scale                : LODR scale. (float, default = 0.01)
+  --whisper-enable-segment-timestamps : If true, use Whisper's native timestamp token mode to produce segment-level timestamps. The decoder outputs timestamp tokens like <|0.00|> interleaved with text, creating segments with start/end times. Does not require attention outputs. Can be combined with --whisper-enable-token-timestamps for both segment-level and token-level timestamps. Default: false. (bool, default = false)
+  --canary-decoder            : Path to onnx decoder of Canary, e.g., decoder.int8.onnx (string, default = "")
+  --funasr-nano-llm           : Path to llm.onnx for FunASR-nano (KV cache mode) (string, default = "")
+  --hotwords-score            : The bonus score for each token in context word/phrase. Used only when decoding_method is modified_beam_search (float, default = 1.5)
+  --canary-encoder            : Path to onnx encoder of Canary, e.g., encoder.int8.onnx (string, default = "")
+  --fire-red-asr-encoder      : Path to onnx encoder of FireRedAsr (string, default = "")
+  --moonshine.qnn-system-lib  : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --moonshine.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --moonshine-decoder         : Path to moonshine decoder for QNN. Can be a model library (*.so) when no context binary is provided. (string, default = "")
+  --lm-num-threads            : Number of threads to run the neural network of LM model (int, default = 1)
+  --nemo-ctc.qnn-backend-lib  : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+  --provider                  : Specify a provider to use: cpu, cuda, coreml (string, default = "cpu")
+  --moonshine-cached-decoder  : Path to onnx cached_decoder of moonshine v1, e.g., cached_decode.onnx (string, default = "")
+  --moonshine-uncached-decoder : Path to onnx uncached_decoder of moonshine v1, e.g., uncached_decode.onnx (string, default = "")
+  --paraformer.qnn-system-lib : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --moonshine-preprocessor    : Path to onnx preprocessor of moonshine v1, e.g., preprocess.onnx (string, default = "")
+  --paraformer                : Path to model.onnx of Paraformer. If you use Ascend NPU, it is /path/to/encoder.om,/path/to/predictor.om,/path/to/decoder.omIf you use RK NPU, it is /path/to/encoder.rknn,/path/to/predictor.rknn,/path/to/decoder.rknn (string, default = "")
+  --funasr-nano-tokenizer     : Path to tokenizer directory (e.g., Qwen3-0.6B) for FunASR-nano (string, default = "")
+  --wenet-ctc-model           : Path to model.onnx from WeNet. Please see https://github.com/k2-fsa/sherpa-onnx/pull/425 for available models (string, default = "")
+  --funasr-nano-itn           : Whether to apply inverse text normalization (default: true) (bool, default = true)
+  --zipformer-ctc.qnn-system-lib : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --transducer.qnn-backend-lib : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+  --fire-red-asr-decoder      : Path to onnx decoder of FireRedAsr (string, default = "")
+  --feat-dim                  : Feature dimension. Must match the one expected by the model. Not used by whisper and CED models (int, default = 80)
+  --zipformer-ctc.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --nemo-ctc.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --zipformer-ctc-model       : Path to zipformer CTC model (string, default = "")
+  --sense-voice-language      : Valid values: auto, zh, en, ja, ko, yue. If left empty, auto is used (string, default = "auto")
+  --lm-provider               : Specify a provider to LM model use: cpu, cuda, coreml (string, default = "cpu")
+  --canary-use-pnc            : true to enable punctuations and casing. false to disable them (bool, default = true)
+  --whisper.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --qwen3-asr-seed            : Random seed for Qwen3-ASR (int, default = 42)
+  --whisper-language          : The spoken language in the input audio file. Example values: en, de, fr, zh, jp. If it is not given for a multilingual model, we will infer the language from the input audio file. Please refer to https://github.com/openai/whisper/blob/main/whisper/tokenizer.py#L10 for valid values. Note that for non-multilingual models, it supports only 'en' (string, default = "")
+  --whisper-encoder           : Path to onnx encoder of whisper, e.g., tiny-encoder.onnx, medium.en-encoder.onnx. (string, default = "")
+  --sense-voice-model         : Path to model.onnx of SenseVoice. (string, default = "")
+  --whisper.qnn-backend-lib   : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+  --high-freq                 : High cutoff frequency for mel bins (if <= 0, offset from Nyquist) (float, default = -400)
+  --qwen3-asr-top-p           : Top-p (nucleus) sampling threshold for Qwen3-ASR (float, default = 0.8)
+  --qwen3-asr-encoder         : Path to encoder.onnx for Qwen3-ASR (string, default = "")
+  --sense-voice-use-itn       : True to enable inverse text normalization. False to disable it. (bool, default = false)
+  --sense-voice.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --whisper-tail-paddings     : Suggested value: 50 for English models. 300 for multilingual models. Since we have removed the 30-second constraint, we need to add some tail padding frames so that whisper can detect the eot token. Leave it to -1 to use 1000. (int, default = -1)
+  --telespeech-ctc            : Path to model.onnx for telespeech ctc (string, default = "")
+  --funasr-nano-top-p         : Top-p (nucleus) sampling threshold for FunASR-nano (float, default = 0.8)
+  --moonshine-merged-decoder  : Path to moonshine v2 merged decoder ONNX model (decoder_model_merged.onnx). (string, default = "")
+  --low-freq                  : Low cutoff frequency for mel bins (float, default = 20)
+  --sense-voice.qnn-system-lib : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --funasr-nano-seed          : Random seed for FunASR-nano (int, default = 42)
+  --whisper-task              : Valid values: transcribe, translate. Note that for non-multilingual models, it supports only 'transcribe' (string, default = "transcribe")
+  --whisper-decoder           : Path to onnx decoder of whisper, e.g., tiny-decoder.onnx, medium.en-decoder.onnx. (string, default = "")
+  --medasr                    : Path to model.onnx from MedASR. Please see https://github.com/k2-fsa/sherpa-onnx/pull/2934 for available models (string, default = "")
+  --funasr-nano-encoder-adaptor : Path to encoder_adaptor.onnx for FunASR-nano (string, default = "")
+  --canary-tgt-lang           : Valid values: en, de, es, fr. If empty, default to use en (string, default = "")
+  --dolphin-model             : Path to model.onnx of Dolphin CTC branch. (string, default = "")
+  --rule-fars                 : If not empty, it specifies fst archives for inverse text normalization. If there are multiple archives, they are separated by a comma. (string, default = "")
+  --hr-rule-fsts              : Fst files for HomophoneReplacer. If there are multiple, they are separated by a comma. E.g., a.fst,b.fst,c.fst (string, default = "")
+  --nemo-ctc.qnn-system-lib   : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --nemo-ctc-model            : Path to NeMo CTC model. For qnn, use compiled model library (e.g. libmodel.so). For onnxruntime, use model.onnx. (string, default = "")
+  --whisper.qnn-system-lib    : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --paraformer.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --paraformer.qnn-backend-lib : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+  --encoder                   : Path to encoder.onnx (string, default = "")
+  --rule-fsts                 : If not empty, it specifies fsts for inverse text normalization. If there are multiple fsts, they are separated by a comma. (string, default = "")
+  --tdnn-model                : Path to onnx model (string, default = "")
+  --transducer.qnn-context-binary : Path to model.bin. Used only when provider is qnn. If it exists, libmodel.so is ignored. For models with multiple QNN components, you can provide multiple context binaries separated by commas. If a specified file does not exist, a context binary is saved there so that it is loaded the next time you run it. You can leave it empty if you don't use qnn (string, default = "")
+  --qwen3-asr-max-total-len   : Maximum total sequence length for Qwen3-ASR (int, default = 512)
+  --funasr-nano-hotwords      : Hotwords (comma-separated, e.g., "Sherpa,FunASR") (string, default = "")
+  --qwen3-asr-conv-frontend   : Path to conv_frontend.onnx for Qwen3-ASR (string, default = "")
+  --joiner                    : Path to joiner.onnx (string, default = "")
+  --cohere-transcribe-encoder : Path to onnx encoder of Cohere Transcribe (string, default = "")
+  --moonshine-encoder         : Path to moonshine encoder. Can be an ONNX model (v1 or v2) or a QNN model library (*.so) when no context binary is provided. (string, default = "")
+  --sense-voice.qnn-backend-lib : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+  --whisper-enable-token-timestamps : If true, use cross-attention weights and DTW to compute token-level timestamps. Requires ONNX models exported with attention outputs. Default: false. (bool, default = false)
+  --funasr-nano-temperature   : Sampling temperature for FunASR-nano (float, default = 1e-06)
+  --sample-rate               : Sampling rate of the input waveform. Note: You can have a different sample rate for the input waveform. We will do resampling inside the feature extractor (int, default = 16000)
+  --moonshine.qnn-backend-lib : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+  --transducer.qnn-system-lib : Required and used only when --qnn-context-binary is not empty and exists. You can leave it empty if you don't use qnn. (string, default = "")
+  --qwen3-asr-tokenizer       : Path to tokenizer directory (e.g., Qwen3-ASR-0.6B) for Qwen3-ASR (string, default = "")
+  --funasr-nano-max-new-tokens : Maximum number of new tokens to generate for FunASR-nano (int, default = 512)
+  --zipformer-ctc.qnn-backend-lib : Path to libQnnHtp.so Used only when provider is qnn.Leave it empty if you don't use qnn (string, default = "")
+
+Standard options:
+  --help                      : Print out usage message (bool, default = false)
+  --print-args                : Print the command line arguments (to stderr) (bool, default = true)
+  --config                    : Configuration file to read (this option may be repeated) (string, default = "")
+
+
+exit=0
