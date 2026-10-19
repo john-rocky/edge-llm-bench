@@ -1,0 +1,36 @@
+| runtime | model | task | cold (run1) | warm (med r2-4) | n | thermal |
+|---|---|---|---|---|---|---|
+| litert-lm | litert-community/Qwen3-0.6B | long-context-1024-gen256 | 172.6 | 173.1 | 4 | nominal |
+| litert-lm | litert-community/Qwen3-0.6B | short-chat | 174.1 | 175.1 | 4 | nominal |
+| litert-lm | litert-community/Qwen3-1.7B | long-context-1024-gen256 | 72.2 | 72.7 | 4 | nominal |
+| litert-lm | litert-community/Qwen3-1.7B | short-chat | 81.9 | 82.0 | 4 | nominal |
+| litert-lm | litert-community/Qwen3-4B | long-context-1024-gen256 | 35.2 | 19.4 | 4 | fair,nominal |
+| litert-lm | litert-community/Qwen3-4B | short-chat | 37.8 | 21.9 | 4 | fair,nominal |
+| litert-lm | litert-community/gemma-4-E2B-it-litert-lm | long-context-1024-gen256 | 75.1 | 84.9 | 4 | nominal |
+| litert-lm | litert-community/gemma-4-E2B-it-litert-lm | short-chat | 84.8 | 88.9 | 4 | nominal |
+| litert-lm | litert-community/gemma-4-E4B-it-litert-lm | long-context-1024-gen256 | 39.1 | 20.6 | 4 | fair,nominal |
+| litert-lm | litert-community/gemma-4-E4B-it-litert-lm | short-chat | 40.5 | 40.3 | 4 | nominal,serious |
+| llama.cpp | unsloth/Qwen3-0.6B-GGUF/Q4_K_M | long-context-1024-gen256 | 145.8 | 146.3 | 4 | nominal |
+| llama.cpp | unsloth/Qwen3-0.6B-GGUF/Q4_K_M | short-chat | 193.1 | 187.9 | 4 | nominal |
+| llama.cpp | unsloth/Qwen3-1.7B-GGUF/Q4_K_M | long-context-1024-gen256 | 71.5 | 71.4 | 4 | nominal |
+| llama.cpp | unsloth/Qwen3-1.7B-GGUF/Q4_K_M | short-chat | 81.4 | 82.2 | 4 | nominal |
+| llama.cpp | unsloth/Qwen3-4B-GGUF/Q4_K_M | long-context-1024-gen256 | 34.5 | 34.7 | 4 | nominal |
+| llama.cpp | unsloth/Qwen3-4B-GGUF/Q4_K_M | short-chat | 38.3 | 38.2 | 4 | nominal |
+| llama.cpp | unsloth/gemma-4-E2B-it-GGUF/Q4_K_M | long-context-1024-gen256 | 58.2 | 58.0 | 4 | nominal |
+| llama.cpp | unsloth/gemma-4-E2B-it-GGUF/Q4_K_M | short-chat | 59.3 | 58.6 | 4 | nominal |
+| llama.cpp | unsloth/gemma-4-E4B-it-GGUF/Q4_K_M | long-context-1024-gen256 | 30.5 | 30.8 | 4 | nominal |
+| llama.cpp | unsloth/gemma-4-E4B-it-GGUF/Q4_K_M | short-chat | 30.8 | 30.9 | 4 | nominal |
+| mlx-swift | mlx-community/Qwen3-0.6B-4bit | long-context-1024-gen256 | 175.2 | 174.8 | 4 | nominal |
+| mlx-swift | mlx-community/Qwen3-0.6B-4bit | short-chat | 229.5 | 221.6 | 3 | nominal |
+| mlx-swift | mlx-community/Qwen3-1.7B-4bit | long-context-1024-gen256 | 87.1 | 87.1 | 4 | nominal |
+| mlx-swift | mlx-community/Qwen3-1.7B-4bit | short-chat | 101.3 | 101.5 | 4 | nominal |
+| mlx-swift | mlx-community/Qwen3-4B-4bit | long-context-1024-gen256 | 40.3 | 40.2 | 4 | nominal |
+| mlx-swift | mlx-community/Qwen3-4B-4bit | short-chat | 45.4 | 45.3 | 4 | nominal |
+| mlx-swift | mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit | long-context-1024-gen256 | 52.2 | 52.2 | 4 | nominal |
+| mlx-swift | mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit | short-chat | 53.4 | 54.3 | 4 | nominal |
+| onnxruntime-genai-cpu | onnx-community/Qwen3-0.6B-ONNX | long-context-1024-gen256 | 64.7 | 60.5 | 4 | nominal |
+| onnxruntime-genai-cpu | onnx-community/Qwen3-0.6B-ONNX | short-chat | 138.5 | 131.6 | 4 | nominal |
+| onnxruntime-genai-cpu | onnx-community/Qwen3-1.7B-ONNX | long-context-1024-gen256 | 32.1 | 26.3 | 4 | fair |
+| onnxruntime-genai-cpu | onnx-community/Qwen3-1.7B-ONNX | short-chat | 51.3 | 47.9 | 4 | nominal |
+| onnxruntime-genai-cpu | onnx-community/Qwen3-4B-ONNX | long-context-1024-gen256 | 14.9 | 9.2 | 4 | nominal,serious |
+| onnxruntime-genai-cpu | onnx-community/Qwen3-4B-ONNX | short-chat | 22.5 | 20.5 | 4 | nominal |
