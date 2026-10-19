@@ -1,0 +1,1195 @@
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+index b075a051..3b54f542 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+@@ -22,9 +22,10 @@ android {
+ 
+   defaultConfig {
+     applicationId = "com.google.ai.edge.examples.asr"
+-    // The burst benchmark build installs beside the sustained one (asr-litert-app-v1) on the same
+-    // phone, so neither replaces the other's APK or files between sittings.
+-    applicationIdSuffix = ".burst"
++    // The decoder-fix benchmark build (asr-fix-v1) installs beside the sustained one
++    // (asr-litert-app-v1) and the burst one (asr-burst-v1, ".burst") on the same phone, so none
++    // replaces another's APK or files between sittings.
++    applicationIdSuffix = ".burstfix"
+     minSdk = 31
+     targetSdk = 35
+     versionCode = 1
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+index c4096613..7630dd75 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+@@ -28,6 +28,8 @@ import com.google.ai.edge.examples.asr.bench.UtteranceResult
+ import com.google.ai.edge.examples.asr.bench.capDropPct
+ import com.google.ai.edge.examples.asr.bench.median
+ import com.google.ai.edge.examples.asr.bench.parseCpuList
++import com.google.ai.edge.examples.asr.bench.validFeatureFrames
++import com.google.ai.edge.examples.asr.bench.validSamples
+ import com.google.ai.edge.litert.Accelerator
+ import com.google.ai.edge.litert.CompiledModel
+ import com.k2fsa.sherpa.onnx.FeatureConfig
+@@ -69,7 +71,9 @@ import org.junit.runner.RunWith
+  *   d15f8ae9, copied below with timing hooks and without the UI: FileAudioSource (5 s or 30 s
+  *   windows, 2 s overlap) -> MelSpectroProcessor -> LiteRtRunner + TdtDecoder ->
+  *   LevenshteinTokenMerger, in the activity's three coroutines and channels. The model is built
+- *   once per process the way preparePipeline builds it.
++ *   once per process the way preparePipeline builds it. The preprocessing coroutine also counts
++ *   each window's samples up to its last non-zero one and hands that count on with the features;
++ *   with tdt_fix the recognizer gets the window's valid feature frames from it (asr-fix-v1).
+  * - sherpa: sherpa-onnx's own Kotlin API from its release AAR (OfflineRecognizer, NeMo transducer,
+  *   greedy search, CPU), the whole utterance in one stream: WaveReader.readWave -> createStream ->
+  *   acceptWaveform -> decode -> getResult.
+@@ -109,6 +113,9 @@ import org.junit.runner.RunWith
+  *   process is in the top-app cpuset (a header and a footer with `aborted`)
+  * - app_commit, dexopt_app, dexopt_test: what the host read (source commit, `dumpsys package`
+  *   compiler filter / reason of the app and of the test package), copied to the header
++ * - tdt_fix: true builds TdtDecoder with its decode-loop fix (stop past the frames that carry
++ *   audio, at most 10 non-blank tokens per encoder frame) and passes every window's valid feature
++ *   frames to the recognizer; false (default) = the app's decoder and call as they are
+  */
+ @RunWith(AndroidJUnit4::class)
+ class AsrBenchTest {
+@@ -122,6 +129,10 @@ class AsrBenchTest {
+     val preprocessorMs: Double,
+     val tokenizerMs: Double,
+     val loadMs: Double,
++    val hopLength: Int,
++    val tdtFix: Boolean,
++    // Filled by TdtDecoder on each decode; null when the model has no TDT decoder.
++    val tdtStats: TdtGreedyLoop.Stats?,
+   ) : AutoCloseable {
+     override fun close() {
+       audioPreprocessor.close()
+@@ -140,8 +151,34 @@ class AsrBenchTest {
+     val decodeMs = ArrayList<Double>()
+     val tokens = ArrayList<Int>()
+     val stageMs = LinkedHashMap<String, Double>()
++
++    // Per window (litert): the samples up to the last non-zero one, their feature frames, and what
++    // TdtDecoder's loop did (the time index it stopped before, its network runs, the frames its
++    // symbol cap moved past).
++    val validSamples = ArrayList<Int>()
++    val validFrames = ArrayList<Int>()
++    val decodeFrames = ArrayList<Int>()
++    val decodeSteps = ArrayList<Int>()
++    val cappedFrames = ArrayList<Int>()
++
++    /** The per-window counts as row fields (none for an engine that has no windows). */
++    fun windowFields(): Map<String, Any?> =
++      if (validSamples.isEmpty() && decodeFrames.isEmpty()) {
++        emptyMap()
++      } else {
++        linkedMapOf(
++          "window_valid_samples" to validSamples,
++          "window_valid_frames" to validFrames,
++          "window_decode_frames" to decodeFrames,
++          "window_decode_steps" to decodeSteps,
++          "window_capped_frames" to cappedFrames,
++        )
++      }
+   }
+ 
++  /** One window's features and the count of its samples that carry audio. */
++  private class Window(val features: FloatArray, val validSamples: Int, val validFrames: Int)
++
+   /** One way to transcribe a WAV file, built once per process. */
+   private interface Engine : AutoCloseable {
+     val loadMs: Double
+@@ -161,13 +198,14 @@ class AsrBenchTest {
+     context: Context,
+     private val modelKey: String,
+     private val accelerator: Accelerator,
++    private val tdtFix: Boolean,
+   ) : Engine {
+     private val modelConfig =
+       context.assets.open(MODEL_METADATA_PATH).bufferedReader().use { it.readText() }.let {
+         ModelMetadataManager(it).getModelConfig(modelKey)
+       }
+     private val pipeline =
+-      runBlocking(Dispatchers.IO) { preparePipeline(context, modelKey, modelConfig, accelerator) }
++      runBlocking(Dispatchers.IO) { preparePipeline(context, modelKey, modelConfig, accelerator, tdtFix) }
+     val modelFile =
+       File(
+         context.filesDir,
+@@ -193,6 +231,17 @@ class AsrBenchTest {
+         "gpu_constant_tensor_sharing" to modelConfig.gpuShareConstantTensors,
+         "npu_htp_performance_mode" to
+           if (modelConfig.npuHighPerformance) "HIGH_PERFORMANCE" else "DEFAULT",
++        "tdt_fix" to tdtFix,
++        "tdt_decoder" to (pipeline.tdtStats != null),
++        "tdt_max_symbols_per_step" to if (tdtFix) TdtDecoder.MAX_SYMBOLS_PER_STEP else null,
++        "tdt_time_limit" to
++          if (tdtFix) {
++            "min(maxTimeIndex, ceil(n / ${TdtDecoder.SUBSAMPLING_FACTOR}) + ${TdtDecoder.VALID_FRAMES_MARGIN}), " +
++              "n = floor(v / hop_length), v = the window's samples up to its last non-zero one"
++          } else {
++            null
++          },
++        "hop_length" to pipeline.hopLength,
+         "load_seconds" to pipeline.loadMs / 1000.0,
+         "load_ms" to pipeline.loadMs,
+         "load_scope" to "LiteRtRunner constructor (CompiledModel.create + decoder and I/O buffers)",
+@@ -344,6 +393,14 @@ class AsrBenchTest {
+         else -> throw IllegalArgumentException("foreground must be front, main or false, got $f")
+       }
+     val requireTopApp = args.getString("require_top_app") == "true"
++    val tdtFix =
++      when (val f = args.getString("tdt_fix")) {
++        null,
++        "false" -> false
++        "true" -> true
++        else -> throw IllegalArgumentException("tdt_fix must be true or false, got $f")
++      }
++    require(engineName == "litert" || !tdtFix) { "tdt_fix applies to the litert engine" }
+ 
+     val manifestRows = BenchManifest.parse(manifestFile.readText(), manifestFile.parent)
+     val selection =
+@@ -395,7 +452,7 @@ class AsrBenchTest {
+       )
+     Log.i(
+       TAG,
+-      "start tag=$tag engine=$engineName model=$modelKey accelerator=$acceleratorName pace=$pace " +
++      "start tag=$tag engine=$engineName model=$modelKey accelerator=$acceleratorName pace=$pace tdt_fix=$tdtFix " +
+         "todo=${todo.size} foreground=$foregroundState top_app=$topApp cpuset=${processAfterForeground["cpuset"]}",
+     )
+     if (requireTopApp && !(foregroundState == "RESUMED" && topApp)) {
+@@ -448,6 +505,7 @@ class AsrBenchTest {
+             "npu" -> Accelerator.NPU
+             else -> Accelerator.CPU
+           },
++          tdtFix,
+         )
+       }
+     Log.i(TAG, "loaded in ${engine.loadMs} ms")
+@@ -541,7 +599,7 @@ class AsrBenchTest {
+             "windows" to times.encodeMs.size,
+             "stage_ms" to times.stageMs.takeIf { it.isNotEmpty() },
+             "error" to attempted.error,
+-          )
++          ) + times.windowFields()
+         )
+       )
+       Log.i(TAG, "warmup ${warmupRow.id} ${attempted.seconds} s text=${attempted.text}")
+@@ -696,7 +754,9 @@ class AsrBenchTest {
+             times.decodeMs,
+             times.tokens,
+             attempted.error,
+-            extra = if (times.stageMs.isEmpty()) emptyMap() else mapOf("stage_ms" to times.stageMs),
++            extra =
++              times.windowFields() +
++                if (times.stageMs.isEmpty()) emptyMap() else mapOf("stage_ms" to times.stageMs),
+           )
+         )
+       )
+@@ -796,6 +856,7 @@ class AsrBenchTest {
+         if (first.value.text != last.value.text) retakeTextDiffers++
+       }
+       if (last.value.times.stageMs.isNotEmpty()) extra["stage_ms"] = last.value.times.stageMs
++      extra.putAll(last.value.times.windowFields())
+       val times = last.value.times
+       emit(
+         BenchJson.utterance(
+@@ -919,6 +980,7 @@ class AsrBenchTest {
+     modelKey: String,
+     modelConfig: ModelConfig,
+     accelerator: Accelerator,
++    tdtFix: Boolean,
+   ): Pipeline {
+     var t = SystemClock.elapsedRealtimeNanos()
+     val logMelSpectro = modelConfig.logMelSpectro
+@@ -932,10 +994,12 @@ class AsrBenchTest {
+     t = SystemClock.elapsedRealtimeNanos()
+     val tokenizer = HuggingfaceTokenizer(context, modelConfig)
+     val tokenizerMs = msSince(t)
++    val tdtStats = if (modelKey.contains("-tdt")) TdtGreedyLoop.Stats() else null
+     val decoderFactory: (CompiledModel, ModelConfig) -> LiteRtRunner.Decoder =
+       when {
+         modelKey.contains("-ctc-") -> { _, _ -> CtcDecoder(tokenizer.vocabSize) }
+-        modelKey.contains("-tdt") -> { model, config -> TdtDecoder(model, config) }
++        // tdt_fix false builds the decoder the app builds (the fix off, the default).
++        modelKey.contains("-tdt") -> { model, config -> TdtDecoder(model, config, tdtFix, tdtStats!!) }
+         else -> { model, config -> LiteRtRunner.DefaultDecoder(model, config) }
+       }
+     t = SystemClock.elapsedRealtimeNanos()
+@@ -949,6 +1013,9 @@ class AsrBenchTest {
+       preprocessorMs,
+       tokenizerMs,
+       loadMs,
++      logMelSpectro?.hopLength ?: 0,
++      tdtFix,
++      tdtStats,
+     )
+   }
+ 
+@@ -989,7 +1056,7 @@ class AsrBenchTest {
+     pipeline: Pipeline,
+     times: WindowTimes,
+   ): String {
+-    val preprocessedChannel = Channel<FloatArray>(Channel.BUFFERED)
++    val preprocessedChannel = Channel<Window>(Channel.BUFFERED)
+     val tokenChannel = Channel<Pair<Int, Int>>(Channel.BUFFERED)
+     val transcript = TranscriptAccumulator()
+     LevenshteinTokenMerger(
+@@ -1002,10 +1069,11 @@ class AsrBenchTest {
+           scheduleAudioPreprocessing(
+             audioSource,
+             pipeline.audioPreprocessor,
++            pipeline.hopLength,
+             preprocessedChannel,
+             times,
+           )
+-          scheduleSpeechRecognition(pipeline.speechRecognizer, preprocessedChannel, tokenChannel, times)
++          scheduleSpeechRecognition(pipeline, preprocessedChannel, tokenChannel, times)
+           scheduleTokenPostprocessing(postprocessor, tokenChannel, transcript)
+         }
+       }
+@@ -1015,16 +1083,22 @@ class AsrBenchTest {
+   private fun CoroutineScope.scheduleAudioPreprocessing(
+     audioSource: AudioSource,
+     audioPreprocessor: AudioPreprocessor,
+-    preprocessedChannel: Channel<FloatArray>,
++    hopLength: Int,
++    preprocessedChannel: Channel<Window>,
+     times: WindowTimes,
+   ) =
+     launch(Dispatchers.IO) {
+       try {
+         for (audioChunk in audioSource.getAudioData()) {
++          // Counted before the source refills its buffer (it hands the same array every window).
++          val samples = validSamples(audioChunk)
++          val frames = if (hopLength > 0) validFeatureFrames(samples, hopLength) else SpeechRecognizer.ALL_FRAMES
++          times.validSamples.add(samples)
++          times.validFrames.add(frames)
+           val t = SystemClock.elapsedRealtimeNanos()
+           val preprocessed = audioPreprocessor.process(audioChunk)
+           times.melMs.add(msSince(t))
+-          preprocessedChannel.send(preprocessed)
++          preprocessedChannel.send(Window(preprocessed, samples, frames))
+           yield()
+         }
+       } finally {
+@@ -1033,18 +1107,24 @@ class AsrBenchTest {
+     }
+ 
+   private fun CoroutineScope.scheduleSpeechRecognition(
+-    speechRecognizer: SpeechRecognizer,
+-    preprocessedChannel: Channel<FloatArray>,
++    pipeline: Pipeline,
++    preprocessedChannel: Channel<Window>,
+     tokenChannel: Channel<Pair<Int, Int>>,
+     times: WindowTimes,
+   ) =
+     launch(Dispatchers.IO) {
++      val speechRecognizer = pipeline.speechRecognizer
+       try {
+-        for (preprocessed in preprocessedChannel) {
++        for (window in preprocessedChannel) {
+           // recognize() runs the encoder; the decoder runs lazily inside the returned sequence, so
+           // the decode time is the time spent in the iterator's own calls (not in the channel).
+           var t = SystemClock.elapsedRealtimeNanos()
+-          val tokenSequence = speechRecognizer.recognize(preprocessed)
++          val tokenSequence =
++            if (pipeline.tdtFix) {
++              speechRecognizer.recognize(window.features, window.validFrames)
++            } else {
++              speechRecognizer.recognize(window.features) // MainActivity's call
++            }
+           times.encodeMs.add(msSince(t))
+           var decodeNs = 0L
+           var tokens = 0
+@@ -1062,6 +1142,12 @@ class AsrBenchTest {
+           }
+           times.decodeMs.add(decodeNs / 1e6)
+           times.tokens.add(tokens)
++          pipeline.tdtStats?.let { stats ->
++            // The sequence has ended: the stats are this window's.
++            times.decodeFrames.add(stats.timeLimit)
++            times.decodeSteps.add(stats.steps)
++            times.cappedFrames.add(stats.cappedFrames)
++          }
+           yield()
+         }
+       } finally {
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/ValidLength.kt b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/ValidLength.kt
+new file mode 100644
+index 00000000..25b1fdfe
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/ValidLength.kt
+@@ -0,0 +1,15 @@
++package com.google.ai.edge.examples.asr.bench
++
++/**
++ * The samples of a window that carry audio: up to and including the last non-zero sample.
++ * FileAudioSource hands every window over as a full buffer and fills the part after the audio
++ * with exact zeros, so a short window's audio ends at its last non-zero sample (asr-fix-v1).
++ */
++fun validSamples(window: FloatArray): Int {
++  var n = window.size
++  while (n > 0 && window[n - 1] == 0.0f) n--
++  return n
++}
++
++/** The feature frames of [validSamples] samples, counted as MelSpectroProcessor counts frames. */
++fun validFeatureFrames(validSamples: Int, hopLength: Int): Int = validSamples / hopLength
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt
+index 30026562..ae764cc1 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt
+@@ -47,6 +47,15 @@ class LiteRtRunner(
+      * @return The list of token IDs and their timestamps (if available) as a sequence.
+      */
+     fun decode(encodeOutputBuffers: List<TensorBuffer>): Sequence<Pair<Int, Int>>
++
++    /**
++     * Same as [decode], told how many feature frames of the window carry audio (see
++     * [SpeechRecognizer.recognize]). A decoder that cannot use the count ignores it.
++     */
++    fun decode(
++      encodeOutputBuffers: List<TensorBuffer>,
++      validFeatureFrames: Int,
++    ): Sequence<Pair<Int, Int>> = decode(encodeOutputBuffers)
+   }
+ 
+   private val compiledModel: CompiledModel =
+@@ -109,13 +118,16 @@ class LiteRtRunner(
+     compiledModel.close()
+   }
+ 
+-  override fun recognize(features: FloatArray): Sequence<Pair<Int, Int>> {
++  override fun recognize(features: FloatArray): Sequence<Pair<Int, Int>> =
++    recognize(features, SpeechRecognizer.ALL_FRAMES)
++
++  override fun recognize(features: FloatArray, validFeatureFrames: Int): Sequence<Pair<Int, Int>> {
+     val paddedFeatures = padOrTruncateFeatures(features, expectedNumOfFloats)
+     inputBuffers[0].writeFloat(paddedFeatures)
+ 
+     compiledModel.run(inputBuffers, outputBuffers)
+ 
+-    return decoder.decode(outputBuffers)
++    return decoder.decode(outputBuffers, validFeatureFrames)
+   }
+ 
+   /** Helper class for decoding the ASR encoder output by looping over the decoder inputs. */
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/SpeechRecognizer.kt b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/SpeechRecognizer.kt
+index 18a009fe..6bb86202 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/SpeechRecognizer.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/SpeechRecognizer.kt
+@@ -27,11 +27,22 @@ interface SpeechRecognizer : AutoCloseable {
+    */
+   fun recognize(features: FloatArray): Sequence<Pair<Int, Int>>
+ 
++  /**
++   * Same as [recognize], told that only the first [validFeatureFrames] feature frames carry audio
++   * (the audio source zero-pads the rest of a short window), or [ALL_FRAMES]. A recognizer that
++   * cannot use the count ignores it.
++   */
++  fun recognize(features: FloatArray, validFeatureFrames: Int): Sequence<Pair<Int, Int>> =
++    recognize(features)
++
+   companion object {
+     /** Special token ID that indicates the end of the sequence. */
+     const val END_OF_SEQUENCE = -1
+ 
+     /** Special timestamp that indicates the timestamp is not available. */
+     const val NO_TIMESTAMP = -1
++
++    /** Valid feature frames of a window whose frames all carry audio, or whose count is unknown. */
++    const val ALL_FRAMES = -1
+   }
+ }
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt
+index 683e118c..d10eb7ea 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt
+@@ -26,9 +26,23 @@ import com.google.ai.edge.litert.Environment
+ import com.google.ai.edge.litert.TensorBuffer
+ import com.google.ai.edge.litert.TensorType
+ 
+-/** Token Duration Transducer (TDT) decoder. */
+-class TdtDecoder(private val compiledModel: CompiledModel, private val modelConfig: ModelConfig) :
+-  LiteRtRunner.Decoder {
++/**
++ * Token Duration Transducer (TDT) decoder.
++ *
++ * [fixDecodeLoop] (off by default: the decoding this sample has always done) changes two things in
++ * the greedy loop ([TdtGreedyLoop]), as NeMo's greedy TDT decoding does them: when the recognizer
++ * is told how many feature frames of the window carry audio, the loop stops a few encoder frames
++ * past them instead of decoding the zero-padded rest of the window, and after
++ * [MAX_SYMBOLS_PER_STEP] non-blank tokens at one encoder frame it moves to the next frame (a
++ * non-blank token with duration 0 does not advance the loop, and without a cap it can repeat).
++ * [stats] receives what each decode did.
++ */
++class TdtDecoder(
++  private val compiledModel: CompiledModel,
++  private val modelConfig: ModelConfig,
++  private val fixDecodeLoop: Boolean = false,
++  private val stats: TdtGreedyLoop.Stats = TdtGreedyLoop.Stats(),
++) : LiteRtRunner.Decoder {
+   private val inputBuffers = compiledModel.createInputBuffers(DECODE_SIGNATURE)
+   private val outputBuffers = compiledModel.createOutputBuffers(DECODE_SIGNATURE)
+ 
+@@ -63,79 +77,56 @@ class TdtDecoder(private val compiledModel: CompiledModel, private val modelConf
+     compiledModel.getInputTensorType(inputBufferName(2), DECODE_SIGNATURE).numElements
+ 
+   override fun decode(encodeOutputBuffers: List<TensorBuffer>): Sequence<Pair<Int, Int>> =
+-    sequence {
+-      // Clear the states as initial states are all zeros.
+-      val zeroStates = FloatArray(numOfStates) { 0.0f }
+-      statesBuffers[inputStatesBuffersIndex].forEach { it.writeFloat(zeroStates) }
+-
+-      // Start inference with decode signature for better quality in sequence start as stateless
+-      // decoding can keep context better than decode_1, stateful decoding.
+-      var inferenceSignature = DECODE_SIGNATURE
+-      var numOfInferenceTokenIds = numOfTokenIds
+-      var inferenceTokenIdsBuffer = inputBuffers[1]
+-      var inferenceTokenIds = IntArray(numOfTokenIds) { 0 }
+-      inferenceTokenIds[0] = modelConfig.decodeStartTokenId
+-      var inferenceLogitsBuffer = outputBuffers[0]
+-
+-      var tokenIndex: Int = 0
+-      var timeIndex: Int = 0
+-      while (timeIndex < maxTimeIndex) {
+-        inferenceTokenIdsBuffer.writeInt(inferenceTokenIds)
++    decode(encodeOutputBuffers, SpeechRecognizer.ALL_FRAMES)
++
++  override fun decode(
++    encodeOutputBuffers: List<TensorBuffer>,
++    validFeatureFrames: Int,
++  ): Sequence<Pair<Int, Int>> = sequence {
++    // Clear the states as initial states are all zeros.
++    val zeroStates = FloatArray(numOfStates) { 0.0f }
++    statesBuffers[inputStatesBuffersIndex].forEach { it.writeFloat(zeroStates) }
++
++    yieldAll(
++      TdtGreedyLoop.decode(
++        network(encodeOutputBuffers),
++        maxTimeIndex,
++        numOfTokenIds,
++        numOfLogitsPerToken,
++        NUM_DURATIONS,
++        blankTokenId = blankTokenId,
++        startTokenId = modelConfig.decodeStartTokenId,
++        hasDecode1 = hasDecode1,
++        timeLimit =
++          if (fixDecodeLoop) timeLimit(validFeatureFrames, maxTimeIndex) else maxTimeIndex,
++        maxSymbolsPerStep =
++          if (fixDecodeLoop) MAX_SYMBOLS_PER_STEP else TdtGreedyLoop.NO_SYMBOL_CAP,
++        stats = stats,
++      )
++    )
++  }
++
++  /** The decode and decode_1 signatures on this window's encoder output. */
++  private fun network(encodeOutputBuffers: List<TensorBuffer>) =
++    object : TdtGreedyLoop.Network {
++      override fun run(stateful: Boolean, tokenIds: IntArray): FloatArray {
++        val inferenceTokenIdsBuffer = if (stateful) inputBuffersOfDecode1!![1] else inputBuffers[1]
++        val inferenceLogitsBuffer = if (stateful) outputBuffersOfDecode1!![0] else outputBuffers[0]
++        inferenceTokenIdsBuffer.writeInt(tokenIds)
+ 
+         compiledModel.run(
+           getInputBuffers(encodeOutputBuffers, inferenceTokenIdsBuffer),
+           getOutputBuffers(inferenceLogitsBuffer),
+-          inferenceSignature,
++          if (stateful) DECODE_1_SIGNATURE else DECODE_SIGNATURE,
+         )
+ 
+-        val logits = inferenceLogitsBuffer.readFloat()
+-        val startIndexInCurrentTimeIndex = timeIndex * numOfInferenceTokenIds * numOfLogitsPerToken
+-        // Do argmax among the logits of the current token.
+-        val startIndexOfTokenId = startIndexInCurrentTimeIndex + tokenIndex * numOfLogitsPerToken
+-        val endIndexOfDuration =
+-          startIndexInCurrentTimeIndex + (tokenIndex + 1) * numOfLogitsPerToken
+-        val endIndexOfTokenId = endIndexOfDuration - NUM_DURATIONS
+-        val tokenId =
+-          ((startIndexOfTokenId until endIndexOfTokenId).maxByOrNull { logits[it] }
+-            ?: startIndexOfTokenId) - startIndexOfTokenId
+-        if (tokenId != blankTokenId) {
+-          yield(Pair(tokenId, timeIndex))
+-          if (numOfInferenceTokenIds > 1) {
+-            tokenIndex++
+-            if (tokenIndex < numOfInferenceTokenIds) {
+-              // Still room in the stateless token array: keep filling it, so the
+-              // LSTM states handed to decode_1 below are computed from real
+-              // tokens only (an unfilled zero slot skews them).
+-            } else if (hasDecode1) { // Switch to decode_1 for stateful decoding.
+-              inferenceSignature = DECODE_1_SIGNATURE
+-              numOfInferenceTokenIds = 1
+-              inferenceTokenIdsBuffer = inputBuffersOfDecode1!![1]
+-              inferenceTokenIds = IntArray(1) { 0 }
+-              inferenceLogitsBuffer = outputBuffersOfDecode1!![0]
+-              tokenIndex = 0
+-            } else { // Stateless decoding reached the max token size.
+-              break
+-            }
+-          }
+-          inferenceTokenIds[tokenIndex] = tokenId
+-        }
+-
+-        val duration =
+-          ((endIndexOfTokenId until endIndexOfDuration).maxByOrNull { logits[it] }
+-            ?: endIndexOfTokenId) - endIndexOfTokenId
+-        timeIndex += if (duration == 0 && tokenId == blankTokenId) 1 else duration
+-
+-        if (numOfInferenceTokenIds == 1 && tokenId != blankTokenId) {
+-          // Stateful RNN decoder: adopt the new LSTM states by swapping the
+-          // input and output state buffers — but only on a non-blank emission.
+-          // In RNN-T greedy decoding the prediction network advances only when
+-          // a token is emitted; adopting the state on blank steps re-consumes
+-          // the last token once per blank and degrades the transcript.
+-          inputStatesBuffersIndex = 1 - inputStatesBuffersIndex
+-        }
++        return inferenceLogitsBuffer.readFloat()
+       }
+ 
+-      yield(Pair(SpeechRecognizer.END_OF_SEQUENCE, maxTimeIndex))
++      override fun adoptStates() {
++        // Swap the input and output state buffers.
++        inputStatesBuffersIndex = 1 - inputStatesBuffersIndex
++      }
+     }
+ 
+   private fun getInputBuffers(
+@@ -152,12 +143,36 @@ class TdtDecoder(private val compiledModel: CompiledModel, private val modelConf
+   private fun getOutputBuffers(logitsBuffer: TensorBuffer) =
+     listOf(logitsBuffer) + statesBuffers[1 - inputStatesBuffersIndex]
+ 
+-  private companion object {
+-    const val DECODE_SIGNATURE = LiteRtRunner.DECODE_SIGNATURE
+-    const val DECODE_1_SIGNATURE = "decode_1"
++  companion object {
++    /** Non-blank tokens at one encoder frame before the fixed loop moves on (NeMo: 10). */
++    const val MAX_SYMBOLS_PER_STEP = 10
++
++    /** Encoder frames the fixed loop decodes past the last one that carries audio. */
++    const val VALID_FRAMES_MARGIN = 4
++
++    /** FastConformer subsamples the feature frames by 8: n frames encode to ceil(n / 8). */
++    const val SUBSAMPLING_FACTOR = 8
++
++    /**
++     * The time index the fixed loop stops before, for a window whose first [validFeatureFrames]
++     * feature frames carry audio: min(maxTimeIndex, ceil(n / 8) + 4); every frame for
++     * [SpeechRecognizer.ALL_FRAMES].
++     */
++    fun timeLimit(validFeatureFrames: Int, maxTimeIndex: Int): Int =
++      if (validFeatureFrames == SpeechRecognizer.ALL_FRAMES) {
++        maxTimeIndex
++      } else {
++        minOf(
++          maxTimeIndex,
++          (validFeatureFrames + SUBSAMPLING_FACTOR - 1) / SUBSAMPLING_FACTOR + VALID_FRAMES_MARGIN,
++        )
++      }
++
++    private const val DECODE_SIGNATURE = LiteRtRunner.DECODE_SIGNATURE
++    private const val DECODE_1_SIGNATURE = "decode_1"
+ 
+-    const val NUM_FEATURES = 1024 // Hardcoded because CompileModel doesn't expose shape info.
+-    const val NUM_DURATIONS = 5
++    private const val NUM_FEATURES = 1024 // Hardcoded because CompileModel doesn't expose shape info.
++    private const val NUM_DURATIONS = 5
+ 
+     private fun inputBufferName(index: Int) = LiteRtRunner.inputBufferName(index)
+ 
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtGreedyLoop.kt b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtGreedyLoop.kt
+new file mode 100644
+index 00000000..817f0d2c
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtGreedyLoop.kt
+@@ -0,0 +1,165 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++/**
++ * The greedy decoding loop of [TdtDecoder], apart from the model, so that it can run on made-up
++ * logits in tests. With the default [decode] arguments it is the loop TdtDecoder has always run:
++ * every encoder frame of the window, no cap on the symbols emitted at one frame.
++ */
++object TdtGreedyLoop {
++  /** No cap on the non-blank symbols emitted at one time index. */
++  const val NO_SYMBOL_CAP = 0
++
++  /** The decoder network the loop drives. */
++  interface Network {
++    /**
++     * Writes [tokenIds] into the token input of decode ([stateful] false) or decode_1 (true), runs
++     * that signature and returns its logits for every time index and token slot.
++     */
++    fun run(stateful: Boolean, tokenIds: IntArray): FloatArray
++
++    /** Makes the LSTM states the last [run] wrote the input states of the next run. */
++    fun adoptStates()
++  }
++
++  /** What one decode did: the time limit, the network runs, the frames the cap moved past. */
++  class Stats {
++    var timeLimit = 0
++      private set
++
++    var steps = 0
++      private set
++
++    var cappedFrames = 0
++      private set
++
++    internal fun reset(limit: Int) {
++      timeLimit = limit
++      steps = 0
++      cappedFrames = 0
++    }
++
++    internal fun step() {
++      steps++
++    }
++
++    internal fun capped() {
++      cappedFrames++
++    }
++  }
++
++  /**
++   * Decodes one window: yields (token id, time index) for each non-blank token, then
++   * (END_OF_SEQUENCE, [maxTimeIndex]).
++   *
++   * @param timeLimit the loop stops before this time index (at most [maxTimeIndex])
++   * @param maxSymbolsPerStep after this many non-blank tokens at one time index the loop moves to
++   *   the next one, as NeMo's max_symbols does; [NO_SYMBOL_CAP] for no cap
++   * @param stats filled while the sequence is iterated
++   */
++  fun decode(
++    network: Network,
++    maxTimeIndex: Int,
++    numOfTokenIds: Int,
++    numOfLogitsPerToken: Int,
++    numOfDurations: Int,
++    blankTokenId: Int,
++    startTokenId: Int,
++    hasDecode1: Boolean,
++    timeLimit: Int = maxTimeIndex,
++    maxSymbolsPerStep: Int = NO_SYMBOL_CAP,
++    stats: Stats = Stats(),
++  ): Sequence<Pair<Int, Int>> = sequence {
++    val limit = minOf(timeLimit, maxTimeIndex)
++    stats.reset(limit)
++
++    // Start inference with decode signature for better quality in sequence start as stateless
++    // decoding can keep context better than decode_1, stateful decoding.
++    var stateful = false
++    var numOfInferenceTokenIds = numOfTokenIds
++    var inferenceTokenIds = IntArray(numOfTokenIds) { 0 }
++    inferenceTokenIds[0] = startTokenId
++
++    var tokenIndex: Int = 0
++    var timeIndex: Int = 0
++    var symbolsAtTimeIndex = 0
++    var lastTimeIndex = 0
++    while (timeIndex < limit) {
++      if (maxSymbolsPerStep != NO_SYMBOL_CAP) {
++        if (timeIndex != lastTimeIndex) {
++          symbolsAtTimeIndex = 0
++          lastTimeIndex = timeIndex
++        }
++        if (symbolsAtTimeIndex >= maxSymbolsPerStep) {
++          // A non-blank token with duration 0 keeps the loop at one time index: move on.
++          timeIndex++
++          stats.capped()
++          continue
++        }
++      }
++
++      val logits = network.run(stateful, inferenceTokenIds)
++      stats.step()
++
++      val startIndexInCurrentTimeIndex = timeIndex * numOfInferenceTokenIds * numOfLogitsPerToken
++      // Do argmax among the logits of the current token.
++      val startIndexOfTokenId = startIndexInCurrentTimeIndex + tokenIndex * numOfLogitsPerToken
++      val endIndexOfDuration =
++        startIndexInCurrentTimeIndex + (tokenIndex + 1) * numOfLogitsPerToken
++      val endIndexOfTokenId = endIndexOfDuration - numOfDurations
++      val tokenId =
++        ((startIndexOfTokenId until endIndexOfTokenId).maxByOrNull { logits[it] }
++          ?: startIndexOfTokenId) - startIndexOfTokenId
++      if (tokenId != blankTokenId) {
++        symbolsAtTimeIndex++
++        yield(Pair(tokenId, timeIndex))
++        if (numOfInferenceTokenIds > 1) {
++          tokenIndex++
++          if (tokenIndex < numOfInferenceTokenIds) {
++            // Still room in the stateless token array: keep filling it, so the
++            // LSTM states handed to decode_1 below are computed from real
++            // tokens only (an unfilled zero slot skews them).
++          } else if (hasDecode1) { // Switch to decode_1 for stateful decoding.
++            stateful = true
++            numOfInferenceTokenIds = 1
++            inferenceTokenIds = IntArray(1) { 0 }
++            tokenIndex = 0
++          } else { // Stateless decoding reached the max token size.
++            break
++          }
++        }
++        inferenceTokenIds[tokenIndex] = tokenId
++      }
++
++      val duration =
++        ((endIndexOfTokenId until endIndexOfDuration).maxByOrNull { logits[it] }
++          ?: endIndexOfTokenId) - endIndexOfTokenId
++      timeIndex += if (duration == 0 && tokenId == blankTokenId) 1 else duration
++
++      if (numOfInferenceTokenIds == 1 && tokenId != blankTokenId) {
++        // Stateful RNN decoder: adopt the new LSTM states — but only on a non-blank emission.
++        // In RNN-T greedy decoding the prediction network advances only when a token is
++        // emitted; adopting the state on blank steps re-consumes the last token once per blank
++        // and degrades the transcript.
++        network.adoptStates()
++      }
++    }
++
++    yield(Pair(SpeechRecognizer.END_OF_SEQUENCE, maxTimeIndex))
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/TdtGreedyLoopTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/TdtGreedyLoopTest.kt
+new file mode 100644
+index 00000000..2cf6a80d
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/TdtGreedyLoopTest.kt
+@@ -0,0 +1,423 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++import com.google.ai.edge.examples.asr.bench.validFeatureFrames
++import com.google.ai.edge.examples.asr.bench.validSamples
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertTrue
++import org.junit.Assert.fail
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.junit.runners.JUnit4
++
++@RunWith(JUnit4::class)
++class TdtGreedyLoopTest {
++
++  /** A token and a duration the decoder network "predicts" at the position the loop reads. */
++  private data class Choice(val token: Int, val duration: Int)
++
++  /** One run of the network: the signature, the token ids written, the input-state buffer used. */
++  private data class Call(val signature: String, val tokenIds: List<Int>, val statesIndex: Int)
++
++  /**
++   * Stands in for the decode / decode_1 signatures: every run returns logits for every time index
++   * and token slot, all 0 except a 1 at the token and at the duration [choose] picks for that run
++   * (by run number, time index and slot, so a loop that reads the wrong position reads another
++   * prediction). It records every run, and gives up after [maxRuns] (the loop has not ended).
++   */
++  private class FakeModel(
++    val maxTimeIndex: Int,
++    val numOfTokenIds: Int,
++    val choose: (run: Int, timeIndex: Int, slot: Int) -> Choice,
++    val maxRuns: Int = 100_000,
++  ) {
++    val calls = ArrayList<Call>()
++    var inputStatesBuffersIndex = 0
++    // Refilled by every run (the loops read a run's logits before the next run).
++    private val decodeLogits = FloatArray(maxTimeIndex * numOfTokenIds * LOGITS_PER_TOKEN)
++    private val decode1Logits = FloatArray(maxTimeIndex * LOGITS_PER_TOKEN)
++
++    fun run(signature: String, tokenIds: IntArray): FloatArray {
++      if (calls.size >= maxRuns) throw LoopDidNotEnd()
++      val run = calls.size
++      calls.add(Call(signature, tokenIds.toList(), inputStatesBuffersIndex))
++      val slots = if (signature == DECODE_1) 1 else numOfTokenIds
++      val logits = if (signature == DECODE_1) decode1Logits else decodeLogits
++      logits.fill(0.0f)
++      for (t in 0 until maxTimeIndex) {
++        for (slot in 0 until slots) {
++          val choice = choose(run, t, slot)
++          val base = (t * slots + slot) * LOGITS_PER_TOKEN
++          logits[base + choice.token] = 1.0f
++          logits[base + VOCAB + choice.duration] = 1.0f
++        }
++      }
++      return logits
++    }
++
++    /** The extracted loop's view of this model. */
++    fun network() =
++      object : TdtGreedyLoop.Network {
++        override fun run(stateful: Boolean, tokenIds: IntArray) =
++          run(if (stateful) DECODE_1 else DECODE, tokenIds)
++
++        override fun adoptStates() {
++          inputStatesBuffersIndex = 1 - inputStatesBuffersIndex
++        }
++      }
++  }
++
++  private class LoopDidNotEnd : RuntimeException()
++
++  /**
++   * TdtDecoder.decode as of 5f23093f (= upstream d15f8ae9, last changed by 8a32fa03), line for
++   * line, with its CompiledModel calls (writeInt, run, readFloat) replaced by [FakeModel.run] and
++   * its state-buffer swap kept: the reference the extracted loop has to match with the fix off.
++   */
++  private fun upstreamDecode(
++    model: FakeModel,
++    hasDecode1: Boolean,
++    maxTimeIndex: Int = model.maxTimeIndex,
++    numOfTokenIds: Int = model.numOfTokenIds,
++    numOfLogitsPerToken: Int = LOGITS_PER_TOKEN,
++    blankTokenId: Int = BLANK,
++    decodeStartTokenId: Int = BLANK,
++  ): List<Pair<Int, Int>> =
++    sequence {
++        var inferenceSignature = DECODE
++        var numOfInferenceTokenIds = numOfTokenIds
++        var inferenceTokenIds = IntArray(numOfTokenIds) { 0 }
++        inferenceTokenIds[0] = decodeStartTokenId
++
++        var tokenIndex: Int = 0
++        var timeIndex: Int = 0
++        while (timeIndex < maxTimeIndex) {
++          val logits = model.run(inferenceSignature, inferenceTokenIds)
++          val startIndexInCurrentTimeIndex = timeIndex * numOfInferenceTokenIds * numOfLogitsPerToken
++          // Do argmax among the logits of the current token.
++          val startIndexOfTokenId = startIndexInCurrentTimeIndex + tokenIndex * numOfLogitsPerToken
++          val endIndexOfDuration =
++            startIndexInCurrentTimeIndex + (tokenIndex + 1) * numOfLogitsPerToken
++          val endIndexOfTokenId = endIndexOfDuration - NUM_DURATIONS
++          val tokenId =
++            ((startIndexOfTokenId until endIndexOfTokenId).maxByOrNull { logits[it] }
++              ?: startIndexOfTokenId) - startIndexOfTokenId
++          if (tokenId != blankTokenId) {
++            yield(Pair(tokenId, timeIndex))
++            if (numOfInferenceTokenIds > 1) {
++              tokenIndex++
++              if (tokenIndex < numOfInferenceTokenIds) {
++                // Still room in the stateless token array.
++              } else if (hasDecode1) { // Switch to decode_1 for stateful decoding.
++                inferenceSignature = DECODE_1
++                numOfInferenceTokenIds = 1
++                inferenceTokenIds = IntArray(1) { 0 }
++                tokenIndex = 0
++              } else { // Stateless decoding reached the max token size.
++                break
++              }
++            }
++            inferenceTokenIds[tokenIndex] = tokenId
++          }
++
++          val duration =
++            ((endIndexOfTokenId until endIndexOfDuration).maxByOrNull { logits[it] }
++              ?: endIndexOfTokenId) - endIndexOfTokenId
++          timeIndex += if (duration == 0 && tokenId == blankTokenId) 1 else duration
++
++          if (numOfInferenceTokenIds == 1 && tokenId != blankTokenId) {
++            model.inputStatesBuffersIndex = 1 - model.inputStatesBuffersIndex
++          }
++        }
++
++        yield(Pair(SpeechRecognizer.END_OF_SEQUENCE, maxTimeIndex))
++      }
++      .toList()
++
++  private fun loopDecode(
++    model: FakeModel,
++    hasDecode1: Boolean,
++    timeLimit: Int = model.maxTimeIndex,
++    maxSymbolsPerStep: Int = TdtGreedyLoop.NO_SYMBOL_CAP,
++    stats: TdtGreedyLoop.Stats = TdtGreedyLoop.Stats(),
++  ): List<Pair<Int, Int>> =
++    TdtGreedyLoop.decode(
++        model.network(),
++        model.maxTimeIndex,
++        model.numOfTokenIds,
++        LOGITS_PER_TOKEN,
++        NUM_DURATIONS,
++        blankTokenId = BLANK,
++        startTokenId = BLANK,
++        hasDecode1 = hasDecode1,
++        timeLimit = timeLimit,
++        maxSymbolsPerStep = maxSymbolsPerStep,
++        stats = stats,
++      )
++      .toList()
++
++  /**
++   * Random predictions, fixed by [seed] and different at every run, time index and slot: blank
++   * with [pBlank], duration 0 with [pZero].
++   */
++  private fun randomChoice(seed: Int, pBlank: Double, pZero: Double) = { run: Int, t: Int, slot: Int ->
++    val h = mix(seed, run, t, slot)
++    val token = if ((h and 0xFFFF) / 65536.0 < pBlank) BLANK else ((h ushr 16) and 0xFFFF).toInt() % BLANK
++    val duration =
++      if (((h ushr 32) and 0xFFFF) / 65536.0 < pZero) 0
++      else 1 + ((h ushr 48) and 0xFFFF).toInt() % (NUM_DURATIONS - 1)
++    Choice(token, duration)
++  }
++
++  /** A 64-bit hash of four ints (SplitMix64's finalizer after each). */
++  private fun mix(a: Int, b: Int, c: Int, d: Int): Long {
++    var h = 0x2545F4914F6CDD1DL
++    for (x in intArrayOf(a, b, c, d)) {
++      h = (h xor x.toLong()) * -0x40a7b892e31b1a47L
++      h = (h xor (h ushr 27)) * -0x6b2fb644ecceee15L
++      h = h xor (h ushr 31)
++    }
++    return h
++  }
++
++  /** The same prediction at every position of a run, by run number. */
++  private fun byRun(script: (run: Int) -> Choice) = { run: Int, _: Int, _: Int -> script(run) }
++
++  // (c) Off: the extracted loop is the app's loop.
++
++  @Test
++  fun fixOff_sameTokensAndSameNetworkRunsAsUpstream() {
++    var cases = 0
++    var tokens = 0
++    var stateful = 0
++    for (maxTimeIndex in listOf(1, 7, 63, 375)) {
++      for (numOfTokenIds in listOf(1, 2, 4)) {
++        for (hasDecode1 in listOf(true, false)) {
++          for ((pBlank, pZero) in listOf(0.5 to 0.3, 0.8 to 0.5, 0.2 to 0.6)) {
++            for (seed in 0 until if (maxTimeIndex == 375) 5 else 25) {
++              val choose = randomChoice(seed, pBlank, pZero)
++              val upstreamModel = FakeModel(maxTimeIndex, numOfTokenIds, choose)
++              val expected = upstreamDecode(upstreamModel, hasDecode1)
++              val model = FakeModel(maxTimeIndex, numOfTokenIds, choose)
++              val actual = loopDecode(model, hasDecode1)
++              assertEquals(expected, actual)
++              assertEquals(upstreamModel.calls, model.calls)
++              assertEquals(upstreamModel.inputStatesBuffersIndex, model.inputStatesBuffersIndex)
++              cases++
++              tokens += expected.size - 1
++              stateful += model.calls.count { it.signature == DECODE_1 }
++            }
++          }
++        }
++      }
++    }
++    // The cases reach both signatures and emit tokens (the comparison is not empty).
++    assertEquals(3 * 3 * 2 * 3 * 25 + 3 * 2 * 3 * 5, cases)
++    assertTrue(tokens > 2_000)
++    assertTrue(stateful > 300)
++  }
++
++  @Test
++  fun fixOff_decoderDefaultsAreTheAppsLoop() {
++    // TdtDecoder with fixDecodeLoop false passes these: every frame, no cap.
++    val choose = randomChoice(seed = 3, pBlank = 0.6, pZero = 0.4)
++    val upstreamModel = FakeModel(375, 4, choose)
++    val model = FakeModel(375, 4, choose)
++    val stats = TdtGreedyLoop.Stats()
++    assertEquals(
++      upstreamDecode(upstreamModel, hasDecode1 = true),
++      loopDecode(model, hasDecode1 = true, timeLimit = TdtDecoder.timeLimit(SpeechRecognizer.ALL_FRAMES, 375), stats = stats),
++    )
++    assertEquals(upstreamModel.calls, model.calls)
++    assertEquals(375, stats.timeLimit)
++    assertEquals(model.calls.size, stats.steps)
++    assertEquals(0, stats.cappedFrames)
++  }
++
++  @Test
++  fun upstreamLoopNeverEnds_onARepeatedZeroDurationToken() {
++    // The defect the cap closes: a non-blank token with duration 0 at one frame, over and over.
++    val choose = byRun { run -> if (run < 2) Choice(BLANK, 1) else Choice(3, 0) }
++    try {
++      upstreamDecode(FakeModel(10, 4, choose, maxRuns = 10_000), hasDecode1 = true)
++      fail("the upstream loop ended")
++    } catch (e: LoopDidNotEnd) {
++      // Expected: 10 000 runs at time index 2.
++    }
++  }
++
++  // (a) The stop: no network run at or past the time limit; the end marker keeps maxTimeIndex.
++
++  @Test
++  fun timeLimit_stopsBeforeTheLimit() {
++    val choose = byRun { Choice(1, 1) } // a token at every frame
++    val model = FakeModel(375, 4, choose)
++    val stats = TdtGreedyLoop.Stats()
++    val out = loopDecode(model, hasDecode1 = true, timeLimit = 129, stats = stats)
++    assertEquals((0 until 129).map { Pair(1, it) } + Pair(SpeechRecognizer.END_OF_SEQUENCE, 375), out)
++    assertEquals(129, model.calls.size)
++    assertEquals(129, stats.timeLimit)
++    assertEquals(129, stats.steps)
++
++    // The app's loop on the same predictions runs every frame.
++    val upstreamModel = FakeModel(375, 4, choose)
++    assertEquals(376, upstreamDecode(upstreamModel, hasDecode1 = true).size)
++    assertEquals(375, upstreamModel.calls.size)
++  }
++
++  @Test
++  fun timeLimit_aDurationJumpsPastTheLimit() {
++    val model = FakeModel(375, 4, byRun { Choice(2, 4) })
++    val out = loopDecode(model, hasDecode1 = true, timeLimit = 10)
++    assertEquals(listOf(Pair(2, 0), Pair(2, 4), Pair(2, 8), Pair(SpeechRecognizer.END_OF_SEQUENCE, 375)), out)
++    assertEquals(3, model.calls.size)
++  }
++
++  @Test
++  fun timeLimit_fromTheWindowsValidFrames() {
++    // ceil(n / 8) + 4, at most maxTimeIndex; every frame when the count is unknown.
++    assertEquals(375, TdtDecoder.timeLimit(3000, 375))
++    assertEquals(375, TdtDecoder.timeLimit(2961, 375))
++    assertEquals(374, TdtDecoder.timeLimit(2960, 375))
++    assertEquals(129, TdtDecoder.timeLimit(1000, 375))
++    assertEquals(130, TdtDecoder.timeLimit(1001, 375))
++    assertEquals(5, TdtDecoder.timeLimit(1, 375))
++    assertEquals(4, TdtDecoder.timeLimit(0, 375))
++    assertEquals(375, TdtDecoder.timeLimit(SpeechRecognizer.ALL_FRAMES, 375))
++    assertEquals(63, TdtDecoder.timeLimit(500, 63)) // the 5 s export: a full window decodes all
++  }
++
++  @Test
++  fun validSamples_endAtTheLastNonZeroSample() {
++    assertEquals(0, validSamples(FloatArray(0)))
++    assertEquals(0, validSamples(FloatArray(4)))
++    assertEquals(1, validSamples(floatArrayOf(0.5f, 0f, 0f)))
++    assertEquals(2, validSamples(floatArrayOf(0f, -0.25f)))
++    assertEquals(2, validSamples(floatArrayOf(0.1f, 0.2f, -0.0f)))
++    // FileAudioSource's last 30 s window of a 10 s utterance: 160 000 samples, then zeros.
++    val window = FloatArray(480_000)
++    for (i in 0 until 160_000) window[i] = if (i % 2 == 0) 0.01f else -0.02f
++    assertEquals(160_000, validSamples(window))
++    assertEquals(1000, validFeatureFrames(validSamples(window), 160))
++    assertEquals(129, TdtDecoder.timeLimit(validFeatureFrames(validSamples(window), 160), 375))
++    // A full window (the audio's last sample non-zero) decodes every frame.
++    window.fill(0.03f)
++    assertEquals(375, TdtDecoder.timeLimit(validFeatureFrames(validSamples(window), 160), 375))
++    // Some exact zeros at the end of a full window move the stop by at most the margin.
++    for (i in 479_000 until 480_000) window[i] = 0f
++    assertEquals(375, TdtDecoder.timeLimit(validFeatureFrames(validSamples(window), 160), 375))
++  }
++
++  // (b) The cap: at most 10 non-blank tokens at one time index, then the next one.
++
++  @Test
++  fun symbolCap_movesOnAfterTenAtOneFrame() {
++    // Frames 0 and 1 blank; from frame 2 on, 25 non-blank tokens with duration 0; then blanks.
++    val model = FakeModel(6, 4, byRun { run -> if (run < 2 || run >= 27) Choice(BLANK, 1) else Choice(3, 0) })
++    val stats = TdtGreedyLoop.Stats()
++    val out = loopDecode(model, hasDecode1 = true, maxSymbolsPerStep = 10, stats = stats)
++    assertEquals(
++      List(10) { Pair(3, 2) } + List(10) { Pair(3, 3) } + List(5) { Pair(3, 4) } +
++        Pair(SpeechRecognizer.END_OF_SEQUENCE, 6),
++      out,
++    )
++    assertEquals(2, stats.cappedFrames)
++    // 2 blanks, 25 tokens, the rest of frame 4 is a blank, then frame 5.
++    assertEquals(2 + 25 + 1 + 1, stats.steps)
++    // The first 4 tokens fill the stateless array (decode), the rest go through decode_1.
++    assertEquals(2 + 4, model.calls.count { it.signature == DECODE })
++    assertEquals(listOf(BLANK, 3, 3, 3), model.calls[5].tokenIds)
++    assertEquals(DECODE_1, model.calls[6].signature)
++  }
++
++  @Test
++  fun symbolCap_countsAgainAtANewFrame() {
++    // Frame 2: nine tokens with duration 0 and a tenth with duration 1 (the loop moves on by
++    // itself); frame 3: ten with duration 0 (the cap moves it on); then blanks.
++    val model =
++      FakeModel(
++        6,
++        4,
++        byRun { run ->
++          when {
++            run < 2 -> Choice(BLANK, 1)
++            run < 11 -> Choice(3, 0)
++            run == 11 -> Choice(3, 1)
++            run < 22 -> Choice(4, 0)
++            else -> Choice(BLANK, 1)
++          }
++        },
++      )
++    val stats = TdtGreedyLoop.Stats()
++    val out = loopDecode(model, hasDecode1 = true, maxSymbolsPerStep = 10, stats = stats)
++    assertEquals(
++      List(10) { Pair(3, 2) } + List(10) { Pair(4, 3) } + Pair(SpeechRecognizer.END_OF_SEQUENCE, 6),
++      out,
++    )
++    assertEquals(1, stats.cappedFrames)
++  }
++
++  @Test
++  fun symbolCap_endsTheLoopThatUpstreamNeverEnds() {
++    val choose = byRun { run -> if (run < 2) Choice(BLANK, 1) else Choice(3, 0) }
++    val stats = TdtGreedyLoop.Stats()
++    val model = FakeModel(10, 4, choose)
++    val out = loopDecode(model, hasDecode1 = true, maxSymbolsPerStep = 10, stats = stats)
++    // Frames 2..9 each give 10 tokens, then the cap moves on: 8 frames capped.
++    assertEquals(80, out.size - 1)
++    assertEquals(8, stats.cappedFrames)
++    assertEquals(2 + 80, model.calls.size)
++  }
++
++  @Test
++  fun symbolCap_doesNotChangeADecodeThatNeverReachesIt() {
++    for (seed in 0 until 50) {
++      val choose = randomChoice(seed, pBlank = 0.5, pZero = 0.3)
++      val upstreamModel = FakeModel(375, 4, choose)
++      val model = FakeModel(375, 4, choose)
++      val stats = TdtGreedyLoop.Stats()
++      assertEquals(
++        upstreamDecode(upstreamModel, hasDecode1 = true),
++        loopDecode(model, hasDecode1 = true, maxSymbolsPerStep = 10, stats = stats),
++      )
++      assertEquals(upstreamModel.calls, model.calls)
++      assertEquals(0, stats.cappedFrames)
++    }
++  }
++
++  @Test
++  fun stats_areResetByEachDecode() {
++    val stats = TdtGreedyLoop.Stats()
++    loopDecode(FakeModel(375, 4, byRun { Choice(1, 1) }), hasDecode1 = true, timeLimit = 129, stats = stats)
++    loopDecode(FakeModel(63, 4, byRun { Choice(BLANK, 1) }), hasDecode1 = true, stats = stats)
++    assertEquals(63, stats.timeLimit)
++    assertEquals(63, stats.steps)
++    assertEquals(0, stats.cappedFrames)
++  }
++
++  private companion object {
++    const val DECODE = "decode"
++    const val DECODE_1 = "decode_1"
++    const val NUM_DURATIONS = 5
++
++    // A small vocabulary with the blank last, as in the parakeet export (8192 = blank of 0..8192).
++    const val VOCAB = 9
++    const val BLANK = VOCAB - 1
++    const val LOGITS_PER_TOKEN = VOCAB + NUM_DURATIONS
++  }
++}
