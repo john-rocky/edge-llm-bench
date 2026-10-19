@@ -11,6 +11,7 @@ Supervisor: edge-llm-bench-55 [4f120b] (K/LANE.md first line). Branch `q06-candi
 - 13:4x 監督の追加 1 件(2×2 の iPhone GPU の engine 作成の smoke: graph 8/5 / 9/21 × LlmMetadata 8/5 / 今)。(c) の re-pack を Mac で(PASS)、4 launch は go の後の iPhone の枠に入れた(`K/tools/r18_step7.sh ios-push`)。
 - 13:50:39–13:52:33 build(自分の quiet_hold 114 s): Mac yardstick と iPhone app、どちらも BUILD SUCCEEDED、r17 の 4 file は戻した(sha256 一致)。
 - 13:56 Mac の side-load に候補を置いた(sha256 一致)。13:56:33–13:57:53 Mac smoke(自分の quiet_hold 100 s、4 launch)。端末にはまだ触れていない(3 台とも他の lane の sitting 中: iPhone = r16 の mlx-ptq-r3、S26 = asr lane、Pixel 8a = r15 の llama-thinkoff-r2; Pixel 8a は USB に戻っている)。次 = commit、監督へ「Mac 側 PASS、端末待ち」。
+- 14:0x commit 4f46adf7(明示 path 16 file: catalog、run_cell.py、selftest.py、docs、cells 4 本、ROUND18、K/tools の r18_* 7 本)と、この行の commit。次 = 監督へ「Mac 側 PASS、端末待ち」、go を待つ(端末には触れない、enqueue もしない)。
 
 ## 下見(13:25–13:37)
 
