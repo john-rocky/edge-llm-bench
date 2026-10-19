@@ -304,6 +304,10 @@ cmd_run(){
     local rec_rt="$rt"
     [ "$rt" = executorch ] && [ -n "$be" ] && rec_rt="executorch-$be"
     [ "$rt" = onnxruntime-genai ] && [ -n "$be" ] && rec_rt="onnxruntime-genai-$be"
+    # a LiteRT-LM CPU row: the app stamps its records litert-lm-cpu (BenchmarkApp --litert-backend cpu), which names
+    # their files; gated as litert-lm, the cell found no files (SHORT 0) and its runs went ungated (2026-10-19 13:10:
+    # the 18 Pro's Qwen3 0.6B CPU 1K cell, warm runs 48 / 29 / 27 tok/s with no verdict)
+    [ "$rt" = litert-lm ] && [ "$be" = cpu ] && rec_rt="litert-lm-cpu"
 
     [ "$first" = 1 ] && first=0 || { log "cooldown ${cool}s"; sleep "$cool"; }
     if [ "${serious_wait:-0}" -gt 0 ]; then
