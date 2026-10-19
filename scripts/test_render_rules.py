@@ -384,6 +384,13 @@ class Dashboard(unittest.TestCase):
         self.assertEqual({h["model_id"]: h["cpu_capped_counted"] for h in history if h["arm"] == "llama.cpp-npu"},
                          {"org/gguf": "3/3"})
 
+    def test_an_apple_cpu_row_is_the_cpu_arm(self):
+        # Mac and iPhone LiteRT-LM rows with backend=cpu are the litert-lm-cpu arm (the records'
+        # stamp); without backend= they stay the bare GPU arm (2026-10-19: the iOS branch was missing)
+        for plat in ("mac", "ios"):
+            self.assertEqual(render_dashboard.arm_of(plat, "litert-lm", {"backend": "cpu"}), "litert-lm-cpu")
+            self.assertEqual(render_dashboard.arm_of(plat, "litert-lm", {}), "litert-lm")
+
     def test_a_cpu_arm_keeps_the_line(self):
         # the exemption is a list of arm names (render_leaderboard.CPU_CAP_EXEMPT_ARMS): the arms an
         # Android cells row names for an NPU or GPU backend, and no CPU arm -> a CPU arm's run

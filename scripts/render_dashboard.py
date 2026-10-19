@@ -119,7 +119,10 @@ def arm_of(plat, runtime, opts):
         return f"{runtime}-{opts['backend']}"
     if plat == "android" and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
-    if plat == "mac" and runtime == "litert-lm" and opts.get("backend") == "cpu":
+    if plat in ("mac", "ios") and runtime == "litert-lm" and opts.get("backend") == "cpu":
+        # the iPhone app stamps litert-lm-cpu as the Mac CLI does (BenchmarkApp --litert-backend cpu);
+        # without the ios branch a backend=cpu row was keyed as the bare GPU arm and its records were
+        # never counted (2026-10-19: the 18 Pro's Qwen3 0.6B CPU cells, "4 of 6 cells")
         return f"{runtime}-cpu"
     # executorch carries its delegate on every platform (executorch-xnnpack, …;
     # docs/executorch-arm-v1.md)
