@@ -899,10 +899,14 @@ def campaign_notes(rel_path):
     return notes
 
 
-def cells_with_records(rel_path, cells_file, platform, ident):
+def cells_with_records(rel_path, cells_file, platform, ident, key=None):
+    """(cells the device was to run, cells with a record): the file's rows of the platform minus its
+    exclude= rows and, given the device key, the rows exclude-on= names for that device (the runner
+    skips those with a CELL_SKIP line and no record; counting them read every Pixel 8a sitting of a
+    file with 4B-class rows as partial, 2026-10-19)."""
     plat = PLATFORM_TOKEN[platform]
     want = {(c["arm"], c["model_id"], c["task"]) for c in load_cells(os.path.join(ROOT, cells_file))
-            if c["platform"] == plat and not c["exclude"]}
+            if c["platform"] == plat and not c["exclude"] and not (key and key in c["exclude_on"])}
     have = set()
     for r in load_rows():
         if r["campaign"] == rel_path and r["device"] == ident:
@@ -1134,7 +1138,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                 log(f"{tag} used {used} this sitting; on-device footprint of {tag}: {foot:.1f} GB "
                     "(models + caches — the measured floor for min_free_gb)")
             created.append(rel_path)
-            expected, have = cells_with_records(rel_path, cells_file, platform, dev["identifier"])
+            expected, have = cells_with_records(rel_path, cells_file, platform, dev["identifier"], key)
             # the payload session runs its own anchor row first; re-judge it
             # so a contention that began after phase A is not admitted blindly
             own_ok, own_reason, own_details = admit(schedule, dev, rel_path, platform)

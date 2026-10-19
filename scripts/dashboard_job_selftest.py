@@ -785,6 +785,26 @@ def main():
     if os.path.exists(lock):
         os.remove(lock)
 
+    # cells_with_records: a row exclude-on= names for the device is not expected of it (the runner skips it
+    # with a CELL_SKIP line and no record); other devices still expect it (Pixel 8a 2026-10-19: every sitting
+    # of a file with 4B-class rows had read as partial)
+    xcells = os.path.join(tmp, "exclude-on.cells")
+    with open(xcells, "w") as fh:
+        fh.write("android llama.cpp m/A short-chat\n"
+                 "android llama.cpp m/B short-chat exclude=never\n"
+                 "android llama.cpp m/C short-chat exclude-on=pixel8a:too-big\n"
+                 "mac llama.cpp m/A short-chat\n")
+    real_rows_x = dj.load_rows
+    dj.load_rows = lambda path=None: [{"campaign": "results/raw/x-android", "device": "Pixel 8a",
+                                       "runtime": "llama.cpp", "model_id": "m/A", "task": "short-chat"}]
+    try:
+        counts = [dj.cells_with_records("results/raw/x-android", xcells, "android", "Pixel 8a", k)
+                  for k in ("pixel8a", "s26", None)]
+    finally:
+        dj.load_rows = real_rows_x
+    ok(counts == [(1, 1), (2, 1), (2, 1)],
+       f"cells_with_records: the exclude-on=pixel8a row is not expected on pixel8a, expected elsewhere: {counts}")
+
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
         return 1
