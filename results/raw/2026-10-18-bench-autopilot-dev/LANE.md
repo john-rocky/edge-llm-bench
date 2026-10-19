@@ -579,3 +579,17 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   (r17 holds the quiet lock 12:26– for its yardstick build and smoke). Two of my chains had waited on conditions that can never hold:
   BSD grep -P under nohup (both rewritten) and `pgrep -f` matching other sessions' prompt text (the 2K-ladder chain now reads ps lines
   minus the agent CLI and waits for an empty quiet lock). The 0.6B sitting is queued behind r16's MLX sitting on the phone.
+- 12:3x–12:4x two job defects found by the day's shared-phone traffic and fixed on main: check_holds read the lanes' .iphone_hold
+  (which names its phone) as this phone's (1940f4a8: a hold naming another schedule device is skipped; register_devices maps key /
+  display / identifier / serial / udid / CoreDevice id to a key), and the iPhone preflight read any bench_matrix_iphone.sh on the host
+  as this phone's runner (8fe22207: the runner's phone from BENCH_UDID / DEV when macOS lets us read it, else the live sibling hold
+  that names another phone; the 17 Pro's AA lane (code-fe, until 15:12) had held the 18 Pro's job at exit 3). r15's Pixel 8a sitting
+  aborted at 12:35 when the phone vanished from USB (ioreg too): a human re-plug is needed; its S26 sitting runs on; the re-measure
+  takes a new suffix. The Mac 2K-ladder llama.cpp sitting (12:35–12:43) PASSed and its post made the first automatic push
+  (da515ee4); the hf-to-litertlm lane's export (100 % CPU, 15.8 GB) overlapped 12:39:30–12:41:40 with its E2B cells, whose warm
+  runs still agree within about 1 % (kept). Root cause: a Mac sitting held no quiet lock, so other lanes' quiet_wait / hook could
+  not see it — change in flight: the Mac sitting flocks ~/code/coreai/_GPU_LOCK (schedule quiet_lock) for its whole length, and the
+  Mac guards also name scripts/convert.py / verify_lock.py (their one-line patch). r17: GO for regression_diff.py (prompt_version in
+  the join key); its smoke: the four arms answer the new tail (+17 prompt tokens, 256 generated); its P patch applies. r16: the
+  transfer of the two 4bit bundles done (16 files, 8.76 GB); its P row-name patch would split the Apple panel groups and take MLX out
+  of the Gemma 4 comparison, so it reworks it to label the bars only; the sitting starts now that the runner check is fixed.
