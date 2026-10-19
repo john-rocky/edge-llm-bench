@@ -440,14 +440,37 @@ def main():
     os.makedirs(raw)
     hist = os.path.join(tmp, "device-runs.csv")
     with open(hist, "w") as fh:
-        fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check\n")
+        fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check,model_file\n")
         for i in range(3):
-            fh.write(f"results/raw/old-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,19,\n")
+            fh.write(f"results/raw/old-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,19,,\n")
+        # the same model id on another file read 9 tokens (a bundle whose template drops the user turn); more
+        # rows than the three file-less ones, which a pre-column summary contributes to every file
+        for i in range(5):
+            fh.write(f"results/raw/old-file-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,9,,other-file.gguf\n")
 
     print(f"--- LEADER, the platform of the LiteRT-LM-only cases: {LEADER_WHY}")
     if LEADER_PLATFORM is None:
         ok(False, "no LEADER: the protocol-off cases are not built (a registry where no platform's "
                   "LiteRT-LM pin is the newest release FAILs every LiteRT-LM cell on pin-drift)")
+
+    print("--- prompt history is keyed by the artifact file (2026-10-19: one model id, two files)")
+    fa = anchor_dir(raw, "2099-01-03-dashboard-v1-m4max-anchor-mac")
+    recs_new = cell("llama.cpp", LLAMA_MODEL, LLAMA)
+    for r in recs_new:
+        r.setdefault("model", {})["file"] = "new-file.gguf"
+    fp = payload_dir(raw, "2099-01-03-dashboard-v1-m4max-mac", os.path.basename(fa), records=recs_new)
+    rc, res, out = run([fa, fp], history=hist)
+    r = res[os.path.basename(fp)]
+    ok("prompt-tokens" not in rules(r) and clean(r, set()),
+       f"a cell on a file the history has not seen reads its own prompt count, not another file's ({sorted(rules(r))})")
+    recs_old = cell("llama.cpp", LLAMA_MODEL, LLAMA)
+    for r in recs_old:
+        r.setdefault("model", {})["file"] = "other-file.gguf"
+    fp2 = payload_dir(raw, "2099-01-04-dashboard-v1-m4max-mac", os.path.basename(anchor_dir(raw, "2099-01-04-dashboard-v1-m4max-anchor-mac")), records=recs_old)
+    rc, res, out = run([os.path.join(raw, "2099-01-04-dashboard-v1-m4max-anchor-mac"), fp2], history=hist)
+    r = res[os.path.basename(fp2)]
+    ok("prompt-tokens" in rules(r) and clean(r, {"prompt-tokens"}),
+       f"the same file's history (9 tokens) holds a 19-token cell on it ({sorted(rules(r))})")
 
     print("--- PASS: a clean Mac anchor + payload pair, the prompt as the history reads it")
     a = anchor_dir(raw, "2099-01-01-dashboard-v1-m4max-anchor-mac")

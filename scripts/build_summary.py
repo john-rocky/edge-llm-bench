@@ -376,6 +376,7 @@ def build_device():
             "engine_version": d.get("engineVersion"),
             "engine_artifact": d.get("engineArtifact"),
             "model_id": model.get("id"),
+            "model_file": os.path.basename(str(model.get("file") or model.get("primaryFile") or "")) or None,
             "quantization": model.get("quantization"),
             "task": d.get("task"),
             "harness_stamp": m.get("harnessStamp"),
@@ -494,6 +495,9 @@ def main():
             "from 2026-10-06; its earlier rows carry a peak only from the\n"
             "`BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:\n"
             "`methodology/memory.md` \"Peak memory\".\n\n"
+            "`model_file` (after `model_id`, 2026-10-19) is the artifact file the run loaded (the record's `model.file`, or\n"
+            "`model.primaryFile` on the Apple native path; empty before): one model id can ship several files, and the\n"
+            "session checker keys the prompt-token history by it (quant-label-rule: the recipe is visible in every row).\n"
             "`text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:\n"
             "`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a\n"
             "`FAIL` run stays a row here and in raw but pools into no number\n"

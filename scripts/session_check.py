@@ -176,6 +176,12 @@ def parse_time(text):
     return t if t.tzinfo else t.astimezone()
 
 
+def model_file_of(r):
+    """The artifact file a record loaded, as the summary's model_file column reads it."""
+    m = r.get("model") or {}
+    return os.path.basename(str(m.get("file") or m.get("primaryFile") or ""))
+
+
 def cell_of(r):
     """A cell as findings name it: arm, model, task and the engine build its records stamp; the key
     of text_screen.json's cells too (build_summary.cell_key_of, which reads them back)."""
@@ -1176,8 +1182,14 @@ class Check:
         sitting = self.ctx["sitting_of"](self.raw, self.name)
         same = collections.Counter()
         other = collections.defaultdict(collections.Counter)
-        for (hplat, heng, hrt, hmodel, htask), rows in hist.items():
+        # one model id can ship several files (litert-community/Qwen3-0.6B: mixed_int4 reads 9 tokens on
+        # v0.18.0, dynamic_wi4b32 reads 19): the history of another file is not this cell's; a summary
+        # written before the model_file column (2026-10-19) is read as any file
+        mfile = model_file_of(items[0][1])
+        for (hplat, heng, hrt, hmodel, htask, hfile), rows in hist.items():
             if (hplat, hrt, hmodel, htask) != (plat, rt, model, task):
+                continue
+            if hfile and mfile and hfile != mfile:
                 continue
             for pt, camp in rows:
                 if self.ctx["sitting_of"](self.raw, camp) == sitting:
@@ -1267,8 +1279,8 @@ class Check:
                                      f"({spec}): {found}")
 
     def history_index(self):
-        """(platform, engine, runtime, model, task) -> [(prompt tokens, campaign dir name)] over the
-        committed summary's admitted rows whose text check did not fail."""
+        """(platform, engine, runtime, model, task, model_file) -> [(prompt tokens, campaign dir name)] over
+        the committed summary's admitted rows whose text check did not fail (model_file '' before 2026-10-19)."""
         key = id(self.repo)
         if key not in self.ctx["hist_cache"]:
             admitted = self.ctx["admission"](self.raw)
@@ -1284,7 +1296,7 @@ class Check:
                 except ValueError:
                     continue
                 idx[(r.get("platform"), r.get("engine_version") or "", r.get("runtime"),
-                     r.get("model_id"), r.get("task"))].append((pt, camp))
+                     r.get("model_id"), r.get("task"), r.get("model_file") or "")].append((pt, camp))
             self.ctx["hist_cache"][key] = idx
         return self.ctx["hist_cache"][key]
 
