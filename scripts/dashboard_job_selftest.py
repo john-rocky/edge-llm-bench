@@ -839,6 +839,17 @@ def main():
             verdicts.append("busy")
     ok(verdicts == ["free", "busy", "busy"],
        f"check_holds: another phone's hold is skipped, the same phone's and an unnamed one are busy ({verdicts})")
+    if os.path.exists(other):
+        os.remove(other)
+    with open(hdev["hold"], "w") as fh:     # the phone's own hold file, labelled with another device
+        json.dump({"pid": live, "script": "dashboard_job.py", "device": "iPhone 17 Pro", "started": "now"}, fh)
+    try:
+        dj.check_holds(hdev, True)
+        own = "free"
+    except dj.Busy:
+        own = "busy"
+    os.remove(hdev["hold"])
+    ok(own == "busy", f"check_holds: the device's own hold file is busy whatever device it names ({own})")
 
     # iphone_runner_busy: a runner that drives another phone (BENCH_UDID) shares only the host
     real_pgrep_i, real_env_i = dj.pgrep, dj.driver_env
@@ -858,10 +869,19 @@ def main():
             with open(other, "w") as fh:
                 json.dump(hold, fh)
         outcomes.append("busy" if dj.iphone_runner_busy("00008160-MINE", rdev) else "free")
+    # two runners whose phone cannot be read and one other phone holding a sibling lock: one runner may be ours
+    dj.pgrep = lambda pattern: ["4242 bash scripts/bench_matrix_iphone.sh run a.cells",
+                                "4343 bash scripts/bench_matrix_iphone.sh run b.cells"]
+    dj.driver_env = lambda pid, var: None
+    with open(other, "w") as fh:
+        json.dump({"pid": live, "script": "x-17pro", "device": "iPhone 17 Pro"}, fh)
+    outcomes.append("busy" if dj.iphone_runner_busy("00008160-MINE", rdev) else "free")
+    os.remove(other)
     dj.pgrep, dj.driver_env = real_pgrep_i, real_env_i
-    ok(outcomes == ["free", "busy", "busy", "busy", "free", "busy", "busy"],
+    ok(outcomes == ["free", "busy", "busy", "busy", "free", "busy", "busy", "busy"],
        f"iphone_runner_busy: the runner's phone from its environment (another phone free; this phone by udid or coredevice, "
-       f"an unknown id: busy), else from the live sibling hold (another phone free; this phone or no hold: busy) ({outcomes})")
+       f"an unknown id: busy), else from the live sibling hold (another phone free; this phone or no hold: busy), two "
+       f"unreadable runners for one other-phone hold: busy ({outcomes})")
 
     # cells_with_records: a row exclude-on= names for the device is not expected of it (the runner skips it
     # with a CELL_SKIP line and no record); other devices still expect it (Pixel 8a 2026-10-19: every sitting

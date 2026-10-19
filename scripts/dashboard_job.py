@@ -271,47 +271,53 @@ def driver_serial(pid):
     return driver_env(pid, "BENCH_ANDROID_SERIAL")
 
 
-def other_phone_held(dev):
-    """The key of another schedule device whose live hold sits in this device's sibling hold files
-    (the lanes' .iphone_hold names its phone), or None."""
+def other_phones_held(dev):
+    """The keys of the other schedule devices whose live holds sit in this device's sibling hold
+    files (the lanes' .iphone_hold names its phone)."""
     mine = device_key_of(dev)
+    keys = set()
     for path in dev.get("hold_also_check", []):
         h = read_hold(path)
         if not h or not pid_alive(h.get("pid")):
             continue
         other = KNOWN_DEVICES.get(str(h.get("device") or "").strip().lower())
         if other is not None and mine is not None and other != mine:
-            return other
-    return None
+            keys.add(other)
+    return keys
 
 
 def iphone_runner_busy(udid, dev):
     """Why a live iPhone runner (scripts/bench_matrix_iphone.sh) makes this phone busy, or None.
-    The runner's phone is BENCH_UDID or DEV in its environment (the job's run_matrix env; the
-    runner's own default) when that can be read; macOS shows another session's environment as
-    empty, and then a live sibling hold that names another phone (other_phone_held) is taken as
-    that runner's phone. A runner on another phone shares only the host (2026-10-19 12:36: the
-    17 Pro's AA lane's runner held the 18 Pro's job at exit 3); one on this phone, or on no phone
-    anyone can name, is busy."""
+    A runner whose environment names its phone (BENCH_UDID, the job's run_matrix env, or DEV) is
+    read by that name: another schedule phone's runner shares only the host (2026-10-19 12:36: the
+    17 Pro's AA lane's runner held the 18 Pro's job at exit 3); this phone's, or an unknown id, is
+    busy. macOS shows another session's environment as empty: such runners are explained only up to
+    the number of other phones holding a live sibling lock (other_phones_held), one each; any runner
+    left over may be this phone's and is busy."""
     mine = device_key_of(dev) or KNOWN_DEVICES.get(udid.lower())
+    unnamed = []
     for ln in pgrep("bench_matrix_iphone"):
         pid = ln.split(None, 1)[0]
         try:
             named = driver_env(int(pid), "BENCH_UDID") or driver_env(int(pid), "DEV")
         except ValueError:
             named = None
-        other = KNOWN_DEVICES.get(str(named or "").strip().lower())
-        if named and other is None and named != udid:
-            other = "?"            # a device string the schedule does not know
-        if other is None:
-            other = other_phone_held(dev)
-            how = "the live sibling hold names" if other else ""
-        else:
-            how = "its environment names"
-        if other not in (None, "?") and mine is not None and other != mine:
-            log(f"bench_matrix_iphone.sh pid {pid}: {how} {other} — another phone's runner, not this one's")
+        if not named:
+            unnamed.append(pid)
             continue
-        return f"bench_matrix_iphone.sh is running (pid {pid}, device {named or other or 'unknown'})"
+        other = KNOWN_DEVICES.get(named.strip().lower())
+        if other is not None and mine is not None and other != mine:
+            log(f"bench_matrix_iphone.sh pid {pid}: its environment names {other} — another phone's runner")
+            continue
+        return f"bench_matrix_iphone.sh is running (pid {pid}, device {named})"
+    if unnamed:
+        held = other_phones_held(dev)
+        if len(unnamed) <= len(held):
+            log(f"bench_matrix_iphone.sh pid(s) {', '.join(unnamed)}: environment unreadable; the live sibling "
+                f"hold(s) name {', '.join(sorted(held))} — taken as those phones' runners")
+            return None
+        return (f"bench_matrix_iphone.sh is running (pid {', '.join(unnamed)}, phone unknown; "
+                f"{len(held)} other phone(s) hold a sibling lock)")
     return None
 
 
@@ -351,7 +357,9 @@ def check_holds(dev, dry):
         if not h:
             raise Busy(f"unowned hold present: {path}")
         other, mine = KNOWN_DEVICES.get(str(h.get("device") or "").strip().lower()), device_key_of(dev)
-        if other is not None and mine is not None and other != mine:
+        # only a sibling file: the device's own hold file is this phone's whatever its device field
+        # says (hold_cli.py writes "S26" into every hold it takes, the iPhone 18 Pro's too)
+        if path != dev.get("hold") and other is not None and mine is not None and other != mine:
             # the sibling lanes' .iphone_hold serves two phones and names its phone (memory
             # device-busy-is-probeable): a hold that names another device of the schedule is not
             # this sitting's business (2026-10-19 12:3x: the 17 Pro's AA lane held it while the
