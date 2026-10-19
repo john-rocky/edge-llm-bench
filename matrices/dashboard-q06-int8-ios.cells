@@ -1,0 +1,13 @@
+# iPhone 18 Pro, the Qwen3 0.6B LiteRT-LM page cells on the bundles that run under v0.18.0 (2026-10-19 12:2x): the dynamic INT8
+# bundle on the GPU (dynamic_int8: short-chat, the 1K task, the protocol cell) and the dynamic INT4 bundle on the CPU (backend=cpu:
+# short-chat, the 1K task), after the smokes of 12:22 (INT8 GPU 46.5 tok/s, INT4 CPU 88.3 tok/s, INT4 GPU: Failed to modify graph
+# with delegate). First row = the iOS session anchor (as in dashboard-llama-b11721-ios.cells). Job route:
+#   python3 scripts/dashboard_job.py iphone18pro --cells matrices/dashboard-q06-int8-ios.cells --suffix q06-int8 --once
+
+# ---- ios ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 native-benchmark-1024x256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat backend=cpu
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu context-tokens=2048

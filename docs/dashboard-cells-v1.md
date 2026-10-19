@@ -1170,6 +1170,26 @@ byte for byte; the Mac's next sitting of these files measures the new id. If lit
 a re-export of the mixed INT4 file, one v0.18.0 launch's `Prefill Turn 1` line shows whether the user
 turn arrives; moving back is the same edit in reverse and a re-measurement.
 
+### iOS from 2026-10-19 12:2x: the INT8 bundle on the GPU, the INT4 bundle on the CPU
+
+On the iPhone 18 Pro the dynamic INT4 bundle fails at engine creation on the Metal GPU under LiteRT-LM v0.18.0
+(`Failed to create engine … Failed to modify graph with delegate`, 4 of 4 launches in three tasks,
+`results/raw/2026-10-19-dashboard-v1-iphone18pro-q06-dynamic-ios/`; the same bytes load on the Mac's Metal GPU and on
+Android's OpenCL GPU the same day; hazard `ios-metal-dynamic-int4-engine-fails`, issue draft pending the owner's GO). With
+the mixed-INT4 bundle dropping the user turn on 0.18.0 (#3688), no INT4 Qwen3 0.6B bundle runs on the iPhone's GPU. Smokes
+of 12:22 (short-chat, 19 prompt tokens, one launch each): the repo's dynamic INT8 bundle `Qwen3-0.6B.litertlm`
+(`dynamic_int8`, LlmMetadata for 0.18.0 since 2026-10-12) on the GPU 46.5 tok/s decode, 158 prefill, 1,515 MB peak; the
+dynamic INT4 bundle on the CPU 88.3 tok/s decode, 64.5 prefill, 505 MB peak.
+
+Rows from 2026-10-19 12:2x: every iOS LiteRT-LM row of the Qwen3 0.6B (the anchors, the weekly set, the 1K ladder, the
+protocol cell, the Core AI file's reference rows) runs `dynamic_int8` on the GPU (the arm the page's LiteRT-LM column
+shows; the recipe label says INT8), and the weekly set gains a `backend=cpu` pair on the dynamic INT4 bundle (arm
+`litert-lm-cpu`, as Android shows its CPU arm) so the 4-bit class stays measurable on the phone. Neither row claims the
+other's class: the quantization travels in the row (quant-per-arm-rule). The Mac and Android rows keep the INT4 bundle.
+First values: `matrices/dashboard-q06-int8-ios.cells`, one sitting on 2026-10-19. Revert = the ios rows back to
+`dynamic_wi4b32_afp32`, the cpu pair out. Owner's items: whether the iPhone page should carry the INT8 row at all while
+the other arms are 4-bit, and the issue to the LiteRT-LM team.
+
 ## llama.cpp Gemma 4 rows before 2026-10-19 ran without the chat template (Mac and iPhone)
 
 Every llama.cpp Gemma 4 row the Mac and the iPhones measured before 2026-10-19 (E2B and E4B; short-chat,

@@ -12,10 +12,11 @@
 # anchor_cells: the primary anchor is the non-litert arm); a regression pair across this date normalized through it
 # (a llama.cpp bump on Android) compares two files. The Mac and iPhone LiteRT-LM anchors keep
 # litert-community/Qwen3-0.6B: their page rows moved to the catalog id
-# litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32.
+# litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32. The iOS LiteRT-LM anchor runs the dynamic INT8 bundle (dynamic_int8) from
+# 2026-10-19 12:2x: the INT4 build fails at engine creation on the iPhone's Metal GPU (docs/dashboard-cells-v1.md).
 
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
-ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
 
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat anchor=1 runs=3

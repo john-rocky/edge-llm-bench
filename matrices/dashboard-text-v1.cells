@@ -121,13 +121,20 @@ android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=
 # h18p bundle, 4B needs an h18p compile. Until a folder is staged the cell fails
 # at load and stays in the table as the datum.
 
+# iOS Qwen3 0.6B LiteRT-LM rows (2026-10-19 12:2x): the dynamic INT4 bundle (dynamic_wi4b32_afp32) fails at engine creation on
+# the iPhone's Metal GPU under v0.18.0 (Failed to modify graph with delegate; hazard ios-metal-dynamic-int4-engine-fails), so the
+# GPU rows run the repo's dynamic INT8 bundle (dynamic_int8, Qwen3-0.6B.litertlm) and a backend=cpu pair keeps the INT4 bundle
+# measurable (arm litert-lm-cpu; the recipe is in the row). docs/dashboard-cells-v1.md 'Qwen3 0.6B LiteRT-LM file'. Revert = the
+# ios rows back to dynamic_wi4b32_afp32 and the cpu pair out.
 # --- Qwen3-0.6B ---
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
-ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat backend=cpu
 ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
 ios core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
-ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu context-tokens=2048
 ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
 
 # --- Qwen3-1.7B ---
