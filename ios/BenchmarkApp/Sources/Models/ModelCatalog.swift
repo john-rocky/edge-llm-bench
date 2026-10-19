@@ -590,6 +590,23 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"],
             primaryFile: "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
         ),
+        // Qwen3-0.6B, the same repo's dynamic INT8 bundle (`Qwen3-0.6B.litertlm`, 614 MB): dynamic INT8
+        // weights, float KV, context 4096; LlmMetadata updated for LiteRT-LM 0.18.0 on 2026-10-12 and the
+        // tokenizer section replaced on 2026-10-13 (Hub commits a6e678a1, e6687177), weights unchanged. Added
+        // 2026-10-19 as the fallback the note above names: on the iPhone 18 Pro the dynamic INT4 build fails at
+        // engine creation on the Metal GPU ("Failed to modify graph with delegate", LiteRT-LM v0.18.0) and the
+        // mixed-INT4 bundle drops the user turn on v0.18.0 (#3688). A different file and recipe, so its own id
+        // (quant-label-rule); the Mac and Android keep the dynamic INT4 build.
+        ModelInfo(
+            id: "litert-community/Qwen3-0.6B/dynamic_int8",
+            displayName: "Qwen3 0.6B (.litertlm, dynamic INT8)",
+            quantization: "INT8 (dynamic weights, float KV; metadata for 0.18.0, 2026-10-12)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 614,
+            hfRepoId: "litert-community/Qwen3-0.6B",
+            hfFilePatterns: ["Qwen3-0.6B.litertlm"],
+            primaryFile: "Qwen3-0.6B.litertlm"
+        ),
         // Qwen3 0.6B / 4B — OUR exports from litert-torch main (6d4c622, 2026-09-08; needs
         // litert-lm-builder 0.17.0) with the flag set the LiteRT team asked us to benchmark on
         // 2026-09-10: quantization_recipe=dynamic_wi4b32_afp32, enable_gpu_dynamic_prefill
