@@ -308,6 +308,7 @@ def payload_dir(raw, name, anchor, records=None, **over):
 
 
 GEMMA = "litert-community/gemma-4-E2B-it-litert-lm"
+TASK_1K = "long-context-1024-gen256"
 
 
 def ios_anchor(raw, name):
@@ -440,12 +441,16 @@ def main():
     os.makedirs(raw)
     hist = os.path.join(tmp, "device-runs.csv")
     with open(hist, "w") as fh:
-        fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check,model_file\n")
+        fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check,model_file,"
+                 "prompt_version\n")
         for i in range(3):
             fh.write(f"results/raw/old-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,19,,\n")
         # the same model id on another file read 9 tokens (a bundle whose template drops the user turn)
         for i in range(3):
             fh.write(f"results/raw/old-file-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,9,,other-file.gguf\n")
+        # the 1K task's first text (no version, the "passage above" tail) read 1338 tokens
+        for i in range(3):
+            fh.write(f"results/raw/old-1k-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},{TASK_1K},1338,,,\n")
 
     print(f"--- LEADER, the platform of the LiteRT-LM-only cases: {LEADER_WHY}")
     if LEADER_PLATFORM is None:
@@ -470,6 +475,30 @@ def main():
     r = res[os.path.basename(fp2)]
     ok("prompt-tokens" in rules(r) and clean(r, {"prompt-tokens"}),
        f"the same file's history (9 tokens) holds a 19-token cell on it ({sorted(rules(r))})")
+
+    print("--- prompt history is keyed by the prompt version (2026-10-19: the 1K task's tail changed under its id)")
+
+    def cell_1k(prompt, version):
+        recs = [headline(r) for r in cell("llama.cpp", LLAMA_MODEL, LLAMA, task=TASK_1K, prompt=prompt)]
+        for r in recs:
+            if version:
+                r["conditions"] = {"promptVersion": version}
+        return recs
+    va = anchor_dir(raw, "2099-01-05-dashboard-v1-m4max-anchor-mac")
+    vp = payload_dir(raw, "2099-01-05-dashboard-v1-m4max-mac", os.path.basename(va),
+                     records=cell_1k(1360, "noref-2026-10-19"))
+    rc, res, out = run([va, vp], history=hist)
+    r = res[os.path.basename(vp)]
+    ok("prompt-tokens" not in rules(r) and "prompt-newtag" not in rules(r) and clean(r, set())
+       and any("at prompt version noref-2026-10-19" in n for n in r["notes"]),
+       f"the first sitting of a new prompt version reads no history (a note), not the old text's 1338 "
+       f"({sorted(rules(r))})")
+    ua = anchor_dir(raw, "2099-01-06-dashboard-v1-m4max-anchor-mac")
+    up = payload_dir(raw, "2099-01-06-dashboard-v1-m4max-mac", os.path.basename(ua), records=cell_1k(1360, None))
+    rc, res, out = run([ua, up], history=hist)
+    r = res[os.path.basename(up)]
+    ok("prompt-tokens" in rules(r) and clean(r, {"prompt-tokens"}),
+       f"a record that names no version is held to the unversioned history (1338) ({sorted(rules(r))})")
 
     print("--- PASS: a clean Mac anchor + payload pair, the prompt as the history reads it")
     a = anchor_dir(raw, "2099-01-01-dashboard-v1-m4max-anchor-mac")

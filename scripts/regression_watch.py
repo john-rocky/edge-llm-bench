@@ -18,8 +18,11 @@ the admitted weekly rows (SESSION.json, campaign names holding 'dashboard', a la
 rows out): render_leaderboard.arm_row of that campaign's rows alone, read by
 render_dashboard.headline_regime. One point a day (render_leaderboard.latest_session over the
 day's rows). Per metric, a shown point with a value against the nearest earlier shown point with
-a value - on decode of the same regime - by the page's diff_pct; red = below
--render_leaderboard.SPREAD_FLAG.
+a value of the same prompt version - on decode also of the same regime - by the page's diff_pct;
+red = below -render_leaderboard.SPREAD_FLAG. The prompt version (the summary's prompt_version: the 1K
+task's tail changed under its id on 2026-10-19) cuts a series as the regime does: the first point of
+a new version is compared with none (prompt_changed, "prompt <old> -> <new>: not compared"), so a
+changed task text never reads as a regression or queues a retake.
 
 --compare reads the page's regression.json and compares the red sets (device, arm, model id,
 task, context, file, campaign, metric) and each red point's percentage: exit 0 when they agree,
@@ -234,6 +237,18 @@ def regression_value(p, key):
     return p[key] if p and p["status"] == "measured" else None
 
 
+def prompt_of(crows):
+    """A point's prompt version: the summary's prompt_version of its campaign's rows of the cell ('' =
+    the task's first text); the versions joined by '+' when a sitting holds two, which equals no single
+    version, so such a point is compared with nothing on either side."""
+    return "+".join(sorted({r.get("prompt_version") or "" for r in crows}))
+
+
+def prompt_word(v):
+    """A prompt version as the marks write it: 'none' for the task's first text."""
+    return v or "none"
+
+
 def diff_pct(subject, other, higher):
     """build.py diff_pct (l.812): + = better; a lower-is-better metric as a rate."""
     if higher:
@@ -276,7 +291,8 @@ def build_series(defs, devices, rows, cfg):
                 status = headline_status(a, dec)
                 points.append({
                     "campaign": os.path.basename(a["campaign"]), "captured": a["date"], "shown": True,
-                    "sittings_that_day": 1, "regime": regime, "engine": a["engine"], "status": status,
+                    "sittings_that_day": 1, "regime": regime, "engine": a["engine"], "prompt": prompt_of(crows),
+                    "status": status,
                     "decode_tps": dec, "n": n, "spread_pct": None if status.startswith(NO_NUMBER) else spread,
                     "prefill_tps": a["prefill"], "mem_peak_mb": a["mem_peak"],
                     "vs_prev": dict.fromkeys(metrics)})
@@ -299,6 +315,11 @@ def build_series(defs, devices, rows, cfg):
                         continue
                     earlier = [q for q in shown[:i] if regression_value(q, key) is not None]
                     changed = False
+                    # prompt-version cut: a figure compares within its task text only (the nearest
+                    # earlier point with a value on another version = the series' break, marked)
+                    before = earlier[-1]["prompt"] if earlier else None
+                    prompt_changed = before is not None and before != p["prompt"]
+                    earlier = [q for q in earlier if q["prompt"] == p["prompt"]]
                     if key == "decode_tps":
                         # cold-warm-split: a decode figure compares within its regime only
                         changed = bool(earlier) and earlier[-1]["regime"] != p["regime"]
@@ -309,6 +330,7 @@ def build_series(defs, devices, rows, cfg):
                         "pct": pct, "prev_campaign": prev["campaign"] if prev else None,
                         "regression": pct is not None and pct < -SPREAD_FLAG, "regime_changed": changed,
                         "engine_changed": prev["engine"] != p["engine"] if prev else None,
+                        "prompt_changed": prompt_changed, "prev_prompt": before if prompt_changed else None,
                         "value": v, "prev_value": regression_value(prev, key) if prev else None,
                         "prev_engine": prev["engine"] if prev else None}
             # the sitting the page's cell shows now (cells.json: arm_row over every row of the cell)
@@ -339,8 +361,10 @@ def compute(root, summary, cfg):
                      "shown": sum(p["shown"] for p in pts), "red": len(red),
                      "red_by_metric": {m: sum(1 for x in red if x["metric"] == m) for m in cfg["metric_keys"]},
                      "regime_changes": sum(1 for p in pts if p["vs_prev"].get("decode_tps")
-                                           and p["vs_prev"]["decode_tps"]["regime_changed"])},
-            "series": series, "excluded": excluded, "red": red}
+                                           and p["vs_prev"]["decode_tps"]["regime_changed"]),
+                     "prompt_changes": sum(1 for p in pts if p["vs_prev"].get("decode_tps")
+                                           and p["vs_prev"]["decode_tps"]["prompt_changed"])},
+            "series": series, "excluded": excluded, "red": red, "prompt_breaks": prompt_breaks(series)}
 
 
 def series_key(s):
@@ -361,6 +385,19 @@ def red_points(series):
                                 "engine": p["engine"], "prev_engine": vp["prev_engine"],
                                 "engine_changed": vp["engine_changed"], "regime": p["regime"],
                                 "current": p["campaign"] == s["current"]})
+    return out
+
+
+def prompt_breaks(series):
+    """The points where a series' task text changed (prompt_changed on decode): never compared, listed."""
+    out = []
+    for s in series:
+        for p in s["points"]:
+            vp = p["vs_prev"].get("decode_tps")
+            if vp and vp["prompt_changed"]:
+                out.append({"device": s["device"], "model": s["model"], "task": s["task"], "backend": s["backend"],
+                            "campaign": p["campaign"], "captured": p["captured"], "prompt": p["prompt"],
+                            "prev_prompt": vp["prev_prompt"]})
     return out
 
 
@@ -420,7 +457,7 @@ def summary_line(doc):
     r = m["red_by_metric"]
     return (f"regression: {m['series']} series, {m['points']} sittings ({m['shown']} shown), red points decode "
             f"{r.get('decode_tps', 0)} / prefill {r.get('prefill_tps', 0)} / memory {r.get('mem_peak_mb', 0)}, "
-            f"regime changes {m['regime_changes']}")
+            f"regime changes {m['regime_changes']}, prompt changes {m['prompt_changes']}")
 
 
 def markdown(doc, cmp=None, respond=None):
@@ -431,6 +468,10 @@ def markdown(doc, cmp=None, respond=None):
         lines.append(f"| {x['device']} | {x['model']} | {x['task']} | {x['backend']} | {x['campaign']} | "
                      f"{VERDICT_WORD[x['metric']]} | {fmt_pct(x['pct'])} | {x['prev_campaign']} | "
                      f"{x['prev_engine']} -> {x['engine']} | {x['engine_changed']} | {x['current']} |")
+    if doc.get("prompt_breaks"):
+        lines += ["", "prompt version changes (the series' task text changed: not compared):"]
+        lines += [f"- {b['device']} {b['model']} {b['task']} {b['backend']} {b['campaign']}: prompt "
+                  f"{prompt_word(b['prev_prompt'])} -> {prompt_word(b['prompt'])}" for b in doc["prompt_breaks"]]
     if cmp is not None:
         lines += ["", f"compare: {'equal' if cmp['equal'] else 'DIFFERENT'} (red bench {cmp['red']['bench']}, page "
                       f"{cmp['red']['page']}; " + ", ".join(f"{k} {v['bench']} / {v['page']}" for k, v in cmp["counts"].items())
@@ -722,6 +763,9 @@ def judge(entry, s, retake_name, cfg):
             row["why"] = f"the retake has no {VERDICT_WORD[key]} value ({p['status'].split(':', 1)[0]})"
         elif pv is None:
             row["why"] = f"the previous point {m['prev_campaign']} has no value"
+        elif p["prompt"] != prev["prompt"]:
+            row["why"] = (f"the retake's prompt version is {prompt_word(p['prompt'])}, the previous point's "
+                          f"{prompt_word(prev['prompt'])}")
         elif key == "decode_tps" and p["regime"] != prev["regime"]:
             row["why"] = f"the retake's regime is {p['regime']}, the previous point's {prev['regime']}"
         else:
@@ -961,6 +1005,9 @@ def main(argv=None):
               f"{VERDICT_WORD[x['metric']]} {fmt_pct(x['pct'])} % vs {x['prev_campaign']} | "
               f"engine {x['prev_engine']} -> {x['engine']}{' (changed)' if x['engine_changed'] else ''}"
               f"{'' if x['current'] else ' | not the cell newest'}")
+    for b in doc.get("prompt_breaks", []):
+        print(f"  prompt  {b['device']} | {b['model']} | {b['task']} | {b['backend']} | {b['campaign']} | "
+              f"prompt {prompt_word(b['prev_prompt'])} -> {prompt_word(b['prompt'])} (not compared)")
     if cmp is not None:
         print(f"compare with {args.compare}: {'equal' if cmp['equal'] else 'DIFFERENT'} (red bench "
               f"{cmp['red']['bench']}, page {cmp['red']['page']}; "

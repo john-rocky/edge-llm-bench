@@ -56,7 +56,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 sys.path.insert(0, os.path.join(ROOT, "android", "ddp"))
 from build_summary import (TEXT_SCREEN, TEXT_SCREEN_SCHEMA, cell_key_of, context_tokens_of,  # noqa: E402
-                           cpu_cap_drop_of, platform_of)
+                           cpu_cap_drop_of, platform_of, prompt_version_of)
 from cell_gate import degenerate  # noqa: E402
 from dashboard_job import anchor_cells, session_stats  # noqa: E402
 from parsers import (RE_LLAMA_BRACKET, RE_LLAMA_LOG, RE_ORTGENAI_OUTPUT, litert_reply,  # noqa: E402
@@ -1189,8 +1189,9 @@ class Check:
 
     def check_cell_counts(self, cell, items, plat, rt, task, hist):
         """The prompt reached the engine whole: its token count is the committed history's for the
-        same platform, build, arm, model and task (the mode of the admitted sessions' rows, this
-        sitting left out); with no history on this build, it is within 10 % of every other build's."""
+        same platform, build, arm, model, task, file and prompt version (the mode of the admitted
+        sessions' rows, this sitting left out); with no history on this build, it is within 10 % of
+        every other build's."""
         counts = collections.Counter(int((r.get("metrics") or {}).get("promptTokenCount"))
                                      for _, r in items
                                      if isinstance((r.get("metrics") or {}).get("promptTokenCount"), (int, float)))
@@ -1206,8 +1207,12 @@ class Check:
         # carries model_file since 2026-10-19 (32c28915 rebuilt every row); a record that names no file
         # matches the rows that name none
         mfile = model_file_of(items[0][1])
-        for (hplat, heng, hrt, hmodel, htask, hfile), rows in hist.items():
-            if (hplat, hrt, hmodel, htask, hfile or "") != (plat, rt, model, task, mfile or ""):
+        # a task's text can change under its id (prompts/text/versions.tsv: the 1K task on 2026-10-19):
+        # the history of another text is not this cell's either, so the first sitting of a new version
+        # reads "no history" (a note); a record that names no version matches the rows that name none
+        pver = prompt_version_of(items[0][1]) or ""
+        for (hplat, heng, hrt, hmodel, htask, hfile, hver), rows in hist.items():
+            if (hplat, hrt, hmodel, htask, hfile or "", hver or "") != (plat, rt, model, task, mfile or "", pver):
                 continue
             for pt, camp in rows:
                 if self.ctx["sitting_of"](self.raw, camp) == sitting:
@@ -1222,7 +1227,8 @@ class Check:
                                           f"build reads {mode} ({n} rows)")
             return
         if not other:
-            self.note(f"prompt history: none for {cell}; prompt {mine} tokens")
+            self.note(f"prompt history: none for {cell}{f' at prompt version {pver}' if pver else ''}; "
+                      f"prompt {mine} tokens")
             return
         modes = {eng: c.most_common(1)[0][0] for eng, c in other.items()}
         far = [v for v in counts if all(abs(v - m) > 0.10 * m for m in modes.values())]
@@ -1297,8 +1303,9 @@ class Check:
                                      f"({spec}): {found}")
 
     def history_index(self):
-        """(platform, engine, runtime, model, task, model_file) -> [(prompt tokens, campaign dir name)] over
-        the committed summary's admitted rows whose text check did not fail (model_file '' where the record names none)."""
+        """(platform, engine, runtime, model, task, model_file, prompt_version) -> [(prompt tokens, campaign
+        dir name)] over the committed summary's admitted rows whose text check did not fail (model_file and
+        prompt_version '' where the record names none)."""
         key = id(self.repo)
         if key not in self.ctx["hist_cache"]:
             admitted = self.ctx["admission"](self.raw)
@@ -1314,7 +1321,8 @@ class Check:
                 except ValueError:
                     continue
                 idx[(r.get("platform"), r.get("engine_version") or "", r.get("runtime"),
-                     r.get("model_id"), r.get("task"), r.get("model_file") or "")].append((pt, camp))
+                     r.get("model_id"), r.get("task"), r.get("model_file") or "",
+                     r.get("prompt_version") or "")].append((pt, camp))
             self.ctx["hist_cache"][key] = idx
         return self.ctx["hist_cache"][key]
 

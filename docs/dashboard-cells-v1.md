@@ -593,7 +593,9 @@ the forced-output tail, byte-identical to the Swift task
 (`LongContextTask`, `forceLongOutput`): about 1,339 Qwen3 / 1,106 Gemma 4
 tokens with the chat template (the count is the engine's; each record's
 `promptTokenCount` is the ground truth); output budget 256 (`budgets.tsv`).
-The same text goes to every arm.
+The same text goes to every arm. Since 2026-10-19 the tail is the 2K ladder's
+`-noref` sentence, under the same id and budget: "1K task tail (2026-10-19)"
+below.
 
 `context-tokens=2048` on every LiteRT-LM and llama.cpp row: the agreed
 protocol's context (`methodology/agreed-protocol-gemma4.md`: prefill 1024,
@@ -1272,6 +1274,79 @@ text-fail mark (the model declines the lorem passage, not an engine fault). No c
 `quant_method: gemma` (`./bench release-watch` lists mlx-swift-lm drift), the qat-mobile rows of
 `matrices/mlx-gemma4-file-mac.cells` lose their `exclude=` and run as candidates of the QAT class, in the
 schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own sitting.
+
+## 1K task tail (2026-10-19)
+
+Decision (code-2d, 2026-10-19 11:4x, under the owner's rule that what the team's purpose decides is done
+without asking: the task is the team's own instrument): the cross-arm 1K task `long-context-1024-gen256` keeps its id, its 18 lorem blocks, its
+budget (a prompt of about 1,024 tokens, decode 256, context 2048) and every cells row, and its tail
+becomes the 2K ladder's `-noref` sentence on every arm at once. The protocol cell
+(`native-benchmark-1024x256`: forced prefill, no prompt) does not change.
+
+Why. The task is the house's instrument for the arms with no forced-prefill entry point, and its old
+tail asked the model to use the lorem blocks. With the model's own chat template applied, Gemma 4
+declines them: llama.cpp b11721 E2B and E4B (1,106 prompt tokens) and MLX OptiQ E4B, 4bit E2B and
+4bit E4B answer that the passage is placeholder text (`results/raw/2026-10-19-llama-template-probe-mac/`,
+"MLX Gemma 4 file (2026-10-19)" above), so the column timed the decode of a refusal on some arms and
+of a list on others. The `-noref` tail calls the blocks filler and asks for the same list from the
+model's own knowledge; on the Galaxy S26 GPU both Gemma 4 bundles then filled the 256-token budget
+(catalog X2, `results/raw/2026-10-12-catalog-x2-s26-android/`). The fix is the same for every arm.
+
+| | tail (after the 18 blocks and a blank line) | `prompts/text/long-context-1024-gen256.txt` |
+|---|---|---|
+| until 2026-10-19 | "Using the passage above as context, list 25 distinct things on-device AI lets a phone do that a cloud model cannot. Number every item and give each one two full sentences of explanation. Do not stop early." | 5,219 bytes, sha256 `f64fb515…` |
+| from 2026-10-19 | "The numbered blocks above are filler text and carry no information; do not summarize or evaluate them. From your own knowledge, list 25 distinct things on-device AI lets a phone do that a cloud model cannot. Number every item and give each one two full sentences of explanation. Do not stop early." (`LongContextTask.norefTail` = `NOREF_TAIL` in `scripts/gen_task_prompts.py`) | 5,311 bytes, sha256 `740112db…` |
+
+The version mark. A text change under one id breaks the series, so every record says which text it
+ran: `conditions.promptVersion` = `noref-2026-10-19` on the 1K records from the new text on, no key
+on the records before. The Apple records get it from `BenchmarkTask.promptVersion` through
+`RunConditions` (`BenchmarkRunner`); the Android runner, the DDP records and the Mac ONNX Runtime GenAI,
+uzu and ExecuTorch drivers from `prompts/text/versions.tsv`, which the generator writes with the prompt
+files. `long-context-2048-gen256-noref` is named `noref-2026-10-12`, its text since its first records
+(catalog X2): its records before 2026-10-19 carry no version and the same text. `results/summary/device-runs.csv`
+carries the version as `prompt_version` (after `task`; empty where the record names none). Readers:
+- the session checker keys the prompt-token history by it, beside `model_file`: the first sitting on the
+  new text reads "prompt history: none … at prompt version noref-2026-10-19", a note, not a HOLD against
+  the old text's counts;
+- `scripts/regression_watch.py` and the team page (`build.py`, `tools/check_regression.py`,
+  `tools/render_check.py` in the page repo) compare a point only with points of its own version, as decode
+  compares only within its regime: the first point on the new text is compared with nothing
+  (`prompt_changed`, "prompt changed from the previous point (none → noref-2026-10-19): not compared", the
+  line broken there), so the change never reads as a regression and queues no retake; later sittings compare
+  among themselves. A retake whose previous point ran another version is not judged;
+- ExecuTorch's `llama_main` reads a prompt rendered once on the host with the model's chat template
+  (`<pte stem>.prompts/<task>.chat.txt`, `scripts/executorch/make_prompts.py`); `parsers.executorch_inputs`
+  refuses a render whose `prompts.json` `sourceSha256` is not the repository file's and prints the re-render
+  command, so a stale render never runs the old text under the new version.
+
+Prompt tokens on the new text (Mac Studio M4 Max, the yardstick rebuilt with the change, one launch per cell,
+2026-10-19 12:28–12:30 JST; a prompt check, its speeds are not used; the dir stays out of the summary). The old
+tail's counts and replies are those cells' records in the same day's sittings: llama.cpp from
+`2026-10-19-dashboard-v1-m4max-llama-b11721-mac`, MLX from `2026-10-19-mlx-gemma4-file-mac`, LiteRT-LM from
+`2026-10-19-dashboard-v1-m4max-0180-rebuilt-mac` (the stored reply keeps 200 characters).
+
+| Cell | prompt tokens, old tail → new | generated (budget 256), old → new | the stored reply on the new tail |
+|---|---|---|---|
+| llama.cpp b11721, `unsloth/gemma-4-E4B-it-GGUF` Q4_K_M (jinja, thinking false) | 1,106 → 1,123 | 86 (stopped: "I am sorry, but the passage you provided is placeholder …") → 256 | "Here are 25 distinct things on-device AI lets a phone do that a cloud model cannot: 1. **Real-time Voice Transcription without Latency:** …" |
+| MLX, `gemma-4-e4b-it-qat-OptiQ-4bit` | 1,107 → 1,124 | 256 (opens "… the provided text is a block of repetitive "Lorem Ipsum" …") → 256 | "Here are 25 distinct things on-device AI lets a phone do that a cloud model cannot: 1. **Real-time Voice Transcription Offline:** …" |
+| LiteRT-LM v0.18.0, `gemma-4-E2B-it-litert-lm` | 1,106 → 1,123 | 256 (opens "The provided text is placeholder "Lorem ipsum" text …") → 256 | "Here are 25 distinct things on-device AI lets a phone do that a cloud model cannot: 1. **Real-time, low-latency voice commands:** …" |
+| llama.cpp b11721, `unsloth/Qwen3-1.7B-GGUF` Q4_K_M (jinja, thinking: the template's default, on) | 1,338 → 1,355 | 256 → 256 | "<think> Okay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. …" |
+
+Every record carries `conditions.promptVersion` `noref-2026-10-19`; the new tail adds 17 tokens on both vocabularies
+(92 bytes). The two llama.cpp launches end in the known Metal teardown abort after their record (`FAILURES.txt`).
+
+The flip. The merge, the Mac yardstick switch (`.build/dd-mac`), the iPhone install and the re-render of the
+six Mac ExecuTorch Qwen3 prompts happen together, between sittings: the Android, DDP and Mac Python drivers read
+the prompt file from the checkout and the yardstick and the app build the text into the binary, so a Mac
+sitting on the merged checkout and the old yardstick would run ONNX Runtime GenAI and ExecuTorch on the new text
+and the yardstick arms on the old one. Each record's version still names what it ran. Date: the supervisor's
+(tonight when everything is green by 21:00, else after this week's sittings).
+
+Back out: give the 1K task back its old tail and no version (the generator's `PROMPTS` entry without
+`tail=NOREF_TAIL` and its `VERSIONS` line removed; the Swift definition without `tail:` and `promptVersion:`),
+regenerate with `python3 scripts/gen_task_prompts.py`, rebuild the yardstick and the app, re-render the
+ExecuTorch prompts. Records then carry no version and compare again with the records before 2026-10-19 (the
+same text); the page marks the break back.
 
 ## Open questions for the LiteRT team
 

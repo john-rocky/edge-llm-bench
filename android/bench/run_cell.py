@@ -593,6 +593,18 @@ def push_prompt(task, serial):
     return dev_path, budget
 
 
+def prompt_version(task):
+    """The version of a task's prompt text (prompts/text/versions.tsv = scripts/gen_task_prompts.py
+    VERSIONS = the Swift task's promptVersion) for the record's conditions.promptVersion; None for a
+    task that keeps the text it was born with. The 1K task's text changed under its id on 2026-10-19:
+    the summary's prompt_version marks the break (docs/dashboard-cells-v1.md "1K task tail")."""
+    for line in open(os.path.join(ROOT, "prompts", "text", "versions.tsv")):
+        t, v = line.rstrip("\n").split("\t")
+        if t == task:
+            return v
+    return None
+
+
 DEFAULT_LLAMA_CTX = 4096  # llama-cli otherwise defaults to the model's TRAINING
 # context (Qwen3: 40960) — measured 4.8 GB RSS for a 0.6B Q4 before this pin.
 
@@ -1210,9 +1222,10 @@ def main():
     model_sha_source = "device"
     if model_sha is None:
         model_sha, model_sha_source = (ort_model["sha256"] if ort else sha256_file(model_local)), "host"
-    prompt_dev = budget = prompt_text = None
+    prompt_dev = budget = prompt_text = prompt_ver = None
     if not args.task.startswith("native-benchmark-"):
         prompt_dev, budget = push_prompt(args.task, args.serial)
+        prompt_ver = prompt_version(args.task)
         if engine_dir:  # the text the chat tool echoes before its reply (llama_cli_reply)
             with open(os.path.join(ROOT, "prompts", "text", f"{args.task}.txt")) as fh:
                 prompt_text = fh.read()
@@ -1445,6 +1458,7 @@ def main():
                            "cpuAffinity": f"taskset {CPU_MASK}" if CPU_MASK else "none",
                            **cpu_cond,
                            "contextTokens": ctx_note,
+                           **({"promptVersion": prompt_ver} if prompt_ver else {}),
                            **({"chatMode": "single-turn template default (-st)"}
                               if args.runtime == "llama.cpp"
                               and not args.task.startswith("native-") else {}),

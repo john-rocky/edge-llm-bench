@@ -5,13 +5,15 @@ what the Swift tasks build (same-budget rule: every arm sees the same prompt).
 Sources of truth being mirrored:
   ShortChatTask.swift    prompt literal, maxTokens 128, greedy
   LongContextTask.swift  [i]-tagged lorem blocks (55 tok/block nominal) + tail;
-                         long-context-1024-gen256 = forceLongOutput, maxTokens 256
+                         long-context-1024-gen256 = 18 blocks + NOREF_TAIL, maxTokens 256
                          long-context-2048-gen256 = explicit 27 blocks, maxTokens 256
 
 long-context-2048-gen256-noref = the same 27 blocks with a tail that calls them
 filler and asks from the model's own knowledge (NOREF_TAIL), maxTokens 256; Android
 drivers read the file, the Swift catalog builds it (LongContextTask.norefTail, since
-2026-10-17 for catalog X2's iPhone leg).
+2026-10-17 for catalog X2's iPhone leg). long-context-1024-gen256 takes the same tail
+since 2026-10-19 (the "passage above" tail before), under the same id: versions.tsv
+names the versioned texts (VERSIONS; the records' conditions.promptVersion).
 
 The Android CLI drivers feed these files via --input_prompt_file / llama-cli -f.
 If a Swift task changes, regenerate and commit; a follow-up iOS unit test can
@@ -47,7 +49,10 @@ def long_context(target_tokens, force_long_output, blocks=None, tail=None):
 # E4B refuses the lorem blocks in 50-61 tokens and E2B stops at 93 tokens at an 8,192
 # allocation (results/raw/2026-09-24-dashboard-longctx-v1-s26-android-gpu-retake/text_check.md),
 # so its decode rates are taken over different answer lengths. This tail asks for the same list
-# from the model's own knowledge. A tail change is a new task id once a record carries this one.
+# from the model's own knowledge. Since 2026-10-19 the 1K task takes it too (with the model's own chat
+# template Gemma 4 on llama.cpp and MLX declined the "passage above" tail as placeholder text); a text
+# change under an id that records already carry gets a version in VERSIONS (docs/dashboard-cells-v1.md
+# "1K task tail (2026-10-19)").
 NOREF_TAIL = ("The numbered blocks above are filler text and carry no information; do not summarize "
               "or evaluate them. From your own knowledge, list 25 distinct things on-device AI lets "
               "a phone do that a cloud model cannot. Number every item and give each one two full "
@@ -56,9 +61,20 @@ NOREF_TAIL = ("The numbered blocks above are filler text and carry no informatio
 PROMPTS = {
     # task id -> (text, decode budget the task pins)
     "short-chat": ("Explain what on-device AI means in simple terms.", 128),
-    "long-context-1024-gen256": (long_context(1024, True), 256),
+    "long-context-1024-gen256": (long_context(1024, True, tail=NOREF_TAIL), 256),
     "long-context-2048-gen256": (long_context(2048, True, blocks=27), 256),
     "long-context-2048-gen256-noref": (long_context(2048, True, blocks=27, tail=NOREF_TAIL), 256),
+}
+
+# task id -> the version of its text (the Swift tasks' promptVersion, byte for byte): every driver
+# writes it into its records as conditions.promptVersion and results/summary carries it as
+# prompt_version, so a series across a text change under one id is marked, never compared
+# (scripts/regression_watch.py prompt_changed). A task not here keeps the text it was born with (no
+# key). The 1K text changed on 2026-10-19; the 2K noref text is unchanged since its first records
+# (2026-10-12): its records before 2026-10-19 carry no version and the same text.
+VERSIONS = {
+    "long-context-1024-gen256": "noref-2026-10-19",
+    "long-context-2048-gen256-noref": "noref-2026-10-12",
 }
 
 # EnduranceChatTask.turnPrompts mirrored verbatim (methodology/endurance.md;
@@ -100,6 +116,10 @@ def main():
     with open(os.path.join(OUT, "budgets.tsv"), "w") as fh:
         for task, (_, budget) in PROMPTS.items():
             fh.write(f"{task}\t{budget}\n")
+    # versions sidecar: the drivers stamp conditions.promptVersion from it
+    with open(os.path.join(OUT, "versions.tsv"), "w") as fh:
+        for task, version in VERSIONS.items():
+            fh.write(f"{task}\t{version}\n")
     print(f"wrote {OUT}")
 
 

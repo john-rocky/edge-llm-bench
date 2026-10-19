@@ -10,7 +10,10 @@ Pins:
       point), one point a day (the day's newest sitting shown, the other hidden and never red),
       engine_changed, a lower-is-better metric as a rate, a lab unit's stand-in rows, a sitting
       SESSION.json refused and a campaign that is not a weekly sitting all left out; --compare
-      exit 0 on the same red set and 1 with the difference named
+      exit 0 on the same red set and 1 with the difference named; the prompt version cuts a series
+      as the regime does (a -20 % first point on a new task text is not compared, prompt_changed,
+      listed "prompt none -> <version>"; the next point compares within the version and can be red;
+      a retake on another version than its previous point is not judged)
   (b) a red point that is its cell's newest sitting -> one pending retake whose row is the cells
       file's line byte for byte; the same sitting again adds none; a red point a newer sitting has
       replaced adds none; the job's close marks it done (exit 0) or counts the attempt (abandoned
@@ -48,7 +51,8 @@ import regression_watch as rw  # noqa: E402
 _fails = []
 
 COLUMNS = ["source", "campaign", "platform", "timestamp", "runtime", "schema_version", "engine_version",
-           "engine_artifact", "model_id", "quantization", "task", "harness_stamp", "decode_tps", "decode_tps_wall",
+           "engine_artifact", "model_id", "quantization", "task", "prompt_version", "harness_stamp", "decode_tps",
+           "decode_tps_wall",
            "prefill_tps", "prompt_tokens", "gen_tokens", "ttft_ms", "mem_footprint_median_mb",
            "mem_resident_median_mb", "energy_j_per_tok", "thermal_initial", "thermal_final", "battery_state",
            "cold_run", "first_ever", "context_tokens", "device", "os_version", "mem_footprint_peak_mb",
@@ -237,6 +241,50 @@ def main():
     p = subprocess.run(cli, capture_output=True, text=True)
     ok(p.returncode == 1 and "only in the bench: SM-S942Q Gemma 4 E2B short-chat CPU " + W3 in p.stdout,
        f"--compare, one red point fewer on the page: exit {p.returncode}, the difference named")
+
+    print("--- (a') the prompt version cuts a series as the regime does (2026-10-19: the 1K task's tail)")
+    root_p = os.path.join(tmp, "bench-prompt")
+    for rel in ("matrices/st-text.cells", "matrices/st-protocol.cells", "matrices/anchors.cells",
+                "ops/dashboard-v1/schedule.json"):
+        with open(os.path.join(root, rel)) as fh:
+            write(os.path.join(root_p, rel), fh.read())
+    M3, M4 = "2026-09-15-dashboard-v1-m4max-mac", "2026-09-22-dashboard-v1-m4max-mac"
+
+    def mac_runs(camp, day, decode, version):
+        out = runs(camp, "Mac16,9", "mac", "litert-lm", QWEN, "short-chat", day, 20, "v0.16.0", decode, 1000.0, 1000,
+                   warm=3)
+        for r in out:
+            r["prompt_version"] = version
+        return out
+    # M1 100 / M2 100 on the first text, M3 80 (-20 %) on a new text, M4 75.6 (-5.5 % within the new text)
+    rows_p = [r for r in rows if r["campaign"] in (f"results/raw/{M1}", f"results/raw/{M2}")]
+    rows_p += mac_runs(M3, 15, 80.0, "noref-2026-10-19") + mac_runs(M4, 22, 75.6, "noref-2026-10-19")
+    summary_p = os.path.join(root_p, "results", "summary", "device-runs.csv")
+    write_summary(summary_p, rows_p)
+    for camp in (M1, M2, M3, M4):
+        session(root_p, camp, "m4max")
+    doc_p = rw.compute(root_p, summary_p, cfg)
+    mac_p = series_of(doc_p, "Mac16,9", "litert-lm", "short-chat")
+    v3, v4 = point(mac_p, M3)["vs_prev"], point(mac_p, M4)["vs_prev"]
+    ok(point(mac_p, M2)["prompt"] == "" and point(mac_p, M3)["prompt"] == "noref-2026-10-19"
+       and all(v3[k]["pct"] is None and v3[k]["prompt_changed"] is True and v3[k]["prev_prompt"] == ""
+               and v3[k]["regression"] is False and v3[k]["regime_changed"] is False for k in v3),
+       "the first point on a new prompt version is compared with none on every metric: prompt_changed, the old "
+       "version kept, never red (80 vs 100 tok/s, no pct)")
+    ok(v4["decode_tps"]["prev_campaign"] == M3 and v4["decode_tps"]["prompt_changed"] is False
+       and v4["decode_tps"]["regression"] is True and round(v4["decode_tps"]["pct"], 2) == -5.5,
+       f"the next point compares within the version: -5.50 % vs {M3}, red ({v4['decode_tps']['pct']:.2f})")
+    ok(doc_p["meta"]["prompt_changes"] == 1 and [(b["campaign"], b["prev_prompt"], b["prompt"]) for b in doc_p["prompt_breaks"]]
+       == [(M3, "", "noref-2026-10-19")] and "prompt changes 1" in rw.summary_line(doc_p)
+       and f"- Mac16,9 Qwen 3 0.6B short-chat GPU {M3}: prompt none -> noref-2026-10-19" in rw.markdown(doc_p),
+       f"the break counted and listed ({doc_p['prompt_breaks']})")
+    result, judged = rw.judge({"metrics": [{"metric": "decode_tps", "prev_campaign": M2}]}, mac_p, M3, cfg)
+    ok(result == "unjudged" and "prompt version is noref-2026-10-19, the previous point's none" in judged[0].get("why", ""),
+       f"a retake on another prompt version than its previous point is not judged ({result}: {judged[0].get('why')})")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "regression_watch.py"), "--root", root_p,
+                        "--definitions", defs_path], capture_output=True, text=True)
+    ok(p.returncode == 0 and f"| {M3} | prompt none -> noref-2026-10-19 (not compared)" in p.stdout,
+       f"the console lists the break: exit {p.returncode}")
 
     print("--- (b) a red point that is its cell's newest sitting -> one pending retake, the row byte for byte")
     now = datetime.datetime(2026, 9, 16, 3, 0)

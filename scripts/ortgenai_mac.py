@@ -156,6 +156,14 @@ def task_input(task):
     return prompt, int(budgets[task])
 
 
+def prompt_version(task):
+    """The version of a task's prompt text (prompts/text/versions.tsv, scripts/gen_task_prompts.py
+    VERSIONS) for the record's conditions.promptVersion; None for a task without one."""
+    versions = dict(line.split("\t") for line in (REPO / "prompts/text/versions.tsv").read_text().splitlines()
+                    if line.strip())
+    return versions.get(task)
+
+
 def sh(cmd):
     try:
         return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
@@ -768,6 +776,9 @@ def run_cell(args, prompt, budget, quant, libs):
             "thermalInitial": before["snapshot"]["thermal"], "thermalFinal": after["snapshot"]["thermal"],
             "loadAverage": before["snapshot"]["loadAverage"], "capturePurpose": args.capture_purpose,
             "hostQuiet": bool(args.quiet_label) and args.quiet_label in before["snapshot"]["quietWindow"]}
+        version = prompt_version(args.task)
+        if version:
+            conditions["promptVersion"] = version
         if args.campaign_note:
             conditions["campaignNote"] = args.campaign_note
         if args.overlay_obj is not None:

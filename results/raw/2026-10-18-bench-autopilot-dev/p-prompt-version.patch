@@ -1,0 +1,591 @@
+diff --git a/README.md b/README.md
+index 3299d72..ee436f0 100644
+--- a/README.md
++++ b/README.md
+@@ -59,7 +59,7 @@ The box is tinted by the counts behind it (`panels[].verdict`): green when LiteR
+ 
+ **Scatter.** One point per LiteRT-LM cell of the filtered table with a decode gap and a bandwidth figure: x = its bandwidth utilization, y = its decode gap (the axis titled with the comparator), ▲ for + and ▼ for −, coloured by the gap band as the badges are (green Leading, grey Parity, amber Lagging, red Critical Gap; the shape carries the sign, since red and green alone are one colour to a deuteranope); the legend over the chart reads the colours and the shapes, no point label (the model, device and backend are on hover and in the point's row), "Parity (0%)" on the dashed 0 % line; "Open Roofline Matrix →" beside the title, disabled (not in this version). A click on a point (or Enter on it) selects its row in the table; the points are one tab stop. Below it, how many measured cells are not drawn and why (no compared runtime measured; no bandwidth figure, with the devices whose ceiling is `n/a`).
+ 
+-**Regression.** Section 4 (eyebrow "Regression Tracking", "LiteRT-LM Across Weekly Measurements"), under the per-device section and over the device cards on the page as it opens, alone through the Regression tab: LiteRT-LM's own cells across the weekly sittings, drawn from the embedded `dist/regression.json` (below) — no other runtime, no average, no trend line; every value, comparison and flag drawn is the file's, the page only counts points for the status line. Three pill groups pick what every tile draws: the model (the file's `meta.models`, Qwen 3 0.6B by default), the metric (decode tok/s by default, prefill tok/s, peak memory MB; the pills' labels and arrows as the panels') and the workload (text task 1K/256 by default, short chat 20/128, protocol 1024/256). The status line under them answers first: the points of the selection the file marks as a regression, one clause each ("Galaxy S26 CPU 09-08 −6.0 % vs 09-05"; the first three, then "and N more"), or "No point more than 5 % worse than the one before it …" with the lines, the points and the lines of one point only; then how many protocol points are not compared because the regime changed (cold → warm). One tile per device of `meta.devices`, in the cards' order (Galaxy S26, iPhone 18 Pro, Mac Studio M4 Max, Pixel 8a; At a glance's grid: five in a row from 1800 px, three, two, one on narrower screens): its heading (platform — device), then one latest line per backend readable without hovering — the value of the line's newest point, its difference from the point before it ("−6.0 % vs previous (09-05)", red where the file marks a regression; "baseline only" where the line has one point, "regime changed, not compared" across cold and warm), n (the sitting's decode runs; peak memory: the runs with a peak) and the engine — then the chart: x = the measurement dates of the tile's shown points (`captured`, UTC; MM-DD, equally spaced, thinned where they would touch; the year in the tooltips), y from 0 on the tile's own scale (at most five gridlines on the cards' clean steps, the unit over the axis), one line per backend in LiteRT-LM's colour (1.5 px), each point a 9 px square in the cards' backend fill (CPU hatched, GPU solid, NPU dotted; the legend under the chart names the backends drawn), the cards' marks over it (▲ a decode spread above 5 %, * a memory value not ranked, ◆ hot, ◇ capped), its value label in the cards' digits on every point where every label finds room, else on the first, the last and the ringed point of each line, and a red ring where the file's `vs_prev` is a regression (more than `threshold_pct` worse than the point before it). A line breaks where the decode regime changes (cold and warm never compare). Only the shown points are drawn (one a day, `shown`), and only where the sitting has a value on the metric: under the chart, "peak n/r: N sittings" names the shown sittings with no peak recorded, "excl." a cell the cells file excludes on that device. A device with no sitting on the selection reads "Not measured yet on <workload>" ("No <metric> value recorded yet" where its sittings have no value on the metric); the planned Pixel 11 reads "Not measured yet (no device yet)" — its heading and the note, no number, no chart. A point's tooltip (and `aria-label`) gives its value, runs and spread, engine, date with the year, campaign and regime, the cards' words for its marks, its difference from the previous point (with the engine change, if any) and from the line's first point, how many sittings that day had (the newest shown), and "regime changed from the previous point (cold → warm): not compared" where that applies. Each chart is one tab stop: ← → (↑ ↓) move between its points in date order and show the same tooltip, Home and End go to the first and the last.
++**Regression.** Section 4 (eyebrow "Regression Tracking", "LiteRT-LM Across Weekly Measurements"), under the per-device section and over the device cards on the page as it opens, alone through the Regression tab: LiteRT-LM's own cells across the weekly sittings, drawn from the embedded `dist/regression.json` (below) — no other runtime, no average, no trend line; every value, comparison and flag drawn is the file's, the page only counts points for the status line. Three pill groups pick what every tile draws: the model (the file's `meta.models`, Qwen 3 0.6B by default), the metric (decode tok/s by default, prefill tok/s, peak memory MB; the pills' labels and arrows as the panels') and the workload (text task 1K/256 by default, short chat 20/128, protocol 1024/256). The status line under them answers first: the points of the selection the file marks as a regression, one clause each ("Galaxy S26 CPU 09-08 −6.0 % vs 09-05"; the first three, then "and N more"), or "No point more than 5 % worse than the one before it …" with the lines, the points and the lines of one point only; then how many protocol points are not compared because the regime changed (cold → warm), and how many points are not compared because the task's text changed (prompt none → noref-2026-10-19). One tile per device of `meta.devices`, in the cards' order (Galaxy S26, iPhone 18 Pro, Mac Studio M4 Max, Pixel 8a; At a glance's grid: five in a row from 1800 px, three, two, one on narrower screens): its heading (platform — device), then one latest line per backend readable without hovering — the value of the line's newest point, its difference from the point before it ("−6.0 % vs previous (09-05)", red where the file marks a regression; "baseline only" where the line has one point, "prompt changed, not compared" across a change of the task's text, "regime changed, not compared" across cold and warm), n (the sitting's decode runs; peak memory: the runs with a peak) and the engine — then the chart: x = the measurement dates of the tile's shown points (`captured`, UTC; MM-DD, equally spaced, thinned where they would touch; the year in the tooltips), y from 0 on the tile's own scale (at most five gridlines on the cards' clean steps, the unit over the axis), one line per backend in LiteRT-LM's colour (1.5 px), each point a 9 px square in the cards' backend fill (CPU hatched, GPU solid, NPU dotted; the legend under the chart names the backends drawn), the cards' marks over it (▲ a decode spread above 5 %, * a memory value not ranked, ◆ hot, ◇ capped), its value label in the cards' digits on every point where every label finds room, else on the first, the last and the ringed point of each line, and a red ring where the file's `vs_prev` is a regression (more than `threshold_pct` worse than the point before it). A line breaks where the decode regime changes (cold and warm never compare) and where the prompt version changes (a task's text never compares across its change). Only the shown points are drawn (one a day, `shown`), and only where the sitting has a value on the metric: under the chart, "peak n/r: N sittings" names the shown sittings with no peak recorded, "excl." a cell the cells file excludes on that device. A device with no sitting on the selection reads "Not measured yet on <workload>" ("No <metric> value recorded yet" where its sittings have no value on the metric); the planned Pixel 11 reads "Not measured yet (no device yet)" — its heading and the note, no number, no chart. A point's tooltip (and `aria-label`) gives its value, runs and spread, engine, date with the year, campaign and regime, the cards' words for its marks, its difference from the previous point (with the engine change, if any) and from the line's first point, how many sittings that day had (the newest shown), and "prompt changed from the previous point (none → noref-2026-10-19): not compared" or "regime changed from the previous point (cold → warm): not compared" where that applies. Each chart is one tab stop: ← → (↑ ↓) move between its points in date order and show the same tooltip, Home and End go to the first and the last.
+ 
+ **Artificial Analysis.** The section after Regression (eyebrow "Artificial Analysis Set", "The 23 Models of Artificial Analysis's Mobile Benchmark on Our Devices"), alone through its tab (`#view=aa`): the models of Artificial Analysis's mobile benchmark that have a `.litertlm` in litert-community — the six new model cards (LFM2.5-350M, LFM2-700M, LFM2 2.6B, LFM2-2.6B-Exp, G9v3-3B, Granite 4.0 Micro), then the 17 that were there already — on the Galaxy S26, Pixel 8a, iPhone 17 Pro and Mac Studio (M4 Max) (the iPhone 17 Pro here, not the iPhone 18 Pro of the other sections: it is the phone Artificial Analysis publishes), drawn from the embedded `dist/aa.json` (below); every value and word drawn is the file's, the page computes none. A line under the heading names both settings: ours (1,024-token prompt / 256-token reply, context 2048; each figure's build and harness on hover) and Artificial Analysis's (llama.cpp, Q4_K_M, 1,024-token prompt + 256-token reply, 16K context cap — published, captured 2026-10-12). Two pill groups pick what the table draws: the device (Galaxy S26 by default, Pixel 8a, iPhone 17 Pro, Mac Studio (M4 Max)) and the metric (decode tok/s by default, prefill tok/s, TTFT ms, peak memory MB; the pills' labels and arrows as the panels'). The table: one row per model, its Artificial Analysis entries (both, where it lists reasoning on and off) under its name; one column per runtime · backend the page's cells define on the device, in the page's runtime order and colours (the Android NPU columns left out: no model of the set has an NPU bundle there; Core AI's Neural Engine column on the Apple devices); a cell holds one line per row of the file — the value in the cards' digits (LiteRT-LM's blue and bold), its recipe small after it (`int4` / `int8` on a card's two files, the quantization family on a page cell), or the row's word, muted: `not measured yet`, `no build`, `excl.` (the reason on hover), `n/r` (measured, but no value on that metric: the Mac card rows record no peak); at the right, ruled off, Artificial Analysis's published values on its own phones — "AA · Galaxy S26 Ultra" on the Galaxy S26, "AA · iPhone 17 Pro" on the iPhone 17 Pro, both faint on the Pixel 8a and the Mac (neither is that device) — their capture date under the heading, `not listed` where Artificial Analysis has no figure. Hover (and every value's `aria-label`) gives the value, the recipe, how it was measured, the source and the date. Under the table, a line naming the reference columns as Artificial Analysis's (published, captured 2026-10-12, their settings, measured by Artificial Analysis and not by this page; that Artificial Analysis measures an iPhone 17 Pro and a Galaxy S26 Ultra, this section's iPhone 17 Pro being the same phone model and its Galaxy S26 the base model, not the Ultra; the source URL) and one saying that the six new models' LiteRT-LM figures are the model cards' own, not this page's weekly measurement, and are replaced by this page's cells as the devices measure them.
+ 
+@@ -77,7 +77,7 @@ From `results/summary/device-runs.csv` (the disk copy, which includes sittings n
+ 2. keep campaigns whose directory name contains `dashboard` — the weekly job and the long-context sittings; the hand-run experiment sittings are not read;
+ 3. keep the runtimes the page shows: `litert-lm`, `litert-lm-cpu`, `litert-lm-gpu`, `llama.cpp`, `mlx-swift`, ExecuTorch's `executorch-<backend>`, and Core AI's `core-ai-ane` (each a planned runtime until one of its cells holds a record, above). Rows of any other runtime are dropped when they are read and reach no output.
+ 
+-Columns read: `campaign platform timestamp runtime engine_version model_id quantization task decode_tps prefill_tps prompt_tokens gen_tokens ttft_ms mem_footprint_median_mb mem_resident_median_mb mem_footprint_peak_mb mem_resident_peak_mb thermal_initial cold_run first_ever context_tokens device text_check cpu_capped cpu_cap_drop_pct` (through `arm_row` for the metrics).
++Columns read: `campaign platform timestamp runtime engine_version model_id quantization task prompt_version decode_tps prefill_tps prompt_tokens gen_tokens ttft_ms mem_footprint_median_mb mem_resident_median_mb mem_footprint_peak_mb mem_resident_peak_mb thermal_initial cold_run first_ever context_tokens device text_check cpu_capped cpu_cap_drop_pct` (through `arm_row` for the metrics).
+ 
+ Text check (text-check-rule, `methodology/fairness-rules.md` §12 of the bench): a run whose decoded text failed the check (`text_check` = `FAIL:<flags>`) is not a measurement. `arm_row` keeps it out of every pool and the token medians behind the workload label leave it out too; a cell whose session the check left with no headline number has the status `text-fail:text check failed: <flags> (k of N runs)` — no number, the reason shown as an excluded cell's is (`fail` on the panels, "text check failed" in the table), its session kept as the evidence — as `render_dashboard.build` renders it. `text_fail_n` / `text_checked_n` count the session's failed / checked runs.
+ 
+@@ -153,16 +153,16 @@ The token medians are taken over the runs behind the decode median (the session
+ 
+ ## `dist/regression.json` / `dist/regression.csv`
+ 
+-LiteRT-LM across the weekly sittings, the data of the page's section 4, Regression (the page embeds `regression.json` as it embeds `cells.json` — `<script type="application/json" id="regression">` — and draws section 4 from it; `cells.json` reads neither file). One series per LiteRT-LM cell of the Galaxy S26, iPhone 18 Pro, Mac Studio M4 Max and Pixel 8a (`build.REGRESSION_DEVICES`, the cards' order; the Pixel 11 is listed as planned, with no identifier and no number, `build.REGRESSION_PLANNED`), for Qwen 3 0.6B and Gemma 4 E2B on the text task 1K/256, short chat and protocol 1024/256: the cells' own definitions, rows and key (the Galaxy S26's LiteRT-LM NPU cell, `Qwen/Qwen3-0.6B` on its own bundle, is the Qwen 3 0.6B NPU series; a cell the cells file excludes on that device is listed under `meta.excluded` instead). One point per sitting (campaign) of the cell: `render_leaderboard.arm_row` of that campaign's rows alone, read as the cell is (`headline_regime`, the status), so a point is the number the page showed while that sitting was the cell's newest, and the newest point is the cell. One point a day is shown (`shown`): where the cell has several sittings on one date (UTC), the one `render_leaderboard.latest_session` picks from all of that day's rows (the newest engine tag, then the newest sitting; a same-day retake measures the device's drift between sittings, not the engine), the others kept with `shown` false. Per metric (decode, prefill, peak memory; not TTFT), a shown point with a value — a measured sitting with the figure — is compared with the nearest earlier shown point with a value: `vs_prev` = `build.diff_pct` (+ = better, the page's one formula), on decode only against a point of the same regime (cold and warm never compare; `regime_changed` marks a point whose nearest earlier decode figure is of the other regime), `engine_changed` where the compared point ran another engine version; `regression` = `vs_prev` below −5 % (`render_leaderboard.SPREAD_FLAG`, the ▲ line); `vs_first` = the same against the first such point. `build.py` computes all of it; the same input gives byte-identical files.
++LiteRT-LM across the weekly sittings, the data of the page's section 4, Regression (the page embeds `regression.json` as it embeds `cells.json` — `<script type="application/json" id="regression">` — and draws section 4 from it; `cells.json` reads neither file). One series per LiteRT-LM cell of the Galaxy S26, iPhone 18 Pro, Mac Studio M4 Max and Pixel 8a (`build.REGRESSION_DEVICES`, the cards' order; the Pixel 11 is listed as planned, with no identifier and no number, `build.REGRESSION_PLANNED`), for Qwen 3 0.6B and Gemma 4 E2B on the text task 1K/256, short chat and protocol 1024/256: the cells' own definitions, rows and key (the Galaxy S26's LiteRT-LM NPU cell, `Qwen/Qwen3-0.6B` on its own bundle, is the Qwen 3 0.6B NPU series; a cell the cells file excludes on that device is listed under `meta.excluded` instead). One point per sitting (campaign) of the cell: `render_leaderboard.arm_row` of that campaign's rows alone, read as the cell is (`headline_regime`, the status), so a point is the number the page showed while that sitting was the cell's newest, and the newest point is the cell. One point a day is shown (`shown`): where the cell has several sittings on one date (UTC), the one `render_leaderboard.latest_session` picks from all of that day's rows (the newest engine tag, then the newest sitting; a same-day retake measures the device's drift between sittings, not the engine), the others kept with `shown` false. Per metric (decode, prefill, peak memory; not TTFT), a shown point with a value — a measured sitting with the figure — is compared with the nearest earlier shown point with a value of the same prompt version: `vs_prev` = `build.diff_pct` (+ = better, the page's one formula), never across a change of the task's text (the bench summary's `prompt_version`: the text task 1K/256 took the filler tail under its id on 2026-10-19, `prompts/text/versions.tsv` in the bench; `prompt_changed` marks a point whose nearest earlier point with a value is of another version, `prev_prompt` that version, and the page draws the line broken there, "prompt changed, not compared"), on decode only against a point of the same regime (cold and warm never compare; `regime_changed` marks a point whose nearest earlier decode figure of its version is of the other regime), `engine_changed` where the compared point ran another engine version; `regression` = `vs_prev` below −5 % (`render_leaderboard.SPREAD_FLAG`, the ▲ line); `vs_first` = the same against the first such point. `build.py` computes all of it; the same input gives byte-identical files.
+ 
+-`regression.json`: `meta` (models, metrics, workloads, devices with the planned ones, `threshold_pct`, `data_as_of`, `excluded`, the rules in words) and `series[]` (`device`, `display`, `platform`, `model`, `model_id`, `arm`, `backend`, `task`, `wl`, `ctx`, `artifact_file`, `cell` = the index of the same cell in `cells.json` `cells`, `mem_not_ranked` = the page's reason for an Android GPU / NPU arm's peak, `points[]`). Per point: `campaign`, `captured`, `shown`, `sittings_that_day`, `regime`, `engine`, `status`, `decode_tps`, `n`, `spread_pct`, `prefill_tps`, `mem_peak_mb`, `mem_peak_n`, `thermal_initial`, `hot`, `cpu_capped_counted_n`, `cpu_capped_counted_max_drop`, `text_fail_n`, `text_checked_n` (as the cell columns of those names), and `vs_prev` (`pct`, `prev_campaign`, `regression`, `regime_changed`, `engine_changed`) and `vs_first` (`pct`, `first_campaign`) per metric key — null where the point is not shown or has no value, `pct` null where there is nothing to compare. Full precision.
++`regression.json`: `meta` (models, metrics, workloads, devices with the planned ones, `threshold_pct`, `data_as_of`, `excluded`, the rules in words) and `series[]` (`device`, `display`, `platform`, `model`, `model_id`, `arm`, `backend`, `task`, `wl`, `ctx`, `artifact_file`, `cell` = the index of the same cell in `cells.json` `cells`, `mem_not_ranked` = the page's reason for an Android GPU / NPU arm's peak, `points[]`). Per point: `campaign`, `captured`, `shown`, `sittings_that_day`, `regime`, `engine`, `prompt` (the prompt version of its rows, `""` = the task's first text, two versions of one sitting joined by `+`), `status`, `decode_tps`, `n`, `spread_pct`, `prefill_tps`, `mem_peak_mb`, `mem_peak_n`, `thermal_initial`, `hot`, `cpu_capped_counted_n`, `cpu_capped_counted_max_drop`, `text_fail_n`, `text_checked_n` (as the cell columns of those names), and `vs_prev` (`pct`, `prev_campaign`, `regression`, `regime_changed`, `engine_changed`, `prompt_changed`, `prev_prompt`) and `vs_first` (`pct`, `first_campaign`; against the first point of the same prompt version) per metric key — null where the point is not shown or has no value, `pct` null where there is nothing to compare. Full precision.
+ 
+ `regression.csv`, one row per sitting, floats to 2 decimals as in `cells.csv`:
+ 
+ | column | meaning |
+ |---|---|
+ | `device`, `model`, `backend`, `task` | the series: identifier, model row label, CPU / GPU / NPU, task id |
+-| `captured`, `campaign`, `engine_version`, `regime` | the sitting's date (UTC), campaign directory, engine version, warm / cold |
++| `captured`, `campaign`, `engine_version`, `prompt_version`, `regime` | the sitting's date (UTC), campaign directory, engine version, the task text's version (empty = the first text), warm / cold |
+ | `shown` | `True` = the point of its day (above); `False` = another sitting of that day |
+ | `decode_tps`, `prefill_tps`, `mem_peak_mb`, `n`, `spread_pct` | the sitting's values, as the cell columns |
+ | `flags` | `;`-separated: `hot` (a run started above the nominal thermal state), `capped` (runs under a CPU cap counted, the ◇; or no valid run under a cap past the line), `spread` (decode spread above 5 %, the ▲), `not-ranked` (an Android GPU / NPU peak, the *), `text-fail` (runs whose text failed the check) |
+@@ -223,8 +223,8 @@ The page shows CPU / GPU / NPU (the chip; NPU teal); the detail is in the toolti
+ 
+ `tools/check_against_bench_dashboard.py` renders the bench's table with `scripts/render_dashboard.py` (into a temp dir) for `dashboard-text-v1.cells`, each `dashboard-longctx1024-v1*.cells`, the ONNX Runtime GenAI and ExecuTorch cells files (both text tasks) and the Core AI cells files (the 1K text task; their protocol rows go to the protocol check below) — not the NPU files, which this page reads for the Galaxy S26 only; a bench cell of a runtime this build holds as planned (`meta.planned_runtimes`) must have no page cell and is counted, not compared — and requires every cell whose session is a weekly sitting to equal this repo's cell (and, for the protocol cells of `dashboard-protocol1024-v1*.cells` and the Core AI files, calls `load_cells` and `arm_row` itself and applies the protocol rule — `render_dashboard.headline_regime`, warm where the session has warm runs, else cold — the cold first-call median included (`cold_tps`); the cells added for MLX and llama.cpp on Apple must read "no forced-prefill entry") on decode / spread / n / prefill / TTFT / memory / peak memory / bandwidth / date / campaign, on the text-check count (the bench's "text fail" k/N against `text_fail_n`) and on the count of runs under a CPU cap the bench counts (its "cpu capped, counted" k/N against `cpu_capped_counted_n`: within the line, or any cap on an accelerator arm), and a bench cell of status `text-fail` or `cpu-capped` to be this repo's `text-fail:` / `cpu-capped:` cell with the same reason; cells whose bench session is another sitting are listed with their old and new value. It also runs `scripts/longctx_ladder_diff.py --no-rebuild` for the Mac and S26 2048/256 sittings and compares the ladders cell by cell (the Android cells against the script's cold fields, since the page holds Android cold).
+ 
+-`tools/render_check.py` opens the page in headless Chrome with a throwaway profile, writes the seven screenshots (each section through `#view=`, since headless Chrome paints a blank image after a scroll), and checks the DOM against numbers it computes from `cells.json` and, for section 4, from `regression.json`: the default load is dark (no `data-theme`) and `#theme=light` light; after each metric switch the pressed pill, the legend's runtimes, five panels, each panel's drawn columns and `n/m` frames, its charts (one per backend with a cell, in the order CPU, GPU, NPU, each with its chip and `data-backend`, a column per cell of that backend; the bars' look by backend — class `cpu` the hatch, `npu` the dots, neither solid — and the word in each column's `aria-label`), each chart's labels (no rotated text; each value label its column's value and flag; a thinned group holding only LiteRT-LM's and the tallest column's labels, at 9 px; frame marks one per run at most), the box's tint, its `data-sentence` (= `panels[].summaries`), the sentence rebuilt from `verdict` + `summary_parts`, the box's text, the empty-state message exactly where nothing is drawn (per chart), one tab stop per chart and every LiteRT-LM column opening its own row; one exclusion note per reason under each chart and the band key naming every band; the legend's toggles, every one pressed by default, and the same through the hash with backends and runtimes hidden (`#acc=CPU`, `#fw=llama.cpp`, every backend, every runtime, unknown names, with another metric and `#view=overview`, on the protocol pill): the buttons' state, the charts and columns left, nothing of a hidden one (no column, frame or note of a runtime; no chart or hatched / dotted bar of a backend), the line of a card left with nothing and the note under every box; At a glance on every metric, on the protocol pill, with another model (`#sm=`), with an unknown one and with each of those toggle states: the model pills (the pressed one = the hash's model where the workload has it, else the default the checker counts from `cells.json`), the line over the charts, one tile per device in the cards' order (a low band card's device, or one with no cell of the model, reading "Not measured yet"; a device whose cells the toggles hide reading their line), per chart the bars = the model's cells measured with a value on the metric, best first, their lengths in proportion to the values, each bar's colour slot, backend fill class and stale class, its "runtime · backend", its value label (the cards' digits, LiteRT-LM's `data-own`) and marks, its `aria-label` and the row it opens, one tab stop, and the lines under it (one per kind, with the names), nothing of a hidden runtime or backend; the fills as the browser computes them (a probe on a copy of the page, opened on the table row of LiteRT-LM's NPU cell with section 4 on its workload: every card column, At a glance bar, head-to-head bar and section 4 marker — CPU `url(#hatch-s<slot>)`, NPU `url(#dots-s<slot>)` (in the head-to-head LiteRT-LM's NPU bar only), GPU the colour; LiteRT-LM's hatch and dots on a ground of its colour at 0.85 with the stripes and dots in the card colour, so its marks are painted from one colour, every other slot's at 0.22 with its own; the markers' swatches alike); the table's row count and single tab stop at the default filters and the row count after one filter change; the `hot` and `capped ≤15 %` flags (`capped, max D %` on an accelerator arm, its title the mark's name) beside exactly the cells cells.json marks, at the default filters and on the short-chat table, and the ◇ on exactly those columns with the mark's name and the count in its `aria-label`; every Gap badge's number, band and word, on decode and with the primary metric switched to TTFT and memory; one selected row (the row marked, the inspector on it, one head-to-head bar per cell of its group, the computed line); the scatter's point count; the per-device table's values (default workload and short-chat); no console message, "not measured" in the page, and no runtime name outside the page's set. Section 4, every expected value counted from `regression.json`: `#view=regression` shows it alone (the body's `data-view`, the CSS rules that hide sections 1-3 and the footer, the Regression tab current — `--dump-dom` keeps hidden sections in the DOM); on the default selection and through the hash on the selections the data exposes (the decode and prefill red rings, the memory ring with the * marks, the excluded cell and the peak n/r sittings, the protocol's regime changes, unknown values reading the defaults): the pill groups (order, labels, the one pressed), the description, the status line, a tile per device in `meta.devices` order (the planned one its note and nothing else), the latest lines, the empty-state lines, the notes, and per chart a point per shown point with a value and no other, the lines and line paths, the marker's fill by backend, the red ring exactly on the file's regressions, "not compared" exactly on its regime changes, each point's `aria-label` (value, vs previous, vs first, regression), the cards' marks, the value labels, one tab stop; the page as it opens: section 4 under section 3 with the same grid as `#view=regression`, tab 1 current, the Method popover's line and the footer's paragraph. Section 5: the sections in their order (the device cards last, then the footer), every card (the charted ones, then the low band ones) in section 5 under its heading and none in section 1 — on the page as it opens, on `#view=cards` (section 5 alone, tab 1 current, the cards' text the page as it opens draws) and on `#view=overview` —, the line over the cards on every metric and on the protocol pill, and the `#view=` rules of every view (each hides section 5, or `cards` keeps it alone); the cards' checks above read section 5, and the toggles' hash cases include one on `#view=cards`.
++`tools/render_check.py` opens the page in headless Chrome with a throwaway profile, writes the seven screenshots (each section through `#view=`, since headless Chrome paints a blank image after a scroll), and checks the DOM against numbers it computes from `cells.json` and, for section 4, from `regression.json`: the default load is dark (no `data-theme`) and `#theme=light` light; after each metric switch the pressed pill, the legend's runtimes, five panels, each panel's drawn columns and `n/m` frames, its charts (one per backend with a cell, in the order CPU, GPU, NPU, each with its chip and `data-backend`, a column per cell of that backend; the bars' look by backend — class `cpu` the hatch, `npu` the dots, neither solid — and the word in each column's `aria-label`), each chart's labels (no rotated text; each value label its column's value and flag; a thinned group holding only LiteRT-LM's and the tallest column's labels, at 9 px; frame marks one per run at most), the box's tint, its `data-sentence` (= `panels[].summaries`), the sentence rebuilt from `verdict` + `summary_parts`, the box's text, the empty-state message exactly where nothing is drawn (per chart), one tab stop per chart and every LiteRT-LM column opening its own row; one exclusion note per reason under each chart and the band key naming every band; the legend's toggles, every one pressed by default, and the same through the hash with backends and runtimes hidden (`#acc=CPU`, `#fw=llama.cpp`, every backend, every runtime, unknown names, with another metric and `#view=overview`, on the protocol pill): the buttons' state, the charts and columns left, nothing of a hidden one (no column, frame or note of a runtime; no chart or hatched / dotted bar of a backend), the line of a card left with nothing and the note under every box; At a glance on every metric, on the protocol pill, with another model (`#sm=`), with an unknown one and with each of those toggle states: the model pills (the pressed one = the hash's model where the workload has it, else the default the checker counts from `cells.json`), the line over the charts, one tile per device in the cards' order (a low band card's device, or one with no cell of the model, reading "Not measured yet"; a device whose cells the toggles hide reading their line), per chart the bars = the model's cells measured with a value on the metric, best first, their lengths in proportion to the values, each bar's colour slot, backend fill class and stale class, its "runtime · backend", its value label (the cards' digits, LiteRT-LM's `data-own`) and marks, its `aria-label` and the row it opens, one tab stop, and the lines under it (one per kind, with the names), nothing of a hidden runtime or backend; the fills as the browser computes them (a probe on a copy of the page, opened on the table row of LiteRT-LM's NPU cell with section 4 on its workload: every card column, At a glance bar, head-to-head bar and section 4 marker — CPU `url(#hatch-s<slot>)`, NPU `url(#dots-s<slot>)` (in the head-to-head LiteRT-LM's NPU bar only), GPU the colour; LiteRT-LM's hatch and dots on a ground of its colour at 0.85 with the stripes and dots in the card colour, so its marks are painted from one colour, every other slot's at 0.22 with its own; the markers' swatches alike); the table's row count and single tab stop at the default filters and the row count after one filter change; the `hot` and `capped ≤15 %` flags (`capped, max D %` on an accelerator arm, its title the mark's name) beside exactly the cells cells.json marks, at the default filters and on the short-chat table, and the ◇ on exactly those columns with the mark's name and the count in its `aria-label`; every Gap badge's number, band and word, on decode and with the primary metric switched to TTFT and memory; one selected row (the row marked, the inspector on it, one head-to-head bar per cell of its group, the computed line); the scatter's point count; the per-device table's values (default workload and short-chat); no console message, "not measured" in the page, and no runtime name outside the page's set. Section 4, every expected value counted from `regression.json`: `#view=regression` shows it alone (the body's `data-view`, the CSS rules that hide sections 1-3 and the footer, the Regression tab current — `--dump-dom` keeps hidden sections in the DOM); on the default selection and through the hash on the selections the data exposes (the decode and prefill red rings, the memory ring with the * marks, the excluded cell and the peak n/r sittings, the protocol's regime changes, unknown values reading the defaults): the pill groups (order, labels, the one pressed), the description, the status line, a tile per device in `meta.devices` order (the planned one its note and nothing else), the latest lines, the empty-state lines, the notes, and per chart a point per shown point with a value and no other, the lines and line paths, the marker's fill by backend, the red ring exactly on the file's regressions, "not compared" exactly on its regime and prompt changes (`data-regime-changed`, `data-prompt-changed` with the versions), each point's `aria-label` (value, vs previous, vs first, regression), the cards' marks, the value labels, one tab stop; the page as it opens: section 4 under section 3 with the same grid as `#view=regression`, tab 1 current, the Method popover's line and the footer's paragraph. Section 5: the sections in their order (the device cards last, then the footer), every card (the charted ones, then the low band ones) in section 5 under its heading and none in section 1 — on the page as it opens, on `#view=cards` (section 5 alone, tab 1 current, the cards' text the page as it opens draws) and on `#view=overview` —, the line over the cards on every metric and on the protocol pill, and the `#view=` rules of every view (each hides section 5, or `cards` keeps it alone); the cards' checks above read section 5, and the toggles' hash cases include one on `#view=cards`.
+ 
+ `tools/check_aa.py` rebuilds the Artificial Analysis rows with a loop of its own, without `build.py`'s code for them (`aa_card`, `aa_published`, `build_aa` and `aa_csv_text` are not called; the devices and their reference devices are `build.py`'s `AA_PAGE_DEVICES`, `AA_REF_FOR` and `AA_REF_DEVICES`, read as literals): `data/aa/aa_models.json`, each card's README read block by block, the saved Artificial Analysis page's device list and metric records decoded as JSON objects one by one, and `cells.json` for the page's devices, runtimes and protocol cells, with the rules above restated. It requires every row and field of `aa.json` to equal it (numbers to 1e-9), each model's fields to be `aa_models.json`'s and its `aa_ref` the published numbers, `meta.devices` (columns, reference devices, faint) and the settings, and every row of `aa.csv` its rebuilt row (numbers to 2 decimals). It prints the models, devices, rows by status, measured rows (cards, bench cells), the Artificial Analysis references and the CSV rows, one line per mismatch, then `PASS` or `FAIL (n)` (exit 1). `tools/render_check.py` checks the section against `aa.json`: `#view=aa` shows it alone (the body's `data-view`, the hiding rules, its tab current) on the default selection, on each other device with another metric and with unknown values (the defaults): the heading, the description, the pills, the table's head (the device's columns in the file's order, then "AA · <device>" per reference device, faint where the file says), one row per model (23) and per cell the file's rows for it — the value in the cards' digits with its recipe (LiteRT-LM's `data-own`) or the row's word, and each `aria-label` (value, recipe, measured with, source, captured) — the reference cells with Artificial Analysis's words, settings, entries and source, and the two notes; against its own list, not the file's, the device pills (Galaxy S26, Pixel 8a, iPhone 17 Pro, Mac Studio (M4 Max), in that order), the one reference column on the Galaxy S26 and on the iPhone 17 Pro, not faint, no iPhone 18 Pro in the section or in `aa.json`, and the same-phone words once under the table; on the page as it opens, the section after section 4 and before section 5 with the same table, tab 1 current and the three live tabs in order; and that the page file names no local account or home path. It writes the seventh screenshot, `dist/screenshot-aa.png`.
+ 
+-`tools/check_regression.py` rebuilds the regression series with a loop of its own, without `build.py`'s code for them (`build_regression`, `make_cell` and `build_cells` are not called): the rows as the page reads them (SESSION.json admission, `dashboard` campaigns, the page's runtimes), the LiteRT-LM definitions of `build.load_cell_defs()` on `build.REGRESSION_DEVICES` (the bench's `exclusion` for a cell excluded on its device), per campaign the bench's `arm_row` and `headline_regime` with the status restated, one point a day by the bench's `latest_session`, and `vs_prev` / `vs_first` walked forward with `build.diff_pct` against `SPREAD_FLAG`. It requires every series, point and field of `regression.json` to equal it (numbers to 2 decimals, as the check above compares them) and its meta (models, metrics, workloads, devices, threshold, data date, exclusions); every row of `regression.csv` to equal its JSON point, column by column; per series, `cells.json` `cells[series.cell]` to be the series' cell and the point of that cell's campaign to equal the cell on decode / spread / n / prefill / peak memory and its n / engine / date / regime / the CPU-cap count and fall / the text-check counts / thermal states / status and to be shown (the newest point is the number the page shows), a cell not measured to have a series with no point, and every LiteRT-LM cell of those devices, models and workloads to have a series or an exclusion; and a planned device to carry no identifier, no number and no series. It prints the series, sittings, shown points, red points per metric and regime changes, one line per mismatch, then `PASS` or `FAIL (n)` (exit 1).
++`tools/check_regression.py` rebuilds the regression series with a loop of its own, without `build.py`'s code for them (`build_regression`, `make_cell` and `build_cells` are not called): the rows as the page reads them (SESSION.json admission, `dashboard` campaigns, the page's runtimes), the LiteRT-LM definitions of `build.load_cell_defs()` on `build.REGRESSION_DEVICES` (the bench's `exclusion` for a cell excluded on its device), per campaign the bench's `arm_row` and `headline_regime` with the status restated, one point a day by the bench's `latest_session`, and `vs_prev` / `vs_first` walked forward with `build.diff_pct` against `SPREAD_FLAG`. It requires every series, point and field of `regression.json` to equal it (numbers to 2 decimals, as the check above compares them) and its meta (models, metrics, workloads, devices, threshold, data date, exclusions); every row of `regression.csv` to equal its JSON point, column by column; per series, `cells.json` `cells[series.cell]` to be the series' cell and the point of that cell's campaign to equal the cell on decode / spread / n / prefill / peak memory and its n / engine / date / regime / the CPU-cap count and fall / the text-check counts / thermal states / status and to be shown (the newest point is the number the page shows), a cell not measured to have a series with no point, and every LiteRT-LM cell of those devices, models and workloads to have a series or an exclusion; and a planned device to carry no identifier, no number and no series. It prints the series, sittings, shown points, red points per metric, regime changes and prompt changes, one line per mismatch, then `PASS` or `FAIL (n)` (exit 1).
+diff --git a/build.py b/build.py
+index 386c92b..08bbb01 100644
+--- a/build.py
++++ b/build.py
+@@ -354,7 +354,7 @@ REGRESSION_TASKS = ["long-context-1024-gen256", "short-chat", NATIVE_TASK]
+ REGRESSION_METRICS = ["decode_tps", "prefill_tps", "mem_peak_mb"]  # METRICS' keys; TTFT is not tracked
+ REGRESSION_SHORT = {"decode_tps": "decode", "prefill_tps": "prefill", "mem_peak_mb": "mem"}  # CSV columns
+ REGRESSION_CSV_FIELDS = [
+-    "device", "model", "backend", "task", "captured", "campaign", "engine_version", "regime", "shown",
++    "device", "model", "backend", "task", "captured", "campaign", "engine_version", "prompt_version", "regime", "shown",
+     "decode_tps", "prefill_tps", "mem_peak_mb", "n", "spread_pct", "flags",
+     "vs_prev_decode_pct", "vs_prev_prefill_pct", "vs_prev_mem_pct",
+     "regression_decode", "regression_prefill", "regression_mem",
+@@ -1236,6 +1236,13 @@ def regression_value(p, key):
+     return p[key] if p["status"] == "measured" else None
+ 
+ 
++def regression_prompt(crows):
++    """A point's prompt version: the bench summary's prompt_version of its campaign's rows of the cell
++    ('' = the task's first text; the text task 1K/256 changed its text under its id on 2026-10-19), the
++    versions joined by '+' where one sitting holds two, which equals no single version."""
++    return "+".join(sorted({r.get("prompt_version") or "" for r in crows}))
++
++
+ def build_regression(defs, devices, rows, cells):
+     """The Regression section's series: one per LiteRT-LM cell of REGRESSION_DEVICES x
+     REGRESSION_MODELS x REGRESSION_TASKS (build_cells' definitions and row key), one point per
+@@ -1245,10 +1252,12 @@ def build_regression(defs, devices, rows, cells):
+     newest. One point a day is shown: where the cell has several sittings on one date, the one
+     latest_session picks from all of that day's rows (the newest engine tag, then the newest
+     sitting); the others stay, shown false. Per metric, a shown point with a value is compared
+-    (diff_pct, + = better) with the nearest earlier shown point with a value - on decode, of the
+-    same regime (regime_changed: the nearest earlier one with a decode value has the other
+-    regime) - and with the first such point; a regression is vs_prev below -SPREAD_FLAG, the
+-    spread flag's line. -> (series, the cells of those keys excluded on their device)."""
++    (diff_pct, + = better) with the nearest earlier shown point with a value of the same prompt
++    version (prompt_changed: the nearest earlier one with a value is of another version, the task's
++    text changed under its id) - on decode, also of the same regime (regime_changed: the nearest
++    earlier one of its version with a decode value has the other regime) - and with the first such
++    point; a regression is vs_prev below -SPREAD_FLAG, the spread flag's line. -> (series, the
++    cells of those keys excluded on their device)."""
+     by_key = {}
+     for r in rows:
+         if r.get("stand_in"):
+@@ -1295,7 +1304,7 @@ def build_regression(defs, devices, rows, cells):
+                 points.append({
+                     "campaign": os.path.basename(a["campaign"]), "captured": a["date"],
+                     "shown": True, "sittings_that_day": 1, "regime": regime, "engine": a["engine"],
+-                    "status": status, "decode_tps": dec, "n": n,
++                    "prompt": regression_prompt(crows), "status": status, "decode_tps": dec, "n": n,
+                     "spread_pct": None if status.startswith(NO_NUMBER) else spread,
+                     "prefill_tps": a["prefill"], "mem_peak_mb": a["mem_peak"], "mem_peak_n": a["mem_peak_n"],
+                     "thermal_initial": ",".join(a["thermal_initial"]),
+@@ -1325,6 +1334,11 @@ def build_regression(defs, devices, rows, cells):
+                         continue
+                     earlier = [q for q in shown[:i] if regression_value(q, key) is not None]
+                     changed = False
++                    # a figure compares within its task text only: the nearest earlier point with a
++                    # value on another prompt version is the series' break (marked, not compared)
++                    before = earlier[-1]["prompt"] if earlier else None
++                    prompt_changed = before is not None and before != p["prompt"]
++                    earlier = [q for q in earlier if q["prompt"] == p["prompt"]]
+                     if key == "decode_tps":
+                         # cold-warm-split: a decode figure compares within its regime only
+                         changed = bool(earlier) and earlier[-1]["regime"] != p["regime"]
+@@ -1337,7 +1351,8 @@ def build_regression(defs, devices, rows, cells):
+                         "pct": pct, "prev_campaign": prev["campaign"] if prev else None,
+                         "regression": pct is not None and pct < -SPREAD_FLAG,
+                         "regime_changed": changed,
+-                        "engine_changed": prev["engine"] != p["engine"] if prev else None}
++                        "engine_changed": prev["engine"] != p["engine"] if prev else None,
++                        "prompt_changed": prompt_changed, "prev_prompt": before if prompt_changed else None}
+                     p["vs_first"][key] = {
+                         "pct": diff_pct(v, regression_value(first, key), higher) if first else None,
+                         "first_campaign": first["campaign"] if first else None}
+@@ -1392,16 +1407,22 @@ def regression_doc(series, excluded, devices, as_of):
+                          "figure; a sitting with no headline number (no-decode, text-fail, cpu-capped) "
+                          "has none on any metric and is never a previous point",
+                 "vs_prev": "per metric, null where the point is not shown or has no value: diff_pct of "
+-                           "the value against the nearest earlier shown point with a value (+ = better; "
+-                           "lower-is-better metrics as a rate, the page's formula); on decode the nearest "
+-                           "of the same regime, never across cold and warm (regime_changed: the nearest "
+-                           "earlier point with a decode value has the other regime); pct null where "
+-                           "there is no such point",
++                           "the value against the nearest earlier shown point with a value of the same "
++                           "prompt version (+ = better; lower-is-better metrics as a rate, the page's "
++                           "formula); on decode the nearest of the same regime, never across cold and warm "
++                           "(regime_changed: the nearest earlier point of its version with a decode value "
++                           "has the other regime); pct null where there is no such point",
+                 "regression": "vs_prev pct below -threshold_pct (render_leaderboard.SPREAD_FLAG, the "
+                               "page's spread flag)",
+                 "engine_changed": "the compared point ran another engine version",
+-                "vs_first": "the same difference against the first shown point with a value (on decode, "
+-                            "of the same regime); null on that first point",
++                "prompt": "the point's prompt version: the bench summary's prompt_version of its rows ('' = "
++                          "the task's first text; the text task 1K/256 changed its text under its id on "
++                          "2026-10-19: prompts/text/versions.tsv in the bench), two versions of one sitting "
++                          "joined by '+'",
++                "prompt_changed": "the nearest earlier shown point with a value is of another prompt version "
++                                  "(prev_prompt): the series' break, never compared across it",
++                "vs_first": "the same difference against the first shown point with a value of the same "
++                            "prompt version (on decode, of the same regime); null on that first point",
+             },
+         },
+         "series": series,
+@@ -1437,7 +1458,8 @@ def regression_csv_text(series):
+         for p in s["points"]:
+             row = {"device": s["device"], "model": s["model"], "backend": s["backend"], "task": s["task"],
+                    "captured": p["captured"], "campaign": p["campaign"], "engine_version": p["engine"],
+-                   "regime": p["regime"], "shown": p["shown"], "decode_tps": p["decode_tps"],
++                   "prompt_version": p["prompt"], "regime": p["regime"], "shown": p["shown"],
++                   "decode_tps": p["decode_tps"],
+                    "prefill_tps": p["prefill_tps"], "mem_peak_mb": p["mem_peak_mb"], "n": p["n"],
+                    "spread_pct": p["spread_pct"], "flags": ";".join(regression_flags(s, p))}
+             for key, short in REGRESSION_SHORT.items():
+@@ -1900,7 +1922,8 @@ def main():
+     red = {k: sum(1 for p in pts if p["vs_prev"][k] and p["vs_prev"][k]["regression"]) for k in REGRESSION_METRICS}
+     print(f"regression: {len(reg_series)} series, {len(pts)} sittings ({sum(p['shown'] for p in pts)} shown), "
+           f"red points decode {red['decode_tps']} / prefill {red['prefill_tps']} / memory {red['mem_peak_mb']}, "
+-          f"regime changes {sum(1 for p in pts if p['vs_prev']['decode_tps'] and p['vs_prev']['decode_tps']['regime_changed'])}")
++          f"regime changes {sum(1 for p in pts if p['vs_prev']['decode_tps'] and p['vs_prev']['decode_tps']['regime_changed'])}, "
++          f"prompt changes {sum(1 for p in pts if p['vs_prev']['decode_tps'] and p['vs_prev']['decode_tps']['prompt_changed'])}")
+     ar = aa_doc["rows"]
+     print(f"aa: {len(aa_doc['models'])} models, {len(aa_doc['meta']['devices'])} devices, {len(ar)} rows "
+           f"(measured {sum(r['status'] == 'measured' for r in ar)}), Artificial Analysis references "
+@@ -3297,7 +3320,7 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+       ["Core AI.", (META.planned_runtimes.indexOf("Core AI") >= 0 ? "Planned, not yet measured: " : "") + "the arm core-ai-ane, Apple's exports of the models run by Apple's Core AI static-shape engine on the Neural Engine (backend NPU; the runner fixes the compute unit), from the bench's matrices/dashboard-coreai-v1-ios.cells and dashboard-coreai-v1-mac.cells (docs/coreai-arm-v1.md). Two instruments, as for LiteRT-LM, never pooled: the text task reads the record's runtime counts (decode = the tokens the engine yielded / the time from the first token to the end of the stream; prefill = the prompt tokens / the time from the generate call to the first token), and the protocol task is Apple's llm-benchmark measurement (prefill = 1024 / the time to the first token; decode = 255 / the time after it). Its Mac memory is drawn and not ranked (above); on the iPhone it ranks with the other Apple arms."],
+       ["Abbreviations.", "TTFT = time to first token; BW = memory bandwidth (BW util = its share used by decode); ctx = context (KV cache) allocation; p / d = prompt / decode tokens, measured medians; kv = the allocation of a long-context ladder step; n = runs or cells counted; † at the end of a quantization label = the bench's audited in-place correction of the recorded label for the same artifact (quant-label-rule: the Gemma 4 .litertlm bundles are the wNa8o8 schema, the Android Qwen 3 4B LiteRT file was recorded without its label); no number changes."],
+       ["Artifacts.", "Each runtime runs its own published artifact and quantization (in every tooltip and in the inspector) — a different recipe is a different deployment profile, not a win. Rebuild: python3 build.py (data, cells and aggregation are read from ../edge-llm-bench at build time)."],
+-      ["Regression.", "Section 4 draws LiteRT-LM's own cells across the weekly sittings from dist/regression.json (embedded in this page; the same points, one row per sitting, in dist/regression.csv, its columns in the repo's README): the rows cells.json reads (admitted sessions of the weekly sittings), one series per LiteRT-LM cell of " + andList(REG.meta.devices.filter(function (d) { return !d.planned; }).map(function (d) { return d.display; })) + " for " + andList(REG.meta.models) + " on " + andList(REG.meta.workloads.map(function (w) { return w.label; })) + REG.meta.devices.filter(function (d) { return d.planned; }).map(function (d) { return "; " + d.display + ": " + d.note; }).join("") + ". A point is one sitting: render_leaderboard.arm_row of that campaign's rows alone, the number the page showed while that sitting was the cell's newest; " + REG_RULE + " (render_leaderboard.SPREAD_FLAG, the ▲ line); the other sittings of a day stay in the files, shown false. Per metric a point is compared with the nearest earlier point with a value, by the page's gap formula (+ = better; decode within its regime only: cold and warm never compare, so a point after a change of regime is not compared), and vs first with the line's first point. Nothing is pooled across sittings; no average or trend is drawn."]
++      ["Regression.", "Section 4 draws LiteRT-LM's own cells across the weekly sittings from dist/regression.json (embedded in this page; the same points, one row per sitting, in dist/regression.csv, its columns in the repo's README): the rows cells.json reads (admitted sessions of the weekly sittings), one series per LiteRT-LM cell of " + andList(REG.meta.devices.filter(function (d) { return !d.planned; }).map(function (d) { return d.display; })) + " for " + andList(REG.meta.models) + " on " + andList(REG.meta.workloads.map(function (w) { return w.label; })) + REG.meta.devices.filter(function (d) { return d.planned; }).map(function (d) { return "; " + d.display + ": " + d.note; }).join("") + ". A point is one sitting: render_leaderboard.arm_row of that campaign's rows alone, the number the page showed while that sitting was the cell's newest; " + REG_RULE + " (render_leaderboard.SPREAD_FLAG, the ▲ line); the other sittings of a day stay in the files, shown false. Per metric a point is compared with the nearest earlier point with a value, by the page's gap formula (+ = better; within its prompt version only: a task whose text changed under its id, the text task 1K/256 on 2026-10-19, is not compared across the change; decode within its regime only: cold and warm never compare, so a point after a change of regime is not compared), and vs first with the line's first point. Nothing is pooled across sittings; no average or trend is drawn."]
+     ].forEach(function (t) { f.appendChild(add(el("p"), el("b", null, t[0]), " " + t[1])); });
+   }
+ 
+@@ -4240,8 +4263,10 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+   function andList(xs) { return xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1]; }
+   function r1(v) { return Math.round(v * 10) / 10; }
+   // a point's comparison with the one before it, as the file holds it: the difference and the date it is against
+-  // (an engine change named), "regime changed" where the point before is of the other regime and nothing earlier of
+-  // its own (cold and warm never compare), else the line's first point ("baseline only"); `long` = with the year
++  // (an engine change named), "prompt changed" where the point before ran another text of the task and nothing earlier
++  // ran its own (a task text that changed under its id never compares across the change), "regime changed" where the
++  // point before is of the other regime and nothing earlier of its own (cold and warm never compare), else the line's
++  // first point ("baseline only"); `long` = with the year
+   function regVsPrev(s, p, key, long) {
+     var vp = p.vs_prev[key];
+     if (vp && vp.pct != null) {
+@@ -4249,12 +4274,19 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+       return signedPct(vp.pct) + " vs previous (" + (long ? q.captured : mmdd(q.captured)) + ")" +
+         (vp.engine_changed ? ", engine " + q.engine + " → " + p.engine : "");
+     }
++    if (vp && vp.prompt_changed) return "prompt changed, not compared";
+     if (vp && vp.regime_changed) return "regime changed, not compared";
+     return "baseline only";
+   }
+   function regRegimeText(p) {
+     return "regime changed from the previous point (" + otherRegime(p.regime) + " → " + p.regime + "): not compared";
+   }
++  // a prompt version as the marks write it: "none" for the task's first text
++  function promptWord(v) { return v || "none"; }
++  function regPromptText(p, vp) {
++    return "prompt changed from the previous point (" + promptWord(vp.prev_prompt) + " → " + promptWord(p.prompt) +
++      "): not compared";
++  }
+ 
+   function renderRegression() {
+     var m = RMET[state.rmet], w = RWL[state.rw];
+@@ -4275,9 +4307,10 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+   }
+   // the answer first: the red-ringed points of the selection, one clause each (the first three and how many more),
+   // else that there is none, with the lines and points it covers; then the decode points not compared across a change
+-  // of regime. Counts of the file's points and flags only
++  // of regime, and the points not compared across a change of the task's text (prompt version). Counts of the file's
++  // points and flags only
+   function renderRegStatus(m, w) {
+-    var lines = 0, points = 0, single = 0, flagged = [], changed = [];
++    var lines = 0, points = 0, single = 0, flagged = [], changed = [], prompts = [];
+     REG.meta.devices.forEach(function (d) {
+       if (d.planned) return;
+       regSeries(d.device).forEach(function (s) {
+@@ -4291,10 +4324,11 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+           if (vp && vp.regression) flagged.push(d.display + " " + s.backend + " " + mmdd(p.captured) + " " + signedPct(vp.pct) +
+             " vs " + mmdd(regPoint(s, vp.prev_campaign).captured));
+           if (m.key === "decode_tps" && vp && vp.regime_changed) changed.push(otherRegime(p.regime) + " → " + p.regime);
++          if (vp && vp.prompt_changed) prompts.push(promptWord(vp.prev_prompt) + " → " + promptWord(p.prompt));
+         });
+       });
+     });
+-    var t, proto = w.key.indexOf("protocol") === 0, dirs = [];
++    var t, proto = w.key.indexOf("protocol") === 0, dirs = [], pdirs = [];
+     if (!lines) t = "Not measured yet on " + w.label + " for " + state.rm + ".";
+     else if (!flagged.length) t = "No point more than " + REG.meta.threshold_pct + " % worse than the one before it on " + metricTitle(m) +
+       " — " + state.rm + ", " + w.label + ": " + plural(lines, "line", "lines") + ", " + plural(points, "point", "points") +
+@@ -4304,6 +4338,8 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+     changed.forEach(function (x) { if (dirs.indexOf(x) < 0) dirs.push(x); });
+     if (changed.length) t += " " + plural(changed.length, proto ? "protocol point" : "point", proto ? "protocol points" : "points") +
+       " not compared (" + dirs.join(", ") + ").";
++    prompts.forEach(function (x) { if (pdirs.indexOf(x) < 0) pdirs.push(x); });
++    if (prompts.length) t += " " + plural(prompts.length, "point", "points") + " not compared (prompt " + pdirs.join(", ") + ").";
+     var box = document.getElementById("rg-status");
+     box.textContent = t;
+     box.setAttribute("data-flagged", String(flagged.length > 0));
+@@ -4376,7 +4412,8 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+   // One device's line chart: x = the measurement dates of its shown points (every backend's), equally spaced, MM-DD
+   // under the axis (thinned where they would touch); y from 0 on the tile's own scale (at most five gridlines on the
+   // cards' clean steps), the unit over the axis; a line per backend through its drawn points in time order (broken
+-  // where the decode regime changes: cold and warm never compare), each point a 9 px square in the cards' backend
++  // where the decode regime changes, cold and warm never compare, and where the task's text changes, its prompt
++  // version: a figure never compares across it), each point a 9 px square in the cards' backend
+   // fill (CPU hatched, GPU solid, NPU dotted) with a ring of the card's colour, a red ring where vs_prev is a
+   // regression, the cards' marks over it, its value label (the cards' digits) over or under it — every point where
+   // every label finds room, else the first, the last and the ringed point of each line — and its tooltip. One tab stop:
+@@ -4394,7 +4431,8 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+       var pts = regDrawn(s, m.key);
+       pts.forEach(function (p, j) {
+         var vp = p.vs_prev[m.key], it = { s: s, si: si, p: p, v: regValue(p, m.key), xi: dates.indexOf(p.captured), first: j === 0,
+-          last: j === pts.length - 1, ring: !!(vp && vp.regression), changed: !!(vp && vp.regime_changed) };
++          last: j === pts.length - 1, ring: !!(vp && vp.regression), changed: !!(vp && vp.regime_changed),
++          prompt: !!(vp && vp.prompt_changed) };
+         // the cards' marks: ▲ a decode spread or * a memory value not ranked, ◆ hot, ◇ capped
+         it.flag = m.key === "decode_tps" && p.spread_pct != null && p.spread_pct > META.spread_flag_pct ? "▲"
+           : m.key === "mem_peak_mb" && s.mem_not_ranked ? "*" : null;
+@@ -4434,7 +4472,7 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+     kept.forEach(function (x) {
+       sv.appendChild(svg("text", { "class": "rg-xl", x: r1(xs(x[0])), y: y1 + 15, "text-anchor": "middle" }, mmdd(dates[x[0]])));
+     });
+-    // the lines, a backend's points in time order; broken where the regime changes
++    // the lines, a backend's points in time order; broken where the regime or the prompt version changes
+     var segs = [];
+     series.forEach(function (s) {
+       var prev = null, dd = "";
+@@ -4442,7 +4480,7 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+         if (it.s !== s) return;
+         it.x = xs(it.xi);
+         it.y = ys(it.v);
+-        if (prev && !it.changed) {
++        if (prev && !it.changed && !it.prompt) {
+           dd += "L" + r1(it.x) + "," + r1(it.y);
+           segs.push([prev.x, prev.y, it.x, it.y]);
+         } else dd += "M" + r1(it.x) + "," + r1(it.y);
+@@ -4455,7 +4493,8 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+       var s = it.s, p = it.p, X = it.x, Y = it.y, c = regCell(s, p);
+       it.k = k;
+       var g = svg("g", { "class": "rg-pt", role: "img", "data-backend": s.backend, "data-campaign": p.campaign, "data-captured": p.captured,
+-        "data-regression": it.ring ? "" : null, "data-regime-changed": it.changed ? "" : null });
++        "data-regression": it.ring ? "" : null, "data-regime-changed": it.changed ? "" : null,
++        "data-prompt-changed": it.prompt ? "" : null });
+       g.appendChild(svg("circle", { "class": "rg-hit", cx: r1(X), cy: r1(Y), r: 12 }));
+       g.appendChild(svg("rect", { "class": "rg-halo", x: r1(X - RG_MK - 2), y: r1(Y - RG_MK - 2), width: 2 * RG_MK + 4,
+         height: 2 * RG_MK + 4, rx: 2 }));
+@@ -4483,12 +4522,14 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+         g.appendChild(svg("path", { "class": "mk-cap", "data-mark": "◇", d: "M" + r1(mx) + "," + r1(kb) + "L" + r1(mx + 2.8) + "," + r1(km) +
+           "L" + r1(mx) + "," + r1(kb - MARKH + 1.2) + "L" + r1(mx - 2.8) + "," + r1(km) + "Z" }));
+       }
+-      var vf = p.vs_first[m.key], vp = p.vs_prev[m.key];
++      var vf = p.vs_first[m.key], vp = p.vs_prev[m.key], why = [];  // why: not compared with the point before it
++      if (it.prompt) why.push(regPromptText(p, vp));
++      if (it.changed) why.push(regRegimeText(p));
+       g.setAttribute("aria-label", s.backend + " (" + LOOK[s.backend] + "), " + p.captured + ": " + num(it.v, m.digits) + " " + m.unit +
+         (it.flag === "▲" ? ", runs spread " + num(p.spread_pct, 0) + " %" : "") + (it.flag === "*" ? ", not ranked" : "") +
+         (it.hot ? ", hot: " + startedAt(c) : "") + (it.capped ? ", " + capLabel(c) + ": " + cappedText(c) : "") + "; " +
+-        (vp && vp.pct != null ? regVsPrev(s, p, m.key, true) : it.changed ? regRegimeText(p) : "baseline only (the line's first point)") +
+-        (vp && vp.pct != null && it.changed ? "; " + regRegimeText(p) : "") +
++        (vp && vp.pct != null ? [regVsPrev(s, p, m.key, true)].concat(why).join("; ")
++          : why.length ? why.join("; ") : "baseline only (the line's first point)") +
+         (vf && vf.pct != null ? "; " + signedPct(vf.pct) + " vs first (" + regPoint(s, vf.first_campaign).captured + ")" : "") +
+         (it.ring ? "; regression: more than " + REG.meta.threshold_pct + " % worse than the previous point" : ""));
+       hoverable(g, function (ev) { regTip(s, p, m, ev); });
+@@ -4555,6 +4596,7 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+     tipLine("decode", "n = " + p.n + " runs" + (p.spread_pct != null ? ", spread " + num(p.spread_pct, 1) + " %" : "") +
+       (p.spread_pct != null && p.spread_pct > META.spread_flag_pct ? " (▲: above " + META.spread_flag_pct + " %)" : ""));
+     tipLine("engine", p.engine);
++    if (p.prompt) tipLine("prompt", p.prompt + " (the task's text version)");
+     tipLine("captured", p.captured + " · thermal " + (p.thermal_initial || "n/a"));
+     tipLine("campaign", p.campaign);
+     tipLine("regime", p.regime === "warm" ? "warm: the median of the session's warm runs"
+@@ -4567,9 +4609,10 @@ body[data-view="aa"] #sec-overview, body[data-view="aa"] #sec-drill, body[data-v
+     if (m.key === "mem_peak_mb" && s.mem_not_ranked) tipLine("* not ranked", s.mem_not_ranked + "; compared with this line's own points only.");
+     if (vp && vp.pct != null) tipLine("vs previous", regVsPrev(s, p, m.key, true) +
+       (vp.regression ? " — more than " + REG.meta.threshold_pct + " % worse: the red ring" : ""));
+-    else if (!(vp && vp.regime_changed)) tipLine("vs previous", "none — the line's first point (baseline)");
++    else if (!(vp && (vp.regime_changed || vp.prompt_changed))) tipLine("vs previous", "none — the line's first point (baseline)");
+     if (vf && vf.pct != null) tipLine("vs first", signedPct(vf.pct) + " (" + regPoint(s, vf.first_campaign).captured + ")");
+     if (p.sittings_that_day > 1) tipLine("that day", p.sittings_that_day + " sittings that day; shown: the newest");
++    if (vp && vp.prompt_changed) tipLine("not compared:", regPromptText(p, vp));
+     if (vp && vp.regime_changed) tipLine("not compared:", regRegimeText(p));
+     tip.hidden = false;
+     placeTip(ev.clientX, ev.clientY);
+diff --git a/tools/check_regression.py b/tools/check_regression.py
+index 481decf..dc0a533 100644
+--- a/tools/check_regression.py
++++ b/tools/check_regression.py
+@@ -13,9 +13,11 @@ on build.REGRESSION_DEVICES for build.REGRESSION_MODELS and build.REGRESSION_TAS
+ excluded on its device by the bench's exclusion(); per campaign the bench's arm_row on that
+ campaign's rows of the cell, read by the bench's headline_regime, the status restated in
+ render_dashboard.build's words; one point a day by the bench's latest_session over all of that
+-day's rows; per metric vs_prev / vs_first by build.diff_pct against the nearest earlier / the
+-first shown point with a value (on decode, of the same regime) and a regression below
+--SPREAD_FLAG, walked forward here (the build filters lists). Then:
++day's rows; a point's prompt version from its rows' prompt_version; per metric vs_prev / vs_first
++by build.diff_pct against the nearest earlier / the first shown point with a value of the same
++prompt version (on decode, also of the same regime) and a regression below -SPREAD_FLAG, the
++nearest earlier point with a value of another version marking prompt_changed, walked forward here
++(the build filters lists). Then:
+ 1. regression.json equals that loop: every series (count, key, cell index, the memory reason
+    cells.json's not_ranked gives the cell), every point (count, campaign, time order) and every
+    field - numbers to 2 decimals as check_against_bench_dashboard compares them, strings and
+@@ -52,7 +54,7 @@ DIST = os.path.join(os.path.dirname(HERE), "dist")
+ SUBJECT = "LiteRT-LM"
+ METRICS = build.REGRESSION_METRICS
+ SHORT = {"decode_tps": "decode", "prefill_tps": "prefill", "mem_peak_mb": "mem"}
+-CSV_COLUMNS = ["device", "model", "backend", "task", "captured", "campaign", "engine_version", "regime",
++CSV_COLUMNS = ["device", "model", "backend", "task", "captured", "campaign", "engine_version", "prompt_version", "regime",
+                "shown", "decode_tps", "prefill_tps", "mem_peak_mb", "n", "spread_pct", "flags"] + \
+               [f"vs_prev_{SHORT[m]}_pct" for m in METRICS] + [f"regression_{SHORT[m]}" for m in METRICS]
+ CSV_NUMBERS = {"decode_tps", "prefill_tps", "mem_peak_mb", "n", "spread_pct"} | \
+@@ -162,7 +164,9 @@ def own(cells, not_ranked):
+                 rows_of[name] = crows
+                 points.append({
+                     "campaign": name, "captured": a["date"], "shown": None, "sittings_that_day": None,
+-                    "regime": regime, "engine": a["engine"], "status": status, "decode_tps": dec,
++                    "regime": regime, "engine": a["engine"],
++                    "prompt": "+".join(sorted({r.get("prompt_version") or "" for r in crows})),
++                    "status": status, "decode_tps": dec,
+                     "n": a["warm_n"] if warm else a["cold_n"],
+                     "spread_pct": (None if status.split(":", 1)[0] in ("text-fail", "cpu-capped")
+                                    else a["spread"] if warm else a["cold_spread"]),
+@@ -182,8 +186,10 @@ def own(cells, not_ranked):
+                 pick = os.path.basename(sess[0]["campaign"])
+                 for p in same:
+                     p["shown"], p["sittings_that_day"] = p["campaign"] == pick, len(same)
+-            # walk forward: the last and the first point with a value per metric (decode: per regime)
+-            last, first, last_any = {}, {}, {}
++            # walk forward: the last and the first point with a value per metric and prompt version (decode:
++            # per regime too), the last of the version per metric (the regime turn) and the last of any version
++            # (the prompt turn)
++            last, first, last_any, last_all = {}, {}, {}, {}
+             for p in points:
+                 if not p["shown"] or p["status"] != "measured":
+                     continue
+@@ -191,18 +197,20 @@ def own(cells, not_ranked):
+                     v = p[m]
+                     if v is None:
+                         continue
+-                    k = (m, p["regime"] if m == "decode_tps" else "")
++                    k = (m, p["prompt"], p["regime"] if m == "decode_tps" else "")
+                     higher = build.METRIC[m]["better"] == "higher"
+-                    prev, base, before = last.get(k), first.get(k), last_any.get(m)
++                    prev, base, before = last.get(k), first.get(k), last_any.get((m, p["prompt"]))
++                    turned = m in last_all and last_all[m]["prompt"] != p["prompt"]
+                     pct = build.diff_pct(v, prev[m], higher) if prev else None
+                     p["vs_prev"][m] = {
+                         "pct": pct, "prev_campaign": prev["campaign"] if prev else None,
+                         "regression": pct is not None and pct < -SPREAD_FLAG,
+                         "regime_changed": m == "decode_tps" and before is not None and before["regime"] != p["regime"],
+-                        "engine_changed": (prev["engine"] != p["engine"]) if prev else None}
++                        "engine_changed": (prev["engine"] != p["engine"]) if prev else None,
++                        "prompt_changed": turned, "prev_prompt": last_all[m]["prompt"] if turned else None}
+                     p["vs_first"][m] = {"pct": build.diff_pct(v, base[m], higher) if base else None,
+                                         "first_campaign": base["campaign"] if base else None}
+-                    last[k], last_any[m] = p, p
++                    last[k], last_any[(m, p["prompt"])], last_all[m] = p, p, p
+                     first.setdefault(k, p)
+             series.append({
+                 "device": ident, "display": dev["display"], "platform": plat, "model": model,
+@@ -283,7 +291,7 @@ def csv_row(s, p):
+         flags.append("text-fail")
+     row = {"device": s["device"], "model": s["model"], "backend": s["backend"], "task": s["task"],
+            "captured": p["captured"], "campaign": p["campaign"], "engine_version": p["engine"],
+-           "regime": p["regime"], "shown": p["shown"], "decode_tps": p["decode_tps"],
++           "prompt_version": p["prompt"], "regime": p["regime"], "shown": p["shown"], "decode_tps": p["decode_tps"],
+            "prefill_tps": p["prefill_tps"], "mem_peak_mb": p["mem_peak_mb"], "n": p["n"],
+            "spread_pct": p["spread_pct"], "flags": ";".join(flags)}
+     for m in METRICS:
+@@ -449,10 +457,11 @@ def main():
+     pts = [p for s in series for p in s["points"]]
+     red = {m: sum(1 for p in pts if p["vs_prev"][m] and p["vs_prev"][m]["regression"]) for m in METRICS}
+     turns = sum(1 for p in pts if p["vs_prev"]["decode_tps"] and p["vs_prev"]["decode_tps"]["regime_changed"])
++    breaks = sum(1 for p in pts if p["vs_prev"]["decode_tps"] and p["vs_prev"]["decode_tps"]["prompt_changed"])
+     print(f"regression (this check's loop): {len(series)} series, {len(pts)} sittings "
+           f"({sum(1 for p in pts if p['shown'])} shown), red points decode {red['decode_tps']} / "
+-          f"prefill {red['prefill_tps']} / memory {red['mem_peak_mb']}, regime changes {turns}; "
+-          f"{len(excluded)} excluded")
++          f"prefill {red['prefill_tps']} / memory {red['mem_peak_mb']}, regime changes {turns}, "
++          f"prompt changes {breaks}; {len(excluded)} excluded")
+     print(f"  regression.json: {len(doc.get('series', []))} series, {jn} points compared on every field "
+           f"(numbers to 2 decimals) and the meta; {len(jf)} mismatches")
+     print(f"  regression.csv: {cn} rows compared with their JSON points, column by column; {len(cf)} mismatches")
+diff --git a/tools/render_check.py b/tools/render_check.py
+index 2796ca5..13b1dbc 100644
+--- a/tools/render_check.py
++++ b/tools/render_check.py
+@@ -142,13 +142,15 @@ dist/cells.json, not read from the page:
+   regime changes, unknown values falling back to the defaults) the pill groups (the file's
+   order and labels, the one pressed), the description, the status line (the red-ringed points,
+   else none with the lines, points and single-point lines; the points not compared across a
+-  change of regime), a tile per meta.devices entry in its order (the planned one its note and
+-  nothing else), per tile the latest lines (value, vs previous or "baseline only" or "regime
+-  changed, not compared", n, engine), the empty-state line exactly where nothing is drawn, the
+-  notes (excl., peak n/r), and per chart a point per shown point with a value and no other,
+-  the lines = its backends, the line paths (broken at a change of regime), the marker's fill by
+-  backend, a red ring exactly on the file's vs_prev regressions, "not compared" exactly on its
+-  regime changes, each point's aria-label (value, vs previous, vs first, regression), the cards'
++  change of regime, and across a change of prompt version), a tile per meta.devices entry in its
++  order (the planned one its note and nothing else), per tile the latest lines (value, vs previous
++  or "baseline only" or "prompt changed, not compared" or "regime changed, not compared", n,
++  engine), the empty-state line exactly where nothing is drawn, the notes (excl., peak n/r), and
++  per chart a point per shown point with a value and no other, the lines = its backends, the line
++  paths (broken at a change of regime or of prompt version), the marker's fill by backend, a red
++  ring exactly on the file's vs_prev regressions, "not compared" exactly on its regime and prompt
++  changes (data-regime-changed, data-prompt-changed), each point's aria-label (value, vs previous,
++  vs first, regression, the prompt change's versions), the cards'
+   marks, value labels in the cards' digits (on every point, or on the first, last and ringed
+   ones only), one tab stop; the page as it opens: section 4 under section 3 with the same grid
+   text as #view=regression, tab 1 current, the Method popover's line and the footer's paragraph;
+@@ -1307,15 +1309,23 @@ def reg_point(s, campaign):
+ 
+ def reg_vs_prev(s, p, key, long):
+     """A point's comparison with the point before it, worded from the file's vs_prev: '−6.0 % vs previous (09-05)'
+-    (the date with its year where `long`; an engine change named), 'regime changed, not compared', 'baseline only'."""
++    (the date with its year where `long`; an engine change named), 'prompt changed, not compared', 'regime changed,
++    not compared', 'baseline only'."""
+     vp = p["vs_prev"][key]
+     if vp["pct"] is not None:
+         q = reg_point(s, vp["prev_campaign"])
+         return (f"{signed_pct(vp['pct'])} vs previous ({q['captured'] if long else q['captured'][5:]})"
+                 + (f", engine {q['engine']} → {p['engine']}" if vp["engine_changed"] else ""))
++    if vp["prompt_changed"]:
++        return "prompt changed, not compared"
+     return "regime changed, not compared" if vp["regime_changed"] else "baseline only"
+ 
+ 
++def reg_prompt_text(p, vp):
++    """build.py regPromptText: a point after a change of the task's text (its prompt version; 'none' = the first)."""
++    return f"prompt changed from the previous point ({vp['prev_prompt'] or 'none'} → {p['prompt'] or 'none'}): not compared"
++
++
+ def reg_gap_text(doc, p):
+     """build.py gapText of a sitting with no number (its status)."""
+     st = p["status"]
+@@ -1329,7 +1339,8 @@ def reg_gap_text(doc, p):
+ def reg_expected(doc, reg, sel):
+     """Section 4 on one selection (model, metric key, workload key), from regression.json alone: the description, the
+     status line (the file's red-ringed points of the selection, the first three and how many more, else none with the
+-    lines and points it covers; the decode points not compared across a change of regime), and per entry of
++    lines and points it covers; the decode points not compared across a change of regime; the points not compared
++    across a change of prompt version), and per entry of
+     meta.devices its tile: the heading; the planned one its note; else the latest line per series (the value of its
+     last drawn point, its vs_prev in words, n, the engine), the empty-state line where nothing is drawn, the points
+     (the shown ones with a value), the line paths, the legend, the chart's aria-label and the notes under it."""
+@@ -1340,7 +1351,7 @@ def reg_expected(doc, reg, sel):
+     thr = f"{meta['threshold_pct']:g}"
+     title = f"{METRIC_TITLE[key]} ({m['unit']})"
+     lines = points = single = 0
+-    flagged, changed, tiles = [], [], []
++    flagged, changed, prompts, tiles = [], [], [], []
+     for d in meta["devices"]:
+         heading = f"{doc['meta']['platforms'].get(d['platform'], d['platform'])} — {d['display']}"
+         if d["planned"]:
+@@ -1377,8 +1388,10 @@ def reg_expected(doc, reg, sel):
+                     lines += 1
+                     points += len(pts)
+                     single += len(pts) == 1
+-                    # a line breaks where the decode regime changes (cold and warm never compare)
+-                    t["paths"] += any(not p["vs_prev"][key]["regime_changed"] for p in pts[1:])
++                    # a line breaks where the decode regime changes (cold and warm never compare) and where the
++                    # prompt version changes (a task text never compares across its change)
++                    t["paths"] += any(not (p["vs_prev"][key]["regime_changed"] or p["vs_prev"][key]["prompt_changed"])
++                                      for p in pts[1:])
+                     for j, p in enumerate(pts):
+                         vp = p["vs_prev"][key]
+                         if vp["regression"]:
+@@ -1386,6 +1399,8 @@ def reg_expected(doc, reg, sel):
+                                            f"{reg_point(s, vp['prev_campaign'])['captured'][5:]}")
+                         if key == "decode_tps" and vp["regime_changed"]:
+                             changed.append(f"{'cold' if p['regime'] == 'warm' else 'warm'} → {p['regime']}")
++                        if vp["prompt_changed"]:
++                            prompts.append(f"{vp['prev_prompt'] or 'none'} → {p['prompt'] or 'none'}")
+                         t["points"].append({"s": s, "p": p, "key": vp["regression"] or j == 0 or j == len(pts) - 1})
+         for x in meta["excluded"]:
+             if x["device"] == d["device"] and x["model"] == model and x["task"] == w["task"]:
+@@ -1414,11 +1429,14 @@ def reg_expected(doc, reg, sel):
+         proto = wkey.startswith("protocol")
+         status += (f" {plural(len(changed), 'protocol point' if proto else 'point', 'protocol points' if proto else 'points')} "
+                    f"not compared ({', '.join(dict.fromkeys(changed))}).")
++    if prompts:
++        status += f" {plural(len(prompts), 'point', 'points')} not compared (prompt {', '.join(dict.fromkeys(prompts))})."
+     rule = (f"one point per measurement date (the newest sitting of the day); red ring = more than {thr} % worse than "
+             f"the previous point")
+     return {"m": m, "w": w, "status": status, "flagged": bool(flagged), "tiles": tiles,
+             "desc": f"{model} · {title} · {w['label']} — {doc['meta']['subject']} on each device, a line per backend; {rule}.",
+-            "counts": {"lines": lines, "points": points, "single": single, "red": len(flagged), "regime": len(changed)}}
++            "counts": {"lines": lines, "points": points, "single": single, "red": len(flagged), "regime": len(changed),
++                       "prompt": len(prompts)}}
+ 
+ 
+ def check_regression_section(doc, reg, dom, sel):
+@@ -1428,8 +1446,9 @@ def check_regression_section(doc, reg, dom, sel):
+     the planned one its note and nothing else); per tile the latest lines (the "baseline only" ones among them), the
+     empty-state line exactly where nothing is drawn, the notes; per chart its aria-label, the legend, a point per shown
+     point with a value and no other (data-backend, data-campaign), the lines = their backends, the line paths, the
+-    marker's fill by backend, the red ring exactly on the file's vs_prev regressions, data-regime-changed and "not
+-    compared" exactly on its regime changes, each point's aria-label (value, vs previous, vs first, regression), the
++    marker's fill by backend, the red ring exactly on the file's vs_prev regressions, data-regime-changed exactly on
++    its regime changes, data-prompt-changed and the versions exactly on its prompt changes, "not compared" exactly on
++    either, each point's aria-label (value, vs previous, vs first, regression), the
+     cards' marks, value labels in the cards' digits (on every point, or on the first, last and ringed points only),
+     one tab stop. -> (problems, per tile what it holds, the expectation)"""
+     exp = reg_expected(doc, reg, sel)
+@@ -1521,9 +1540,16 @@ def check_regression_section(doc, reg, dom, sel):
+             if ring != vp["regression"] or (attr(tag, "data-regression") is not None) != vp["regression"]:
+                 bad.append(f"{dev}: {name} red ring {ring}, the file's regression {vp['regression']}")
+             aria = attr(tag, "aria-label") or ""
+-            if (attr(tag, "data-regime-changed") is not None) != vp["regime_changed"] or ("not compared" in aria) != vp["regime_changed"]:
++            either = vp["regime_changed"] or vp["prompt_changed"]
++            if (attr(tag, "data-regime-changed") is not None) != vp["regime_changed"] or ("not compared" in aria) != either:
+                 bad.append(f"{dev}: {name} regime change {attr(tag, 'data-regime-changed') is not None} / 'not compared' "
+-                           f"{'not compared' in aria}, the file's regime_changed {vp['regime_changed']}")
++                           f"{'not compared' in aria}, the file's regime_changed {vp['regime_changed']}, prompt_changed "
++                           f"{vp['prompt_changed']}")
++            if ((attr(tag, "data-prompt-changed") is not None) != vp["prompt_changed"]
++                    or (reg_prompt_text(p, vp) in aria) != vp["prompt_changed"]):
++                bad.append(f"{dev}: {name} prompt change {attr(tag, 'data-prompt-changed') is not None} / its words "
++                           f"{reg_prompt_text(p, vp) in aria if vp['prompt_changed'] else 'prompt changed' in aria}, the file's "
++                           f"prompt_changed {vp['prompt_changed']} ({vp['prev_prompt']!r} → {p['prompt']!r})")
+             head = f"{s['backend']} ({LOOK[s['backend']]}), {p['captured']}: {js_num(v, m['digits'])} {m['unit']}"
+             if (not aria.startswith(head) or (vp["pct"] is not None and reg_vs_prev(s, p, key, True) not in aria)
+                     or (vf["pct"] is not None and f"{signed_pct(vf['pct'])} vs first "
+@@ -2106,7 +2132,8 @@ def main():
+             check(not rbad and not errors,
+                   f"#{frag} = {sel}: section 4 alone (body data-view, the hiding rules, the Regression tab current); pills and "
+                   f"description = the selection; status {rexp['status']!r} ({c['lines']} lines, {c['points']} points, "
+-                  f"{c['single']} single, {c['red']} red, {c['regime']} not compared across regimes); tiles: {'; '.join(rper)}; "
++                  f"{c['single']} single, {c['red']} red, {c['regime']} not compared across regimes, {c['prompt']} across "
++                  f"prompt versions); tiles: {'; '.join(rper)}; "
+                   f"console errors {len(errors)}" + (": " + "; ".join(rbad[:6]) if rbad else ""))
+         rbad, rper, rexp = check_regression_section(doc, reg, first_dom, reg_selection(reg))
+         body = re.search(r"<body[^>]*>", first_dom).group(0)

@@ -2100,8 +2100,11 @@ def main():
         text = rd(f"{task}.qwen3-chat.txt")
         with open(os.path.join(et_models, stem + ".prompts", f"{task}.chat.txt"), "w") as fh:
             fh.write(text)
+        # the stored S26 renders stand for renders of the repository prompts as they are now
+        # (executorch_inputs compares sourceSha256 with prompts/text/<task>.txt)
+        source = open(os.path.join(ROOT, "prompts", "text", f"{task}.txt"), "rb").read()
         manifest["tasks"][task] = {"renderedSha256": hashlib.sha256(text.encode()).hexdigest(),
-                                   "hostPromptTokens": tokens}
+                                   "hostPromptTokens": tokens, "sourceSha256": hashlib.sha256(source).hexdigest()}
     json.dump(manifest, open(os.path.join(et_models, stem + ".prompts", "prompts.json"), "w"))
     sha = lambda path: hashlib.sha256(open(path, "rb").read()).hexdigest()
     recipe = {"executorch": "1.5.1", "model_class": "qwen3_0_6b",
@@ -2299,6 +2302,29 @@ def main():
        and mac["provenance"]["definitions"] == parsers.EXECUTORCH_DEFINITIONS["llama_main"],
        f"Mac writer: the r1 cold launch's record (decode 110.63, ru_maxrss 1198.0 MiB, v1.5.1 by the "
        f"lock's sha; schema {'validated' if not unchecked else 'not checked here: ' + unchecked})")
+
+    # a llama_main prompt rendered from another text of the task (the 1K task's "passage above" tail,
+    # sha256 f64fb515…, before 2026-10-19) is refused with the re-render command, never run
+    listing = os.path.join(et_models, stem + ".prompts", "prompts.json")
+    current = open(listing).read()
+    stale = json.loads(current)
+    stale["tasks"]["long-context-1024-gen256"]["sourceSha256"] = (
+        "f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426")
+    with open(listing, "w") as fh:
+        json.dump(stale, fh)
+    try:
+        parsers.executorch_inputs(et_models, f"{stem}.pte", "long-context-1024-gen256", alias, ROOT)
+        refused = ""
+    except ValueError as e:
+        refused = str(e)
+    with open(listing, "w") as fh:
+        fh.write(current)
+    ok("rendered from another prompts/text/long-context-1024-gen256.txt" in refused and "re-render:" in refused
+       and "make_prompts.py" in refused,
+       f"executorch_inputs refuses a render of an older task text (got {refused[:160]!r})")
+    ok(parsers.executorch_inputs(et_models, f"{stem}.pte", "long-context-1024-gen256", alias, ROOT)["promptSha256"]
+       == hashlib.sha256(rd("long-context-1024-gen256.qwen3-chat.txt").encode()).hexdigest(),
+       "executorch_inputs takes the render again once its source is the repository prompt")
 
     # BENCH_SITTING=1 on LiteRT-LM's flat build (2026-10-15): the expected tag is the registry's
     # current Android pin (engine-pins.json android_pins), the field the launched tool's —

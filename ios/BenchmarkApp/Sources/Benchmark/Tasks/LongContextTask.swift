@@ -35,8 +35,13 @@ public struct LongContextTask: BenchmarkTask {
     /// the `forceLongOutput` choice.
     private let tail: String?
 
-    /// The tail of `long-context-2048-gen256-noref`, byte-identical to `NOREF_TAIL` in
-    /// `scripts/gen_task_prompts.py` (the Android drivers read the generated file). The
+    /// The version of the prompt text when it changed under the same id (`conditions.promptVersion`
+    /// of every record; `prompts/text/versions.tsv`); `nil` = the text the id was born with.
+    public let promptVersion: String?
+
+    /// The tail of `long-context-2048-gen256-noref` (since 2026-10-12) and of
+    /// `long-context-1024-gen256` (since 2026-10-19), byte-identical to `NOREF_TAIL` in
+    /// `scripts/gen_task_prompts.py` (the Android drivers read the generated files). The
     /// "passage above" tail asks the model to use the lorem blocks: on the Galaxy S26 GPU
     /// (LiteRT-LM v0.16.0) Gemma 4 E4B refused them in 50–61 tokens and E2B stopped at 93
     /// tokens at an 8,192-token allocation, so those decode rates were taken over different
@@ -55,12 +60,15 @@ public struct LongContextTask: BenchmarkTask {
     ///   sets the block count from a measured count instead of the estimate.
     /// - Parameter tail: an explicit instruction after the blocks (see `norefTail`); `nil`
     ///   keeps the `forceLongOutput` tail or the one-sentence tail.
+    /// - Parameter promptVersion: set when the id's text changes (see `promptVersion`).
     public init(id: String = "long-context", targetTokens: Int = 2048, maxTokens: Int = 128,
-                forceLongOutput: Bool = false, blocks: Int? = nil, tail: String? = nil) {
+                forceLongOutput: Bool = false, blocks: Int? = nil, tail: String? = nil,
+                promptVersion: String? = nil) {
         self.id = id
         self.blocks = blocks ?? max(1, targetTokens / Self.tokensPerBlock)
         self.forceLongOutput = forceLongOutput
         self.tail = tail
+        self.promptVersion = promptVersion
         let approx = targetTokens >= 1000 ? "~\(targetTokens / 1000)K" : "~\(targetTokens)"
         self.title = "Long-context prefill (\(approx) tok)"
         self.summary = "\(approx)-token prompt, \(maxTokens)-token output. "
