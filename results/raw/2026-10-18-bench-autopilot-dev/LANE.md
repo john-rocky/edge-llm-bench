@@ -619,3 +619,10 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   (the Gemma 4 1K llama.cpp / MLX PTQ cells are refusal replies until tonight's flip; the iPhone 0.6B INT8 row is an owner item;
   the dist is at bench e2824932) — it holds the publish to tomorrow morning after the 02:00 post-flip post. The issue draft is with
   a Fable reader (fact / cold-read tables) before any GO request.
+- 13:1x the 18 Pro 0.6B INT8 / CPU sitting (12:50–13:12, old app) ended anchor-short: its payload anchor lost a run to the same
+  record-name collision; its cells otherwise ran — INT8 on the GPU: short-chat 46.3–46.5 tok/s, 1K 45–46 (HOT retry kept), native
+  benchmark 1,137–1,189 prefill / 45.6–46.2 decode; INT4 on the CPU: short-chat 85.7–87.9, 1K 50 / 48 / 29 / 27 (heat) — and the
+  CPU cells read "SHORT 0" because the iPhone runner gated them under litert-lm while the app names them litert-lm-cpu (fixed,
+  fa719648: their runs had gone ungated). The aborted dirs stay on disk uncommitted. The fractional-second app is installed (13:12)
+  and verified on the phone (three distinct names for a 3-run cell); r16's attempt 3 (mlx-ptq-r3) started on it; my 0.6B re-run
+  (q06-int8-r2) is queued after r16's ledger row, the free hold and 15 min of cool-down.
