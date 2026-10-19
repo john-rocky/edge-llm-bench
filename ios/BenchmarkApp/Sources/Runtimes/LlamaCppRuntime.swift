@@ -2,6 +2,9 @@
 import Foundation
 import llama
 import HuggingFace
+#if canImport(Jinja)
+import Jinja  // swift-transformers' template engine (its Tokenizers target depends on it)
+#endif
 
 /// llama.cpp adapter.
 ///
@@ -22,6 +25,16 @@ public actor LlamaCppRuntime: LLMRuntime {
     private var vocab: OpaquePointer?
     private var batch: llama_batch?
 
+    /// The GGUF's own chat template, compiled at load so the timed window holds only the
+    /// render: renders one user turn with the assistant turn opened. `nil` when the jinja
+    /// path is unavailable for the loaded model (`jinjaUnavailable` says why).
+    private var renderChatTemplate: ((String) throws -> String)?
+    private var jinjaUnavailable: String?
+    /// `enable_thinking` handed to that template (`ModelInfo.chatTemplateThinking`).
+    private var templateThinking: Bool?
+    /// How the last `generate` built its prompt, carried into its record.
+    private var lastConditions: RunConditions?
+
     /// KV context size handed to `llama_init_from_model`. llama.cpp allocates its KV to
     /// `n_ctx` up front, so this is most of what a memory cell measures — it used to be
     /// hardcoded at 4096 while LiteRT-LM sized its KV from the task, which meant the
@@ -41,6 +54,8 @@ public actor LlamaCppRuntime: LLMRuntime {
     public func prepareContext(maxContextTokens: Int) {
         contextBudget = Int32(max(256, maxContextTokens))
     }
+
+    public var recordConditions: RunConditions? { lastConditions }
 
     public func loadModel(
         _ model: ModelInfo,
@@ -67,6 +82,8 @@ public actor LlamaCppRuntime: LLMRuntime {
         }
         self.model = m
         self.vocab = llama_model_get_vocab(m)
+        self.templateThinking = model.chatTemplateThinking
+        compileChatTemplate()
 
         let nThreads = max(1, min(8, ProcessInfo.processInfo.processorCount - 2))
         var ctxParams = llama_context_default_params()
@@ -117,6 +134,10 @@ public actor LlamaCppRuntime: LLMRuntime {
         context = nil
         model = nil
         vocab = nil
+        renderChatTemplate = nil
+        jinjaUnavailable = nil
+        templateThinking = nil
+        lastConditions = nil
         loadedModelId = nil
     }
 
@@ -159,13 +180,13 @@ public actor LlamaCppRuntime: LLMRuntime {
         let sampler = try makeSampler(parameters)
         defer { llama_sampler_free(sampler) }
 
-        // Apply the model's chat template so llama.cpp matches the other adapters (rule 1);
-        // parseSpecial so the template's <start_of_turn> / <|im_start|> tokenize as special
-        // tokens, not literal text. VERIFY ON DEVICE: if the template also prepends <bos>,
-        // drop addBOS here to avoid a double-BOS. llama.cpp rows need re-measure after this.
-        let templated = applyChatTemplate(prompt)
-        let promptTokens = tokenize(text: templated ?? prompt, addBOS: true,
-                                    parseSpecial: templated != nil)
+        // The prompt as the model's own chat template renders it, so llama.cpp sees the same
+        // input as the other adapters (rule 1). parseSpecial so the template's <|turn> /
+        // <|im_start|> tokenize as special tokens, not literal text; addBOS adds the vocab's
+        // BOS once (the jinja render's own leading <bos> is dropped, the built-in set writes none).
+        let built = buildPrompt(prompt)
+        lastConditions = RunConditions(chatTemplate: built.path, thinking: built.thinking)
+        let promptTokens = tokenize(text: built.text, addBOS: true, parseSpecial: built.path != "bare")
 
         var b = batch ?? llama_batch_init(Int32(max(promptTokens.count, 2048)), 0, 1)
         // Reset batch.
@@ -243,10 +264,97 @@ public actor LlamaCppRuntime: LLMRuntime {
     /// Wrap the bare prompt in the model's own chat template (read from the GGUF metadata)
     /// so llama.cpp sees the same input as every other adapter — MLX / CoreML / Core AI /
     /// ANEMLL / LiteRT all apply their template via the tokenizer; llama.cpp must do it
-    /// explicitly (fairness rule 1). Returns nil if the model has no template or it isn't in
-    /// `llama_chat_apply_template`'s built-in set (Gemma / Qwen / Llama are), so the caller
-    /// falls back to the bare prompt rather than failing.
-    private func applyChatTemplate(_ userPrompt: String) -> String? {
+    /// explicitly (fairness rule 1). In order: the GGUF's jinja template rendered (what
+    /// llama.cpp's own tools apply by default and HF tokenizers render), llama.cpp's built-in
+    /// template set, the bare prompt. Returns the text, the path taken (the record's
+    /// `conditions.chatTemplate`) and what the template was told about thinking (`nil` when
+    /// no template applied). A bare run is not a measurement — the Gemma 4 GGUFs' template is
+    /// outside the built-in set, and their rows ran bare until 2026-10-19 — so it is marked.
+    private func buildPrompt(_ userPrompt: String) -> (text: String, path: String, thinking: RunConditions.Thinking?) {
+        let thinking: RunConditions.Thinking = templateThinking.map { .passed($0) } ?? .templateDefault
+        if let render = renderChatTemplate {
+            do {
+                let start = CFAbsoluteTimeGetCurrent()
+                let text = try render(userPrompt)
+                let ms = (CFAbsoluteTimeGetCurrent() - start) * 1000
+                print(String(format: "YARDSTICK_NOTE chat_template=jinja thinking=%@ render_ms=%.2f", thinking.label, ms))
+                fflush(stdout)
+                return (text, "jinja", thinking)
+            } catch {
+                jinjaUnavailable = "render: \(error)"
+            }
+        }
+        print("YARDSTICK_WARN chat_template_jinja_unavailable=\(jinjaUnavailable ?? "?")")
+        if let templated = applyBuiltinTemplate(userPrompt) {
+            print("YARDSTICK_NOTE chat_template=builtin thinking=template-default")
+            fflush(stdout)
+            return (templated, "builtin", .templateDefault)
+        }
+        print("YARDSTICK_WARN chat_template=bare thinking=none (no chat template applied: not a measurement)")
+        fflush(stdout)
+        return (userPrompt, "bare", nil)
+    }
+
+    /// Compile the GGUF's `tokenizer.chat_template` into `renderChatTemplate`, the way
+    /// transformers and llama.cpp's own jinja engine read a chat template (trim_blocks,
+    /// lstrip_blocks), with the vocab's BOS / EOS text as `bos_token` / `eos_token` and
+    /// `enable_thinking` only when the catalog sets it: HF's
+    /// `apply_chat_template([{"role": "user", "content": prompt}], add_generation_prompt=True)`.
+    /// A leading BOS the template writes is dropped when the vocab adds one at tokenize, as
+    /// llama.cpp's common_chat apply does, so the prompt carries exactly one.
+    private func compileChatTemplate() {
+        renderChatTemplate = nil
+        jinjaUnavailable = nil
+        #if canImport(Jinja)
+        guard let model, let vocab, let source = llama_model_chat_template(model, nil) else {
+            jinjaUnavailable = "no chat template in the GGUF"
+            return
+        }
+        let template: Template
+        do {
+            template = try Template(Self.withCommentWhitespaceControl(String(cString: source)),
+                                    with: .init(lstripBlocks: true, trimBlocks: true))
+        } catch {
+            jinjaUnavailable = "parse: \(error)"
+            return
+        }
+        let bos = tokenText(llama_vocab_bos(vocab))
+        let eos = tokenText(llama_vocab_eos(vocab))
+        let dropBOS = llama_vocab_get_add_bos(vocab) && !bos.isEmpty
+        let thinking = templateThinking
+        renderChatTemplate = { prompt in
+            var context: [String: Jinja.Value] = [  // HuggingFace has a Value too
+                "messages": .array([.object(["role": .string("user"), "content": .string(prompt)])]),
+                "add_generation_prompt": .boolean(true),
+                "bos_token": .string(bos),
+                "eos_token": .string(eos),
+            ]
+            if let thinking { context["enable_thinking"] = .boolean(thinking) }
+            var text = try template.render(context)
+            if dropBOS, text.hasPrefix(bos) { text.removeFirst(bos.count) }
+            return text
+        }
+        #else
+        jinjaUnavailable = "no Jinja module in this build"
+        #endif
+    }
+
+    /// jinja2's whitespace control on comments, which swift-jinja 2.4.2 does not apply (its
+    /// lexer strips around `{%-` / `{{-` / `-%}` / `-}}` only): without it the Gemma 4 GGUF
+    /// template's `{%- endif %}`, blank line, `{#- … -#}` leaves a "\n" after `<bos>` that the
+    /// reference renders (Python jinja2, llama.cpp) do not have — one prompt token more. The
+    /// same steps as swift-jinja's own `{%-` pass, a literal `{` kept apart from the delimiter.
+    private static func withCommentWhitespaceControl(_ source: String) -> String {
+        var s = source.replacing(#/-#\}\s*/#, with: "#}")
+        s = s.replacing(#/\{\s+\{#-/#, with: "{ {#")
+        s = s.replacing(#/([^\{])\s*\{#-/#) { "\($0.1){#" }
+        return s.replacing(#/^\s*\{#-/#, with: "{#")
+    }
+
+    /// The fallback: `llama_chat_apply_template`, llama.cpp's built-in template set (no
+    /// jinja; Qwen's chatml is in it, the Gemma 4 GGUFs' `<|turn>` template is not). Returns
+    /// nil if the model has no template or it isn't in the set.
+    private func applyBuiltinTemplate(_ userPrompt: String) -> String? {
         guard let model, let tmpl = llama_model_chat_template(model, nil) else { return nil }
         return "user".withCString { rolePtr in
             userPrompt.withCString { contentPtr -> String? in
@@ -264,11 +372,17 @@ public actor LlamaCppRuntime: LLMRuntime {
         }
     }
 
-    private func tokenToPiece(token: llama_token) -> String {
+    /// A special token's text (`<bos>`) for the template's bos_token / eos_token, as llama.cpp's
+    /// common_chat passes them; "" when the vocab reports none.
+    private func tokenText(_ token: llama_token) -> String {
+        token == LLAMA_TOKEN_NULL ? "" : tokenToPiece(token: token, special: true)
+    }
+
+    private func tokenToPiece(token: llama_token, special: Bool = false) -> String {
         guard let vocab else { return "" }
         var buffer = [CChar](repeating: 0, count: 64)
         let nWritten = buffer.withUnsafeMutableBufferPointer { ptr in
-            llama_token_to_piece(vocab, token, ptr.baseAddress, Int32(ptr.count), 0, false)
+            llama_token_to_piece(vocab, token, ptr.baseAddress, Int32(ptr.count), 0, special)
         }
         guard nWritten > 0 else { return "" }
         var bytes = Array(buffer.prefix(Int(nWritten)))

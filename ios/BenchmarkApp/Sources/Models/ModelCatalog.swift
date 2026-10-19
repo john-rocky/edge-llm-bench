@@ -20,6 +20,12 @@ public struct ModelInfo: Codable, Sendable, Hashable {
     /// Path inside the downloaded snapshot, relative to the snapshot root.
     /// Empty string = the snapshot root itself.
     public let primaryFile: String
+    /// llama.cpp only: the `enable_thinking` value LlamaCppRuntime hands to the GGUF's own
+    /// chat template (the record's `conditions.thinking`). `nil` = nothing passed, the
+    /// template's own default. Set per family so the arm thinks exactly when the other arms'
+    /// builds of the model do (budget-mode-rule): the Gemma 4 rows pin `false` (LiteRT-LM and
+    /// MLX answer without thinking); Qwen3 stays `nil` (its template thinks, as there).
+    public let chatTemplateThinking: Bool?
 
     public init(
         id: String,
@@ -29,7 +35,8 @@ public struct ModelInfo: Codable, Sendable, Hashable {
         onDiskSizeMB: Double? = nil,
         hfRepoId: String,
         hfFilePatterns: [String] = ["*"],
-        primaryFile: String = ""
+        primaryFile: String = "",
+        chatTemplateThinking: Bool? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -39,6 +46,7 @@ public struct ModelInfo: Codable, Sendable, Hashable {
         self.hfRepoId = hfRepoId
         self.hfFilePatterns = hfFilePatterns
         self.primaryFile = primaryFile
+        self.chatTemplateThinking = chatTemplateThinking
     }
 }
 
@@ -340,7 +348,8 @@ public enum ModelCatalog {
             onDiskSizeMB: 3350,
             hfRepoId: "google/gemma-4-E2B-it-qat-q4_0-gguf",
             hfFilePatterns: ["gemma-4-E2B_q4_0-it.gguf"],
-            primaryFile: "gemma-4-E2B_q4_0-it.gguf"
+            primaryFile: "gemma-4-E2B_q4_0-it.gguf",
+            chatTemplateThinking: false
         ),
         // PTQ. Kept for the PTQ-vs-QAT delta; not for cross-runtime tables.
         ModelInfo(
@@ -351,7 +360,8 @@ public enum ModelCatalog {
             onDiskSizeMB: 1700,
             hfRepoId: "unsloth/gemma-4-E2B-it-GGUF",
             hfFilePatterns: ["gemma-4-E2B-it-Q4_K_M.gguf"],
-            primaryFile: "gemma-4-E2B-it-Q4_K_M.gguf"
+            primaryFile: "gemma-4-E2B-it-Q4_K_M.gguf",
+            chatTemplateThinking: false
         ),
         ModelInfo(
             id: "unsloth/gemma-4-E4B-it-GGUF/Q4_K_M",
@@ -361,7 +371,8 @@ public enum ModelCatalog {
             onDiskSizeMB: 3300,
             hfRepoId: "unsloth/gemma-4-E4B-it-GGUF",
             hfFilePatterns: ["gemma-4-E4B-it-Q4_K_M.gguf"],
-            primaryFile: "gemma-4-E4B-it-Q4_K_M.gguf"
+            primaryFile: "gemma-4-E4B-it-Q4_K_M.gguf",
+            chatTemplateThinking: false
         ),
         ModelInfo(
             id: "bartowski/Llama-3.2-1B-Instruct-GGUF/Q4_K_M",
@@ -474,7 +485,8 @@ public enum ModelCatalog {
             onDiskSizeMB: 7000,
             hfRepoId: "unsloth/gemma-4-12B-it-GGUF",
             hfFilePatterns: ["gemma-4-12b-it-Q4_K_M.gguf"],
-            primaryFile: "gemma-4-12b-it-Q4_K_M.gguf"
+            primaryFile: "gemma-4-12b-it-Q4_K_M.gguf",
+            chatTemplateThinking: false
         ),
         ModelInfo(
             id: "LiquidAI/LFM2.5-350M-GGUF/Q4_K_M",
