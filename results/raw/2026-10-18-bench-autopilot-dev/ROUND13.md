@@ -9,7 +9,8 @@ template's default) and every llama.cpp record carries `conditions.chatTemplate`
 `jinja`; Gemma 4 prompt 12 → 20 (short-chat) and 1098 → 1106 (1K) = LiteRT-LM's counts; Qwen3 unchanged (19 / 1338, `<think>` replies).
 The E4B 1K "[Item 1] …" skeleton is gone; with the template and greedy decoding E4B now **declines the lorem task in 86 tokens** — the same
 words llama.cpp's own llama-cli gives with `--temp 0` and the same template (LiteRT-LM's and MLX's E4B decline too). Mac yardstick
-(`MAIN/.build/dd-mac-tmpl`) and iPhone app built; not installed, not switched.
+(`MAIN/.build/dd-mac-tmpl`) built, not switched; iPhone app built, and on the 18 Pro by 11:17 (the supervisor's install: its llama-b11721
+sitting's llama.cpp records carry `conditions.chatTemplate` jinja).
 
 ## 下見
 - 10:17:43 JST. REPO `llama-chat-template` at be17d5a4, clean. MAIN on main (its HEAD moves with the backlog posts).
@@ -138,16 +139,19 @@ schema validates (scratchpad `tools/schema_check_r13.py`, jsonschema 4.26.0). Be
   this gap.
 
 ## commit
-- (hash filled in after the commit) (branch `llama-chat-template`, not pushed, not merged): `ios/BenchmarkApp/Sources/Runtimes/LlamaCppRuntime.swift`,
+- **aaae422a** (branch `llama-chat-template`, not pushed, not merged; author / committer rockyshikoku@gmail.com, no attribution lines),
+  then a second commit with this hash and the round-close lint line: `ios/BenchmarkApp/Sources/Runtimes/LlamaCppRuntime.swift`,
   `…/Runtimes/LLMRuntime.swift`, `…/Models/BenchmarkResult.swift`, `…/Benchmark/BenchmarkRunner.swift`, `…/Models/ModelCatalog.swift`,
   `schema/result.v1.json`, `methodology/fairness-rules.md`, `docs/dashboard-cells-v1.md`, K `ROUND13.md`, K `SPEED_LADDER.md`. No
   project.yml / pbxproj change. SIDE carries the same five source files (cmp = REPO), outside the commit.
+- Round-close lint (`~/code/standup/tools/opus/round_close_lint.sh`): `PASS round close: results/raw/2026-10-18-bench-autopilot-dev/ROUND13.md`.
 
 ## 監督が打つ物
 1. **dd-mac の切り替え**: the job's Mac route → `MAIN/.build/dd-mac-tmpl` (yardstick sha256 `5579ae3a…`), pins file = SIDE's
    `Vendored/engine-pins.json` (unchanged, `f9f0c846…`). Same LiteRT-LM dylib (`9526db9e…`) and llama.framework (843E7D68) as the r9 build
    the job uses now; only the Swift code differs (the chat template; `conditions` on llama.cpp records).
-2. **install (after the 18 Pro sitting)**: `xcrun devicectl device install app --device 00008160-000038CA02C00036
+2. **install** — done by the supervisor before 11:17 (the 18 Pro's llama-b11721 sitting's first llama.cpp record, 11:21:19, carries
+   `conditions.chatTemplate` jinja); the line for the record: `xcrun devicectl device install app --device 00008160-000038CA02C00036
    ~/code/edge-llm-bench/.build/dd-ios-0180-18pro/Build/Products/Release-iphoneos/BenchmarkApp.app`; record 1 must then read
    `device.buildConfiguration` Release and, on a llama.cpp row, `conditions.chatTemplate` jinja (Gemma 4: thinking false). Backing out:
    `BenchmarkApp.app.r9-20261019-0606` beside it. r9's 0.6B file copy line (ROUND9 "iPhone app の build と install の 1 行") is unchanged.
@@ -202,7 +206,12 @@ schema validates (scratchpad `tools/schema_check_r13.py`, jsonschema 4.26.0). Be
   (committed on MAIN 11:12:40–43), clean again at 11:13; not mine (the runner's `run` writes no summary), nothing reverted.
 - 11:13:57 llama-cli greedy cross-check (E4B 1K = the harness's reply word for word); 11:15:25 one direct yardstick launch for the console
   line.
-- 11:2x SPEED_LADDER.md, this report, commit, round close.
+- 11:16:19 the 18 Pro's q06-dynamic sitting ended (ledger), and its `./bench matrix` rebuilt MAIN's disk summary with every untracked
+  campaign dir, this round's smoke dir among them (5 rows; HEAD has none). Left as is: the 18 Pro's next sitting was running.
+- 11:21:19 the 18 Pro's `2026-10-19-dashboard-v1-iphone18pro-llama-b11721-ios` sitting (started 11:17 by the supervisor): its first
+  llama.cpp record (Qwen3 0.6B short-chat) reads `conditions {chatTemplate jinja, thinking template-default}`, 19 tokens, b11721, Release =
+  this round's app is installed (read from the record file; no device touched).
+- 11:2x SPEED_LADDER.md, this report, commit aaae422a, round close.
 
 ## 訂正
 - E2B is not in llama.cpp's built-in template set: the unsloth E2B and E4B GGUFs carry the same template (sha256 `241c50d8…`), and both ran
@@ -255,11 +264,11 @@ schema validates (scratchpad `tools/schema_check_r13.py`, jsonschema 4.26.0). Be
 ## 残した file
 - K `ROUND13.md` (this), K `SPEED_LADDER.md` (the smoke rows): committed.
 - `MAIN/.build/dd-mac-tmpl/` (the Mac yardstick for the switch; keep until the job uses it or the change is backed out).
-- `MAIN/.build/dd-ios-0180-18pro/Build/Products/Release-iphoneos/BenchmarkApp.app` (the app to install) and `BenchmarkApp.app.r9-20261019-0606`
+- `MAIN/.build/dd-ios-0180-18pro/Build/Products/Release-iphoneos/BenchmarkApp.app` (the app now on the 18 Pro) and `BenchmarkApp.app.r9-20261019-0606`
   (r9's app, an APFS clone: 消してよい once the new app is installed and checked).
 - SIDE's five source files (= REPO's commit; SIDE is the 18 Pro's build tree, untracked).
-- `MAIN/results/raw/2026-10-19-llama-template-probe-mac/` (the smoke: 5 records, FAILURES.txt = the exit aborts; not committed, 消してよい
-  after review).
+- `MAIN/results/raw/2026-10-19-llama-template-probe-mac/` (the smoke: 5 records, FAILURES.txt = the exit aborts; not committed; every
+  disk rebuild of MAIN's summary takes its 5 rows in, as it takes r9's smoke dirs: 消してよい after review).
 - Scratchpad (消してよい): `tools/` (gguf_meta.py, extract_templates.sh, ref_render.py, ref_all.sh, ref_count.sh, swift_vs_ref.sh,
   mlx_plus1_check.sh, schema_check_r13.py, mac_build_r13.sh, window_r13.sh, ios_build_r13_inner.sh, llamacli_greedy_r13.sh,
   ys_console_r13.sh), `tmpl/` (the five templates), `render/` (ref / swift / mlx renders), `probe/` (jinja-probe package with clones of
