@@ -1170,6 +1170,26 @@ byte for byte; the Mac's next sitting of these files measures the new id. If lit
 a re-export of the mixed INT4 file, one v0.18.0 launch's `Prefill Turn 1` line shows whether the user
 turn arrives; moving back is the same edit in reverse and a re-measurement.
 
+## llama.cpp Gemma 4 rows before 2026-10-19 ran without the chat template (Mac and iPhone)
+
+Every llama.cpp Gemma 4 row the Mac and the iPhones measured before 2026-10-19 (E2B and E4B; short-chat,
+the 1K task and the Mac 2K ladder) is a bare-prompt run: the GGUFs' template is outside llama.cpp's
+built-in set, and the adapter then sent the prompt without it (methodology/fairness-rules.md §1). Their
+prompt-token counts show it: 12 for short-chat and 1,098 for `long-context-1024-gen256` (1,629 on the
+2K ladder), where the LiteRT-LM Gemma 4 bundles read 20 and 1,106. On the Mac the text screen failed
+only the E4B 1K replies, which continue the prompt's list as `1. [Item 1] 2. [Item 2] …` (text-fail on
+the page); the E2B and short-chat replies passed it as continuations that happen to read like answers,
+and are bare runs all the same. The iPhone rows carry no screen verdict: the 18 Pro's E4B 1K replies are
+the same skeleton (`results/raw/2026-10-06-dashboard-longctx1024-v1-iphone18pro-c4-ios/`), and its page
+number stands until the re-measure. Since 2026-10-19 the adapter renders the GGUF's own template
+(Gemma 4 with `enable_thinking: false`, as LiteRT-LM and MLX answer) and every llama.cpp record carries
+`conditions.chatTemplate` and `conditions.thinking`; the Qwen3 rows' prompt does not change (the
+built-in chatml and the rendered template are the same text). The rebuilt yardstick (`.build/dd-mac-tmpl`)
+and iPhone app re-measure the Gemma 4 rows with the rest of `matrices/dashboard-llama-b11721-mac.cells`
+and `-ios.cells`, one job-route sitting per device; the page shows each cell's latest admitted session, so
+that sitting replaces the bare rows. The Mac 2K ladder's llama.cpp Gemma 4 rows (`dashboard-longctx-v1.cells`)
+are not in those files.
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows used `qwen3_0_6b_mixed_int4`

@@ -38,6 +38,9 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
     /// the raw sidecar this record's `endurance.turnsSidecar` names — derived
     /// stats travel with the record, raw series stay raw.
     public let endurance: EnduranceSummary?
+    /// Run conditions the runtime reports (schema v1 `conditions`, the object the Android
+    /// records carry): `nil`, and absent from the JSON, for every runtime but llama.cpp.
+    public let conditions: RunConditions?
 
     public init(
         id: UUID = UUID(),
@@ -53,7 +56,8 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
         parameters: GenerationParameters,
         metrics: Metrics,
         outputSample: String,
-        endurance: EnduranceSummary? = nil
+        endurance: EnduranceSummary? = nil,
+        conditions: RunConditions? = nil
     ) {
         self.id = id
         self.schemaVersion = schemaVersion
@@ -69,6 +73,55 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
         self.metrics = metrics
         self.outputSample = outputSample
         self.endurance = endurance
+        self.conditions = conditions
+    }
+}
+
+/// The `conditions` keys an Apple runtime reports (the Android runner writes many more).
+/// Since 2026-10-19 llama.cpp reports how it built the prompt from the model's chat template.
+public struct RunConditions: Codable, Sendable {
+    /// `jinja` (the model file's own template, rendered) | `builtin` (llama.cpp's built-in
+    /// template set) | `bare` (no template: the run is not a measurement).
+    public let chatTemplate: String?
+    /// What the template was told about thinking; `nil` when no template applied.
+    public let thinking: Thinking?
+
+    public init(chatTemplate: String?, thinking: Thinking?) {
+        self.chatTemplate = chatTemplate
+        self.thinking = thinking
+    }
+
+    /// `true` / `false` in the JSON when `enable_thinking` was passed, `"template-default"`
+    /// when nothing was (the template's own default decides).
+    public enum Thinking: Codable, Sendable {
+        case passed(Bool)
+        case templateDefault
+
+        public var label: String {
+            switch self {
+            case .passed(let on): return on ? "true" : "false"
+            case .templateDefault: return "template-default"
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.singleValueContainer()
+            if let on = try? c.decode(Bool.self) {
+                self = .passed(on)
+            } else if try c.decode(String.self) == "template-default" {
+                self = .templateDefault
+            } else {
+                throw DecodingError.dataCorruptedError(in: c, debugDescription: "thinking: not a Bool or \"template-default\"")
+            }
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var c = encoder.singleValueContainer()
+            switch self {
+            case .passed(let on): try c.encode(on)
+            case .templateDefault: try c.encode("template-default")
+            }
+        }
     }
 }
 

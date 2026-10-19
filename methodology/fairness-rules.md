@@ -21,6 +21,37 @@ The benchmark is only useful if the comparisons are honest. The full rules:
 
 Every runtime sees the same prompt text and the same `maxTokens` limit. If a runtime needs special chat-template wrapping (e.g., `<|im_start|>` tokens for ChatML), that wrapping is applied uniformly per model, not per runtime.
 
+**llama.cpp on the Mac and iPhone renders the GGUF's own chat template (2026-10-19).** Until then
+`LlamaCppRuntime` used `llama_chat_apply_template`, llama.cpp's built-in template set, and sent the
+prompt bare when the file's template was outside it. The Gemma 4 GGUFs' `<|turn>` template is outside
+it (unsloth's E2B and E4B files carry the same template, sha256 `241c50d8…`), so every llama.cpp Gemma 4
+row of the Apple lanes before that date ran without a chat template: 12 prompt tokens for short-chat,
+1,098 for `long-context-1024-gen256`, where the LiteRT-LM bundles read 20 and 1,106. Since then the
+adapter renders `tokenizer.chat_template` from the GGUF metadata (swift-jinja, HF's `trim_blocks` /
+`lstrip_blocks`, one user turn, `add_generation_prompt`), falls back to the built-in set, and marks a
+bare run as no measurement; every llama.cpp record says which (`conditions.chatTemplate`: `jinja` /
+`builtin` / `bare`) and what the template was told about thinking (`conditions.thinking`). The render
+equals Python jinja2's byte for byte on the five dashboard GGUFs (Gemma 4 E2B / E4B, Qwen3 0.6B / 1.7B /
+4B, both text tasks): swift-jinja 2.4.2 ignores the `{#-` / `-#}` whitespace control of comments, which
+put one `\n` after `<bos>` in the Gemma 4 template, and the adapter applies it before compiling. The
+MLX arm renders through the same swift-jinja without that step: its Gemma 4 prompts carry the extra
+token (21 / 1,107).
+
+Thinking is set per model family so every arm runs the mode the other arms run (`budget-mode-rule`);
+the llama.cpp flag is `ModelInfo.chatTemplateThinking` (`nil` = nothing passed):
+
+| Family | LiteRT-LM | MLX | llama.cpp, Mac / iPhone | Other Apple arms | Evidence |
+|---|---|---|---|---|---|
+| Gemma 4 (E2B, E4B) | off: nothing passed | off: nothing passed; the repo's `chat_template.jinja` defaults `enable_thinking` to false | off: `enable_thinking: false` passed (the GGUF template's default is false too); every Gemma 4 GGUF row of the catalog sets it | — | direct replies without thought text (Mac, 2026-10-19 records) |
+| Qwen3 (0.6B, 1.7B, 4B) | on: nothing passed | on: nothing passed | on: nothing passed; the jinja render equals the built-in chatml text (19 / 1,338 tokens, unchanged) | on: Core AI, ExecuTorch, ONNX Runtime GenAI | every arm's reply opens with its thinking (`<think>`; LiteRT-LM's thought text without the tag) |
+
+llama.cpp's own tools are not the reference for thinking: `llama-cli` (b11721) passes
+`enable_thinking = true` unless `--chat-template-kwargs '{"enable_thinking": false}'` says otherwise,
+and its Gemma 4 replies then open with a thinking block the GGUF template's default would not start
+(`--reasoning-budget 0` is not the same switch: the Gemma 4 E2B / E4B replies then wrote their analysis
+out as the answer). The Android llama.cpp rows run `llama-cli … -st` with neither flag; whether their
+Gemma 4 replies think is not checked yet.
+
 ## 2. Cold and warm runs are reported separately  <!-- slug: cold-warm-split -->
 
 Three distinct regimes — a table must say which one each number is (tightened 2026-07-13 after

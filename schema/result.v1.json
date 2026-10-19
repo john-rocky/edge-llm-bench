@@ -36,12 +36,13 @@
     },
     "conditions": {
       "type": "object",
-      "description": "everything a fairness reviewer asks first",
+      "description": "everything a fairness reviewer asks first. The Android drivers write most keys; the Apple records (BenchmarkRunner: the iOS app and the Mac yardstick) carry the object since 2026-10-19 for llama.cpp only, with chatTemplate and thinking (RunConditions); the other Apple arms write none",
       "properties": {
         "contextBudget": { "type": "integer" },
         "maxOutputTokens": { "type": "integer" },
         "sampler": { "type": "string" },
-        "thinking": { "type": "boolean" },
+        "thinking": { "oneOf": [{ "type": "boolean" }, { "const": "template-default" }], "description": "Whether the model was set to think. A boolean from the Android drivers, uzu and the quality reports. llama.cpp on the Mac / iPhone (2026-10-19): true / false = the enable_thinking value handed to the GGUF's chat template (ModelInfo.chatTemplateThinking: the Gemma 4 rows false), \"template-default\" = nothing passed, the template's own default decides (Qwen3: thinks); absent when no template applied (chatTemplate bare). methodology/fairness-rules.md §1" },
+        "chatTemplate": { "type": "string", "enum": ["jinja", "builtin", "bare"], "description": "llama.cpp on the Mac / iPhone (LlamaCppRuntime, 2026-10-19): how the prompt reached the model. jinja = the GGUF's own chat template rendered (swift-jinja with HF's trim_blocks / lstrip_blocks, compiled at load); builtin = llama.cpp's built-in template set (llama_chat_apply_template), when the jinja render fails; bare = no template applied: the run is not a measurement (console YARDSTICK_WARN chat_template=bare). Records before 2026-10-19 carry no key; their Gemma 4 GGUF rows ran bare (methodology/fairness-rules.md §1)" },
         "warm": { "type": "boolean" },
         "thermalInitial": { "type": "string" },
         "thermalFinal": { "type": "string" },

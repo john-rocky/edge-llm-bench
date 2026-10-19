@@ -49,12 +49,18 @@ public protocol LLMRuntime: AnyObject, Sendable {
     /// passed in can change it (a Core AI static-shape bundle's top rung). The record then
     /// carries this instead of the requested budget. `nil` (the default): the budget applies.
     var recordedContextTokens: Int? { get async }
+
+    /// The conditions of the last `generate` call that its record carries (schema v1
+    /// `conditions`) — llama.cpp: how it built the prompt from the model's chat template.
+    /// `nil` (the default): the record has no `conditions`.
+    var recordConditions: RunConditions? { get async }
 }
 
 public extension LLMRuntime {
     func prepareContext(maxContextTokens: Int) async {}
     var recordRuntimeLabel: String { get async { kind.rawValue } }
     var recordedContextTokens: Int? { get async { nil } }
+    var recordConditions: RunConditions? { get async { nil } }
 }
 
 public enum GenerationEvent: Sendable {
