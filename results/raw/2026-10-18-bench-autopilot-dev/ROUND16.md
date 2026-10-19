@@ -27,6 +27,9 @@ Supervisor: edge-llm-bench-55 [4f120b] (K/LANE.md first line). Branch `mlx-ptq-r
 - 12:3x 監督: (1) runner の判定は device ごとにする(監督が直す、2 回目の起動は次の 1 通の後)、(2) P の名前の v1 は group を割って MLX を比べる相手から外す = 目的に反する → group の鍵はそのまま、級は棒 / artifact の label だけに(できなければ名前の patch は無し)。
 - 12:40–12:44 Mac の窓が空いた間に P の v2 を作って確かめた(「P の名前の patch」): patch なし / v2 とも P の 4 つの check が PASS(render_check は自分の窓 r16-p-render-check で 52–55 s ずつ 3 回: なし PASS、v2 は 11 FAIL → render_check の名前の規則を直して PASS)。
 - 12:4x 監督: main 8fe22207 で runner の判定は device ごと = 2 回目の起動の許可。12:45:12 job 起動(log は追記、`--- attempt 2` の行のあと): 17 Pro の runner と `.iphone_hold` は「別の phone」と読まれ、preflight ok、hold 取得、anchor の phase。Monitor(cell の始まり、load、判定、失敗、終了の行)。12:47 P の patch を v2 で上書き、`git -C P apply --check` OK。次 = commit、監督へ v2 の 1 通、sitting の終わりを待つ。
+- 12:47:48 job exit 4: anchor の phase の MLX の anchor(Qwen3 0.6B 4bit short-chat runs=3)は app が RUN_OK を 3 本出したのに `pulled=2 verdict=SHORT 2` → `admission: ABORTED — anchor-short`(SESSION.json の anchor n=1)。payload の phase は始まっていない、hold は job が返した。**停止条件(exit 3〜6 を 2 回)**= 止めて 12:4x 監督へ出力と証拠の 1 通。証拠: 引けた 2 本は `…_2026-10-19T03-45-15Z.json` と `…T03-45-16Z.json` = app は record を UTC の秒で名付け、0.6 s ほどの run 2 と run 3 が同じ秒に終わって端末上で片方が上書きされた(run 2 の decode が無く、残ったのは run 3)。同じ cell は 10-15 と 10-17 の sitting でも payload 側の anchor 行で pulled=2 SHORT 2(logs/dashboard-job/2026-10-1{5,7}-iphone18pro.log)。転送とも 17 Pro の runner とも関係しない(pull は呼ぶたびに自分の一時 dir)。次 = 監督の指示を待つ(3 回目の起動は指示の後)。
+- 12:4x 監督: P の v2 を当てて commit(P 5f66436)。追加で P の 2K 梯子の check の 6 件 FAIL の patch v3(sitting が先)。原因の読み(record 名の秒の衝突)は正しい、app の ResultStore を小数秒の名前に直して build・install・anchor の smoke 中、終わったら 3 回目の起動の連絡(停止条件の 2 回は環境の事故 = 監督の許可)。
+- 12:49–12:56 v3: 再現 → 読み(pool ではなく check の固定の選び)→ patch → 4 check PASS(「P の 2K 梯子の check の patch」)。12:51:46 からの別の窓(iPhone app の record 名の build)の間は python を止め、編集は Edit で。driver の job 部に SUFFIX(再開は新しい suffix `mlx-ptq-r3`: 同じ名前は止まった sitting の record を拾う)。
 
 ## 下見(11:53–12:00)
 
@@ -105,6 +108,15 @@ cells.json: 550 → 568(+18、削除 0)= 3 device(iPhone 17 Pro、18 Pro、Mac)�
 - 確かめ(P の写しをこの worktree = PTQ 行と名前の入った bench に向けて build): patch なし / v2 とも check_against_bench_dashboard、check_regression、check_aa、render_check が PASS(render_check は自分の Mac の窓で 55 s)。v2 の render_check は、render_check の名前の規則を直す前は 11 件 FAIL(aria-label と At a glance の名前が「MLX · GPU」のままの期待)= その 4 か所を直して PASS。
 - 効き目(patch なし → v2、数字は書かない): MLX の Gemma 4 の 36 cell は `model` が "Gemma 4 E2B" / "Gemma 4 E4B" のまま、`build` が QAT OptiQ / PTQ 4bit(9 cell ずつ)。Apple の panel の group は 5 のまま(Gemma 4 E2B の group の棒: … LiteRT-LM · GPU、llama.cpp · GPU、MLX PTQ 4bit · GPU、MLX QAT OptiQ · GPU …)。panel の文は patch なしと同一(0 本変わる)= PTQ の cell も比べる相手の候補のまま。summary_parts は largest に build の欄が増えた 18 か所だけ。AA の行は 638(patch なしも同じ数、v2 は MLX の 8 行を級で見分ける)。
 - 前の版(v1、12:3x): model の名前そのものに級を足した形 = Apple の panel の group が 5 → 9 に割れ、Gemma 4 の group での LiteRT-LM の比べる相手から MLX が外れた(panel の文が 12 本変わる)。監督の判断(目的に反する)で v2 に置き換えた。
+
+## P の 2K 梯子の check の patch(`K/p-ladder-newest-session.patch`、当てるのは監督)
+
+監督の指示(12:4x): 12:43 の post の check_against_bench_dashboard が「long-context ladders」で 6 件 FAIL(Mac16,9 の llama.cpp Gemma 4 E2B / E4B × 2304 / 4096 / 8192)。page が session を跨いで pool しているように見える、cell の最新の admitted session だけにする patch を。
+
+- 再現(P の HEAD 5f66436 を git archive、MAIN の HEAD 024141d1 の index から build に要る file を git archive、scratchpad で build): 同じ 6 件の FAIL。例 `Mac16,9 llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M 2304: script table (warm): decode_tps 139.06 vs 148.97, n 8 vs 3`(左 = script、右 = page)。
+- 読み(前提の訂正): pool は起きていない。この cell の行は 2026-09-18 の梯子の sitting(warm 8 + cold 8)と 2026-10-19 の llama.cpp b11721 の梯子の sitting(warm 3 + cold 1)の 2 本。page の cell(build.py の make_cell → arm_row)は最新の session = 10-19(n 3)で、bench の規則どおり。script の `ladders()` も cell ごとに arm_row(= 最新の session)を取る。食い違いは check の `LADDERS = ["campaign:2026-09-18-dashboard-longctx-v1-m4max-mac", "campaign:dashboard-longctx-v1-s26"]`: Mac は 09-18 の campaign だけを script に読ませるので、10-19 の新しい sitting が選びの外 → 09-18 の n 8 と page の n 3 を比べていた。「10-06 の sitting」の行はこの cell には無い。
+- patch(29 行、tools/check_against_bench_dashboard.py だけ; build.py は変えない): `LADDERS = ["campaign:dashboard"]` = page が読む週次の sitting 全部(load_rows と同じ「campaign 名に dashboard」)を script に読ませ、cell ごとの最新の session は script の arm_row が選ぶ。docstring の 2. も同じ向きに。2K の session は全部 admitted(10-19 の Mac は SESSION.json admitted true、09-18 と S26 の 6 本は SESSION.json なし = admitted 扱い)、DDP の 2K の行は無い = admission と stand-in の違いは今は出ない(出れば FAIL として読める)。
+- 確かめ: `git -C P apply --check` OK(5f66436)。P の HEAD の build(2026-10-19 12:5x、MAIN 024141d1 の index)に v3 の check: `long-context ladders: 71 cells equal (17 via script ladders() cold fields (table shows warm); 15 via script table (cold); 39 via script table (warm)), 0 unexplained` → PASS。check_regression PASS、check_aa PASS、render_check PASS(自分の Mac の窓で 56 s)。
 
 ## docs の要点(`docs/dashboard-cells-v1.md`)
 

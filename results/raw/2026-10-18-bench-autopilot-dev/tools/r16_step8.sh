@@ -11,7 +11,8 @@
 # Exit: 0 = done (push: both bundles on the phone; job: started); 1 = the push failed, or main lacks the cells
 # file (no job); 3 = the phone stayed busy past WAIT_S (dequeued); 4 = another keeper waits in the line (no job).
 #   OUT=<dir for the push logs> bash r16_step8.sh push
-#   OUT=<dir> bash r16_step8.sh job
+#   OUT=<dir> [SUFFIX=mlx-ptq-r3] bash r16_step8.sh job   # a retake takes a new suffix: the same campaign name
+#                                                       # re-pulls a stopped sitting's records
 set -u
 MAIN=$HOME/code/edge-llm-bench
 TOOLS=$HOME/code/litertlm-convert/community_accel_work
@@ -62,7 +63,7 @@ job() {
   cd "$MAIN" || exit 1
   # its own session, so the job outlives this driver and whatever ends the driver's process group
   python3 -I -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' \
-    nohup python3 scripts/dashboard_job.py iphone18pro --cells "$CELLS" --suffix mlx-ptq --once \
+    nohup python3 scripts/dashboard_job.py iphone18pro --cells "$CELLS" --suffix "${SUFFIX:-mlx-ptq}" --once \
     < /dev/null >> "$LOG" 2>&1 &
   say "job started: pid $! (cwd $MAIN, log $LOG)"
   exit 0
