@@ -244,17 +244,15 @@ def pgrep(pattern):
     return lines
 
 
-def driver_serial(pid):
-    """The phone a host campaign driver drives, read from its environment: the bench
-    wrapper hands run_campaign.py its phone (BENCH_ANDROID_SERIAL) and campaign (CAMPAIGN)
-    through the environment, not argv. None when the process is gone or names no phone.
-    Only that one variable is taken (`/proc/<pid>/environ` on Linux, `ps -E` on macOS);
+def driver_env(pid, var):
+    """One variable of a live process's environment (`/proc/<pid>/environ` on Linux, `ps -E` on
+    macOS), or None when the process is gone or does not set it. Only that variable is taken;
     nothing else of the environment is kept or logged (it carries the shell's secrets)."""
     if os.path.isdir("/proc"):
         try:
             with open(f"/proc/{pid}/environ", "rb") as fh:
                 for item in fh.read().split(b"\0"):
-                    if item.startswith(b"BENCH_ANDROID_SERIAL="):
+                    if item.startswith(var.encode() + b"="):
                         return item.split(b"=", 1)[1].decode(errors="replace") or None
         except OSError:
             pass
@@ -262,8 +260,33 @@ def driver_serial(pid):
     rc, out = sh(["ps", "-E", "-o", "command=", "-p", str(pid)])
     if rc != 0:
         return None
-    m = re.search(r"(?:^|\s)BENCH_ANDROID_SERIAL=(\S+)", out)
+    m = re.search(r"(?:^|\s)" + re.escape(var) + r"=(\S+)", out)
     return m.group(1) if m else None
+
+
+def driver_serial(pid):
+    """The phone a host campaign driver drives, read from its environment: the bench
+    wrapper hands run_campaign.py its phone (BENCH_ANDROID_SERIAL) and campaign (CAMPAIGN)
+    through the environment, not argv. None when the process is gone or names no phone."""
+    return driver_env(pid, "BENCH_ANDROID_SERIAL")
+
+
+def iphone_runner_busy(udid):
+    """Why a live iPhone runner (scripts/bench_matrix_iphone.sh) makes this phone busy, or None.
+    The runner takes its phone from BENCH_UDID (the job's run_matrix env): one that names another
+    phone shares only the host (2026-10-19 12:36: the 17 Pro's AA lane's runner held the 18 Pro's
+    job at exit 3); one that names this phone, or none, is busy."""
+    for ln in pgrep("bench_matrix_iphone"):
+        pid = ln.split(None, 1)[0]
+        try:
+            other = driver_env(int(pid), "BENCH_UDID")
+        except ValueError:
+            other = None
+        if other and other != udid:
+            log(f"bench_matrix_iphone.sh pid {pid} drives {other}: another phone's runner, not this one's")
+            continue
+        return f"bench_matrix_iphone.sh is running (pid {pid}, device {other or 'unknown'})"
+    return None
 
 
 # ---------------------------------------------------------------- preflight
@@ -590,8 +613,9 @@ def preflight_iphone(dev, dry, cells_files=()):
                        "(the runner's default is the retired app)")
     if not iphone_attached(udid):
         raise NotReady(f"{udid} not available to devicectl — connect + trust the phone")
-    if pgrep("bench_matrix_iphone"):
-        raise Busy("bench_matrix_iphone.sh is running")
+    busy = iphone_runner_busy(udid)
+    if busy:
+        raise Busy(busy)
     check_holds(dev, dry)
     rc, out = devicectl("device", "info", "lockState", "--device", udid)
     if rc != 0:

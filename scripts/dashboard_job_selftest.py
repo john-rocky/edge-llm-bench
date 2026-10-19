@@ -807,6 +807,17 @@ def main():
     ok(verdicts == ["free", "busy", "busy"],
        f"check_holds: another phone's hold is skipped, the same phone's and an unnamed one are busy ({verdicts})")
 
+    # iphone_runner_busy: a runner that drives another phone (BENCH_UDID) shares only the host
+    real_pgrep_i, real_env_i = dj.pgrep, dj.driver_env
+    dj.pgrep = lambda pattern: ["4242 bash scripts/bench_matrix_iphone.sh run matrices/x.cells"]
+    outcomes = []
+    for env_udid in ("00008150-OTHER", "00008160-MINE", None):
+        dj.driver_env = lambda pid, var, _u=env_udid: _u if var == "BENCH_UDID" else None
+        outcomes.append("busy" if dj.iphone_runner_busy("00008160-MINE") else "free")
+    dj.pgrep, dj.driver_env = real_pgrep_i, real_env_i
+    ok(outcomes == ["free", "busy", "busy"],
+       f"iphone_runner_busy: another phone's runner is not busy, this phone's and an unnamed one are ({outcomes})")
+
     # cells_with_records: a row exclude-on= names for the device is not expected of it (the runner skips it
     # with a CELL_SKIP line and no record); other devices still expect it (Pixel 8a 2026-10-19: every sitting
     # of a file with 4B-class rows had read as partial)
