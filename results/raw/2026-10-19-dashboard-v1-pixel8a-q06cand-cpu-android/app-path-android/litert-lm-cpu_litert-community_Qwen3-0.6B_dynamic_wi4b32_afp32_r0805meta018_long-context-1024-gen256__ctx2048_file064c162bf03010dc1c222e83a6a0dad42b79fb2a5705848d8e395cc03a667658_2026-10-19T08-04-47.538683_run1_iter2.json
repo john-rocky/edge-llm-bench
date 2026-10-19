@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "63ea574f-916a-4d15-802e-3df0c698785d",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.18.0",
+  "engineArtifact": "cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; 2026-08-05 graph, 0.18.0 metadata, local candidate)",
+    "file": "litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_r0805meta018_Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm",
+    "sha256": "e6bf25c0cf7e1a09d19fc6ad716072bb5b8ac96a0eca75075a69f7ce8c1a8f91"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-19T08:04:47Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1328,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 1221,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 1885,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 1,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 60.1,
+    "exitCode": 0,
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "0e54d07a-e9ef-43e7-886c-3c1532354ac0",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 36.9,
+    "batteryTemperatureFinalC": 36.7,
+    "batteryLevelFinal": 1.0,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_r0805meta018_Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+    "allocationWitnessTokens": [
+      2048
+    ],
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 2,
+    "regime": "warm",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 864,
+      "distinctWords": 101,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "ba930320cfd2d1112f1429bbf783d2f08ae7cdb2ec8fb31d96817a7c7119984a"
+  },
+  "metrics": {
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "light",
+    "memoryMedianResidentMB": 1468.3671875,
+    "memoryPeakResidentMB": 1480.4453125,
+    "firstTokenLatencyMS": 13650.0,
+    "promptTokensPerSecond": 98.49,
+    "decodeTokensPerSecond": 15.13,
+    "promptTokenCount": 1338,
+    "generatedTokenCount": 256,
+    "coldRun": false
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_r0805meta018_long-context-1024-gen256__ctx2048_file064c162bf03010dc1c222e83a6a0dad42b79fb2a5705848d8e395cc03a667658_2026-10-19T08-04-47.538683_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "decodedText": "litert-lm-cpu_litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_r0805meta018_long-context-1024-gen256__ctx2048_file064c162bf03010dc1c222e83a6a0dad42b79fb2a5705848d8e395cc03a667658_2026-10-19T08-04-47.538683_run1_iter2.decoded.txt"
+  }
+}
