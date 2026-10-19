@@ -1,0 +1,29 @@
+--- a/tools/check_against_bench_dashboard.py
++++ b/tools/check_against_bench_dashboard.py
+@@ -27,8 +27,12 @@
+    campaign must be the one latest_session picks from the phone's and the unit's rows of the
+    cell together (the newest engine tag, then the newest sitting; build.stand_in_rows).
+ 2. Long-context ladders. scripts/longctx_ladder_diff.py --no-rebuild (never without it:
+-   the default rebuilds the bench's results/summary) prints each ladder sitting against
+-   itself; its candidate columns must equal the page's 2048 cells. The script picks warm
++   the default rebuilds the bench's results/summary) reads the weekly sittings (campaign
++   names containing "dashboard", the page's rows) against themselves, each (device, arm,
++   model, allocation) cell from its latest session (its ladders() is render_leaderboard.arm_row,
++   the bench's rule and the page's); its candidate columns must equal the page's 2048 cells,
++   so a newer sitting of a ladder cell (the Mac's llama.cpp b11721 Gemma 4 ladder of
++   2026-10-19 beside the 2026-09-18 ladder) is the one compared. The script picks warm
+    where a ladder has warm runs; the page holds Android cold (render_dashboard.REGIME),
+    so for an Android ladder with warm runs the cold fields of the same script's
+    ladders() / arm_row are the comparison.
+@@ -82,7 +86,10 @@
+ # rows are the 1024 and protocol files' cells, which come first): the text task here, the protocol
+ # rows in check_protocol
+ TABLE_FILES += [name for name in build.COREAI_CELL_FILES if os.path.exists(os.path.join(BENCH, "matrices", name))]
+-LADDERS = ["campaign:2026-09-18-dashboard-longctx-v1-m4max-mac", "campaign:dashboard-longctx-v1-s26"]
++# every weekly sitting, as the page reads them (load_rows: campaign names containing "dashboard"); the script's
++# arm_row takes each ladder cell's latest session. Until 2026-10-19 two fixed sittings (the Mac's 2026-09-18 ladder
++# and the S26's), which compared a cell that has a newer sitting with the old one.
++LADDERS = ["campaign:dashboard"]
+ LADDER_TASK = "long-context-2048-gen256"
+ 
+ 

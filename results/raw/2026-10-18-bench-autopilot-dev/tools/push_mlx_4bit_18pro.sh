@@ -10,11 +10,13 @@
 #
 #   push_mlx_4bit_18pro.sh --dry-run          host-side checks and the copy plan; no device call
 #   push_mlx_4bit_18pro.sh --keeper <pid>     the copy, inside the hold <pid> owns (queue_cli.py wait <hold> <name> <pid>)
+#   CHECK_ONLY=1 push_mlx_4bit_18pro.sh --keeper <pid>   the device check alone, no copy (are the bundles still there,
+#                                             e.g. after the app was installed again); exit 1 when a file is missing
 #
 # Host-side checks: the cache's refs/main is the Hub's main today, and the snapshot holds every Hub file the app's
 # patterns (*.safetensors *.json *.jinja) match, at the Hub's size. Device side (--keeper only): the phone is
-# attached and unlocked, the hold names <pid>; list the app's hub dir, copy each snapshot dir and then its
-# refs/main, list again and compare every file's size with the Mac's.
+# attached and unlocked, the hold names <pid>; list the app's hub dir, copy each snapshot file (the Mac's blob,
+# under its name) and then refs/main, list again and compare every file's size with the Mac's.
 # Exit: 0 = every file on the phone at the Mac's size (or, --dry-run, the host checks passed); 1 = a check failed
 # (the line says which); 2 = usage.
 set -u
@@ -27,7 +29,7 @@ DEST=Library/Caches/huggingface/hub
 REPOS="gemma-4-e2b-it-4bit gemma-4-e4b-it-4bit"
 LISTED="gemma-4-e2b-it-qat-OptiQ-4bit"
 PATTERNS="*.safetensors *.json *.jinja"     # mlx-swift-lm 60bd0d7 modelDownloadPatterns
-COPY_TIMEOUT=1200                          # seconds per snapshot copy: two of them stay inside the hold's 45 min
+COPY_TIMEOUT=1200                          # seconds per file copy; all copies stop at 40 min (the hold's window is 45)
 
 usage() { sed -n 2,20p "$0" >&2; exit 2; }
 DRY=0; KEEPER=""
@@ -128,20 +130,30 @@ files = {f["relativePath"]: f["metadata"]["size"] for f in json.load(open(listin
          if not f["resources"]["isDirectory"]}
 mine = {p[len(repo) + 1:]: s for p, s in files.items() if p.startswith(repo + "/")}
 if not tsv:
-    # list only: each snapshot on the phone, against the Mac's snapshot of the same revision where the Mac has one
+    # list only: each snapshot on the phone against the Mac's snapshot of the same revision, where the Mac has one.
+    # The app's own downloads keep the HubCache layout: snapshots/<rev>/<file> is a symlink (the listing gives the
+    # link's length, not the file's) into blobs/<etag>; the Mac's links name the same etags, so each file is
+    # checked as "the phone has the entry and blobs/<etag> at the Mac's size".
+    blobs = {p[len("blobs/"):]: v for p, v in mine.items() if p.startswith("blobs/")}
     snaps = sorted({p.split("/")[1] for p in mine if p.startswith("snapshots/")})
     for s in snaps:
         sub = {p[len(f"snapshots/{s}/"):]: v for p, v in mine.items() if p.startswith(f"snapshots/{s}/")}
-        line = f"     {repo} snapshots/{s}: {len(sub)} files, {sum(sub.values()):,} bytes"
+        line = f"     {repo} snapshots/{s}: {len(sub)} entries"
         mac = os.path.join(cache, repo, "snapshots", s)
         if os.path.isdir(mac):
-            ref = {}
-            for root, _, fs in os.walk(mac, followlinks=True):
+            bad, n = [], 0
+            for root, _, fs in os.walk(mac):
                 for f in fs:
-                    ref[os.path.relpath(os.path.join(root, f), mac)] = os.stat(os.path.join(root, f)).st_size
-            diff = sorted(p for p in set(ref) | set(sub) if ref.get(p) != sub.get(p))
-            line += (f"; the Mac's snapshot of {s[:8]}: {len(ref)} files, "
-                     + ("every file at the same size" if not diff else "differs: " + ", ".join(diff)))
+                    p = os.path.join(root, f)
+                    rel, size = os.path.relpath(p, mac), os.stat(p).st_size
+                    etag = os.path.basename(os.readlink(p)) if os.path.islink(p) else None
+                    n += 1
+                    if rel not in sub:
+                        bad.append(f"{rel}: no entry")
+                    elif sub[rel] != size and (etag is None or blobs.get(etag) != size):
+                        bad.append(f"{rel}: entry {sub[rel]} bytes, blob {blobs.get(etag)}, Mac {size}")
+            line += (f"; the Mac's snapshot of {s[:8]}: {n} files, "
+                     + ("each one there, its blob (or file) at the Mac's size" if not bad else "differs: " + "; ".join(bad)))
         print(line)
     print(f"     {repo} refs/main: {'present, ' + str(mine['refs/main']) + ' bytes' if 'refs/main' in mine else 'absent'}"
           + ("" if snaps else "; no snapshot"))
@@ -161,15 +173,33 @@ EOF
 list_hub before
 say "before the copy:"
 for r in $LISTED $REPOS; do check_repo before "$r" ""; done
+if [ "${CHECK_ONLY:-0}" = 1 ]; then
+  rc=0
+  for r in $REPOS; do
+    cat "$CACHE/models--mlx-community--$r/refs/main" > "$OUT/$r.rev"
+    check_repo before "$r" "$OUT/$r.files.tsv" || rc=1
+  done
+  [ $rc -eq 0 ] && say "check only: both bundles on the phone at the Mac's sizes" || say "check only: a bundle is missing or differs (above)"
+  exit $rc
+fi
 
+# One copy per file: the source is the Mac's blob (the snapshot entry resolved), the destination its full path
+# under the snapshot's name. devicectl does not follow a directory's symlinks: it sends them as links and refuses
+# a target with '..' ("File paths cannot contain '..'", 2026-10-19 12:26, the snapshot's links into ../../blobs/).
+# A file's --destination is the item's own path (as the 03:2x refs/main copy of 2026-10-19 ran).
+T0=$(date +%s)
 for r in $REPOS; do
   repo=$CACHE/models--mlx-community--$r
   rev=$(cat "$repo/refs/main")
   printf '%s\n' "$rev" > "$OUT/$r.rev"
-  say "copy $r snapshots/$rev/"
-  xcrun devicectl device copy to --device "$UDID" --domain-type appDataContainer --domain-identifier "$APP" \
-    --source "$repo/snapshots/$rev" --destination "$DEST/models--mlx-community--$r/snapshots/$rev" \
-    -t "$COPY_TIMEOUT" > "$OUT/copy-$r-snapshot.txt" 2>&1 || fail "copy of $r snapshot failed ($OUT/copy-$r-snapshot.txt)"
+  while IFS="$(printf '\t')" read -r f size; do
+    [ $(( $(date +%s) - T0 )) -lt 2400 ] || fail "40 minutes of copies spent; stopping inside the hold's window"
+    src=$(python3 -I -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$repo/snapshots/$rev/$f" < /dev/null)
+    say "copy $r $f ($size bytes)"
+    xcrun devicectl device copy to --device "$UDID" --domain-type appDataContainer --domain-identifier "$APP" \
+      --source "$src" --destination "$DEST/models--mlx-community--$r/snapshots/$rev/$f" \
+      -t "$COPY_TIMEOUT" < /dev/null > "$OUT/copy-$r-$f.txt" 2>&1 || fail "copy of $r $f failed ($OUT/copy-$r-$f.txt)"
+  done < "$OUT/$r.files.tsv"
   say "copy $r refs/main"
   xcrun devicectl device copy to --device "$UDID" --domain-type appDataContainer --domain-identifier "$APP" \
     --source "$repo/refs/main" --destination "$DEST/models--mlx-community--$r/refs/main" \

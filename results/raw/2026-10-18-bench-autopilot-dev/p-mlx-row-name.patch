@@ -1,0 +1,137 @@
+--- a/build.py
++++ b/build.py
+@@ -555,6 +555,23 @@
+     return "measured" if dec else "no-decode"
+ 
+ 
++# The MLX Gemma 4 builds' class (owner decision 2026-10-19; the bench's docs/dashboard-cells-v1.md "MLX Gemma 4 file
++# (2026-10-19)"): the page carries both MLX builds of each Gemma 4 model, QAT OptiQ and PTQ 4bit, in the model's one
++# group (render_dashboard.model_row keys it), and names a cell's build by class in the words of the bench's
++# bench_common.LOGICAL_MODELS: cells.json `build`, shown with the runtime wherever a cell is named (cellName).
++MLX_GEMMA4_CLASS = (("qat-optiq", "QAT OptiQ"), ("-it-4bit", "PTQ 4bit"))
++
++
++def mlx_class(model_id):
++    """An MLX Gemma 4 build's class (MLX_GEMMA4_CLASS), else ""."""
++    mid = model_id.lower()
++    if mid.startswith("mlx-community/gemma-4-"):
++        for pat, name in MLX_GEMMA4_CLASS:
++            if pat in mid:
++                return name
++    return ""
++
++
+ def make_cell(dev, d, sel, budgets, as_of, stale_days):
+     plat, arm = dev["platform"], d["arm"]
+     if (plat, arm) not in BACKEND:
+@@ -563,7 +580,8 @@
+     c = {
+         "device": dev["device"], "device_display": dev["display"], "chip": dev["chip"],
+         "platform": plat, "model": model_row(d["model_id"]), "model_id": d["model_id"],
+-        "artifact_file": d["file"], "runtime": RUNTIME[arm], "backend": BACKEND[(plat, arm)][0],
++        "artifact_file": d["file"], "build": mlx_class(d["model_id"]),
++        "runtime": RUNTIME[arm], "backend": BACKEND[(plat, arm)][0],
+         "arm": arm, "task": d["task"], "context_tokens": d["ctx"], "workload": "", "prompt_tokens": None,
+         "gen_tokens": None, "budget": budgets.get(d["task"]), "quant": "", "engine": "",
+         "regime": regime, "decode_tps": None, "spread_pct": None, "n": 0, "prefill_tps": None,
+@@ -901,7 +919,8 @@
+     if largest:
+         m, diff, a, b = largest
+         largest = {"model": m, "gap": fmt_signed_pct(diff), "gap_pct": diff,
+-                   "subject_backend": a["backend"], "runtime": b["runtime"], "backend": b["backend"]}
++                   "subject_backend": a["backend"], "runtime": b["runtime"], "backend": b["backend"],
++                   "build": b.get("build", "")}
+     # bandwidth utilization (a decode figure) of the cells this comparison picked: the means
+     # over the compared models where both cells have one; n/a where the device has no ceiling
+     bw = None
+@@ -1672,7 +1691,8 @@
+                 proto = [c for c in cells if c["device"] == dev and c["model"] == m["model"] and c["runtime"] == rt
+                          and c["backend"] == be and c["task"] == NATIVE_TASK]
+                 for c in proto:
+-                    row = dict(base, captured=c["captured"])
++                    # an MLX Gemma 4 build's class in the recipe column: one row per build
++                    row = dict(base, captured=c["captured"], recipe=c.get("build") or "")
+                     if c["status"] == "measured":
+                         row.update(status="measured", recipe=short_quant(c["quant"]) or "",
+                                    prefill_tps=c["prefill_tps"], decode_tps=c["decode_tps"], ttft_ms=c["ttft_ms"],
+@@ -2920,7 +2940,8 @@
+   function noKvFlag(c) { return META.no_kv_flag_arms.indexOf(c.arm) >= 0; }
+   function workloadText(c) { return noKvFlag(c) ? c.workload.replace(/\/kv\d+$/, "") : c.workload; }
+   function shortEngine(e) { return e && e.length >= 32 ? e.slice(0, 8) : e; }
+-  function cellName(c) { return c.runtime + " · " + c.backend; }
++  // a cell's name: its runtime (with an MLX Gemma 4 build's class, cells.json build) and backend
++  function cellName(c) { return c.runtime + (c.build ? " " + c.build : "") + " · " + c.backend; }
+   // how a cell's column looks, by its backend: " (hatched)", " (solid)", " (dotted)"
+   function lookText(c) { return LOOK[c.backend] ? " (" + LOOK[c.backend] + ")" : ""; }
+   function metricName(m) { return m.label + " " + m.unit; }
+@@ -3681,7 +3702,7 @@
+       add(box, el("p", { "class": "s-head" }, SUBJECT + " leads on " + v.lead + " of " + plural(v.compared, "model", "models") +
+         ", trails on " + v.trail + (v.tie ? ", ties on " + v.tie : "")));
+       var lg = x.largest, bw = x.bw;
+-      add(box, add(el("p", { "class": "s-nums" }), "Largest gap: " + lg.model + " ", n1(lg.gap), " vs " + lg.runtime + " · " + lg.backend));
++      add(box, add(el("p", { "class": "s-nums" }), "Largest gap: " + lg.model + " ", n1(lg.gap), " vs " + lg.runtime + (lg.build ? " " + lg.build : "") + " · " + lg.backend));
+       add(detail, add(el("p"), "Gap vs the best other runtime: mean ", n1(x.mean),
+         x.median ? " · median " : null, x.median ? n1(x.median) : null));
+       if (bw.na) add(detail, el("p", null, "Bandwidth ceiling n/a"));
+--- a/tools/check_aa.py
++++ b/tools/check_aa.py
+@@ -203,7 +203,7 @@
+                     else:
+                         src = "this page's protocol cell" + (": " + c["campaign"] if c["campaign"] else "")
+                         rows.append(row(status={"not measured": "not measured yet"}.get(c["status"], c["status"]),
+-                                        source=src, captured=c["captured"]))
++                                        source=src, captured=c["captured"], recipe=c.get("build") or ""))
+                 if proto:
+                     continue
+                 tasks = sorted({TASK_LABEL[c["task"]] for c in cells if (c["device"], c["model"], c["runtime"],
+--- a/tools/render_check.py
++++ b/tools/render_check.py
+@@ -327,6 +327,12 @@
+     return s
+ 
+ 
++def cell_name(c):
++    """A cell's name as the page's cellName gives it: its runtime (with an MLX Gemma 4 build's class, cells.json
++    build) and its backend."""
++    return f"{c['runtime']}{' ' + c['build'] if c.get('build') else ''} · {c['backend']}"
++
++
+ def box_text(v, x, subject):
+     """The text the page's summary box shows (build.py summaryBox): the headline and the
+     largest gap; the headline alone where no model is compared."""
+@@ -335,7 +341,7 @@
+     lg = x["largest"]
+     return (f"{subject} leads on {v['lead']} of {plural(v['compared'], 'model', 'models')}, trails on {v['trail']}"
+             + (f", ties on {v['tie']}" if v["tie"] else "")
+-            + f" Largest gap: {lg['model']} {lg['gap']} vs {lg['runtime']} · {lg['backend']}")
++            + f" Largest gap: {lg['model']} {lg['gap']} vs {cell_name(lg)}")
+ 
+ 
+ def detail_text(v, x, subject, stale_days, metric_name):
+@@ -656,7 +662,7 @@
+             if c["backend"] != b or not want_cls <= set(cls) or (set(cls) & {"cpu", "npu"}) != (want_cls & {"cpu", "npu"}):
+                 bad.append(f"{b}: cell {cell} ({c['runtime']} · {c['backend']}) drawn as {m.group(1)!r}")
+             aria = html.unescape((re.search(r'aria-label="([^"]*)"', tag) or [None, ""])[1])
+-            if f"{c['runtime']} · {c['backend']} ({LOOK[b]}): " not in aria:
++            if f"{cell_name(c)} ({LOOK[b]}): " not in aria:
+                 bad.append(f"{b}: cell {cell} aria-label {aria[:80]!r} lacks '({LOOK[b]})'")
+         if ('t-empty"' in sb) != (not drawn):
+             bad.append(f"{b}: empty-state message {'t-empty' in sb} with {len(drawn)} columns drawn")
+@@ -755,7 +761,7 @@
+     sign = -1 if m["better"] == "higher" else 1
+     bars = sorted((i for i in shown if cells[i]["status"] == "measured" and cells[i][key] is not None),
+                   key=lambda i: (sign * cells[i][key], i))
+-    lines = [(kind, [f"{cells[i]['runtime']} · {cells[i]['backend']}" for i in shown
++    lines = [(kind, [cell_name(cells[i]) for i in shown
+                      if i not in bars and frame_kind(cells[i], key) == kind]) for kind in GLANCE_KINDS]
+     msg = None if bars else (f"No {m['words']} value recorded yet" if any(cells[i]["status"] == "measured" for i in shown)
+                              else "Not measured yet")
+@@ -818,7 +824,7 @@
+         widths = []
+         for (tag, rb), i in zip(rows, bars):
+             c = cells[i]
+-            v, name = c[key], f"{c['runtime']} · {c['backend']}"
++            v, name = c[key], cell_name(c)
+             bar = re.search(r'<rect class="(bar [^"]*)"[^>]*\swidth="([\d.]+)"', rb)
+             want_cls = ({"bar", f"s{meta['runtime_slots'][c['runtime']]}"} | ({LOOK_CLASS[c["backend"]]} if c["backend"] in LOOK_CLASS else set())
+                         | ({"stale"} if c["stale"] else set()))
