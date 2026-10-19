@@ -593,3 +593,17 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   the join key); its smoke: the four arms answer the new tail (+17 prompt tokens, 256 generated); its P patch applies. r16: the
   transfer of the two 4bit bundles done (16 files, 8.76 GB); its P row-name patch would split the Apple panel groups and take MLX out
   of the Gemma 4 comparison, so it reworks it to label the bars only; the sitting starts now that the runner check is fixed.
+- 12:4x–12:5x r17 closed (lint PASS; its smoke records read first-hand: the four arms answer the noref tail, prompt 1123 / 1124 /
+  1355 tokens, 256 generated, promptVersion noref-2026-10-19; tab 386 closed). Its branch (cc27f490 + 1c0ff3b8 + ddd09087) is NOT
+  merged yet: the flip (merge with three known conflicts — run_cell.py keeps r15's and r17's lines, docs keeps both sections,
+  device-runs.csv from the index — then .build/dd-mac to dd-mac-noref, the 18 Pro app from dd-ios-noref, the six ExecuTorch prompt
+  files re-rendered, the P patch of four files) happens after today's last by-hand sitting on MAIN and before the 02:00 job, so no
+  sitting mixes the two tails. r17's incident note: the Mac 2K-ladder sitting's anchor phase overlapped its render_check hold and
+  its selftests overlapped the last cell — kept (gates clean, one warm run 3.5 % low); the quiet-lock change prevents the class.
+  r16's sitting aborted at admission (anchor-short): the app names a record by its whole second, and two MLX 0.6B short-chat runs
+  ending in one second overwrote each other (also 10-15 / 10-17 payload anchors) — fix in flight: fractional seconds in
+  ResultStore (MAIN and SIDE), a pre-flip app built with r17's SIDE files set aside and restored, install, a 3-run smoke; then r16's
+  attempt 3. P: r16's patch v2 (build class in the bar labels, group key unchanged) applied as 5f66436; the page check still fails on
+  the 2K-ladder table pooling two sittings (page n=8 vs bench n=3) — r16 prepares a P patch v3 (newest session only). CI: every
+  push today success (b70e4f6f … 024141d1). code-2d: the user switches this tab to Opus 5.5 effort max when idle ("opus 監督 opus
+  実行、外部に出す前だけ fable 監査"); outward text (the issue draft) gets a Fable read before any GO request.
