@@ -567,3 +567,15 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   model_row, so QAT / PTQ would not show without it); its phone go comes after the 0.6B smokes. Trap found: a nohup'd bash script
   sees BSD grep (no -P) while the tool's zsh sees GNU grep — my smokes chain and the Mac longctx chain waited forever on `grep -P`;
   both rewritten with `grep -E $'\t…'` and relaunched (the smokes are running now).
+- 12:2x–12:3x the 18 Pro 0.6B smokes (12:22, LiteRT-LM v0.18.0, short-chat, 19 prompt tokens each): the dynamic INT8 bundle on the GPU
+  46.5 tok/s decode, 158 prefill, 1,515 MB peak; the dynamic INT4 bundle on the CPU 88.3 tok/s, 64.5 prefill, 505 MB; the INT4 bundle
+  on the GPU fails again (Failed to modify graph with delegate). Decision (the rule "the current version that runs", the recipe in
+  the row): every iOS LiteRT-LM 0.6B row (anchors, weekly set, 1K ladder, protocol cell, Core AI file references, AA files) moves to
+  dynamic_int8 on the GPU and the weekly set gains a backend=cpu pair on the INT4 bundle (arm litert-lm-cpu); docs section; the
+  sitting file matrices/dashboard-q06-int8-ios.cells (50e8eb5f, the ladder-file row 2fbe5b01 after test_weekly_rows_are_the_1024_set
+  caught the missing 1K row — 50e8eb5f had gone in with that test red because `cmd | tail -1` hid its status again; the owner's
+  item: whether the iPhone page should carry an INT8 row while the other arms are 4-bit). main pushed to 48d95e9d (CI success 12:27).
+  r16 merged (6378a790; the 1K twin count 69 = its four PTQ pairs + the cpu pair); the merged tests are queued behind r17's Mac window
+  (r17 holds the quiet lock 12:26– for its yardstick build and smoke). Two of my chains had waited on conditions that can never hold:
+  BSD grep -P under nohup (both rewritten) and `pgrep -f` matching other sessions' prompt text (the 2K-ladder chain now reads ps lines
+  minus the agent CLI and waits for an empty quiet lock). The 0.6B sitting is queued behind r16's MLX sitting on the phone.
