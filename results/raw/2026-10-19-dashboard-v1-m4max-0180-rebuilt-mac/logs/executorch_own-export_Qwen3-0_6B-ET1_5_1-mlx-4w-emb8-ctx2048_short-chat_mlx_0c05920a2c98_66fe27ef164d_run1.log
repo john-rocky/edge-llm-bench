@@ -1,0 +1,52 @@
+# executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat run 1 (cold)
+# command: /Users/USER/code/edge-llm-bench/.build/executorch-v1.5.1-mlx/llama_main --model_path /Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte --tokenizer_path /Users/USER/code/edge-llm-bench/models/executorch/tokenizer.json --prompt_file /Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.prompts/short-chat.chat.txt --temperature 0 --max_new_tokens 128
+# exit 0 wall 0.558s ru_maxrss 619872256
+===== stdout =====
+<|im_start|>user
+Explain what on-device AI means in simple terms.<|im_end|>
+<|im_start|>assistant
+<think>
+Okay, so the user is asking for an explanation of on-device AI in simple terms. Let me start by breaking down the term. On-device AI refers to AI systems that run on the user's device, like smartphones or laptops, rather than on a cloud server. Now, I need to make sure I understand this correctly.
+
+First, I should clarify what AI is. AI is artificial intelligence, right? It's the technology that allows machines to perform tasks that are typically done by humans. Now, on-device AI would mean that these systems don't rely on external servers. Instead, they run on the user's device,
+PyTorchObserver {"prefill_token_per_sec":1187.5,"decode_token_per_sec":396.875,"prompt_tokens":19,"generated_tokens":127,"model_load_start_ms":1792358358116,"model_load_end_ms":1792358358174,"inference_start_ms":1792358358174,"inference_end_ms":1792358358510,"model_execution_start_ms":1792358358508,"model_execution_end_ms":1792358358510,"prompt_eval_end_ms":1792358358190,"first_token_ms":1792358358190,"aggregate_sampling_time_ms":22,"aggregate_model_execution_time_ms":313,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+
+===== stderr =====
+I tokenizers:regex.cpp:40] Registering override fallback regex
+I 00:00:00.001129 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.001169 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.001175 executorch:cpuinfo_utils.cpp:167] Number of efficient cores 0
+I 00:00:00.001178 executorch:main.cpp:159] Resetting threadpool with num threads = 16
+I 00:00:00.001180 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.001184 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.001187 executorch:cpuinfo_utils.cpp:167] Number of efficient cores 0
+I 00:00:00.001262 executorch:threadpool.cpp:66] Resetting threadpool to 16 threads.
+I 00:00:00.001271 executorch:runner.cpp:69] Creating LLaMa runner: model_path=/Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte, tokenizer_path=/Users/USER/code/edge-llm-bench/models/executorch/tokenizer.json
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1792358358.078591 168732179 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+I 00:00:00.135637 executorch:llm_runner_helper.cpp:55] Loaded json tokenizer
+I 00:00:00.135710 executorch:llm_runner_helper.cpp:258] Reading metadata from model
+I 00:00:00.137987 executorch:llm_runner_helper.cpp:137] Metadata: use_sdpa_with_kv_cache = 1
+I 00:00:00.137997 executorch:llm_runner_helper.cpp:137] Metadata: use_kv_cache = 1
+I 00:00:00.138004 executorch:llm_runner_helper.cpp:137] Metadata: get_max_context_len = 2048
+I 00:00:00.138008 executorch:llm_runner_helper.cpp:137] Metadata: get_max_seq_len = 2048
+I 00:00:00.138012 executorch:llm_runner_helper.cpp:137] Metadata: enable_dynamic_shape = 1
+I 00:00:00.138017 executorch:llm_runner_helper.cpp:179] eos_id = 151645
+I 00:00:00.138030 executorch:llm_runner_helper.cpp:294] Using method: forward
+I 00:00:00.195449 executorch:text_llm_runner.cpp:92] RSS after loading model: 0.000000 MiB (0 if unsupported)
+I 00:00:00.211439 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:00.211639 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 128, given pos_ 19, num_prompt_tokens 19, max_context_len 2048
+I 00:00:00.211670 executorch:text_llm_runner.cpp:231] RSS after prompt prefill: 0.000000 MiB (0 if unsupported)
+I 00:00:00.532060 executorch:text_llm_runner.cpp:261] RSS after finishing text generation: 0.000000 MiB (0 if unsupported)
+I 00:00:00.532067 executorch:text_llm_runner.cpp:264] Max new tokens 128 reached!
+I 00:00:00.532076 executorch:stats.h:179] 	Prompt Tokens: 19    Generated Tokens: 127
+I 00:00:00.532079 executorch:stats.h:185] 	Model Load Time:		0.058000 (seconds)
+I 00:00:00.532082 executorch:stats.h:194] 	Total inference time:		0.336000 (seconds)		 Rate: 	377.976190 (tokens/second)
+I 00:00:00.532085 executorch:stats.h:203] 		Prompt evaluation:	0.016000 (seconds)		 Rate: 	1187.500000 (tokens/second)
+I 00:00:00.532087 executorch:stats.h:215] 		Generated 127 tokens:	0.320000 (seconds)		 Rate: 	396.875000 (tokens/second)
+I 00:00:00.532090 executorch:stats.h:223] 	Time to first generated token:	0.016000 (seconds)
+I 00:00:00.532092 executorch:stats.h:230] 	Sampling time over 146 tokens:	0.022000 (seconds)

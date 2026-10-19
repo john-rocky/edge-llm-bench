@@ -1,0 +1,56 @@
+# executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat run 4 (warm)
+# command: /Users/USER/code/edge-llm-bench/.build/executorch-v1.5.1-mlx/llama_main --model_path /Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte --tokenizer_path /Users/USER/code/edge-llm-bench/models/executorch/tokenizer.json --prompt_file /Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.prompts/short-chat.chat.txt --temperature 0 --max_new_tokens 128 --warmup
+# exit 0 wall 3.402s ru_maxrss 619986944
+===== stdout =====
+<|im_start|>user
+Explain what on-device AI means in simple terms.<|im_end|>
+<|im_start|>assistant
+<think>
+Okay, so the user is asking for an explanation of on-device AI in simple terms. Let me start by breaking down the term. On-device AI refers to AI systems that run on the user's device, like smartphones or laptops, rather than on a cloud server. Now, I need to make sure I understand this correctly.
+
+First, I should clarify what AI is. AI is artificial intelligence, right? It's the technology that allows machines to perform tasks that are typically done by humans. Now, on-device AI would mean that these systems don't rely on external servers. Instead, they run on the user's device,
+PyTorchObserver {"prefill_token_per_sec":3166.67,"decode_token_per_sec":411.003,"prompt_tokens":19,"generated_tokens":127,"model_load_start_ms":1792358454042,"model_load_end_ms":1792358455780,"inference_start_ms":1792358456120,"inference_end_ms":1792358456435,"model_execution_start_ms":1792358456432,"model_execution_end_ms":1792358456435,"prompt_eval_end_ms":1792358456126,"first_token_ms":1792358456126,"aggregate_sampling_time_ms":18,"aggregate_model_execution_time_ms":297,"SCALING_FACTOR_UNITS_PER_SECOND":1000}
+
+===== stderr =====
+I tokenizers:regex.cpp:40] Registering override fallback regex
+I 00:00:00.004989 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.005288 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.005295 executorch:cpuinfo_utils.cpp:167] Number of efficient cores 0
+I 00:00:00.005299 executorch:main.cpp:159] Resetting threadpool with num threads = 16
+I 00:00:00.005303 executorch:cpuinfo_utils.cpp:71] Reading file /sys/devices/soc0/image_version
+I 00:00:00.005309 executorch:cpuinfo_utils.cpp:87] Failed to open midr file /sys/devices/soc0/image_version
+I 00:00:00.005313 executorch:cpuinfo_utils.cpp:167] Number of efficient cores 0
+I 00:00:00.005403 executorch:threadpool.cpp:66] Resetting threadpool to 16 threads.
+I 00:00:00.005410 executorch:runner.cpp:69] Creating LLaMa runner: model_path=/Users/USER/code/edge-llm-bench/models/executorch/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte, tokenizer_path=/Users/USER/code/edge-llm-bench/models/executorch/tokenizer.json
+I tokenizers:normalizer.cpp:103] Using NFC normalizer. Please notice that our implementation may not handle all edge cases.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1792358453.223570 168738701 re2.cc:237] Error parsing '((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s...': invalid perl operator: (?!
+I tokenizers:re2_regex.cpp:27] Re2 failed to compile regex: ((?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+), error: invalid perl operator: (?!
+This may be ok if a fallback regex is used.
+I tokenizers:regex_lookahead.cpp:26] Creating PCRE2 regex
+I 00:00:00.200935 executorch:llm_runner_helper.cpp:55] Loaded json tokenizer
+I 00:00:00.201221 executorch:llm_runner_helper.cpp:258] Reading metadata from model
+I 00:00:00.982278 executorch:llm_runner_helper.cpp:137] Metadata: use_sdpa_with_kv_cache = 1
+I 00:00:00.982308 executorch:llm_runner_helper.cpp:137] Metadata: use_kv_cache = 1
+I 00:00:00.982314 executorch:llm_runner_helper.cpp:137] Metadata: get_max_context_len = 2048
+I 00:00:00.982320 executorch:llm_runner_helper.cpp:137] Metadata: get_max_seq_len = 2048
+I 00:00:00.982325 executorch:llm_runner_helper.cpp:137] Metadata: enable_dynamic_shape = 1
+I 00:00:00.982331 executorch:llm_runner_helper.cpp:179] eos_id = 151645
+I 00:00:00.982346 executorch:llm_runner_helper.cpp:294] Using method: forward
+I 00:00:02.720746 executorch:text_llm_runner.cpp:86] Doing a warmup run...
+I 00:00:02.738950 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:02.739117 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 128, given pos_ 19, num_prompt_tokens 19, max_context_len 2048
+I 00:00:03.060098 executorch:text_llm_runner.cpp:272] Warmup run finished!
+I 00:00:03.060130 executorch:text_llm_runner.cpp:92] RSS after loading model: 0.000000 MiB (0 if unsupported)
+I 00:00:03.066191 executorch:text_prefiller.cpp:122] Prefill token result numel(): 151936
+I 00:00:03.066340 executorch:text_llm_runner.cpp:208] Max new tokens resolved: 128, given pos_ 19, num_prompt_tokens 19, max_context_len 2048
+I 00:00:03.066357 executorch:text_llm_runner.cpp:231] RSS after prompt prefill: 0.000000 MiB (0 if unsupported)
+I 00:00:03.375233 executorch:text_llm_runner.cpp:261] RSS after finishing text generation: 0.000000 MiB (0 if unsupported)
+I 00:00:03.375241 executorch:text_llm_runner.cpp:264] Max new tokens 128 reached!
+I 00:00:03.375253 executorch:stats.h:179] 	Prompt Tokens: 19    Generated Tokens: 127
+I 00:00:03.375257 executorch:stats.h:185] 	Model Load Time:		1.738000 (seconds)
+I 00:00:03.375260 executorch:stats.h:194] 	Total inference time:		0.315000 (seconds)		 Rate: 	403.174603 (tokens/second)
+I 00:00:03.375268 executorch:stats.h:203] 		Prompt evaluation:	0.006000 (seconds)		 Rate: 	3166.666667 (tokens/second)
+I 00:00:03.375271 executorch:stats.h:215] 		Generated 127 tokens:	0.309000 (seconds)		 Rate: 	411.003236 (tokens/second)
+I 00:00:03.375280 executorch:stats.h:223] 	Time to first generated token:	0.006000 (seconds)
+I 00:00:03.375283 executorch:stats.h:230] 	Sampling time over 146 tokens:	0.018000 (seconds)
