@@ -216,6 +216,14 @@ this branch's index with its summary rebuilt there (scratchpad `tools/p_test_r17
   the synthetic check (scratchpad `tools/regression_diff_check_r17.py`, run through quiet_wait): versions differ → the 1K cell does not
   join, rc 0; same version → the -20 % REGRESSION as before, rc 1; the anchor path → IMPROVED +24.99 % through the anchor. Next: the second
   commit, the message.
+- 12:46 second commit **1c0ff3b8**. Found while checking main (da515ee4): the Mac sitting
+  `2026-10-19-dashboard-v1-m4max-llama-b11721-longctx` ran 12:35:28–12:43:25 without the quiet lock (MAIN's working-tree
+  `dashboard_job.quiet_lock_take` notes the gap at 12:39 and takes the lock from then on). Its anchor phase (records 12:35:31–12:36:08,
+  admitted at 0.985) lay inside this round's "r17 P render_check" hold (12:35:09–12:36:56: two headless Chrome page loads with
+  screenshots); quiet_hold got the flock at once, as the sitting held none. The payload phase began 12:39:14 (its own anchor rows at
+  1.007), after that hold; this round's nice-19 merge-preview selftests (about 12:41:15–12:45:16, quiet_wait saw no hold) overlapped its
+  last cells (12:41:53–12:43:23). r16's render_check holds (12:40:48, 12:43:50) also fell inside the payload. Not checked: whether the
+  0.985 / 1.007 gap is that overlap. Reported to the supervisor with the round close.
 
 ## merge の下見 (for the supervisor's merge; nothing merged here)
 - `git merge-tree --write-tree --name-only main HEAD` with main at 112db736: CONFLICT in `android/bench/run_cell.py`, `docs/dashboard-cells-v1.md`,
