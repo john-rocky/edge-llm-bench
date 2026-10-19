@@ -128,3 +128,54 @@ Full table: ROUND16.md "計測の表". The post step held the sitting (its admis
 
 ## 残り(remaining — まだ試していないレバーと見込み。無ければ「なし」。1 件でも書けば lint は HOLD)
 なし
+
+<!-- fourth ladder of the lane: round r15 (the Android llama.cpp arm's Gemma 4 thinking mode); a bench lane keeps one file per round topic, the conversion-lane lint does not apply -->
+
+# SPEED_LADDER — llama.cpp arm (Android), Gemma 4 thinking off (round r15)
+
+runtime: llama.cpp `llama-cli` (flat b11721 ff5a23376 on both phones, CPU, `-t 4`; the S26's Snapdragon side build b11469-snapdragon
+ad2156533, `-ngl 99 --device HTP0 / GPUOpenCL`), driven by `android/bench/run_cell.py`
+model: unsloth Gemma 4 E2B / E4B GGUF Q4_K_M (Qwen3 0.6B / 1.7B for the anchor and the unchanged-family check)
+device: Pixel 8a 4C131JEKB15210 (Tensor G3, Android 16, mask f0), Galaxy S26 RFGL80R6A6H (SM8850, Android 16, no mask)
+parity bar: thinking as the other arms run it (Gemma 4 off, Qwen3 the template's default; methodology/fairness-rules.md §1): no
+`[Start thinking]` in a Gemma 4 run log, a reply on the task
+
+This round changes the mode the arm runs, not the engine or the file. The probe rows are one launch each (runs=1, by hand under a
+keeper hold, 2026-10-19 12:03–12:05 JST), not a session: their speeds are not comparable with the page's sessions.
+
+## 梯子(ladder — 1 行 = 1 form。測った形は全部残す。ship = 出荷する形)
+| # | form | backend | device | workload | metric | parity | status | evidence | ship |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | Gemma 4 E2B, `-st`, thinking on (llama-cli's default; before 2026-10-19, reference) | cpu (flat b11721) | Pixel 8a | short-chat | decode 14.1 tok/s, prefill 32.5 tok/s (one run of the 10-19 sitting) | FAIL: `[Start thinking]`, the 128-token budget spent inside the thought | measured | MAIN results/raw/2026-10-19-dashboard-v1-pixel8a-llama-b11721-android/ (01-15-22 run) | |
+| 2 | Gemma 4 E2B, `-st --chat-template-kwargs '{"enable_thinking":false}'` | cpu (flat b11721) | Pixel 8a | short-chat | decode 14.0 tok/s, prefill 26.5 tok/s (probe, 1 launch) | PASS: no `[Start thinking]`, a direct answer | measured | REPO results/raw/2026-10-19-probe-thinkoff-pixel8a-android/ (not committed) | ship |
+| 3 | Qwen3 1.7B, `-st` (unchanged family check) | cpu (flat b11721) | Pixel 8a | short-chat | decode 21.2 tok/s, prefill 53.8 tok/s (probe, 1 launch) | PASS: `[Start thinking]` as on every arm (template default) | measured | same dir | ship |
+| 4 | Gemma 4 E2B, side build, `-st --chat-template-kwargs '{"enable_thinking":false}' -ngl 99 -fa on -ub 1024` | npu (HTP0, b11469) | Galaxy S26 | short-chat | decode 29.9 tok/s, prefill 123.5 tok/s (probe, 1 launch, cpu-capped mark) | PASS: no `[Start thinking]`, a direct answer, text check PASS | measured | REPO results/raw/2026-10-19-probe-thinkoff-s26-side-android/ (not committed) | ship |
+| 5 | Gemma 4 E2B, flat, thinking on (reference: the 10-19 05:52 b11721 sitting) | cpu (flat b11721) | Galaxy S26 | short-chat / 1K | short-chat 28.3 / 28.6 / 28.5, 1K 17.2 / 16.3 / 16.3 (all cpu-capped) | FAIL: `[Start thinking]` in every log | measured | MAIN results/raw/2026-10-19-dashboard-v1-s26-llama-b11721-android/ | |
+| 6 | Gemma 4 E2B, flat, thinking off (job sitting) | cpu (flat b11721) | Galaxy S26 | short-chat | 28.9 / 28.7 / 28.8 after the gate's COLLAPSE re-run (quarantined 1.0 / 29.1 / 28.3); all cpu-capped >15 % | PASS: 0 `[Start thinking]` in 6 logs | measured, no page number (cpu-cap-rule) | MAIN results/raw/2026-10-19-dashboard-v1-s26-llama-thinkoff-e2b-android/ (721ee21e) | ship |
+| 7 | Gemma 4 E2B, flat, thinking off (job sitting) | cpu (flat b11721) | Galaxy S26 | 1K | 15.8 / 16.0 / 16.4; all cpu-capped (caps down to 1785.6 / 1747.2 MHz) | PASS: 0 `[Start thinking]` in 3 logs | measured, no page number | same dir | ship |
+| 8 | Gemma 4 E2B, flat, thinking off (job sitting, r2) | cpu (flat b11721) | Pixel 8a | short-chat | 12.8 / 13.0 / 13.2 after a COLLAPSE re-run (quarantined 12.3 / 13.1 / 8.4); page 13.1 (n=2); thinking-on reference 13.9 | PASS: 0 `[Start thinking]` | measured | MAIN results/raw/2026-10-19-dashboard-v1-pixel8a-llama-thinkoff-r2-android/ (2b4b6f37) | ship |
+| 9 | Gemma 4 E2B, flat, thinking off (job sitting, r2) | cpu (flat b11721) | Pixel 8a | 1K | 5.0 / 5.8 / 7.9, all cpu-capped (policy4 down to 1065 / 2367 MHz); thinking-on reference 8.2–8.4 (capped) | PASS: 0 `[Start thinking]` | measured, no page number | same dir | ship |
+| 10 | Gemma 4 E2B, side build, thinking off (job sitting) | npu (HTP0, b11469) | Galaxy S26 | short-chat | 28.9 / 29.9 / 30.3 → page 29.9 (n=3); thinking-on reference (10-11) page 28.3 | PASS: 0 `[Start thinking]`, text check PASS ×3 | measured | MAIN results/raw/2026-10-19-dashboard-v1-s26-llama-thinkoff-side-e2b-android/ (c9fa1590) | ship |
+| 11 | Gemma 4 E2B, side build, thinking off (job sitting) | gpu (OpenCL, b11469) | Galaxy S26 | short-chat | 26.3 / 27.0 / 27.4 → page 26.65 (n=2); thinking-on reference (10-11) page 21.6 | PASS: 0 `[Start thinking]`, text check PASS ×3 | measured | same dir | ship |
+
+## レバー(levers — 試すべき手を全部。1 行 = 1 手。n-a は「この model には当てはまらない」理由つき)
+| lever | status | result / reason | evidence |
+|---|---|---|---|
+| thinking | measured | Gemma 4 off through the template variable (`--chat-template-kwargs '{"enable_thinking":false}'`): llama-cli takes it on b11721 and b11469 (rows 2, 4); the arm runs off, as LiteRT-LM / MLX / the Apple llama.cpp adapter | ROUND15.md probe |
+| thinking switch | not tried | `-rea, --reasoning off` (in the b11721 / b11469 help, default auto) would be llama-cli's own switch; the template variable was kept because it is the one the Apple adapter passes (one mechanism on every llama.cpp row) | ROUND15.md 下見 |
+| quant | n-a: this round does not change the file or the engine | — | — |
+| precision | n-a: same | — | — |
+| shape | n-a: same | — | — |
+| npu-path | n-a: the side build's npu / gpu rows keep their build and flags; only the template variable is added | — | — |
+| state | n-a: one single-turn process per run, unchanged | — | — |
+
+## 例外(exception — 同じ device + workload でもっと速い形を出荷しないときだけ理由。無ければ「なし」)
+- Row 1 (thinking on) decodes at the same rate as row 2 within one launch's noise and is not shipped: it runs another mode than every
+  other arm (budget-mode-rule); it is a reference, not a candidate.
+
+## 残り(remaining — まだ試していないレバーと見込み。無ければ「なし」。1 件でも書けば lint は HOLD)
+- the S26's side E4B (npu / gpu short-chat) and flat E4B (short-chat, 1K) sittings: queued behind the asr lane at the round's close
+  (ROUND15 handoff); expected: the same mode change, E4B's own speeds.
+- the S26 llama.cpp CPU arm's cpu-cap: every flat Gemma 4 run of 10-19 (thinking on and off) is capped above 15 % on the S26 (policy6,
+  cores 6-7, unmasked `-t 4`), so these page cells carry no number; a mask that keeps the four threads in policy0 (e.g. 0x0f) is untested
+  (an owner decision: the S26's mask is "" since 2026-08-25).
