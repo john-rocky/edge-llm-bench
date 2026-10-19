@@ -1,0 +1,51 @@
+qat-mobile load probes — r14, 2026-10-19, one launch per bundle, before this sitting and outside it
+(the cells file's qat-mobile rows are exclude=quant-method-gemma-mobile-schema-not-loadable-by-mlx-swift-lm-60bd0d7).
+
+yardstick: .build/dd-mac/Build/Products/Release/yardstick (built 2026-10-19 05:59 JST, flavor=full,
+harness 2026-07-30-agreed-protocol-r4; mlx-swift-lm 60bd0d7880c82980f9481f8be78862e9b63c58a3, mlx-swift
+0bb916c67f4b9e5c682cbe02a42c701c93ab5021), each launch inside its own quiet_hold window:
+  yardstick run --runtime mlx-swift --model-id <id> --task short-chat --runs 1 --output <scratch>
+The bundles were in the Hub cache already (hf download, the yardstick's patterns *.safetensors *.json
+*.jinja); the cached model.safetensors hashed from the bytes equals the Hub's lfs.sha256.
+
+== mlx-community/gemma-4-E2B-it-qat-mobile @ 0548ff6ddfb85b478bbb7d3294545e8974d47f1c, 10:31:10 JST
+   model.safetensors 2398140572 B, sha256 5d22f208758cc75d7909d598aa1ce65eac70dd8e9c50ef9e5b1a98567a3a4ab3
+quiet_hold: window taken after 0 s wait: r14 qat-mobile E2B load probe timing pid 9986 since 2026-10-19T10:31:10+0900
+yardstick: run 1/1 task=short-chat runtime=mlx-swift model=mlx-community/gemma-4-E2B-it-qat-mobile
+error: loadFailed("Unhandled keys [\"input_activation_scale\", \"output_activation_scale\", \"weight_scale\"] in language_model.model.layers.0.per_layer_projection in Gemma4Model.Gemma4TextModel.Gemma4TextModelInner.Gemma4DecoderLayer.Linear")
+[MLX] load starting: mlx-community/gemma-4-E2B-it-qat-mobile
+[HubBridge] download id=mlx-community/gemma-4-E2B-it-qat-mobile rev=main patterns=["*.safetensors", "*.json", "*.jinja"]
+[HubBridge] downloaded to ~/.cache/huggingface/hub/models--mlx-community--gemma-4-E2B-it-qat-mobile/snapshots/0548ff6ddfb85b478bbb7d3294545e8974d47f1c
+[MLX] load FAILED: Unhandled keys ["input_activation_scale", "output_activation_scale", "weight_scale"] in language_model.model.layers.0.per_layer_projection in Gemma4Model.Gemma4TextModel.Gemma4TextModelInner.Gemma4DecoderLayer.Linear
+quiet_hold: window released after 2 s, rc=1
+
+== mlx-community/gemma-4-E4B-it-qat-mobile @ 659820526b0c35dc548eca973741b3efe8ae8a35, 10:32:37 JST
+   model.safetensors 3455955670 B, sha256 21f9454498531e6bae2d4960ea8fb653628f35ac9e1e7f2f575db00a8b0a3572
+quiet_hold: window taken after 0 s wait: r14 qat-mobile E4B load probe timing pid 13174 since 2026-10-19T10:32:37+0900
+yardstick: run 1/1 task=short-chat runtime=mlx-swift model=mlx-community/gemma-4-E4B-it-qat-mobile
+error: loadFailed("Mismatched parameter language_model.lm_head.weight in Gemma4Model.Gemma4TextModel.Linear shape. Actual [262144, 640], expected [262144, 2560]")
+[MLX] load starting: mlx-community/gemma-4-E4B-it-qat-mobile
+[HubBridge] download id=mlx-community/gemma-4-E4B-it-qat-mobile rev=main patterns=["*.safetensors", "*.json", "*.jinja"]
+[HubBridge] downloaded to ~/.cache/huggingface/hub/models--mlx-community--gemma-4-E4B-it-qat-mobile/snapshots/659820526b0c35dc548eca973741b3efe8ae8a35
+[MLX] load FAILED: Mismatched parameter language_model.lm_head.weight in Gemma4Model.Gemma4TextModel.Linear shape. Actual [262144, 640], expected [262144, 2560]
+quiet_hold: window released after 1 s, rc=1
+
+Why it does not load (read from the files):
+- config.json has no `quantization` key, only `quantization_config`: quant_method "gemma", num_bits 4, and
+  module_quant_configs (bits per weight): E2B (35 layers) lm_head 2, embed_tokens 2, embed_tokens_per_layer 4,
+  mlp of layers 0-14 4 and of the other layers 2, self_attn 4, per_layer_input_gate / per_layer_projection 8,
+  vision_tower 8, audio_tower 2 / 4; E4B (42 layers) lm_head 2, embed_tokens 2, embed_tokens_per_layer 2,
+  every mlp 4, self_attn 4, per_layer_input_gate / per_layer_projection 8, vision_tower 8, audio_tower 2 / 4.
+  Both Hub cards are frontmatter only (84 B, no quantization text).
+- The safetensors header (E2B): each linear is weight U8 / I8 + weight_scale [out, 1] BF16 +
+  input_activation_scale and output_activation_scale (scalars, BF16); embed_tokens is
+  embedding_quantized U8 + embedding_scale BF16. That is Google's mobile schema (per-channel weights at
+  2 / 4 / 8 bit, static activation scales), the schema ModelCatalog.swift's LiteRT-LM Gemma 4 entry
+  describes ("wNa8o8 (int2/int4/int8 + int8 activations, QAT)"), not MLX's group-wise affine format
+  (weight U32 + scales + biases).
+- mlx-swift-lm 60bd0d7 reads the `quantization` key only (Libraries/MLXLMCommon/BaseConfiguration.swift,
+  CodingKeys quantizationContainer = "quantization"); LLMModelFactory passes that per-layer quantization
+  to loadWeights (Libraries/MLXLMCommon/Load.swift), so no layer is quantized, and
+  Module.update(parameters:verify: .all) rejects the extra keys (E2B: weight_scale and the two activation
+  scales) or the packed 2-bit lm_head's shape (E4B: [262144, 640] = 2560 columns at 2 bit, against
+  [262144, 2560]).
