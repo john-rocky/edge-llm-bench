@@ -417,3 +417,74 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   Qwen3 0.6B dynamic id. Page checks: against / aa / render PASS, check_regression FAIL (the stand-in item, patch ready) → page not
   committed; 21 red points on the page (the engine and file moves of this week show as reds with engine_changed; the watch queues retakes
   for the cells whose newest sitting is red).
+
+## 2026-10-19 10:0x — code-2d's two decisions executed, and the Mac's two text-failed cells read outside the harness
+- Decisions (code-2d 10:0x, "決めた事", the user told): (1) the P stand-in patch needs no GO for a local commit → applied with patch -p0 and
+  committed in ~/code/litert-bench-dashboard as 82731c6 (main; push_page / publish stay GO). The post's page step can now pass all four
+  checks and commit the page locally. (2) backlog (b): the checker-PASS dirs are committed locally; the six reply-off-task dirs are not;
+  the mixed 13 stay. Recomputed with today's main (71 dirs: PASS 25 / HOLD 29 / FAIL 17; pin-drift now 8 = the 10-15 / 10-17 iPhone
+  sittings only, since the Mac block's withdrawal means nothing drifted before Android's 10-15 move): 14 sittings posted one by one with
+  --allow-subset (the Mac 09-30 / 10-05 payloads included: their only hold was the account name, which the post scrubs). The first run of
+  the batch split nothing (zsh `for d in $line`), the second runs under bash.
+- The ask: the cause of the Mac llama.cpp Gemma 4 E4B 1K "[Item 1] …" skeleton and the MLX E4B OptiQ 1K lorem refusal — measuring side or
+  the file's. First read (llama-cli b11721, --jinja, single turn, the bench's 1K prompt): E4B and E2B both open with "[Start thinking]
+  Thinking Process: 1. Analyze the Request …" = the GGUF's own jinja template puts Gemma 4 into its thinking mode and the 256 tokens go
+  to analysis; the harness (LlamaCppRuntime, llama_chat_apply_template = the C API's built-in template, no jinja) gets a direct answer
+  from E2B and the skeleton from E4B. Two more reads running (E4B with --no-jinja; with --jinja --reasoning-budget 0).
+- 10:1x the cause, read in the code and with llama-cli: `LlamaCppRuntime.applyChatTemplate` uses the C API's `llama_chat_apply_template`
+  (the built-in template set) and, when the GGUF's template is not in that set, returns nil and "the caller falls back to the bare
+  prompt" (the function's own comment). llama-cli b11721 on the Gemma 4 E4B GGUF with --no-jinja: "Error: this custom template is not
+  supported, try using --jinja" = the E4B file's template is outside the built-in set, so the harness has been sending the E4B 1K prompt
+  bare, and the model continues the lorem/list text as "[Item 1] [Item 2] …" = the measuring side (template application), not the file.
+  The E2B GGUF's template is in the set (its 1K replies answer). With --jinja both models open a "[Start thinking]" analysis (the GGUF
+  template's thinking mode) and spend the 256 tokens on it; a thinking-off run is in flight.
+- 10:13 the cause, one line each (code-2d's ask): **llama.cpp Gemma 4 E4B 1K "[Item 1] …" = the measuring side**: the harness applies the chat
+  template through llama.cpp's built-in set and falls back to the bare prompt when the GGUF's template is custom (the E4B file's is; the
+  E2B file's is in the set), so the model continued the lorem/list text; with the file's own jinja template and thinking off
+  (llama-cli --jinja --chat-template-kwargs '{"enable_thinking": false}') E4B answers the task ("1. **Instantaneous Wake Word Detection:** …",
+  after one sentence on the lorem context), as E2B does; with the template's default (thinking on) both spend the 256 tokens on a
+  "[Start thinking]" analysis. Fix = render the GGUF's jinja template (thinking off, as the LiteRT-LM bundles answer) in LlamaCppRuntime
+  and stamp the template path in the record = round r13 (then the Mac yardstick and the iPhone app rebuild from SIDE and the llama.cpp
+  1K cells are re-measured). **MLX Gemma 4 E4B OptiQ 1K refusal = the model's side under the bench's prompt**: MLX renders the proper HF
+  template and the OptiQ 4-bit model declines the lorem block outright, where Gemma 4 E4B through LiteRT-LM and (with its template)
+  llama.cpp answer after a note; the lorem padding is the bench's 1K-task design (a -noref tail exists for the 2K ladder), so changing it
+  is a protocol decision for every arm, not a per-cell fix. Until then the cell is shown text-fail.
+- 10:2x code-2d answered with the results (P 82731c6, the backlog batch, the two causes). Round r13 launched (worktree wt-autopilot-tmpl,
+  branch llama-chat-template): LlamaCppRuntime renders the GGUF's own jinja template (swift-transformers' Jinja, already a dependency),
+  thinking per model family aligned with the other arms (Gemma 4 off, Qwen3 the template's default), the template path and thinking
+  stamped in conditions, a bare prompt flagged; the Mac yardstick (.build/dd-mac-tmpl) and the iPhone app rebuilt from SIDE; a Mac smoke
+  must show the E4B 1K cell answering. After it: the dd-mac switch again, the llama.cpp Mac rows re-measured, the iPhone app installed
+  with the 0.6B file after the 18 Pro's sitting.
+- 10:2x code-2d's fairness ask (Hub API read by code-2d): the page's MLX Gemma 4 rows run the qat-OptiQ-4bit builds (5.22 / 7.48 GB
+  safetensors, 956 / 2,475 downloads in 30 days) while mlx-community's used builds are gemma-4-e2b/e4b-it-4bit (3.55 / 5.15 GB; 24,394 /
+  31,114) and gemma-4-E2B/E4B-it-qat-mobile (2.40 / 3.46 GB; 19,670 / 15,219); if the LiteRT-LM lead on the page (Mac E2B 1K 154 vs 151,
+  18 Pro 79 vs 52) comes from the file choice, the team reads a wrong-looking-right. Measure, do not infer from downloads or bytes. Round
+  r14 launched (worktree wt-autopilot-q06, branch mlx-gemma4-file, tab workspace:380): the three files per model in one Mac sitting (1K task,
+  anchor, runs 4, text screen), the rule "same quantization class, passes the text check, fastest; within 5 % the most downloaded", the
+  cells and docs; the measurement waits for my go (after r13's build and smoke, in two ≤45-min slots). r13 adds the four catalog entries
+  to its build. The 18 Pro's turn comes after its sitting (13:00+), a later round.
+- 10:22 backlog batch (bash): 12 of 14 sittings committed by the post (09-25, 09-27, 09-28, 09-29 anchor+b1+b2, Mac 09-30 and 10-05 pairs
+  after the scrub, 10-05 S26 anchor+b1+b2, Pixel 10-07 b1r anchor, iPhone 10-08 anchor, 10-11 S26 anchor+b1+b2+npu+ort, Pixel 10-13 anchor,
+  10-14 S26 anchor+b2; summary 5414 -> 5799 lines); the page committed locally in P at each post (the stand-in patch: all four checks
+  PASS). Held: 09-26 S26 anchor (reference-uncommitted: its admission reference is an uncommitted session) and the 10-02 Pixel 8a anchor
+  (the post's own guard: the generated anchor-only message still carries "vs"; fix and re-post). main is 78 commits ahead of origin.
+- 10:23–10:25 the guard's false match fixed (83167a92: a word inside a hyphenated name is not prose; e4ccf8d8 moved the selftest case I had
+  dropped into the middle of another call — the second commit of the day that went in with a red selftest because a `test $rc` line sat
+  after a pipeline: from now every selftest runs to a file and the commit is inside `if [ "$rc" -eq 0 ]`), the 10-02 Pixel 8a anchor
+  re-posted and committed (15a2b3ee). Backlog (b): 13 of 14 PASS sittings committed, 09-26 held on reference-uncommitted. code-2d told.
+- 10:29 test_render_rules.py's summary header expectation updated for engine_stamped and model_file (bae4c416); the whole CI selftest set is
+  green on main (session_check, post, job, watch, android/bench, ddp, autopilot, render rules). main is 82 commits ahead of origin.
+- 10:37–10:48 after the compaction: r14's two decisions sent (the qat-mobile rows exclude= with the loader error as the reason; the
+  quantization class is QAT, so the PTQ 4bit builds are measured and tabled but not swapped onto the page), the four catalog entries
+  cancelled for r13 (the two 4bit ids already exist at l.170 / l.200; the qat-mobile builds do not load on mlx-swift-lm 60bd0d7), r14
+  given the Mac go at 10:4x (quiet window since 10:41, .build/dd-mac, runner-only route). The 18 Pro's weekly on v0.18.0 ended at 07:16,
+  not 13:00 (my estimate from the 580-min sittings; this one took 228 min): ledger OK, post HOLD on `partial` (32 of 37: the three Core AI
+  Qwen3 short-chat cells fail at load — the side-tree app build (stock Core AI 1.0.0) resolves `qwen3_*_gpu` under Documents/CoreAIModels,
+  which the phone's container never held (its folders are the 10-06 / 10-08 g4stock_* and stock_*_ctx2048 ones); the two MLX E4B OptiQ
+  cells are the standing load-time SIGKILL skip, same as 10-15 / 10-17) and `prompt-newtag` (the 0.6B mixed_int4 cells on v0.18.0:
+  9 prompt tokens, #3688, text-fail in the sidecar). The team page's Core AI rows are the stock-ctx2048 cells (dashboard-coreai-v1-ios;
+  P dist/cells.json carries only those ids), so the three cells are leaderboard-local; how the weekly's Core AI short-chat rows follow the
+  stock engine (ids, backend) is an open item for the letter, not a silent cells edit. Route: hand commit by allow-list lines (partial,
+  prompt-newtag) with the reason in this commit, then the post; the 0.6B dynamic file copied into the app's model folder (328.7 MB,
+  10:48); the dynamic retake queued behind the Mac window (quiet_wait; exit 3 = retry every 5 min); the llama.cpp iOS retake waits for
+  r13's app. The iPhone watcher I had started read the dir column as the device and could never fire: stopped.
