@@ -488,3 +488,14 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   prompt-newtag) with the reason in this commit, then the post; the 0.6B dynamic file copied into the app's model folder (328.7 MB,
   10:48); the dynamic retake queued behind the Mac window (quiet_wait; exit 3 = retry every 5 min); the llama.cpp iOS retake waits for
   r13's app. The iPhone watcher I had started read the dir column as the device and could never fire: stopped.
+- 11:04–11:10 the Pixel 8a llama.cpp retake ended (09:45–11:04, OK, all six cells the phone was to run have records, anchor ratio
+  0.989) and its post held on `partial` "6 of 10": the job's cells_expected counted the four exclude-on=pixel8a rows (Qwen3 4B,
+  Gemma 4 E4B) the runner skips with a CELL_SKIP line — a counting defect that would read every Pixel 8a sitting of a file with
+  4B-class rows as partial (the committed Pixel payloads either had no such rows or went in by an allow-list line). Fix:
+  cells_with_records() takes the device key and drops the rows exclude-on= names for it; selftest case; queued behind the Mac window
+  (scratchpad pixel-partial-fix-chain.sh: selftests to files, commit inside the green check, the allow-list line for this dir naming
+  the fix commit, the re-post). The 18 Pro weekly on v0.18.0 re-posted and committed (8a062658; page 9a030c04 in P: 12 cells gain a
+  number, 1 text-fail cell loses one). r14's window closed ~11:08; r13's window (rebuild + smoke + iPhone app build) opened 11:08:36;
+  the 18 Pro 0.6B dynamic retake started 11:08:29 on the job route (anchor first). The after-retake chain waits for an app binary
+  newer than 11:00 and a free hold, then installs r13's app, smokes llama.cpp 0.6B, moves arms.llama.cpp.ios to b11721, and runs the
+  llama.cpp iOS retake (exit 3 = retry).
