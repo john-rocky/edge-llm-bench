@@ -499,3 +499,14 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   the 18 Pro 0.6B dynamic retake started 11:08:29 on the job route (anchor first). The after-retake chain waits for an app binary
   newer than 11:00 and a free hold, then installs r13's app, smokes llama.cpp 0.6B, moves arms.llama.cpp.ios to b11721, and runs the
   llama.cpp iOS retake (exit 3 = retry).
+- 11:12–11:16 the Pixel 8a counting fix landed by the chain (selftests job / check / post all OK to files; fix a4ca53f8, allow-list
+  25f5e6e5 naming it, the Pixel llama.cpp retake committed 796eec68 with page 6eaf7f90 in P). r13's window (11:08:36–11:12): Mac
+  rebuild incremental (the 10:40 yardstick), smoke of 5 probe cells into results/raw/2026-10-19-llama-template-probe-mac, iPhone app
+  built 11:12 (the after-retake chain's mtime gate is met). My own reading of the probe records (refute-first): Gemma 4 E4B 1K
+  prompt 1106 tokens, conditions {chatTemplate jinja, thinking false}, 86 generated tokens, reply "I am sorry, but the passage you
+  provided is placeholder Lorem ipsum text … I cannot use it"; E2B 1K 1106 tokens, 256 generated, the same opening; E4B short-chat
+  20 tokens, a plain answer. So with its own template Gemma 4 through llama.cpp declines the lorem passage the way MLX OptiQ does
+  (text-fail under the current screen), where the bare prompt had produced 1098-token runs that passed as rates: the llama.cpp Gemma 4
+  1K page cells will likely turn text-fail after the retakes — the honest outcome under the agreed protocol; the lorem-padding /
+  -noref protocol question stays the team's decision (letter). FAILURES.txt of the probe = the known Metal teardown abort after the
+  record (crash reports, ggml_abort in ggml_metal_rsets), not a failed run.
