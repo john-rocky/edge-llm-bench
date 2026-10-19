@@ -1,0 +1,120 @@
+{
+ "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-android",
+ "phase": "payload",
+ "cells": "logs/dashboard-job/retake-2026-10-20-pixel8a.cells",
+ "device_key": "pixel8a",
+ "device_display": "Pixel 8a",
+ "device_identifier": "Pixel 8a",
+ "platform": "android",
+ "attempt": 1,
+ "started": "2026-10-20 06:00:07",
+ "ended": "2026-10-20 06:35:05",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 0.734 vs reference (b11721)",
+ "anchor": {
+  "regime": "cold",
+  "anchors": [
+   {
+    "cell": "llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat",
+    "primary": true,
+    "median": 39.2,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "b11721",
+    "reference": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+     "median": 53.4,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+     "median": 53.4,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+     "median": 53.4,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "b11721"
+    },
+    "ratio": 0.7340823970037454
+   },
+   {
+    "cell": "litert-lm-gpu litert-community/Qwen3-0.6B short-chat",
+    "primary": false,
+    "median": 32.79,
+    "n": 3,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "v0.18.0",
+    "reference": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+     "median": 32.09,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.18.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+     "median": 32.09,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.18.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+     "median": 32.09,
+     "n": 3,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.18.0"
+    },
+    "ratio": 1.0218136491118728
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-10-20-dashboard-v1-pixel8a-retake-2cells-anchor-android",
+ "runner_exit": 0,
+ "cells_expected": 3,
+ "cells_with_records": 3,
+ "retake": {
+  "ids": [
+   "2026-10-19-pixel8a-qwen306b-cpu-short-chat",
+   "2026-10-19-pixel8a-qwen306b-gpu-short-chat"
+  ],
+  "cells_file": "logs/dashboard-job/retake-2026-10-20-pixel8a.cells",
+  "rows": [
+   "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+   "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf",
+   "android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+  ]
+ },
+ "thermal_gate": [
+  "cpu-capped litert-lm-gpu_litert-community_Qwen3-0.6B_short-chat_2026-10-19T21-12-27.504650_run1: policy8 min 2363/2914 MHz (cpus 8)",
+  "cpu-capped litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-10-19T21-26-39.749783_run1: policy4 min 1572/2367 MHz (cpus 4-7); policy8 min 2363/2914 MHz (cpus 8)",
+  "cpu-capped litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-10-19T21-30-04.316402_run1: policy4 min 1418/2367 MHz (cpus 4-7); policy8 min 1885/2914 MHz (cpus 8)",
+  "cpu-capped litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat_2026-10-19T21-35-04.603199_run1: policy4 min 1221/2367 MHz (cpus 4-7); policy8 min 1885/2914 MHz (cpus 8)"
+ ],
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1"
+}
