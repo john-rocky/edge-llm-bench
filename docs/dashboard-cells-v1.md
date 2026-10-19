@@ -1314,6 +1314,9 @@ carries the version as `prompt_version` (after `task`; empty where the record na
   (`prompt_changed`, "prompt changed from the previous point (none → noref-2026-10-19): not compared", the
   line broken there), so the change never reads as a regression and queues no retake; later sittings compare
   among themselves. A retake whose previous point ran another version is not judged;
+- `./bench regress` (`scripts/regression_diff.py`) joins device cells on (device, runtime, model, task, prompt version,
+  context, cold / warm): a baseline on one text and a candidate on the other do not join, so the release-regression
+  matrix's 1K rows give no verdict across the change (the "no common cells" list names the versions);
 - ExecuTorch's `llama_main` reads a prompt rendered once on the host with the model's chat template
   (`<pte stem>.prompts/<task>.chat.txt`, `scripts/executorch/make_prompts.py`); `parsers.executorch_inputs`
   refuses a render whose `prompts.json` `sourceSha256` is not the repository file's and prints the re-render

@@ -196,7 +196,11 @@ def select(rows, sel):
 # (2304 / 4096 / 8192), and without the axis the three ladders pooled into one
 # "cell" whose median said nothing. Rows without the field keep an empty
 # component, so every pre-existing key is unchanged.
-GROUP = ("device", "runtime", "model_id", "task", "context_tokens", "cold_run")
+# prompt_version (the version of the task's prompt text, prompts/text/versions.tsv) joined it on
+# 2026-10-19: the 1K task's tail changed under its id, and a baseline on one text against a
+# candidate on the other is no comparison — the two sides do not join (no verdict), as the
+# regression watch never compares across a version. Rows without it keep an empty component.
+GROUP = ("device", "runtime", "model_id", "task", "prompt_version", "context_tokens", "cold_run")
 
 
 # fairness-rules §2 thermal guard, applied as code: only runs that STARTED at
@@ -268,9 +272,10 @@ def anchor_median(side_cells, anchors, device, cold_run, exclude_runtime, spread
         if rt == exclude_runtime:
             continue
         # an anchor is one cell at whatever allocation its cells line carries;
-        # match on everything but context_tokens
+        # match on everything but context_tokens (the anchors are short-chat cells,
+        # whose text has no version)
         vals = [v for k, runs in side_cells.items()
-                if (k[0], k[1], k[2], k[3], k[5]) == (device, rt, mid, task, cold_run)
+                if (k[0], k[1], k[2], k[3], k[4], k[6]) == (device, rt, mid, task, "", cold_run)
                 for v, _ in runs]
         if len(vals) < 2:
             continue

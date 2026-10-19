@@ -8,8 +8,8 @@ P = `~/code/litert-bench-dashboard` (read only).
 constant, the generator, the file: diff = the tail line; same id, 18 blocks, budget 256). Every record of a versioned task carries
 `conditions.promptVersion` (1K `noref-2026-10-19`, 2K noref `noref-2026-10-12`): Apple through `RunConditions`, Android / DDP / the Mac
 Python drivers from `prompts/text/versions.tsv`; the summary has `prompt_version`; the checker keys its prompt-token history by it; the
-watch and the page (P patch) compare a point only with points of its own version, so the break is marked and never red. A stale
-ExecuTorch render is refused. Mac smoke on the yardstick built from SIDE (`.build/dd-mac-noref`): llama.cpp Gemma 4 E4B, MLX OptiQ E4B,
+watch and the page (P patch) compare a point only with points of its own version, so the break is marked and never red; `./bench
+regress` joins no cells across versions. A stale ExecuTorch render is refused. Mac smoke on the yardstick built from SIDE (`.build/dd-mac-noref`): llama.cpp Gemma 4 E4B, MLX OptiQ E4B,
 LiteRT-LM Gemma 4 E2B and llama.cpp Qwen3 1.7B all answer the task and run to 256 tokens (+17 prompt tokens each); the iPhone app is built
 from SIDE into `.build/dd-ios-noref` (not installed). All 14 selftests green; the P patch applies to P c06e5a4 and passes P's
 check_regression and render_check on a real export with and without a synthetic break. Merge, dd-mac switch, install, the ExecuTorch
@@ -69,6 +69,9 @@ re-render and the flip date are the supervisor's.
   `prev_prompt` = that version. So the first point on the new text has `pct` null (never red, no retake); a back-out (A, B, A) compares the
   last A with the first A, marked. `judge` refuses a retake whose previous point ran another version. Outputs: `meta.prompt_changes`,
   `prompt_breaks[]`, the console / markdown line "prompt none -> noref-2026-10-19 (not compared)".
+- **`./bench regress`** (supervisor GO 12:4x, a second commit): `regression_diff.GROUP` adds `prompt_version` after `task` (rows without it
+  keep an empty component: every earlier key unchanged), the anchor lookup matches the version "" beside everything but the context
+  (`k[4]`, `k[6]`), `fmt_key` names a non-empty version; a baseline and a candidate on two versions do not join (no verdict).
 - **P patch** (`K/p-prompt-version.patch`, 4 files): `build.py` — `regression_prompt`, the same cut, `vs_prev.prompt_changed / prev_prompt`,
   `vs_first` within the version, the rules text, `regression.csv` column `prompt_version`, the build line's "prompt changes N"; page JS —
   `regVsPrev` "prompt changed, not compared", `regPromptText` "prompt changed from the previous point (none → noref-2026-10-19): not
@@ -85,6 +88,7 @@ re-render and the flip date are the supervisor's.
   the tail line = the 2K noref file's last line (`diff`); 18 `[n]` blocks. New `prompts/text/versions.tsv` (2 lines).
 - Drivers: `run_cell.prompt_version` (+ the record), `run_ddp` job `promptVersion` → `record.py`, `ortgenai_mac` / `uzu_mac` /
   `executorch_mac` `prompt_version`; `parsers.executorch_inputs` source-sha guard.
+- `./bench regress`: `regression_diff.GROUP` + `prompt_version`, the anchor lookup and `fmt_key` (second commit).
 - Summary / checker / watch: as in 設計. `results/summary/` rebuilt from the index export (5,988 rows; the CSV without `prompt_version`
   = HEAD's byte for byte; README +6 lines).
 - Docs: `docs/dashboard-cells-v1.md` "1K task tail (2026-10-19)" (decision, why, the two tails with sizes and shas, the version mark and
@@ -203,6 +207,35 @@ this branch's index with its summary rebuilt there (scratchpad `tools/p_test_r17
   S26 GPU series: prompt changes 1, check_regression PASS, the bench's --compare equal, plain export identical between P c06e5a4 and the
   patched build but for the new fields. 12:35:09–12:36:56 quiet hold for render_check: PASS on both builds. 12:3x the third ladder in
   SPEED_LADDER.md (no rates side by side: public repo), this file. Next: round close, lint, commit, the merge preview, the message.
+- 12:38 round-close lint PASS; commit **cc27f490** (29 files, explicit paths; author = committer = rockyshikoku@gmail.com, no attribution
+  lines). 12:39 `git merge-tree --write-tree main HEAD` (main 112db736, 22 commits after 80a36462): three conflicts — run_cell.py (r15's
+  `llama_chat_conditions` line beside this branch's `promptVersion` line), docs (r15 / r16 sections beside this one), device-runs.csv. A
+  scratchpad copy of that tree with both sides kept and the summary rebuilt passed all 14 selftests (12:42–12:45; quiet_wait found the lock
+  empty at start, r16's render_check hold began 12:43:50 while they ran at nice 19).
+- 12:40 found `./bench regress` joining the 1K rows without the version; 12:41 SendMessage; 12:4x supervisor GO; regression_diff.py edited,
+  the synthetic check (scratchpad `tools/regression_diff_check_r17.py`, run through quiet_wait): versions differ → the 1K cell does not
+  join, rc 0; same version → the -20 % REGRESSION as before, rc 1; the anchor path → IMPROVED +24.99 % through the anchor. Next: the second
+  commit, the message.
+
+## merge の下見 (for the supervisor's merge; nothing merged here)
+- `git merge-tree --write-tree --name-only main HEAD` with main at 112db736: CONFLICT in `android/bench/run_cell.py`, `docs/dashboard-cells-v1.md`,
+  `results/summary/device-runs.csv`; auto-merged `android/bench/selftest.py`, `android/bench/test_longctx1024.py`, `results/summary/README.md`.
+- Resolutions (checked): run_cell.py l.~1488 keep both lines, this branch's `**({"promptVersion": prompt_ver} if prompt_ver else {}),` then
+  main's `**(llama_chat_conditions(model_dev)` (it replaced the `chatMode` line); docs: keep main's sections ("Android llama.cpp Gemma 4
+  thinking", the MLX additions) and then "1K task tail (2026-10-19)" before "Open questions"; device-runs.csv: either side, then the
+  summary rebuilt from the merged index. That tree (scratchpad `merge-preview/`) passes py_compile, validate_cells, test_longctx1024,
+  test_longctx, test_render_rules, test_import_native_benchmark, session_check, regression_watch, dashboard_post, dashboard_job,
+  android/bench, ddp and autopilot selftests (all rc 0; scratchpad `logs/*.merge.txt`). The second commit (regression_diff.py, docs,
+  this file) was made after this preview; it touches no file main changed except the docs section it extends.
+
+## commit
+- **cc27f490** (branch `task1k-noref-tail`, not pushed, not merged): the change, the summary from the index, docs, this file's first
+  version, the P patch, the ladder. Then a second commit: `scripts/regression_diff.py` (the join key), the docs line for it, this file
+  (cc27f490, the merge preview, the round close). Author = committer = rockyshikoku@gmail.com, no attribution lines, explicit paths.
+- SIDE carries the same four Swift files (`cmp` = REPO), outside any commit.
+- Round-close lint (`~/code/standup/tools/opus/round_close_lint.sh`): `PASS round close: results/raw/2026-10-18-bench-autopilot-dev/ROUND17.md`.
+  `speed_ladder_lint.sh` on the lane's ladder file FAILs on its first section's `runtime:` header (r13's llama.cpp), as r14 recorded: a bench
+  round's ladder, not a conversion lane's.
 
 ## 監督が打つ物 (the flip, together and between sittings)
 1. **merge** `task1k-noref-tail` into main; `results/summary/device-runs.csv` conflicts on every row (main added rows since 80a36462, this
@@ -263,6 +296,9 @@ this branch's index with its summary rebuilt there (scratchpad `tools/p_test_r17
   `.build/dd-ios-noref`, so MAIN gained that dir beside `.build/dd-mac-noref` and the smoke dir.
 - `scripts/gen_task_prompts.py` said "A tail change is a new task id once a record carries this one"; the decision keeps the id and marks
   the version: the comment is rewritten.
+- The bench has a second regression verdict besides the watch: `./bench regress` (`scripts/regression_diff.py` l.199 `GROUP`) joined the
+  1K rows of `matrices/release-regression-litert.cells` without the version (a baseline on the old text against a candidate on the new
+  one would have been scored); the version joined its key in a second commit (supervisor GO 12:4x).
 
 ## 罠と袋小路
 - The PreToolUse hook blocks `python3 -` heredocs, and a `cat >> file <<EOF` whose text names a runtime, while any quiet window is open —
@@ -277,6 +313,9 @@ this branch's index with its summary rebuilt there (scratchpad `tools/p_test_r17
 - After a Bash / python edit, the Edit tool reports "modified on disk since you last read it": `git diff` the file before trusting it
   (here it held only this round's edits).
 - The harness blocks `sleep N; check`: wait on a Monitor that prints the log's end line.
+- zsh reads `$T:a` in `git show $T:android/…` as the `:a` (absolute path) modifier: write `"$T:android/…"` under bash, or `${T}`.
+- `quiet_wait.py` checks the lock once, at start: a job of minutes started in a free gap runs on into the next lane's hold (the merge
+  preview's selftests met r16's render_check hold at 12:43:50); keep such jobs at nice 19 or take a hold for them.
 
 ## op と delegate の観察
 - Not an op / delegate round: the task's text changed, no engine or backend. Measured: llama.cpp b11721 Metal runs both smoke cells to
@@ -305,6 +344,7 @@ this branch's index with its summary rebuilt there (scratchpad `tools/p_test_r17
 - `MAIN/results/raw/2026-10-19-noref-tail-probe-mac/` (the smoke: 4 records, FAILURES.txt = the teardown aborts, SKIPPED.txt empty,
   session_provenance.txt; not committed; its rows enter every in-tree rebuild of MAIN's summary: 消してよい after review).
 - Scratchpad (消してよい): `tools/` (window_r17.sh, ios_build_r17_inner.sh, et_rerender_r17.sh, schema_check_r17.py, selftests_r17.sh,
-  p_test_r17.sh), `probe/` (the smoke cells), `et/` (the dry runs; `rerender/` = the six re-rendered prompt dirs, what the flip's step 5
-  writes), `logs/`, `p-clone/` (P with the patch, uncommitted), `p-orig/` (P c06e5a4), `bench-export/` and `bench-export-break/` (index
-  exports), `pdist/` (three P builds with their screenshots), `head-device-runs.csv`.
+  p_test_r17.sh, regression_diff_check_r17.py), `probe/` (the smoke cells), `et/` (the dry runs; `rerender/` = the six re-rendered prompt
+  dirs, what the flip's step 5 writes), `logs/`, `p-clone/` (P with the patch, uncommitted), `p-orig/` (P c06e5a4), `bench-export/` and
+  `bench-export-break/` (index exports), `pdist/` (three P builds with their screenshots), `merge-preview/` (main 112db736 + cc27f490,
+  resolved), `head-device-runs.csv`.
