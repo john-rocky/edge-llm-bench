@@ -1,0 +1,1106 @@
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+index 02d1c0c9..15f8d1e6 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+@@ -5,6 +5,15 @@ plugins {
+   id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
+ }
+ 
++// LiteRT runtime version. 2.2.0 is the release the Qualcomm NPU runtime libraries in
++// src/main/jniLibs/arm64-v8a come from (litert_npu_runtime_libraries.zip, qualcomm_runtime_v81);
++// -Plitert.version=2.3.0 builds the upstream version (GPU accelerator in its own artifact).
++val litertVersion: String = providers.gradleProperty("litert.version").getOrElse("2.2.0")
++val litertAtLeast23 =
++  litertVersion.split('.').let { v ->
++    v[0].toInt() > 2 || (v[0].toInt() == 2 && v[1].toInt() >= 3)
++  }
++
+ android {
+   namespace = "com.google.ai.edge.examples.asr"
+   compileSdk = 35
+@@ -19,13 +28,19 @@ android {
+     versionName = "1.0"
+ 
+     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
++    buildConfigField("String", "LITERT_VERSION", "\"$litertVersion\"")
+ 
+     ndk {
+       // Chaquopy requires specific ABIs
+       abiFilters += listOf("arm64-v8a")
+     }
+-    // Needed for Qualcomm NPU runtimes
+-    packaging { jniLibs { useLegacyPackaging = true } }
++    // Needed for Qualcomm NPU runtimes; keepDebugSymbols ships them byte for byte (no strip).
++    packaging {
++      jniLibs {
++        useLegacyPackaging = true
++        keepDebugSymbols += "**/*.so"
++      }
++    }
+   }
+ 
+   buildTypes {
+@@ -42,7 +57,17 @@ android {
+     jvmTarget = "11"
+     freeCompilerArgs += "-Xskip-metadata-version-check"
+   }
+-  buildFeatures { viewBinding = true }
++  buildFeatures {
++    viewBinding = true
++    buildConfig = true
++  }
++
++  // Benchmark helpers (manifest, JSONL rows) shared by the JVM tests and the instrumented
++  // benchmark test (src/androidTest/.../AsrBenchTest.kt).
++  sourceSets {
++    getByName("test").java.srcDir("src/benchShared/java")
++    getByName("androidTest").java.srcDir("src/benchShared/java")
++  }
+ 
+   externalNativeBuild {
+     cmake {
+@@ -87,14 +112,13 @@ dependencies {
+   implementation(libs.androidx.constraintlayout)
+   implementation(libs.androidx.navigation.fragment.ktx)
+   implementation(libs.androidx.navigation.ui.ktx)
+-  implementation("com.google.ai.edge.litert:litert:2.3.0")
+-  implementation("com.google.ai.edge.litert:litert-gpu:2.3.0")
++  implementation("com.google.ai.edge.litert:litert:$litertVersion")
++  if (litertAtLeast23) implementation("com.google.ai.edge.litert:litert-gpu:$litertVersion")
+   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+   implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+   implementation(files("libs/jlibrosa-1.1.8-SNAPSHOT-jar-with-dependencies.jar"))
+-  implementation(project(":litert_npu_runtime_libraries:runtime_strings"))
+   testImplementation(libs.junit)
+   testImplementation("org.json:json:20231013")
+   androidTestImplementation(libs.androidx.junit)
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+new file mode 100644
+index 00000000..8d72a885
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+@@ -0,0 +1,648 @@
++package com.google.ai.edge.examples.asr
++
++import android.content.Context
++import android.content.Intent
++import android.content.IntentFilter
++import android.os.BatteryManager
++import android.os.Build
++import android.os.Bundle
++import android.os.PowerManager
++import android.os.Process
++import android.os.SystemClock
++import android.util.Log
++import androidx.test.core.app.ActivityScenario
++import androidx.test.ext.junit.runners.AndroidJUnit4
++import androidx.test.platform.app.InstrumentationRegistry
++import com.google.ai.edge.examples.asr.bench.BenchJson
++import com.google.ai.edge.examples.asr.bench.BenchManifest
++import com.google.ai.edge.examples.asr.bench.TranscriptAccumulator
++import com.google.ai.edge.examples.asr.bench.UtteranceResult
++import com.google.ai.edge.examples.asr.bench.median
++import com.google.ai.edge.litert.Accelerator
++import com.google.ai.edge.litert.CompiledModel
++import java.io.File
++import java.io.FileInputStream
++import java.io.FileOutputStream
++import java.security.MessageDigest
++import java.text.SimpleDateFormat
++import java.util.Date
++import java.util.Locale
++import java.util.TimeZone
++import java.util.concurrent.atomic.AtomicBoolean
++import kotlin.time.Duration
++import kotlin.time.Duration.Companion.milliseconds
++import kotlin.time.Duration.Companion.seconds
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.channels.Channel
++import kotlinx.coroutines.coroutineScope
++import kotlinx.coroutines.launch
++import kotlinx.coroutines.runBlocking
++import kotlinx.coroutines.yield
++import org.junit.Test
++import org.junit.runner.RunWith
++
++/**
++ * Runs the app's file-transcription pipeline over a manifest of WAV files, one utterance after the
++ * other in one process, and writes one JSONL row per utterance (edge-llm-bench
++ * docs/asr-litert-app-v1.md).
++ *
++ * The pipeline is MainActivity's file path at d15f8ae9, copied below with timing hooks and without
++ * the UI: FileAudioSource (5 s or 30 s windows, 2 s overlap) -> MelSpectroProcessor ->
++ * LiteRtRunner + TdtDecoder -> LevenshteinTokenMerger, in the activity's three coroutines and
++ * channels. The model is built once per process the way preparePipeline builds it.
++ *
++ * Arguments (am instrument -e <name> <value>):
++ * - model: model_metadata.json key, e.g. parakeet-tdt-0.6b-v3 or parakeet-tdt-0.6b-v3-30s
++ * - accelerator: cpu, gpu or npu
++ * - manifest: manifest TSV on the phone (id, WAV path relative to the manifest, seconds)
++ * - every: keep the rows at index 0, every, 2 * every, ... (4 = S4); default 1
++ * - limit: keep only the first N rows of that selection; default 0 = all
++ * - start_after: resume after this id (the host restarts the run after a crash or a hang)
++ * - failed_id, failed_kind: the utterance the previous process died on; written as an error row
++ * - out: output directory; default <external files dir>/bench
++ * - tag: output file stem; <tag>.jsonl, <tag>.vmhwm.log, <tag>.load-logcat.txt, <tag>.done
++ * - load_label: cold or warm, copied to the header (the host knows the order of processes)
++ * - foreground: true keeps MainActivity in the foreground for the whole run
++ * - app_commit: the source commit the APK was built from, copied to the header
++ */
++@RunWith(AndroidJUnit4::class)
++class AsrBenchTest {
++
++  /** What MainActivity.preparePipeline builds, plus the time each part took. */
++  private class Pipeline(
++    val audioPreprocessor: AudioPreprocessor,
++    val tokenizer: Tokenizer,
++    val speechRecognizer: SpeechRecognizer,
++    val modelInputInterval: Duration,
++    val preprocessorMs: Double,
++    val tokenizerMs: Double,
++    val loadMs: Double,
++  ) : AutoCloseable {
++    override fun close() {
++      audioPreprocessor.close()
++      speechRecognizer.close()
++      tokenizer.close()
++    }
++  }
++
++  /** Per-window times of one utterance; each list is written by one coroutine only. */
++  private class WindowTimes {
++    val melMs = ArrayList<Double>()
++    val encodeMs = ArrayList<Double>()
++    val decodeMs = ArrayList<Double>()
++    val tokens = ArrayList<Int>()
++  }
++
++  @Test
++  fun transcribeManifest() {
++    val context = InstrumentationRegistry.getInstrumentation().targetContext
++    val args = InstrumentationRegistry.getArguments()
++    val modelKey = args.getString("model") ?: "parakeet-tdt-0.6b-v3"
++    val acceleratorName = (args.getString("accelerator") ?: "cpu").lowercase(Locale.ROOT)
++    val accelerator =
++      when (acceleratorName) {
++        "cpu" -> Accelerator.CPU
++        "gpu" -> Accelerator.GPU
++        "npu" -> Accelerator.NPU
++        else -> throw IllegalArgumentException("accelerator must be cpu, gpu or npu")
++      }
++    val manifestFile = File(requireNotNull(args.getString("manifest")) { "manifest is required" })
++    val every = args.int("every", 1)
++    val limit = args.int("limit", 0)
++    val startAfter = args.getString("start_after")
++    val failedId = args.getString("failed_id")
++    val outDir =
++      File(args.getString("out") ?: File(context.getExternalFilesDir(null), "bench").path).apply {
++        mkdirs()
++      }
++    val tag = args.getString("tag") ?: "$modelKey-$acceleratorName"
++    val foreground = args.getString("foreground") == "true"
++
++    val selection =
++      BenchManifest.stride(BenchManifest.parse(manifestFile.readText(), manifestFile.parent), every)
++        .let { if (limit > 0) it.take(limit) else it }
++    val todo = if (startAfter != null) BenchManifest.after(selection, startAfter) else selection
++    val jsonl = FileOutputStream(File(outDir, "$tag.jsonl"), true)
++    fun emit(line: String) {
++      jsonl.write((line + "\n").toByteArray())
++      jsonl.flush()
++    }
++
++    val processStart = SystemClock.elapsedRealtimeNanos()
++    val sampler = MemorySampler(File(outDir, "$tag.vmhwm.log"), processStart).start()
++    val scenario = if (foreground) ActivityScenario.launch(MainActivity::class.java) else null
++    val thermalStart = thermalStatus(context)
++    val batteryStart = batteryCelsius(context)
++    Log.i(TAG, "start tag=$tag model=$modelKey accelerator=$acceleratorName todo=${todo.size}")
++
++    if (failedId != null) {
++      // The previous process of this run died on this utterance (watchdog or crash).
++      val row = selection.first { it.id == failedId }
++      emit(
++        BenchJson.utterance(
++          UtteranceResult(
++            row.id,
++            "",
++            row.seconds,
++            0.0,
++            error = args.getString("failed_kind") ?: "crash",
++          )
++        )
++      )
++    }
++
++    val modelConfig =
++      context.assets.open(MODEL_METADATA_PATH).bufferedReader().use { it.readText() }.let {
++        ModelMetadataManager(it).getModelConfig(modelKey)
++      }
++    val pipeline = runBlocking(Dispatchers.IO) { preparePipeline(context, modelKey, modelConfig, accelerator) }
++    val modelFile =
++      File(
++        context.filesDir,
++        if (accelerator == Accelerator.NPU) modelConfig.npuModelPath else modelConfig.modelPath,
++      )
++    Log.i(TAG, "loaded in ${pipeline.loadMs} ms (${modelFile.path})")
++    // This process's log so far = what LiteRT logged while it built the model (accelerators, the
++    // delegate that took the graph), kept before the merger's per-token lines wrap the ring buffer.
++    dumpOwnLogcat(File(outDir, "$tag.load-logcat.txt"))
++    emit(
++      BenchJson.header(
++        linkedMapOf(
++          "harness" to BenchJson.HARNESS,
++          "tag" to tag,
++          "model_name" to modelKey,
++          "backend" to acceleratorName,
++          "num_threads" to LiteRtRunner.CPU_NUM_THREADS,
++          "litert_version" to BuildConfig.LITERT_VERSION,
++          "app_commit" to args.getString("app_commit"),
++          "model_file" to modelFile.path,
++          "model_bytes" to modelFile.length(),
++          "input_ms" to modelConfig.inputMilliseconds,
++          "overlap_ms" to FILE_AUDIO_CHUNK_OVERLAP_DURATION.inWholeMilliseconds,
++          "max_levenshtein_distance" to FILE_MAX_LEVENSHTEIN_DISTANCE,
++          "gpu_precision" to
++            if (modelConfig.gpuEnforceFloat32) "FP32" else "DEFAULT",
++          "gpu_constant_tensor_sharing" to modelConfig.gpuShareConstantTensors,
++          "npu_htp_performance_mode" to
++            if (modelConfig.npuHighPerformance) "HIGH_PERFORMANCE" else "DEFAULT",
++          "load_seconds" to pipeline.loadMs / 1000.0,
++          "load_ms" to pipeline.loadMs,
++          "load_scope" to "LiteRtRunner constructor (CompiledModel.create + decoder and I/O buffers)",
++          "tokenizer_ms" to pipeline.tokenizerMs,
++          "preprocessor_ms" to pipeline.preprocessorMs,
++          "load_label" to args.getString("load_label"),
++          "manifest" to manifestFile.path,
++          "every" to every,
++          "limit" to limit,
++          "start_after" to startAfter,
++          "utterances_selected" to selection.size,
++          "utterances_todo" to todo.size,
++          "foreground" to foreground,
++          "pid" to Process.myPid(),
++          "started_utc" to iso(Date()),
++          "device" to
++            linkedMapOf(
++              "model" to Build.MODEL,
++              "soc" to Build.SOC_MODEL,
++              "android" to Build.VERSION.RELEASE,
++              "build" to Build.DISPLAY,
++              "security_patch" to Build.VERSION.SECURITY_PATCH,
++            ),
++          "thermal_status_start" to thermalStart,
++          "battery_celsius_start" to batteryStart,
++        )
++      )
++    )
++
++    var done = 0
++    var failed = 0
++    var sumAudio = 0.0
++    var sumWall = 0.0
++    val utteranceRtf = ArrayList<Double>()
++    for ((index, row) in todo.withIndex()) {
++      val times = WindowTimes()
++      var text = ""
++      var error: String? = null
++      var wallSeconds = 0.0
++      try {
++        val (t, w) = runBlocking(Dispatchers.IO) { processFileAudio(File(row.wavPath), pipeline, times) }
++        text = t
++        wallSeconds = w
++      } catch (e: Throwable) {
++        error = "${e.javaClass.simpleName}: ${e.message}"
++        Log.e(TAG, "utterance ${row.id} failed", e)
++      }
++      emit(
++        BenchJson.utterance(
++          UtteranceResult(
++            row.id,
++            text,
++            row.seconds,
++            wallSeconds,
++            times.melMs,
++            times.encodeMs,
++            times.decodeMs,
++            times.tokens,
++            error,
++          )
++        )
++      )
++      if (error == null) {
++        done++
++        sumAudio += row.seconds
++        sumWall += wallSeconds
++        utteranceRtf.add(wallSeconds / row.seconds)
++      } else {
++        failed++
++      }
++      if ((index + 1) % 25 == 0 || index + 1 == todo.size) {
++        Log.i(TAG, "progress ${index + 1}/${todo.size} rtf=${sumWall / sumAudio}")
++      }
++    }
++
++    val elapsedSeconds = (SystemClock.elapsedRealtimeNanos() - processStart) / 1e9
++    val thermalEnd = thermalStatus(context)
++    val batteryEnd = batteryCelsius(context)
++    pipeline.close()
++    scenario?.close()
++    val memory = sampler.stop()
++    val vmHwmKb = procStatusKb("VmHWM")
++    // Witnesses, read after the measurement: the native libraries the process ran with, the model's
++    // bytes, and the WAVs of the selection in order (the chain of SET-S4.json for S4).
++    val nativeLibs =
++      File(context.applicationInfo.nativeLibraryDir)
++        .listFiles { f -> f.name.endsWith(".so") }
++        .orEmpty()
++        .sortedBy { it.name }
++        .associate { it.name to sha256(listOf(it)) }
++    val rtf = if (sumAudio > 0) sumWall / sumAudio else Double.NaN
++    emit(
++      BenchJson.footer(
++        linkedMapOf(
++          "tag" to tag,
++          "utterances_done" to done,
++          "utterances_failed" to failed,
++          "sum_audio_seconds" to sumAudio,
++          "sum_processing_seconds" to sumWall,
++          "rtf" to rtf,
++          "rtfx" to 1.0 / rtf,
++          "median_utterance_rtf" to median(utteranceRtf),
++          "vmhwm_kb" to vmHwmKb,
++          "peak_rss_bytes" to vmHwmKb?.let { it * 1024 },
++          "sampler_max_rss_kb" to memory.first,
++          "sampler_max_hwm_kb" to memory.second,
++          "memory_scope" to "instrumentation process = the app process (ART, test runner, app)",
++          "cpus_allowed_seen" to sampler.cpusAllowedSeen(),
++          "cpu_ceilings" to sampler.cpuCeilings(),
++          "thermal_status_end" to thermalEnd,
++          "battery_celsius_end" to batteryEnd,
++          "elapsed_seconds" to elapsedSeconds,
++          "model_sha256" to sha256(listOf(modelFile)),
++          "selection_wav_sha256_chain" to sha256(selection.map { File(it.wavPath) }),
++          "native_libs" to nativeLibs,
++          "finished_utc" to iso(Date()),
++        )
++      )
++    )
++    jsonl.close()
++    File(outDir, "$tag.done").writeText("done=$done failed=$failed rtf=$rtf\n")
++    Log.i(TAG, "done tag=$tag done=$done failed=$failed rtf=$rtf vmhwm_kb=$vmHwmKb")
++  }
++
++  // ---- MainActivity.preparePipeline (d15f8ae9), timed, on the IO dispatcher as in the activity.
++
++  private fun preparePipeline(
++    context: Context,
++    modelKey: String,
++    modelConfig: ModelConfig,
++    accelerator: Accelerator,
++  ): Pipeline {
++    var t = SystemClock.elapsedRealtimeNanos()
++    val logMelSpectro = modelConfig.logMelSpectro
++    val audioPreprocessor =
++      if (logMelSpectro != null) {
++        MelSpectroProcessor(SAMPLING_RATE, logMelSpectro)
++      } else {
++        DummyAudioProcessor()
++      }
++    val preprocessorMs = msSince(t)
++    t = SystemClock.elapsedRealtimeNanos()
++    val tokenizer = HuggingfaceTokenizer(context, modelConfig)
++    val tokenizerMs = msSince(t)
++    val decoderFactory: (CompiledModel, ModelConfig) -> LiteRtRunner.Decoder =
++      when {
++        modelKey.contains("-ctc-") -> { _, _ -> CtcDecoder(tokenizer.vocabSize) }
++        modelKey.contains("-tdt") -> { model, config -> TdtDecoder(model, config) }
++        else -> { model, config -> LiteRtRunner.DefaultDecoder(model, config) }
++      }
++    t = SystemClock.elapsedRealtimeNanos()
++    val speechRecognizer = LiteRtRunner(context, modelConfig, accelerator, decoderFactory)
++    val loadMs = msSince(t)
++    return Pipeline(
++      audioPreprocessor,
++      tokenizer,
++      speechRecognizer,
++      modelConfig.inputMilliseconds.milliseconds,
++      preprocessorMs,
++      tokenizerMs,
++      loadMs,
++    )
++  }
++
++  // ---- MainActivity.processFileAudio and transcribeAudio (d15f8ae9) with the wall clock of one
++  // utterance: from opening the WAV until the merger has taken the last token.
++
++  private suspend fun processFileAudio(
++    wav: File,
++    pipeline: Pipeline,
++    times: WindowTimes,
++  ): Pair<String, Double> {
++    val start = SystemClock.elapsedRealtimeNanos()
++    val text =
++      FileInputStream(wav).use { inputStream ->
++        FileAudioSource(
++            inputStream,
++            SAMPLING_RATE,
++            pipeline.modelInputInterval,
++            FILE_AUDIO_CHUNK_OVERLAP_DURATION,
++          )
++          .use { audioSource ->
++            transcribeAudio(
++              audioSource,
++              (FILE_AUDIO_CHUNK_OVERLAP_DURATION / pipeline.modelInputInterval).toFloat(),
++              FILE_MAX_LEVENSHTEIN_DISTANCE,
++              pipeline,
++              times,
++            )
++          }
++      }
++    return Pair(text, (SystemClock.elapsedRealtimeNanos() - start) / 1e9)
++  }
++
++  private suspend fun transcribeAudio(
++    audioSource: AudioSource,
++    overlapRatio: Float,
++    maxLevenshteinDistance: Int,
++    pipeline: Pipeline,
++    times: WindowTimes,
++  ): String {
++    val preprocessedChannel = Channel<FloatArray>(Channel.BUFFERED)
++    val tokenChannel = Channel<Pair<Int, Int>>(Channel.BUFFERED)
++    val transcript = TranscriptAccumulator()
++    LevenshteinTokenMerger(
++        pipeline.tokenizer,
++        overlapRatio,
++        maxLevenshteinDistance = maxLevenshteinDistance,
++      )
++      .use { postprocessor ->
++        coroutineScope {
++          scheduleAudioPreprocessing(
++            audioSource,
++            pipeline.audioPreprocessor,
++            preprocessedChannel,
++            times,
++          )
++          scheduleSpeechRecognition(pipeline.speechRecognizer, preprocessedChannel, tokenChannel, times)
++          scheduleTokenPostprocessing(postprocessor, tokenChannel, transcript)
++        }
++      }
++    return transcript.text()
++  }
++
++  private fun CoroutineScope.scheduleAudioPreprocessing(
++    audioSource: AudioSource,
++    audioPreprocessor: AudioPreprocessor,
++    preprocessedChannel: Channel<FloatArray>,
++    times: WindowTimes,
++  ) =
++    launch(Dispatchers.IO) {
++      try {
++        for (audioChunk in audioSource.getAudioData()) {
++          val t = SystemClock.elapsedRealtimeNanos()
++          val preprocessed = audioPreprocessor.process(audioChunk)
++          times.melMs.add(msSince(t))
++          preprocessedChannel.send(preprocessed)
++          yield()
++        }
++      } finally {
++        preprocessedChannel.close()
++      }
++    }
++
++  private fun CoroutineScope.scheduleSpeechRecognition(
++    speechRecognizer: SpeechRecognizer,
++    preprocessedChannel: Channel<FloatArray>,
++    tokenChannel: Channel<Pair<Int, Int>>,
++    times: WindowTimes,
++  ) =
++    launch(Dispatchers.IO) {
++      try {
++        for (preprocessed in preprocessedChannel) {
++          // recognize() runs the encoder; the decoder runs lazily inside the returned sequence, so
++          // the decode time is the time spent in the iterator's own calls (not in the channel).
++          var t = SystemClock.elapsedRealtimeNanos()
++          val tokenSequence = speechRecognizer.recognize(preprocessed)
++          times.encodeMs.add(msSince(t))
++          var decodeNs = 0L
++          var tokens = 0
++          val iterator = tokenSequence.iterator()
++          while (true) {
++            t = SystemClock.elapsedRealtimeNanos()
++            val hasNext = iterator.hasNext()
++            val next = if (hasNext) iterator.next() else null
++            decodeNs += SystemClock.elapsedRealtimeNanos() - t
++            if (next == null) break
++            val (tokenId, timestamp) = next
++            if (tokenId != SpeechRecognizer.END_OF_SEQUENCE) tokens++
++            tokenChannel.send(Pair(tokenId, timestamp))
++            if (tokenId == SpeechRecognizer.END_OF_SEQUENCE) break
++          }
++          times.decodeMs.add(decodeNs / 1e6)
++          times.tokens.add(tokens)
++          yield()
++        }
++      } finally {
++        tokenChannel.close()
++      }
++    }
++
++  private fun CoroutineScope.scheduleTokenPostprocessing(
++    postprocessor: Postprocessor,
++    tokenChannel: Channel<Pair<Int, Int>>,
++    transcript: TranscriptAccumulator,
++  ) =
++    launch(Dispatchers.Default) {
++      // The activity hands every non-null result to updateTranscriptionUI on the main thread;
++      // the accumulator keeps the text that view would show.
++      for ((tokenId, timestamp) in tokenChannel) {
++        transcript.add(postprocessor.decode(tokenId, timestamp))
++      }
++    }
++
++  // ---- Device state and memory.
++
++  /**
++   * Samples VmRSS and VmHWM of this process, the CPUs it may run on and every cpufreq policy's
++   * ceiling (scaling_max_freq, when readable) every second into a log; keeps the maxima, the
++   * lowest ceiling per policy and every Cpus_allowed_list seen (edge-llm-bench cpu-cap-rule).
++   */
++  private class MemorySampler(private val log: File, private val origin: Long) {
++    private val stop = AtomicBoolean(false)
++    private var maxRss = 0L
++    private var maxHwm = 0L
++    private val policies =
++      File("/sys/devices/system/cpu/cpufreq")
++        .listFiles { f -> f.name.startsWith("policy") }
++        .orEmpty()
++        .sortedBy { it.name }
++    private val minCeilingKhz = HashMap<String, Long>()
++    private val cpusAllowed = LinkedHashSet<String>()
++    private lateinit var thread: Thread
++
++    fun start(): MemorySampler {
++      thread =
++        Thread {
++            log.appendText(
++              "# elapsed_ms\tVmRSS_kB\tVmHWM_kB\tCpus_allowed_list" +
++                policies.joinToString("") { "\t${it.name}_scaling_max_kHz" } +
++                " (pid ${Process.myPid()})\n"
++            )
++            while (!stop.get()) {
++              val rss = procStatusKb("VmRSS") ?: 0L
++              val hwm = procStatusKb("VmHWM") ?: 0L
++              val cpus = procStatusText("Cpus_allowed_list") ?: ""
++              val ceilings = policies.map { readLong(File(it, "scaling_max_freq")) }
++              synchronized(this) {
++                maxRss = maxOf(maxRss, rss)
++                maxHwm = maxOf(maxHwm, hwm)
++                if (cpus.isNotEmpty()) cpusAllowed.add(cpus)
++                policies.zip(ceilings).forEach { (p, khz) ->
++                  if (khz != null) minCeilingKhz[p.name] = minOf(minCeilingKhz[p.name] ?: khz, khz)
++                }
++              }
++              log.appendText(
++                "${(SystemClock.elapsedRealtimeNanos() - origin) / 1_000_000}\t$rss\t$hwm\t$cpus" +
++                  ceilings.joinToString("") { "\t${it ?: "-"}" } +
++                  "\n"
++              )
++              try {
++                Thread.sleep(1000)
++              } catch (e: InterruptedException) {
++                break
++              }
++            }
++          }
++          .apply {
++            isDaemon = true
++            name = "vmhwm-sampler"
++            start()
++          }
++      return this
++    }
++
++    /** Returns (max VmRSS kB, max VmHWM kB). */
++    fun stop(): Pair<Long, Long> {
++      stop.set(true)
++      thread.interrupt()
++      thread.join(2000)
++      return synchronized(this) { Pair(maxRss, maxHwm) }
++    }
++
++    /** Per policy: its CPUs, hardware maximum and the lowest ceiling read (null = unreadable). */
++    fun cpuCeilings(): Map<String, Map<String, Any?>> =
++      synchronized(this) {
++        policies.associate {
++          it.name to
++            linkedMapOf(
++              "cpus" to readText(File(it, "related_cpus")),
++              "hw_khz" to readLong(File(it, "cpuinfo_max_freq")),
++              "min_khz" to minCeilingKhz[it.name],
++            )
++        }
++      }
++
++    fun cpusAllowedSeen(): List<String> = synchronized(this) { cpusAllowed.toList() }
++  }
++
++  private companion object {
++    const val TAG = "AsrBench"
++    const val MODEL_METADATA_PATH = "model_metadata.json"
++
++    // MainActivity's file-path constants (d15f8ae9).
++    const val SAMPLING_RATE = 16000
++    val FILE_AUDIO_CHUNK_OVERLAP_DURATION = 2.seconds
++    const val FILE_MAX_LEVENSHTEIN_DISTANCE = 5
++
++    fun Bundle.int(name: String, default: Int) = getString(name)?.toInt() ?: default
++
++    fun msSince(startNs: Long) = (SystemClock.elapsedRealtimeNanos() - startNs) / 1e6
++
++    fun procStatusText(key: String): String? =
++      try {
++        File("/proc/self/status").useLines { lines ->
++          lines.firstOrNull { it.startsWith("$key:") }?.substringAfter(':')?.trim()
++        }
++      } catch (e: Exception) {
++        null
++      }
++
++    fun procStatusKb(key: String): Long? =
++      procStatusText(key)?.split(Regex("\\s+"))?.firstOrNull()?.toLongOrNull()
++
++    fun readText(file: File): String? =
++      try {
++        file.readText().trim()
++      } catch (e: Exception) {
++        null
++      }
++
++    fun readLong(file: File): Long? = readText(file)?.toLongOrNull()
++
++    /** Appends `logcat -d --pid=<this process>` to [file] (an app may read its own log). */
++    fun dumpOwnLogcat(file: File) {
++      try {
++        val process =
++          ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=${Process.myPid()}")
++            .redirectErrorStream(true)
++            .start()
++        val text = process.inputStream.bufferedReader().use { it.readText() }
++        process.waitFor()
++        file.appendText("# logcat --pid=${Process.myPid()} at ${iso(Date())}\n$text")
++      } catch (e: Exception) {
++        Log.w(TAG, "logcat dump failed", e)
++      }
++    }
++
++    fun thermalStatus(context: Context): Int =
++      (context.getSystemService(Context.POWER_SERVICE) as PowerManager).currentThermalStatus
++
++    fun batteryCelsius(context: Context): Double? =
++      context
++        .registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
++        ?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE)
++        ?.takeIf { it != Int.MIN_VALUE }
++        ?.let { it / 10.0 }
++
++    /** SHA-256 over the bytes of [files] in order (one file: its own hash). */
++    fun sha256(files: List<File>): String {
++      val digest = MessageDigest.getInstance("SHA-256")
++      val buffer = ByteArray(1 shl 20)
++      for (file in files) {
++        FileInputStream(file).use { input ->
++          while (true) {
++            val n = input.read(buffer)
++            if (n < 0) break
++            digest.update(buffer, 0, n)
++          }
++        }
++      }
++      return digest.digest().joinToString("") { "%02x".format(it) }
++    }
++
++    fun iso(date: Date): String =
++      SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
++        .apply { timeZone = TimeZone.getTimeZone("UTC") }
++        .format(date)
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt
+new file mode 100644
+index 00000000..f0b67716
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt
+@@ -0,0 +1,136 @@
++package com.google.ai.edge.examples.asr.bench
++
++import com.google.ai.edge.examples.asr.Postprocessor
++import org.json.JSONArray
++import org.json.JSONObject
++
++/** One utterance of a benchmark manifest: its id, its WAV (16 kHz mono PCM16) and its length. */
++data class ManifestRow(val id: String, val wavPath: String, val seconds: Double)
++
++/**
++ * The benchmark manifest: one line per utterance, `id<TAB>wav<TAB>seconds`, in the set's order. A
++ * relative wav path is resolved against the manifest's directory.
++ */
++object BenchManifest {
++  fun parse(text: String, baseDir: String? = null): List<ManifestRow> =
++    text
++      .lineSequence()
++      .mapIndexedNotNull { index, line ->
++        if (line.isBlank()) return@mapIndexedNotNull null
++        val cols = line.trimEnd('\r').split('\t')
++        require(cols.size == 3) {
++          "manifest line ${index + 1}: expected 3 tab-separated columns, got ${cols.size}"
++        }
++        val seconds =
++          requireNotNull(cols[2].toDoubleOrNull()) {
++            "manifest line ${index + 1}: seconds '${cols[2]}' is not a number"
++          }
++        val path = if (baseDir != null && !cols[1].startsWith("/")) "$baseDir/${cols[1]}" else cols[1]
++        ManifestRow(cols[0], path, seconds)
++      }
++      .toList()
++
++  /** The rows at index 0, every, 2 * every, ... in order (S4 = every 4th row from the first). */
++  fun stride(rows: List<ManifestRow>, every: Int): List<ManifestRow> {
++    require(every >= 1) { "every must be at least 1, got $every" }
++    return rows.filterIndexed { index, _ -> index % every == 0 }
++  }
++
++  /** The rows after the row with [id], to resume a run after a crash or a hang. */
++  fun after(rows: List<ManifestRow>, id: String): List<ManifestRow> {
++    val index = rows.indexOfFirst { it.id == id }
++    require(index >= 0) { "start_after id $id is not in the selection" }
++    return rows.subList(index + 1, rows.size)
++  }
++}
++
++/**
++ * The text MainActivity shows when a file transcription ends: every confirmed text merged in
++ * order, then the unconfirmed text of the last update (scheduleTokenPostprocessing and
++ * updateTranscriptionUI).
++ */
++class TranscriptAccumulator {
++  private var totalConfirmedText = ""
++  private var unconfirmedText = ""
++
++  fun add(decodedText: Postprocessor.DecodedText?) {
++    if (decodedText == null) return
++    totalConfirmedText = merge(totalConfirmedText, decodedText.confirmedText)
++    unconfirmedText = decodedText.unconfirmedText
++  }
++
++  fun text(): String = merge(totalConfirmedText, unconfirmedText)
++
++  private fun merge(prev: String, next: String) =
++    listOf(prev, next).filter { it.isNotEmpty() }.joinToString(separator = " ")
++}
++
++/** One transcribed utterance with the per-window times of the pipeline's three stages. */
++data class UtteranceResult(
++  val id: String,
++  val text: String,
++  val audioSeconds: Double,
++  val processingSeconds: Double,
++  val melMs: List<Double> = emptyList(),
++  val encodeMs: List<Double> = emptyList(),
++  val decodeMs: List<Double> = emptyList(),
++  val tokens: List<Int> = emptyList(),
++  val error: String? = null,
++)
++
++/**
++ * JSONL rows in the shape tools/omni-eval/score.py reads (edge-llm-bench): a header and a footer
++ * with a `type` and no `id`, and one row per utterance with `id`, `text`, `audio_seconds` and
++ * `processing_seconds`.
++ */
++object BenchJson {
++  const val HARNESS = "asr-litert-app-v1"
++
++  fun header(fields: Map<String, Any?>): String = typed("header", fields)
++
++  fun footer(fields: Map<String, Any?>): String = typed("footer", fields)
++
++  fun utterance(result: UtteranceResult): String {
++    val row = JSONObject()
++    row.put("type", "utterance")
++    row.put("id", result.id)
++    row.put("text", result.text)
++    row.put("audio_seconds", result.audioSeconds)
++    row.put("processing_seconds", round3(result.processingSeconds))
++    row.put("windows", result.encodeMs.size)
++    row.put("empty_windows", result.tokens.count { it == 0 })
++    row.put("tokens", JSONArray(result.tokens))
++    row.put("mel_ms", JSONArray(result.melMs.map(::round3)))
++    row.put("encode_ms", JSONArray(result.encodeMs.map(::round3)))
++    row.put("decode_ms", JSONArray(result.decodeMs.map(::round3)))
++    if (result.error != null) row.put("error", result.error)
++    return row.toString()
++  }
++
++  private fun typed(type: String, fields: Map<String, Any?>): String {
++    require("id" !in fields) { "a $type row must not carry an id (score.py reads rows with an id)" }
++    val row = JSONObject()
++    row.put("type", type)
++    for ((key, value) in fields) row.put(key, toJson(value))
++    return row.toString()
++  }
++
++  private fun toJson(value: Any?): Any =
++    when (value) {
++      null -> JSONObject.NULL
++      is Map<*, *> -> JSONObject().also { o -> value.forEach { (k, v) -> o.put(k.toString(), toJson(v)) } }
++      is Iterable<*> -> JSONArray().also { a -> value.forEach { a.put(toJson(it)) } }
++      is Double -> if (value.isNaN() || value.isInfinite()) JSONObject.NULL else value
++      else -> value
++    }
++
++  fun round3(value: Double): Double = Math.round(value * 1000.0) / 1000.0
++}
++
++/** The median of [values], or null when there are none. */
++fun median(values: List<Double>): Double? {
++  if (values.isEmpty()) return null
++  val sorted = values.sorted()
++  val mid = sorted.size / 2
++  return if (sorted.size % 2 == 1) sorted[mid] else (sorted[mid - 1] + sorted[mid]) / 2.0
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/assets/model_metadata.json b/samples/litert/speech_recognition/AndroidApp/app/src/main/assets/model_metadata.json
+index 311bb3ed..dc608476 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/main/assets/model_metadata.json
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/assets/model_metadata.json
+@@ -12,6 +12,18 @@
+     },
+     "decodeStartTokenId": 8192
+   },
++  "parakeet-tdt-0.6b-v3-30s": {
++    "modelRemoteUrl": "https://huggingface.co/mlboydaisuke/Parakeet-TDT-0.6B-v3-LiteRT/resolve/main/parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite",
++    "tokenizerUrl": "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3/resolve/main/tokenizer.json",
++    "inputMilliseconds": 30000,
++    "logMelSpectro": {
++      "nFFT": 512,
++      "nMels": 128,
++      "nFrames": 3000,
++      "preemphasis": 0.97
++    },
++    "decodeStartTokenId": 8192
++  },
+   "parakeet-ctc-0.6b": {
+     "modelRemoteUrl": "https://huggingface.co/litert-community/parakeet-ctc-0.6b/resolve/main/parakeet_ctc_0.6b_5s_i8.tflite",
+     "npuModelRemoteUrlPattern": "https://huggingface.co/litert-community/parakeet-ctc-0.6b/resolve/main/parakeet_ctc_0.6b_5s_f32_<target>.tflite",
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt
+index e0170920..30026562 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/LiteRtRunner.kt
+@@ -55,6 +55,8 @@ class LiteRtRunner(
+       val accelerators = setOf(Accelerator.CPU, accelerator)
+ 
+       val options = CompiledModel.Options(accelerators)
++      // Set the CPU thread count explicitly (the CPU path and the CPU fallback of GPU / NPU).
++      options.cpuOptions = CompiledModel.CpuOptions(numThreads = CPU_NUM_THREADS)
+       if (accelerator == Accelerator.GPU) {
+         // Force float32 and constant tensors sharing for GPU inference.
+         options.gpuOptions =
+@@ -199,6 +201,7 @@ class LiteRtRunner(
+ 
+     private const val ENCODE_SIGNATURE = "encode"
+     internal const val DECODE_SIGNATURE = "decode"
++    internal const val CPU_NUM_THREADS = 4
+     @VisibleForTesting internal const val MASKED_IN_FLOAT_VALUE = 0.0f
+     @VisibleForTesting internal const val MASKED_OUT_FLOAT_VALUE = -0.7f * Float.MAX_VALUE
+ 
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/bench/BenchIoTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/bench/BenchIoTest.kt
+new file mode 100644
+index 00000000..af7262ac
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/bench/BenchIoTest.kt
+@@ -0,0 +1,153 @@
++package com.google.ai.edge.examples.asr.bench
++
++import com.google.ai.edge.examples.asr.Postprocessor
++import org.json.JSONObject
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertFalse
++import org.junit.Assert.assertNull
++import org.junit.Assert.assertTrue
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.junit.runners.JUnit4
++
++@RunWith(JUnit4::class)
++class BenchIoTest {
++
++  private fun rows(n: Int) = (0 until n).map { ManifestRow("utt-$it", "/sets/utt-$it.wav", 1.0 + it) }
++
++  @Test
++  fun parse_readsThreeColumnsAndResolvesRelativePaths() {
++    val text = "a-1\ta-1.wav\t3.5\n\nb-2\t/abs/b-2.wav\t12.25\r\n"
++    val parsed = BenchManifest.parse(text, "/sdcard/sets")
++    assertEquals(
++      listOf(
++        ManifestRow("a-1", "/sdcard/sets/a-1.wav", 3.5),
++        ManifestRow("b-2", "/abs/b-2.wav", 12.25),
++      ),
++      parsed,
++    )
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun parse_rejectsAMissingColumn() {
++    BenchManifest.parse("a-1\ta-1.wav\n")
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun parse_rejectsSecondsThatAreNotANumber() {
++    BenchManifest.parse("a-1\ta-1.wav\tlong\n")
++  }
++
++  @Test
++  fun stride_s4KeepsEveryFourthRowFromTheFirst() {
++    // LibriSpeech test-clean: 2620 utterances -> S4 = 655 (index 0, 4, ..., 2616).
++    val s4 = BenchManifest.stride(rows(2620), 4)
++    assertEquals(655, s4.size)
++    assertEquals("utt-0", s4.first().id)
++    assertEquals("utt-4", s4[1].id)
++    assertEquals("utt-2616", s4.last().id)
++    assertEquals(rows(2620), BenchManifest.stride(rows(2620), 1))
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun stride_rejectsZero() {
++    BenchManifest.stride(rows(3), 0)
++  }
++
++  @Test
++  fun after_resumesBehindTheGivenId() {
++    val s4 = BenchManifest.stride(rows(20), 4)
++    assertEquals(listOf("utt-12", "utt-16"), BenchManifest.after(s4, "utt-8").map { it.id })
++    assertTrue(BenchManifest.after(s4, "utt-16").isEmpty())
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun after_rejectsAnIdOutsideTheSelection() {
++    BenchManifest.after(BenchManifest.stride(rows(20), 4), "utt-1")
++  }
++
++  @Test
++  fun transcript_isWhatTheActivityShowsAtTheEnd() {
++    val t = TranscriptAccumulator()
++    t.add(Postprocessor.DecodedText("", "hello wor"))
++    t.add(null) // "too short" updates leave the text as it is
++    t.add(Postprocessor.DecodedText("hello", "world and"))
++    t.add(Postprocessor.DecodedText("world", "and more"))
++    assertEquals("hello world and more", t.text())
++
++    val silenceAtTheEnd = TranscriptAccumulator()
++    silenceAtTheEnd.add(Postprocessor.DecodedText("", "one two"))
++    silenceAtTheEnd.add(Postprocessor.DecodedText("one two", ""))
++    assertEquals("one two", silenceAtTheEnd.text())
++
++    assertEquals("", TranscriptAccumulator().text())
++  }
++
++  @Test
++  fun utterance_rowHasTheFieldsScorePyReads() {
++    val row =
++      JSONObject(
++        BenchJson.utterance(
++          UtteranceResult(
++            id = "1089-134686-0000",
++            text = "he said \"yes\" — then left",
++            audioSeconds = 10.435,
++            processingSeconds = 0.4567891,
++            melMs = listOf(12.3456, 11.0),
++            encodeMs = listOf(80.0, 79.5),
++            decodeMs = listOf(20.25, 0.5),
++            tokens = listOf(9, 0),
++          )
++        )
++      )
++    assertEquals("utterance", row.getString("type"))
++    assertEquals("1089-134686-0000", row.getString("id"))
++    assertEquals("he said \"yes\" — then left", row.getString("text"))
++    assertEquals(10.435, row.getDouble("audio_seconds"), 0.0)
++    assertEquals(0.457, row.getDouble("processing_seconds"), 0.0)
++    assertEquals(2, row.getInt("windows"))
++    assertEquals(1, row.getInt("empty_windows"))
++    assertEquals(12.346, row.getJSONArray("mel_ms").getDouble(0), 0.0)
++    assertFalse(row.has("error"))
++
++    val failed =
++      JSONObject(BenchJson.utterance(UtteranceResult("x", "", 3.0, 0.0, error = "hang")))
++    assertEquals("hang", failed.getString("error"))
++    assertEquals(0, failed.getInt("windows"))
++  }
++
++  @Test
++  fun headerAndFooter_carryATypeAndNoId() {
++    val header =
++      JSONObject(
++        BenchJson.header(
++          mapOf(
++            "model_name" to "parakeet-tdt-0.6b-v3",
++            "load_seconds" to 1.25,
++            "native_libs" to mapOf("libLiteRt.so" to "abc"),
++            "start_after" to null,
++            "rtf" to Double.NaN,
++          )
++        )
++      )
++    assertEquals("header", header.getString("type"))
++    assertFalse(header.has("id"))
++    assertEquals(1.25, header.getDouble("load_seconds"), 0.0)
++    assertEquals("abc", header.getJSONObject("native_libs").getString("libLiteRt.so"))
++    assertTrue(header.isNull("start_after"))
++    assertTrue(header.isNull("rtf"))
++    assertEquals("footer", JSONObject(BenchJson.footer(mapOf("utterances_done" to 3))).getString("type"))
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun header_rejectsAnId() {
++    BenchJson.header(mapOf("id" to "x"))
++  }
++
++  @Test
++  fun median_oddEvenEmpty() {
++    assertEquals(2.0, median(listOf(3.0, 1.0, 2.0))!!, 0.0)
++    assertEquals(2.5, median(listOf(4.0, 1.0, 2.0, 3.0))!!, 0.0)
++    assertNull(median(emptyList()))
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts b/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts
+index 0b7e9064..cdbb788a 100644
+--- a/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts
+@@ -27,22 +27,5 @@ rootProject.name = "Asr"
+ 
+ include(":app")
+ 
+-// Install litert_npu_runtime_libraries following
+-// https://developers.googleblog.com/unlocking-peak-performance-on-qualcomm-npu-with-litert/
+-include(":litert_npu_runtime_libraries:runtime_strings")
+-
+-include(":litert_npu_runtime_libraries:google_tensor_runtime")
+-
+-include(":litert_npu_runtime_libraries:mediatek_runtime_v8")
+-
+-include(":litert_npu_runtime_libraries:mediatek_runtime_v9")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v69")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v73")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v75")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v79")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v81")
++// The litert_npu_runtime_libraries modules are not in this repository; the benchmark build packages
++// the Qualcomm runtime (qualcomm_runtime_v81) from app/src/main/jniLibs/arm64-v8a instead.

@@ -1,0 +1,5 @@
+# l3-litert-npu-5s-smoke3 2026-10-19 17:56:27 JST label=cold
+cool: ok after 204s
+dexopt:       arm64: [status=run-from-apk] [reason=unknown] [primary-abi]
+17:59:51 attempt 1: adb -s RFGL80R6A6H shell am instrument -r -e model parakeet-tdt-0.6b-v3 -e accelerator npu -e manifest /data/user/0/com.google.ai.edge.examples.asr/files/sets/test-clean/manifest-device.tsv -e every 4 -e limit 3 -e tag l3-litert-npu-5s-smoke3 -e load_label cold -e app_commit 289d4672fad088e416a0a91fcd0a842392abbf9b   com.google.ai.edge.examples.asr.test/androidx.test.runner.AndroidJUnitRunner
+18:10:17 attempt 2: adb -s RFGL80R6A6H shell am instrument -r -e model parakeet-tdt-0.6b-v3 -e accelerator npu -e manifest /data/user/0/com.google.ai.edge.examples.asr/files/sets/test-clean/manifest-device.tsv -e every 4 -e limit 3 -e tag l3-litert-npu-5s-smoke3 -e load_label cold -e app_commit 289d4672fad088e416a0a91fcd0a842392abbf9b  -e start_after 4507-16021-0047 -e failed_id 4507-16021-0047 -e failed_kind hang com.google.ai.edge.examples.asr.test/androidx.test.runner.AndroidJUnitRunner

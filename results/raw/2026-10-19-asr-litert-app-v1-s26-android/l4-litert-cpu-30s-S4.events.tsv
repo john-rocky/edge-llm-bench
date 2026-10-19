@@ -1,0 +1,8 @@
+time	event	detail
+15:21:45	launch	attempt 1 
+15:22:00	header	pid 9154, 151 logcat lines
+16:00:19	crash	utterance 121-121726-0005 (fail 1 of 3), 546 lines so far, 0s without a new line
+16:00:19	launch	attempt 2 -e start_after 121-121726-0005 -e failed_id 121-121726-0005 -e failed_kind crash
+16:00:15	note	planned stop (supervisor 15:31): driver kill attempted, then am force-stop; the kill missed (two pids in one variable), so the 16:00:19 'crash' above is this stop, not a crash
+16:00:31	note	driver killed 16:00:22 after it relaunched the test (attempt 2); attempt 2 force-stopped at 16:00:31 after 2 utterances. jsonl = lines 1-546 of jsonl.as-pulled (part 1: header + 545 utterances, last 260-123440-0005); jsonl.as-pulled keeps attempt 2's false crash row (121-121726-0005), header and 2 rows. Part 2 = l4-litert-cpu-30s-S4-p2, start_after 260-123440-0005
+18:22	note	l4-litert-cpu-30s-S4.vmhwm.log lines 2308-2320 (header '(pid 18406)' + 12 samples) and the second block of .load-logcat.txt (pid 18406) are the 16:00:19 relaunch's; part 1 (pid 9154) alone gives the VmHWM 2,105,360 kB and the lowest policy0 ceiling 1,555,200 kHz
