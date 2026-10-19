@@ -1190,6 +1190,89 @@ and `-ios.cells`, one job-route sitting per device; the page shows each cell's l
 that sitting replaces the bare rows. The Mac 2K ladder's llama.cpp Gemma 4 rows (`dashboard-longctx-v1.cells`)
 are not in those files.
 
+## MLX Gemma 4 file (2026-10-19)
+
+The page's MLX Gemma 4 rows (the Mac and iPhone short-chat and `long-context-1024-gen256` rows of
+`matrices/dashboard-text-v1.cells` and the 1K rows of `dashboard-longctx1024-v1.cells`) run
+`mlx-community/gemma-4-{e2b,e4b}-it-qat-OptiQ-4bit`; the team pointed on 2026-10-19 to the mlx-community
+bundles with far more downloads, `gemma-4-{e2b,e4b}-it-4bit` and `gemma-4-{E2B,E4B}-it-qat-mobile`. The three
+families were measured on the Mac in one sitting and the file follows the rule below. Download counts and
+bytes are listed for the record; they are not read as speed.
+
+Rule. The page's MLX Gemma 4 file is of the QAT class, the class of the page's comparison partner (the
+LiteRT-LM Gemma 4 bundles, Google's wNa8o8 QAT mobile schema). Among the QAT bundles that the pinned
+mlx-swift-lm loads and whose 1K replies pass the text check (text-check-rule; on the Mac, the session
+checker's text screen), the page takes the one with the fastest warm decode on `long-context-1024-gen256` in
+one sitting (`render_leaderboard.arm_row`'s warm median). Two within 5 % of each other go to the one with more
+30-day downloads (the Hub API's `downloads`, read on the day of the sitting). A PTQ build is measured for the
+table and is no candidate (`ModelCatalog.swift`: the E2B PTQ build scored 78 % and the QAT build 87 % on GSM8K,
+n = 100). A bundle the pinned runtime cannot load stays in the table with its error.
+
+The bundles (Hub main and the 30-day downloads as read 2026-10-19 10:23 JST; bytes = every `*.safetensors` file
+the yardstick downloads, each one's sha256 hashed from the bytes in the Mac's Hub cache and equal to the Hub's
+`lfs.sha256`):
+
+| Bundle (`mlx-community/…`) | Hub main | Quantization (the card; the config where the card says nothing) | Class | safetensors bytes | downloads, 30 days |
+|---|---|---|---|---|---|
+| `gemma-4-e2b-it-qat-OptiQ-4bit` | `6bf302fd` | QAT base `google/gemma-4-E2B-it-qat-q4_0-unquantized`; mlx-optiq per layer, 144 components at 8 bit and 132 at 4 bit, group 64, 5.24 bits per weight | QAT | 5,222,073,830 (weights 4,270,441,092, vision sidecar 951,632,738) | 956 |
+| `gemma-4-e4b-it-qat-OptiQ-4bit` | `a78078f4` | QAT base `google/gemma-4-E4B-it-qat-q4_0-unquantized`; 221 components at 8 bit and 122 at 4 bit, group 64, 5.17 bits per weight | QAT | 7,478,790,516 (weights 6,522,439,186, vision sidecar 956,351,330) | 2,475 |
+| `gemma-4-e2b-it-4bit` | `23876752` | `mlx_vlm.convert` of `google/gemma-4-E2B-it`, uniform 4 bit affine, group 64 | PTQ | 3,550,670,554 | 24,394 |
+| `gemma-4-e4b-it-4bit` | `475b9088` | `mlx_vlm.convert` of `google/gemma-4-E4B-it`, uniform 4 bit affine, group 64 | PTQ | 5,146,800,534 | 31,114 |
+| `gemma-4-E2B-it-qat-mobile` | `0548ff6d` | the card states none; config `quantization_config`, quant_method `gemma`: per-channel weights at 2 / 4 / 8 bit (MLP of layers 15–34 at 2 bit) with static input and output activation scales | QAT, mobile schema (by name and format) | 2,398,140,572 | 19,670 |
+| `gemma-4-E4B-it-qat-mobile` | `65982052` | the same format (every MLP at 4 bit, lm_head and embeddings at 2 bit) | QAT, mobile schema (by name and format) | 3,455,955,670 | 15,219 |
+
+The sitting: Mac Studio (M4 Max), 2026-10-19 10:41–11:08 JST, `results/raw/2026-10-19-mlx-gemma4-file-mac/`,
+cells `matrices/mlx-gemma4-file-mac.cells` (the Mac session anchor row, then the four loadable bundles'
+`long-context-1024-gen256` rows with the weekly rows' options, `cooldown=300 runs=4`; the qat-mobile rows are
+`exclude=`), on the yardstick of the 2026-10-19 Mac weekly (`.build/dd-mac`, mlx-swift-lm `60bd0d78`).
+
+| Bundle | warm decode tok/s (n, spread) | cold | prefill tok/s | peak footprint MB | text screen | the stored reply (its first 200 characters), read |
+|---|---|---|---|---|---|---|
+| E2B OptiQ (QAT) | 151.02 (3, 0.07 %) | 150.06 | 7,076 | 5,246 | PASS, 4 of 4 | lists the 25 items |
+| E2B 4bit (PTQ) | 178.68 (3, 0.18 %) | 178.70 | 7,105 | 3,653 | PASS, 4 of 4 | declines: the passage is placeholder text |
+| E2B qat-mobile | does not load | | | | | |
+| E4B 4bit (PTQ) | 111.97 (3, 0.23 %) | 112.17 | 2,283 | 5,403 | PASS, 4 of 4 | declines |
+| E4B OptiQ (QAT) | text-fail, no number | — | — | — | FAIL, 4 of 4 (reply-off-task) | declines |
+| E4B qat-mobile | does not load | | | | | |
+
+Prefill and peak are `arm_row`'s medians over the four runs (peak = `memoryPeakDuringDecodeMB`); a run that
+fails the text check enters no column (text-check-rule).
+
+- qat-mobile: mlx-swift-lm `60bd0d78` reads the `quantization` key of `config.json` only. These bundles carry
+  `quantization_config` alone, so no layer is quantized before the weights are applied, and
+  `Module.update(verify: .all)` rejects them: E2B `Unhandled keys ["input_activation_scale",
+  "output_activation_scale", "weight_scale"]`, E4B `Mismatched parameter language_model.lm_head.weight … Actual
+  [262144, 640], expected [262144, 2560]` (one launch each, `NOTES-qat-mobile-load.txt` in the campaign dir).
+  The format matches the schema the LiteRT-LM Gemma 4 entry describes; whether it is the same checkpoint is
+  unverified (the cards are empty).
+- Text: the prompt asks for the list "using the passage above as context" after 18 lorem-ipsum blocks
+  (`prompts/text/long-context-1024-gen256.txt`). The stored replies of three of the four bundles open by
+  declining it (the records keep 200 characters of the 256-token reply); E2B OptiQ's starts the list.
+  The screen is lexical (the session checker's `reply_rules` on each run's stored reply): the two 4bit replies
+  name the subject while they decline and pass; E4B OptiQ's names none and fails, as in the 2026-10-19 Mac
+  weekly. A hand-run dir gets no `text_screen.json` from the checker (the screen runs on job campaigns).
+- E2B OptiQ read 151.02 here and 150.64 in the 2026-10-19 Mac weekly, on the same yardstick and the same
+  weights: OptiQ's 2026-10-18 Hub revision moved the bf16 vision sidecar (`optiq_vision.safetensors`) to the
+  repo root and registered it in the index; the text weights did not change (E2B: one blob, sha256
+  `fd6e9b68…`, in the cached July, September and October revisions; E4B: the same two blobs in the September
+  and October ones). The yardstick's `*.safetensors` pattern downloads the sidecar (about
+  0.95 GB a bundle); the Gemma 4 loader drops its vision and audio keys. mlx-swift-lm does not read OptiQ's
+  `kv_config.json` (per-layer KV precision).
+- Host: two single-run dips kept their prefill (the anchor's warm run 450.80 beside 553.34; run 4 of E4B
+  4bit's first launch at 92.27 beside 112.1). The gate quarantined that launch and its re-run is the row; the
+  anchor row is GATE_FAIL (SPREAD 20.4, `FLAGGED.txt`), so cross-session comparisons of this dir do not go
+  through it. `host_load.log` in the dir lists the busiest processes every 30 s (StorageManagementService at
+  about one core throughout, Google Chrome renderers, WallpaperAerialsExtension); the cause of the dips is
+  unverified.
+
+Decision: the page keeps OptiQ for both models, measured and kept. It is the only QAT bundle that loads, so the
+5 % and download steps did not come into play. The E2B rows keep their number; the E4B 1K cell keeps its
+text-fail mark (the model declines the lorem passage, not an engine fault). No cells file changes. The PTQ
+4bit rows above are the speed of that class; the rule keeps them off the page. If a newer mlx-swift-lm loads
+`quant_method: gemma` (`./bench release-watch` lists mlx-swift-lm drift), the qat-mobile rows of
+`matrices/mlx-gemma4-file-mac.cells` lose their `exclude=` and run as candidates of the QAT class, in the
+schema of the LiteRT-LM file. The iPhone leg is the same procedure in its own sitting.
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows used `qwen3_0_6b_mixed_int4`
