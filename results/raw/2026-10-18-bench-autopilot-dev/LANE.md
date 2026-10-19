@@ -551,3 +551,19 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   noref sentence on every arm, conditions.promptVersion / summary prompt_version / checker history key / watch and P marking the break
   like engine_changed, Mac yardstick and iPhone app built from SIDE, a Mac smoke of four arms; the flip (merge, dd-mac switch,
   install) is mine and happens tonight only if everything is green by 21:00, else after this week's sittings.
+- 12:0x–12:2x main pushed again (b70e4f6f..f9f3dced, six hand commits, rehearsal green, CI success 12:02). The 18 Pro's llama.cpp
+  retake (11:17–12:14, OK) held on prompt-newtag (Gemma 4 short-chat 20 tokens where b8999's bare prompt read 12 = the template fix)
+  and its anchor on reference-uncommitted (the 0.6B dynamic sitting): the 0.6B dynamic sitting went in as the stored report of the
+  Metal failure (allow-list partial naming ed0ef963; b66d6f16) and the llama retake after an allow-list line naming aaae422a
+  (2c7d47b0; the page gains one cell). Every Gemma 4 record carries conditions {chatTemplate jinja, thinking false}; the text screen
+  passes all four Gemma 4 cells, including the E4B 1K whose 86-token reply declines the lorem passage (it names the subject terms —
+  r14's note 2 again; r17's tail change is the fix). The Mac retake (11:34–12:17, OK) held on prompt-tokens for the same reason
+  (the same build's morning sitting is the bare-prompt history): allow-list line, re-posted. The post's push guard refused to push
+  over my allow-list commits (by design); I push by hand after a rehearsal. r15 reviewed (the runner flags Gemma 4 by the model path's
+  basename, shlex-quoted kwargs, conditions per family) and merged (8b898cff), go given: Pixel first, then the S26 in four one-model
+  sittings between the asr lane's slots (that lane shares the S26 today through the queue; the job takes the keeper's hold with
+  --hold-held-by). r16 Mac-side PASS: 12 PTQ rows, LOGICAL_MODELS names, docs, the iOS cells file, a transfer script for the two
+  4bit bundles; it commits the test count change on its branch and prepares a P patch for the page's row name (P names rows by
+  model_row, so QAT / PTQ would not show without it); its phone go comes after the 0.6B smokes. Trap found: a nohup'd bash script
+  sees BSD grep (no -P) while the tool's zsh sees GNU grep — my smokes chain and the Mac longctx chain waited forever on `grep -P`;
+  both rewritten with `grep -E $'\t…'` and relaunched (the smokes are running now).
