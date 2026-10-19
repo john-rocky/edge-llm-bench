@@ -122,3 +122,298 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
 - Open for the GO letter: P's check_regression needs the stand-in rule (a P change) before the page can be committed by
   the post step on nights when the lab unit's sitting is the S26 Gemma 4 E2B GPU cells' newest.
 - 00:5x correction: the r6 commits on main are 7bcf856c..eee9dfdb (the rebase of b910eb2f..a8d6c810); 14cdba05 written at 00:0x was a mid-rebase hash, not a main ancestor. Lane close r7 = cca803b4 (K + K3) and 53f0f226 (K2/LANE.md on bench-autopilot-bisect); handoff ~/code/standup/handoffs/2026-10-19-bench-autopilot.md; 34 intermediate paths (17.3 GB) deleted per K/bench_autopilot_deleted_paths.txt; the three worktrees stay (their ignored ddp-raw / execution logcats are moved into the main tree before any worktree remove).
+
+## 2026-10-19 02:2x–02:4x — round r8 (team rules into the checker), after the lane close
+- Trigger: code-2d (02:2x) relayed three team-side facts for the checker and the push/publish conditions, not a GO:
+  (1) 10-14 reading of an S26 cell on the 0.16.0 pin against the card's number while the Mac was on 0.18.0
+  (environment.lock.json arms.litert-lm.android.note: 25.9 vs 44-47 on the same phone); the checker is to FAIL a cell whose
+  LiteRT-LM release differs from the other platforms' and a headline cell off the agreed protocol (methodology/agreed-protocol-gemma4.md:
+  forced prefill 1024 / decode 256 / ctx 2048). (2) The public repo carries raw records only; the generated commit message
+  names no DDP-vs-phone difference. (3) When the switch goes ON, the next mail to the team carries one sentence
+  ("a run that passes the checks goes onto the page automatically"), never a mail of its own; EN / JA in GO (a).
+- Facts read before the launch (02:2x-02:3x): the weekly set is text tasks only (short-chat + long-context-1024-gen256, ctx 2048 on
+  the 1K rows); the protocol cells live in the protocol1024 cells files (10-06/07 campaigns, the 10-15 S26 0180 splits). The committed
+  summary's LiteRT-LM headline rows all read ctx 2048 (text: android 386 / ios 163 / mac 80; protocol: 42 / 49 / 40 with prompt 1024,
+  gen 256). The iPhone 18 Pro's weekly sittings stamp v0.16.0 (10-15, 10-17: 40 records each) while the Mac (since 10-12) and Android
+  (since 10-15) are on v0.18.0; the page's dist (10-17 12:52, data as of 10-16) shows the 18 Pro column at v0.16.0 (10-08), the Mac 1K
+  column at v0.16.0 (10-08; the 10-12 / 10-16 Mac sittings sit in the backlog), 8 of the S26's 10 protocol cells at v0.16.0 (10-06).
+- Design given to r8 (launch/2026-10-19-autopilot-team-rules-opus-r8.md, lint PASS): `pin-drift` FAIL = a LiteRT-LM release-tag stamp
+  below newest(day) = the highest tag among default_tag, the lock's platform blocks whose `since` <= the sitting day, and android_pins
+  (registry only: the checker is offline by design, so "the current release" is the newest pin any platform adopted, not an upstream
+  tag release-watch would see; a person still decides every bump). `protocol-off` FAIL = a LiteRT-LM headline-task run (protocol cell,
+  1K text task) off ctx 2048, or a protocol run off prompt 1024 / gen 256; other runtimes out of scope (MLX cannot force the budget,
+  llama-bench sizes its own). Both unwaivable in the allow-list (the fix is a pin bump and a re-measure). dashboard_post.py refuses its
+  own message on a percent sign or a standings word. Verification: every committed SESSION.json dir and the 90 backlog dirs, with
+  the expected FAIL set named (Pixel 8a 10-13, S26 10-14, iPhone 18 Pro 10-15 / 10-17) and the must-pass set named.
+- Consequence stated in the GO letter (a), prerequisite (3): until the iOS pin moves, the 18 Pro's weekly sitting FAILs pin-drift
+  (today's 05:30 sitting too, if r8 is merged before its post step runs ~15:00). The pin bump is the user's decision.
+- Supervisor's own correction: the launch header and the letter first carried "03:0x" / "03:1x" written from an estimate; `date` read
+  02:39 at the launch. Corrected in both files. The rule (read `date` before writing a time) applied to me as much as to the worker.
+- Worker tab: cmux workspace:366 "autopilot team rules Opus r8". Mac sitting of the night (02:00, m4max) runs alongside; the round is
+  light python only.
+
+## 2026-10-19 02:5x–03:3x — the user's decision (via code-2d): measure on the current release, no waiting
+- Words relayed: 「バージョンは上げる一択。最新の数字が欲しいんだから古いのでやる意味がない」. Orders: the 18 Pro's weekly app to v0.18.0 and a
+  re-measure; the page's old-release cells re-measured (the S26's 8 protocol cells on 0.18.0 in one sitting, the Mac 1K column from
+  the backlog's 0.18.0 sitting); from now on a lagging pin is bumped without asking; commit / push / publish GO unchanged (awaiting audit).
+- Done 03:10–03:23 (supervisor, main tree, the night's Mac sitting running since 02:00):
+  - S26: `matrices/dashboard-0180-s26-protocol8.cells` (anchor row + the 8 litert-lm protocol rows other than Gemma 4 E2B, byte-identical to
+    the protocol1024 file) run by hand through the job route (`dashboard_job.py s26 --cells … --suffix 0180-protocol8 --once`, started 03:12:06,
+    hold taken by the job, anchor admitted 03:22). The first attempt used `setsid` (not on macOS) and did not start; relaunched with nohup.
+  - 18 Pro: the v0.18.0 app (.build/dd-ios-0180-18pro, CLiteRTLM LC_UUID 8B273118 = the xcframework's ios-arm64 slice, Release) installed
+    03:11 over the pinned app (devicectl, bundle path 68BABC7A… -> B74A3E9E…); the phone is wired, paired, 80 % on external power (charge
+    limit; BatteryIsCharging false). Then one launch per LiteRT-LM model with `--purge-engine-cache` (03:13–03:16): the GPU delegate's
+    program / weight caches are keyed on the model file only, so the 0.18.0 build would have restored what 0.16.0 compiled. Findings from
+    those launches: Qwen3 0.6B prompt 9 tokens (the known pre-0.18 template, allow-listed), Qwen3 1.7B RUN_FAIL "Failed to apply template:
+    + operator on unsupported types string and sequence" (the phone holds the 2026-10-06 revision 73fbc3fe, blob 2eeffef7; the Mac's
+    current 79bf0667 blob 2a72330b reads 19 tokens on 0.18.0), Qwen3 4B prompt 9 tokens (the phone holds 84cc5a35 blob f0794bc7; the
+    current 8b4c3d3f blob 569fe029 reads 19-20 on the Mac and Android), Gemma 4 E2B / E4B 20 tokens. = the pin bump needs the current
+    Hub bundles on the phone too (the same trap as the Pixel 8a's p3b on 10-15). Next: refresh the three Qwen bundles, verify by one
+    launch each, then start the by-hand weekly sitting.
+  - Mac: the 2026-10-12 pair committed by hand as 8ac9b8bb (the post's checker read HOLD: the llama.cpp Gemma 4 E4B 1K replies are the
+    prompt's list skeleton and the MLX E4B OptiQ 1K replies refuse the lorem blocks, 4 of 4 each; the Mac route has no runner text
+    check, so those two cells' .jsonl files were set aside as .jsonl.set-aside; the account name replaced in 139 files; summary from
+    the index 4811 -> 5036 lines); allow-list line for the resulting failures finding (9288dd34); the pair reads PASS / PASS.
+- r8 closed 03:2x (worker edge-llm-bench-wt-autopilot-a4, tab workspace:366 closed): 4d5b60b1 + a73d7c67 on bench-autopilot; merged into
+  main as 6bd946f9 (merge commit, no rebase: the ios block's registered time stays 03:17:25). Supervisor's recomputation: selftest OK
+  (49 checks), the 10-14 S26 pair FAILs pin-drift with the expected detail, the 10-18 DDP sitting PASSes, the 10-16 Mac r2 anchor has
+  no new finding; main's three selftests OK after the merge. Worker's corrections accepted: the "should FAIL" sittings were all in the
+  backlog, not committed (my launch text said committed: the disk summary I read at 02:4x carried the uncommitted dirs); the generated
+  message's "ratio R vs <reference>" was reworded ("to") so the new guard does not refuse it.
+- Not done tonight, named for the letter: the Android phones' Qwen3 0.6B bundle is the same pre-0.18 revision (9 prompt tokens on every
+  v0.18.0 sitting, allow-listed as a known exception); the Hub's current revision reads 20 on the Mac. A bundle refresh + re-measure on
+  the S26 and Pixel 8a is the same "current release" rule applied to the model files.
+
+## 2026-10-19 03:3x–03:4x — code-2d's three follow-ups (the team's purpose: the current version's correct numbers), facts first
+- Qwen3 0.6B: the same bytes everywhere (qwen3_0_6b_mixed_int4.litertlm, sha 7900eb4e, the Hub's current main). The engine's own line on
+  Android and iOS at v0.18.0: "Prefill Turn 1: Processed 9 tokens" with the whole prompt in input_prompt = the user turn is dropped by the
+  bundle's pre-0.18 template. Registered already: hazard `pre-018-template-drops-user-turn` (standup knowledge/runtime-hazards.md line 25),
+  LiteRT-LM #3688, the re-export asked of the team 2026-10-13 (code-2d 03:4x). The Hub updated a different file for 0.18.0 on 10-12 / 10-13
+  (Qwen3-0.6B.litertlm: dynamic INT8 weights per the card; the dynamic INT4 block-32 file 03e7da1e is from 09-21). Decision path: probe
+  both candidates on the S26 after the protocol8 sitting (one GPU short-chat launch each, read Prefill Turn 1), then move the 0.6B text
+  cells to the candidate that reads the prompt whole, label per the card, the from -> to line citing #3688; iOS / Mac need a catalog
+  change (compiled into the app) = a round. The Mac records' "20" for 0.6B at 0.18.0 is unverified at the engine line (no raw log kept).
+- The two Mac cells set aside at 03:19: not left out. Round r10 (launched 03:40, tab workspace:368, worker edge-llm-bench-wt-autopilot-38):
+  the checker's reply proxies become a sidecar `text_screen.json`, build_summary fills `text_check` from it for Mac / iOS records, the page
+  shows the cell as text-fail (number present as a mark, not missing); the 10-12 pair gets restored through that path. Causes: llama.cpp
+  after the bump below; the MLX OptiQ lorem refusal = a probe with the -noref task variant and the non-OptiQ 4bit, in the Mac's hold.
+- llama.cpp: upstream now has two kinds of releases: v0.7.0 (10-15, notes only, no binaries) and the b-builds (b11721 on 10-18 with
+  android-arm64, macos-arm64 and xcframework assets). The pin b8999 is far behind. Bump target = the newest b-build with binaries at
+  bump time; Mac after the night's sitting (yardstick rebuild), both phones inside job holds, the 18 Pro app rebuilt with the new
+  xcframework. = round r9 (launch after the Mac ledger row).
+- GO letter and the standup state line updated (03:4x); code-2d answered twice with facts.
+
+## 2026-10-19 04:0x–04:1x — r9's finding: the job's Mac yardstick never ran v0.18.0
+- Worker edge-llm-bench-wt-llama-07 (r9) read, and the supervisor confirmed with otool -L and shasum: `.build/dd-mac/Build/Products/
+  Release/yardstick` (built 2026-09-18 05:00, the binary every Mac sitting's log names) links `@rpath/libCLiteRTLM_mac.dylib`; the
+  dylib beside it is dated 2026-08-11 (142,807,744 B, sha ae31a93f…) = the v0.16.0 artifact's; the v0.18.0 dylib (9526db9e…) exists only
+  in `.build/dd-mac-0180` (10-07), which the job never used. The Mac LiteRT-LM records' `engineVersion v0.18.0` from 10-12 on come from
+  `BENCH_ENGINE_PINS_FILE` = `ios/BenchmarkApp/Vendored/engine-pins.json` (bench_matrix_mac.sh l.65; file written 10-07 14:20 by the
+  dd-mac-0180 build's pre-build stamp) — a source-tree file, not the loaded binary. = the 10-12, 10-16 and 10-19 Mac LiteRT-LM rows are
+  v0.16.0 measurements with a false stamp. Never published, never pushed (the 10-12 commit 8ac9b8bb is local).
+- Consequences and decisions (04:1x): (1) `environment.lock.json arms.litert-lm.mac` rewritten to the truth (v0.16.0 since 2026-09-18,
+  note with the evidence; the 10-18 block withdrawn) = the checker reads engine-stamp HOLD on those stamps: tonight's Mac sitting will
+  not be auto-committed (REVIEW.md), the 10-12 pair now reads HOLD again — a correction follows (summary correction table, allow-list,
+  message). (2) r9 builds the yardstick in a separate derived data with today's source + the swapped Vendored (fallback: from the SIDE
+  tree the 18 Pro runs) and proves the loaded dylib (sha + DYLD_PRINT_LIBRARIES) in its smoke; the supervisor switches the job's Mac
+  route and re-measures the Mac weekly set by hand today. (3) r9 also establishes what flipped the stamp on 10-12 and lists every
+  Mac campaign whose stamp disagrees with the binary (the correction table's keys). (4) Memory: `engine-stamp-needs-a-binary-witness`.
+  (5) My r5-era lock note and tonight's 03:19 commit message said "the Mac pin since 2026-10-12": wrong, from the stamps.
+- Why it was not caught earlier: the registry block was written from the records' stamps (r5, 10-18) and the checker trusts the stamp
+  as the witness. The rule now: a stamp is a witness only when it comes from the binary that ran.
+
+## 2026-10-19 04:3x — r10 closed and merged; the selftest on main is red
+- r10 (text screen; worker edge-llm-bench-wt-autopilot-38, tab workspace:368 closed) closed 04:2x: 77a3fdd0 / 15b7866e / 0ae41f50 on
+  bench-autopilot; supervisor's recomputation: selftests OK in the worktree (session_check 60, post 54). Merged into main as 07b339a6 after
+  reverting the job's disk rebuild of results/summary (derived files, as before). The worker's (b): the 10-12 Mac pair's sidecar marks the
+  two cells FAIL (4/4 each), the page shows them text-fail with no number (before: the 10-06 87.13 / 92.29); (c): of the 118 committed
+  dirs only 2026-10-06-dashboard-v1-m4max-longctx1024-mac changes (reply-* only).
+- Open from r10: (1) `scripts/session_check_selftest.py` fails 11 cases on main since 0b38a1f2 (the generic 2099 Mac fixture stamps the
+  Mac block's tag, now v0.16.0, below the newest pin v0.18.0 → pin-drift); the data-pipeline CI would be red if pushed (nothing pushed).
+  (2) P's check_regression FAIL (2) on the S26 stand-in cells (known, the letter's P item) stops the page step of every post until P is
+  patched. (3) The iPhone 17 Pro's LiteRT-LM Qwen3 0.6B short-chat cell on the page (131.03, 0180-aa-i1) is 6/6 off-task = would turn
+  text-fail if its dir got a sidecar; 22 committed dirs (157 cells) have none yet. (4) The 18 Pro's llama.cpp Gemma 4 E4B 1K page number
+  (30.71, a 10-07 hand run) has the same "[Item 1]" replies.
+- Next: r12 = the selftest fixture made registry-robust (CI green on main); then the 10-12 pair restored through the sidecar (ROUND10's
+  procedure) once the S26 post is done and before the Mac post; the retroactive sidecar pass over committed Mac / iOS dirs is a decision
+  for daylight (it changes page cells).
+- 05:0x r12 (selftest fixture) reported: its 11 full scratch clones (3.7 GB, ~0.8 core, 04:57–05:02) overlapped the Mac sitting's
+  llama.cpp Gemma 4 E4B short-chat retry (05:00:09–05:00:15; decode 90.1 / 82.8 / 88.9 / 88.6, SPREAD 6.9; the attempt before the load
+  read 89.3 / 86.9 / 89.1 / 82.6, SPREAD 7.5). Decision: no separate retake — the whole Mac weekly set is re-measured today after the
+  yardstick rebuild (the sitting holds on engine-stamp anyway); the overlap goes into that sitting's REVIEW / message line. r12 moves to
+  sparse clones and deletes in cooldowns.
+
+## 2026-10-19 05:07 — the first automatic post on main: the S26 protocol sitting (8 cells on v0.18.0)
+- `2026-10-19-dashboard-v1-s26-0180-protocol8{-anchor,}-android`: 03:12–05:07 (115 min; the 4B / E4B cells with their 300 s cooldowns made it
+  two hours, not one), anchor admitted at ratio 1.070, 9/9 cells, checker PASS / PASS under the merged r8 + r10 rules, committed by the post as
+  28ddc14e (73 files, summary 5036 -> 5069 lines); page built and check_against_bench_dashboard passed, check_regression FAILed (the known
+  stand-in item) so the page commit was withheld; push / publish off (ledger `logs/dashboard-job/autopilot-ledger.tsv` line 1). The S26's
+  protocol column is now all v0.18.0 (Qwen3 0.6B / 1.7B / 4B, Gemma 4 E4B × CPU / GPU today; E2B from 10-15). CPU rows carry the cap mark.
+- 05:08 the Qwen3 0.6B bundle probe runs on the S26 (hold taken by the probe's keeper): one GPU short-chat launch each of
+  Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (03e7da1e) and Qwen3-0.6B.litertlm (c5f39b41, the 10-13 revision); read Prefill Turn 1.
+
+## 2026-10-19 05:08–05:15 — the Qwen3 0.6B bundle probe on the S26, and the 10-12 Mac pair restored
+- Probe (`results/raw/2026-10-19-probe-q06-s26-android-android`, one GPU short-chat launch each, hold held by the probe 05:08–05:13): both
+  candidates deliver the whole prompt to LiteRT-LM v0.18.0 ("Prefill Turn 1: Processed 19 tokens"): `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`
+  (03e7da1e, INT4 dynamic block-32 weights, FP32 act; 345 MB) decode 76.5 tok/s, prefill 193, peak 861 MB; `Qwen3-0.6B.litertlm` (c5f39b41, the
+  10-13 revision, dynamic INT8 per the card; 614 MB) decode 25.7, prefill 104, peak 753 MB. The current `qwen3_0_6b_mixed_int4.litertlm`
+  (7900eb4e) reads 9 tokens (the user turn dropped; LiteRT-LM #3688, hazard pre-018-template-drops-user-turn).
+- Decision (the user's rule: measure the current release; code-2d 03:4x: the from -> to line cites #3688): the Qwen3 0.6B LiteRT-LM page cells
+  move from `qwen3_0_6b_mixed_int4.litertlm` (TorchAO mixed INT4) to `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` (dynamic INT4, block-32
+  weights, FP32 act; the same family as the 1.7B GPU cell's file) on every platform: Android cells files + the DDP cells, the Apple catalog
+  (compiled into the Mac yardstick and the iPhone app: lands before r9's rebuilds). The anchor rows stay on mixed_int4 (a stability probe,
+  not a page number; a file change would reset the admission reference). The protocol cells move too (one recipe per model and arm). When
+  the team's re-export of the mixed_int4 bundle lands, the choice is re-read. = round r11 (worktree wt-autopilot-q06, branch qwen06-bundle).
+  Re-measure: S26 today after r9's smoke (6 cells, job route), Pixel 8a after its weekly, Mac in today's by-hand weekly on the rebuilt
+  yardstick, iPhone after its sitting with the rebuilt app.
+- 05:14 the 10-12 Mac pair restored through the text screen (ROUND10's procedure): the two .set-aside files are records again, text_screen.json
+  in both dirs (39 cells, 2 text-fail), the 8ac9b8bb allow-list line removed, summary 5069 -> 5077 from the index, commit 8dae71e6; the
+  committed summary reads FAIL:reply-empty,reply-off-task on the llama.cpp E4B 1K runs and FAIL:reply-off-task on the MLX E4B OptiQ 1K
+  runs, PASS:screen on the LiteRT-LM E4B 1K runs. The pair holds on engine-stamp alone (the false v0.18.0 stamps).
+- 05:14–05:20 r9 on the S26 (hold 05:14:20–05:20, keeper pid 89652): llama.cpp b11721's launchers + 22 .so pushed to the flat dir, the
+  reworked witness identifies b11721 by the libs (the b10903 candidate falls out on the libs), smoke record `results/raw/2026-10-19-llama-
+  b11721-smoke-s26` stamps llama.cpp b11721 (decode 112.7 on the Qwen3 0.6B GGUF short-chat). Caveat from r9: until its run_cell /
+  engine-pins changes are merged, MAIN's witness would stamp b10903 and the BENCH_SITTING pin check (android_pins b8999) would refuse an
+  S26 llama.cpp cell = no S26 job sitting before the merge (the Qwen3 0.6B re-measure on the S26 waits for it too).
+- 05:2x merge timing of r9's registry change: the checker reads the registries "as committed at the newest change at or before the
+  sitting's start" (session_check.py _registry), so today's running Mac (02:00) and iPhone (03:28) sittings keep reading b8999 for
+  llama.cpp whenever r9's lock (b11721 since 2026-10-19, b8999 under `previous`, llama_before()) is merged later today; only sittings
+  started after the merge read b11721. r9 asked to commit its finished part (registry, witness, cells, docs) now as commit 1 so main can
+  run S26 sittings again (the 0.6B re-measure and the llama.cpp retake); the Mac / iPhone builds are commit 2.
+- 05:2x–05:3x r9 commit 1 = 6b41bf0d on llama-bump (android_pins.llama.cpp b11721, the lib-based witness, the lock's llama block with
+  `since` + `previous`, release_watch, cells, docs; its selftests OK). Not merged into main yet: the Pixel 8a's weekly (05:30–~16:30) runs on
+  b8999 and the runner's BENCH_SITTING pin check reads android_pins live, so a merge mid-sitting would fail its remaining llama.cpp cells.
+  Order decided: S26 sittings today (the Qwen3 0.6B re-measure, the llama.cpp retake) run from the llama-bump worktree (its registry
+  already says b11721; the post commits there; android/bin from MAIN); the Pixel gets b11721 after its weekly, then r9 is merged. r9's
+  commit 2 makes the llama.cpp registry per platform (mac b11721 since 10-19 with REGISTERED_LATER so the by-hand Mac weekly that starts
+  before the merge passes its post; ios b8999 until the 18 Pro app is replaced; android = android_pins) — the same shape as LiteRT-LM's
+  (memory pin-registry-is-per-platform). r11's decisions 05:2x: drop the 10-15 exclude-on from the moved rows (D1), move the Android
+  LiteRT-LM anchor row too (D2: the admission primary is llama.cpp; the page keys cells without the file, so a kept old-file anchor would
+  surface in the cell), Apple rows use the catalog's existing alternate id `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32` (D3: the
+  catalog and SIDE stay untouched; Apple cells empty until their first session on the new id).
+- 05:3x the 05:30 firing never ran: launchd keeps one instance per label, and the 02:00 Mac sitting (pid 12780) was still running at
+  05:30, so the firing was skipped (the same happened 2026-10-16: the Mac TIMEOUT at 07:31, no 05:30 row). Consequence today: the Pixel 8a
+  has no sitting until tomorrow's 02:00 firing = it is free now. Decision: r9 deploys llama.cpp b11721 to the Pixel 8a now (hold, ≤30 min,
+  smoke), then commits 1 + 2 (6b41bf0d, 4c281ac3: pins, witness, per-platform llama registry) merge into main and every later S26 / Pixel
+  sitting runs from MAIN; the worktree route is dropped. Design note for the letter: a Mac sitting that overruns 05:30 silently costs the
+  05:30 device its week (the iPhone 18 Pro's only slot is 05:30) — the job doc should say so, or the plist should carry two labels.
+- 05:3x–05:4x r9: Pixel 8a deployed with b11721 (hold 05:34:18–05:36:57, smoke record engineVersion b11721, witness by libs), commit 2 =
+  4c281ac3 (llama.cpp registry per platform: mac b11721 since 10-19 under REGISTERED_LATER, ios b8999, android = android_pins). My merge of
+  llama-bump into main conflicted in scripts/session_check_selftest.py (r9's llama cases vs r10 / r12) and was aborted cleanly; r12 (worker
+  edge-llm-bench-wt-autopilot-eb, tab workspace:370 closed) had just closed with 5b11ac48 + d796efc6 (the selftest passes whichever
+  platform's pin lags; verified on eleven registry shapes and the 19 CI steps) — merged into main as 665a580d, selftest OK on main (the CI
+  red is gone). r9 asked to merge main into llama-bump and resolve the selftest conflict on r12's structure; I merge after. The S26
+  llama.cpp retake and the Qwen3 0.6B re-measure run from MAIN once that merge and r11's are in.
+- 05:4x r9 merged main into llama-bump (72810aa4: the selftest conflict resolved on r12's structure) and I merged llama-bump into main as
+  254c1c85: llama.cpp b11721 per platform (mac since 10-19 registered later, ios b8999 until the app is rebuilt, android_pins b11721), the
+  lib-based witness, release_watch, the three re-measure cells files. All selftests OK on main (session_check 67, android/bench 248, post,
+  job, watch). Then the S26 llama.cpp retake started from MAIN through the job route (`dashboard_job.py s26 --cells
+  matrices/dashboard-llama-b11721-android.cells --suffix llama-b11721 --once`, 05:4x): the anchor row (llama.cpp Qwen3 0.6B short-chat)
+  + nine llama.cpp text rows; the first sitting on b11721 is that build's first session on the phone (admission: no same-build reference).
+- 05:49 the S26 llama.cpp retake exited BUSY "host driver running: 3 asset の揃う b-build…": the job's pgrep() read a continuation line of
+  the r9 Claude session's prompt argv (the launch text, multi-line) that starts with a number as pid 3's command. Fixed in main (a record
+  starts only with a pid `pgrep -f` matched; selftest case, dashboard_job_selftest 90) and the retake restarted; memory
+  night-job-reads-host-drivers-as-busy gained the trap.
+- 05:5x the pgrep() fix committed as f8ef2c9c (+ 376c40d9: the selftest's REAL_PGREP binding fixed after a column-0 insert broke the file
+  for one commit; dashboard_job_selftest 90 OK). The S26 llama.cpp retake restarted 05:52:04 on the patched code and took the hold.
+  main is 48 commits ahead of origin/main (nothing pushed).
+
+## 2026-10-19 05:53 — the night's Mac sitting ended; its post held it (as expected after the lock correction)
+- `2026-10-19-dashboard-v1-m4max{-anchor,}-mac`: 02:00–05:53 (233 min), 55 of 57 cells (two MLX OptiQ short-chat cells with no records,
+  FAILURES lines), post → HOLD / HOLD: engine-stamp on LiteRT-LM (stamps v0.18.0, registry v0.16.0 = the false stamps) and on llama.cpp
+  (stamps b8999, the new mac block b11721 applied retroactively by REGISTERED_LATER), partial, failures, prompt-tokens on Qwen3 1.7B and 4B
+  (8 tokens: the Mac's HF cache now holds the Hub's 10-11 templates, which empty the user turn on a pre-0.18 engine — consistent with the
+  binary being the v0.16.0 dylib; the 10-12 sitting read 19 because the older snapshot was still in use), reference-uncommitted. Nothing
+  committed; REVIEW.md written; the scrub replaced the account name in 146 files. This sitting is superseded today by the by-hand weekly
+  on the rebuilt yardstick (real v0.18.0 LiteRT-LM + llama.cpp b11721); the records stay as the audit trail of the stamp defect.
+
+## 2026-10-19 06:0x–06:11 — r11 merged, the Mac yardstick switched, the by-hand Mac weekly started
+- r11 closed 06:0x (8ac3fbdd; worker edge-llm-bench-wt-autopilot-q06-02, tab workspace:371 closed): 21 Android rows on the dynamic_wi4b32 file
+  (12 lose the 10-15 exclude-on, 6 anchor rows), 12 Apple page rows on the alternate catalog id, re-measure cells for Android and the iPhone,
+  DDP cells (the lab slot grows to 20 jobs / 3 sessions), docs, two selftests. Merged as e8149249 (docs/dashboard-cells-v1.md conflict
+  resolved by keeping both 10-19 sections, main's first; the S26 probe dir committed with it as the stored report); 14 cells files
+  validated, regression_watch / ddp / session_check selftests OK on main.
+- r9's "Mac 側 PASS" 06:0x: the yardstick built from SIDE (MAIN's source does not compile against the Core AI 0.2.0 checkout) in
+  .build/dd-mac-b11721: libCLiteRTLM_mac.dylib sha 9526db9e… (the v0.18.0 artifact's; DYLD_PRINT_LIBRARIES agrees), llama.framework UUID
+  843E7D68 (= b11721's macOS slice), smoke records stamp b11721; the Metal teardown abort persists on b11721; the llama.cpp Gemma 4 E4B 1K
+  reply is the same "[Item 1]" skeleton (prompt 1098 / gen 256 / ctx 2048) = not a llama.cpp version matter. The iPhone app rebuilt 06:06
+  (llama 6226C23F, CLiteRTLM 8B273118 unchanged, pins llama b11721), install after the 18 Pro's sitting.
+- Switch 06:10:51 (scratchpad mac-switch.sh): .build/dd-mac <- the rebuild (the 2026-09-18 one kept as .build/dd-mac-0918-litert0160-
+  llama8999), MAIN's Vendored/engine-pins.json <- SIDE's (the old one kept as .b8999-0220; the stamp-from-binary fix stays the durable
+  answer), lock 5c2e5798: arms.litert-lm.mac v0.18.0 since 2026-10-19 (previous v0.16.0 since 09-18 kept) and arms.coreai-models.tag
+  1.0.0-10-gbd3c539 (the stock checkout the rebuilt yardstick links, the same as the iPhone app's since 10-17; 0.2.0 kept as
+  tag_before_2026_10_19). The by-hand Mac weekly `2026-10-19-dashboard-v1-m4max-0180-rebuilt{-anchor,}-mac` started 06:10, anchor admitted at
+  ratio 1.058; its 0.6B LiteRT-LM rows run on the new id. Expected end ~10:30–11:00, then the post.
+- The switch script's first run refused on its own guard: a plain pgrep matched Claude sessions' prompt argv (the same trap as the job's
+  pgrep() this morning); the guard now excludes `.local/bin/claude` lines.
+- 06:2x r9 closed (worker edge-llm-bench-wt-llama-07, tab workspace:369 closed): b23ba14a + 2d9b89d7 (ROUND9, lock notes) merged into main.
+  Left for me from ROUND9 「iPhone app の build と install の 1 行」after the 18 Pro's sitting: the devicectl install of the 06:06 app, the
+  devicectl copy of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (blob 03e7da1e) into Documents/models/litert-lm/litert-community__Qwen3-0.6B/,
+  then arms.llama.cpp.ios -> b11721 since that day. r9's open items (for the letter / handoff): the snapdragon side build to b11721, the
+  Mac Metal teardown abort (still on b11721), the E4B 1K list skeleton (same on both builds = not the engine), the LiteRT-LM flat witness
+  reading tools only, stamps that follow the pins file instead of the binary, core-ai / mlx-swift-lm DRIFT in release-watch.
+
+## 2026-10-19 08:33 — the S26 llama.cpp retake on b11721 committed by the post; the 0.6B re-measures started on both phones
+- `2026-10-19-dashboard-v1-s26-llama-b11721{-anchor,}-android`: 05:52–08:33 (161 min: the 300 s cooldowns and the 1K cells), 10/10 cells,
+  checker PASS / PASS, auto-committed a1e995ea (summary 5077 -> 5115). The page step: check_against_bench_dashboard FAILed this time (the
+  ledger note names it; read with the Mac post), check_regression the known stand-in FAIL; page not committed, push / publish off.
+- 08:36 the Qwen3 0.6B re-measure (`matrices/dashboard-q06-dynamic-android.cells`, suffix q06-dynamic) started on the S26, and 08:37 on the
+  Pixel 8a (free today: the 05:30 firing was skipped), both through the job route in their own holds, concurrent with the Mac weekly
+  (06:10–) and the iPhone weekly (03:28–); the Android drivers are light on the host. The Pixel's llama.cpp retake follows its 0.6B sitting.
+- 08:4x read with the S26 retake: (1) the S26's llama.cpp rows are cpu-capped past the line on b11721 (48–63 % on the 1K cells, 14–58 %
+  on short-chat) exactly as in the 10-14 weekly on b8999 (same drops) = the phone's own-load caps under llama.cpp, structural, not the
+  build nor the llama-only ordering; the page shows those cells as cpu-capped (12 of 14 "number before, none now"). (2) The page check
+  check_against_bench_dashboard FAILs on two cells since r11: the Apple LiteRT-LM Qwen3 0.6B short-chat anchor rows kept the old id
+  (r11's D3), the bench's grid still carries that id as a cell (the anchor rows' records) while the page moved to the alternate id =
+  "fields differ: 333.61 vs -" (Mac16,9) and "131.03 vs -" (iPhone18,1). Fix = move the Apple LiteRT-LM anchor rows to the alternate id too
+  (the Apple admission primary is the MLX anchor, so the LiteRT-LM anchor row is secondary; the same shape as Android's D2). (3) The
+  bench's grid shows the Mac's new-id short-chat cell from a 2026-09-10 v0.17.0 flags experiment campaign (352.93) until today's Mac weekly
+  commits: render_dashboard's latest_session pools any campaign of the id; the page says "not measured" (its filter is stricter).
+- 08:41 eb5506be: the Apple LiteRT-LM Qwen3 0.6B short-chat anchor rows (18 rows in 15 files: anchors.cells, protocol1024 / longctx1024 /
+  coreai-v1 / aa-v1 and its i1–i9 splits) moved to the alternate id, so the bench grid no longer carries an anchor-only cell of the old id
+  (the cause of the check_against_bench_dashboard FAIL); dashboard_job / regression_watch selftests and render --check OK. The S26 protocol8
+  cells file committed with it (the post had left it untracked). The Mac weekly (06:10) and the iPhone weekly (03:28) loaded their files
+  at start = their anchor rows are still on the old id; the first sittings on the new anchor id are the ones started after 08:41.
+
+## 2026-10-19 09:32 — the S26 Qwen3 0.6B re-measure on the dynamic file: the sitting is right, the checker's prompt history is not file-aware
+- `2026-10-19-dashboard-v1-s26-q06-dynamic{-anchor,}-android`: 08:36–09:32 (57 min), OK; the post HOLDs both dirs on `prompt-tokens`: the
+  LiteRT-LM 0.6B short-chat cells read 19 tokens (the whole prompt, the point of the file change) while "the committed history on this
+  build reads 9" — the history key (platform, engine, runtime, model id, task) has no artifact file, so the mixed_int4 rows (9 tokens,
+  90 rows) are the reference for the dynamic file. The same will hold the Pixel 8a's sitting and every later Android 0.6B sitting (the mode
+  stays 9 until the dynamic rows outnumber them). Fix: the summary gains a `model_file` column and the checker keys the prompt history by
+  it (an old summary without the column is a wildcard); the summary is rebuilt from the index with the code change so the first re-post
+  reads the new column; then the two q06 pairs are posted again.
+- 09:4x the prompt history made file-aware: e661000f (summary column model_file; the checker keys the history by it) + 32c28915 (results/summary
+  rebuilt from the index: 4454 of 5114 rows carry a file) → the S26 q06-dynamic pair re-posted and committed by the post as 1fe5be6f (7/7
+  cells on the dynamic file: 19 prompt tokens, GPU and CPU text cells, the protocol pair). The watch queued one more retake (the 0.6B GPU 1K
+  cell's peak memory vs the 10-06 mixed_int4 point: the series key has no file, the known proposal). A slip of mine: e661000f went in while
+  the selftest was red (a pipeline hid the exit code again, and the transition wildcard let a file-less cell read every file's rows);
+  fixed by the exact match in the next commit, the selftest run without a pipe. The page check still FAILs on check_regression (stand-in).
+- 09:41 the Pixel 8a's Qwen3 0.6B re-measure (`…-pixel8a-q06-dynamic`, 08:38–09:40, 63 min) PASS / PASS, auto-committed 9c5c61f0 (summary 5148 ->
+  5181). With eb5506be in, check_against_bench_dashboard PASSes again; only check_regression (the stand-in item) holds the page commit.
+  The CI selftest set is green on main at fbeb3a4b (session_check, post, job, watch, android/bench, ddp, autopilot). 09:46 the Pixel 8a
+  llama.cpp retake started (`dashboard-llama-b11721-android.cells`, suffix llama-b11721; the Pixel skips the 4B / E4B rows).
+- 09:5x the page-side patch for the letter's P item prepared without touching P: `p-check-regression-stand-in.patch` (55 lines, in this
+  dir): check_cells counts a stand-in cell (a lab unit's sitting shown in the phone's cell) as "not compared" after asserting the
+  phone's series carries no point of the lab unit's campaign, and prints the count. Run as a copy against the last page build
+  (logs/dashboard-job/autopilot-page, PYTHONPATH = P + the bench's scripts): 2 stand-in cells, 0 mismatches, PASS — with it applied, the
+  post's page step would pass all four checks and (after the GO) commit and publish the page. Applying it is P's change = the GO.
+
+## 2026-10-19 09:55 — the by-hand Mac weekly on the rebuilt yardstick ended; its post holds it for three reasons, two of them mine to fix
+- `2026-10-19-dashboard-v1-m4max-0180-rebuilt{-anchor,}-mac`: 06:10–09:55 (225 min), OK; the LiteRT-LM records stamp v0.18.0 (now true),
+  core-ai 1.0.0-10-gbd3c539, llama.cpp b11721. HOLD on: (1) engine-stamp for litert-lm and core-ai "registry … at b23ba14a": the checker
+  reads the registry at the newest lock-changing commit whose time is at or before the sitting's start, by commit time over the whole
+  history — b23ba14a (r9's note commit, authored on llama-bump 06:1x before my merge) outranked my 5c2e5798 (06:10) and carries the
+  branch's lock without the v0.18.0 / 1.0.0 blocks = the lookup must follow main's first-parent chain, not any commit by time.
+  (2) prompt-tokens on Qwen3 4B (19 / 1338 vs "history on this build" 20 / 1339): the history rows labelled v0.18.0 are the 10-12 Mac
+  sitting's, measured on the v0.16.0 dylib with the false stamp — the correction table (summary engine_version for the false-stamped Mac
+  campaigns -> v0.16.0) removes them from this build's history. (3) reference-uncommitted: the admission reference is the 02:00 sitting
+  (old yardstick, held, stays uncommitted) — an allow-list line with the reason. Then the pair is posted again.
+- 09:59 fixes for the three holds and the re-post: 558d4bbc (the registry lookup follows main's first-parent chain; summary gains
+  engine_stamped and engine_version is corrected to v0.16.0 on the false-stamped Mac LiteRT-LM rows via bench_common.corrected_engine, the
+  campaigns listed), 518d01ea (summary rebuilt from the index: the 10-12 Mac rows, 43, read v0.16.0 / stamped v0.18.0), 69ca3ef5
+  (allow-list: the rebuilt anchor's reference is the held 02:00 sitting). Re-post → the rebuilt Mac weekly committed by the post as
+  **a06f2a5a** (summary 5181 -> 5414): the Mac column is now the real LiteRT-LM v0.18.0, llama.cpp b11721 and the stock Core AI, on the
+  Qwen3 0.6B dynamic id. Page checks: against / aa / render PASS, check_regression FAIL (the stand-in item, patch ready) → page not
+  committed; 21 red points on the page (the engine and file moves of this week show as reds with engine_changed; the watch queues retakes
+  for the cells whose newest sitting is red).

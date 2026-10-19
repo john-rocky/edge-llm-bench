@@ -1,0 +1,55 @@
+--- /Users/majimadaisuke/code/litert-bench-dashboard/tools/check_regression.py	2026-10-14 14:35:21
++++ tools/check_regression.py	2026-10-19 09:47:41
+@@ -340,7 +340,7 @@
+ def check_cells(doc, cells):
+     """3. -> (failures, newest points equal to their cell, series of cells not measured,
+     exclusions matched)"""
+-    failed, equal, unmeasured, excl_ok = [], 0, 0, 0
++    failed, equal, unmeasured, excl_ok, stand_ins = [], 0, 0, 0, 0
+     pointed = set()
+     for s in doc.get("series", []):
+         k = label(series_key(s))
+@@ -358,6 +358,15 @@
+                           f"{c['artifact_file']} {c['context_tokens']}")
+             continue
+         points = s.get("points", [])
++        if c.get("stand_in"):
++            # the cell shows a lab unit's sitting (build.STAND_IN); the Regression section follows the
++            # phone's own sittings by design, so the cell's campaign has no point here and the cell's
++            # numbers are not the series' newest point: the series must not carry the lab unit's sitting
++            if any(p.get("campaign") == c["campaign"] for p in points):
++                failed.append(f"cells.json {k}: the stand-in cell's campaign {c['campaign']} has a point in the phone's series")
++            else:
++                stand_ins += 1
++            continue
+         if not c["campaign"]:
+             if points:
+                 failed.append(f"cells.json {k}: cell {c['status']}, {len(points)} points")
+@@ -389,7 +398,7 @@
+                               f"{c['status']}, not under meta.excluded")
+         elif i not in pointed:
+             failed.append(f"cells.json cells[{i}] {c['device']} {c['arm']} {c['model_id']} {c['task']}: no series")
+-    return failed, equal, unmeasured, excl_ok
++    return failed, equal, unmeasured, excl_ok, stand_ins
+ 
+ 
+ def check_planned(doc):
+@@ -434,7 +443,7 @@
+     }
+     jf, jn = check_json(series, want_meta, doc)
+     cf, cn = check_csv(doc, os.path.join(DIST, "regression.csv"))
+-    xf, xeq, xun, xex = check_cells(doc, cells)
++    xf, xeq, xun, xex, xsi = check_cells(doc, cells)
+     pf, planned = check_planned(doc)
+ 
+     pts = [p for s in series for p in s["points"]]
+@@ -448,7 +457,8 @@
+           f"(numbers to 2 decimals) and the meta; {len(jf)} mismatches")
+     print(f"  regression.csv: {cn} rows compared with their JSON points, column by column; {len(cf)} mismatches")
+     print(f"  cells.json: {xeq} newest points equal their cell on {len(CELL_FIELDS)} fields and are shown, "
+-          f"{xun} series of cells not measured have no point, {xex} excluded cells listed; {len(xf)} mismatches")
++          f"{xun} series of cells not measured have no point, {xex} excluded cells listed, {xsi} stand-in cells "
++          f"(a lab unit's sitting shown in the phone's cell: the series stays the phone's, not compared); {len(xf)} mismatches")
+     print(f"  planned devices: {', '.join(planned) or 'none'} (no identifier, no number, no series); "
+           f"{len(pf)} mismatches")
+     bad = failed + jf + cf + xf + pf
