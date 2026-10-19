@@ -85,3 +85,46 @@ Metric = render_leaderboard.arm_row's warm decode median (runs 2–4). Full tabl
 - runtime version: bump mlx-swift-lm and probe the qat-mobile bundles (one launch each); if they load, measure them with
   matrices/mlx-gemma4-file-mac.cells as QAT-class candidates.
 - iPhone 18 Pro: the same procedure in its own sitting after the 13:00 weekly.
+
+---
+
+<!-- third ladder of the lane: round r16 (the MLX Gemma 4 PTQ rows beside the QAT OptiQ rows, the iPhone 18 Pro's first sitting); a bench lane keeps one file per round topic, the conversion-lane lint does not apply -->
+
+# SPEED_LADDER — Gemma 4 E2B / E4B → MLX (mlx-swift) on the iPhone 18 Pro: the page's two MLX rows (QAT OptiQ, PTQ 4bit)
+
+runtime: mlx-swift (mlx-swift-lm 60bd0d7880c82980f9481f8be78862e9b63c58a3), the bench app com.example.CoreMLLLMChat (the 2026-10-19 13:12 build: record names to the fraction of a second)
+model: mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit, gemma-4-e2b-it-4bit, gemma-4-e4b-it-4bit (gemma-4-e4b-it-qat-OptiQ-4bit: the weekly rows' exclude=)
+device: iPhone 18 Pro (iPhone19,2), iOS 27.2, 11,555 MB; the 4bit bundles copied over USB into the app's Hub cache (no Wi-Fi download)
+parity bar: the text screen (session_check reply_rules on every run) and a person's read of one stored reply per cell; the class is shown in the row's name (owner decision 2026-10-19 via code-2d)
+
+Round r16 (2026-10-19). One job-route sitting, campaign `2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-ios` (anchor phase admitted at ratio 1.003),
+payload 13:37:53–14:15:30 JST, cooldown 300 s between cells, 4 runs a cell. Metric = render_leaderboard.arm_row's warm decode median (runs 2–4).
+Full table: ROUND16.md "計測の表". The post step held the sitting (its admission reference is uncommitted), so the rows are on disk, not committed yet.
+
+## 梯子(ladder — 1 行 = 1 form。測った形は全部残す。ship = 出荷する形)
+| # | form | backend | device | workload | metric | parity | status | evidence | ship |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | E2B qat-OptiQ-4bit (QAT, Hub 6bf302fd) | gpu | iPhone 18 Pro | p1107/d256 | 52.09 tok/s (n 3, spread 0.0 %), prefill 4,505, peak 5,028 MB | PASS 4/4; the reply starts the list | measured | MAIN results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-ios | ship (QAT row) |
+| 2 | E2B 4bit (PTQ, Hub 23876752) | gpu | iPhone 18 Pro | p1107/d256 | 68.19 tok/s (n 3, spread 1.7 %), prefill 4,874, peak 3,413 MB | PASS 4/4 (screen); the reply declines the lorem passage | measured | same dir | ship (PTQ row) |
+| 3 | E4B 4bit (PTQ, Hub 475b9088) | gpu | iPhone 18 Pro | p1107/d256 | 36.80 tok/s (n 3, spread 0.6 %), prefill 1,462, peak 5,139 MB | PASS 4/4 (screen); the reply declines the lorem passage | measured | same dir | ship (PTQ row) |
+| 4 | E4B qat-OptiQ-4bit (QAT, 6.5 GB text weights) | gpu | iPhone 18 Pro | p1107/d256 | — | — | not run: the weekly rows' exclude=app-killed-at-model-load-sigkill (iPhone 17 Pro, 2026-09-06) | matrices/dashboard-text-v1.cells | — |
+| 5 | E2B qat-OptiQ-4bit (QAT) | gpu | iPhone 18 Pro | short-chat p21/d128 | 54.73 tok/s (n 3, spread 0.1 %), prefill 344, peak 4,631 MB | PASS 4/4 | measured | same dir | ship (QAT row) |
+| 6 | E2B 4bit (PTQ) | gpu | iPhone 18 Pro | short-chat p21/d128 | 71.35 tok/s (n 3, spread 0.1 %), prefill 379, peak 3,039 MB | PASS 4/4 | measured | same dir | ship (PTQ row) |
+| 7 | E4B 4bit (PTQ) | gpu | iPhone 18 Pro | short-chat p21/d128 | 38.17 tok/s (n 3, spread 0.3 %; the first capture SPREAD 17.0, quarantined), prefill 177, peak 4,583 MB | PASS 4/4 | measured | same dir | ship (PTQ row) |
+
+## レバー(levers — 試すべき手を全部。1 行 = 1 手。n-a は「この model には当てはまらない」理由つき)
+| lever | status | result / reason | evidence |
+|---|---|---|---|
+| quant | measured | QAT OptiQ (4 / 8 bit mixed) vs PTQ 4bit (uniform 4 bit) in one sitting: PTQ decodes E2B 68.19 vs 52.09 (1K) and 71.35 vs 54.73 (short-chat), peak lower (3,413 vs 5,028 MB); both are page rows by decision | ROUND16.md 計測の表 |
+| memory fit | measured | the E4B PTQ build (5.1 GB of safetensors) loads on the 18 Pro, peak 5,139 MB of 11,555; the E4B OptiQ build (6.5 GB of text weights) stays excluded | ROUND16.md |
+| staging | measured | the 4bit bundles copied over USB into the app's Hub cache (refs/main + snapshots/<rev>/, one devicectl copy per file): load 1.2–1.9 s, no download | ROUND16.md 転送の結果 |
+| precision | n-a: the app has no MLX dtype option; each bundle fixes its dtypes | - | ROUND14.md |
+| shape | n-a: the task's fixed prompt and budget | - | - |
+| npu-path | n-a: MLX runs on the Apple GPU only | - | - |
+| state | n-a: mlx-swift-lm's default KV cache | - | ROUND14.md |
+
+## 例外(exception — 同じ device + workload でもっと速い形を出荷しないときだけ理由。無ければ「なし」)
+なし(owner decision 2026-10-19: the QAT and the PTQ forms both ship, as the model's two MLX rows with the class in the name)
+
+## 残り(remaining — まだ試していないレバーと見込み。無ければ「なし」。1 件でも書けば lint は HOLD)
+なし

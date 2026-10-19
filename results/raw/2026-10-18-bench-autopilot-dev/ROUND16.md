@@ -31,6 +31,11 @@ Supervisor: edge-llm-bench-55 [4f120b] (K/LANE.md first line). Branch `mlx-ptq-r
 - 12:4x 監督: P の v2 を当てて commit(P 5f66436)。追加で P の 2K 梯子の check の 6 件 FAIL の patch v3(sitting が先)。原因の読み(record 名の秒の衝突)は正しい、app の ResultStore を小数秒の名前に直して build・install・anchor の smoke 中、終わったら 3 回目の起動の連絡(停止条件の 2 回は環境の事故 = 監督の許可)。
 - 12:49–12:54 v3: 再現 → 読み(pool ではなく check の固定の選び)→ patch → 4 check PASS(「P の 2K 梯子の check の patch」)。12:51:46 からの別の窓(iPhone app の record 名の build)の間は python を止め、編集は Edit で。driver の job 部に SUFFIX(再開は新しい suffix `mlx-ptq-r3`: 同じ名前は止まった sitting の record を拾う)。
 - 12:54 監督へ v3 の 1 通(前提の訂正つき)。12:5x 3 回目の起動の手順を決めた: 監督の app の入れ直しの後なので、push をもう一度回して(同じ file は devicectl が飛ばす)hold の中で端末の Hub cache を確かめ、足りなければ送り直し → release → job を suffix `mlx-ptq-r3` で。次 = 監督の連絡を待つ。
+- 12:5x 監督: P の v3 を当てた(P 9d9895c)、前提の訂正は了解。18 Pro は監督の 0.6B の sitting(INT8 GPU / INT4 CPU)が 12:50 から約 40 分(監督の chain が私の aborted の ledger 行に反応して早く起きた)→ その後に監督の chain が小数秒の app を install して anchor の 3 run smoke → 私への go の 1 通 → 3 回目(suffix `mlx-ptq-r3`)。次 = 待機。
+- 13:1x 監督の go(3 回目): 小数秒の app を 13:12 に install、anchor の cell の 3 run smoke で端末の record 名が 3 本とも別(`…T04-12-23.255Z` / `…24.078Z` / `…24.911Z`)。監督の 0.6B の sitting も同じ上書きで anchor-short(13:12 終了、私の後に取り直し)。
+- 13:15:01–13:15:03 driver の push 部(確かめだけの mode を足した): hold 取得(keeper pid 23012)、端末の 2 bundle は app の入れ直しの後も 16 file とも Mac と同じ size、refs/main 40 bytes = copy なし、release。13:15:03 job 起動(suffix `mlx-ptq-r3`): 17 Pro の runner と `.iphone_hold` は別の phone と読まれ、13:15:04 preflight ok、hold 取得、anchor の phase(campaign `2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-anchor-ios`)。
+- 13:15 anchor の MLX の cell: 3 本とも引けた(小数秒の名前で上書きなし)が、3 run とも開始時の thermal が serious(この端末は 11:17 から llama.cpp の retake、0.6B の sitting と smoke、app の build と install で使われ続けていた)→ gate HOT、隔離して 600 s 冷まし、13:25:19 の取り直しは 3 run とも nominal で OK。runner は前の HOT を受けて次の cell の前に 600 s 余分に待った → LiteRT-LM の anchor 13:37:13、OK。13:37:53 `admission: ADMITTED — anchor nominal, ratio 1.003 vs reference`。次 = payload(`matrices/mlx-gemma4-file-ios.cells`、anchor 行 + 6 cell)。
+- 13:37:53– payload: anchor 行 OK(pulled 3)→ 13:43:07 E2B OptiQ 1K OK(4)→ 13:48:41 E2B 4bit 1K OK(4、cell 全体で約 25 s = Wi-Fi の download は無い)→ 13:54:07 E4B 4bit 1K OK(4): **5.1 GB の PTQ E4B は 18 Pro に載る**(peak footprint 約 5.1–5.2 GB、4 run とも nominal)= iOS の E4B PTQ 行に exclude= は要らない。次 = short-chat の 3 cell。
 
 ## 下見(11:53–12:00)
 
@@ -170,7 +175,25 @@ dry run: no device call made
 
 ## 計測の表
 
-(go の後に書く)
+iPhone 18 Pro(iPhone19,2、iOS 27.2、物理 memory 11,555 MB、app は監督の 13:12 の build = record 名が小数秒、Release、充電中)、mlx-swift-lm 60bd0d78、2026-10-19 の 3 回目の sitting(job 経路、suffix `mlx-ptq-r3`): anchor の phase 13:15:04–13:37:53(MLX の anchor は 1 回目が HOT serious で隔離、600 s 後の取り直しが nominal)、`admission: ADMITTED — anchor nominal, ratio 1.003`、payload 13:37:53–14:15:30、`=== done: OK (ok) exit 0`。数字は render_leaderboard.arm_row(MAIN の disk の summary を campaign で絞った: warm = run 2–4 の中央値、cold = run 1、prefill と peak は pool の中央値、peak = 生成中の phys_footprint の high-water)。text screen = post の session_check(`text_screen.json`)。load と snapshot = cell の console(`[MLX] load complete in …`、`[HubBridge] downloaded to …/snapshots/<rev>`)。
+
+| cell | 級 | warm decode tok/s(n、spread %) | cold | prefill tok/s | peak MB | text screen | load s | 読んだ snapshot |
+|---|---|---|---|---|---|---|---|---|
+| E2B OptiQ 1K | QAT | 52.09(3、0.0) | 52.14 | 4,505 | 5,028 | PASS 4/4(25 項目を挙げ始める) | 2.07 | 6bf302fd |
+| E2B 4bit 1K | PTQ | 68.19(3、1.7) | 68.72 | 4,874 | 3,413 | PASS 4/4(lorem を断る返事) | 1.20 | 23876752(送った物) |
+| E4B 4bit 1K | PTQ | 36.80(3、0.6) | 36.85 | 1,462 | 5,139 | PASS 4/4(lorem を断る返事) | 1.92 | 475b9088(送った物) |
+| E2B OptiQ short-chat | QAT | 54.73(3、0.1) | 54.49 | 344 | 4,631 | PASS 4/4 | 1.81 | 6bf302fd |
+| E2B 4bit short-chat | PTQ | 71.35(3、0.1) | 71.77 | 379 | 3,039 | PASS 4/4 | 1.17 | 23876752 |
+| E4B 4bit short-chat | PTQ | 38.17(3、0.3) | 38.29 | 177 | 4,583 | PASS 4/4 | 1.60(取り直し 1.67) | 475b9088 |
+| anchor Qwen3 0.6B 4bit short-chat(payload の anchor 行) | — | 221.00(2、0.2) | 232.56 | 638 | 524 | PASS 3/3 | 0.68 | 73e3e38d |
+
+- E4B 4bit(5.1 GB の safetensors)は 18 Pro に載る: 1K と short-chat の 8 run とも RUN_OK、peak 5,139 / 4,583 MB。iOS の E4B PTQ 行に exclude= は要らない(OptiQ E4B の SIGKILL は 6.5 GB の text weights、この行とは別)。
+- E4B 4bit short-chat の最初の capture は run 2 だけ decode 31.69(他 35.84 / 38.18 / 38.18、prefill は崩れていない)= SPREAD 17.0 で gate が隔離(`device-jsonl-flagged/`)、240 s 後の取り直しが表の行。原因は未確認。
+- 送った bundle を app は download せずに読んだ: console の snapshot は送った revision、load は 1.2–1.9 s、cell の始まりから最初の RUN_OK まで数秒(E2B 4bit 1K は cell 全体で約 25 s)。
+- 返事: PTQ の 2 本の 1K は 4 回とも lorem を断る(r14 の Mac と同じ; 字面の screen は話題の語で通す)。OptiQ E2B の 1K は課題に答える。short-chat は 3 本とも課題に答える。1K の tail は r17 で全 arm 一斉に替わる。
+- 同じ 18 Pro の 10-19 の週次の OptiQ E2B(page の数字、別の session)と比べると 1K warm 52.20 → 52.09、short-chat 54.33 → 54.73(同じ runtime、同じ重み、別の sitting = 参考)。
+
+post(dashboard_post.py、14:15:31–14:15:32): payload `…-mlx-ptq-r3-ios` = PASS(text screen 7 cell、text-fail 0)、anchor `…-mlx-ptq-r3-anchor-ios` = **HOLD**(`reference-uncommitted`: admission の基準 `2026-10-19-dashboard-v1-iphone18pro-q06-int8-anchor-ios` = 監督の 0.6B INT8 の sitting の anchor が commit も同じ組にも入っていない)→ sitting ごと保留、REVIEW.md が 2 dir に、`post exit 1`(sitting の exit 0 はそのまま)。直し方(REVIEW.md の通り): 基準の dir を先に commit するか同じ組で post し、`python3 scripts/dashboard_post.py results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-anchor-ios results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-ios` をもう一度。監督の campaign なので私は commit しない。P の page の step はこの post では走っていない。
 
 ## commit
 
@@ -185,3 +208,42 @@ dry run: no device call made
 3. `ModelCatalog.swift` l.174–176 の comment(PTQ を cross-runtime table に使わない)が決定と食い違う。catalog に触れる round で 1 行直す(build は不要、comment だけ)。`docs/dashboard-recurring-job-v1.md` l.709–711(iPhone MLX E4B は PTQ を選ぶまで exclude)も同じ向きに 1 行。
 4. `models/artifact-bytes.json` に 4bit の 2 bundle の entry を足すと PTQ 行の bw の欄が出る(`scripts/artifact_streamed_bytes.py`)。
 5. 週次の Apple の sitting は 4 cell 増える(cooldown だけで 20 分)。`ops/dashboard-v1/schedule.json` の expected_hours(Mac 3.8、iPhone 18 Pro 5.8)は次の週次の実測で見直す。
+
+## 訂正
+- launch「起動 12:0x」→ この tab の最初の `date` は 11:52:30(経過の 1 行目)。
+- launch「snapshot dir ごと `devicectl copy to` で送る」→ devicectl 642.16 は dir の中の symlink を link のまま送り、`../../blobs/…` を「File paths cannot contain '..'」で断る(12:26:09)。file ごとに Mac の blob を送り先の名前で送る(「転送の結果」、K/tools/push_mlx_4bit_18pro.sh)。
+- launch「P の check … 行を足せば両方に出る」→ 行は出て check も PASS だが、P は cell を model_row で名付けるので page の名前に QAT / PTQ が出なかった → cell の `build` と cellName の patch v2(監督が P 5f66436 で当てた)(「P の名前の patch」)。
+- launch の書く範囲 → `android/bench/test_longctx1024.py` が 1K の対の数(64)を書き込んでいて、PTQ 行で 68。監督の指示で branch に commit(merge で r15 の行と合わせて 69)(「CI の下稽古」)。
+- launch「18 Pro … hold は job が持つ(release 後に空く)」→ job の preflight が共有 `.iphone_hold`(17 Pro の AA lane)とその runner を 18 Pro の busy と読み exit 3(12:36:49、logs/dashboard-job/2026-10-19-iphone18pro-mlx-ptq.byhand.out)。監督が main 1940f4a8 / 8fe22207 で直した。
+- app の record 名が UTC の秒単位 → anchor の run 2 と run 3 が同じ秒で上書き、pulled=2 で anchor-short exit 4(12:47:48、MAIN results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-anchor-ios/device-jsonl の …T03-45-15Z / …T03-45-16Z)。監督が ResultStore を小数秒にして 13:12 に install。
+- 監督の前提「P の 2K 梯子は session を跨いで pool」→ pool ではなく、check の LADDERS が Mac を 09-18 の campaign に固定していた(v3、監督が P 9d9895c で当てた)(「P の 2K 梯子の check の patch」)。
+- launch 手順 8 の suffix `mlx-ptq` → 止まった 2 回の後なので `mlx-ptq-r3` で走らせた(同じ名前は止まった sitting の record を拾う)。docs と cells の header に実際の名前。
+
+## 罠と袋小路
+- `devicectl device copy to` に HubCache の snapshot dir を渡すと '..' の symlink で断られる → `--source <blob の実体> --destination …/snapshots/<rev>/<file 名>` を file ごとに。USB で約 31 MB/s(3.55 GB 114 s、5.15 GB 166 s)。
+- `devicectl device info files` で app の HubCache を見ると snapshot の entry は symlink で、size は link の長さ(52 / 76 bytes)→ `blobs/<etag>` の size で比べる(Mac の link が同じ etag を名指す)。
+- app の ResultStore が秒単位の名前(13:12 の build より前)だと、速い run(MLX 0.6B、1 本 約 0.6 s)が上書きし合って pulled < runs → SHORT / anchor-short(10-15、10-17 は payload の anchor 行で、10-19 は anchor の phase で)。
+- dashboard_job の preflight(main 1940f4a8 / 8fe22207 より前)は、別の phone の `.iphone_hold` と runner を busy と読む。
+- 止まった sitting と同じ campaign 名での取り直しは止まった record を拾う → 新しい suffix。
+- 別の lane の Mac の窓(r17 の build と smoke、app の build)の間は PreToolUse hook が python を含む command を止める → 編集は Edit、P の check は quiet_hold の中(render_check は headless Chrome を開く)。
+- P の名前: model の label は panel の group の鍵。名前に級を足すと(v1)group が割れて MLX が Gemma 4 の比べる相手から外れる → 級は cell の名前(cellName)に(v2)。render_check は cell の名前を自分で組む(4 か所)ので cellName と一緒に直す。
+- app を上書きで install しても container は残る: 送った 4bit bundle は 13:12 の install の後もそのまま(13:15 の確かめだけの push)。
+- 何時間も続けて使った phone の最初の anchor は thermal serious → HOT → 600 s 冷まし + 次の cell の前に 600 s(sitting の約 22 分)。
+- ROUND16 に render の grid(2 runtime の数字が並ぶ行)を貼ってしまい、merge の前に branch の履歴を書き換えた(12:24)→ 公開 repo の round notes には名前と状態だけを貼る。
+
+## op と delegate の観察
+- MLX(Metal GPU)だけ: op / delegate / fallback の観察は無い。fp16 と fp32 の差は測っていない。
+- load の失敗は無い: E4B PTQ(5.1 GB)は 18 Pro に載る(peak 5,139 MB / 物理 11,555 MB)。OptiQ E4B は exclude のまま走らせていない。
+- E4B 4bit short-chat の最初の capture で 1 run だけ decode 31.69(他 38.18、prefill は無傷)→ SPREAD 17.0 で隔離、取り直しは 0.3 %。原因は未確認。
+- runtime: mlx-swift-lm 60bd0d78、swift-huggingface b7219594(app の Hub client: listFiles は online、file は refs/main を通して cache から)。
+
+## 使った環境
+- Mac Studio M4 Max(Mac16,9)、macOS 27.0、devicectl 642.16、python3 3.14(Homebrew)、venv なし。P の build と check は `git archive` の写しで、EDGE_LLM_BENCH を指して。
+- iPhone 18 Pro(iPhone19,2、UDID 00008160-000038CA02C00036)、iOS 27.2、app com.example.CoreMLLLMChat(Release、監督の 13:12 の build)、mlx-swift-lm 60bd0d78。
+- hold: `~/code/coreai/ondevice/.device_hold` を queue_cli wait / hold_cli release で(keeper pid 51951 / 83796 / 23012、枠 3 s / 4 分 49 秒 / 2 s)、sitting は job が自分で取った(12:45:12–12:47:48、13:15:04–14:15:31)。自分の Mac の窓: quiet_hold `r16-p-render-check` を 4 回(52–56 s)。
+
+## 残した file
+- REPO(branch `mlx-ptq-rows`、main に merge 済み = 6378a790 まで、その後の commit は未 merge): `matrices/dashboard-text-v1.cells`、`matrices/dashboard-longctx1024-v1.cells`、`matrices/mlx-gemma4-file-ios.cells`、`scripts/bench_common.py`、`android/bench/test_longctx1024.py`、`docs/dashboard-cells-v1.md`、K の `ROUND16.md`、`SPEED_LADDER.md`(3 本目の梯子)、`tools/push_mlx_4bit_18pro.sh`(app の Hub cache への USB の転送と確かめ、週次の前にも使える)、`tools/r16_step8.sh`(keeper / queue / push / job の driver = 消してよい)、`p-mlx-row-name.patch`(P 5f66436 で当て済み = 消してよい)、`p-ladder-newest-session.patch`(P 9d9895c で当て済み = 消してよい)。
+- MAIN(私は commit していない): `results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3{-anchor,}-ios/`(この sitting、post が HOLD、2 dir に REVIEW.md、監督の基準の dir と一緒に commit 待ち)、`results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-anchor-ios/`(12:45 の止まった anchor の phase、admitted=false、監査の跡として disk に残す、commit しない)、`logs/dashboard-job/2026-10-19-iphone18pro-mlx-ptq.byhand.out`(3 回の起動)。MAIN の disk の results/summary は runner が作り直した(sitting のたびに起きること)。
+- 端末: app の `Library/Caches/huggingface/hub` の 4bit の 2 bundle(8.76 GB)= 残す(週次の iPhone の sitting が PTQ 行を走らせる)。
+- Mac の HF cache: 変更なし。scratchpad(P の写しと build、転送の log、r16_table.py)= 消してよい。

@@ -37,8 +37,14 @@ push() {
     exit 3
   fi
   say "hold taken by keeper $KEEPER"
-  OUT="$OUT" bash "$HERE/push_mlx_4bit_18pro.sh" --keeper "$KEEPER"
+  # the bundles may already be there (an earlier push; an app installed over itself keeps its container)
+  OUT="$OUT" CHECK_ONLY=1 bash "$HERE/push_mlx_4bit_18pro.sh" --keeper "$KEEPER"
   rc=$?
+  if [ $rc -ne 0 ]; then
+    say "the check found a bundle missing or different: copying"
+    OUT="$OUT" bash "$HERE/push_mlx_4bit_18pro.sh" --keeper "$KEEPER"
+    rc=$?
+  fi
   python3 "$TOOLS/hold_cli.py" release "$HOLD" "$KEEPER"
   say "hold released (push exit $rc)"
   kill "$KEEPER" 2>/dev/null

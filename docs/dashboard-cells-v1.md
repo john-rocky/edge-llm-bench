@@ -1306,13 +1306,17 @@ E4B OptiQ build apart from the generic pattern, as the E2B one has been.
 
 Numbers so far: the Mac's PTQ figures are the table above (one hand-run sitting,
 `results/raw/2026-10-19-mlx-gemma4-file-mac/`). The page reads the weekly sittings, so its Mac PTQ cells read "not
-measured" until the Mac's next weekly sitting runs the new rows. The iPhone 18 Pro's first PTQ sitting runs through
+measured" until the Mac's next weekly sitting runs the new rows. The iPhone 18 Pro's first PTQ sitting ran through
 the job route with `matrices/mlx-gemma4-file-ios.cells` (the session anchor row, then the E2B OptiQ, E2B 4bit and
-E4B 4bit rows of both tasks, byte-identical to the weekly rows), campaign
-`results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-ios/` (anchor phase `…-mlx-ptq-anchor-ios/`). The two 4bit
-bundles are copied over USB from the Mac's Hub cache into the app's own Hub cache first, so no cell downloads over
-Wi-Fi: the app's MLX loader (swift-huggingface `HubClient`) reads
+E4B 4bit rows of both tasks, byte-identical to the weekly rows) on 2026-10-19 13:15–14:15 JST, campaign
+`results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-ios/` (anchor phase `…-mlx-ptq-r3-anchor-ios/`; `-r3`:
+the two earlier starts stopped before any payload cell). Every cell has its records: the E4B PTQ build loads on the
+phone (peak footprint about 5.1 GB), so its iPhone rows carry no `exclude=`. The PTQ 1K replies decline the lorem
+passage, as on the Mac. The two 4bit bundles were copied over USB from the Mac's Hub cache into the app's own Hub
+cache first, so no cell downloaded over Wi-Fi: the app's MLX loader (swift-huggingface `HubClient`) reads
 `Library/Caches/huggingface/hub/models--mlx-community--<repo>/refs/main` and `snapshots/<rev>/` in the app's container.
+`devicectl device copy to` sends a snapshot directory's symlinks as links and refuses their `../../blobs/` targets
+("File paths cannot contain '..'"), so each file goes in its own copy, the blob under the file's name.
 
 ## Open questions for the LiteRT team
 
