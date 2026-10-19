@@ -1183,13 +1183,12 @@ class Check:
         same = collections.Counter()
         other = collections.defaultdict(collections.Counter)
         # one model id can ship several files (litert-community/Qwen3-0.6B: mixed_int4 reads 9 tokens on
-        # v0.18.0, dynamic_wi4b32 reads 19): the history of another file is not this cell's; a summary
-        # written before the model_file column (2026-10-19) is read as any file
+        # v0.18.0, dynamic_wi4b32 reads 19): the history of another file is not this cell's. The summary
+        # carries model_file since 2026-10-19 (32c28915 rebuilt every row); a record that names no file
+        # matches the rows that name none
         mfile = model_file_of(items[0][1])
         for (hplat, heng, hrt, hmodel, htask, hfile), rows in hist.items():
-            if (hplat, hrt, hmodel, htask) != (plat, rt, model, task):
-                continue
-            if hfile and mfile and hfile != mfile:
+            if (hplat, hrt, hmodel, htask, hfile or "") != (plat, rt, model, task, mfile or ""):
                 continue
             for pt, camp in rows:
                 if self.ctx["sitting_of"](self.raw, camp) == sitting:
@@ -1280,7 +1279,7 @@ class Check:
 
     def history_index(self):
         """(platform, engine, runtime, model, task, model_file) -> [(prompt tokens, campaign dir name)] over
-        the committed summary's admitted rows whose text check did not fail (model_file '' before 2026-10-19)."""
+        the committed summary's admitted rows whose text check did not fail (model_file '' where the record names none)."""
         key = id(self.repo)
         if key not in self.ctx["hist_cache"]:
             admitted = self.ctx["admission"](self.raw)

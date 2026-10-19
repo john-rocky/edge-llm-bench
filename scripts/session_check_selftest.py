@@ -443,9 +443,8 @@ def main():
         fh.write("campaign,platform,engine_version,runtime,model_id,task,prompt_tokens,text_check,model_file\n")
         for i in range(3):
             fh.write(f"results/raw/old-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,19,,\n")
-        # the same model id on another file read 9 tokens (a bundle whose template drops the user turn); more
-        # rows than the three file-less ones, which a pre-column summary contributes to every file
-        for i in range(5):
+        # the same model id on another file read 9 tokens (a bundle whose template drops the user turn)
+        for i in range(3):
             fh.write(f"results/raw/old-file-{i}-mac,mac,{LLAMA},llama.cpp,{LLAMA_MODEL},short-chat,9,,other-file.gguf\n")
 
     print(f"--- LEADER, the platform of the LiteRT-LM-only cases: {LEADER_WHY}")
