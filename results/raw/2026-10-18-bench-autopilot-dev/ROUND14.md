@@ -16,6 +16,7 @@ Supervisor: edge-llm-bench-55 [4f120b]. Worktree `~/code/edge-llm-bench-wt-autop
 - 10:59–11:03 E4B 4bit 1K: 1 回目の launch は run 4 が 92.27(他は 112.16 / 112.14、prefill は無傷)= SPREAD 17.7 → 隔離(.attempt1)、180 s 後の再実行が行: cold 112.17、warm 111.97 / 112.05 / 111.79、label "Q4"、返事は lorem を断る。
 - 11:08 E4B OptiQ 1K: 4 run とも返事は lorem を断る(text-fail、下の表)= rate は記録に残るが数字としては使わない。11:08:18 SITTING-END rc 0、窓の解放 1628 s。
 - 11:1x 集計: session_check は HOLD(not-job = 手で走らせた dir、user-name = 私の host_load.log の account 名 → USER に置換)、text_screen.json は書かれない(screen は job campaign だけ)= reply_rules を各 run に当てて判定(scratch tools/screen.py)。scratch の木(REPO の index + この dir)で build_summary → render_leaderboard.arm_row。MAIN の results/summary は 11:10:37 に別 session の in-tree 再生成(私の 19 行を含む)で変わっていた = 11:12 に `git checkout -- results/summary` で戻した。docs の節、cells の header を書いた。
+- 11:22 commit 342e6b0e、全 cells の validate OK、round close の 5 節、lint。次 = ROUND14 の hash 追記の commit、監督へ round close の 1 通。
 
 ## 下見(10:23–10:40)
 - 6 bundle(Hub API、card、config、commits、2026-10-19 10:23 JST に読んだ。DL = Hub API の `downloads` = 30 日):
@@ -60,7 +61,8 @@ Mac Studio(M4 Max)、2026-10-19 10:41–11:08 JST、campaign `MAIN/results/raw/2
 - cells の変更: なし(dashboard-*.cells の OptiQ 行はそのまま; `grep -n 'gemma-4-e[24]b-it-qat-OptiQ' matrices/dashboard-*.cells` の 12 行 = text-v1 8、longctx1024-v1 4)。docs に節を追加。
 
 ## commit
-(下の commit 行に hash)
+- 342e6b0e(branch `mlx-gemma4-file`、push / merge なし): cells file、docs の節、ROUND14、SPEED_LADDER。この hash の追記は次の 1 commit(ROUND14 だけ)。
+- CI と同じ `scripts/validate_cells.py matrices/*.cells` = 146 file OK。round_close_lint PASS。speed_ladder_lint は `runtime:` 欄だけで FAIL(mlx-swift は lint の変換 runtime の一覧に無い、SPEED_LADDER の例外に記載)。
 
 ## 提案
 1. この dir を commit する前に: session_check は手で走らせた dir に text screen をかけない → text_screen.json が無いまま summary に入ると text_check が空 = arm_row が E4B OptiQ の run を pool する(scratch で確認: text_checked_n 0、warm が数字になる)。page の cell は最新の session を取る(render_leaderboard.latest_session)ので、commit で E4B OptiQ 1K が text-fail から数字に変わりうる(team page の build.py の絞り込みは未確認)。案: session_check が hand run にも screen をかける、またはこの dir を session として page の経路から外す。
