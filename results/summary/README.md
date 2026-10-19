@@ -25,6 +25,9 @@ from 2026-10-06; its earlier rows carry a peak only from the
 `BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:
 `methodology/memory.md` "Peak memory".
 
+`engine_version` is the engine the row ran on; `engine_stamped` (after it, 2026-10-19) the record's own
+`engineVersion`. They differ only for the Mac LiteRT-LM rows of the 2026-10-12..10-19 dashboard sittings, whose
+yardstick loaded the v0.16.0 dylib while the pins file stamped v0.18.0 (bench_common.corrected_engine).
 `model_file` (after `model_id`, 2026-10-19) is the artifact file the run loaded (the record's `model.file`, or
 `model.primaryFile` on the Apple native path; empty before): one model id can ship several files, and the
 session checker keys the prompt-token history by it (quant-label-rule: the recipe is visible in every row).
