@@ -38,6 +38,12 @@ LOGICAL_MODELS: list[tuple[str, str]] = [
     # OptiQ before the generic e2b pattern: MLX has two 4-bit builds of E2B in the table
     # (quality-best QAT OptiQ vs speed-best PTQ) and they must not pool in the pivots.
     ("gemma-4-e2b-it-qat-optiq", "Gemma 4 E2B (QAT OptiQ)"),
+    # The PTQ builds and the E4B OptiQ build too: since 2026-10-19 the dashboard has both
+    # MLX rows of each model (docs/dashboard-cells-v1.md "MLX Gemma 4 file (2026-10-19)"),
+    # each named by its class; a PTQ row on the generic name would read as "Gemma 4 E2B".
+    ("gemma-4-e2b-it-4bit",      "Gemma 4 E2B (PTQ 4bit)"),
+    ("gemma-4-e4b-it-qat-optiq", "Gemma 4 E4B (QAT OptiQ)"),
+    ("gemma-4-e4b-it-4bit",      "Gemma 4 E4B (PTQ 4bit)"),
     # Cactus ships two CQ4 lineages of E2B (same repo, different files) that must not
     # pool either: the pre-07-09 "uncalibrated" (the row: GSM8K 87.0) vs the shipped
     # default "calibrated" (footnote: GSM8K 3.0). Uncal pattern first — it contains cq4.

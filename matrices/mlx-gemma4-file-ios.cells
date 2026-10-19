@@ -1,0 +1,25 @@
+# iPhone 18 Pro, 2026-10-19: the first sitting of the MLX Gemma 4 PTQ rows on the phone (owner decision via code-2d
+# 2026-10-19: the page carries both MLX Gemma 4 rows, QAT OptiQ and PTQ 4bit, named by class; docs/dashboard-cells-v1.md
+# "MLX Gemma 4 file (2026-10-19)"). The E2B OptiQ rows run in the same sitting, so the two classes are read in one
+# session. No E4B OptiQ row: its weekly rows are exclude=app-killed-at-model-load-sigkill. The E4B 4bit rows (5.1 GB of
+# safetensors) carry no exclude=: this sitting shows whether the phone loads them.
+# Source: matrices/dashboard-text-v1.cells line 128 (anchor; matrices/dashboard-llama-b11721-ios.cells has the same
+# first row) and lines 152, 153, 177 (long-context-1024-gen256) and 147, 148, 172 (short-chat), each byte-identical.
+# The two 4bit bundles are copied over USB from the host's Hub cache into the app's own Hub cache before the sitting
+# (Library/Caches/huggingface/hub: refs/main and snapshots/<rev>/; results/raw/2026-10-18-bench-autopilot-dev/tools/
+# push_mlx_4bit_18pro.sh), so no cell downloads over Wi-Fi. Run through the job route (it takes the hold, runs
+# anchors.cells, admits, posts):
+#   python3 scripts/dashboard_job.py iphone18pro --cells matrices/mlx-gemma4-file-ios.cells --suffix mlx-ptq --once
+
+# ---- ios ----
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+
+# --- long-context-1024-gen256 ---
+ios mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+ios mlx-swift mlx-community/gemma-4-e2b-it-4bit long-context-1024-gen256 cooldown=300
+ios mlx-swift mlx-community/gemma-4-e4b-it-4bit long-context-1024-gen256 cooldown=300
+
+# --- short-chat ---
+ios mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
+ios mlx-swift mlx-community/gemma-4-e2b-it-4bit short-chat cooldown=300
+ios mlx-swift mlx-community/gemma-4-e4b-it-4bit short-chat cooldown=300
