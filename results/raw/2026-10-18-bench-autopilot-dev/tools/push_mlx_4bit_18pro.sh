@@ -27,7 +27,7 @@ DEST=Library/Caches/huggingface/hub
 REPOS="gemma-4-e2b-it-4bit gemma-4-e4b-it-4bit"
 LISTED="gemma-4-e2b-it-qat-OptiQ-4bit"
 PATTERNS="*.safetensors *.json *.jinja"     # mlx-swift-lm 60bd0d7 modelDownloadPatterns
-COPY_TIMEOUT=1800                          # seconds per devicectl copy (the hold's window is 45 min)
+COPY_TIMEOUT=1200                          # seconds per snapshot copy: two of them stay inside the hold's 45 min
 
 usage() { sed -n 2,20p "$0" >&2; exit 2; }
 DRY=0; KEEPER=""

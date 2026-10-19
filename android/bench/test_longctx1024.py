@@ -140,7 +140,8 @@ class CellsContract(unittest.TestCase):
         # the MLX delegate, the Gemma 4 ones excluded), the Mac's 6 onnxruntime-genai rows (CPU EP and
         # the WebGPU plugin EP, Qwen3 only; weekly since 2026-10-09) and the iPhone's 3 (CPU EP, Qwen3
         # only; weekly since 2026-10-09, the pinned app build carries the adapter)
-        self.assertEqual(len(twins), 64)
+        # + 4 since 2026-10-19: the MLX Gemma 4 PTQ 4bit rows beside the QAT OptiQ ones (Mac and iPhone, 2 each)
+        self.assertEqual(len(twins), 68)
 
     def test_weekly_rows_are_the_1024_set(self):
         weekly = {r[0] for r in rows(WEEKLY) if r[4] == TASK}
