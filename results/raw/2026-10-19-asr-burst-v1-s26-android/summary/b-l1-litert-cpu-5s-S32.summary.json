@@ -1,0 +1,345 @@
+{
+  "tag": "b-l1-litert-cpu-5s-S32",
+  "harness": "asr-burst-v1",
+  "engine": "litert",
+  "model_name": "parakeet-tdt-0.6b-v3",
+  "backend": "cpu",
+  "num_threads": 4,
+  "litert_version": "2.2.0",
+  "sherpa_onnx_version": null,
+  "onnxruntime_version": null,
+  "gpu_precision": "FP32",
+  "npu_htp_performance_mode": "HIGH_PERFORMANCE",
+  "input_ms": 5000,
+  "processes": [
+    {
+      "pid": 31410,
+      "load_label": "cold",
+      "load_ms": 971.488229,
+      "start_after": null,
+      "utterances_todo": 82,
+      "foreground_state": "RESUMED",
+      "foreground_error": null,
+      "screen_start": {
+        "interactive": true,
+        "keyguard_locked": false,
+        "device_locked": false
+      },
+      "process_state": {
+        "start": {
+          "cpus_allowed": "0-5",
+          "cpuset": "4:cpuset:/foreground",
+          "cgroup": [
+            "5:freezer:/",
+            "4:cpuset:/foreground",
+            "3:cpuacct:/",
+            "2:cpu:/foreground",
+            "1:blkio:/high",
+            "0::/apps/uid_10749/pid_31410"
+          ]
+        },
+        "after_foreground": {
+          "cpus_allowed": "0-7",
+          "cpuset": "4:cpuset:/top-app",
+          "cgroup": [
+            "5:freezer:/",
+            "4:cpuset:/top-app",
+            "3:cpuacct:/top-app",
+            "2:cpu:/top-app",
+            "1:blkio:/top",
+            "0::/apps/uid_10749/pid_31410"
+          ]
+        },
+        "after_load": {
+          "cpus_allowed": "0-7",
+          "cpuset": "4:cpuset:/top-app",
+          "cgroup": [
+            "5:freezer:/",
+            "4:cpuset:/top-app",
+            "3:cpuacct:/top-app",
+            "2:cpu:/top-app",
+            "1:blkio:/top",
+            "0::/apps/uid_10749/pid_31410"
+          ]
+        }
+      },
+      "debuggable": false,
+      "dexopt_app": "speed/cmdline",
+      "dexopt_test": "speed/cmdline",
+      "oat_files_mapped": [
+        "/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/oat/arm64/base.vdex",
+        "/data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/oat/arm64/base.vdex",
+        "/data/data/com.google.ai.edge.examples.asr.burst/cache/oat_primary/arm64/base.art"
+      ],
+      "thermal_status_start": 0,
+      "battery_celsius_start": 36.5,
+      "started_utc": "2026-10-19T15:00:52.573Z"
+    }
+  ],
+  "warmups": [
+    {
+      "warmup_id": "1995-1836-0004",
+      "processing_seconds": 1.586,
+      "audio_seconds": 33.91,
+      "error": null
+    }
+  ],
+  "rows_written": 82,
+  "set": "S32",
+  "rows_covered_of_s16": 82,
+  "rows_from_runs": {
+    "b-l1-litert-cpu-5s-S32": 82
+  },
+  "rows_outside_s16": [],
+  "rows_ok": 82,
+  "rows_failed": [],
+  "rows_counted": 82,
+  "rows_excluded": 0,
+  "rows_retaken": 0,
+  "retake_text_differs": 0,
+  "counted_audio_seconds": 626.36,
+  "counted_processing_seconds": 35.1,
+  "rtf_burst": 0.05604,
+  "rtfx_burst": 17.85,
+  "median_utterance_rtf_burst": 0.05703,
+  "rtf_all_ok_rows": 0.05604,
+  "wait_sum_s": 350.499,
+  "wait_median_s": 0.504,
+  "wait_max_s": 40.911,
+  "wait_over_1s": 25,
+  "wait_timeouts": 0,
+  "retake_wait_sum_s": 0,
+  "cap_drop_first_attempt": {
+    "max": 14.2,
+    "median": 0.0,
+    "over_line": 0
+  },
+  "cap_drop_last_attempt_max": 14.2,
+  "cap_drop_engine_cpus_max": 14.2,
+  "cpus_allowed_rows": [
+    "0-7"
+  ],
+  "windows": 197,
+  "window_ms": {
+    "mel_median": 124.086,
+    "encode_median": 52.559,
+    "decode_median": 55.738
+  },
+  "per_utterance_stage": {
+    "mel": {
+      "median_ms": 234.78050000000002,
+      "sum_s": 24.383868000000003
+    },
+    "encode": {
+      "median_ms": 104.712,
+      "sum_s": 10.554984999999997
+    },
+    "decode": {
+      "median_ms": 99.57,
+      "sum_s": 13.152194000000001
+    }
+  },
+  "jit_check_window_ms": {
+    "first_10": {
+      "ids": [
+        "4507-16021-0047",
+        "8230-279154-0043",
+        "5105-28241-0001",
+        "4077-13754-0008",
+        "1188-133604-0002",
+        "3575-170457-0026",
+        "7127-75946-0028",
+        "1188-133604-0011",
+        "2300-131720-0001",
+        "1284-134647-0007"
+      ],
+      "windows": 63,
+      "audio_s": 195.12,
+      "mel_ms": 127.665,
+      "encode_ms": 52.215,
+      "decode_ms": 63.853
+    },
+    "last_10": {
+      "ids": [
+        "7021-85628-0004",
+        "4970-29095-0019",
+        "5639-40744-0011",
+        "4446-2271-0015",
+        "1995-1826-0014",
+        "2094-142345-0040",
+        "8555-284447-0012",
+        "121-127105-0030",
+        "4507-16021-0006",
+        "1995-1837-0008"
+      ],
+      "windows": 10,
+      "audio_s": 24.19,
+      "mel_ms": 114.29249999999999,
+      "encode_ms": 58.8555,
+      "decode_ms": 41.304
+    }
+  },
+  "wer_percent_s16_reference": 15.28,
+  "substitutions": 32,
+  "deletions": 225,
+  "insertions": 2,
+  "reference_words": 1695,
+  "empty_hypotheses": 0,
+  "vmhwm_kb_max": 1555704,
+  "vmhwm_kb_per_process": [
+    1555704
+  ],
+  "sampler_max_hwm_kb_per_process": [
+    1555704
+  ],
+  "cpuset_seen": [
+    "4:cpuset:/foreground",
+    "4:cpuset:/top-app"
+  ],
+  "cpus_allowed_seen": [
+    "0-5",
+    "0-7"
+  ],
+  "foreground_state_end": [
+    "RESUMED"
+  ],
+  "thermal_status_end": [
+    0
+  ],
+  "battery_celsius_end": [
+    36.4
+  ],
+  "probes": {
+    "b-l1-litert-cpu-5s-S32.probe-before.json": {
+      "mac_time": "2026-10-20T00:00:50+09:00",
+      "battery_celsius": 36.0,
+      "thermal_status": 0,
+      "hal_ap": 37.5,
+      "hal_skin": 36.5,
+      "ceilings": {
+        "policy0": {
+          "max_khz": 3628800,
+          "hw_khz": 3628800,
+          "drop_pct": 0.0
+        },
+        "policy6": {
+          "max_khz": 4742400,
+          "hw_khz": 4742400,
+          "drop_pct": 0.0
+        }
+      },
+      "mem_available_kb": 6733296,
+      "wakefulness": "Awake"
+    },
+    "b-l1-litert-cpu-5s-S32.probe-after.json": {
+      "mac_time": "2026-10-20T00:07:25+09:00",
+      "battery_celsius": 36.7,
+      "thermal_status": 0,
+      "hal_ap": 40.6,
+      "hal_skin": 37.6,
+      "ceilings": {
+        "policy0": {
+          "max_khz": 3628800,
+          "hw_khz": 3628800,
+          "drop_pct": 0.0
+        },
+        "policy6": {
+          "max_khz": 4646400,
+          "hw_khz": 4742400,
+          "drop_pct": 2.0
+        }
+      },
+      "mem_available_kb": 7095304,
+      "wakefulness": "Awake"
+    }
+  },
+  "registration_lines": [
+    "10-20 00:00:50.725 31410 31410 D nativeloader: Configuring clns-9 for other apk /data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/base.apk:/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/base.apk. target_sdk_version=35, uses_libraries=libOpenCL.so:libcdsprpc.so, library_path=/data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/lib/arm64:/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/lib/arm64:/data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/base.apk!/lib/arm64-v8a:/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.google.ai.edge.examples.asr.burst",
+    "10-20 00:00:50.733 31410 31410 I AndroidJUnitRunner: onCreate Bundle[{require_top_app=true, warmup_id=1995-1836-0004, engine=litert, tag=b-l1-litert-cpu-5s-S32, pace=burst, dexopt_test=speed/cmdline, every=32, limit=0, model=parakeet-tdt-0.6b-v3, load_label=cold, manifest=/data/user/0/com.google.ai.edge.examples.asr.burst/files/sets/test-clean/manifest-device.tsv, app_commit=5f23093fb483498948497a42a83bb46ef68ff2c4, accelerator=cpu, dexopt_app=speed/cmdline, foreground=front}]",
+    "10-20 00:00:50.785 31410 31436 I DisplayManager: Choreographer implicitly registered for the refresh rate.",
+    "10-20 00:00:50.813 31410 31410 D WindowOnBackDispatcher: setTopOnBackInvokedCallback (unwrapped): android.view.ViewRootImpl$$ExternalSyntheticLambda16@4a23bb9",
+    "10-20 00:00:50.817 31410 31410 E BufferQueueProducer: Unable to open libpenguin.so: dlopen failed: library \"libpenguin.so\" not found.",
+    "10-20 00:00:51.533 31410 31423 I AsrBench: start tag=b-l1-litert-cpu-5s-S32 engine=litert model=parakeet-tdt-0.6b-v3 accelerator=cpu pace=burst todo=82 foreground=RESUMED top_app=true cpuset=4:cpuset:/top-app",
+    "10-20 00:00:51.579 31410 31478 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorInvalidArgument.",
+    "10-20 00:00:51.579 31410 31478 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).",
+    "10-20 00:00:51.580 31410 31478 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).",
+    "10-20 00:00:51.580 31410 31478 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a43828650, name=LiteRT GPU",
+    "10-20 00:00:51.580 31410 31478 I litert  : [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtClGlAccelerator.so) registered.",
+    "10-20 00:00:51.580 31410 31478 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a43834f50, name=CpuAccelerator",
+    "10-20 00:00:51.580 31410 31478 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.",
+    "10-20 00:00:51.630 31410 31478 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.",
+    "10-20 00:00:51.633 31410 31478 I tflite  : Replacing 1643 out of 1790 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 249 partitions for subgraph 0 (encode).",
+    "10-20 00:00:52.506 31410 31478 I tflite  : Replacing 161 out of 163 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 1 (decode).",
+    "10-20 00:00:52.533 31410 31478 I tflite  : Replacing 61 out of 63 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 2 (decode_1).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3 (odml.group_norm.impl).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 4 (odml.group_norm.impl_0).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 5 (odml.group_norm.impl_1).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 6 (odml.group_norm.impl_2).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 7 (odml.group_norm.impl_3).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 8 (odml.group_norm.impl_4).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 9 (odml.group_norm.impl_5).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 10 (odml.group_norm.impl_6).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 11 (odml.group_norm.impl_7).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 12 (odml.group_norm.impl_8).",
+    "10-20 00:00:52.545 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 13 (odml.group_norm.impl_9).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 14 (odml.group_norm.impl_10).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 15 (odml.group_norm.impl_11).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 16 (odml.group_norm.impl_12).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 17 (odml.group_norm.impl_13).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 18 (odml.group_norm.impl_14).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 19 (odml.group_norm.impl_15).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 20 (odml.group_norm.impl_16).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 21 (odml.group_norm.impl_17).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 22 (odml.group_norm.impl_18).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 23 (odml.group_norm.impl_19).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 24 (odml.group_norm.impl_20).",
+    "10-20 00:00:52.546 31410 31478 I tflite  : Replacing 14 out of 14 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 25 (odml.group_norm.impl_21)."
+  ],
+  "selection_wav_sha256_chain": [
+    "6ccb9d3c271b966a7c7cdaa02417b360a1319a858542fab92dc8407e3332f8f4"
+  ],
+  "chain_expected": "6ccb9d3c271b966a7c7cdaa02417b360a1319a858542fab92dc8407e3332f8f4",
+  "chain_matches": true,
+  "model_sha256": [
+    "334745b8bc7fd372b1c213516f0b6338bb827b1a2abb3e77ad35fe6fea5cd16b"
+  ],
+  "native_libs_loaded": [
+    [
+      "libLiteRt.so",
+      "libLiteRtClGlAccelerator.so",
+      "liblitert_jni.so",
+      "libtokenizer_jni.so"
+    ]
+  ],
+  "native_libs": {
+    "libLiteRt.so": "97355a36cb8ac7628cf407773291e98da79f3ef184cc43cb0e57dedf5f0c0637",
+    "libLiteRtClGlAccelerator.so": "7c63d606a48e9479499c012f6732623f9e6fc26250c5bdf6724af205d73eb0fb",
+    "libLiteRtCompilerPlugin_Qualcomm.so": "425e5caf007f834748c6bf67aff265d7e21512a01910f219fab6b7749ef57732",
+    "libLiteRtDispatch_Qualcomm.so": "c4abfff6c99ec218f545415a81a2a03a3ee3e21df2ea911902d6b7bbfeda80bf",
+    "libQnnHtp.so": "c0488f2df87932a42ca0a563883e6fba190896bca439ad0fdaa2428358ab5092",
+    "libQnnHtpPrepare.so": "9988ce10ffee6813ffd218df308478f44dbc758cc89aed9cb98cfebb030ca72e",
+    "libQnnHtpV81CalculatorStub.so": "3567bc848ae1c9169ad38879f9f75e4ead3e959a5258e370d9c8e46e58a76176",
+    "libQnnHtpV81Skel.so": "0b4fa7419e7265ae33d5e57f214d49cd11abbf7302149bb7ff78d9b602903899",
+    "libQnnHtpV81Stub.so": "479da62bd52bb7cb5791d5898442457272d5403e42244af690a137b52d67f939",
+    "libQnnIr.so": "79043536d4ac324782c953c9092066d3418ec88626ac2384b2e81883a3f8f644",
+    "libQnnSaver.so": "d26d8002da0fbe829f58370465dc40b4e5a0fc2c2830c0608972817ac5835026",
+    "libQnnSystem.so": "077a8b20a53b216d006b85b58dd754a9e958e02f98e9c79d46619db6f8edfec9",
+    "liblitert_jni.so": "329167c4a999b64ebfd7189ebd6d49b5b6da0419e84da6448e18a3c5d1942feb",
+    "libonnxruntime.so": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+    "libsherpa-onnx-c-api.so": "c85e2382e2ca12b0513826be926eaccfea896b4cbf568182e287671ba526f80d",
+    "libsherpa-onnx-cxx-api.so": "5eabb2bcf5a8af66aeab37431c09fab4a9c65cdebf02bd7e50f8c589044bd70e",
+    "libsherpa-onnx-jni.so": "3c6492ea91ea68fd3b72b9495efdde6dd913f6b58c387e3b07389cf335f4d26f",
+    "libtokenizer_jni.so": "616e15c2812226f5dd3c1561aee7a76e93b130f629cde825c2202bef49207fde"
+  },
+  "text_check": {
+    "ref": "L1 S4 sustained (asr-litert-app-v1)",
+    "ref_path": "/Users/USER/code/edge-llm-bench-wt-asr-litert/results/raw/2026-10-19-asr-litert-app-v1-s26-android/l1-litert-cpu-5s-S4.jsonl",
+    "compared": 82,
+    "missing_in_ref": 0,
+    "identical": 82,
+    "identical_after_strip": 0,
+    "different": 0,
+    "examples": []
+  },
+  "retake_examples": []
+}

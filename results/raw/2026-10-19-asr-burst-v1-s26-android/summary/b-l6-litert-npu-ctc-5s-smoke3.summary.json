@@ -1,0 +1,311 @@
+{
+  "tag": "b-l6-litert-npu-ctc-5s-smoke3",
+  "harness": "asr-burst-v1",
+  "engine": "litert",
+  "model_name": "parakeet-ctc-0.6b",
+  "backend": "npu",
+  "num_threads": 4,
+  "litert_version": "2.2.0",
+  "sherpa_onnx_version": null,
+  "onnxruntime_version": null,
+  "gpu_precision": "FP32",
+  "npu_htp_performance_mode": "HIGH_PERFORMANCE",
+  "input_ms": 5000,
+  "processes": [
+    {
+      "pid": 9480,
+      "load_label": "cold",
+      "load_ms": 887.620364,
+      "start_after": null,
+      "utterances_todo": 3,
+      "foreground_state": "RESUMED",
+      "foreground_error": null,
+      "screen_start": {
+        "interactive": true,
+        "keyguard_locked": false,
+        "device_locked": false
+      },
+      "process_state": {
+        "start": {
+          "cpus_allowed": "0-5",
+          "cpuset": "4:cpuset:/foreground",
+          "cgroup": [
+            "5:freezer:/",
+            "4:cpuset:/foreground",
+            "3:cpuacct:/",
+            "2:cpu:/foreground",
+            "1:blkio:/high",
+            "0::/apps/uid_10749/pid_9480"
+          ]
+        },
+        "after_foreground": {
+          "cpus_allowed": "0-7",
+          "cpuset": "4:cpuset:/top-app",
+          "cgroup": [
+            "5:freezer:/",
+            "4:cpuset:/top-app",
+            "3:cpuacct:/top-app",
+            "2:cpu:/top-app",
+            "1:blkio:/top",
+            "0::/apps/uid_10749/pid_9480"
+          ]
+        },
+        "after_load": {
+          "cpus_allowed": "0-7",
+          "cpuset": "4:cpuset:/top-app",
+          "cgroup": [
+            "5:freezer:/",
+            "4:cpuset:/top-app",
+            "3:cpuacct:/top-app",
+            "2:cpu:/top-app",
+            "1:blkio:/top",
+            "0::/apps/uid_10749/pid_9480"
+          ]
+        }
+      },
+      "debuggable": false,
+      "dexopt_app": "speed/cmdline",
+      "dexopt_test": "speed/cmdline",
+      "oat_files_mapped": [
+        "/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/oat/arm64/base.vdex",
+        "/data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/oat/arm64/base.vdex",
+        "/data/data/com.google.ai.edge.examples.asr.burst/cache/oat_primary/arm64/base.art"
+      ],
+      "thermal_status_start": 0,
+      "battery_celsius_start": 36.5,
+      "started_utc": "2026-10-19T14:02:02.466Z"
+    }
+  ],
+  "warmups": [
+    {
+      "warmup_id": "1995-1836-0004",
+      "processing_seconds": 0.967,
+      "audio_seconds": 33.91,
+      "error": null
+    }
+  ],
+  "rows_written": 3,
+  "set": "S32",
+  "rows_covered_of_s16": 3,
+  "rows_from_runs": {
+    "b-l6-litert-npu-ctc-5s-smoke3": 3
+  },
+  "rows_outside_s16": [],
+  "rows_ok": 3,
+  "rows_failed": [],
+  "rows_counted": 3,
+  "rows_excluded": 0,
+  "rows_retaken": 0,
+  "retake_text_differs": 0,
+  "counted_audio_seconds": 80.455,
+  "counted_processing_seconds": 2.49,
+  "rtf_burst": 0.03095,
+  "rtfx_burst": 32.31,
+  "median_utterance_rtf_burst": 0.03198,
+  "rtf_all_ok_rows": 0.03095,
+  "wait_sum_s": 18.478,
+  "wait_median_s": 0.501,
+  "wait_max_s": 17.476,
+  "wait_over_1s": 1,
+  "wait_timeouts": 0,
+  "retake_wait_sum_s": 0,
+  "cap_drop_first_attempt": {
+    "max": 4.9,
+    "median": 2.8,
+    "over_line": 0
+  },
+  "cap_drop_last_attempt_max": 4.9,
+  "cap_drop_engine_cpus_max": 4.9,
+  "cpus_allowed_rows": [
+    "0-7"
+  ],
+  "windows": 26,
+  "window_ms": {
+    "mel_median": 86.396,
+    "encode_median": 37.699,
+    "decode_median": 0.547
+  },
+  "per_utterance_stage": {
+    "mel": {
+      "median_ms": 719.3459999999999,
+      "sum_s": 2.299136
+    },
+    "encode": {
+      "median_ms": 305.94399999999996,
+      "sum_s": 0.9842609999999999
+    },
+    "decode": {
+      "median_ms": 7.979000000000001,
+      "sum_s": 0.022715
+    }
+  },
+  "jit_check_window_ms": {
+    "first_10": {
+      "ids": [
+        "4507-16021-0047",
+        "8230-279154-0043",
+        "5105-28241-0001"
+      ],
+      "windows": 26,
+      "audio_s": 80.45,
+      "mel_ms": 86.396,
+      "encode_ms": 37.699,
+      "decode_ms": 0.547
+    },
+    "last_10": {
+      "ids": [
+        "4507-16021-0047",
+        "8230-279154-0043",
+        "5105-28241-0001"
+      ],
+      "windows": 26,
+      "audio_s": 80.45,
+      "mel_ms": 86.396,
+      "encode_ms": 37.699,
+      "decode_ms": 0.547
+    }
+  },
+  "wer_percent_s16_reference": 100.0,
+  "substitutions": 2,
+  "deletions": 196,
+  "insertions": 0,
+  "reference_words": 198,
+  "empty_hypotheses": 1,
+  "vmhwm_kb_max": 1509604,
+  "vmhwm_kb_per_process": [
+    1509604
+  ],
+  "sampler_max_hwm_kb_per_process": [
+    1509604
+  ],
+  "cpuset_seen": [
+    "4:cpuset:/foreground",
+    "4:cpuset:/top-app"
+  ],
+  "cpus_allowed_seen": [
+    "0-5",
+    "0-7"
+  ],
+  "foreground_state_end": [
+    "RESUMED"
+  ],
+  "thermal_status_end": [
+    0
+  ],
+  "battery_celsius_end": [
+    36.5
+  ],
+  "probes": {
+    "b-l6-litert-npu-ctc-5s-smoke3.probe-before.json": {
+      "mac_time": "2026-10-19T23:01:59+09:00",
+      "battery_celsius": 36.0,
+      "thermal_status": 0,
+      "hal_ap": 37.2,
+      "hal_skin": 36.4,
+      "ceilings": {
+        "policy0": {
+          "max_khz": 3628800,
+          "hw_khz": 3628800,
+          "drop_pct": 0.0
+        },
+        "policy6": {
+          "max_khz": 4742400,
+          "hw_khz": 4742400,
+          "drop_pct": 0.0
+        }
+      },
+      "mem_available_kb": 7211096,
+      "wakefulness": "Awake"
+    },
+    "b-l6-litert-npu-ctc-5s-smoke3.probe-after.json": {
+      "mac_time": "2026-10-19T23:02:31+09:00",
+      "battery_celsius": 36.3,
+      "thermal_status": 0,
+      "hal_ap": 39.3,
+      "hal_skin": 37.1,
+      "ceilings": {
+        "policy0": {
+          "max_khz": 3628800,
+          "hw_khz": 3628800,
+          "drop_pct": 0.0
+        },
+        "policy6": {
+          "max_khz": 4396800,
+          "hw_khz": 4742400,
+          "drop_pct": 7.3
+        }
+      },
+      "mem_available_kb": 7206164,
+      "wakefulness": "Awake"
+    }
+  },
+  "registration_lines": [
+    "10-19 23:02:00.682  9480  9480 D nativeloader: Configuring clns-9 for other apk /data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/base.apk:/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/base.apk. target_sdk_version=35, uses_libraries=libOpenCL.so:libcdsprpc.so, library_path=/data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/lib/arm64:/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/lib/arm64:/data/app/~~tJ2HaTIpWuAsPWZfE1XaVw==/com.google.ai.edge.examples.asr.burst.test-PD-l0ybf3k7FWAsZkTluYQ==/base.apk!/lib/arm64-v8a:/data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.google.ai.edge.examples.asr.burst",
+    "10-19 23:02:00.726  9480  9480 I AndroidJUnitRunner: onCreate Bundle[{require_top_app=true, warmup_id=1995-1836-0004, engine=litert, tag=b-l6-litert-npu-ctc-5s-smoke3, pace=burst, dexopt_test=speed/cmdline, every=32, limit=3, model=parakeet-ctc-0.6b, load_label=cold, manifest=/data/user/0/com.google.ai.edge.examples.asr.burst/files/sets/test-clean/manifest-device.tsv, app_commit=5f23093fb483498948497a42a83bb46ef68ff2c4, accelerator=npu, dexopt_app=speed/cmdline, foreground=front}]",
+    "10-19 23:02:00.786  9480  9510 I DisplayManager: Choreographer implicitly registered for the refresh rate.",
+    "10-19 23:02:00.811  9480  9480 D WindowOnBackDispatcher: setTopOnBackInvokedCallback (unwrapped): android.view.ViewRootImpl$$ExternalSyntheticLambda16@4a23bb9",
+    "10-19 23:02:00.815  9480  9480 E BufferQueueProducer: Unable to open libpenguin.so: dlopen failed: library \"libpenguin.so\" not found.",
+    "10-19 23:02:01.525  9480  9493 I AsrBench: start tag=b-l6-litert-npu-ctc-5s-smoke3 engine=litert model=parakeet-ctc-0.6b accelerator=npu pace=burst todo=3 foreground=RESUMED top_app=true cpuset=4:cpuset:/top-app",
+    "10-19 23:02:01.566  9480  9551 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a43821510, name=NpuAccelerator",
+    "10-19 23:02:01.566  9480  9551 I litert  : [npu_registry.cc:30] NPU accelerator registered.",
+    "10-19 23:02:01.566  9480  9551 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).",
+    "10-19 23:02:01.566  9480  9551 I litert  : [gpu_registry.cc:101] Attempting to load GPU accelerator(libLiteRtClGlAccelerator.so).",
+    "10-19 23:02:01.570  9480  9551 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a438207f0, name=LiteRT GPU",
+    "10-19 23:02:01.571  9480  9551 I litert  : [gpu_registry.cc:109] Dynamically loaded GPU accelerator(libLiteRtClGlAccelerator.so) registered.",
+    "10-19 23:02:01.571  9480  9551 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a43834890, name=CpuAccelerator",
+    "10-19 23:02:01.571  9480  9551 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.",
+    "10-19 23:02:01.580  9480  9551 I litert  : [litert_dispatch.cc:159] Loading shared library: /data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/lib/arm64/libLiteRtDispatch_Qualcomm.so",
+    "10-19 23:02:01.609  9480  9551 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/fastrpc_apps_user.c:4366: Error 0xe: remote_handle_control_domain failed for request ID 2 on domain 3 (errno Permission denied)",
+    "10-19 23:02:01.612  9480  9551 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/fastrpc_apps_user.c:4390: Error 0xe: remote_handle_control failed for request ID 2 (errno Success) (user err 0xe)",
+    "10-19 23:02:01.613  9480  9551 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/fastrpc_apps_user.c:6192: Error 0xd: open_shell failed for domain 3 search paths used are /usr/lib/dsp/, /vendor/dsp/, /vendor/dsp/xdsp/ (errno Permission denied)",
+    "10-19 23:02:01.641  9480  9551 I com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/fastrpc_apps_user.c:7196: open_dev : panic error codes sent successfully",
+    "10-19 23:02:01.641  9480  9551 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/log_config.c:687:Error : Unable to add watcher for folder /data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/lib/arm64 : errno is Permission denied",
+    "10-19 23:02:01.641  9480  9551 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/log_config.c:687:Error : Unable to add watcher for folder /vendor/lib64/rfs/dsp : errno is Permission denied",
+    "10-19 23:02:01.641  9480  9551 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/log_config.c:687:Error : Unable to add watcher for folder /vendor/lib/rfsa/adsp : errno is Permission denied",
+    "10-19 23:02:01.644  9480  9554 E com.google.ai.edge.examples.asr.burst: vendor/qcom/proprietary/adsprpc/src/apps_std_imp.c:377: Error 0x2: apps_std_fopen_fd failed for /data/app/~~OnsWwEdXNslxTdbuGm1KTQ==/com.google.ai.edge.examples.asr.burst-qz87vvG0VkPg98YRiKi5ow==/lib/arm64/cdsp/./libQnnHtpV81Skel.so (No such file or directory)",
+    "10-19 23:02:01.715  9480  9551 I tflite  : Replacing 1 out of 1 node(s) with delegate (DispatchDelegate) node, yielding 1 partitions for subgraph 0 ().",
+    "10-19 23:02:02.445  9480  9551 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU."
+  ],
+  "selection_wav_sha256_chain": [
+    "8da124f2e9c8673384f7977c129ab44ef1c797382e5a708c9458e2c81eeb99f6"
+  ],
+  "chain_expected": "8da124f2e9c8673384f7977c129ab44ef1c797382e5a708c9458e2c81eeb99f6",
+  "chain_matches": true,
+  "model_sha256": [
+    "30e431db44f40f7de869776ad37869e0e3847a30717232b3667e9ce4688352fb"
+  ],
+  "native_libs_loaded": [
+    [
+      "libLiteRt.so",
+      "libLiteRtClGlAccelerator.so",
+      "libLiteRtDispatch_Qualcomm.so",
+      "libQnnHtp.so",
+      "libQnnHtpV81Stub.so",
+      "libQnnSystem.so",
+      "liblitert_jni.so",
+      "libtokenizer_jni.so"
+    ]
+  ],
+  "native_libs": {
+    "libLiteRt.so": "97355a36cb8ac7628cf407773291e98da79f3ef184cc43cb0e57dedf5f0c0637",
+    "libLiteRtClGlAccelerator.so": "7c63d606a48e9479499c012f6732623f9e6fc26250c5bdf6724af205d73eb0fb",
+    "libLiteRtCompilerPlugin_Qualcomm.so": "425e5caf007f834748c6bf67aff265d7e21512a01910f219fab6b7749ef57732",
+    "libLiteRtDispatch_Qualcomm.so": "c4abfff6c99ec218f545415a81a2a03a3ee3e21df2ea911902d6b7bbfeda80bf",
+    "libQnnHtp.so": "c0488f2df87932a42ca0a563883e6fba190896bca439ad0fdaa2428358ab5092",
+    "libQnnHtpPrepare.so": "9988ce10ffee6813ffd218df308478f44dbc758cc89aed9cb98cfebb030ca72e",
+    "libQnnHtpV81CalculatorStub.so": "3567bc848ae1c9169ad38879f9f75e4ead3e959a5258e370d9c8e46e58a76176",
+    "libQnnHtpV81Skel.so": "0b4fa7419e7265ae33d5e57f214d49cd11abbf7302149bb7ff78d9b602903899",
+    "libQnnHtpV81Stub.so": "479da62bd52bb7cb5791d5898442457272d5403e42244af690a137b52d67f939",
+    "libQnnIr.so": "79043536d4ac324782c953c9092066d3418ec88626ac2384b2e81883a3f8f644",
+    "libQnnSaver.so": "d26d8002da0fbe829f58370465dc40b4e5a0fc2c2830c0608972817ac5835026",
+    "libQnnSystem.so": "077a8b20a53b216d006b85b58dd754a9e958e02f98e9c79d46619db6f8edfec9",
+    "liblitert_jni.so": "329167c4a999b64ebfd7189ebd6d49b5b6da0419e84da6448e18a3c5d1942feb",
+    "libonnxruntime.so": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+    "libsherpa-onnx-c-api.so": "c85e2382e2ca12b0513826be926eaccfea896b4cbf568182e287671ba526f80d",
+    "libsherpa-onnx-cxx-api.so": "5eabb2bcf5a8af66aeab37431c09fab4a9c65cdebf02bd7e50f8c589044bd70e",
+    "libsherpa-onnx-jni.so": "3c6492ea91ea68fd3b72b9495efdde6dd913f6b58c387e3b07389cf335f4d26f",
+    "libtokenizer_jni.so": "616e15c2812226f5dd3c1561aee7a76e93b130f629cde825c2202bef49207fde"
+  },
+  "text_check": null,
+  "retake_examples": []
+}

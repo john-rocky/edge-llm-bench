@@ -1,0 +1,1744 @@
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+index 15f8d1e6..b075a051 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+@@ -22,6 +22,9 @@ android {
+ 
+   defaultConfig {
+     applicationId = "com.google.ai.edge.examples.asr"
++    // The burst benchmark build installs beside the sustained one (asr-litert-app-v1) on the same
++    // phone, so neither replaces the other's APK or files between sittings.
++    applicationIdSuffix = ".burst"
+     minSdk = 31
+     targetSdk = 35
+     versionCode = 1
+@@ -48,7 +51,17 @@ android {
+       isMinifyEnabled = false
+       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+     }
++    // The measured build (edge-llm-bench asr-burst-v1): release settings, so it is not debuggable
++    // and ART runs the AOT code `cmd package compile -m speed` writes, as a shipped app's would;
++    // signed with the debug key, so the androidTest APK can instrument it and it installs over the
++    // debug build whose run-as put the models into the app's files dir.
++    create("bench") {
++      initWith(getByName("release"))
++      signingConfig = signingConfigs.getByName("debug")
++      matchingFallbacks += listOf("release")
++    }
+   }
++  testBuildType = "bench"
+   compileOptions {
+     sourceCompatibility = JavaVersion.VERSION_11
+     targetCompatibility = JavaVersion.VERSION_11
+@@ -119,6 +132,10 @@ dependencies {
+   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+   implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+   implementation(files("libs/jlibrosa-1.1.8-SNAPSHOT-jar-with-dependencies.jar"))
++  // sherpa-onnx's release AAR (k2-fsa/sherpa-onnx v1.13.8 asset sherpa-onnx-1.13.8.aar, sha256
++  // 633c2432...; not in git): the Kotlin API and its JNI libraries with ONNX Runtime 1.28.2, the
++  // way an app ships it; AsrBenchTest's sherpa engine uses it.
++  implementation(files("libs/sherpa-onnx-1.13.8.aar"))
+   testImplementation(libs.junit)
+   testImplementation("org.json:json:20231013")
+   androidTestImplementation(libs.androidx.junit)
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+index 8d72a885..c4096613 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+@@ -1,8 +1,11 @@
+ package com.google.ai.edge.examples.asr
+ 
++import android.app.Activity
++import android.app.KeyguardManager
+ import android.content.Context
+ import android.content.Intent
+ import android.content.IntentFilter
++import android.content.pm.ApplicationInfo
+ import android.os.BatteryManager
+ import android.os.Build
+ import android.os.Bundle
+@@ -10,16 +13,30 @@ import android.os.PowerManager
+ import android.os.Process
+ import android.os.SystemClock
+ import android.util.Log
++import android.view.WindowManager
+ import androidx.test.core.app.ActivityScenario
+ import androidx.test.ext.junit.runners.AndroidJUnit4
+ import androidx.test.platform.app.InstrumentationRegistry
+ import com.google.ai.edge.examples.asr.bench.BenchJson
+ import com.google.ai.edge.examples.asr.bench.BenchManifest
++import com.google.ai.edge.examples.asr.bench.BurstPacer
++import com.google.ai.edge.examples.asr.bench.BurstRule
++import com.google.ai.edge.examples.asr.bench.CeilingMin
++import com.google.ai.edge.examples.asr.bench.ManifestRow
+ import com.google.ai.edge.examples.asr.bench.TranscriptAccumulator
+ import com.google.ai.edge.examples.asr.bench.UtteranceResult
++import com.google.ai.edge.examples.asr.bench.capDropPct
+ import com.google.ai.edge.examples.asr.bench.median
++import com.google.ai.edge.examples.asr.bench.parseCpuList
+ import com.google.ai.edge.litert.Accelerator
+ import com.google.ai.edge.litert.CompiledModel
++import com.k2fsa.sherpa.onnx.FeatureConfig
++import com.k2fsa.sherpa.onnx.OfflineModelConfig
++import com.k2fsa.sherpa.onnx.OfflineRecognizer
++import com.k2fsa.sherpa.onnx.OfflineRecognizerConfig
++import com.k2fsa.sherpa.onnx.OfflineTransducerModelConfig
++import com.k2fsa.sherpa.onnx.VersionInfo
++import com.k2fsa.sherpa.onnx.WaveReader
+ import java.io.File
+ import java.io.FileInputStream
+ import java.io.FileOutputStream
+@@ -43,28 +60,55 @@ import org.junit.Test
+ import org.junit.runner.RunWith
+ 
+ /**
+- * Runs the app's file-transcription pipeline over a manifest of WAV files, one utterance after the
+- * other in one process, and writes one JSONL row per utterance (edge-llm-bench
+- * docs/asr-litert-app-v1.md).
++ * Runs one speech recognizer over a manifest of WAV files, one utterance after the other in one
++ * process, and writes one JSONL row per utterance (edge-llm-bench docs/asr-litert-app-v1.md for the
++ * sustained runs, docs/asr-burst-v1.md for the burst runs).
+  *
+- * The pipeline is MainActivity's file path at d15f8ae9, copied below with timing hooks and without
+- * the UI: FileAudioSource (5 s or 30 s windows, 2 s overlap) -> MelSpectroProcessor ->
+- * LiteRtRunner + TdtDecoder -> LevenshteinTokenMerger, in the activity's three coroutines and
+- * channels. The model is built once per process the way preparePipeline builds it.
++ * Engines:
++ * - litert (default): the app's file-transcription pipeline. It is MainActivity's file path at
++ *   d15f8ae9, copied below with timing hooks and without the UI: FileAudioSource (5 s or 30 s
++ *   windows, 2 s overlap) -> MelSpectroProcessor -> LiteRtRunner + TdtDecoder ->
++ *   LevenshteinTokenMerger, in the activity's three coroutines and channels. The model is built
++ *   once per process the way preparePipeline builds it.
++ * - sherpa: sherpa-onnx's own Kotlin API from its release AAR (OfflineRecognizer, NeMo transducer,
++ *   greedy search, CPU), the whole utterance in one stream: WaveReader.readWave -> createStream ->
++ *   acceptWaveform -> decode -> getResult.
++ *
++ * Pacing:
++ * - none (default): the utterances back to back, as in the sustained runs.
++ * - burst: after the model is built, the warm-up utterance once (outside the timing), then before
++ *   each utterance a wait of at least 0.5 s and until every cpufreq ceiling is at its maximum
++ *   (BurstPacer); the ceilings are read every 100 ms while the utterance runs, and an utterance
++ *   during which one fell more than 15 % is run once more after the ceilings are back and 5 s
++ *   (BurstRule). The last attempt's row is written with its waits, ceilings and attempts.
+  *
+  * Arguments (am instrument -e <name> <value>):
+- * - model: model_metadata.json key, e.g. parakeet-tdt-0.6b-v3 or parakeet-tdt-0.6b-v3-30s
+- * - accelerator: cpu, gpu or npu
++ * - engine: litert or sherpa; default litert
++ * - model: model_metadata.json key (litert), e.g. parakeet-tdt-0.6b-v3 or parakeet-tdt-0.6b-v3-30s;
++ *   the model directory under the files dir (sherpa), default
++ *   sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8
++ * - accelerator: cpu, gpu or npu (litert); cpu (sherpa)
++ * - sherpa_debug: true sets OfflineModelConfig.debug (sherpa-onnx logs its config and the model's
++ *   metadata at load); default false
+  * - manifest: manifest TSV on the phone (id, WAV path relative to the manifest, seconds)
+- * - every: keep the rows at index 0, every, 2 * every, ... (4 = S4); default 1
++ * - every: keep the rows at index 0, every, 2 * every, ... (4 = S4, 16 = S16); default 1
+  * - limit: keep only the first N rows of that selection; default 0 = all
+  * - start_after: resume after this id (the host restarts the run after a crash or a hang)
+  * - failed_id, failed_kind: the utterance the previous process died on; written as an error row
++ * - pace: none or burst; default none
++ * - warmup_id: a manifest id transcribed once after the load, outside the timing (burst runs)
++ * - pace_gap_ms, pace_poll_ms, pace_max_wait_s, cap_poll_ms, cap_line_pct, retake_settle_s: the
++ *   burst rule; defaults 500, 200, 120, 100, 15, 5
+  * - out: output directory; default <external files dir>/bench
+- * - tag: output file stem; <tag>.jsonl, <tag>.vmhwm.log, <tag>.load-logcat.txt, <tag>.done
++ * - tag: output file stem; <tag>.jsonl, <tag>.vmhwm.log, <tag>.ceil.log, <tag>.load-logcat.txt,
++ *   <tag>.done
+  * - load_label: cold or warm, copied to the header (the host knows the order of processes)
+- * - foreground: true keeps MainActivity in the foreground for the whole run
+- * - app_commit: the source commit the APK was built from, copied to the header
++ * - foreground: front (or true) keeps BenchFrontActivity in front for the whole run (the bench build
++ *   type's window, shown over the keyguard), main keeps MainActivity in front; default none
++ * - require_top_app: true stops the run before the load unless the activity is resumed and the
++ *   process is in the top-app cpuset (a header and a footer with `aborted`)
++ * - app_commit, dexopt_app, dexopt_test: what the host read (source commit, `dumpsys package`
++ *   compiler filter / reason of the app and of the test package), copied to the header
+  */
+ @RunWith(AndroidJUnit4::class)
+ class AsrBenchTest {
+@@ -86,43 +130,229 @@ class AsrBenchTest {
+     }
+   }
+ 
+-  /** Per-window times of one utterance; each list is written by one coroutine only. */
++  /**
++   * Per-window times of one utterance (litert; each list is written by one coroutine only) and the
++   * stage times of one utterance (sherpa).
++   */
+   private class WindowTimes {
+     val melMs = ArrayList<Double>()
+     val encodeMs = ArrayList<Double>()
+     val decodeMs = ArrayList<Double>()
+     val tokens = ArrayList<Int>()
++    val stageMs = LinkedHashMap<String, Double>()
++  }
++
++  /** One way to transcribe a WAV file, built once per process. */
++  private interface Engine : AutoCloseable {
++    val loadMs: Double
++
++    /** The text and the wall seconds from opening the WAV to the last text. */
++    fun transcribe(wav: File, times: WindowTimes): Pair<String, Double>
++
++    /** What the header says about this engine, after the load. */
++    fun header(): Map<String, Any?>
++
++    /** The model files' hashes, read after the measurement. */
++    fun modelHashes(): Map<String, Any?>
++  }
++
++  /** The app's LiteRT pipeline (MainActivity's file path). */
++  private inner class LiteRtEngine(
++    context: Context,
++    private val modelKey: String,
++    private val accelerator: Accelerator,
++  ) : Engine {
++    private val modelConfig =
++      context.assets.open(MODEL_METADATA_PATH).bufferedReader().use { it.readText() }.let {
++        ModelMetadataManager(it).getModelConfig(modelKey)
++      }
++    private val pipeline =
++      runBlocking(Dispatchers.IO) { preparePipeline(context, modelKey, modelConfig, accelerator) }
++    val modelFile =
++      File(
++        context.filesDir,
++        if (accelerator == Accelerator.NPU) modelConfig.npuModelPath else modelConfig.modelPath,
++      )
++
++    override val loadMs: Double
++      get() = pipeline.loadMs
++
++    override fun transcribe(wav: File, times: WindowTimes): Pair<String, Double> =
++      runBlocking(Dispatchers.IO) { processFileAudio(wav, pipeline, times) }
++
++    override fun header(): Map<String, Any?> =
++      linkedMapOf(
++        "num_threads" to LiteRtRunner.CPU_NUM_THREADS,
++        "litert_version" to BuildConfig.LITERT_VERSION,
++        "model_file" to modelFile.path,
++        "model_bytes" to modelFile.length(),
++        "input_ms" to modelConfig.inputMilliseconds,
++        "overlap_ms" to FILE_AUDIO_CHUNK_OVERLAP_DURATION.inWholeMilliseconds,
++        "max_levenshtein_distance" to FILE_MAX_LEVENSHTEIN_DISTANCE,
++        "gpu_precision" to if (modelConfig.gpuEnforceFloat32) "FP32" else "DEFAULT",
++        "gpu_constant_tensor_sharing" to modelConfig.gpuShareConstantTensors,
++        "npu_htp_performance_mode" to
++          if (modelConfig.npuHighPerformance) "HIGH_PERFORMANCE" else "DEFAULT",
++        "load_seconds" to pipeline.loadMs / 1000.0,
++        "load_ms" to pipeline.loadMs,
++        "load_scope" to "LiteRtRunner constructor (CompiledModel.create + decoder and I/O buffers)",
++        "tokenizer_ms" to pipeline.tokenizerMs,
++        "preprocessor_ms" to pipeline.preprocessorMs,
++      )
++
++    override fun modelHashes(): Map<String, Any?> = linkedMapOf("model_sha256" to sha256(listOf(modelFile)))
++
++    override fun close() = pipeline.close()
++  }
++
++  /**
++   * sherpa-onnx's OfflineRecognizer from the release AAR, set up as the CLI arm A1 runs it
++   * (sherpa-onnx-offline-parallel --model-type=nemo_transducer --num-threads=4
++   * --decoding-method=greedy_search, the feature options at their defaults).
++   */
++  private class SherpaEngine(context: Context, dirName: String, debug: Boolean) : Engine {
++    private val dir = File(context.filesDir, dirName)
++    private val files = SHERPA_FILES.map { File(dir, it) }
++    val config =
++      OfflineRecognizerConfig(
++        featConfig = FeatureConfig(sampleRate = SAMPLING_RATE, featureDim = 80),
++        modelConfig =
++          OfflineModelConfig(
++            transducer =
++              OfflineTransducerModelConfig(
++                encoder = files[0].path,
++                decoder = files[1].path,
++                joiner = files[2].path,
++              ),
++            tokens = files[3].path,
++            numThreads = SHERPA_NUM_THREADS,
++            debug = debug,
++            provider = "cpu",
++            modelType = "nemo_transducer",
++          ),
++        decodingMethod = "greedy_search",
++      )
++    private val recognizer: OfflineRecognizer
++    override val loadMs: Double
++
++    init {
++      files.forEach { require(it.isFile) { "sherpa model file missing: ${it.path}" } }
++      // The first OfflineRecognizer loads libsherpa-onnx-jni.so (and libonnxruntime.so) in its
++      // companion's init, inside this time, as the LiteRT runtime loads inside LiteRtRunner's.
++      val t = SystemClock.elapsedRealtimeNanos()
++      recognizer = OfflineRecognizer(config = config)
++      loadMs = msSince(t)
++    }
++
++    override fun transcribe(wav: File, times: WindowTimes): Pair<String, Double> {
++      val start = SystemClock.elapsedRealtimeNanos()
++      var t = start
++      fun stage(name: String) {
++        val now = SystemClock.elapsedRealtimeNanos()
++        times.stageMs[name] = (now - t) / 1e6
++        t = now
++      }
++      val wave = WaveReader.readWave(wav.path)
++      stage("read")
++      val stream = recognizer.createStream()
++      stage("create_stream")
++      try {
++        stream.acceptWaveform(wave.samples, wave.sampleRate)
++        stage("accept_waveform") // the features (fbank + NeMo normalization) are computed here
++        recognizer.decode(stream)
++        stage("decode") // encoder + TDT greedy search
++        val text = recognizer.getResult(stream).text
++        stage("get_result")
++        return Pair(text, (SystemClock.elapsedRealtimeNanos() - start) / 1e9)
++      } finally {
++        stream.release()
++      }
++    }
++
++    override fun header(): Map<String, Any?> =
++      linkedMapOf(
++        "num_threads" to SHERPA_NUM_THREADS,
++        "sherpa_onnx_version" to versionOrNull { VersionInfo.version },
++        "sherpa_onnx_git_sha1" to versionOrNull { VersionInfo.gitSha1 },
++        "sherpa_onnx_git_date" to versionOrNull { VersionInfo.gitDate },
++        "onnxruntime_version" to versionOrNull { VersionInfo.onnxruntimeVersion },
++        "sherpa_config_kotlin" to config.toString(),
++        "model_file" to files[0].path,
++        "model_bytes" to files.sumOf { it.length() },
++        "model_files" to files.associate { it.name to it.length() },
++        "input_ms" to null,
++        "load_seconds" to loadMs / 1000.0,
++        "load_ms" to loadMs,
++        "load_scope" to
++          "OfflineRecognizer constructor (first use loads libsherpa-onnx-jni.so; newFromFile: the three ONNX Runtime sessions, tokens, config)",
++      )
++
++    override fun modelHashes(): Map<String, Any?> =
++      linkedMapOf("model_files_sha256" to files.associate { it.name to sha256(listOf(it)) })
++
++    override fun close() = recognizer.release()
++
++    private companion object {
++      fun versionOrNull(read: () -> String): String? =
++        try {
++          read()
++        } catch (e: Throwable) {
++          null
++        }
++    }
+   }
+ 
++  /** The result of one attempt at one utterance. */
++  private class Attempted(
++    val text: String,
++    val seconds: Double,
++    val times: WindowTimes,
++    val error: String?,
++  )
++
+   @Test
+   fun transcribeManifest() {
+     val context = InstrumentationRegistry.getInstrumentation().targetContext
+     val args = InstrumentationRegistry.getArguments()
+-    val modelKey = args.getString("model") ?: "parakeet-tdt-0.6b-v3"
++    val engineName = (args.getString("engine") ?: "litert").lowercase(Locale.ROOT)
++    require(engineName == "litert" || engineName == "sherpa") { "engine must be litert or sherpa" }
++    val pace = (args.getString("pace") ?: "none").lowercase(Locale.ROOT)
++    require(pace == "none" || pace == "burst") { "pace must be none or burst" }
++    val modelKey =
++      args.getString("model") ?: if (engineName == "sherpa") SHERPA_MODEL_DIR else "parakeet-tdt-0.6b-v3"
+     val acceleratorName = (args.getString("accelerator") ?: "cpu").lowercase(Locale.ROOT)
+-    val accelerator =
+-      when (acceleratorName) {
+-        "cpu" -> Accelerator.CPU
+-        "gpu" -> Accelerator.GPU
+-        "npu" -> Accelerator.NPU
+-        else -> throw IllegalArgumentException("accelerator must be cpu, gpu or npu")
+-      }
++    require(acceleratorName in setOf("cpu", "gpu", "npu")) { "accelerator must be cpu, gpu or npu" }
++    require(engineName == "litert" || acceleratorName == "cpu") { "the sherpa engine runs on the CPU" }
+     val manifestFile = File(requireNotNull(args.getString("manifest")) { "manifest is required" })
+     val every = args.int("every", 1)
+     val limit = args.int("limit", 0)
+     val startAfter = args.getString("start_after")
+     val failedId = args.getString("failed_id")
++    val warmupId = args.getString("warmup_id")
+     val outDir =
+       File(args.getString("out") ?: File(context.getExternalFilesDir(null), "bench").path).apply {
+         mkdirs()
+       }
+     val tag = args.getString("tag") ?: "$modelKey-$acceleratorName"
+-    val foreground = args.getString("foreground") == "true"
++    val foregroundMode =
++      when (val f = args.getString("foreground")) {
++        null,
++        "false" -> null
++        "main" -> "main"
++        "true",
++        "front" -> "front"
++        else -> throw IllegalArgumentException("foreground must be front, main or false, got $f")
++      }
++    val requireTopApp = args.getString("require_top_app") == "true"
+ 
++    val manifestRows = BenchManifest.parse(manifestFile.readText(), manifestFile.parent)
+     val selection =
+-      BenchManifest.stride(BenchManifest.parse(manifestFile.readText(), manifestFile.parent), every)
+-        .let { if (limit > 0) it.take(limit) else it }
++      BenchManifest.stride(manifestRows, every).let { if (limit > 0) it.take(limit) else it }
+     val todo = if (startAfter != null) BenchManifest.after(selection, startAfter) else selection
++    val warmupRow =
++      warmupId?.let { id ->
++        requireNotNull(manifestRows.firstOrNull { it.id == id }) { "warmup_id $id is not in the manifest" }
++      }
+     val jsonl = FileOutputStream(File(outDir, "$tag.jsonl"), true)
+     fun emit(line: String) {
+       jsonl.write((line + "\n").toByteArray())
+@@ -131,10 +361,64 @@ class AsrBenchTest {
+ 
+     val processStart = SystemClock.elapsedRealtimeNanos()
+     val sampler = MemorySampler(File(outDir, "$tag.vmhwm.log"), processStart).start()
+-    val scenario = if (foreground) ActivityScenario.launch(MainActivity::class.java) else null
++    val processAtStart = processState()
++    var foregroundError: String? = null
++    val scenario =
++      if (foregroundMode != null) {
++        try {
++          launchForeground(foregroundMode)
++        } catch (e: Throwable) {
++          foregroundError = "${e.javaClass.simpleName}: ${e.message}"
++          Log.e(TAG, "foreground activity failed", e)
++          null
++        }
++      } else {
++        null
++      }
++    val foregroundState = scenario?.state?.name
++    // The process moves to the top-app cpuset after its activity resumed: wait for it (at most 3 s).
++    val topAppWaitMs = if (scenario != null) waitForCpuset("top-app", 3000) else null
++    val processAfterForeground = processState()
++    val topApp = (processAfterForeground["cpuset"] as String?)?.contains("top-app") == true
++    val screenStart = screenState(context)
+     val thermalStart = thermalStatus(context)
+     val batteryStart = batteryCelsius(context)
+-    Log.i(TAG, "start tag=$tag model=$modelKey accelerator=$acceleratorName todo=${todo.size}")
++    val foregroundInfo =
++      linkedMapOf<String, Any?>(
++        "foreground" to foregroundMode,
++        "foreground_state" to foregroundState,
++        "foreground_error" to foregroundError,
++        "foreground_top_app" to topApp,
++        "foreground_top_app_wait_ms" to topAppWaitMs,
++        "require_top_app" to requireTopApp,
++        "screen_start" to screenStart,
++      )
++    Log.i(
++      TAG,
++      "start tag=$tag engine=$engineName model=$modelKey accelerator=$acceleratorName pace=$pace " +
++        "todo=${todo.size} foreground=$foregroundState top_app=$topApp cpuset=${processAfterForeground["cpuset"]}",
++    )
++    if (requireTopApp && !(foregroundState == "RESUMED" && topApp)) {
++      // The run was asked to measure as the resumed top app only: record where it is and stop
++      // before the load (asr-burst-v1 keeps one form for every arm).
++      val reason = "not the resumed top app (state $foregroundState, cpuset ${processAfterForeground["cpuset"]})"
++      emit(
++        BenchJson.header(
++          linkedMapOf<String, Any?>("harness" to BenchJson.BURST_HARNESS, "tag" to tag, "engine" to engineName,
++            "model_name" to modelKey, "backend" to acceleratorName, "aborted" to reason) +
++            foregroundInfo +
++            linkedMapOf("process_state" to linkedMapOf("start" to processAtStart, "after_foreground" to processAfterForeground),
++              "pid" to Process.myPid(), "started_utc" to iso(Date()))
++        )
++      )
++      emit(BenchJson.footer(linkedMapOf("tag" to tag, "aborted" to reason, "utterances_done" to 0, "finished_utc" to iso(Date()))))
++      jsonl.close()
++      scenario?.close()
++      sampler.stop()
++      File(outDir, "$tag.done").writeText("aborted: $reason\n")
++      Log.e(TAG, "aborted tag=$tag: $reason")
++      return
++    }
+ 
+     if (failedId != null) {
+       // The previous process of this run died on this utterance (watchdog or crash).
+@@ -152,162 +436,480 @@ class AsrBenchTest {
+       )
+     }
+ 
+-    val modelConfig =
+-      context.assets.open(MODEL_METADATA_PATH).bufferedReader().use { it.readText() }.let {
+-        ModelMetadataManager(it).getModelConfig(modelKey)
++    val engine: Engine =
++      if (engineName == "sherpa") {
++        SherpaEngine(context, modelKey, args.getString("sherpa_debug") == "true")
++      } else {
++        LiteRtEngine(
++          context,
++          modelKey,
++          when (acceleratorName) {
++            "gpu" -> Accelerator.GPU
++            "npu" -> Accelerator.NPU
++            else -> Accelerator.CPU
++          },
++        )
+       }
+-    val pipeline = runBlocking(Dispatchers.IO) { preparePipeline(context, modelKey, modelConfig, accelerator) }
+-    val modelFile =
+-      File(
+-        context.filesDir,
+-        if (accelerator == Accelerator.NPU) modelConfig.npuModelPath else modelConfig.modelPath,
+-      )
+-    Log.i(TAG, "loaded in ${pipeline.loadMs} ms (${modelFile.path})")
+-    // This process's log so far = what LiteRT logged while it built the model (accelerators, the
+-    // delegate that took the graph), kept before the merger's per-token lines wrap the ring buffer.
++    Log.i(TAG, "loaded in ${engine.loadMs} ms")
++    // This process's log so far = what the runtime logged while it built the model (accelerators, the
++    // delegate that took the graph, sherpa-onnx's config), kept before the merger's per-token lines
++    // wrap the ring buffer.
+     dumpOwnLogcat(File(outDir, "$tag.load-logcat.txt"))
++    val processAfterLoad = processState()
++    val policies = cpufreqPolicies()
++    val hwKhz = policies.map { readLong(File(it, "cpuinfo_max_freq")) }
++    val burst =
++      if (pace == "burst") {
++        BurstSettings(
++          gapMs = args.long("pace_gap_ms", 500),
++          pollMs = args.long("pace_poll_ms", 200),
++          maxWaitS = args.long("pace_max_wait_s", 120),
++          capPollMs = args.long("cap_poll_ms", 100),
++          linePct = args.getString("cap_line_pct")?.toDouble() ?: 15.0,
++          settleS = args.long("retake_settle_s", 5),
++        )
++      } else {
++        null
++      }
+     emit(
+       BenchJson.header(
+-        linkedMapOf(
+-          "harness" to BenchJson.HARNESS,
++        linkedMapOf<String, Any?>(
++          "harness" to if (burst != null) BenchJson.BURST_HARNESS else BenchJson.HARNESS,
+           "tag" to tag,
++          "engine" to engineName,
+           "model_name" to modelKey,
+           "backend" to acceleratorName,
+-          "num_threads" to LiteRtRunner.CPU_NUM_THREADS,
+-          "litert_version" to BuildConfig.LITERT_VERSION,
+           "app_commit" to args.getString("app_commit"),
+-          "model_file" to modelFile.path,
+-          "model_bytes" to modelFile.length(),
+-          "input_ms" to modelConfig.inputMilliseconds,
+-          "overlap_ms" to FILE_AUDIO_CHUNK_OVERLAP_DURATION.inWholeMilliseconds,
+-          "max_levenshtein_distance" to FILE_MAX_LEVENSHTEIN_DISTANCE,
+-          "gpu_precision" to
+-            if (modelConfig.gpuEnforceFloat32) "FP32" else "DEFAULT",
+-          "gpu_constant_tensor_sharing" to modelConfig.gpuShareConstantTensors,
+-          "npu_htp_performance_mode" to
+-            if (modelConfig.npuHighPerformance) "HIGH_PERFORMANCE" else "DEFAULT",
+-          "load_seconds" to pipeline.loadMs / 1000.0,
+-          "load_ms" to pipeline.loadMs,
+-          "load_scope" to "LiteRtRunner constructor (CompiledModel.create + decoder and I/O buffers)",
+-          "tokenizer_ms" to pipeline.tokenizerMs,
+-          "preprocessor_ms" to pipeline.preprocessorMs,
+-          "load_label" to args.getString("load_label"),
+-          "manifest" to manifestFile.path,
+-          "every" to every,
+-          "limit" to limit,
+-          "start_after" to startAfter,
+-          "utterances_selected" to selection.size,
+-          "utterances_todo" to todo.size,
+-          "foreground" to foreground,
+-          "pid" to Process.myPid(),
+-          "started_utc" to iso(Date()),
+-          "device" to
+-            linkedMapOf(
+-              "model" to Build.MODEL,
+-              "soc" to Build.SOC_MODEL,
+-              "android" to Build.VERSION.RELEASE,
+-              "build" to Build.DISPLAY,
+-              "security_patch" to Build.VERSION.SECURITY_PATCH,
+-            ),
+-          "thermal_status_start" to thermalStart,
+-          "battery_celsius_start" to batteryStart,
+-        )
++        ) +
++          engine.header() +
++          linkedMapOf(
++            "load_label" to args.getString("load_label"),
++            "manifest" to manifestFile.path,
++            "every" to every,
++            "limit" to limit,
++            "start_after" to startAfter,
++            "utterances_selected" to selection.size,
++            "utterances_todo" to todo.size,
++            "pace" to pace,
++            "burst" to burst?.asMap(),
++            "warmup_id" to warmupId,
++          ) +
++          foregroundInfo +
++          linkedMapOf(
++            "process_state" to
++              linkedMapOf(
++                "start" to processAtStart,
++                "after_foreground" to processAfterForeground,
++                "after_load" to processAfterLoad,
++              ),
++            "debuggable" to (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0),
++            "dexopt_app" to args.getString("dexopt_app"),
++            "dexopt_test" to args.getString("dexopt_test"),
++            "oat_files_mapped" to mappedFiles(context.packageName) { it.endsWith(".odex") || it.endsWith(".vdex") || it.endsWith(".art") || it.endsWith(".oat") },
++            "cpu_policies" to
++              policies.mapIndexed { i, p ->
++                linkedMapOf("name" to p.name, "cpus" to readText(File(p, "related_cpus")), "hw_khz" to hwKhz[i])
++              },
++            "pid" to Process.myPid(),
++            "started_utc" to iso(Date()),
++            "device" to
++              linkedMapOf(
++                "model" to Build.MODEL,
++                "soc" to Build.SOC_MODEL,
++                "android" to Build.VERSION.RELEASE,
++                "build" to Build.DISPLAY,
++                "security_patch" to Build.VERSION.SECURITY_PATCH,
++              ),
++            "thermal_status_start" to thermalStart,
++            "battery_celsius_start" to batteryStart,
++          )
+       )
+     )
+ 
+-    var done = 0
+-    var failed = 0
+-    var sumAudio = 0.0
+-    var sumWall = 0.0
+-    val utteranceRtf = ArrayList<Double>()
+-    for ((index, row) in todo.withIndex()) {
++    if (warmupRow != null) {
++      // Outside the timing: the first utterance after the load pays one-time costs (first runs of
++      // the graph, allocator growth); its text is kept here and not scored.
+       val times = WindowTimes()
+-      var text = ""
+-      var error: String? = null
+-      var wallSeconds = 0.0
+-      try {
+-        val (t, w) = runBlocking(Dispatchers.IO) { processFileAudio(File(row.wavPath), pipeline, times) }
+-        text = t
+-        wallSeconds = w
+-      } catch (e: Throwable) {
+-        error = "${e.javaClass.simpleName}: ${e.message}"
+-        Log.e(TAG, "utterance ${row.id} failed", e)
+-      }
++      val attempted = attemptOne(engine, warmupRow, times)
+       emit(
+-        BenchJson.utterance(
+-          UtteranceResult(
+-            row.id,
+-            text,
+-            row.seconds,
+-            wallSeconds,
+-            times.melMs,
+-            times.encodeMs,
+-            times.decodeMs,
+-            times.tokens,
+-            error,
++        BenchJson.warmup(
++          linkedMapOf(
++            "warmup_id" to warmupRow.id,
++            "text" to attempted.text,
++            "audio_seconds" to warmupRow.seconds,
++            "processing_seconds" to BenchJson.round3(attempted.seconds),
++            "windows" to times.encodeMs.size,
++            "stage_ms" to times.stageMs.takeIf { it.isNotEmpty() },
++            "error" to attempted.error,
+           )
+         )
+       )
+-      if (error == null) {
+-        done++
+-        sumAudio += row.seconds
+-        sumWall += wallSeconds
+-        utteranceRtf.add(wallSeconds / row.seconds)
++      Log.i(TAG, "warmup ${warmupRow.id} ${attempted.seconds} s text=${attempted.text}")
++    }
++
++    val totals =
++      if (burst != null) {
++        burstLoop(engine, todo, burst, policies, hwKhz, File(outDir, "$tag.ceil.log"), processStart, ::emit)
+       } else {
+-        failed++
+-      }
+-      if ((index + 1) % 25 == 0 || index + 1 == todo.size) {
+-        Log.i(TAG, "progress ${index + 1}/${todo.size} rtf=${sumWall / sumAudio}")
++        sustainedLoop(engine, todo, ::emit)
+       }
+-    }
+ 
+     val elapsedSeconds = (SystemClock.elapsedRealtimeNanos() - processStart) / 1e9
+     val thermalEnd = thermalStatus(context)
+     val batteryEnd = batteryCelsius(context)
+-    pipeline.close()
++    val processAtEnd = processState()
++    val foregroundStateEnd = scenario?.state?.name
++    val loadedLibs = mappedFiles(context.applicationInfo.nativeLibraryDir) { it.endsWith(".so") }.map { File(it).name }
++    engine.close()
+     scenario?.close()
+     val memory = sampler.stop()
+     val vmHwmKb = procStatusKb("VmHWM")
+     // Witnesses, read after the measurement: the native libraries the process ran with, the model's
+-    // bytes, and the WAVs of the selection in order (the chain of SET-S4.json for S4).
++    // bytes, and the WAVs of the selection in order (the chain of SET-S4.json / SET-S16.json).
+     val nativeLibs =
+       File(context.applicationInfo.nativeLibraryDir)
+         .listFiles { f -> f.name.endsWith(".so") }
+         .orEmpty()
+         .sortedBy { it.name }
+         .associate { it.name to sha256(listOf(it)) }
+-    val rtf = if (sumAudio > 0) sumWall / sumAudio else Double.NaN
++    val rtf = if (totals.sumAudio > 0) totals.sumWall / totals.sumAudio else Double.NaN
+     emit(
+       BenchJson.footer(
+-        linkedMapOf(
++        linkedMapOf<String, Any?>(
+           "tag" to tag,
+-          "utterances_done" to done,
+-          "utterances_failed" to failed,
+-          "sum_audio_seconds" to sumAudio,
+-          "sum_processing_seconds" to sumWall,
++          "utterances_done" to totals.done,
++          "utterances_failed" to totals.failed,
++          "sum_audio_seconds" to totals.sumAudio,
++          "sum_processing_seconds" to totals.sumWall,
+           "rtf" to rtf,
+           "rtfx" to 1.0 / rtf,
+-          "median_utterance_rtf" to median(utteranceRtf),
+-          "vmhwm_kb" to vmHwmKb,
+-          "peak_rss_bytes" to vmHwmKb?.let { it * 1024 },
+-          "sampler_max_rss_kb" to memory.first,
+-          "sampler_max_hwm_kb" to memory.second,
+-          "memory_scope" to "instrumentation process = the app process (ART, test runner, app)",
+-          "cpus_allowed_seen" to sampler.cpusAllowedSeen(),
+-          "cpu_ceilings" to sampler.cpuCeilings(),
+-          "thermal_status_end" to thermalEnd,
+-          "battery_celsius_end" to batteryEnd,
+-          "elapsed_seconds" to elapsedSeconds,
+-          "model_sha256" to sha256(listOf(modelFile)),
+-          "selection_wav_sha256_chain" to sha256(selection.map { File(it.wavPath) }),
+-          "native_libs" to nativeLibs,
+-          "finished_utc" to iso(Date()),
+-        )
++          "median_utterance_rtf" to median(totals.utteranceRtf),
++        ) +
++          totals.burst +
++          linkedMapOf(
++            "vmhwm_kb" to vmHwmKb,
++            "peak_rss_bytes" to vmHwmKb?.let { it * 1024 },
++            "sampler_max_rss_kb" to memory.first,
++            "sampler_max_hwm_kb" to memory.second,
++            "memory_scope" to "instrumentation process = the app process (ART, test runner, app)",
++            "cpus_allowed_seen" to sampler.cpusAllowedSeen(),
++            "cpuset_seen" to sampler.cpusetSeen(),
++            "cpu_ceilings" to sampler.cpuCeilings(),
++            "process_state_end" to processAtEnd,
++            "foreground_state_end" to foregroundStateEnd,
++            "thermal_status_end" to thermalEnd,
++            "battery_celsius_end" to batteryEnd,
++            "elapsed_seconds" to elapsedSeconds,
++          ) +
++          engine.modelHashes() +
++          linkedMapOf(
++            "selection_wav_sha256_chain" to sha256(selection.map { File(it.wavPath) }),
++            "warmup_wav_sha256" to warmupRow?.let { sha256(listOf(File(it.wavPath))) },
++            "native_libs" to nativeLibs,
++            "native_libs_loaded" to loadedLibs,
++            "finished_utc" to iso(Date()),
++          )
+       )
+     )
+     jsonl.close()
+-    File(outDir, "$tag.done").writeText("done=$done failed=$failed rtf=$rtf\n")
+-    Log.i(TAG, "done tag=$tag done=$done failed=$failed rtf=$rtf vmhwm_kb=$vmHwmKb")
++    File(outDir, "$tag.done").writeText("done=${totals.done} failed=${totals.failed} rtf=$rtf\n")
++    Log.i(TAG, "done tag=$tag done=${totals.done} failed=${totals.failed} rtf=$rtf vmhwm_kb=$vmHwmKb")
++  }
++
++  /** What the loops add up; [burst] = the burst run's own footer fields. */
++  private class Totals {
++    var done = 0
++    var failed = 0
++    var sumAudio = 0.0
++    var sumWall = 0.0
++    val utteranceRtf = ArrayList<Double>()
++    val burst = LinkedHashMap<String, Any?>()
++
++    fun add(row: ManifestRow, attempted: Attempted) {
++      if (attempted.error == null) {
++        done++
++        sumAudio += row.seconds
++        sumWall += attempted.seconds
++        utteranceRtf.add(attempted.seconds / row.seconds)
++      } else {
++        failed++
++      }
++    }
++  }
++
++  private class BurstSettings(
++    val gapMs: Long,
++    val pollMs: Long,
++    val maxWaitS: Long,
++    val capPollMs: Long,
++    val linePct: Double,
++    val settleS: Long,
++  ) {
++    fun asMap(): Map<String, Any?> =
++      linkedMapOf(
++        "min_gap_ms" to gapMs,
++        "ceiling_poll_ms" to pollMs,
++        "max_wait_s" to maxWaitS,
++        "cap_poll_ms" to capPollMs,
++        "cap_line_pct" to linePct,
++        "retake_settle_s" to settleS,
++        "cap_rule" to "max over every cpufreq policy of (1 - min scaling_max_freq / cpuinfo_max_freq) * 100, one decimal",
++      )
++  }
++
++  /** Starts the activity [mode] names and keeps the screen on while it is in front. */
++  @Suppress("UNCHECKED_CAST")
++  private fun launchForeground(mode: String): ActivityScenario<out Activity> =
++    if (mode == "main") {
++      ActivityScenario.launch(MainActivity::class.java).also { s ->
++        s.onActivity { it.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
++      }
++    } else {
++      // BenchFrontActivity exists in the bench build type only (src/bench), hence by name.
++      ActivityScenario.launch(Class.forName(FRONT_ACTIVITY) as Class<Activity>)
++    }
++
++  private fun attemptOne(engine: Engine, row: ManifestRow, times: WindowTimes): Attempted =
++    try {
++      val (text, seconds) = engine.transcribe(File(row.wavPath), times)
++      Attempted(text, seconds, times, null)
++    } catch (e: Throwable) {
++      Log.e(TAG, "utterance ${row.id} failed", e)
++      Attempted("", 0.0, times, "${e.javaClass.simpleName}: ${e.message}")
++    }
++
++  /** The utterances back to back (asr-litert-app-v1). */
++  private fun sustainedLoop(engine: Engine, todo: List<ManifestRow>, emit: (String) -> Unit): Totals {
++    val totals = Totals()
++    for ((index, row) in todo.withIndex()) {
++      val times = WindowTimes()
++      val attempted = attemptOne(engine, row, times)
++      emit(
++        BenchJson.utterance(
++          UtteranceResult(
++            row.id,
++            attempted.text,
++            row.seconds,
++            attempted.seconds,
++            times.melMs,
++            times.encodeMs,
++            times.decodeMs,
++            times.tokens,
++            attempted.error,
++            extra = if (times.stageMs.isEmpty()) emptyMap() else mapOf("stage_ms" to times.stageMs),
++          )
++        )
++      )
++      totals.add(row, attempted)
++      if ((index + 1) % 25 == 0 || index + 1 == todo.size) {
++        Log.i(TAG, "progress ${index + 1}/${todo.size} rtf=${totals.sumWall / totals.sumAudio}")
++      }
++    }
++    return totals
++  }
++
++  /** The burst rule (asr-burst-v1): wait, run, retake once past the line; one row per utterance. */
++  private fun burstLoop(
++    engine: Engine,
++    todo: List<ManifestRow>,
++    settings: BurstSettings,
++    policies: List<File>,
++    hwKhz: List<Long?>,
++    ceilingLog: File,
++    origin: Long,
++    emit: (String) -> Unit,
++  ): Totals {
++    val totals = Totals()
++    val names = policies.map { it.name }
++    val policyCpus = policies.map { parseCpuList(readText(File(it, "related_cpus"))) }
++    val log = CeilingLog(ceilingLog, origin, names, hwKhz)
++    fun read() = policies.map { readLong(File(it, "scaling_max_freq")) }
++    val now = { SystemClock.elapsedRealtimeNanos() }
++    val sleep = { ms: Long -> Thread.sleep(ms) }
++    val pacer =
++      BurstPacer(
++        hwKhz,
++        { read().also { log.add("wait", it) } },
++        now,
++        sleep,
++        settings.gapMs,
++        settings.pollMs,
++        settings.maxWaitS * 1000,
++      )
++    val rule =
++      BurstRule(pacer, hwKhz, { read().also { log.add("edge", it) } }, now, sleep, settings.linePct, settings.settleS * 1000)
++    val counted = ArrayList<Pair<ManifestRow, Attempted>>()
++    val waits = ArrayList<Double>()
++    var excluded = 0
++    var retaken = 0
++    var retakeTextDiffers = 0
++    var waitTimeouts = 0
++    var retakeWaitSum = 0.0
++    var prevEnd = SystemClock.elapsedRealtimeNanos()
++    for ((index, row) in todo.withIndex()) {
++      val cpusAtStart = procStatusText("Cpus_allowed_list")
++      val cpusetAtStart = cpusetOf(readText(File("/proc/self/cgroup")))
++      val engineIdx = policyCpus.indices.filter { policyCpus[it].intersect(parseCpuList(cpusAtStart)).isNotEmpty() }.toSet()
++      var attemptNo = 0
++      val outcome =
++        rule.utterance<Attempted>(prevEnd, retakeAllowed = { it.error == null }) { min ->
++          attemptNo++
++          log.context = "${row.id}\t$attemptNo"
++          val times = WindowTimes()
++          pollCeilings(min, settings.capPollMs, ::read, log) { attemptOne(engine, row, times) }
++        }
++      prevEnd = outcome.final.endNs
++      val first = outcome.attempts.first()
++      val last = outcome.final
++      val extra =
++        linkedMapOf<String, Any?>(
++          "attempts" to outcome.attempts.size,
++          "wait_s" to BenchJson.round3(first.wait.waitedMs / 1000.0),
++          "wait_timed_out" to first.wait.timedOut,
++          "wait_polls" to first.wait.polls,
++          "cap_drop_pct" to last.dropPct,
++          "cap_drop_engine_cpus_pct" to capDropPct(last.minKhz, hwKhz, engineIdx),
++          "cap_min_khz" to names.zip(last.minKhz).toMap(),
++          "cap_reads" to last.reads,
++          "excluded" to outcome.excluded,
++          "cpus_allowed" to cpusAtStart,
++          "cpuset" to cpusetAtStart,
++        )
++      if (outcome.attempts.size > 1) {
++        extra["retake"] =
++          linkedMapOf(
++            "first" to
++              linkedMapOf(
++                "processing_seconds" to BenchJson.round3(first.value.seconds),
++                "cap_drop_pct" to first.dropPct,
++                "cap_min_khz" to names.zip(first.minKhz).toMap(),
++                "cap_reads" to first.reads,
++                "text" to first.value.text,
++                "error" to first.value.error,
++              ),
++            "wait_s" to BenchJson.round3(last.wait.waitedMs / 1000.0),
++            "wait_timed_out" to last.wait.timedOut,
++            "text_same" to (first.value.text == last.value.text),
++          )
++        retaken++
++        retakeWaitSum += last.wait.waitedMs / 1000.0
++        if (first.value.text != last.value.text) retakeTextDiffers++
++      }
++      if (last.value.times.stageMs.isNotEmpty()) extra["stage_ms"] = last.value.times.stageMs
++      val times = last.value.times
++      emit(
++        BenchJson.utterance(
++          UtteranceResult(
++            row.id,
++            last.value.text,
++            row.seconds,
++            last.value.seconds,
++            times.melMs,
++            times.encodeMs,
++            times.decodeMs,
++            times.tokens,
++            last.value.error,
++            extra,
++          )
++        )
++      )
++      log.flush()
++      totals.add(row, last.value)
++      waits.add(first.wait.waitedMs / 1000.0)
++      if (first.wait.timedOut) waitTimeouts++
++      if (outcome.excluded && last.value.error == null) excluded++
++      if (!outcome.excluded && last.value.error == null) counted.add(row to last.value)
++      if ((index + 1) % 25 == 0 || index + 1 == todo.size) {
++        Log.i(TAG, "progress ${index + 1}/${todo.size} excluded=$excluded retaken=$retaken")
++      }
++    }
++    log.close()
++    val audio = counted.sumOf { it.first.seconds }
++    val wall = counted.sumOf { it.second.seconds }
++    totals.burst.putAll(
++      linkedMapOf(
++        "utterances_counted" to counted.size,
++        "utterances_excluded" to excluded,
++        "utterances_retaken" to retaken,
++        "retake_text_differs" to retakeTextDiffers,
++        "counted_audio_seconds" to audio,
++        "counted_processing_seconds" to wall,
++        "rtf_burst" to if (audio > 0) wall / audio else null,
++        "median_utterance_rtf_burst" to median(counted.map { it.second.seconds / it.first.seconds }),
++        "wait_sum_s" to waits.sum(),
++        "wait_median_s" to median(waits),
++        "wait_max_s" to waits.maxOrNull(),
++        "wait_timeouts" to waitTimeouts,
++        "retake_wait_sum_s" to retakeWaitSum,
++      )
++    )
++    return totals
++  }
++
++  /** Runs [block] while a thread adds every policy's ceiling to [min] every [everyMs]. */
++  private fun <T> pollCeilings(
++    min: CeilingMin,
++    everyMs: Long,
++    read: () -> List<Long?>,
++    log: CeilingLog,
++    block: () -> T,
++  ): T {
++    val stop = AtomicBoolean(false)
++    val thread =
++      Thread {
++          while (!stop.get()) {
++            try {
++              Thread.sleep(everyMs)
++            } catch (e: InterruptedException) {
++              break
++            }
++            if (stop.get()) break
++            val ceilings = read()
++            min.add(ceilings)
++            log.add("run", ceilings)
++          }
++        }
++        .apply {
++          isDaemon = true
++          name = "ceiling-poller"
++          start()
++        }
++    try {
++      return block()
++    } finally {
++      stop.set(true)
++      thread.interrupt()
++      thread.join(1000)
++    }
++  }
++
++  /**
++   * `<tag>.ceil.log`: every ceiling read of a burst run while an utterance ran (run), at its start
++   * and end (edge), and the waits' reads that were below the maximum (wait).
++   */
++  private class CeilingLog(file: File, private val origin: Long, names: List<String>, private val hwKhz: List<Long?>) {
++    // Appended: a run resumed in a later process adds its reads after the earlier ones.
++    private val writer = FileOutputStream(file, true).bufferedWriter()
++    @Volatile var context: String = "-\t0"
++
++    init {
++      writer.write("# elapsed_ms\tid\tattempt\tphase" + names.joinToString("") { "\t${it}_scaling_max_kHz" } + "\n")
++      writer.write("# hw_kHz" + hwKhz.joinToString("") { "\t$it" } + "\n")
++    }
++
++    @Synchronized
++    fun add(phase: String, ceilings: List<Long?>) {
++      if (phase == "wait" && hwKhz.indices.all { i -> hwKhz[i] == null || ceilings.getOrNull(i) == null || ceilings[i]!! >= hwKhz[i]!! }) return
++      writer.write(
++        "${(SystemClock.elapsedRealtimeNanos() - origin) / 1_000_000}\t$context\t$phase" +
++          ceilings.joinToString("") { "\t${it ?: "-"}" } +
++          "\n"
++      )
++    }
++
++    @Synchronized fun flush() = writer.flush()
++
++    @Synchronized fun close() = writer.close()
+   }
+ 
+   // ---- MainActivity.preparePipeline (d15f8ae9), timed, on the IO dispatcher as in the activity.
+@@ -483,21 +1085,19 @@ class AsrBenchTest {
+   // ---- Device state and memory.
+ 
+   /**
+-   * Samples VmRSS and VmHWM of this process, the CPUs it may run on and every cpufreq policy's
+-   * ceiling (scaling_max_freq, when readable) every second into a log; keeps the maxima, the
+-   * lowest ceiling per policy and every Cpus_allowed_list seen (edge-llm-bench cpu-cap-rule).
++   * Samples VmRSS and VmHWM of this process, the CPUs it may run on, its cpuset and every cpufreq
++   * policy's ceiling (scaling_max_freq, when readable) every second into a log; keeps the maxima,
++   * the lowest ceiling per policy and every Cpus_allowed_list and cpuset seen (edge-llm-bench
++   * cpu-cap-rule).
+    */
+   private class MemorySampler(private val log: File, private val origin: Long) {
+     private val stop = AtomicBoolean(false)
+     private var maxRss = 0L
+     private var maxHwm = 0L
+-    private val policies =
+-      File("/sys/devices/system/cpu/cpufreq")
+-        .listFiles { f -> f.name.startsWith("policy") }
+-        .orEmpty()
+-        .sortedBy { it.name }
++    private val policies = cpufreqPolicies()
+     private val minCeilingKhz = HashMap<String, Long>()
+     private val cpusAllowed = LinkedHashSet<String>()
++    private val cpusets = LinkedHashSet<String>()
+     private lateinit var thread: Thread
+ 
+     fun start(): MemorySampler {
+@@ -506,17 +1106,19 @@ class AsrBenchTest {
+             log.appendText(
+               "# elapsed_ms\tVmRSS_kB\tVmHWM_kB\tCpus_allowed_list" +
+                 policies.joinToString("") { "\t${it.name}_scaling_max_kHz" } +
+-                " (pid ${Process.myPid()})\n"
++                "\tcpuset (pid ${Process.myPid()})\n"
+             )
+             while (!stop.get()) {
+               val rss = procStatusKb("VmRSS") ?: 0L
+               val hwm = procStatusKb("VmHWM") ?: 0L
+               val cpus = procStatusText("Cpus_allowed_list") ?: ""
+               val ceilings = policies.map { readLong(File(it, "scaling_max_freq")) }
++              val cpuset = cpusetOf(readText(File("/proc/self/cgroup"))) ?: ""
+               synchronized(this) {
+                 maxRss = maxOf(maxRss, rss)
+                 maxHwm = maxOf(maxHwm, hwm)
+                 if (cpus.isNotEmpty()) cpusAllowed.add(cpus)
++                if (cpuset.isNotEmpty()) cpusets.add(cpuset)
+                 policies.zip(ceilings).forEach { (p, khz) ->
+                   if (khz != null) minCeilingKhz[p.name] = minOf(minCeilingKhz[p.name] ?: khz, khz)
+                 }
+@@ -524,7 +1126,7 @@ class AsrBenchTest {
+               log.appendText(
+                 "${(SystemClock.elapsedRealtimeNanos() - origin) / 1_000_000}\t$rss\t$hwm\t$cpus" +
+                   ceilings.joinToString("") { "\t${it ?: "-"}" } +
+-                  "\n"
++                  "\t$cpuset\n"
+               )
+               try {
+                 Thread.sleep(1000)
+@@ -563,6 +1165,8 @@ class AsrBenchTest {
+       }
+ 
+     fun cpusAllowedSeen(): List<String> = synchronized(this) { cpusAllowed.toList() }
++
++    fun cpusetSeen(): List<String> = synchronized(this) { cpusets.toList() }
+   }
+ 
+   private companion object {
+@@ -574,10 +1178,25 @@ class AsrBenchTest {
+     val FILE_AUDIO_CHUNK_OVERLAP_DURATION = 2.seconds
+     const val FILE_MAX_LEVENSHTEIN_DISTANCE = 5
+ 
++    const val FRONT_ACTIVITY = "com.google.ai.edge.examples.asr.BenchFrontActivity"
++
++    // The sherpa-onnx arm: the k2-fsa release model sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8.
++    const val SHERPA_MODEL_DIR = "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8"
++    val SHERPA_FILES = listOf("encoder.int8.onnx", "decoder.int8.onnx", "joiner.int8.onnx", "tokens.txt")
++    const val SHERPA_NUM_THREADS = 4
++
+     fun Bundle.int(name: String, default: Int) = getString(name)?.toInt() ?: default
+ 
++    fun Bundle.long(name: String, default: Long) = getString(name)?.toLong() ?: default
++
+     fun msSince(startNs: Long) = (SystemClock.elapsedRealtimeNanos() - startNs) / 1e6
+ 
++    fun cpufreqPolicies(): List<File> =
++      File("/sys/devices/system/cpu/cpufreq")
++        .listFiles { f -> f.name.startsWith("policy") }
++        .orEmpty()
++        .sortedBy { it.name.removePrefix("policy").toIntOrNull() ?: Int.MAX_VALUE }
++
+     fun procStatusText(key: String): String? =
+       try {
+         File("/proc/self/status").useLines { lines ->
+@@ -599,6 +1218,46 @@ class AsrBenchTest {
+ 
+     fun readLong(file: File): Long? = readText(file)?.toLongOrNull()
+ 
++    /** The cpuset line of /proc/self/cgroup ("…:cpuset:/top-app"), else the whole text on one line. */
++    fun cpusetOf(cgroup: String?): String? {
++      if (cgroup == null) return null
++      val lines = cgroup.lines().filter { it.isNotBlank() }
++      return lines.firstOrNull { it.contains(":cpuset:") } ?: lines.joinToString(";")
++    }
++
++    /** Polls this process's cpuset until it names [name]: the ms that took, or null after [maxMs]. */
++    fun waitForCpuset(name: String, maxMs: Long): Long? {
++      val t0 = SystemClock.elapsedRealtime()
++      while (true) {
++        if (cpusetOf(readText(File("/proc/self/cgroup")))?.contains(name) == true) {
++          return SystemClock.elapsedRealtime() - t0
++        }
++        if (SystemClock.elapsedRealtime() - t0 >= maxMs) return null
++        Thread.sleep(100)
++      }
++    }
++
++    /** Where the process may run now: Cpus_allowed_list and its cgroup lines. */
++    fun processState(): Map<String, Any?> =
++      linkedMapOf(
++        "cpus_allowed" to procStatusText("Cpus_allowed_list"),
++        "cpuset" to cpusetOf(readText(File("/proc/self/cgroup"))),
++        "cgroup" to readText(File("/proc/self/cgroup"))?.lines()?.filter { it.isNotBlank() },
++      )
++
++    /** The distinct paths in /proc/self/maps that contain [under] and pass [keep]. */
++    fun mappedFiles(under: String, keep: (String) -> Boolean): List<String> =
++      try {
++        File("/proc/self/maps")
++          .readLines()
++          .mapNotNull { line -> line.substringAfter('/', "").takeIf { it.isNotEmpty() }?.let { "/$it" } }
++          .filter { it.contains(under) && keep(it) }
++          .distinct()
++          .sorted()
++      } catch (e: Exception) {
++        emptyList()
++      }
++
+     /** Appends `logcat -d --pid=<this process>` to [file] (an app may read its own log). */
+     fun dumpOwnLogcat(file: File) {
+       try {
+@@ -617,6 +1276,16 @@ class AsrBenchTest {
+     fun thermalStatus(context: Context): Int =
+       (context.getSystemService(Context.POWER_SERVICE) as PowerManager).currentThermalStatus
+ 
++    /** Whether the screen is on and the keyguard up when the run starts (MainActivity needs both). */
++    fun screenState(context: Context): Map<String, Any?> {
++      val keyguard = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
++      return linkedMapOf(
++        "interactive" to (context.getSystemService(Context.POWER_SERVICE) as PowerManager).isInteractive,
++        "keyguard_locked" to keyguard.isKeyguardLocked,
++        "device_locked" to keyguard.isDeviceLocked,
++      )
++    }
++
+     fun batteryCelsius(context: Context): Double? =
+       context
+         .registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/bench/AndroidManifest.xml b/samples/litert/speech_recognition/AndroidApp/app/src/bench/AndroidManifest.xml
+new file mode 100644
+index 00000000..cf345626
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/bench/AndroidManifest.xml
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- The bench build type only (edge-llm-bench asr-burst-v1): the window AsrBenchTest keeps in front. -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <application>
++        <activity
++            android:name=".BenchFrontActivity"
++            android:exported="true"
++            android:showWhenLocked="true"
++            android:turnScreenOn="true"
++            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
++    </application>
++
++</manifest>
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/bench/java/com/google/ai/edge/examples/asr/BenchFrontActivity.kt b/samples/litert/speech_recognition/AndroidApp/app/src/bench/java/com/google/ai/edge/examples/asr/BenchFrontActivity.kt
+new file mode 100644
+index 00000000..a898253a
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/bench/java/com/google/ai/edge/examples/asr/BenchFrontActivity.kt
+@@ -0,0 +1,27 @@
++package com.google.ai.edge.examples.asr
++
++import android.app.Activity
++import android.os.Bundle
++import android.view.WindowManager
++import android.widget.TextView
++
++/**
++ * The bench build's front window (edge-llm-bench asr-burst-v1): AsrBenchTest starts it so the app
++ * process runs as the top app while it measures. It shows over the keyguard and turns the screen
++ * on, so a locked phone needs no unlock; it loads nothing and draws one static line.
++ */
++class BenchFrontActivity : Activity() {
++  override fun onCreate(savedInstanceState: Bundle?) {
++    super.onCreate(savedInstanceState)
++    setShowWhenLocked(true)
++    setTurnScreenOn(true)
++    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
++    setContentView(
++      TextView(this).apply {
++        text = "asr-burst benchmark running"
++        textSize = 20f
++        setPadding(48, 96, 48, 48)
++      }
++    )
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt
+index f0b67716..f4d4776d 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/BenchIo.kt
+@@ -65,7 +65,10 @@ class TranscriptAccumulator {
+     listOf(prev, next).filter { it.isNotEmpty() }.joinToString(separator = " ")
+ }
+ 
+-/** One transcribed utterance with the per-window times of the pipeline's three stages. */
++/**
++ * One transcribed utterance with the per-window times of the pipeline's three stages; [extra]
++ * holds what a burst run adds (waits, ceilings, attempts) and the sherpa stages, after the rest.
++ */
+ data class UtteranceResult(
+   val id: String,
+   val text: String,
+@@ -76,6 +79,7 @@ data class UtteranceResult(
+   val decodeMs: List<Double> = emptyList(),
+   val tokens: List<Int> = emptyList(),
+   val error: String? = null,
++  val extra: Map<String, Any?> = emptyMap(),
+ )
+ 
+ /**
+@@ -86,10 +90,16 @@ data class UtteranceResult(
+ object BenchJson {
+   const val HARNESS = "asr-litert-app-v1"
+ 
++  /** The burst runs' harness name (docs/asr-burst-v1.md); the sustained runs keep [HARNESS]. */
++  const val BURST_HARNESS = "asr-burst-v1"
++
+   fun header(fields: Map<String, Any?>): String = typed("header", fields)
+ 
+   fun footer(fields: Map<String, Any?>): String = typed("footer", fields)
+ 
++  /** The warm-up utterance a burst run transcribes once before the set (no `id`: not scored). */
++  fun warmup(fields: Map<String, Any?>): String = typed("warmup", fields)
++
+   fun utterance(result: UtteranceResult): String {
+     val row = JSONObject()
+     row.put("type", "utterance")
+@@ -104,6 +114,10 @@ object BenchJson {
+     row.put("encode_ms", JSONArray(result.encodeMs.map(::round3)))
+     row.put("decode_ms", JSONArray(result.decodeMs.map(::round3)))
+     if (result.error != null) row.put("error", result.error)
++    for ((key, value) in result.extra) {
++      require(!row.has(key)) { "extra field $key would overwrite a row field" }
++      row.put(key, toJson(value))
++    }
+     return row.toString()
+   }
+ 
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/Burst.kt b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/Burst.kt
+new file mode 100644
+index 00000000..d0643cc7
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/benchShared/java/com/google/ai/edge/examples/asr/bench/Burst.kt
+@@ -0,0 +1,166 @@
++package com.google.ai.edge.examples.asr.bench
++
++private const val NS_PER_MS = 1_000_000L
++
++private fun ceilDiv(a: Long, b: Long) = (a + b - 1) / b
++
++/**
++ * The burst pacing of asr-burst-v1 (edge-llm-bench docs/asr-burst-v1.md): an utterance starts at
++ * least [minGapMs] after the previous one ended, and only once every cpufreq policy's ceiling
++ * (scaling_max_freq) is back at its hardware maximum (cpuinfo_max_freq), read every [pollMs], for at
++ * most [maxWaitMs] (then it starts anyway and the wait is marked). The clock, the sleep and the
++ * ceiling read are passed in, so the JVM tests drive them.
++ */
++class BurstPacer(
++  private val hwKhz: List<Long?>,
++  private val readCeilings: () -> List<Long?>,
++  private val nowNs: () -> Long,
++  private val sleepMs: (Long) -> Unit,
++  val minGapMs: Long = 500,
++  val pollMs: Long = 200,
++  val maxWaitMs: Long = 120_000,
++) {
++  /** One wait: from the end of the previous utterance to the moment this one may start. */
++  data class Wait(
++    val waitedMs: Double,
++    val timedOut: Boolean,
++    val polls: Int,
++    val ceilingsKhz: List<Long?>,
++  )
++
++  /** True when every policy whose maximum and ceiling were both read sits at its maximum. */
++  fun atMax(ceilingsKhz: List<Long?>): Boolean =
++    hwKhz.indices.all { i ->
++      val hw = hwKhz[i]
++      val now = ceilingsKhz.getOrNull(i)
++      hw == null || now == null || now >= hw
++    }
++
++  /** Waits from [sinceNs], the end of the previous utterance. */
++  fun await(sinceNs: Long): Wait {
++    val gapEndNs = sinceNs + minGapMs * NS_PER_MS
++    val deadlineNs = sinceNs + maxWaitMs * NS_PER_MS
++    var t = nowNs()
++    if (t < gapEndNs) sleepMs(ceilDiv(gapEndNs - t, NS_PER_MS))
++    var polls = 0
++    while (true) {
++      val ceilings = readCeilings()
++      polls++
++      t = nowNs()
++      if (atMax(ceilings)) return Wait((t - sinceNs) / 1e6, false, polls, ceilings)
++      if (t >= deadlineNs) return Wait((t - sinceNs) / 1e6, true, polls, ceilings)
++      sleepMs(minOf(pollMs, ceilDiv(deadlineNs - t, NS_PER_MS)))
++    }
++  }
++}
++
++/** The lowest ceiling per policy over the reads taken while one attempt ran (read from two threads). */
++class CeilingMin(private val hwKhz: List<Long?>) {
++  private val minKhz = arrayOfNulls<Long>(hwKhz.size)
++  private var reads = 0
++
++  @Synchronized
++  fun add(ceilingsKhz: List<Long?>) {
++    reads++
++    for (i in minKhz.indices) {
++      val v = ceilingsKhz.getOrNull(i) ?: continue
++      minKhz[i] = minOf(minKhz[i] ?: v, v)
++    }
++  }
++
++  @Synchronized fun reads(): Int = reads
++
++  @Synchronized fun minKhz(): List<Long?> = minKhz.toList()
++
++  fun dropPct(only: Set<Int>? = null): Double? = capDropPct(minKhz(), hwKhz, only)
++}
++
++/**
++ * How far the ceilings fell: the largest (1 - min / hw) * 100 over the policies, one decimal, as
++ * edge-llm-bench's cpu-cap-rule computes cpu_cap_drop_pct; null when no policy was read. [only]
++ * keeps the policies at those indices (e.g. the policies of the CPUs the process may run on).
++ */
++fun capDropPct(minKhz: List<Long?>, hwKhz: List<Long?>, only: Set<Int>? = null): Double? {
++  val drops =
++    minKhz.indices.mapNotNull { i ->
++      if (only != null && i !in only) return@mapNotNull null
++      val min = minKhz[i]
++      val hw = hwKhz.getOrNull(i)
++      if (min == null || hw == null || hw <= 0) null else maxOf(0.0, (1.0 - min.toDouble() / hw) * 100.0)
++    }
++  return drops.maxOrNull()?.let { Math.round(it * 10.0) / 10.0 }
++}
++
++/** The CPUs of a list such as "0-5" or "0-3,6" (Cpus_allowed_list, related_cpus with commas). */
++fun parseCpuList(spec: String?): Set<Int> {
++  if (spec.isNullOrBlank()) return emptySet()
++  return spec
++    .split(',', ' ')
++    .filter { it.isNotBlank() }
++    .flatMap { part ->
++      val bounds = part.trim().split('-')
++      val first = bounds[0].toInt()
++      (first..(bounds.getOrNull(1)?.toInt() ?: first)).toList()
++    }
++    .toSet()
++}
++
++/**
++ * One utterance under the burst rule: wait ([BurstPacer]), run once, and when the ceiling fell
++ * past [linePct] during the run, wait until it is back plus [settleMs], then run once more. The
++ * last attempt's fall decides whether the utterance counts toward RTF_burst; [retakeAllowed] says
++ * no for an attempt that failed (it is recorded, not repeated).
++ */
++class BurstRule(
++  private val pacer: BurstPacer,
++  private val hwKhz: List<Long?>,
++  private val readCeilings: () -> List<Long?>,
++  private val nowNs: () -> Long,
++  private val sleepMs: (Long) -> Unit,
++  val linePct: Double = 15.0,
++  val settleMs: Long = 5_000,
++) {
++  class Attempt<T>(
++    val value: T,
++    val wait: BurstPacer.Wait,
++    val startNs: Long,
++    val endNs: Long,
++    val minKhz: List<Long?>,
++    val reads: Int,
++    val dropPct: Double?,
++  )
++
++  class Outcome<T>(val attempts: List<Attempt<T>>, val excluded: Boolean) {
++    val final: Attempt<T>
++      get() = attempts.last()
++  }
++
++  fun over(dropPct: Double?): Boolean = dropPct != null && dropPct > linePct
++
++  /** [run] performs the attempt; it may add its own ceiling reads to the [CeilingMin] it gets. */
++  fun <T> utterance(
++    prevEndNs: Long,
++    retakeAllowed: (T) -> Boolean = { true },
++    run: (CeilingMin) -> T,
++  ): Outcome<T> {
++    val first = attempt(pacer.await(prevEndNs), run)
++    if (!over(first.dropPct) || !retakeAllowed(first.value)) {
++      return Outcome(listOf(first), excluded = over(first.dropPct))
++    }
++    val back = pacer.await(first.endNs)
++    sleepMs(settleMs)
++    val wait = back.copy(waitedMs = (nowNs() - first.endNs) / 1e6)
++    val second = attempt(wait, run)
++    return Outcome(listOf(first, second), excluded = over(second.dropPct))
++  }
++
++  private fun <T> attempt(wait: BurstPacer.Wait, run: (CeilingMin) -> T): Attempt<T> {
++    val min = CeilingMin(hwKhz)
++    min.add(readCeilings())
++    val start = nowNs()
++    val value = run(min)
++    val end = nowNs()
++    min.add(readCeilings())
++    return Attempt(value, wait, start, end, min.minKhz(), min.reads(), min.dropPct())
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/bench/BurstTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/bench/BurstTest.kt
+new file mode 100644
+index 00000000..d9d24f6e
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/bench/BurstTest.kt
+@@ -0,0 +1,239 @@
++package com.google.ai.edge.examples.asr.bench
++
++import org.json.JSONObject
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertFalse
++import org.junit.Assert.assertNull
++import org.junit.Assert.assertTrue
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.junit.runners.JUnit4
++
++@RunWith(JUnit4::class)
++class BurstTest {
++
++  /** A clock that only moves when the code under test sleeps or a run takes time. */
++  private class FakeClock {
++    var ns = 0L
++
++    fun now() = ns
++
++    fun sleep(ms: Long) {
++      ns += ms * 1_000_000
++    }
++
++    fun advanceMs(ms: Long) = sleep(ms)
++  }
++
++  // The Galaxy S26 (SM8850): policy0 = cpu 0-5, policy6 = cpu 6-7.
++  private val hw = listOf(3_628_800L, 4_742_400L)
++  private val low = listOf(2_496_000L, 2_438_400L)
++
++  private fun pacer(clock: FakeClock, read: () -> List<Long?>) =
++    BurstPacer(hw, read, clock::now, clock::sleep)
++
++  @Test
++  fun pacer_waitsTheMinimumGapWhenEveryCeilingIsAtItsMaximum() {
++    val clock = FakeClock()
++    clock.advanceMs(100) // writing the previous row took 100 ms
++    val wait = pacer(clock) { hw }.await(sinceNs = 0)
++    assertEquals(500.0, wait.waitedMs, 0.0)
++    assertEquals(1, wait.polls)
++    assertFalse(wait.timedOut)
++  }
++
++  @Test
++  fun pacer_pollsEvery200MsUntilEveryPolicyIsBack() {
++    val clock = FakeClock()
++    // policy6 stays capped until 1.3 s after the previous utterance ended.
++    val wait =
++      pacer(clock) { if (clock.ns < 1_300_000_000L) listOf(hw[0], low[1]) else hw }.await(0)
++    assertEquals(1300.0, wait.waitedMs, 0.0)
++    assertEquals(5, wait.polls) // 0.5, 0.7, 0.9, 1.1, 1.3 s
++    assertFalse(wait.timedOut)
++    assertEquals(hw, wait.ceilingsKhz)
++  }
++
++  @Test
++  fun pacer_startsAnywayAfter120SecondsAndMarksIt() {
++    val clock = FakeClock()
++    val wait = pacer(clock) { low }.await(0)
++    assertEquals(120_000.0, wait.waitedMs, 0.0)
++    assertTrue(wait.timedOut)
++    assertEquals(599, wait.polls) // 0.5 s, then every 200 ms to 119.9 s, then the deadline itself
++  }
++
++  @Test
++  fun pacer_ignoresAPolicyItCannotRead() {
++    val clock = FakeClock()
++    assertTrue(BurstPacer(listOf(hw[0], null), { listOf(hw[0], 1L) }, clock::now, clock::sleep).atMax(listOf(hw[0], 1L)))
++    assertTrue(pacer(clock) { hw }.atMax(listOf(null, hw[1])))
++    assertFalse(pacer(clock) { hw }.atMax(listOf(hw[0], hw[1] - 1)))
++  }
++
++  @Test
++  fun capDropPct_isTheLargestFallOverThePoliciesOneDecimal() {
++    // r2's L1 smoke on the S26: policy0 down to 3513600 (-3.2 %), policy6 down to 3974400 (-16.2 %).
++    val min = listOf(3_513_600L, 3_974_400L)
++    assertEquals(16.2, capDropPct(min, hw)!!, 0.0)
++    assertEquals(3.2, capDropPct(min, hw, only = setOf(0))!!, 0.0)
++    assertEquals(0.0, capDropPct(hw, hw)!!, 0.0)
++    assertNull(capDropPct(listOf(null, null), hw))
++    assertEquals(16.2, capDropPct(listOf(null, 3_974_400L), hw)!!, 0.0)
++    // 15.04 % rounds to 15.0, which is not past the line.
++    assertEquals(15.0, capDropPct(listOf(3_398_400L), listOf(4_000_000L))!!, 0.0)
++  }
++
++  @Test
++  fun parseCpuList_readsRangesCommasAndSpaces() {
++    assertEquals((0..5).toSet(), parseCpuList("0-5"))
++    assertEquals(setOf(0, 1, 2, 3, 6), parseCpuList("0-3,6"))
++    assertEquals(setOf(6, 7), parseCpuList("6 7"))
++    assertTrue(parseCpuList("").isEmpty())
++    assertTrue(parseCpuList(null).isEmpty())
++  }
++
++  /** A run that takes [ms] and reads the ceilings [ceilings] once while it runs. */
++  private fun run(clock: FakeClock, ms: Long, ceilings: List<Long?>): (CeilingMin) -> String = { min ->
++    clock.advanceMs(ms / 2)
++    min.add(ceilings)
++    clock.advanceMs(ms - ms / 2)
++    "text"
++  }
++
++  @Test
++  fun rule_keepsAnAttemptAtTheLine() {
++    val clock = FakeClock()
++    val hw4 = listOf(4_000_000L)
++    val rule = BurstRule(BurstPacer(hw4, { hw4 }, clock::now, clock::sleep), hw4, { hw4 }, clock::now, clock::sleep)
++    val outcome = rule.utterance(0, run = run(clock, 800, listOf(3_400_000L))) // exactly -15.0 %
++    assertEquals(1, outcome.attempts.size)
++    assertEquals(15.0, outcome.final.dropPct!!, 0.0)
++    assertFalse(outcome.excluded)
++    assertEquals(3, outcome.final.reads) // at the start, the run's own, at the end
++    assertEquals(500.0, outcome.final.wait.waitedMs, 0.0)
++  }
++
++  @Test
++  fun rule_retakesOnceAfterTheCeilingIsBackAndFiveSecondsMore() {
++    val clock = FakeClock()
++    var firstEndNs = Long.MAX_VALUE
++    // Capped from just after the first attempt ended until 2 s later.
++    val read = { if (clock.ns > firstEndNs && clock.ns < firstEndNs + 2_000_000_000L) low else hw }
++    val rule = BurstRule(pacer(clock, read), hw, read, clock::now, clock::sleep)
++    var calls = 0
++    val outcome =
++      rule.utterance(0) { min ->
++        calls++
++        if (calls == 1) {
++          clock.advanceMs(500)
++          min.add(listOf(hw[0], 3_793_920L)) // policy6 -20 %
++          clock.advanceMs(500)
++          firstEndNs = clock.ns
++          "first"
++        } else {
++          run(clock, 1000, hw)(min)
++          "second"
++        }
++      }
++    assertEquals(2, outcome.attempts.size)
++    assertEquals("first", outcome.attempts[0].value)
++    assertEquals(20.0, outcome.attempts[0].dropPct!!, 0.0)
++    assertEquals("second", outcome.final.value)
++    assertEquals(0.0, outcome.final.dropPct!!, 0.0)
++    assertFalse(outcome.excluded)
++    // Back at 2.1 s after the first attempt (polls at 0.5, 0.7, ..., 2.1 s), then 5 s more.
++    assertEquals(7100.0, outcome.final.wait.waitedMs, 0.0)
++    assertEquals(outcome.attempts[0].endNs + 7_100_000_000L, outcome.final.startNs)
++  }
++
++  @Test
++  fun rule_excludesAnUtteranceWhoseRetakeIsPastTheLineToo() {
++    val clock = FakeClock()
++    val rule = BurstRule(pacer(clock) { hw }, hw, { hw }, clock::now, clock::sleep)
++    val outcome = rule.utterance(0, run = run(clock, 1000, low))
++    assertEquals(2, outcome.attempts.size)
++    assertEquals(48.6, outcome.final.dropPct!!, 0.0)
++    assertTrue(outcome.excluded)
++  }
++
++  @Test
++  fun rule_doesNotRetakeAFailedAttempt() {
++    val clock = FakeClock()
++    val rule = BurstRule(pacer(clock) { hw }, hw, { hw }, clock::now, clock::sleep)
++    val outcome = rule.utterance(0, retakeAllowed = { it != "error" }) { min ->
++      min.add(low)
++      "error"
++    }
++    assertEquals(1, outcome.attempts.size)
++    assertTrue(outcome.excluded)
++  }
++
++  @Test
++  fun s16_isEveryEighthRowOfS4FromTheFirst() {
++    // LibriSpeech test-clean: 2620 rows -> S16 = 164 (index 0, 16, ..., 2608); W = row 1 is outside.
++    val rows = (0 until 2620).map { ManifestRow("utt-$it", "/sets/utt-$it.wav", 1.0) }
++    val s16 = BenchManifest.stride(rows, 16)
++    assertEquals(164, s16.size)
++    assertEquals(listOf("utt-0", "utt-16"), s16.take(2).map { it.id })
++    assertEquals("utt-2608", s16.last().id)
++    assertFalse(s16.any { it.id == "utt-1" })
++    assertTrue(BenchManifest.stride(rows, 4).map { it.id }.containsAll(s16.map { it.id }))
++    assertEquals(10, BenchManifest.stride(rows, 16).take(10).size)
++  }
++
++  @Test
++  fun utteranceRow_carriesTheBurstFields() {
++    val row =
++      JSONObject(
++        BenchJson.utterance(
++          UtteranceResult(
++            id = "1089-134686-0000",
++            text = "he hoped",
++            audioSeconds = 10.435,
++            processingSeconds = 0.61234,
++            extra =
++              linkedMapOf(
++                "wait_s" to 0.5,
++                "wait_timed_out" to false,
++                "cap_drop_pct" to 3.2,
++                "cap_min_khz" to linkedMapOf("policy0" to 3_513_600L, "policy6" to null),
++                "attempts" to 2,
++                "retake" to linkedMapOf("first" to linkedMapOf("cap_drop_pct" to 20.0, "text" to "he hoped")),
++                "excluded" to false,
++                "stage_ms" to linkedMapOf("feature" to 12.5, "decode" to 400.25),
++              ),
++          )
++        )
++      )
++    assertEquals("1089-134686-0000", row.getString("id"))
++    assertEquals(0.612, row.getDouble("processing_seconds"), 0.0)
++    assertEquals(0.5, row.getDouble("wait_s"), 0.0)
++    assertEquals(3_513_600L, row.getJSONObject("cap_min_khz").getLong("policy0"))
++    assertTrue(row.getJSONObject("cap_min_khz").isNull("policy6"))
++    assertEquals(20.0, row.getJSONObject("retake").getJSONObject("first").getDouble("cap_drop_pct"), 0.0)
++    assertEquals(400.25, row.getJSONObject("stage_ms").getDouble("decode"), 0.0)
++    assertFalse(row.getBoolean("excluded"))
++    // The sherpa arm has no windows: the window fields stay, empty.
++    assertEquals(0, row.getInt("windows"))
++    assertEquals(0, row.getJSONArray("mel_ms").length())
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun utteranceRow_rejectsAnExtraFieldThatOverwritesOne() {
++    BenchJson.utterance(UtteranceResult("x", "t", 1.0, 0.1, extra = mapOf("text" to "other")))
++  }
++
++  @Test
++  fun warmupRow_hasATypeAndNoId() {
++    val row = JSONObject(BenchJson.warmup(mapOf("warmup_id" to "1995-1836-0004", "text" to "w")))
++    assertEquals("warmup", row.getString("type"))
++    assertFalse(row.has("id"))
++    assertEquals("1995-1836-0004", row.getString("warmup_id"))
++  }
++
++  @Test(expected = IllegalArgumentException::class)
++  fun warmupRow_rejectsAnId() {
++    BenchJson.warmup(mapOf("id" to "1995-1836-0004"))
++  }
++}
