@@ -457,8 +457,8 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   with the 0.6B file after the 18 Pro's sitting.
 - 10:2x code-2d's fairness ask (Hub API read by code-2d): the page's MLX Gemma 4 rows run the qat-OptiQ-4bit builds (5.22 / 7.48 GB
   safetensors, 956 / 2,475 downloads in 30 days) while mlx-community's used builds are gemma-4-e2b/e4b-it-4bit (3.55 / 5.15 GB; 24,394 /
-  31,114) and gemma-4-E2B/E4B-it-qat-mobile (2.40 / 3.46 GB; 19,670 / 15,219); if the LiteRT-LM lead on the page (Mac E2B 1K 154 vs 151,
-  18 Pro 79 vs 52) comes from the file choice, the team reads a wrong-looking-right. Measure, do not infer from downloads or bytes. Round
+  31,114) and gemma-4-E2B/E4B-it-qat-mobile (2.40 / 3.46 GB; 19,670 / 15,219); if the page's MLX Gemma 4 rows read the way they do
+  because of the file choice, the team reads a wrong-looking-right. Measure, do not infer from downloads or bytes. Round
   r14 launched (worktree wt-autopilot-q06, branch mlx-gemma4-file, tab workspace:380): the three files per model in one Mac sitting (1K task,
   anchor, runs 4, text screen), the rule "same quantization class, passes the text check, fastest; within 5 % the most downloaded", the
   cells and docs; the measurement waits for my go (after r13's build and smoke, in two ≤45-min slots). r13 adds the four catalog entries
