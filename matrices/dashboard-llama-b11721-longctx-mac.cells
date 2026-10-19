@@ -1,0 +1,14 @@
+# Mac, the llama.cpp Gemma 4 rows of the 2K context ladder (matrices/dashboard-longctx-v1.cells lines 83-85 and 101-103, byte for byte)
+# re-measured on the template-fix build (round r13, 2026-10-19: before it the adapter sent these prompts without the GGUF's chat
+# template, 1,629 prompt tokens; now the rendered template, thinking off, conditions.chatTemplate = jinja). The first row is the Mac
+# session anchor (as in matrices/dashboard-llama-b11721-mac.cells). Job route:
+#   python3 scripts/dashboard_job.py m4max --cells matrices/dashboard-llama-b11721-longctx-mac.cells --suffix llama-b11721-longctx --once
+
+# ---- mac ----
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=2304
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=4096
+mac llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-2048-gen256 context-tokens=8192
