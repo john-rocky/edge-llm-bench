@@ -25,6 +25,9 @@ from 2026-10-06; its earlier rows carry a peak only from the
 `BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:
 `methodology/memory.md` "Peak memory".
 
+`model_file` (after `model_id`, 2026-10-19) is the artifact file the run loaded (the record's `model.file`, or
+`model.primaryFile` on the Apple native path; empty before): one model id can ship several files, and the
+session checker keys the prompt-token history by it (quant-label-rule: the recipe is visible in every row).
 `text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:
 `PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a
 `FAIL` run stays a row here and in raw but pools into no number
