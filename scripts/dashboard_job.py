@@ -131,7 +131,7 @@ MAC_HEAVY_PROGRAM_RE = re.compile(
     r"^[^ ]*(coreai-models/\.venv/bin/python|release/llm-benchmark( |$)|coreai-build compile)")
 MAC_HEAVY_PYTHON_RE = re.compile(
     r"^[^ ]*[Pp]ython[0-9.]*( [^ ]+)* (-m coreai\.llm\.export|[^ ]*export_simple_template\.py|"
-    r"[^ ]*scratchpad/export_[A-Za-z0-9_]*\.py|-m executorch\.extension\.llm\.export|"
+    r"[^ ]*scratchpad/export_[A-Za-z0-9_]*\.py|[^ ]*scripts/(convert|verify_lock)\.py|-m executorch\.extension\.llm\.export|"
     r"[^ ]*export_gemma4\.py|[^ ]*scripts/executorch/(export_|run_gemma4_export))")
 
 
@@ -707,6 +707,49 @@ def hold_release(h):
     log(f"hold released: {path}" if rc == 0 else f"WARN hold release failed: {out.strip()}")
 
 
+def quiet_lock_take(dev, label):
+    """The Mac measurement window for a sitting: flock the lock file schedule.json names in
+    "quiet_lock" (the machine's ~/code/coreai/_GPU_LOCK: every other lane's heavy job waits on it
+    through quiet_wait.py and the guard hook) and write the `timing` label the others read. None
+    when the device names no lock. A lock another process holds = Busy (the job's busy retry).
+    2026-10-19 12:39: an export from another lane ran on top of a Mac sitting because the sitting
+    held no lock; the runner's name-based guard only refuses to start."""
+    path = expand(dev.get("quiet_lock"))
+    if not path:
+        return None
+    fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o644)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        try:
+            holder = open(path, encoding="utf-8", errors="replace").read().strip()[:160]
+        except OSError:
+            holder = "?"
+        os.close(fd)
+        raise Busy(f"the Mac measurement window is held by another lane: {holder or path}")
+    line = f"dashboard-job {label} timing pid {os.getpid()} since {time.strftime('%Y-%m-%dT%H:%M:%S%z')}"
+    os.ftruncate(fd, 0)
+    os.lseek(fd, 0, 0)
+    os.write(fd, line.encode())
+    os.fsync(fd)
+    log(f"quiet window taken: {path} ({line})")
+    return (fd, path)
+
+
+def quiet_lock_release(q):
+    if not q:
+        return
+    fd, path = q
+    try:
+        os.ftruncate(fd, 0)
+        os.fsync(fd)
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+        log(f"quiet window released: {path}")
+    except OSError as e:
+        log(f"WARN quiet window release failed: {e}")
+
+
 # ---------------------------------------------------------------- capture
 
 def run_matrix(cells, platform, campaign, env, timeout_s, dry, ddp=None):
@@ -1096,7 +1139,10 @@ def attempt(schedule, key, dev, attempt_no, args):
     def sitting_dirs():
         return (list(planned) if dry else
                 [d for d in created if os.path.exists(os.path.join(ROOT, d, "SESSION.json"))])
+    qlock = None
     try:
+        # the Mac measurement window for the whole sitting (schedule "quiet_lock"; Busy when held)
+        qlock = None if dry else quiet_lock_take(dev, f"{key} {base}")
         # a phone past its uptime limit is rebooted here, under the hold
         # (reboot_before, opt-in per device; §3) — then the state a reboot
         # changes is read again
@@ -1259,6 +1305,7 @@ def attempt(schedule, key, dev, attempt_no, args):
             reason += "; skipped, side build not on the phone: " + ", ".join(no_build)
         return worst, reason, last_rel, sitting_dirs()
     finally:
+        quiet_lock_release(qlock)
         if HOLD_KEEPER is not None:
             log(f"hold kept by keeper pid {HOLD_KEEPER} (not acquired / not released by the job)")
         hold_release(hold)

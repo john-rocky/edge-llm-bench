@@ -269,7 +269,7 @@ guard(){
   # argv (their prompt text) named coreai-models/.venv/bin/python.
   local py='^[^ ]*[Pp]ython[0-9.]*( [^ ]+)* '
   if running '^[^ ]*coreai-models/\.venv/bin/python|^[^ ]*release/llm-benchmark( |$)|^[^ ]*coreai-build compile' \
-     || running "$py"'(-m coreai\.llm\.export|[^ ]*export_simple_template\.py|[^ ]*scratchpad/export_[A-Za-z0-9_]*\.py)'; then
+     || running "$py"'(-m coreai\.llm\.export|[^ ]*export_simple_template\.py|[^ ]*scratchpad/export_[A-Za-z0-9_]*\.py|[^ ]*scripts/(convert|verify_lock)\.py)'; then
     echo "refusing to start: heavy pipeline running (unified-memory contention)" >&2; exit 1
   fi
   # ExecuTorch exports (export_llm, export_gemma4.py; scripts/executorch/) load the same

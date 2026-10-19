@@ -271,6 +271,12 @@ bench host's):
 | iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | the 05:30 firing only (`auto_window` 05:00–08:00), after ≥4 h without a record; unlocked (Auto-Lock Never) | no sitting yet | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
 | Galaxy S26 lab unit on the Developer Device Platform (`s26-ddp`, pool m1q-36 of SM-S942U1, since 2026-10-18) | never the firing's device: after its attached sitting (or a firing with none), while `ddp_weekly` is true in `ops/autopilot/switch.json`, at most once in `interval_days` (6) | 2026-10-16 by hand: 12 of its 16 jobs in 151 device-min, 92 min wall in three streams; first job sitting 2026-10-18: 42.9 min, 2 sessions (15.3 + 25.2 min), 193.0 device-min (ROUND5) | doctor.py `check_ddp` (gcloud signed in, huggingface_hub, the pinned engine files); the plan's Device Run sessions within `ddp_max_sessions`; no phone of this host listed or touched | none on the host; billed per device minute (about 200 a week) |
 
+The Mac sitting holds the machine's measurement window for its whole length (2026-10-19): it flocks the lock
+`schedule.json` names in `quiet_lock` (`~/code/coreai/_GPU_LOCK`) and writes the `timing` label every other lane's
+heavy job waits on (`quiet_wait.py`, the guard hook); a lock another lane holds is busy (exit 3, the auto firing polls).
+Before that the runner's name-based guard only refused to start, and an export from another lane ran on top of a
+sitting on 2026-10-19 12:39.
+
 On the Galaxy S26 and the Pixel 8a the job installs nothing on the phone: the flat engine build in
 `/data/local/tmp/llmbench` is replaced by hand with `android/scripts/deploy_litert_lm_android.sh`,
 which also resets the engine caches and markers.

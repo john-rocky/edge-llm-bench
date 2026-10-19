@@ -160,6 +160,39 @@ def main():
        "mac guard: an ExecuTorch export is heavy")
     ok(heavy("/opt/x/release/llm-benchmark --model a.aimodel"), "mac guard: llm-benchmark is heavy")
     ok(not heavy("python3 scripts/build_summary.py"), "mac guard: a summary build is not heavy")
+    ok(heavy("/Users/u/code/hf-to-litertlm/.venv/bin/python scripts/convert.py Qwen/Qwen3-1.7B --out x"),
+       "mac guard: the hf-to-litertlm one-command export (scripts/convert.py) is heavy")
+    ok(not heavy("/Users/u/.local/bin/claude --model m 'read scripts/convert.py first'"),
+       "mac guard: an agent CLI whose prompt names convert.py is not heavy")
+    # the Mac measurement window: the sitting flocks the lock schedule.json names and writes the
+    # timing label; a lock another process holds is Busy; the release empties it
+    import fcntl as _fcntl
+    qpath = os.path.join(tmp, "_GPU_LOCK")
+    ql = dj.quiet_lock_take({"quiet_lock": qpath}, "m4max 2099-01-01-dashboard-v1-m4max")
+    line = open(qpath).read()
+    fd2 = os.open(qpath, os.O_RDWR)
+    try:
+        _fcntl.flock(fd2, _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+        held = False
+    except OSError:
+        held = True
+    dj.quiet_lock_release(ql)
+    try:
+        _fcntl.flock(fd2, _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+        free_after = True
+    except OSError:
+        free_after = False
+    try:
+        dj.quiet_lock_take({"quiet_lock": qpath}, "m4max again")
+        busy = False
+    except dj.Busy:
+        busy = True
+    _fcntl.flock(fd2, _fcntl.LOCK_UN)
+    os.close(fd2)
+    ok(line.startswith("dashboard-job m4max 2099-01-01-dashboard-v1-m4max timing pid ") and held and free_after
+       and open(qpath).read() == "" and busy and dj.quiet_lock_take({}, "x") is None,
+       f"quiet lock: label written and flock held during the sitting, empty and free after, Busy while another "
+       f"process holds it, none without schedule quiet_lock ({held}, {free_after}, {busy})")
     ok(not heavy("node /x/claude --prompt 'release/llm-benchmark --model'"), "mac guard: llm-benchmark named inside another argv is not heavy")
 
     def attached(*serials):
