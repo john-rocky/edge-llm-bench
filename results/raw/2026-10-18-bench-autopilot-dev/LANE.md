@@ -540,3 +540,14 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   android-llama-thinking, tab workspace:384): Gemma 4 thinking off on the Android llama.cpp arm via --chat-template-kwargs (the phones'
   llama-cli builds have no --reasoning-budget), disclosed in conditions, then the Gemma 4 llama.cpp cells re-measured on the S26 and
   the Pixel 8a through the job route after my merge and go.
+- 11:5x–12:1x after the push: code-2d told the stage-1 result; the standup state line and the letter carry it; the hazard row
+  ios-metal-dynamic-int4-engine-fails and the EN / JA issue draft (standup drafts/2026-10-19-litertlm-ios-metal-dynamic-int4-issue.md,
+  posting = GO) committed in standup (96ed79dc). The checker now screens a hand run's Mac / iPhone text cells too (0e56f5ba: the
+  not-job HOLD unchanged, text_screen.json written; selftest case), and r14's file comparison went in as a stored report with its
+  sidecar (80a36462: E4B OptiQ 4 of 4 text-fail, the other cells PASS; summary from the index, which also reset the working tree's
+  summary). Rounds launched: r16 (worktree wt-autopilot-q06, branch mlx-ptq-rows, tab workspace:385): the PTQ 4bit MLX Gemma 4 rows
+  beside the OptiQ rows, named by class in LOGICAL_MODELS, docs, and the 18 Pro's sitting after the 0.6B work; r17 (worktree
+  wt-autopilot-tmpl, branch task1k-noref-tail, tab workspace:386 if cmux numbered it so): the 1K task's tail becomes the 2K ladder's
+  noref sentence on every arm, conditions.promptVersion / summary prompt_version / checker history key / watch and P marking the break
+  like engine_changed, Mac yardstick and iPhone app built from SIDE, a Mac smoke of four arms; the flip (merge, dd-mac switch,
+  install) is mine and happens tonight only if everything is green by 21:00, else after this week's sittings.
