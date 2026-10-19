@@ -10,6 +10,7 @@ Supervisor: edge-llm-bench-55 [4f120b] (K/LANE.md first line). Branch `mlx-ptq-r
 - 12:05–12:09 render_dashboard(--check と 3 file の render)、test_render_rules、leaderboard の generate、selftest 5 本、Android selftest 3 本、py_compile。`android/bench/test_longctx1024.py` だけ FAIL(1K の対の数 64 を書き込んだ assert、今は 68)= launch の書く範囲の外 → patch を K/tools に用意(下の「CI の下稽古」)。P を私の branch に向けて scratchpad に build、P の check PASS。
 - 12:09–12:14 docs の節、転送 script と dry run(PASS)。
 - 12:14 18 Pro の llama.cpp retake が終わった(ledger 12:14:22 OK)。hold は空(holder none、queue 空)。転送も計測も監督の go の後(launch 手順 8)= まだ端末に触れていない。次 = commit、監督へ「Mac 側 PASS、端末待ち」。
+- 12:18 commit a71f1b5a。次 = hash の追記の commit、監督へ「Mac 側 PASS、端末待ち」、go を待つ。
 
 ## 下見(11:53–12:00)
 
@@ -119,7 +120,7 @@ dry run: no device call made
 
 ## commit
 
-(この下に hash)
+- a71f1b5a(branch `mlx-ptq-rows`、push / merge なし、帰属行なし): cells 3 本、bench_common.py、docs、ROUND16、K/tools の転送 script と test の patch。明示 path で stage、`git diff --cached --name-only` は 8 file だけ。この hash の追記は次の 1 commit(ROUND16 だけ)。
 
 ## 提案
 
