@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "3de631c5-7c49-4c1e-a104-a93f0dfeadc3",
+  "runtime": "llama.cpp-npu",
+  "engineVersion": "b11469-snapdragon",
+  "engineArtifact": "2dc86fc0cb486ce4eb0e0b082f28f5c420d23badc8cae447e96db33fb8f6742d",
+  "model": {
+    "id": "unsloth/gemma-4-E4B-it-GGUF",
+    "quantization": "Q4_K_M",
+    "file": "unsloth_gemma-4-E4B-it-GGUF_gemma-4-E4B-it-Q4_K_M.gguf",
+    "sha256": "85a896a047553e842f25297ee5b031d64ff30147d9c4af17b1e4b394cd1fab87"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-10-11T02:06:41Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.8,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3187.2,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 3129.6,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 4096,
+    "chatMode": "single-turn template default (-st)",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "off-usb (mWakefulness=Dozing)",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "0",
+    "elapsedSeconds": 18.0,
+    "exitCode": 0,
+    "engineBuild": "b11469-snapdragon",
+    "ggmlDevice": "HTP0",
+    "nGpuLayers": 99,
+    "threads": 6,
+    "flashAttn": "on",
+    "ubatch": 1024,
+    "hexagonOpPoll": 1,
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/b11469-snapdragon/lib ADSP_LIBRARY_PATH=/data/local/tmp/llmbench/engines/b11469-snapdragon/lib GGML_HEXAGON_DEVICES=HTP0 GGML_HEXAGON_OPPOLL=1 GGML_OPENCL_KERNEL_CACHE_DIR=/data/local/tmp/llmbench/engines/b11469-snapdragon/clcache /data/local/tmp/llmbench/engines/b11469-snapdragon/bin/llama-cli -lv 4 -m /data/local/tmp/llmbench/models/unsloth_gemma-4-E4B-it-GGUF_gemma-4-E4B-it-Q4_K_M.gguf -t 6 -c 4096 -f /data/local/tmp/llmbench/prompts/short-chat.txt -n 128 --temp 0 --top-p 1 -st -ngl 99 -fa on -ub 1024 --device HTP0",
+    "backendRegistered": [
+      "ggml_opencl: device: 'QUALCOMM Adreno(TM) 840 (OpenCL 3.0 Adreno(TM) 840)'",
+      "ggml-hex: Hexagon Arch version v81, DMA64 enabled",
+      "llama_prepare_model_devices: using device HTP0 (Hexagon) (unknown id) - 0 MiB free",
+      "load_tensors: offloaded 43/43 layers to GPU",
+      "load_tensors: CPU model buffer size = 2260.50 MiB",
+      "load_tensors: HTP0 model buffer size = 3101.85 MiB"
+    ],
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 420,
+      "distinctWords": 63,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "c678f5b2830ab15d105026167ad46c28909e09816a680f12b3ef187a0ac735d1"
+  },
+  "metrics": {
+    "promptTokensPerSecond": 84.0,
+    "decodeTokensPerSecond": 15.7,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 2347.94140625,
+    "memoryPeakResidentMB": 2370.1328125
+  },
+  "provenance": {
+    "rawLog": "llama.cpp-npu_unsloth_gemma-4-E4B-it-GGUF_short-chat_2026-10-11T02-06-41.442604_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024; the host process only: the device's buffers (HTP0 / OpenCL: weights, KV cache, compute) are not in VmRSS / VmHWM",
+    "decodedText": "llama.cpp-npu_unsloth_gemma-4-E4B-it-GGUF_short-chat_2026-10-11T02-06-41.442604_run1_iter1.decoded.txt"
+  }
+}
