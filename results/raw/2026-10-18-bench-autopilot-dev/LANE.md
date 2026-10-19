@@ -510,3 +510,19 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   1K page cells will likely turn text-fail after the retakes — the honest outcome under the agreed protocol; the lorem-padding /
   -noref protocol question stays the team's decision (letter). FAILURES.txt of the probe = the known Metal teardown abort after the
   record (crash reports, ggml_abort in ggml_metal_rsets), not a failed run.
+- 11:2x–11:35 r13 and r14 closed (both lints PASS; r14's warm medians recomputed from the records: E2B OptiQ 151.02, E2B 4bit 178.68,
+  E4B 4bit 111.97, E4B OptiQ 91.96 text-fail). Merged into main (llama-chat-template, then mlx-gemma4-file; conflicts in
+  docs/dashboard-cells-v1.md and the lane's SPEED_LADDER.md resolved by keeping both rounds' sections). CI selftests green
+  (autopilot_selftest needs BENCH_ANDROID_BIN_DIR=android/bin; 58 checks). Tabs 379 / 380 closed. The Qwen3 0.6B dynamic_int8
+  catalog entry (ed0ef963) added to main and the side tree, the 18 Pro app rebuilt 11:33 (sha 1fddd7e2…, UUIDs unchanged; install
+  after the llama.cpp iOS sitting; smokes queued: INT8 GPU, INT4 CPU, INT4 GPU again). .build/dd-mac switched to the template-fix
+  build 11:34 (dylib 9526db9e…, llama 843E7D68 verified; the morning build kept as .build/dd-mac-1019-pretmpl), the Mac llama.cpp
+  retake started on the job route (2026-10-19-dashboard-v1-m4max-llama-b11721). Finding (r13's unverified note, verified first-hand):
+  the Android llama.cpp arm runs Gemma 4 with thinking ON — "[Start thinking]" in the run logs of 10-05, 10-11, 10-14 (b8999) and
+  today's b11721 retakes alike (llama-cli's default enable_thinking); LiteRT-LM, MLX and (since r13) the Apple llama.cpp arm run it
+  off, Qwen3 is template-default (on) everywhere. Next round (r15): --reasoning-budget 0 for the Gemma 4 rows on Android, disclosed
+  in conditions, the Gemma 4 llama.cpp cells re-measured on the S26 and the Pixel 8a. code-2d told the results (MLX decision, the
+  template fix, the Android thinking finding, the iPhone 0.6B situation). Open for the letter: the weekly's iOS 0.6B LiteRT-LM file
+  (INT8 vs INT4-on-CPU vs a hole), the lorem-refusal screen question (r14 note 2: the screen passes refusals that mention the
+  topic), the hand-run text screen (the checker screens job dirs only; r14's stored report needs the sidecar before it enters the
+  summary — change queued after the Mac retake).
