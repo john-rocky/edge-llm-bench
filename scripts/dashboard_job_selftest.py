@@ -785,6 +785,28 @@ def main():
     if os.path.exists(lock):
         os.remove(lock)
 
+    # check_holds: a sibling hold that names another phone is skipped; the same phone, or no device, is busy
+    hdir = os.path.join(tmp, "holds"); os.makedirs(hdir, exist_ok=True)
+    other = os.path.join(hdir, ".iphone_hold")
+    live = os.getppid()
+    hdev = {"display": "iPhone 18 Pro", "identifier": "iPhone19,2", "hold": os.path.join(hdir, ".device_hold"),
+            "hold_also_check": [other]}
+    dj.register_devices({"devices": {"p18": {"display": "iPhone 18 Pro", "identifier": "iPhone19,2"},
+                                     "p17": {"display": "iPhone 17 Pro", "identifier": "iPhone18,1"}}})
+    verdicts = []
+    for hold in ({"pid": live, "script": "x-17pro", "device": "iPhone 17 Pro", "started": "2026-10-19 12:23:30"},
+                 {"pid": live, "script": "x-18pro", "device": "iPhone 18 Pro", "started": "2026-10-19 12:23:30"},
+                 {"pid": live, "script": "x-nodev", "started": "2026-10-19 12:23:30"}):
+        with open(other, "w") as fh:
+            json.dump(hold, fh)
+        try:
+            dj.check_holds(hdev, True)
+            verdicts.append("free")
+        except dj.Busy:
+            verdicts.append("busy")
+    ok(verdicts == ["free", "busy", "busy"],
+       f"check_holds: another phone's hold is skipped, the same phone's and an unnamed one are busy ({verdicts})")
+
     # cells_with_records: a row exclude-on= names for the device is not expected of it (the runner skips it
     # with a CELL_SKIP line and no record); other devices still expect it (Pixel 8a 2026-10-19: every sitting
     # of a file with 4B-class rows had read as partial)

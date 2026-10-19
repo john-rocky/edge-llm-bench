@@ -268,6 +268,26 @@ def driver_serial(pid):
 
 # ---------------------------------------------------------------- preflight
 
+# every name a hold file may use for a schedule device -> its key (register_devices, from the
+# schedule the run loaded); device_key_of maps a device entry back to its key the same way
+KNOWN_DEVICES = {}
+
+
+def register_devices(schedule):
+    KNOWN_DEVICES.clear()
+    for key, d in (schedule.get("devices") or {}).items():
+        for name in (key, d.get("display"), d.get("identifier"), d.get("serial"), d.get("udid")):
+            if name:
+                KNOWN_DEVICES[str(name).strip().lower()] = key
+
+
+def device_key_of(dev):
+    for name in (dev.get("key"), dev.get("identifier"), dev.get("serial"), dev.get("udid"), dev.get("display")):
+        if name and str(name).strip().lower() in KNOWN_DEVICES:
+            return KNOWN_DEVICES[str(name).strip().lower()]
+    return None
+
+
 def check_holds(dev, dry):
     """A live foreign pid in any of the device's hold files = busy. An
     unowned zero-byte hold cannot be attributed and is treated as busy too
@@ -281,6 +301,15 @@ def check_holds(dev, dry):
             continue
         if not h:
             raise Busy(f"unowned hold present: {path}")
+        other, mine = KNOWN_DEVICES.get(str(h.get("device") or "").strip().lower()), device_key_of(dev)
+        if other is not None and mine is not None and other != mine:
+            # the sibling lanes' .iphone_hold serves two phones and names its phone (memory
+            # device-busy-is-probeable): a hold that names another device of the schedule is not
+            # this sitting's business (2026-10-19 12:3x: the 17 Pro's AA lane held it while the
+            # 18 Pro was free); a device string the schedule does not know stays busy
+            log(f"hold at {path} names another device ({h.get('device')} = {other}, pid {h.get('pid')}, "
+                f"{h.get('script')}): not this phone's")
+            continue
         if HOLD_KEEPER is not None and same_pid(h.get("pid"), HOLD_KEEPER):
             log(f"hold kept by keeper pid {HOLD_KEEPER} at {path} — the sitting's own")
             continue
@@ -1673,6 +1702,7 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     keys already tried this firing to (state, detail). The report has one dict per
     device — key, state (done / by-hand / ddp / candidate / busy / not-ready / waiting),
     detail, last, weekly_done — for the log."""
+    register_devices(schedule)
     devices = schedule.get("devices", {})
     if key != "auto":
         dev = devices.get(key)
@@ -1868,6 +1898,7 @@ def main():
 
     try:
         schedule = json.load(open(args.schedule))
+        register_devices(schedule)
     except (OSError, ValueError) as e:
         print(f"schedule unreadable: {e}", file=sys.stderr)
         return EXIT_CONFIG
