@@ -526,3 +526,17 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   (INT8 vs INT4-on-CPU vs a hole), the lorem-refusal screen question (r14 note 2: the screen passes refusals that mention the
   topic), the hand-run text screen (the checker screens job dirs only; r14's stored report needs the sidecar before it enters the
   summary — change queued after the Mac retake).
+- 11:3x–11:45 owner GO via code-2d ("All go", stage 1 of the letter): the CI rehearsed on a clean export of the index (every data-pipeline
+  step, nice'd, no HF cache; android/bench selftest 101 s; all [0]), the one cross-runtime sentence in this file scrubbed (e7e3f25e),
+  authorship checked (99 commits, author = committer = rockyshikoku@gmail.com, no attribution words), no standings file in the diff;
+  ops/autopilot/switch.json push_bench on (b70e4f6f) and main pushed d9762f2c..b70e4f6f (100 commits; ahead 0, behind 0; GitHub run
+  39191235833 in progress). push_page / publish stay off (stage 2 after a week of the ledger; the Lu / Kimish sentence waits for it).
+  code-2d's three decisions received at 11:4x: (1) the page carries the PTQ 4bit MLX Gemma 4 rows beside the QAT OptiQ rows, named by
+  class (a round after r15: cells, labels, docs; the Mac values exist in r14's sitting, the 18 Pro's sitting today); (2) the 1K
+  cross-arm task's lorem padding becomes an explicit padding tail (the 2K ladder's -noref form) on every arm from the next weekly,
+  prompt 1024 / decode 256 / ctx 2048 unchanged, protocol cells unchanged, the series break marked (design: a prompt version in the
+  records and the summary, treated like engine_changed by the watch and the page); (3) a hazard row for the dynamic INT4 bundle failing
+  on the iPhone's Metal GPU plus an EN / JA issue draft (posting = GO). Round r15 launched 11:44 (worktree wt-llama, branch
+  android-llama-thinking, tab workspace:384): Gemma 4 thinking off on the Android llama.cpp arm via --chat-template-kwargs (the phones'
+  llama-cli builds have no --reasoning-budget), disclosed in conditions, then the Gemma 4 llama.cpp cells re-measured on the S26 and
+  the Pixel 8a through the job route after my merge and go.
