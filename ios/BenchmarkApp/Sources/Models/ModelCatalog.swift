@@ -607,6 +607,27 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3-0.6B.litertlm"],
             primaryFile: "Qwen3-0.6B.litertlm"
         ),
+        // Qwen3-0.6B, a LOCAL candidate (not on the Hub) for the iPhone Metal failure of the dynamic INT4 file above
+        // (2026-10-19): that file's 2026-08-05 revision (Hub 8414150f, sha256 e3e29010...) with the LlmMetadata
+        // section of the current file (Hub a3c5d805: LiteRT-LM's content-parts Qwen3 template) put in by a
+        // metadata-only re-pack with litert-lm-builder 0.18.0; graph, weights, tokenizer and executor metadata are
+        // byte-identical to the 2026-08-05 file (no odml.swiglu composite, no logits output on the prefill
+        // signatures). Bundle sha256 e6bf25c0cf7e1a09d19fc6ad716072bb5b8ac96a0eca75075a69f7ce8c1a8f91, 344,437,808 B.
+        // Side-loaded: Documents/models/litert-lm/litert-local__Qwen3-0.6B-r0805meta018/<primaryFile>. The hfRepoId is a
+        // litert-local one on purpose: HFDownloader.snapshot returns Documents/models/litert-lm/litert-community__Qwen3-0.6B/
+        // for every entry of that repo once it holds a file, and locateModelFile falls back to another .litertlm when an
+        // entry's primaryFile is missing there, so a copy in that directory would move the entries above (on the Mac they
+        // read the hub cache) onto whatever file it holds.
+        ModelInfo(
+            id: "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018",
+            displayName: "Qwen3 0.6B (.litertlm, dynamic wi4b32, 2026-08-05 graph + 0.18.0 metadata, local candidate)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; 2026-08-05 graph, 0.18.0 metadata, local candidate)",
+            parameterCountB: 0.6,
+            onDiskSizeMB: 344,
+            hfRepoId: "litert-local/Qwen3-0.6B-r0805meta018",
+            hfFilePatterns: ["Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm"],
+            primaryFile: "Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm"
+        ),
         // Qwen3 0.6B / 4B — OUR exports from litert-torch main (6d4c622, 2026-09-08; needs
         // litert-lm-builder 0.17.0) with the flag set the LiteRT team asked us to benchmark on
         // 2026-09-10: quantization_recipe=dynamic_wi4b32_afp32, enable_gpu_dynamic_prefill

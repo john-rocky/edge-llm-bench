@@ -1190,6 +1190,52 @@ First values: `matrices/dashboard-q06-int8-ios.cells`, one sitting on 2026-10-19
 `dynamic_wi4b32_afp32`, the cpu pair out. Owner's items: whether the iPhone page should carry the INT8 row at all while
 the other arms are 4-bit, and the issue to the LiteRT-LM team.
 
+## Qwen3 0.6B candidate (2026-10-19)
+
+A local candidate for the iPhone Metal failure above, measured beside the current file in one sitting per device (owner
+decision 2026-10-19 via code-2d). Nothing is uploaded and no page row moves: the candidate's rows live in their own cells
+files, under their own model id.
+
+- The candidate = the dynamic INT4 file's 2026-08-05 revision (litert-community/Qwen3-0.6B at 8414150f, hvt4's export,
+  sha256 `e3e29010…76cf`, 344,437,808 B; the bundle's creation timestamp is 2026-08-04T21:11Z) with the current file's
+  LlmMetadata (Hub a3c5d805: the same fields but for `jinja_prompt_template`, which is LiteRT-LM's content-parts Qwen3
+  template), put in by a metadata-only re-pack with litert-lm-builder 0.18.0
+  (`~/code/litertlm-convert/team_repack_20261012/tools/repack_metadata.py`, PASS): ExecutorMetadata, the HF tokenizer and
+  the TFLite graph are byte-identical to the 2026-08-05 file, the LlmMetadata section is byte-identical to the current
+  file's, the header's format version is the 0.18.0 builder's 1.7.0 (both Hub files carry 1.6.0). File
+  `Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm`, sha256 `e6bf25c0cf7e1a09d19fc6ad716072bb5b8ac96a0eca75075a69f7ce8c1a8f91`,
+  344,437,808 B, kept outside every repo in `~/.cache/edge-llm-bench/litert-candidates/out/`.
+- The graphs: both have the signatures prefill_128 / prefill_1024 / decode, a 32,771-entry KV cache in 28 layers, a bool
+  mask and INT4 block-32 FC weights, so the current LlmMetadata (max_num_tokens 4096) fits the old graph unchanged. The
+  2026-08-05 graph has no `odml.swiglu` composite (the current one has 28 per signature) and its prefill signatures output
+  no logits; both carry `odml.rope`, `odml.rms_norm`, `odml.runtime_bmm` and `odml.cache_update`.
+- Apple: catalog id `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018` (label "INT4 (dynamic, block-32
+  weights, FP32 act; 2026-08-05 graph, 0.18.0 metadata, local candidate)"), side-loaded into
+  `Documents/models/litert-lm/litert-local__Qwen3-0.6B-r0805meta018/`. Its hfRepoId is a litert-local one, not the Hub
+  repo: `HFDownloader.snapshot` returns `Documents/models/litert-lm/litert-community__Qwen3-0.6B/` for every entry of the
+  repo as soon as that directory holds a file, and `MediaPipeRuntime.locateModelFile` falls back to another `.litertlm`
+  there when an entry's primaryFile is missing. On the Mac that directory is empty and the repo's entries read the hub
+  cache (their records' `modelRevision`), so a candidate copied into it would move the Mac's 0.6B rows, the anchor
+  included, onto the candidate, and the candidate's records would carry the hub cache's revision. Records of a
+  side-loaded bundle carry no revision; the catalog comment and this section hold its sha256.
+- Android: the candidate's rows name the Apple catalog's id as their model id and give `file=` as the host path (`local=1`);
+  `android/bench/run_cell.py` pushes a host path as it is (sha256-verified, the record's `model.sha256`) and
+  `ANDROID_QUANT_LABELS` holds the label above for the file's name. Its own model id keeps the candidate apart from the
+  current file (`litert-community/Qwen3-0.6B` + `file=`): the leaderboard groups by runtime and model id, and the job's
+  `cells_with_records` by arm, model id and task.
+- Cells: `matrices/q06-candidate-ios.cells`, `matrices/q06-candidate-mac.cells`, `matrices/q06-candidate-android-gpu.cells`
+  and `matrices/q06-candidate-android-cpu.cells`: each the platform's session anchor row of `dashboard-text-v1.cells`,
+  then the current file and the candidate in pairs with the same options (GPU short-chat, 1K, native 1024x256; CPU
+  short-chat, 1K), the current file's rows byte-identical to their page source. Android is split by backend so each
+  sitting stays within an hour (the morning's six-row file of the same model took 57 min on the S26 and 63 min on the
+  Pixel 8a); each pair sits in one sitting. The Mac sitting runs the yardstick built with the entry
+  (`DD_MAC=.build/dd-mac-q06cand`).
+- Reading (owner's rule): the candidate replaces the Hub file only if it is not slower anywhere (same-sitting warm decode
+  and prefill within −3 % of the current file on every device and backend) and both pass the text check; then a Hub PR
+  goes to a GO request. If it is slower somewhere it does not replace the file: an iOS-only file or a card note instead.
+  On the iPhone GPU the first question is whether the engine builds at all. Results: the lane's round record
+  (`results/raw/2026-10-18-bench-autopilot-dev/ROUND18.md`).
+
 ## llama.cpp Gemma 4 rows before 2026-10-19 ran without the chat template (Mac and iPhone)
 
 Every llama.cpp Gemma 4 row the Mac and the iPhones measured before 2026-10-19 (E2B and E4B; short-chat,
