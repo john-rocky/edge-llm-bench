@@ -1416,6 +1416,22 @@ cache first, so no cell downloaded over Wi-Fi: the app's MLX loader (swift-huggi
 `devicectl device copy to` sends a snapshot directory's symlinks as links and refuses their `../../blobs/` targets
 ("File paths cannot contain '..'"), so each file goes in its own copy, the blob under the file's name.
 
+## iPhone 17 Pro, Artificial Analysis slots: two models that do not run as chat (2026-10-19)
+
+Slots `matrices/dashboard-aa-v1-ios-i*.cells`, LiteRT-LM v0.18.0 on the Metal GPU of the iPhone 17 Pro
+(A19 Pro), bench app built from this repo at 93961ee6:
+
+- `litert-community/gemma-3-270m-it` (`gemma3-270m-it-q8.litertlm`): the short-chat reply is empty. Each run
+  decodes to the context limit (652 tokens after a 20-token prompt, `ctx=672`) and no visible text reaches the
+  stream (time to first visible token 0, wall rate 0), 2 of 2 runs in both 2026-10-19 sittings of slot i5. The
+  row's short-chat rate is therefore no chat rate (session checker `gen-budget`, text screen `reply-empty`);
+  its native 1024/256 cell is a forced-length decode and reads no text.
+- `litert-community/LFM2.5-1.2B-Instruct` (`LFM2.5-1.2B-Instruct_int4_gpu.litertlm`): the engine is not
+  created, 2 of 2 launches: the Metal delegate's generated shader does not compile ("implicit conversions
+  between vector types ('half4' ... and 'float4' ...) are not permitted"), DYNAMIC_UPDATE_SLICE then fails
+  to prepare on the CPU, and the engine reports "Failed to modify graph with delegate". Its cells record the
+  failure.
+
 ## Open questions for the LiteRT team
 
 1. Qwen3 LiteRT artifacts per backend. 0.6B rows used `qwen3_0_6b_mixed_int4`

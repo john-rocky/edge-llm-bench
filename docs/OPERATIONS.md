@@ -500,6 +500,13 @@ outputs under `automation/sessions/`).
   default `BENCH_COREAI_MODELS_DIR` is `~/.cache/edge-llm-bench/CoreAIModels`
   (a full local copy, no symlinks); a disk cleanup must leave that folder
   alone — the weekly job reads it.
+- **A stopped sitting's dirs leave `results/raw/`.** `build_summary.py` reads every record under
+  `results/raw/`, whatever the dir is called, and the admission counts a campaign with no
+  `SESSION.json` as admitted: on 2026-10-19 the iPhone 17 Pro sitting of 14:19, stopped at 14:46
+  and renamed to a `-stopped-` dir under `results/raw/`, became the admission reference of the
+  next sitting of the same slot (15:18), which the session checker then held as
+  `reference-uncommitted`. Move a stopped or refused sitting to a quarantine dir outside
+  `results/raw/` (it stays on disk as audit trail), then start the next sitting.
 - **A phone is shared with other lanes.** Before any Android capture, check
   the campaign flock, the conversion lane's hold file
   (`~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.<device>`),
