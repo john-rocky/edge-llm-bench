@@ -680,3 +680,17 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   Qwen3 0.6B GPU anchor decode, −11 %, queued as a retake). The S26 side-build E2B thinking-off sitting committed (c9fa1590).
   Rehearsal 11 failed once on autopilot_selftest and did not reproduce in a clean export with an empty HF cache nor in rehearsal 12
   (flake, noted). main pushed to c9fa1590. Running: r18's iPhone job (14:59) and Pixel GPU sitting (15:00); r15's S26 queue.
+- 15:18–16:4x r18's S26 GPU job exited 3 at 15:18:23 (CPU capped, 2668 / 4742 MHz, right after r15's side E2B sitting) and its
+  keeper left the queue; r18 re-enqueues both S26 legs at the queue's end with a cool check in the hold (asr lane ×3 and the RN lane
+  ahead). r18's 18 Pro sitting (14:59–15:54, exit 0): the candidate file (the 2026-08-05 graph with the 0.18.0 metadata) loads and
+  answers on the iPhone Metal GPU; the current file's three GPU cells have no records, the stored Metal failure. Its post held as
+  `partial` "4 of 7", the job's count before arm_of learned the iOS CPU arm (8 of 11 by the current rule): allow-list 9f7676af,
+  re-post PASS, bench commit 2e0ebb0c. r18's Pixel 8a GPU sitting committed (ac7cc70f); its CPU sitting runs since 16:10.
+  The RN lane, installing its own apps under the bench bundle id, asked which build to put back: the docs' 2026-10-09 pin path was
+  gone. The pin is now kept at `.build/dd-ios-pin/` with PIN.txt (main binary b714ce21…, installed by r18 at 14:58:09) and the docs
+  paragraph rewritten (3eda3578). r15 closed (lint PASS; its S26 NPU 29.9 and GPU 26.65 read back from the page): a92f4fa2 merged
+  (6fa2577e, the ladder file keeps r16's and r15's sections), tab closed; its nohup chain (pid 42283) runs the S26 side E4B (queue
+  head) and then the flat E4B with its own cool check. The r17 flip moves off tonight: the pending retakes include the S26 Qwen3 0.6B
+  GPU 1K cell (peak memory −12.1 % in the q06-dynamic sitting), and a retake after the flip would read the new tail against the old
+  series. The flip waits for the S26's retake sitting on the old task (the job takes the Mac first at 02:00, by the oldest admitted
+  session) and lands before the next weekly (2026-10-26 02:00).
