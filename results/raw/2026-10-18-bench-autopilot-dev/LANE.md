@@ -607,3 +607,15 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   the 2K-ladder table pooling two sittings (page n=8 vs bench n=3) — r16 prepares a P patch v3 (newest session only). CI: every
   push today success (b70e4f6f … 024141d1). code-2d: the user switches this tab to Opus 5.5 effort max when idle ("opus 監督 opus
   実行、外部に出す前だけ fable 監査"); outward text (the issue draft) gets a Fable read before any GO request.
+- 12:5x–13:0x the tab switched to Opus 5.5 / effort max (the owner's setup via code-2d: Opus supervises and executes, Fable reads
+  outward text before a GO request). The hold check was corrected (3afe9e1d: the device-name skip applies to sibling files only —
+  hold_cli.py labels every hold "S26", the 18 Pro's own too, so 1940f4a8 would have read the 18 Pro's own hold as another device's;
+  the runner inference now counts unnamed runners against other phones' live sibling holds) and the record-name fix committed
+  (470caa06); main pushed to 470caa06 after rehearsal 5. My 0.6B INT8 / CPU chain fired on r16's aborted ledger row (my wait
+  condition matched an aborted attempt) and that sitting runs since 12:50 on the old app; the record-name app waits for its end,
+  then r16's attempt 3 (mlx-ptq-r3). r15: the 1.0 tok/s E2B run was a mid-run cap to 2227 MHz (thermal light); round 2 decoded 29.1
+  tok/s with the kwargs = the thinking-off path is not slow; the A/B withdrawn; the round extended to 17:00 (S26 shared with the
+  asr lane's queue). The AA lane (edge-llm-bench-06) asked whether P main can be published with the 17 Pro window; answered: hold
+  (the Gemma 4 1K llama.cpp / MLX PTQ cells are refusal replies until tonight's flip; the iPhone 0.6B INT8 row is an owner item;
+  the dist is at bench e2824932) — it holds the publish to tomorrow morning after the 02:00 post-flip post. The issue draft is with
+  a Fable reader (fact / cold-read tables) before any GO request.
