@@ -381,28 +381,30 @@ to unlock it for the next 05:30 firing or run it by hand.
 
 The iPhone 18 Pro's app is a pin. The job installs nothing: a sitting measures whatever
 build of `com.example.CoreMLLLMChat` is on the phone, and every record stamps that build's
-engines (`engineVersion`). Since 2026-10-09 the pinned build is a Release build of bench
-`50ab482` (the iOS sources as of `c05d183`), main binary sha256
-`042df03a447cde76dab7d7f8bc6bf218536a3ce15af57e9235772ecac8f4f1a7`, signed as the builds
-before it (the team profile of `com.example.CoreMLLLMChat`, with the increased-memory-limit
-and extended-virtual-addressing entitlements). Its `Vendored/`: LiteRT-LM v0.16.0 (a copy of
-the main checkout's `Vendored/LiteRT-LM.v0160`, the maxNumTokens patch applied; that
-checkout's own `Vendored/LiteRT-LM` is v0.18.0 now, and a build from it would change the
-phone's LiteRT-LM arm), `coreai-models` → apple/coreai-models `bd3c539` (1.0.0-10-gbd3c539, the
-stock arm's pin), llama.cpp b8999, cactus 1ace6d78, and the ONNX Runtime GenAI release
-XCFramework 0.17.0 (zip sha256 699697a1…). Its Swift packages resolve to the versions of the
-build it replaced (`-onlyUsePackageVersionsFromResolvedFile`: mlx-swift-lm 60bd0d78…,
-swift-transformers 1.3.3, swift-jinja 2.4.2, swift-huggingface 0.9.0). Against that build
-(main binary 6564d5b7…, core-ai 1.0.0-4-gd30b086) the engine pins differ only in core-ai and
-the added onnxruntime-genai, and the embedded LiteRT-LM, llama.cpp and cactus frameworks are
-byte-identical once unsigned. The .app is kept on the bench host at
-`~/code/edge-llm-bench-wt-ort-r7/.build/dd-ios-pin-2026-10-09/BenchmarkApp.app`: a lane that
-installs its own build on the phone puts this one back afterwards. Its check on the phone
-(`results/raw/2026-10-09-iphone18pro-pin-check-ios`, NOTES.md): the two session anchors
-within 1 % of the 2026-10-08 anchors, and one ONNX Runtime GenAI launch; the Core AI stock
+engines (`engineVersion`). The pin is kept on the bench host in the main checkout at
+`.build/dd-ios-pin/BenchmarkApp.app`, next to `PIN.txt`: the main binary's sha256 on its first
+line, then where the build came from and when it went onto the phone. The bench lane replaces
+both whenever it installs a new build. The pin of 2026-10-19 is a Release build from the side
+tree `.build/dd-ios-0180-18pro/src` with LiteRT-LM v0.18.0 and llama.cpp b11721, signed with the
+team profile of `com.example.CoreMLLLMChat` and its increased-memory-limit and
+extended-virtual-addressing entitlements. A lane that installs its
+own app under this bundle id shares the bench's data container (`Documents/`: models, results,
+side-loaded files; `Library/Caches/`: the Hub cache, ONNX Runtime GenAI's cache; `tmp/`:
+LiteRT-LM's cache). Such a lane takes
+the iPhone hold through the queue, removes only the files it added, and puts the pin back
+without uninstalling (an uninstall deletes the container's models). It checks the main binary
+against `PIN.txt` before the install, and makes one throwaway launch after it: the first launch
+after an install is killed by the scene-create watchdog.
+
+From 2026-10-09 the pin was a Release build of bench `50ab482` (main binary sha256
+`042df03a…`) with LiteRT-LM v0.16.0, llama.cpp b8999 and the ONNX Runtime GenAI 0.17.0
+XCFramework. Its check on the phone
+(`results/raw/2026-10-09-iphone18pro-pin-check-ios`, NOTES.md) found the two session anchors
+within 1 % of the 2026-10-08 anchors, and one ONNX Runtime GenAI launch. The Core AI stock
 bundles on the phone (Gemma 4 E2B, E4B) loaded neither with it nor with the build the Core AI
 arm had measured them with: the app's specialization cache pointed at compiled Neural Engine
 programs the phone no longer had (`No model at modelFilePath … existsInCache=0` in the device log).
+The phone's first LiteRT-LM v0.18.0 records are from 2026-10-17.
 
 What the job does about the two devices it cannot manage: the iPhone 15 is
 never a bench device (no schedule entry, no way to select it); the Galaxy S26
