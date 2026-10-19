@@ -1,0 +1,24 @@
+# Pixel 8a: the llama.cpp Gemma 4 text cells re-measured with thinking off (budget-mode-rule, 2026-10-19), one job-route
+# sitting of about 60 min (the job's anchor phase, then this file: the anchor row and three rounds of the E2B rows).
+# The fix: android/bench/run_cell.py hands a Gemma 4 GGUF row's chat template enable_thinking = false
+# (llama-cli ... -st --chat-template-kwargs '{"enable_thinking":false}'), as the other arms run Gemma 4; until then
+# llama-cli's default thinking was on, and every Android Gemma 4 reply since 2026-10-05 opened with "[Start thinking]"
+# (b8999, b11721; docs/dashboard-cells-v1.md "Android llama.cpp Gemma 4 thinking (2026-10-19)"). Qwen3 rows are unchanged.
+# The first row is the Android session anchor, byte-identical to matrices/dashboard-llama-b11721-android.cells line 20
+# (llama.cpp Qwen3 0.6B short-chat, thinking the template's default: unchanged by the fix). Then the four Gemma 4 rows,
+# each byte-identical to its source line: matrices/dashboard-text-v1-android-a.cells lines 28, 31 (E2B);
+# matrices/dashboard-text-v1-android-b2.cells lines 16, 19 (E4B: exclude-on=pixel8a, skipped on the Pixel 8a as in the
+# weekly set). The Galaxy S26 runs the same rows from matrices/dashboard-llama-thinkoff-s26-e2b.cells and -s26-e4b.cells
+# (one model per sitting, each within its slot of the shared S26 queue).
+# The first admitted sitting after the fix gives the cells their new value. Run after the runner change is on main, the
+# Pixel 8a hold taken first by a keeper (queue_cli.py enqueue, then queue_cli.py wait <the Pixel 8a hold>
+# autopilot_r15_text_pixel8a <keeper pid>), then
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/dashboard-llama-thinkoff-android.cells --suffix llama-thinkoff --once --hold-held-by <keeper pid>
+# and release the hold when the job ends (BENCH_SITTING=1: the flat build must be android_pins.llama.cpp).
+
+# ---- android ----
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash

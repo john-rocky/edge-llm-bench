@@ -1,0 +1,35 @@
+# Galaxy S26: the other llama.cpp Gemma 4 prompt rows that ran with thinking on (budget-mode-rule, 2026-10-19), listed
+# for a re-measure decision; a list, not a job file. The fix is the runner's (android/bench/run_cell.py: a Gemma 4 GGUF
+# row hands its chat template enable_thinking = false; docs/dashboard-cells-v1.md "Android llama.cpp Gemma 4 thinking
+# (2026-10-19)"); the page cells come first in matrices/dashboard-llama-thinkoff-android.cells (Pixel 8a) and
+# matrices/dashboard-llama-thinkoff-s26-{e2b,e4b,side-e2b,side-e4b}.cells (S26). Every row below is byte-identical to its
+# source line; each group runs by its source file's route:
+#   - the side build's long-context-1024-gen256 rows (page cells llama.cpp-npu / llama.cpp-gpu; E2B measured 2026-10-08
+#     with thinking on, E4B not measured): matrices/dashboard-npu-v1-android-s26.cells lines 29, 30, 39, 40. By hand,
+#     as matrices/dashboard-npu-v1-android-s26-short.cells says (a 1K launch raised the battery up to 4.1 C, and the job
+#     has no battery-temperature stop).
+#   - the 2K ladder (long-context-2048-gen256 at context-tokens 2304 / 4096 / 8192, llama.cpp b8999 on 2026-09-20/21):
+#     matrices/dashboard-longctx-v1-android-s26.cells lines 54-56, 76-78 (= dashboard-longctx-v1-android-s26-gemmae2b.cells
+#     lines 29-31 and -gemmae4b.cells lines 29-31). Round mode, as that file's header says (ROUNDS=8 COOLDOWN=30
+#     THERMAL_WAIT=600 BENCH_CPU_MASK=; long-context-2048-gen256 needs ROUNDS=N).
+# Not listed: the protocol rows (dashboard-protocol1024-v1-android.cells, dashboard-npu-protocol1024-v1-android-s26*.cells)
+# are native-benchmark-1024x256 = llama-bench, which has no prompt and no chat template (unchanged by the fix); the
+# Gemma 4 rows of dashboard-longctx1024-v1-android-a.cells (line 29) and -b2.cells (line 24) are byte-identical to
+# dashboard-text-v1-android-a.cells line 31 and -b2.cells line 19, the 1K rows of dashboard-llama-thinkoff-android.cells.
+# The first row is the Android session anchor, byte-identical to matrices/dashboard-llama-b11721-android.cells line 20.
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+# side build, long-context-1024-gen256 (by hand)
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-1024-gen256 backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048
+
+# 2K ladder, long-context-2048-gen256 (round mode)
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-2048-gen256 context-tokens=2304 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-2048-gen256 context-tokens=4096 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF long-context-2048-gen256 context-tokens=8192 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-2048-gen256 context-tokens=2304 file=gemma-4-E4B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-2048-gen256 context-tokens=4096 file=gemma-4-E4B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E4B-it-GGUF long-context-2048-gen256 context-tokens=8192 file=gemma-4-E4B-it-Q4_K_M.gguf

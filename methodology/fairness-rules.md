@@ -38,19 +38,24 @@ MLX arm renders through the same swift-jinja without that step: its Gemma 4 prom
 token (21 / 1,107).
 
 Thinking is set per model family so every arm runs the mode the other arms run (`budget-mode-rule`);
-the llama.cpp flag is `ModelInfo.chatTemplateThinking` (`nil` = nothing passed):
+the llama.cpp flag is `ModelInfo.chatTemplateThinking` on the Mac / iPhone (`nil` = nothing passed) and
+`llama_thinking_off` in `android/bench/run_cell.py` on Android:
 
-| Family | LiteRT-LM | MLX | llama.cpp, Mac / iPhone | Other Apple arms | Evidence |
-|---|---|---|---|---|---|
-| Gemma 4 (E2B, E4B) | off: nothing passed | off: nothing passed; the repo's `chat_template.jinja` defaults `enable_thinking` to false | off: `enable_thinking: false` passed (the GGUF template's default is false too); every Gemma 4 GGUF row of the catalog sets it | — | direct replies without thought text (Mac, 2026-10-19 records) |
-| Qwen3 (0.6B, 1.7B, 4B) | on: nothing passed | on: nothing passed | on: nothing passed; the jinja render equals the built-in chatml text (19 / 1,338 tokens, unchanged) | on: Core AI, ExecuTorch, ONNX Runtime GenAI | every arm's reply opens with its thinking (`<think>`; LiteRT-LM's thought text without the tag) |
+| Family | LiteRT-LM | MLX | llama.cpp, Mac / iPhone | llama.cpp, Android | Other Apple arms | Evidence |
+|---|---|---|---|---|---|---|
+| Gemma 4 (E2B, E4B) | off: nothing passed | off: nothing passed; the repo's `chat_template.jinja` defaults `enable_thinking` to false | off: `enable_thinking: false` passed (the GGUF template's default is false too); every Gemma 4 GGUF row of the catalog sets it | off since 2026-10-19: `llama-cli … -st --chat-template-kwargs '{"enable_thinking":false}'` on the flat and the side build; before, on (llama-cli's default) | — | direct replies without thought text (Mac, 2026-10-19 records) |
+| Qwen3 (0.6B, 1.7B, 4B) | on: nothing passed | on: nothing passed | on: nothing passed; the jinja render equals the built-in chatml text (19 / 1,338 tokens, unchanged) | on: nothing passed (`llama-cli … -st`, unchanged) | on: Core AI, ExecuTorch, ONNX Runtime GenAI | every arm's reply opens with its thinking (`<think>`; LiteRT-LM's thought text without the tag; llama-cli's `[Start thinking]`) |
 
 llama.cpp's own tools are not the reference for thinking: `llama-cli` (b11721) passes
 `enable_thinking = true` unless `--chat-template-kwargs '{"enable_thinking": false}'` says otherwise,
 and its Gemma 4 replies then open with a thinking block the GGUF template's default would not start
 (`--reasoning-budget 0` is not the same switch: the Gemma 4 E2B / E4B replies then wrote their analysis
-out as the answer). The Android llama.cpp rows run `llama-cli … -st` with neither flag; whether their
-Gemma 4 replies think is not checked yet.
+out as the answer). The Android llama.cpp rows ran `llama-cli … -st` with neither flag until 2026-10-19,
+and their Gemma 4 replies thought: every Gemma 4 prompt-task run log from 2026-10-05 to 2026-10-19 holds
+one `[Start thinking]` (76 on the flat build, b8999 and b11721; 30 on the b11469-snapdragon side build).
+Since then a Gemma 4 GGUF row passes the template variable on both builds, its records carry
+`conditions.thinking` `false` and every other llama.cpp prompt row `"template-default"`; the cells it
+re-measures are in `docs/dashboard-cells-v1.md` "Android llama.cpp Gemma 4 thinking (2026-10-19)".
 
 ## 2. Cold and warm runs are reported separately  <!-- slug: cold-warm-split -->
 

@@ -7,7 +7,8 @@ capture path — record shape, firstEver labelling via the on-device marker,
 witness stamping, capture gate + quarantine + retry, the endurance
 session path (streaming turn sidecar, host-derived decay/slope/degeneracy
 verdicts, failed-runs-stay), the default text check of context-prompt
-launches (text-check-rule), exclude-on= per device, a phone lost under a
+launches (text-check-rule), exclude-on= per device, the llama-cli rows' thinking per
+model family (Gemma 4 off, Qwen3 the template's default), a phone lost under a
 running engine (the launch fails, never re-run), and the CPU frequency cap read
 per run (cpu-cap-rule: the flag, the pre-launch wait, the summary columns and
 arm_row's pool, a 10 % fall counted and a 30 % fall kept out by the 15 % line, a
@@ -38,6 +39,7 @@ import glob
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -641,14 +643,15 @@ NPU_REGISTERED = [
     "subgraph 1 (decode)."]
 # The key layout of a CPU llama.cpp record (no backend=) as the runner wrote it at 3d5655c,
 # before the side builds: top-level keys and one level below, in order — a legacy cell, and
-# a round-mode launch. The side-build wiring must not move a key of the CPU arm. One key
-# was added at the end on purpose: provenance.modelShaSource (2026-10-15, push_verified).
+# a round-mode launch. The side-build wiring must not move a key of the CPU arm. Two keys
+# were added on purpose: provenance.modelShaSource at the end (2026-10-15, push_verified) and
+# conditions.thinking after conditions.chatMode (2026-10-19, thinking per model family).
 CPU_LLAMA_KEYS = {
     "legacy": "schemaVersion id runtime engineVersion engineArtifact model.id model.quantization "
               "model.file model.sha256 task timestamp device.modelIdentifier device.systemName "
               "device.systemVersion device.securityPatch device.soc device.product device.batteryLevel "
               "device.batteryState conditions.sampler conditions.cpuAffinity conditions.cpusAllowedList "
-              "conditions.cpuMaxFreqMHz conditions.contextTokens conditions.chatMode "
+              "conditions.cpuMaxFreqMHz conditions.contextTokens conditions.chatMode conditions.thinking "
               "conditions.thermalRawStatus conditions.thermalRawStatusFinal conditions.screen "
               "conditions.screenSource conditions.stayOnWhilePluggedIn conditions.elapsedSeconds "
               "conditions.exitCode metrics.promptTokensPerSecond metrics.decodeTokensPerSecond "
@@ -659,7 +662,7 @@ CPU_LLAMA_KEYS = {
              "model.file model.sha256 task timestamp device.modelIdentifier device.systemName "
              "device.systemVersion device.securityPatch device.soc device.product device.batteryLevel "
              "device.batteryState conditions.sampler conditions.cpuAffinity conditions.cpusAllowedList "
-             "conditions.cpuMaxFreqMHz conditions.contextTokens conditions.chatMode "
+             "conditions.cpuMaxFreqMHz conditions.contextTokens conditions.chatMode conditions.thinking "
              "conditions.thermalRawStatus conditions.thermalRawStatusFinal conditions.screen "
              "conditions.screenSource conditions.elapsedSeconds conditions.exitCode conditions.roundIndex "
              "conditions.launchIndex conditions.launchID conditions.elapsedScope "
@@ -1736,6 +1739,60 @@ def main():
     ok(len(layouts) == 2 and all(k == CPU_LLAMA_KEYS["round"] for k in layouts),
        f"CPU llama.cpp round-mode records: the key layout of 3d5655c "
        f"(got {[k for k in layouts if k != CPU_LLAMA_KEYS['round']][:1]})")
+
+    # check 4: thinking per model family (2026-10-19, budget-mode-rule): a Gemma 4 GGUF row, on
+    # the flat build and on a side build, hands llama-cli's template enable_thinking = false as
+    # one word for the phone's shell; a Qwen3 row hands nothing (the template's default). The
+    # records say which (conditions.chatMode / thinking), and --dry-run plans the same lines.
+    sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
+    import run_cell
+    think_raw = os.path.join(tmp, "think", "results", "raw")
+    kwargs = "--chat-template-kwargs '{\"enable_thinking\":false}'"
+    g4_dev = f"/data/local/tmp/llmbench/models/unsloth_gemma-4-E2B-it-GGUF_{os.path.basename(gguf_model)}"
+    cells_t = os.path.join(tmp, "t.cells")
+    with open(cells_t, "w") as fh:
+        fh.write(f"android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat runs=1 file={gguf_model}\n"
+                 f"android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat runs=1 file={gguf_model}\n"
+                 f"android llama.cpp unsloth/gemma-4-E2B-it-GGUF {npu_cell}\n")
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    schedule([14.1, 20.0, 73.0])
+    print("--- campaign T (thinking per model family: Gemma 4 off on the flat and the side build, Qwen3 the template's)")
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-t", BENCH_RAW_ROOT=think_raw), cells_t)
+    ok(rc == 0, f"campaign T exits 0 (got {rc})")
+    shells_t = open(cmds).read().splitlines() if os.path.exists(cmds) else []
+    flat_g4 = [s for s in shells_t if f" ./llama-cli -m {g4_dev} " in s]
+    flat_q3 = [s for s in shells_t if " ./llama-cli -m /data/local/tmp/llmbench/models/unsloth_Qwen3-0.6B-GGUF_" in s]
+    side_g4 = [s for s in shells_t if f" {eng_dev}/bin/llama-cli -lv 4 -m {g4_dev} " in s]
+    words = shlex.split(flat_g4[0]) if flat_g4 else []
+    ok(len(shells_t) == 3 and len(flat_g4) == len(flat_q3) == len(side_g4) == 1
+       and flat_g4[0].endswith(" --temp 0 --top-p 1 -st " + kwargs)
+       and flat_q3[0].endswith(" --temp 0 --top-p 1 -st") and "chat-template-kwargs" not in flat_q3[0]
+       and f" -st {kwargs} -ngl 99 -fa on -ub 1024 --device HTP0" in side_g4[0]
+       and [w for i, w in enumerate(words[1:]) if words[i] == "--chat-template-kwargs"]
+       == ['{"enable_thinking":false}'],
+       f"thinking: Gemma 4 hands the template enable_thinking=false, one shell word (flat and side "
+       f"build); Qwen3 hands nothing: {shells_t}")
+    conds_t = {(r["runtime"], r["model"]["id"]): r["conditions"]
+               for _, r in records(os.path.join(think_raw, "selftest-t", "app-path-android"), "llama.cpp")}
+    got = {k: (c.get("chatMode"), c.get("thinking", "absent")) for k, c in conds_t.items()}
+    off = ("single-turn, GGUF template, enable_thinking=false (-st --chat-template-kwargs)", False)
+    ok(got == {("llama.cpp", "unsloth/gemma-4-E2B-it-GGUF"): off,
+               ("llama.cpp", "unsloth/Qwen3-0.6B-GGUF"): ("single-turn template default (-st)", "template-default"),
+               ("llama.cpp-npu", "unsloth/gemma-4-E2B-it-GGUF"): off}
+       and kwargs in conds_t.get(("llama.cpp-npu", "unsloth/gemma-4-E2B-it-GGUF"), {}).get("engineCommand", ""),
+       f"thinking: conditions.chatMode / thinking per family, the side build's engineCommand carries the "
+       f"flag (got {got})")
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_t,
+                        "--dry-run"], env=dict(env, ROUNDS="1"), capture_output=True, text=True)
+    plan = [json.loads(line) for line in p.stdout.splitlines() if line.startswith("{")]
+    ok(p.returncode == 0 and [kwargs in d.get("command", "") for d in plan] == [True, False, True],
+       f"thinking: --dry-run plans the flag per family: {[d.get('command', '')[-70:] for d in plan]}")
+    family = getattr(run_cell, "llama_thinking_off", lambda model: None)
+    ok([family(m) for m in ("unsloth/Gemma-4-E4B-it-GGUF", "unsloth/Qwen3-1.7B-GGUF",
+                            "google/gemma-3-1b-it-qat-q4_0-gguf", g4_dev)] == [True, False, False, True],
+       "thinking: the family check reads 'gemma-4' in any case, in a model id or a device path; "
+       "not Gemma 3, not Qwen3")
 
     # --- LiteRT-LM on the NPU (2026-10-08): a LiteRT-LM runtime build with the Qualcomm
     # dispatch and QNN libraries, flat in DEV/engines/<tag> (the skel in dsp/), an own AOT

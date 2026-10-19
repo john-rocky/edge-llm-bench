@@ -1,0 +1,20 @@
+# Galaxy S26 only: the llama.cpp Snapdragon side build's Gemma 4 E2B short-chat cells (llama.cpp-npu / llama.cpp-gpu,
+# engine-build=b11469-snapdragon) re-measured with thinking off (budget-mode-rule, 2026-10-19), one job-route sitting of
+# about 50-60 min (the job's anchor phase, then this file: the anchor row and three rounds of the two rows). The fix:
+# android/bench/run_cell.py hands a Gemma 4 GGUF row's chat template enable_thinking = false on the side build's llama-cli
+# too (... -st --chat-template-kwargs '{"enable_thinking":false}' -ngl 99 ...); every side-build Gemma 4 reply of
+# 2026-10-08 and 2026-10-11 opened with "[Start thinking]" (docs/dashboard-cells-v1.md "Android llama.cpp Gemma 4
+# thinking (2026-10-19)"). One of four S26 files, run in this order: -s26-e2b, -s26-e4b, -s26-side-e2b, -s26-side-e4b.
+# The first row is the Android session anchor, byte-identical to matrices/dashboard-llama-b11721-android.cells line 20
+# (the flat build's llama.cpp Qwen3 0.6B short-chat, as in the weekly -npu session); then the two side-build rows, each
+# byte-identical to its source line: matrices/dashboard-npu-v1-android-s26-short.cells lines 23, 24.
+# Needs the side build on the phone, /data/local/tmp/llmbench/engines/b11469-snapdragon (android/README.md, "Side builds").
+# Run after the runner change is on main, the S26 hold taken first by a keeper through the shared queue (the asr lane
+# uses the same S26 queue): queue_cli.py enqueue, then queue_cli.py wait <the S26 hold> autopilot_r15_side_e2b <keeper pid>, then
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/dashboard-llama-thinkoff-s26-side-e2b.cells --suffix llama-thinkoff-side-e2b --once --hold-held-by <keeper pid>
+# and release the hold when the job ends.
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=npu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
+android llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=gpu engine-build=b11469-snapdragon cooldown=300 file=gemma-4-E2B-it-Q4_K_M.gguf
