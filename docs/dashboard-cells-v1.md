@@ -1431,6 +1431,17 @@ Slots `matrices/dashboard-aa-v1-ios-i*.cells`, LiteRT-LM v0.18.0 on the Metal GP
   between vector types ('half4' ... and 'float4' ...) are not permitted"), DYNAMIC_UPDATE_SLICE then fails
   to prepare on the CPU, and the engine reports "Failed to modify graph with delegate". Its cells record the
   failure.
+- 2026-10-20, slot i6 again (the same build): `LFM2.5-1.2B-Instruct` fails the same way in short chat (2 of 2),
+  while the same file's native `benchmark()` runs on the GPU, 4 of 4 (1024 / 256 at context 2048: prefill
+  2,275–2,298 tok/s after the cold launch's 1,372, decode 72.8–74.2 tok/s). The native import takes its record
+  shape from a task record of the same model (`--like`), so that cell stays NATIVE_IMPORT_PENDING, without a record.
+- `litert-community/MiniCPM5-1B` (`minicpm_wi4b32_wi8_afp32_gpu_opt.litertlm`, Hub revision d417eaa3): the native
+  1024/256 cell cannot run with this file. The launch stops at its first run with "Input token ids are too long.
+  Exceeding the maximum number of tokens allowed: 1024 >= 1024" (the cell asks for context 2048). Its short chat
+  runs, at 24 prompt tokens where v0.16.0 read 20: the file's LlmMetadata for LiteRT-LM 0.18.0 (Hub commit
+  d417eaa3, 2026-10-10, weights unchanged) ends the generation prompt with an empty think block
+  (`<think>\n\n</think>\n\n`) when thinking is off, and v0.18.0 renders that template. The 4 extra tokens match it,
+  and the reply is on topic (text screen PASS).
 
 ## Open questions for the LiteRT team
 
