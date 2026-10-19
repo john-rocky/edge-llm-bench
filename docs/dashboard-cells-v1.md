@@ -1190,6 +1190,38 @@ and `-ios.cells`, one job-route sitting per device; the page shows each cell's l
 that sitting replaces the bare rows. The Mac 2K ladder's llama.cpp Gemma 4 rows (`dashboard-longctx-v1.cells`)
 are not in those files.
 
+## Android llama.cpp Gemma 4 thinking (2026-10-19)
+
+Every Android llama.cpp Gemma 4 prompt-task row before 2026-10-19 ran with thinking on, where every
+other arm runs Gemma 4 off (methodology/fairness-rules.md §1, `budget-mode-rule`). `llama-cli … -st`
+hands a template that can think `enable_thinking = true` unless told otherwise (b11721 and b11469 help:
+`--reasoning` defaults to `auto`, "detect from template"), and the Gemma 4 GGUF template's own default
+(off) never applied. Every stored Gemma 4 short-chat and `long-context-1024-gen256` run log from
+2026-10-05 to 2026-10-19 holds one `[Start thinking]`: 76 on the flat build (S26 and Pixel 8a, b8999 and
+b11721) and 30 on the S26's b11469-snapdragon side build (`llama.cpp-npu` / `llama.cpp-gpu`). On short-chat the 128-token budget can run out inside the thought:
+the Pixel 8a's E2B reply of 2026-10-19 is "Here's a thinking process that leads to the suggested
+explanation: …" with no answer in the budget. The flat build's records hold no prompt-token count and no
+reply text (the reply is in the run log), so the page did not show it. Qwen3 thinks on every arm (the
+template's default) and its rows do not change; llama-bench rows (`native-benchmark-1024x256`) have no
+prompt and no chat template and do not change either.
+
+The fix (`android/bench/run_cell.py`, `LLAMA_THINKING_OFF_FLAGS`): a Gemma 4 GGUF row — `gemma-4` in the
+model id or file, any case — runs `llama-cli … -st --chat-template-kwargs '{"enable_thinking":false}'`,
+on the flat build and on the side build, the template variable the Apple llama.cpp adapter passes. Every
+llama.cpp prompt record now says which: `conditions.thinking` `false` (Gemma 4) or `"template-default"`
+(the rest), and `conditions.chatMode` "single-turn, GGUF template, enable_thinking=false (-st
+--chat-template-kwargs)" or, as before, "single-turn template default (-st)".
+
+Cells re-measured, page cells first, one job-route sitting per file: the Pixel 8a's E2B short-chat and
+1K from `matrices/dashboard-llama-thinkoff-android.cells` (its E4B rows keep their exclude-on); the
+S26's from four files of one model each, so that each sitting fits a slot of the S26 queue the phone
+shares with other lanes: `-s26-e2b` and `-s26-e4b` (llama.cpp, short-chat and 1K), `-s26-side-e2b` and
+`-s26-side-e4b` (`llama.cpp-npu` / `llama.cpp-gpu` short-chat), all `matrices/dashboard-llama-thinkoff-*.cells`
+with the Android anchor row first. `matrices/dashboard-llama-thinkoff-ladder-android.cells` lists the
+rest: the side build's E2B / E4B 1K rows (page cells, by hand as in the weekly set) and the S26's 2K
+ladder (round mode). The page shows each cell's latest admitted session, so the first admitted sitting
+after the fix gives these cells their new value; until then they show the thinking-on numbers.
+
 ## MLX Gemma 4 file (2026-10-19)
 
 The page's MLX Gemma 4 rows (the Mac and iPhone short-chat and `long-context-1024-gen256` rows of

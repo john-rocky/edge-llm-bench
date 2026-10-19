@@ -596,6 +596,30 @@ def push_prompt(task, serial):
 DEFAULT_LLAMA_CTX = 4096  # llama-cli otherwise defaults to the model's TRAINING
 # context (Qwen3: 40960) — measured 4.8 GB RSS for a 0.6B Q4 before this pin.
 
+# Thinking on the llama-cli prompt rows, per model family (budget-mode-rule; methodology/
+# fairness-rules.md §1). llama-cli hands a template that can think enable_thinking = true unless
+# told otherwise (b11721 / b11469 help: --reasoning defaults to auto, "detect from template"): every
+# Android Gemma 4 reply of b8999, b11721 and the b11469-snapdragon side build opened with
+# "[Start thinking]" (2026-10-05 to 2026-10-19), where the GGUF template's own default and every
+# other arm run Gemma 4 off. A Gemma 4 row hands the template enable_thinking = false (what the
+# Apple llama.cpp adapter passes); every other family keeps the template's default (Qwen3: thinks,
+# as on every arm).
+LLAMA_THINKING_OFF_FLAGS = "--chat-template-kwargs " + shlex.quote('{"enable_thinking":false}')
+
+
+def llama_thinking_off(model):
+    """True for a Gemma 4 GGUF: "gemma-4" (any case) in the model's device path basename, which
+    starts with the model id (<model id with / -> _>_<file>), or in a bare model id."""
+    return "gemma-4" in os.path.basename(model).lower()
+
+
+def llama_chat_conditions(model):
+    """conditions.chatMode / thinking of a llama-cli prompt row (engine_command's flags)."""
+    if llama_thinking_off(model):
+        return {"chatMode": "single-turn, GGUF template, enable_thinking=false (-st --chat-template-kwargs)",
+                "thinking": False}
+    return {"chatMode": "single-turn template default (-st)", "thinking": "template-default"}
+
 
 def context_prompt(runtime, task, context_tokens):
     return (runtime == "litert-lm" and context_tokens is not None
@@ -696,8 +720,9 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
                 return (f"{tool_dir}/llama-bench -m {model_dev} -t {SIDE_THREADS} -p {p} -n {d} -o json "
                         f"-ngl 99{ub} --device {device}"), "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
             flags = f" {SNAPDRAGON_CHAT_FLAGS}" if SNAPDRAGON_CHAT_FLAGS else ""
+            think = f" {LLAMA_THINKING_OFF_FLAGS}" if llama_thinking_off(model_dev) else ""
             return (f"{tool_dir}/{SNAPDRAGON_CHAT_TOOL} -lv 4{flags} -m {model_dev} -t {SIDE_THREADS} "
-                    f"-c {ctx} -f {prompt_dev} -n {max_tokens or budget} --temp 0 --top-p 1 -st "
+                    f"-c {ctx} -f {prompt_dev} -n {max_tokens or budget} --temp 0 --top-p 1 -st{think} "
                     f"-ngl 99 -fa on -ub {SIDE_UBATCH} --device {device}"), SNAPDRAGON_CHAT_TOOL, "greedy", ctx
         if task.startswith("native-benchmark-"):
             p, d = task[len("native-benchmark-"):].split("x")
@@ -707,9 +732,11 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
         # supported") and then loops forever echoing "> " on stdin EOF —
         # measured as a silent 1800 s hang. Single-turn chat runs the template
         # once and exits; the model's template defaults apply (Qwen3: thinking
-        # ON), disclosed via conditions.chatMode.
+        # ON), Gemma 4 with thinking off (LLAMA_THINKING_OFF_FLAGS), disclosed
+        # via conditions.chatMode / thinking.
+        think = f" {LLAMA_THINKING_OFF_FLAGS}" if llama_thinking_off(model_dev) else ""
         return (f"./llama-cli -m {model_dev} -t 4 -c {ctx} -f {prompt_dev} "
-                f"-n {max_tokens or budget} --temp 0 --top-p 1 -st"), \
+                f"-n {max_tokens or budget} --temp 0 --top-p 1 -st{think}"), \
             "llama-cli", "greedy", ctx
     if runtime == "executorch":
         # The family's runner (parsers.executorch_runner_for: the name; the recipe.json must
@@ -1445,7 +1472,7 @@ def main():
                            "cpuAffinity": f"taskset {CPU_MASK}" if CPU_MASK else "none",
                            **cpu_cond,
                            "contextTokens": ctx_note,
-                           **({"chatMode": "single-turn template default (-st)"}
+                           **(llama_chat_conditions(model_dev)
                               if args.runtime == "llama.cpp"
                               and not args.task.startswith("native-") else {}),
                            "thermalRawStatus": raw_status,

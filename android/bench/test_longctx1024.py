@@ -200,9 +200,11 @@ class AndroidLaunchContract(unittest.TestCase):
         for c in cells:
             model = f"{cell.DEV_DIR}/models/{c['model_id'].replace('/', '_')}_{c['opts']['file']}"
             prompt = f"{cell.DEV_DIR}/prompts/{TASK}.txt"
+            # Gemma 4 runs with thinking off (2026-10-19), every other family the template's default
+            think = " --chat-template-kwargs '{\"enable_thinking\":false}'" if "gemma-4" in c["model_id"].lower() else ""
             self.assertEqual(cell.engine_command("llama.cpp", None, model, TASK, prompt, BUDGET, None, CTX),
                              (f"./llama-cli -m {model} -t 4 -c {CTX} -f {prompt} -n {BUDGET} "
-                              "--temp 0 --top-p 1 -st", "llama-cli", "greedy", CTX))
+                              f"--temp 0 --top-p 1 -st{think}", "llama-cli", "greedy", CTX))
             self.assertEqual(campaign.records_per_launch(c), 1)
             self.assertIn(f"__ctx{CTX}_file", cell.capture_stem("llama.cpp", None, c["model_id"], TASK,
                                                                 c["opts"]["file"], CTX))
