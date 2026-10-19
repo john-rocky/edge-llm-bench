@@ -1,0 +1,144 @@
+{
+  "arm": "A2: sherpa-onnx v1.13.8 + QNN (HTP), parakeet-ctc-0.6b SM8850 context binary, 30 s window",
+  "qairt": {
+    "version": "2.40.0.251030",
+    "sdk_yaml": {
+      "product": "QAIRT",
+      "version": "2.40.0",
+      "build_id": "251030114326_189385",
+      "qnn_backend_api_version": "2.18.0",
+      "android-ndk": "r26c"
+    },
+    "zip_url": "https://softwarecenter.qualcomm.com/api/download/software/sdks/Qualcomm_AI_Runtime_Community/All/2.40.0.251030/v2.40.0.251030.zip",
+    "zip": {
+      "bytes": 1403532983,
+      "sha256": "423ab04883150ab6c18de01f2adf23829fa9e8602a5a6b573473e3516921a3b9",
+      "note": "public download, no login; Qualcomm publishes no digest"
+    },
+    "license_note": "Qualcomm's license: the libraries ship only inside an application; used here for the measurement, never committed or published",
+    "phone_libs": {
+      "libQnnHtp.so": {
+        "bytes": 2516048,
+        "sha256": "328cf737ca8942c2dde5c6f3e32a113378df2750afb9af1aafdd1775bef59875",
+        "zip_path": "qairt/2.40.0.251030/lib/aarch64-android/libQnnHtp.so"
+      },
+      "libQnnHtpPrepare.so": {
+        "bytes": 74225392,
+        "sha256": "05cfaff3c2180d7d9006320c16579c5869c2261ba5f891bcaab172ced21c266c",
+        "zip_path": "qairt/2.40.0.251030/lib/aarch64-android/libQnnHtpPrepare.so"
+      },
+      "libQnnSystem.so": {
+        "bytes": 2590072,
+        "sha256": "2d42b6bb2710155fa963ee623ce3c320f8a9896b9cfd8dcc25506affb41ab8ab",
+        "zip_path": "qairt/2.40.0.251030/lib/aarch64-android/libQnnSystem.so"
+      },
+      "libQnnHtpV81Stub.so": {
+        "bytes": 632336,
+        "sha256": "0fccba2bd6b66d3e5ac32381cfbf5b10b80088055ff6dab712ce99633e3bc8c9",
+        "zip_path": "qairt/2.40.0.251030/lib/aarch64-android/libQnnHtpV81Stub.so"
+      },
+      "libQnnHtpV81Skel.so": {
+        "bytes": 10561352,
+        "sha256": "2dff3367e70920742e8122cdbebfe4d5f9aa1d88d863a200b663842551d2b6f0",
+        "zip_path": "qairt/2.40.0.251030/lib/hexagon-v81/unsigned/libQnnHtpV81Skel.so"
+      }
+    },
+    "libQnnHtp_build_strings": [
+      "v2.40.0.251030114326_189385"
+    ]
+  },
+  "model": {
+    "name": "sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s",
+    "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models-qnn-binary/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s.tar.bz2",
+    "release": "k2-fsa/sherpa-onnx asr-models-qnn-binary, asset updated 2026-06-17T15:55:18Z",
+    "tar": {
+      "bytes": 429068469,
+      "sha256": "31a71db22d129d198612689e61bf5c5fc8f6480bd09b3cc71def8f0fb99273ee",
+      "release_digest": "sha256:31a71db22d129d198612689e61bf5c5fc8f6480bd09b3cc71def8f0fb99273ee"
+    },
+    "files": {
+      "model.bin": {
+        "bytes": 629837824,
+        "sha256": "7fec0861d4600b601a50f1fb43c2498b3a3971ebc0ae4900f3e45d0de01e4d7a"
+      },
+      "tokens.txt": {
+        "bytes": 10373,
+        "sha256": "0eac63e6f95e297c481527353378dfbd96e1bbf8337ab71c59eca5e703363933"
+      },
+      "info.txt": {
+        "bytes": 16,
+        "sha256": "91a73c47bee5e0204c87a4a2c7f3f391a55261cd4abf2aeb53a80175c95ec2f1"
+      }
+    },
+    "info_txt": "num_seconds=30s",
+    "readme": "none in the tar (info.txt, tokens.txt, model.bin, test_wavs/)",
+    "qnn_sdk_of_the_context_binary": {
+      "build_id_strings_in_model_bin": [
+        "v2.40.0.251030114326_189385",
+        "v2.40.0.251030114326_189385.e8e9f048a0"
+      ],
+      "release_body": "Context binary files in this page are generated using qnn sdk 2.40.0.251030"
+    },
+    "export_recipe": {
+      "workflow": "k2-fsa/sherpa-onnx .github/workflows/export-parakeet-ctc-qnn.yaml at 9961aee6 (2026-06-18, 'Export Parakeet CTC models to QNN (#3686)'; the release assets are dated 2026-06-17, the PR's runs)",
+      "num_frames": "num_seconds * 100 = 3000 for 30 s; model input x [1, frames, 80] (sherpa's QNN impl reads it from the graph)",
+      "converter": "qnn-onnx-converter --input_list <calibration raws> --use_native_input_files --act_bitwidth 16 --bias_bitwidth 32 (weights_bitwidth default 8: QAIRT 2.40 converter source) = post-training quantized, int8 weights, 16-bit activations",
+      "context_config": "scripts/qnn/generate_config.py: SM8850 soc_id 87, dsp_arch v81, vtcm_mb 8, O 3, perf_profile burst (for qnn-context-binary-generator)"
+    }
+  },
+  "sherpa_onnx": {
+    "tag": "v1.13.8",
+    "commit": "11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+    "build": {
+      "command": "SHERPA_ONNX_ENABLE_QNN=ON SHERPA_ONNX_ENABLE_BINARY=ON SHERPA_ONNX_ANDROID_PLATFORM=android-24 CMAKE_POLICY_VERSION_MINIMUM=3.5 QNN_SDK_ROOT=<qairt> ANDROID_NDK=<ndk> ./build-android-arm64-v8a.sh (tools/asr-qnn/build.sh)",
+      "android_platform": "android-24",
+      "android_platform_why": "the script's default android-21 does not link the executables with NDK 28: libonnxruntime.so 1.28.2 needs API 23-24 libc symbols (__write_chk@LIBC_N ...), lld refuses them for an executable",
+      "ndk": "/Users/USER/Library/Android/sdk/ndk/28.2.13676358",
+      "ndk_revision": "28.2.13676358",
+      "cmake": "cmake version 4.3.1",
+      "build_type": "Release",
+      "shared_libs": "ON",
+      "qnn": "ON",
+      "binary": "ON",
+      "stl": "c++_static (the toolchain default; the executables need no libc++_shared.so)"
+    },
+    "bins": {
+      "sherpa-onnx-offline-parallel": {
+        "bytes": 2541216,
+        "sha256": "a50184ba0931c3e916a9b1479244d37bac65947ce0be6f03a03f55e68f68ddcb"
+      },
+      "sherpa-onnx-offline": {
+        "bytes": 2530312,
+        "sha256": "ec00dd1be4a09f0f41d8081660bd73ef3017378eb6825667a38d1700d1625bef"
+      },
+      "sherpa-onnx-version": {
+        "bytes": 4832,
+        "sha256": "d8322a70c2aff61dece1f1e36743366f33dbfff0c5f2e972feacf968c108b525"
+      }
+    }
+  },
+  "driver": {
+    "source": {
+      "bytes": 49123,
+      "sha256": "009ae56373d0e1c3c118b20ab94317d404283010e1741d97b6cc4afbf276b9a6",
+      "path": "tools/asr-qnn/burst_driver.cc"
+    },
+    "bin": {
+      "bytes": 2660600,
+      "sha256": "f4c31a7ff94669d4de47a848574f384e7153672d506bcd1c7c0fdf52c8b65a60",
+      "how": "compiled with sherpa-onnx-offline's compile rule, linked with its link.txt (object swapped), stripped"
+    }
+  },
+  "onnxruntime": {
+    "version_strings": [
+      "1.28.2",
+      "ORT Build Info: git-branch=HEAD, git-commit-id=33ca962, fp8-kv-cache=1, build type=Release"
+    ],
+    "lib": {
+      "bytes": 22249560,
+      "sha256": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+      "source": "https://github.com/csukuangfj/onnxruntime-libs/releases/download/v1.28.2/onnxruntime-android-1.28.2.zip (downloaded by build-android-arm64-v8a.sh)"
+    },
+    "note": "the model graph runs on the HTP through the QNN API (sherpa-onnx/csrc/qnn), not through onnxruntime"
+  }
+}

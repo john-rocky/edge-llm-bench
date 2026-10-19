@@ -1,0 +1,180 @@
+1792398878.354894	/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/parse-options.cc:Read:374 /data/local/tmp/edge-llm-bench/asr-qnn/bin/asr-qnn-burst-driver --provider=qnn --tokens=/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/tokens.txt --nemo-ctc.qnn-backend-lib=/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnHtp.so --nemo-ctc.qnn-system-lib=/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnSystem.so --nemo-ctc.qnn-context-binary=/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/model.bin --num-threads=4 --decoding-method=greedy_search --list=/data/local/tmp/edge-llm-bench/asr-qnn/lists/S32.tsv --pace=burst --warmup-id=1995-1836-0004 --warmup-wav=/data/local/tmp/edge-llm-bench/asr-qnn/sets/W/1995-1836-0004.wav --warmup-seconds=33.91 --load-label=warm --model-name=sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s --run-info=repo=ec2798fd,driver_sha256=f4c31a7ff946,list_sha256=28c6d5d456dc '--quant-recipe=QNN post-training quantization with calibration inputs: weights 8-bit (qnn-onnx-converter default), activations 16-bit, bias 32-bit (k2-fsa export-parakeet-ctc-qnn 9961aee6); context binary for SM8850 / HTP v81 made with QAIRT 2.40.0.251030' --out=/data/local/tmp/edge-llm-bench/asr-qnn/runs/a2-sherpa-qnn-ctc-30s-S32-burst.jsonl --ceil-log=/data/local/tmp/edge-llm-bench/asr-qnn/runs/a2-sherpa-qnn-ctc-30s-S32-burst.ceil.log --tag=a2-sherpa-qnn-ctc-30s-S32-burst 
+1792398878.356754	
+1792398878.357156	OfflineRecognizerConfig(feat_config=FeatureExtractorConfig(sampling_rate=16000, feature_dim=80, low_freq=20, high_freq=-400, dither=0, normalize_samples=True, snip_edges=False), model_config=OfflineModelConfig(transducer=OfflineTransducerModelConfig(encoder_filename="", decoder_filename="", joiner_filename=""), paraformer=OfflineParaformerModelConfig(model=""), nemo_ctc=OfflineNemoEncDecCtcModelConfig(model="", qnn_config=QnnConfig(backend_lib="/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnHtp.so", context_binary="/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/model.bin", system_lib="/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnSystem.so"), ), whisper=OfflineWhisperModelConfig(encoder="", decoder="", language="", task="transcribe", tail_paddings=-1, enable_token_timestamps=False, enable_segment_timestamps=False, ), fire_red_asr=OfflineFireRedAsrModelConfig(encoder="", decoder=""), tdnn=OfflineTdnnModelConfig(model=""), zipformer_ctc=OfflineZipformerCtcModelConfig(model=""), wenet_ctc=OfflineWenetCtcModelConfig(model=""), sense_voice=OfflineSenseVoiceModelConfig(model="", language="auto", use_itn=False), moonshine=OfflineMoonshineModelConfig(preprocessor="", encoder="", uncached_decoder="", cached_decoder="", merged_decoder="", decoder="", ), dolphin=OfflineDolphinModelConfig(model=""), canary=OfflineCanaryModelConfig(encoder="", decoder="", src_lang="", tgt_lang="", use_pnc=True), cohere_transcribe=OfflineCohereTranscribeModelConfig(encoder="", decoder="", language="", use_punct=True, use_itn=True), omnilingual=OfflineOmnilingualAsrCtcModelConfig(model=""), funasr_nano=OfflineFunASRNanoModelConfig(encoder_adaptor="", llm="", embedding="", tokenizer="", system_prompt="You are a helpful assistant.", user_prompt="语音转写：", max_new_tokens=512, temperature=1e-06, top_p=0.8, seed=42, language="", itn=True, hotwords=""), medasr=OfflineMedAsrCtcModelConfig(model=""), fire_red_asr_ctc=OfflineFireRedAsrCtcModelConfig(model=""), qwen3_asr=OfflineQwen3ASRModelConfig(conv_frontend="", encoder="", decoder="", tokenizer="", hotwords="", max_total_len=512, max_new_tokens=128, temperature=1e-06, top_p=0.8, seed=42), telespeech_ctc="", tokens="/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/tokens.txt", num_threads=4, debug=False, provider="qnn", model_type="", modeling_unit="cjkchar", bpe_vocab=""), lm_config=OfflineLMConfig(model="", scale=0.5, lodr_scale=0.01, lodr_fst="", lodr_backoff_id=-1), ctc_fst_decoder_config=OfflineCtcFstDecoderConfig(graph="", max_active=3000), decoding_method="greedy_search", max_active_paths=4, hotwords_file="", hotwords_score=1.5, blank_penalty=0, rule_fsts="", rule_fars="", hr=HomophoneReplacerConfig(lexicon="", rule_fsts=""))
+1792398878.756903	/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/utils.cc:CopyGraphsInfo:548 version: 3
+1792398878.997200	[asr-qnn] loaded in 642.005 ms
+1792398878.998901	[asr-qnn] begin 1995-1836-0004 warmup
+1792398879.012029	/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Run:89 Number of input frames 3391 is too large. Truncate it to 3000 frames.
+1792398879.012100	/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Run:93 Recognition result may be truncated/incomplete. Please select a model accepting longer audios.
+1792398879.890644	[asr-qnn] end 1995-1836-0004 warmup 0.891
+1792398880.394935	[asr-qnn] begin 4507-16021-0047 1
+1792398880.429164	/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Run:89 Number of input frames 3496 is too large. Truncate it to 3000 frames.
+1792398880.429270	/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Run:93 Recognition result may be truncated/incomplete. Please select a model accepting longer audios.
+1792398881.286948	[asr-qnn] end 4507-16021-0047 1 0.890
+1792398883.190864	[asr-qnn] begin 8230-279154-0043 1
+1792398884.333119	[asr-qnn] end 8230-279154-0043 1 1.141
+1792398884.834425	[asr-qnn] begin 5105-28241-0001 1
+1792398885.989282	[asr-qnn] end 5105-28241-0001 1 1.152
+1792398886.489908	[asr-qnn] begin 4077-13754-0008 1
+1792398887.457915	[asr-qnn] end 4077-13754-0008 1 0.965
+1792398887.959107	[asr-qnn] begin 1188-133604-0002 1
+1792398888.774104	[asr-qnn] end 1188-133604-0002 1 0.814
+1792398889.274619	[asr-qnn] begin 3575-170457-0026 1
+1792398890.247398	[asr-qnn] end 3575-170457-0026 1 0.971
+1792398890.750829	[asr-qnn] begin 7127-75946-0028 1
+1792398891.692497	[asr-qnn] end 7127-75946-0028 1 0.940
+1792398892.193071	[asr-qnn] begin 1188-133604-0011 1
+1792398893.246366	[asr-qnn] end 1188-133604-0011 1 1.052
+1792398893.748335	[asr-qnn] begin 2300-131720-0001 1
+1792398894.869559	[asr-qnn] end 2300-131720-0001 1 1.120
+1792398895.370363	[asr-qnn] begin 1284-134647-0007 1
+1792398896.331963	[asr-qnn] end 1284-134647-0007 1 0.959
+1792398896.834442	[asr-qnn] begin 5639-40744-0022 1
+1792398897.755435	[asr-qnn] end 5639-40744-0022 1 0.919
+1792398898.255970	[asr-qnn] begin 5639-40744-0034 1
+1792398899.141549	[asr-qnn] end 5639-40744-0034 1 0.884
+1792398899.642662	[asr-qnn] begin 1188-133604-0003 1
+1792398900.529219	[asr-qnn] end 1188-133604-0003 1 0.885
+1792398901.029598	[asr-qnn] begin 4077-13751-0009 1
+1792398902.122565	[asr-qnn] end 4077-13751-0009 1 1.091
+1792398902.623322	[asr-qnn] begin 7729-102255-0040 1
+1792398903.766859	[asr-qnn] end 7729-102255-0040 1 1.142
+1792398904.267444	[asr-qnn] begin 5105-28233-0005 1
+1792398905.407418	[asr-qnn] end 5105-28233-0005 1 1.138
+1792398905.908061	[asr-qnn] begin 5639-40744-0015 1
+1792398906.817277	[asr-qnn] end 5639-40744-0015 1 0.908
+1792398907.317785	[asr-qnn] begin 1284-1180-0017 1
+1792398908.188197	[asr-qnn] end 1284-1180-0017 1 0.868
+1792398908.688534	[asr-qnn] begin 2300-131720-0020 1
+1792398909.565300	[asr-qnn] end 2300-131720-0020 1 0.875
+1792398910.069744	[asr-qnn] begin 8455-210777-0038 1
+1792398910.949438	[asr-qnn] end 8455-210777-0038 1 0.877
+1792398911.449929	[asr-qnn] begin 3575-170457-0044 1
+1792398912.590941	[asr-qnn] end 3575-170457-0044 1 1.140
+1792398913.095333	[asr-qnn] begin 2830-3979-0011 1
+1792398914.229121	[asr-qnn] end 2830-3979-0011 1 1.132
+1792398914.729932	[asr-qnn] begin 7127-75946-0018 1
+1792398915.866686	[asr-qnn] end 7127-75946-0018 1 1.135
+1792398916.368750	[asr-qnn] begin 1320-122617-0020 1
+1792398917.239167	[asr-qnn] end 1320-122617-0020 1 0.869
+1792398917.739898	[asr-qnn] begin 237-126133-0007 1
+1792398918.579732	[asr-qnn] end 237-126133-0007 1 0.839
+1792398918.580029	[asr-qnn] progress 25/82 excluded=0 retaken=0
+1792398919.083550	[asr-qnn] begin 61-70970-0015 1
+1792398919.966883	[asr-qnn] end 61-70970-0015 1 0.881
+1792398920.467170	[asr-qnn] begin 1221-135767-0010 1
+1792398921.358521	[asr-qnn] end 1221-135767-0010 1 0.890
+1792398921.859815	[asr-qnn] begin 1995-1836-0003 1
+1792398922.982160	[asr-qnn] end 1995-1836-0003 1 1.120
+1792398923.483022	[asr-qnn] begin 1320-122617-0023 1
+1792398924.580915	[asr-qnn] end 1320-122617-0023 1 1.096
+1792398925.083399	[asr-qnn] begin 2961-960-0007 1
+1792398926.214075	[asr-qnn] end 2961-960-0007 1 1.130
+1792398926.717119	[asr-qnn] begin 61-70968-0014 1
+1792398927.628088	[asr-qnn] end 61-70968-0014 1 0.909
+1792398928.129638	[asr-qnn] begin 3575-170457-0005 1
+1792398929.141480	[asr-qnn] end 3575-170457-0005 1 1.011
+1792398929.642097	[asr-qnn] begin 8555-284447-0023 1
+1792398930.688651	[asr-qnn] end 8555-284447-0023 1 1.045
+1792398931.192821	[asr-qnn] begin 8463-294828-0036 1
+1792398932.237290	[asr-qnn] end 8463-294828-0036 1 1.043
+1792398932.740744	[asr-qnn] begin 7729-102255-0033 1
+1792398933.870810	[asr-qnn] end 7729-102255-0033 1 1.128
+1792398934.372897	[asr-qnn] begin 1089-134686-0025 1
+1792398935.515333	[asr-qnn] end 1089-134686-0025 1 1.141
+1792398936.016074	[asr-qnn] begin 1580-141084-0031 1
+1792398937.081930	[asr-qnn] end 1580-141084-0031 1 1.065
+1792398937.583507	[asr-qnn] begin 8230-279154-0024 1
+1792398938.574768	[asr-qnn] end 8230-279154-0024 1 0.990
+1792398939.075447	[asr-qnn] begin 4507-16021-0022 1
+1792398940.120706	[asr-qnn] end 4507-16021-0022 1 1.044
+1792398940.622145	[asr-qnn] begin 61-70970-0000 1
+1792398941.638058	[asr-qnn] end 61-70970-0000 1 1.014
+1792398942.138639	[asr-qnn] begin 1995-1826-0016 1
+1792398943.247151	[asr-qnn] end 1995-1826-0016 1 1.107
+1792398943.750720	[asr-qnn] begin 5142-36377-0024 1
+1792398944.878456	[asr-qnn] end 5142-36377-0024 1 1.126
+1792398945.380681	[asr-qnn] begin 4992-41797-0002 1
+1792398946.378527	[asr-qnn] end 4992-41797-0002 1 0.996
+1792398946.878979	[asr-qnn] begin 5105-28233-0006 1
+1792398947.831639	[asr-qnn] end 5105-28233-0006 1 0.952
+1792398948.332976	[asr-qnn] begin 4446-2273-0028 1
+1792398949.301979	[asr-qnn] end 4446-2273-0028 1 0.967
+1792398949.802620	[asr-qnn] begin 8463-294828-0029 1
+1792398950.779538	[asr-qnn] end 8463-294828-0029 1 0.976
+1792398951.284741	[asr-qnn] begin 8555-292519-0012 1
+1792398952.313672	[asr-qnn] end 8555-292519-0012 1 1.028
+1792398952.817245	[asr-qnn] begin 237-134500-0002 1
+1792398953.942178	[asr-qnn] end 237-134500-0002 1 1.123
+1792398954.442934	[asr-qnn] begin 4077-13754-0004 1
+1792398955.582462	[asr-qnn] end 4077-13754-0004 1 1.138
+1792398956.084448	[asr-qnn] begin 8463-294828-0015 1
+1792398957.035786	[asr-qnn] end 8463-294828-0015 1 0.951
+1792398957.036036	[asr-qnn] progress 50/82 excluded=0 retaken=0
+1792398957.539959	[asr-qnn] begin 8455-210777-0042 1
+1792398958.503032	[asr-qnn] end 8455-210777-0042 1 0.962
+1792398959.003817	[asr-qnn] begin 7127-75946-0009 1
+1792398959.918695	[asr-qnn] end 7127-75946-0009 1 0.913
+1792398960.419526	[asr-qnn] begin 1580-141084-0000 1
+1792398961.343599	[asr-qnn] end 1580-141084-0000 1 0.923
+1792398961.845017	[asr-qnn] begin 61-70968-0009 1
+1792398962.966284	[asr-qnn] end 61-70968-0009 1 1.120
+1792398964.274624	[asr-qnn] begin 4446-2271-0013 1
+1792398965.410670	[asr-qnn] end 4446-2271-0013 1 1.135
+1792398965.912937	[asr-qnn] begin 1284-1180-0004 1
+1792398966.900900	[asr-qnn] end 1284-1180-0004 1 0.987
+1792398967.404155	[asr-qnn] begin 5105-28240-0016 1
+1792398968.333622	[asr-qnn] end 5105-28240-0016 1 0.928
+1792398968.835450	[asr-qnn] begin 4446-2275-0035 1
+1792398969.744896	[asr-qnn] end 4446-2275-0035 1 0.908
+1792398970.245493	[asr-qnn] begin 672-122797-0031 1
+1792398971.110470	[asr-qnn] end 672-122797-0031 1 0.864
+1792398971.611870	[asr-qnn] begin 4970-29095-0023 1
+1792398972.721309	[asr-qnn] end 4970-29095-0023 1 1.108
+1792398973.221972	[asr-qnn] begin 4446-2275-0023 1
+1792398974.353155	[asr-qnn] end 4446-2275-0023 1 1.130
+1792398974.857235	[asr-qnn] begin 1580-141083-0039 1
+1792398975.982825	[asr-qnn] end 1580-141083-0039 1 1.124
+1792398976.483621	[asr-qnn] begin 8230-279154-0008 1
+1792398977.221280	[asr-qnn] end 8230-279154-0008 1 0.737
+1792398977.722058	[asr-qnn] begin 121-127105-0019 1
+1792398978.430303	[asr-qnn] end 121-127105-0019 1 0.707
+1792398978.933193	[asr-qnn] begin 260-123288-0009 1
+1792398979.651374	[asr-qnn] end 260-123288-0009 1 0.717
+1792398980.153119	[asr-qnn] begin 5683-32865-0006 1
+1792398980.868594	[asr-qnn] end 5683-32865-0006 1 0.715
+1792398981.371784	[asr-qnn] begin 7176-88083-0008 1
+1792398982.095183	[asr-qnn] end 7176-88083-0008 1 0.722
+1792398982.595436	[asr-qnn] begin 6930-76324-0001 1
+1792398983.334316	[asr-qnn] end 6930-76324-0001 1 0.738
+1792398983.835603	[asr-qnn] begin 260-123440-0005 1
+1792398984.690532	[asr-qnn] end 260-123440-0005 1 0.854
+1792398985.190905	[asr-qnn] begin 237-134500-0026 1
+1792398986.076105	[asr-qnn] end 237-134500-0026 1 0.884
+1792398986.578351	[asr-qnn] begin 7127-75947-0034 1
+1792398987.513836	[asr-qnn] end 7127-75947-0034 1 0.935
+1792398988.017343	[asr-qnn] begin 1995-1826-0008 1
+1792398989.005335	[asr-qnn] end 1995-1826-0008 1 0.987
+1792398989.507569	[asr-qnn] begin 7021-85628-0004 1
+1792398990.537031	[asr-qnn] end 7021-85628-0004 1 1.029
+1792398992.444276	[asr-qnn] begin 4970-29095-0019 1
+1792398993.480768	[asr-qnn] end 4970-29095-0019 1 1.036
+1792398993.982423	[asr-qnn] begin 5639-40744-0011 1
+1792398994.987432	[asr-qnn] end 5639-40744-0011 1 1.004
+1792398994.987560	[asr-qnn] progress 75/82 excluded=0 retaken=0
+1792398995.488646	[asr-qnn] begin 4446-2271-0015 1
+1792398996.465346	[asr-qnn] end 4446-2271-0015 1 0.975
+1792398996.966151	[asr-qnn] begin 1995-1826-0014 1
+1792398997.946495	[asr-qnn] end 1995-1826-0014 1 0.979
+1792398998.447764	[asr-qnn] begin 2094-142345-0040 1
+1792398999.431199	[asr-qnn] end 2094-142345-0040 1 0.981
+1792398999.934866	[asr-qnn] begin 8555-284447-0012 1
+1792399000.931965	[asr-qnn] end 8555-284447-0012 1 0.995
+1792399001.435809	[asr-qnn] begin 121-127105-0030 1
+1792399002.559637	[asr-qnn] end 121-127105-0030 1 1.122
+1792399003.063670	[asr-qnn] begin 4507-16021-0006 1
+1792399004.202994	[asr-qnn] end 4507-16021-0006 1 1.138
+1792399004.704380	[asr-qnn] begin 1995-1837-0008 1
+1792399005.835349	[asr-qnn] end 1995-1837-0008 1 1.126
+1792399005.835430	[asr-qnn] progress 82/82 excluded=0 retaken=0
+1792399005.839038	[asr-qnn] done tag=a2-sherpa-qnn-ctc-30s-S32-burst done=82 failed=0 rtf=0.129412 vmhwm_kb=1283924

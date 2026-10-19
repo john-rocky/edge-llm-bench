@@ -1,0 +1,80 @@
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/parse-options.cc:Read:374 bin/sherpa-onnx-offline --provider=qnn --tokens=/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/tokens.txt --nemo-ctc.qnn-backend-lib=/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnHtp.so --nemo-ctc.qnn-system-lib=/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnSystem.so --nemo-ctc.qnn-context-binary=/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/model.bin --num-threads=4 --decoding-method=greedy_search --debug=1 sets/W/1995-1836-0004.wav 
+
+OfflineRecognizerConfig(feat_config=FeatureExtractorConfig(sampling_rate=16000, feature_dim=80, low_freq=20, high_freq=-400, dither=0, normalize_samples=True, snip_edges=False), model_config=OfflineModelConfig(transducer=OfflineTransducerModelConfig(encoder_filename="", decoder_filename="", joiner_filename=""), paraformer=OfflineParaformerModelConfig(model=""), nemo_ctc=OfflineNemoEncDecCtcModelConfig(model="", qnn_config=QnnConfig(backend_lib="/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnHtp.so", context_binary="/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/model.bin", system_lib="/data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnSystem.so"), ), whisper=OfflineWhisperModelConfig(encoder="", decoder="", language="", task="transcribe", tail_paddings=-1, enable_token_timestamps=False, enable_segment_timestamps=False, ), fire_red_asr=OfflineFireRedAsrModelConfig(encoder="", decoder=""), tdnn=OfflineTdnnModelConfig(model=""), zipformer_ctc=OfflineZipformerCtcModelConfig(model=""), wenet_ctc=OfflineWenetCtcModelConfig(model=""), sense_voice=OfflineSenseVoiceModelConfig(model="", language="auto", use_itn=False), moonshine=OfflineMoonshineModelConfig(preprocessor="", encoder="", uncached_decoder="", cached_decoder="", merged_decoder="", decoder="", ), dolphin=OfflineDolphinModelConfig(model=""), canary=OfflineCanaryModelConfig(encoder="", decoder="", src_lang="", tgt_lang="", use_pnc=True), cohere_transcribe=OfflineCohereTranscribeModelConfig(encoder="", decoder="", language="", use_punct=True, use_itn=True), omnilingual=OfflineOmnilingualAsrCtcModelConfig(model=""), funasr_nano=OfflineFunASRNanoModelConfig(encoder_adaptor="", llm="", embedding="", tokenizer="", system_prompt="You are a helpful assistant.", user_prompt="语音转写：", max_new_tokens=512, temperature=1e-06, top_p=0.8, seed=42, language="", itn=True, hotwords=""), medasr=OfflineMedAsrCtcModelConfig(model=""), fire_red_asr_ctc=OfflineFireRedAsrCtcModelConfig(model=""), qwen3_asr=OfflineQwen3ASRModelConfig(conv_frontend="", encoder="", decoder="", tokenizer="", hotwords="", max_total_len=512, max_new_tokens=128, temperature=1e-06, top_p=0.8, seed=42), telespeech_ctc="", tokens="/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/tokens.txt", num_threads=4, debug=True, provider="qnn", model_type="", modeling_unit="cjkchar", bpe_vocab=""), lm_config=OfflineLMConfig(model="", scale=0.5, lodr_scale=0.01, lodr_fst="", lodr_backoff_id=-1), ctc_fst_decoder_config=OfflineCtcFstDecoderConfig(graph="", max_active=3000), decoding_method="greedy_search", max_active_paths=4, hotwords_file="", hotwords_score=1.5, blank_penalty=0, rule_fsts="", rule_fars="", hr=HomophoneReplacerConfig(lexicon="", rule_fsts=""))
+Creating recognizer ...
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:100 loaded /data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnHtp.so
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:114 Got QnnInterface_getProviders
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:136 QNN_API_VERSION_MAJOR: 2
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:137 QNN_API_VERSION_MINOR: 30
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:138 QNN_API_VERSION_PATCH: 0
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:161 ---0----
+backendId: 6
+coreApiVersion.major: 2
+coreApiVersion.minor: 30
+coreApiVersion.patch: 0
+backendApiVersion.major: 5
+backendApiVersion.minor: 40
+backendApiVersion.patch: 0
+
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-backend.cc:InitQnnInterface:179 backend build ID: v2.40.0.251030114326_189385
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Impl:66 Init from context binary '/data/local/tmp/edge-llm-bench/asr-qnn/models/sherpa-onnx-qnn-SM8850-binary-parakeet-ctc-0.6b-30s/model.bin'
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:LoadSystemLib:67 loaded /data/local/tmp/edge-llm-bench/asr-qnn/lib/libQnnSystem.so
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:LoadSystemLib:103 QNN_SYSTEM_API_VERSION_MAJOR: 1
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:LoadSystemLib:105 QNN_SYSTEM_API_VERSION_MINOR: 6
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:LoadSystemLib:109 systemApiVersion.major: 1
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:LoadSystemLib:113 systemApiVersion.minor: 6
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/utils.cc:CopyGraphsInfo:548 version: 3
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:InitInputTensors:593 input 0
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/utils.cc:PrintTensor:493   id: 1
+  name: x
+  type: QNN_TENSOR_TYPE_APP_WRITE
+  data format: 0
+  data type: QNN_DATATYPE_UFIXED_POINT_16
+  quantize info: 
+    encodingDefinition: 0x1
+    quantizationEncoding: QNN_QUANTIZATION_ENCODING_SCALE_OFFSET
+     scale: 5.66595e-05
+     offset: -41458
+  rank: 3
+  dimensions: 1, 3000, 80, 
+  memType: QNN_TENSORMEMTYPE_RAW
+ memType raw data size: 480000
+  isDynamicDimensions: False
+  isProduced: 0
+
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:InitOutputTensors:614 output 0
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/utils.cc:PrintTensor:493   id: 3758
+  name: log_probs
+  type: QNN_TENSOR_TYPE_APP_READ
+  data format: 0
+  data type: QNN_DATATYPE_UFIXED_POINT_16
+  quantize info: 
+    encodingDefinition: 0x1
+    quantizationEncoding: QNN_QUANTIZATION_ENCODING_SCALE_OFFSET
+     scale: 0.00215588
+     offset: -65535
+  rank: 3
+  dimensions: 1, 375, 1025, 
+  memType: QNN_TENSORMEMTYPE_RAW
+ memType raw data size: 768750
+  isDynamicDimensions: False
+  isProduced: 0
+
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:AllocateBuffer:635 Allocate 1248750 bytes, or 1.191 MB
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/qnn-model.cc:SetupPointers:656 Setup pointers successfully.
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:CheckModel:222 max_num_frames: 3000
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:CheckModel:223 feat_dim: 80
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:CheckModel:224 vocab_size: 1025
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:CheckModel:225 subsampling_factor: 8
+recognizer created in 0.635 s
+Started
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Run:89 Number of input frames 3391 is too large. Truncate it to 3000 frames.
+/Users/USER/code/edge-llm-bench-wt-asr-qnn/.build/asr-qnn/src/sherpa-onnx/sherpa-onnx/csrc/qnn/offline-parakeet-ctc-model-qnn.cc:Run:93 Recognition result may be truncated/incomplete. Please select a model accepting longer audios.
+Done!
+
+sets/W/1995-1836-0004.wav
+----
+num threads: 4
+decoding method: greedy_search
+Elapsed seconds: 0.921 s
+Real time factor (RTF): 0.921 / 33.910 = 0.027
