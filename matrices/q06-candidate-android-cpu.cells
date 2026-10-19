@@ -1,0 +1,16 @@
+# 2026-10-19 Qwen3 0.6B candidate, Android CPU (one sitting per device, after matrices/q06-candidate-android-gpu.cells; split so
+# each sitting stays within an hour). The current Hub file Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (Hub a3c5d805) beside a
+# local candidate (the same file's 2026-08-05 revision, Hub 8414150f, with the current file's LlmMetadata; sha256
+# e6bf25c0cf7e1a09d19fc6ad716072bb5b8ac96a0eca75075a69f7ce8c1a8f91), same options row by row, the current file first in
+# each pair (docs/dashboard-cells-v1.md "Qwen3 0.6B candidate (2026-10-19)"). Not a page file: the candidate is not
+# published, so its rows give it its own model id and file= is its host path (android/bench/run_cell.py pushes a host
+# path as it is and records the pushed bytes' sha256). First row = the Android session anchor of
+# matrices/dashboard-text-v1.cells; the current file's rows are byte-identical to matrices/dashboard-text-v1.cells.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/q06-candidate-android-cpu.cells --suffix q06cand-cpu --once --hold-held-by <keeper pid>
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/q06-candidate-android-cpu.cells --suffix q06cand-cpu --once
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 short-chat backend=cpu local=1 file=~/.cache/edge-llm-bench/litert-candidates/out/Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 long-context-1024-gen256 backend=cpu local=1 file=~/.cache/edge-llm-bench/litert-candidates/out/Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm context-tokens=2048

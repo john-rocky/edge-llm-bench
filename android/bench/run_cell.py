@@ -1632,6 +1632,10 @@ ANDROID_QUANT_LABELS = {
     # (ModelCatalog liteRTLM) for the wi4b32 builds; the 1.7B INT8 file's label
     # is the repo manifest's recipe name (dynamic_wi8_afp32)
     "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    # 2026-10-19 local candidate, side-loaded by a file= path (not on the Hub): the 2026-08-05 revision of the
+    # file above (Hub 8414150f) with the current file's LlmMetadata (Hub a3c5d805) — the Mac catalog string of
+    # litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; 2026-08-05 graph, 0.18.0 metadata, local candidate)",
     "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     # 2026-09-14 dtype-only pair: one litert-torch main (6d4c622) GPU-graph export of

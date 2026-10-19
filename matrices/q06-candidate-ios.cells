@@ -1,0 +1,26 @@
+# 2026-10-19 Qwen3 0.6B candidate, iPhone (one sitting): the current Hub file Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+# (catalog litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32, Hub a3c5d805; its Metal GPU engine fails to build on the
+# iPhone 18 Pro on LiteRT-LM v0.18.0, a generated kernel that does not compile) beside a local candidate
+# (litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018: the same file's 2026-08-05 revision, Hub 8414150f,
+# with the current file's LlmMetadata; sha256 e6bf25c0cf7e1a09d19fc6ad716072bb5b8ac96a0eca75075a69f7ce8c1a8f91), same
+# options row by row, the current file first in each pair (docs/dashboard-cells-v1.md "Qwen3 0.6B candidate (2026-10-19)").
+# Not a page file: the candidate is not published. First row = the iPhone session anchor of matrices/dashboard-text-v1.cells;
+# the current file's rows are byte-identical to matrices/dashboard-q06-dynamic-ios.cells (GPU) and
+# matrices/dashboard-text-v1.cells (CPU); the task rows come before the native row of the same model (the native import
+# takes this campaign's task record of that arm and model as --like).
+# Before the sitting: an app built with the candidate's catalog entry, and the candidate side-loaded into the app's
+# Documents/models/litert-lm/litert-local__Qwen3-0.6B-r0805meta018/ (its own directory: litert-community__Qwen3-0.6B/,
+# which the current file's rows read, stays as it is).
+#   python3 scripts/dashboard_job.py iphone18pro --cells matrices/q06-candidate-ios.cells --suffix q06cand --once
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 native-benchmark-1024x256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat backend=cpu
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 short-chat backend=cpu
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018 long-context-1024-gen256 backend=cpu context-tokens=2048

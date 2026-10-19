@@ -792,6 +792,29 @@ def main():
     ok(len(marker) == 1, "on-device cache marker written after first clean run")
     ok(not os.path.exists(os.path.join(out_a, "FLAGGED.txt")), "clean capture not flagged")
 
+    # --- a side-loaded candidate (2026-10-19): a bundle that is not on the Hub, given by its host path
+    # under its own model id, is pushed as it is and recorded with that id, the label ANDROID_QUANT_LABELS
+    # holds for its file name (not the Hub file's, whose name it extends) and the pushed bytes' sha256
+    print("--- campaign C6 (a side-loaded candidate bundle: id, label, sha256)")
+    cand = os.path.join(tmp, "cand", "Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm")
+    os.makedirs(os.path.dirname(cand))
+    with open(cand, "w") as fh:
+        fh.write("weights of a re-packed candidate")
+    cand_id = "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018"
+    cells_c6 = os.path.join(tmp, "c6.cells")
+    with open(cells_c6, "w") as fh:
+        fh.write(f"android litert-lm {cand_id} short-chat backend=gpu local=1 runs=1 file={cand}\n")
+    schedule([31.0])
+    rc = run_campaign(dict(env, CAMPAIGN="selftest-c6"), cells_c6)
+    ok(rc == 0, f"campaign C6 exits 0 (got {rc})")
+    c6 = records(os.path.join(raw_root, "selftest-c6", "app-path-android"), "litert-lm-gpu_")
+    cand_dev = "litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_r0805meta018_" + os.path.basename(cand)
+    got_c6 = [(r["model"]["id"], r["model"]["quantization"], r["model"]["file"], r["model"]["sha256"]) for _, r in c6]
+    ok(got_c6 == [(cand_id, "INT4 (dynamic, block-32 weights, FP32 act; 2026-08-05 graph, 0.18.0 metadata, local candidate)",
+                   cand_dev, hashlib.sha256(open(cand, "rb").read()).hexdigest())]
+       and os.path.exists(os.path.join(dev, "models", cand_dev)),
+       f"candidate: one record with its id, its label, the pushed copy's name and sha256 (got {got_c6})")
+
     # --- push_verified by sha256 (2026-10-15): a same-size copy whose bytes differ is pushed
     # again (the Hub's metadata-only updates of 2026-10-11 never reached the Pixel 8a under the
     # size check), the phone's sha256 is cached in <file>.sha256 by size and mtime, and the
