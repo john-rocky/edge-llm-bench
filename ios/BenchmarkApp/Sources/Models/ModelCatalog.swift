@@ -171,9 +171,10 @@ public enum ModelCatalog {
             onDiskSizeMB: 500,
             hfRepoId: "mlx-community/Qwen3.5-0.8B-MLX-4bit"
         ),
-        // PTQ. Kept for the PTQ-vs-QAT delta; do NOT use it in a cross-runtime table — Google
-        // ships a QAT build for every arm, so a PTQ row measures the recipe, not the runtime.
-        // Measured on M4 Max: PTQ 78% vs QAT 87% on GSM8K (n=100, same protocol).
+        // PTQ. Since 2026-10-19 the page shows it as the second MLX Gemma 4 row beside the QAT OptiQ
+        // row, named by class (owner decision: the most-downloaded build, and the llama.cpp rows are
+        // PTQ too; docs/dashboard-cells-v1.md "MLX Gemma 4 file"). The class is in the row name because
+        // it costs quality: PTQ 78% vs QAT 87% on GSM8K on M4 Max (n=100, same protocol).
         ModelInfo(
             id: "mlx-community/gemma-4-e2b-it-4bit",
             displayName: "Gemma 4 E2B (PTQ 4-bit)",

@@ -713,9 +713,9 @@ was not); the 1.7B / 4B Core AI cells fell inside the unreachable window.
   row.
 - Qwen3.5 / LFM2.5 stay as disabled placeholders until the go signal;
   uncommenting them adds cells to the same slots (about +40% device time).
-- iPhone MLX Gemma 4 E4B stays `exclude=app-killed-at-model-load-sigkill`
-  unless the owner chooses the smaller PTQ build for that one row (open
-  question 6).
+- iPhone MLX Gemma 4 E4B: the QAT OptiQ row stays `exclude=app-killed-at-model-load-sigkill`; since
+  2026-10-19 the PTQ 4bit build is a second row (owner decision), and it loads on the iPhone 18 Pro
+  (peak 5,139 MB, `results/raw/2026-10-19-dashboard-v1-iphone18pro-mlx-ptq-r3-ios/`).
 - The second task (1024-prefill / 256-decode / ctx 2048) is scheduled since
   2026-10-06: every sitting measures `long-context-1024-gen256` beside
   `short-chat` (rows and reasons: `docs/dashboard-cells-v1.md`, "Second task
