@@ -179,3 +179,56 @@ keeper hold, 2026-10-19 12:03–12:05 JST), not a session: their speeds are not 
 - the S26 llama.cpp CPU arm's cpu-cap: every flat Gemma 4 run of 10-19 (thinking on and off) is capped above 15 % on the S26 (policy6,
   cores 6-7, unmasked `-t 4`), so these page cells carry no number; a mask that keeps the four threads in policy0 (e.g. 0x0f) is untested
   (an owner decision: the S26's mask is "" since 2026-08-25).
+
+---
+
+<!-- ladder of round r18 (the Qwen3 0.6B dynamic INT4 file: the current Hub file beside a local candidate with the 2026-08-05 graph); a bench lane keeps one file per round topic, the conversion-lane lint does not apply -->
+
+# SPEED_LADDER — Qwen3 0.6B dynamic INT4 (litert-community/Qwen3-0.6B) on LiteRT-LM v0.18.0: the current file (2026-09-21 graph) or the 2026-08-05 graph with the current LlmMetadata
+
+runtime: litert (LiteRT-LM v0.18.0: the Mac yardstick .build/dd-mac-q06cand, the iPhone app b714ce21…, the Android flat binaries)
+model: Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (Hub a3c5d805, sha256 03e7da1e…) and the local candidate Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm (sha256 e6bf25c0…, not on the Hub)
+device: Mac Studio M4 Max (Mac16,9) macOS 27.0; iPhone 18 Pro (iPhone19,2) iOS 27.2; Pixel 8a (akita) Android 16; the Galaxy S26 not measured (the supervisor's decision: its numbers would not change the reading)
+parity bar: the text check (the Android runner's; the session_check text screen on the Mac and the iPhone) and the owner's rule: the candidate replaces the Hub file only if its same-sitting decode and prefill stay within −3 % of the current file on every device and backend
+
+Round r18 (2026-10-19). One sitting per device and cells file (matrices/q06-candidate-*.cells), the two files alternating row by row.
+Workload = long-context-1024-gen256 (prompt 1,338 tokens, 256 decoded, ctx 2048). Metric = render_leaderboard.arm_row: the warm decode
+median on the Mac and the iPhone (runs 2–4), the cold median on Android (each launch's first run), prefill on the same regime. Short-chat
+and the native 1024x256 rows: ROUND18.md "計測の表". Verdict: not replaced (slower on the Pixel 8a GPU).
+
+## 梯子(ladder — 1 行 = 1 form。測った形は全部残す。ship = 出荷する形)
+| # | form | backend | device | workload | metric | parity | status | evidence | ship |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | current file (2026-09-21 graph: odml.swiglu, prefill logits) | gpu | M4 Max | p1338/d256 | 314.9 tok/s (n 3), prefill 7,342 | PASS 4/4 (screen) | measured | ../2026-10-19-dashboard-v1-m4max-q06cand-mac/ (main) | ship |
+| 2 | candidate (2026-08-05 graph + current LlmMetadata) | gpu | M4 Max | p1338/d256 | 310.4 tok/s (−1.4 %), prefill 7,441 (+1.4 %) | PASS 4/4 | measured | same | |
+| 3 | current file | cpu | M4 Max | p1338/d256 | 47.8 tok/s, prefill 525.9 | PASS 4/4 | measured | same | ship |
+| 4 | candidate | cpu | M4 Max | p1338/d256 | 48.2 tok/s (+0.7 %), prefill 543.0 (+3.3 %) | PASS 4/4 | measured | same | |
+| 5 | current file | gpu | iPhone 18 Pro | p1338/d256 | — | — | no-go: the Metal engine is not created ("half4 half4(res)_final", 9 compile-error lines a launch, the 2026-09-21 graph whatever the LlmMetadata) | r18-iphone-2x2/console_d_graph0921_meta018.txt, console_c_graph0921_meta0805.txt | |
+| 6 | candidate | gpu | iPhone 18 Pro | p1338/d256 | 142.5 tok/s (n 3), prefill 3,477.5 | PASS 4/4 | measured | ../2026-10-19-dashboard-v1-iphone18pro-q06cand-ios/ (main) | |
+| 7 | current file | cpu | iPhone 18 Pro | p1338/d256 | 50.1 tok/s (spread 45.8 %, heat), prefill 402.3 | PASS 4/4 | measured | same | ship |
+| 8 | candidate | cpu | iPhone 18 Pro | p1338/d256 | 49.7 tok/s (−0.7 %, spread 44.5 %), prefill 415.8 (+3.4 %) | PASS 4/4 | measured | same | |
+| 9 | current file | gpu | Pixel 8a | p1338/d256 | 30.6 tok/s cold (all iterations 31.59), prefill 554.5 | PASS 6/6 | measured | ../2026-10-19-dashboard-v1-pixel8a-q06cand-gpu-android/ (main) | ship |
+| 10 | candidate | gpu | Pixel 8a | p1338/d256 | 25.7 tok/s cold (−15.8 %; all iterations 27.36 = −13.4 %), prefill 573.9 (+3.5 %) | PASS 5/5 | measured | same | |
+| 11 | current file | cpu | Pixel 8a | p1338/d256 | no number: every run capped 40–55 % (cpu-cap-rule) | PASS 6/6 | measured | ../2026-10-19-dashboard-v1-pixel8a-q06cand-cpu-android/ (main) | |
+| 12 | candidate | cpu | Pixel 8a | p1338/d256 | no number: every run capped 40–55 % (cpu-cap-rule) | PASS 5/5 | measured | same | |
+
+## レバー(levers — 試すべき手を全部。1 行 = 1 手。n-a は「この model には当てはまらない」理由つき)
+| lever | status | result / reason | evidence |
+|---|---|---|---|
+| graph (the export) | measured | the 2026-08-05 graph (no odml.swiglu, no logits on the prefill signatures, decode 936 ops against 830) builds the iPhone 18 Pro's Metal engine where the 2026-09-21 graph does not; it decodes 13–22 % slower on the Pixel 8a GPU, −1.4 to −2.5 % on the Mac GPU, within −1 % on the iPhone CPU; why the Pixel GPU is slower is unverified | ROUND18.md "2×2 の結果", "計測の表" |
+| LlmMetadata (the chat template) | measured | no part in the iPhone GPU failure (the 2×2: the 2026-09-21 graph fails with either metadata, the 2026-08-05 graph builds with either); the 2026-08-05 template fails the first turn on 0.18.0 (content parts), the current one answers | r18-iphone-2x2/ |
+| quant | n-a: both files carry the same recipe (INT4 block-32 FC weights, the same FC inventory) | - | ROUND18.md "候補の作り方" |
+| precision | n-a: no dtype option in this comparison; each backend's default activation type | - | - |
+| shape | n-a: the protocol's fixed tasks (19-token chat, 1,338-token 1K, forced 1024 / 256) | - | - |
+| npu-path | n-a: no NPU row for this file in this round | - | - |
+| state | n-a: one fresh conversation per run | - | - |
+
+## 例外(exception — 同じ device + workload でもっと速い形を出荷しないときだけ理由。無ければ「なし」)
+- iPhone 18 Pro GPU: row 6 (the candidate) is the only form that runs and is not shipped: the owner's rule keeps one Hub file for every
+  device, and the candidate is slower on the Pixel 8a GPU (rows 9–10); an iOS-only file or a card note is the supervisor's next step.
+- Mac CPU row 4 (+0.7 %): inside the run-to-run spread (2.7 %), not shipped for the same rule.
+
+## 残り(remaining — まだ試していないレバーと見込み。無ければ「なし」。1 件でも書けば lint は HOLD)
+- the cause of the Pixel 8a GPU slowdown: an export of the 2026-09-21 recipe without the odml.swiglu composite, A/B on the Pixel 8a and the
+  iPhone GPU (does the iPhone failure follow the composite, and does the Pixel speed); outside this round (the supervisor's call).
+- the Galaxy S26 (Adreno GPU, CPU): not measured by decision; the Pixel 8a CPU pair again on a cool phone if its numbers are wanted.
