@@ -644,3 +644,11 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   repack_metadata.py, a catalog entry, a local-file route for the Android runner, three cells files, SIDE builds with r17's four
   files set aside, then one sitting per device on the job route after my merge and go. The S26 thinkoff E2B sitting (r15) passed and
   auto-pushed (721ee21e); my push raced it once and succeeded on retry (origin ddc2f290).
+- 13:4x the Pixel 8a is back on USB (the owner re-plugged it; adb device 13:44): r15's re-measure (llama-thinkoff-r2) started 13:43.
+  The AA lane reported a second own bundle failing on an iPhone's Metal GPU under v0.18.0: LFM2.5-1.2B-Instruct_int4_gpu.litertlm on
+  the 17 Pro (A19 Pro), 2 of 2, a half4 / float4 mismatch in generated MSL after DYNAMIC_UPDATE_SLICE stays off the GPU delegate
+  (console read: .dashboard/0180_aa_20261014/device/ios/log/resmoke.20261019-1346.log l.264-271). Its card says the 10-13
+  metadata re-pack's llm_model_type changed the GPU executor defaults — so the metadata may select the failing Metal path. Hazard
+  row ios-metal-lfm25-12b-int4gpu-engine-fails added (standup 04a00677; the LFM card now fails hazard_lint card = an owner item:
+  a card line, or a fix). r18 gets a 2x2 iPhone engine-creation smoke (graph 08-05 / 09-21 × metadata 08-05 / current) to tell the
+  graph from the metadata before the four-device comparison.
