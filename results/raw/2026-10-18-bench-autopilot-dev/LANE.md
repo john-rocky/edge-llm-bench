@@ -664,3 +664,10 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   cells' peak memory reads below the model size (E4B 4bit 968 MB on a 5.1 GB bundle; short-chat 4,722 MB). Rehearsal 7 died
   silently because I rewrote ci-rehearsal.sh while bash ran it (bash reads a script by offset); rehearsal 8 runs through a wrapper
   that holds the Mac measurement window (so no rehearsal overlaps a Mac sitting again).
+- 14:4x–15:0x r18's Mac comparison sitting committed (e6b98c14) after its two native rows were imported by hand (as on 10-06; the
+  Mac runner does not import YARDSTICK_NATIVE_OK lines — a follow-up), allow-list 56749863; its post found a red point on the Mac
+  Qwen3 0.6B GPU short-chat prefill (−23 %, a 19-token prefill) already covered by the pending retake that runs first at 02:00.
+  r15's Pixel 8a re-measure (llama-thinkoff-r2, exit 0, all runs thinking false, cpu-capped) held on reference-uncommitted: its
+  admission reference is the aborted 12:34 sitting's anchor dir, which ADMITTED on two good llama.cpp runs and one LiteRT-LM cell
+  of three, its third llama.cpp run failing rc=1 when the phone dropped off USB (12:35) — that anchor dir is committed by hand with
+  an allow-list line naming this entry, then the r2 pair is posted.
