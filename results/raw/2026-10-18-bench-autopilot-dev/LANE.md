@@ -635,3 +635,12 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   (EN / JA mirrored, v1 kept) and the hazard row's note updated (standup 5aab2a34). The owner was given three items through code-2d:
   the workaround candidate (the 0.6B file's 2026-08-05 revision with the 0.18.0 LlmMetadata, as the 1.7B got on 10-11 = an upload,
   GO), the issue (GO; recommended after that test), and the iPhone INT8 row. main is level with origin after rehearsal 6 (ef25807f).
+- 13:2x–13:3x owner decisions via code-2d: (3) the iPhone 0.6B stays two rows (INT8 GPU, INT4 CPU, labelled); (1) the
+  workaround candidate is built locally first — the 2026-08-05 graph (Hub 8414150f) with the current file's 0.18.0 LlmMetadata,
+  weights unchanged — and measured beside the current file on four devices (iPhone GPU / CPU, S26 GPU / CPU, Pixel 8a, Mac): no
+  device slower and the text check passing = a Hub PR GO request (its body Fable-read), else an iOS-only file or a card note; no
+  upload until then; (2) the issue gets that result in its body before its GO request (full EN / JA text). Round r18 launched
+  (worktree wt-autopilot, branch q06-candidate, tab workspace:394): the metadata-only re-pack with LC/team_repack_20261012's
+  repack_metadata.py, a catalog entry, a local-file route for the Android runner, three cells files, SIDE builds with r17's four
+  files set aside, then one sitting per device on the job route after my merge and go. The S26 thinkoff E2B sitting (r15) passed and
+  auto-pushed (721ee21e); my push raced it once and succeeded on retry (origin ddc2f290).
