@@ -45,7 +45,7 @@ from render_leaderboard import arm_row  # noqa: E402
 OFF = "FAIL:text-off-task-screen"
 TODAY = datetime.date(2026, 10, 6)
 FIELDS = ["source", "campaign", "platform", "timestamp", "runtime", "schema_version",
-          "engine_version", "engine_artifact", "model_id", "quantization", "task",
+          "engine_version", "engine_stamped", "engine_artifact", "model_id", "model_file", "quantization", "task",
           "harness_stamp", "decode_tps", "decode_tps_wall", "prefill_tps", "prompt_tokens",
           "gen_tokens", "ttft_ms", "mem_footprint_median_mb", "mem_resident_median_mb",
           "energy_j_per_tok", "thermal_initial", "thermal_final", "battery_state", "cold_run",
