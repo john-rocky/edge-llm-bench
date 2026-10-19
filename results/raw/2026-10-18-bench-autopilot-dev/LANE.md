@@ -652,3 +652,15 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   row ios-metal-lfm25-12b-int4gpu-engine-fails added (standup 04a00677; the LFM card now fails hazard_lint card = an owner item:
   a card line, or a fix). r18 gets a 2x2 iPhone engine-creation smoke (graph 08-05 / 09-21 × metadata 08-05 / current) to tell the
   graph from the metadata before the four-device comparison.
+- 14:0x–14:2x r18 Mac-side PASS checked (the candidate's sha256 e6bf25c0… recomputed; the re-pack changed only the jinja template;
+  the candidate's LlmMetadata section equals the current file's; both graphs' llm_model_type qwen3) and merged (f7bfbeb5); its four
+  device chains run (Mac now; the iPhone after my 0.6B re-run; S26 / Pixel after r15). r16 closed (lint PASS; its 18 Pro sitting
+  mlx-ptq-r3 recomputed: 1K / short-chat warm decode E2B OptiQ 52.09 / 54.73, E2B 4bit 68.19 / 71.35, E4B 4bit 36.80 / 38.17 —
+  the E4B 4bit loads on the 18 Pro, no exclude; the PTQ 1K replies decline the lorem passage as on the Mac); its post held on
+  reference-uncommitted (my aborted sitting's anchor phase): that anchor posted alone with --allow-subset (ffdd2e6e), then r16's
+  pair (142ac15d), both page-checked PASS (P 391b9a46, 288da0d2); r16's branch merged (ae336d6d), tab 385 closed. Its open items:
+  the ModelCatalog comment and docs/dashboard-recurring-job-v1.md l.709-711 still say PTQ is no cross-runtime row; no PTQ bytes in
+  models/artifact-bytes.json (bandwidth n/a); the weekly Apple sittings grow by four cells. Observation to check: the 18 Pro's 1K
+  cells' peak memory reads below the model size (E4B 4bit 968 MB on a 5.1 GB bundle; short-chat 4,722 MB). Rehearsal 7 died
+  silently because I rewrote ci-rehearsal.sh while bash ran it (bash reads a script by offset); rehearsal 8 runs through a wrapper
+  that holds the Mac measurement window (so no rehearsal overlaps a Mac sitting again).
