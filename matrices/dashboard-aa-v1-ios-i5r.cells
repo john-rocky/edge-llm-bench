@@ -1,0 +1,11 @@
+# Artificial Analysis set on the iPhone 17 Pro, LiteRT-LM v0.18.0 (matrices/dashboard-aa-v1-ios.cells header).
+# Slot i5r: the LFM2.5-230M rows of slot i5, re-run (the 2026-10-19 i5 sitting lost both cells when the phone moved from USB to Wi-Fi mid-cell). The session anchor rows, then the rows below, each byte-identical to its source line.
+# Source: matrices/dashboard-aa-v1-ios.cells lines 16-17 (anchors), 54-55
+# Estimate: 14.0 min (job + anchors.cells phase + this file's anchor rows 9.0, then per row its cooldown + the launch; .dashboard/0180_aa_20261014/device/ios/README.md)
+# Run, inside the iPhone hold a keeper took:
+#   python3 scripts/dashboard_job.py iphone17pro --schedule <schedule copy with the phone's UDID> --cells matrices/dashboard-aa-v1-ios-i5r.cells --suffix 0180-aa-i5r --once --hold-held-by <keeper pid>
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
+ios litert-lm litert-community/LFM2.5-230M short-chat backend=gpu runs=2
+ios litert-lm litert-community/LFM2.5-230M native-benchmark-1024x256 backend=gpu context-tokens=2048
