@@ -10,11 +10,13 @@ Supervisor: edge-llm-bench-55 [4f120b] (K/LANE.md first line). Branch `mlx-ptq-r
 - 12:05–12:09 render_dashboard(--check と 3 file の render)、test_render_rules、leaderboard の generate、selftest 5 本、Android selftest 3 本、py_compile。`android/bench/test_longctx1024.py` だけ FAIL(1K の対の数 64 を書き込んだ assert、今は 68)= launch の書く範囲の外 → patch を K/tools に用意(下の「CI の下稽古」)。P を私の branch に向けて scratchpad に build、P の check PASS。
 - 12:09–12:14 docs の節、転送 script と dry run(PASS)。
 - 12:14 18 Pro の llama.cpp retake が終わった(ledger 12:14:22 OK)。hold は空(holder none、queue 空)。転送も計測も監督の go の後(launch 手順 8)= まだ端末に触れていない。次 = commit、監督へ「Mac 側 PASS、端末待ち」。
-- 12:17:19 commit a71f1b5a、12:17:32 ca5321c9(hash の追記。その行に 12:18 と書いたのは clock を読む前の誤り、ここで直した)。次 = 監督へ「Mac 側 PASS、端末待ち」、go を待つ。
+- 12:17:19 commit a71f1b5a、12:17:32 ca5321c9(hash の追記。その行に 12:18 と書いたのは clock を読む前の誤り、ここで直した)。次 = 監督へ「Mac 側 PASS、端末待ち」、go を待つ。(12:24 の履歴の書き換えの後の hash は「commit」節)
 - 12:18 監督へ「Mac 側 PASS、端末待ち」の 1 通(手順 1〜7 の結果、test の patch をどう当てるかの問い、P の名前の件)。次 = go を待つ(端末には触れない、enqueue もしない)。
 - 12:19–12:21 手順 8 の driver `K/tools/r16_step8.sh`(keeper → enqueue + wait → 転送 → release → 待ち行列に keeper が居なければ MAIN から job、job は自分の session で nohup)。転送の copy の上限を 1 本 20 分に(2 本で 45 分の枠に収まる)。
 - 12:2x 監督の返事: (1) test の 64 → 68 は branch で commit(同じ理由の 1 行の comment)、merge は r15 → r16 の順で監督、(2) P の名前は P 側の変更が要る = `K/p-mlx-row-name.patch` を用意(当てるのは監督)、(3) go は 0.6B smoke の後の 1 通、それまで enqueue しない。
 - 12:21 test を直して 13 tests OK。次 = commit、P の patch。
+- 12:21:35 commit(test、driver、経過)。12:22–12:24 P の名前の patch の下見(P の HEAD 1f45083 を scratchpad に git archive)。途中で ROUND16 の render の抜粋に runtime を並べた数字が入っていたのに気づき、12:24 に履歴を書き換えた(「commit」節)。
+- 12:2x 監督の go: 0.6B smoke は済み、18 Pro は空き。転送は今から、job は cells file が main に入ってから(test の commit が入ったら「commit 済み」の 1 通、監督が merge して返す)。12:25 driver を push / job の 2 部に分けた。次 = commit、「commit 済み」、push を起動。
 
 ## 下見(11:53–12:00)
 
@@ -75,7 +77,7 @@ iPhone 18 Pro long-context-1024-gen256:
 ## CI の下稽古(`.github/workflows/data-pipeline.yml` の手順、nice -n 19)
 
 - OK: validate(全部と --require-anchor)、render_dashboard --check、test_render_rules、test_import_native_benchmark、session_check_selftest、dashboard_job_selftest、regression_watch_selftest、dashboard_post_selftest、autopilot_selftest(58 checks; CI と同じく pin の Android binary の dir を `BENCH_ANDROID_BIN_DIR` に渡して。渡さないと 12 FAIL = 環境)、android/bench/selftest.py、android/ddp/selftest.py(76 checks)、py_compile 全部。summary-fresh は raw も build_summary も変えていないので対象外。
-- FAIL(直した): `android/bench/test_longctx1024.py` `test_every_short_chat_row_has_one_1024_twin` — `AssertionError: 68 != 64`(l.143、1K の対の数を手で書いた assert)。HEAD は 64(iPhone と Mac の MLX が 15 → 17)、それより前の assert(対が 1 本ずつ、option が同じ)は通っている。launch の書く範囲の外なので最初は patch にした(a71f1b5a の `K/tools/test_longctx1024-ptq-rows.patch`)。監督の指示(12:2x「branch で commit、同じ理由の 1 行の comment つき」; r15 も同じ file の別の行を直したので merge は r15 → r16 の順、監督が行う)で 64 → 68 と comment 1 行を branch に commit し、patch file は消した。この tree で 13 tests OK。
+- FAIL(直した): `android/bench/test_longctx1024.py` `test_every_short_chat_row_has_one_1024_twin` — `AssertionError: 68 != 64`(l.143、1K の対の数を手で書いた assert)。HEAD は 64(iPhone と Mac の MLX が 15 → 17)、それより前の assert(対が 1 本ずつ、option が同じ)は通っている。launch の書く範囲の外なので最初は patch にした(最初の commit の `K/tools/test_longctx1024-ptq-rows.patch`)。監督の指示(12:2x「branch で commit、同じ理由の 1 行の comment つき」; r15 も同じ file の別の行を直したので merge は r15 → r16 の順、監督が行う)で 64 → 68 と comment 1 行を branch に commit し、patch file は消した。この tree で 13 tests OK。
 
 ## P の build(私の branch に向けて、scratchpad に。P には書かない)
 
@@ -124,7 +126,9 @@ dry run: no device call made
 
 ## commit
 
-- a71f1b5a(branch `mlx-ptq-rows`、push / merge なし、帰属行なし): cells 3 本、bench_common.py、docs、ROUND16、K/tools の転送 script と test の patch。明示 path で stage、`git diff --cached --name-only` は 8 file だけ。この hash の追記は次の 1 commit(ROUND16 だけ)。
+- 7b95e363(branch `mlx-ptq-rows`、push / merge なし、帰属行なし): cells 3 本、bench_common.py、docs、ROUND16、K/tools の転送 script と test の patch。明示 path で stage、`git diff --cached --name-only` は 8 file だけ。
+- 2dae1311、27f86ff2: ROUND16 の hash と経過の行。702f7d1d: test の 64 → 68(comment 1 行)、patch file の削除、手順 8 の driver、転送 script の copy の上限。
+- 12:24 履歴を書き換えた(私の branch だけ、main にも remote にも入る前): 最初の版の ROUND16 の render の抜粋に、LiteRT-LM と llama.cpp の数字が並ぶ行があった(この repo の text は runtime を並べた数字を載せない)。抜粋を名前と MLX の欄だけ(数字は #)に直して `commit --fixup` + `rebase --autosquash 80a36462` で最初の commit に畳んだ = 旧 a71f1b5a / ca5321c9 / 18bfe2f1 / 737036de → 7b95e363 / 2dae1311 / 27f86ff2 / 702f7d1d(2 本目と 3 本目の commit message の旧 hash はそのまま)。`git log -p 80a36462..HEAD` に旧抜粋の数字は 0 件。`git merge-tree --write-tree main mlx-ptq-rows` は衝突なし(main は r15 の merge 済み)。
 
 ## 提案
 
