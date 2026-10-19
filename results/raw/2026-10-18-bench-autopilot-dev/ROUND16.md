@@ -17,6 +17,16 @@ Supervisor: edge-llm-bench-55 [4f120b] (K/LANE.md first line). Branch `mlx-ptq-r
 - 12:21 test を直して 13 tests OK。次 = commit、P の patch。
 - 12:21:35 commit(test、driver、経過)。12:22–12:24 P の名前の patch の下見(P の HEAD 1f45083 を scratchpad に git archive)。途中で ROUND16 の render の抜粋に runtime を並べた数字が入っていたのに気づき、12:24 に履歴を書き換えた(「commit」節)。
 - 12:2x 監督の go: 0.6B smoke は済み、18 Pro は空き。転送は今から、job は cells file が main に入ってから(test の commit が入ったら「commit 済み」の 1 通、監督が merge して返す)。12:25 driver を push / job の 2 部に分けた。次 = commit、「commit 済み」、push を起動。
+- 12:25:30 commit d9613c0a、監督へ「commit 済み」。12:26:06 転送 1 回目: hold を取得(keeper pid 51951、待ち 0 s、18 Pro は空き、`.iphone_hold` は 17 Pro の AA lane が 12:23:30 から持つ = 別の phone)、端末は接続・unlock。12:26:09 最初の copy で FAIL(devicectl が snapshot の symlink を link のまま送り「File paths cannot contain '..'」、罠の節)、端末側は変化なし、hold は即 release。直し = file ごとに Mac の blob を送り先の名前で送る。1 回目の listing で、端末の OptiQ E2B は 6bf302fd の 11 file とも blob が Mac と同じ size。
+- 12:29 merge 6378a790(監督: test の twins は私の 4 対 + 監督の iOS 0.6B cpu 対 = 69、監督が解決)。2 回目を quiet_hold で r17 の Mac の窓(12:26:51 から)の後ろに置き、監督へ判断を 2 点(r17 の窓の中で転送するか、job の check_holds が共有 `.iphone_hold` を device 欄を見ずに busy と読む件)。
+- 12:3x 監督: 転送は r17 の窓の中で走らせてよい(build と runs=1 の smoke、page の数字ではない)。12:31 quiet_hold の待ちを止め、**r17 の窓の中で転送**(2 回目): 12:31:41 hold 取得(keeper pid 83796、待ち 0 s)、E2B の model.safetensors 3.55 GB は 12:31:44–12:33:40。次 = E4B 5.15 GB、size の照合、release、job。
+- 12:3x 監督: check_holds は main 1940f4a8 で別 device を名指す hold を読み飛ばす = job を起動してよい(転送の後、keeper から `--hold-held-by` か release してから)。
+- 12:22–12:35 P の名前の patch(下の節)。r17 が 12:35:09 から P の render_check の窓を持つので、AA の比較と render_check は窓の後。
+- 12:36:30 転送 2 回目が完了: 2 bundle とも 16 file が端末で Mac と同じ size、refs/main 40 bytes(「転送の結果」)、hold を返した(枠 4 分 49 秒)。
+- 12:36:48 MAIN から job を起動(driver の job 部、自分の session で nohup)→ 12:36:49 `BUSY: bench_matrix_iphone.sh is running` exit 3(停止条件の 2 回のうち 1 回目)。走っていたのは 17 Pro の AA lane の runner(keeper_ios.sh measure i5 45、pid 83996、12:31:42 から → bench matrix anchors.cells → bench_matrix_iphone.sh pid 84481)。preflight の pgrep は host 全体を見る。12:37 監督へ判断を 1 通(待つか、runner の判定を device ごとにするか)。次 = 指示を待つ、job は起動しない。
+- 12:3x 監督: (1) runner の判定は device ごとにする(監督が直す、2 回目の起動は次の 1 通の後)、(2) P の名前の v1 は group を割って MLX を比べる相手から外す = 目的に反する → group の鍵はそのまま、級は棒 / artifact の label だけに(できなければ名前の patch は無し)。
+- 12:40–12:44 Mac の窓が空いた間に P の v2 を作って確かめた(「P の名前の patch」): patch なし / v2 とも P の 4 つの check が PASS(render_check は自分の窓 r16-p-render-check で 52–55 s ずつ 3 回: なし PASS、v2 は 11 FAIL → render_check の名前の規則を直して PASS)。
+- 12:4x 監督: main 8fe22207 で runner の判定は device ごと = 2 回目の起動の許可。12:45:12 job 起動(log は追記、`--- attempt 2` の行のあと): 17 Pro の runner と `.iphone_hold` は「別の phone」と読まれ、preflight ok、hold 取得、anchor の phase。Monitor(cell の始まり、load、判定、失敗、終了の行)。12:47 P の patch を v2 で上書き、`git -C P apply --check` OK。次 = commit、監督へ v2 の 1 通、sitting の終わりを待つ。
 
 ## 下見(11:53–12:00)
 
@@ -85,6 +95,17 @@ iPhone 18 Pro long-context-1024-gen256:
 
 cells.json: 550 → 568(+18、削除 0)= 3 device(iPhone 17 Pro、18 Pro、Mac)× 2 model × 3 task(short-chat、1K、protocol の "no forced-prefill entry")。新しい cell の "model" は全部 `'Gemma 4 E2B'` / `'Gemma 4 E4B'`(model_row)= page の名前には QAT / PTQ が出ない。P の panel の文(`summary_sentence`)は model の group の中の「LiteRT-LM 以外で最も速い cell」と比べる = PTQ の cell が測られると比べる相手の候補に入る(P の code の読み、数字ではない)。
 
+## P の名前の patch(`K/p-mlx-row-name.patch`、当てるのは監督)
+
+監督の指示: (12:2x)code-2d の決定は「行の名前に QAT / PTQ」= P 側の変更が要る。(12:4x)group を割って MLX が Gemma 4 の比べる相手から外れるのは code-2d の目的(PTQ の速さを隠さない = 比べる相手に入る)に反する = group の鍵(model_row)はそのまま、QAT / PTQ の語は棒 / artifact の label だけに。
+
+- 今の版(v2、137 行の diff、build.py + tools/check_aa.py + tools/render_check.py): `git -C ~/code/litert-bench-dashboard apply --check K/p-mlx-row-name.patch` = OK(P の HEAD c06e5a4。1f45083 からの commit は dist だけ = code は同じ)。P には書いていない(写しは `git archive` で scratchpad に)。
+  - build.py: `mlx_class(model_id)`(`mlx-community/gemma-4-` の id で `qat-optiq` → "QAT OptiQ"、`-it-4bit` → "PTQ 4bit"、bench の LOGICAL_MODELS の語)を cell の新しい欄 `build` に入れる(cells.json; cells.csv の列は変えない)。`model` は model_row のまま = group は今と同じ。JS の `cellName(c)` = runtime + 級 + " · " + backend("MLX PTQ 4bit · GPU")= tooltip、aria-label、表、inspector、「(compared)」の名前。panel の箱の「Largest gap … vs」にも級(summary_parts.largest.build)。AA の表は MLX の protocol の行の recipe 欄に級を入れる(patch なしだと、同じ「excluded: no forced-prefill entry」の行が MLX の Gemma 4 で 2 本ずつ重なる)。
+  - tools/check_aa.py: AA の行の recipe に同じ級(build と同じ規則)。tools/render_check.py: cell の名前を page の cellName と同じ規則で組む `cell_name(c)`(aria-label、At a glance の行、箱の Largest gap、bar の名前の 4 か所)。
+- 確かめ(P の写しをこの worktree = PTQ 行と名前の入った bench に向けて build): patch なし / v2 とも check_against_bench_dashboard、check_regression、check_aa、render_check が PASS(render_check は自分の Mac の窓で 55 s)。v2 の render_check は、render_check の名前の規則を直す前は 11 件 FAIL(aria-label と At a glance の名前が「MLX · GPU」のままの期待)= その 4 か所を直して PASS。
+- 効き目(patch なし → v2、数字は書かない): MLX の Gemma 4 の 36 cell は `model` が "Gemma 4 E2B" / "Gemma 4 E4B" のまま、`build` が QAT OptiQ / PTQ 4bit(9 cell ずつ)。Apple の panel の group は 5 のまま(Gemma 4 E2B の group の棒: … LiteRT-LM · GPU、llama.cpp · GPU、MLX PTQ 4bit · GPU、MLX QAT OptiQ · GPU …)。panel の文は patch なしと同一(0 本変わる)= PTQ の cell も比べる相手の候補のまま。summary_parts は largest に build の欄が増えた 18 か所だけ。AA の行は 638(patch なしも同じ数、v2 は MLX の 8 行を級で見分ける)。
+- 前の版(v1、12:3x): model の名前そのものに級を足した形 = Apple の panel の group が 5 → 9 に割れ、Gemma 4 の group での LiteRT-LM の比べる相手から MLX が外れた(panel の文が 12 本変わる)。監督の判断(目的に反する)で v2 に置き換えた。
+
 ## docs の要点(`docs/dashboard-cells-v1.md`)
 
 - 節「MLX Gemma 4 file (2026-10-19)」の Rule: PTQ の文を「A PTQ build is the page's second MLX row, not a candidate for this one: its class is in the row's name」に書き換え、元の文を 1 行残した("(Until 2026-10-19 11:4x the rule read: …)")。Decision の段落の「the rule keeps them off the page」も同じ向きに直し、元の語を括弧で残した。
@@ -119,6 +140,20 @@ dry run: no device call made
 本番(`--keeper <pid>`)の手順: keeper の pid が hold を持つことを確かめる → 接続と unlock → app の hub dir を一覧(OptiQ e2b の snapshot を Mac の同じ revision と file ごとに比べる)→ snapshot dir、refs/main の順に copy(1 回 30 分まで)→ もう一度一覧して 16 file の size を Mac と比べる。端末側の比較は、devicectl の JSON の形(監督の 03:2x の listing と同じ形)で作った合成の listing で OK / FAIL の両方を確かめた(1 byte 短い file を FAIL にする)。
 
 取り方(go の後): `sleep 2700 &`(keeper、45 分で切れる)→ `queue_cli.py enqueue <hold> r16-push-mlx-4bit edge-llm-bench-55 45` → `queue_cli.py wait <hold> r16-push-mlx-4bit <keeper>`(run_in_background)→ script → `hold_cli.py release <hold> <keeper>` → 待ち行列に keeper が居なければすぐに MAIN から job 経路。
+
+## 転送の結果(手順 8 の前半)
+
+- 1 回目 12:26:06–12:26:09: hold 取得(keeper pid 51951)→ 接続・unlock OK → 最初の `devicectl device copy to`(snapshot dir)が `ERROR: The specified file could not be transferred. (com.apple.dt.CoreDeviceError error 7000) … File paths cannot contain '..'. (com.apple.dt.remoteservices.error error 11007) NSFilePath = ../../blobs/038e39a3…` → FAIL、hold を返した。2 回目の前の listing で 4bit の 2 repo は「refs/main absent; no snapshot」= 1 回目は何も残していない。
+- 2 回目 12:31:41–12:36:30(r17 の Mac の窓の中、監督の許可): hold 取得(keeper pid 83796、待ち 0 s)→ file ごとに Mac の blob を送り先の名前で copy(16 file + refs/main 2 本)→ 一覧を取り直して照合:
+  ```
+  before: models--mlx-community--gemma-4-e2b-it-qat-OptiQ-4bit snapshots/6bf302fd…: 11 entries; the Mac's snapshot of 6bf302fd: 11 files, each one there, its blob (or file) at the Mac's size
+          (古い snapshot c6c65725 も残っている: 9 entries、vision の file だけ無い。refs/main は 40 bytes = 週次の console が 6bf302fd から load)
+          models--mlx-community--gemma-4-e2b-it-4bit / gemma-4-e4b-it-4bit: refs/main absent; no snapshot
+  copy:   e2b model.safetensors 3,550,670,554 bytes 12:31:44–12:33:38(114 s、約 31 MB/s)、e4b model.safetensors 5,146,800,534 bytes 12:33:41–12:36:27(166 s、約 31 MB/s)、残りは 1 本 1 s 前後
+  after:  OK   models--mlx-community--gemma-4-e2b-it-4bit snapshots/238767527555cb75a05732a84dff5d6ba0dd6809: 8 files at the Mac's sizes (3,583,086,498 bytes); refs/main 40 bytes
+          OK   models--mlx-community--gemma-4-e4b-it-4bit snapshots/475b9088d29754a3379866cf5aeb6b41acd313c2: 8 files at the Mac's sizes (5,179,239,349 bytes); refs/main 40 bytes
+  ```
+  hold を返した(枠 4 分 49 秒)。app が download せずに読むかは sitting の最初の 4bit の cell の console(`[HubBridge] downloaded to …` までの時間と `[MLX] load complete in …`)で見る。
 
 ## 計測の表
 

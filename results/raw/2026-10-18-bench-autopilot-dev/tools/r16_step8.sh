@@ -63,7 +63,7 @@ job() {
   # its own session, so the job outlives this driver and whatever ends the driver's process group
   python3 -I -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' \
     nohup python3 scripts/dashboard_job.py iphone18pro --cells "$CELLS" --suffix mlx-ptq --once \
-    < /dev/null > "$LOG" 2>&1 &
+    < /dev/null >> "$LOG" 2>&1 &
   say "job started: pid $! (cwd $MAIN, log $LOG)"
   exit 0
 }
