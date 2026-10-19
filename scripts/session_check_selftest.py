@@ -545,6 +545,18 @@ def main():
        and "text screen: written text_screen.json (2 cells, 1 text-fail: " in out
        and (screen_of(t1a) or {}).get("cells", {}).keys() == {mlx},
        "the result and the output line say written, with the cell; the anchor phase has its own file")
+    # a hand run (no SESSION.json) with the same off-task Mac cell: HOLD not-job as before, and the
+    # screen written all the same (2026-10-19: the file comparison run by hand that enters the summary)
+    hand = campaign(raw, "2099-09-01-mlx-file-compare-mac")
+    hand_recs = cell("llama.cpp", LLAMA_MODEL, LLAMA, sample=OFF_TASK)
+    write_jsonl(hand, jsonl_of(hand_recs), hand_recs)
+    rc, res, out = run([hand], history=hist)
+    r = res[os.path.basename(hand)]
+    sh = (screen_of(hand) or {}).get("cells", {}).get(llama, {})
+    ok(r["verdict"] == "HOLD" and rules(r) == {"not-job"} and sh.get("verdict") == "FAIL"
+       and (sh.get("runs"), sh.get("runs_off")) == (4, 4)
+       and f"screened text-fail: {llama} (reply-off-task): the page shows the cell as text-fail" in r["notes"],
+       f"a hand run's Mac text cell is screened too: HOLD not-job only, text_screen.json FAIL 4 of 4, the note ({sorted(rules(r))})")
     path = os.path.join(t1p, "text_screen.json")
     before = (os.stat(path).st_mtime_ns, open(path, "rb").read())
     rc, res, out = run([t1a, t1p], history=hist)

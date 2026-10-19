@@ -795,6 +795,11 @@ class Check:
             if self.session is not None and self.session.get("admitted") is False:
                 self.add("not-admitted", f"admitted false ({self.session.get('verdict')}): "
                                          f"{short(self.session.get('reason'), 120)}")
+            # the text screen reads a hand run's Mac / iPhone text cells too (2026-10-19: a file
+            # comparison run by hand enters the summary as a stored report, and without the sidecar
+            # its text-fail runs would pool into a number on the page)
+            self.check_text_only(recs)
+            self.screen_out()
         self.ledger_row = self.find_ledger()
         self.apply_allow_list()
         return self
@@ -868,6 +873,17 @@ class Check:
             self.check_session(s, recs)
         self.check_records(recs)
         self.screen_out()
+
+    def check_text_only(self, recs):
+        """The reply proxies alone (check_cell_text) for the Mac / iPhone text cells of a dir the
+        job-session rules do not cover, so it gets text_screen.json like a job dir."""
+        by_cell = collections.defaultdict(list)
+        for p, r in recs:
+            if platform_of(r) in SCREEN_PLATFORMS:
+                by_cell[cell_of(r)].append((p, r))
+        for cell, items in by_cell.items():
+            r0 = items[0][1]
+            self.check_cell_text(cell, items, r0.get("task") or "", platform_of(r0))
 
     def check_session(self, s, recs):
         phase = s.get("phase")
