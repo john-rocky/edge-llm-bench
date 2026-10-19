@@ -276,7 +276,10 @@ class Repo:
         base = self.top or ROOT
         if self._registry_commits is None:
             self._registry_commits = []
-            rc, out = run(["git", "-C", base, "log", "--format=%H %cI", "--",
+            # --first-parent: the mainline's state at that time. A commit authored on a branch and merged
+            # later carries the branch's registry, not the mainline's (2026-10-19: r9's note commit, authored
+            # 06:1x on llama-bump, outranked the mainline's 06:10 switch for a sitting that started 06:10:51)
+            rc, out = run(["git", "-C", base, "log", "--first-parent", "--format=%H %cI", "--",
                            "android/engine-pins.json", "environment.lock.json"])
             for ln in out.splitlines():
                 sha, _, when_c = ln.partition(" ")

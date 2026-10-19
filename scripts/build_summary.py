@@ -23,7 +23,7 @@ this script is the bridge for pre-v1 records.
 import csv, glob, json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bench_common import atomic_write  # noqa: E402
+from bench_common import atomic_write, corrected_engine  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "results", "summary")
@@ -373,7 +373,8 @@ def build_device():
             "timestamp": d.get("timestamp"),
             "runtime": d.get("runtime"),
             "schema_version": d.get("schemaVersion"),
-            "engine_version": d.get("engineVersion"),
+            "engine_version": corrected_engine(campaign, platform_of(d), d.get("runtime") or "", d.get("engineVersion"))[0],
+            "engine_stamped": d.get("engineVersion"),
             "engine_artifact": d.get("engineArtifact"),
             "model_id": model.get("id"),
             "model_file": os.path.basename(str(model.get("file") or model.get("primaryFile") or "")) or None,
@@ -495,6 +496,9 @@ def main():
             "from 2026-10-06; its earlier rows carry a peak only from the\n"
             "`BENCH_STRICT_SMOKE=1` sittings. Definitions and windows:\n"
             "`methodology/memory.md` \"Peak memory\".\n\n"
+            "`engine_version` is the engine the row ran on; `engine_stamped` (after it, 2026-10-19) the record's own\n"
+            "`engineVersion`. They differ only for the Mac LiteRT-LM rows of the 2026-10-12..10-19 dashboard sittings, whose\n"
+            "yardstick loaded the v0.16.0 dylib while the pins file stamped v0.18.0 (bench_common.corrected_engine).\n"
             "`model_file` (after `model_id`, 2026-10-19) is the artifact file the run loaded (the record's `model.file`, or\n"
             "`model.primaryFile` on the Apple native path; empty before): one model id can ship several files, and the\n"
             "session checker keys the prompt-token history by it (quant-label-rule: the recipe is visible in every row).\n"

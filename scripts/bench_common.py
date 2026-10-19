@@ -260,3 +260,26 @@ def corrected_quant(runtime: str, model_id: str, quant: str) -> tuple[str, bool]
             and (not quant or quant.startswith("unrecorded"))):
         return "INT4 (mixed, blockwise gs32)", True
     return quant, False
+
+
+# The dashboard job's Mac yardstick built 2026-09-18 (.build/dd-mac until the 2026-10-19 06:10 switch) loaded the
+# LiteRT-LM v0.16.0 dylib (142,807,744 B, sha256 ae31a93f…) while, from 2026-10-12 on, its LiteRT-LM records stamped
+# engineVersion v0.18.0 out of the source tree's pins file (BENCH_ENGINE_PINS_FILE, written 2026-10-07 by another build's
+# pre-build stamp). The records stay as written (the audit trail of the stamp defect, environment.lock.json
+# arms.litert-lm.mac.previous.note); the summary reads what ran. Scope: these campaigns, the Mac, the litert-lm arms.
+FALSE_STAMP_MAC_LITERT_CAMPAIGNS = {
+    "2026-10-12-dashboard-v1-m4max-anchor-mac", "2026-10-12-dashboard-v1-m4max-mac",
+    "2026-10-16-dashboard-v1-m4max-anchor-mac", "2026-10-16-dashboard-v1-m4max-r2-anchor-mac",
+    "2026-10-16-dashboard-v1-m4max-r2-mac",
+    "2026-10-19-dashboard-v1-m4max-anchor-mac", "2026-10-19-dashboard-v1-m4max-mac",
+}
+
+
+def corrected_engine(campaign: str, platform: str, runtime: str, stamped: str) -> tuple[str, bool]:
+    """The engine a Mac LiteRT-LM row of a false-stamped campaign ran on (v0.16.0), else the stamp as
+    recorded. Returns (engine_version, corrected?)."""
+    name = (campaign or "").rstrip("/").split("/")[-1]
+    if (platform == "mac" and (runtime or "").startswith("litert-lm") and stamped == "v0.18.0"
+            and name in FALSE_STAMP_MAC_LITERT_CAMPAIGNS):
+        return "v0.16.0", True
+    return stamped, False
