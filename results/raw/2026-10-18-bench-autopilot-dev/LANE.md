@@ -671,3 +671,12 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   admission reference is the aborted 12:34 sitting's anchor dir, which ADMITTED on two good llama.cpp runs and one LiteRT-LM cell
   of three, its third llama.cpp run failing rc=1 when the phone dropped off USB (12:35) — that anchor dir is committed by hand with
   an allow-list line naming this entry, then the r2 pair is posted.
+- 15:0x–15:1x the 18 Pro's Qwen3 0.6B page cells committed (44a60601; recomputed: INT8 GPU short-chat 46.72 / 1K 46.35 tok/s,
+  INT4 CPU short-chat 87.14 / 1K 47.87 with fair / serious runs). The CPU rows exposed one missing branch in three places, all fixed:
+  render_dashboard.arm_of keyed an iPhone backend=cpu row as the bare GPU arm (6d172fb5; the job had counted "4 of 6"), the page's
+  BACKEND table had no ("ios", "litert-lm-cpu") (P 18cb1d4), and ops/autopilot/regression-watch.json had no "ios litert-lm-cpu"
+  (a3e31932; the post's red step had stopped with "no backend entry"). The Pixel 8a thinking-off re-measure committed (afffb3f9 the
+  aborted sitting's anchor with an allow-list line for its USB-drop failure, 2b4b6f37 the r2 pair; a red point on the Pixel's
+  Qwen3 0.6B GPU anchor decode, −11 %, queued as a retake). The S26 side-build E2B thinking-off sitting committed (c9fa1590).
+  Rehearsal 11 failed once on autopilot_selftest and did not reproduce in a clean export with an empty HF cache nor in rehearsal 12
+  (flake, noted). main pushed to c9fa1590. Running: r18's iPhone job (14:59) and Pixel GPU sitting (15:00); r15's S26 queue.
