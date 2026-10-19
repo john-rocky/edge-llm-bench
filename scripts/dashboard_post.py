@@ -97,7 +97,9 @@ REFUSED_WORDS = re.compile(r"claude|anthropic", re.I)
 # a percentage or a standing word: the public repo's text carries no standings (CLAUDE.md
 # "Cross-runtime standings stay LOCAL"; no DDP-to-attached difference in percent), so a generated
 # message with one is never committed — a defect of commit_message, not of the dirs (no REVIEW.md)
-STANDING_WORDS = re.compile(r"%|\b(?:vs\.?|faster|slower|than|beats|leads|outperforms)\b", re.I)
+# a word inside a hyphenated name is not prose: the reference campaign 2026-09-14-catalog-int4-vs-int8-… held the
+# 2026-10-02 Pixel 8a anchor on 2026-10-19 (the name copied into the admission clause)
+STANDING_WORDS = re.compile(r"%|(?<![\w-])(?:vs\.?|faster|slower|than|beats|leads|outperforms)(?![\w-])", re.I)
 # an operation in progress: a commit now would land in the middle of it
 GIT_BUSY = ("MERGE_HEAD", "rebase-merge", "rebase-apply", "CHERRY_PICK_HEAD", "REVERT_HEAD")
 REVIEW = "REVIEW.md"

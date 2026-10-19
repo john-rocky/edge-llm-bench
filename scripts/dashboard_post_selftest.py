@@ -388,6 +388,10 @@ def main():
        "the admission ratio and its reference campaign in the message")
     import dashboard_post as dp
     ok(not dp.STANDING_WORDS.search(msg) and re.search(r"message guard: no '%' and no standing word .*: OK", out),
+
+    ok(not dp.STANDING_WORDS.search("anchor admitted at ratio 0.813 to reference 2026-09-14-catalog-int4-vs-int8-pixel8a-dtypeonly-norope-android")
+       and dp.STANDING_WORDS.search("LiteRT-LM vs llama.cpp") and dp.STANDING_WORDS.search("12 % faster"),
+       "the standings guard ignores a word inside a hyphenated name (a campaign name with -vs-) and refuses it as prose")
        "no percentage and no standing word in the message, and the guard's OK line in the output")
     write(os.path.join(bench, "other-lane-commit.txt"), "x\n")
     sh(bench, "git", "add", "--", "other-lane-commit.txt")
