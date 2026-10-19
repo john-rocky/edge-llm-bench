@@ -626,3 +626,12 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   fa719648: their runs had gone ungated). The aborted dirs stay on disk uncommitted. The fractional-second app is installed (13:12)
   and verified on the phone (three distinct names for a 3-run cell); r16's attempt 3 (mlx-ptq-r3) started on it; my 0.6B re-run
   (q06-int8-r2) is queued after r16's ledger row, the free hold and 15 min of cool-down.
+- 13:1x–13:2x the Fable read of the issue draft (fact 31 checked / 8 fixed / 1 cut; wording 16) changed the finding: the first
+  error on the iPhone is a generated Metal kernel that does not compile ("half4 half4(res)_final", a cmp_int4 store, nine compile
+  errors per attempt), which v1 had called loader output; the failing file is our own re-export (litert-torch main 731ef0a, Hub PR
+  #6 = a3c5d805), which v1 had not disclosed; and Qwen3-1.7B_dynamic_wi4b32_afp32 (the same recipe, hvt4's 2026-08-05 export,
+  without the SwiGLU / KV-cache-update composites the 0.6B card lists) runs on the same iPhone GPU — the newer composites are the
+  likely trigger. One reader claim was wrong (the evidence dirs are committed: b66d6f16, 1fe5be6f, 9c5c61f0, a06f2a5a). Draft v2
+  (EN / JA mirrored, v1 kept) and the hazard row's note updated (standup 5aab2a34). The owner was given three items through code-2d:
+  the workaround candidate (the 0.6B file's 2026-08-05 revision with the 0.18.0 LlmMetadata, as the 1.7B got on 10-11 = an upload,
+  GO), the issue (GO; recommended after that test), and the iPhone INT8 row. main is level with origin after rehearsal 6 (ef25807f).
