@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "370f3688-8ef4-4fb4-a874-b3e2ae1bbb4d",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+  "engineArtifact": "b3658a5552ba906ffe6dc0dd70135f116589e2e694f19a85525d32154f66dfb8",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "file": "litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-20T12:45:50Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1425,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 1836,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 2363,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 27.9,
+    "exitCode": 0,
+    "engineBuild": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly /data/local/tmp/llmbench/engines/head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly/litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048",
+    "backendRegistered": [
+      "Choose backend: cpu",
+      "enable_ynnpack: false",
+      "max_tokens: 2048",
+      "RegisterAccelerator: ptr=<addr>, name=YNNPackAccelerator",
+      "YNNPACK CPU accelerator registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 592 out of 916 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 396 partitions for subgraph 0 (prefill_128).",
+      "Replacing 592 out of 916 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 396 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 507 out of 830 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 396 partitions for subgraph 2 (decode).",
+      "Replacing 2361 out of 2655 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 114 partitions for subgraph 2 (decode).",
+      "Replacing 2615 out of 2910 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 114 partitions for subgraph 1 (prefill_1024)."
+    ],
+    "enableYnnpack": false,
+    "ynnpackLines": {
+      "ops": 0,
+      "partitions": 0
+    },
+    "protocolFlags": [
+      "cpu-capped"
+    ]
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 9510.0,
+    "promptTokensPerSecond": 108.33,
+    "decodeTokensPerSecond": 16.55,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 1522.7421875,
+    "memoryPeakResidentMB": 1522.7421875
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_native-benchmark-1024x256_2026-10-20T12-45-50.788938_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
