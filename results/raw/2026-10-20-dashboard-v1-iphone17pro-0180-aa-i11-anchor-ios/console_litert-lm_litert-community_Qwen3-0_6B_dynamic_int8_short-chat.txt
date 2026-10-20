@@ -1,0 +1,252 @@
+YARDSTICK_METAL_DEVICE name=Apple A19 Pro GPU registry_id=4294968201
+Launched application with com.daisukemajima.llmbench bundle identifier.
+Waiting for the application to terminate…
+ggml_metal_device_init: testing tensor API for f16 support
+YARDSTICK_BEGIN runtime=litert-lm model=litert-community/Qwen3-0.6B/dynamic_int8 task=short-chat runs=3
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10afa0230 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10afa0230 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.018 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.019 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.024 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.039 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.035 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.029 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.029 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.037 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.015 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.031 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.025 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.020 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.020 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.017 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.017 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.002 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.040 sec (max single = 0.039 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A19 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple10  (1010)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+W0000 00:00:1792471748.361519 2160937 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792471748.361542 2160799 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792471748.361672 2160799 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792471748.361678 2160799 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792471748.361682 2160799 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792471748.361659 2160937 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792471748.361748 2160937 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11b3cb1e0, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11b3cb240, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x153900600, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x153900660, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792471748.477906 2160799 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+W0000 00:00:1792471748.477959 2160799 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1792471748.487603 2160799 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:398] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1792471748.487778 2160799 gpu_backend_metal.mm:114] Metal Residency Set successfully initialized.
+I0000 00:00:1792471748.530900 2160799 delegate_kernel.cc:329] Total 113 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792471748.530912 2160799 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+I0000 00:00:1792471748.603167 2160799 delegate_kernel.cc:866] Initialized InferenceContext from serialized data.
+I0000 00:00:1792471748.619297 2160799 delegate_kernel.cc:329] Total 112 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792471748.619306 2160799 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+I0000 00:00:1792471748.725566 2160799 delegate_kernel.cc:866] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x700959a0a0, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x700959a040, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792471748.782988 2160799 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792471748.782999 2160799 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1792471748.783002 2160799 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792471748.783003 2160799 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1792471748.783004 2160799 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792471748.783005 2160799 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1792471748.783006 2160799 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792471748.783007 2160799 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+W0000 00:00:1792471748.783035 2160799 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792471748.783048 2160799 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792471748.783050 2160799 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792471748.783051 2160799 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792471749.380431 2160956 sampler_factory.cc:572] Metal sampler not available, falling back to statically linked C API.
+I0000 00:00:1792471749.389670 2160956 llm_litert_compiled_model_executor.cc:1622] Sampler will handle decode input tensors.
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=33.35 decode_tok_s_wall=33.09 ttft_ms=730 prefill_tok_s=34.4 prefill_tok_s_wall=26.0 prompt_tokens=19 peak_mb=1204 median_mb=1115 median_resident_mb=399 ctx=672 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=unplugged battery_delta_pct=5.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=31.23 decode_tok_s_wall=30.98 ttft_ms=321 prefill_tok_s=122.3 prefill_tok_s_wall=59.1 prompt_tokens=19 peak_mb=1118 median_mb=1118 median_resident_mb=404 ctx=672 tokens=128 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=unplugged battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=31.60 decode_tok_s_wall=31.35 ttft_ms=329 prefill_tok_s=120.6 prefill_tok_s_wall=57.7 prompt_tokens=19 peak_mb=1119 median_mb=1119 median_resident_mb=405 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=unplugged battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x700959a040, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x700959a0a0, name=GPU Metal
+The app terminated with the exit code 0.
+Launched application with com.daisukemajima.llmbench bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A19 Pro GPU registry_id=4294968201
+ggml_metal_device_init: testing tensor API for f16 support
+YARDSTICK_BEGIN runtime=litert-lm model=litert-community/Qwen3-0.6B/dynamic_int8 task=short-chat runs=3
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10a91d120 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10a91d120 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.016 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.015 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.035 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.032 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.018 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.020 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.036 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.025 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.027 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.020 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.020 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.020 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.034 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.017 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.003 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.039 sec (max single = 0.036 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A19 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple10  (1010)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+W0000 00:00:1792472107.488030 2165902 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792472107.488087 2165902 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792472107.488091 2165902 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792472107.488094 2165902 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+W0000 00:00:1792472107.488911 2165959 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792472107.488968 2165959 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792472107.488971 2165959 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11af83720, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x11af83780, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x1278515c0, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x127851620, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792472107.589556 2165902 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+W0000 00:00:1792472107.589620 2165902 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1792472107.597910 2165902 delegate_metal.mm:89] Created a Metal device.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:436] Failed to create OpenCL context.
+INFO: [gpu_environment.cc:398] Created Metal device from provided device id
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1792472107.598108 2165902 gpu_backend_metal.mm:114] Metal Residency Set successfully initialized.
+I0000 00:00:1792472107.639178 2165902 delegate_kernel.cc:329] Total 113 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792472107.639187 2165902 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+I0000 00:00:1792472107.705599 2165902 delegate_kernel.cc:866] Initialized InferenceContext from serialized data.
+I0000 00:00:1792472107.721750 2165902 delegate_kernel.cc:329] Total 112 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792472107.721758 2165902 delegate_kernel.cc:979] Initializing Metal-based API from serialized data.
+I0000 00:00:1792472107.827923 2165902 delegate_kernel.cc:866] Initialized InferenceContext from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7004a585a0, name=GPU Metal
+INFO: [gpu_registry.cc:113] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7004a58540, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792472107.863969 2165902 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792472107.863975 2165902 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1792472107.863977 2165902 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792472107.863978 2165902 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1792472107.863979 2165902 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792472107.863980 2165902 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1792472107.863981 2165902 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792472107.863982 2165902 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+W0000 00:00:1792472107.864009 2165902 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792472107.864071 2165902 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792472107.864072 2165902 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792472107.864074 2165902 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792472108.448589 2165980 sampler_factory.cc:572] Metal sampler not available, falling back to statically linked C API.
+I0000 00:00:1792472108.458440 2165980 llm_litert_compiled_model_executor.cc:1622] Sampler will handle decode input tensors.
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=33.45 decode_tok_s_wall=33.18 ttft_ms=716 prefill_tok_s=35.2 prefill_tok_s_wall=26.5 prompt_tokens=19 peak_mb=1205 median_mb=1116 median_resident_mb=401 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=unplugged battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=33.18 decode_tok_s_wall=32.93 ttft_ms=320 prefill_tok_s=122.5 prefill_tok_s_wall=59.4 prompt_tokens=19 peak_mb=1119 median_mb=1119 median_resident_mb=406 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=unplugged battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=32.24 decode_tok_s_wall=31.99 ttft_ms=329 prefill_tok_s=124.5 prefill_tok_s_wall=57.8 prompt_tokens=19 peak_mb=1120 median_mb=1120 median_resident_mb=406 ctx=672 tokens=128 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=unplugged battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7004a58540, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7004a585a0, name=GPU Metal
+The app terminated with the exit code 0.
