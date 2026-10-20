@@ -150,6 +150,23 @@
       },
       "built": "android/scripts/build_litert_lm_main.sh at tag v0.18.0 (bazel source build, 2026-10-07; the release ships no Android binary)",
       "note": "Android dashboard pin since 2026-10-15 (v0.16.0 before): the Galaxy S26 Gemma 4 E2B GPU protocol cell read 25.9 tok/s decode at 1024/256 on v0.16.0 while 0.18-era builds of LiteRT-LM read 44-47 on the same phone and file (results/raw/2026-10-11-s26-gallery-vs-binary); the model card's figure is of that class"
+    },
+    "main-b7c40ea81": {
+      "requested_tag": "main@b7c40ea81",
+      "observed": "b7c40ea8178b80919f7f5af79855c922a40bfaf7",
+      "engine_version": "main@b7c40ea81",
+      "litert_lm_advanced_main_sha256": "ce1f25dc982413c08d4094898f4d34dd22032af3a776081ec3dc9c3d1ba15234",
+      "so_files": {
+        "libGemmaModelConstraintProvider.so": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+        "libLiteRtGpuAccelerator.so": "c9a77bc7cea1d93d57b08250df94453d7c8f41147c443701a2092fe835448575",
+        "libLiteRtOpenClAccelerator.so": "7c747af05556b649b6fcb2d6daca7ab93211337b9cf8036c5d1d4150af36ced3",
+        "libLiteRtTopKOpenClSampler.so": "d52762b58dc837f232af4d1489f8e6aef5374775c7c02f0acf7469e49ef14d9c",
+        "libLiteRtTopKWebGpuSampler.so": "8c991913fedb17f07f85cd831bb44ac445964c7904703235aa2b63a0da059095",
+        "libLiteRtWebGpuAccelerator.so": "174329e79465f99e0afee2e41c10f0f7abffc38db8c7842e9c98efa82439c3be",
+        "libwebgpu_dawn.so": "01f672db983411871aaae0590e8ab470592e6a83cd1c7b28c7820daaa1670767"
+      },
+      "built": "7.6.1 via bazelisk; flags: --config=android_arm64 --enable_platform_specific_config; target //runtime/engine:litert_lm_advanced_main at LiteRT-LM b7c40ea8178b80919f7f5af79855c922a40bfaf7 (2026-10-13T14:10:14-07:00 Fengwu Yao: Update dependencies of litert_lm); LITERT_REF 9b8c7f77e7a29e6073e614a05e1e38be7b761229; NDK /Users/USER/Library/Android/sdk/ndk/29.0.13113456; built 2026-10-14 18:39 JST by the T1b lane (its kit ~/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/kit/main-b7c40ea81/, KIT.md); the seven .so = prebuilt/android_arm64 at b7c40ea8, byte-identical to the files lu1020 r1 pulled and checked against their LFS pointers' oids (14 / 14, .dashboard/lu1020_qwen3_gemma4/r1/PREBUILT_SHA256SUMS_b7c40ea81.txt)",
+      "note": "side build of the 2026-10-20 Qwen3 0.6B rows (docs/dashboard-cells-v1.md, 'Qwen3 0.6B on LiteRT-LM main@b7c40ea81'), on the phone in /data/local/tmp/llmbench/engines/main-b7c40ea81/; the GPU rows; not the pin (android_pins stays v0.18.0)"
     }
   },
   "litertlm-android": {
