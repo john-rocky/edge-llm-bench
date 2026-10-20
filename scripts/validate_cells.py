@@ -55,7 +55,7 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 # endurance-chat-<N>m — multi-turn endurance sessions (methodology/endurance.md);
 # duration is part of the task id, like the long-context sweep variants.
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
-INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown"}
+INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown", "cool-wait"}
 FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
 STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
             "engine-build", "revision",
@@ -178,6 +178,12 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 errors.append(f"{where}: unknown platform {plat!r}")
             if rt not in RUNTIMES:
                 errors.append(f"{where}: unknown runtime {rt!r}")
+            # cool-wait=<s>: the iPhone app's --native-cool-wait (a pause before every benchmark() call,
+            # longer while the phone is warm; scripts/bench_matrix_iphone.sh): ios litert-lm protocol rows only
+            if "cool-wait" in opts and not (plat == "ios" and rt == "litert-lm" and NATIVE_TASK.match(task)):
+                errors.append(f"{where}: cool-wait= is for ios litert-lm native-benchmark rows only")
+            elif "cool-wait" in opts and int(opts["cool-wait"]) < 1:
+                errors.append(f"{where}: cool-wait must be positive")
             if rt == "uzu":
                 if plat != "mac":
                     errors.append(f"{where}: uzu v1 is Mac-only")

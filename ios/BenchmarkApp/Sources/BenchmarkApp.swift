@@ -223,6 +223,13 @@ enum HeadlessAutoRun {
         /// of a task; `--runs` = timed trials after one warmup trial (printed as trial 0, cold).
         /// core-ai stock ids only.
         var coreAINativeBenchmark: (prefill: Int, decode: Int)?
+        /// `--native-cool-wait <seconds>` (with `--litert-native-benchmark`): before every call the
+        /// app pauses this long, then, while the thermal state is not nominal, waits on (polling every
+        /// 15 s) up to twice the pause in all. Back-to-back calls of a bigger model heat a phone inside
+        /// the launch and the later runs fall, the label sometimes still nominal (2026-10-20, iPhone 17
+        /// Pro: Granite 4.0 H 1B decode 31.8 -> 21.9 tok/s, LFM2 2.6B 34.7 -> 28.8 at nominal). A call
+        /// that still starts warm keeps its thermal_initial. nil = no pause, calls back to back.
+        var nativeCoolWaitSeconds: Int?
     }
 
     static func specFromLaunchArgs(_ args: [String] = CommandLine.arguments) -> Spec? {
@@ -299,6 +306,12 @@ enum HeadlessAutoRun {
             }
             coreAINative = (p, d)
         }
+        var nativeCoolWait: Int?
+        if let raw = value("--native-cool-wait") {
+            guard let n = Int(raw), n > 0 else { fatal("bad --native-cool-wait '\(raw)'") }
+            guard native != nil else { fatal("--native-cool-wait requires --litert-native-benchmark") }
+            nativeCoolWait = n
+        }
         // Both run here, before any runtime exists (AppSession builds the runtimes when the
         // first view appears): every autorun console names its GPU, and a purge cannot race
         // an engine that already opened its cache.
@@ -307,7 +320,7 @@ enum HeadlessAutoRun {
         return Spec(runtime: runtime, modelId: modelId, taskId: taskId, runs: runs,
                     sustainSeconds: sustainSeconds, maxTokens: maxTokens,
                     contextTokens: contextTokens, nativeBenchmark: native,
-                    coreAINativeBenchmark: coreAINative)
+                    coreAINativeBenchmark: coreAINative, nativeCoolWaitSeconds: nativeCoolWait)
     }
 
     /// `YARDSTICK_METAL_DEVICE`: the system default Metal device's `name` (the string a GPU
@@ -419,7 +432,8 @@ struct HeadlessRunnerView: View {
         }
         if let native = spec.nativeBenchmark {
             await runNativeBenchmark(runtime: runtime, model: model, spec: native,
-                                     runs: spec.runs, contextTokensValue: spec.contextTokens)
+                                     runs: spec.runs, contextTokensValue: spec.contextTokens,
+                                     coolWaitSeconds: spec.nativeCoolWaitSeconds)
             return
         }
         guard var task = BenchmarkTaskCatalog.task(for: spec.taskId) else {
@@ -631,7 +645,7 @@ struct HeadlessRunnerView: View {
     /// process and the on-disk caches are: each one still loads a new engine.
     private func runNativeBenchmark(
         runtime: any LLMRuntime, model: ModelInfo, spec: (prefill: Int, decode: Int),
-        runs: Int, contextTokensValue: Int?
+        runs: Int, contextTokensValue: Int?, coolWaitSeconds: Int? = nil
     ) async {
         #if canImport(LiteRTLM)
         guard let litert = runtime as? MediaPipeRuntime else {
@@ -649,9 +663,22 @@ struct HeadlessRunnerView: View {
         }
         await log("YARDSTICK_BEGIN native_benchmark model=\(model.id) prefill=\(spec.prefill) decode=\(spec.decode) context_tokens=\(contextTokens) runs=\(runs)")
         let warmRuns = runs > 1 ? "runs 2...\(runs)" : "none (--runs 1)"
-        await log("YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=\(warmRuns) (same process, no pause between calls; benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)")
+        let pauseNote = coolWaitSeconds.map { "before every call a pause of \($0) s, up to \(2 * $0) s until thermal nominal" } ?? "no pause between calls"
+        await log("YARDSTICK_NOTE native_benchmark cold=run 1 (the first benchmark() call in this process) warm=\(warmRuns) (same process, \(pauseNote); benchmark() builds a new engine on every call, so only the process and the on-disk caches are warm)")
 
         for run in 1...runs {
+            if let pause = coolWaitSeconds {
+                // --native-cool-wait: a pause before every call, longer while the phone is not back at
+                // nominal (at most twice the pause); the OK line still carries the state it starts at
+                let before = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+                try? await Task.sleep(nanoseconds: UInt64(pause) * 1_000_000_000)
+                var waited = pause
+                while ProcessInfo.processInfo.thermalState != .nominal && waited < 2 * pause {
+                    try? await Task.sleep(nanoseconds: 15_000_000_000)
+                    waited += 15
+                }
+                await log("YARDSTICK_NOTE native_benchmark cool_wait run=\(run) waited_s=\(waited) pause_s=\(pause) thermal_before=\(before) thermal_after=\(ThermalMonitor.describe(ProcessInfo.processInfo.thermalState))")
+            }
             // Sample memory *during* the benchmark. The published 92 MB deep-context cell was a
             // single footprint read taken after `benchmark()` returned and released the engine,
             // which is not the same quantity as the in-run peaks it was tabulated against.

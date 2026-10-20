@@ -1,0 +1,15 @@
+# Artificial Analysis set on the iPhone 17 Pro, LiteRT-LM v0.18.0 (matrices/dashboard-aa-v1-ios.cells header).
+# Slot i10: Gemma 4 E4B, Granite 4.0 H 1B, Qwen3.5 0.8B, again. Their protocol cells of slots i1 (2026-10-17), i5 (2026-10-19) and i6 (2026-10-20) heated the phone inside the launch and broke the spread rule (warm decode 26.1 -> 19.2, 31.8 -> 21.9 and 41.5 -> 31.4 tok/s; docs/dashboard-cells-v1.md); their protocol rows now carry cool-wait=60. The session anchor rows, then the rows below, each byte-identical to its source line.
+# Source: matrices/dashboard-aa-v1-ios.cells lines 21-22 (anchors), 27-28, 57-58, 67-68
+# Estimate: 50.8 min (job + anchors.cells phase + this file's anchor rows 9.0, then per row its cooldown + the launch, + 6 per protocol row for the cool-wait pauses; .dashboard/0180_aa_20261014/device/ios/README.md)
+# Run, inside the iPhone hold a keeper took:
+#   python3 scripts/dashboard_job.py iphone17pro --schedule <schedule copy with the phone's UDID> --cells matrices/dashboard-aa-v1-ios-i10.cells --suffix 0180-aa-i10 --once --hold-held-by <keeper pid>
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048 cool-wait=60
+ios litert-lm litert-community/granite-4.0-h-1b short-chat backend=gpu runs=2
+ios litert-lm litert-community/granite-4.0-h-1b native-benchmark-1024x256 backend=gpu context-tokens=2048 cool-wait=60
+ios litert-lm litert-community/Qwen3.5-0.8B short-chat backend=gpu runs=2
+ios litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=gpu context-tokens=2048 cool-wait=60

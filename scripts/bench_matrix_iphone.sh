@@ -5,7 +5,7 @@
 # Supersedes scripts/bench_warm_matrix_iphone.sh for new campaigns (that script
 # stays frozen as provenance for its published captures). Differences:
 #   - platform column + task column + per-cell overrides (runs / context-tokens /
-#     max-tokens / cooldown) come from the cells file, not env
+#     max-tokens / cooldown / cool-wait) come from the cells file, not env
 #   - anchor=1 cells run first (session-anchor normalization, regression_diff --anchors)
 #   - exclude=/manual= cells are skipped with the reason logged to SKIPPED.txt
 #   - optional catalog preflight: CATALOG_JSON=<yardstick list --json output>
@@ -316,6 +316,10 @@ cmd_run(){
     fi
     case "$task" in native-benchmark-*)
       # the engine's own benchmark: one launch, its console lines imported, no capture gate
+      # cool-wait=<s> (litert-lm): the app pauses s seconds before every benchmark() call, longer
+      # (up to 2s) while the phone is not back at nominal (BenchmarkApp --native-cool-wait)
+      local coolwait; coolwait="$(cell_opt cool-wait "" ${opts[@]+"${opts[@]}"})"
+      [ -n "$coolwait" ] && [ "$rt" = litert-lm ] && extra+=(--native-cool-wait "$coolwait")
       native_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
       continue ;;
     esac
