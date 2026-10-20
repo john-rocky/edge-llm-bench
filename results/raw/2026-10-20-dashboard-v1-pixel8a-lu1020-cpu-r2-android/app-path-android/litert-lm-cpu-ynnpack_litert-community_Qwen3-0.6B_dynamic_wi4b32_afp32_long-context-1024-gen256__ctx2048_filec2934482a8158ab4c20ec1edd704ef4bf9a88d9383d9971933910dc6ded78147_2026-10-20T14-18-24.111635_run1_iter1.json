@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "3d2161ec-acfd-4e3a-86a9-6df60096cdd7",
+  "runtime": "litert-lm-cpu-ynnpack",
+  "engineVersion": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+  "engineArtifact": "b3658a5552ba906ffe6dc0dd70135f116589e2e694f19a85525d32154f66dfb8",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "file": "litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-20T14:18:24Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1425,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 1065,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 1164,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": 2048,
+    "promptVersion": "noref-2026-10-19",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 1,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 135.1,
+    "exitCode": 0,
+    "engineBuild": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly /data/local/tmp/llmbench/engines/head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly/litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false --enable_ynnpack=true",
+    "backendRegistered": [
+      "Choose backend: cpu",
+      "enable_ynnpack: true",
+      "max_tokens: 2048",
+      "RegisterAccelerator: ptr=<addr>, name=YNNPackAccelerator",
+      "YNNPACK CPU accelerator registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 2569 out of 2798 node(s) with delegate (YNNPackDelegate) node, yielding 340 partitions for subgraph 0 (prefill_128).",
+      "Replacing 2569 out of 2798 node(s) with delegate (YNNPackDelegate) node, yielding 340 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 2314 out of 2543 node(s) with delegate (YNNPackDelegate) node, yielding 340 partitions for subgraph 2 (decode).",
+      "Replacing 113 out of 399 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 0 (prefill_128).",
+      "Replacing 113 out of 399 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 113 out of 399 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 2 (decode)."
+    ],
+    "enableYnnpack": true,
+    "ynnpackLines": {
+      "ops": 625,
+      "partitions": 790
+    },
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "dd15e715-883b-413b-a08a-5d4187c6030a",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 36.3,
+    "batteryTemperatureFinalC": 36.6,
+    "batteryLevelFinal": 1.0,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "allocationWitnessTokens": [
+      2048
+    ],
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 1,
+    "regime": "cold",
+    "textCheck": {
+      "status": "PASS",
+      "alphanumericCount": 1017,
+      "distinctWords": 104,
+      "taskTerms": true,
+      "flags": [],
+      "method": "r3-r4-response-boundary + lexical screen; full text retained"
+    },
+    "textOutputSHA256": "dae2bc1eb194d2ff7b5641738392d53a9d50493982b94f50d4d81b8b66f8fd5f"
+  },
+  "metrics": {
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "light",
+    "memoryMedianResidentMB": 1388.0625,
+    "memoryPeakResidentMB": 1452.30859375,
+    "firstEver": true,
+    "firstTokenLatencyMS": 16910.0,
+    "promptTokensPerSecond": 80.67,
+    "decodeTokensPerSecond": 8.9,
+    "promptTokenCount": 1355,
+    "generatedTokenCount": 256,
+    "coldRun": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu-ynnpack_litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_long-context-1024-gen256__ctx2048_filec2934482a8158ab4c20ec1edd704ef4bf9a88d9383d9971933910dc6ded78147_2026-10-20T14-18-24.111635_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "decodedText": "litert-lm-cpu-ynnpack_litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_long-context-1024-gen256__ctx2048_filec2934482a8158ab4c20ec1edd704ef4bf9a88d9383d9971933910dc6ded78147_2026-10-20T14-18-24.111635_run1_iter1.decoded.txt"
+  }
+}
