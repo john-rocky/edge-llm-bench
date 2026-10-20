@@ -84,6 +84,11 @@ RETAKE_DIR_RE = re.compile(r"-dashboard-v1-.*-retake(-|$)")
 RETAKE_MAX_AGE_DAYS = 7
 # sittings a retake may take that do not admit before it is abandoned (a person reads the ledger)
 RETAKE_MAX_ATTEMPTS = 2
+# dashboard_job.EXIT_BUSY: the device or the Mac measurement window was not free and nothing ran. Logged as an attempt,
+# never counted toward RETAKE_MAX_ATTEMPTS (2026-10-20: the Mac retake was abandoned after two busy windows without a
+# measurement); RETAKE_MAX_AGE_DAYS still ends a retake that never finds its device free
+RETAKE_BUSY_EXIT = 3
+
 # the Developer Device Platform lab unit of each phone's model (android/ddp/devices.json, the
 # scheduleKey of each id); the iPhone and the Mac have no route
 BISECT_ROUTE = {"s26": "ddp:m1q-36", "pixel8a": "ddp:akita-35"}
@@ -538,9 +543,27 @@ def parse_now(text):
 
 # ---------------------------------------------------------------- the job's side (dashboard_job.py)
 
-def pending_retakes(state_dir, key, now=None, write=True):
+def row_gone(root, e):
+    """Why a pending retake's row is no longer its cell's row, or None: the cells file it was queued
+    from does not hold the row any more (the page's cell moved to another file, context or option
+    after the retake was queued). 2026-10-20: the S26 Qwen3 0.6B protocol row moved from
+    qwen3_0_6b_mixed_int4.litertlm to the dynamic file an hour after its retake was queued; the retake
+    re-ran the old row and its point fell in no series the watch reads ("left no point"). A cells
+    file that is not there (renamed, or a test's own tree) supersedes nothing: there is no row to compare."""
+    rel = e.get("cells_file") or ""
+    path = os.path.join(root, rel)
+    if not rel or not os.path.isfile(path):
+        return None
+    with open(path) as fh:
+        rows = {ln.split("#", 1)[0].strip() for ln in fh}
+    return None if (e.get("row") or "").split("#", 1)[0].strip() in rows else f"its row is no longer in {rel}"
+
+
+def pending_retakes(state_dir, key, now=None, write=True, root=None, gone=None):
     """The device's pending retakes, oldest first. A pending one older than RETAKE_MAX_AGE_DAYS is
-    marked expired (when `write`): the weekly set has re-measured the cell by then."""
+    marked expired (when `write`): the weekly set has re-measured the cell by then. With `root`, one
+    whose row has left its cells file is marked superseded (row_gone; `gone` collects (id, why)): a
+    retake of the old row would measure a cell the page no longer shows."""
     now = now or datetime.datetime.now()
     with state_lock(state_dir):
         entries = load_state(state_dir, RETAKES)
@@ -553,19 +576,28 @@ def pending_retakes(state_dir, key, now=None, write=True):
                 e.update(status="expired", ended=now_text(now))
                 changed = True
                 continue
+            why = row_gone(root, e) if root else None
+            if why:
+                e.update(status="superseded", superseded=why, ended=now_text(now))
+                changed = True
+                if gone is not None:
+                    gone.append((e.get("id"), why))
+                continue
             out.append(e)
         if changed and write:
             save_state(state_dir, RETAKES, entries)
     return sorted(out, key=lambda e: e.get("created") or "")
 
 
-def pending_counts(state_dir):
-    """device key -> pending retakes (auto's choice reads it)."""
+def pending_counts(state_dir, root=None):
+    """device key -> pending retakes (auto's choice reads it); with `root`, none whose row has left its
+    cells file (the device's retake sitting would mark it superseded and run nothing)."""
     try:
         entries = load_state(state_dir, RETAKES)
     except Config:
         return {}
-    return dict(collections.Counter(e.get("device") for e in entries if e.get("status") == "pending"))
+    return dict(collections.Counter(e.get("device") for e in entries if e.get("status") == "pending"
+                                    and not (root and row_gone(root, e))))
 
 
 def cell_key_of(line):
@@ -627,7 +659,8 @@ def write_retake_cells(root, state_dir, anchors_rel, platform_token, key, entrie
 
 def finish_retakes(state_dir, ids, code, reason, campaign, cells_file=None, suffix=None, now=None):
     """After the retake sitting: admitted (exit 0) -> done with its payload campaign; otherwise the
-    attempt is counted and the retake stays pending, or is abandoned after RETAKE_MAX_ATTEMPTS."""
+    attempt is logged and the retake stays pending, abandoned after RETAKE_MAX_ATTEMPTS sittings that ran
+    and did not admit (a busy exit, RETAKE_BUSY_EXIT, is logged and not counted)."""
     now = now or datetime.datetime.now()
     with state_lock(state_dir):
         entries = load_state(state_dir, RETAKES)
@@ -639,7 +672,8 @@ def finish_retakes(state_dir, ids, code, reason, campaign, cells_file=None, suff
             e.update(retake_cells=cells_file or e.get("retake_cells"), retake_suffix=suffix or e.get("retake_suffix"))
             if code == 0:
                 e.update(status="done", retake_campaign=campaign, ended=now_text(now))
-            elif len(e["attempts"]) >= RETAKE_MAX_ATTEMPTS:
+            elif (code != RETAKE_BUSY_EXIT and sum(a.get("exit") != RETAKE_BUSY_EXIT for a in e["attempts"])
+                  >= RETAKE_MAX_ATTEMPTS):
                 e.update(status="abandoned", ended=now_text(now))
         save_state(state_dir, RETAKES, entries)
 
@@ -757,7 +791,9 @@ def judge(entry, s, retake_name, cfg):
         key, row = m["metric"], {"metric": m["metric"], "prev_campaign": m["prev_campaign"]}
         prev = pts.get(m["prev_campaign"])
         v, pv = regression_value(p, key), regression_value(prev, key)
-        if p is None:
+        if s is None:
+            row["why"] = "the cells files define this cell no more (its row changed after the retake was queued)"
+        elif p is None:
             row["why"] = "the retake sitting left no point of this cell"
         elif v is None:
             row["why"] = f"the retake has no {VERDICT_WORD[key]} value ({p['status'].split(':', 1)[0]})"

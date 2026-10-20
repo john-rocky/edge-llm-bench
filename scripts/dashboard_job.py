@@ -1330,7 +1330,10 @@ def retake_sitting(schedule, key, dev, args):
     the generated cells file its plan names and changes no retake state."""
     date = datetime.date.today().isoformat()
     try:
-        entries = regression_watch.pending_retakes(LOG_DIR, key, write=not args.dry_run)
+        gone = []
+        entries = regression_watch.pending_retakes(LOG_DIR, key, write=not args.dry_run, root=ROOT, gone=gone)
+        for rid, why in gone:
+            log(f"retake {rid} superseded: {why} (the cell's row changed after it was queued; not run)")
         if not entries:
             return None
         path, slug, rows = regression_watch.write_retake_cells(ROOT, LOG_DIR, schedule["anchors"],
@@ -1818,7 +1821,7 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     rows = load_rows() if rows is None else rows
     admitted = load_admission() if admitted is None else admitted
     exclude = exclude or {}
-    retakes = regression_watch.pending_counts(LOG_DIR) if retakes is None else retakes
+    retakes = regression_watch.pending_counts(LOG_DIR, root=ROOT) if retakes is None else retakes
     skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
     sessions = device_sessions(schedule, rows, admitted, skip)
     monday = week_start(now)
@@ -2087,7 +2090,7 @@ def main():
             if retake_only:
                 code = EXIT_OK if rcode is None else rcode
                 reason = ("the retake sitting only: the weekly set is done this week" if rcode is not None
-                          else "nothing to retake (expired, or the retake state unusable: the log says which)")
+                          else "nothing to retake (expired or superseded, or the retake state unusable: the log says which)")
                 camp, sitting, own_ledger = "", [], True
                 break
         sitting = []

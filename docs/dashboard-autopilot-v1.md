@@ -194,7 +194,8 @@ message, as before, or stays uncommitted.
 - Reading one reply per cell: the checker's proxies screen the replies; a PASS never stands for a
   person reading them (`docs/session-check-v1.md`, "A person reads").
 - The regression response (§8): running a bisect request and posting its draft (the GO), a retake
-  that stays red on the same engine build or ends `unjudged` / `abandoned`, a `red: mismatch`.
+  that stays red on the same engine build or ends `unjudged` / `abandoned` / `superseded`, a
+  `red: mismatch`.
 
 ## 7. Not covered
 
@@ -253,9 +254,14 @@ since `validate_cells.py` refuses a cell twice in one file; an identical row is 
 `SESSION.json` with a `retake` field naming the retakes, the ledger line, the post) with the suffix
 `retake-<slug>` (campaigns `<date>-dashboard-v1-<device>-retake-<slug>[-anchor]-<platform>`; the slug
 is model, backend and task, or `<n>cells`). Exit 0 marks the retakes `done` with the payload
-campaign; another exit counts an attempt, and two sittings that do not admit mark them `abandoned`;
-a pending retake older than seven days is `expired` (the weekly set has re-measured the cell by
-then). `auto` takes a device whose weekly set is done when a retake of it is pending (that firing
+campaign; a busy exit (3: the device or the Mac measurement window was not free, nothing ran) is
+logged and not counted (2026-10-20: two busy windows had abandoned a Mac retake that never ran);
+another exit counts an attempt, and two counted attempts mark them `abandoned`; a pending retake older
+than seven days is `expired` (the weekly set has re-measured the cell by then), and one whose row has
+left the cells file it was queued from is `superseded` and not run (the page's cell is another row
+now; 2026-10-20: a retake re-ran the S26 Qwen3 0.6B protocol row on the file the page had left an
+hour after the retake was queued, and its point fell in no series).
+`auto` takes a device whose weekly set is done when a retake of it is pending (that firing
 runs the retake only), and a device with a pending retake before the others; a retake sitting is
 not the week's session (its `SESSION.json` names its retakes; a by-hand `--suffix -retake` sitting
 counts as before). `--cells` (a run by hand) and `--no-retake` take no retake. The retake sitting's
@@ -305,7 +311,7 @@ committed as any sitting's.
 
 **Where a person is needed.** Running a bisect request (billed lab sessions: the GO, after a look at
 the route and the row); posting a draft (the GO); a retake that stays red on the same engine build,
-an `unjudged` or `abandoned` retake (read the sittings); `red: mismatch` (the page's rule moved:
+an `unjudged`, `abandoned` or `superseded` retake (read the sittings); `red: mismatch` (the page's rule moved:
 bring `ops/autopilot/regression-watch.json` and `regression_watch.py` to `build.py` again, then
 `--compare` until it says equal).
 

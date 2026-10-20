@@ -323,6 +323,40 @@ def main():
     ok(end["x1"]["status"] == "done" and end["x1"]["retake_campaign"].endswith("-retake-x-android")
        and mid["x2"] == "pending" and end["x2"]["status"] == "abandoned" and len(end["x2"]["attempts"]) == 2,
        "exit 0 -> done with its campaign; a sitting that does not admit -> pending, abandoned after two")
+    st3 = os.path.join(tmp, "state-busy")
+    rw.save_state(st3, rw.RETAKES, [dict(e, id="b1")])
+    for _ in range(3):
+        rw.finish_retakes(st3, ["b1"], rw.RETAKE_BUSY_EXIT, "the Mac measurement window is held by another lane", "")
+    busy_mid = rw.load_state(st3, rw.RETAKES)[0]
+    rw.finish_retakes(st3, ["b1"], 4, "anchor-collapse", "")
+    after_one = rw.load_state(st3, rw.RETAKES)[0]["status"]
+    rw.finish_retakes(st3, ["b1"], 4, "anchor-collapse", "")
+    busy_end = rw.load_state(st3, rw.RETAKES)[0]
+    ok(busy_mid["status"] == "pending" and len(busy_mid["attempts"]) == 3 and after_one == "pending"
+       and busy_end["status"] == "abandoned" and len(busy_end["attempts"]) == 5,
+       "busy exits (nothing ran) are logged and not counted: pending after three, abandoned after two sittings that ran")
+    sup_root = os.path.join(tmp, "root-supersede")
+    sup_cells = os.path.join(sup_root, e["cells_file"])
+    write(sup_cells, f"# the cells file the red sitting ran\n{e['row']}\n")
+    st4 = os.path.join(tmp, "state-supersede")
+    rw.save_state(st4, rw.RETAKES, [dict(e, id="s1", status="pending", created=rw.now_text(now))])
+    kept = rw.pending_retakes(st4, e["device"], now=now, root=sup_root)
+    counted = rw.pending_counts(st4, root=sup_root).get(e["device"])
+    write(sup_cells, f"# the cells file the red sitting ran\n{e['row'].split('#', 1)[0].rstrip()} context-tokens=4096\n")
+    moved = rw.pending_counts(st4, root=sup_root).get(e["device"])
+    gone = []
+    left = rw.pending_retakes(st4, e["device"], now=now, root=sup_root, gone=gone)
+    s1 = rw.load_state(st4, rw.RETAKES)[0]
+    ok([x["id"] for x in kept] == ["s1"] and counted == 1 and moved is None and left == []
+       and s1["status"] == "superseded" and gone == [("s1", f"its row is no longer in {e['cells_file']}")],
+       "a retake whose row left its cells file is not counted for the choice and is marked superseded, not run")
+    st5 = os.path.join(tmp, "state-no-cells-file")
+    rw.save_state(st5, rw.RETAKES, [dict(e, id="s2", status="pending", created=rw.now_text(now))])
+    ok([x["id"] for x in rw.pending_retakes(st5, e["device"], now=now, root=os.path.join(tmp, "no-such-root"))] == ["s2"],
+       "a cells file that is not there supersedes nothing (no row to compare): the retake stays pending")
+    result, judged = rw.judge(e, None, "x", cfg)
+    ok(result == "unjudged" and all("define this cell no more" in j["why"] for j in judged),
+       f"no series of the retake's cell any more: unjudged, the row changed ({judged[0].get('why')})")
     old = rw.pending_retakes(state, "s26", now=now + datetime.timedelta(days=8), write=False)
     ok(old == [] and rw.pending_retakes(state, "s26", now=now)[0]["id"] == e["id"],
        "a pending retake past seven days is expired; within them it is the device's pending one")
