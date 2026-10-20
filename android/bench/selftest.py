@@ -2081,6 +2081,18 @@ def main():
        and len(parsers.parse_litert_iterations(proto)) == 1,
        "v0.18.0 protocol (synthetic, from litert_lm_lib.cc): the per-call BenchmarkInfo's values, the "
        "same with an Aggregated block after it")
+    # LiteRT-LM main@b7c40ea81 (the 2026-10-20 side build) prints two prefill turns per 1K iteration: Turn 1
+    # = the prompt (1355 tokens), Turn 2 = 2 tokens after the reply (outside the TTFT); the prompt's count
+    # and speed are Turn 1's (before 2026-10-20: the counts summed, the last turn's speed, 23.1 tok/s)
+    k2 = lrd("s26-main-b7c40ea81-gpu-qwen3-0.6b-long-context-1024-gen256.console.txt")
+    its2, k2_checks = parsers.context_prompt_results(k2, 2048, 256)
+    ok([rounded(m) for m in its2] == [
+        {"firstTokenLatencyMS": 720.0, "promptTokensPerSecond": 1919.14, "decodeTokensPerSecond": 65.55,
+         "promptTokenCount": 1355, "generatedTokenCount": 256},
+        {"firstTokenLatencyMS": 700.0, "promptTokensPerSecond": 1967.87, "decodeTokensPerSecond": 69.16,
+         "promptTokenCount": 1355, "generatedTokenCount": 256}]
+       and k2_checks["protocolFlags"] == [],
+       f"main@b7c40ea81 1K: Prefill Turn 1's count and speed, not the second turn's (got {its2} {k2_checks})")
 
     # the cells grammar of the side builds (validate_cells) and the runner's refusals
     sys.path.insert(0, os.path.join(ROOT, "scripts"))

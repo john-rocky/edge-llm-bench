@@ -32,6 +32,9 @@ RE_PREFILL = re.compile(r"Prefill Speed: ([\d.]+) tokens/sec")
 RE_DECODE = re.compile(r"Decode Speed: ([\d.]+) tokens/sec")
 # real v0.16.0 device output: "Prefill Turn 1: Processed 20 tokens in 764.48ms duration."
 RE_PREFILL_TOKENS = re.compile(r"Prefill Turn \d+: Processed (\d+) tokens")
+# the prompt's own turn and the speed line right after it (before any later turn)
+RE_PREFILL_TURN1 = re.compile(r"Prefill Turn 1: Processed (\d+) tokens[^\n]*\n(?:(?!\s*Prefill Turn)[^\n]*\n)*?"
+                              r"\s*Prefill Speed: ([\d.]+) tokens/sec")
 RE_DECODE_TOKENS = re.compile(r"Decode Turn \d+: Processed (\d+) tokens")
 RE_PEAK_MEM = re.compile(r"[Pp]eak memory.*?([\d.]+) *(MB|GB|bytes)")
 # BenchmarkInfo's first line, at column zero (v0.16.0) or after a glog prefix (v0.18.0
@@ -71,20 +74,31 @@ def cut_aggregated(text):
 
 def parse_litert(text):
     """litert_lm_main console -> metrics dict (BenchmarkResult field names), from the
-    per-call BenchmarkInfo only (never the Aggregated block)."""
+    per-call BenchmarkInfo only (never the Aggregated block).
+
+    The prompt is Prefill Turn 1. A build that prints more prefill turns in one BenchmarkInfo
+    (LiteRT-LM main@b7c40ea81 on the 1K task: "Prefill Turn 1: Processed 1355 tokens … 1919.14
+    tokens/sec" then "Prefill Turn 2: Processed 2 tokens … 23.10 tokens/sec", the second after the
+    reply, outside the TTFT; main@16ab5491's litert_lm_main the same on short-chat) reads Turn 1's
+    count and speed; before 2026-10-20 the parser summed the counts and kept the last speed, which
+    on those builds was the short turn's. A one-turn console reads the same either way."""
     text = cut_aggregated(text)
     m = {}
     ttft = _last_float(RE_TTFT, text)
     if ttft is not None:
         m["firstTokenLatencyMS"] = ttft * 1000
-    prefill = _last_float(RE_PREFILL, text)
+    turn1 = RE_PREFILL_TURN1.search(text)
+    prefill = (float(turn1.group(2)) if turn1 and turn1.group(2) is not None
+               else _last_float(RE_PREFILL, text))
     if prefill is not None:
         m["promptTokensPerSecond"] = prefill
     decode = _last_float(RE_DECODE, text)
     if decode is not None:
         m["decodeTokensPerSecond"] = decode
     pt = RE_PREFILL_TOKENS.findall(text)
-    if pt:
+    if turn1:
+        m["promptTokenCount"] = int(turn1.group(1))
+    elif pt:
         m["promptTokenCount"] = sum(int(x) for x in pt)
     dt = RE_DECODE_TOKENS.findall(text)
     if dt:
