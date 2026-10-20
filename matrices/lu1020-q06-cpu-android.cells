@@ -1,0 +1,22 @@
+# 2026-10-20 Qwen3 0.6B on LiteRT-LM main@b7c40ea81 (lane lu1020, round r1), Android CPU, one sitting per device (the
+# GPU rows are matrices/lu1020-q06-gpu-android.cells; this file first, after a cooling hold): the current Hub file
+# Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (litert-community/Qwen3-0.6B main e6687177, lfs sha256 03e7da1e…2856,
+# 344,671,744 B) on the CPU with XNNPACK and with YNNPACK, the two arms of ONE binary: the side build
+# main-b7c40ea81-ynnpack (android/engine-pins.json; litert_lm_main + litert_lm_advanced_main built at LiteRT-LM
+# b7c40ea81 with --define=litert_enable_ynnpack=true, which LiteRT 9b8c7f77 needs to link the YNNPACK accelerator, +
+# the commit's seven prebuilt android_arm64 libraries), in /data/local/tmp/llmbench/engines/main-b7c40ea81-ynnpack/;
+# the flat pinned v0.18.0 build is not touched. ynnpack=1 = --enable_ynnpack=true (arm litert-lm-cpu-ynnpack); the
+# rows without it are the XNNPACK arm (litert-lm-cpu) of the same binary, and the payload interleaves the two per
+# round. Not page rows: the model id is the Mac catalog id of the same Hub file, so the rows stay apart from the
+# page's v0.18.0 rows (litert-community/Qwen3-0.6B + file=), and file= is the file's path in the host's Hub cache
+# (pushed as it is, sha256-checked on the phone: the record's model.sha256). First row = the Android session anchor
+# of matrices/dashboard-text-v1.cells. Short-chat is no CPU row here: the team's CPU rows are the 1K task and the
+# protocol.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/lu1020-q06-cpu-android.cells --suffix lu1020-cpu --once --hold-held-by <keeper pid> --no-page-commit
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/lu1020-q06-cpu-android.cells --suffix lu1020-cpu --once --hold-held-by <keeper pid> --no-page-commit
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=cpu engine-build=main-b7c40ea81-ynnpack local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=cpu engine-build=main-b7c40ea81-ynnpack ynnpack=1 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu engine-build=main-b7c40ea81-ynnpack local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu engine-build=main-b7c40ea81-ynnpack ynnpack=1 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048

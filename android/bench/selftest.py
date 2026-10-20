@@ -134,6 +134,35 @@ def side_chat_reply(cmd):
             tail, ""]
 
 
+def litert_side_lines(cmd):
+    """A LiteRT-LM cpu / gpu side build's lines (the forms of main@b7c40ea81 on the Galaxy S26,
+    2026-10-14): the backend it chose, the settings echo, the accelerators LiteRT registers on every
+    launch, the three signatures' delegation (the GPU's, XNNPACK's, or YNNPACK's when the command asks
+    for it), and YNNPACK's per-op lines; STATE/ynn_silent = a launch that asks for YNNPACK and shows
+    none of it."""
+    backend = re.search(r"--backend=(\\w+)", cmd).group(1)
+    ctx = re.search(r"--max_num_tokens=(\\d+)", cmd)
+    asked = "--enable_ynnpack=true" in cmd
+    ynn = asked and not os.path.exists(os.path.join(STATE, "ynn_silent"))
+    out = ["I0000 00:00:1792039861.215478   13129 litert_lm_lib.cc:654] Choose backend: " + backend]
+    if ctx:
+        out.append("max_tokens: " + ctx.group(1))
+    out.append("enable_ynnpack: " + ("1" if asked else "0"))
+    out += ["INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006f35c090c0, name=LiteRT GPU",
+            "INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.",
+            "INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered."]
+    if asked:
+        out.append("INFO: [cpu_registry.cc:56] YNNPACK CPU accelerator registered.")
+    delegate = "LITERT_CL" if backend == "gpu" else "YNNPackDelegate" if ynn else "TfLiteXNNPackDelegate"
+    for i, sig in enumerate(("prefill_128", "prefill_1024", "decode")):
+        out.append("VERBOSE: Replacing 436 out of 436 node(s) with delegate (%%s) node, yielding 1 partitions "
+                   "for subgraph %%d (%%s)." %% (delegate, i, sig))
+    if ynn:
+        out += ["ERROR: external/litert/tflite/delegates/ynnpack/elementwise.cc:44 "
+                "IsTensorSupported(input) was not true."] * 2
+    return out
+
+
 def et_engine(cmd):
     """An ExecuTorch runner launch (sh -c 'exec ./executorch-<tag>/<runner> ... 2>err'): the
     next STATE/et_launches.json entry's stdout to stdout and its stderr into the file the
@@ -185,6 +214,10 @@ def engine(cmd):
         print("SOCKET 4242 unix")
     print("===ENGINE_OUTPUT===")
     side = DEV + "/engines/" in cmd
+    if side and "/litert_lm_" in cmd and "--backend=npu" not in cmd:
+        # a LiteRT-LM cpu / gpu side build: its lines, then the flat build's output below
+        for line in litert_side_lines(cmd):
+            print(line)
     if side and "/bin/llama-bench " in cmd:
         sys.stdout.write(BENCH_HTP0)
     elif "./llama-cli" in cmd or (side and "/bin/llama-cli " in cmd):
@@ -230,7 +263,8 @@ def engine(cmd):
         print("ORTGENAI_LIBS " + " ".join(DEV + "/ortgenai/" + n for n in
                                           ("libmat.so", "libonnxruntime-genai.so", "libonnxruntime.so")))
         print("[OUTPUT BEGIN]" + ON_TASK + "[OUTPUT END]")
-    elif "./litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
+    elif "/litert_lm_advanced_main" in cmd and "--num_iterations=2" in cmd:
+        # the flat build (./) and a cpu / gpu side build (its absolute path) alike
         ctx = re.search(r"--max_num_tokens=(\\d+)", cmd).group(1)
         print("max_tokens: " + ctx)
         reply = OFF_TASK if os.path.exists(os.path.join(STATE, "off_task")) else ON_TASK
@@ -2062,8 +2096,15 @@ def main():
         ("android llama.cpp m/g short-chat engine-build=b11469-snapdragon file=x.gguf", "go together"),
         ("mac litert-lm m/l short-chat backend=npu", "backend=npu is an android"),
         ("android litert-lm m/l short-chat backend=npu file=x.litertlm", "go together"),
-        ("android litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt file=x.litertlm",
-         "go together"),
+        # a cpu / gpu row may name a LiteRT-LM side build (2026-10-20); ynnpack=1 = a cpu row on one
+        ("android litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt file=x.litertlm", None),
+        ("android litert-lm m/l native-benchmark-1024x256 backend=cpu engine-build=main-20260821-selfbuilt "
+         "ynnpack=1 file=x.litertlm context-tokens=2048", None),
+        ("android litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt ynnpack=1 "
+         "file=x.litertlm", "ynnpack=1 is a backend=cpu row on a side build"),
+        ("android litert-lm m/l short-chat backend=cpu ynnpack=1 file=x.litertlm",
+         "ynnpack=1 is a backend=cpu row on a side build"),
+        ("mac litert-lm m/l short-chat backend=cpu ynnpack=1", "ynnpack= is read for android litert-lm rows only"),
         ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
          "file=x.litertlm context-tokens=2048", "no context-tokens="),
         ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=main-20260821-selfbuilt "
@@ -2087,9 +2128,18 @@ def main():
     errors, _ = validate_cells.validate_file(path_v)
     ok(any("duplicate cell" in e for e in errors),
        f"validate_cells: one arm on two side builds in one file is a duplicate cell (got {errors})")
+    with open(path_v, "w") as fh:
+        fh.write("android litert-lm m/l native-benchmark-1024x256 backend=cpu engine-build=a file=x.litertlm "
+                 "context-tokens=2048\n"
+                 "android litert-lm m/l native-benchmark-1024x256 backend=cpu engine-build=a ynnpack=1 "
+                 "file=x.litertlm context-tokens=2048\n")
+    errors, _ = validate_cells.validate_file(path_v)
+    ok(not errors, f"validate_cells: one cpu row with and one without ynnpack=1 are two cells (got {errors})")
     for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "pass --backend npu and --engine-build together"),
-                       (["--runtime", "litert-lm", "--backend", "gpu", "--engine-build", npu_tag],
-                        "pass --backend npu and --engine-build together"),
+                       (["--runtime", "litert-lm", "--backend", "gpu", "--ynnpack", "--engine-build", npu_tag],
+                        "--ynnpack is a litert-lm --backend cpu row on a side build"),
+                       (["--runtime", "litert-lm", "--backend", "cpu", "--ynnpack"],
+                        "--ynnpack is a litert-lm --backend cpu row on a side build"),
                        (["--runtime", "litert-lm", "--backend", "npu", "--engine-build", npu_tag,
                          "--context-tokens", "2048"], "no --context-tokens"),
                        (["--runtime", "llama.cpp", "--backend", "cpu"], "without --backend is the CPU arm"),
@@ -2456,6 +2506,126 @@ def main():
     for n, text in flat_saved.items():
         with open(os.path.join(dev, n), "w") as fh:
             fh.write(text)
+
+    # LiteRT-LM cpu / gpu side builds (2026-10-20): a build other than the flat pin, its two tools and
+    # seven libraries flat in DEV/engines/<tag>, named by engine-build= on a cpu / gpu row; the flat dir
+    # is never touched. The witness reads the tool and the seven libs, BENCH_SITTING=1 expects the cell's
+    # tag, the commands are the flat build's by absolute path with the build's LD_LIBRARY_PATH, ynnpack=1
+    # adds --enable_ynnpack=true and is an arm of its own (litert-lm-cpu-ynnpack), the build's lines go
+    # to backendRegistered with YNNPACK's line counts, the cache marker names the build, and a launch whose
+    # lines show another device (no YNNPACK line when asked for) is kept, flagged backend-not-registered.
+    sb_tag = "main-fixture-cpugpu"
+    sb_eng = os.path.join(dev, "engines", sb_tag)
+    sb_libs = sorted(reg["litert-lm"][lt_tag]["so_files"])
+    sb_files = ["litert_lm_main", "litert_lm_advanced_main"] + sb_libs
+    sb_sha = {n: hashlib.sha256(("side " + n).encode()).hexdigest() for n in sb_files}
+    os.makedirs(sb_eng)
+    for n in sb_files:
+        with open(os.path.join(sb_eng, n), "w") as fh:
+            fh.write("sha256=" + sb_sha[n])
+    sb_pins = json.load(open(os.path.join(ROOT, "android", "engine-pins.json")))
+    sb_pins["litert-lm"][sb_tag] = {"litert_lm_main_sha256": sb_sha["litert_lm_main"],
+                                    "litert_lm_advanced_main_sha256": sb_sha["litert_lm_advanced_main"],
+                                    "so_files": {n: sb_sha[n] for n in sb_libs}}
+    sb_pins_path = os.path.join(tmp, "engine-pins.side.json")
+    json.dump(sb_pins, open(sb_pins_path, "w"))
+    sb_dev = f"/data/local/tmp/llmbench/engines/{sb_tag}"
+    sb_model = "/data/local/tmp/llmbench/models/fake_side_fake_model.litertlm"
+    cells_s = os.path.join(tmp, "s.cells")
+    with open(cells_s, "w") as fh:
+        fh.write(f"android litert-lm fake/side short-chat runs=2 backend=gpu engine-build={sb_tag} local=1 "
+                 f"file={litert_model}\n"
+                 f"android litert-lm fake/side native-benchmark-1024x256 runs=1 backend=cpu engine-build={sb_tag} "
+                 f"local=1 file={litert_model} context-tokens=2048\n"
+                 f"android litert-lm fake/side native-benchmark-1024x256 runs=1 backend=cpu engine-build={sb_tag} "
+                 f"ynnpack=1 local=1 file={litert_model} context-tokens=2048\n")
+    errors, _ = validate_cells.validate_file(cells_s)
+    ok(not errors, f"side build cells validate (got {errors})")
+    flat_before = {n: open(os.path.join(dev, n)).read() for n in ("litert_lm_main", "litert_lm_advanced_main")}
+    if os.path.exists(cmds):
+        os.remove(cmds)
+    schedule([40.0, 41.0, 30.0, 31.0])
+    print(f"--- campaign S (LiteRT-LM cpu / gpu side build {sb_tag} under BENCH_SITTING=1: gpu short-chat x2, "
+          "cpu protocol, cpu protocol with ynnpack=1)")
+    env_s = dict(env, CAMPAIGN="selftest-s", BENCH_TEST_PINS=sb_pins_path, BENCH_SITTING="1")
+    rc = run_campaign(env_s, cells_s)
+    ok(rc == 0, f"campaign S exits 0 (got {rc})")
+    out_s = os.path.join(raw_root, "selftest-s", "app-path-android")
+    gpu_s = [r for _, r in records(out_s, "litert-lm-gpu_")]
+    cpu_s = [r for _, r in records(out_s, "litert-lm-cpu_")]
+    ynn_s = [r for _, r in records(out_s, "litert-lm-cpu-ynnpack_")]
+    gpu_lines = ["Choose backend: gpu", "enable_ynnpack: 0", "RegisterAccelerator: ptr=<addr>, name=LiteRT GPU",
+                 "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.",
+                 "XNNPACK CPU accelerator registered."] + [
+        f"Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph {i} ({s})."
+        for i, s in enumerate(("prefill_128", "prefill_1024", "decode"))]
+    sc_cmd = (f"{sb_dev}/litert_lm_main --backend=gpu --model_path={sb_model} "
+              "--input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false")
+    if len(gpu_s) == 2:
+        r, c = gpu_s[0], gpu_s[0]["conditions"]
+        ok((r["runtime"], r["engineVersion"], r["engineArtifact"]) == ("litert-lm-gpu", sb_tag, sb_sha["litert_lm_main"]),
+           f"side gpu: runtime litert-lm-gpu, engineVersion {sb_tag} (litert_lm_main + 7 libs matched in the build's "
+           f"dir), passing BENCH_SITTING=1 (got {r['runtime']}, {r['engineVersion']})")
+        ok(c.get("engineBuild") == sb_tag and c.get("engineCommand") == f"LD_LIBRARY_PATH={sb_dev} {sc_cmd}",
+           f"side gpu: engineBuild and engineCommand = the build's env + the flat build's short-chat command by "
+           f"absolute path: {c.get('engineCommand')!r}")
+        ok(c.get("backendRegistered") == gpu_lines and not c.get("protocolFlags") and "enableYnnpack" not in c,
+           f"side gpu: backendRegistered = the build's lines (addresses as <addr>), not flagged "
+           f"(got {c.get('backendRegistered')}, flags {c.get('protocolFlags')})")
+        ok([x["metrics"].get("firstEver") for x in gpu_s] == [True, None]
+           and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".gpu.{sb_tag}.cachebuilt"))
+           and r["provenance"]["rssBasis"] == gpu_s[1]["provenance"]["rssBasis"]
+           and "not in VmRSS" not in r["provenance"]["rssBasis"],
+           f"side gpu: the build's own cache marker (run 1 firstEver), rssBasis as the flat build's "
+           f"(got {[x['metrics'].get('firstEver') for x in gpu_s]})")
+    else:
+        ok(False, f"two side gpu records (got {len(gpu_s)})")
+    if len(cpu_s) == 1 and len(ynn_s) == 1:
+        c0, c1 = cpu_s[0]["conditions"], ynn_s[0]["conditions"]
+        ok((cpu_s[0]["runtime"], ynn_s[0]["runtime"]) == ("litert-lm-cpu", "litert-lm-cpu-ynnpack")
+           and cpu_s[0]["engineArtifact"] == ynn_s[0]["engineArtifact"] == sb_sha["litert_lm_advanced_main"],
+           f"side cpu: XNNPACK and YNNPACK are two arms of one binary (got {cpu_s[0]['runtime']}, {ynn_s[0]['runtime']})")
+        ok(c0.get("enableYnnpack") is False and c0.get("ynnpackLines") == {"ops": 0, "partitions": 0}
+           and not c0.get("engineCommand", "").endswith("--enable_ynnpack=true") and not c0.get("protocolFlags"),
+           f"side cpu, ynnpack off: no flag in the command, no YNNPACK line, not flagged (got {c0.get('ynnpackLines')}, "
+           f"{c0.get('protocolFlags')})")
+        ok(c1.get("enableYnnpack") is True and c1.get("ynnpackLines") == {"ops": 2, "partitions": 3}
+           and c1.get("engineCommand") == (f"LD_LIBRARY_PATH={sb_dev} {sb_dev}/litert_lm_advanced_main --backend=cpu "
+                                           f"--model_path={sb_model} --benchmark --benchmark_prefill_tokens=1024 "
+                                           "--benchmark_decode_tokens=256 --async=false --max_num_tokens=2048 "
+                                           "--enable_ynnpack=true")
+           and "max_tokens: 2048" in c1.get("backendRegistered", []) and not c1.get("protocolFlags"),
+           f"side cpu, ynnpack on: --enable_ynnpack=true, YNNPACK's per-op lines and partitions counted, the KV echo "
+           f"kept, not flagged (got {c1.get('ynnpackLines')}, {c1.get('engineCommand')!r})")
+        ok(os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".cpu-ynnpack.{sb_tag}.cachebuilt"))
+           and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".cpu.{sb_tag}.cachebuilt")),
+           "side cpu: each arm keeps its own cache marker")
+    else:
+        ok(False, f"one side cpu record and one with ynnpack (got {len(cpu_s)}, {len(ynn_s)})")
+    shells = open(cmds).read().splitlines() if os.path.exists(cmds) else []
+    ok(len(shells) == 4 and all(s.startswith(f"cd /data/local/tmp/llmbench && LD_LIBRARY_PATH={sb_dev} taskset f0 "
+                                             f"{sb_dev}/litert_lm_") for s in shells)
+       and {n: open(os.path.join(dev, n)).read() for n in ("litert_lm_main", "litert_lm_advanced_main")} == flat_before,
+       f"side build: every shell runs the build's own tool and libs, the flat dir untouched: {shells[:1]}")
+    open(os.path.join(state, "ynn_silent"), "w").close()
+    with open(cells_s, "w") as fh:
+        fh.write(f"android litert-lm fake/side native-benchmark-1024x256 runs=1 backend=cpu engine-build={sb_tag} "
+                 f"ynnpack=1 local=1 file={litert_model} context-tokens=2048\n")
+    schedule([29.0])
+    print("--- campaign S2 (a ynnpack=1 launch that shows no YNNPACK line)")
+    rc = run_campaign(dict(env_s, CAMPAIGN="selftest-s2"), cells_s)
+    os.remove(os.path.join(state, "ynn_silent"))
+    out_s2 = os.path.join(raw_root, "selftest-s2", "app-path-android")
+    s2 = [r for _, r in records(out_s2, "litert-lm-cpu-ynnpack_")]
+    fails_s2 = os.path.join(out_s2, "FAILURES.txt")
+    fails_s2 = open(fails_s2).read().splitlines() if os.path.exists(fails_s2) else []
+    ok(len(s2) == 1 and s2[0]["conditions"].get("protocolFlags") == ["backend-not-registered"]
+       and s2[0]["conditions"].get("backendOffReason") == "no YNNPACK line"
+       and s2[0]["metrics"].get("decodeTokensPerSecond") == 29.0
+       and fails_s2 == ["litert-lm-cpu-ynnpack fake/side native-benchmark-1024x256 rc=1"],
+       f"no YNNPACK line on a ynnpack=1 launch: kept, rate kept, flagged backend-not-registered, a failed launch "
+       f"under its arm (got {[(r['conditions'].get('protocolFlags'), r['conditions'].get('backendOffReason')) for r in s2]}, "
+       f"{fails_s2})")
 
     # llama.cpp's flat build (2026-10-19): from b10903 on the CPU asset's llama-cli is a 7 KB launcher, and
     # b11721's is byte-identical to b10903's, so the witness reads the pin's so_files beside it in the flat

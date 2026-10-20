@@ -1238,6 +1238,35 @@ files, under their own model id.
   On the iPhone GPU the first question is whether the engine builds at all. Results: the lane's round record
   (`results/raw/2026-10-18-bench-autopilot-dev/ROUND18.md`).
 
+## Qwen3 0.6B on LiteRT-LM main@b7c40ea81: a GPU-composite export, and YNNPACK on the CPU (2026-10-20)
+
+Two asks of the LiteRT team for the Qwen3 0.6B rows, measured as side-build rows on the Galaxy S26 and the Pixel 8a,
+one CPU and one GPU sitting per phone; no page row moves.
+
+- The engine. PyPI litert-lm 0.18.1 (2026-10-19) ships one library per platform with the GPU accelerators linked in,
+  built from a tree whose `version.bzl` says 0.18.1; no public commit carries that version (main's says 0.19.0 since
+  93d74126, 2026-10-06), there is no v0.18.1 tag, and the newest prebuilt libraries on main are those of b7c40ea81
+  (2026-10-13). So the rows run main@b7c40ea81: `litert_lm_main` and `litert_lm_advanced_main` built at that commit
+  with the commit's seven prebuilt android_arm64 libraries (the GPU accelerators among them; LFS oids checked), as
+  two side builds in `android/engine-pins.json`: `main-b7c40ea81` (the GPU rows) and `main-b7c40ea81-ynnpack` (the same
+  commit with `--define=litert_enable_ynnpack=true`, the CPU rows). Records stamp `engineVersion` `main@b7c40ea81` /
+  `main@b7c40ea81-ynnpack`; the pin stays v0.18.0.
+- The files. The current Hub file `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` (lfs sha256 `03e7da1e…2856`) and E2, a
+  local export of the same model with litert-torch 0a81bf6f's `--apply_gpu_composites=True` (its GPU flag set,
+  dynamic_wi4b32_afp32, prefill 128 + 1024, the official Qwen3 LlmMetadata; sha256 `fbbf0657…5b79`, not on the Hub).
+  v0.18.0's OpenCL kit builds no engine for E2 (`unexpected type name 'float4'`), so E2 has no v0.18.0 row. Model ids:
+  the Hub file under `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32` (the Mac catalog id of the same file), E2 under
+  `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2` (the candidate's form above), both with a host
+  path in `file=` (pushed as they are, sha256-checked on the phone): the rows never share a cell with the page's
+  v0.18.0 rows (`litert-community/Qwen3-0.6B` + `file=`), whose cells select by device, arm, model id, task and
+  context, not by engine.
+- Cells: `matrices/lu1020-q06-gpu-android.cells` (the Hub file and E2 in pairs: short-chat, the 1K task, the protocol)
+  and `matrices/lu1020-q06-cpu-android.cells` (the Hub file on the CPU: the protocol and the 1K task, XNNPACK and
+  `ynnpack=1` interleaved per round, one binary). `ynnpack=1` is the arm `litert-lm-cpu-ynnpack` (android/README.md,
+  "Side builds"): a toggle in the conditions only would pool the two into one cell.
+- Reading: E2 against the Hub file only within one sitting on one build; YNNPACK on against off only within one
+  sitting on one binary, with YNNPACK's own lines in every on launch and none in an off one.
+
 ## llama.cpp Gemma 4 rows before 2026-10-19 ran without the chat template (Mac and iPhone)
 
 Every llama.cpp Gemma 4 row the Mac and the iPhones measured before 2026-10-19 (E2B and E4B; short-chat,

@@ -56,7 +56,9 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 # duration is part of the task id, like the long-context sweep variants.
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown", "cool-wait"}
-FLAG_KEYS = {"anchor", "manual", "local"}          # value must be 1
+# ynnpack=1: an android litert-lm backend=cpu row on a side build with YNNPACK (run_cell.py --ynnpack,
+# arm litert-lm-cpu-ynnpack)
+FLAG_KEYS = {"anchor", "manual", "local", "ynnpack"}          # value must be 1
 STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
             "engine-build", "revision",
             # litert-lm on the iPhone: where a task run stops at its output budget — engine (the
@@ -372,12 +374,18 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                                   "alone would stamp the CPU arm with a second build)")
             # an android litert-lm row on the NPU (arm litert-lm-npu) runs a side build: a
             # LiteRT-LM runtime with the Qualcomm dispatch libraries, named by engine-build=
-            # (docs/dashboard-cells-v1.md "LiteRT-LM on the NPU"); cpu / gpu run the pinned build
+            # (docs/dashboard-cells-v1.md "LiteRT-LM on the NPU"); cpu / gpu run the pinned build,
+            # or with engine-build= a LiteRT-LM build other than the pin (android/README.md
+            # "Side builds"), and ynnpack=1 asks a cpu row's build for YNNPACK
             if plat == "android" and rt == "litert-lm":
-                if (opts.get("backend") == "npu") != bool(opts.get("engine-build")):
+                if opts.get("backend") == "npu" and not opts.get("engine-build"):
                     errors.append(f"{where}: android litert-lm backend=npu and engine-build=<tag> go "
                                   "together (the NPU runs a LiteRT-LM side build with the Qualcomm "
-                                  "dispatch libraries; engine-build= is read for backend=npu only)")
+                                  "dispatch libraries)")
+                if opts.get("ynnpack") == "1" and not (opts.get("backend") == "cpu" and opts.get("engine-build")):
+                    errors.append(f"{where}: ynnpack=1 is a backend=cpu row on a side build "
+                                  "(engine-build=<tag> of a build with --define=litert_enable_ynnpack=true; "
+                                  "the flat pinned build carries no YNNPACK)")
                 if (opts.get("backend") == "npu" and not opts.get("exclude")
                         and (opts.get("context-tokens") or NATIVE_TASK.match(task)
                              or ENDURANCE_TASK.match(task))):
@@ -388,6 +396,9 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
             if opts.get("engine-build") and not (plat == "android" and rt in ("llama.cpp", "litert-lm")):
                 errors.append(f"{where}: engine-build= is read for android llama.cpp and litert-lm "
                               "rows only (android/bench/run_cell.py --engine-build)")
+            if opts.get("ynnpack") and not (plat == "android" and rt == "litert-lm"):
+                errors.append(f"{where}: ynnpack= is read for android litert-lm rows only "
+                              "(android/bench/run_cell.py --ynnpack)")
             if opts.get("max-tokens") and plat == "mac":
                 errors.append(f"{where}: the Mac CLI has no --max-tokens flag "
                               "(BenchmarkRunner.Configuration carries no budget "
@@ -397,7 +408,8 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
             # capture file on it, so one cell at two allocations is two cells.
             key = (plat, rt, mid, task, opts.get("backend", ""),
                    opts.get("context-tokens", ""), opts.get("file", ""), opts.get("recipe", ""),
-                   opts.get("thinking", "model-default") if rt == "uzu" else "")
+                   opts.get("thinking", "model-default") if rt == "uzu" else "",
+                   opts.get("ynnpack", ""))
             if key in seen:
                 errors.append(f"{where}: duplicate cell (first at line {seen[key]})")
             else:

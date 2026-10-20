@@ -161,6 +161,32 @@ and passes `--litert_dispatch_lib_dir=$E`; the witness reads
 pin gives them (`dsp/…` for the skel). Until the pin is written, the records
 stamp `unknown (…)` and a sitting stops the cell before it launches.
 
+LiteRT-LM on the CPU or the GPU on a build other than the flat pin (cells
+`backend=cpu|gpu engine-build=<tag>`, arms `litert-lm-cpu` / `litert-lm-gpu`;
+since 2026-10-20) sits flat in `/data/local/tmp/llmbench/engines/<tag>/` too:
+its `litert_lm_main`, its `litert_lm_advanced_main` and the seven prebuilt
+libraries of the commit it was built at, the nine files the flat build has.
+The runner starts the tools by absolute path with `LD_LIBRARY_PATH=$E` (the
+accelerator and sampler libraries load by name), runs the flat build's
+commands, and the witness reads both tools and the seven libs against the
+tag's pin; the flat pinned build is never touched, so the weekly rows keep
+it. `ynnpack=1` on such a cpu row adds `--enable_ynnpack=true` and is the arm
+`litert-lm-cpu-ynnpack`: the build must carry YNNPACK (LiteRT links its
+accelerator only under `--define=litert_enable_ynnpack=true`), and a launch
+that asks for it and logs none of YNNPACK's lines (its per-op
+`tflite/delegates/ynnpack/` lines, its `YNNPackDelegate` partitions), or logs
+them without asking, is flagged `backend-not-registered`
+(`conditions.ynnpackLines`, `backendOffReason`).
+
+```bash
+E=/data/local/tmp/llmbench/engines/main-b7c40ea81
+adb shell mkdir -p $E
+adb push android/bin/main-b7c40ea81/litert_lm_main android/bin/main-b7c40ea81/litert_lm_advanced_main \
+    android/bin/main-b7c40ea81/*.so $E/
+adb shell chmod 755 $E/litert_lm_main $E/litert_lm_advanced_main
+adb shell "cd $E && sha256sum litert_lm_main litert_lm_advanced_main *.so"   # against the build's SHA256SUMS
+```
+
 ## ONNX Runtime GenAI (the `onnxruntime-genai-cpu` rows)
 
 The official onnxruntime-genai 0.17.0 release AAR is CPU-only and ships no

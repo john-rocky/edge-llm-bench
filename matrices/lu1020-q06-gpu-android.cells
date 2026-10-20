@@ -1,0 +1,24 @@
+# 2026-10-20 Qwen3 0.6B on LiteRT-LM main@b7c40ea81 (lane lu1020, round r1), Android GPU, one sitting per device (after
+# matrices/lu1020-q06-cpu-android.cells): the current Hub file Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+# (litert-community/Qwen3-0.6B main e6687177, lfs sha256 03e7da1e…2856) beside a local GPU-composite export of the same
+# model, E2 (litert-torch 0a81bf6f export_hf --apply_gpu_composites=True, dynamic_wi4b32_afp32, prefill 128 + 1024,
+# the official Qwen3 LlmMetadata; sha256 fbbf0657efe90a57a4f3992023e01b1431455d3c130b5ab926647b1f137e5b79, 343,466,928 B;
+# not on the Hub), same options row by row, the Hub file first in each pair, the page's three tasks (short-chat, the
+# 1K task, the protocol 1024 / 256), both on the side build main-b7c40ea81 (android/engine-pins.json; litert_lm_main +
+# litert_lm_advanced_main built at LiteRT-LM b7c40ea81 + the commit's seven prebuilt android_arm64 libraries, the GPU
+# accelerators among them) in /data/local/tmp/llmbench/engines/main-b7c40ea81/; the flat pinned v0.18.0 build is not
+# touched (v0.18.0's OpenCL kit builds no engine for E2: "unexpected type name 'float4'"). Not page rows: the Hub file
+# runs under the Mac catalog id of the same file and E2 under an id of its own (the form of the 2026-10-19 candidate,
+# docs/dashboard-cells-v1.md), so the rows stay apart from the page's v0.18.0 rows; file= is a host path (pushed as
+# it is, sha256-checked on the phone: the record's model.sha256). First row = the Android session anchor of
+# matrices/dashboard-text-v1.cells.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/lu1020-q06-gpu-android.cells --suffix lu1020-gpu --once --hold-held-by <keeper pid> --no-page-commit
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/lu1020-q06-gpu-android.cells --suffix lu1020-gpu --once --hold-held-by <keeper pid> --no-page-commit
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat backend=gpu engine-build=main-b7c40ea81 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2 short-chat backend=gpu engine-build=main-b7c40ea81 local=1 file=~/code/edge-llm-bench/.dashboard/lu1020_qwen3_gemma4/r1/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=gpu engine-build=main-b7c40ea81 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2 long-context-1024-gen256 backend=gpu engine-build=main-b7c40ea81 local=1 file=~/code/edge-llm-bench/.dashboard/lu1020_qwen3_gemma4/r1/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=gpu engine-build=main-b7c40ea81 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2 native-benchmark-1024x256 backend=gpu engine-build=main-b7c40ea81 local=1 file=~/code/edge-llm-bench/.dashboard/lu1020_qwen3_gemma4/r1/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048

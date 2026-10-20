@@ -414,6 +414,80 @@ def litert_npu_lines(text):
     return out
 
 
+# A LiteRT-LM cpu / gpu side build's lines (cells backend=cpu|gpu engine-build=<tag>; the forms of
+# main@b7c40ea81 on the Galaxy S26, 2026-10-14):
+#   I0000 00:00:1792039861.215478   13129 litert_lm_lib.cc:654] Choose backend: gpu
+#   max_tokens: 2048                                   (the settings echo)
+#   enable_ynnpack: 0
+#   INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400006f35c090c0, name=LiteRT GPU
+#   INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+#   INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+#   VERBOSE: Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+# The delegation lines are kept for the model's own signatures (prefill_* / decode*), not for the
+# composites' inner subgraphs (odml.rms_norm.impl_31 …). LiteRT registers every accelerator whatever
+# the backend (a CPU launch registers the GPU one too), so a registration line says nothing about
+# where the model ran; a delegation line does. A build with YNNPACK registers it whether the launch
+# asks for it or not (ynnpack_accelerator.cc declines when the option is off): what shows YNNPACK ran
+# is its per-op lines (tflite/delegates/ynnpack/*.cc, the tensors it hands back) and its partitions.
+LITERT_SIDE_LINE_PATTERNS = (
+    re.compile(r"Choose backend: \w+"),
+    re.compile(r"^max_tokens: \d+"),
+    re.compile(r"^enable_ynnpack: \w+"),
+    re.compile(r"RegisterAccelerator: ptr=\w+, name=.+"),
+    re.compile(r"Dynamically loaded GPU accelerator\(\S+\) registered\."),
+    re.compile(r"[XY]NNPACK CPU accelerator registered\."),
+    re.compile(r"Replacing \d+ out of \d+ node\(s\) with delegate \(\S+\) node, yielding \d+ partitions? for "
+               r"subgraph \d+ \((?:prefill\w*|decode\w*)\)\.?"),
+)
+RE_YNNPACK_OP = re.compile(r"delegates/ynnpack/")
+RE_YNNPACK_PARTITION = re.compile(r"with delegate \(YNNPackDelegate\)")
+RE_SIDE_DELEGATE = re.compile(r"with delegate \((\S+)\) node.*\((?:prefill\w*|decode\w*)\)")
+CPU_DELEGATES = ("TfLiteXNNPackDelegate", "YNNPackDelegate")
+
+
+def litert_side_lines(text):
+    """The engine output's lines of a LiteRT-LM cpu / gpu side build (LITERT_SIDE_LINE_PATTERNS), in
+    order, each once, runs of blanks folded, addresses as <addr> — conditions.backendRegistered of
+    such a launch. Absent lines stay absent."""
+    out = []
+    for line in text.split("===ENGINE_OUTPUT===", 1)[-1].splitlines():
+        for rx in LITERT_SIDE_LINE_PATTERNS:
+            m = rx.search(line)
+            if m:
+                found = re.sub(r"\b0x[0-9a-fA-F]+\b", "<addr>", re.sub(r"\s+", " ", m.group(0).strip()))
+                if found not in out:
+                    out.append(found)
+                break
+    return out
+
+
+def ynnpack_counts(text):
+    """{"ops": YNNPACK's per-op lines, "partitions": its partitions} in one launch's engine output."""
+    engine = text.split("===ENGINE_OUTPUT===", 1)[-1]
+    return {"ops": len(RE_YNNPACK_OP.findall(engine)), "partitions": len(RE_YNNPACK_PARTITION.findall(engine))}
+
+
+def litert_side_off_device(lines, backend, ynnpack, counts):
+    """Why a LiteRT-LM cpu / gpu side-build launch did not run where its arm says, or None. Read on
+    positive evidence only (litert_lm_main short-chat launches print neither the backend choice nor
+    the delegation on v0.18.0, so an absent line flags nothing): another backend chosen; on gpu, a
+    model signature taken by a CPU delegate; on cpu, YNNPACK's lines absent when the arm asks for it
+    (--enable_ynnpack=true) or present when it does not."""
+    chose = [ln.split(": ", 1)[1] for ln in lines if ln.startswith("Choose backend: ")]
+    if chose and chose[-1] != backend:
+        return f"chose backend {chose[-1]}"
+    if backend == "gpu":
+        cpu = sorted({m.group(1) for ln in lines for m in [RE_SIDE_DELEGATE.search(ln)]
+                      if m and m.group(1) in CPU_DELEGATES})
+        return f"a signature on {', '.join(cpu)}" if cpu else None
+    seen = counts["ops"] + counts["partitions"]
+    if ynnpack and not seen:
+        return "no YNNPACK line"
+    if not ynnpack and seen:
+        return f"{seen} YNNPACK lines without --enable_ynnpack"
+    return None
+
+
 def litert_npu_registered(lines):
     """Did this LiteRT-LM launch run on the NPU? It chose the npu backend, LiteRT registered
     its NPU accelerator, and the dispatch delegate took at least one of the model's subgraphs

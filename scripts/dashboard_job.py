@@ -550,7 +550,11 @@ def side_build_tools(cells_file):
             continue
         build = f"{ANDROID_DEV_DIR}/engines/{tag}"
         if c["runtime"] == "litert-lm":
-            tools.add(f"{build}/litert_lm_advanced_main")
+            # a cpu / gpu build's short-chat row launches its litert_lm_main (run_cell.py
+            # engine_command); every other LiteRT-LM side-build row its advanced_main
+            short = c["opts"].get("backend") in ("cpu", "gpu") and c["task"] == "short-chat" \
+                and not c["opts"].get("context-tokens")
+            tools.add(f"{build}/{'litert_lm_main' if short else 'litert_lm_advanced_main'}")
         else:
             tool = "llama-bench" if c["task"].startswith("native-benchmark-") else "llama-cli"
             tools.add(f"{build}/bin/{tool}")

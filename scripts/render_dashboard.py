@@ -117,6 +117,9 @@ def arm_of(plat, runtime, opts):
     (onnxruntime-genai-cpu / onnxruntime-genai-webgpu)."""
     if runtime == "onnxruntime-genai" and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
+    if plat == "android" and runtime == "litert-lm" and opts.get("ynnpack") == "1":
+        # a CPU row with YNNPACK asked for (cells ynnpack=1, run_cell.py --ynnpack)
+        return f"{runtime}-{opts['backend']}-ynnpack"
     if plat == "android" and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
     if plat in ("mac", "ios") and runtime == "litert-lm" and opts.get("backend") == "cpu":

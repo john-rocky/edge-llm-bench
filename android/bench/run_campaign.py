@@ -14,7 +14,10 @@ Order and discipline (fairness rules as code):
     from the device's engines dir (run_cell.py --backend --engine-build; arm
     llama.cpp-npu / llama.cpp-gpu); a row without backend= is the CPU arm. A
     litert-lm row with backend=npu engine-build=<tag> runs the LiteRT-LM NPU
-    build there the same way (arm litert-lm-npu).
+    build there the same way (arm litert-lm-npu), and a litert-lm row with
+    backend=cpu|gpu engine-build=<tag> a LiteRT-LM build other than the flat pin
+    (arm litert-lm-cpu / -gpu; ynnpack=1 on a cpu row = --enable_ynnpack=true,
+    arm litert-lm-cpu-ynnpack).
   - an executorch row (backend=xnnpack|vulkan|qnn file=<.pte> recipe=<alias>) runs
     the ExecuTorch runner of its model family on an own export staged under
     ET_MODEL_DIR (run_cell.py --recipe; arm executorch-<backend>;
@@ -165,6 +168,8 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
         cmd += ["--backend", cell["opts"]["backend"]]
     if cell["opts"].get("engine-build"):
         cmd += ["--engine-build", cell["opts"]["engine-build"]]
+    if cell["opts"].get("ynnpack") == "1":
+        cmd += ["--ynnpack"]
     if cell["runtime"] == "executorch" and cell["opts"].get("recipe"):
         cmd += ["--recipe", cell["opts"]["recipe"]]
     if cell["opts"].get("file"):
@@ -196,10 +201,10 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
 
 
 def arm_of(cell):
-    # run_cell.py's arm: backend is part of arm identity (litert-lm-<backend>, and
-    # llama.cpp-<backend> for a side build on npu / gpu; bare llama.cpp = the CPU arm;
-    # onnxruntime-genai-<backend>)
-    return arm_name(cell["runtime"], cell["opts"].get("backend"))
+    # run_cell.py's arm: backend is part of arm identity (litert-lm-<backend>, litert-lm-cpu-ynnpack
+    # for ynnpack=1, and llama.cpp-<backend> for a side build on npu / gpu; bare llama.cpp = the
+    # CPU arm; onnxruntime-genai-<backend>)
+    return arm_name(cell["runtime"], cell["opts"].get("backend"), cell["opts"].get("ynnpack") == "1")
 
 
 def cell_id(cell, round_mode=False):
@@ -217,7 +222,7 @@ def cell_records(cell, out_dir):
     opts = cell["opts"]
     ctx = int(opts["context-tokens"]) if opts.get("context-tokens") else None
     pat = capture_stem(cell["runtime"], opts.get("backend"), cell["model_id"],
-                       cell["task"], opts.get("file"), ctx) + "_*.json"
+                       cell["task"], opts.get("file"), ctx, ynnpack=opts.get("ynnpack") == "1") + "_*.json"
     return sorted(glob.glob(os.path.join(out_dir, pat)))
 
 
@@ -331,7 +336,7 @@ def planned_command(cell):
     command, binary, sampler, _ = engine_command(
         cell["runtime"], opts.get("backend"), model, cell["task"], prompt,
         int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx,
-        engine_dir=engine_dir)
+        engine_dir=engine_dir, ynnpack=opts.get("ynnpack") == "1")
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
     env = launch_env(engine_dir, opts.get("backend"), cell["runtime"])
     return f"cd {DEV_DIR} && {env} {affinity}{command}", binary, sampler

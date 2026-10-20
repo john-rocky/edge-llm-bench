@@ -29,7 +29,14 @@ Design decisions (methodology/android.md):
     pinned CPU build in the flat {DEV_DIR}, as before. litert-lm with
     --backend npu is a side build too (--engine-build <tag>: a LiteRT-LM
     runtime build with the Qualcomm dispatch and QNN libraries, flat in
-    {DEV_DIR}/engines/<tag>/), arm litert-lm-npu.
+    {DEV_DIR}/engines/<tag>/), arm litert-lm-npu. litert-lm --backend cpu|gpu
+    with --engine-build <tag> runs a LiteRT-LM build other than the flat pin
+    (its two tools and its seven prebuilt libraries, flat in
+    {DEV_DIR}/engines/<tag>/) by absolute path with LD_LIBRARY_PATH=<that
+    dir>: the flat pinned build the weekly rows run is never touched. --ynnpack
+    (cpu only) adds --enable_ynnpack=true, for a build that carries YNNPACK
+    (--define=litert_enable_ynnpack=true), and is arm litert-lm-cpu-ynnpack, so
+    its runs never pool with the XNNPACK ones of the same build.
   - side-build witness and device lines: the tool's sha AND every shared lib
     its pin lists (engine-pins.json so_files) must match, else the stamp is
     'unknown'; the engine's own device lines (llama.cpp: registry, `using
@@ -155,7 +162,8 @@ SNAPDRAGON_CHAT_TOOL = "llama-cli"
 SNAPDRAGON_CHAT_FLAGS = ""
 # A side build's layout under {ENGINES_DIR}/<tag>: (the tool's subdir, the libs' subdir).
 # llama.cpp's release asset keeps bin/ and lib/; the LiteRT-LM NPU build sits flat, its
-# Hexagon skel in dsp/ (the pin's so_files names it dsp/<file>).
+# Hexagon skel in dsp/ (the pin's so_files names it dsp/<file>), and so does a LiteRT-LM
+# cpu / gpu build (its two tools beside its seven libraries).
 SIDE_DIRS = {"llama.cpp": ("bin", "lib"), "litert-lm": ("", "")}
 # LiteRT-LM on the NPU (cells backend=npu engine-build=<tag>; arm litert-lm-npu): the
 # build's advanced_main, which takes the NPU switches and prints BenchmarkInfo with
@@ -638,18 +646,18 @@ def context_prompt(runtime, task, context_tokens):
             and not task.startswith(("native-", "endurance-")))
 
 
-def arm_name(runtime, backend):
-    """The recorded runtime = arm identity: litert-lm-<backend>, llama.cpp-<backend> for a
-    llama.cpp side build on the npu / gpu device, the bare runtime otherwise (the CPU
-    llama.cpp arm stays `llama.cpp`)."""
+def arm_name(runtime, backend, ynnpack=False):
+    """The recorded runtime = arm identity: litert-lm-<backend> (litert-lm-cpu-ynnpack with
+    YNNPACK asked for), llama.cpp-<backend> for a llama.cpp side build on the npu / gpu device,
+    the bare runtime otherwise (the CPU llama.cpp arm stays `llama.cpp`)."""
     if runtime == "litert-lm":
-        return f"litert-lm-{backend}"
+        return f"litert-lm-{backend}" + ("-ynnpack" if ynnpack else "")
     return f"{runtime}-{backend}" if backend else runtime
 
 
 def capture_stem(runtime, backend, model_id, task, file_hint=None,
-                 context_tokens=None, round_mode=False):
-    arm = arm_name(runtime, backend)
+                 context_tokens=None, round_mode=False, ynnpack=False):
+    arm = arm_name(runtime, backend, ynnpack)
     stem = f"{arm}_{model_id.replace('/', '_')}_{task}"
     # Preserve legacy filenames, including native/endurance captures. The new
     # round path keys both allocation and the exact explicit artifact choice.
@@ -660,12 +668,13 @@ def capture_stem(runtime, backend, model_id, task, file_hint=None,
 
 
 def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_tokens,
-                   context_tokens, engine_dir=None):
+                   context_tokens, engine_dir=None, ynnpack=False):
     """The on-device command line for one run. Returns (cmd, binname, sampler, ctx_note).
     engine_dir = a side build ({ENGINES_DIR}/<tag>): the tool by absolute path; llama.cpp
-    with every layer on the backend's device, LiteRT-LM on the NPU; its env comes from
-    launch_env."""
-    if runtime.startswith("litert-lm") and engine_dir:
+    with every layer on the backend's device, LiteRT-LM on the NPU, or LiteRT-LM on cpu / gpu
+    with the flat build's commands; its env comes from launch_env. ynnpack = LiteRT-LM on the
+    CPU with --enable_ynnpack=true."""
+    if runtime.startswith("litert-lm") and engine_dir and backend == "npu":
         # The NPU side build runs a prompt task on the bundle's own KV cache: an AOT bundle's
         # cache length is fixed at export (no --max_num_tokens; main() names it from the
         # bundle, ctx_note here is the placeholder). --benchmark with no synthetic token
@@ -685,28 +694,31 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
     if runtime.startswith("litert-lm"):
         ctx = f" --max_num_tokens={context_tokens}" if context_tokens else ""
         ctx_note = context_tokens or "bundle-default"
+        # the flat pinned build from the cwd; a cpu / gpu side build by absolute path
+        tools = engine_dir or "."
+        ynn = " --enable_ynnpack=true" if ynnpack else ""
         if task.startswith("native-benchmark-"):
             # ONLY advanced_main consumes the benchmark token counts (verified
             # in v0.16.0 sources AND on device: the plain main ran its default
             # ~20-token prompt regardless of the flags).
             p, d = task[len("native-benchmark-"):].split("x")
-            core = (f"./litert_lm_advanced_main --backend={backend} --model_path={model_dev} "
+            core = (f"{tools}/litert_lm_advanced_main --backend={backend} --model_path={model_dev} "
                     f"--benchmark --benchmark_prefill_tokens={p} "
-                    f"--benchmark_decode_tokens={d} --async=false{ctx}")
+                    f"--benchmark_decode_tokens={d} --async=false{ctx}{ynn}")
             return core, "litert_lm_advanced_main", "engine-default", ctx_note
         if context_prompt(runtime, task, context_tokens):
             # v0.16.0 plain main ignores both context and output limits.
             # --benchmark enables per-Conversation BenchmarkInfo; zero synthetic
             # token overrides retain the real prompt and native output cap.
-            core = (f"./litert_lm_advanced_main --backend={backend} --model_path={model_dev} "
+            core = (f"{tools}/litert_lm_advanced_main --backend={backend} --model_path={model_dev} "
                     f"--input_prompt_file={prompt_dev} --max_num_tokens={context_tokens} "
                     f"--max_output_tokens={max_tokens or budget} --num_iterations=2 "
                     "--async=false --benchmark --benchmark_prefill_tokens=0 "
-                    "--benchmark_decode_tokens=0 --use_session=false")
+                    f"--benchmark_decode_tokens=0 --use_session=false{ynn}")
             return core, "litert_lm_advanced_main", "engine-default", ctx_note
-        core = (f"./litert_lm_main --backend={backend} --model_path={model_dev} "
+        core = (f"{tools}/litert_lm_main --backend={backend} --model_path={model_dev} "
                 f"--input_prompt_file={prompt_dev} "
-                f"--max_output_tokens={max_tokens or budget} --async=false{ctx}")
+                f"--max_output_tokens={max_tokens or budget} --async=false{ctx}{ynn}")
         # no temperature/top-p flags exist -> engine-default sampling, disclosed
         return core, "litert_lm_main", "engine-default", ctx_note
     if runtime == "llama.cpp":
@@ -869,7 +881,7 @@ def dry_run(args, arm, engine_dir):
     prompt_dev = f"{DEV_DIR}/prompts/{args.task}.txt"
     cmd, binname, sampler, _ = engine_command(args.runtime, args.backend, model_dev, args.task, prompt_dev,
                                               budget, args.max_tokens, args.context_tokens,
-                                              engine_dir=engine_dir)
+                                              engine_dir=engine_dir, ynnpack=args.ynnpack)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
     plan.update(command=f"cd {DEV_DIR} && {launch_env(engine_dir, args.backend, args.runtime)} {affinity}{cmd} "
                         f">{DEV_DIR}/run_out.txt 2>&1 </dev/null",
@@ -909,6 +921,10 @@ def launch_env(engine_dir=None, backend=None, runtime="llama.cpp"):
                 "ORT_DISABLE_TELEMETRY=1")
     if not engine_dir:
         return "LD_LIBRARY_PATH=."
+    if runtime == "litert-lm" and backend != "npu":
+        # a cpu / gpu side build: its tools load the accelerator and sampler libraries by
+        # name (gpu_registry's "Dynamically loaded GPU accelerator(<file>)"), from here first
+        return f"LD_LIBRARY_PATH={engine_dir}"
     if runtime == "litert-lm":
         return (f'LD_LIBRARY_PATH={engine_dir} '
                 f'ADSP_LIBRARY_PATH="{engine_dir}/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"')
@@ -1125,8 +1141,12 @@ def main():
                          "npu|gpu on a side build, none = the CPU arm; onnxruntime-genai: cpu")
     ap.add_argument("--engine-build", default=None,
                     help=f"side build on the device, {ENGINES_DIR}/<tag> (an android/engine-pins.json "
-                         "key): llama.cpp's {bin,lib}, the LiteRT-LM NPU build flat; without it the "
-                         "flat pinned build")
+                         "key): llama.cpp's {bin,lib}, a LiteRT-LM build flat (the NPU build, or a "
+                         "cpu / gpu build other than the pin); without it the flat pinned build")
+    ap.add_argument("--ynnpack", action="store_true",
+                    help="litert-lm --backend cpu on a side build: --enable_ynnpack=true (the build "
+                         "carries YNNPACK: --define=litert_enable_ynnpack=true); arm "
+                         "litert-lm-cpu-ynnpack (cells ynnpack=1)")
     ap.add_argument("--model-id", required=True)
     ap.add_argument("--file", default=None, help="artifact filename inside the HF repo "
                                                  "(onnxruntime-genai: the GenAI folder's path in it)")
@@ -1162,11 +1182,15 @@ def main():
 
     if args.runtime == "litert-lm" and not args.backend:
         ap.error("litert-lm needs --backend cpu|gpu|npu (arm identity)")
-    if args.runtime == "litert-lm" and (args.backend == "npu") != bool(args.engine_build):
+    if args.runtime == "litert-lm" and args.backend == "npu" and not args.engine_build:
         ap.error("litert-lm on the NPU is a side build: pass --backend npu and --engine-build together "
                  "(the Qualcomm dispatch runs in a LiteRT-LM build with its libraries, "
-                 f"{ENGINES_DIR}/<tag>; --engine-build is read for the NPU only)")
-    if args.runtime == "litert-lm" and args.engine_build and (
+                 f"{ENGINES_DIR}/<tag>)")
+    if args.ynnpack and not (args.runtime == "litert-lm" and args.backend == "cpu" and args.engine_build):
+        ap.error("--ynnpack is a litert-lm --backend cpu row on a side build (--engine-build <tag>, a "
+                 "build with --define=litert_enable_ynnpack=true): the flat pinned build carries no "
+                 "YNNPACK, and the engine refuses --enable_ynnpack=true without it")
+    if args.runtime == "litert-lm" and args.engine_build and args.backend == "npu" and (
             args.context_tokens is not None or args.task.startswith(("native-", "endurance-"))):
         ap.error("litert-lm on the NPU runs a prompt task on the bundle's own KV cache: no "
                  "--context-tokens (an AOT bundle's cache is fixed at export), no native-benchmark- "
@@ -1182,7 +1206,7 @@ def main():
                  "and no --engine-build (its runtime dir is " + ORTGENAI_DIR + ")")
     if ort and not args.file:
         ap.error("onnxruntime-genai needs --file <the GenAI folder in the HF repo, or a local folder>")
-    arm = arm_name(args.runtime, args.backend)
+    arm = arm_name(args.runtime, args.backend, args.ynnpack)
     engine_dir = f"{ENGINES_DIR}/{args.engine_build}" if args.engine_build else None
     if args.runtime == "executorch":
         if args.backend not in EXECUTORCH_BACKENDS or args.engine_build:
@@ -1258,8 +1282,12 @@ def main():
                 prompt_text = fh.read()
     cmd, binname, sampler, ctx_note = engine_command(
         args.runtime, args.backend, model_dev, args.task,
-        prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir)
-    litert_npu = args.runtime == "litert-lm" and bool(engine_dir)
+        prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir,
+        ynnpack=args.ynnpack)
+    litert_npu = args.runtime == "litert-lm" and bool(engine_dir) and args.backend == "npu"
+    # a LiteRT-LM cpu / gpu build other than the flat pin: the flat build's commands and
+    # records, plus the build's tag, its env + command, its lines and YNNPACK's
+    litert_side = args.runtime == "litert-lm" and bool(engine_dir) and args.backend in ("cpu", "gpu")
     quantization = None
     if litert_npu:  # the label and the KV cache of an own NPU export, by its sha256
         quantization, ctx_note = own_npu_bundle(model_sha)
@@ -1306,8 +1334,11 @@ def main():
     cache_built = True
     marker = None
     if args.runtime == "litert-lm":
+        # a side build's caches are its own (another engine rebuilds them): its marker names the
+        # build, and YNNPACK's runs keep one of their own
+        build_key = (("-ynnpack" if args.ynnpack else "") + f".{args.engine_build}") if litert_side else ""
         marker = (f"{DEV_DIR}/markers/"
-                  f"{os.path.basename(model_dev)}.{args.backend}.cachebuilt")
+                  f"{os.path.basename(model_dev)}.{args.backend}{build_key}.cachebuilt")
         if paired:
             marker = marker.replace(".cachebuilt", f".{engine_artifact}.ctx{args.context_tokens}.cachebuilt")
         out = adb(["shell", f"ls {marker} >/dev/null 2>&1 && echo present || echo absent"],
@@ -1397,6 +1428,21 @@ def main():
                          "engineCommand": f"{env} {cmd}", "backendRegistered": lines}
             if not parsers.litert_npu_registered(lines):
                 backend_flags = ["backend-not-registered"]
+        elif litert_side:
+            # the build's lines (the backend it chose, the accelerators registered, the KV cache
+            # of its settings echo, the model signatures' delegation) and, on the CPU, YNNPACK's
+            # per-op lines and partitions; a launch that shows another device (a GPU signature
+            # on a CPU delegate, YNNPACK absent when asked for or present when not) is flagged
+            lines = parsers.litert_side_lines(console)
+            side_cond = {"engineBuild": args.engine_build, "engineCommand": f"{env} {cmd}",
+                         "backendRegistered": lines}
+            counts = parsers.ynnpack_counts(console)
+            if args.backend == "cpu":
+                side_cond.update(enableYnnpack=args.ynnpack, ynnpackLines=counts)
+            off = parsers.litert_side_off_device(lines, args.backend, args.ynnpack, counts)
+            if off:
+                side_cond["backendOffReason"] = off
+                backend_flags = ["backend-not-registered"]
         elif engine_dir:
             device = LLAMA_DEVICES[args.backend]
             bench = binname == "llama-bench"
@@ -1464,7 +1510,8 @@ def main():
         # runner, where two payload rounds landed in the same second
         stamp = now.strftime("%Y-%m-%dT%H-%M-%S.%f")
         stem = capture_stem(args.runtime, args.backend, args.model_id, args.task,
-                            args.file, args.context_tokens, args.round_index is not None)
+                            args.file, args.context_tokens, args.round_index is not None,
+                            ynnpack=args.ynnpack)
         console_name = f"{stem}_{stamp}_run{i}.log"
         with open(os.path.join(args.out, console_name), "w") as fh:
             fh.write(console)
@@ -1496,7 +1543,8 @@ def main():
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
                            "rssBasis": RSS_BASIS + (LITERT_NPU_RSS_NOTE if litert_npu
-                                                    else SIDE_RSS_NOTE if engine_dir else ""),
+                                                    else SIDE_RSS_NOTE if engine_dir and not litert_side
+                                                    else ""),
                            "modelShaSource": model_sha_source},
         }
         if et:
@@ -1556,7 +1604,7 @@ def main():
             printed_texts = parsers.context_prompt_texts(console)
         elif litert_npu and checking:
             printed_texts = [parsers.litert_reply(console)]
-        elif engine_dir and binname != "llama-bench" and checking:
+        elif engine_dir and not litert_side and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
         elif et and checking:
             printed_texts = [et_fields["text"] or ""]
@@ -1618,7 +1666,9 @@ def main():
         if launch_checks.get("protocolFlags"):
             print("protocol flags: " + ", ".join(launch_checks["protocolFlags"]))
         if backend_flags:
-            shown = "the NPU dispatch" if litert_npu else LLAMA_DEVICES[args.backend]
+            shown = ("the NPU dispatch" if litert_npu
+                     else f"the {arm} launch it asked for ({side_cond.get('backendOffReason')})" if litert_side
+                     else LLAMA_DEVICES[args.backend])
             print(f"backend-not-registered {stem}_{stamp}_run{i}: the engine's lines do not show "
                   f"{shown} — the record stays, no number pools it")
         if cpu_capped:
@@ -1650,6 +1700,11 @@ ANDROID_QUANT_LABELS = {
     # file above (Hub 8414150f) with the current file's LlmMetadata (Hub a3c5d805) — the Mac catalog string of
     # litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_r0805meta018
     "Qwen3-0.6B_dynamic_wi4b32_afp32.r0805meta018.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; 2026-08-05 graph, 0.18.0 metadata, local candidate)",
+    # 2026-10-20 local export, side-loaded by a file= path (not on the Hub): litert-torch 0a81bf6f
+    # export_hf --apply_gpu_composites=True (its GPU flag set: fused qkv / gate_up, qkv_norm_rope,
+    # sdpa, swiglu, bool mask, dynamic cache), dynamic_wi4b32_afp32, prefill 128 + 1024, the official
+    # Qwen3 LlmMetadata (sha256 fbbf0657…5b79, 343,466,928 B; the lane's E2, named for its recipe)
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024, local candidate)",
     "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     # 2026-09-14 dtype-only pair: one litert-torch main (6d4c622) GPU-graph export of
