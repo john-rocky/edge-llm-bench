@@ -31,6 +31,11 @@ release has no NPU runtime archive).
   (`TdtDecoder(separateSignatureBuffers = true)`: every signature on its own buffers, the encoder
   output and the states copied), S32's first 10 rows (F10) on the NPU; on the CPU (f32 stateful file)
   the separate form's text is checked against the shared form's.
+- **The decoder alone** (`DecoderBufferTest`, a second hold): the app's `TdtDecoder` (tdt_fix) on
+  B's CPU encoder outputs written into the encode signature's output buffer, three passes over the
+  four files, on the CPU (f32 file, the token reference) and on the NPU with the app's buffers (with
+  and without an encode run before each window) and with `tdt_buffers=separate`
+  (`tools/asr-npu/decoder_compare.sh`: errors per run, token ids per window against the CPU's).
 - **Harness.** The `bench` build of litert-samples speech_recognition (package `….npucheck`,
   `INSTRUMENT.md`), `BenchFrontActivity` in front (`require_top_app=false`: nothing is timed), W =
   `1995-1836-0004` once per AsrBenchTest process outside the scoring, WER by

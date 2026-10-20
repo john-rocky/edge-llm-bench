@@ -97,3 +97,35 @@ buffers.
   24.65 % each (11 / 112 / 0 of 499); 30.70 decoder runs per window each.
 - For reference, the asr-litert-app-v1 L1 run (CPU, the 5 s int8 file, the app's decoder) over the
   same ten ids: WER 26.25 % (`summary/runs.json`).
+
+## The decoder alone with a finite encoder output (`d-*`, a second hold)
+
+A second hold, 14:11:53–14:12:43 JST (`setup-decoder.log`, `cleanup.log`): the bench test APK
+rebuilt with `DecoderBufferTest` (app commit 01140858, test APK sha256 21201e67…; the app APK on the
+phone unchanged), then four runs, then the round's packages uninstalled. `DecoderBufferTest` runs the
+app's `TdtDecoder` (tdt_fix on) without the encoder: before each window it writes an encoder output
+read from a file into the encode signature's output buffer (the buffer `LiteRtRunner` hands the
+decoder) and decodes from it. The four files are `b-tdt-cpu`'s encoder outputs (windows 1, 6, 11
+and the all-zero input, f32 file on the CPU: no NaN); each run decodes them three times in order,
+12 windows (`d-compare.json`).
+
+- `d-cpu-shared` (the 5 s f32 stateful file on the CPU, the app's buffers): no error in 12 windows;
+  23, 16, 17 and 0 tokens per window, in 28, 32, 28 and 16 decoder steps.
+- `d-npu-shared` (the SM8850 AOT file on the NPU, the app's buffers, the encode signature run on an
+  all-zero input before each window as the app runs it, then its output buffer overwritten): every
+  window has the error `LiteRtException: Failed to invoke the compiled model` (12 of 12). The first
+  window emitted 23 tokens, identical to `d-cpu-shared`'s, and failed at decoder step 26 of 28;
+  every later window failed at its first decoder step.
+- `d-npu-shared-noenc` (the same without the encode run): the same, 12 of 12, the first window's 23
+  tokens identical, failure at step 26, then at the first step.
+- `d-npu-separate` (the same file, `tdt_buffers=separate`, encode run as in `d-npu-shared`): no
+  error in 12 windows; the token ids of every window identical to `d-cpu-shared`'s (12 of 12),
+  in the same numbers of decoder steps; 119–145 ms per window.
+- The kept logs of the four runs (`d-*.logcat.log`) hold none of the app process's lines: each
+  process ended (2–4 s) before the driver's first poll read its pid, so the filter dropped them;
+  the QNN lines of these runs are not in the record. Since then the driver takes the pid from the
+  test's report. The same holds for `b-tdt-npu` / `b-ctc-npu`'s `.logcat.log`; their
+  `.load-logcat.txt` (written by the test itself after the load) has the load lines.
+- Cleanup (`cleanup.log`): `….npucheck.test`, `….npucheck`, `….prcheck.test` and `….prcheck`
+  uninstalled (Success × 4; the last two are the same lane's asr-pr round's); `/data` free
+  16,194,464 kB before, 24,982,356 kB after.

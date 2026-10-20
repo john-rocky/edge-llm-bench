@@ -1,7 +1,8 @@
 #!/bin/bash
 # One asr-npu sitting on the Galaxy S26 (docs/asr-npu-v1.md): waits for the keeper's hold, then
 # setup -> B (the four compare runs) -> A (the two CTC CPU runs) -> C (the four TDT runs) -> finish,
-# and gives the hold back. A step starts only while the sitting's end (the hold + 42 min) is more than
+# and gives the hold back. The decoder-only sitting: STEPS="install2 d cleanup" LIMIT_S=1080 (the new
+# test APK, the four DecoderBufferTest runs, then the two packages uninstalled, always last). A step starts only while the sitting's end (the hold + 42 min) is more than
 # its need away; a skipped step is logged. Prints one line per step start / end (a Monitor waits on
 # them) and the final SITTING DONE / SITTING STOPPED line.
 #
@@ -42,9 +43,16 @@ for s in $STEPS; do
       for arm in a-ctc-i8 a-ctc-f32; do step 420 "run $arm" bash "$D" run "$arm" first20; done ;;
     c)
       for arm in c-npu-shared c-npu-separate c-cpu-shared c-cpu-separate; do step 420 "run $arm" bash "$D" run "$arm" smoke10; done ;;
+    install2) step 120 install-test2 bash "$D" install-test2 || { stopped="install-test2 failed"; break; } ;;
+    d)
+      for arm in d-cpu-shared d-npu-shared d-npu-separate d-npu-shared-noenc; do step 150 "decoder $arm" bash "$D" decoder "$arm"; done ;;
+    cleanup) ;;  # below, after the loop, whatever happened before it
     *) say "unknown step $s" ;;
   esac
 done
+case " $STEPS " in
+  *" cleanup "*) say "STEP cleanup"; bash "$D" cleanup; say "END cleanup rc=$?" ;;
+esac
 bash "$D" finish
 touch "$SIG/RELEASE"
 if [ -n "$stopped" ]; then say "SITTING STOPPED ($stopped)"; else say "SITTING DONE"; fi

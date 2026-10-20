@@ -4,7 +4,7 @@ App: `google-ai-edge/litert-samples` `samples/litert/speech_recognition/AndroidA
 `d15f8ae9`, plus the benchmark commits of asr-litert-app-v1 (`89f0c45e` + `289d4672`), asr-burst-v1
 (`ddbb14c7` + `5f23093f`) and asr-fix-v1 (`6885e170`: `TdtGreedyLoop`, `TdtDecoder(fixDecodeLoop)`),
 plus this round's commit on branch `asr-bench-s26-npu` (not pushed; `LOCK.json` app.bench_commit).
-`instrument.patch` = `git diff 6885e170 50dfe1d8 -- samples/litert/speech_recognition` (this round's change
+`instrument.patch` = `git diff 6885e170 01140858 -- samples/litert/speech_recognition` (this round's change
 only). Definition of the task: `docs/asr-npu-v1.md`. Versions and hashes: `LOCK.json`.
 
 ## Not changed
@@ -51,6 +51,12 @@ of a WAV (FileAudioSource → MelSpectroProcessor → `LiteRtRunner.padOrTruncat
 float32, with per window the samples up to the last non-zero one and the share of 10 ms frames under
 −40 dBFS. These files are B's inputs; they are made on the Mac (the JVM's float maths, not ART's) and
 are the same bytes for the CPU and the NPU run.
+
+(f) `DecoderBufferTest` (new, androidTest, commit 01140858, the second hold): builds the CompiledModel
+and the encode buffers as `LiteRtRunner` does (default signature) and `TdtDecoder` with tdt_fix and
+`tdt_buffers` shared or separate; per window it optionally runs the encode signature on an all-zero
+input, writes an encoder output read from a file into the encode output buffer, and lets the decoder
+decode from that buffer; one JSON entry per window (tokens, error, decoder steps).
 
 ## Outside git
 

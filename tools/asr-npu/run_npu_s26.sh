@@ -11,6 +11,10 @@
 #   run_npu_s26.sh compare <b-arm>        # NpuCompareTest: am instrument, poll, pull
 #   run_npu_s26.sh run <arm> <set>        # AsrBenchTest: probe, am instrument, poll (watchdog), probe, pull
 #   run_npu_s26.sh check <tag>            # one line on a run (tools/asr-fix/check_run.py)
+#   run_npu_s26.sh freeze2                # the decoder-only run's test APK (apk2/) + sha256, app commit
+#   run_npu_s26.sh install-test2          # that test APK over the installed one (the app and its files stay)
+#   run_npu_s26.sh decoder <d-arm>        # DecoderBufferTest on b-tdt-cpu's encoder outputs (on the phone), 3 passes
+#   run_npu_s26.sh cleanup                # uninstall the two packages (their files dir goes too) and round 6's .prcheck pair, /data before / after
 #   run_npu_s26.sh finish                 # put the stay-awake setting back
 #   DRY=1 run_npu_s26.sh ...              # print the adb commands, run none of them
 #
@@ -26,6 +30,10 @@
 #          c-npu-separate  the same, tdt_buffers separate
 #          c-cpu-shared    parakeet-tdt-0.6b-v3, CPU, the 5 s f32 stateful file (model_file), tdt_fix, shared
 #          c-cpu-separate  the same, tdt_buffers separate (its text against c-cpu-shared checks the separate form)
+# <d-arm>: d-cpu-shared        TdtDecoder (tdt_fix) on the CPU f32 stateful file, the app's buffers: the reference tokens
+#          d-npu-shared        the SM8850 file on the NPU, the app's buffers, encode run before each window
+#          d-npu-separate      the same, tdt_buffers separate
+#          d-npu-shared-noenc  the same as d-npu-shared without the encode run
 # <set>:   first<N> (the first N rows of S32) | smoke<N> (the same rows)
 #
 # Records go to results/raw/2026-10-20-asr-npu-v1-s26-android/ (REC=... to override): per AsrBenchTest
@@ -301,6 +309,101 @@ cmd_compare() {
   log "$tag: $(cat "$REC/$tag.done" 2>/dev/null || echo 'no done marker') ($(ls "$B/compare/$tag".*.f32 2>/dev/null | wc -l | tr -d ' ') output files)"
 }
 
+cmd_freeze2() {  # the decoder-only run's test APK (the app APK on the phone stays the frozen one)
+  local out="$B/apk2" commit dirty
+  mkdir -p "$out"
+  cp "$APPDIR/app/build/outputs/apk/androidTest/bench/app-bench-androidTest.apk" "$out/app-bench-androidTest.apk"
+  commit=$(git -C "$APPDIR" rev-parse HEAD)
+  dirty=$(git -C "$APPDIR" status --porcelain -- . | grep -v '^??' | wc -l | tr -d ' ')
+  (cd "$out" && shasum -a 256 app-bench-androidTest.apk > SHA256SUMS)
+  echo "$commit dirty_tracked_files=$dirty" > "$out/APP_COMMIT"
+  cat "$out/SHA256SUMS" "$out/APP_COMMIT"
+}
+
+cmd_install_test2() {  # the new test APK over the installed one (the app and its files stay)
+  need_hold
+  local L="$REC/setup-decoder.log"
+  {
+    echo "# install-test2 $(date '+%F %T %Z')"
+    cat "$B/apk2/SHA256SUMS" "$B/apk2/APP_COMMIT"
+    echo "app apk on the phone: $(A shell pm path "$PKG" | tr -d '\r')"
+    echo "stay_on_while_plugged_in before: $(A shell settings get global stay_on_while_plugged_in | tr -d '\r')"
+    echo "/data: $(A shell df -k /data | tail -1 | tr -s ' ')"
+  } >> "$L"
+  A shell svc power stayon usb
+  A shell input keyevent KEYCODE_WAKEUP
+  A install -r -t "$B/apk2/app-bench-androidTest.apk" >&2 || { log "install test APK failed"; exit 2; }
+  {
+    echo "installed apk2/app-bench-androidTest.apk (install -r -t)"
+    echo "encoder outputs on the phone: $(A shell "ls -l $EXT/npucheck/ | grep -c 'b-tdt-cpu.enc.w[0-9].out0.f32'" | tr -d '\r') files"
+  } | tee -a "$L" >&2
+}
+
+decoder_spec() {  # arm -> "model accelerator tdt_buffers run_encode"
+  case "$1" in
+    d-cpu-shared) echo "parakeet-tdt-0.6b-v3/model_f32.tflite cpu shared true" ;;
+    d-npu-shared) echo "parakeet-tdt-0.6b-v3/model_npu.tflite npu shared true" ;;
+    d-npu-separate) echo "parakeet-tdt-0.6b-v3/model_npu.tflite npu separate true" ;;
+    d-npu-shared-noenc) echo "parakeet-tdt-0.6b-v3/model_npu.tflite npu shared false" ;;
+    *) return 1 ;;
+  esac
+}
+
+cmd_decoder() {  # DecoderBufferTest on b-tdt-cpu's four encoder outputs, three passes
+  local arm=$1 spec model accel buffers runenc tag=$1 am st pid t0 done_flag n="" inputs
+  spec=$(decoder_spec "$arm") || { log "unknown decoder arm $arm"; exit 2; }
+  read -r model accel buffers runenc <<<"$spec"
+  need_hold
+  keep_earlier "$tag"
+  inputs=$(tdt_cpu_encoder_outputs)
+  "$HERE/probe.sh" before > "$REC/$tag.probe-before.json"
+  A shell "rm -f $EXT/npucheck/$tag.*"
+  A logcat -c
+  am="am instrument -r -e class com.google.ai.edge.examples.asr.DecoderBufferTest -e model $model -e accelerator $accel -e tdt_buffers $buffers -e run_encode $runenc -e enc_inputs $inputs -e passes 3 -e foreground front -e tag $tag $RUNNER"
+  echo "# $tag $(date '+%F %T %Z')" >> "$REC/$tag.cmd"
+  echo "$(date '+%T') adb -s $SERIAL shell $am" >> "$REC/$tag.cmd"
+  log "decoder $tag ($model on $accel, tdt_buffers=$buffers, run_encode=$runenc)"
+  A shell "$am" > "$B/$tag.instrument.txt"
+  [ "$DRY" = 1 ] && return 0
+  t0=$(date +%s)
+  while :; do
+    sleep "$POLL_S"
+    st=$(A shell "[ -f $EXT/npucheck/$tag.done ] && echo done=1; echo pid=\$(pidof $PKG)" | tr -d '\r')
+    done_flag=$(echo "$st" | sed -n 's/^done=//p'); pid=$(echo "$st" | sed -n 's/^pid=//p')
+    [ "$done_flag" = 1 ] && break
+    if [ -z "$pid" ] && [ $(( $(date +%s) - t0 )) -gt 20 ]; then log "$tag: the process is gone without a done marker"; break; fi
+    if [ $(( $(date +%s) - t0 )) -gt 300 ]; then log "$tag: no done marker after 300s, stopped"; A shell am force-stop "$PKG"; break; fi
+    [ -n "$pid" ] && n=$pid
+  done
+  sleep 2
+  for f in json done; do A pull "$EXT/npucheck/$tag.$f" "$REC/$tag.$f" >/dev/null 2>&1; done
+  # A short run ends before the first poll reads its pid (2026-10-20: 2.4 s, the app's lines were not
+  # kept): the test writes its pid into the report.
+  [ -n "$n" ] || n=$(jq -r '.pid // empty' "$REC/$tag.json" 2>/dev/null)
+  grab_logcat "$tag" "${n:-x}" >/dev/null
+  A logcat -b crash -d >> "$REC/$tag.crash.log" 2>/dev/null
+  [ -s "$REC/$tag.crash.log" ] || rm -f "$REC/$tag.crash.log"
+  "$HERE/probe.sh" after > "$REC/$tag.probe-after.json"
+  log "$tag: $(cat "$REC/$tag.done" 2>/dev/null || echo 'no done marker')"
+}
+
+PRCHECK=com.google.ai.edge.examples.asr.prcheck  # the same lane's round 6 (asr-pr), closed; uninstalled here on the supervisor's word
+
+cmd_cleanup() {  # uninstall this round's two packages (their files dir with the 8.0 GB of models goes too) and round 6's two
+  need_hold
+  local L="$REC/cleanup.log" p
+  {
+    echo "# cleanup $(date '+%F %T %Z')"
+    echo "/data before: $(A shell df -k /data | tail -1 | tr -s ' ')"
+    echo "packages before: $(A shell "pm list packages | grep -E 'com.google.ai.edge.examples.asr.(npucheck|prcheck)'" | tr -d '\r' | tr '\n' ' ')"
+    for p in "$PKG.test" "$PKG" "$PRCHECK.test" "$PRCHECK"; do
+      echo "uninstall $p: $(A uninstall "$p" 2>&1 | tr -d '\r')"
+    done
+    echo "packages after: $(A shell "pm list packages | grep -c -E 'com.google.ai.edge.examples.asr.(npucheck|prcheck)'" | tr -d '\r')"
+    echo "/data after: $(A shell df -k /data | tail -1 | tr -s ' ')"
+  } | tee -a "$L" >&2
+}
+
 arm_spec() {  # arm -> "model accelerator tdt_fix tdt_buffers model_file"
   case "$1" in
     a-ctc-i8) echo "parakeet-ctc-0.6b cpu false shared -" ;;
@@ -431,10 +534,14 @@ cmd_run() {
 
 case "${1:-}" in
   freeze) cmd_freeze ;;
+  freeze2) cmd_freeze2 ;;
   setup) cmd_setup ;;
-  compare) shift; [ $# -ge 1 ] || { sed -n 2,40p "$0"; exit 2; }; cmd_compare "$1" ;;
-  run) shift; [ $# -ge 2 ] || { sed -n 2,40p "$0"; exit 2; }; cmd_run "$@" ;;
+  install-test2) cmd_install_test2 ;;
+  compare) shift; [ $# -ge 1 ] || { sed -n 2,47p "$0"; exit 2; }; cmd_compare "$1" ;;
+  decoder) shift; [ $# -ge 1 ] || { sed -n 2,47p "$0"; exit 2; }; cmd_decoder "$1" ;;
+  cleanup) cmd_cleanup ;;
+  run) shift; [ $# -ge 2 ] || { sed -n 2,47p "$0"; exit 2; }; cmd_run "$@" ;;
   check) shift; python3 "$ROOT/tools/asr-fix/check_run.py" "$REC/$1.jsonl" ${2:+--ref "$2"} ;;
   finish) cmd_finish ;;
-  *) sed -n 2,40p "$0"; exit 2 ;;
+  *) sed -n 2,47p "$0"; exit 2 ;;
 esac
