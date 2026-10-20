@@ -117,7 +117,7 @@ summaries: `summary/<tag>.summary.json` (and `.score.json`).
 
 - The app's own `parakeet-ctc-0.6b` entry (CTC decoder, the transposed mel), its SM8850 AOT file on
   the NPU. **The text check fails, so the run is not a measurement** (methodology/fairness-rules.md
-  §12): of the 82 rows 44 are empty and the other 38 read `t`; every 5 s window decoded to 1-3 tokens;
+  §12): of the 82 rows 44 are empty and the other 38 read `t` (33) or `t t` (5); every 5 s window decoded to 1-3 tokens;
   W read `t` too; WER over S32 100.0 %. The run logged no error (no QNN or LiteRT error line, no
   failed row). The cause was not traced: the same entry's int8 model on the CPU was not run through
   the app, which would separate the NPU file and its execution from the app's CTC path. The numbers
