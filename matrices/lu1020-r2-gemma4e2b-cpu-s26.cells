@@ -1,0 +1,21 @@
+# lu1020 r2 (2026-10-20): the Galaxy S26 (SM-S942Q) LiteRT-LM CPU protocol cell of Gemma 4 E2B, retaken once with the
+# settings of the Hugging Face card of litert-community/gemma-4-E2B-it-litert-lm (rev 41c55696: prefill 1024, decode 256,
+# context 2048, CPU = XNNPACK with 4 threads, "caches enabled and initialized"). On 2026-10-15 every run of this cell was
+# capped past the cpu-cap-rule line (results/raw/2026-10-15-dashboard-v1-s26-0180-s8a-android): one retake after a cool
+# hold, then the raw values go into the lane's table whatever the cap.
+# Threads: run_cell passes none; v0.18.0's CPU default is 4 (CpuConfig number_of_threads; the 2026-10-15 logs print
+# number_of_threads: 4), the card's count.
+# Order (android/bench/run_campaign.py: anchors first, then the payload round by round):
+#   1. the platform's session anchor row (matrices/anchors.cells line 25, byte-identical; docs/dashboard-recurring-job-v1.md §4);
+#   2. one cache launch, native-benchmark-128x16, runs=1, 30 s after the anchor row (its speed is not read): litert_lm_advanced_main on the CPU with the protocol's file and
+#      context; it builds the XNNPACK weight cache beside the model when the phone has none and reads it otherwise (its log
+#      says which: "weight cache build for" / "XNNPack weight cache loaded from"). Its record is its own cell, which no page
+#      or table reads;
+#   3. the protocol row, byte-identical to matrices/dashboard-protocol1024-v1-android.cells line 23, 3 launches 300 s apart,
+#      each a fresh process that reads that cache.
+# The page's regime for this row stays cold: the median of the 3 fresh-process launches, each the one benchmark() call of
+# its process (litert_lm_advanced_main makes one call per process; there is no warm run on this path), every one of them
+# with the cache initialized.
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-128x16 backend=cpu runs=1 cooldown=30 file=gemma-4-E2B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048

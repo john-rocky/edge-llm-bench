@@ -174,6 +174,19 @@ class SchemaV1Import(unittest.TestCase):
         self.assertEqual([r["conditions"]["launchIndex"] for r in recs], [1, 1])
         self.assertEqual([r["metrics"]["coldRun"] for r in recs], [False, False])
 
+    def test_runtime_and_engine_name_the_arm_and_build_over_the_like(self):
+        # the Mac's LiteRT-LM CPU rows (2026-10-20): --like is the GPU arm's record of the same model
+        (self.dir / "gpu_like.json").write_text(json.dumps(dict(LIKE, engineArtifact="a.zip@v0.16.0")))
+        rc, recs = self.run_import(NEW, f"{T1},{T2}", "--runtime", "litert-lm-cpu", like="gpu_like.json")
+        self.assertEqual(rc, 0)
+        self.assertEqual({(r["runtime"], r["engineVersion"], r["engineArtifact"]) for r in recs},
+                         {("litert-lm-cpu", "v0.16.0", "a.zip@v0.16.0")})
+        rc, recs = self.run_import(NEW, f"{T1},{T2}", "--engine", "v0.18.0", like="gpu_like.json")
+        self.assertEqual(rc, 0)
+        self.assertEqual({(r["runtime"], r["engineVersion"], r["engineArtifact"]) for r in recs},
+                         {("litert-lm", "v0.18.0", None)})       # another build: no artifact
+        self.assertEqual(self.run_import(NEW, f"{T1},{T2}", "--runtime", "core-ai-ane")[0], 2)
+
     def test_like_must_be_the_lines_arm(self):
         self.assertEqual(self.run_import(cai_launch(1, cached=1), T1)[0], 2)  # litert-lm --like
         (self.dir / "cai_like.json").write_text(json.dumps(CAI_LIKE))

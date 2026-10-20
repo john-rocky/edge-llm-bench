@@ -1,0 +1,20 @@
+# lu1020 r2 (2026-10-20): the Gemma 4 E2B protocol rows on the Mac Studio (M4 Max) on the current Mac pin
+# (LiteRT-LM v0.18.0: environment.lock.json arms.litert-lm.mac; the .build/dd-mac yardstick of 2026-10-19,
+# whose libCLiteRTLM_mac.dylib is the v0.18.0 release artifact's, sha256 9526db9e...), GPU and CPU, for the
+# comparison with the Hugging Face card of litert-community/gemma-4-E2B-it-litert-lm (rev 41c55696: prefill 1024,
+# decode 256, context 2048, CPU = XNNPACK with 4 threads, "caches enabled and initialized").
+# The rows are the weekly protocol row (matrices/dashboard-protocol1024-v1.cells) and its backend=cpu twin; the
+# yardstick passes no thread count, so the CPU arm runs the engine default (CpuConfig number_of_threads = 4).
+# One launch per row, runs = the runner's default 4: run 1 = the first benchmark() call in the process (cold),
+# runs 2-4 warm (same process; each call builds a new engine; the on-disk caches in $TMPDIR are read).
+# GPU first, then CPU (a CPU run writes an XNNPACK weight cache; agreed-protocol-gemma4.md "Traps"). Before the CPU row,
+# one cache launch (native-benchmark-128x16, runs=1, its own cell that no page or table reads): it builds the XNNPACK
+# weight cache in $TMPDIR when there is none, so every run of the CPU protocol row reads it ("caches enabled and
+# initialized"); the round removes the cache it created after the sitting. The GPU program and weight caches of this
+# file are already in $TMPDIR (written 2026-10-19 07:11 and read by the v0.18.0 sittings since).
+# The file starts with the platform's session anchor row (matrices/anchors.cells line 21, byte-identical): the job
+# re-judges the payload session by the anchor records inside its own campaign (docs/dashboard-recurring-job-v1.md §4).
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 cooldown=300 context-tokens=2048
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-128x16 backend=cpu runs=1 cooldown=30 context-tokens=2048
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 context-tokens=2048

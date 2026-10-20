@@ -266,6 +266,12 @@ def core_ai_result(rec, source: Path, device_id: str, model_id: str | None, task
 #   - `prepare_cached=0` is Core AI's own cache lookup before the load saying that this launch's
 #     load specialized the bundle, so the launch's first line is marked firstEver whether or not
 #     --first-ever names it.
+# --runtime / --engine name the arm and the engine build when --like is another arm's record of the
+# same device and model (2026-10-20: the Mac's first LiteRT-LM CPU protocol rows on v0.18.0, whose
+# only same-model record of the build is the GPU arm's short-chat): the records take that runtime
+# (litert-lm-cpu) or engineVersion instead of --like's. --runtime must name the lines' family, as
+# --like's must without it; an --engine other than --like's engineVersion leaves engineArtifact out
+# (the like's artifact belongs to its own build).
 PER_RUN_DEVICE_KEYS = ("initialThermalState",)
 BATTERY_KEYS = ("batteryLevel", "batteryState")
 V1_METRICS = (  # (record key, NATIVE_OK field, cast)
@@ -330,7 +336,7 @@ def launch_positions(recs) -> list[int]:
 
 
 def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, instrument: str,
-                 first_ever: bool = False):
+                 first_ever: bool = False, runtime: str = None, engine: str = None):
     # rec["num"] closes over parse()'s loop variable, so it reads the LAST line's fields once
     # the generator has been drained (main_schema_v1 counts the lines first) — read this
     # line's own dict instead.
@@ -383,9 +389,10 @@ def to_schema_v1(rec, source: Path, like: dict, launch_time: str, index: int, in
     out = {
         "schemaVersion": 1,
         "id": str(uuid.uuid4()).upper(),
-        "runtime": like["runtime"],
-        "engineVersion": like.get("engineVersion"),
-        "engineArtifact": like.get("engineArtifact"),
+        "runtime": runtime or like["runtime"],
+        "engineVersion": engine or like.get("engineVersion"),
+        "engineArtifact": (like.get("engineArtifact")
+                           if engine in (None, like.get("engineVersion")) else None),
         "model": model,
         "task": f"native-benchmark-{rec['prefill_cfg'] or prefill}x{rec['decode_cfg'] or decode}",
         "timestamp": launch_time,
@@ -414,7 +421,10 @@ def main_schema_v1(args) -> int:
               file=sys.stderr)
         return 2
     family = families.pop() if families else "litert-lm"
-    if not str(like.get("runtime", "")).startswith(family):
+    if args.runtime is not None and not args.runtime.startswith(family):
+        print(f"--runtime {args.runtime!r}; the native row is {family}", file=sys.stderr)
+        return 2
+    if args.runtime is None and not str(like.get("runtime", "")).startswith(family):
         print(f"--like is a {like.get('runtime')!r} record; the native row is {family}", file=sys.stderr)
         return 2
     if like.get("device", {}).get("modelIdentifier") != args.device:
@@ -454,7 +464,8 @@ def main_schema_v1(args) -> int:
         out.write_text(json.dumps(to_schema_v1(rec, log, like, times[launch - 1], launch,
                                                args.instrument,
                                                first_ever=head and (launch in first_ever
-                                                                    or specialized)),
+                                                                    or specialized),
+                                               runtime=args.runtime, engine=args.engine),
                                   indent=2, sort_keys=True) + "\n")
         print(f"wrote {out}", file=sys.stderr)
     print(f"\n{len(recs)} native row(s) imported as schema-v1 records.", file=sys.stderr)
@@ -489,6 +500,13 @@ def main() -> int:
                          "trial=0..N lines)")
     ap.add_argument("--instrument", default=None,
                     help="--schema-v1: conditions.instrument, the entry point that printed the lines")
+    ap.add_argument("--runtime", default=None,
+                    help="--schema-v1: the records' runtime (arm) instead of --like's, when --like is "
+                         "another arm's record of the same device, model and build (litert-lm-cpu "
+                         "beside a GPU short-chat record); it must name the lines' family")
+    ap.add_argument("--engine", default=None,
+                    help="--schema-v1: the records' engineVersion instead of --like's; one that "
+                         "differs from --like's leaves engineArtifact out")
     ap.add_argument("--first-ever", default=None,
                     help="--schema-v1: comma-separated launch positions (1-based) that built "
                          "the engine's compilation cache; the launch's first line is marked "

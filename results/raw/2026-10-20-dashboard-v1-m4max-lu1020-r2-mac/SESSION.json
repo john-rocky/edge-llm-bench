@@ -1,0 +1,101 @@
+{
+ "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-mac",
+ "phase": "payload",
+ "cells": "matrices/lu1020-r2-gemma4e2b-protocol-mac.cells",
+ "device_key": "m4max",
+ "device_display": "Mac Studio (M4 Max)",
+ "device_identifier": "Mac16,9",
+ "platform": "mac",
+ "attempt": 1,
+ "started": "2026-10-20 15:12:25",
+ "ended": "2026-10-20 15:24:33",
+ "admitted": true,
+ "verdict": "COMPLETED",
+ "reason": "anchor nominal, ratio 0.986 vs reference (60bd0d7880c82980f9481f8be78862e9b63c58a3)",
+ "anchor": {
+  "regime": "warm",
+  "anchors": [
+   {
+    "cell": "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat",
+    "primary": true,
+    "median": 545.1788682512275,
+    "n": 2,
+    "thermal": [
+     "nominal"
+    ],
+    "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3",
+    "reference": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+     "median": 552.7838387989041,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+     "median": 552.7838387989041,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+     "median": 552.7838387989041,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "60bd0d7880c82980f9481f8be78862e9b63c58a3"
+    },
+    "ratio": 0.9862424151831198
+   },
+   {
+    "cell": "litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat",
+    "primary": false,
+    "median": null,
+    "n": 0,
+    "thermal": [],
+    "engine_version": null,
+    "reference": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+     "median": 354.46668397971075,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.18.0"
+    },
+    "reference_nominal": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+     "median": 354.46668397971075,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.18.0"
+    },
+    "reference_any_version": {
+     "campaign": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+     "median": 354.46668397971075,
+     "n": 2,
+     "thermal": [
+      "nominal"
+     ],
+     "engine_version": "v0.18.0"
+    },
+    "ratio": null
+   }
+  ]
+ },
+ "anchor_phase": "results/raw/2026-10-20-dashboard-v1-m4max-lu1020-r2-anchor-mac",
+ "runner_exit": 0,
+ "cells_expected": 4,
+ "cells_with_records": 4,
+ "schema": "dashboard-job-session.v1",
+ "job": "dashboard-v1",
+ "native_import": "2026-10-20 15:4x JST, lu1020 r2 (by hand, after the sitting): the three native-benchmark rows (the GPU and CPU protocol rows and the CPU cache launch) were lifted into app-path-native/ by scripts/import_native_benchmark.py --schema-v1, as the 2026-10-08 Mac sitting (1918e60c) and 2026-10-19-dashboard-v1-m4max-q06cand-mac were; the job wrote cells_with_records 1 (of 4) before that import (scripts/bench_matrix_mac.sh writes no record for a native row), so the post held this dir on partial; after the import every cell of the file has records: 4 of 4 (NOTES.md)"
+}
