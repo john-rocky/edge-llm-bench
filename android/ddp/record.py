@@ -315,6 +315,7 @@ def records_for_execution(job, exec_dir, out_dir, meta):
                            "cpuAffinity": f"taskset {job['mask']}" if job["mask"] else "none",
                            **cpu_cond,
                            "contextTokens": job["ctxNote"],
+                           **({"promptVersion": job["promptVersion"]} if job.get("promptVersion") else {}),
                            "thermalRawStatus": raw_status,
                            "thermalRawStatusFinal": end_status,
                            **scr, "elapsedSeconds": elapsed,

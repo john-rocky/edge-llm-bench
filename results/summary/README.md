@@ -31,6 +31,12 @@ yardstick loaded the v0.16.0 dylib while the pins file stamped v0.18.0 (bench_co
 `model_file` (after `model_id`, 2026-10-19) is the artifact file the run loaded (the record's `model.file`, or
 `model.primaryFile` on the Apple native path; empty before): one model id can ship several files, and the
 session checker keys the prompt-token history by it (quant-label-rule: the recipe is visible in every row).
+`prompt_version` (after `task`, 2026-10-19) is the version of the task's prompt text (the record's
+`conditions.promptVersion`, `prompts/text/versions.tsv`), empty where the record names none:
+`long-context-1024-gen256` reads `noref-2026-10-19` from the filler tail on, empty before (the "passage above"
+tail); `long-context-2048-gen256-noref` reads `noref-2026-10-12` from 2026-10-19 on, empty before with the same
+text. The session checker keys the prompt-token history by it, and a regression series across two versions is
+marked, never compared (`scripts/regression_watch.py` prompt_changed; `docs/dashboard-cells-v1.md` "1K task tail").
 `text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:
 `PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a
 `FAIL` run stays a row here and in raw but pools into no number

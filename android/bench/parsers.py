@@ -890,6 +890,13 @@ def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
         if checkpoint.get("revision") and checkpoint["revision"] not in str(rendered.get("snapshot")):
             raise ValueError(f"{listing} was rendered from {rendered.get('snapshot')}, not the "
                              f"checkpoint revision {checkpoint['revision']}; re-render: {render}")
+        # rendered from the repository prompt as it is now: a task text that changed under its id
+        # (prompts/text/versions.tsv; the 1K task on 2026-10-19) would otherwise run the old text
+        source = os.path.join(repo_root, "prompts", "text", f"{task}.txt")
+        if entry.get("sourceSha256") != _sha256(source):
+            raise ValueError(f"{prompt} was rendered from another prompts/text/{task}.txt (prompts.json "
+                             f"sourceSha256 {entry.get('sourceSha256')}, the file now {_sha256(source)}); "
+                             f"re-render: {render}")
         manifest = {"call": rendered.get("call"), "transformers": rendered.get("transformers"),
                     "snapshot": rendered.get("snapshot"), "hostPromptTokens": entry.get("hostPromptTokens"),
                     "renderedSha256": entry.get("renderedSha256")}

@@ -21,10 +21,16 @@ public protocol BenchmarkTask: Sendable {
     /// the energy task so a measurable battery delta builds up (a single short
     /// reply is far below the iOS battery API's 1% step). `nil` = run once.
     var sustainSeconds: TimeInterval? { get }
+
+    /// The version of the prompt text when it changed under the same id, written into every
+    /// record as `conditions.promptVersion` (= `prompts/text/versions.tsv`). `nil` = the text
+    /// the id was born with: the record carries no key.
+    var promptVersion: String? { get }
 }
 
 public extension BenchmarkTask {
     var sustainSeconds: TimeInterval? { nil }
+    var promptVersion: String? { nil }
 }
 
 public enum BenchmarkTaskCatalog {
@@ -36,8 +42,14 @@ public enum BenchmarkTaskCatalog {
         // This is the only cross-arm instrument for the deep-context column: LiteRT-LM's
         // native benchmark() forces prefill without a prompt, and no other runtime has an
         // equivalent entry point, so the four remaining arms can only be measured here.
+        // Since 2026-10-19 the tail is the -noref sentence below (the blocks are filler, the
+        // list comes from the model's own knowledge): with the model's own chat template,
+        // Gemma 4 on llama.cpp and MLX declined the "passage above" tail as placeholder text.
+        // Same id, blocks and budget; the records carry the version, and the summary's
+        // prompt_version marks the series break (docs/dashboard-cells-v1.md "1K task tail").
         LongContextTask(id: "long-context-1024-gen256", targetTokens: 1024, maxTokens: 256,
-                        forceLongOutput: true),
+                        forceLongOutput: true, tail: LongContextTask.norefTail,
+                        promptVersion: "noref-2026-10-19"),
         // p≈2048 / g=256 — the dashboard's long-context column (2026-09-18): the same
         // forced-output prompt, twice the depth. 27 filler blocks put the measured prompt
         // just under 2,048 Qwen3 tokens (≈1,980 with the chat template) so it still fits
@@ -50,8 +62,11 @@ public enum BenchmarkTaskCatalog {
         // model's own knowledge (`LongContextTask.norefTail` = scripts/gen_task_prompts.py
         // NOREF_TAIL; the Android drivers' task since 2026-10-12, catalog X2). Same budget;
         // the tail is part of the task id, so its records never pool with the task above.
+        // Its text is unchanged since that day: the version names it (records before
+        // 2026-10-19 carry no version and the same text).
         LongContextTask(id: "long-context-2048-gen256-noref", targetTokens: 2048, maxTokens: 256,
-                        forceLongOutput: true, blocks: 27, tail: LongContextTask.norefTail),
+                        forceLongOutput: true, blocks: 27, tail: LongContextTask.norefTail,
+                        promptVersion: "noref-2026-10-12"),
         LongContextTask(),                                              // ~2K
         LongContextTask(id: "long-context-3k", targetTokens: 3072),     // near the 4096 ctx ceiling (room for 128 decode)
         LongContextTask(id: "long-context-8k", targetTokens: 8192),

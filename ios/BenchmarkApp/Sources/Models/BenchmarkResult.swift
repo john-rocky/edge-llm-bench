@@ -77,18 +77,31 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
     }
 }
 
-/// The `conditions` keys an Apple runtime reports (the Android runner writes many more).
-/// Since 2026-10-19 llama.cpp reports how it built the prompt from the model's chat template.
+/// The `conditions` keys an Apple record carries (the Android runner writes many more).
+/// Since 2026-10-19 llama.cpp reports how it built the prompt from the model's chat template,
+/// and every runtime the version of a task prompt that changed under the same id.
 public struct RunConditions: Codable, Sendable {
     /// `jinja` (the model file's own template, rendered) | `builtin` (llama.cpp's built-in
     /// template set) | `bare` (no template: the run is not a measurement).
     public let chatTemplate: String?
     /// What the template was told about thinking; `nil` when no template applied.
     public let thinking: Thinking?
+    /// `BenchmarkTask.promptVersion` of the run's task; `nil` (no key) = the id's first text.
+    public let promptVersion: String?
 
-    public init(chatTemplate: String?, thinking: Thinking?) {
+    public init(chatTemplate: String?, thinking: Thinking?, promptVersion: String? = nil) {
         self.chatTemplate = chatTemplate
         self.thinking = thinking
+        self.promptVersion = promptVersion
+    }
+
+    /// A runtime's conditions (`LLMRuntime.recordConditions`) with the task's prompt version:
+    /// `nil` when there is neither, so a record of an unversioned task on a runtime that
+    /// reports nothing keeps having no `conditions`.
+    static func record(_ runtime: RunConditions?, promptVersion: String?) -> RunConditions? {
+        guard runtime != nil || promptVersion != nil else { return nil }
+        return RunConditions(chatTemplate: runtime?.chatTemplate, thinking: runtime?.thinking,
+                             promptVersion: promptVersion)
     }
 
     /// `true` / `false` in the JSON when `enable_thinking` was passed, `"template-default"`

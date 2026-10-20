@@ -131,6 +131,14 @@ def cell_key_of(d):
             f"({d.get('engineVersion') or 'unstamped'})")
 
 
+def prompt_version_of(d):
+    """conditions.promptVersion as the summary's prompt_version: the version of the task's prompt text
+    (prompts/text/versions.tsv), None where the record names none (the text the task id was born
+    with, or a record written before 2026-10-19)."""
+    v = (d.get("conditions") or {}).get("promptVersion")
+    return v if isinstance(v, str) and v else None
+
+
 def campaign_dir_of(f):
     """The results/raw/<campaign> dir a record file lies in, at any depth, or None for a flat
     results/raw/*.jsonl file."""
@@ -380,6 +388,9 @@ def build_device():
             "model_file": os.path.basename(str(model.get("file") or model.get("primaryFile") or "")) or None,
             "quantization": model.get("quantization"),
             "task": d.get("task"),
+            # the version of the task's prompt text (2026-10-19, prompts/text/versions.tsv): the 1K
+            # task's text changed under its id, and a series across two versions is never compared
+            "prompt_version": prompt_version_of(d),
             "harness_stamp": m.get("harnessStamp"),
             "decode_tps": m.get("decodeTokensPerSecond"),
             "decode_tps_wall": m.get("decodeTokensPerSecondWallClock"),
@@ -502,6 +513,12 @@ def main():
             "`model_file` (after `model_id`, 2026-10-19) is the artifact file the run loaded (the record's `model.file`, or\n"
             "`model.primaryFile` on the Apple native path; empty before): one model id can ship several files, and the\n"
             "session checker keys the prompt-token history by it (quant-label-rule: the recipe is visible in every row).\n"
+            "`prompt_version` (after `task`, 2026-10-19) is the version of the task's prompt text (the record's\n"
+            "`conditions.promptVersion`, `prompts/text/versions.tsv`), empty where the record names none:\n"
+            "`long-context-1024-gen256` reads `noref-2026-10-19` from the filler tail on, empty before (the \"passage above\"\n"
+            "tail); `long-context-2048-gen256-noref` reads `noref-2026-10-12` from 2026-10-19 on, empty before with the same\n"
+            "text. The session checker keys the prompt-token history by it, and a regression series across two versions is\n"
+            "marked, never compared (`scripts/regression_watch.py` prompt_changed; `docs/dashboard-cells-v1.md` \"1K task tail\").\n"
             "`text_check` (after the peaks, 2026-10-06) is the record's `conditions.textCheck`:\n"
             "`PASS`, `FAIL:<flags>`, or empty where the run's decoded text was not checked; a\n"
             "`FAIL` run stays a row here and in raw but pools into no number\n"

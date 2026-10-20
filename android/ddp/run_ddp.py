@@ -313,6 +313,8 @@ def plan(cells_file, device_id, campaign, args):
             "runtime": cell["runtime"], "backend": opts.get("backend"), "modelId": cell["model_id"],
             "file": filename, "task": cell["task"], "contextTokens": ctx, "ctxNote": ctx_note,
             "budget": budget, "maxTokens": max_tokens,
+            # the version of the pushed prompt's text (prompts/text/versions.tsv); record.py writes it
+            "promptVersion": run_cell.prompt_version(cell["task"]),
             "paired": run_cell.context_prompt(cell["runtime"], cell["task"], ctx),
             "binname": binname, "sampler": sampler, "command": core, "env": env, "mask": mask,
             "runs": runs, "cooldown": cooldown, "perRunTimeout": per_run, "cpucapWait": dev["cpucapWait"],

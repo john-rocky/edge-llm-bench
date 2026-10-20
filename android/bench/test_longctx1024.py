@@ -71,17 +71,21 @@ class TaskContract(unittest.TestCase):
         swift = (ROOT / "ios/BenchmarkApp/Sources/Benchmark/Tasks/LongContextTask.swift").read_text()
         raw_lorem = re.search(r'let lorem = """\n(.*?)\n\s*"""', swift, re.S).group(1)
         lorem = "".join(line.strip().removesuffix("\\") for line in raw_lorem.splitlines())
-        tail_branch = swift.split("if forceLongOutput {")[1].split("} else {")[0]
-        tail = "".join(json.loads('"' + s + '"') for s in re.findall(r'"((?:\\.|[^"\\])*)"', tail_branch))
+        # the tail since 2026-10-19: LongContextTask.norefTail (the 2K ladder's -noref sentence),
+        # which the task appends as "\n\n" + tail
+        noref = swift.split("static let norefTail = ")[1].split("\n\n")[0]
+        tail = "".join(json.loads('"' + s + '"') for s in re.findall(r'"((?:\\.|[^"\\])*)"', noref))
         per_block = int(re.search(r"tokensPerBlock = (\d+)", swift).group(1))
         registry = (ROOT / "ios/BenchmarkApp/Sources/Benchmark/BenchmarkTask.swift").read_text()
         definition = re.search(r'LongContextTask\(id: "' + TASK + r'"(.*?)\)', registry, re.S).group(1)
         self.assertIn("forceLongOutput: true", definition)
+        self.assertIn("tail: LongContextTask.norefTail", definition)
         self.assertNotIn("blocks:", definition)          # the block count is the estimate
         target = int(re.search(r"targetTokens: (\d+)", definition).group(1))
         blocks = max(1, target // per_block)
         self.assertEqual(blocks, 18)
-        expected = "\n".join([f"[{i}] {lorem}" for i in range(blocks)] + [tail])
+        self.assertEqual(tail, generator.NOREF_TAIL)
+        expected = "\n".join([f"[{i}] {lorem}" for i in range(blocks)] + ["\n\n" + tail])
         text, budget = generator.PROMPTS[TASK]
         self.assertEqual(text.encode(), expected.encode())
         self.assertEqual((ROOT / "prompts/text" / f"{TASK}.txt").read_bytes(), expected.encode())
@@ -89,6 +93,11 @@ class TaskContract(unittest.TestCase):
         self.assertEqual(budget, BUDGET)
         budgets = dict(line.split("\t") for line in (ROOT / "prompts/text/budgets.tsv").read_text().splitlines())
         self.assertEqual(int(budgets[TASK]), BUDGET)
+        # the text's version: the Swift task's, the generator's and the drivers' sidecar agree
+        version = re.search(r'promptVersion: "([^"]+)"', definition).group(1)
+        versions = dict(line.split("\t") for line in (ROOT / "prompts/text/versions.tsv").read_text().splitlines())
+        self.assertEqual((version, generator.VERSIONS[TASK], versions[TASK]), ("noref-2026-10-19",) * 3)
+        self.assertEqual(cell.prompt_version(TASK), "noref-2026-10-19")
 
     def test_a_protocol_launch_parses_clean_and_overruns_are_flagged(self):
         def iteration(p, g, rate):

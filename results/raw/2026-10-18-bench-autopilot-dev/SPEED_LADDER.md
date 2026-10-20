@@ -232,3 +232,45 @@ and the native 1024x256 rows: ROUND18.md "計測の表". Verdict: not replaced (
 - the cause of the Pixel 8a GPU slowdown: an export of the 2026-09-21 recipe without the odml.swiglu composite, A/B on the Pixel 8a and the
   iPhone GPU (does the iPhone failure follow the composite, and does the Pixel speed); outside this round (the supervisor's call).
 - the Galaxy S26 (Adreno GPU, CPU): not measured by decision; the Pixel 8a CPU pair again on a cool phone if its numbers are wanted.
+
+---
+
+<!-- ladder of round r17 (the 1K task's tail); a bench lane keeps one file per round topic, the conversion-lane lint does not apply -->
+
+# SPEED_LADDER — the 1K cross-arm task on the noref tail (round r17)
+
+runtime: llama.cpp b11721 (Apple adapter, jinja), mlx-swift (mlx-swift-lm 60bd0d78), LiteRT-LM v0.18.0 (Mac yardstick)
+model: unsloth gemma-4-E4B-it / Qwen3-1.7B GGUFs Q4_K_M, mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit, litert-community/gemma-4-E2B-it-litert-lm
+device: Mac Studio M4 Max (Mac16,9), macOS 27.0 (26A428), yardstick `.build/dd-mac-noref` (sha256 7ad3f33c…, built 12:28 from the side tree)
+parity bar: every arm gets the same text (prompts/text/long-context-1024-gen256.txt = the Swift task, byte for byte); the reply answers the
+task (the list, no refusal) and runs to the 256-token budget
+
+This round changed the task's text, not an engine. The smoke is one launch per cell (runs=1, 30 s cooldowns, one quiet hold, 2026-10-19
+12:28–12:30 JST): a prompt check, not a session. Its rates are in the records and are not used or set side by side here (the public repo
+carries no cross-runtime standings).
+
+## 梯子(ladder — 1 行 = 1 form。測った形は全部残す。ship = 出荷する形)
+| # | form | backend | device | workload | metric | parity | status | evidence | ship |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | llama.cpp Gemma 4 E4B (jinja, thinking false), noref tail | gpu (Metal) | Mac M4 Max | 1K, noref tail | 1,123 prompt tok, 256 generated (rate not used) | PASS: "Here are 25 distinct things …" (passage tail: 1,106 tok, declined in 86) | measured | MAIN results/raw/2026-10-19-noref-tail-probe-mac/ | ship |
+| 2 | MLX gemma-4-e4b-it-qat-OptiQ-4bit, noref tail | gpu | Mac M4 Max | 1K, noref tail | 1,124 prompt tok, 256 generated (rate not used) | PASS: "Here are 25 distinct things …" (passage tail: 1,107 tok, declined) | measured | same dir | ship |
+| 3 | LiteRT-LM gemma-4-E2B-it, noref tail | gpu (WebGPU) | Mac M4 Max | 1K, noref tail, ctx 2048 | 1,123 prompt tok, 256 generated (rate not used) | PASS: "Here are 25 distinct things …" (passage tail: 1,106 tok, opened "The provided text is placeholder …") | measured | same dir | ship |
+| 4 | llama.cpp Qwen3 1.7B (jinja, template default), noref tail | gpu (Metal) | Mac M4 Max | 1K, noref tail | 1,355 prompt tok, 256 generated (rate not used) | PASS: `<think>` on the task, as on the passage tail (1,338 tok) | measured | same dir | ship |
+| 5 | the passage tail (until 2026-10-19), the same four cells | as above | Mac M4 Max | 1K, passage tail | 1,106 / 1,107 / 1,106 / 1,338 prompt tok | FAIL on Gemma 4: the replies decline the lorem passage or call it placeholder text; Qwen3 answers | measured | ../2026-10-19-dashboard-v1-m4max-llama-b11721-mac, ../2026-10-19-mlx-gemma4-file-mac, ../2026-10-19-dashboard-v1-m4max-0180-rebuilt-mac | |
+
+## レバー(levers — 試すべき手を全部。1 行 = 1 手。n-a は「この model には当てはまらない」理由つき)
+| lever | status | result / reason | evidence |
+|---|---|---|---|
+| prompt tail | measured | the noref sentence vs the passage sentence: +17 prompt tokens on the Gemma 4 and Qwen3 vocabularies, every Gemma 4 reply on the task | ROUND17.md smoke |
+| quant | n-a: this round does not change a file or an engine | — | — |
+| precision | n-a: same | — | — |
+| shape | n-a: the budget (prompt ~1,024, decode 256, ctx 2048) is unchanged by decision | — | — |
+| npu-path | n-a: the Mac arms have none here | — | — |
+| state | n-a: one fresh conversation per run, unchanged | — | — |
+
+## 例外(exception — 同じ device + workload でもっと速い形を出荷しないときだけ理由。無ければ「なし」)
+- Row 5 (the passage tail) is not shipped whatever its rates: on Gemma 4 its replies decline the task, so the column timed refusals on some
+  arms and lists on others.
+
+## 残り(remaining — まだ試していないレバーと見込み。無ければ「なし」。1 件でも書けば lint は HOLD)
+なし

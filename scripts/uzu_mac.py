@@ -61,6 +61,14 @@ def task_input(task):
     return prompt, int(budgets[task])
 
 
+def prompt_version(task):
+    """The version of a task's prompt text (prompts/text/versions.tsv, scripts/gen_task_prompts.py
+    VERSIONS) for the record's conditions.promptVersion; None for a task without one."""
+    versions = dict(line.split("\t") for line in (REPO / "prompts/text/versions.tsv").read_text().splitlines()
+                    if line.strip())
+    return versions.get(task)
+
+
 def host_snapshot(path, sample_load=False):
     """Read supplied machine facts and optionally sample load; never assume idle."""
     if path:
@@ -315,6 +323,9 @@ def run_once(args, index, prompt, budget):
                   "contextPolicy": "explicit allocation" if args.context_tokens else "engine/model default"}
     if args.thinking == "off":
         conditions["thinking"] = False
+    version = prompt_version(args.task)
+    if version:
+        conditions["promptVersion"] = version
     for key in ("loadAverage", "loadAverageApproximate", "loadAverageWindow"):
         if key in before["snapshot"]:
             conditions[key] = before["snapshot"][key]

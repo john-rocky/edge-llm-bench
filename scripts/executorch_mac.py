@@ -167,6 +167,9 @@ def build_record(args, inputs, index, cold, stdout, stderr, exit_code, maxrss_by
                   "exitCode": exit_code, "launchWallSeconds": round(wall, 3), "runIndex": index,
                   "textCheck": verdict,
                   "textOutputSHA256": hashlib.sha256(text.encode()).hexdigest()}
+    version = prompt_version(args.task)
+    if version:
+        conditions["promptVersion"] = version
     if flags:
         conditions["protocolFlags"] = flags
     rel = (lambda p: os.path.relpath(p, REPO) if str(p).startswith(str(REPO)) else str(p))
@@ -205,6 +208,15 @@ def task_budget(task):
     budgets = dict(line.split() for line in (REPO / "prompts" / "text" / "budgets.tsv").read_text().splitlines()
                    if line.strip() and not line.startswith("#"))
     return int(budgets[task])
+
+
+def prompt_version(task):
+    """The version of a task's prompt text (prompts/text/versions.tsv, scripts/gen_task_prompts.py
+    VERSIONS) for the record's conditions.promptVersion; None for a task without one. A llama_main
+    prompt rendered from another text of the task is refused before (parsers.executorch_inputs)."""
+    versions = dict(line.split("\t") for line in (REPO / "prompts" / "text" / "versions.tsv").read_text().splitlines()
+                    if line.strip())
+    return versions.get(task)
 
 
 def main():
