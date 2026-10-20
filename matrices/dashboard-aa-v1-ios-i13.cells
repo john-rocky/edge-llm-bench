@@ -1,0 +1,11 @@
+# Artificial Analysis set on the iPhone 17 Pro, LiteRT-LM v0.18.0 (matrices/dashboard-aa-v1-ios.cells header).
+# Slot i13: Qwen3.5 2B, again, its protocol row at cool-wait=240. In slot i11 (2026-10-20, cool-wait=120) its warm decode spread 6.1 % (26.44 / 26.07 / 24.85 tok/s; runs 3-4 started at fair after the 240 s maximum wait), past the spread rule. The session anchor rows, then the rows below, each byte-identical to its source line.
+# Source: matrices/dashboard-aa-v1-ios.cells lines 21-22 (anchors), 69-70
+# Estimate: 45.0 min (job + anchors.cells phase + this file's anchor rows 9.0, then per row its cooldown + the launch, + 22 for the protocol row's cool-wait pauses; .dashboard/0180_aa_20261014/device/ios/README.md)
+# Run, inside the iPhone hold a keeper took:
+#   python3 scripts/dashboard_job.py iphone17pro --schedule <schedule copy with the phone's UDID> --cells matrices/dashboard-aa-v1-ios-i13.cells --suffix 0180-aa-i13 --once --hold-held-by <keeper pid>
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3.5-2B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Qwen3.5-2B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048 cool-wait=240
