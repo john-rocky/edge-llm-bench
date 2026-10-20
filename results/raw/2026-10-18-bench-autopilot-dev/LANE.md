@@ -718,7 +718,7 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
 - The post's push: the AA lane's 17 Pro sittings (by hand through the job) were committed by the post at 04:43 (6ba99bd7) and 10:21,
   and their pushes refused behind a hand commit not yet on origin (5662a052, docs); after it was pushed, the 13:33 post pushed
   itself (b5a66697). 13:41 origin was two commits ahead (the asr lane pushed from a worktree): main fast-forwarded to ca5f447c.
-- 13:4x–14:3x the r17 flip (ROUND17.md "監督が打つ物"), the owner's go 14:2x: merge 40e2aec6 made in a worktree. Four conflicts:
+- 13:4x–14:2x the r17 flip (ROUND17.md "監督が打つ物"), the owner's go 14:2x: merge 40e2aec6 made in a worktree. Four conflicts:
   run_cell.py keeps both main's llama_chat_conditions line and the branch's promptVersion line, the cells doc keeps both new
   sections, the dev ladder file gets r17's ladder after main's, and results/summary/ is rebuilt from the merged index (the
   6,595 rows unchanged, the new prompt_version column empty). The data-pipeline CI steps pass on a clean export of the index
@@ -733,3 +733,11 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   The retake re-ran the old row byte for byte, and the judgment looks its series up by the current definition's file
   (`scripts/regression_watch.py` l.820), which no longer exists. Fix candidate: a retake whose row is gone from the cells file
   is not run and is marked superseded.
+- 15:39–16:53 the rest of the flip. The side tree was synced to the merge (it lacked only `--native-cool-wait`) and the yardstick
+  and the app rebuilt from it: `.build/dd-mac` is now the yardstick e070fc39… (libCLiteRTLM_mac.dylib 9526db9e… = v0.18.0, llama
+  b11721 843E7D68; the previous yardstick 5579ae3a… kept as `.build/dd-mac-pre-r17`), and the app is 50eaab37… (the same
+  LiteRT-LM and llama frameworks as before). The iPhone 18 Pro got the app at 16:34 under both iPhone holds; one 1K run read
+  Release, `promptVersion` noref-2026-10-19, 1,123 prompt tokens (Gemma 4 E2B on the GPU, the count of the Mac's r17 smoke) and a
+  reply on the task. The pin is the new app (`.build/dd-ios-pin`; the previous one kept as `.build/dd-ios-pin-b714ce21`). The six
+  Mac ExecuTorch Qwen3 prompts are re-rendered (1K: 1,355 prompt tokens each, `sourceSha256` = the repo file's 740112db…). The
+  page patch, committed in P (397d0b2), passes its four checks on bench main and the watch reads the same red set (23 / 23).
