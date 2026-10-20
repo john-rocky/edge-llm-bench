@@ -4,7 +4,7 @@ App: `google-ai-edge/litert-samples` `samples/litert/speech_recognition/AndroidA
 `d15f8ae9`, plus the benchmark commits of asr-litert-app-v1 (`89f0c45e` + `289d4672`), asr-burst-v1
 (`ddbb14c7` + `5f23093f`) and asr-fix-v1 (`6885e170`: `TdtGreedyLoop`, `TdtDecoder(fixDecodeLoop)`),
 plus this round's commit on branch `asr-bench-s26-npu` (not pushed; `LOCK.json` app.bench_commit).
-`instrument.patch` = `git diff 6885e170 01140858 -- samples/litert/speech_recognition` (this round's change
+`instrument.patch` = `git diff 6885e170 0e9b8f10 -- samples/litert/speech_recognition` (this round's change
 only). Definition of the task: `docs/asr-npu-v1.md`. Versions and hashes: `LOCK.json`.
 
 ## Not changed
@@ -56,7 +56,11 @@ are the same bytes for the CPU and the NPU run.
 and the encode buffers as `LiteRtRunner` does (default signature) and `TdtDecoder` with tdt_fix and
 `tdt_buffers` shared or separate; per window it optionally runs the encode signature on an all-zero
 input, writes an encoder output read from a file into the encode output buffer, and lets the decoder
-decode from that buffer; one JSON entry per window (tokens, error, decoder steps).
+decode from that buffer; one JSON entry per window (tokens, error, decoder steps). Commit 0e9b8f10
+(the third hold) adds `enc_source seed:<n>` (the encoder output made in the test, N(0, 0.02²) from
+`java.util.Random(n + window)`), `mode pattern` (TdtDecoder's buffer handling with fixed token ids:
+one `decode` run, then `decode_1` runs, the state buffers swapped as `adoptStates` swaps them, or
+every signature on its own buffers with the states copied) and the test's own logcat dump.
 
 ## Outside git
 

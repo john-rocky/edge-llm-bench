@@ -46,6 +46,9 @@ for s in $STEPS; do
     install2) step 120 install-test2 bash "$D" install-test2 || { stopped="install-test2 failed"; break; } ;;
     d)
       for arm in d-cpu-shared d-npu-shared d-npu-separate d-npu-shared-noenc; do step 150 "decoder $arm" bash "$D" decoder "$arm"; done ;;
+    setupmin) step 300 setup-min bash "$D" setup-min || { stopped="setup-min failed"; break; } ;;
+    d2)
+      for arm in p-npu-shared p-npu-separate t-npu-shared t-npu-separate; do step 120 "decoder2 $arm" bash "$D" decoder2 "$arm"; done ;;
     cleanup) ;;  # below, after the loop, whatever happened before it
     *) say "unknown step $s" ;;
   esac

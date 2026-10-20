@@ -36,6 +36,11 @@ release has no NPU runtime archive).
   four files, on the CPU (f32 file, the token reference) and on the NPU with the app's buffers (with
   and without an encode run before each window) and with `tdt_buffers=separate`
   (`tools/asr-npu/decoder_compare.sh`: errors per run, token ids per window against the CPU's).
+  Run 2 (a third hold) needs the SM8850 file only: the encoder output is N(0, 0.02²) from
+  `java.util.Random(1 + window)`, four windows; mode `pattern` drives TdtDecoder's buffer handling
+  with fixed token ids (one `decode`, 64 `decode_1` runs per window, the state buffers swapped or
+  each signature on its own buffers) and mode `tdt` runs the app's TdtDecoder; each run keeps its
+  own logcat (the QNN lines).
 - **Harness.** The `bench` build of litert-samples speech_recognition (package `….npucheck`,
   `INSTRUMENT.md`), `BenchFrontActivity` in front (`require_top_app=false`: nothing is timed), W =
   `1995-1836-0004` once per AsrBenchTest process outside the scoring, WER by

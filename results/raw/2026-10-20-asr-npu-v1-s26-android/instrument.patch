@@ -163,10 +163,10 @@ index 7630dd75..dc33f8ce 100644
    }
 diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/DecoderBufferTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/DecoderBufferTest.kt
 new file mode 100644
-index 00000000..ac718633
+index 00000000..2b5b890e
 --- /dev/null
 +++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/DecoderBufferTest.kt
-@@ -0,0 +1,192 @@
+@@ -0,0 +1,319 @@
 +package com.google.ai.edge.examples.asr
 +
 +import android.app.Activity
@@ -181,34 +181,46 @@ index 00000000..ac718633
 +import com.google.ai.edge.litert.BuiltinNpuAcceleratorProvider
 +import com.google.ai.edge.litert.CompiledModel
 +import com.google.ai.edge.litert.Environment
++import com.google.ai.edge.litert.TensorBuffer
 +import java.io.File
 +import java.nio.ByteBuffer
 +import java.nio.ByteOrder
++import java.util.Random
 +import org.json.JSONArray
 +import org.json.JSONObject
 +import org.junit.Test
 +import org.junit.runner.RunWith
 +
 +/**
-+ * Runs the app's TdtDecoder (tdt_fix on) on encoder outputs read from files, the encoder left out:
-+ * before each window the file's floats go into the encode signature's output buffer, the buffer
-+ * LiteRtRunner hands TdtDecoder, and TdtDecoder decodes from it (asr-npu-v1, edge-llm-bench
-+ * docs/asr-npu-v1.md, the decoder-only run). It shows whether the decoder's buffers fail on the NPU
-+ * with a finite encoder output.
++ * Runs the TDT decoder signatures without the encoder (asr-npu-v1, edge-llm-bench
++ * docs/asr-npu-v1.md, the decoder-only runs): before each window an encoder output goes into the
++ * encode signature's output buffer, the buffer LiteRtRunner hands the decoder, and the decoder runs
++ * from it. It shows whether the decoder's buffers fail on the NPU with a finite encoder output.
++ *
++ * Two modes:
++ * - tdt: the app's TdtDecoder (tdt_fix on) decodes the window.
++ * - pattern: TdtDecoder's buffer handling with fixed token ids, so it does not depend on what the
++ *   model predicts: one decode run (tokens [blank, 0, 0, 0], zero LSTM states), then decode_1 runs
++ *   with one token each. With shared buffers decode_1 runs on decode's state buffers and the input
++ *   and output state buffers swap after every run (TdtDecoder.adoptStates); with separate buffers
++ *   every signature runs on its own buffers and the states are copied.
 + *
 + * Arguments (am instrument -e <name> <value>):
 + * - model: the .tflite file (absolute, or relative to the files dir)
 + * - accelerator: cpu or npu
-+ * - enc_inputs: comma-separated raw float32 encoder outputs `[1, 1024, T]` (absolute, or relative to
-+ *   the files dir), decoded in this order
-+ * - passes: how many times the list is decoded; default 3
-+ * - tdt_buffers: shared (default, TdtDecoder's buffers as the app has them) or separate
-+ *   (TdtDecoder(separateSignatureBuffers = true))
++ * - enc_source: files (enc_inputs) or seed:<n> (window w: N(0, 0.02²) floats from java.util.Random(n + w))
++ * - enc_inputs: comma-separated raw float32 encoder outputs `[1, 1024, T]` (enc_source files)
++ * - windows: windows per pass with enc_source seed; default 4
++ * - passes: how many times the windows are decoded; default 3
++ * - mode: tdt (default) or pattern
++ * - pattern_runs: decode_1 runs per window in pattern mode; default 64
++ * - tdt_buffers: shared (default, the app's buffers) or separate
 + * - run_encode: true (default) runs the encode signature on an all-zero input before each window, as
-+ *   the app runs it before each decode, and then overwrites its output buffer with the file's floats
++ *   the app runs it before each decode, and then overwrites its output buffer
 + * - foreground: front keeps the bench build's BenchFrontActivity in front during the run
 + * - out: output directory; default <external files dir>/npucheck
-+ * - tag: output file stem; <tag>.json (one entry per window: tokens, error, decoder steps), <tag>.done
++ * - tag: output file stem; <tag>.json (one entry per window), <tag>.logcat.txt (this process's log,
++ *   at the first error and at the end), <tag>.done
 + */
 +@RunWith(AndroidJUnit4::class)
 +class DecoderBufferTest {
@@ -225,12 +237,19 @@ index 00000000..ac718633
 +        "npu" -> Accelerator.NPU
 +        else -> throw IllegalArgumentException("accelerator must be cpu or npu, got $acceleratorName")
 +      }
++    val encSource = args.getString("enc_source") ?: "files"
++    val seed = if (encSource.startsWith("seed:")) encSource.removePrefix("seed:").toLong() else null
++    require(seed != null || encSource == "files") { "enc_source must be files or seed:<n>, got $encSource" }
 +    val inputs =
 +      args.getString("enc_inputs").orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.map {
 +        resolve(context, it)
 +      }
-+    require(inputs.isNotEmpty()) { "enc_inputs is required" }
++    require(seed != null || inputs.isNotEmpty()) { "enc_inputs is required with enc_source files" }
++    val windowCount = if (seed != null) args.getString("windows")?.toInt() ?: 4 else inputs.size
 +    val passes = args.getString("passes")?.toInt() ?: 3
++    val mode = args.getString("mode") ?: "tdt"
++    require(mode == "tdt" || mode == "pattern") { "mode must be tdt or pattern, got $mode" }
++    val patternRuns = args.getString("pattern_runs")?.toInt() ?: 64
 +    val separate =
 +      when (val b = args.getString("tdt_buffers")) {
 +        null,
@@ -246,6 +265,8 @@ index 00000000..ac718633
 +      context.assets.open("model_metadata.json").bufferedReader().use { it.readText() }.let {
 +        ModelMetadataManager(it).getModelConfig("parakeet-tdt-0.6b-v3")
 +      }
++    val blank = modelConfig.decodeStartTokenId
++    val logcat = File(outDir, "$tag.logcat.txt").apply { delete() }
 +
 +    val scenario =
 +      if (args.getString("foreground") == "front") {
@@ -277,16 +298,29 @@ index 00000000..ac718633
 +    val encodeOut = compiled.createOutputBuffers()
 +    val stats = TdtGreedyLoop.Stats()
 +    val decoder =
-+      TdtDecoder(compiled, modelConfig, fixDecodeLoop = true, stats = stats, separateSignatureBuffers = separate)
++      if (mode == "tdt") {
++        TdtDecoder(compiled, modelConfig, fixDecodeLoop = true, stats = stats, separateSignatureBuffers = separate)
++      } else {
++        null
++      }
++    val pattern = if (mode == "pattern") BufferPattern(compiled, separate, blank) else null
 +    val loadMs = (SystemClock.elapsedRealtimeNanos() - t0) / 1e6
 +    val zeros = FloatArray(compiled.getInputTensorType("args_0", "encode").layout!!.dimensions.fold(1, Int::times))
++    val encFloats = compiled.getInputTensorType("args_0", "decode").layout!!.dimensions.fold(1, Int::times)
 +
 +    val windows = JSONArray()
 +    var errors = 0
 +    for (pass in 0 until passes) {
-+      for ((w, file) in inputs.withIndex()) {
-+        val floats = readF32(file)
++      for (w in 0 until windowCount) {
++        val floats =
++          if (seed != null) {
++            val random = Random(seed + w)
++            FloatArray(encFloats) { (random.nextGaussian() * 0.02).toFloat() }
++          } else {
++            readF32(inputs[w])
++          }
 +        val tokens = ArrayList<Pair<Int, Int>>()
++        var runsDone = 0
 +        var error: String? = null
 +        val t = SystemClock.elapsedRealtimeNanos()
 +        try {
@@ -295,32 +329,45 @@ index 00000000..ac718633
 +            compiled.run(encodeIn, encodeOut)
 +          }
 +          encodeOut[0].writeFloat(floats)
-+          for (token in decoder.decode(encodeOut, SpeechRecognizer.ALL_FRAMES)) tokens.add(token)
++          if (decoder != null) {
++            for (token in decoder.decode(encodeOut, SpeechRecognizer.ALL_FRAMES)) tokens.add(token)
++          } else {
++            pattern!!.window(encodeOut[0], patternRuns) { runsDone = it }
++          }
 +        } catch (e: Throwable) {
 +          error = "${e.javaClass.simpleName}: ${e.message}"
++          if (errors == 0) dumpOwnLogcat(logcat, "first error, pass $pass window $w")
 +          errors++
 +          Log.e(TAG, "pass $pass window $w failed", e)
 +        }
 +        val ms = (SystemClock.elapsedRealtimeNanos() - t) / 1e6
 +        val emitted = tokens.filter { it.first != SpeechRecognizer.END_OF_SEQUENCE }
-+        windows.put(
++        val entry =
 +          JSONObject()
 +            .put("pass", pass)
 +            .put("window", w)
-+            .put("input", file.name)
++            .put("input", if (seed != null) "seed ${seed + w}" else inputs[w].name)
++            .put("ms", ms)
++            .put("error", error ?: JSONObject.NULL)
++        if (decoder != null) {
++          entry
 +            .put("tokens", JSONArray(emitted.map { it.first }))
 +            .put("timestamps", JSONArray(emitted.map { it.second }))
 +            .put("decoder_steps", stats.steps)
 +            .put("capped_frames", stats.cappedFrames)
-+            .put("ms", ms)
-+            .put("error", error ?: JSONObject.NULL)
-+        )
-+        Log.i(TAG, "pass $pass window $w: ${emitted.size} tokens, ${stats.steps} steps, error=$error")
++        } else {
++          // Network runs that returned: the decode run, then the decode_1 runs.
++          entry.put("runs_done", runsDone).put("runs_planned", 1 + patternRuns)
++        }
++        windows.put(entry)
++        Log.i(TAG, "pass $pass window $w: ${emitted.size} tokens, ${stats.steps} steps, runs $runsDone, error=$error")
 +      }
 +    }
++    dumpOwnLogcat(logcat, "end")
 +
 +    val foregroundState = scenario?.state?.name
 +    (encodeIn + encodeOut).forEach { it.close() }
++    pattern?.close()
 +    compiled.close()
 +    scenario?.close()
 +    val report =
@@ -328,9 +375,12 @@ index 00000000..ac718633
 +        .put("tag", tag)
 +        .put("model", model.path)
 +        .put("accelerator", acceleratorName)
++        .put("mode", mode)
++        .put("enc_source", encSource)
++        .put("pattern_runs", if (mode == "pattern") patternRuns else JSONObject.NULL)
 +        .put("tdt_buffers", if (separate) "separate" else "shared")
 +        .put("run_encode", runEncode)
-+        .put("tdt_fix", true)
++        .put("tdt_fix", mode == "tdt")
 +        .put("passes", passes)
 +        .put("load_ms", loadMs)
 +        .put("foreground_state", foregroundState)
@@ -344,9 +394,73 @@ index 00000000..ac718633
 +    Log.i(TAG, "done tag=$tag failed=$errors")
 +  }
 +
++  /**
++   * TdtDecoder's buffer handling with fixed token ids. Shared: decode's buffers (TdtDecoder's
++   * inputBuffers / outputBuffers), decode_1's token and logits buffers, and the LSTM states in
++   * decode's input and output state buffers, swapped after each run. Separate: every signature on
++   * its own buffers, the encoder output and the states copied.
++   */
++  private class BufferPattern(
++    private val compiled: CompiledModel,
++    private val separate: Boolean,
++    private val blank: Int,
++  ) : AutoCloseable {
++    private val decodeIn = compiled.createInputBuffers(DECODE)
++    private val decodeOut = compiled.createOutputBuffers(DECODE)
++    private val decode1In = compiled.createInputBuffers(DECODE_1)
++    private val decode1Out = compiled.createOutputBuffers(DECODE_1)
++    private val zeroStates =
++      FloatArray(compiled.getInputTensorType("args_2", DECODE).layout!!.dimensions.fold(1, Int::times))
++    private val states = listOf(listOf(decodeIn[2], decodeIn[3]), listOf(decodeOut[1], decodeOut[2]))
++    private var inputStates = 0
++
++    /** One window: decode once, then [runs] decode_1 runs; [done] gets the runs that returned. */
++    fun window(encoderOutput: TensorBuffer, runs: Int, done: (Int) -> Unit) {
++      var returned = 0
++      if (!separate) {
++        states[inputStates].forEach { it.writeFloat(zeroStates) }
++        decodeIn[1].writeInt(intArrayOf(blank, 0, 0, 0))
++        compiled.run(listOf(encoderOutput, decodeIn[1]) + states[inputStates], listOf(decodeOut[0]) + states[1 - inputStates], DECODE)
++        done(++returned)
++        inputStates = 1 - inputStates
++        for (k in 0 until runs) {
++          decode1In[1].writeInt(intArrayOf(TOKENS[k % TOKENS.size]))
++          compiled.run(listOf(encoderOutput, decode1In[1]) + states[inputStates], listOf(decode1Out[0]) + states[1 - inputStates], DECODE_1)
++          done(++returned)
++          inputStates = 1 - inputStates
++        }
++      } else {
++        val encoded = encoderOutput.readFloat()
++        decodeIn[0].writeFloat(encoded)
++        decode1In[0].writeFloat(encoded)
++        decodeIn[2].writeFloat(zeroStates)
++        decodeIn[3].writeFloat(zeroStates)
++        decodeIn[1].writeInt(intArrayOf(blank, 0, 0, 0))
++        compiled.run(decodeIn, decodeOut, DECODE)
++        done(++returned)
++        decode1In[2].writeFloat(decodeOut[1].readFloat())
++        decode1In[3].writeFloat(decodeOut[2].readFloat())
++        for (k in 0 until runs) {
++          decode1In[1].writeInt(intArrayOf(TOKENS[k % TOKENS.size]))
++          compiled.run(decode1In, decode1Out, DECODE_1)
++          done(++returned)
++          decode1In[2].writeFloat(decode1Out[1].readFloat())
++          decode1In[3].writeFloat(decode1Out[2].readFloat())
++        }
++      }
++    }
++
++    override fun close() = (decodeIn + decodeOut + decode1In + decode1Out).forEach { it.close() }
++  }
++
 +  private companion object {
 +    const val TAG = "DecoderBuffer"
 +    const val FRONT_ACTIVITY = "com.google.ai.edge.examples.asr.BenchFrontActivity"
++    const val DECODE = "decode"
++    const val DECODE_1 = "decode_1"
++
++    // The first eight tokens the CPU decoded from LibriSpeech 4507-16021-0047, window 1 (any non-blank ids).
++    val TOKENS = intArrayOf(990, 3246, 591, 7893, 1180, 4250, 1117, 7875)
 +
 +    fun resolve(context: Context, path: String) = if (path.startsWith("/")) File(path) else File(context.filesDir, path)
 +
@@ -356,6 +470,19 @@ index 00000000..ac718633
 +      val out = FloatArray(bytes.size / 4)
 +      ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(out)
 +      return out
++    }
++
++    /** Appends `logcat -d --pid=<this process>` to [file]: the QNN and LiteRT lines of this run. */
++    fun dumpOwnLogcat(file: File, label: String) {
++      try {
++        val process =
++          ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=${Process.myPid()}").redirectErrorStream(true).start()
++        val text = process.inputStream.bufferedReader().use { it.readText() }
++        process.waitFor()
++        file.appendText("# logcat --pid=${Process.myPid()} ($label)\n$text")
++      } catch (e: Exception) {
++        Log.w(TAG, "logcat dump failed", e)
++      }
 +    }
 +  }
 +}

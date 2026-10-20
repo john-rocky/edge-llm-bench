@@ -15,6 +15,10 @@
 #   run_npu_s26.sh install-test2          # that test APK over the installed one (the app and its files stay)
 #   run_npu_s26.sh decoder <d-arm>        # DecoderBufferTest on b-tdt-cpu's encoder outputs (on the phone), 3 passes
 #   run_npu_s26.sh cleanup                # uninstall the two packages (their files dir goes too) and round 6's .prcheck pair, /data before / after
+#   run_npu_s26.sh freeze3                # the decoder-only run 2's test APK (apk3/)
+#   run_npu_s26.sh setup-min              # after a cleanup: the app with the SM8850 TDT file + its tokenizer, the apk3 test APK
+#   run_npu_s26.sh decoder2 <p|t-arm>     # DecoderBufferTest, seeded encoder outputs: p-npu-shared / p-npu-separate (pattern
+#                                         # mode) and t-npu-shared / t-npu-separate (TdtDecoder), one pass of four windows
 #   run_npu_s26.sh finish                 # put the stay-awake setting back
 #   DRY=1 run_npu_s26.sh ...              # print the adb commands, run none of them
 #
@@ -389,6 +393,91 @@ cmd_decoder() {  # DecoderBufferTest on b-tdt-cpu's four encoder outputs, three 
 
 PRCHECK=com.google.ai.edge.examples.asr.prcheck  # the same lane's round 6 (asr-pr), closed; uninstalled here on the supervisor's word
 
+cmd_freeze3() {  # the decoder-only run 2's test APK (seeded encoder output, the pattern mode, its own logcat)
+  local out="$B/apk3" commit dirty
+  mkdir -p "$out"
+  cp "$APPDIR/app/build/outputs/apk/androidTest/bench/app-bench-androidTest.apk" "$out/app-bench-androidTest.apk"
+  commit=$(git -C "$APPDIR" rev-parse HEAD)
+  dirty=$(git -C "$APPDIR" status --porcelain -- . | grep -v '^??' | wc -l | tr -d ' ')
+  (cd "$out" && shasum -a 256 app-bench-androidTest.apk > SHA256SUMS)
+  echo "$commit dirty_tracked_files=$dirty" > "$out/APP_COMMIT"
+  cat "$out/SHA256SUMS" "$out/APP_COMMIT"
+}
+
+cmd_setup_min() {  # after the cleanup: the app again with the SM8850 TDT file and its tokenizer only, the run 2 test APK
+  need_hold
+  local apk="$B/apk" L="$REC/setup-decoder2.log" f dst want got
+  {
+    echo "# setup-min $(date '+%F %T %Z')"
+    cat "$apk/SHA256SUMS" "$B/apk3/SHA256SUMS" "$B/apk3/APP_COMMIT"
+    echo "stay_on_while_plugged_in before: $(A shell settings get global stay_on_while_plugged_in | tr -d '\r')"
+    echo "/data before: $(A shell df -k /data | tail -1 | tr -s ' ')"
+  } >> "$L"
+  A install -r -t "$apk/app-debug.apk" >&2 || { log "install debug app failed"; exit 2; }
+  A shell svc power stayon usb
+  A shell input keyevent KEYCODE_WAKEUP
+  A shell mkdir -p "$DT/models"
+  printf '%s\n' "parakeet_tdt_0.6b_v3_5s_f32_stateful_Qualcomm_SM8850.tflite parakeet-tdt-0.6b-v3/model_npu.tflite" \
+    "tdt-tokenizer.json parakeet-tdt-0.6b-v3/tokenizer.json" | while read -r f dst; do
+    want=$(python3 -c 'import json,sys; print({r["local"].split("/")[-1]: r["sha256"] for r in json.load(open(sys.argv[1]))}[sys.argv[2]])' "$B/models/models.lock.json" "$f")
+    A push "$B/models/$f" "$DT/models/$f" >&2 || { log "push $f failed"; exit 2; }
+    A shell "run-as $PKG sh -c 'mkdir -p files/${dst%/*} && cat > files/$dst' < $DT/models/$f"
+    got=$(A shell run-as "$PKG" sha256sum "files/$dst" | cut -c1-64)
+    A shell rm -f "$DT/models/$f"
+    echo "model $f -> files/$dst sha256_local=$want sha256_phone=$got $([ "$got" = "$want" ] && echo OK || echo MISMATCH)" | tee -a "$L" >&2
+    [ "$DRY" = 1 ] || [ "$got" = "$want" ] || exit 3
+  done || exit $?
+  A shell rm -rf "$DT"
+  A install -r "$apk/app-bench.apk" >&2 || { log "install bench app failed"; exit 2; }
+  A install -r -t "$B/apk3/app-bench-androidTest.apk" >&2 || { log "install test APK failed"; exit 2; }
+  echo "installed app-bench.apk + apk3/app-bench-androidTest.apk; /data: $(A shell df -k /data | tail -1 | tr -s ' ')" | tee -a "$L" >&2
+}
+
+decoder2_spec() {  # arm -> "mode tdt_buffers"
+  case "$1" in
+    p-npu-shared) echo "pattern shared" ;;
+    p-npu-separate) echo "pattern separate" ;;
+    t-npu-shared) echo "tdt shared" ;;
+    t-npu-separate) echo "tdt separate" ;;
+    *) return 1 ;;
+  esac
+}
+
+cmd_decoder2() {  # DecoderBufferTest on seeded encoder outputs (seed 1..4), one pass, the SM8850 file on the NPU
+  local arm=$1 spec mode buffers tag=$1 am st pid t0 done_flag n=""
+  spec=$(decoder2_spec "$arm") || { log "unknown decoder2 arm $arm"; exit 2; }
+  read -r mode buffers <<<"$spec"
+  need_hold
+  keep_earlier "$tag"
+  "$HERE/probe.sh" before > "$REC/$tag.probe-before.json"
+  A shell "rm -f $EXT/npucheck/$tag.*"
+  A logcat -c
+  am="am instrument -r -e class com.google.ai.edge.examples.asr.DecoderBufferTest -e model parakeet-tdt-0.6b-v3/model_npu.tflite -e accelerator npu -e mode $mode -e tdt_buffers $buffers -e run_encode false -e enc_source seed:1 -e windows 4 -e passes 1 -e pattern_runs 64 -e foreground front -e tag $tag $RUNNER"
+  echo "# $tag $(date '+%F %T %Z')" >> "$REC/$tag.cmd"
+  echo "$(date '+%T') adb -s $SERIAL shell $am" >> "$REC/$tag.cmd"
+  log "decoder2 $tag (mode=$mode, tdt_buffers=$buffers)"
+  A shell "$am" > "$B/$tag.instrument.txt"
+  [ "$DRY" = 1 ] && return 0
+  t0=$(date +%s)
+  while :; do
+    sleep 2
+    st=$(A shell "[ -f $EXT/npucheck/$tag.done ] && echo done=1; echo pid=\$(pidof $PKG)" | tr -d '\r')
+    done_flag=$(echo "$st" | sed -n 's/^done=//p'); pid=$(echo "$st" | sed -n 's/^pid=//p')
+    [ -n "$pid" ] && n=$pid
+    [ "$done_flag" = 1 ] && break
+    if [ -z "$pid" ] && [ $(( $(date +%s) - t0 )) -gt 20 ]; then log "$tag: the process is gone without a done marker"; break; fi
+    if [ $(( $(date +%s) - t0 )) -gt 240 ]; then log "$tag: no done marker after 240s, stopped"; A shell am force-stop "$PKG"; break; fi
+  done
+  sleep 2
+  for f in json done logcat.txt; do A pull "$EXT/npucheck/$tag.$f" "$REC/$tag.$f" >/dev/null 2>&1; done
+  [ -n "$n" ] || n=$(jq -r '.pid // empty' "$REC/$tag.json" 2>/dev/null)
+  grab_logcat "$tag" "${n:-x}" >/dev/null
+  A logcat -b crash -d >> "$REC/$tag.crash.log" 2>/dev/null
+  [ -s "$REC/$tag.crash.log" ] || rm -f "$REC/$tag.crash.log"
+  "$HERE/probe.sh" after > "$REC/$tag.probe-after.json"
+  log "$tag: $(cat "$REC/$tag.done" 2>/dev/null || echo 'no done marker'); memHandle lines $(grep -c 'Failed to find memHandle' "$REC/$tag.logcat.txt" 2>/dev/null)"
+}
+
 cmd_cleanup() {  # uninstall this round's two packages (their files dir with the 8.0 GB of models goes too) and round 6's two
   need_hold
   local L="$REC/cleanup.log" p
@@ -537,11 +626,14 @@ case "${1:-}" in
   freeze2) cmd_freeze2 ;;
   setup) cmd_setup ;;
   install-test2) cmd_install_test2 ;;
-  compare) shift; [ $# -ge 1 ] || { sed -n 2,47p "$0"; exit 2; }; cmd_compare "$1" ;;
-  decoder) shift; [ $# -ge 1 ] || { sed -n 2,47p "$0"; exit 2; }; cmd_decoder "$1" ;;
+  compare) shift; [ $# -ge 1 ] || { sed -n 2,51p "$0"; exit 2; }; cmd_compare "$1" ;;
+  decoder) shift; [ $# -ge 1 ] || { sed -n 2,51p "$0"; exit 2; }; cmd_decoder "$1" ;;
+  freeze3) cmd_freeze3 ;;
+  setup-min) cmd_setup_min ;;
+  decoder2) shift; [ $# -ge 1 ] || { sed -n 2,51p "$0"; exit 2; }; cmd_decoder2 "$1" ;;
   cleanup) cmd_cleanup ;;
-  run) shift; [ $# -ge 2 ] || { sed -n 2,47p "$0"; exit 2; }; cmd_run "$@" ;;
+  run) shift; [ $# -ge 2 ] || { sed -n 2,51p "$0"; exit 2; }; cmd_run "$@" ;;
   check) shift; python3 "$ROOT/tools/asr-fix/check_run.py" "$REC/$1.jsonl" ${2:+--ref "$2"} ;;
   finish) cmd_finish ;;
-  *) sed -n 2,47p "$0"; exit 2 ;;
+  *) sed -n 2,51p "$0"; exit 2 ;;
 esac

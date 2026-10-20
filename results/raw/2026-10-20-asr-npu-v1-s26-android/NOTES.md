@@ -129,3 +129,38 @@ and the all-zero input, f32 file on the CPU: no NaN); each run decodes them thre
 - Cleanup (`cleanup.log`): `….npucheck.test`, `….npucheck`, `….prcheck.test` and `….prcheck`
   uninstalled (Success × 4; the last two are the same lane's asr-pr round's); `/data` free
   16,194,464 kB before, 24,982,356 kB after.
+
+## The decoder alone, run 2: a seeded encoder output, the SM8850 file only (`p-*`, `t-*`, a third hold)
+
+A third hold, 16:00:46–16:02:06 JST (`setup-decoder2.log`, `cleanup.log`): the app reinstalled
+with the SM8850 TDT file and its tokenizer only (sha256 read back on the phone: e9edabe4… and
+bd321b09…), the bench test APK rebuilt (app commit 0e9b8f10, sha256 d68601f5…), four runs, then
+the packages uninstalled. The encoder output is made in the test: window w is
+`java.util.Random(1 + w)`'s Gaussian times 0.02 (N(0, 0.02²), `[1, 1024, 63]`), four windows,
+one pass, no encode run; it goes into the encode signature's output buffer, as before. Each run
+writes its own log (`<tag>.logcat.txt`: at the first error and at the end).
+
+- `p-npu-shared` (mode `pattern`: TdtDecoder's buffer handling with fixed token ids, so the
+  buffers move whatever the model predicts — per window one `decode` run with tokens
+  `[8192, 0, 0, 0]` and zero states, then 64 `decode_1` runs with one token each, the LSTM states
+  in `decode`'s input and output state buffers swapped after every run): windows 1 and 3 ran all
+  65 runs; windows 2 and 4 failed at their first `decode_1` run (`LiteRtException: Failed to invoke
+  the compiled model`). The log at the first error: `decode` (`qnn_partition_1`) of window 2
+  finished, four `QnnMem_deRegister` calls (status 0), then `QnnGraph_execute` of `decode_1`
+  (`qnn_partition_2`): `QnnDsp <E> Failed to find memHandle 0x3`, `Failed to get HTP memHandle
+  info for tensor`, `graphExecuteRpcMemWrite failed for inputs`, `preGraph execute failed 6004`,
+  `Graph qnn_partition_2 failed in execution with err 6004`, then LiteRT's `Failed to execute
+  invocation context` and `Failed to invoke`. Over the run: 11 `Failed to find memHandle` lines
+  (handles 0x3, 0x4, 0x5, 0x6), 774 `QnnMem_register started`, 764 `QnnMem_deRegister started`.
+  Windows 2 and 4 are the ones that begin with the state buffers in the roles opposite to
+  window 1's (an odd number of swaps before them).
+- `p-npu-separate` (the same with every signature on its own buffers, the encoder output and the
+  states copied): all four windows ran all 65 runs, no error; 14 `QnnMem_register started`, no
+  `QnnMem_deRegister`, no `E` line.
+- `t-npu-shared` / `t-npu-separate` (mode `tdt`, the app's TdtDecoder with tdt_fix on the same
+  seeded outputs): no error; every window decoded to blanks only (no token, 49–56 decoder steps),
+  so `decode_1` never ran and no state buffer was swapped; 7 `QnnMem_register started` each.
+- Load 376–430 ms; VmHWM not read in this test.
+- Cleanup (`cleanup.log`): `….npucheck.test` and `….npucheck` uninstalled (Success); the
+  `….prcheck` pair was already gone (`DELETE_FAILED_INTERNAL_ERROR`); `/data` free 23,541,648 kB
+  before, 24,954,968 kB after.

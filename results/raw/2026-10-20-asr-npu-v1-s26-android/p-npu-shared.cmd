@@ -1,0 +1,2 @@
+# p-npu-shared 2026-10-20 16:01:39 JST
+16:01:39 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.DecoderBufferTest -e model parakeet-tdt-0.6b-v3/model_npu.tflite -e accelerator npu -e mode pattern -e tdt_buffers shared -e run_encode false -e enc_source seed:1 -e windows 4 -e passes 1 -e pattern_runs 64 -e foreground front -e tag p-npu-shared com.google.ai.edge.examples.asr.npucheck.test/androidx.test.runner.AndroidJUnitRunner

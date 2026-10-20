@@ -1,0 +1,2 @@
+# t-npu-separate 2026-10-20 16:01:58 JST
+16:01:58 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.DecoderBufferTest -e model parakeet-tdt-0.6b-v3/model_npu.tflite -e accelerator npu -e mode tdt -e tdt_buffers separate -e run_encode false -e enc_source seed:1 -e windows 4 -e passes 1 -e pattern_runs 64 -e foreground front -e tag t-npu-separate com.google.ai.edge.examples.asr.npucheck.test/androidx.test.runner.AndroidJUnitRunner
