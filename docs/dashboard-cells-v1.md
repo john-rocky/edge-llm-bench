@@ -1520,6 +1520,13 @@ Back out: give the 1K task back its old tail and no version (the generator's `PR
 regenerate with `python3 scripts/gen_task_prompts.py`, rebuild the yardstick and the app, re-render the
 ExecuTorch prompts. Records then carry no version and compare again with the records before 2026-10-19 (the
 same text); the page marks the break back.
+- 2026-10-20, slot i4: `litert-community/LFM2.5-2.6B` fails the same way as LFM2.5-1.2B. In short chat the engine is
+  not created, 2 of 2 launches: the GPU delegate refuses two DYNAMIC_UPDATE_SLICE ops ("Updated_slice shape must be
+  less or equal to the array to update", updated_slice [18102464] / [18641024] against [1867264] / [1864672]), 120 of
+  936 operations go to the GPU and 816 to the CPU, and the engine's fully-delegated hint fails it ("Hint fully
+  delegated to single delegate is set, but the graph is not fully delegated"). The same file's native `benchmark()`
+  runs on the GPU, 4 of 4 at nominal (1024 / 256 at context 2048: prefill 1,096-1,101 tok/s after the cold call's
+  869, decode 34.4-34.5 tok/s); without a task record of the model the import leaves it NATIVE_IMPORT_PENDING.
 
 ## Open questions for the LiteRT team
 
