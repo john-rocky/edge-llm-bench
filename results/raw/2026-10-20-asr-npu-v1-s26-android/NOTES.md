@@ -138,7 +138,9 @@ bd321b09…), the bench test APK rebuilt (app commit 0e9b8f10, sha256 d68601f5�
 the packages uninstalled. The encoder output is made in the test: window w is
 `java.util.Random(1 + w)`'s Gaussian times 0.02 (N(0, 0.02²), `[1, 1024, 63]`), four windows,
 one pass, no encode run; it goes into the encode signature's output buffer, as before. Each run
-writes its own log (`<tag>.logcat.txt`: at the first error and at the end).
+writes its own log (`<tag>.logcat.txt`): a run with an error holds two dumps, one at the first
+error and one at the end, and the second covers the whole run, so the counts below come from the
+`(end)` dump only.
 
 - `p-npu-shared` (mode `pattern`: TdtDecoder's buffer handling with fixed token ids, so the
   buffers move whatever the model predicts — per window one `decode` run with tokens
@@ -150,13 +152,22 @@ writes its own log (`<tag>.logcat.txt`: at the first error and at the end).
   (`qnn_partition_2`): `QnnDsp <E> Failed to find memHandle 0x3`, `Failed to get HTP memHandle
   info for tensor`, `graphExecuteRpcMemWrite failed for inputs`, `preGraph execute failed 6004`,
   `Graph qnn_partition_2 failed in execution with err 6004`, then LiteRT's `Failed to execute
-  invocation context` and `Failed to invoke`. Over the run: 11 `Failed to find memHandle` lines
-  (handles 0x3, 0x4, 0x5, 0x6), 774 `QnnMem_register started`, 764 `QnnMem_deRegister started`.
-  Windows 2 and 4 are the ones that begin with the state buffers in the roles opposite to
-  window 1's (an odd number of swaps before them).
+  invocation context` and `Failed to invoke`. Over the run (the `(end)` dump, l.1627–4630):
+  10 `Failed to find memHandle` lines — one in each of the two failed `decode_1` runs (0x3), and
+  eight (0x3, 0x4, 0x5, 0x6, two each) before window 3's `decode`, each pair followed by
+  `Failed to deregister memHandles with error 0x1f41` (four times); four `QnnMem_register` calls
+  follow, and that `decode` finishes. 517 `QnnMem_register started`, 512
+  `QnnMem_deRegister started`. Per run (each `QnnGraph_execute done` status and the
+  deregistrations / registrations since the previous run): of the 130 `decode_1` runs, 125 with
+  4 / 4 ended 0x0, 2 with 0 / 0 ended 0x0, 1 with 0 / 2 (window 1's first) ended 0x0, and the 2 with
+  4 / 0 ended 0x1774 (= 6004) — the two failed runs, each the first `decode_1` of windows 2 and
+  4; the four `decode` runs (window 1: 0 / 7, window 2: 0 / 0, window 3: 0 / 4 after the four
+  failed deregistrations, window 4: 4 / 4) all ended 0x0. Windows 2 and 4 are the ones that begin
+  with the state buffers in the roles opposite to window 1's (an odd number of swaps before them).
 - `p-npu-separate` (the same with every signature on its own buffers, the encoder output and the
   states copied): all four windows ran all 65 runs, no error; 14 `QnnMem_register started`, no
-  `QnnMem_deRegister`, no `E` line.
+  `QnnMem_deRegister`. Its log has 13 `E` lines, all at start-up from adsprpc, ashmem, Adreno
+  and libpenguin; none from `qnn`, `QnnDsp`, `litert` or `tflite`.
 - `t-npu-shared` / `t-npu-separate` (mode `tdt`, the app's TdtDecoder with tdt_fix on the same
   seeded outputs): no error; every window decoded to blanks only (no token, 49–56 decoder steps),
   so `decode_1` never ran and no state buffer was swapped; 7 `QnnMem_register started` each.
