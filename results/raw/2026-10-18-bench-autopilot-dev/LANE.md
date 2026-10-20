@@ -741,3 +741,8 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   reply on the task. The pin is the new app (`.build/dd-ios-pin`; the previous one kept as `.build/dd-ios-pin-b714ce21`). The six
   Mac ExecuTorch Qwen3 prompts are re-rendered (1K: 1,355 prompt tokens each, `sourceSha256` = the repo file's 740112db…). The
   page patch, committed in P (397d0b2), passes its four checks on bench main and the watch reads the same red set (23 / 23).
+- 17:5x the retake fixes (the owner's go): a busy exit (3: the device or the Mac measurement window was not free, nothing
+  ran) is logged and no longer counted toward abandoning a retake, and a retake whose row has left the cells file it was
+  queued from is `superseded` and not run (auto does not count it when it chooses a device). Selftest cases for both; the
+  data-pipeline steps pass (the rehearsal's first two runs failed three checks only because its export directory was named
+  `ci-retake-…`, which their "no `-retake-` line" test matched).
