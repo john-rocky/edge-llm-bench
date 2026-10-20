@@ -694,3 +694,42 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   GPU 1K cell (peak memory −12.1 % in the q06-dynamic sitting), and a retake after the flip would read the new tail against the old
   series. The flip waits for the S26's retake sitting on the old task (the job takes the Mac first at 02:00, by the oldest admitted
   session) and lands before the next weekly (2026-10-26 02:00).
+
+## 2026-10-19 16:4x – 2026-10-20 — r18's two outward texts, the first night of retakes, the r17 flip
+- 16:4x–21:1x r18's verdict on the Qwen3 0.6B candidate (the 2026-08-05 graph with the 0.18.0 LlmMetadata): it does not replace
+  the Hub file (the owner's −3 % rule fails on the Pixel 8a GPU, ROUND18.md "計測の表"), so the iPhone GPU gets an iOS-only file.
+  Posted with the owner's word: LiteRT-LM#4055 (18:35 JST: the Metal kernel generated for the current file does not compile on
+  iOS, `half4 half4(res)_final`) and the Hub PR litert-community/Qwen3-0.6B#14 (21:07 JST: `Qwen3-0.6B_dynamic_wi4b32_afp32.ios.litertlm`,
+  sha256 e6bf25c0…, and the card lines). When #14 merges, the iPhone's 0.6B rows move to the iOS file (ModelCatalog, the iOS cells'
+  `file=`, the page by file name); until then nothing measures the refs/pr file. 21:56 r15's last sitting (the S26 flat E4B,
+  thinking off) was committed and pushed by the post (7a25bc9e).
+- 10-20 00:01 #4055's first comment (not from the team) points at LiteRT-LM PR #3962 ("Fix SwiGLU post-op fusion variable linking …
+  in MLDrift", open; its LiteRT-LM diff is KV-cache state only). Not answered. The re-test is tied to every new LiteRT-LM release:
+  one short GPU chat with the current file (a3c5d805) on the 18 Pro, engine creation only. 03:18 the issue was assigned and
+  labelled `type :bug`.
+- 02:00 the first night of retakes (logs/dashboard-job/retakes.json). The Mac retake found the Mac measurement window held by another
+  lane (exit 3). The S26 sitting re-measured two cells: `qwen306b-gpu-1024` red-stays (peak memory −11.58 %; its bisect request,
+  v0.16.0 → v0.18.0, has no command: the tooling is not on main), `qwen306b-gpu-protocol-1024` unjudged ("the retake sitting left no
+  point of this cell", although the summary has the sitting's four rows of it; cause not read yet). 05:30 the Mac window was held
+  again and the Mac retake is `abandoned` (two attempts, RETAKE_MAX_ATTEMPTS) without a measurement: the plan reads a phone's hold
+  and marks it busy without counting an attempt, but not the Mac window (a fix candidate; it changes when a retake runs, no number).
+  06:00–06:35 the Pixel 8a retakes: `qwen306b-gpu-short-chat` red-stays (decode −5.03 %, the same engine, no bisect request),
+  `qwen306b-cpu-short-chat` unjudged (every run capped: policy4's ceiling −34 to −48 %; another lane had the phone until 06:00).
+- The post's push: the AA lane's 17 Pro sittings (by hand through the job) were committed by the post at 04:43 (6ba99bd7) and 10:21,
+  and their pushes refused behind a hand commit not yet on origin (5662a052, docs); after it was pushed, the 13:33 post pushed
+  itself (b5a66697). 13:41 origin was two commits ahead (the asr lane pushed from a worktree): main fast-forwarded to ca5f447c.
+- 13:4x–14:3x the r17 flip (ROUND17.md "監督が打つ物"), the owner's go 14:2x: merge 40e2aec6 made in a worktree. Four conflicts:
+  run_cell.py keeps both main's llama_chat_conditions line and the branch's promptVersion line, the cells doc keeps both new
+  sections, the dev ladder file gets r17's ladder after main's, and results/summary/ is rebuilt from the merged index (the
+  6,595 rows unchanged, the new prompt_version column empty). The data-pipeline CI steps pass on a clean export of the index
+  (21 steps). The page patch (p-prompt-version.patch) applies to P f9b816c; the page built from the merge passes its four
+  checks and the watch reads the same red set (23 / 23). The yardstick and the app built on 10-19 (`.build/dd-mac-noref`,
+  `dd-ios-noref`) predate the record-name fix (470caa06) and `--native-cool-wait` (eec978af): both are rebuilt from the side
+  tree synced to the merge (`.build/dd-mac-r17`, `dd-ios-r17`) once the Mac measurement window is free, then the yardstick
+  swap, the iPhone 18 Pro install and the ExecuTorch re-render follow; until then the Mac yardstick and the 18 Pro app run the
+  old tail and their records carry no version (the Android and Mac Python drivers read the merged prompt file and mark it).
+- The retake that left no point (S26 `qwen306b-gpu-protocol-1024`): the entry was queued at 2026-10-19 05:08 on the
+  `qwen3_0_6b_mixed_int4.litertlm` row; 8ac3fbdd (06:06) moved the page row to `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`.
+  The retake re-ran the old row byte for byte, and the judgment looks its series up by the current definition's file
+  (`scripts/regression_watch.py` l.820), which no longer exists. Fix candidate: a retake whose row is gone from the cells file
+  is not run and is marked superseded.

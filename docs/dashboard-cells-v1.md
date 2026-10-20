@@ -1512,8 +1512,8 @@ The flip. The merge, the Mac yardstick switch (`.build/dd-mac`), the iPhone inst
 six Mac ExecuTorch Qwen3 prompts happen together, between sittings: the Android, DDP and Mac Python drivers read
 the prompt file from the checkout and the yardstick and the app build the text into the binary, so a Mac
 sitting on the merged checkout and the old yardstick would run ONNX Runtime GenAI and ExecuTorch on the new text
-and the yardstick arms on the old one. Each record's version still names what it ran. Date: the supervisor's
-(tonight when everything is green by 21:00, else after this week's sittings).
+and the yardstick arms on the old one. Each record's version still names what it ran. Date: 2026-10-20, merge 40e2aec6; the rebuilt yardstick and app
+follow it once the Mac measurement window is free (the lane record, `results/raw/2026-10-18-bench-autopilot-dev/LANE.md`).
 
 Back out: give the 1K task back its old tail and no version (the generator's `PROMPTS` entry without
 `tail=NOREF_TAIL` and its `VERSIONS` line removed; the Swift definition without `tail:` and `promptVersion:`),
