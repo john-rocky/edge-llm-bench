@@ -1,0 +1,306 @@
+{
+  "harness": "asr-npu-v1",
+  "app": {
+    "repo": "google-ai-edge/litert-samples",
+    "path": "samples/litert/speech_recognition/AndroidApp",
+    "upstream_commit": "d15f8ae9",
+    "base": "asr-fix-v1 benchmark commit 6885e170 (branch asr-bench-s26-fix)",
+    "bench_branch": "asr-bench-s26-npu",
+    "bench_commit": "50dfe1d8a1de7a37949065e3b873499f6904d4fe",
+    "dirty_tracked_files_at_freeze": "dirty_tracked_files=0",
+    "application_id": "com.google.ai.edge.examples.asr.npucheck (applicationIdSuffix .npucheck)",
+    "test_application_id": "com.google.ai.edge.examples.asr.npucheck.test",
+    "test_build_type": "bench = initWith(release) + debug signing key: not debuggable, no minify",
+    "setup_build_type": "debug (debuggable: run-as copies the models, the B inputs and the WAVs into the app's files dir before the bench build is installed over it)"
+  },
+  "apk": {
+    "app-debug.apk": "ac7ea356d1b1711abfab54d293e32152a231b98f972882f03310c99dc90fdc15",
+    "app-bench.apk": "bf7a38200fa8da2974c1a8853f2eccdb4a5d0c06b61d129b6f4b840dfbe1efd6",
+    "app-bench-androidTest.apk": "5675e09c849c7bc1263982503e1d15d63d1a993b540bf3a65ad3fce0be248863"
+  },
+  "native_libs_in_bench_apk": {
+    "libLiteRt.so": {
+      "sha256": "97355a36cb8ac7628cf407773291e98da79f3ef184cc43cb0e57dedf5f0c0637",
+      "bytes": 5508376,
+      "origin": "LiteRT 2.2.0 Maven AAR contents (litert-2.2.0.aar / litert-api-2.2.0.aar; same bytes as the asr-fix-v1 bench APK)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libLiteRtClGlAccelerator.so": {
+      "sha256": "7c63d606a48e9479499c012f6732623f9e6fc26250c5bdf6724af205d73eb0fb",
+      "bytes": 3105544,
+      "origin": "LiteRT 2.2.0 Maven AAR contents (litert-2.2.0.aar / litert-api-2.2.0.aar; same bytes as the asr-fix-v1 bench APK)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libLiteRtCompilerPlugin_Qualcomm.so": {
+      "sha256": "425e5caf007f834748c6bf67aff265d7e21512a01910f219fab6b7749ef57732",
+      "bytes": 724016,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libLiteRtDispatch_Qualcomm.so": {
+      "sha256": "c4abfff6c99ec218f545415a81a2a03a3ee3e21df2ea911902d6b7bbfeda80bf",
+      "bytes": 445576,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnHtp.so": {
+      "sha256": "c0488f2df87932a42ca0a563883e6fba190896bca439ad0fdaa2428358ab5092",
+      "bytes": 3664480,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnHtpPrepare.so": {
+      "sha256": "9988ce10ffee6813ffd218df308478f44dbc758cc89aed9cb98cfebb030ca72e",
+      "bytes": 86301344,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnHtpV81CalculatorStub.so": {
+      "sha256": "3567bc848ae1c9169ad38879f9f75e4ead3e959a5258e370d9c8e46e58a76176",
+      "bytes": 250904,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnHtpV81Skel.so": {
+      "sha256": "0b4fa7419e7265ae33d5e57f214d49cd11abbf7302149bb7ff78d9b602903899",
+      "bytes": 12322384,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnHtpV81Stub.so": {
+      "sha256": "479da62bd52bb7cb5791d5898442457272d5403e42244af690a137b52d67f939",
+      "bytes": 771024,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnIr.so": {
+      "sha256": "79043536d4ac324782c953c9092066d3418ec88626ac2384b2e81883a3f8f644",
+      "bytes": 1940848,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnSaver.so": {
+      "sha256": "d26d8002da0fbe829f58370465dc40b4e5a0fc2c2830c0608972817ac5835026",
+      "bytes": 809832,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libQnnSystem.so": {
+      "sha256": "077a8b20a53b216d006b85b58dd754a9e958e02f98e9c79d46619db6f8edfec9",
+      "bytes": 3931536,
+      "origin": "Qualcomm runtime (kev_work/npu/libs SHA256SUMS: LiteRT v2.2.0 qualcomm_runtime_v81 + QAIRT 2.47.0)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "liblitert_jni.so": {
+      "sha256": "329167c4a999b64ebfd7189ebd6d49b5b6da0419e84da6448e18a3c5d1942feb",
+      "bytes": 528696,
+      "origin": "LiteRT 2.2.0 Maven AAR contents (litert-2.2.0.aar / litert-api-2.2.0.aar; same bytes as the asr-fix-v1 bench APK)",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libonnxruntime.so": {
+      "sha256": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+      "bytes": 22249560,
+      "origin": "same bytes as the asr-fix-v1 bench APK",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libsherpa-onnx-c-api.so": {
+      "sha256": "c85e2382e2ca12b0513826be926eaccfea896b4cbf568182e287671ba526f80d",
+      "bytes": 4465168,
+      "origin": "same bytes as the asr-fix-v1 bench APK",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libsherpa-onnx-cxx-api.so": {
+      "sha256": "5eabb2bcf5a8af66aeab37431c09fab4a9c65cdebf02bd7e50f8c589044bd70e",
+      "bytes": 440688,
+      "origin": "same bytes as the asr-fix-v1 bench APK",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libsherpa-onnx-jni.so": {
+      "sha256": "3c6492ea91ea68fd3b72b9495efdde6dd913f6b58c387e3b07389cf335f4d26f",
+      "bytes": 4771760,
+      "origin": "same bytes as the asr-fix-v1 bench APK",
+      "same_bytes_as_asr_fix_v1_bench_apk": true
+    },
+    "libtokenizer_jni.so": {
+      "sha256": "7dd837d3cc4ed8a7015dc19d84440ebc7dfacd09a8c0083683c425144b225bfc",
+      "bytes": 13619800,
+      "origin": "the app's own CMake target (src/main/cpp), built in this worktree",
+      "same_bytes_as_asr_fix_v1_bench_apk": false
+    }
+  },
+  "litert": {
+    "version": "2.2.0",
+    "resolved": "com.google.ai.edge.litert:litert:2.2.0 -> litert-api:2.2.0 (debugRuntimeClasspath)",
+    "aars": {
+      "litert-2.2.0.aar": {
+        "sha256": "624518d72f8a249711a19e9901f480e74f823ca7818260a739cb2c023024807c",
+        "bytes": 11761541
+      },
+      "litert-api-2.2.0.aar": {
+        "sha256": "b785714414d7af54ad1e8f4a40a382f2809b538b88a2246dcdeb9039394bc38d",
+        "bytes": 934666
+      }
+    }
+  },
+  "npu_runtime_libs": {
+    "staging": "~/code/litertlm-convert/kev_work/npu/libs (PROVENANCE.md)",
+    "origin": "LiteRT v2.2.0 release litert_npu_runtime_libraries.zip (qualcomm_runtime_v81: libLiteRtDispatch_Qualcomm.so) + litert_npu_runtime_libraries_jit.zip (libLiteRtCompilerPlugin_Qualcomm.so) + QAIRT 2.47.0 lib/aarch64-android and lib/hexagon-v81/unsigned",
+    "license": "QAIRT AI Stack License: inside an APK only, benchmarking use; not redistributed standalone"
+  },
+  "models": [
+    {
+      "repo": "nvidia/parakeet-tdt-0.6b-v3",
+      "repo_type": "models",
+      "revision": "541d1f99c6b0c3cd0b11a95167540bb8edefd82b",
+      "file": "tokenizer.json",
+      "local": "models/tdt-tokenizer.json",
+      "bytes": 1159960,
+      "sha256": "bd321b096832a3f270bd3b2a88823957920f1a5c5ada71114a26ea729d0cbe91",
+      "hub_hash": "gitblob:a10a554cf61e38108756650018d5781ae9675c1d"
+    },
+    {
+      "repo": "nvidia/parakeet-ctc-0.6b",
+      "repo_type": "models",
+      "revision": "ad09ba1cc62743fbc9814de5d2016fca9096485a",
+      "file": "tokenizer.json",
+      "local": "models/ctc-tokenizer.json",
+      "bytes": 412363,
+      "sha256": "f3f1dd45c3889ed2b5bf67180caf05f51d7d7e4948c20e5f24d8c24df9cc47aa",
+      "hub_hash": "gitblob:80af47728aab88c918efe5ce9fa5e2d2ceec7511"
+    },
+    {
+      "repo": "hf-audio/open-asr-leaderboard",
+      "repo_type": "datasets",
+      "revision": "de79e57adf9983993bcc72586d7313460825f5eb",
+      "file": "librispeech/test.clean-00000-of-00001.parquet",
+      "local": "data/test.clean-00000-of-00001.parquet",
+      "bytes": 350475095,
+      "sha256": "e576cf31312bf67d5ab714ac1dd93fb52d60d62659b76402ba1f97484464ddc3",
+      "hub_hash": "sha256:e576cf31312bf67d5ab714ac1dd93fb52d60d62659b76402ba1f97484464ddc3"
+    },
+    {
+      "repo": "litert-community/parakeet-tdt-0.6b-v3",
+      "repo_type": "models",
+      "revision": "3ce205aa928f443f423214195cfe83ebe4802826",
+      "file": "parakeet_tdt_0.6b_v3_5s_f32_stateful.tflite",
+      "local": "models/parakeet_tdt_0.6b_v3_5s_f32_stateful.tflite",
+      "bytes": 2421888688,
+      "sha256": "8c1f06a9e1682ab2f4d95f65d413055c8f83d64a7b3daab3185b5e0e91e9f4ab",
+      "hub_hash": "sha256:8c1f06a9e1682ab2f4d95f65d413055c8f83d64a7b3daab3185b5e0e91e9f4ab"
+    },
+    {
+      "repo": "litert-community/parakeet-tdt-0.6b-v3",
+      "repo_type": "models",
+      "revision": "3ce205aa928f443f423214195cfe83ebe4802826",
+      "file": "parakeet_tdt_0.6b_v3_5s_f32_stateful_Qualcomm_SM8850.tflite",
+      "local": "models/parakeet_tdt_0.6b_v3_5s_f32_stateful_Qualcomm_SM8850.tflite",
+      "bytes": 1275526880,
+      "sha256": "e9edabe48ffd853ddebac6c83804752edf0e1e567b26954aae0d3e964f72a486",
+      "hub_hash": "sha256:e9edabe48ffd853ddebac6c83804752edf0e1e567b26954aae0d3e964f72a486"
+    },
+    {
+      "repo": "litert-community/parakeet-ctc-0.6b",
+      "repo_type": "models",
+      "revision": "e3c5b655c0159f79bc90be2d6769fa7cc6386856",
+      "file": "parakeet_ctc_0.6b_5s_f32.tflite",
+      "local": "models/parakeet_ctc_0.6b_5s_f32.tflite",
+      "bytes": 2348753728,
+      "sha256": "8b4c970ac8814d065b1cf54af6c31facbb4ee4dc0c4926fc1ef6c9c13c8e5423",
+      "hub_hash": "sha256:8b4c970ac8814d065b1cf54af6c31facbb4ee4dc0c4926fc1ef6c9c13c8e5423"
+    },
+    {
+      "repo": "litert-community/parakeet-ctc-0.6b",
+      "repo_type": "models",
+      "revision": "e3c5b655c0159f79bc90be2d6769fa7cc6386856",
+      "file": "parakeet_ctc_0.6b_5s_i8.tflite",
+      "local": "models/parakeet_ctc_0.6b_5s_i8.tflite",
+      "bytes": 596365072,
+      "sha256": "3d0799f625842fded4580c9b51d321667f0bd5f334cb325fb1b9051c6534e102",
+      "hub_hash": "sha256:3d0799f625842fded4580c9b51d321667f0bd5f334cb325fb1b9051c6534e102"
+    },
+    {
+      "repo": "litert-community/parakeet-ctc-0.6b",
+      "repo_type": "models",
+      "revision": "e3c5b655c0159f79bc90be2d6769fa7cc6386856",
+      "file": "parakeet_ctc_0.6b_5s_f32_Qualcomm_SM8850.tflite",
+      "local": "models/parakeet_ctc_0.6b_5s_f32_Qualcomm_SM8850.tflite",
+      "bytes": 1210738160,
+      "sha256": "30e431db44f40f7de869776ad37869e0e3847a30717232b3667e9ce4688352fb",
+      "hub_hash": "sha256:30e431db44f40f7de869776ad37869e0e3847a30717232b3667e9ce4688352fb"
+    }
+  ],
+  "b_inputs": [
+    {
+      "file": "tdt-4507-16021-0047.w00.f32",
+      "sha256": "47fd9aa70aaf7885daa3e08dd9cc085a7455ab6db7dc924e74c21d04b40e592a"
+    },
+    {
+      "file": "tdt-4507-16021-0047.w05.f32",
+      "sha256": "ffb07a5e5fc0615c00b10f29009130b78ca3d8cf41fb1c9e65996a4a5f29851e"
+    },
+    {
+      "file": "tdt-4507-16021-0047.w10.f32",
+      "sha256": "86d270b81bea886de5966d22004e7d8394fdca7e3286f8718f58cb5f366bac27"
+    },
+    {
+      "file": "tdt-zeros.f32",
+      "sha256": "24a046dc04fefdb652e4077b41162490b344a4dd45f918505477f84c592f3070"
+    },
+    {
+      "file": "ctc-4507-16021-0047.w00.f32",
+      "sha256": "1c25d93729493eb8fe576f1f3d27414a84ca41659e7e670d6b490da192dd4614"
+    },
+    {
+      "file": "ctc-4507-16021-0047.w05.f32",
+      "sha256": "0940dca8b5746d2257a0696b515da2202fe2e8ce68e95c0f2b9d6b202a0d4ccc"
+    },
+    {
+      "file": "ctc-4507-16021-0047.w10.f32",
+      "sha256": "ff6bee449d40379840353bef50813623cad27851305dcecead9f078f732208a9"
+    },
+    {
+      "file": "ctc-zeros.f32",
+      "sha256": "b9ce164d30e4101b009fe4be765a070593cfbdd48f897853de159a8c177fabe8"
+    }
+  ],
+  "wav_set": {
+    "tar": "test-clean-F20W.tar",
+    "tar_bytes": 11192320,
+    "tar_sha256": "586dae7201aaed148758b9d19ca2041accdd35bb126e74cefdb230fd83743c51",
+    "manifest": "manifest-device.tsv",
+    "manifest_rows": 2620,
+    "manifest_sha256": "9435c415fdbf9427816327eb0f7f0ff0efd2a33d0af29b6f7c721a89274910e0",
+    "wavs": 21,
+    "s32": {
+      "utterances": 82,
+      "total_seconds": 626.3599999999997,
+      "wav_sha256_chain": "6ccb9d3c271b966a7c7cdaa02417b360a1319a858542fab92dc8407e3332f8f4"
+    },
+    "f20": {
+      "utterances": 20,
+      "total_seconds": 311.815,
+      "wav_sha256_chain": "c0741a6f573071bbbc4d79217c38fd2385511100e9de3fba4018397ec328855d"
+    },
+    "f10": {
+      "utterances": 10,
+      "total_seconds": 195.12499999999997,
+      "wav_sha256_chain": "2fe9d3e629c34ace7d4d34e818c0f4383429715792001574715cdb2430aa238a"
+    },
+    "s32_chain_matches_asr_fix_v1": true,
+    "warmup": {
+      "id": "1995-1836-0004",
+      "row_index": 1,
+      "seconds": 33.91,
+      "wav_sha256": "fd8622195593d018d1c1b1694ffdc3eab13b44c88027f69e484e32a04e3d6144",
+      "in_s32": false
+    }
+  },
+  "build": {
+    "gradle_wrapper": "9.3.1",
+    "agp": "9.1.1",
+    "kotlin": "2.2.10",
+    "compileSdk": 35,
+    "targetSdk": 35,
+    "minSdk": 31
+  }
+}

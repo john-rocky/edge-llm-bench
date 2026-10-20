@@ -1,0 +1,736 @@
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+index 3b54f542..9329ecdb 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+@@ -22,10 +22,10 @@ android {
+ 
+   defaultConfig {
+     applicationId = "com.google.ai.edge.examples.asr"
+-    // The decoder-fix benchmark build (asr-fix-v1) installs beside the sustained one
+-    // (asr-litert-app-v1) and the burst one (asr-burst-v1, ".burst") on the same phone, so none
+-    // replaces another's APK or files between sittings.
+-    applicationIdSuffix = ".burstfix"
++    // The NPU check build (asr-npu-v1) installs beside the earlier benchmark builds (asr-litert-app-v1,
++    // asr-burst-v1 ".burst", asr-fix-v1 ".burstfix") on the same phone, so none replaces another's
++    // APK or files between sittings.
++    applicationIdSuffix = ".npucheck"
+     minSdk = 31
+     targetSdk = 35
+     versionCode = 1
+@@ -119,6 +119,12 @@ tasks.register<de.undercouch.gradle.tasks.download.Download>("downloadJLibrosa")
+ 
+ tasks.named("preBuild") { dependsOn("downloadJLibrosa") }
+ 
++// asr-npu-v1: MelDumpTest writes the app's encoder inputs for fixed windows when
++// -Pnpucheck.melDump=<job file> names its jobs (skipped otherwise).
++tasks.withType<Test>().configureEach {
++  providers.gradleProperty("npucheck.melDump").orNull?.let { systemProperty("npucheck.melDump", it) }
++}
++
+ dependencies {
+   implementation(libs.androidx.core.ktx)
+   implementation(libs.androidx.appcompat)
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+index 7630dd75..dc33f8ce 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/AsrBenchTest.kt
+@@ -116,6 +116,13 @@ import org.junit.runner.RunWith
+  * - tdt_fix: true builds TdtDecoder with its decode-loop fix (stop past the frames that carry
+  *   audio, at most 10 non-blank tokens per encoder frame) and passes every window's valid feature
+  *   frames to the recognizer; false (default) = the app's decoder and call as they are
++ * - model_file: the model file under the files dir the run loads instead of the entry's own
++ *   (model.tflite, or model_npu.tflite on the NPU), e.g. parakeet-ctc-0.6b/model_f32.tflite; it must
++ *   be there (the run never downloads it) (asr-npu-v1)
++ * - tdt_buffers: shared (default) = TdtDecoder's buffers as the app has them (decode_1 runs on
++ *   decode's LSTM state buffers, swapped between input and output, and both signatures take the
++ *   encoder's output buffer); separate = every signature on its own buffers, states and encoder
++ *   output copied (TdtDecoder's separateSignatureBuffers) (asr-npu-v1)
+  */
+ @RunWith(AndroidJUnit4::class)
+ class AsrBenchTest {
+@@ -131,6 +138,7 @@ class AsrBenchTest {
+     val loadMs: Double,
+     val hopLength: Int,
+     val tdtFix: Boolean,
++    val tdtSeparateBuffers: Boolean,
+     // Filled by TdtDecoder on each decode; null when the model has no TDT decoder.
+     val tdtStats: TdtGreedyLoop.Stats?,
+   ) : AutoCloseable {
+@@ -199,13 +207,31 @@ class AsrBenchTest {
+     private val modelKey: String,
+     private val accelerator: Accelerator,
+     private val tdtFix: Boolean,
++    private val modelFileOverride: String?,
++    private val tdtSeparateBuffers: Boolean,
+   ) : Engine {
+     private val modelConfig =
+       context.assets.open(MODEL_METADATA_PATH).bufferedReader().use { it.readText() }.let {
+         ModelMetadataManager(it).getModelConfig(modelKey)
++      }.let { config ->
++        when {
++          modelFileOverride == null -> config
++          accelerator == Accelerator.NPU -> config.copy(npuModelPath = modelFileOverride)
++          else -> config.copy(modelPath = modelFileOverride)
++        }
+       }
++
++    init {
++      // LiteRtRunner downloads the entry's URL when the file is missing: never for another file.
++      if (modelFileOverride != null) {
++        require(File(context.filesDir, modelFileOverride).isFile) { "model_file $modelFileOverride is not in the files dir" }
++      }
++    }
++
+     private val pipeline =
+-      runBlocking(Dispatchers.IO) { preparePipeline(context, modelKey, modelConfig, accelerator, tdtFix) }
++      runBlocking(Dispatchers.IO) {
++        preparePipeline(context, modelKey, modelConfig, accelerator, tdtFix, tdtSeparateBuffers)
++      }
+     val modelFile =
+       File(
+         context.filesDir,
+@@ -231,7 +257,9 @@ class AsrBenchTest {
+         "gpu_constant_tensor_sharing" to modelConfig.gpuShareConstantTensors,
+         "npu_htp_performance_mode" to
+           if (modelConfig.npuHighPerformance) "HIGH_PERFORMANCE" else "DEFAULT",
++        "model_file_override" to modelFileOverride,
+         "tdt_fix" to tdtFix,
++        "tdt_buffers" to if (pipeline.tdtStats == null) null else if (tdtSeparateBuffers) "separate" else "shared",
+         "tdt_decoder" to (pipeline.tdtStats != null),
+         "tdt_max_symbols_per_step" to if (tdtFix) TdtDecoder.MAX_SYMBOLS_PER_STEP else null,
+         "tdt_time_limit" to
+@@ -401,6 +429,16 @@ class AsrBenchTest {
+         else -> throw IllegalArgumentException("tdt_fix must be true or false, got $f")
+       }
+     require(engineName == "litert" || !tdtFix) { "tdt_fix applies to the litert engine" }
++    val modelFileOverride = args.getString("model_file")
++    require(engineName == "litert" || modelFileOverride == null) { "model_file applies to the litert engine" }
++    val tdtSeparateBuffers =
++      when (val b = args.getString("tdt_buffers")) {
++        null,
++        "shared" -> false
++        "separate" -> true
++        else -> throw IllegalArgumentException("tdt_buffers must be shared or separate, got $b")
++      }
++    require(engineName == "litert" || !tdtSeparateBuffers) { "tdt_buffers applies to the litert engine" }
+ 
+     val manifestRows = BenchManifest.parse(manifestFile.readText(), manifestFile.parent)
+     val selection =
+@@ -453,6 +491,7 @@ class AsrBenchTest {
+     Log.i(
+       TAG,
+       "start tag=$tag engine=$engineName model=$modelKey accelerator=$acceleratorName pace=$pace tdt_fix=$tdtFix " +
++        "model_file=$modelFileOverride tdt_buffers=${if (tdtSeparateBuffers) "separate" else "shared"} " +
+         "todo=${todo.size} foreground=$foregroundState top_app=$topApp cpuset=${processAfterForeground["cpuset"]}",
+     )
+     if (requireTopApp && !(foregroundState == "RESUMED" && topApp)) {
+@@ -506,6 +545,8 @@ class AsrBenchTest {
+             else -> Accelerator.CPU
+           },
+           tdtFix,
++          modelFileOverride,
++          tdtSeparateBuffers,
+         )
+       }
+     Log.i(TAG, "loaded in ${engine.loadMs} ms")
+@@ -981,6 +1022,7 @@ class AsrBenchTest {
+     modelConfig: ModelConfig,
+     accelerator: Accelerator,
+     tdtFix: Boolean,
++    tdtSeparateBuffers: Boolean,
+   ): Pipeline {
+     var t = SystemClock.elapsedRealtimeNanos()
+     val logMelSpectro = modelConfig.logMelSpectro
+@@ -999,7 +1041,10 @@ class AsrBenchTest {
+       when {
+         modelKey.contains("-ctc-") -> { _, _ -> CtcDecoder(tokenizer.vocabSize) }
+         // tdt_fix false builds the decoder the app builds (the fix off, the default).
+-        modelKey.contains("-tdt") -> { model, config -> TdtDecoder(model, config, tdtFix, tdtStats!!) }
++        // tdt_buffers shared builds it with the app's buffers (separate off, the default).
++        modelKey.contains("-tdt") -> { model, config ->
++          TdtDecoder(model, config, tdtFix, tdtStats!!, separateSignatureBuffers = tdtSeparateBuffers)
++        }
+         else -> { model, config -> LiteRtRunner.DefaultDecoder(model, config) }
+       }
+     t = SystemClock.elapsedRealtimeNanos()
+@@ -1015,6 +1060,7 @@ class AsrBenchTest {
+       loadMs,
+       logMelSpectro?.hopLength ?: 0,
+       tdtFix,
++      tdtSeparateBuffers,
+       tdtStats,
+     )
+   }
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/NpuCompareTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/NpuCompareTest.kt
+new file mode 100644
+index 00000000..cba7f6aa
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/NpuCompareTest.kt
+@@ -0,0 +1,363 @@
++package com.google.ai.edge.examples.asr
++
++import android.app.Activity
++import android.content.Context
++import android.os.Build
++import android.os.Process
++import android.os.SystemClock
++import android.util.Log
++import androidx.test.core.app.ActivityScenario
++import androidx.test.ext.junit.runners.AndroidJUnit4
++import androidx.test.platform.app.InstrumentationRegistry
++import com.google.ai.edge.litert.Accelerator
++import com.google.ai.edge.litert.BuiltinNpuAcceleratorProvider
++import com.google.ai.edge.litert.CompiledModel
++import com.google.ai.edge.litert.Environment
++import java.io.File
++import java.nio.ByteBuffer
++import java.nio.ByteOrder
++import java.security.MessageDigest
++import org.json.JSONArray
++import org.json.JSONObject
++import org.junit.Test
++import org.junit.runner.RunWith
++
++/**
++ * Runs the signatures of one .tflite file on the CPU or the NPU over fixed input files and writes
++ * every output as raw float32, so that the same inputs can be compared across accelerators
++ * (asr-npu-v1, edge-llm-bench docs/asr-npu-v1.md). It uses the LiteRT Kotlin API only, with the
++ * options LiteRtRunner builds for the accelerator (CPU in the accelerator set, 4 CPU threads, the
++ * Qualcomm HTP performance mode HIGH_PERFORMANCE on the NPU).
++ *
++ * For each input file: encode, [repeats] times on the same buffers (the repeats are compared bit for
++ * bit), the first run's outputs written. For each file of decode_from and, with decode_self, each
++ * window's own encoder output: decode (tokens [blank, 0, 0, 0], zero LSTM states) and decode_1
++ * (token [blank], zero states) once each on buffers of their own signature, outputs written.
++ *
++ * Arguments (am instrument -e <name> <value>):
++ * - model: the .tflite file (absolute, or relative to the files dir)
++ * - accelerator: cpu or npu
++ * - inputs: comma-separated raw float32 little-endian files for encode's input args_0, one window
++ *   each (absolute, or relative to the files dir)
++ * - repeats: encode runs per input; default 2
++ * - decode_from: comma-separated raw float32 encoder outputs to decode (TDT models)
++ * - decode_self: true decodes each window's own encoder output too (TDT models)
++ * - blank: the blank token id fed to decode / decode_1; default 8192
++ * - foreground: front keeps the bench build's BenchFrontActivity in front during the run
++ * - out: output directory; default <external files dir>/npucheck
++ * - tag: output file stem; <tag>.json (report), <tag>.<part>.f32 (outputs), <tag>.load-logcat.txt,
++ *   <tag>.done
++ */
++@RunWith(AndroidJUnit4::class)
++class NpuCompareTest {
++
++  @Test
++  fun compare() {
++    val context = InstrumentationRegistry.getInstrumentation().targetContext
++    val args = InstrumentationRegistry.getArguments()
++    val model = resolve(context, requireNotNull(args.getString("model")) { "model is required" })
++    val acceleratorName = (args.getString("accelerator") ?: "cpu").lowercase()
++    val accelerator =
++      when (acceleratorName) {
++        "cpu" -> Accelerator.CPU
++        "npu" -> Accelerator.NPU
++        else -> throw IllegalArgumentException("accelerator must be cpu or npu, got $acceleratorName")
++      }
++    val inputs = list(args.getString("inputs")).map { resolve(context, it) }
++    val decodeFrom = list(args.getString("decode_from")).map { resolve(context, it) }
++    val decodeSelf = args.getString("decode_self") == "true"
++    val repeats = args.getString("repeats")?.toInt() ?: 2
++    require(repeats >= 1) { "repeats must be at least 1" }
++    val blank = args.getString("blank")?.toInt() ?: 8192
++    val outDir =
++      File(args.getString("out") ?: File(context.getExternalFilesDir(null), "npucheck").path).apply { mkdirs() }
++    val tag = args.getString("tag") ?: "${model.nameWithoutExtension}-$acceleratorName"
++    val report = JSONObject()
++    report.put("tag", tag)
++    report.put("model", model.path)
++    report.put("model_bytes", model.length())
++    report.put("accelerator", acceleratorName)
++    report.put("repeats", repeats)
++    report.put("pid", Process.myPid())
++    report.put(
++      "device",
++      JSONObject()
++        .put("model", Build.MODEL)
++        .put("soc", Build.SOC_MODEL)
++        .put("android", Build.VERSION.RELEASE)
++        .put("build", Build.DISPLAY),
++    )
++    report.put("litert_version", BuildConfig.LITERT_VERSION)
++
++    val scenario =
++      if (args.getString("foreground") == "front") {
++        @Suppress("UNCHECKED_CAST")
++        ActivityScenario.launch(Class.forName(FRONT_ACTIVITY) as Class<Activity>)
++      } else {
++        null
++      }
++    report.put("foreground_state", scenario?.state?.name)
++
++    // The options LiteRtRunner builds for this accelerator.
++    val options = CompiledModel.Options(setOf(Accelerator.CPU, accelerator))
++    options.cpuOptions = CompiledModel.CpuOptions(numThreads = LiteRtRunner.CPU_NUM_THREADS)
++    if (accelerator == Accelerator.NPU) {
++      options.qualcommOptions =
++        CompiledModel.QualcommOptions(
++          htpPerformanceMode = CompiledModel.QualcommOptions.HtpPerformanceMode.HIGH_PERFORMANCE
++        )
++    }
++    val env =
++      if (accelerator == Accelerator.NPU) {
++        Environment.create(BuiltinNpuAcceleratorProvider(context))
++      } else {
++        Environment.create()
++      }
++    val t0 = SystemClock.elapsedRealtimeNanos()
++    val compiled = CompiledModel.create(model.path, options, env)
++    report.put("load_ms", msSince(t0))
++    dumpOwnLogcat(File(outDir, "$tag.load-logcat.txt"))
++    report.put("signatures", describe(compiled))
++
++    val encodeIn = compiled.createInputBuffers(ENCODE)
++    val encodeOut = compiled.createOutputBuffers(ENCODE)
++    val encodeInputFloats = compiled.getInputTensorType("args_0", ENCODE).layout!!.dimensions.fold(1, Int::times)
++    val windows = JSONArray()
++    val ownEncoderOutputs = ArrayList<Pair<String, File>>()
++    for ((w, file) in inputs.withIndex()) {
++      val floats = readF32(file)
++      require(floats.size == encodeInputFloats) { "${file.name}: ${floats.size} floats, encode takes $encodeInputFloats" }
++      encodeIn[0].writeFloat(floats)
++      val runs = JSONArray()
++      val repeatOutputs = ArrayList<List<FloatArray>>()
++      for (r in 0 until repeats) {
++        val t = SystemClock.elapsedRealtimeNanos()
++        compiled.run(encodeIn, encodeOut, ENCODE)
++        runs.put(msSince(t))
++        repeatOutputs.add(encodeOut.map { it.readFloat() })
++      }
++      val first = repeatOutputs.first()
++      val identical = repeatOutputs.all { outs -> outs.indices.all { sameBits(outs[it], first[it]) } }
++      val written = JSONArray()
++      first.forEachIndexed { o, out ->
++        val f = File(outDir, "$tag.enc.w$w.out$o.f32")
++        writeF32(f, out)
++        written.put(stats(out).put("file", f.name).put("sha256", sha256(f)))
++        if (o == 0) ownEncoderOutputs.add("w$w" to f)
++      }
++      windows.put(
++        JSONObject()
++          .put("input", file.path)
++          .put("input_sha256", sha256(file))
++          .put("input_stats", stats(floats))
++          .put("run_ms", runs)
++          .put("repeats_bit_identical", identical)
++          .put("outputs", written)
++      )
++      Log.i(TAG, "encode w$w ${file.name}: ${runs} ms, repeats identical=$identical")
++    }
++    report.put("encode", windows)
++
++    val decodeInputs = decodeFrom.map { it.nameWithoutExtension to it } + (if (decodeSelf) ownEncoderOutputs else emptyList())
++    if (decodeInputs.isNotEmpty()) {
++      val decodes = JSONArray()
++      for ((label, file) in decodeInputs) {
++        val encoded = readF32(file)
++        for ((signature, tokens) in listOf(DECODE to intArrayOf(blank, 0, 0, 0), DECODE_1 to intArrayOf(blank))) {
++          val ins = compiled.createInputBuffers(signature)
++          val outs = compiled.createOutputBuffers(signature)
++          ins[0].writeFloat(encoded)
++          ins[1].writeInt(tokens)
++          val states = FloatArray(compiled.getInputTensorType("args_2", signature).layout!!.dimensions.fold(1, Int::times))
++          ins[2].writeFloat(states)
++          ins[3].writeFloat(states)
++          val t = SystemClock.elapsedRealtimeNanos()
++          compiled.run(ins, outs, signature)
++          val ms = msSince(t)
++          val written = JSONArray()
++          outs.forEachIndexed { o, buffer ->
++            val out = buffer.readFloat()
++            val f = File(outDir, "$tag.$signature.$label.out$o.f32")
++            writeF32(f, out)
++            written.put(stats(out).put("file", f.name).put("sha256", sha256(f)))
++          }
++          decodes.put(
++            JSONObject()
++              .put("signature", signature)
++              .put("encoder_output", file.path)
++              .put("encoder_output_sha256", sha256(file))
++              .put("tokens", JSONArray(tokens.toList()))
++              .put("run_ms", ms)
++              .put("outputs", written)
++          )
++          Log.i(TAG, "$signature on $label: $ms ms")
++          (ins + outs).forEach { it.close() }
++        }
++      }
++      report.put("decode", decodes)
++    }
++
++    (encodeIn + encodeOut).forEach { it.close() }
++    compiled.close()
++    scenario?.close()
++    report.put("vmhwm_kb", procStatusKb("VmHWM"))
++    report.put(
++      "native_libs",
++      JSONObject().apply {
++        File(context.applicationInfo.nativeLibraryDir)
++          .listFiles { f -> f.name.endsWith(".so") }
++          .orEmpty()
++          .sortedBy { it.name }
++          .forEach { put(it.name, sha256(it)) }
++      },
++    )
++    report.put("model_sha256", sha256(model))
++    File(outDir, "$tag.json").writeText(report.toString(1) + "\n")
++    File(outDir, "$tag.done").writeText("done\n")
++    Log.i(TAG, "done tag=$tag")
++  }
++
++  private companion object {
++    const val TAG = "NpuCompare"
++    const val ENCODE = "encode"
++    const val DECODE = "decode"
++    const val DECODE_1 = "decode_1"
++    const val FRONT_ACTIVITY = "com.google.ai.edge.examples.asr.BenchFrontActivity"
++
++    fun list(arg: String?): List<String> = arg?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() }.orEmpty()
++
++    fun resolve(context: Context, path: String) = if (path.startsWith("/")) File(path) else File(context.filesDir, path)
++
++    fun msSince(startNs: Long) = (SystemClock.elapsedRealtimeNanos() - startNs) / 1e6
++
++    fun readF32(file: File): FloatArray {
++      val bytes = file.readBytes()
++      require(bytes.size % 4 == 0) { "${file.name}: ${bytes.size} bytes is not whole float32 values" }
++      val out = FloatArray(bytes.size / 4)
++      ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(out)
++      return out
++    }
++
++    fun writeF32(file: File, values: FloatArray) {
++      val buffer = ByteBuffer.allocate(values.size * 4).order(ByteOrder.LITTLE_ENDIAN)
++      buffer.asFloatBuffer().put(values)
++      file.writeBytes(buffer.array())
++    }
++
++    fun sameBits(a: FloatArray, b: FloatArray) =
++      a.size == b.size && a.indices.all { java.lang.Float.floatToRawIntBits(a[it]) == java.lang.Float.floatToRawIntBits(b[it]) }
++
++    /** Count, NaN, ±Inf, exact zeros, and min / max / mean / mean |x| of the finite values. */
++    fun stats(values: FloatArray): JSONObject {
++      var nan = 0
++      var inf = 0
++      var zeros = 0
++      var finite = 0
++      var min = Double.POSITIVE_INFINITY
++      var max = Double.NEGATIVE_INFINITY
++      var sum = 0.0
++      var sumAbs = 0.0
++      for (v in values) {
++        when {
++          v.isNaN() -> nan++
++          v.isInfinite() -> inf++
++          else -> {
++            if (v == 0.0f) zeros++
++            finite++
++            min = minOf(min, v.toDouble())
++            max = maxOf(max, v.toDouble())
++            sum += v
++            sumAbs += kotlin.math.abs(v.toDouble())
++          }
++        }
++      }
++      return JSONObject()
++        .put("count", values.size)
++        .put("nan", nan)
++        .put("inf", inf)
++        .put("zeros", zeros)
++        .put("min", if (finite > 0) min else JSONObject.NULL)
++        .put("max", if (finite > 0) max else JSONObject.NULL)
++        .put("mean", if (finite > 0) sum / finite else JSONObject.NULL)
++        .put("mean_abs", if (finite > 0) sumAbs / finite else JSONObject.NULL)
++    }
++
++    /** Every signature's inputs and outputs as LiteRT reports them, with the buffer types it asks for. */
++    fun describe(compiled: CompiledModel): JSONObject {
++      val out = JSONObject()
++      for (signature in listOf(ENCODE, DECODE, DECODE_1)) {
++        // A missing signature throws here (TdtDecoder probes decode_1 the same way).
++        val counts =
++          (try {
++            val ins = compiled.createInputBuffers(signature)
++            val outs = compiled.createOutputBuffers(signature)
++            (ins + outs).forEach { it.close() }
++            ins.size to outs.size
++          } catch (e: Exception) {
++            null
++          }) ?: continue
++        val sig = JSONObject()
++        for ((kind, prefix) in listOf("inputs" to "args_", "outputs" to "output_")) {
++          val tensors = JSONArray()
++          for (i in 0 until (if (kind == "inputs") counts.first else counts.second)) {
++            val name = "$prefix$i"
++            val type =
++              if (kind == "inputs") compiled.getInputTensorType(name, signature) else compiled.getOutputTensorType(name, signature)
++            val requirements =
++              try {
++                val r = if (kind == "inputs") compiled.getInputBufferRequirements(name, signature) else compiled.getOutputBufferRequirements(name, signature)
++                "${r.supportedTypes} size=${r.bufferSize}"
++              } catch (e: Throwable) {
++                "unavailable: ${e.message}"
++              }
++            tensors.put(
++              JSONObject()
++                .put("name", name)
++                .put("type", type.elementType.name)
++                .put("dims", JSONArray(type.layout?.dimensions.orEmpty()))
++                .put("buffer_requirements", requirements)
++            )
++          }
++          if (tensors.length() > 0) sig.put(kind, tensors)
++        }
++        if (sig.length() > 0) out.put(signature, sig)
++      }
++      return out
++    }
++
++    fun procStatusKb(key: String): Long? =
++      try {
++        File("/proc/self/status").useLines { lines ->
++          lines.firstOrNull { it.startsWith("$key:") }?.substringAfter(':')?.trim()?.split(Regex("\\s+"))?.firstOrNull()?.toLongOrNull()
++        }
++      } catch (e: Exception) {
++        null
++      }
++
++    fun sha256(file: File): String {
++      val digest = MessageDigest.getInstance("SHA-256")
++      file.inputStream().use { input ->
++        val buffer = ByteArray(1 shl 20)
++        while (true) {
++          val n = input.read(buffer)
++          if (n < 0) break
++          digest.update(buffer, 0, n)
++        }
++      }
++      return digest.digest().joinToString("") { "%02x".format(it) }
++    }
++
++    /** Appends `logcat -d --pid=<this process>` to [file]: the accelerator and delegate lines of the load. */
++    fun dumpOwnLogcat(file: File) {
++      try {
++        val process =
++          ProcessBuilder("logcat", "-d", "-v", "threadtime", "--pid=${Process.myPid()}").redirectErrorStream(true).start()
++        val text = process.inputStream.bufferedReader().use { it.readText() }
++        process.waitFor()
++        file.appendText("# logcat --pid=${Process.myPid()}\n$text")
++      } catch (e: Exception) {
++        Log.w(TAG, "logcat dump failed", e)
++      }
++    }
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt
+index d10eb7ea..4056cf2f 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt
+@@ -36,12 +36,18 @@ import com.google.ai.edge.litert.TensorType
+  * [MAX_SYMBOLS_PER_STEP] non-blank tokens at one encoder frame it moves to the next frame (a
+  * non-blank token with duration 0 does not advance the loop, and without a cap it can repeat).
+  * [stats] receives what each decode did.
++ *
++ * [separateSignatureBuffers] (off by default: the buffer sharing this sample has always done) gives
++ * decode and decode_1 only buffers created for their own signature and keeps each buffer in one
++ * role: the encoder output and the LSTM states are copied into them instead of handing one
++ * signature's buffers to the other or swapping a state buffer between input and output.
+  */
+ class TdtDecoder(
+   private val compiledModel: CompiledModel,
+   private val modelConfig: ModelConfig,
+   private val fixDecodeLoop: Boolean = false,
+   private val stats: TdtGreedyLoop.Stats = TdtGreedyLoop.Stats(),
++  private val separateSignatureBuffers: Boolean = false,
+ ) : LiteRtRunner.Decoder {
+   private val inputBuffers = compiledModel.createInputBuffers(DECODE_SIGNATURE)
+   private val outputBuffers = compiledModel.createOutputBuffers(DECODE_SIGNATURE)
+@@ -76,6 +82,11 @@ class TdtDecoder(
+   private val numOfStates =
+     compiledModel.getInputTensorType(inputBufferName(2), DECODE_SIGNATURE).numElements
+ 
++  // separateSignatureBuffers: the encoder output and LSTM state inputs of decode_1, the encoder output
++  // copied into decode's own input buffers[0]; decode keeps inputBuffers / outputBuffers above.
++  private val decode1InputBuffers =
++    if (separateSignatureBuffers && hasDecode1) inputBuffersOfDecode1!! else null
++
+   override fun decode(encodeOutputBuffers: List<TensorBuffer>): Sequence<Pair<Int, Int>> =
+     decode(encodeOutputBuffers, SpeechRecognizer.ALL_FRAMES)
+ 
+@@ -85,11 +96,23 @@ class TdtDecoder(
+   ): Sequence<Pair<Int, Int>> = sequence {
+     // Clear the states as initial states are all zeros.
+     val zeroStates = FloatArray(numOfStates) { 0.0f }
+-    statesBuffers[inputStatesBuffersIndex].forEach { it.writeFloat(zeroStates) }
++    val network =
++      if (separateSignatureBuffers) {
++        // decode always starts from zero states; decode_1 gets its states copied in (adoptStates).
++        inputBuffers[2].writeFloat(zeroStates)
++        inputBuffers[3].writeFloat(zeroStates)
++        val encoded = encodeOutputBuffers[0].readFloat()
++        inputBuffers[0].writeFloat(encoded)
++        decode1InputBuffers?.get(0)?.writeFloat(encoded)
++        separateNetwork()
++      } else {
++        statesBuffers[inputStatesBuffersIndex].forEach { it.writeFloat(zeroStates) }
++        network(encodeOutputBuffers)
++      }
+ 
+     yieldAll(
+       TdtGreedyLoop.decode(
+-        network(encodeOutputBuffers),
++        network,
+         maxTimeIndex,
+         numOfTokenIds,
+         numOfLogitsPerToken,
+@@ -129,6 +152,33 @@ class TdtDecoder(
+       }
+     }
+ 
++  /**
++   * decode and decode_1 on their own buffers (separateSignatureBuffers): every buffer stays bound to
++   * one signature in one role, and the LSTM states move by copy.
++   */
++  private fun separateNetwork() =
++    object : TdtGreedyLoop.Network {
++      private var lastStateful = false
++
++      override fun run(stateful: Boolean, tokenIds: IntArray): FloatArray {
++        val inputs = if (stateful) decode1InputBuffers!! else inputBuffers
++        val outputs = if (stateful) outputBuffersOfDecode1!! else outputBuffers
++        inputs[1].writeInt(tokenIds)
++        compiledModel.run(inputs, outputs, if (stateful) DECODE_1_SIGNATURE else DECODE_SIGNATURE)
++        lastStateful = stateful
++        return outputs[0].readFloat()
++      }
++
++      override fun adoptStates() {
++        // The states the last run wrote become the input states of the next run (decode_1's, or
++        // decode's own for a model without decode_1).
++        val outputs = if (lastStateful) outputBuffersOfDecode1!! else outputBuffers
++        val inputs = decode1InputBuffers ?: inputBuffers
++        inputs[2].writeFloat(outputs[1].readFloat())
++        inputs[3].writeFloat(outputs[2].readFloat())
++      }
++    }
++
+   private fun getInputBuffers(
+     encodeOutputBuffers: List<TensorBuffer>,
+     tokenIdsBuffer: TensorBuffer,
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/MelDumpTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/MelDumpTest.kt
+new file mode 100644
+index 00000000..1407b06d
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/test/java/com/google/ai/edge/examples/asr/MelDumpTest.kt
+@@ -0,0 +1,103 @@
++package com.google.ai.edge.examples.asr
++
++import com.google.ai.edge.examples.asr.bench.validSamples
++import java.io.File
++import java.io.FileInputStream
++import java.nio.ByteBuffer
++import java.nio.ByteOrder
++import java.security.MessageDigest
++import kotlin.math.log10
++import kotlin.math.sqrt
++import kotlin.time.Duration.Companion.milliseconds
++import kotlin.time.Duration.Companion.seconds
++import org.json.JSONArray
++import org.json.JSONObject
++import org.junit.Assume.assumeTrue
++import org.junit.Test
++
++/**
++ * Writes the encoder input the app builds for every window of a WAV file (FileAudioSource with the
++ * app's 2 s overlap -> MelSpectroProcessor -> LiteRtRunner's pad / truncate) as raw float32, for the
++ * fixed inputs of NpuCompareTest (asr-npu-v1, edge-llm-bench docs/asr-npu-v1.md).
++ *
++ * Runs only when the system property npucheck.melDump names a job file (Gradle property
++ * -Pnpucheck.melDump=<file>); otherwise it is skipped. The job file:
++ * {"jobs": [{"wav": <path>, "model": <model_metadata.json key>, "expected_floats": <encode input
++ * floats>, "out": <dir>, "prefix": <file stem>}]}. Each job writes <prefix>.w<k>.f32 for window k and
++ * <prefix>.windows.json (per window: the samples up to the last non-zero one, the share of 10 ms
++ * frames under -40 dBFS, the feature floats before padding, the file's sha256).
++ */
++class MelDumpTest {
++  @Test
++  fun dumpWindows() {
++    val jobFile = System.getProperty("npucheck.melDump")
++    assumeTrue(!jobFile.isNullOrEmpty())
++    val metadata = ModelMetadataManager(File("src/main/assets/model_metadata.json").readText())
++    val jobs = JSONObject(File(jobFile!!).readText()).getJSONArray("jobs")
++    for (j in 0 until jobs.length()) {
++      val job = jobs.getJSONObject(j)
++      val config = metadata.getModelConfig(job.getString("model"))
++      val expected = job.getInt("expected_floats")
++      val out = File(job.getString("out")).apply { mkdirs() }
++      val prefix = job.getString("prefix")
++      val processor = MelSpectroProcessor(SAMPLING_RATE, config.logMelSpectro!!)
++      val windows = JSONArray()
++      FileInputStream(job.getString("wav")).use { input ->
++        FileAudioSource(input, SAMPLING_RATE, config.inputMilliseconds.milliseconds, OVERLAP).use { source ->
++          for ((k, window) in source.getAudioData().withIndex()) {
++            val valid = validSamples(window)
++            val quiet = quietShare(window)
++            val features = processor.process(window)
++            val padded = LiteRtRunner.padOrTruncateFeatures(features, expected)
++            val file = File(out, "$prefix.w$k.f32")
++            val bytes = ByteBuffer.allocate(padded.size * 4).order(ByteOrder.LITTLE_ENDIAN)
++            bytes.asFloatBuffer().put(padded)
++            file.writeBytes(bytes.array())
++            windows.put(
++              JSONObject()
++                .put("window", k)
++                .put("start_s", k * (config.inputMilliseconds - OVERLAP.inWholeMilliseconds) / 1000.0)
++                .put("valid_samples", valid)
++                .put("quiet_frame_share", quiet)
++                .put("feature_floats", features.size)
++                .put("written_floats", padded.size)
++                .put("file", file.name)
++                .put("sha256", sha256(file))
++            )
++          }
++        }
++      }
++      File(out, "$prefix.windows.json")
++        .writeText(
++          JSONObject()
++            .put("wav", job.getString("wav"))
++            .put("model", job.getString("model"))
++            .put("expected_floats", expected)
++            .put("windows", windows)
++            .toString(1) + "\n"
++        )
++    }
++  }
++
++  private companion object {
++    const val SAMPLING_RATE = 16000
++    val OVERLAP = 2.seconds // MainActivity's FILE_AUDIO_CHUNK_OVERLAP_DURATION
++    const val FRAME = 160 // 10 ms
++
++    /** The share of the window's 10 ms frames (its zero padding counted too) whose RMS is under -40 dBFS. */
++    fun quietShare(window: FloatArray): Double {
++      var quiet = 0
++      val frames = window.size / FRAME
++      for (f in 0 until frames) {
++        var sum = 0.0
++        for (i in f * FRAME until (f + 1) * FRAME) sum += window[i].toDouble() * window[i]
++        val rms = sqrt(sum / FRAME)
++        if (rms <= 0.0 || 20 * log10(rms) < -40.0) quiet++
++      }
++      return if (frames > 0) quiet.toDouble() / frames else 0.0
++    }
++
++    fun sha256(file: File): String =
++      MessageDigest.getInstance("SHA-256").digest(file.readBytes()).joinToString("") { "%02x".format(it) }
++  }
++}

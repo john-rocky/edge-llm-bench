@@ -1,0 +1,2 @@
+# b-ctc-cpu 2026-10-20 12:06:25 JST
+12:06:25 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.NpuCompareTest -e model parakeet-ctc-0.6b/model_f32.tflite -e accelerator cpu -e inputs npucheck/mel/ctc-4507-16021-0047.w00.f32,npucheck/mel/ctc-4507-16021-0047.w05.f32,npucheck/mel/ctc-4507-16021-0047.w10.f32,npucheck/mel/ctc-zeros.f32 -e repeats 2 -e foreground front -e tag b-ctc-cpu  com.google.ai.edge.examples.asr.npucheck.test/androidx.test.runner.AndroidJUnitRunner

@@ -1,0 +1,743 @@
+{
+ "tag": "b-tdt-cpu",
+ "model": "\/data\/user\/0\/com.google.ai.edge.examples.asr.npucheck\/files\/parakeet-tdt-0.6b-v3\/model_f32.tflite",
+ "model_bytes": 2421888688,
+ "accelerator": "cpu",
+ "repeats": 2,
+ "pid": 31449,
+ "device": {
+  "model": "SM-S942Q",
+  "soc": "SM8850",
+  "android": "16",
+  "build": "BP4A.251205.006.S942QOPS1AZH9"
+ },
+ "litert_version": "2.2.0",
+ "foreground_state": "RESUMED",
+ "load_ms": 2054.688957,
+ "signatures": {
+  "encode": {
+   "inputs": [
+    {
+     "name": "args_0",
+     "type": "FLOAT",
+     "dims": [
+      1,
+      128,
+      500
+     ],
+     "buffer_requirements": "[HostMemory] size=256000"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "output_0",
+     "type": "FLOAT",
+     "dims": [
+      1,
+      1024,
+      63
+     ],
+     "buffer_requirements": "[HostMemory] size=258048"
+    }
+   ]
+  },
+  "decode": {
+   "inputs": [
+    {
+     "name": "args_0",
+     "type": "FLOAT",
+     "dims": [
+      1,
+      1024,
+      63
+     ],
+     "buffer_requirements": "[HostMemory] size=258048"
+    },
+    {
+     "name": "args_1",
+     "type": "INT",
+     "dims": [
+      1,
+      4
+     ],
+     "buffer_requirements": "[HostMemory] size=16"
+    },
+    {
+     "name": "args_2",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    },
+    {
+     "name": "args_3",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "output_0",
+     "type": "FLOAT",
+     "dims": [
+      1,
+      63,
+      4,
+      8198
+     ],
+     "buffer_requirements": "[HostMemory] size=8263584"
+    },
+    {
+     "name": "output_1",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    },
+    {
+     "name": "output_2",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    }
+   ]
+  },
+  "decode_1": {
+   "inputs": [
+    {
+     "name": "args_0",
+     "type": "FLOAT",
+     "dims": [
+      1,
+      1024,
+      63
+     ],
+     "buffer_requirements": "[HostMemory] size=258048"
+    },
+    {
+     "name": "args_1",
+     "type": "INT",
+     "dims": [
+      1,
+      1
+     ],
+     "buffer_requirements": "[HostMemory] size=4"
+    },
+    {
+     "name": "args_2",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    },
+    {
+     "name": "args_3",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "output_0",
+     "type": "FLOAT",
+     "dims": [
+      1,
+      63,
+      1,
+      8198
+     ],
+     "buffer_requirements": "[HostMemory] size=2065896"
+    },
+    {
+     "name": "output_1",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    },
+    {
+     "name": "output_2",
+     "type": "FLOAT",
+     "dims": [
+      2,
+      1,
+      640
+     ],
+     "buffer_requirements": "[HostMemory] size=5120"
+    }
+   ]
+  }
+ },
+ "encode": [
+  {
+   "input": "\/data\/user\/0\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/mel\/tdt-4507-16021-0047.w00.f32",
+   "input_sha256": "47fd9aa70aaf7885daa3e08dd9cc085a7455ab6db7dc924e74c21d04b40e592a",
+   "input_stats": {
+    "count": 64000,
+    "nan": 0,
+    "inf": 0,
+    "zeros": 0,
+    "min": -2.5633785724639893,
+    "max": 19.36737632751465,
+    "mean": 1.7037226479033051E-7,
+    "mean_abs": 0.7990049587873059
+   },
+   "run_ms": [
+    237.156198,
+    111.10599
+   ],
+   "repeats_bit_identical": true,
+   "outputs": [
+    {
+     "count": 64512,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.1713731437921524,
+     "max": 0.17552690207958221,
+     "mean": -1.3981446800921428E-5,
+     "mean_abs": 0.014330805067465905,
+     "file": "b-tdt-cpu.enc.w0.out0.f32",
+     "sha256": "c06c2bcf74a2df0fcdad65bd4ad913d7b665d0871fa6f152e8ca8dca3946b2e9"
+    }
+   ]
+  },
+  {
+   "input": "\/data\/user\/0\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/mel\/tdt-4507-16021-0047.w05.f32",
+   "input_sha256": "ffb07a5e5fc0615c00b10f29009130b78ca3d8cf41fb1c9e65996a4a5f29851e",
+   "input_stats": {
+    "count": 64000,
+    "nan": 0,
+    "inf": 0,
+    "zeros": 0,
+    "min": -2.2266085147857666,
+    "max": 15.083548545837402,
+    "mean": 2.2145347217872314E-7,
+    "mean_abs": 0.8189862299969576
+   },
+   "run_ms": [
+    106.834531,
+    100.132135
+   ],
+   "repeats_bit_identical": true,
+   "outputs": [
+    {
+     "count": 64512,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.11849203705787659,
+     "max": 0.12572111189365387,
+     "mean": -9.397385695042625E-5,
+     "mean_abs": 0.011052458236228661,
+     "file": "b-tdt-cpu.enc.w1.out0.f32",
+     "sha256": "60557e9e857c1c79509d8bcce8ac9dde5e49adb54d52718f2cd58f7ce24d7d83"
+    }
+   ]
+  },
+  {
+   "input": "\/data\/user\/0\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/mel\/tdt-4507-16021-0047.w10.f32",
+   "input_sha256": "86d270b81bea886de5966d22004e7d8394fdca7e3286f8718f58cb5f366bac27",
+   "input_stats": {
+    "count": 64000,
+    "nan": 0,
+    "inf": 0,
+    "zeros": 0,
+    "min": -2.5295400619506836,
+    "max": 6.981184005737305,
+    "mean": 6.85746355060246E-7,
+    "mean_abs": 0.7929368018611661
+   },
+   "run_ms": [
+    102.605104,
+    103.991302
+   ],
+   "repeats_bit_identical": true,
+   "outputs": [
+    {
+     "count": 64512,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.11320800334215164,
+     "max": 0.13640843331813812,
+     "mean": 2.5414837800574566E-5,
+     "mean_abs": 0.01210793466652635,
+     "file": "b-tdt-cpu.enc.w2.out0.f32",
+     "sha256": "96c123a7a2ed31aab15f088a6cc61dc3de5730cca4d9afd0920c4f079ea44846"
+    }
+   ]
+  },
+  {
+   "input": "\/data\/user\/0\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/mel\/tdt-zeros.f32",
+   "input_sha256": "24a046dc04fefdb652e4077b41162490b344a4dd45f918505477f84c592f3070",
+   "input_stats": {
+    "count": 64000,
+    "nan": 0,
+    "inf": 0,
+    "zeros": 64000,
+    "min": 0,
+    "max": 0,
+    "mean": 0,
+    "mean_abs": 0
+   },
+   "run_ms": [
+    102.036041,
+    101.829115
+   ],
+   "repeats_bit_identical": true,
+   "outputs": [
+    {
+     "count": 64512,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.14767208695411682,
+     "max": 0.18474940955638885,
+     "mean": -3.2245191687449746E-4,
+     "mean_abs": 0.025719377427602778,
+     "file": "b-tdt-cpu.enc.w3.out0.f32",
+     "sha256": "75b615a9315415e9f4ab65eeb45e0e0605455855fb0c47175785f1159b9e9914"
+    }
+   ]
+  }
+ ],
+ "decode": [
+  {
+   "signature": "decode",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w0.out0.f32",
+   "encoder_output_sha256": "c06c2bcf74a2df0fcdad65bd4ad913d7b665d0871fa6f152e8ca8dca3946b2e9",
+   "tokens": [
+    8192,
+    0,
+    0,
+    0
+   ],
+   "run_ms": 5.734583,
+   "outputs": [
+    {
+     "count": 2065896,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 4,
+     "min": -176.0382843017578,
+     "max": 0,
+     "mean": -42.458815605351646,
+     "mean_abs": 42.458815605351646,
+     "file": "b-tdt-cpu.decode.w0.out0.f32",
+     "sha256": "f92daa2888977da214a31e92254e617d45ddea30f8b8abf6dec43b00a3b7f6bf"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9925904273986816,
+     "max": 0.9976291060447693,
+     "mean": 0.022166286856215946,
+     "mean_abs": 0.11805465721837546,
+     "file": "b-tdt-cpu.decode.w0.out1.f32",
+     "sha256": "ed19b728804b0aa49750a6b743ea089e4bf83da489a16e83e559e4220abf1da3"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -3.995521068572998,
+     "max": 3.9836907386779785,
+     "mean": 0.0692130061722324,
+     "mean_abs": 0.6724316267911503,
+     "file": "b-tdt-cpu.decode.w0.out2.f32",
+     "sha256": "8b8010a0638834f0228b2e947bdcee7cfe6bba1e2cb2528ec44891d8dd0f9d5b"
+    }
+   ]
+  },
+  {
+   "signature": "decode_1",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w0.out0.f32",
+   "encoder_output_sha256": "c06c2bcf74a2df0fcdad65bd4ad913d7b665d0871fa6f152e8ca8dca3946b2e9",
+   "tokens": [
+    8192
+   ],
+   "run_ms": 1.906927,
+   "outputs": [
+    {
+     "count": 516474,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 1,
+     "min": -176.0382843017578,
+     "max": 0,
+     "mean": -46.05932872013728,
+     "mean_abs": 46.05932872013728,
+     "file": "b-tdt-cpu.decode_1.w0.out0.f32",
+     "sha256": "13763b68ced0560ec61c68fb12be898d7b6e783d345cfd04a07f5f4ba9ba38a6"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.5628373622894287,
+     "max": 0.6577033400535583,
+     "mean": 0.0029889037787100394,
+     "mean_abs": 0.07792860061683235,
+     "file": "b-tdt-cpu.decode_1.w0.out1.f32",
+     "sha256": "d8ad7554d786319c333a2861d1b97975404aba90e14804af4da029b083f11335"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9987739324569702,
+     "max": 0.9980471134185791,
+     "mean": 0.007827287633958235,
+     "mean_abs": 0.27367672140444765,
+     "file": "b-tdt-cpu.decode_1.w0.out2.f32",
+     "sha256": "fe617c6080d533d56532411411aefd370d02fd6a6934f751574a8432da47bcfa"
+    }
+   ]
+  },
+  {
+   "signature": "decode",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w1.out0.f32",
+   "encoder_output_sha256": "60557e9e857c1c79509d8bcce8ac9dde5e49adb54d52718f2cd58f7ce24d7d83",
+   "tokens": [
+    8192,
+    0,
+    0,
+    0
+   ],
+   "run_ms": 5.840209,
+   "outputs": [
+    {
+     "count": 2065896,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -126.60424041748047,
+     "max": -5.960462203802308E-7,
+     "mean": -43.08654352663745,
+     "mean_abs": 43.08654352663745,
+     "file": "b-tdt-cpu.decode.w1.out0.f32",
+     "sha256": "898c72e400591a3996a2ae048db00e5501673d1b781a4f235653af485aafe2d2"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9925904273986816,
+     "max": 0.9976291060447693,
+     "mean": 0.022166286856215946,
+     "mean_abs": 0.11805465721837546,
+     "file": "b-tdt-cpu.decode.w1.out1.f32",
+     "sha256": "ed19b728804b0aa49750a6b743ea089e4bf83da489a16e83e559e4220abf1da3"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -3.995521068572998,
+     "max": 3.9836907386779785,
+     "mean": 0.0692130061722324,
+     "mean_abs": 0.6724316267911503,
+     "file": "b-tdt-cpu.decode.w1.out2.f32",
+     "sha256": "8b8010a0638834f0228b2e947bdcee7cfe6bba1e2cb2528ec44891d8dd0f9d5b"
+    }
+   ]
+  },
+  {
+   "signature": "decode_1",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w1.out0.f32",
+   "encoder_output_sha256": "60557e9e857c1c79509d8bcce8ac9dde5e49adb54d52718f2cd58f7ce24d7d83",
+   "tokens": [
+    8192
+   ],
+   "run_ms": 1.71651,
+   "outputs": [
+    {
+     "count": 516474,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -126.60424041748047,
+     "max": -5.960462203802308E-7,
+     "mean": -48.743581908391846,
+     "mean_abs": 48.743581908391846,
+     "file": "b-tdt-cpu.decode_1.w1.out0.f32",
+     "sha256": "e68b615e32d6658323ab804635f2aa769e7c89f359210abc4720afd84df7e4f8"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.5628373622894287,
+     "max": 0.6577033400535583,
+     "mean": 0.0029889037787100394,
+     "mean_abs": 0.07792860061683235,
+     "file": "b-tdt-cpu.decode_1.w1.out1.f32",
+     "sha256": "d8ad7554d786319c333a2861d1b97975404aba90e14804af4da029b083f11335"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9987739324569702,
+     "max": 0.9980471134185791,
+     "mean": 0.007827287633958235,
+     "mean_abs": 0.27367672140444765,
+     "file": "b-tdt-cpu.decode_1.w1.out2.f32",
+     "sha256": "fe617c6080d533d56532411411aefd370d02fd6a6934f751574a8432da47bcfa"
+    }
+   ]
+  },
+  {
+   "signature": "decode",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w2.out0.f32",
+   "encoder_output_sha256": "96c123a7a2ed31aab15f088a6cc61dc3de5730cca4d9afd0920c4f079ea44846",
+   "tokens": [
+    8192,
+    0,
+    0,
+    0
+   ],
+   "run_ms": 5.84026,
+   "outputs": [
+    {
+     "count": 2065896,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 1,
+     "min": -142.0587615966797,
+     "max": 0,
+     "mean": -41.8336333382818,
+     "mean_abs": 41.8336333382818,
+     "file": "b-tdt-cpu.decode.w2.out0.f32",
+     "sha256": "97059100c9bc9a7b6e0f0b73c92ef6363dce19425576cf194e99565eb81c57f2"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9925904273986816,
+     "max": 0.9976291060447693,
+     "mean": 0.022166286856215946,
+     "mean_abs": 0.11805465721837546,
+     "file": "b-tdt-cpu.decode.w2.out1.f32",
+     "sha256": "ed19b728804b0aa49750a6b743ea089e4bf83da489a16e83e559e4220abf1da3"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -3.995521068572998,
+     "max": 3.9836907386779785,
+     "mean": 0.0692130061722324,
+     "mean_abs": 0.6724316267911503,
+     "file": "b-tdt-cpu.decode.w2.out2.f32",
+     "sha256": "8b8010a0638834f0228b2e947bdcee7cfe6bba1e2cb2528ec44891d8dd0f9d5b"
+    }
+   ]
+  },
+  {
+   "signature": "decode_1",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w2.out0.f32",
+   "encoder_output_sha256": "96c123a7a2ed31aab15f088a6cc61dc3de5730cca4d9afd0920c4f079ea44846",
+   "tokens": [
+    8192
+   ],
+   "run_ms": 1.680468,
+   "outputs": [
+    {
+     "count": 516474,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 1,
+     "min": -142.0587615966797,
+     "max": 0,
+     "mean": -46.82992516545023,
+     "mean_abs": 46.82992516545023,
+     "file": "b-tdt-cpu.decode_1.w2.out0.f32",
+     "sha256": "dcabedafd78768e13788e27a8f7fa7ed1156375ccb3a61766dfed27ea5024877"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.5628373622894287,
+     "max": 0.6577033400535583,
+     "mean": 0.0029889037787100394,
+     "mean_abs": 0.07792860061683235,
+     "file": "b-tdt-cpu.decode_1.w2.out1.f32",
+     "sha256": "d8ad7554d786319c333a2861d1b97975404aba90e14804af4da029b083f11335"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9987739324569702,
+     "max": 0.9980471134185791,
+     "mean": 0.007827287633958235,
+     "mean_abs": 0.27367672140444765,
+     "file": "b-tdt-cpu.decode_1.w2.out2.f32",
+     "sha256": "fe617c6080d533d56532411411aefd370d02fd6a6934f751574a8432da47bcfa"
+    }
+   ]
+  },
+  {
+   "signature": "decode",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w3.out0.f32",
+   "encoder_output_sha256": "75b615a9315415e9f4ab65eeb45e0e0605455855fb0c47175785f1159b9e9914",
+   "tokens": [
+    8192,
+    0,
+    0,
+    0
+   ],
+   "run_ms": 5.302032,
+   "outputs": [
+    {
+     "count": 2065896,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 1,
+     "min": -166.5578155517578,
+     "max": 0,
+     "mean": -78.1518722904085,
+     "mean_abs": 78.1518722904085,
+     "file": "b-tdt-cpu.decode.w3.out0.f32",
+     "sha256": "f3b4042ced5311044ce34fdb19a958fada24cd539aa92d8ef7b380dcbc49f05d"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9925904273986816,
+     "max": 0.9976291060447693,
+     "mean": 0.022166286856215946,
+     "mean_abs": 0.11805465721837546,
+     "file": "b-tdt-cpu.decode.w3.out1.f32",
+     "sha256": "ed19b728804b0aa49750a6b743ea089e4bf83da489a16e83e559e4220abf1da3"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -3.995521068572998,
+     "max": 3.9836907386779785,
+     "mean": 0.0692130061722324,
+     "mean_abs": 0.6724316267911503,
+     "file": "b-tdt-cpu.decode.w3.out2.f32",
+     "sha256": "8b8010a0638834f0228b2e947bdcee7cfe6bba1e2cb2528ec44891d8dd0f9d5b"
+    }
+   ]
+  },
+  {
+   "signature": "decode_1",
+   "encoder_output": "\/storage\/emulated\/0\/Android\/data\/com.google.ai.edge.examples.asr.npucheck\/files\/npucheck\/b-tdt-cpu.enc.w3.out0.f32",
+   "encoder_output_sha256": "75b615a9315415e9f4ab65eeb45e0e0605455855fb0c47175785f1159b9e9914",
+   "tokens": [
+    8192
+   ],
+   "run_ms": 1.563073,
+   "outputs": [
+    {
+     "count": 516474,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 1,
+     "min": -166.5578155517578,
+     "max": 0,
+     "mean": -82.04878897073613,
+     "mean_abs": 82.04878897073613,
+     "file": "b-tdt-cpu.decode_1.w3.out0.f32",
+     "sha256": "4461688bda7422b63cdcf86806d193c92adc9503b2cd9c0173905fad728c99df"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.5628373622894287,
+     "max": 0.6577033400535583,
+     "mean": 0.0029889037787100394,
+     "mean_abs": 0.07792860061683235,
+     "file": "b-tdt-cpu.decode_1.w3.out1.f32",
+     "sha256": "d8ad7554d786319c333a2861d1b97975404aba90e14804af4da029b083f11335"
+    },
+    {
+     "count": 1280,
+     "nan": 0,
+     "inf": 0,
+     "zeros": 0,
+     "min": -0.9987739324569702,
+     "max": 0.9980471134185791,
+     "mean": 0.007827287633958235,
+     "mean_abs": 0.27367672140444765,
+     "file": "b-tdt-cpu.decode_1.w3.out2.f32",
+     "sha256": "fe617c6080d533d56532411411aefd370d02fd6a6934f751574a8432da47bcfa"
+    }
+   ]
+  }
+ ],
+ "vmhwm_kb": 4979120,
+ "native_libs": {
+  "libLiteRt.so": "97355a36cb8ac7628cf407773291e98da79f3ef184cc43cb0e57dedf5f0c0637",
+  "libLiteRtClGlAccelerator.so": "7c63d606a48e9479499c012f6732623f9e6fc26250c5bdf6724af205d73eb0fb",
+  "libLiteRtCompilerPlugin_Qualcomm.so": "425e5caf007f834748c6bf67aff265d7e21512a01910f219fab6b7749ef57732",
+  "libLiteRtDispatch_Qualcomm.so": "c4abfff6c99ec218f545415a81a2a03a3ee3e21df2ea911902d6b7bbfeda80bf",
+  "libQnnHtp.so": "c0488f2df87932a42ca0a563883e6fba190896bca439ad0fdaa2428358ab5092",
+  "libQnnHtpPrepare.so": "9988ce10ffee6813ffd218df308478f44dbc758cc89aed9cb98cfebb030ca72e",
+  "libQnnHtpV81CalculatorStub.so": "3567bc848ae1c9169ad38879f9f75e4ead3e959a5258e370d9c8e46e58a76176",
+  "libQnnHtpV81Skel.so": "0b4fa7419e7265ae33d5e57f214d49cd11abbf7302149bb7ff78d9b602903899",
+  "libQnnHtpV81Stub.so": "479da62bd52bb7cb5791d5898442457272d5403e42244af690a137b52d67f939",
+  "libQnnIr.so": "79043536d4ac324782c953c9092066d3418ec88626ac2384b2e81883a3f8f644",
+  "libQnnSaver.so": "d26d8002da0fbe829f58370465dc40b4e5a0fc2c2830c0608972817ac5835026",
+  "libQnnSystem.so": "077a8b20a53b216d006b85b58dd754a9e958e02f98e9c79d46619db6f8edfec9",
+  "liblitert_jni.so": "329167c4a999b64ebfd7189ebd6d49b5b6da0419e84da6448e18a3c5d1942feb",
+  "libonnxruntime.so": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+  "libsherpa-onnx-c-api.so": "c85e2382e2ca12b0513826be926eaccfea896b4cbf568182e287671ba526f80d",
+  "libsherpa-onnx-cxx-api.so": "5eabb2bcf5a8af66aeab37431c09fab4a9c65cdebf02bd7e50f8c589044bd70e",
+  "libsherpa-onnx-jni.so": "3c6492ea91ea68fd3b72b9495efdde6dd913f6b58c387e3b07389cf335f4d26f",
+  "libtokenizer_jni.so": "7dd837d3cc4ed8a7015dc19d84440ebc7dfacd09a8c0083683c425144b225bfc"
+ },
+ "model_sha256": "8c1f06a9e1682ab2f4d95f65d413055c8f83d64a7b3daab3185b5e0e91e9f4ab"
+}

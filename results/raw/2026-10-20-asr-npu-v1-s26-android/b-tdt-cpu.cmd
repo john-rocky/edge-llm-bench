@@ -1,0 +1,2 @@
+# b-tdt-cpu 2026-10-20 12:05:58 JST
+12:05:58 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.NpuCompareTest -e model parakeet-tdt-0.6b-v3/model_f32.tflite -e accelerator cpu -e inputs npucheck/mel/tdt-4507-16021-0047.w00.f32,npucheck/mel/tdt-4507-16021-0047.w05.f32,npucheck/mel/tdt-4507-16021-0047.w10.f32,npucheck/mel/tdt-zeros.f32 -e repeats 2 -e foreground front -e tag b-tdt-cpu -e decode_self true com.google.ai.edge.examples.asr.npucheck.test/androidx.test.runner.AndroidJUnitRunner

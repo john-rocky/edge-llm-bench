@@ -1,0 +1,1713 @@
+{
+ "line": {
+  "cosine_below": 0.99,
+  "ctc_argmax_agreement_below": 0.9,
+  "non_finite_npu_value": "differs"
+ },
+ "models": {
+  "ctc": {
+   "cpu_model": "/data/user/0/com.google.ai.edge.examples.asr.npucheck/files/parakeet-ctc-0.6b/model_f32.tflite",
+   "cpu_model_sha256": "8b4c970ac8814d065b1cf54af6c31facbb4ee4dc0c4926fc1ef6c9c13c8e5423",
+   "npu_model": "/data/user/0/com.google.ai.edge.examples.asr.npucheck/files/parakeet-ctc-0.6b/model_npu.tflite",
+   "npu_model_sha256": "30e431db44f40f7de869776ad37869e0e3847a30717232b3667e9ce4688352fb",
+   "load_ms": {
+    "cpu": 2136.609896,
+    "npu": 835.196822
+   },
+   "signatures_npu": {
+    "encode": {
+     "inputs": [
+      {
+       "name": "args_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        500,
+        80
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=160000"
+      }
+     ],
+     "outputs": [
+      {
+       "name": "output_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        63,
+        1025
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=258300"
+      }
+     ]
+    }
+   },
+   "windows": [
+    {
+     "window": 0,
+     "input": "ctc-4507-16021-0047.w00.f32",
+     "input_sha256": "1c25d93729493eb8fe576f1f3d27414a84ca41659e7e670d6b490da192dd4614",
+     "encode_ms": {
+      "cpu": [
+       117.048958,
+       91.993541
+      ],
+      "npu": [
+       45.700729,
+       41.833646
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64575,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64575,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": null,
+      "mean_abs_diff": null,
+      "cpu_max_abs": 169.33473205566406,
+      "npu_max_abs": null,
+      "cosine": null,
+      "cosine_finite": null,
+      "all_finite": false
+     },
+     "argmax": {
+      "frames": 63,
+      "agree": 0,
+      "share": 0.0,
+      "nan_frames_npu": 63
+     },
+     "app_view": {
+      "cpu_ids": [
+       694,
+       132,
+       551,
+       38,
+       249,
+       1,
+       6,
+       1010,
+       1016,
+       1006,
+       21,
+       69,
+       3,
+       67,
+       884,
+       39,
+       58,
+       122,
+       40,
+       22,
+       38,
+       22,
+       446
+      ],
+      "cpu_pieces": [
+       "\u2581yes",
+       "ter",
+       "day",
+       "\u2581you",
+       "\u2581were",
+       "\u2581t",
+       "re",
+       "m",
+       "b",
+       "l",
+       "ing",
+       "\u2581for",
+       "\u2581a",
+       "\u2581he",
+       "alth",
+       "\u2581that",
+       "\u2581is",
+       "\u2581de",
+       "ar",
+       "\u2581to",
+       "\u2581you",
+       "\u2581to",
+       "\u2581day"
+      ],
+      "npu_ids": [
+       0
+      ],
+      "npu_pieces": [
+       "<unk>"
+      ]
+     },
+     "differs": true,
+     "in_line": true
+    },
+    {
+     "window": 1,
+     "input": "ctc-4507-16021-0047.w05.f32",
+     "input_sha256": "0940dca8b5746d2257a0696b515da2202fe2e8ce68e95c0f2b9d6b202a0d4ccc",
+     "encode_ms": {
+      "cpu": [
+       92.500729,
+       93.672969
+      ],
+      "npu": [
+       41.598854,
+       41.849271
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64575,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64534,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": 62220.39990234375,
+      "mean_abs_diff": 32517.805808997735,
+      "cpu_max_abs": 165.4370880126953,
+      "npu_max_abs": 62336.0,
+      "cosine": null,
+      "cosine_finite": 0.3247430191291851,
+      "all_finite": false
+     },
+     "argmax": {
+      "frames": 63,
+      "agree": 0,
+      "share": 0.0,
+      "nan_frames_npu": 63
+     },
+     "app_view": {
+      "cpu_ids": [
+       446,
+       451,
+       39,
+       5,
+       19,
+       37,
+       1014,
+       177,
+       193,
+       997,
+       34,
+       197,
+       803,
+       14,
+       219,
+       5,
+       351,
+       1017,
+       637,
+       21
+      ],
+      "cpu_pieces": [
+       "\u2581day",
+       "\u2581after",
+       "\u2581that",
+       "\u2581the",
+       "\u2581m",
+       "is",
+       "f",
+       "ort",
+       "un",
+       "e",
+       "\u2581of",
+       "\u2581some",
+       "\u2581frie",
+       "nd",
+       "\u2581then",
+       "\u2581the",
+       "\u2581pre",
+       "v",
+       "ail",
+       "ing"
+      ],
+      "npu_ids": [
+       1,
+       0
+      ],
+      "npu_pieces": [
+       "\u2581t",
+       "<unk>"
+      ]
+     },
+     "differs": true,
+     "in_line": true
+    },
+    {
+     "window": 2,
+     "input": "ctc-4507-16021-0047.w10.f32",
+     "input_sha256": "ff6bee449d40379840353bef50813623cad27851305dcecead9f078f732208a9",
+     "encode_ms": {
+      "cpu": [
+       95.48375,
+       96.435417
+      ],
+      "npu": [
+       41.729688,
+       41.868594
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64575,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64575,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": null,
+      "mean_abs_diff": null,
+      "cpu_max_abs": 149.91310119628906,
+      "npu_max_abs": null,
+      "cosine": null,
+      "cosine_finite": null,
+      "all_finite": false
+     },
+     "argmax": {
+      "frames": 63,
+      "agree": 0,
+      "share": 0.0,
+      "nan_frames_npu": 63
+     },
+     "app_view": {
+      "cpu_ids": [
+       328,
+       38,
+       412,
+       5,
+       767,
+       34,
+       887,
+       569,
+       3,
+       293,
+       999,
+       94,
+       1003
+      ],
+      "cpu_pieces": [
+       "ach",
+       "\u2581you",
+       "\u2581again",
+       "\u2581the",
+       "\u2581course",
+       "\u2581of",
+       "\u2581pub",
+       "lic",
+       "\u2581a",
+       "ff",
+       "a",
+       "ir",
+       "s"
+      ],
+      "npu_ids": [
+       0
+      ],
+      "npu_pieces": [
+       "<unk>"
+      ]
+     },
+     "differs": true,
+     "in_line": true
+    },
+    {
+     "window": 3,
+     "input": "ctc-zeros.f32",
+     "input_sha256": "b9ce164d30e4101b009fe4be765a070593cfbdd48f897853de159a8c177fabe8",
+     "encode_ms": {
+      "cpu": [
+       96.115208,
+       97.654062
+      ],
+      "npu": [
+       42.009062,
+       41.810573
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64575,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64539,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": 62972.516914367676,
+      "mean_abs_diff": 38005.87507571114,
+      "cpu_max_abs": 99.46302032470703,
+      "npu_max_abs": 62912.0,
+      "cosine": null,
+      "cosine_finite": -0.388966271551755,
+      "all_finite": false
+     },
+     "argmax": {
+      "frames": 63,
+      "agree": 0,
+      "share": 0.0,
+      "nan_frames_npu": 63
+     },
+     "app_view": {
+      "cpu_ids": [],
+      "cpu_pieces": [],
+      "npu_ids": [
+       0,
+       1,
+       0
+      ],
+      "npu_pieces": [
+       "<unk>",
+       "\u2581t",
+       "<unk>"
+      ]
+     },
+     "differs": true,
+     "in_line": false
+    }
+   ],
+   "windows_in_line": 3,
+   "windows_in_line_differing": 3
+  },
+  "tdt": {
+   "cpu_model": "/data/user/0/com.google.ai.edge.examples.asr.npucheck/files/parakeet-tdt-0.6b-v3/model_f32.tflite",
+   "cpu_model_sha256": "8c1f06a9e1682ab2f4d95f65d413055c8f83d64a7b3daab3185b5e0e91e9f4ab",
+   "npu_model": "/data/user/0/com.google.ai.edge.examples.asr.npucheck/files/parakeet-tdt-0.6b-v3/model_npu.tflite",
+   "npu_model_sha256": "e9edabe48ffd853ddebac6c83804752edf0e1e567b26954aae0d3e964f72a486",
+   "load_ms": {
+    "cpu": 2054.688957,
+    "npu": 866.441562
+   },
+   "signatures_npu": {
+    "encode": {
+     "inputs": [
+      {
+       "name": "args_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        128,
+        500
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=256000"
+      }
+     ],
+     "outputs": [
+      {
+       "name": "output_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        1024,
+        63
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=258048"
+      }
+     ]
+    },
+    "decode": {
+     "inputs": [
+      {
+       "name": "args_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        1024,
+        63
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=258048"
+      },
+      {
+       "name": "args_1",
+       "type": "INT",
+       "dims": [
+        1,
+        4
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=16"
+      },
+      {
+       "name": "args_2",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      },
+      {
+       "name": "args_3",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      }
+     ],
+     "outputs": [
+      {
+       "name": "output_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        63,
+        4,
+        8198
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=8263584"
+      },
+      {
+       "name": "output_1",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      },
+      {
+       "name": "output_2",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      }
+     ]
+    },
+    "decode_1": {
+     "inputs": [
+      {
+       "name": "args_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        1024,
+        63
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=258048"
+      },
+      {
+       "name": "args_1",
+       "type": "INT",
+       "dims": [
+        1,
+        1
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=4"
+      },
+      {
+       "name": "args_2",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      },
+      {
+       "name": "args_3",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      }
+     ],
+     "outputs": [
+      {
+       "name": "output_0",
+       "type": "FLOAT",
+       "dims": [
+        1,
+        63,
+        1,
+        8198
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=2065896"
+      },
+      {
+       "name": "output_1",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      },
+      {
+       "name": "output_2",
+       "type": "FLOAT",
+       "dims": [
+        2,
+        1,
+        640
+       ],
+       "buffer_requirements": "[FastRpc, DmaBuf] size=5120"
+      }
+     ]
+    }
+   },
+   "windows": [
+    {
+     "window": 0,
+     "input": "tdt-4507-16021-0047.w00.f32",
+     "input_sha256": "47fd9aa70aaf7885daa3e08dd9cc085a7455ab6db7dc924e74c21d04b40e592a",
+     "encode_ms": {
+      "cpu": [
+       237.156198,
+       111.10599
+      ],
+      "npu": [
+       45.306615,
+       43.574062
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64512,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64512,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": null,
+      "mean_abs_diff": null,
+      "cpu_max_abs": 0.17552690207958221,
+      "npu_max_abs": null,
+      "cosine": null,
+      "cosine_finite": null,
+      "all_finite": false
+     },
+     "encoder_frames": {
+      "frames": 63,
+      "non_finite_npu_frames": 63,
+      "cosine_min": null,
+      "cosine_median": null
+     },
+     "differs": true,
+     "in_line": true
+    },
+    {
+     "window": 1,
+     "input": "tdt-4507-16021-0047.w05.f32",
+     "input_sha256": "ffb07a5e5fc0615c00b10f29009130b78ca3d8cf41fb1c9e65996a4a5f29851e",
+     "encode_ms": {
+      "cpu": [
+       106.834531,
+       100.132135
+      ],
+      "npu": [
+       42.92375,
+       43.08599
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64512,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64512,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": null,
+      "mean_abs_diff": null,
+      "cpu_max_abs": 0.12572111189365387,
+      "npu_max_abs": null,
+      "cosine": null,
+      "cosine_finite": null,
+      "all_finite": false
+     },
+     "encoder_frames": {
+      "frames": 63,
+      "non_finite_npu_frames": 63,
+      "cosine_min": null,
+      "cosine_median": null
+     },
+     "differs": true,
+     "in_line": true
+    },
+    {
+     "window": 2,
+     "input": "tdt-4507-16021-0047.w10.f32",
+     "input_sha256": "86d270b81bea886de5966d22004e7d8394fdca7e3286f8718f58cb5f366bac27",
+     "encode_ms": {
+      "cpu": [
+       102.605104,
+       103.991302
+      ],
+      "npu": [
+       43.111771,
+       43.007292
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64512,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64512,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": null,
+      "mean_abs_diff": null,
+      "cpu_max_abs": 0.13640843331813812,
+      "npu_max_abs": null,
+      "cosine": null,
+      "cosine_finite": null,
+      "all_finite": false
+     },
+     "encoder_frames": {
+      "frames": 63,
+      "non_finite_npu_frames": 63,
+      "cosine_min": null,
+      "cosine_median": null
+     },
+     "differs": true,
+     "in_line": true
+    },
+    {
+     "window": 3,
+     "input": "tdt-zeros.f32",
+     "input_sha256": "24a046dc04fefdb652e4077b41162490b344a4dd45f918505477f84c592f3070",
+     "encode_ms": {
+      "cpu": [
+       102.036041,
+       101.829115
+      ],
+      "npu": [
+       42.848646,
+       42.828854
+      ]
+     },
+     "repeats_bit_identical": {
+      "cpu": true,
+      "npu": true
+     },
+     "encoder_output": {
+      "count": 64512,
+      "nan_cpu": 0,
+      "inf_cpu": 0,
+      "nan_npu": 64512,
+      "inf_npu": 0,
+      "zeros_npu": 0,
+      "max_abs_diff": null,
+      "mean_abs_diff": null,
+      "cpu_max_abs": 0.18474940955638885,
+      "npu_max_abs": null,
+      "cosine": null,
+      "cosine_finite": null,
+      "all_finite": false
+     },
+     "encoder_frames": {
+      "frames": 63,
+      "non_finite_npu_frames": 63,
+      "cosine_min": null,
+      "cosine_median": null
+     },
+     "differs": true,
+     "in_line": false
+    }
+   ],
+   "decode_on_cpu_encoder_output": [
+    {
+     "signature": "decode",
+     "window": "w0",
+     "encoder_output": "b-tdt-cpu.enc.w0.out0.f32",
+     "encoder_output_sha256": "c06c2bcf74a2df0fcdad65bd4ad913d7b665d0871fa6f152e8ca8dca3946b2e9",
+     "tokens": [
+      8192,
+      0,
+      0,
+      0
+     ],
+     "outputs": [
+      {
+       "count": 2065896,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 13,
+       "max_abs_diff": 34.76685333251953,
+       "mean_abs_diff": 3.9344859405778823,
+       "cpu_max_abs": 176.0382843017578,
+       "npu_max_abs": 141.875,
+       "cosine": 0.9695990995900533,
+       "cosine_finite": 0.9695990995900533,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         990,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         990,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         990,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 77,
+       "max_abs_diff": 0.0032101720571517944,
+       "mean_abs_diff": 0.00011020279922108779,
+       "cpu_max_abs": 0.9976291060447693,
+       "npu_max_abs": 0.99755859375,
+       "cosine": 0.9999995351861789,
+       "cosine_finite": 0.9999995351861789,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 33,
+       "max_abs_diff": 0.007542669773101807,
+       "mean_abs_diff": 0.00044726039984631616,
+       "cpu_max_abs": 3.995521068572998,
+       "npu_max_abs": 3.994140625,
+       "cosine": 0.9999997302702238,
+       "cosine_finite": 0.9999997302702238,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode",
+     "window": "w1",
+     "encoder_output": "b-tdt-cpu.enc.w1.out0.f32",
+     "encoder_output_sha256": "60557e9e857c1c79509d8bcce8ac9dde5e49adb54d52718f2cd58f7ce24d7d83",
+     "tokens": [
+      8192,
+      0,
+      0,
+      0
+     ],
+     "outputs": [
+      {
+       "count": 2065896,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 8,
+       "max_abs_diff": 34.92432403564453,
+       "mean_abs_diff": 8.642657442672208,
+       "cpu_max_abs": 126.60424041748047,
+       "npu_max_abs": 92.5,
+       "cosine": 0.9379363275433881,
+       "cosine_finite": 0.9379363275433881,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         1676,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         1676,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         1676,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 77,
+       "max_abs_diff": 0.0032101720571517944,
+       "mean_abs_diff": 0.00011020279922108779,
+       "cpu_max_abs": 0.9976291060447693,
+       "npu_max_abs": 0.99755859375,
+       "cosine": 0.9999995351861789,
+       "cosine_finite": 0.9999995351861789,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 33,
+       "max_abs_diff": 0.007542669773101807,
+       "mean_abs_diff": 0.00044726039984631616,
+       "cpu_max_abs": 3.995521068572998,
+       "npu_max_abs": 3.994140625,
+       "cosine": 0.9999997302702238,
+       "cosine_finite": 0.9999997302702238,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode",
+     "window": "w2",
+     "encoder_output": "b-tdt-cpu.enc.w2.out0.f32",
+     "encoder_output_sha256": "96c123a7a2ed31aab15f088a6cc61dc3de5730cca4d9afd0920c4f079ea44846",
+     "tokens": [
+      8192,
+      0,
+      0,
+      0
+     ],
+     "outputs": [
+      {
+       "count": 2065896,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 6,
+       "max_abs_diff": 34.95953369140625,
+       "mean_abs_diff": 6.249696683083965,
+       "cpu_max_abs": 142.0587615966797,
+       "npu_max_abs": 107.875,
+       "cosine": 0.9518315950088568,
+       "cosine_finite": 0.9518315950088568,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         867,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         867,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         867,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 77,
+       "max_abs_diff": 0.0032101720571517944,
+       "mean_abs_diff": 0.00011020279922108779,
+       "cpu_max_abs": 0.9976291060447693,
+       "npu_max_abs": 0.99755859375,
+       "cosine": 0.9999995351861789,
+       "cosine_finite": 0.9999995351861789,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 33,
+       "max_abs_diff": 0.007542669773101807,
+       "mean_abs_diff": 0.00044726039984631616,
+       "cpu_max_abs": 3.995521068572998,
+       "npu_max_abs": 3.994140625,
+       "cosine": 0.9999997302702238,
+       "cosine_finite": 0.9999997302702238,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode",
+     "window": "w3",
+     "encoder_output": "b-tdt-cpu.enc.w3.out0.f32",
+     "encoder_output_sha256": "75b615a9315415e9f4ab65eeb45e0e0605455855fb0c47175785f1159b9e9914",
+     "tokens": [
+      8192,
+      0,
+      0,
+      0
+     ],
+     "outputs": [
+      {
+       "count": 2065896,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 1,
+       "max_abs_diff": 34.750343322753906,
+       "mean_abs_diff": 31.085774921496093,
+       "cpu_max_abs": 166.5578155517578,
+       "npu_max_abs": 132.375,
+       "cosine": 0.9878850202041966,
+       "cosine_finite": 0.9878850202041966,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 77,
+       "max_abs_diff": 0.0032101720571517944,
+       "mean_abs_diff": 0.00011020279922108779,
+       "cpu_max_abs": 0.9976291060447693,
+       "npu_max_abs": 0.99755859375,
+       "cosine": 0.9999995351861789,
+       "cosine_finite": 0.9999995351861789,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 33,
+       "max_abs_diff": 0.007542669773101807,
+       "mean_abs_diff": 0.00044726039984631616,
+       "cpu_max_abs": 3.995521068572998,
+       "npu_max_abs": 3.994140625,
+       "cosine": 0.9999997302702238,
+       "cosine_finite": 0.9999997302702238,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode_1",
+     "window": "w0",
+     "encoder_output": "b-tdt-cpu.enc.w0.out0.f32",
+     "encoder_output_sha256": "c06c2bcf74a2df0fcdad65bd4ad913d7b665d0871fa6f152e8ca8dca3946b2e9",
+     "tokens": [
+      8192
+     ],
+     "outputs": [
+      {
+       "count": 516474,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 4,
+       "max_abs_diff": 34.69886016845703,
+       "mean_abs_diff": 7.0433425368024345,
+       "cpu_max_abs": 176.0382843017578,
+       "npu_max_abs": 141.875,
+       "cosine": 0.9556734023294435,
+       "cosine_finite": 0.9556734023294435,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         990,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         990,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         990,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 1,
+       "max_abs_diff": 0.00042742490768432617,
+       "mean_abs_diff": 4.0089078669325315e-05,
+       "cpu_max_abs": 0.6577033400535583,
+       "npu_max_abs": 0.65771484375,
+       "cosine": 0.9999998769808796,
+       "cosine_finite": 0.9999998769808796,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 0,
+       "max_abs_diff": 0.0007360577583312988,
+       "mean_abs_diff": 9.472203576876836e-05,
+       "cpu_max_abs": 0.9987739324569702,
+       "npu_max_abs": 0.99853515625,
+       "cosine": 0.9999999339896579,
+       "cosine_finite": 0.9999999339896579,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode_1",
+     "window": "w1",
+     "encoder_output": "b-tdt-cpu.enc.w1.out0.f32",
+     "encoder_output_sha256": "60557e9e857c1c79509d8bcce8ac9dde5e49adb54d52718f2cd58f7ce24d7d83",
+     "tokens": [
+      8192
+     ],
+     "outputs": [
+      {
+       "count": 516474,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 4,
+       "max_abs_diff": 34.88371276855469,
+       "mean_abs_diff": 13.050603113926709,
+       "cpu_max_abs": 126.60424041748047,
+       "npu_max_abs": 92.5,
+       "cosine": 0.9308414807853588,
+       "cosine_finite": 0.9308414807853588,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         1676,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         1676,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         1676,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 1,
+       "max_abs_diff": 0.00042742490768432617,
+       "mean_abs_diff": 4.0089078669325315e-05,
+       "cpu_max_abs": 0.6577033400535583,
+       "npu_max_abs": 0.65771484375,
+       "cosine": 0.9999998769808796,
+       "cosine_finite": 0.9999998769808796,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 0,
+       "max_abs_diff": 0.0007360577583312988,
+       "mean_abs_diff": 9.472203576876836e-05,
+       "cpu_max_abs": 0.9987739324569702,
+       "npu_max_abs": 0.99853515625,
+       "cosine": 0.9999999339896579,
+       "cosine_finite": 0.9999999339896579,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode_1",
+     "window": "w2",
+     "encoder_output": "b-tdt-cpu.enc.w2.out0.f32",
+     "encoder_output_sha256": "96c123a7a2ed31aab15f088a6cc61dc3de5730cca4d9afd0920c4f079ea44846",
+     "tokens": [
+      8192
+     ],
+     "outputs": [
+      {
+       "count": 516474,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 3,
+       "max_abs_diff": 34.8765869140625,
+       "mean_abs_diff": 11.417503548300665,
+       "cpu_max_abs": 142.0587615966797,
+       "npu_max_abs": 107.875,
+       "cosine": 0.9337233623944681,
+       "cosine_finite": 0.9337233623944681,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         867,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         867,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         867,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 1,
+       "max_abs_diff": 0.00042742490768432617,
+       "mean_abs_diff": 4.0089078669325315e-05,
+       "cpu_max_abs": 0.6577033400535583,
+       "npu_max_abs": 0.65771484375,
+       "cosine": 0.9999998769808796,
+       "cosine_finite": 0.9999998769808796,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 0,
+       "max_abs_diff": 0.0007360577583312988,
+       "mean_abs_diff": 9.472203576876836e-05,
+       "cpu_max_abs": 0.9987739324569702,
+       "npu_max_abs": 0.99853515625,
+       "cosine": 0.9999999339896579,
+       "cosine_finite": 0.9999999339896579,
+       "all_finite": true
+      }
+     ]
+    },
+    {
+     "signature": "decode_1",
+     "window": "w3",
+     "encoder_output": "b-tdt-cpu.enc.w3.out0.f32",
+     "encoder_output_sha256": "75b615a9315415e9f4ab65eeb45e0e0605455855fb0c47175785f1159b9e9914",
+     "tokens": [
+      8192
+     ],
+     "outputs": [
+      {
+       "count": 516474,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 0,
+       "max_abs_diff": 34.26966857910156,
+       "mean_abs_diff": 32.155007237372196,
+       "cpu_max_abs": 166.5578155517578,
+       "npu_max_abs": 132.375,
+       "cosine": 0.9907974575673354,
+       "cosine_finite": 0.9907974575673354,
+       "all_finite": true,
+       "slot0": {
+        "frames": 63,
+        "token_agree": 63,
+        "duration_agree": 63,
+        "cpu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_tokens_first8": [
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192
+        ],
+        "npu_kotlin_argmax_first8": [
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192,
+         8192
+        ]
+       }
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 1,
+       "max_abs_diff": 0.00042742490768432617,
+       "mean_abs_diff": 4.0089078669325315e-05,
+       "cpu_max_abs": 0.6577033400535583,
+       "npu_max_abs": 0.65771484375,
+       "cosine": 0.9999998769808796,
+       "cosine_finite": 0.9999998769808796,
+       "all_finite": true
+      },
+      {
+       "count": 1280,
+       "nan_cpu": 0,
+       "inf_cpu": 0,
+       "nan_npu": 0,
+       "inf_npu": 0,
+       "zeros_npu": 0,
+       "max_abs_diff": 0.0007360577583312988,
+       "mean_abs_diff": 9.472203576876836e-05,
+       "cpu_max_abs": 0.9987739324569702,
+       "npu_max_abs": 0.99853515625,
+       "cosine": 0.9999999339896579,
+       "cosine_finite": 0.9999999339896579,
+       "all_finite": true
+      }
+     ]
+    }
+   ],
+   "npu_decode_on_npu_encoder_output": [
+    {
+     "signature": "decode",
+     "encoder_output": "b-tdt-npu.enc.w0.out0.f32",
+     "stats": {
+      "count": 2065896,
+      "nan": 2065896,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode.w0.out0.f32",
+      "sha256": "967f4d4d9e67966cc6b98ebcd96bbb7c559bf3185a94e0d99cfc28fabe5ed410"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode",
+     "encoder_output": "b-tdt-npu.enc.w1.out0.f32",
+     "stats": {
+      "count": 2065896,
+      "nan": 2065896,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode.w1.out0.f32",
+      "sha256": "1ea16a811430966c66f5a8f323ea6dd4bf8aba43f8b6079b8e5343498f051365"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode",
+     "encoder_output": "b-tdt-npu.enc.w2.out0.f32",
+     "stats": {
+      "count": 2065896,
+      "nan": 2065896,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode.w2.out0.f32",
+      "sha256": "dcfc142d976dee4a1ade0bd4a6715fae14935f6a9079f80a2f7414b310001b6d"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode",
+     "encoder_output": "b-tdt-npu.enc.w3.out0.f32",
+     "stats": {
+      "count": 2065896,
+      "nan": 2065896,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode.w3.out0.f32",
+      "sha256": "05dfbd44cd13d88e20eea07b3a6fe03945836cbdaabb6c04af5437f3e96e8a57"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode_1",
+     "encoder_output": "b-tdt-npu.enc.w0.out0.f32",
+     "stats": {
+      "count": 516474,
+      "nan": 516474,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode_1.w0.out0.f32",
+      "sha256": "c9e5f3a06d88e1a00f5c3da068f81e8bb1629ce1dd58afac375bde259cb4a19b"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode_1",
+     "encoder_output": "b-tdt-npu.enc.w1.out0.f32",
+     "stats": {
+      "count": 516474,
+      "nan": 516474,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode_1.w1.out0.f32",
+      "sha256": "5b9da0bf00f15f3dcd66187b6a284f37bd5a51eebbda1d53462ade80d881655b"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode_1",
+     "encoder_output": "b-tdt-npu.enc.w2.out0.f32",
+     "stats": {
+      "count": 516474,
+      "nan": 516474,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode_1.w2.out0.f32",
+      "sha256": "0645c7a4c3e166ebb62959b0f7edfbcf6c0798defd57ba40f6b36a6f2efbaefe"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    },
+    {
+     "signature": "decode_1",
+     "encoder_output": "b-tdt-npu.enc.w3.out0.f32",
+     "stats": {
+      "count": 516474,
+      "nan": 516474,
+      "inf": 0,
+      "zeros": 0,
+      "min": null,
+      "max": null,
+      "mean": null,
+      "mean_abs": null,
+      "file": "b-tdt-npu.decode_1.w3.out0.f32",
+      "sha256": "cdd7a305dcda04da6336a1321028fa4202a14b4f47daf9670d737cdd67aba880"
+     },
+     "kotlin_token_argmax": {
+      "distinct": [
+       0
+      ],
+      "token0_frames": 63
+     },
+     "kotlin_duration_argmax": {
+      "distinct": [
+       0
+      ],
+      "duration0_frames": 63
+     }
+    }
+   ],
+   "windows_in_line": 3,
+   "windows_in_line_differing": 3
+  }
+ }
+}
