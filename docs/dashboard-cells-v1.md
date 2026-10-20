@@ -1247,10 +1247,14 @@ one CPU and one GPU sitting per phone; no page row moves.
   built from a tree whose `version.bzl` says 0.18.1; no public commit carries that version (main's says 0.19.0 since
   93d74126, 2026-10-06), there is no v0.18.1 tag, and the newest prebuilt libraries on main are those of b7c40ea81
   (2026-10-13). So the rows run main@b7c40ea81: `litert_lm_main` and `litert_lm_advanced_main` built at that commit
-  with the commit's seven prebuilt android_arm64 libraries (the GPU accelerators among them; LFS oids checked), as
-  two side builds in `android/engine-pins.json`: `main-b7c40ea81` (the GPU rows) and `main-b7c40ea81-ynnpack` (the same
-  commit with `--define=litert_enable_ynnpack=true`, the CPU rows). Records stamp `engineVersion` `main@b7c40ea81` /
-  `main@b7c40ea81-ynnpack`; the pin stays v0.18.0.
+  with the commit's seven prebuilt android_arm64 libraries (the GPU accelerators among them; LFS oids checked): the
+  side build `main-b7c40ea81` in `android/engine-pins.json`, the GPU rows; records stamp `engineVersion`
+  `main@b7c40ea81`. The CPU rows run the heads the LiteRT team asked for (2026-10-20): the side build
+  `head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly`, the two tools built at LiteRT-LM main 2ef6baeb with LiteRT main
+  d469ea48, XNNPACK 878f1d8c and slinky 9b2ee975 (LiteRT d469ea48's own pins) by `--override_repository`,
+  `--define=litert_enable_ynnpack=true`, and `--@litert//litert/build_common:build_include=cpu_only` (LiteRT d469ea48's
+  GPU code needs ML Drift repositories that LiteRT-LM 2ef6baeb's workspace does not define; the CPU rows need no GPU);
+  records stamp `engineVersion` with that tag. The pin stays v0.18.0.
 - The files. The current Hub file `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` (lfs sha256 `03e7da1e…2856`) and E2, a
   local export of the same model with litert-torch 0a81bf6f's `--apply_gpu_composites=True` (its GPU flag set,
   dynamic_wi4b32_afp32, prefill 128 + 1024, the official Qwen3 LlmMetadata; sha256 `fbbf0657…5b79`, not on the Hub).
