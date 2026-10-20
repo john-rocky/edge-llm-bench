@@ -1,0 +1,302 @@
+{
+  "harness": "asr-pr-v1",
+  "pr_branch": {
+    "repo": "google-ai-edge/litert-samples",
+    "path": "samples/litert/speech_recognition/AndroidApp",
+    "upstream_commit": "e3be146957abba01be1ced5a82f5f8acd2ad9f69",
+    "upstream_main_at_lock": "f51fa48af2781b64f51aa24a751990ca4ce944f1",
+    "branch": "speech-recognition-tdt-decode-stop",
+    "head": "fb3fb51f28fa1fddaa1ecd346b6d183f5aca54c9",
+    "head_tree": "6389b2c46d98fe24803eb2886319b6c65a696e43",
+    "commits": [
+      "fb3fb51f28fa1fddaa1ecd346b6d183f5aca54c9 speech_recognition: stop TdtDecoder where the audio ends, cap tokens per time index",
+      "67415211b3b346ce354357b3ff08356c62fb1e3e speech_recognition: move TdtDecoder's greedy loop into a function unit tests can run"
+    ]
+  },
+  "app": {
+    "bench_branch": "asr-bench-s26-pr",
+    "bench_commit": "8b9f5590cf7e642e4f72a197096278a015130761",
+    "bench_parent": "fb3fb51f28fa1fddaa1ecd346b6d183f5aca54c9",
+    "dirty_tracked_files_at_freeze": "dirty_tracked_files=0",
+    "application_id": "com.google.ai.edge.examples.asr.prcheck (applicationIdSuffix .prcheck)",
+    "test_application_id": "com.google.ai.edge.examples.asr.prcheck.test",
+    "measured_build_type": "bench = initWith(release) + debug signing key: not debuggable, no minify; testBuildType = bench",
+    "setup_build_type": "debug (debuggable: run-as copies the models and WAVs into the app's files dir before the bench build is installed over it)"
+  },
+  "apk": {
+    "app-debug.apk": "4bf7064fb16580d93d901a3ace939cbe455751798d5f1257355774d2464f5478",
+    "app-bench.apk": "e14e7fd1cf3fbe58ed3a61573fc83b5ab6c9839eb343090bd2ac25688ba6d036",
+    "app-bench-androidTest.apk": "23c8834366dcbc4ea7bdf200adafc801a0f899d5d7982f22d1743c687819a69d"
+  },
+  "native_libs_in_bench_apk": {
+    "libLiteRt.so": {
+      "sha256": "e5b7e3413a8b428b1a1b669f368cf613058868bc7b63e10d0b9c2e6ba55c97d8",
+      "bytes": 5629696,
+      "origin": "litert-2.3.0.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": false,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "libLiteRtClGlAccelerator.so": {
+      "sha256": "c200369269a3994b646a8d0ac56ff29127c6ce742abcfd345a7d478eab3b6c6d",
+      "bytes": 3253032,
+      "origin": "litert-gpu-2.3.0.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": false,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "liblitert_jni.so": {
+      "sha256": "b4bc082f740076f09d566b2deaa8a1af6b1ec1252d20c3688acb8405d69871dc",
+      "bytes": 529296,
+      "origin": "litert-api-2.3.0.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": false,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "libonnxruntime.so": {
+      "sha256": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+      "bytes": 22249560,
+      "origin": "sherpa-onnx-1.13.8.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": true,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "libsherpa-onnx-c-api.so": {
+      "sha256": "c85e2382e2ca12b0513826be926eaccfea896b4cbf568182e287671ba526f80d",
+      "bytes": 4465168,
+      "origin": "sherpa-onnx-1.13.8.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": true,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "libsherpa-onnx-cxx-api.so": {
+      "sha256": "5eabb2bcf5a8af66aeab37431c09fab4a9c65cdebf02bd7e50f8c589044bd70e",
+      "bytes": 440688,
+      "origin": "sherpa-onnx-1.13.8.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": true,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "libsherpa-onnx-jni.so": {
+      "sha256": "3c6492ea91ea68fd3b72b9495efdde6dd913f6b58c387e3b07389cf335f4d26f",
+      "bytes": 4771760,
+      "origin": "sherpa-onnx-1.13.8.aar jni/arm64-v8a",
+      "same_bytes_as_asr_fix_v1_bench_apk": true,
+      "in_asr_fix_v1_bench_apk": true
+    },
+    "libtokenizer_jni.so": {
+      "sha256": "2dcb561d79fa4292995854d2a778f61ed3f44ad1cb5f42e110a8756f33c4e608",
+      "bytes": 13619808,
+      "origin": "the app's own CMake target (src/main/cpp), built in this worktree",
+      "same_bytes_as_asr_fix_v1_bench_apk": false,
+      "in_asr_fix_v1_bench_apk": true
+    }
+  },
+  "native_libs_debug_apk_differ": {
+    "libtokenizer_jni.so": {
+      "debug_sha256": "e237e7074c515821f74663a9115d364a6194082494e203a2f0318252d3243636",
+      "bench_sha256": "2dcb561d79fa4292995854d2a778f61ed3f44ad1cb5f42e110a8756f33c4e608"
+    }
+  },
+  "litert": {
+    "version": "2.3.0",
+    "dependencies": [
+      "com.google.ai.edge.litert:litert:2.3.0",
+      "com.google.ai.edge.litert:litert-gpu:2.3.0"
+    ],
+    "aars": {
+      "litert-2.3.0.aar": {
+        "maven": "com.google.ai.edge.litert:litert:2.3.0",
+        "sha256": "9508c6e9142646f0f2bc1fe68b3925fb470ee7ddd29114540339a04a8ab189dc",
+        "sha1": "81a1c19d8891608417df4a01e7ad28cf29019ddd",
+        "gradle_cache_dir_sha1": "81a1c19d8891608417df4a01e7ad28cf29019ddd",
+        "bytes": 7640140,
+        "jni_arm64_v8a": {
+          "libLiteRt.so": {
+            "sha256": "e5b7e3413a8b428b1a1b669f368cf613058868bc7b63e10d0b9c2e6ba55c97d8",
+            "bytes": 5629696
+          }
+        }
+      },
+      "litert-api-2.3.0.aar": {
+        "maven": "com.google.ai.edge.litert:litert-api:2.3.0",
+        "sha256": "20f630e9ed0b4f0564da616fd3d6406f3013cacad7d492cbe2963330f519256b",
+        "sha1": "5fb1c551fdb87d90aec59c459f767536d80e6947",
+        "gradle_cache_dir_sha1": "5fb1c551fdb87d90aec59c459f767536d80e6947",
+        "bytes": 945619,
+        "jni_arm64_v8a": {
+          "liblitert_jni.so": {
+            "sha256": "b4bc082f740076f09d566b2deaa8a1af6b1ec1252d20c3688acb8405d69871dc",
+            "bytes": 529296
+          }
+        }
+      },
+      "litert-gpu-2.3.0.aar": {
+        "maven": "com.google.ai.edge.litert:litert-gpu:2.3.0",
+        "sha256": "173a4c3813601f7e9542f4e6a49e237775e2f9ce1e0948f35407098bffb1824f",
+        "sha1": "a0264cf48c4a7ea22b267435e135bc6e30ba4c43",
+        "gradle_cache_dir_sha1": "a0264cf48c4a7ea22b267435e135bc6e30ba4c43",
+        "bytes": 4695499,
+        "jni_arm64_v8a": {
+          "libLiteRtClGlAccelerator.so": {
+            "sha256": "c200369269a3994b646a8d0ac56ff29127c6ce742abcfd345a7d478eab3b6c6d",
+            "bytes": 3253032
+          }
+        }
+      },
+      "litert-metadata-2.3.0.aar": {
+        "maven": "com.google.ai.edge.litert:litert-metadata:2.3.0",
+        "sha256": "4705de4459ee800750e2d2bf3f591253e055d9203bc427c54984c79c3b751194",
+        "sha1": "aa8a2732b3aa44a63b7d6701484d582bf966d32e",
+        "gradle_cache_dir_sha1": "aa8a2732b3aa44a63b7d6701484d582bf966d32e",
+        "bytes": 658840,
+        "jni_arm64_v8a": {}
+      },
+      "litert-support-2.3.0.aar": {
+        "maven": "com.google.ai.edge.litert:litert-support:2.3.0",
+        "sha256": "255facc704ba62894b344268c50662e7f690889705ce99a2e52d36bbbf072889",
+        "sha1": "4902366adacbed0e34f80a51aa6448be772bf822",
+        "gradle_cache_dir_sha1": "4902366adacbed0e34f80a51aa6448be772bf822",
+        "bytes": 8263,
+        "jni_arm64_v8a": {}
+      },
+      "litert-support-api-2.3.0.aar": {
+        "maven": "com.google.ai.edge.litert:litert-support-api:2.3.0",
+        "sha256": "c66f6835ca59606c90f9a4e27ab00c4efe48abbe3d1493f317e354b69a8360ee",
+        "sha1": "ec728fd849f5a86bab79311b5e8f4703738bf654",
+        "gradle_cache_dir_sha1": "ec728fd849f5a86bab79311b5e8f4703738bf654",
+        "bytes": 96767,
+        "jni_arm64_v8a": {}
+      }
+    }
+  },
+  "sherpa_onnx_aar": {
+    "asset": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar",
+    "sha256": "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96",
+    "bytes": 50129134,
+    "jni_arm64_v8a": {
+      "libonnxruntime.so": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+      "libsherpa-onnx-c-api.so": "c85e2382e2ca12b0513826be926eaccfea896b4cbf568182e287671ba526f80d",
+      "libsherpa-onnx-cxx-api.so": "5eabb2bcf5a8af66aeab37431c09fab4a9c65cdebf02bd7e50f8c589044bd70e",
+      "libsherpa-onnx-jni.so": "3c6492ea91ea68fd3b72b9495efdde6dd913f6b58c387e3b07389cf335f4d26f"
+    },
+    "note": "bundled as in asr-burst-v1 / asr-fix-v1 (AsrBenchTest's sherpa engine); no run of this round loads it"
+  },
+  "models": [
+    {
+      "repo": "mlboydaisuke/Parakeet-TDT-0.6B-v3-LiteRT",
+      "repo_type": "model",
+      "revision": "af580dff28a80150057d54bb33a0e01025ce4bce",
+      "file": "parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite",
+      "local": "parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite",
+      "bytes": 629689824,
+      "sha256": "378935f8897f0c713ad2aa97d939c73c44e9f26546e12c1cd6af9c76f386f06a",
+      "git_blob": "34d2229ced0cd24a25f07a7839e41c116b8406ba",
+      "hub_hash": "sha256:378935f8897f0c713ad2aa97d939c73c44e9f26546e12c1cd6af9c76f386f06a",
+      "checks": {
+        "bytes_match_record": true,
+        "sha256_matches_record": true,
+        "matches_hub_now": true,
+        "hub_size_matches": true
+      },
+      "downloaded_to": ".build/asr-pr/download/model30s/parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite",
+      "staged_as": ".build/asr-pr/models/parakeet_tdt_0.6b_v3_30s_i8_stateful.tflite"
+    },
+    {
+      "repo": "nvidia/parakeet-tdt-0.6b-v3",
+      "repo_type": "model",
+      "revision": "541d1f99c6b0c3cd0b11a95167540bb8edefd82b",
+      "file": "tokenizer.json",
+      "local": "tokenizer.json",
+      "bytes": 1159960,
+      "sha256": "bd321b096832a3f270bd3b2a88823957920f1a5c5ada71114a26ea729d0cbe91",
+      "git_blob": "a10a554cf61e38108756650018d5781ae9675c1d",
+      "hub_hash": "gitblob:a10a554cf61e38108756650018d5781ae9675c1d",
+      "checks": {
+        "bytes_match_record": true,
+        "sha256_matches_record": true,
+        "matches_hub_now": true,
+        "hub_size_matches": true
+      },
+      "downloaded_to": ".build/asr-pr/download/tokenizer/tokenizer.json",
+      "staged_as": ".build/asr-pr/models/tokenizer.json"
+    }
+  ],
+  "parquet": {
+    "repo": "hf-audio/open-asr-leaderboard",
+    "repo_type": "dataset",
+    "revision": "de79e57adf9983993bcc72586d7313460825f5eb",
+    "file": "librispeech/test.clean-00000-of-00001.parquet",
+    "local": "test.clean-00000-of-00001.parquet",
+    "bytes": 350475095,
+    "sha256": "e576cf31312bf67d5ab714ac1dd93fb52d60d62659b76402ba1f97484464ddc3",
+    "git_blob": "a88d837b4df23ffd85d0359efbb2667e2ffe8950",
+    "hub_hash": "sha256:e576cf31312bf67d5ab714ac1dd93fb52d60d62659b76402ba1f97484464ddc3",
+    "checks": {
+      "bytes_match_record": true,
+      "sha256_matches_record": true,
+      "matches_hub_now": true,
+      "hub_size_matches": true
+    },
+    "downloaded_to": ".build/asr-pr/download/parquet/test.clean-00000-of-00001.parquet"
+  },
+  "wav_set": {
+    "tar": "test-clean-S32WE.tar",
+    "tar_bytes": 21401600,
+    "tar_sha256": "03314d98e61d17dfef906872b0d1ce65a926ea874eb34b9d49001558045f1e3d",
+    "manifests": {
+      "manifest-device.tsv": "9435c415fdbf9427816327eb0f7f0ff0efd2a33d0af29b6f7c721a89274910e0",
+      "manifest-edge.tsv": "41550f8de981545550f75805a6e2fed94947669b2fc98c3cd667207e1e3e53ef"
+    },
+    "manifest_rows": 2620,
+    "wavs": 85,
+    "s32": {
+      "utterances": 82,
+      "total_seconds": 626.3599999999997,
+      "wav_sha256_chain": "6ccb9d3c271b966a7c7cdaa02417b360a1319a858542fab92dc8407e3332f8f4"
+    },
+    "warmup": {
+      "id": "1995-1836-0004",
+      "row_index": 1,
+      "seconds": 33.91,
+      "wav_sha256": "fd8622195593d018d1c1b1694ffdc3eab13b44c88027f69e484e32a04e3d6144",
+      "in_s32": false
+    },
+    "edge": [
+      {
+        "id": "silence-2s",
+        "wav": "silence-2s.wav",
+        "seconds": 2.0,
+        "made": "32,000 zero samples (16 kHz mono PCM16)",
+        "wav_sha256": "20eaebffe1816e0ffa6f7f854f5ef4ea80d5349faaf0ce1fec1b713e7fde58fa",
+        "last_nonzero_sample": -1
+      },
+      {
+        "id": "clip-0p8s",
+        "wav": "clip-0p8s.wav",
+        "seconds": 0.8,
+        "made": "the first 12800 samples of 1995-1836-0004.wav (W)",
+        "wav_sha256": "224fe68e3415b73bc491e5580393da63072c2cc4b4ef327c6f1883ffee31971f",
+        "last_nonzero_sample": 12799
+      }
+    ],
+    "s32_set": {
+      "set": "librispeech-test-clean-S32",
+      "rule": "manifest.tsv rows at index 0, 32, 64, ... (every 32th row from the first, file order)",
+      "utterances": 82,
+      "total_seconds": 626.3599999999997,
+      "wav_sha256_chain": "6ccb9d3c271b966a7c7cdaa02417b360a1319a858542fab92dc8407e3332f8f4",
+      "first_ids": [
+        "4507-16021-0047",
+        "8230-279154-0043",
+        "5105-28241-0001"
+      ],
+      "last_id": "1995-1837-0008",
+      "matches_asr_fix_v1": true
+    },
+    "full_chain": "c703709c50680769d7398f5daee2691fb6ddd81675969ff31d44bd20508b888a"
+  },
+  "build": {
+    "gradle_wrapper": "9.3.1",
+    "agp": "9.1.1",
+    "kotlin": "2.2.10",
+    "daemon_toolchain": "21",
+    "compileSdk": 35,
+    "targetSdk": 35,
+    "minSdk": 31
+  }
+}
