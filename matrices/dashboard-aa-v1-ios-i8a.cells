@@ -1,0 +1,11 @@
+# Artificial Analysis set on the iPhone 17 Pro, LiteRT-LM v0.18.0 (matrices/dashboard-aa-v1-ios.cells header).
+# Slot i8a: Nanbeige4.2-3B, alone. Slot i8 (Nanbeige4.2-3B and Qwen3.5 4B) hit the job's 90 minutes on 2026-10-21 13:39-15:14: Nanbeige4.2-3B's fp32-activation file decodes at about 5.4 tok/s on the GPU, so its cells and the cool-wait pauses took most of the slot. The session anchor rows, then the rows below, each byte-identical to its source line.
+# Source: matrices/dashboard-aa-v1-ios.cells lines 21-22 (anchors), 79-80
+# Estimate: 45.0 min (job + anchors.cells phase + this file's anchor rows 9.0, then per row its cooldown + the launch, + the protocol row's cool-wait pauses; .dashboard/0180_aa_20261014/device/ios/README.md)
+# Run, inside the iPhone hold a keeper took:
+#   python3 scripts/dashboard_job.py iphone17pro --schedule <schedule copy with the phone's UDID> --cells matrices/dashboard-aa-v1-ios-i8a.cells --suffix 0180-aa-i8a --once --hold-held-by <keeper pid>
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
+ios litert-lm litert-community/Nanbeige4.2-3B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Nanbeige4.2-3B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048 cool-wait=120
