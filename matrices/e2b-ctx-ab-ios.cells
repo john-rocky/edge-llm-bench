@@ -1,0 +1,20 @@
+# Gemma 4 E2B on the iPhone 18 Pro GPU: LiteRT-LM v0.18.0's benchmark() at 1024 / 256 with a 2048- and a 4096-token KV
+# allocation, one sitting (hand-run experiment, not the weekly set).
+# Purpose: how much the KV allocation alone moves benchmark()'s prefill and decode on the iPhone GPU. Since
+# google-ai-edge/LiteRT-LM eae7821a (2026-10-19) benchmark() no longer sizes the KV from prefill + decode; with no
+# max_num_tokens set, Gemma 4 E2B (whose .litertlm metadata carries none) gets the engine default 4096 for a 1024-token
+# prefill (runtime/engine/engine_settings.cc 347-361). The model card and this repo's protocol rows use 2048.
+# Order 2048 -> 4096 here, then the 2048 row again from e2b-ctx-ab-ios-repeat.cells (the validator refuses a duplicate
+# row in one file) after a 300 s pause inside the same hold: the repeat measures the sitting's drift.
+# Source rows: matrices/anchors.cells line 18 (the iOS anchor); matrices/dashboard-aa-v1-ios.cells lines 25-26 (the E2B
+# short-chat and protocol rows), the short-chat at runs=1 cooldown=100 (it only supplies the native import's --like
+# record and a text check), the protocol row with context-tokens per row.
+# Estimate: 24 min (anchor 1.5 + 100 s + short-chat 1.2 + 2 x (300 s cooldown + 4 x 60 s cool-wait + 40 s launch)),
+# then 300 s + the repeat row 5 min = 34 min in one hold.
+# Run, inside the 18 Pro's hold (~/code/coreai/ondevice/.device_hold, queue_cli), with the repeat file after it:
+#   BENCH_UDID=00008160-000038CA02C00036 CAMPAIGN=2026-10-21-e2b-ctx-ab-iphone18pro-ios scripts/bench_matrix_iphone.sh run matrices/e2b-ctx-ab-ios.cells
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu runs=1 cooldown=100
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048 cool-wait=60
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=4096 cool-wait=60

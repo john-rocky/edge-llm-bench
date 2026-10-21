@@ -1,0 +1,10 @@
+# Two more KV allocations for matrices/e2b-ctx-ab-ios.cells (that file's header: purpose, sources), same row otherwise:
+# 1312 = what v0.18.0's stock Swift benchmark() allocates at 1024 / 256 (prefillTokens + decodeTokens + 32, the code
+# before google-ai-edge/LiteRT-LM eae7821a), 8192 = the top of the 2026-10-17 18 Pro task-path ladder
+# (results/raw/2026-10-17-catalog-x2-iphone18pro-ios). Second hold of the same sitting, right after the first:
+# the caller sleeps 300 s, runs this file, sleeps 300 s and runs e2b-ctx-ab-ios-repeat.cells (2048) to close the bracket.
+# Estimate: 5 + 4.7 + 5 + 4.7 min here, + 5 + 4.7 for the closing 2048 = 29 min.
+#   BENCH_UDID=00008160-000038CA02C00036 CAMPAIGN=2026-10-21-e2b-ctx-ab-iphone18pro-ios scripts/bench_matrix_iphone.sh run matrices/e2b-ctx-ab-ios-more.cells
+
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=1312 cool-wait=60
+ios litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=8192 cool-wait=60

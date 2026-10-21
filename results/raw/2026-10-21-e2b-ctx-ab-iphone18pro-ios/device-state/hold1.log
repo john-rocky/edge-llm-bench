@@ -1,0 +1,75 @@
+[2026-10-21 14:01:29] queued e2b-ctx-ab-18pro-h1 on /Users/USER/code/coreai/ondevice/.device_hold (keeper pid 65626)
+hold acquired: /Users/USER/code/coreai/ondevice/.device_hold (owner pid 65626) at 14:01:29
+[2026-10-21 14:01:29] HOLD 1 acquired: {"pid": 65626, "script": "e2b-ctx-ab-18pro-h1", "device": "iPhone 18 Pro", "started": "2026-10-21 14:01:29"}
+[2026-10-21 14:01:30] battery 80 % ExternalConnected=true IsCharging=
+[2026-10-21 14:01:30] RUN main: matrices/e2b-ctx-ab-ios.cells (campaign 2026-10-21-e2b-ctx-ab-iphone18pro-ios)
+OK matrices/e2b-ctx-ab-ios.cells
+preflight: CATALOG_JSON unset — skipping (advisory)
+
+=== CELL mlx-swift / mlx-community/Qwen3-0.6B-4bit / short-chat runs=3  (14:01:30) ===
+YARDSTICK_BEGIN runtime=mlx-swift model=mlx-community/Qwen3-0.6B-4bit task=short-chat runs=3
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=222.51 decode_tok_s_wall=220.79 ttft_ms=36 prefill_tok_s=599.7 prefill_tok_s_wall=529.3 prompt_tokens=19 peak_mb=526 median_mb=526 median_resident_mb=566 ctx=672 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=221.44 decode_tok_s_wall=219.75 ttft_ms=29 prefill_tok_s=680.9 prefill_tok_s_wall=659.2 prompt_tokens=19 peak_mb=527 median_mb=527 median_resident_mb=567 ctx=672 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=221.92 decode_tok_s_wall=220.24 ttft_ms=29 prefill_tok_s=669.6 prefill_tok_s_wall=646.7 prompt_tokens=19 peak_mb=527 median_mb=525 median_resident_mb=568 ctx=672 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ALL_DONE
+pulled=3 verdict=OK
+
+=== cooldown 100s ===
+
+=== CELL litert-lm / litert-community/gemma-4-E2B-it-litert-lm / short-chat runs=1 --litert-backend gpu (14:05:12) ===
+YARDSTICK_BEGIN runtime=litert-lm model=litert-community/gemma-4-E2B-it-litert-lm task=short-chat runs=1
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=85.20 decode_tok_s_wall=84.53 ttft_ms=455 prefill_tok_s=115.0 prefill_tok_s_wall=43.9 prompt_tokens=20 peak_mb=500 median_mb=476 median_resident_mb=667 ctx=672 tokens=128 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ALL_DONE
+pulled=1 verdict=OK
+
+=== cooldown 300s ===
+
+=== CELL litert-lm / litert-community/gemma-4-E2B-it-litert-lm / native-benchmark-1024x256 runs=4 (native: one launch, --litert-native-benchmark) --context-tokens 2048 --litert-backend gpu --native-cool-wait 60 (14:12:11) ===
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=2048 runs=4
+YARDSTICK_NATIVE_OK run=1 runs=4 cold=1 prefill_tokens=1024 prefill_tok_s=4990.46 decode_tokens=256 decode_tok_s=80.34 ttft_ms=217.6 init_s=1.07 context_tokens=2048 peak_mb=645 median_mb=638 median_resident_mb=708 samples=38 teardown_footprint_mb=100 thermal_initial=nominal thermal_final=nominal wall_s=3.943 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=2 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=6112.74 decode_tokens=256 decode_tok_s=86.91 ttft_ms=179.0 init_s=0.90 context_tokens=2048 peak_mb=387 median_mb=384 median_resident_mb=713 samples=35 teardown_footprint_mb=168 thermal_initial=nominal thermal_final=nominal wall_s=3.573 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=3 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=6051.85 decode_tokens=256 decode_tok_s=86.89 ttft_ms=180.7 init_s=0.90 context_tokens=2048 peak_mb=384 median_mb=373 median_resident_mb=705 samples=35 teardown_footprint_mb=160 thermal_initial=nominal thermal_final=nominal wall_s=3.574 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=4 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=6092.68 decode_tokens=256 decode_tok_s=86.91 ttft_ms=179.6 init_s=0.86 context_tokens=2048 peak_mb=385 median_mb=373 median_resident_mb=706 samples=35 teardown_footprint_mb=160 thermal_initial=nominal thermal_final=nominal wall_s=3.557 harness=2026-07-30-agreed-protocol-r4
+native lines=4 fatal=0 (console_litert-lm_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256.txt)
+NATIVE_IMPORTED console_litert-lm_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256.txt -> app-path-native/ (--like litert-lm_litert-community_gemma-4-E2B-it-litert-lm_short-chat_2026-10-21T05-05-19.390Z.json)
+
+=== cooldown 300s ===
+
+=== CELL litert-lm / litert-community/gemma-4-E2B-it-litert-lm / native-benchmark-1024x256 runs=4 (native: one launch, --litert-native-benchmark) --context-tokens 4096 --litert-backend gpu --native-cool-wait 60 (14:21:39) ===
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=4096 runs=4
+YARDSTICK_NATIVE_OK run=1 runs=4 cold=1 prefill_tokens=1024 prefill_tok_s=4798.60 decode_tokens=256 decode_tok_s=84.46 ttft_ms=225.2 init_s=4.78 context_tokens=4096 peak_mb=804 median_mb=802 median_resident_mb=1490 samples=55 teardown_footprint_mb=152 thermal_initial=nominal thermal_final=nominal wall_s=5.661 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=2 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=5041.52 decode_tokens=256 decode_tok_s=84.75 ttft_ms=214.9 init_s=0.90 context_tokens=4096 peak_mb=548 median_mb=546 median_resident_mb=755 samples=36 teardown_footprint_mb=192 thermal_initial=nominal thermal_final=nominal wall_s=3.696 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=3 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=5069.63 decode_tokens=256 decode_tok_s=84.44 ttft_ms=213.8 init_s=0.89 context_tokens=4096 peak_mb=541 median_mb=530 median_resident_mb=748 samples=36 teardown_footprint_mb=185 thermal_initial=nominal thermal_final=nominal wall_s=3.704 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=4 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=5069.06 decode_tokens=256 decode_tok_s=84.75 ttft_ms=213.8 init_s=0.85 context_tokens=4096 peak_mb=539 median_mb=528 median_resident_mb=750 samples=36 teardown_footprint_mb=184 thermal_initial=nominal thermal_final=nominal wall_s=3.677 harness=2026-07-30-agreed-protocol-r4
+native lines=4 fatal=0 (console_litert-lm_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256.txt)
+NATIVE_IMPORTED console_litert-lm_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256.txt -> app-path-native/ (--like litert-lm_litert-community_gemma-4-E2B-it-litert-lm_short-chat_2026-10-21T05-05-19.390Z.json)
+| runtime | model | task | cold (run1) | warm (med r2-4) | n | thermal |
+|---|---|---|---|---|---|---|
+| litert-lm | litert-community/gemma-4-E2B-it-litert-lm | short-chat | 85.2 | — | 1 | nominal |
+| mlx-swift | mlx-community/Qwen3-0.6B-4bit | short-chat | 222.5 | 221.7 | 3 | nominal |
+
+[2026-10-21 14:26:07] main exit 0
+[2026-10-21 14:26:07] pause 300 s before the repeat row
+[2026-10-21 14:31:08] battery 80 % ExternalConnected=true IsCharging=
+[2026-10-21 14:31:08] RUN repeat: matrices/e2b-ctx-ab-ios-repeat.cells
+OK matrices/e2b-ctx-ab-ios-repeat.cells
+preflight: CATALOG_JSON unset — skipping (advisory)
+
+=== CELL litert-lm / litert-community/gemma-4-E2B-it-litert-lm / native-benchmark-1024x256 runs=4 (native: one launch, --litert-native-benchmark) --context-tokens 2048 --litert-backend gpu --native-cool-wait 60 (14:31:09) ===
+YARDSTICK_BEGIN native_benchmark model=litert-community/gemma-4-E2B-it-litert-lm prefill=1024 decode=256 context_tokens=2048 runs=4
+YARDSTICK_NATIVE_OK run=1 runs=4 cold=1 prefill_tokens=1024 prefill_tok_s=5357.18 decode_tokens=256 decode_tok_s=86.79 ttft_ms=202.7 init_s=1.05 context_tokens=2048 peak_mb=654 median_mb=648 median_resident_mb=705 samples=36 teardown_footprint_mb=102 thermal_initial=nominal thermal_final=nominal wall_s=3.694 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=2 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=6078.28 decode_tokens=256 decode_tok_s=86.85 ttft_ms=180.0 init_s=0.90 context_tokens=2048 peak_mb=389 median_mb=384 median_resident_mb=713 samples=35 teardown_footprint_mb=171 thermal_initial=nominal thermal_final=nominal wall_s=3.587 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=3 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=6048.39 decode_tokens=256 decode_tok_s=86.88 ttft_ms=180.8 init_s=0.90 context_tokens=2048 peak_mb=386 median_mb=380 median_resident_mb=715 samples=35 teardown_footprint_mb=167 thermal_initial=nominal thermal_final=nominal wall_s=3.583 harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_NATIVE_OK run=4 runs=4 cold=0 prefill_tokens=1024 prefill_tok_s=6031.54 decode_tokens=256 decode_tok_s=86.55 ttft_ms=181.3 init_s=0.87 context_tokens=2048 peak_mb=385 median_mb=383 median_resident_mb=719 samples=35 teardown_footprint_mb=170 thermal_initial=nominal thermal_final=nominal wall_s=3.583 harness=2026-07-30-agreed-protocol-r4
+native lines=4 fatal=0 (console_litert-lm_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256.txt)
+NATIVE_IMPORTED console_litert-lm_litert-community_gemma-4-E2B-it-litert-lm_native-benchmark-1024x256.txt -> app-path-native/ (--like litert-lm_litert-community_gemma-4-E2B-it-litert-lm_short-chat_2026-10-21T05-05-19.390Z.json)
+| runtime | model | task | cold (run1) | warm (med r2-4) | n | thermal |
+|---|---|---|---|---|---|---|
+| litert-lm | litert-community/gemma-4-E2B-it-litert-lm | short-chat | 85.2 | — | 1 | nominal |
+| mlx-swift | mlx-community/Qwen3-0.6B-4bit | short-chat | 222.5 | 221.7 | 3 | nominal |
+
+[2026-10-21 14:35:31] repeat exit 0
+[2026-10-21 14:35:31] battery 80 % ExternalConnected=true IsCharging=
+[2026-10-21 14:35:32] HOLD 1 released (held 2043 s)
+[2026-10-21 14:35:32] DONE
+[2026-10-21 14:35:32] EXIT rc=0
