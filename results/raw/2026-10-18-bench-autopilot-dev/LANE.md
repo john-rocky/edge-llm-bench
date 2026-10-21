@@ -746,3 +746,12 @@ job's; merges into main only after a dry run passes; stage explicit paths only.
   queued from is `superseded` and not run (auto does not count it when it chooses a device). Selftest cases for both; the
   data-pipeline steps pass (the rehearsal's first two runs failed three checks only because its export directory was named
   `ci-retake-…`, which their "no `-retake-` line" test matched).
+- 2026-10-20 18:48 the Mac smoke on the swapped yardstick and the re-rendered ExecuTorch prompt (a probe, not committed): both
+  1K cells stamp `promptVersion` noref-2026-10-19 on every run (LiteRT-LM Gemma 4 E2B 1,123 prompt tokens, as on the 18 Pro;
+  ExecuTorch Qwen3 0.6B xnnpack 1,355, text check PASS).
+- 2026-10-21 disk (the owner's go, relayed): the `.build` dirs neither the autopilot nor the dashboard job reads are on the HDD
+  archive through `~/code/standup/tools/hdd_evac.py dir` (copy, size check, symlink: the paths still resolve): 01:38–01:45
+  dd-mac-pre-r17, dd-mac-noref, dd-mac-q06cand, dd-mac-1019-pretmpl, dd-ios-r17, dd-ios and dd-ios-pin-b714ce21 (23.8 GiB);
+  17:14–17:17 dd-ios-0180-18pro, the 18 Pro side tree (6.9 GiB; the next iPhone build reads it from the HDD or brings it back).
+  Kept: dd-mac (the job's yardstick; its libraries load from dd-mac itself), dd-ios-pin (the 18 Pro pin) and dd-ios-0180-17pro
+  (the AA lane's build tree and install path).
