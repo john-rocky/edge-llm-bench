@@ -1273,6 +1273,18 @@ one CPU and one GPU sitting per phone; no page row moves.
   "Side builds"): a toggle in the conditions only would pool the two into one cell.
 - Reading: E2 against the Hub file only within one sitting on one build; YNNPACK on against off only within one
   sitting on one binary, with YNNPACK's own lines in every on launch and none in an off one.
+- The control (the cells of 2026-10-21, the S26 sitting of 2026-10-22): `matrices/lu1020-q06-cpu-ctl-android.cells`, six arms in one Galaxy S26 sitting, the
+  protocol only. HEAD = the CPU rows' build and file, XNNPACK and `ynnpack=1` (the CPU file's two protocol rows as they
+  are, so the sitting is also their S26 retake); slinky = the same build with slinky left at what LiteRT-LM 2ef6baeb's
+  workspace resolves (side build `head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly-slinkytf`: slinky a3eec6fc of
+  TensorFlow / XLA in place of LiteRT d469ea48's pin 9b2ee975, whose 26eddcb5 raises the Android spin count of the
+  thread pool YNNPACK runs on from 1000 to 10000000); INT8 = the HEAD build on the Hub's dynamic INT8 file
+  `Qwen3-0.6B.litertlm` (lfs sha256 `c5f39b41…`), whose FULLY_CONNECTED weights YNNPACK's delegate may take where it
+  refuses the block-32 INT4 file's (the 2026-10-20 logs: 339 `dot.cc` `IsTensorSupported(weights, true)` lines per
+  launch). Model ids: the slinky rows `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_ctl_slinkytf` (the same Hub
+  file: a protocol capture is named by arm, model id and task only, so a second build of one cell in one sitting needs
+  its own id), the INT8 rows `litert-community/Qwen3-0.6B/dynamic_int8` (the iOS and Mac catalog id of that file; its
+  quant label is the catalog's string). Reading: YNNPACK on against off only within one build and file in that sitting.
 
 ## llama.cpp Gemma 4 rows before 2026-10-19 ran without the chat template (Mac and iPhone)
 

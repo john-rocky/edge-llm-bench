@@ -1,0 +1,29 @@
+# 2026-10-21 the control of the YNNPACK CPU rows of matrices/lu1020-q06-cpu-android.cells (lane lu1020, round r1b;
+# supervisor 2026-10-20 22:2x): the protocol only (1,024 prompt / 256 decode tokens at context 2,048), six arms in one
+# Galaxy S26 sitting, each build's XNNPACK row (arm litert-lm-cpu) and YNNPACK row (ynnpack=1 = --enable_ynnpack=true,
+# arm litert-lm-cpu-ynnpack) on one binary:
+#   HEAD     = side build head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly, the Hub file
+#              Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (block-32 INT4 weights): the two rows are the protocol rows of
+#              matrices/lu1020-q06-cpu-android.cells unchanged, so they are also the S26 retake of those cells.
+#   slinkytf = side build head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly-slinkytf (android/engine-pins.json): the
+#              same build without its slinky override, slinky at what LiteRT-LM 2ef6baeb's workspace resolves
+#              (TensorFlow / XLA a3eec6fc) instead of LiteRT d469ea48's pin 9b2ee975 (slinky 26eddcb5, between the two,
+#              raises the Android spin count of slinky's thread pool, which YNNPACK runs on, from 1000 to 10000000), on
+#              the same Hub file under the model id ..._ctl_slinkytf: a protocol capture is named by arm, model id and
+#              task only (android/bench/run_cell.py capture_stem), so a second build of one cell in one sitting needs
+#              its own id or the gate would judge the two builds' records as one capture.
+#   int8     = the HEAD build on the Hub's dynamic INT8 file Qwen3-0.6B.litertlm (litert-community/Qwen3-0.6B main
+#              e6687177, lfs sha256 c5f39b41…, 613,722,264 B) under its catalog id litert-community/Qwen3-0.6B/dynamic_int8
+#              (the iOS and Mac id of the same file): does YNNPACK take the FULLY_CONNECTED weights of an INT8 file,
+#              which it refuses in the block-32 INT4 file (dot.cc IsTensorSupported(weights), 339 lines per launch)?
+# The payload runs round-robin (run_campaign: each round runs the six rows once, in this order). Not page rows; the
+# records tell the builds apart by conditions.engineBuild / engineVersion. First row = the Android session anchor.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/lu1020-q06-cpu-ctl-android.cells --suffix lu1020-ctl --once --hold-held-by <keeper pid> --no-page-commit
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_ctl_slinkytf native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly-slinkytf local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_ctl_slinkytf native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly-slinkytf ynnpack=1 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_int8 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/e6687177e00897731e7716267eebd4eba0dde7c2/Qwen3-0.6B.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_int8 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/e6687177e00897731e7716267eebd4eba0dde7c2/Qwen3-0.6B.litertlm context-tokens=2048
