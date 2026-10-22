@@ -11,7 +11,8 @@ binary, credential, execution-level DDP logcat); the team rules: pin-drift (an i
 cell older than the newest release a platform's pin names, FAIL; the day before those pins' since
 days, none; a stamp that is no release tag, a note) and protocol-off (a protocol cell at context
 1056, prompt 1023 or decode 128 and a 1K text cell at context 672, FAIL; MLX's 2523, llama-bench
-without a context and the context ladder, none); the text screen (a Mac / iPhone cell's off-task,
+without a context and the context ladder, none; a declared context ladder's protocol cell, model id
+..._ctx4096, at 4096 none, with one run at 2048 FAIL); the text screen (a Mac / iPhone cell's off-task,
 looping or empty replies: text_screen.json per run by record id, a note and PASS; the file left
 alone when nothing changed; --no-text-screen writes nothing and judges alike; a cell with one run
 off; a dir it cannot write and a failed run without an id keep the HOLD; an allow-list line for
@@ -976,6 +977,27 @@ def main():
            f"MLX's 1K text cell at 2523, llama-bench's protocol cell without a context, the LiteRT-LM context "
            f"ladder at 4096 and the short-chat cells: no protocol-off, PASS ({sorted(rules(r, live=False))}, "
            f"{sorted(rules(rl, live=False))})")
+        # a declared context ladder of the protocol (2026-10-23, matrices/ctx-ladder-*.cells): a model id ending in
+        # _ctx<N> reads the context axis as N; the prompt and decode axes stay
+        lad = f"{GEMMA}_ctx4096"
+        at_n = [headline(leader_record(i, lad, task="native-benchmark-1024x256", prompt=1024), 4096) for i in range(4)]
+        dirs, pd = leader_sitting(raw, "2099-08-06", "pd", [at_n])
+        rc, res, out = run(dirs, history=hist)
+        r = res[os.path.basename(pd)]
+        ok(r["verdict"] == "PASS" and clean(r, set()) and "protocol-off" not in rules(r, live=False)
+           and any("declared context ladder (model id _ctx4096)" in n for n in r["notes"]),
+           f"a protocol cell whose model id ends in _ctx4096, every run at context 4096: no protocol-off, a note, "
+           f"PASS ({sorted(rules(r, live=False))})")
+        one_off = [headline(leader_record(i, lad, task="native-benchmark-1024x256", prompt=1024), ctx)
+                   for i, ctx in enumerate((4096, 4096, 2048, 4096))]
+        dirs, pm = leader_sitting(raw, "2099-08-07", "pm", [one_off])
+        rc, res, out = run(dirs, history=hist)
+        r = res[os.path.basename(pm)]
+        off = sorted(f["detail"] for f in r["findings"] if f["rule"] == "protocol-off")
+        ok(r["verdict"] == "FAIL" and clean(r, {"protocol-off"}) and len(off) == 1
+           and "1 of 4 runs" in off[0] and "(context 4096, prompt 1024, generated 256)" in off[0]
+           and "context 2048 x1" in off[0],
+           f"the same cell with one run at context 2048: FAIL protocol-off against context 4096 ({off})")
     else:
         print("  skip  no LEADER")
 

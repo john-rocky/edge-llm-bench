@@ -22,8 +22,9 @@ docs/session-check-v1.md. Verdicts:
         in a dir the job made, an unscrubbed or execution-level DDP logcat, model weights, a
         trace or an engine binary, a credential, a payload whose anchor phase is gone, a LiteRT-LM
         cell of an older release than the newest one a platform's pin names on the sitting's day
-        (pin-drift), a LiteRT-LM headline cell off the agreed protocol (protocol-off: context 2048;
-        the protocol cell also prefill 1024 and decode 256). These two take no allow-list line
+        (pin-drift), a LiteRT-LM headline cell off the agreed protocol (protocol-off: context 2048,
+        or N for a declared context ladder, a model id ending in _ctx<N>; the protocol cell also
+        prefill 1024 and decode 256). These two take no allow-list line
 
 Exit 0 = every dir PASS, 1 = a HOLD or a FAIL, 2 = usage. Reads: the dirs, the git index and
 HEAD of the repo that holds them (tracked files, the committed results/summary as the history of
@@ -119,6 +120,8 @@ PROTOCOL_TASK_PREFIX = "native-benchmark-"
 PROTOCOL_CELL = "native-benchmark-1024x256"
 HEADLINE_TEXT_TASK = "long-context-1024-gen256"
 PROTOCOL_CONTEXT, PROTOCOL_PREFILL, PROTOCOL_DECODE = 2048, 1024, 256
+# a declared context ladder of the protocol: one model id per allocation, ..._ctx<N> (protocol-off reads N)
+DECLARED_LADDER_RE = re.compile(r"_ctx(\d+)$")
 # LiteRT-LM's arms on the release build (registry_pin leaves litert-lm-npu out: a side build)
 LITERT_RUNTIMES = ("litert-lm", "litert-lm-cpu", "litert-lm-gpu")
 # the platform blocks of environment.lock.json arms.litert-lm, each a pin from its since day (before
@@ -1273,10 +1276,18 @@ class Check:
         protocol-gemma4.md "The spec"): every run's context 2048 (the summary's context_tokens:
         build_summary.context_tokens_of), and the protocol cell's runs 1024 prompt and 256 generated
         tokens. One finding per cell; a run without a context is off. Other arms (MLX sizes its KV
-        as it goes, llama-bench sets its own), short-chat and the context ladder are not read."""
+        as it goes, llama-bench sets its own), short-chat and the context ladder are not read. A
+        declared context ladder of the protocol (a model id ending in _ctx<N>, 2026-10-23: one id per
+        allocation, matrices/ctx-ladder-*.cells) reads its context axis as N, its prompt and decode
+        axes as any protocol cell's."""
         if rt not in LITERT_RUNTIMES or task not in (PROTOCOL_CELL, HEADLINE_TEXT_TASK):
             return
         want = {"context": PROTOCOL_CONTEXT}
+        ladder = DECLARED_LADDER_RE.search(((items[0][1] if items else {}).get("model") or {}).get("id") or "")
+        if ladder:
+            want["context"] = int(ladder.group(1))
+            self.note(f"protocol-off: {cell}: declared context ladder (model id _ctx{ladder.group(1)}): the "
+                      f"context axis read as {ladder.group(1)}")
         if task == PROTOCOL_CELL:
             want.update(prompt=PROTOCOL_PREFILL, generated=PROTOCOL_DECODE)
         off = collections.defaultdict(collections.Counter)
