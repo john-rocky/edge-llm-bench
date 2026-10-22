@@ -1,0 +1,28 @@
+# 2026-10-23 the context ladder of Qwen3 0.6B's all-composite export (E2) on the CPU, XNNPACK and YNNPACK (lane
+# ctx-ladder, round r1), the Mac Studio (M4 Max) leg: one dashboard-job sitting whose payload is the platform's session
+# anchor row alone (matrices/anchors.cells, byte-identical: the job re-judges the payload by the anchor records in its
+# own campaign), followed, inside the same Mac measurement window, by the ladder itself. The ladder cannot be a row
+# here: the Mac runner (scripts/bench_matrix_mac.sh) runs the yardstick, whose LiteRT-LM is the vendored release
+# (v0.18.0), while the ladder runs the HEAD build of the YNNPACK rows, so it runs as that build's CLI:
+#   build = litert_lm_advanced_main built for macos_arm64 from the sources of the Android side build
+#           head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly (android/engine-pins.json: LiteRT-LM 2ef6baeb, LiteRT
+#           d469ea48, XNNPACK 878f1d8c and slinky 9b2ee975 by --override_repository, --define=litert_enable_ynnpack=true,
+#           --@litert//litert/build_common:build_include=cpu_only, bazel 7.6.1, -c opt), with the commit's prebuilt
+#           libGemmaModelConstraintProvider.dylib; the binary's sha256 and otool -L go into the campaign dir;
+#   file  = E2, Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm (sha256 fbbf0657...5b79), one APFS clone per
+#           allocation (the CLI writes its XNNPACK cache beside the model, so each allocation's first launch builds
+#           its own, as each allocation's pushed copy does on the phones: matrices/ctx-ladder-q06-e2-ynnpack-a-android.cells);
+#   rows  = the Android command form (android/bench/run_cell.py engine_command): --backend=cpu --benchmark
+#           --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=<N>, and
+#           --enable_ynnpack=true for the YNNPACK arm, N = 2,048 / 4,096 / 8,192 / 16,384 / 32,768 (the Mac's 128 GB
+#           takes the 32,768 allocation), 4 launches per allocation and arm, one process each, in rounds whose order
+#           reverses every round (allocations up then down, XNNPACK and YNNPACK swapping), a 5-s sampler of the other
+#           processes' CPU per launch and one retake of a launch another process overlapped;
+#   ids   = litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx<N>, the phones' ids.
+# The consoles become schema-v1 records in the payload dir's app-path-cli/ (scripts/import_litert_cli.py: the Android
+# route's parsers; the arm, the allocation's target_number and the overlap verdict per launch), with the console, the
+# sampler's lines and the manifest in its cli/ dir. A launch per allocation and arm is the cache build (firstEver).
+# Estimate: one Mac window of about 25 min (the job about 3 min, the ladder about 15-20 min).
+#   python3 <lane>/job_inwindow.py m4max --cells matrices/ctx-ladder-q06-e2-ynnpack-mac.cells --suffix ctxladder --once --no-page-commit
+
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
