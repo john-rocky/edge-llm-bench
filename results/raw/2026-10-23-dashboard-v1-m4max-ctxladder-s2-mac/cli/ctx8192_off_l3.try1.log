@@ -1,0 +1,144 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792708108.948433 385426996 litert_lm_lib.cc:700] Choose backend: cpu
+I0000 00:00:1792708108.948504 385426996 litert_lm_lib.cc:868] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 8192
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /Users/USER/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/mac/s2/models/ctx8192/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: [1024]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1792708108.948518 385426996 litert_lm_lib.cc:875] vision_executor_settings: not set
+I0000 00:00:1792708108.948523 385426996 litert_lm_lib.cc:881] audio_executor_settings: not set
+I0000 00:00:1792708108.948529 385426996 litert_lm_lib.cc:904] Creating engine
+W0000 00:00:1792708108.949779 385426996 litert_lm_loader.cc:526] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792708108.949785 385427003 litert_lm_loader.cc:401] Section not found: SP_Tokenizer
+W0000 00:00:1792708108.949803 385427003 litert_lm_loader.cc:401] Section not found: SP_Tokenizer
+W0000 00:00:1792708108.949812 385427003 litert_lm_loader.cc:401] Section not found: HF_Tokenizer_Zlib
+W0000 00:00:1792708108.949790 385426996 litert_lm_loader.cc:526] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792708108.949831 385426996 litert_lm_loader.cc:544] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792708108.949836 385426996 litert_lm_loader.cc:544] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ba302c000, name=YNNPackAccelerator
+INFO: [cpu_registry.cc:59] YNNPACK CPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ba302c060, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1792708108.955241 385426996 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ba302c0c0, name=YNNPackAccelerator
+INFO: [cpu_registry.cc:59] YNNPACK CPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ba302c120, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=510, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=900, num_inputs=60, num_outputs=57, num_ops=406
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=8192, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 534 tensors of signature prefill_128 have been updated for magic number  32771 to target number 8192
+INFO: [magic_number_utils.cc:536] 534 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 8192
+INFO: [magic_number_utils.cc:536] 534 tensors of signature decode have been updated for magic number  32771 to target number 8192
+INFO: [compiled_model.cc:953] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1792708109.126357 385426996 litert_lm_loader.cc:401] Section not found: TFLiteModel
+W0000 00:00:1792708109.126390 385426996 litert_lm_loader.cc:491] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1792708109.126396 385426996 litert_lm_loader.cc:401] Section not found: TFLiteModel
+W0000 00:00:1792708109.126399 385426996 litert_lm_loader.cc:491] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1792708109.126402 385426996 litert_lm_loader.cc:401] Section not found: TFLiteModel
+W0000 00:00:1792708109.126404 385426996 litert_lm_loader.cc:491] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1792708109.126407 385426996 litert_lm_loader.cc:401] Section not found: TFLiteModel
+W0000 00:00:1792708109.126409 385426996 litert_lm_loader.cc:491] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ba55dfea0, name=YNNPackAccelerator
+INFO: [cpu_registry.cc:59] YNNPACK CPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0x7ba55dff00, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1792708109.293204 385426996 litert_lm_loader.cc:526] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792708109.293233 385426996 litert_lm_loader.cc:526] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792708109.293237 385426996 litert_lm_loader.cc:544] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792708109.293241 385426996 litert_lm_loader.cc:544] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1792708109.293390 385426996 litert_lm_lib.cc:1182] Creating conversation
+I0000 00:00:1792708109.293661 385426996 litert_lm_lib.cc:1194] Running single-turn conversation
+I0000 00:00:1792708126.090893 385426996 litert_lm_lib.cc:433] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.01 ms
+    - Init Executor: 343.35 ms
+    - Init LLM metadata: 0.17 ms
+    - Init Model assets: 1.05 ms
+    - Init Tokenizer: 107.49 ms
+    - Init Total: 344.85 ms
+--------------------------------------------------
+  Time to first token: 3.85 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 3.799094375s duration.
+      Prefill Speed: 269.54 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 12.99783425s duration.
+      Decode Speed: 19.70 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7ba302c120, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7ba302c0c0, name=YNNPackAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7ba55dff00, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0x7ba55dfea0, name=YNNPackAccelerator
+       17.19 real        50.86 user         2.86 sys
+          6617448448  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              438682  page reclaims
+                  10  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   1  signals received
+                   1  voluntary context switches
+              411761  involuntary context switches
+            30389823  instructions retired
+            13214984  cycles elapsed
+             2163168  peak memory footprint
+EXIT_CODE=0
