@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "913ccd05-1943-43d0-b7d1-ead094d5b45a",
+  "runtime": "litert-lm-cpu-ynnpack",
+  "engineVersion": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+  "engineArtifact": "b3658a5552ba906ffe6dc0dd70135f116589e2e694f19a85525d32154f66dfb8",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx8192",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024, local candidate)",
+    "file": "litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_gpucomposites_e2_ctx8192_Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm",
+    "sha256": "fbbf0657efe90a57a4f3992023e01b1431455d3c130b5ab926647b1f137e5b79"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-22T19:17:30Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2227.2,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 2227.2,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 8192,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "2",
+    "elapsedSeconds": 10.8,
+    "exitCode": 0,
+    "engineBuild": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly /data/local/tmp/llmbench/engines/head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly/litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_gpucomposites_e2_ctx8192_Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=8192 --enable_ynnpack=true",
+    "backendRegistered": [
+      "Choose backend: cpu",
+      "enable_ynnpack: true",
+      "max_tokens: 8192",
+      "RegisterAccelerator: ptr=<addr>, name=YNNPackAccelerator",
+      "YNNPACK CPU accelerator registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 2092 out of 2262 node(s) with delegate (YNNPackDelegate) node, yielding 284 partitions for subgraph 0 (prefill_128).",
+      "Replacing 2092 out of 2262 node(s) with delegate (YNNPackDelegate) node, yielding 284 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 1921 out of 2091 node(s) with delegate (YNNPackDelegate) node, yielding 284 partitions for subgraph 2 (decode).",
+      "Replacing 113 out of 312 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 0 (prefill_128).",
+      "Replacing 113 out of 312 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 113 out of 312 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 2 (decode)."
+    ],
+    "enableYnnpack": true,
+    "ynnpackLines": {
+      "ops": 451,
+      "partitions": 482
+    },
+    "protocolFlags": [
+      "cpu-capped"
+    ]
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 2200.0,
+    "promptTokensPerSecond": 469.41,
+    "decodeTokensPerSecond": 53.39,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 2339.37109375,
+    "memoryPeakResidentMB": 2442.0859375,
+    "firstEver": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu-ynnpack_litert-community_Qwen3-0.6B_dynamic_wi4b32_afp32_gpucomposites_e2_ctx8192_native-benchmark-1024x256_2026-10-22T19-17-30.949338_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
