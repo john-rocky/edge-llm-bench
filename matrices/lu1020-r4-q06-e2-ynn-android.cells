@@ -1,0 +1,22 @@
+# 2026-10-23 Qwen3 0.6B's all-composite export (E2) on the CPU, YNNPACK on and off (lane lu1020, round r4), Android,
+# one dashboard-job sitting per device, the protocol only (1,024 prompt / 256 decode tokens at context 2,048), on the
+# side build of matrices/lu1020-q06-cpu-android.cells, head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly
+# (android/engine-pins.json): the XNNPACK row (arm litert-lm-cpu) and the YNNPACK row (ynnpack=1 = --enable_ynnpack=true,
+# arm litert-lm-cpu-ynnpack) of one binary for each file:
+#   E2  = the local export Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm (sha256 fbbf0657...5b79,
+#         343,466,928 B; litert-torch main 0a81bf6f3 on 2026-10-13, --quantization_recipe=dynamic_wi4b32_afp32
+#         --apply_gpu_composites=True --cache_length=32768 --prefill_lengths=128,1024: in every signature
+#         odml.qkv_norm_rope, odml.sdpa_transposed, odml.swiglu and odml.cache_update 28 each, odml.rms_norm 57),
+#         not on the Hub, under the model id of its GPU rows (matrices/lu1020-q06-gpu-a-android.cells);
+#   OWN = the Hub file Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (block-32 INT4 weights), the two protocol rows of
+#         matrices/lu1020-q06-cpu-android.cells unchanged: the sitting's control, and the device's retake of those cells.
+# The payload runs round-robin (each round runs the four rows once, in this order). Not page rows of the main
+# sections; the records tell the files apart by model.id / model.sha256. First row = the Android session anchor.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/lu1020-r4-q06-e2-ynn-android.cells --suffix lu1020-cpu-r4 --once --hold-held-by <keeper pid> --no-page-commit
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/lu1020-r4-q06-e2-ynn-android.cells --suffix lu1020-cpu-r4 --once --hold-held-by <keeper pid> --no-page-commit
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/lu1020_qwen3_gemma4/r1/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/lu1020_qwen3_gemma4/r1/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/snapshots/a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
