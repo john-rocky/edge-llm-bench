@@ -1,0 +1,2 @@
+# dec-npu-fix 2026-10-22 12:58:27 JST
+12:58:27 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.SigbufDecoderTest -e model parakeet-tdt-0.6b-v3 -e accelerator npu  -e enc_inputs sigbuf/enc/b-tdt-cpu.enc.w0.out0.f32,sigbuf/enc/b-tdt-cpu.enc.w1.out0.f32,sigbuf/enc/b-tdt-cpu.enc.w2.out0.f32,sigbuf/enc/b-tdt-cpu.enc.w3.out0.f32 -e passes 3 -e run_encode true -e foreground front -e tag dec-npu-fix com.google.ai.edge.examples.asr.sigbufcheck.npu.test/androidx.test.runner.AndroidJUnitRunner

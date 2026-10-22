@@ -1,0 +1,2 @@
+# f2-mainact-fix 2026-10-22 15:24:52 JST
+15:24:52 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.SigbufMainActivityTest -e model parakeet-tdt-0.6b-v3 -e accelerators cpu,gpu -e manifest /data/user/0/com.google.ai.edge.examples.asr.sigbufcheck.fix/files/sets/test-clean/manifest-device.tsv -e every 32 -e rows 1 -e max_tokens 630 -e tag f2-mainact-fix com.google.ai.edge.examples.asr.sigbufcheck.fix.test/androidx.test.runner.AndroidJUnitRunner

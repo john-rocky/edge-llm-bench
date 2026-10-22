@@ -1,0 +1,2 @@
+# f2-mainact-npu 2026-10-22 15:24:28 JST
+15:24:28 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.SigbufMainActivityTest -e model parakeet-tdt-0.6b-v3 -e accelerators npu -e manifest /data/user/0/com.google.ai.edge.examples.asr.sigbufcheck.npu/files/sets/test-clean/manifest-device.tsv -e every 32 -e rows 1 -e max_tokens 630 -e tag f2-mainact-npu com.google.ai.edge.examples.asr.sigbufcheck.npu.test/androidx.test.runner.AndroidJUnitRunner

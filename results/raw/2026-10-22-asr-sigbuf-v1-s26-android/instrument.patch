@@ -1,0 +1,1184 @@
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+index 02d1c0c9..8b7d8af9 100644
+--- a/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/app/build.gradle.kts
+@@ -5,6 +5,36 @@ plugins {
+   id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
+ }
+ 
++// asr-sigbuf-v1 check build (edge-llm-bench docs/asr-sigbuf-v1.md), not for upstream.
++// -Psigbufcheck.suffix=<applicationIdSuffix>: each build installs beside the others on one phone.
++// -Psigbufcheck.npuLibs=<dir>: LiteRT 2.2.0, the release the Qualcomm NPU runtime libraries come from
++// (litert_npu_runtime_libraries.zip, qualcomm_runtime_v81, with QAIRT's HTP libraries), packaged from
++// <dir>/arm64-v8a; without it the app's own LiteRT 2.3.0 and litert-gpu 2.3.0.
++val checkSuffix: String = providers.gradleProperty("sigbufcheck.suffix").getOrElse(".sigbufcheck")
++val npuLibs: String? = providers.gradleProperty("sigbufcheck.npuLibs").orNull
++val litertVersion = if (npuLibs != null) "2.2.0" else "2.3.0"
++// The git blob of the TdtDecoder.kt this APK is built from, written into every run's header.
++val tdtDecoderBlob: String =
++  providers
++    .exec {
++      workingDir(projectDir)
++      commandLine("git", "hash-object", "src/main/java/com/google/ai/edge/examples/asr/TdtDecoder.kt")
++    }
++    .standardOutput
++    .asText
++    .get()
++    .trim()
++val mainActivityBlob: String =
++  providers
++    .exec {
++      workingDir(projectDir)
++      commandLine("git", "hash-object", "src/main/java/com/google/ai/edge/examples/asr/MainActivity.kt")
++    }
++    .standardOutput
++    .asText
++    .get()
++    .trim()
++
+ android {
+   namespace = "com.google.ai.edge.examples.asr"
+   compileSdk = 35
+@@ -13,19 +43,28 @@ android {
+ 
+   defaultConfig {
+     applicationId = "com.google.ai.edge.examples.asr"
++    applicationIdSuffix = checkSuffix
+     minSdk = 31
+     targetSdk = 35
+     versionCode = 1
+     versionName = "1.0"
+ 
+     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
++    buildConfigField("String", "LITERT_VERSION", "\"$litertVersion\"")
++    buildConfigField("String", "TDT_DECODER_BLOB", "\"$tdtDecoderBlob\"")
++    buildConfigField("String", "MAIN_ACTIVITY_BLOB", "\"$mainActivityBlob\"")
+ 
+     ndk {
+       // Chaquopy requires specific ABIs
+       abiFilters += listOf("arm64-v8a")
+     }
+-    // Needed for Qualcomm NPU runtimes
+-    packaging { jniLibs { useLegacyPackaging = true } }
++    // Needed for Qualcomm NPU runtimes; keepDebugSymbols ships the libraries byte for byte.
++    packaging {
++      jniLibs {
++        useLegacyPackaging = true
++        keepDebugSymbols += "**/*.so"
++      }
++    }
+   }
+ 
+   buildTypes {
+@@ -33,7 +72,17 @@ android {
+       isMinifyEnabled = false
+       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+     }
++    // The measured build: release settings (not debuggable), signed with the debug key so the
++    // androidTest APK can instrument it and it installs over the debug build whose run-as put the
++    // models into the app's files dir.
++    create("bench") {
++      initWith(getByName("release"))
++      signingConfig = signingConfigs.getByName("debug")
++      matchingFallbacks += listOf("release")
++    }
+   }
++  testBuildType = "bench"
++  sourceSets { if (npuLibs != null) getByName("main").jniLibs.srcDir(npuLibs) }
+   compileOptions {
+     sourceCompatibility = JavaVersion.VERSION_11
+     targetCompatibility = JavaVersion.VERSION_11
+@@ -42,7 +91,10 @@ android {
+     jvmTarget = "11"
+     freeCompilerArgs += "-Xskip-metadata-version-check"
+   }
+-  buildFeatures { viewBinding = true }
++  buildFeatures {
++    viewBinding = true
++    buildConfig = true
++  }
+ 
+   externalNativeBuild {
+     cmake {
+@@ -87,14 +139,13 @@ dependencies {
+   implementation(libs.androidx.constraintlayout)
+   implementation(libs.androidx.navigation.fragment.ktx)
+   implementation(libs.androidx.navigation.ui.ktx)
+-  implementation("com.google.ai.edge.litert:litert:2.3.0")
+-  implementation("com.google.ai.edge.litert:litert-gpu:2.3.0")
++  implementation("com.google.ai.edge.litert:litert:$litertVersion")
++  if (npuLibs == null) implementation("com.google.ai.edge.litert:litert-gpu:$litertVersion")
+   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+   implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+   implementation(files("libs/jlibrosa-1.1.8-SNAPSHOT-jar-with-dependencies.jar"))
+-  implementation(project(":litert_npu_runtime_libraries:runtime_strings"))
+   testImplementation(libs.junit)
+   testImplementation("org.json:json:20231013")
+   androidTestImplementation(libs.androidx.junit)
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufBenchTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufBenchTest.kt
+new file mode 100644
+index 00000000..4289a2e9
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufBenchTest.kt
+@@ -0,0 +1,265 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++import android.util.Log
++import androidx.test.ext.junit.runners.AndroidJUnit4
++import androidx.test.platform.app.InstrumentationRegistry
++import com.google.ai.edge.litert.Accelerator
++import java.io.File
++import java.io.FileInputStream
++import kotlin.time.Duration
++import kotlin.time.Duration.Companion.milliseconds
++import kotlin.time.Duration.Companion.seconds
++import org.json.JSONArray
++import org.json.JSONObject
++import org.junit.Test
++import org.junit.runner.RunWith
++
++/**
++ * asr-sigbuf-v1 (edge-llm-bench docs/asr-sigbuf-v1.md): the app's file path over WAV files, with the
++ * token ids, time indices and step times of every window. MainActivity.preparePipeline for a "-tdt"
++ * entry (MelSpectroProcessor, HuggingfaceTokenizer, LiteRtRunner with TdtDecoder) and
++ * MainActivity.processFileAudio's steps (FileAudioSource -> AudioPreprocessor.process ->
++ * LiteRtRunner.recognize -> the token sequence -> LevenshteinTokenMerger), one after the other per
++ * window on the test thread (the activity overlaps them in three coroutines). A window's decode time
++ * is the time spent in the token sequence's iterator calls.
++ *
++ * Arguments (am instrument -e <name> <value>):
++ * - model: a "-tdt" key of model_metadata.json
++ * - accelerator: cpu, gpu or npu
++ * - manifest: TSV on the phone (id, WAV path relative to the manifest, seconds)
++ * - every, limit: the rows at index 0, every, 2 * every, ..., the first [limit] of them (0 = all)
++ * - warmup_id: a manifest id transcribed once after the load, before the rows (written, marked warmup)
++ * - max_tokens: tokens taken from one window's sequence before the test stops reading it (the
++ *   window is marked capped); default 2000
++ * - pace: none (default) or ceiling (SigbufIo.ceilingWait before every row)
++ * - foreground: front keeps BenchFrontActivity in front while the test runs
++ * - tag: output stem in <external files dir>/sigbuf: <tag>.jsonl (a header line, one line per row),
++ *   <tag>.log.txt (SigbufIo.LogcatTap), <tag>.done
++ */
++@RunWith(AndroidJUnit4::class)
++class SigbufBenchTest {
++
++  private data class Row(val id: String, val wav: File, val seconds: Double)
++
++  @Test
++  fun transcribeFiles() {
++    val context = InstrumentationRegistry.getInstrumentation().targetContext
++    val args = InstrumentationRegistry.getArguments()
++    val modelKey = requireNotNull(args.getString("model")) { "model is required" }
++    require(modelKey.contains("-tdt")) { "$modelKey is not a -tdt entry (TdtDecoder)" }
++    val acceleratorName = (args.getString("accelerator") ?: "cpu").lowercase()
++    val accelerator = SigbufIo.accelerator(acceleratorName)
++    val manifest = File(requireNotNull(args.getString("manifest")) { "manifest is required" })
++    val every = args.getString("every")?.toInt() ?: 1
++    val limit = args.getString("limit")?.toInt() ?: 0
++    val warmupId = args.getString("warmup_id")
++    val maxTokens = args.getString("max_tokens")?.toInt() ?: 2000
++    val pace = args.getString("pace") ?: "none"
++    require(pace == "none" || pace == "ceiling") { "pace must be none or ceiling, got $pace" }
++    val tag = requireNotNull(args.getString("tag")) { "tag is required" }
++    val out = SigbufIo.outDir(context, args)
++    val jsonl = File(out, "$tag.jsonl").apply { delete() }
++    val done = File(out, "$tag.done").apply { delete() }
++
++    val rows =
++      manifest.readLines().filter { it.isNotBlank() }.map { line ->
++        val f = line.split('\t')
++        Row(f[0], File(manifest.parentFile, f[1]), f.getOrNull(2)?.toDoubleOrNull() ?: -1.0)
++      }
++    val selected = rows.filterIndexed { i, _ -> i % every == 0 }.let { if (limit > 0) it.take(limit) else it }
++    val warmup = warmupId?.let { id -> requireNotNull(rows.firstOrNull { it.id == id }) { "$id is not in the manifest" } }
++
++    val metadata =
++      ModelMetadataManager(context.assets.open("model_metadata.json").bufferedReader().use { it.readText() })
++    val config = SigbufIo.localConfig(metadata.getModelConfig(modelKey), accelerator, null)
++    val modelFile =
++      SigbufIo.requireFile(context, if (accelerator == Accelerator.NPU) config.npuModelPath else config.modelPath)
++    SigbufIo.requireFile(context, config.tokenizerPath)
++
++    val tap = SigbufIo.LogcatTap(File(out, "$tag.log.txt"))
++    val scenario = if (args.getString("foreground") == "front") SigbufIo.launchFront() else null
++
++    // MainActivity.preparePipeline for a "-tdt" entry.
++    val logMelSpectro = config.logMelSpectro
++    val preprocessor =
++      if (logMelSpectro != null) MelSpectroProcessor(SAMPLING_RATE, logMelSpectro) else DummyAudioProcessor()
++    val tokenizer = HuggingfaceTokenizer(context, config)
++    val t0 = SigbufIo.nowNs()
++    var separateBuffers: Boolean? = null
++    val recognizer =
++      LiteRtRunner(context, config, accelerator) { model, cfg ->
++        SigbufIo.tdtDecoder(model, cfg, accelerator).let { (decoder, separate) ->
++          separateBuffers = separate
++          decoder
++        }
++      }
++    val loadMs = SigbufIo.msSince(t0)
++    val interval = config.inputMilliseconds.milliseconds
++
++    jsonl.appendText(
++      JSONObject()
++        .put("type", "header")
++        .put("tag", tag)
++        .put("model", modelKey)
++        .put("accelerator", acceleratorName)
++        .put("model_file", modelFile.path)
++        .put("model_bytes", modelFile.length())
++        .put("litert_version", BuildConfig.LITERT_VERSION)
++        .put("tdt_decoder_blob", BuildConfig.TDT_DECODER_BLOB)
++        .put("tdt_separate_buffers", separateBuffers ?: JSONObject.NULL)
++        .put("application_id", BuildConfig.APPLICATION_ID)
++        .put("load_ms", loadMs)
++        .put("manifest", manifest.path)
++        .put("every", every)
++        .put("limit", limit)
++        .put("rows", selected.size)
++        .put("warmup_id", warmupId ?: JSONObject.NULL)
++        .put("max_tokens", maxTokens)
++        .put("pace", pace)
++        .put("foreground_state", scenario?.state?.name ?: JSONObject.NULL)
++        .put("device", SigbufIo.deviceFacts(context))
++        .toString() + "\n"
++    )
++
++    var prevEndNs = SigbufIo.nowNs()
++    val plan = listOfNotNull(warmup?.let { Pair(it, true) }) + selected.map { Pair(it, false) }
++    for ((row, isWarmup) in plan) {
++      val wait = if (pace == "ceiling" && !isWarmup) SigbufIo.ceilingWait(prevEndNs) else null
++      val line = transcribe(context, row, isWarmup, recognizer, preprocessor, tokenizer, interval, maxTokens)
++      if (wait != null) line.put("pace_wait", wait)
++      jsonl.appendText(line.toString() + "\n")
++      prevEndNs = SigbufIo.nowNs()
++    }
++
++    val foregroundState = scenario?.state?.name
++    recognizer.close()
++    tokenizer.close()
++    preprocessor.close()
++    scenario?.close()
++    val logCounts = tap.finish()
++    jsonl.appendText(
++      JSONObject()
++        .put("type", "end")
++        .put("foreground_state", foregroundState ?: JSONObject.NULL)
++        .put("log", logCounts)
++        .put("device", SigbufIo.deviceFacts(context))
++        .toString() + "\n"
++    )
++    done.writeText("done rows=${plan.size}\n")
++    Log.i(SigbufIo.TAG, "done tag=$tag rows=${plan.size}")
++  }
++
++  /** One WAV through the activity's file path; the row's JSON line. */
++  private fun transcribe(
++    context: android.content.Context,
++    row: Row,
++    isWarmup: Boolean,
++    recognizer: SpeechRecognizer,
++    preprocessor: AudioPreprocessor,
++    tokenizer: Tokenizer,
++    interval: Duration,
++    maxTokens: Int,
++  ): JSONObject {
++    val windows = JSONArray()
++    var confirmed = ""
++    var unconfirmed = ""
++    var error: String? = null
++    val thermalBefore = SigbufIo.thermalStatus(context)
++    val start = SigbufIo.nowNs()
++    try {
++      FileInputStream(row.wav).use { input ->
++        FileAudioSource(input, SAMPLING_RATE, interval, FILE_AUDIO_CHUNK_OVERLAP_DURATION).use { source ->
++          LevenshteinTokenMerger(
++              tokenizer,
++              (FILE_AUDIO_CHUNK_OVERLAP_DURATION / interval).toFloat(),
++              maxLevenshteinDistance = FILE_MAX_LEVENSHTEIN_DISTANCE,
++            )
++            .use { merger ->
++              for (chunk in source.getAudioData()) {
++                var t = SigbufIo.nowNs()
++                val features = preprocessor.process(chunk)
++                val melMs = SigbufIo.msSince(t)
++                t = SigbufIo.nowNs()
++                val sequence = recognizer.recognize(features)
++                val encodeMs = SigbufIo.msSince(t)
++                val ids = ArrayList<Int>()
++                val timeIndices = ArrayList<Int>()
++                var ended = false
++                var capped = false
++                var decodeNs = 0L
++                val iterator = sequence.iterator()
++                while (true) {
++                  t = SigbufIo.nowNs()
++                  val next = if (iterator.hasNext()) iterator.next() else null
++                  decodeNs += SigbufIo.nowNs() - t
++                  if (next == null) break
++                  val decoded = merger.decode(next.first, next.second)
++                  if (decoded != null) {
++                    confirmed = listOf(confirmed, decoded.confirmedText).filter { it.isNotEmpty() }.joinToString(" ")
++                    unconfirmed = decoded.unconfirmedText
++                  }
++                  if (next.first == SpeechRecognizer.END_OF_SEQUENCE) {
++                    ended = true
++                    break
++                  }
++                  ids.add(next.first)
++                  timeIndices.add(next.second)
++                  if (ids.size >= maxTokens) {
++                    capped = true
++                    break
++                  }
++                }
++                windows.put(
++                  JSONObject()
++                    .put("mel_ms", melMs)
++                    .put("encode_ms", encodeMs)
++                    .put("decode_ms", decodeNs / 1e6)
++                    .put("tokens", JSONArray(ids))
++                    .put("time_indices", JSONArray(timeIndices))
++                    .put("ended", ended)
++                    .put("capped", capped)
++                )
++              }
++            }
++        }
++      }
++    } catch (e: Exception) {
++      error = "${e.javaClass.simpleName}: ${e.message}"
++      Log.e(SigbufIo.TAG, "${row.id} failed", e)
++    }
++    return JSONObject()
++      .put("type", "utterance")
++      .put("id", row.id)
++      .put("warmup", isWarmup)
++      .put("seconds", row.seconds)
++      .put("wall_s", SigbufIo.msSince(start) / 1e3)
++      .put("windows", windows)
++      .put("text", listOf(confirmed, unconfirmed).filter { it.isNotEmpty() }.joinToString(" "))
++      .put("error", error ?: JSONObject.NULL)
++      .put("thermal_before", thermalBefore)
++      .put("thermal_after", SigbufIo.thermalStatus(context))
++  }
++
++  private companion object {
++    // MainActivity's file path constants.
++    const val SAMPLING_RATE = 16000
++    val FILE_AUDIO_CHUNK_OVERLAP_DURATION = 2.seconds
++    const val FILE_MAX_LEVENSHTEIN_DISTANCE = 5
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufDecoderTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufDecoderTest.kt
+new file mode 100644
+index 00000000..5b57ae72
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufDecoderTest.kt
+@@ -0,0 +1,185 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++import android.util.Log
++import androidx.test.ext.junit.runners.AndroidJUnit4
++import androidx.test.platform.app.InstrumentationRegistry
++import com.google.ai.edge.litert.Accelerator
++import com.google.ai.edge.litert.CompiledModel
++import java.io.File
++import org.json.JSONArray
++import org.json.JSONObject
++import org.junit.Test
++import org.junit.runner.RunWith
++
++/**
++ * asr-sigbuf-v1 (edge-llm-bench docs/asr-sigbuf-v1.md): the app's TdtDecoder on encoder outputs read
++ * from files, without the encoder. LiteRtRunner builds the model as the app does for the accelerator;
++ * before each window the encode signature runs on an all-zero input into output buffers of its own
++ * (as the app runs encode before each decode; run_encode), the file's encoder output is written into
++ * that output buffer, and TdtDecoder.decode runs from it, as from LiteRtRunner's.
++ *
++ * Arguments (am instrument -e <name> <value>):
++ * - model: a "-tdt" key of model_metadata.json
++ * - accelerator: cpu or npu
++ * - model_file: a file under the files dir in place of the entry's own (e.g. the f32 file on the CPU)
++ * - enc_inputs: comma-separated raw float32 encoder outputs [1, 1024, T] under the files dir
++ * - passes: how many times the windows are decoded in order; default 3
++ * - max_tokens: tokens taken from one window before the test stops reading it; default 2000
++ * - run_encode: true (default) or false
++ * - foreground: front keeps BenchFrontActivity in front while the test runs
++ * - tag: output stem in <external files dir>/sigbuf: <tag>.json (one entry per window), <tag>.log.txt
++ *   (SigbufIo.LogcatTap), <tag>.done
++ */
++@RunWith(AndroidJUnit4::class)
++class SigbufDecoderTest {
++
++  @Test
++  fun decodeFromFiles() {
++    val context = InstrumentationRegistry.getInstrumentation().targetContext
++    val args = InstrumentationRegistry.getArguments()
++    val modelKey = requireNotNull(args.getString("model")) { "model is required" }
++    require(modelKey.contains("-tdt")) { "$modelKey is not a -tdt entry (TdtDecoder)" }
++    val acceleratorName = (args.getString("accelerator") ?: "cpu").lowercase()
++    val accelerator = SigbufIo.accelerator(acceleratorName)
++    val inputs =
++      requireNotNull(args.getString("enc_inputs")) { "enc_inputs is required" }
++        .split(',')
++        .map { it.trim() }
++        .filter { it.isNotEmpty() }
++        .map { SigbufIo.requireFile(context, it) }
++    val passes = args.getString("passes")?.toInt() ?: 3
++    val maxTokens = args.getString("max_tokens")?.toInt() ?: 2000
++    val runEncode = args.getString("run_encode") != "false"
++    val tag = requireNotNull(args.getString("tag")) { "tag is required" }
++    val out = SigbufIo.outDir(context, args)
++    val report = File(out, "$tag.json").apply { delete() }
++    val done = File(out, "$tag.done").apply { delete() }
++
++    val metadata =
++      ModelMetadataManager(context.assets.open("model_metadata.json").bufferedReader().use { it.readText() })
++    val config =
++      SigbufIo.localConfig(metadata.getModelConfig(modelKey), accelerator, args.getString("model_file"))
++    val modelFile =
++      SigbufIo.requireFile(context, if (accelerator == Accelerator.NPU) config.npuModelPath else config.modelPath)
++
++    val tap = SigbufIo.LogcatTap(File(out, "$tag.log.txt"))
++    val scenario = if (args.getString("foreground") == "front") SigbufIo.launchFront() else null
++
++    var compiled: CompiledModel? = null
++    var decoder: TdtDecoder? = null
++    var separateBuffers: Boolean? = null
++    val t0 = SigbufIo.nowNs()
++    val recognizer =
++      LiteRtRunner(context, config, accelerator) { model, cfg ->
++        SigbufIo.tdtDecoder(model, cfg, accelerator).let { (built, separate) ->
++          compiled = model
++          decoder = built
++          separateBuffers = separate
++          built
++        }
++      }
++    val loadMs = SigbufIo.msSince(t0)
++    val model = requireNotNull(compiled)
++    val tdtDecoder = requireNotNull(decoder)
++    val encodeIn = model.createInputBuffers()
++    val encodeOut = model.createOutputBuffers()
++    val zeros = FloatArray(model.getInputTensorType("args_0", "encode").layout!!.dimensions.fold(1, Int::times))
++
++    val windows = JSONArray()
++    var failed = 0
++    for (pass in 0 until passes) {
++      for ((w, input) in inputs.withIndex()) {
++        val floats = SigbufIo.readF32(input)
++        val ids = ArrayList<Int>()
++        val timeIndices = ArrayList<Int>()
++        var ended = false
++        var capped = false
++        var error: String? = null
++        val t = SigbufIo.nowNs()
++        try {
++          if (runEncode) {
++            encodeIn[0].writeFloat(zeros)
++            model.run(encodeIn, encodeOut)
++          }
++          encodeOut[0].writeFloat(floats)
++          for ((tokenId, timeIndex) in tdtDecoder.decode(encodeOut)) {
++            if (tokenId == SpeechRecognizer.END_OF_SEQUENCE) {
++              ended = true
++              break
++            }
++            ids.add(tokenId)
++            timeIndices.add(timeIndex)
++            if (ids.size >= maxTokens) {
++              capped = true
++              break
++            }
++          }
++        } catch (e: Exception) {
++          error = "${e.javaClass.simpleName}: ${e.message}"
++          failed++
++          Log.e(SigbufIo.TAG, "pass $pass window $w failed", e)
++        }
++        windows.put(
++          JSONObject()
++            .put("pass", pass)
++            .put("window", w)
++            .put("input", input.name)
++            .put("ms", SigbufIo.msSince(t))
++            .put("tokens", JSONArray(ids))
++            .put("time_indices", JSONArray(timeIndices))
++            .put("ended", ended)
++            .put("capped", capped)
++            .put("error", error ?: JSONObject.NULL)
++        )
++        Log.i(SigbufIo.TAG, "pass $pass window $w: ${ids.size} tokens, ended=$ended, error=$error")
++      }
++    }
++
++    val foregroundState = scenario?.state?.name
++    (encodeIn + encodeOut).forEach { it.close() }
++    recognizer.close()
++    scenario?.close()
++    val logCounts = tap.finish()
++    report.writeText(
++      JSONObject()
++        .put("tag", tag)
++        .put("model", modelKey)
++        .put("accelerator", acceleratorName)
++        .put("model_file", modelFile.path)
++        .put("model_bytes", modelFile.length())
++        .put("litert_version", BuildConfig.LITERT_VERSION)
++        .put("tdt_decoder_blob", BuildConfig.TDT_DECODER_BLOB)
++        .put("tdt_separate_buffers", separateBuffers ?: JSONObject.NULL)
++        .put("application_id", BuildConfig.APPLICATION_ID)
++        .put("load_ms", loadMs)
++        .put("run_encode", runEncode)
++        .put("passes", passes)
++        .put("max_tokens", maxTokens)
++        .put("foreground_state", foregroundState ?: JSONObject.NULL)
++        .put("windows_run", windows.length())
++        .put("windows_failed", failed)
++        .put("windows", windows)
++        .put("log", logCounts)
++        .put("device", SigbufIo.deviceFacts(context))
++        .toString(1) + "\n"
++    )
++    done.writeText("done failed=$failed\n")
++    Log.i(SigbufIo.TAG, "done tag=$tag failed=$failed")
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufIo.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufIo.kt
+new file mode 100644
+index 00000000..1e7cfad8
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufIo.kt
+@@ -0,0 +1,240 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++import android.app.Activity
++import android.content.Context
++import android.os.Build
++import android.os.Bundle
++import android.os.PowerManager
++import android.os.Process
++import android.os.SystemClock
++import android.util.Log
++import androidx.test.core.app.ActivityScenario
++import com.google.ai.edge.litert.Accelerator
++import com.google.ai.edge.litert.CompiledModel
++import java.io.File
++import java.nio.ByteBuffer
++import java.nio.ByteOrder
++import org.json.JSONObject
++
++/** Helpers of the asr-sigbuf-v1 check tests (edge-llm-bench docs/asr-sigbuf-v1.md). */
++internal object SigbufIo {
++  const val TAG = "Sigbuf"
++  private const val FRONT_ACTIVITY = "com.google.ai.edge.examples.asr.BenchFrontActivity"
++  private val ERR_6004 = Regex("(err|failed|error)\\s+6004|0x1774")
++
++  fun nowNs() = SystemClock.elapsedRealtimeNanos()
++
++  fun msSince(startNs: Long) = (nowNs() - startNs) / 1e6
++
++  fun accelerator(name: String): Accelerator =
++    when (name.lowercase()) {
++      "cpu" -> Accelerator.CPU
++      "gpu" -> Accelerator.GPU
++      "npu" -> Accelerator.NPU
++      else -> throw IllegalArgumentException("accelerator must be cpu, gpu or npu, got $name")
++    }
++
++  /**
++   * The TdtDecoder MainActivity builds for [accelerator]: with the change, the separateBuffers
++   * argument is true on the NPU only (MainActivity's factory); upstream main's TdtDecoder takes the
++   * model and the config only. The second value says which form was built (null = no such argument).
++   */
++  fun tdtDecoder(model: CompiledModel, config: ModelConfig, accelerator: Accelerator): Pair<TdtDecoder, Boolean?> {
++    val withFlag =
++      try {
++        TdtDecoder::class.java.getConstructor(CompiledModel::class.java, ModelConfig::class.java, java.lang.Boolean.TYPE)
++      } catch (e: NoSuchMethodException) {
++        null
++      }
++    if (withFlag == null) return Pair(TdtDecoder(model, config), null)
++    val separate = accelerator == Accelerator.NPU
++    return Pair(withFlag.newInstance(model, config, separate), separate)
++  }
++
++  /** The bench build's front window, so the process runs in the top-app cpuset. */
++  @Suppress("UNCHECKED_CAST")
++  fun launchFront(): ActivityScenario<Activity> =
++    ActivityScenario.launch(Class.forName(FRONT_ACTIVITY) as Class<Activity>)
++
++  fun outDir(context: Context, args: Bundle): File =
++    File(args.getString("out") ?: File(context.getExternalFilesDir(null), "sigbuf").path).apply {
++      mkdirs()
++    }
++
++  /**
++   * The entry's config with every remote URL emptied, so a missing file stops the run instead of
++   * a download; [modelFile] replaces the model path of [accelerator] when given.
++   */
++  fun localConfig(config: ModelConfig, accelerator: Accelerator, modelFile: String?): ModelConfig {
++    val local = config.copy(modelRemoteUrl = "", npuModelRemoteUrlPattern = "", tokenizerRemoteUrl = "")
++    return when {
++      modelFile == null -> local
++      accelerator == Accelerator.NPU -> local.copy(npuModelPath = modelFile)
++      else -> local.copy(modelPath = modelFile)
++    }
++  }
++
++  fun requireFile(context: Context, path: String): File =
++    File(context.filesDir, path).also { require(it.isFile) { "missing ${it.path}" } }
++
++  fun readF32(file: File): FloatArray {
++    val bytes = file.readBytes()
++    require(bytes.size % 4 == 0) { "${file.name}: ${bytes.size} bytes is not whole float32 values" }
++    val out = FloatArray(bytes.size / 4)
++    ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(out)
++    return out
++  }
++
++  fun thermalStatus(context: Context): Int =
++    (context.getSystemService(Context.POWER_SERVICE) as PowerManager).currentThermalStatus
++
++  private fun procStatus(key: String): String =
++    try {
++      File("/proc/self/status").readLines().firstOrNull { it.startsWith("$key:") }?.substringAfter(':')?.trim()
++        ?: ""
++    } catch (e: Exception) {
++      ""
++    }
++
++  private fun readText(file: File): String =
++    try {
++      file.readText().trim()
++    } catch (e: Exception) {
++      ""
++    }
++
++  /** The run's device facts for a header. */
++  fun deviceFacts(context: Context): JSONObject =
++    JSONObject()
++      .put("model", Build.MODEL)
++      .put("soc_model", Build.SOC_MODEL)
++      .put("sdk_int", Build.VERSION.SDK_INT)
++      .put("pid", Process.myPid())
++      .put("cpus_allowed", procStatus("Cpus_allowed_list"))
++      .put("cpuset", readText(File("/proc/self/cpuset")))
++      .put("thermal_status", thermalStatus(context))
++
++  private fun readKhz(file: File): Long? = readText(file).toLongOrNull()
++
++  /**
++   * Waits from [sinceNs] (the end of the previous row) at least [minGapMs], then until every cpufreq
++   * policy's ceiling (scaling_max_freq) is back at its hardware maximum (cpuinfo_max_freq), read
++   * every 100 ms, for at most [maxWaitMs]: the waited time and whether it ran out.
++   */
++  fun ceilingWait(sinceNs: Long, minGapMs: Long = 500, maxWaitMs: Long = 60_000): JSONObject {
++    val policies =
++      File("/sys/devices/system/cpu/cpufreq")
++        .listFiles { f -> f.name.startsWith("policy") }
++        ?.sortedBy { it.name.removePrefix("policy").toIntOrNull() ?: Int.MAX_VALUE }
++        .orEmpty()
++    val hwKhz = policies.map { readKhz(File(it, "cpuinfo_max_freq")) }
++    val gapEndNs = sinceNs + minGapMs * 1_000_000
++    val deadlineNs = sinceNs + maxWaitMs * 1_000_000
++    val left = (gapEndNs - nowNs()) / 1_000_000
++    if (left > 0) Thread.sleep(left)
++    while (true) {
++      val ceilings = policies.map { readKhz(File(it, "scaling_max_freq")) }
++      val atMax =
++        hwKhz.indices.all { i ->
++          val hw = hwKhz[i]
++          val now = ceilings[i]
++          hw == null || now == null || now >= hw
++        }
++      if (atMax || nowNs() >= deadlineNs) {
++        return JSONObject()
++          .put("waited_ms", (nowNs() - sinceNs) / 1e6)
++          .put("timed_out", !atMax)
++          .put("ceilings_khz", ceilings.joinToString(" "))
++      }
++      Thread.sleep(100)
++    }
++  }
++
++  /**
++   * Streams this process's log (`logcat -v threadtime --pid=<this pid>`) while a run goes on: every
++   * E / F line and every line naming a memory handle or error 6004 goes to [file]; the QNN memory
++   * registrations, deregistrations and finished graph executions are counted. Read as it is written,
++   * so the phone's log ring cannot drop the lines that matter before the end of the run.
++   */
++  class LogcatTap(private val file: File) : AutoCloseable {
++    private val process =
++      ProcessBuilder("logcat", "-v", "threadtime", "--pid=${Process.myPid()}")
++        .redirectErrorStream(true)
++        .start()
++    private val counts = linkedMapOf(
++      "lines" to 0,
++      "e_lines" to 0,
++      "failed_to_find_memhandle" to 0,
++      "err_6004" to 0,
++      "qnnmem_register_started" to 0,
++      "qnnmem_deregister_started" to 0,
++      "qnngraph_execute_done" to 0,
++    )
++    private val reader =
++      Thread {
++          try {
++            file.bufferedWriter().use { out ->
++              process.inputStream.bufferedReader().forEachLine { line ->
++                synchronized(counts) {
++                  bump("lines")
++                  val level = line.split(Regex("\\s+")).getOrNull(4)
++                  val memHandle = line.contains("Failed to find memHandle")
++                  // QNN's error 6004 ("... failed 6004", "... with err 6004", status 0x1774), not a
++                  // pid / tid / timestamp that happens to contain the digits.
++                  val err6004 = SigbufIo.ERR_6004.containsMatchIn(line)
++                  if (level == "E" || level == "F") bump("e_lines")
++                  if (memHandle) bump("failed_to_find_memhandle")
++                  if (err6004) bump("err_6004")
++                  if (line.contains("QnnMem_register started")) bump("qnnmem_register_started")
++                  if (line.contains("QnnMem_deRegister started")) bump("qnnmem_deregister_started")
++                  if (line.contains("QnnGraph_execute done")) bump("qnngraph_execute_done")
++                  if (level == "E" || level == "F" || memHandle || err6004 ||
++                    line.contains("memHandle")) {
++                    out.write(line)
++                    out.newLine()
++                  }
++                }
++              }
++            }
++          } catch (e: Exception) {
++            Log.w(SigbufIo.TAG, "logcat tap stopped", e)
++          }
++        }
++        .apply {
++          isDaemon = true
++          start()
++        }
++
++    private fun bump(key: String) {
++      counts[key] = (counts[key] ?: 0) + 1
++    }
++
++    /** Stops the tap after [settleMs] (the last lines of the run reach the log) and returns the counts. */
++    fun finish(settleMs: Long = 1500): JSONObject {
++      Thread.sleep(settleMs)
++      process.destroy()
++      reader.join(3000)
++      return synchronized(counts) { JSONObject(counts as Map<*, *>) }
++    }
++
++    override fun close() {
++      process.destroy()
++    }
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufMainActivityTest.kt b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufMainActivityTest.kt
+new file mode 100644
+index 00000000..881d7ef9
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/androidTest/java/com/google/ai/edge/examples/asr/SigbufMainActivityTest.kt
+@@ -0,0 +1,253 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++import android.util.Log
++import android.widget.AutoCompleteTextView
++import android.widget.Button
++import androidx.test.core.app.ActivityScenario
++import androidx.test.ext.junit.runners.AndroidJUnit4
++import androidx.test.platform.app.InstrumentationRegistry
++import java.io.File
++import java.io.FileInputStream
++import kotlin.time.Duration.Companion.milliseconds
++import kotlin.time.Duration.Companion.seconds
++import org.json.JSONArray
++import org.json.JSONObject
++import org.junit.Test
++import org.junit.runner.RunWith
++
++/**
++ * asr-sigbuf-v1 (edge-llm-bench docs/asr-sigbuf-v1.md): the TdtDecoder MainActivity itself builds. The
++ * test launches MainActivity, writes the model and the backend into its two selectors and calls its
++ * preparePipeline (what picking an item calls), waits until the activity holds a new speech recognizer,
++ * and reads the decoder MainActivity's factory built (LiteRtRunner.decoder) and its separateBuffers
++ * flag through reflection. The activity's own speech recognizer, audio preprocessor and tokenizer then
++ * take WAV files through MainActivity's file steps (as SigbufBenchTest, one step after the other).
++ * MainActivity reads the entry's own files from the files dir; the test stops before the activity is
++ * asked to load when a file is missing (the activity would download it).
++ *
++ * Arguments (am instrument -e <name> <value>):
++ * - model: a "-tdt" key of model_metadata.json; default parakeet-tdt-0.6b-v3
++ * - accelerators: comma-separated cpu / gpu / npu, loaded in that order
++ * - manifest, every, rows: the WAV rows (index 0, every, ...; the first [rows]); default rows 1
++ * - max_tokens: tokens taken from one window before the test stops reading it; default 630
++ * - tag: output stem in <external files dir>/sigbuf: <tag>.json, <tag>.log.txt (SigbufIo.LogcatTap),
++ *   <tag>.done
++ */
++@RunWith(AndroidJUnit4::class)
++class SigbufMainActivityTest {
++
++  @Test
++  fun mainActivityBuildsTheDecoder() {
++    val context = InstrumentationRegistry.getInstrumentation().targetContext
++    val args = InstrumentationRegistry.getArguments()
++    val modelKey = args.getString("model") ?: "parakeet-tdt-0.6b-v3"
++    require(modelKey.contains("-tdt")) { "$modelKey is not a -tdt entry (TdtDecoder)" }
++    val accelerators =
++      requireNotNull(args.getString("accelerators")) { "accelerators is required" }
++        .split(',')
++        .map { it.trim().lowercase() }
++        .filter { it.isNotEmpty() }
++    val manifest = File(requireNotNull(args.getString("manifest")) { "manifest is required" })
++    val every = args.getString("every")?.toInt() ?: 1
++    val rowCount = args.getString("rows")?.toInt() ?: 1
++    val maxTokens = args.getString("max_tokens")?.toInt() ?: 630
++    val tag = requireNotNull(args.getString("tag")) { "tag is required" }
++    val out = SigbufIo.outDir(context, args)
++    val report = File(out, "$tag.json").apply { delete() }
++    val done = File(out, "$tag.done").apply { delete() }
++
++    val metadata =
++      ModelMetadataManager(context.assets.open("model_metadata.json").bufferedReader().use { it.readText() })
++    val config = metadata.getModelConfig(modelKey)
++    for (name in accelerators) {
++      SigbufIo.requireFile(context, if (name == "npu") config.npuModelPath else config.modelPath)
++    }
++    SigbufIo.requireFile(context, config.tokenizerPath)
++    val wavs =
++      manifest
++        .readLines()
++        .filter { it.isNotBlank() }
++        .map { it.split('\t') }
++        .filterIndexed { i, _ -> i % every == 0 }
++        .take(rowCount)
++        .map { Pair(it[0], File(manifest.parentFile, it[1])) }
++
++    val tap = SigbufIo.LogcatTap(File(out, "$tag.log.txt"))
++    val scenario = ActivityScenario.launch(MainActivity::class.java)
++    val results = JSONArray()
++    var previous: Any? = null
++    for (name in accelerators) {
++      val backend =
++        context.getString(
++          when (name) {
++            "cpu" -> R.string.cpu
++            "gpu" -> R.string.gpu
++            "npu" -> R.string.npu
++            else -> throw IllegalArgumentException("accelerator must be cpu, gpu or npu, got $name")
++          }
++        )
++      var activity: MainActivity? = null
++      val t0 = SigbufIo.nowNs()
++      scenario.onActivity {
++        it.findViewById<AutoCompleteTextView>(R.id.model_selector).setText(modelKey, false)
++        it.findViewById<AutoCompleteTextView>(R.id.backend_selector).setText(backend, false)
++        MainActivity::class.java.getDeclaredMethod("preparePipeline").apply { isAccessible = true }.invoke(it)
++        activity = it
++      }
++      val main = requireNotNull(activity)
++      var recognizer: Any? = null
++      while (SigbufIo.msSince(t0) < 120_000) {
++        val now = field(main, "speechRecognizer")
++        if (now != null && now !== previous) {
++          recognizer = now
++          break
++        }
++        Thread.sleep(200)
++      }
++      val entry =
++        JSONObject()
++          .put("accelerator", name)
++          .put("backend_text", backend)
++          .put("loaded", recognizer != null)
++          .put("load_wait_ms", SigbufIo.msSince(t0))
++      if (recognizer == null) {
++        var buttonText = ""
++        scenario.onActivity { buttonText = it.findViewById<Button>(R.id.transcribe_button).text.toString() }
++        entry.put("button_text", buttonText)
++      } else {
++        previous = recognizer
++        val decoder = requireNotNull(field(recognizer, "decoder"))
++        val separate =
++          try {
++            field(decoder, "separateBuffers") as Boolean
++          } catch (e: NoSuchFieldException) {
++            null
++          }
++        entry
++          .put("recognizer_class", recognizer.javaClass.simpleName)
++          .put("decoder_class", decoder.javaClass.simpleName)
++          .put("separate_buffers", separate ?: JSONObject.NULL)
++        val preprocessor = field(main, "audioPreprocessor") as AudioPreprocessor
++        val tokenizer = field(main, "tokenizer") as Tokenizer
++        val rows = JSONArray()
++        for ((id, wav) in wavs) {
++          rows.put(transcribe(id, wav, recognizer as SpeechRecognizer, preprocessor, tokenizer, config, maxTokens))
++        }
++        entry.put("rows", rows)
++      }
++      results.put(entry)
++      Log.i(SigbufIo.TAG, "$name: loaded=${recognizer != null} ${entry.opt("separate_buffers")}")
++    }
++    val foregroundState = scenario.state.name
++    scenario.close()
++    val logCounts = tap.finish()
++    report.writeText(
++      JSONObject()
++        .put("tag", tag)
++        .put("model", modelKey)
++        .put("litert_version", BuildConfig.LITERT_VERSION)
++        .put("tdt_decoder_blob", BuildConfig.TDT_DECODER_BLOB)
++        .put("main_activity_blob", BuildConfig.MAIN_ACTIVITY_BLOB)
++        .put("application_id", BuildConfig.APPLICATION_ID)
++        .put("max_tokens", maxTokens)
++        .put("foreground_state", foregroundState)
++        .put("accelerators", results)
++        .put("log", logCounts)
++        .put("device", SigbufIo.deviceFacts(context))
++        .toString(1) + "\n"
++    )
++    done.writeText("done accelerators=${accelerators.size}\n")
++    Log.i(SigbufIo.TAG, "done tag=$tag")
++  }
++
++  /** One WAV through MainActivity's file steps on the activity's own objects; the row's JSON. */
++  private fun transcribe(
++    id: String,
++    wav: File,
++    recognizer: SpeechRecognizer,
++    preprocessor: AudioPreprocessor,
++    tokenizer: Tokenizer,
++    config: ModelConfig,
++    maxTokens: Int,
++  ): JSONObject {
++    val interval = config.inputMilliseconds.milliseconds
++    val windows = JSONArray()
++    var confirmed = ""
++    var unconfirmed = ""
++    var error: String? = null
++    try {
++      FileInputStream(wav).use { input ->
++        FileAudioSource(input, SAMPLING_RATE, interval, OVERLAP).use { source ->
++          val merger = LevenshteinTokenMerger(tokenizer, (OVERLAP / interval).toFloat(), maxLevenshteinDistance = 5)
++          merger.use {
++            for (chunk in source.getAudioData()) {
++              val ids = ArrayList<Int>()
++              var ended = false
++              var capped = false
++              for ((tokenId, timestamp) in recognizer.recognize(preprocessor.process(chunk))) {
++                val decoded = merger.decode(tokenId, timestamp)
++                if (decoded != null) {
++                  confirmed = listOf(confirmed, decoded.confirmedText).filter { it.isNotEmpty() }.joinToString(" ")
++                  unconfirmed = decoded.unconfirmedText
++                }
++                if (tokenId == SpeechRecognizer.END_OF_SEQUENCE) {
++                  ended = true
++                  break
++                }
++                ids.add(tokenId)
++                if (ids.size >= maxTokens) {
++                  capped = true
++                  break
++                }
++              }
++              windows.put(JSONObject().put("tokens", ids.size).put("ended", ended).put("capped", capped))
++            }
++          }
++        }
++      }
++    } catch (e: Exception) {
++      error = "${e.javaClass.simpleName}: ${e.message}"
++      Log.e(SigbufIo.TAG, "$id failed", e)
++    }
++    return JSONObject()
++      .put("id", id)
++      .put("windows", windows)
++      .put("text", listOf(confirmed, unconfirmed).filter { it.isNotEmpty() }.joinToString(" "))
++      .put("error", error ?: JSONObject.NULL)
++  }
++
++  private companion object {
++    // MainActivity's file path constants.
++    const val SAMPLING_RATE = 16000
++    val OVERLAP = 2.seconds
++
++    /** A declared field of [target]'s class or a superclass, read through reflection. */
++    fun field(target: Any, name: String): Any? {
++      var c: Class<*>? = target.javaClass
++      while (c != null) {
++        try {
++          return c.getDeclaredField(name).apply { isAccessible = true }.get(target)
++        } catch (e: NoSuchFieldException) {
++          c = c.superclass
++        }
++      }
++      throw NoSuchFieldException(name)
++    }
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/bench/AndroidManifest.xml b/samples/litert/speech_recognition/AndroidApp/app/src/bench/AndroidManifest.xml
+new file mode 100644
+index 00000000..f1afbd80
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/bench/AndroidManifest.xml
+@@ -0,0 +1,14 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- The bench build type only (asr-sigbuf-v1 check build): the window the tests keep in front. -->
++<manifest xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <application>
++        <activity
++            android:name=".BenchFrontActivity"
++            android:exported="true"
++            android:showWhenLocked="true"
++            android:turnScreenOn="true"
++            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
++    </application>
++
++</manifest>
+diff --git a/samples/litert/speech_recognition/AndroidApp/app/src/bench/java/com/google/ai/edge/examples/asr/BenchFrontActivity.kt b/samples/litert/speech_recognition/AndroidApp/app/src/bench/java/com/google/ai/edge/examples/asr/BenchFrontActivity.kt
+new file mode 100644
+index 00000000..62628705
+--- /dev/null
++++ b/samples/litert/speech_recognition/AndroidApp/app/src/bench/java/com/google/ai/edge/examples/asr/BenchFrontActivity.kt
+@@ -0,0 +1,43 @@
++/*
++ * Copyright 2026 Google LLC
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.google.ai.edge.examples.asr
++
++import android.app.Activity
++import android.os.Bundle
++import android.view.WindowManager
++import android.widget.TextView
++
++/**
++ * The bench build's front window (asr-sigbuf-v1 check build): the tests start it so the app process
++ * runs as the top app while they run. It shows over the keyguard and turns the screen on, so a
++ * locked phone needs no unlock; it loads nothing and draws one static line.
++ */
++class BenchFrontActivity : Activity() {
++  override fun onCreate(savedInstanceState: Bundle?) {
++    super.onCreate(savedInstanceState)
++    setShowWhenLocked(true)
++    setTurnScreenOn(true)
++    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
++    setContentView(
++      TextView(this).apply {
++        text = "asr-sigbuf check running"
++        textSize = 20f
++        setPadding(48, 96, 48, 48)
++      }
++    )
++  }
++}
+diff --git a/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts b/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts
+index 0b7e9064..db07f567 100644
+--- a/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts
++++ b/samples/litert/speech_recognition/AndroidApp/settings.gradle.kts
+@@ -27,22 +27,5 @@ rootProject.name = "Asr"
+ 
+ include(":app")
+ 
+-// Install litert_npu_runtime_libraries following
+-// https://developers.googleblog.com/unlocking-peak-performance-on-qualcomm-npu-with-litert/
+-include(":litert_npu_runtime_libraries:runtime_strings")
+-
+-include(":litert_npu_runtime_libraries:google_tensor_runtime")
+-
+-include(":litert_npu_runtime_libraries:mediatek_runtime_v8")
+-
+-include(":litert_npu_runtime_libraries:mediatek_runtime_v9")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v69")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v73")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v75")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v79")
+-
+-include(":litert_npu_runtime_libraries:qualcomm_runtime_v81")
++// asr-sigbuf-v1 check build: the litert_npu_runtime_libraries modules are not in this repository;
++// the NPU build packages the Qualcomm runtime from -Psigbufcheck.npuLibs instead (app/build.gradle.kts).

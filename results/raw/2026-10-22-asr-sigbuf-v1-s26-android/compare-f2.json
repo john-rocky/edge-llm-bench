@@ -1,0 +1,265 @@
+{
+ "lines": {
+  "npu_decoder": {
+   "windows_failed": 0,
+   "memhandle_lines": 0,
+   "same_tokens_as_cpu": 12,
+   "windows": 12,
+   "pass": true
+  },
+  "npu_app": {
+   "memhandle_lines": 0,
+   "err_6004_lines": 0,
+   "crash_log": false,
+   "done": true,
+   "pass": true
+  },
+  "identity": {
+   "v3-cpu": true,
+   "v3-gpu": true,
+   "ja-cpu": true,
+   "ja-gpu": true
+  }
+ },
+ "identity": {
+  "v3-cpu": {
+   "runs": [
+    "fix-r1",
+    "main-r1"
+   ],
+   "windows": 100,
+   "tokens": 1550,
+   "comparisons": {
+    "fix-r1 against main-r1": {
+     "windows_main": 100,
+     "windows_fix": 100,
+     "identical": 100,
+     "diffs": [],
+     "diff_count": 0,
+     "errors": [],
+     "error_count": 0,
+     "same_error_in_both_builds": [],
+     "tokens_main": 1550,
+     "capped_main": 0,
+     "capped_fix": 0
+    }
+   },
+   "pass": true
+  },
+  "v3-gpu": {
+   "runs": [
+    "fix-r1",
+    "main-r1"
+   ],
+   "windows": 100,
+   "tokens": 1585,
+   "comparisons": {
+    "fix-r1 against main-r1": {
+     "windows_main": 100,
+     "windows_fix": 100,
+     "identical": 100,
+     "diffs": [],
+     "diff_count": 0,
+     "errors": [],
+     "error_count": 0,
+     "same_error_in_both_builds": [],
+     "tokens_main": 1585,
+     "capped_main": 0,
+     "capped_fix": 0
+    }
+   },
+   "pass": true
+  },
+  "ja-cpu": {
+   "runs": [
+    "fix-r1",
+    "main-r1"
+   ],
+   "windows": 98,
+   "tokens": 1386,
+   "comparisons": {
+    "fix-r1 against main-r1": {
+     "windows_main": 98,
+     "windows_fix": 98,
+     "identical": 98,
+     "diffs": [],
+     "diff_count": 0,
+     "errors": [],
+     "error_count": 0,
+     "same_error_in_both_builds": [
+      [
+       "1188-133604-0002",
+       "IllegalArgumentException: Requested element count -1 is less than zero.",
+       4
+      ]
+     ],
+     "tokens_main": 1386,
+     "capped_main": 0,
+     "capped_fix": 0
+    }
+   },
+   "pass": true
+  },
+  "ja-gpu": {
+   "runs": [
+    "fix-r1",
+    "main-r1"
+   ],
+   "windows": 100,
+   "tokens": 1351,
+   "comparisons": {
+    "fix-r1 against main-r1": {
+     "windows_main": 100,
+     "windows_fix": 100,
+     "identical": 100,
+     "diffs": [],
+     "diff_count": 0,
+     "errors": [],
+     "error_count": 0,
+     "same_error_in_both_builds": [],
+     "tokens_main": 1351,
+     "capped_main": 0,
+     "capped_fix": 0
+    }
+   },
+   "pass": true
+  }
+ },
+ "cost": {
+  "v3-cpu": {
+   "decode_median_main_runs_ms": 69.128466,
+   "decode_median_fix_runs_ms": 68.60520700000001,
+   "windows_main": 100,
+   "windows_fix": 100,
+   "per_run": {
+    "fix-r1": {
+     "windows": 100,
+     "decode_median_ms": 68.60520700000001,
+     "encode_median_ms": 58.770625,
+     "pace_timeouts": 0,
+     "thermal_max": 0
+    },
+    "main-r1": {
+     "windows": 100,
+     "decode_median_ms": 69.128466,
+     "encode_median_ms": 58.134739499999995,
+     "pace_timeouts": 0,
+     "thermal_max": 0
+    }
+   }
+  },
+  "v3-gpu": {
+   "decode_median_main_runs_ms": 291.95825349999996,
+   "decode_median_fix_runs_ms": 316.7660155,
+   "windows_main": 100,
+   "windows_fix": 100,
+   "per_run": {
+    "fix-r1": {
+     "windows": 100,
+     "decode_median_ms": 316.7660155,
+     "encode_median_ms": 0.3590625,
+     "pace_timeouts": 0,
+     "thermal_max": 1
+    },
+    "main-r1": {
+     "windows": 100,
+     "decode_median_ms": 291.95825349999996,
+     "encode_median_ms": 0.36057300000000003,
+     "pace_timeouts": 0,
+     "thermal_max": 1
+    }
+   }
+  }
+ },
+ "npu_decoder": {
+  "dec-cpu-f32-fix": {
+   "windows_run": 12,
+   "windows_failed": 0,
+   "log": {
+    "lines": 325,
+    "e_lines": 5,
+    "failed_to_find_memhandle": 0,
+    "err_6004": 0,
+    "qnnmem_register_started": 0,
+    "qnnmem_deregister_started": 0,
+    "qnngraph_execute_done": 0
+   },
+   "same_tokens_as_dec_cpu_f32_fix": null,
+   "tokens_per_window": [
+    23,
+    16,
+    17,
+    0,
+    23,
+    16,
+    17,
+    0,
+    23,
+    16,
+    17,
+    0
+   ],
+   "first_error": null,
+   "tdt_decoder_blob": "7ebe0efc1c0acba9c6c6babf414da58c7e5f03c2",
+   "litert_version": "2.2.0"
+  },
+  "dec-npu-fix": {
+   "windows_run": 12,
+   "windows_failed": 0,
+   "log": {
+    "lines": 1477,
+    "e_lines": 13,
+    "failed_to_find_memhandle": 0,
+    "err_6004": 0,
+    "qnnmem_register_started": 16,
+    "qnnmem_deregister_started": 16,
+    "qnngraph_execute_done": 324
+   },
+   "same_tokens_as_dec_cpu_f32_fix": 12,
+   "tokens_per_window": [
+    23,
+    16,
+    17,
+    0,
+    23,
+    16,
+    17,
+    0,
+    23,
+    16,
+    17,
+    0
+   ],
+   "first_error": null,
+   "tdt_decoder_blob": "7ebe0efc1c0acba9c6c6babf414da58c7e5f03c2",
+   "litert_version": "2.2.0"
+  }
+ },
+ "npu_app": {
+  "v3-npu-app-fix": {
+   "rows": 3,
+   "errors": [],
+   "windows": 26,
+   "capped_windows": 26,
+   "ended_windows": 0,
+   "texts": [
+    "",
+    "",
+    ""
+   ],
+   "log": {
+    "lines": 98850,
+    "e_lines": 13,
+    "failed_to_find_memhandle": 0,
+    "err_6004": 0,
+    "qnnmem_register_started": 16,
+    "qnnmem_deregister_started": 16,
+    "qnngraph_execute_done": 16406
+   },
+   "crash_log": false,
+   "done": true,
+   "tdt_decoder_blob": "7ebe0efc1c0acba9c6c6babf414da58c7e5f03c2"
+  }
+ },
+ "form": "f2"
+}

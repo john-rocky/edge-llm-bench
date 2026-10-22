@@ -1,0 +1,3 @@
+# f2-v3-cpu-main-r1 2026-10-22 14:11:34 JST
+dexopt: app verify/install, test verify/install; screen:  mWakefulness=Awake 
+14:11:35 adb -s RFGL80R6A6H shell am instrument -r -e class com.google.ai.edge.examples.asr.SigbufBenchTest -e model parakeet-tdt-0.6b-v3 -e accelerator cpu -e manifest /data/user/0/com.google.ai.edge.examples.asr.sigbufcheck.main/files/sets/test-clean/manifest-device.tsv -e every 32 -e limit 20 -e max_tokens 2000 -e pace ceiling -e warmup_id 1995-1836-0004 -e foreground front -e tag f2-v3-cpu-main-r1 com.google.ai.edge.examples.asr.sigbufcheck.main.test/androidx.test.runner.AndroidJUnitRunner
