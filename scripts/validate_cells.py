@@ -80,7 +80,7 @@ EXECUTORCH_BACKENDS = {"android": {"xnnpack", "vulkan", "qnn"}, "mac": {"xnnpack
 EXECUTORCH_TASKS = {"short-chat", "long-context-1024-gen256"}
 # an iPhone executorch row: the app built from ios/BenchmarkApp/project-executorch.yml, the
 # ExecuTorch SwiftPM runtime with the XNNPACK delegate only (docs/executorch-arm-v1.md "iPhone")
-EXECUTORCH_BACKENDS["ios"] = {"xnnpack"}
+EXECUTORCH_BACKENDS["ios"] = {"xnnpack", "mlx"}
 # runtimes whose backend= values are not BACKENDS: the ORT GenAI arm names its execution
 # provider (cpu = the CPU EP; webgpu = the WebGPU plugin EP, Mac only); the Core AI stock arm
 # names the Neural Engine its engine is pinned to (arm core-ai-ane, docs/coreai-arm-v1.md)

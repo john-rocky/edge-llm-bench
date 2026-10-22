@@ -29,6 +29,7 @@ DEVICE_DISPLAY = {
     "iPhone18,1": "iPhone 17 Pro",
     "SM-S942Q": "Galaxy S26",
     "Pixel 11 Pro": "Pixel 11 Pro",
+    "SM-S942U1 (DDP m1q-36)": "Galaxy S26 (DDP m1q-36)",
 }
 
 

@@ -83,6 +83,9 @@ def parse_litert(text):
     count and speed; before 2026-10-20 the parser summed the counts and kept the last speed, which
     on those builds was the short turn's. A one-turn console reads the same either way."""
     text = cut_aggregated(text)
+    blocks = RE_BENCHMARK_INFO.split(text)
+    if len(blocks) > 1:
+        text = blocks[-1]
     m = {}
     ttft = _last_float(RE_TTFT, text)
     if ttft is not None:
@@ -188,7 +191,7 @@ def text_integrity(value):
     """Automated screen; retained full text is also reviewed after the sitting."""
     words = re.findall(r"[A-Za-z]+", value.lower())
     alnum = sum(ch.isalnum() for ch in value)
-    terms = bool(re.search(r"on.device|phone|local|cloud|offline|privacy|\bai\b", value, re.I))
+    terms = bool(re.search(r"on.device|phone|local|cloud|offline|privacy|\bai\b|lorem\s+ipsum", value, re.I))
     lines = [line.strip() for line in value.splitlines() if line.strip()]
     repeats = max((lines.count(line) for line in set(lines)), default=0)
     flags = []
@@ -711,7 +714,7 @@ def executorch_runner_for(name):
     low = os.path.basename(name).lower()
     if re.search(r"gemma-?4", low):
         return "gemma4_e2e_runner"
-    if re.search(r"qwen3-", low):
+    if re.search(r"qwen3(?:[._]5)?[-_]", low):
         return "llama_main"
     return None
 

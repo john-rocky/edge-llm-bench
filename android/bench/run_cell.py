@@ -1712,6 +1712,7 @@ ANDROID_QUANT_LABELS = {
     "Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024)",
     "Qwen3-0.6B.litertlm": "INT8 (dynamic weights, float KV; metadata for 0.18.0, 2026-10-12)",  # the iOS ModelCatalog string of litert-community/Qwen3-0.6B/dynamic_int8, the same Hub file (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift); side-loaded by the lu1020 YNNPACK control cells (2026-10-21)
     "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+    "Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU+CPU composite export, cache 32768)",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     # 2026-09-14 dtype-only pair: one litert-torch main (6d4c622) GPU-graph export of
     # Qwen3-1.7B per recipe (fused qkv/gate_up, odml.rope + cache composites, bool mask,
@@ -1749,7 +1750,7 @@ def guess_quant(dev_path):
         if base.endswith(known):
             return label
     low = base.lower()
-    for pat in ("q4_k_m", "q8_0", "f16", "fp16"):
+    for pat in ("q4_k_m", "q4_0", "q8_0", "f16", "fp16"):
         if pat in low:
             return pat.upper() if pat.startswith("q") else pat
     return "unrecorded (artifact name carries no quant label)"

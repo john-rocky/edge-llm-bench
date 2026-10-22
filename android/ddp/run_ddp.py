@@ -125,17 +125,18 @@ def device_entry(device_id):
     return entry
 
 
-def select_cells(cells_file, device_id, key):
+def select_cells(cells_file, device_id, key, all_runtimes=False):
     """-> (kept cells in file order, [(cell, reason, schedule key or None)])."""
     anchors, payload, skipped = run_campaign.parse_cells(cells_file)
     skips, candidates = [], []
+    wired = ("litert-lm", "llama.cpp", "executorch") if all_runtimes else ("litert-lm",)
     for cell, reason in skipped:
-        skips.append((cell, "runtime-not-wired-on-ddp" if cell["runtime"] != "litert-lm" else reason, None))
+        skips.append((cell, "runtime-not-wired-on-ddp" if cell["runtime"] not in wired else reason, None))
     for cell in anchors + payload:
         opts = cell["opts"]
-        if cell["runtime"] != "litert-lm":
+        if cell["runtime"] not in wired:
             skips.append((cell, "runtime-not-wired-on-ddp", None))
-        elif opts.get("backend") == "npu" or opts.get("engine-build"):
+        elif opts.get("backend") == "npu" or (not all_runtimes and opts.get("engine-build")):
             skips.append((cell, "side-build-not-wired-on-ddp", None))
         elif opts.get("anchor"):
             skips.append((cell, "no-session-anchor-on-ddp", None))
@@ -179,6 +180,89 @@ def engine_files(bin_dir, tag, pins):
     return files
 
 
+def cell_engine_files(bin_dir, cell, pins, litert_tag):
+    """(engine_tag, files) for a cell across litert-lm, llama.cpp (CPU or GPU side build), and executorch."""
+    rt = cell["runtime"]
+    opts = cell["opts"]
+    if rt == "litert-lm":
+        return litert_tag, engine_files(bin_dir, litert_tag, pins)
+    if rt == "llama.cpp":
+        etag = opts.get("engine-build") or pins.get("android_pins", {}).get("llama.cpp")
+        entry = pins.get("llama.cpp", {}).get(etag)
+        if not entry:
+            raise SystemExit(f"android/engine-pins.json has no llama.cpp {etag} entry")
+        local_dir = os.path.join(bin_dir, f"llama-{etag}")
+        if not os.path.isdir(local_dir):
+            local_dir = os.path.join(bin_dir, etag)
+        files = []
+        if opts.get("engine-build"):
+            want_bins = {"llama-cli": entry.get("llama_cli_sha256"),
+                         "llama-bench": entry.get("llama_bench_sha256")}
+            for name, want_sha in sorted(want_bins.items()):
+                path = os.path.join(local_dir, "bin", name)
+                if not os.path.isfile(path):
+                    raise SystemExit(f"{path}: missing")
+                sha = sha256_file(path)
+                if sha != want_sha:
+                    raise SystemExit(f"{path}: sha256 {sha} is not the pin's {want_sha}")
+                files.append({"kind": "engine", "name": f"bin/{name}", "local": path,
+                              "bytes": os.path.getsize(path), "sha256": sha,
+                              "device": f"{run_cell.ENGINES_DIR}/{etag}/bin/{name}",
+                              "object": f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/bin/{name}"})
+            pinned_libs = entry.get("so_files") or {}
+            for path in sorted(glob.glob(os.path.join(local_dir, "lib", "*.so"))):
+                name = os.path.basename(path)
+                sha = sha256_file(path)
+                if name in pinned_libs and sha != pinned_libs[name]:
+                    raise SystemExit(f"{path}: sha256 {sha} is not the pin's {pinned_libs[name]}")
+                files.append({"kind": "engine", "name": f"lib/{name}", "local": path,
+                              "bytes": os.path.getsize(path), "sha256": sha,
+                              "device": f"{run_cell.ENGINES_DIR}/{etag}/lib/{name}",
+                              "object": f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/lib/{name}"})
+            for name in sorted(pinned_libs):
+                if not os.path.isfile(os.path.join(local_dir, "lib", name)):
+                    raise SystemExit(f"{os.path.join(local_dir, 'lib', name)}: missing")
+            return etag, files
+        want_bins = {"llama-cli": entry.get("llama_cli_sha256"),
+                     "llama-bench": entry.get("llama_bench_sha256")}
+        for name, want_sha in sorted(want_bins.items()):
+            path = os.path.join(local_dir, name)
+            if not os.path.isfile(path):
+                raise SystemExit(f"{path}: missing")
+            sha = sha256_file(path)
+            if sha != want_sha:
+                raise SystemExit(f"{path}: sha256 {sha} is not the pin's {want_sha}")
+            files.append({"kind": "engine", "name": name, "local": path, "bytes": os.path.getsize(path),
+                          "sha256": sha, "device": f"{run_cell.DEV_DIR}/{name}",
+                          "object": f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/{name}"})
+        for path in sorted(glob.glob(os.path.join(local_dir, "*.so"))):
+            name = os.path.basename(path)
+            sha = sha256_file(path)
+            files.append({"kind": "engine", "name": name, "local": path, "bytes": os.path.getsize(path),
+                          "sha256": sha, "device": f"{run_cell.DEV_DIR}/{name}",
+                          "object": f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/{name}"})
+        return etag, files
+    if rt == "executorch":
+        etag = run_cell.EXECUTORCH_TAG
+        runner = run_cell.parsers.executorch_runner_for(opts["file"])
+        if not runner:
+            raise SystemExit(f"executorch: no runner for {opts['file']}")
+        binname = run_cell.executorch_binname(opts.get("backend"), runner)
+        field = f"{runner}_sha256" if opts.get("backend") == "xnnpack" else f"{runner}_{opts.get('backend')}_sha256"
+        entry = pins.get("executorch", {}).get(etag) or {}
+        want_sha = entry.get(field)
+        path = os.path.join(bin_dir, binname)
+        if not os.path.isfile(path):
+            raise SystemExit(f"{path}: missing")
+        sha = sha256_file(path)
+        if sha != want_sha:
+            raise SystemExit(f"{path}: sha256 {sha} is not the pin's {want_sha}")
+        return etag, [{"kind": "engine", "name": binname, "local": path, "bytes": os.path.getsize(path),
+                       "sha256": sha, "device": f"{run_cell.DEV_DIR}/{binname}",
+                       "object": f"{INPUTS}/engines/executorch/{etag}/{sha}/{binname}"}]
+    raise SystemExit(f"unsupported runtime on ddp: {rt}")
+
+
 def model_file(model_id, filename, dry_run):
     """The model's local file (the HF cache blob) and the sha256 of its bytes, which the plan and
     the bucket key carry. The blob's name is the LFS sha256 on older huggingface_hub and the xet
@@ -186,6 +270,17 @@ def model_file(model_id, filename, dry_run):
     A dry run reads the cache only (uncached = no sha, no size); a real run downloads, checks the
     size against the Hub's (run_cell.ensure_model's guard) and the hash against the Hub's LFS
     sha256 when the file has one (a poisoned or truncated cache stops the run)."""
+    if os.path.isabs(filename) or filename.startswith(("~", "./", "../")):
+        local = os.path.realpath(os.path.expanduser(filename) if (os.path.isabs(filename) or filename.startswith("~"))
+                                 else os.path.join(ROOT, filename))
+        if not os.path.isfile(local):
+            raise SystemExit(f"{filename}: local model file not found ({local})")
+        return {"local": local, "bytes": os.path.getsize(local), "sha256": sha256_file(local)}
+    for sub in ("litert", "llama.cpp"):
+        cand = os.path.join(ROOT, "models", sub, filename)
+        if os.path.isfile(cand):
+            local = os.path.realpath(cand)
+            return {"local": local, "bytes": os.path.getsize(local), "sha256": sha256_file(local)}
     if dry_run:
         os.environ["HF_HUB_OFFLINE"] = "1"
     try:
@@ -252,87 +347,134 @@ def plan(cells_file, device_id, campaign, args):
     tag = getattr(args, "engine_build", None) or pins.get("android_pins", {}).get("litert-lm")
     if not tag:
         raise SystemExit("android/engine-pins.json android_pins has no litert-lm tag")
-    kept, skips = select_cells(cells_file, device_id, key)
+    all_runtimes = getattr(args, "all_runtimes", False) or os.environ.get("BENCH_DDP_ALL_RUNTIMES") == "1"
+    kept, skips = select_cells(cells_file, device_id, key, all_runtimes=all_runtimes)
     with open(os.path.join(ROOT, "prompts", "text", "budgets.tsv")) as fh:
         budgets = dict(line.strip().split("\t") for line in fh if line.strip())
-    engines = engine_files(args.bin_dir, tag, pins) if kept else []
     wrapper = {"kind": "wrapper", "name": "ddp_cell.sh", "local": WRAPPER, "bytes": os.path.getsize(WRAPPER),
                "sha256": sha256_file(WRAPPER)}
     wrapper["object"] = f"{INPUTS}/wrapper/{wrapper['sha256']}/ddp_cell.sh"
     mask = dev["cpuMask"]
-    jobs, models = [], {}
+    jobs, models, engine_cache = [], {}, {}
     for n, cell in enumerate(kept, 1):
         opts = cell["opts"]
+        rt = cell["runtime"]
         runs = int(opts.get("runs", "3"))
         cooldown = int(opts.get("cooldown", run_campaign.COOLDOWN))
         ctx = int(opts["context-tokens"]) if opts.get("context-tokens") else None
         max_tokens = int(opts["max-tokens"]) if opts.get("max-tokens") else None
         budget = int(budgets[cell["task"]]) if cell["task"] in budgets else None
-        full, binname, sampler = run_campaign.planned_command(cell)
-        env = run_cell.launch_env(None, opts.get("backend"), cell["runtime"])
-        head = f"cd {run_cell.DEV_DIR} && {env} "
-        affinity = f"taskset {run_cell.CPU_MASK} " if run_cell.CPU_MASK else ""
-        if not full.startswith(head + affinity):
-            raise SystemExit(f"planned_command form changed: {full!r}")
-        core = full[len(head + affinity):]
-        filename = opts["file"]
+        ekey = (rt, opts.get("backend"), opts.get("engine-build"),
+                run_cell.parsers.executorch_runner_for(opts.get("file", "")) if rt == "executorch" else None)
+        if ekey not in engine_cache:
+            engine_cache[ekey] = cell_engine_files(args.bin_dir, cell, pins, tag)
+        cell_etag, job_engines = engine_cache[ekey]
+        raw_file = opts["file"]
+        filename = (os.path.basename(raw_file)
+                    if os.path.isabs(raw_file) or raw_file.startswith(("~", "./", "../")) else raw_file)
         model_dev = f"{run_cell.DEV_DIR}/models/{cell['model_id'].replace('/', '_')}_{filename}"
         prompt_dev = f"{run_cell.DEV_DIR}/prompts/{cell['task']}.txt"
-        _, _, _, ctx_note = run_cell.engine_command(cell["runtime"], opts.get("backend"), model_dev, cell["task"],
-                                                    prompt_dev, budget, max_tokens, ctx)
-        if not SAFE_COMMAND.match(core) or not SAFE_ENV.match(env):
+        engine_dir = f"{run_cell.ENGINES_DIR}/{opts['engine-build']}" if opts.get("engine-build") else None
+        full, binname, sampler = run_campaign.planned_command(cell)
+        env = run_cell.launch_env(engine_dir, opts.get("backend"), rt)
+        err_file = None
+        et = None
+        if rt == "executorch":
+            et = run_cell.parsers.executorch_inputs(
+                run_cell.EXECUTORCH_MODEL_DIR, raw_file, cell["task"], opts.get("recipe"), ROOT)
+            tokenizer_dev, rendered_dev = run_cell.executorch_device_paths(model_dev, cell["task"])
+            prompt_arg = (f"--prompt_file={rendered_dev}" if et["runner"] == "llama_main"
+                          else f'--prompt="$(cat {prompt_dev})"')
+            core = (f"./{binname} --model_path={model_dev} --tokenizer_path={tokenizer_dev} "
+                    f"{prompt_arg} --temperature=0 --max_new_tokens={max_tokens or budget}")
+            ctx_note = ctx or "export-fixed"
+            err_file = run_cell.EXECUTORCH_STDERR
+        else:
+            head = f"cd {run_cell.DEV_DIR} && {env} "
+            affinity = f"taskset {run_cell.CPU_MASK} " if run_cell.CPU_MASK else ""
+            if not full.startswith(head + affinity):
+                raise SystemExit(f"planned_command form changed: {full!r}")
+            core = full[len(head + affinity):]
+            _, _, _, ctx_note = run_cell.engine_command(
+                rt, opts.get("backend"), model_dev, cell["task"],
+                prompt_dev, budget, max_tokens, ctx, engine_dir=engine_dir)
+        if not SAFE_COMMAND.match(core) or not all(SAFE_ENV.match(tok) for tok in env.split()):
             raise SystemExit(f"{run_campaign.cell_id(cell)}: command or env holds a character the job args "
                              f"cannot carry ({core!r}, {env!r})")
-        if f"--model_path={model_dev} " not in core + " ":
+        model_flag = f"-m {model_dev} " if rt == "llama.cpp" else f"--model_path={model_dev} "
+        if model_flag not in core + " ":
             raise SystemExit(f"{run_campaign.cell_id(cell)}: the command's model path is not {model_dev}")
         per_run = min(RUN_TIMEOUT_CAP, (args.job_timeout - cooldown * (runs - 1) - PULL_MARGIN) // runs)
         if per_run < 60:
             raise SystemExit(f"{run_campaign.cell_id(cell)}: {runs} runs + cooldowns leave {per_run} s per run "
                              f"in --job-timeout {args.job_timeout}")
-        arm = run_cell.arm_name(cell["runtime"], opts.get("backend"))
-        stem = run_cell.capture_stem(cell["runtime"], opts.get("backend"), cell["model_id"], cell["task"],
+        arm = run_cell.arm_name(rt, opts.get("backend"))
+        stem = run_cell.capture_stem(rt, opts.get("backend"), cell["model_id"], cell["task"],
                                      filename, ctx)
-        if (cell["model_id"], filename) not in models:
-            models[(cell["model_id"], filename)] = model_file(cell["model_id"], filename, args.dry_run)
-        m = models[(cell["model_id"], filename)]
-        model_push = {"kind": "model", "name": filename, "local": m["local"], "bytes": m["bytes"],
-                      "sha256": m["sha256"], "device": model_dev,
-                      "object": f"{INPUTS}/models/{m['sha256'] or 'UNCACHED'}/{filename}",
-                      **({"uncached": m["uncached"]} if m.get("uncached") else {})}
-        push = engines + [model_push]
-        # a native-benchmark row forces its token counts and reads no prompt file (run_cell.engine_command)
-        if not cell["task"].startswith("native-benchmark-"):
-            prompt_local = os.path.join(ROOT, "prompts", "text", f"{cell['task']}.txt")
-            psha = sha256_file(prompt_local)
-            push.append({"kind": "prompt", "name": f"{cell['task']}.txt", "local": prompt_local,
-                         "bytes": os.path.getsize(prompt_local), "sha256": psha, "device": prompt_dev,
-                         "object": f"{INPUTS}/prompts/{psha}/{cell['task']}.txt"})
-        wargs = [f"--runs={runs}", f"--cooldown={cooldown}", f"--mask={mask or 'none'}", f"--env={env}",
-                 f"--binname={binname}", f"--dir={run_cell.DEV_DIR}", f"--output_dir={OUTPUT_DIR}",
-                 f"--timeout={per_run}", f"--thermal_wait={run_campaign.THERMAL_WAIT}",
-                 f"--cpucap_wait={dev['cpucapWait']}", f"--budget={args.job_timeout - PULL_MARGIN}",
-                 f"--cell={stem}", f"--command={core}"]
+        if rt == "executorch":
+            model_push = {"kind": "model", "name": filename, "local": et["pte"],
+                          "bytes": os.path.getsize(et["pte"]), "sha256": et["pteSha256"],
+                          "device": model_dev, "object": f"{INPUTS}/models/{et['pteSha256']}/{filename}"}
+            tok_name = os.path.basename(tokenizer_dev)
+            tok_push = {"kind": "prompt", "name": tok_name, "local": et["tokenizer"],
+                        "bytes": os.path.getsize(et["tokenizer"]), "sha256": et["tokenizerSha256"],
+                        "device": tokenizer_dev,
+                        "object": f"{INPUTS}/prompts/{et['tokenizerSha256']}/{tok_name}"}
+            p_dest = rendered_dev if et["runner"] == "llama_main" else prompt_dev
+            p_name = os.path.basename(p_dest)
+            prompt_push = {"kind": "prompt", "name": p_name, "local": et["prompt"],
+                           "bytes": os.path.getsize(et["prompt"]), "sha256": et["promptSha256"],
+                           "device": p_dest, "object": f"{INPUTS}/prompts/{et['promptSha256']}/{p_name}"}
+            push = job_engines + [model_push, tok_push, prompt_push]
+        else:
+            if (cell["model_id"], raw_file) not in models:
+                models[(cell["model_id"], raw_file)] = model_file(cell["model_id"], raw_file, args.dry_run)
+            m = models[(cell["model_id"], raw_file)]
+            model_push = {"kind": "model", "name": filename, "local": m["local"], "bytes": m["bytes"],
+                          "sha256": m["sha256"], "device": model_dev,
+                          "object": f"{INPUTS}/models/{m['sha256'] or 'UNCACHED'}/{filename}",
+                          **({"uncached": m["uncached"]} if m.get("uncached") else {})}
+            push = job_engines + [model_push]
+            # a native-benchmark row forces its token counts and reads no prompt file (run_cell.engine_command)
+            if not cell["task"].startswith("native-benchmark-"):
+                prompt_local = os.path.join(ROOT, "prompts", "text", f"{cell['task']}.txt")
+                psha = sha256_file(prompt_local)
+                push.append({"kind": "prompt", "name": f"{cell['task']}.txt", "local": prompt_local,
+                             "bytes": os.path.getsize(prompt_local), "sha256": psha, "device": prompt_dev,
+                             "object": f"{INPUTS}/prompts/{psha}/{cell['task']}.txt"})
+        env_args = [f"--env={env}"] if " " not in env else [f"--env={tok}" for tok in env.split()]
+        err_args = [f"--err_file={err_file}"] if err_file else []
+        wargs = ([f"--runs={runs}", f"--cooldown={cooldown}", f"--mask={mask or 'none'}"]
+                 + env_args + err_args +
+                 [f"--binname={binname}", f"--dir={run_cell.DEV_DIR}", f"--output_dir={OUTPUT_DIR}",
+                  f"--timeout={per_run}", f"--thermal_wait={run_campaign.THERMAL_WAIT}",
+                  f"--cpucap_wait={dev['cpucapWait']}", f"--budget={args.job_timeout - PULL_MARGIN}",
+                  f"--cell={stem}", f"--command={core}"])
         labels = {"harness": "edge-llm-bench", "campaign": label_value(campaign), "cell": label_value(stem),
                   "runtime": label_value(arm), "model": label_value(cell["model_id"].replace("/", "--")),
                   "task": label_value(cell["task"]), "backend": label_value(opts.get("backend")),
                   "devicekey": label_value(key or "none"), "deviceid": label_value(device_id),
-                  "engine": label_value(tag)}
-        elapsed, basis = elapsed_basis(cell, stem, dev.get("identifier"), tag)
+                  "engine": label_value(cell_etag)}
+        elapsed, basis = elapsed_basis(cell, stem, dev.get("identifier"), cell_etag)
         estimate = round(elapsed * runs * ESTIMATE_FACTOR + cooldown * (runs - 1) + CACHE_BUILD_S)
         jobs.append({
-            "index": n, "displayName": display_name(f"j{n:02d}-{opts.get('backend')}-"
+            "index": n, "displayName": display_name(f"j{n:02d}-{arm}-"
+                                                    f"{cell['model_id'].split('/')[-1]}-{cell['task']}"
+                                                    if all_runtimes else
+                                                    f"j{n:02d}-{opts.get('backend')}-"
                                                     f"{cell['model_id'].split('/')[-1]}-{cell['task']}"),
             "cell": cell, "cellId": run_campaign.cell_id(cell, True), "stem": stem, "arm": arm,
-            "runtime": cell["runtime"], "backend": opts.get("backend"), "modelId": cell["model_id"],
+            "runtime": rt, "backend": opts.get("backend"), "engineBuild": opts.get("engine-build"),
+            "recipe": opts.get("recipe"), "modelId": cell["model_id"],
             "file": filename, "task": cell["task"], "contextTokens": ctx, "ctxNote": ctx_note,
             "budget": budget, "maxTokens": max_tokens,
             # the version of the pushed prompt's text (prompts/text/versions.tsv); record.py writes it
             "promptVersion": run_cell.prompt_version(cell["task"]),
-            "paired": run_cell.context_prompt(cell["runtime"], cell["task"], ctx),
+            "paired": run_cell.context_prompt(rt, cell["task"], ctx),
             "binname": binname, "sampler": sampler, "command": core, "env": env, "mask": mask,
             "runs": runs, "cooldown": cooldown, "perRunTimeout": per_run, "cpucapWait": dev["cpucapWait"],
             "executionTimeout": args.job_timeout, "deviceId": device_id, "deviceKey": key,
-            "engineTag": tag, "args": wargs, "labels": labels, "push": push, "wrapper": wrapper,
+            "engineTag": cell_etag, "args": wargs, "labels": labels, "push": push, "wrapper": wrapper,
             "modelDevice": model_dev, "promptDevice": prompt_dev,
             "estimate": {"elapsedSeconds": elapsed, "basis": basis, "jobSeconds": estimate,
                          "overTimeout": estimate > args.job_timeout}})
@@ -420,15 +562,54 @@ def print_plan(p):
 
 # ---------------------------------------------------------------- the billed path (no --dry-run)
 
+_TOKEN_CACHE = {"token": None, "ts": 0.0, "use_adc": None, "path": None}
+
+
+def _ensure_token_env():
+    now = time.time()
+    if _TOKEN_CACHE["use_adc"] is None:
+        r = subprocess.run(["gcloud", "auth", "print-access-token"], capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            _TOKEN_CACHE["use_adc"] = False
+            _TOKEN_CACHE["token"] = r.stdout.strip()
+            _TOKEN_CACHE["ts"] = now
+        else:
+            _TOKEN_CACHE["use_adc"] = True
+    if not _TOKEN_CACHE["use_adc"]:
+        if now - _TOKEN_CACHE["ts"] > 600:
+            r = subprocess.run(["gcloud", "auth", "print-access-token"], capture_output=True, text=True)
+            if r.returncode == 0 and r.stdout.strip():
+                _TOKEN_CACHE["token"] = r.stdout.strip()
+                _TOKEN_CACHE["ts"] = now
+        return _TOKEN_CACHE["token"], None
+    if _TOKEN_CACHE["token"] is None or now - _TOKEN_CACHE["ts"] > 600:
+        r = subprocess.run(["gcloud", "auth", "application-default", "print-access-token"],
+                           capture_output=True, text=True)
+        if r.returncode != 0 or not r.stdout.strip():
+            raise SystemExit(f"gcloud auth application-default print-access-token failed: {r.stderr.strip()}")
+        _TOKEN_CACHE["token"] = r.stdout.strip()
+        _TOKEN_CACHE["ts"] = now
+        import tempfile
+        tpath = os.path.join(tempfile.gettempdir(), f"edge-llm-bench-adc-{os.getuid()}.tok")
+        with open(os.open(tpath, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w") as fh:
+            fh.write(_TOKEN_CACHE["token"] + "\n")
+        _TOKEN_CACHE["path"] = tpath
+    env = dict(os.environ)
+    env["CLOUDSDK_AUTH_ACCESS_TOKEN_FILE"] = _TOKEN_CACHE["path"]
+    return _TOKEN_CACHE["token"], env
+
+
 def gcloud(argv, check=True):
-    r = subprocess.run(["gcloud"] + argv, capture_output=True, text=True)
+    _, env = _ensure_token_env()
+    r = subprocess.run(["gcloud"] + argv, capture_output=True, text=True, env=env)
     if check and r.returncode:
         raise SystemExit(f"gcloud {' '.join(argv)}: exit {r.returncode}: {r.stderr.strip()[-400:]}")
     return r
 
 
 def access_token():
-    return gcloud(["auth", "print-access-token"]).stdout.strip()
+    tok, _ = _ensure_token_env()
+    return tok
 
 
 def rest(method, url, body=None):
@@ -599,6 +780,8 @@ def main():
     ap.add_argument("--device", help="DDP catalog id (android/ddp/devices.json)")
     ap.add_argument("--campaign", help="campaign dir name (default: env CAMPAIGN, else <date>-ddp-<id>-android)")
     ap.add_argument("--dry-run", action="store_true", help="plan, request bodies and estimate; no subprocess")
+    ap.add_argument("--all-runtimes", action="store_true",
+                    help="wire llama.cpp (CPU + GPU side build) and executorch alongside litert-lm")
     ap.add_argument("--jobs-per-session", type=int, default=8)
     ap.add_argument("--job-timeout", type=int, default=3600, help="executionTimeout per job, s (API: 60-10800)")
     ap.add_argument("--resume", help="an operation name to poll instead of POSTing its session")
@@ -674,10 +857,26 @@ def main():
     ensure_uploaded(p, args.bucket)
     failed = 0
     started = resume_name is None
+    pre_ops = {}
+    if args.all_runtimes and not args.resume and len(p["sessions"]) > 1:
+        ddp = os.path.join(campaign_dir, "ddp")
+        for s in p["sessions"]:
+            n = s["index"]
+            status, op = rest("POST", f"{args.endpoint}/projects/{args.project}/locations/global/sessions",
+                              s["request"])
+            if status >= 400 or not isinstance(op, dict) or "name" not in op:
+                path = os.path.join(ddp, f"error-{n}.json")
+                with open(path, "w") as fh:
+                    fh.write(op if isinstance(op, str) else json.dumps(op, indent=2))
+                raise SystemExit(f"session {n}: POST answered {status}; body in {path}")
+            write_json(os.path.join(ddp, f"operation-create-{n}.json"), op)
+            pre_ops[n] = op["name"]
+            print(f"session {n}: submitted operation {op['name']}", flush=True)
     for s in p["sessions"]:
         if not started and s["displayName"] != resume_name:
             continue
-        operation = args.resume if (resume_name and s["displayName"] == resume_name) else None
+        operation = (args.resume if (resume_name and s["displayName"] == resume_name)
+                     else pre_ops.get(s["index"]))
         started = True
         session = run_session(s, campaign_dir, args, operation)
         written, notes = record.write_session(s, session, campaign_dir, out_dir)
