@@ -1,0 +1,33 @@
+# 2026-10-23 the context ladder of Qwen3 0.6B's all-composite export (E2) on the CPU, XNNPACK and YNNPACK (lane
+# ctx-ladder, round r1), Android, sitting B of two per device: the Android session anchor, then max_num_tokens
+# 2,048 / 16,384 / 32,768, each with the XNNPACK row and the YNNPACK row of one binary. Sitting A =
+# matrices/ctx-ladder-q06-e2-ynnpack-a-android.cells (2,048 / 4,096 / 8,192): the question, the file (E2, sha256
+# fbbf0657...5b79), the build (the side build head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly), the task
+# (native-benchmark-1024x256: 1,024 prefill and 256 decode tokens at every allocation) and the model ids (one per
+# allocation, ..._ctx<N>) are the same as there. The 2,048 rows repeat sitting A's: a ladder is read inside one sitting
+# (devices drift between sittings), and the 2,048 rows tie the two sittings' ladders together. The payload runs
+# round-robin, each round every row once in this order.
+# The 16,384 and 32,768 rows are the phone's memory gate: the KV of this model is allocated at --max_num_tokens and
+# grows with it (32,768 tokens: about 3.8 GB in f16, about 7.5 GB in f32), the S26 has 11.4 GB of RAM and the Pixel
+# 8a 8 GB, and a 32,771-token GPU run rebooted the S26 on 2026-09-11 (docs/profiling-subcommand-design.md). They run
+# only when the gate passes, inside the hold, before the sitting: 10:00-18:00 JST, and MemAvailable at least the
+# allocation's need extrapolated from sitting A's 2,048 / 4,096 / 8,192 peak resident memory plus 1.5 GB. A row the
+# gate does not pass on a device is rewritten, before that device's sitting, to exclude-on=<schedule.json device
+# key>:<reason> (on both devices: exclude=<reason>), the reason with its numbers and no spaces, e.g.
+# exclude-on=pixel8a:memavailable-4.1GB-below-the-32768-need-5.6GB-plus-1.5GB; the table then shows that reason, never
+# a number. A reboot or an out-of-memory kill of a row excludes it the same way at its first occurrence and it is never
+# run again: the round-robin would run a failed row again in the next round, so a row whose fit is unsettled gets one
+# probe launch under the hold (not a record) before it goes into the sitting.
+# Estimate: one sitting about 60-70 min (job phase A about 11 min, the anchor row 3 runs about 7 min, 18 launches of
+# about 2.25-3 min each with the 120-s cooldown; the 16,384 and 32,768 launches take longer). First row = the
+# Android session anchor of matrices/dashboard-text-v1.cells.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells --suffix ctxladder-b --once --hold-held-by <keeper pid> --no-page-commit
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells --suffix ctxladder-b --once --hold-held-by <keeper pid> --no-page-commit
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx2048 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx2048 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx16384 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=16384
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx16384 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=16384
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx32768 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=32768
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx32768 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=32768

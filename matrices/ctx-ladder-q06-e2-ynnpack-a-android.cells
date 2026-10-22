@@ -1,0 +1,44 @@
+# 2026-10-23 the context ladder of Qwen3 0.6B's all-composite export (E2) on the CPU, XNNPACK and YNNPACK (lane
+# ctx-ladder, round r1), Android, sitting A of two per device: the Android session anchor, then max_num_tokens
+# 2,048 / 4,096 / 8,192, each with the XNNPACK row and the YNNPACK row of one binary. Sitting B =
+# matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells (2,048 again, 16,384 and 32,768).
+# The question (Jingjiang Li, the LiteRT gTech Support thread, 2026-10-23 02:2x JST: "measure the result under 2k 4k 8k
+# 16k and 32k context length ... perhaps that can be added in Daisuke's dashboard?") and the answer the dashboard
+# promised: XNNPACK and YNNPACK at context lengths 2K, 4K, 8K, 16K and 32K (max_num_tokens) on the Galaxy S26, the
+# Pixel 8a and the Mac Studio M4 Max, all on the Qwen3 0.6B export with the composite ops and the HEAD build of the
+# YNNPACK rows already on the dashboard; the prompt stays at 1,024 tokens with 256 decode tokens, so only the context
+# length changes; a size a phone cannot run shows its reason instead of a number.
+#   file  = E2, the local export Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm (sha256 fbbf0657...5b79,
+#           343,466,928 B; litert-torch main 0a81bf6f3 on 2026-10-13, --quantization_recipe=dynamic_wi4b32_afp32
+#           --apply_gpu_composites=True --cache_length=32768 --prefill_lengths=128,1024), not on the Hub: the file of
+#           matrices/lu1020-q06-gpu-a-android.cells and lu1020-r4-q06-e2-ynn-android.cells (the same name, so the same
+#           quant label, android/bench/run_cell.py ANDROID_QUANT_LABELS), here an APFS clone in the lane's directory.
+#           Its graph's KV is the export's 32,771-entry placeholder; the engine allocates --max_num_tokens when the
+#           flag is set (LiteRT-LM runtime/engine/engine_settings.cc: the metadata or the default formula only when it
+#           is 0) and logs magic_number=32771, target_number=<the allocation> at load (E2's GPU rows, 2026-10-20).
+#   build = the side build head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly (android/engine-pins.json; the build of
+#           the YNNPACK rows on the dashboard, matrices/lu1020-q06-cpu-android.cells), in
+#           /data/local/tmp/llmbench/engines/<that tag>/; the flat pinned v0.18.0 build is not touched. ynnpack=1 =
+#           --enable_ynnpack=true (arm litert-lm-cpu-ynnpack); the row without it is the XNNPACK arm (litert-lm-cpu).
+#   rows  = native-benchmark-1024x256 (litert_lm_advanced_main --benchmark, 1,024 prefill and 256 decode tokens) at
+#           context-tokens=<N> (--max_num_tokens=<N>), N = 2,048 / 4,096 / 8,192, the smaller allocation first and
+#           at each XNNPACK then YNNPACK; the payload runs round-robin, each round every row once in this order.
+#   ids   = litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx<N>: a protocol capture is named by
+#           arm, model id and task only (android/bench/run_cell.py capture_stem, android/bench/run_campaign.py
+#           cell_id: a native- task keeps the legacy name, without the context), so one id for the five allocations
+#           would make the sitting's gate judge them as one capture; one id per allocation also keeps E2's 2,048 rows
+#           of lu1020-r4-q06-e2-ynn-android.cells (the page's CPU table) apart, and each allocation its own pushed
+#           copy, engine cache and firstEver marker on the phone. Not page rows of the main sections.
+# Estimate: one sitting about 60 min (job phase A about 11 min, the anchor row 3 runs about 7 min, 18 launches of
+# about 2.25 min each with the 120-s cooldown; the 2026-10-22 S26 sitting of 7 cells ran 57.9 min). First row = the
+# Android session anchor of matrices/dashboard-text-v1.cells.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/ctx-ladder-q06-e2-ynnpack-a-android.cells --suffix ctxladder-a --once --hold-held-by <keeper pid> --no-page-commit
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py pixel8a --cells matrices/ctx-ladder-q06-e2-ynnpack-a-android.cells --suffix ctxladder-a --once --hold-held-by <keeper pid> --no-page-commit
+
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx2048 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx2048 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx4096 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=4096
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx4096 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=4096
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx8192 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=8192
+android litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx8192 native-benchmark-1024x256 backend=cpu engine-build=head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly ynnpack=1 local=1 file=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/models/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm context-tokens=8192

@@ -1285,6 +1285,19 @@ one CPU and one GPU sitting per phone; no page row moves.
   file: a protocol capture is named by arm, model id and task only, so a second build of one cell in one sitting needs
   its own id), the INT8 rows `litert-community/Qwen3-0.6B/dynamic_int8` (the iOS and Mac catalog id of that file; its
   quant label is the catalog's string). Reading: YNNPACK on against off only within one build and file in that sitting.
+- The context ladder (2026-10-23, the LiteRT team's question of that day: XNNPACK and YNNPACK at 2K, 4K, 8K, 16K and
+  32K context): E2 on the CPU rows' side build, the protocol (1,024 prefill and 256 decode tokens) at
+  `context-tokens=` 2,048 / 4,096 / 8,192 / 16,384 / 32,768 (`--max_num_tokens`; E2's graph carries the export's
+  32,771-entry placeholder, which the engine sizes to the flag at load: `magic_number=32771, target_number=<N>` in the
+  console), XNNPACK and `ynnpack=1` of one binary at each allocation. Two sittings per phone:
+  `matrices/ctx-ladder-q06-e2-ynnpack-a-android.cells` (2,048 / 4,096 / 8,192) and
+  `matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells` (2,048 again, the two sittings' tie, then 16,384 / 32,768, which
+  run only through a memory gate: MemAvailable against the need extrapolated from sitting A, 10:00-18:00 JST; a row the
+  gate does not pass becomes `exclude-on=<device>:<reason with the numbers>`, so the table shows the reason). Model ids
+  `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx<N>`, one per allocation: a protocol capture
+  is named by arm, model id and task only, and one id per allocation keeps E2's 2,048 rows of the CPU table apart.
+  Reading: a ladder only within one sitting (devices drift between sittings), YNNPACK on against off only within one
+  sitting, binary and allocation, with YNNPACK's own lines in every on launch and none in an off one.
 
 ## llama.cpp Gemma 4 rows before 2026-10-19 ran without the chat template (Mac and iPhone)
 
