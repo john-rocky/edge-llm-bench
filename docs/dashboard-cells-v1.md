@@ -1293,9 +1293,14 @@ one CPU and one GPU sitting per phone; no page row moves.
   `matrices/ctx-ladder-q06-e2-ynnpack-a-android.cells` (2,048 / 4,096 / 8,192) and
   `matrices/ctx-ladder-q06-e2-ynnpack-b-android.cells` (2,048 again, the two sittings' tie, then 16,384 / 32,768, which
   run only through a memory gate: MemAvailable against the need extrapolated from sitting A, 10:00-18:00 JST; a row the
-  gate does not pass becomes `exclude-on=<device>:<reason with the numbers>`, so the table shows the reason). Model ids
+  gate does not pass carries its reason with the numbers, `exclude=` where neither phone passes and
+  `exclude-on=<device>:` where one does not, so the table shows the reason). Model ids
   `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx<N>`, one per allocation: a protocol capture
   is named by arm, model id and task only, and one id per allocation keeps E2's 2,048 rows of the CPU table apart.
+  The Mac Studio's ladder, `matrices/ctx-ladder-q06-e2-ynnpack-mac.cells`: a sitting whose payload is the Mac session
+  anchor, then, in the same Mac window, the five allocations on a macOS build of the side build's sources and flags,
+  whose consoles `scripts/import_litert_cli.py` turns into records in the payload's `app-path-cli/` (a launch that
+  other processes overlapped on its try and on its retake is kept as `.json.overlapped`, out of the summary).
   Reading: a ladder only within one sitting (devices drift between sittings), YNNPACK on against off only within one
   sitting, binary and allocation, with YNNPACK's own lines in every on launch and none in an off one.
 
