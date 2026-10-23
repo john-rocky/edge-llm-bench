@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "08df08bf-a817-5057-9706-0510114966b9",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "main-25016d6ef",
+  "engineArtifact": "ea7c7271d15d103f843b4d1a532472bbbc0705b0b8116fcd690488b9d5ff994a",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "file": "litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-23T15:01:37Z",
+  "device": {
+    "modelIdentifier": "Pixel 9",
+    "systemName": "Android",
+    "systemVersion": "15",
+    "securityPatch": "2025-05-05",
+    "soc": "Tensor G4",
+    "product": "tokay",
+    "batteryLevel": 0.8,
+    "batteryState": "charging",
+    "ddp": {
+      "deviceId": "tokay-35",
+      "buildFingerprint": "google/tokay/tokay:15/BP1A.250505.005/13277524:user/release-keys",
+      "serial": "47231FDAQ004G7"
+    }
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "4-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1696,
+        "hw": 1950,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 1795,
+        "hw": 2600,
+        "cpus": "4-6"
+      },
+      "policy7": {
+        "min": 2687,
+        "hw": 3105,
+        "cpus": "7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 27.9,
+    "exitCode": 0,
+    "engineCache": {
+      "xnnpackWeightCache": "built",
+      "gpuCache": "absent"
+    },
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "7f62312a-8e15-5d3b-98c2-f6d37c3ff55a",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 36.3,
+    "batteryTemperatureFinalC": 37.0,
+    "batteryLevelFinal": 0.8,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": null,
+    "engineCommand": "./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "ddp": {
+      "sessionId": "session-53d7e165",
+      "jobId": "6445d017-4c9e-4aa2-b9b7-f35fe477ee67",
+      "executionId": "701a1dce-4801-4bf7-a708-6bd5ab55f122",
+      "deviceId": "tokay-35",
+      "deviceKey": null,
+      "buildFingerprint": "google/tokay/tokay:15/BP1A.250505.005/13277524:user/release-keys",
+      "serial": "47231FDAQ004G7",
+      "product": "tokay",
+      "jobStartTime": "2026-10-23T15:00:20.963Z",
+      "jobEndTime": "2026-10-23T15:07:15.649Z",
+      "executionStartTime": "2026-10-23T15:01:16.233Z",
+      "executionEndTime": "2026-10-23T15:07:13.138Z",
+      "executionTimeout": "3600s",
+      "resultType": "PASSED",
+      "runIndex": 1
+    },
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 7930.0,
+    "promptTokensPerSecond": 130.17,
+    "decodeTokensPerSecond": 14.74,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+ddp-route-c",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 1544.67578125,
+    "memoryPeakResidentMB": 1544.8984375,
+    "firstEver": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-0.6B_native-benchmark-1024x256_2026-10-23T15-01-37_run1.log",
+    "harness": "android/ddp/run_ddp.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "ddpSessionDir": "ddp/session-53d7e165/j01-cpu-Qwen3-0-6B-native-benchmark-1024x256/execution-701a1dce-4801-4bf7-a708-6bd5ab55f122",
+    "wrapper": "android/ddp/ddp_cell.sh",
+    "wrapperSha256": "8e2880f66cce856b644ffa32d68371f825b87c4a13324f032a5452f56b488656"
+  }
+}

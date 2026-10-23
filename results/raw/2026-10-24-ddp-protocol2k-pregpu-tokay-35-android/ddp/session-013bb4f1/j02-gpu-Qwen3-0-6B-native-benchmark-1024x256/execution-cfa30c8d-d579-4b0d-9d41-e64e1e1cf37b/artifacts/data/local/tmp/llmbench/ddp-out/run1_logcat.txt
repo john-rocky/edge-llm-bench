@@ -1,0 +1,392 @@
+--------- beginning of main
+10-23 12:22:48.822 20107 20107 I native  : I0000 00:00:1792783368.822564   20107 litert_lm_lib.cc:700] Choose backend: gpu
+10-23 12:22:48.823 20107 20107 I native  : I0000 00:00:1792783368.823927   20107 litert_lm_lib.cc:880] executor_settings: backend: GPU
+10-23 12:22:48.823 20107 20107 I native  : backend_config:
+10-23 12:22:48.823 20107 20107 I native  : max_top_k: 64
+10-23 12:22:48.823 20107 20107 I native  : 
+10-23 12:22:48.823 20107 20107 I native  : max_tokens: 2048
+10-23 12:22:48.823 20107 20107 I native  : activation_data_type: Not set
+10-23 12:22:48.823 20107 20107 I native  : max_num_images: 0
+10-23 12:22:48.823 20107 20107 I native  : lora_rank: 0
+10-23 12:22:48.823 20107 20107 I native  : pad_token_id: -1
+10-23 12:22:48.823 20107 20107 I native  : cache_dir: 
+10-23 12:22:48.823 20107 20107 I native  : cache_file: Not set
+10-23 12:22:48.823 20107 20107 I native  : litert_dispatch_lib_dir: Not set
+10-23 12:22:48.823 20107 20107 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+10-23 12:22:48.823 20107 20107 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 12:22:48.823 20107 20107 I native  : 
+10-23 12:22:48.823 20107 20107 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 12:22:48.823 20107 20107 I native  : num_output_candidates: 1
+10-23 12:22:48.823 20107 20107 I native  : configure_magic_numbers: true
+10-23 12:22:48.823 20107 20107 I native  : verify_magic_numbers: false
+10-23 12:22:48.823 20107 20107 I native  : clear_kv_cache_before_prefill: true
+10-23 12:22:48.823 20107 20107 I native  : num_logits_to_print_after_decode: 0
+10-23 12:22:48.823 20107 20107 I native  : gpu_madvise_original_shared_tensors: true
+10-23 12:22:48.823 20107 20107 I native  : gpu_enable_metal_residency_set: false
+10-23 12:22:48.823 20107 20107 I native  : is_benchmark: true
+10-23 12:22:48.823 20107 20107 I native  : enable_profiling: false
+10-23 12:22:48.823 20107 20107 I native  : preferred_device_substr: 
+10-23 12:22:48.823 20107 20107 I native  : num_threads_to_upload: -1
+10-23 12:22:48.823 20107 20107 I native  : num_threads_to_compile: -1
+10-23 12:22:48.823 20107 20107 I native  : convert_weights_on_gpu: true
+10-23 12:22:48.823 20107 20107 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 12:22:48.823 20107 20107 I native  : optimize_shader_compilation: true
+10-23 12:22:48.823 20107 20107 I native  : cache_compiled_shaders_only: false
+10-23 12:22:48.823 20107 20107 I native  : share_constant_tensors: true
+10-23 12:22:48.823 20107 20107 I native  : sampler_handles_input: true
+10-23 12:22:48.823 20107 20107 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 12:22:48.823 20107 20107 I native  : hint_waiting_for_completion: Not set
+10-23 12:22:48.823 20107 20107 I native  : gpu_context_low_priority: Not set
+10-23 12:22:48.823 20107 20107 I native  : enable_speculative_decoding: false
+10-23 12:22:48.823 20107 20107 I native  : disable_delegate_clustering: false
+10-23 12:22:48.823 20107 20107 I native  : hint_kernel_batch_size: Not set
+10-23 12:22:48.823 20107 20107 I native  : error_on_invalid_sampled_token_id: false
+10-23 12:22:48.823 20107 20107 I native  : 
+10-23 12:22:48.823 20107 20107 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+10-23 12:22:48.823 20107 20107 I native  : 
+10-23 12:22:48.823 20107 20107 I native  : I0000 00:00:1792783368.823959   20107 litert_lm_lib.cc:887] vision_executor_settings: not set
+10-23 12:22:48.823 20107 20107 I native  : I0000 00:00:1792783368.823964   20107 litert_lm_lib.cc:893] audio_executor_settings: not set
+10-23 12:22:48.823 20107 20107 I native  : I0000 00:00:1792783368.823969   20107 litert_lm_lib.cc:916] Creating engine
+10-23 12:22:48.824 20107 20107 W native  : W0000 00:00:1792783368.824100   20107 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 12:22:48.824 20107 20107 W native  : W0000 00:00:1792783368.824109   20107 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 12:22:48.824 20107 20107 W native  : W0000 00:00:1792783368.824114   20107 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:22:48.824 20107 20107 W native  : W0000 00:00:1792783368.824117   20107 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:22:48.824 20107 20107 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 12:22:48.824 20107 20107 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 12:22:48.824 20107 20107 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 12:22:48.824 20107 20108 W native  : W0000 00:00:1792783368.824288   20108 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-23 12:22:48.824 20107 20108 W native  : W0000 00:00:1792783368.824361   20108 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-23 12:22:48.824 20107 20108 W native  : W0000 00:00:1792783368.824373   20108 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+10-23 12:22:48.891 20107 20107 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074e1510050, name=LiteRT GPU
+10-23 12:22:48.891 20107 20107 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 12:22:48.891 20107 20107 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074e150e290, name=CpuAccelerator
+10-23 12:22:48.891 20107 20107 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 12:22:48.916 20107 20107 W native  : W0000 00:00:1792783368.916435   20107 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-23 12:22:48.916 20107 20107 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 12:22:48.916 20107 20107 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 12:22:48.916 20107 20107 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 12:22:48.916 20107 20107 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074e150d260, name=LiteRT GPU
+10-23 12:22:48.917 20107 20107 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 12:22:48.917 20107 20107 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074e150d110, name=CpuAccelerator
+10-23 12:22:48.917 20107 20107 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 12:22:48.919 20107 20107 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=846, num_signatures=3
+10-23 12:22:48.919 20107 20107 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1368, num_inputs=60, num_outputs=57, num_ops=916
+10-23 12:22:48.919 20107 20107 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1368, num_inputs=60, num_outputs=57, num_ops=916
+10-23 12:22:48.919 20107 20107 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1280, num_inputs=60, num_outputs=57, num_ops=830
+10-23 12:22:48.919 20107 20107 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 12:22:48.919 20107 20107 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+10-23 12:22:48.920 20107 20107 I litert  : [magic_number_utils.cc:536] 482 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+10-23 12:22:48.921 20107 20107 I litert  : [magic_number_utils.cc:536] 482 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+10-23 12:22:48.922 20107 20107 I litert  : [magic_number_utils.cc:536] 482 tensors of signature decode have been updated for magic number  32771 to target number 2048
+10-23 12:22:48.922 20107 20107 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 12:22:48.923 20107 20107 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 12:22:48.938 20107 20107 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 12:22:48.938 20107 20107 W libc    : Access denied finding property "ro.chipname"
+10-23 12:22:48.938 20107 20107 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 12:22:48.941 20107 20107 W tflite  : Read-only tensor #8 (litert_torch.generative.export_hf.core.exportable_module.LiteRTExportableModuleForDecoderOnlyLMPrefill/transformers.models.qwen3.modeling_qwen3.Qwen3ForCausalLM_model/transformers.models.qwen3.modeling_qwen3.Qwen3Model_model/transformers.models.qwen3.modeling_qwen3.Qwen3DecoderLayer_0/litert_torch.generative.export_hf.model_ext.qwen3.patch.FusedQwen3Attention_self_attn;93) has an unaligned buffer (0x747ce6c56c, required alignment 8); copying to an aligned heap buffer. Re-export the model to align buffers in the FlatBuffer and enable zero-copy mmap.
+10-23 12:22:48.974 20107 20107 I native  : I0000 00:00:1792783368.974572   20107 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+10-23 12:22:48.974 20107 20107 I native  : I0000 00:00:1792783368.974762   20107 delegate_opencl.cc:657] options->kernel_batch_size: 0
+10-23 12:22:48.974 20107 20107 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 12:22:48.974 20107 20107 W libc    : Access denied finding property "ro.chipname"
+10-23 12:22:48.974 20107 20107 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 12:22:48.978 20107 20107 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 12:22:48.980 20107 20107 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 12:22:48.981 20107 20107 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+10-23 12:22:48.981 20107 20107 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+10-23 12:22:48.981 20107 20107 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-23 12:22:48.981 20107 20107 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 12:22:48.983 20107 20107 I tflite  : Replacing 916 out of 916 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+10-23 12:22:48.994 20107 20107 W native  : W0000 00:00:1792783368.994685   20107 gpu_model_builder.cc:4457] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.
+10-23 12:22:49.048   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:22:49.178  1368  5646 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 12:22:49.337  5930  6158 D TemperatureStateSource: sequence=92 actualDelay=10001
+10-23 12:22:49.338  5930  6158 D TemperatureStateSource: Reading temperature: sequence=93
+10-23 12:22:49.340  5134  5134 I pixel-thermal: VIRTUAL-SKIN:29.2308 raw data: VIRTUAL-SKIN:29230.8 
+10-23 12:22:49.341  5930  6158 D TemperatureStateSource: getDeviceTemperatures: sequence=93 deviceTemperatureType=3 temperatureSource=0 temperatures=[29.230806]
+10-23 12:22:49.341  5930  6158 D BusinessScope: Enqueuing the block
+10-23 12:22:49.341  5930  6158 D TemperatureStateSource: sequence=93 waitTime=10000
+10-23 12:22:49.342  5930  6022 D BusinessScope: Start running the #202 block
+10-23 12:22:49.342  5930  6022 D BusinessScope: Enqueuing the block
+10-23 12:22:49.342  5930  6022 D ImpulseStateSource: Notify clients: 98
+10-23 12:22:49.342  5930  6022 D BusinessScope: Finish running the #202 block
+10-23 12:22:49.343  5930  6022 D BusinessScope: Start running the #203 block
+10-23 12:22:49.343  5930  6022 D BusinessScope: Finish running the #203 block
+10-23 12:22:49.374 20107 20107 W litert_lm_advanced_main: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-23 12:22:49.375 20107 20107 W litert_lm_advanced_main: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-23 12:22:52.013 20107 20107 I native  : I0000 00:00:1792783372.013003   20107 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-23 12:22:52.013 20107 20107 I native  : I0000 00:00:1792783372.013137   20107 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 12:22:52.179   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:22:52.309  1368  5646 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 3]
+10-23 12:22:52.635 20107 20107 I tflite  : Replacing 916 out of 916 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-23 12:22:52.644 20107 20107 I native  : I0000 00:00:1792783372.644874   20107 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-23 12:22:52.644 20107 20107 I native  : I0000 00:00:1792783372.644980   20107 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 12:22:52.891 20107 20107 I tflite  : Replacing 830 out of 830 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+10-23 12:22:52.902 20107 20107 I native  : I0000 00:00:1792783372.902106   20107 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-23 12:22:52.902 20107 20107 I native  : I0000 00:00:1792783372.902169   20107 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248382   20107 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248513   20107 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248526   20107 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248530   20107 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248534   20107 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248538   20107 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248542   20107 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:22:53.248 20107 20107 W native  : W0000 00:00:1792783373.248545   20107 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-23 12:22:53.251 20107 20107 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 12:22:53.251 20107 20107 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 12:22:53.251 20107 20107 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 12:22:53.252 20107 20107 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074e153c660, name=LiteRT GPU
+10-23 12:22:53.252 20107 20107 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 12:22:53.252 20107 20107 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000074e153b780, name=CpuAccelerator
+10-23 12:22:53.252 20107 20107 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 12:22:53.462 20107 20107 W native  : W0000 00:00:1792783373.462724   20107 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 12:22:53.462 20107 20107 W native  : W0000 00:00:1792783373.462783   20107 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 12:22:53.462 20107 20107 W native  : W0000 00:00:1792783373.462788   20107 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:22:53.462 20107 20107 W native  : W0000 00:00:1792783373.462793   20107 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:22:53.463 20107 20107 I native  : I0000 00:00:1792783373.463084   20107 litert_lm_lib.cc:1194] Creating conversation
+10-23 12:22:53.463 20107 20107 I native  : I0000 00:00:1792783373.463975   20107 litert_lm_lib.cc:1206] Running single-turn conversation
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-23 12:22:53.467 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-23 12:22:53.468 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-23 12:22:54.980 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-23 12:22:54.981 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-23 12:22:54.982 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-23 12:22:54.982 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+10-23 12:22:54.982 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-23 12:22:54.982 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-23 12:22:54.982 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-23 12:22:54.982 20107 20107 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-23 12:22:54.999 20107 20107 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 12:22:54.999 20107 20107 W libc    : Access denied finding property "ro.chipname"
+10-23 12:22:54.999 20107 20107 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 12:22:55.224 20107 20107 I native  : I0000 00:00:1792783375.224704   20107 llm_litert_compiled_model_executor.cc:1748] Sampler will handle decode input tensors.
+10-23 12:22:55.278 20107 20107 I tflite  : Loaded OpenCL library with dlopen.
+10-23 12:22:55.307   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:22:55.429  1368  5646 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 12:22:58.428   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:22:58.560  1368  5646 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 0]
+10-23 12:22:59.342  5930  8125 D TemperatureStateSource: sequence=93 actualDelay=10001
+10-23 12:22:59.343  5930  8125 D TemperatureStateSource: Reading temperature: sequence=94
+10-23 12:22:59.347  5134  5134 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [28166.00 32640.00 27721.00 31015.00 30370.00 31260.00 32440.00 28366.00 ]
+10-23 12:22:59.347  5134  5134 I native  : I0000 00:00:1792783379.347320    5134 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 12:22:59.347  5134  5134 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [29363.2 ]
+10-23 12:22:59.347  5134  5134 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [29363.2 ]
+10-23 12:22:59.347  5134  5134 I pixel-thermal: VIRTUAL-SKIN:29.2838 raw data: VIRTUAL-SKIN:29283.8 VIRTUAL-SKIN-LEGACY:29301.3 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-61.916 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:29363.2 VIRTUAL-SKIN-MODEL-CLAMPED:29363.2 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:61.916 VIRTUAL-SKIN-MODEL-UPDATED:29283.8 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:29363.2 VIRTUAL-SKIN-SUB-0:29185.8 VIRTUAL-SKIN-SUB-1:28575.1 VIRTUAL-SKIN-SUB-2:27648.6 VIRTUAL-SKIN-SUB-3:29301.3 VIRTUAL-SKIN-SUB-4:28767.1 VIRTUAL-SKIN-SUB-5:28466.1 VIRTUAL-SKIN-SUB-6:29275 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:28166 charging_therm:32640 disp_therm:27721 north_therm:31015 quiet_therm:30370 rfpa_therm:31260 soc_therm:32440 usb_pwr_therm:28366 
+10-23 12:22:59.348  5930  8125 D TemperatureStateSource: getDeviceTemperatures: sequence=94 deviceTemperatureType=3 temperatureSource=0 temperatures=[29.283768]
+10-23 12:22:59.348  5930  8125 D BusinessScope: Enqueuing the block
+10-23 12:22:59.348  5930  8125 D TemperatureStateSource: sequence=94 waitTime=10000
+10-23 12:22:59.348  5930  6022 D BusinessScope: Start running the #204 block
+10-23 12:22:59.349  5930  6022 D BusinessScope: Enqueuing the block
+10-23 12:22:59.349  5930  6022 D ImpulseStateSource: Notify clients: 99
+10-23 12:22:59.349  5930  6022 D BusinessScope: Finish running the #204 block
+10-23 12:22:59.349  5930  6022 D BusinessScope: Start running the #205 block
+10-23 12:22:59.349  5930  6022 D BusinessScope: Finish running the #205 block
+--------- beginning of system
+10-23 12:23:00.132  1368  5179 D ActivityManager: sync unfroze 16295 com.android.vending for 6
+10-23 12:23:00.133  1368  5179 D ActivityManager: sync unfroze 16328 com.android.vending:background for 6
+10-23 12:23:00.134  1368  5179 W ProcessStats: Tracking association SourceState{2793435 system/1000 ImpBg #17136} whose proc state 6 is better than process ProcessState{18190ca com.android.vending/10157 pkg=com.android.vending (sub)} proc state 14 (169 skipped)
+10-23 12:23:00.158 16295 16295 I Finsky  : [2] SCH: job service start with id 9329.
+10-23 12:23:00.453 16295 19881 I Finsky  : [220] SCH: Satisfied jobs for 9329 are: 12-1
+10-23 12:23:00.455 16295 19898 I Finsky  : [228] SCH: Job 12-1 starting
+10-23 12:23:00.457 16295 16295 I Finsky  : [2] WM::SCH: Logging work start for 12-1
+10-23 12:23:00.457 16295 16295 I Finsky  : [2] [ContentSync] job started
+10-23 12:23:00.660 16295 20162 E Finsky  : [229] [Counters] attempted to use a non-positive increment for: 9200
+10-23 12:23:00.661 16295 20162 I Finsky  : [229] App states replicator found 16 unowned apps
+10-23 12:23:00.673 16295 16324 I Finsky  : [55] Completed 0 account content syncs with 0 successful.
+10-23 12:23:00.674 16295 16295 I Finsky  : [2] [ContentSync] Installation state replication succeeded.
+10-23 12:23:00.674 16295 16295 I Finsky  : [2] SCH: jobFinished: 12-1. TimeElapsed: 218ms.
+10-23 12:23:00.675 16295 16295 I Finsky  : [2] WM::SCH: Logging work end for 12-1
+10-23 12:23:00.686 16295 16324 I Finsky  : [55] SCH: Scheduling phonesky job Id: 1-1337, CT: 1792782582039, Constraints: [{ L: 24994905, D: 68194905, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-23 12:23:00.686 16295 16324 I Finsky  : [55] SCH: Scheduling phonesky job Id: 10-4, CT: 1792782581590, Constraints: [{ L: 1200000, D: 86400000, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-23 12:23:00.690 16295 16327 I Finsky  : [58] SCH: Scheduling 1 system job(s)
+10-23 12:23:00.693 16295 16327 I Finsky  : [58] SCH: Scheduling system job Id: 9335, L: 400900, D: 67396254, C: false, I: false, N: 1
+10-23 12:23:00.701 16295 19898 I Finsky  : [228] SCH: job service finished with id 9329.
+10-23 12:23:00.710 16295 16295 I Finsky  : [2] Memory trim requested to level 40
+10-23 12:23:00.710 16295 16295 I Finsky  : [2] Flushing in-memory image cache
+10-23 12:23:00.712 16328 16328 I Finsky:background: [2] Memory trim requested to level 40
+10-23 12:23:01.561   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:23:01.681  1368  5646 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 12:23:04.383 14573 14573 D ModemService: Received: com.google.android.apps.scone.modem.ATTEMPT_MODEM_RESET
+10-23 12:23:04.383 14573 14573 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 12:23:04.384  1368  7688 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 12:23:04.394 14573 14581 W roid.apps.scone: Missing inline cache for void afv.d(boolean)
+10-23 12:23:04.396 14573 19662 D ConfigService: onHandleWork
+10-23 12:23:04.396 14573 19662 D ConfigService: onHandleAttemptModemReset
+10-23 12:23:04.398 14573 19662 D ModemUtil: Screen is on, defer actions
+10-23 12:23:04.398 14573 19662 D ConfigService: Preconditions not met, retrying after 60 seconds
+10-23 12:23:04.400 14573 19662 D ConfigService: Attempt to retry after: 60 seconds
+10-23 12:23:04.679   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:23:04.810  1368  5646 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 12:23:05.836   885 11756 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 12:23:05.852   795   826 I bthal.activitywatcher: getStateResidency: ActivityStat{0 : totalTimeMs 26379 totalEntryCount 3987 lastEntryMs 751507}
+10-23 12:23:05.852   795   826 I bthal.activitywatcher: getStateResidency: ActivityStat{1 : totalTimeMs 1394 totalEntryCount 2173 lastEntryMs 751925}
+10-23 12:23:05.852   795   826 I bthal.activitywatcher: getStateResidency: ActivityStat{2 : totalTimeMs 0 totalEntryCount 0 lastEntryMs 0}
+10-23 12:23:05.852   795   826 I bthal.activitywatcher: getStateResidency: ActivityStat{3 : totalTimeMs 73 totalEntryCount 3982 lastEntryMs 751496}
+10-23 12:23:05.855   795   826 I bthal.activitywatcher: send_hci_activities_vsc: Sent VSC <[4]{89, 253, 1, 1}>
+10-23 12:23:05.856   805   805 W android.hardware.power.stats-service.pixel: getStateResidency latency for Bluetooth exceeded time allowed: 3822us
+10-23 12:23:05.857  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xb4 [cntr = 182]
+10-23 12:23:05.858   795  2020 I bthal.activitywatcher: filter_hci_activities_vse: Filtered <[103]{14, 101, 1, 89, 253, 0, 1, 125, 13, 0, 0, 231, 219, 0, 0, 24, 20, 17, 0, 0, 0, 0, 0, 183, 20, 17, 0, 0, 0, 0, 0, 45, 7, 0, 0, 226, 8, 0, 0, 183, 20, 17, 0, 0, 0, 0, 0, 24, 20, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 124, 13, 0, 0, 125, 0, 0, 0, 13, 20, 17, 0, 0, 0, 0, 0, 13, 20, 17, 0, 0, 0, 0, 0}>
+10-23 12:23:05.858   795  2020 I bthal.flowcontrol: HciEventPreProcess: HCI Event 0xe Opcode 0xfd59 Length 103 handled by ControllerActivityWatcher
+10-23 12:23:05.859  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xb4, rc: 0
+10-23 12:23:05.860   795  2020 I bthal.bqr: Batt_Per: 78, Avg_Cur_Pwr: 1 mA, BEr_Tx_Plv: 0 dBm, Le_Tx_Plv: 0 dBm, Idle_Tm: 56467 ms, Act_Tm: 2281 ms, BEr_Tx_Tm: 0 ms, BEr_Rx_Tm: 136 ms, Le_Tx_Tm: 0 ms, Le_Rx_Tm: 0 ms, total_Tm 56603 ms, Rx_1Ch_Tm 136 ms, Rx_2Ch_Tm 0 ms, Tx_iPA_1Ch_Tm 0 ms, Tx_iPA_2Ch_Tm 0 ms, Tx_ePA_1Ch_Tm 0 ms, Tx_ePA_2Ch_Tm 0 ms
+10-23 12:23:05.860   795  2020 I bthal.bqr: update_bqr_energy_report: Avg_Cur_Pwr: 1, BEr_Tx_Plv: 0 dBm, Le_Tx_Plv: 0
+10-23 12:23:05.862  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xb5 [cntr = 183]
+10-23 12:23:05.863  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xb5, rc: 0
+10-23 12:23:05.863  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xb6 [cntr = 184]
+10-23 12:23:05.863  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xb6, rc: 0
+10-23 12:23:05.863   795  2020 I bthal.flowcontrol: HciEventPreProcess: HCI Event 0xff Opcode 0 Length 84 handled by debug_VendorEvent
+10-23 12:23:05.864  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xb7 [cntr = 185]
+10-23 12:23:05.864  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xb7, rc: 0
+10-23 12:23:05.866  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xb8 [cntr = 186]
+10-23 12:23:05.866  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xb8, rc: 0
+10-23 12:23:05.867  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xb9 [cntr = 187]
+10-23 12:23:05.867  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xb9, rc: 0
+10-23 12:23:05.869  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xba [cntr = 188]
+10-23 12:23:05.869  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xba, rc: 0
+10-23 12:23:05.871  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xbb [cntr = 189]
+10-23 12:23:05.871  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xbb, rc: 0
+10-23 12:23:05.872  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xbc [cntr = 190]
+10-23 12:23:05.872  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xbc, rc: 0
+10-23 12:23:05.874  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xbd [cntr = 191]
+10-23 12:23:05.874  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xbd, rc: 0
+10-23 12:23:05.876  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xbe [cntr = 192]
+10-23 12:23:05.876  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xbe, rc: 0
+10-23 12:23:05.877  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xbf [cntr = 193]
+10-23 12:23:05.877  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xbf, rc: 0
+10-23 12:23:05.878  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xc0 [cntr = 194]
+10-23 12:23:05.878  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xc0, rc: 0
+10-23 12:23:05.880  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xc1 [cntr = 195]
+10-23 12:23:05.880  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xc1, rc: 0
+10-23 12:23:05.881  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xc2 [cntr = 196]
+10-23 12:23:05.882  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xc2, rc: 0
+10-23 12:23:05.883  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xc3 [cntr = 197]
+10-23 12:23:05.883  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xc3, rc: 0
+10-23 12:23:05.884  1070  1070 D AOC     : A3:MSG: controller.cc, 275: CNTRL: cmd ID: 0x000a, tag: 0xc4 [cntr = 198]
+10-23 12:23:05.885  1070  1070 D AOC     : A3:MSG: controller.cc, 917: CNTRL: ipc: control, cmd ID: 0x000a, tag: 0xc4, rc: 0
+10-23 12:23:06.051  1368  5174 D TelephonyManager: requestModemActivityInfo: Sending result to app: ModemActivityInfo{ mTimestamp=1132735 mSleepTimeMs=2475 mIdleTimeMs=25071 mActivityStatsTechSpecificInfo=[{mRat=GERAN,mFrequencyRange=UNKNOWN,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=110833}, {mRat=UTRAN,mFrequencyRange=UNKNOWN,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=170317}, {mRat=EUTRAN,mFrequencyRange=UNKNOWN,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=169680}, {mRat=NGRAN,mFrequencyRange=HIGH,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=641250}, {mRat=NGRAN,mFrequencyRange=MMWAVE,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=0}, {mRat=UNKNOWN,mFrequencyRange=UNKNOWN,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=0}]}
+10-23 12:23:06.234 20107 20107 I native  : I0000 00:00:1792783386.234288   20107 litert_lm_lib.cc:433] BenchmarkInfo:
+10-23 12:23:06.234 20107 20107 I native  :   Init Phases (7):
+10-23 12:23:06.234 20107 20107 I native  :     - Init Conversation: 0.03 ms
+10-23 12:23:06.234 20107 20107 I native  :     - Init Executor: 4638.55 ms
+10-23 12:23:06.234 20107 20107 I native  :     - Init LLM metadata: 0.01 ms
+10-23 12:23:06.234 20107 20107 I native  :     - Init Model assets: 0.02 ms
+10-23 12:23:06.234 20107 20107 I native  :     - Init Tokenizer: 486.25 ms
+10-23 12:23:06.234 20107 20107 I native  :     - Init Total: 4639.07 ms
+10-23 12:23:06.234 20107 20107 I native  : --------------------------------------------------
+10-23 12:23:06.234 20107 20107 I native  :   Time to first token: 1.56 s
+10-23 12:23:06.234 20107 20107 I native  : --------------------------------------------------
+10-23 12:23:06.234 20107 20107 I native  :   Prefill Turns (Total 1 turns):
+10-23 12:23:06.234 20107 20107 I native  :     Prefill Turn 1: Processed 1024 tokens in 1.515819378s duration.
+10-23 12:23:06.234 20107 20107 I native  :       Prefill Speed: 675.54 tokens/sec.
+10-23 12:23:06.234 20107 20107 I native  : --------------------------------------------------
+10-23 12:23:06.234 20107 20107 I native  :   Decode Turns (Total 1 turns):
+10-23 12:23:06.234 20107 20107 I native  :     Decode Turn 1: Processed 256 tokens in 11.253467006s duration.
+10-23 12:23:06.234 20107 20107 I native  :       Decode Speed: 22.75 tokens/sec.
+10-23 12:23:06.234 20107 20107 I native  : --------------------------------------------------
+10-23 12:23:06.234 20107 20107 I native  :   TextToTokenIds Turns (Total 0 turns):
+10-23 12:23:06.234 20107 20107 I native  :     No text to token ids turns recorded.
+10-23 12:23:06.234 20107 20107 I native  : --------------------------------------------------
+10-23 12:23:06.379 20107 20107 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074e150d110, name=CpuAccelerator
+10-23 12:23:06.379 20107 20107 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074e150d260, name=LiteRT GPU
+10-23 12:23:06.432 20107 20107 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074e153b780, name=CpuAccelerator
+10-23 12:23:06.432 20107 20107 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000074e153c660, name=LiteRT GPU

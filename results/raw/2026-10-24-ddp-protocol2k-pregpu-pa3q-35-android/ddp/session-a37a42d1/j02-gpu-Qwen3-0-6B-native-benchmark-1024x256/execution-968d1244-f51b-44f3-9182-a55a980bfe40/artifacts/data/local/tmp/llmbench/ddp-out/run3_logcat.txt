@@ -1,0 +1,383 @@
+--------- beginning of main
+10-23 12:26:42.914  7405  7405 I native  : I0000 00:00:1792783602.914871    7405 litert_lm_lib.cc:700] Choose backend: gpu
+10-23 12:26:42.915  7405  7405 I native  : I0000 00:00:1792783602.915582    7405 litert_lm_lib.cc:880] executor_settings: backend: GPU
+10-23 12:26:42.915  7405  7405 I native  : backend_config:
+10-23 12:26:42.915  7405  7405 I native  : max_top_k: 64
+10-23 12:26:42.915  7405  7405 I native  : 
+10-23 12:26:42.915  7405  7405 I native  : max_tokens: 2048
+10-23 12:26:42.915  7405  7405 I native  : activation_data_type: Not set
+10-23 12:26:42.915  7405  7405 I native  : max_num_images: 0
+10-23 12:26:42.915  7405  7405 I native  : lora_rank: 0
+10-23 12:26:42.915  7405  7405 I native  : pad_token_id: -1
+10-23 12:26:42.915  7405  7405 I native  : cache_dir: 
+10-23 12:26:42.915  7405  7405 I native  : cache_file: Not set
+10-23 12:26:42.915  7405  7405 I native  : litert_dispatch_lib_dir: Not set
+10-23 12:26:42.915  7405  7405 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+10-23 12:26:42.915  7405  7405 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 12:26:42.915  7405  7405 I native  : 
+10-23 12:26:42.915  7405  7405 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 12:26:42.915  7405  7405 I native  : num_output_candidates: 1
+10-23 12:26:42.915  7405  7405 I native  : configure_magic_numbers: true
+10-23 12:26:42.915  7405  7405 I native  : verify_magic_numbers: false
+10-23 12:26:42.915  7405  7405 I native  : clear_kv_cache_before_prefill: true
+10-23 12:26:42.915  7405  7405 I native  : num_logits_to_print_after_decode: 0
+10-23 12:26:42.915  7405  7405 I native  : gpu_madvise_original_shared_tensors: true
+10-23 12:26:42.915  7405  7405 I native  : gpu_enable_metal_residency_set: false
+10-23 12:26:42.915  7405  7405 I native  : is_benchmark: true
+10-23 12:26:42.915  7405  7405 I native  : enable_profiling: false
+10-23 12:26:42.915  7405  7405 I native  : preferred_device_substr: 
+10-23 12:26:42.915  7405  7405 I native  : num_threads_to_upload: -1
+10-23 12:26:42.915  7405  7405 I native  : num_threads_to_compile: -1
+10-23 12:26:42.915  7405  7405 I native  : convert_weights_on_gpu: true
+10-23 12:26:42.915  7405  7405 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 12:26:42.915  7405  7405 I native  : optimize_shader_compilation: true
+10-23 12:26:42.915  7405  7405 I native  : cache_compiled_shaders_only: false
+10-23 12:26:42.915  7405  7405 I native  : share_constant_tensors: true
+10-23 12:26:42.915  7405  7405 I native  : sampler_handles_input: true
+10-23 12:26:42.915  7405  7405 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 12:26:42.915  7405  7405 I native  : hint_waiting_for_completion: Not set
+10-23 12:26:42.915  7405  7405 I native  : gpu_context_low_priority: Not set
+10-23 12:26:42.915  7405  7405 I native  : enable_speculative_decoding: false
+10-23 12:26:42.915  7405  7405 I native  : disable_delegate_clustering: false
+10-23 12:26:42.915  7405  7405 I native  : hint_kernel_batch_size: Not set
+10-23 12:26:42.915  7405  7405 I native  : error_on_invalid_sampled_token_id: false
+10-23 12:26:42.915  7405  7405 I native  : 
+10-23 12:26:42.915  7405  7405 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+10-23 12:26:42.915  7405  7405 I native  : 
+10-23 12:26:42.915  7405  7405 I native  : I0000 00:00:1792783602.915606    7405 litert_lm_lib.cc:887] vision_executor_settings: not set
+10-23 12:26:42.915  7405  7405 I native  : I0000 00:00:1792783602.915609    7405 litert_lm_lib.cc:893] audio_executor_settings: not set
+10-23 12:26:42.915  7405  7405 I native  : I0000 00:00:1792783602.915613    7405 litert_lm_lib.cc:916] Creating engine
+10-23 12:26:42.915  7405  7405 W native  : W0000 00:00:1792783602.915725    7405 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 12:26:42.915  7405  7405 W native  : W0000 00:00:1792783602.915753    7405 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 12:26:42.915  7405  7405 W native  : W0000 00:00:1792783602.915757    7405 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:26:42.915  7405  7405 W native  : W0000 00:00:1792783602.915760    7405 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:26:42.915  7405  7405 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 12:26:42.915  7405  7405 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 12:26:42.915  7405  7405 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 12:26:42.916  7405  7406 W native  : W0000 00:00:1792783602.915934    7406 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-23 12:26:42.916  7405  7406 W native  : W0000 00:00:1792783602.916050    7406 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-23 12:26:42.916  7405  7406 W native  : W0000 00:00:1792783602.916080    7406 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+10-23 12:26:42.925  2572  2690 I system_server: Background concurrent mark compact GC freed 46MB AllocSpace bytes, 139(2780KB) LOS objects, 41% free, 66MB/114MB, paused 1.404ms,2.695ms total 175.658ms
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Local Branch                     : 
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Remote Branch                    : NONE
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-23 12:26:42.940  7405  7407 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-23 12:26:42.943  7405  7407 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-23 12:26:42.946  7405  7407 I SnapAlloc: Graphics lib is available
+10-23 12:26:42.948  7405  7407 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-23 12:26:42.948  7405  7407 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-23 12:26:42.949  7405  7407 I AdrenoUtils: <ReadGpuID:366>: Reading chip ID through GSL
+10-23 12:26:42.950  7405  7405 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070e913b8a0, name=LiteRT GPU
+10-23 12:26:42.951  7405  7405 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 12:26:42.951  7405  7405 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070e913bb40, name=CpuAccelerator
+10-23 12:26:42.951  7405  7405 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 12:26:42.966  7405  7405 W native  : W0000 00:00:1792783602.966147    7405 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-23 12:26:42.966  7405  7405 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 12:26:42.966  7405  7405 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 12:26:42.966  7405  7405 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 12:26:42.966  7405  7405 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070e913c080, name=LiteRT GPU
+10-23 12:26:42.966  7405  7405 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 12:26:42.966  7405  7405 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070e913bd70, name=CpuAccelerator
+10-23 12:26:42.966  7405  7405 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 12:26:42.968  7405  7405 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=846, num_signatures=3
+10-23 12:26:42.968  7405  7405 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1368, num_inputs=60, num_outputs=57, num_ops=916
+10-23 12:26:42.968  7405  7405 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1368, num_inputs=60, num_outputs=57, num_ops=916
+10-23 12:26:42.968  7405  7405 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1280, num_inputs=60, num_outputs=57, num_ops=830
+10-23 12:26:42.968  7405  7405 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 12:26:42.968  7405  7405 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+10-23 12:26:42.969  7405  7405 I litert  : [magic_number_utils.cc:536] 482 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+10-23 12:26:42.969  7405  7405 I litert  : [magic_number_utils.cc:536] 482 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+10-23 12:26:42.970  7405  7405 I litert  : [magic_number_utils.cc:536] 482 tensors of signature decode have been updated for magic number  32771 to target number 2048
+10-23 12:26:42.970  7405  7405 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 12:26:42.970  7405  7405 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 12:26:42.976  7405  7405 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 12:26:42.976  7405  7405 W libc    : Access denied finding property "ro.chipname"
+10-23 12:26:42.979  7405  7405 W tflite  : Read-only tensor #8 (litert_torch.generative.export_hf.core.exportable_module.LiteRTExportableModuleForDecoderOnlyLMPrefill/transformers.models.qwen3.modeling_qwen3.Qwen3ForCausalLM_model/transformers.models.qwen3.modeling_qwen3.Qwen3Model_model/transformers.models.qwen3.modeling_qwen3.Qwen3DecoderLayer_0/litert_torch.generative.export_hf.model_ext.qwen3.patch.FusedQwen3Attention_self_attn;93) has an unaligned buffer (0x7084a9756c, required alignment 8); copying to an aligned heap buffer. Re-export the model to align buffers in the FlatBuffer and enable zero-copy mmap.
+10-23 12:26:42.991  7405  7405 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-23 12:26:42.991  7405  7405 I native  : I0000 00:00:1792783602.991654    7405 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+10-23 12:26:42.991  7405  7405 I native  : I0000 00:00:1792783602.991714    7405 delegate_opencl.cc:657] options->kernel_batch_size: 0
+10-23 12:26:42.991  7405  7405 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 12:26:42.991  7405  7405 W libc    : Access denied finding property "ro.chipname"
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Local Branch                     : 
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Remote Branch                    : NONE
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-23 12:26:42.993  7405  7405 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-23 12:26:42.994  7405  7405 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-23 12:26:42.995  7405  7405 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 12:26:42.999  7405  7405 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 12:26:42.999  7405  7405 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+10-23 12:26:42.999  7405  7405 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+10-23 12:26:42.999  7405  7405 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-23 12:26:42.999  7405  7405 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 12:26:43.000  7405  7405 I tflite  : Replacing 916 out of 916 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+10-23 12:26:43.010  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 12:26:43.051  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:43.054  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:43.054  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:43.125  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 12:26:44.008  1851  1945 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+--------- beginning of system
+10-23 12:26:44.012  1034  1034 D io_stats: !@   8,0 r 192973 10565592 w 320174 24867800 d 25703 17289508 f 7246 24041 iot 377976 0 th 0 0 0 pt 0 inp 0 0 9574.258
+10-23 12:26:44.049  1851  1945 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:44.051  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:44.052  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:44.122  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 12:26:44.534  7405  7405 I native  : I0000 00:00:1792783604.534436    7405 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-23 12:26:44.534  7405  7405 I native  : I0000 00:00:1792783604.534517    7405 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 12:26:44.641  7405  7405 I native  : I0000 00:00:1792783604.641923    7405 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 12:26:44.683  7405  7405 I tflite  : Replacing 916 out of 916 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-23 12:26:44.688  7405  7405 I native  : I0000 00:00:1792783604.688584    7405 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-23 12:26:44.688  7405  7405 I native  : I0000 00:00:1792783604.688616    7405 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 12:26:44.711  1726  1810 E BatteryDump: !@new_battery_dump : 4392,-270,800,1500,100,293,292,316,293,0,307,316,0,Full,NO_CHARGING,None,Good,USB_CDP,2,Normal,0,0,9300,0x20008000,0x10010000,0x0,0,0,306,v0002,0000,0000,00000000,0,0,0,0,4,4406,9974,983,0,
+10-23 12:26:44.711  1729  1729 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+10-23 12:26:44.711  1726  1726 I sehhealth-service: updateLrpSysfs: write: 306
+10-23 12:26:44.813  7405  7405 I native  : I0000 00:00:1792783604.813436    7405 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 12:26:44.814  7405  7405 I tflite  : Replacing 830 out of 830 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+10-23 12:26:44.821  7405  7405 I native  : I0000 00:00:1792783604.821186    7405 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-23 12:26:44.821  7405  7405 I native  : I0000 00:00:1792783604.821209    7405 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 12:26:44.862  7405  7405 I native  : I0000 00:00:1792783604.862455    7405 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880826    7405 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880878    7405 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880888    7405 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880892    7405 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880896    7405 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880898    7405 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880902    7405 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-23 12:26:44.880  7405  7405 W native  : W0000 00:00:1792783604.880905    7405 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-23 12:26:44.884  7405  7405 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 12:26:44.884  7405  7405 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 12:26:44.884  7405  7405 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 12:26:44.885  7405  7405 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070e913d190, name=LiteRT GPU
+10-23 12:26:44.885  7405  7405 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 12:26:44.885  7405  7405 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070e9137ee0, name=CpuAccelerator
+10-23 12:26:44.885  7405  7405 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 12:26:45.007  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 12:26:45.045  7405  7405 W native  : W0000 00:00:1792783605.045888    7405 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 12:26:45.045  7405  7405 W native  : W0000 00:00:1792783605.045935    7405 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 12:26:45.045  7405  7405 W native  : W0000 00:00:1792783605.045938    7405 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:26:45.045  7405  7405 W native  : W0000 00:00:1792783605.045942    7405 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 12:26:45.046  7405  7405 I native  : I0000 00:00:1792783605.046126    7405 litert_lm_lib.cc:1194] Creating conversation
+10-23 12:26:45.046  7405  7405 I native  : I0000 00:00:1792783605.046568    7405 litert_lm_lib.cc:1206] Running single-turn conversation
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+10-23 12:26:45.048  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-23 12:26:45.048  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-23 12:26:45.050  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:45.050  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:45.121  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-23 12:26:45.284  7134  7241 I SDHMS:N0: p2p-if:: false, , 
+10-23 12:26:45.346  2572 19007 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 3106, isSameBssidAndFreq true
+10-23 12:26:45.519  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-23 12:26:45.519  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-23 12:26:45.520  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+10-23 12:26:45.521  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-23 12:26:45.522  7405  7405 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-23 12:26:45.537  7405  7405 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 12:26:45.538  7405  7405 W libc    : Access denied finding property "ro.chipname"
+10-23 12:26:45.721  7405  7405 I native  : I0000 00:00:1792783605.721418    7405 llm_litert_compiled_model_executor.cc:1748] Sampler will handle decode input tensors.
+10-23 12:26:45.783 18867 18867 I wpa_supplicant: Heartbeat 940
+10-23 12:26:45.792  7405  7405 I tflite  : Loaded OpenCL library with dlopen.
+10-23 12:26:45.889  2572  4763 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul Disconnection due to RetransSeg
+10-23 12:26:45.889  2572  4763 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-38, CE:2, PE:2, TI:5, PTI:5, TW:0, PTW:0, Tx:0, Rx:0, TxS:0, RxS:0, RESULT:true, IC:1, ICT:5, WC:3, WCT:5, R:0, RC:26, IE:0, EC:0
+10-23 12:26:46.005  1851  1945 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 12:26:46.012  1034  1034 D io_stats: !@   8,0 r 193006 10566048 w 320176 24867808 d 25703 17289508 f 7246 24041 iot 377996 0 th 0 0 0 pt 0 inp 0 0 9576.259
+10-23 12:26:46.012  1034  1034 D io_stats: !@ Read_top(KB): kworker/u17:1(3339) 208 grep(7423) 200 kworker/0:1H(21466) 20
+10-23 12:26:46.012  1034  1034 D io_stats: !@ Write_top(KB): vendor.samsung.(1726) 8 martsuggestions(6888) 4
+10-23 12:26:46.035  1689  4869 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):97,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-23 12:26:46.047  1851  1945 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:46.050  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:46.050  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:46.121  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 12:26:46.456  1689  4869 I sensors-hal: handle_sns_client_event:191, auto_rotation_debug_2 mode,255, type,1,0 acc,9.667,1.283,-0.010, ar,0, ver,12, pedo,1,e,0,i,3
+10-23 12:26:47.004  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 12:26:47.045  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:47.047  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:47.047  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:47.118  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 12:26:47.560  1692 11740 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-23 12:26:47.560  1692 11740 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 12:26:47.560  1692 11740 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_rcv: 0
+10-23 12:26:47.561  1692  1708 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-23 12:26:47.561  1692  1708 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 12:26:47.561  1692  1708 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_spk: 0
+10-23 12:26:47.562  7134  7384 I SDHMS:x : SIOP:: AP:353 BAT:293 USB:292 CHG:349 PA:357 WIFI:310 CF:304 BLK:0 SUBBAT:0 LRPTHM:299 SKIN:312 SKINF:312 SKINB:306 LRP:312 LRF:312 LRB:306 APT:311 APR:304 RCV:296 SPK:288 CHGF:311 CHGR:306 MEMF:312 MEMR:306 WIFIF:307 WIFIR:301 FCAM:291 UPSPK:300 DNSPK:291 VAP:317 VWIFI:309 AMB2:263 HIGH:0 AVGCUR:-99 AVGSYS:256 POWER:-435
+10-23 12:26:47.563  7134  7384 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+10-23 12:26:47.563  1802 15453 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+10-23 12:26:47.564  1692  1708 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-23 12:26:47.564  1692  1708 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-23 12:26:47.564  1692  1708 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-23 12:26:47.564  1692  1708 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-23 12:26:47.564  1692  1708 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+10-23 12:26:47.564  1692  1708 I PAL: API: pal_set_param: 1377: Enter: param id 3002
+10-23 12:26:47.564  1692  1708 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 12:26:47.565  1802 15453 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 12:26:47.565  1802 15453 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 12:26:47.565  7134  7384 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=30
+10-23 12:26:47.566  1802 15453 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=30
+10-23 12:26:47.566  1692 11740 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-23 12:26:47.566  1692 11740 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-23 12:26:47.566  1692 11740 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-23 12:26:47.566  1692 11740 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-23 12:26:47.566  1692 11740 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 30
+10-23 12:26:47.566  1692 11740 I PAL: API: pal_set_param: 1377: Enter: param id 3001
+10-23 12:26:47.566  1692 11740 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 12:26:47.566  1802 15453 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 12:26:47.566  1802 15453 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 12:26:47.628  7134  7134 I SDHMS:LOAD: type: LoadsFreqs, value: 0:0:17:1879680:4473600:1017600:863232:3532800:556800:554:1200:222
+10-23 12:26:48.013  1034  1034 D io_stats: !@   8,0 r 193007 10566052 w 320181 24867860 d 25703 17289508 f 7246 24041 iot 378000 0 th 0 0 0 pt 0 inp 0 0 9578.259
+10-23 12:26:48.044  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 12:26:48.046  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:48.046  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:48.085  1851  2843 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:48.118  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-23 12:26:48.370  2572 19007 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 3107, isSameBssidAndFreq true
+10-23 12:26:49.043  1851  1945 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 12:26:49.084  1851  1945 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 12:26:49.086  1710  1710 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 12:26:49.086  1710  1710 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 12:26:49.158  1710  1902 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 12:26:49.393  7405  7405 I native  : I0000 00:00:1792783609.393886    7405 litert_lm_lib.cc:433] BenchmarkInfo:
+10-23 12:26:49.393  7405  7405 I native  :   Init Phases (7):
+10-23 12:26:49.393  7405  7405 I native  :     - Init Conversation: 0.02 ms
+10-23 12:26:49.393  7405  7405 I native  :     - Init Executor: 2130.11 ms
+10-23 12:26:49.394  7405  7405 I native  :     - Init LLM metadata: 0.01 ms
+10-23 12:26:49.394  7405  7405 I native  :     - Init Model assets: 0.02 ms
+10-23 12:26:49.394  7405  7405 I native  :     - Init Tokenizer: 279.76 ms
+10-23 12:26:49.394  7405  7405 I native  :     - Init Total: 2130.49 ms
+10-23 12:26:49.394  7405  7405 I native  : --------------------------------------------------
+10-23 12:26:49.394  7405  7405 I native  :   Time to first token: 0.49 s
+10-23 12:26:49.394  7405  7405 I native  : --------------------------------------------------
+10-23 12:26:49.394  7405  7405 I native  :   Prefill Turns (Total 1 turns):
+10-23 12:26:49.394  7405  7405 I native  :     Prefill Turn 1: Processed 1024 tokens in 472.381302ms duration.
+10-23 12:26:49.394  7405  7405 I native  :       Prefill Speed: 2167.74 tokens/sec.
+10-23 12:26:49.394  7405  7405 I native  : --------------------------------------------------
+10-23 12:26:49.394  7405  7405 I native  :   Decode Turns (Total 1 turns):
+10-23 12:26:49.394  7405  7405 I native  :     Decode Turn 1: Processed 256 tokens in 3.874381821s duration.
+10-23 12:26:49.394  7405  7405 I native  :       Decode Speed: 66.08 tokens/sec.
+10-23 12:26:49.394  7405  7405 I native  : --------------------------------------------------
+10-23 12:26:49.394  7405  7405 I native  :   TextToTokenIds Turns (Total 0 turns):
+10-23 12:26:49.394  7405  7405 I native  :     No text to token ids turns recorded.
+10-23 12:26:49.394  7405  7405 I native  : --------------------------------------------------
+10-23 12:26:49.560  7405  7405 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070e913bd70, name=CpuAccelerator
+10-23 12:26:49.560  7405  7405 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070e913c080, name=LiteRT GPU
+10-23 12:26:49.584  7405  7405 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070e9137ee0, name=CpuAccelerator
+10-23 12:26:49.584  7405  7405 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070e913d190, name=LiteRT GPU

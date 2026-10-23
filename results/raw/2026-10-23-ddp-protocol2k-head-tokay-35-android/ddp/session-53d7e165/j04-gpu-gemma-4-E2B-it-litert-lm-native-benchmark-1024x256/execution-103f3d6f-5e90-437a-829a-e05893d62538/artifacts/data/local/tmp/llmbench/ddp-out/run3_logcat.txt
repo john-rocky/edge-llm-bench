@@ -1,0 +1,397 @@
+--------- beginning of main
+10-23 08:14:29.154 27451 27451 I native  : I0000 00:00:1792768469.154873   27451 litert_lm_lib.cc:700] Choose backend: gpu
+10-23 08:14:29.156 27451 27451 I native  : I0000 00:00:1792768469.155973   27451 litert_lm_lib.cc:880] executor_settings: backend: GPU
+10-23 08:14:29.156 27451 27451 I native  : backend_config:
+10-23 08:14:29.156 27451 27451 I native  : max_top_k: 64
+10-23 08:14:29.156 27451 27451 I native  : 
+10-23 08:14:29.156 27451 27451 I native  : max_tokens: 2048
+10-23 08:14:29.156 27451 27451 I native  : activation_data_type: Not set
+10-23 08:14:29.156 27451 27451 I native  : max_num_images: 0
+10-23 08:14:29.156 27451 27451 I native  : lora_rank: 0
+10-23 08:14:29.156 27451 27451 I native  : pad_token_id: -1
+10-23 08:14:29.156 27451 27451 I native  : cache_dir: 
+10-23 08:14:29.156 27451 27451 I native  : cache_file: Not set
+10-23 08:14:29.156 27451 27451 I native  : litert_dispatch_lib_dir: Not set
+10-23 08:14:29.156 27451 27451 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm
+10-23 08:14:29.156 27451 27451 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 08:14:29.156 27451 27451 I native  : 
+10-23 08:14:29.156 27451 27451 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 08:14:29.156 27451 27451 I native  : num_output_candidates: 1
+10-23 08:14:29.156 27451 27451 I native  : configure_magic_numbers: true
+10-23 08:14:29.156 27451 27451 I native  : verify_magic_numbers: false
+10-23 08:14:29.156 27451 27451 I native  : clear_kv_cache_before_prefill: true
+10-23 08:14:29.156 27451 27451 I native  : num_logits_to_print_after_decode: 0
+10-23 08:14:29.156 27451 27451 I native  : gpu_madvise_original_shared_tensors: true
+10-23 08:14:29.156 27451 27451 I native  : gpu_enable_metal_residency_set: false
+10-23 08:14:29.156 27451 27451 I native  : is_benchmark: true
+10-23 08:14:29.156 27451 27451 I native  : enable_profiling: false
+10-23 08:14:29.156 27451 27451 I native  : preferred_device_substr: 
+10-23 08:14:29.156 27451 27451 I native  : num_threads_to_upload: -1
+10-23 08:14:29.156 27451 27451 I native  : num_threads_to_compile: -1
+10-23 08:14:29.156 27451 27451 I native  : convert_weights_on_gpu: true
+10-23 08:14:29.156 27451 27451 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 08:14:29.156 27451 27451 I native  : optimize_shader_compilation: true
+10-23 08:14:29.156 27451 27451 I native  : cache_compiled_shaders_only: false
+10-23 08:14:29.156 27451 27451 I native  : share_constant_tensors: true
+10-23 08:14:29.156 27451 27451 I native  : sampler_handles_input: true
+10-23 08:14:29.156 27451 27451 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 08:14:29.156 27451 27451 I native  : hint_waiting_for_completion: Not set
+10-23 08:14:29.156 27451 27451 I native  : gpu_context_low_priority: Not set
+10-23 08:14:29.156 27451 27451 I native  : enable_speculative_decoding: false
+10-23 08:14:29.156 27451 27451 I native  : disable_delegate_clustering: false
+10-23 08:14:29.156 27451 27451 I native  : hint_kernel_batch_size: Not set
+10-23 08:14:29.156 27451 27451 I native  : error_on_invalid_sampled_token_id: false
+10-23 08:14:29.156 27451 27451 I native  : 
+10-23 08:14:29.156 27451 27451 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+10-23 08:14:29.156 27451 27451 I native  : 
+10-23 08:14:29.156 27451 27451 I native  : I0000 00:00:1792768469.156013   27451 litert_lm_lib.cc:887] vision_executor_settings: not set
+10-23 08:14:29.156 27451 27451 I native  : I0000 00:00:1792768469.156019   27451 litert_lm_lib.cc:893] audio_executor_settings: not set
+10-23 08:14:29.156 27451 27451 I native  : I0000 00:00:1792768469.156024   27451 litert_lm_lib.cc:916] Creating engine
+10-23 08:14:29.156 27451 27451 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 08:14:29.156 27451 27451 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 08:14:29.157 27451 27452 W native  : W0000 00:00:1792768469.156990   27452 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-23 08:14:29.228 27451 27451 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070a15b7c60, name=LiteRT GPU
+10-23 08:14:29.228 27451 27451 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+10-23 08:14:29.228 27451 27451 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070a15b60d0, name=CpuAccelerator
+10-23 08:14:29.228 27451 27451 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 08:14:29.280 27451 27451 W native  : W0000 00:00:1792768469.280481   27451 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-23 08:14:29.280 27451 27451 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 08:14:29.280 27451 27451 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 08:14:29.280 27451 27451 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070a15ba820, name=LiteRT GPU
+10-23 08:14:29.280 27451 27451 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+10-23 08:14:29.280 27451 27451 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070a15b92b0, name=CpuAccelerator
+10-23 08:14:29.280 27451 27451 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 08:14:29.280 27451 27451 W native  : W0000 00:00:1792768469.280872   27451 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 08:14:29.281 27451 27451 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 08:14:29.282 27451 27451 I litert  : [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+10-23 08:14:29.283 27451 27451 I litert  : [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+10-23 08:14:29.283 27451 27451 I litert  : [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+10-23 08:14:29.284 27451 27451 I litert  : [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+10-23 08:14:29.284 27451 27451 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 08:14:29.284 27451 27451 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 08:14:29.310 27451 27451 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 08:14:29.310 27451 27451 W libc    : Access denied finding property "ro.chipname"
+10-23 08:14:29.310 27451 27451 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 08:14:29.358 27451 27451 I native  : I0000 00:00:1792768469.358266   27451 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+10-23 08:14:29.358 27451 27451 I native  : I0000 00:00:1792768469.358348   27451 delegate_opencl.cc:657] options->kernel_batch_size: 0
+10-23 08:14:29.360 27451 27451 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 08:14:29.361 27451 27451 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 08:14:29.361 27451 27451 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+10-23 08:14:29.362 27451 27451 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+10-23 08:14:29.362 27451 27451 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-23 08:14:29.362 27451 27451 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 08:14:29.365 27451 27451 I tflite  : Replacing 2068 out of 2068 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+10-23 08:14:29.395 27451 27451 W native  : W0000 00:00:1792768469.395637   27451 gpu_model_builder.cc:4416] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.
+10-23 08:14:29.503 27451 27451 W litert_lm_advanced_main: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-23 08:14:29.504 27451 27451 W litert_lm_advanced_main: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-23 08:14:30.259 27451 27451 I native  : I0000 00:00:1792768470.259494   27451 delegate_kernel.cc:360] Total 32 external tensors are used for delegate inputs and outputs
+10-23 08:14:30.259 27451 27451 I native  : I0000 00:00:1792768470.259658   27451 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 08:14:30.348 27451 27451 I native  : I0000 00:00:1792768470.348656   27451 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 08:14:30.392 27451 27451 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-23 08:14:30.423 27451 27451 I native  : I0000 00:00:1792768470.422983   27451 delegate_kernel.cc:360] Total 31 external tensors are used for delegate inputs and outputs
+10-23 08:14:30.423 27451 27451 I native  : I0000 00:00:1792768470.423124   27451 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 08:14:30.566 27451 27451 I native  : I0000 00:00:1792768470.566328   27451 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 08:14:30.577 27451 27451 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+10-23 08:14:30.589 27451 27451 I native  : I0000 00:00:1792768470.589604   27451 delegate_kernel.cc:360] Total 31 external tensors are used for delegate inputs and outputs
+10-23 08:14:30.589 27451 27451 I native  : I0000 00:00:1792768470.589664   27451 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 08:14:30.594  5104  5110 I pixel-thermal: north_therm:35.912 raw data: north_therm:35912 
+10-23 08:14:30.601  5104  5110 I pixel-thermal: rfpa_therm:35.69 raw data: rfpa_therm:35690 
+10-23 08:14:30.601  5104  5110 I pixel-thermal: disp_therm:32.329 raw data: disp_therm:32329 
+10-23 08:14:30.656 27451 27451 I native  : I0000 00:00:1792768470.656198   27451 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 08:14:30.661 27451 27451 I tflite  : Replacing 2243 out of 2243 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+10-23 08:14:30.688 27451 27451 I native  : I0000 00:00:1792768470.688833   27451 delegate_kernel.cc:360] Total 32 external tensors are used for delegate inputs and outputs
+10-23 08:14:30.688 27451 27451 I native  : I0000 00:00:1792768470.688909   27451 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-23 08:14:30.786 27451 27451 I native  : I0000 00:00:1792768470.786832   27451 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-23 08:14:30.808 27451 27451 W native  : W0000 00:00:1792768470.808307   27451 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+10-23 08:14:30.808 27451 27451 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 08:14:30.808 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+10-23 08:14:30.808 27451 27451 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 08:14:30.808 27451 27451 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 08:14:30.808 27451 27451 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 08:14:30.810 27451 27451 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-23 08:14:30.810 27451 27451 I tflite  : Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 08:14:30.811 27451 27451 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 08:14:30.811 27451 27451 I litert  : [compiled_model.cc:2095] Tracked constant output tensor eoi_embedding with locked address
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 08:14:30.811 27451 27451 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 08:14:30.811 27451 27451 I litert  : [compiled_model.cc:2095] Tracked constant output tensor eoa_embedding with locked address
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 08:14:30.811 27451 27451 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 08:14:30.811 27451 27451 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-23 08:14:30.875 27451 27451 I tflite  : Replacing 1 out of 42 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-23 08:14:30.876 27451 27451 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 08:14:30.876 27451 27451 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 08:14:30.876 27451 27451 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070a1690b80, name=LiteRT GPU
+10-23 08:14:30.876 27451 27451 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+10-23 08:14:30.876 27451 27451 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000070a16905d0, name=CpuAccelerator
+10-23 08:14:30.876 27451 27451 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-23 08:14:30.895 27451 27451 I native  : I0000 00:00:1792768470.895075   27451 litert_lm_lib.cc:1194] Creating conversation
+10-23 08:14:30.896 27451 27451 W native  : W0000 00:00:1792768470.896258   27451 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+10-23 08:14:30.896 27451 27451 I native  : I0000 00:00:1792768470.896308   27451 litert_lm_lib.cc:1206] Running single-turn conversation
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-23 08:14:30.920 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-23 08:14:30.921 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-23 08:14:31.218   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:31.360  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 08:14:31.567  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31839.00 35623.00 32329.00 35912.00 34799.00 35690.00 35534.00 31906.00 ]
+10-23 08:14:31.567  5104  5110 I native  : I0000 00:00:1792768471.567537    5110 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 08:14:31.567  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [33847.7 ]
+10-23 08:14:31.567  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [33847.7 ]
+10-23 08:14:31.568  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:33.8535 raw data: VIRTUAL-SKIN:33853.5 VIRTUAL-SKIN-CPU-MID:33853.5 VIRTUAL-SKIN-LEGACY:33242.8 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-604.902 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33847.7 VIRTUAL-SKIN-MODEL-CLAMPED:33847.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:604.902 VIRTUAL-SKIN-MODEL-UPDATED:33853.5 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33847.7 VIRTUAL-SKIN-SUB-0:32888.9 VIRTUAL-SKIN-SUB-1:32605.2 VIRTUAL-SKIN-SUB-2:32129.6 VIRTUAL-SKIN-SUB-3:33121.4 VIRTUAL-SKIN-SUB-4:32658.4 VIRTUAL-SKIN-SUB-5:32209.9 VIRTUAL-SKIN-SUB-6:33242.8 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31839 charging_therm:35623 disp_therm:32329 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:35534 usb_pwr_therm:31906 
+10-23 08:14:31.573  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35912.00 35534.00 35623.00 32329.00 34799.00 31906.00 35690.00 31839.00 ]
+10-23 08:14:31.573  5104  5110 I native  : I0000 00:00:1792768471.573514    5110 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 08:14:31.574  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33607.8 33646.9 33683.1 33724.1 33762.1 33801.2 ]
+10-23 08:14:31.574  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33607.8 33646.9 33683.1 33724.1 33762.1 33801.2 ]
+10-23 08:14:31.574  5104  5110 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33693.7 LSTM-VT-PREDICTION-21SEC-BACK:33709.8 LSTM-VT-PREDICTION-28SEC-BACK:33733.7 LSTM-VT-PREDICTION-35SEC-BACK:33795.1 LSTM-VT-PREDICTION-7SEC-BACK:33654.2 LSTM-VT-PREDICTION-ERROR-14SEC:85.8359 LSTM-VT-PREDICTION-ERROR-21SEC:101.918 LSTM-VT-PREDICTION-ERROR-28SEC:125.844 LSTM-VT-PREDICTION-ERROR-35SEC:187.305 LSTM-VT-PREDICTION-ERROR-7SEC:46.3867 LSTM-VT-PREDICTION-NOW:33607.8 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:33607.8 btmspkr_therm:31839 charging_therm:35623 disp_therm:32329 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:35534 usb_pwr_therm:31906 
+10-23 08:14:31.574  5104  5110 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33242.8 VIRTUAL-SKIN-MODEL:33847.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:604.902 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:32.961 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:32961 VIRTUAL-SKIN-CHARGE-SUB-0:32788.6 VIRTUAL-SKIN-CHARGE-SUB-1:32704 VIRTUAL-SKIN-CHARGE-SUB-2:32961 VIRTUAL-SKIN-CHARGE-SUB-3:32209.9 VIRTUAL-SKIN-CHARGE-WIRED:32961 WLC_CHECK:1 btmspkr_therm:31839 charging_therm:35623 disp_therm:32329 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:35534 thb_hda:54 usb_pwr_therm:31906 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: quiet_therm:34.799 raw data: quiet_therm:34799 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN:33.8535 raw data: VIRTUAL-SKIN:33853.5 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-SOC:33.8535 raw data: VIRTUAL-SKIN:33853.5 VIRTUAL-SKIN-SOC:33853.5 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-HINT:33.8535 raw data: VIRTUAL-SKIN:33853.5 VIRTUAL-SKIN-HINT:33853.5 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-GPU:33.8535 raw data: VIRTUAL-SKIN:33853.5 VIRTUAL-SKIN-GPU:33853.5 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:33.8535 raw data: VIRTUAL-SKIN:33853.5 VIRTUAL-SKIN-CPU-HIGH:33853.5 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:32.828 raw data: VIRTUAL-SKIN-SPEAKER:32828 VIRTUAL-SKIN-SPEAKER-SUB-0:32828 btmspkr_therm:31839 charging_therm:35623 disp_therm:32329 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:35534 usb_pwr_therm:31906 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: cellular-emergency:33.8535 raw data: VIRTUAL-SKIN:33853.5 cellular-emergency:33853.5 
+10-23 08:14:31.575  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:33.8535 raw data: VIRTUAL-SKIN:33853.5 VIRTUAL-SKIN-CPU-LIGHT-ODPM:33853.5 
+10-23 08:14:31.576  5104  5110 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:32961 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:32961 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 08:14:31.576  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:32.961 raw data: VIRTUAL-SKIN-CHARGE:32961 VIRTUAL-SKIN-CHARGE-PERSIST:32961 
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-23 08:14:31.753 27451 27451 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-23 08:14:31.998 27451 27451 I tflite  : Loaded OpenCL library with dlopen.
+10-23 08:14:32.870 27480 27480 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 08:14:33.000  5879  7923 D TemperatureStateSource: sequence=1807 actualDelay=10001
+10-23 08:14:33.001  5879  7923 D TemperatureStateSource: Reading temperature: sequence=1808
+10-23 08:14:33.003  5104  5104 I pixel-thermal: VIRTUAL-SKIN:33.8535 raw data: VIRTUAL-SKIN:33853.5 
+10-23 08:14:33.003  5879  7923 D TemperatureStateSource: getDeviceTemperatures: sequence=1808 deviceTemperatureType=3 temperatureSource=0 temperatures=[33.85347]
+10-23 08:14:33.004  5879  7923 D BusinessScope: Enqueuing the block
+10-23 08:14:33.007  5879  7932 D ImpulseConnection: timeout happen: com.google.android.apps.turbo
+10-23 08:14:33.008  5879  5943 D BusinessScope: Start running the #3632 block
+10-23 08:14:33.008  5879  7932 D ImpulseConnection: unbindService for releasing a CONNECTED connection com.google.android.apps.turbo
+10-23 08:14:33.008  5879  5943 D BusinessScope: Enqueuing the block
+10-23 08:14:33.008  5879  5943 D ImpulseStateSource: Notify clients: 1813
+10-23 08:14:33.008  5879  5943 D BusinessScope: Finish running the #3632 block
+10-23 08:14:33.008  5879  5943 D BusinessScope: Start running the #3633 block
+10-23 08:14:33.008  5879  5943 D BusinessScope: Finish running the #3633 block
+10-23 08:14:33.008  5879  7923 D TemperatureStateSource: sequence=1808 waitTime=10000
+10-23 08:14:34.356   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:34.500  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 08:14:37.498   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:37.495  1064  1064 W TracingMuxer: type=1400 audit(0.0:1403): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:gxp_logging:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 08:14:37.548 14204 27505 I SconeSatelliteManagerAg: onResult: result=false
+--------- beginning of system
+10-23 08:14:37.551  1415  5146 D ActivityManager: sync unfroze 8116 com.google.android.partnersetup for 6
+10-23 08:14:37.552  1415  5146 W ProcessStats: Tracking association SourceState{23a5313 system/1000 ImpBg #18307} whose proc state 6 is better than process ProcessState{a4d5e8b com.google.android.partnersetup/10155 pkg=com.google.android.partnersetup} proc state 15 (5 skipped)
+10-23 08:14:37.555  5913  5913 D GRIL-S  : [0159]> GET_STATS_ATOM_DATA, atomId: 2, keepData: false
+10-23 08:14:37.574  8116 27508 W JobInfo : Job 'com.google.android.partnersetup/.InstalledAppJobService#4096' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 08:14:37.575  1415  7513 W JobInfo : Job 'com.google.android.partnersetup/.InstalledAppJobService#4096' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 08:14:37.578  8116  8116 W JobInfo : Job 'com.google.android.partnersetup/.InstalledAppJobService#4096' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 08:14:37.578  1415  7497 W JobInfo : Job 'com.google.android.partnersetup/.InstalledAppJobService#4096' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 08:14:37.584  1415  7497 W JobScheduler: Job didn't exist in JobStore: 29d1f1e #u0a155/4096 com.google.android.partnersetup/.InstalledAppJobService
+10-23 08:14:37.588  5913 27507 D GRIL-PowerStats: getModemEnergyData: task started
+10-23 08:14:37.589  5913 27507 D GRIL-PowerStats: getModemEnergyData: got 24 channels
+10-23 08:14:37.598  5913 27507 D GRIL-PowerStats: getModemEnergyData: got 24 measurements
+10-23 08:14:37.598  5913 27507 D GRIL-PowerStats: getModemEnergyData: task completed successfully
+10-23 08:14:37.610  5104  5110 I pixel-thermal: north_therm:35.912 raw data: north_therm:35912 
+10-23 08:14:37.611  5104  5110 I pixel-thermal: rfpa_therm:35.69 raw data: rfpa_therm:35690 
+10-23 08:14:37.611  5104  5110 I pixel-thermal: disp_therm:32.306 raw data: disp_therm:32306 
+10-23 08:14:37.615  5913  6834 D GRIL-S  : [0159]< GET_STATS_ATOM_DATA 
+10-23 08:14:37.622  5913  5937 W System  : A resource failed to call close. 
+10-23 08:14:37.627  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 08:14:38.572  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31839.00 36202.00 32306.00 35912.00 34799.00 35690.00 36269.00 31906.00 ]
+10-23 08:14:38.572  5104  5110 I native  : I0000 00:00:1792768478.572286    5110 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 08:14:38.572  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [33964.1 ]
+10-23 08:14:38.572  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [33964.1 ]
+10-23 08:14:38.572  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:33.8977 raw data: VIRTUAL-SKIN:33897.7 VIRTUAL-SKIN-CPU-MID:33897.7 VIRTUAL-SKIN-LEGACY:33309.1 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-655.055 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33964.1 VIRTUAL-SKIN-MODEL-CLAMPED:33964.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:655.055 VIRTUAL-SKIN-MODEL-UPDATED:33897.7 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33964.1 VIRTUAL-SKIN-SUB-0:33102.4 VIRTUAL-SKIN-SUB-1:32625.6 VIRTUAL-SKIN-SUB-2:32141.1 VIRTUAL-SKIN-SUB-3:33304.8 VIRTUAL-SKIN-SUB-4:32747.6 VIRTUAL-SKIN-SUB-5:32421.5 VIRTUAL-SKIN-SUB-6:33309.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31839 charging_therm:36202 disp_therm:32306 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:36269 usb_pwr_therm:31906 
+10-23 08:14:38.580  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35912.00 36269.00 36202.00 32306.00 34799.00 31906.00 35690.00 31839.00 ]
+10-23 08:14:38.580  5104  5110 I native  : I0000 00:00:1792768478.580223    5110 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 08:14:38.580  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33924.7 33969.5 34011.3 34057.6 34100.7 34144.4 ]
+10-23 08:14:38.580  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33924.7 33969.5 34011.3 34057.6 34100.7 34144.4 ]
+10-23 08:14:38.581  5104  5110 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33690.7 LSTM-VT-PREDICTION-21SEC-BACK:33735 LSTM-VT-PREDICTION-28SEC-BACK:33747.5 LSTM-VT-PREDICTION-35SEC-BACK:33772.2 LSTM-VT-PREDICTION-7SEC-BACK:33646.9 LSTM-VT-PREDICTION-ERROR-14SEC:-234.031 LSTM-VT-PREDICTION-ERROR-21SEC:-189.723 LSTM-VT-PREDICTION-ERROR-28SEC:-177.262 LSTM-VT-PREDICTION-ERROR-35SEC:-152.465 LSTM-VT-PREDICTION-ERROR-7SEC:-277.832 LSTM-VT-PREDICTION-NOW:33924.7 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:33924.7 btmspkr_therm:31839 charging_therm:36202 disp_therm:32306 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:36269 usb_pwr_therm:31906 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33309.1 VIRTUAL-SKIN-MODEL:33964.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:655.055 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:33.015 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:33015 VIRTUAL-SKIN-CHARGE-SUB-0:32939.1 VIRTUAL-SKIN-CHARGE-SUB-1:32895.4 VIRTUAL-SKIN-CHARGE-SUB-2:33015 VIRTUAL-SKIN-CHARGE-SUB-3:32421.5 VIRTUAL-SKIN-CHARGE-WIRED:33015 WLC_CHECK:1 btmspkr_therm:31839 charging_therm:36202 disp_therm:32306 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:36269 thb_hda:54 usb_pwr_therm:31906 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: quiet_therm:34.799 raw data: quiet_therm:34799 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN:33.8977 raw data: VIRTUAL-SKIN:33897.7 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-SOC:33.8977 raw data: VIRTUAL-SKIN:33897.7 VIRTUAL-SKIN-SOC:33897.7 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-HINT:33.8977 raw data: VIRTUAL-SKIN:33897.7 VIRTUAL-SKIN-HINT:33897.7 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-GPU:33.8977 raw data: VIRTUAL-SKIN:33897.7 VIRTUAL-SKIN-GPU:33897.7 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:33.8977 raw data: VIRTUAL-SKIN:33897.7 VIRTUAL-SKIN-CPU-HIGH:33897.7 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:32.9493 raw data: VIRTUAL-SKIN-SPEAKER:32949.3 VIRTUAL-SKIN-SPEAKER-SUB-0:32949.3 btmspkr_therm:31839 charging_therm:36202 disp_therm:32306 north_therm:35912 quiet_therm:34799 rfpa_therm:35690 soc_therm:36269 usb_pwr_therm:31906 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: cellular-emergency:33.8977 raw data: VIRTUAL-SKIN:33897.7 cellular-emergency:33897.7 
+10-23 08:14:38.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:33.8977 raw data: VIRTUAL-SKIN:33897.7 VIRTUAL-SKIN-CPU-LIGHT-ODPM:33897.7 
+10-23 08:14:38.582  5104  5110 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:33015 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:33015 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 08:14:38.582  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:33.015 raw data: VIRTUAL-SKIN-CHARGE:33015 VIRTUAL-SKIN-CHARGE-PERSIST:33015 
+10-23 08:14:39.011   798   798 W TracingMuxer: type=1400 audit(0.0:1404): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 08:14:40.627   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:40.753  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 1]
+10-23 08:14:42.606  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 08:14:42.609  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 08:14:42.609  1415  5612 D InetDiagMessage: Destroyed live tcp sockets for uids={10155} in 6ms
+10-23 08:14:42.612  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 08:14:42.615  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 08:14:42.615  1415  5612 D InetDiagMessage: Destroyed live tcp sockets for uids={20155} in 7ms
+10-23 08:14:43.009  5879  7923 D TemperatureStateSource: sequence=1808 actualDelay=10000
+10-23 08:14:43.009  5879  7923 D TemperatureStateSource: Reading temperature: sequence=1809
+10-23 08:14:43.013  5104  5104 I pixel-thermal: VIRTUAL-SKIN:33.9243 raw data: VIRTUAL-SKIN:33924.3 VIRTUAL-SKIN-LEGACY:33315.1 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-649.07 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33964.1 VIRTUAL-SKIN-MODEL-CLAMPED:33964.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:649.07 VIRTUAL-SKIN-MODEL-UPDATED:33924.3 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33964.1 VIRTUAL-SKIN-SUB-0:33106.3 VIRTUAL-SKIN-SUB-1:32654 VIRTUAL-SKIN-SUB-2:32150.5 VIRTUAL-SKIN-SUB-3:33315.1 VIRTUAL-SKIN-SUB-4:32748.9 VIRTUAL-SKIN-SUB-5:32434.6 VIRTUAL-SKIN-SUB-6:33313.2 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31839 charging_therm:36202 disp_therm:32306 north_therm:35935 quiet_therm:34799 rfpa_therm:35779 soc_therm:36269 usb_pwr_therm:31906 
+10-23 08:14:43.013  5879  7923 D TemperatureStateSource: getDeviceTemperatures: sequence=1809 deviceTemperatureType=3 temperatureSource=0 temperatures=[33.92429]
+10-23 08:14:43.013  5879  7923 D BusinessScope: Enqueuing the block
+10-23 08:14:43.013  5879  7923 D TemperatureStateSource: sequence=1809 waitTime=10000
+10-23 08:14:43.014  5879  6075 D BusinessScope: Start running the #3634 block
+10-23 08:14:43.014  5879  6075 D BusinessScope: Enqueuing the block
+10-23 08:14:43.014  5879  6075 D ImpulseStateSource: Notify clients: 1814
+10-23 08:14:43.014  5879  6075 D BusinessScope: Finish running the #3634 block
+10-23 08:14:43.014  5879  6075 D BusinessScope: Start running the #3635 block
+10-23 08:14:43.014  5879  6075 D BusinessScope: Finish running the #3635 block
+10-23 08:14:43.030  1415  5155 D ActivityManager: freezing 6916 com.google.android.apps.turbo
+10-23 08:14:43.039  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 08:14:43.042  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 08:14:43.042  1415  5612 D InetDiagMessage: Destroyed live tcp sockets for uids={10173} in 7ms
+10-23 08:14:43.692 14204 14204 D ModemService: Received: com.google.android.apps.scone.modem.ATTEMPT_MODEM_RESET
+10-23 08:14:43.692 14204 14204 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 08:14:43.692  1415  7513 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 08:14:43.712 14204 27398 D ConfigService: onHandleWork
+10-23 08:14:43.712 14204 27398 D ConfigService: onHandleAttemptModemReset
+10-23 08:14:43.714 14204 27398 D ModemUtil: Screen is on, defer actions
+10-23 08:14:43.714 14204 27398 D ConfigService: Preconditions not met, retrying after 60 seconds
+10-23 08:14:43.715 14204 27398 D ConfigService: Attempt to retry after: 60 seconds
+10-23 08:14:43.750   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:43.876  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 08:14:44.628  5104  5110 I pixel-thermal: north_therm:35.935 raw data: north_therm:35935 
+10-23 08:14:44.637  5104  5110 I pixel-thermal: rfpa_therm:35.779 raw data: rfpa_therm:35779 
+10-23 08:14:44.637  5104  5110 I pixel-thermal: disp_therm:32.306 raw data: disp_therm:32306 
+10-23 08:14:44.637  5104  5110 I pixel-thermal: Power rails total power: 1437.90 mW for 63196 ms
+10-23 08:14:44.637  5104  5110 I pixel-thermal: Power rails [S6M_LLDO1: 121.84 mW] [S4M_VDD_CPUCL0: 69.78 mW] [S3M_VDD_CPUCL2: 83.30 mW] [S1M_VDD_MIF: 84.91 mW] [VSYS_PWR_MMWAVE: 2.08 mW] [S5M_VDD_INT: 25.42 mW] 
+10-23 08:14:44.637  5104  5110 I pixel-thermal: Power rails [S9M_VDD_CPUCL1_M: 5.80 mW] [S2M_VDD_CPUCL1: 39.30 mW] [VSYS_PWR_CAMERA: 0.68 mW] [VSYS_PWR_DISPLAY: 135.57 mW] [L21S_VDD2L_MEM: 7.41 mW] [S8M_LLDO2: 68.45 mW] 
+10-23 08:14:44.637  5104  5110 I pixel-thermal: Power rails [S3S_LLDO1: 43.98 mW] [VSYS_PWR_RFFE: 9.27 mW] [VSYS_PWR_WLAN_BT: 74.49 mW] [VSYS_PWR_MODEM: 314.16 mW] [L2S_PLL_MIPI_UFS: 14.99 mW] [S4S_VDD2H_MEM: 130.45 mW] 
+10-23 08:14:44.637  5104  5110 I pixel-thermal: Power rails [S9S_VDD_AOC: 8.76 mW] [S2S_VDD_G3D: 169.11 mW] [S1S_VDD_CAM: 5.34 mW] [S7M_VDD_TPU: 0.00 mW] [L22S_UDFPS: 1.45 mW] [S5S_VDDQ_MEM: 21.36 mW] 
+10-23 08:14:45.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31839.00 36602.00 32306.00 36001.00 34844.00 35935.00 36669.00 31906.00 ]
+10-23 08:14:45.581  5104  5110 I native  : I0000 00:00:1792768485.581698    5110 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 08:14:45.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [34141.5 ]
+10-23 08:14:45.581  5104  5110 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [34141.5 ]
+10-23 08:14:45.582  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.0112 raw data: VIRTUAL-SKIN:34011.2 VIRTUAL-SKIN-CPU-MID:34011.2 VIRTUAL-SKIN-LEGACY:33448.7 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-692.801 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:34141.5 VIRTUAL-SKIN-MODEL-CLAMPED:34141.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:692.801 VIRTUAL-SKIN-MODEL-UPDATED:34011.2 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:34141.5 VIRTUAL-SKIN-SUB-0:33235.6 VIRTUAL-SKIN-SUB-1:32717.9 VIRTUAL-SKIN-SUB-2:32200.8 VIRTUAL-SKIN-SUB-3:33448.7 VIRTUAL-SKIN-SUB-4:32815.1 VIRTUAL-SKIN-SUB-5:32600.3 VIRTUAL-SKIN-SUB-6:33372.8 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31839 charging_therm:36602 disp_therm:32306 north_therm:36001 quiet_therm:34844 rfpa_therm:35935 soc_therm:36669 usb_pwr_therm:31906 
+10-23 08:14:45.588  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [36001.00 36669.00 36602.00 32306.00 34844.00 31906.00 35935.00 31839.00 ]
+10-23 08:14:45.588  5104  5110 I native  : I0000 00:00:1792768485.588091    5110 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 08:14:45.588  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34172.6 34221.8 34268 34318.3 34365.3 34412.4 ]
+10-23 08:14:45.588  5104  5110 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34172.6 34221.8 34268 34318.3 34365.3 34412.4 ]
+10-23 08:14:45.588  5104  5110 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33683.1 LSTM-VT-PREDICTION-21SEC-BACK:33731.9 LSTM-VT-PREDICTION-28SEC-BACK:33773.3 LSTM-VT-PREDICTION-35SEC-BACK:33786.3 LSTM-VT-PREDICTION-7SEC-BACK:33969.5 LSTM-VT-PREDICTION-ERROR-14SEC:-489.496 LSTM-VT-PREDICTION-ERROR-21SEC:-440.699 LSTM-VT-PREDICTION-ERROR-28SEC:-399.336 LSTM-VT-PREDICTION-ERROR-35SEC:-386.289 LSTM-VT-PREDICTION-ERROR-7SEC:-203.105 LSTM-VT-PREDICTION-NOW:34172.6 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:34172.6 btmspkr_therm:31839 charging_therm:36602 disp_therm:32306 north_therm:36001 quiet_therm:34844 rfpa_therm:35935 soc_therm:36669 usb_pwr_therm:31906 
+10-23 08:14:45.588  5104  5110 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33448.7 VIRTUAL-SKIN-MODEL:34141.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:692.801 
+10-23 08:14:45.589  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:33.0832 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:33083.2 VIRTUAL-SKIN-CHARGE-SUB-0:33083.2 VIRTUAL-SKIN-CHARGE-SUB-1:33017.9 VIRTUAL-SKIN-CHARGE-SUB-2:33076.2 VIRTUAL-SKIN-CHARGE-SUB-3:32600.3 VIRTUAL-SKIN-CHARGE-WIRED:33083.2 WLC_CHECK:1 btmspkr_therm:31839 charging_therm:36602 disp_therm:32306 north_therm:36001 quiet_therm:34844 rfpa_therm:35935 soc_therm:36669 thb_hda:54 usb_pwr_therm:31906 
+10-23 08:14:45.589  5104  5110 I pixel-thermal: quiet_therm:34.844 raw data: quiet_therm:34844 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN:34.0112 raw data: VIRTUAL-SKIN:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-SOC:34.0112 raw data: VIRTUAL-SKIN:34011.2 VIRTUAL-SKIN-SOC:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-HINT:34.0112 raw data: VIRTUAL-SKIN:34011.2 VIRTUAL-SKIN-HINT:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-GPU:34.0112 raw data: VIRTUAL-SKIN:34011.2 VIRTUAL-SKIN-GPU:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.0112 raw data: VIRTUAL-SKIN:34011.2 VIRTUAL-SKIN-CPU-HIGH:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:33.0309 raw data: VIRTUAL-SKIN-SPEAKER:33030.9 VIRTUAL-SKIN-SPEAKER-SUB-0:33030.9 btmspkr_therm:31839 charging_therm:36602 disp_therm:32306 north_therm:36001 quiet_therm:34844 rfpa_therm:35935 soc_therm:36669 usb_pwr_therm:31906 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: cellular-emergency:34.0112 raw data: VIRTUAL-SKIN:34011.2 cellular-emergency:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.0112 raw data: VIRTUAL-SKIN:34011.2 VIRTUAL-SKIN-CPU-LIGHT-ODPM:34011.2 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:33083.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:33083.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 08:14:45.590  5104  5110 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:33.0832 raw data: VIRTUAL-SKIN-CHARGE:33083.2 VIRTUAL-SKIN-CHARGE-PERSIST:33083.2 
+10-23 08:14:46.875   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:47.002  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 08:14:47.263  6644  7059 I bcot    : (REDACTED) getHotwordActive::active query: %s, watch: %s, devices connected: %s
+10-23 08:14:47.617  1415  5155 D ActivityManager: freezing 8116 com.google.android.partnersetup
+10-23 08:14:47.626  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 08:14:47.631  1415  5612 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 08:14:47.632  1415  5612 D InetDiagMessage: Destroyed live tcp sockets for uids={10155} in 11ms
+10-23 08:14:50.006   886   886 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 08:14:50.133  1415  5612 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 08:14:51.499 27451 27451 I native  : I0000 00:00:1792768491.499385   27451 litert_lm_lib.cc:433] BenchmarkInfo:
+10-23 08:14:51.499 27451 27451 I native  :   Init Phases (7):
+10-23 08:14:51.499 27451 27451 I native  :     - Init Conversation: 0.10 ms
+10-23 08:14:51.499 27451 27451 I native  :     - Init Executor: 1738.76 ms
+10-23 08:14:51.499 27451 27451 I native  :     - Init LLM metadata: 0.02 ms
+10-23 08:14:51.499 27451 27451 I native  :     - Init Model assets: 0.03 ms
+10-23 08:14:51.499 27451 27451 I native  :     - Init Tokenizer: 116.93 ms
+10-23 08:14:51.499 27451 27451 I native  :     - Init Total: 1739.00 ms
+10-23 08:14:51.499 27451 27451 I native  : --------------------------------------------------
+10-23 08:14:51.499 27451 27451 I native  :   Time to first token: 0.93 s
+10-23 08:14:51.499 27451 27451 I native  : --------------------------------------------------
+10-23 08:14:51.499 27451 27451 I native  :   Prefill Turns (Total 1 turns):
+10-23 08:14:51.499 27451 27451 I native  :     Prefill Turn 1: Processed 1024 tokens in 855.798014ms duration.
+10-23 08:14:51.499 27451 27451 I native  :       Prefill Speed: 1196.54 tokens/sec.
+10-23 08:14:51.499 27451 27451 I native  : --------------------------------------------------
+10-23 08:14:51.499 27451 27451 I native  :   Decode Turns (Total 1 turns):
+10-23 08:14:51.499 27451 27451 I native  :     Decode Turn 1: Processed 256 tokens in 19.746118092s duration.
+10-23 08:14:51.499 27451 27451 I native  :       Decode Speed: 12.96 tokens/sec.
+10-23 08:14:51.499 27451 27451 I native  : --------------------------------------------------
+10-23 08:14:51.499 27451 27451 I native  :   TextToTokenIds Turns (Total 0 turns):
+10-23 08:14:51.499 27451 27451 I native  :     No text to token ids turns recorded.
+10-23 08:14:51.499 27451 27451 I native  : --------------------------------------------------
+10-23 08:14:51.646  5104  5110 I pixel-thermal: north_therm:36.113 raw data: north_therm:36113 
+10-23 08:14:51.655  5104  5110 I pixel-thermal: rfpa_therm:36.113 raw data: rfpa_therm:36113 
+10-23 08:14:51.655  5104  5110 I pixel-thermal: disp_therm:32.306 raw data: disp_therm:32306 
+10-23 08:14:51.723 27451 27451 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070a15b92b0, name=CpuAccelerator
+10-23 08:14:51.723 27451 27451 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070a15ba820, name=LiteRT GPU
+10-23 08:14:51.759 27451 27451 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070a16905d0, name=CpuAccelerator
+10-23 08:14:51.759 27451 27451 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000070a1690b80, name=LiteRT GPU
