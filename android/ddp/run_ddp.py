@@ -774,7 +774,64 @@ def records_only(campaign_dir):
     return 1 if failed else 0
 
 
-def main():
+def run_sessions_and_get_data_rest(p, campaign_dir, args):
+    """Default ('rest') executor: uploads missing inputs to GCS, submits/polls DDP REST sessions,
+    pulls session artifacts into <campaign_dir>/ddp/<session_id>/, scrubs logcats, and yields
+    (s, session_dict) pairs for record.write_session."""
+    args.bucket = (args.bucket or "").rstrip("/")
+    if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
+        raise SystemExit(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")
+    if not args.project or re.search(r"[/\s]", args.project):
+        raise SystemExit(f"--project {args.project!r}: a Cloud project id")
+    resume_name = None
+    if args.resume:
+        status, op = rest("GET", f"{args.endpoint}/{args.resume}")
+        if status >= 400 or not isinstance(op, dict):
+            raise SystemExit(f"--resume {args.resume}: GET answered {status}")
+        resume_name = (op.get("response") or {}).get("sessionConfig", {}).get("displayName")
+        if resume_name is None:
+            status, sess = rest("GET", f"{args.endpoint}/{op['metadata']['target']}")
+            resume_name = (sess.get("sessionConfig") or {}).get("displayName") if isinstance(sess, dict) else None
+        if resume_name not in {s["displayName"] for s in p["sessions"]}:
+            raise SystemExit(f"--resume: session {resume_name!r} is not one this plan makes")
+    ensure_uploaded(p, args.bucket)
+    started = resume_name is None
+    pre_ops = {}
+    if args.all_runtimes and not args.resume and len(p["sessions"]) > 1:
+        ddp = os.path.join(campaign_dir, "ddp")
+        for s in p["sessions"]:
+            n = s["index"]
+            status, op = rest("POST", f"{args.endpoint}/projects/{args.project}/locations/global/sessions",
+                              s["request"])
+            if status >= 400 or not isinstance(op, dict) or "name" not in op:
+                path = os.path.join(ddp, f"error-{n}.json")
+                with open(path, "w") as fh:
+                    fh.write(op if isinstance(op, str) else json.dumps(op, indent=2))
+                raise SystemExit(f"session {n}: POST answered {status}; body in {path}")
+            write_json(os.path.join(ddp, f"operation-create-{n}.json"), op)
+            pre_ops[n] = op["name"]
+            print(f"session {n}: submitted operation {op['name']}", flush=True)
+    results = []
+    for s in p["sessions"]:
+        if not started and s["displayName"] != resume_name:
+            continue
+        operation = (args.resume if (resume_name and s["displayName"] == resume_name)
+                     else pre_ops.get(s["index"]))
+        started = True
+        session = run_session(s, campaign_dir, args, operation)
+        results.append((s, session))
+    return results
+
+
+EXECUTORS = {"rest": run_sessions_and_get_data_rest}
+
+
+def register_executor(name, fn):
+    """Register a custom session executor fn(p, campaign_dir, args) -> iterable of (s, session_dict)."""
+    EXECUTORS[name] = fn
+
+
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cells", nargs="?")
     ap.add_argument("--device", help="DDP catalog id (android/ddp/devices.json)")
@@ -782,6 +839,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="plan, request bodies and estimate; no subprocess")
     ap.add_argument("--all-runtimes", action="store_true",
                     help="wire llama.cpp (CPU + GPU side build) and executorch alongside litert-lm")
+    ap.add_argument("--executor", default="rest", choices=sorted(EXECUTORS),
+                    help="session executor registered in EXECUTORS (default: rest)")
     ap.add_argument("--jobs-per-session", type=int, default=8)
     ap.add_argument("--job-timeout", type=int, default=3600, help="executionTimeout per job, s (API: 60-10800)")
     ap.add_argument("--resume", help="an operation name to poll instead of POSTing its session")
@@ -796,7 +855,7 @@ def main():
     ap.add_argument("--project", default="litert-edge-portal", help="the Cloud project of the sessions")
     ap.add_argument("--endpoint", default="https://devicerun.googleapis.com/v1alpha")
     ap.add_argument("--poll-seconds", type=float, default=30)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     if args.records_only:
         if args.cells or args.device or args.dry_run or args.resume or args.campaign or args.engine_build:
             ap.error("--records-only takes the campaign dir alone")
@@ -806,11 +865,12 @@ def main():
     if args.engine_build is not None and not ENGINE_BUILD.fullmatch(args.engine_build):
         ap.error(f"--engine-build {args.engine_build!r}: a pins label, ^[A-Za-z0-9][A-Za-z0-9._-]*$ "
                  "(android/scripts/pins_add.py)")
-    args.bucket = args.bucket.rstrip("/")
-    if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
-        ap.error(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")
-    if not args.project or re.search(r"[/\s]", args.project):
-        ap.error(f"--project {args.project!r}: a Cloud project id")
+    if args.executor == "rest":
+        args.bucket = args.bucket.rstrip("/")
+        if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
+            ap.error(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")
+        if not args.project or re.search(r"[/\s]", args.project):
+            ap.error(f"--project {args.project!r}: a Cloud project id")
     if not 60 <= args.job_timeout <= 10800:
         ap.error("--job-timeout must be within the API's [1 min, 3 hours]")
     if not 1 <= args.jobs_per_session <= 8:
@@ -843,42 +903,9 @@ def main():
                 f.pop("local", None)
         write_json(os.path.join(campaign_dir, "ddp", f"plan-{s['index']}.json"), plan_s)
         write_json(os.path.join(campaign_dir, "ddp", f"request-{s['index']}.json"), s["request"])
-    resume_name = None
-    if args.resume:
-        status, op = rest("GET", f"{args.endpoint}/{args.resume}")
-        if status >= 400 or not isinstance(op, dict):
-            raise SystemExit(f"--resume {args.resume}: GET answered {status}")
-        resume_name = (op.get("response") or {}).get("sessionConfig", {}).get("displayName")
-        if resume_name is None:
-            status, sess = rest("GET", f"{args.endpoint}/{op['metadata']['target']}")
-            resume_name = (sess.get("sessionConfig") or {}).get("displayName") if isinstance(sess, dict) else None
-        if resume_name not in {s["displayName"] for s in p["sessions"]}:
-            raise SystemExit(f"--resume: session {resume_name!r} is not one this plan makes")
-    ensure_uploaded(p, args.bucket)
+    executor_fn = EXECUTORS[args.executor]
     failed = 0
-    started = resume_name is None
-    pre_ops = {}
-    if args.all_runtimes and not args.resume and len(p["sessions"]) > 1:
-        ddp = os.path.join(campaign_dir, "ddp")
-        for s in p["sessions"]:
-            n = s["index"]
-            status, op = rest("POST", f"{args.endpoint}/projects/{args.project}/locations/global/sessions",
-                              s["request"])
-            if status >= 400 or not isinstance(op, dict) or "name" not in op:
-                path = os.path.join(ddp, f"error-{n}.json")
-                with open(path, "w") as fh:
-                    fh.write(op if isinstance(op, str) else json.dumps(op, indent=2))
-                raise SystemExit(f"session {n}: POST answered {status}; body in {path}")
-            write_json(os.path.join(ddp, f"operation-create-{n}.json"), op)
-            pre_ops[n] = op["name"]
-            print(f"session {n}: submitted operation {op['name']}", flush=True)
-    for s in p["sessions"]:
-        if not started and s["displayName"] != resume_name:
-            continue
-        operation = (args.resume if (resume_name and s["displayName"] == resume_name)
-                     else pre_ops.get(s["index"]))
-        started = True
-        session = run_session(s, campaign_dir, args, operation)
+    for s, session in executor_fn(p, campaign_dir, args):
         written, notes = record.write_session(s, session, campaign_dir, out_dir)
         for line in notes:
             print(line)
