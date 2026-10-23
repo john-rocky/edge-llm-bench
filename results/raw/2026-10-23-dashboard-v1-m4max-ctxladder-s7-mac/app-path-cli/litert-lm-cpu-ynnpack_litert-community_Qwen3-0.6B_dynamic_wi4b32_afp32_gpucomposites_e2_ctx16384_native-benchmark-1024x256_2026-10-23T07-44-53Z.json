@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "1502241e-ea2f-415d-9050-032537d99c2d",
+  "runtime": "litert-lm-cpu-ynnpack",
+  "engineVersion": "head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly",
+  "engineArtifact": "litert_lm_advanced_main (macos_arm64) sha256:add87d1f24cdeaf4c93383bd79208c92271a51a4a75b2707f9d0eeb9f921f305",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2_ctx16384",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024, local candidate)",
+    "file": "Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm",
+    "sha256": "fbbf0657efe90a57a4f3992023e01b1431455d3c130b5ab926647b1f137e5b79"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-10-23T07:44:53Z",
+  "device": {
+    "modelIdentifier": "Mac16,9",
+    "systemName": "macOS",
+    "systemVersion": "Version 27.0 (Build 26A428)",
+    "physicalMemoryMB": 131072,
+    "processorCount": 16,
+    "batteryLevel": -1,
+    "batteryState": "unknown",
+    "isLowPowerModeEnabled": false
+  },
+  "conditions": {
+    "instrument": "litert_lm_advanced_main --benchmark, the HEAD cpu_only CLI on macOS, one process per launch (the lane's driver, cli/runlog.txt)",
+    "launchIndex": 28,
+    "cellLaunch": 3,
+    "sampler": "engine-default",
+    "contextTokens": 16384,
+    "kvAllocation": [
+      {
+        "magicNumber": 32771,
+        "targetNumber": 16384
+      }
+    ],
+    "engineBuild": "mac-tot-ynn-cpuonly: litert_lm_advanced_main built for macos_arm64 at LiteRT-LM 2ef6baeb with LiteRT d469ea48, XNNPACK 878f1d8c and slinky 9b2ee975 by --override_repository, --define=litert_enable_ynnpack=true, --@litert//litert/build_common:build_include=cpu_only, bazel 7.6.1 -c opt (2026-10-20 21:17 JST), with the commit's prebuilt libGemmaModelConstraintProvider.dylib: the sources and flags of the Android side build head-lm2ef6baeb-rtd469ea48-xnn878f1d8c-ynn-cpuonly (cli/engine/)",
+    "engineCommand": "./litert_lm_advanced_main --backend=cpu --model_path=~/code/edge-llm-bench/.dashboard/ctx_ladder_ynnpack_20261023/mac/s7/models/ctx16384/Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=16384 --enable_ynnpack=true",
+    "backendRegistered": [
+      "Choose backend: cpu",
+      "enable_ynnpack: true",
+      "max_tokens: 16384",
+      "RegisterAccelerator: ptr=<addr>, name=YNNPackAccelerator",
+      "YNNPACK CPU accelerator registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered."
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 6.4,
+    "hostOverlap": {
+      "verdict": "clean",
+      "samples": "results/raw/2026-10-23-dashboard-v1-m4max-ctxladder-s7-mac/cli/ctx16384_on_l3.samp"
+    },
+    "engineCache": "beside the model, before: Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm_1791857082_343466928.xnnpack_cache 339215320 2026-10-23T16:35:26 | ; after: Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm_1791857082_343466928.xnnpack_cache 339215320 2026-10-23T16:35:26 | ",
+    "protocolFlags": [],
+    "timePeakFootprintMB": 2.1,
+    "enableYnnpack": true,
+    "ynnpackLines": {
+      "ops": 451,
+      "partitions": 0
+    }
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 1210.0,
+    "promptTokensPerSecond": 859.04,
+    "decodeTokensPerSecond": 66.99,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-10-mac-litert-cli-v1",
+    "memoryPeakResidentMB": 4358.5
+  },
+  "provenance": {
+    "rawLog": "results/raw/2026-10-23-dashboard-v1-m4max-ctxladder-s7-mac/cli/ctx16384_on_l3.log",
+    "harness": "scripts/import_litert_cli.py",
+    "rssBasis": "/usr/bin/time -l around the CLI process: maximum resident set size (bytes / 1048576) = memoryPeakResidentMB; peak memory footprint = conditions.timePeakFootprintMB"
+  }
+}
