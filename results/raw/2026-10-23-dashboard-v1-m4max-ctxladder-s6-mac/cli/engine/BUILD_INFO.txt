@@ -1,0 +1,18 @@
+variant: mac-tot-ynn-cpuonly
+commit: 2ef6baebc2890e4f38bf2c69787ebc86882b2c5a (2026-10-19T21:31:31-07:00 Google AI Edge: Support image inputs anywhere in the prompt in the LiteRT-LM chat demo)
+LITERT_REF: 9b8c7f77e7a29e6073e614a05e1e38be7b761229
+litert-lm tree edit: 1 file changed, 49 insertions(+) in WORKSPACE (git diff sha256 e1fb2147677cb4b9…): the ml_drift, egl_headers and opengl_headers repositories as LiteRT d469ea48's own WORKSPACE defines them (LiteRT 4d8b3380a moved its GPU code to ML Drift; LiteRT-LM 2ef6baeb defines none of the three)
+litert-lm tree edit diff: K/r1/kit/litertlm_tot_ml_drift.diff
+litert override: /Users/USER/code/litert-lu1020-tot at d469ea484104ec1c9fbbe7c82a2b362c2d9e3d29 (2026-10-19T21:35:43-07:00 Automated Code Change), the WORKSPACE http_archive's patch_cmds applied to it
+xnnpack override: /Users/USER/code/xnnpack-lu1020 at 878f1d8ca60d7f8fb6670ab7c8cbe39a6d7415f7 (2026-10-19T04:31:06-07:00 Optimize FP32 MobileNet on Hexagon HVX by dispatching `7x64__hvx_broadcast` for `f32_gemm`/`f3), the pin of LiteRT HEAD's litert_workspace.bzl (supervisor 16:2x: LiteRT-LM takes XNNPACK from TF's workspace, 0a66ebb5)
+slinky override: /Users/USER/code/slinky-lu1020-9b2ee975/slinky-9b2ee975f1a8a67a4daf1df6ce0911b66e6faf9f (slinky 9b2ee975 = the pin of LiteRT d469ea48's litert_workspace.bzl and XNNPACK 878f1d8c's MODULE.bazel (archive sha256 56793854…, as both pin it), in place of TF/XLA's a3eec6fc: its 26eddcb5 (2026-10-12) raises the Android spin count of slinky's thread pool, which YNNPACK runs on, from 1000 to 10000000)
+external pthreadpool: 
+external cpuinfo: 
+external KleidiAI: 
+external ml_drift: 
+bazel: 7.6.1 via bazelisk; flags: --config=public_cache --disk_cache=/Users/USER/.cache/bazel-disk-lu1020 --define=litert_enable_ynnpack=true --override_repository=litert=/Users/USER/code/litert-lu1020-tot --override_repository=XNNPACK=/Users/USER/code/xnnpack-lu1020 --override_repository=slinky=/Users/USER/code/slinky-lu1020-9b2ee975/slinky-9b2ee975f1a8a67a4daf1df6ce0911b66e6faf9f --@litert//litert/build_common:build_include=cpu_only; targets //runtime/engine:litert_lm_main //runtime/engine:litert_lm_advanced_main
+NDK: /Users/USER/Library/Android/sdk/ndk/29.0.13113456
+built: 2026-10-20 21:17:02 JST; bazel lines: INFO: Elapsed time: 148.658s, Critical Path: 17.16s;INFO: Build completed successfully, 4598 total actions;
+file litert_lm_main: Mach-O 64-bit executable arm64
+file litert_lm_advanced_main: Mach-O 64-bit executable arm64
+prebuilt: /Users/USER/code/litert-lm-lu1020-tot/prebuilt/macos_arm64/libGemmaModelConstraintProvider.dylib at 2ef6baebc2890e4f38bf2c69787ebc86882b2c5a (unchanged since b7c40ea81; LFS oids: r1/PREBUILT_SHA256SUMS_b7c40ea81.txt)
