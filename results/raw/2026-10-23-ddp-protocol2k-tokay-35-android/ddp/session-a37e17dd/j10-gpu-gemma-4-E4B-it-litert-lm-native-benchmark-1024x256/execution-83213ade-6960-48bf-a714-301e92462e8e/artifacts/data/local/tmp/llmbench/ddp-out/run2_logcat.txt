@@ -1,0 +1,731 @@
+--------- beginning of main
+10-23 02:30:12.763 23521 23521 I native  : I0000 00:00:1792747812.763441   23521 litert_lm_lib.cc:629] Choose backend: gpu
+10-23 02:30:12.766 23521 23521 I native  : I0000 00:00:1792747812.766435   23521 litert_lm_lib.cc:789] executor_settings: backend: GPU
+10-23 02:30:12.766 23521 23521 I native  : backend_config:
+10-23 02:30:12.766 23521 23521 I native  : max_top_k: 64
+10-23 02:30:12.766 23521 23521 I native  : 
+10-23 02:30:12.766 23521 23521 I native  : max_tokens: 2048
+10-23 02:30:12.766 23521 23521 I native  : activation_data_type: Not set
+10-23 02:30:12.766 23521 23521 I native  : max_num_images: 0
+10-23 02:30:12.766 23521 23521 I native  : lora_rank: 0
+10-23 02:30:12.766 23521 23521 I native  : pad_token_id: -1
+10-23 02:30:12.766 23521 23521 I native  : cache_dir: 
+10-23 02:30:12.766 23521 23521 I native  : cache_file: Not set
+10-23 02:30:12.766 23521 23521 I native  : litert_dispatch_lib_dir: Not set
+10-23 02:30:12.766 23521 23521 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_gemma-4-E4B-it-litert-lm_gemma-4-E4B-it.litertlm
+10-23 02:30:12.766 23521 23521 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 02:30:12.766 23521 23521 I native  : 
+10-23 02:30:12.766 23521 23521 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 02:30:12.766 23521 23521 I native  : num_output_candidates: 1
+10-23 02:30:12.766 23521 23521 I native  : configure_magic_numbers: true
+10-23 02:30:12.766 23521 23521 I native  : verify_magic_numbers: false
+10-23 02:30:12.766 23521 23521 I native  : clear_kv_cache_before_prefill: true
+10-23 02:30:12.766 23521 23521 I native  : num_logits_to_print_after_decode: 0
+10-23 02:30:12.766 23521 23521 I native  : gpu_madvise_original_shared_tensors: true
+10-23 02:30:12.766 23521 23521 I native  : gpu_enable_metal_residency_set: false
+10-23 02:30:12.766 23521 23521 I native  : is_benchmark: true
+10-23 02:30:12.766 23521 23521 I native  : enable_profiling: false
+10-23 02:30:12.766 23521 23521 I native  : preferred_device_substr: 
+10-23 02:30:12.766 23521 23521 I native  : num_threads_to_upload: -1
+10-23 02:30:12.766 23521 23521 I native  : num_threads_to_compile: -1
+10-23 02:30:12.766 23521 23521 I native  : convert_weights_on_gpu: true
+10-23 02:30:12.766 23521 23521 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 02:30:12.766 23521 23521 I native  : optimize_shader_compilation: true
+10-23 02:30:12.766 23521 23521 I native  : cache_compiled_shaders_only: false
+10-23 02:30:12.766 23521 23521 I native  : share_constant_tensors: true
+10-23 02:30:12.766 23521 23521 I native  : sampler_handles_input: true
+10-23 02:30:12.766 23521 23521 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 02:30:12.766 23521 23521 I native  : hint_waiting_for_completion: Not set
+10-23 02:30:12.766 23521 23521 I native  : gpu_context_low_priority: Not set
+10-23 02:30:12.766 23521 23521 I native  : enable_speculative_decoding: false
+10-23 02:30:12.766 23521 23521 I native  : disable_delegate_clustering: false
+10-23 02:30:12.766 23521 23521 I native  : hint_kernel_batch_size: Not set
+10-23 02:30:12.766 23521 23521 I native  : error_on_invalid_sampled_token_id: false
+10-23 02:30:12.766 23521 23521 I native  : 
+10-23 02:30:12.766 23521 23521 I native  : 
+10-23 02:30:12.766 23521 23521 I native  : I0000 00:00:1792747812.766530   23521 litert_lm_lib.cc:796] vision_executor_settings: not set
+10-23 02:30:12.766 23521 23521 I native  : I0000 00:00:1792747812.766541   23521 litert_lm_lib.cc:802] audio_executor_settings: not set
+10-23 02:30:12.766 23521 23521 I native  : I0000 00:00:1792747812.766552   23521 litert_lm_lib.cc:825] Creating engine
+10-23 02:30:12.769 23521 23521 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:30:12.769 23521 23521 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:30:12.769 23521 23521 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:30:12.769 23521 23522 W native  : W0000 00:00:1792747812.769386   23522 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:30:12.782 23521 23521 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075e8ceae50, name=LiteRT GPU
+10-23 02:30:12.782 23521 23521 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:30:12.782 23521 23521 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075e8cea520, name=CpuAccelerator
+10-23 02:30:12.782 23521 23521 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:30:12.949 23521 23521 W native  : W0000 00:00:1792747812.949474   23521 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-23 02:30:12.949 23521 23521 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:30:12.949 23521 23521 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:30:12.949 23521 23521 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:30:12.950 23521 23521 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075e8ce5c80, name=LiteRT GPU
+10-23 02:30:12.950 23521 23521 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:30:12.950 23521 23521 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075e8ce62a0, name=CpuAccelerator
+10-23 02:30:12.950 23521 23521 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:30:12.950 23521 23521 W native  : W0000 00:00:1792747812.950076   23521 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+10-23 02:30:12.950 23521 23521 W native  : W0000 00:00:1792747812.950132   23521 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+10-23 02:30:12.974  1294  1318 I pixel-thermal: north_therm:37.226 raw data: north_therm:37226 
+10-23 02:30:12.981  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [37226.00 37003.00 36870.00 33442.00 36424.00 33664.00 36914.00 33597.00 ]
+10-23 02:30:12.981  1294  1318 I native  : I0000 00:00:1792747812.981377    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:12.982  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34833.7 34840.2 34842.6 34853.9 34862.1 34874.6 ]
+10-23 02:30:12.982  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34833.7 34840.2 34842.6 34853.9 34862.1 34874.6 ]
+10-23 02:30:12.982  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:34865.4 LSTM-VT-PREDICTION-21SEC-BACK:34896.9 LSTM-VT-PREDICTION-28SEC-BACK:34930.6 LSTM-VT-PREDICTION-35SEC-BACK:34966.7 LSTM-VT-PREDICTION-7SEC-BACK:34853.4 LSTM-VT-PREDICTION-ERROR-14SEC:31.668 LSTM-VT-PREDICTION-ERROR-21SEC:63.1602 LSTM-VT-PREDICTION-ERROR-28SEC:96.875 LSTM-VT-PREDICTION-ERROR-35SEC:133.008 LSTM-VT-PREDICTION-ERROR-7SEC:19.7188 LSTM-VT-PREDICTION-NOW:34833.7 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:34833.7 btmspkr_therm:33597 charging_therm:36870 disp_therm:33442 north_therm:37226 quiet_therm:36424 rfpa_therm:36914 soc_therm:37003 usb_pwr_therm:33664 
+10-23 02:30:12.982  1294  1318 I pixel-thermal: quiet_therm:36.424 raw data: quiet_therm:36424 
+10-23 02:30:12.982  1294  1318 I pixel-thermal: rfpa_therm:36.914 raw data: rfpa_therm:36914 
+10-23 02:30:12.982  1294  1318 I pixel-thermal: disp_therm:33.442 raw data: disp_therm:33442 
+10-23 02:30:13.050   797   797 W TracingMuxer: type=1400 audit(0.0:690): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1278 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1340, num_signatures=4
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=3514, num_inputs=53, num_outputs=50, num_ops=2712
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=2309, num_inputs=53, num_outputs=48, num_ops=1773
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=3606, num_inputs=53, num_outputs=50, num_ops=2801
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 02:30:13.069 23521 23521 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 02:30:13.074 23521 23521 I litert  : [magic_number_utils.cc:536] 577 tensors of signature decode have been updated for magic number  32003 to target number 2048
+10-23 02:30:13.081 23521 23521 I litert  : [magic_number_utils.cc:536] 426 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+10-23 02:30:13.085 23521 23521 I litert  : [magic_number_utils.cc:536] 426 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+10-23 02:30:13.088 23521 23521 I litert  : [magic_number_utils.cc:536] 581 tensors of signature verify have been updated for magic number  32003 to target number 2048
+10-23 02:30:13.088 23521 23521 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:30:13.089 23521 23521 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 02:30:13.118 23521 23521 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:30:13.118 23521 23521 W libc    : Access denied finding property "ro.chipname"
+10-23 02:30:13.118 23521 23521 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 02:30:13.135  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.7919 raw data: VIRTUAL-SKIN:34791.9 VIRTUAL-SKIN-CPU-MID:34791.9 
+10-23 02:30:13.141  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33597.00 36870.00 33442.00 37226.00 36424.00 36914.00 37003.00 33664.00 ]
+10-23 02:30:13.141  1294  1318 I native  : I0000 00:00:1792747813.141582    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:13.141  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [34773.8 ]
+10-23 02:30:13.141  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [34773.8 ]
+10-23 02:30:13.141  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:34861.8 VIRTUAL-SKIN-MODEL:34773.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-76.6836 btmspkr_therm:33597 charging_therm:36870 disp_therm:33442 north_therm:37226 quiet_therm:36424 rfpa_therm:36914 soc_therm:37003 usb_pwr_therm:33664 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.5819 raw data: VIRTUAL-SKIN-CHARGE-WIRED:34581.9 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4235.75 err=3.41809 s_power=2527 time_elapsed_ms=7009 p=406.753 i=1302 d=0 compensation=0 budget transient=0 control target=2
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=4125.02 after (PARTIAL_SYSTEM_POWER: 922.78 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 922.78 mW, cdev_weight: 0.120000)
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN:34.7919 raw data: VIRTUAL-SKIN:34791.9 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:34.7919 raw data: VIRTUAL-SKIN:34791.9 VIRTUAL-SKIN-SOC:34791.9 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:34.7919 raw data: VIRTUAL-SKIN:34791.9 VIRTUAL-SKIN-HINT:34791.9 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:34.7919 raw data: VIRTUAL-SKIN:34791.9 VIRTUAL-SKIN-GPU:34791.9 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.7919 raw data: VIRTUAL-SKIN:34791.9 VIRTUAL-SKIN-CPU-HIGH:34791.9 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.3511 raw data: VIRTUAL-SKIN-SPEAKER:34351.1 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: cellular-emergency:34.7965 raw data: cellular-emergency:34796.5 
+10-23 02:30:13.142  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.7919 raw data: VIRTUAL-SKIN:34791.9 VIRTUAL-SKIN-CPU-LIGHT-ODPM:34791.9 
+10-23 02:30:13.143  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:34581.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:34581.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:13.143  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.5819 raw data: VIRTUAL-SKIN-CHARGE-PERSIST:34581.9 
+10-23 02:30:13.143  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=5133.05 err=6.41809 s_power=2383 time_elapsed_ms=7009 p=1367.05 i=1383 d=0 compensation=0 budget transient=0 control target=2
+10-23 02:30:13.143  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4939.27 after (PARTIAL_SYSTEM_POWER: 922.78 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:13.143  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 922.78 mW, cdev_weight: 0.210000)
+10-23 02:30:13.210 23521 23521 I native  : I0000 00:00:1792747813.210090   23521 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+10-23 02:30:13.210 23521 23521 I native  : I0000 00:00:1792747813.210181   23521 delegate_opencl.cc:606] options->kernel_batch_size: -1
+10-23 02:30:13.210 23521 23521 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:30:13.210 23521 23521 W libc    : Access denied finding property "ro.chipname"
+10-23 02:30:13.210 23521 23521 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 02:30:13.245 23521 23521 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 02:30:13.247 23521 23521 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 02:30:13.247 23521 23521 I tflite  : Loaded OpenCL library with dlopen.
+10-23 02:30:13.247 23521 23521 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-23 02:30:13.247 23521 23521 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-23 02:30:13.247 23521 23521 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-23 02:30:13.247 23521 23521 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 02:30:13.253 23521 23521 I tflite  : Replacing 2712 out of 2712 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+10-23 02:30:13.296 23521 23521 W native  : W0000 00:00:1792747813.296757   23521 gpu_model_builder.cc:4423] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.
+10-23 02:30:13.514   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:13.640  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 3]
+10-23 02:30:16.637   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:16.770  1668  5618 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 3]
+10-23 02:30:19.766   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:19.894  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 2]
+10-23 02:30:19.934  5887  7290 D TemperatureStateSource: sequence=780 actualDelay=10001
+10-23 02:30:19.935  5887  7290 D TemperatureStateSource: Reading temperature: sequence=781
+10-23 02:30:19.941  1294  1294 I pixel-thermal: VIRTUAL-SKIN:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-LEGACY:34855 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:81.2031 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:34773.8 VIRTUAL-SKIN-MODEL-CLAMPED:34773.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-81.2031 VIRTUAL-SKIN-MODEL-UPDATED:34784.7 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:34773.8 VIRTUAL-SKIN-SUB-0:34439.5 VIRTUAL-SKIN-SUB-1:34071.1 VIRTUAL-SKIN-SUB-2:33515.8 VIRTUAL-SKIN-SUB-3:34603.1 VIRTUAL-SKIN-SUB-4:34102.9 VIRTUAL-SKIN-SUB-5:33634.9 VIRTUAL-SKIN-SUB-6:34855 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33575 charging_therm:36892 disp_therm:33419 north_therm:37204 quiet_therm:36402 rfpa_therm:36892 soc_therm:37092 usb_pwr_therm:33664 
+10-23 02:30:19.942  5887  7290 D TemperatureStateSource: getDeviceTemperatures: sequence=781 deviceTemperatureType=3 temperatureSource=0 temperatures=[34.784695]
+10-23 02:30:19.942  5887  7290 D BusinessScope: Enqueuing the block
+10-23 02:30:19.942  5887  7290 D TemperatureStateSource: sequence=781 waitTime=10000
+10-23 02:30:19.942  5887  7290 D BusinessScope: Start running the #1580 block
+10-23 02:30:19.942  5887  7290 D BusinessScope: Enqueuing the block
+10-23 02:30:19.942  5887  7290 D ImpulseStateSource: Notify clients: 787
+10-23 02:30:19.942  5887  7290 D BusinessScope: Finish running the #1580 block
+10-23 02:30:19.943  5887  7290 D BusinessScope: Start running the #1581 block
+10-23 02:30:19.943  5887  7290 D BusinessScope: Finish running the #1581 block
+10-23 02:30:19.985  1294  1318 I pixel-thermal: north_therm:37.204 raw data: north_therm:37204 
+10-23 02:30:19.994  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [37204.00 37092.00 36892.00 33419.00 36402.00 33664.00 36892.00 33575.00 ]
+10-23 02:30:19.994  1294  1318 I native  : I0000 00:00:1792747819.994139    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:19.994  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34852.5 34859.6 34862.6 34874.5 34883.3 34896.3 ]
+10-23 02:30:19.994  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34852.5 34859.6 34862.6 34874.5 34883.3 34896.3 ]
+10-23 02:30:19.995  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:34855.9 LSTM-VT-PREDICTION-21SEC-BACK:34876.8 LSTM-VT-PREDICTION-28SEC-BACK:34905.4 LSTM-VT-PREDICTION-35SEC-BACK:34943.4 LSTM-VT-PREDICTION-7SEC-BACK:34840.2 LSTM-VT-PREDICTION-ERROR-14SEC:3.34375 LSTM-VT-PREDICTION-ERROR-21SEC:24.25 LSTM-VT-PREDICTION-ERROR-28SEC:52.8789 LSTM-VT-PREDICTION-ERROR-35SEC:90.8711 LSTM-VT-PREDICTION-ERROR-7SEC:-12.3906 LSTM-VT-PREDICTION-NOW:34852.5 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:34852.5 btmspkr_therm:33575 charging_therm:36892 disp_therm:33419 north_therm:37204 quiet_therm:36402 rfpa_therm:36892 soc_therm:37092 usb_pwr_therm:33664 
+10-23 02:30:19.995  1294  1318 I pixel-thermal: quiet_therm:36.402 raw data: quiet_therm:36402 
+10-23 02:30:19.995  1294  1318 I pixel-thermal: rfpa_therm:36.892 raw data: rfpa_therm:36892 
+10-23 02:30:19.995  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:30:20.146  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-CPU-MID:34784.7 
+10-23 02:30:20.146  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33575.00 36892.00 33419.00 37204.00 36402.00 36892.00 37092.00 33664.00 ]
+10-23 02:30:20.147  1294  1318 I native  : I0000 00:00:1792747820.146941    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:20.147  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [34748.8 ]
+10-23 02:30:20.147  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [34748.8 ]
+10-23 02:30:20.147  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:34855 VIRTUAL-SKIN-MODEL:34748.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-81.2031 btmspkr_therm:33575 charging_therm:36892 disp_therm:33419 north_therm:37204 quiet_therm:36402 rfpa_therm:36892 soc_therm:37092 usb_pwr_therm:33664 
+10-23 02:30:20.147  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.567 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:34567 VIRTUAL-SKIN-CHARGE-SUB-0:34217.5 VIRTUAL-SKIN-CHARGE-SUB-1:34128.1 VIRTUAL-SKIN-CHARGE-SUB-2:34567 VIRTUAL-SKIN-CHARGE-SUB-3:33634.9 VIRTUAL-SKIN-CHARGE-WIRED:34567 WLC_CHECK:1 btmspkr_therm:33575 charging_therm:36892 disp_therm:33419 north_therm:37204 quiet_therm:36402 rfpa_therm:36892 soc_therm:37092 thb_hda:54 usb_pwr_therm:33664 
+10-23 02:30:20.147  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4237.52 err=3.43295 s_power=2527 time_elapsed_ms=7010 p=408.521 i=1302 d=0 compensation=0 budget transient=0 control target=2
+10-23 02:30:20.147  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=4055.67 after (PARTIAL_SYSTEM_POWER: 1515.41 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 1515.41 mW, cdev_weight: 0.120000)
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN:34.7847 raw data: VIRTUAL-SKIN:34784.7 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-SOC:34784.7 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-HINT:34784.7 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-GPU:34784.7 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-CPU-HIGH:34784.7 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.3525 raw data: VIRTUAL-SKIN-SPEAKER:34352.5 VIRTUAL-SKIN-SPEAKER-SUB-0:34352.5 btmspkr_therm:33575 charging_therm:36892 disp_therm:33419 north_therm:37204 quiet_therm:36402 rfpa_therm:36892 soc_therm:37092 usb_pwr_therm:33664 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: cellular-emergency:34.7847 raw data: VIRTUAL-SKIN:34784.7 cellular-emergency:34784.7 
+10-23 02:30:20.148  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.7847 raw data: VIRTUAL-SKIN:34784.7 VIRTUAL-SKIN-CPU-LIGHT-ODPM:34784.7 
+10-23 02:30:20.149  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:34567 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:34567 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:20.149  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.567 raw data: VIRTUAL-SKIN-CHARGE:34567 VIRTUAL-SKIN-CHARGE-PERSIST:34567 
+10-23 02:30:20.149  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=5136.22 err=6.43295 s_power=2383 time_elapsed_ms=7010 p=1370.22 i=1383 d=0 compensation=0 budget transient=0 control target=2
+10-23 02:30:20.149  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4817.98 after (PARTIAL_SYSTEM_POWER: 1515.41 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:20.149  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 1515.41 mW, cdev_weight: 0.210000)
+10-23 02:30:21.176 23521 23521 W litert_lm_advanced_main: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-23 02:30:21.178 23521 23521 W litert_lm_advanced_main: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+10-23 02:30:22.893   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:23.019  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 0]
+10-23 02:30:23.083   791   806 I CHRE    : @ 8016.350: [ImuCal] [GYRO_RPS] (s0, c0) Offset | Temp [C] | Quality: 0.000221, -.000651, -.000565 | 38.41 | 4
+10-23 02:30:23.084   791   806 I CHRE    : @ 8016.350: [ImuCal] [GYRO_RPS] (s0) Temp Sensitivity: 0.000029, -.000042, -.000031
+10-23 02:30:23.084   791   806 I CHRE    : @ 8016.350: [ImuCal] [GYRO_RPS] (s0) Temp Intercept: -.000887, 0.000913, 0.000693
+10-23 02:30:26.018   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:26.142  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 3]
+10-23 02:30:26.994  1294  1318 I pixel-thermal: north_therm:37.27 raw data: north_therm:37270 
+10-23 02:30:27.000  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [37270.00 38650.00 37715.00 33419.00 36424.00 33709.00 37070.00 33597.00 ]
+10-23 02:30:27.001  1294  1318 I native  : I0000 00:00:1792747827.001077    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:27.001  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [35475.8 35491.1 35502 35521.5 35537.6 35557.2 ]
+10-23 02:30:27.001  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [35475.8 35491.1 35502 35521.5 35537.6 35557.2 ]
+10-23 02:30:27.004  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:34842.6 LSTM-VT-PREDICTION-21SEC-BACK:34867.2 LSTM-VT-PREDICTION-28SEC-BACK:34885.2 LSTM-VT-PREDICTION-35SEC-BACK:34918.1 LSTM-VT-PREDICTION-7SEC-BACK:34859.6 LSTM-VT-PREDICTION-ERROR-14SEC:-633.188 LSTM-VT-PREDICTION-ERROR-21SEC:-608.516 LSTM-VT-PREDICTION-ERROR-28SEC:-590.539 LSTM-VT-PREDICTION-ERROR-35SEC:-557.617 LSTM-VT-PREDICTION-ERROR-7SEC:-616.148 LSTM-VT-PREDICTION-NOW:35475.8 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:35475.8 btmspkr_therm:33597 charging_therm:37715 disp_therm:33419 north_therm:37270 quiet_therm:36424 rfpa_therm:37070 soc_therm:38650 usb_pwr_therm:33709 
+10-23 02:30:27.004  1294  1318 I pixel-thermal: quiet_therm:36.424 raw data: quiet_therm:36424 
+10-23 02:30:27.005  1294  1318 I pixel-thermal: rfpa_therm:37.07 raw data: rfpa_therm:37070 
+10-23 02:30:27.005  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:30:27.159  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33597.00 37715.00 33419.00 37270.00 36424.00 37070.00 38650.00 33709.00 ]
+10-23 02:30:27.159  1294  1318 I native  : I0000 00:00:1792747827.159526    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:27.159  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35030.2 ]
+10-23 02:30:27.159  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35030.2 ]
+10-23 02:30:27.160  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.8829 raw data: VIRTUAL-SKIN:34882.9 VIRTUAL-SKIN-CPU-MID:34882.9 VIRTUAL-SKIN-LEGACY:35028.6 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-1.63281 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35030.2 VIRTUAL-SKIN-MODEL-CLAMPED:35030.2 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:1.63281 VIRTUAL-SKIN-MODEL-UPDATED:34882.9 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35030.2 VIRTUAL-SKIN-SUB-0:34916.2 VIRTUAL-SKIN-SUB-1:34196.5 VIRTUAL-SKIN-SUB-2:33575.6 VIRTUAL-SKIN-SUB-3:34993.4 VIRTUAL-SKIN-SUB-4:34282.6 VIRTUAL-SKIN-SUB-5:34029.2 VIRTUAL-SKIN-SUB-6:35028.6 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33597 charging_therm:37715 disp_therm:33419 north_therm:37270 quiet_therm:36424 rfpa_therm:37070 soc_therm:38650 usb_pwr_therm:33709 
+10-23 02:30:27.167  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:35028.6 VIRTUAL-SKIN-MODEL:35030.2 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:1.63281 
+10-23 02:30:27.167  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.6804 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:34680.4 VIRTUAL-SKIN-CHARGE-SUB-0:34520.6 VIRTUAL-SKIN-CHARGE-SUB-1:34550.3 VIRTUAL-SKIN-CHARGE-SUB-2:34680.4 VIRTUAL-SKIN-CHARGE-SUB-3:34029.2 VIRTUAL-SKIN-CHARGE-WIRED:34680.4 WLC_CHECK:1 btmspkr_therm:33597 charging_therm:37715 disp_therm:33419 north_therm:37270 quiet_therm:36424 rfpa_therm:37070 soc_therm:38650 thb_hda:54 usb_pwr_therm:33709 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4224.04 err=3.31964 s_power=2527 time_elapsed_ms=7012 p=395.038 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3959.95 after (PARTIAL_SYSTEM_POWER: 2200.70 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 2200.70 mW, cdev_weight: 0.120000)
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN:34.8829 raw data: VIRTUAL-SKIN:34882.9 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:34.8829 raw data: VIRTUAL-SKIN:34882.9 VIRTUAL-SKIN-SOC:34882.9 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:34.8829 raw data: VIRTUAL-SKIN:34882.9 VIRTUAL-SKIN-HINT:34882.9 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:34.8829 raw data: VIRTUAL-SKIN:34882.9 VIRTUAL-SKIN-GPU:34882.9 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.8829 raw data: VIRTUAL-SKIN:34882.9 VIRTUAL-SKIN-CPU-HIGH:34882.9 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.64 raw data: VIRTUAL-SKIN-SPEAKER:34640 VIRTUAL-SKIN-SPEAKER-SUB-0:34640 btmspkr_therm:33597 charging_therm:37715 disp_therm:33419 north_therm:37270 quiet_therm:36424 rfpa_therm:37070 soc_therm:38650 usb_pwr_therm:33709 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: cellular-emergency:34.8829 raw data: VIRTUAL-SKIN:34882.9 cellular-emergency:34882.9 
+10-23 02:30:27.168  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.8829 raw data: VIRTUAL-SKIN:34882.9 VIRTUAL-SKIN-CPU-LIGHT-ODPM:34882.9 
+10-23 02:30:27.169  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:34680.4 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:34680.4 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:27.169  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.6804 raw data: VIRTUAL-SKIN-CHARGE:34680.4 VIRTUAL-SKIN-CHARGE-PERSIST:34680.4 
+10-23 02:30:27.169  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=5112.08 err=6.31964 s_power=2383 time_elapsed_ms=7012 p=1346.08 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:27.169  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4649.94 after (PARTIAL_SYSTEM_POWER: 2200.70 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:27.169  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 2200.70 mW, cdev_weight: 0.210000)
+10-23 02:30:29.138   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:29.264  1668  5618 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:30:29.943  5887  6032 D TemperatureStateSource: sequence=781 actualDelay=10000
+10-23 02:30:29.943  5887  6032 D TemperatureStateSource: Reading temperature: sequence=782
+10-23 02:30:29.946  1294  1294 I pixel-thermal: VIRTUAL-SKIN:34.9418 raw data: VIRTUAL-SKIN:34941.8 VIRTUAL-SKIN-LEGACY:35028.6 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-1.63281 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35030.2 VIRTUAL-SKIN-MODEL-CLAMPED:35030.2 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:1.63281 VIRTUAL-SKIN-MODEL-UPDATED:34941.8 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35030.2 VIRTUAL-SKIN-SUB-0:34916.2 VIRTUAL-SKIN-SUB-1:34196.5 VIRTUAL-SKIN-SUB-2:33575.6 VIRTUAL-SKIN-SUB-3:34993.4 VIRTUAL-SKIN-SUB-4:34282.6 VIRTUAL-SKIN-SUB-5:34029.2 VIRTUAL-SKIN-SUB-6:35028.6 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33597 charging_therm:37715 disp_therm:33419 north_therm:37270 quiet_therm:36424 rfpa_therm:37070 soc_therm:38650 usb_pwr_therm:33709 
+10-23 02:30:29.946  5887  6032 D TemperatureStateSource: getDeviceTemperatures: sequence=782 deviceTemperatureType=3 temperatureSource=0 temperatures=[34.94185]
+10-23 02:30:29.947  5887  6032 D BusinessScope: Enqueuing the block
+10-23 02:30:29.947  5887  6032 D TemperatureStateSource: sequence=782 waitTime=10000
+10-23 02:30:29.947  5887  7295 D BusinessScope: Start running the #1582 block
+10-23 02:30:29.949  1294  1294 I pixel-thermal: VIRTUAL-SKIN:34.9418 raw data: VIRTUAL-SKIN:34941.8 
+10-23 02:30:29.950  5887  7295 I TemperatureStateSource: temperature was set
+10-23 02:30:29.950  5887  7295 D BusinessScope: Enqueuing the block
+10-23 02:30:29.950  5887  7295 D ImpulseStateSource: Notify clients: 788
+10-23 02:30:29.950  5887  7295 D BusinessScope: Finish running the #1582 block
+10-23 02:30:29.950  5887  7295 D BusinessScope: Start running the #1583 block
+10-23 02:30:29.959  5887  7290 D BusinessScope: Finish running the #1583 block
+10-23 02:30:29.959  5887  7290 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:30:32.262   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:32.344   460   547 I hwc-display: Display Temperature : 33°C
+10-23 02:30:32.392  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 02:30:32.519 23610 23610 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:30:32.981 14097 14097 D ModemService: Received: com.google.android.apps.scone.modem.ATTEMPT_MODEM_RESET
+10-23 02:30:32.981 14097 14097 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:30:32.982  1668  7599 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:30:32.990 14097 23469 D ConfigService: onHandleWork
+10-23 02:30:32.990 14097 23469 D ConfigService: onHandleAttemptModemReset
+10-23 02:30:32.991 14097 23469 D ModemUtil: Screen is on, defer actions
+10-23 02:30:32.991 14097 23469 D ConfigService: Preconditions not met, retrying after 60 seconds
+10-23 02:30:32.992 14097 23469 D ConfigService: Attempt to retry after: 60 seconds
+10-23 02:30:33.009 23521 23521 I native  : I0000 00:00:1792747833.009201   23521 delegate_kernel.cc:329] Total 50 external tensors are used for delegate inputs and outputs
+10-23 02:30:33.009 23521 23521 I native  : I0000 00:00:1792747833.009277   23521 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:30:34.009  1294  1318 I pixel-thermal: north_therm:37.404 raw data: north_therm:37404 
+10-23 02:30:34.016  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [37404.00 39541.00 38316.00 33419.00 36513.00 33731.00 37337.00 33597.00 ]
+10-23 02:30:34.016  1294  1318 I native  : I0000 00:00:1792747834.016611    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:34.017  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [35951.5 35973.5 35990.9 36016.6 36038.7 36063.4 ]
+10-23 02:30:34.017  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [35951.5 35973.5 35990.9 36016.6 36038.7 36063.4 ]
+10-23 02:30:34.017  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:34862.6 LSTM-VT-PREDICTION-21SEC-BACK:34853.9 LSTM-VT-PREDICTION-28SEC-BACK:34875.6 LSTM-VT-PREDICTION-35SEC-BACK:34897.8 LSTM-VT-PREDICTION-7SEC-BACK:35491.1 LSTM-VT-PREDICTION-ERROR-14SEC:-1088.86 LSTM-VT-PREDICTION-ERROR-21SEC:-1097.59 LSTM-VT-PREDICTION-ERROR-28SEC:-1075.88 LSTM-VT-PREDICTION-ERROR-35SEC:-1053.65 LSTM-VT-PREDICTION-ERROR-7SEC:-460.379 LSTM-VT-PREDICTION-NOW:35951.5 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:35951.5 btmspkr_therm:33597 charging_therm:38316 disp_therm:33419 north_therm:37404 quiet_therm:36513 rfpa_therm:37337 soc_therm:39541 usb_pwr_therm:33731 
+10-23 02:30:34.017  1294  1318 I pixel-thermal: quiet_therm:36.513 raw data: quiet_therm:36513 
+10-23 02:30:34.017  1294  1318 I pixel-thermal: rfpa_therm:37.337 raw data: rfpa_therm:37337 
+10-23 02:30:34.018  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:30:34.110 23521 23521 I tflite  : Replacing 1773 out of 1773 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-23 02:30:34.170  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33597.00 38316.00 33419.00 37404.00 36513.00 37337.00 39541.00 33731.00 ]
+10-23 02:30:34.171  1294  1318 I native  : I0000 00:00:1792747834.170892    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:34.171  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35371.5 ]
+10-23 02:30:34.171  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35371.5 ]
+10-23 02:30:34.171  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.1137 raw data: VIRTUAL-SKIN:35113.7 VIRTUAL-SKIN-CPU-MID:35113.7 VIRTUAL-SKIN-LEGACY:35255.7 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-115.777 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35371.5 VIRTUAL-SKIN-MODEL-CLAMPED:35371.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:115.777 VIRTUAL-SKIN-MODEL-UPDATED:35113.7 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35371.5 VIRTUAL-SKIN-SUB-0:35200.6 VIRTUAL-SKIN-SUB-1:34320.5 VIRTUAL-SKIN-SUB-2:33670.4 VIRTUAL-SKIN-SUB-3:35255.7 VIRTUAL-SKIN-SUB-4:34401.9 VIRTUAL-SKIN-SUB-5:34317.8 VIRTUAL-SKIN-SUB-6:35160.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33597 charging_therm:38316 disp_therm:33419 north_therm:37404 quiet_therm:36513 rfpa_therm:37337 soc_therm:39541 usb_pwr_therm:33731 
+10-23 02:30:34.178  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:35255.7 VIRTUAL-SKIN-MODEL:35371.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:115.777 
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.8037 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:34803.7 VIRTUAL-SKIN-CHARGE-SUB-0:34749.9 VIRTUAL-SKIN-CHARGE-SUB-1:34803.7 VIRTUAL-SKIN-CHARGE-SUB-2:34786.3 VIRTUAL-SKIN-CHARGE-SUB-3:34317.8 VIRTUAL-SKIN-CHARGE-WIRED:34803.7 WLC_CHECK:1 btmspkr_therm:33597 charging_therm:38316 disp_therm:33419 north_therm:37404 quiet_therm:36513 rfpa_therm:37337 soc_therm:39541 thb_hda:54 usb_pwr_therm:33731 
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4209.36 err=3.19633 s_power=2527 time_elapsed_ms=7011 p=380.363 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3873.86 after (PARTIAL_SYSTEM_POWER: 2795.88 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 2795.88 mW, cdev_weight: 0.120000)
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN:35.1137 raw data: VIRTUAL-SKIN:35113.7 
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:35.1137 raw data: VIRTUAL-SKIN:35113.7 VIRTUAL-SKIN-SOC:35113.7 
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:35.1137 raw data: VIRTUAL-SKIN:35113.7 VIRTUAL-SKIN-HINT:35113.7 
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:35.1137 raw data: VIRTUAL-SKIN:35113.7 VIRTUAL-SKIN-GPU:35113.7 
+10-23 02:30:34.179  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.1137 raw data: VIRTUAL-SKIN:35113.7 VIRTUAL-SKIN-CPU-HIGH:35113.7 
+10-23 02:30:34.180  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.8173 raw data: VIRTUAL-SKIN-SPEAKER:34817.3 VIRTUAL-SKIN-SPEAKER-SUB-0:34817.3 btmspkr_therm:33597 charging_therm:38316 disp_therm:33419 north_therm:37404 quiet_therm:36513 rfpa_therm:37337 soc_therm:39541 usb_pwr_therm:33731 
+10-23 02:30:34.180  1294  1318 I pixel-thermal: cellular-emergency:35.1137 raw data: VIRTUAL-SKIN:35113.7 cellular-emergency:35113.7 
+10-23 02:30:34.180  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.1137 raw data: VIRTUAL-SKIN:35113.7 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35113.7 
+10-23 02:30:34.181  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:34803.7 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:34803.7 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:34.181  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.8037 raw data: VIRTUAL-SKIN-CHARGE:34803.7 VIRTUAL-SKIN-CHARGE-PERSIST:34803.7 
+10-23 02:30:34.181  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=5085.82 err=6.19633 s_power=2383 time_elapsed_ms=7011 p=1319.82 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:34.181  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4498.68 after (PARTIAL_SYSTEM_POWER: 2795.88 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:34.181  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 2795.88 mW, cdev_weight: 0.210000)
+10-23 02:30:34.624 23521 23521 I native  : I0000 00:00:1792747834.624346   23521 delegate_kernel.cc:329] Total 49 external tensors are used for delegate inputs and outputs
+10-23 02:30:34.624 23521 23521 I native  : I0000 00:00:1792747834.624460   23521 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:30:35.002   409   409 I lowmemorykiller: Kill 'com.google.android.projection.gearhead:car' (10225), uid 10131, oom_score_adj 955 to free 102208kB rss, 4096kB swap; reason: low watermark is breached
+--------- beginning of system
+10-23 02:30:35.016  1668  7592 I ActivityManager: Process com.google.android.projection.gearhead:car (pid 10225) has died: cch+55 CEM 
+10-23 02:30:35.016  6556  6556 I adbd    : Remote process closed the socket (on MSG_PEEK)
+10-23 02:30:35.017  6746 17740 D ForegroundUtils: UID: 10131 deleted.
+10-23 02:30:35.018   769   769 I Zygote  : Process 10225 exited due to signal 9 (Killed)
+10-23 02:30:35.017  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10131/pid_10225
+10-23 02:30:35.018  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10131
+10-23 02:30:35.018   409   409 I lowmemorykiller: Kill 'com.google.android.wfcactivation' (7888), uid 10183, oom_score_adj 955 to free 101876kB rss, 7280kB swap; reason: low watermark is breached
+10-23 02:30:35.038  1668  7590 I ActivityManager: Process com.google.android.wfcactivation (pid 7888) has died: cch+55 CEM 
+10-23 02:30:35.039   769   769 I Zygote  : Process 7888 exited due to signal 9 (Killed)
+10-23 02:30:35.040   409   409 I lowmemorykiller: Kill 'com.google.android.adservices.api' (8171), uid 10283, oom_score_adj 955 to free 105576kB rss, 3976kB swap; reason: low watermark is breached
+10-23 02:30:35.043  6746 17740 D ForegroundUtils: UID: 10183 deleted.
+10-23 02:30:35.044  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10183
+10-23 02:30:35.054  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10183/pid_7888
+10-23 02:30:35.060  1668  7590 I ActivityManager: Process com.google.android.adservices.api (pid 8171) has died: cch+55 CEM 
+10-23 02:30:35.061  6746 17740 D ForegroundUtils: UID: 10283 deleted.
+10-23 02:30:35.062   769   769 I Zygote  : Process 8171 exited due to signal 9 (Killed)
+10-23 02:30:35.062  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10283
+10-23 02:30:35.062   409   409 I lowmemorykiller: Kill 'com.google.android.apps.dreamliner' (6854), uid 10171, oom_score_adj 955 to free 107920kB rss, 6228kB swap; reason: low watermark is breached
+10-23 02:30:35.069  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10283/pid_8171
+10-23 02:30:35.073  1668  7599 I ActivityManager: Process com.google.android.apps.dreamliner (pid 6854) has died: cch+55 CEM 
+10-23 02:30:35.074   769   769 I Zygote  : Process 6854 exited due to signal 9 (Killed)
+10-23 02:30:35.075  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10171
+10-23 02:30:35.075  6746 17740 D ForegroundUtils: UID: 10171 deleted.
+10-23 02:30:35.075   409   409 I lowmemorykiller: Kill 'com.android.angle' (9233), uid 10166, oom_score_adj 945 to free 102572kB rss, 3228kB swap; reason: low watermark is breached
+10-23 02:30:35.077  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10171/pid_6854
+10-23 02:30:35.086  1668  7599 I ActivityManager: Process com.android.angle (pid 9233) has died: cch+45 CEM 
+10-23 02:30:35.086  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10166/pid_9233
+10-23 02:30:35.086   769   769 I Zygote  : Process 9233 exited due to signal 9 (Killed)
+10-23 02:30:35.087   409   409 I lowmemorykiller: Kill 'com.google.android.flipendo' (5808), uid 10259, oom_score_adj 945 to free 104944kB rss, 4168kB swap; reason: low watermark is breached
+10-23 02:30:35.087  6746 17740 D ForegroundUtils: UID: 10166 deleted.
+10-23 02:30:35.087  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10166
+10-23 02:30:35.088   409   415 E lowmemorykiller: process_mrelease 5808 failed: No such process
+10-23 02:30:35.119  1668  7378 I ActivityManager: Process com.google.android.flipendo (pid 5808) has died: cch+45 CEM 
+10-23 02:30:35.119  6746 17740 D ForegroundUtils: UID: 10259 deleted.
+10-23 02:30:35.120  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10259/pid_5808
+10-23 02:30:35.120  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10259
+10-23 02:30:35.120   769   769 I Zygote  : Process 5808 exited due to signal 9 (Killed)
+10-23 02:30:35.121   409   409 I lowmemorykiller: Kill 'com.android.traceur' (8887), uid 10117, oom_score_adj 945 to free 101884kB rss, 3300kB swap; reason: low watermark is breached
+10-23 02:30:35.140  1668  7599 I ActivityManager: Process com.android.traceur (pid 8887) has died: cch+45 CEM 
+10-23 02:30:35.141  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10117/pid_8887
+10-23 02:30:35.141   769   769 I Zygote  : Process 8887 exited due to signal 9 (Killed)
+10-23 02:30:35.142   409   409 I lowmemorykiller: Kill 'com.google.android.accessibility.switchaccess' (10531), uid 10187, oom_score_adj 945 to free 102744kB rss, 4740kB swap; reason: low watermark is breached
+10-23 02:30:35.143   409   415 E lowmemorykiller: process_mrelease 10531 failed: No such process
+10-23 02:30:35.144  6746 17740 D ForegroundUtils: UID: 10117 deleted.
+10-23 02:30:35.145  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10117
+10-23 02:30:35.164  1668  7378 I ActivityManager: Process com.google.android.accessibility.switchaccess (pid 10531) has died: cch+45 CEM 
+10-23 02:30:35.165  1668  1713 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10187/pid_10531
+10-23 02:30:35.165   769   769 I Zygote  : Process 10531 exited due to signal 9 (Killed)
+10-23 02:30:35.166  6746 17740 D ForegroundUtils: UID: 10187 deleted.
+10-23 02:30:35.167  1668  1701 D DisplayManagerService: Drop pending events for gone uid 10187
+10-23 02:30:35.387   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:35.513  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 02:30:36.192 23521 23521 I tflite  : Replacing 1773 out of 1773 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+10-23 02:30:36.215 23521 23521 I native  : I0000 00:00:1792747836.215532   23521 delegate_kernel.cc:329] Total 49 external tensors are used for delegate inputs and outputs
+10-23 02:30:36.215 23521 23521 I native  : I0000 00:00:1792747836.215636   23521 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:30:36.616  6726  7017 I bcot    : (REDACTED) getHotwordActive::active query: %s, watch: %s, devices connected: %s
+10-23 02:30:37.036 23521 23521 I tflite  : Replacing 2801 out of 2801 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+10-23 02:30:37.074 23521 23521 I native  : I0000 00:00:1792747837.074887   23521 delegate_kernel.cc:329] Total 50 external tensors are used for delegate inputs and outputs
+10-23 02:30:37.074 23521 23521 I native  : I0000 00:00:1792747837.074983   23521 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:30:38.049 23521 23521 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:30:38.050 23521 23521 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:30:38.050 23521 23521 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:30:38.050 23521 23521 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075e8ec8430, name=LiteRT GPU
+10-23 02:30:38.050 23521 23521 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:30:38.050 23521 23521 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000075e8ec9850, name=CpuAccelerator
+10-23 02:30:38.050 23521 23521 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:30:38.109 23521 23521 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 02:30:38.109 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+10-23 02:30:38.109 23521 23521 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 02:30:38.109 23521 23521 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 02:30:38.109 23521 23521 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:30:38.111 23521 23521 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-23 02:30:38.111 23521 23521 I tflite  : Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 02:30:38.111 23521 23521 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:30:38.111 23521 23521 I litert  : [compiled_model.cc:1856] Tracked constant output tensor eoa_embedding with locked address
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 02:30:38.111 23521 23521 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 02:30:38.111 23521 23521 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:30:38.112 23521 23521 I litert  : [compiled_model.cc:1856] Tracked constant output tensor eoi_embedding with locked address
+10-23 02:30:38.140 23521 23521 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-23 02:30:38.140 23521 23521 I litert  : [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=97, num_inputs=1, num_outputs=1, num_ops=49
+10-23 02:30:38.140 23521 23521 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 02:30:38.140 23521 23521 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-23 02:30:38.140 23521 23521 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:30:38.345 23521 23521 I tflite  : Replacing 1 out of 49 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-23 02:30:38.346 23521 23521 I native  : I0000 00:00:1792747838.346093   23521 litert_lm_lib.cc:1079] Creating conversation
+10-23 02:30:38.347 23521 23521 W native  : W0000 00:00:1792747838.347940   23521 mel_filterbank.cc:137] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+10-23 02:30:38.348 23521 23521 I native  : I0000 00:00:1792747838.348035   23521 litert_lm_lib.cc:1091] Running single-turn conversation
+10-23 02:30:38.510   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:38.631  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 02:30:39.947  5887  6032 D TemperatureStateSource: sequence=782 actualDelay=10001
+10-23 02:30:39.948  5887  6032 D TemperatureStateSource: Reading temperature: sequence=783
+10-23 02:30:39.952  1294  1294 I pixel-thermal: VIRTUAL-SKIN:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-LEGACY:35513.9 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:142.375 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35371.5 VIRTUAL-SKIN-MODEL-CLAMPED:35371.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-142.375 VIRTUAL-SKIN-MODEL-UPDATED:35216.8 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35371.5 VIRTUAL-SKIN-SUB-0:35466.1 VIRTUAL-SKIN-SUB-1:34451.7 VIRTUAL-SKIN-SUB-2:33799 VIRTUAL-SKIN-SUB-3:35513.9 VIRTUAL-SKIN-SUB-4:34521.7 VIRTUAL-SKIN-SUB-5:34611.5 VIRTUAL-SKIN-SUB-6:35304.2 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33597 charging_therm:38940 disp_therm:33419 north_therm:37604 quiet_therm:36647 rfpa_therm:37626 soc_therm:40342 usb_pwr_therm:33753 
+10-23 02:30:39.952  5887  6032 D TemperatureStateSource: getDeviceTemperatures: sequence=783 deviceTemperatureType=3 temperatureSource=0 temperatures=[35.21684]
+10-23 02:30:39.952  5887  6032 D BusinessScope: Enqueuing the block
+10-23 02:30:39.953  5887  6032 D TemperatureStateSource: sequence=783 waitTime=10000
+10-23 02:30:39.953  5887  7295 D BusinessScope: Start running the #1584 block
+10-23 02:30:39.956  1294  1294 I pixel-thermal: VIRTUAL-SKIN:35.2168 raw data: VIRTUAL-SKIN:35216.8 
+10-23 02:30:39.957  5887  7295 I TemperatureStateSource: temperature was set
+10-23 02:30:39.957  5887  7295 D BusinessScope: Enqueuing the block
+10-23 02:30:39.957  5887  7295 D ImpulseStateSource: Notify clients: 789
+10-23 02:30:39.958  5887  7295 D BusinessScope: Finish running the #1584 block
+10-23 02:30:39.958  5887  7295 D BusinessScope: Start running the #1585 block
+10-23 02:30:39.958  5887  7290 D BusinessScope: Finish running the #1585 block
+10-23 02:30:40.018   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:40.514 23521 23521 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:30:40.514 23521 23521 W libc    : Access denied finding property "ro.chipname"
+10-23 02:30:40.514 23521 23521 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 02:30:40.746  1104  1104 W TracingMuxer: type=1400 audit(0.0:691): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1278 scontext=u:r:gxp_logging:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:30:40.853 23521 23521 I tflite  : Loaded OpenCL library with dlopen.
+10-23 02:30:41.025  1294  1318 I pixel-thermal: north_therm:37.604 raw data: north_therm:37604 
+10-23 02:30:41.036  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [37604.00 40342.00 38940.00 33419.00 36647.00 33753.00 37626.00 33597.00 ]
+10-23 02:30:41.036  1294  1318 I native  : I0000 00:00:1792747841.036161    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:41.036  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [36379.4 36407.4 36430.7 36461.9 36489.4 36518.8 ]
+10-23 02:30:41.036  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [36379.4 36407.4 36430.7 36461.9 36489.4 36518.8 ]
+10-23 02:30:41.036  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:35502 LSTM-VT-PREDICTION-21SEC-BACK:34874.5 LSTM-VT-PREDICTION-28SEC-BACK:34862.1 LSTM-VT-PREDICTION-35SEC-BACK:34888.1 LSTM-VT-PREDICTION-7SEC-BACK:35973.5 LSTM-VT-PREDICTION-ERROR-14SEC:-877.41 LSTM-VT-PREDICTION-ERROR-21SEC:-1504.92 LSTM-VT-PREDICTION-ERROR-28SEC:-1517.25 LSTM-VT-PREDICTION-ERROR-35SEC:-1491.31 LSTM-VT-PREDICTION-ERROR-7SEC:-405.926 LSTM-VT-PREDICTION-NOW:36379.4 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:36379.4 btmspkr_therm:33597 charging_therm:38940 disp_therm:33419 north_therm:37604 quiet_therm:36647 rfpa_therm:37626 soc_therm:40342 usb_pwr_therm:33753 
+10-23 02:30:41.036  1294  1318 I pixel-thermal: quiet_therm:36.647 raw data: quiet_therm:36647 
+10-23 02:30:41.036  1294  1318 I pixel-thermal: rfpa_therm:37.626 raw data: rfpa_therm:37626 
+10-23 02:30:41.036  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:30:41.182  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-CPU-MID:35216.8 
+10-23 02:30:41.182  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33597.00 38940.00 33419.00 37604.00 36647.00 37626.00 40342.00 33753.00 ]
+10-23 02:30:41.182  1294  1318 I native  : I0000 00:00:1792747841.182694    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:41.182  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35555.1 ]
+10-23 02:30:41.182  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35555.1 ]
+10-23 02:30:41.182  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:35513.9 VIRTUAL-SKIN-MODEL:35555.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-142.375 btmspkr_therm:33597 charging_therm:38940 disp_therm:33419 north_therm:37604 quiet_therm:36647 rfpa_therm:37626 soc_therm:40342 usb_pwr_therm:33753 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:35.0396 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:35039.6 VIRTUAL-SKIN-CHARGE-SUB-0:34986 VIRTUAL-SKIN-CHARGE-SUB-1:35039.6 VIRTUAL-SKIN-CHARGE-SUB-2:34912.6 VIRTUAL-SKIN-CHARGE-SUB-3:34611.5 VIRTUAL-SKIN-CHARGE-WIRED:35039.6 WLC_CHECK:1 btmspkr_therm:33597 charging_therm:38940 disp_therm:33419 north_therm:37604 quiet_therm:36647 rfpa_therm:37626 soc_therm:40342 thb_hda:54 usb_pwr_therm:33753 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4181.29 err=2.9604 s_power=2527 time_elapsed_ms=7012 p=352.288 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3771.1 after (PARTIAL_SYSTEM_POWER: 3418.22 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 3418.22 mW, cdev_weight: 0.120000)
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN:35.2168 raw data: VIRTUAL-SKIN:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-SOC:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-HINT:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-GPU:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-CPU-HIGH:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.9887 raw data: VIRTUAL-SKIN-SPEAKER:34988.6 VIRTUAL-SKIN-SPEAKER-SUB-0:34988.6 btmspkr_therm:33597 charging_therm:38940 disp_therm:33419 north_therm:37604 quiet_therm:36647 rfpa_therm:37626 soc_therm:40342 usb_pwr_therm:33753 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: cellular-emergency:35.2168 raw data: VIRTUAL-SKIN:35216.8 cellular-emergency:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.2168 raw data: VIRTUAL-SKIN:35216.8 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35216.8 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:35039.6 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:35039.6 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:35.0396 raw data: VIRTUAL-SKIN-CHARGE:35039.6 VIRTUAL-SKIN-CHARGE-PERSIST:35039.6 
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=5035.56 err=5.9604 s_power=2383 time_elapsed_ms=7012 p=1269.57 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4317.74 after (PARTIAL_SYSTEM_POWER: 3418.22 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:41.183  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 3418.22 mW, cdev_weight: 0.210000)
+10-23 02:30:41.627   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:41.761  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 3]
+10-23 02:30:43.078   797   797 W TracingMuxer: type=1400 audit(0.0:692): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1278 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:30:44.759   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:44.895  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:30:47.895   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:48.013  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:30:48.033  1294  1318 I pixel-thermal: north_therm:37.827 raw data: north_therm:37827 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [37827.00 40906.00 39585.00 33419.00 36825.00 33776.00 37960.00 33620.00 ]
+10-23 02:30:48.041  1294  1318 I native  : I0000 00:00:1792747848.041329    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:48.041  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [36639.5 36671.8 36699.3 36734.4 36765.8 36798.3 ]
+10-23 02:30:48.041  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [36639.5 36671.8 36699.3 36734.4 36765.8 36798.3 ]
+10-23 02:30:48.041  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:35990.9 LSTM-VT-PREDICTION-21SEC-BACK:35521.5 LSTM-VT-PREDICTION-28SEC-BACK:34883.3 LSTM-VT-PREDICTION-35SEC-BACK:34874.6 LSTM-VT-PREDICTION-7SEC-BACK:36407.4 LSTM-VT-PREDICTION-ERROR-14SEC:-648.535 LSTM-VT-PREDICTION-ERROR-21SEC:-1117.95 LSTM-VT-PREDICTION-ERROR-28SEC:-1756.18 LSTM-VT-PREDICTION-ERROR-35SEC:-1764.88 LSTM-VT-PREDICTION-ERROR-7SEC:-232.07 LSTM-VT-PREDICTION-NOW:36639.5 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:36639.5 btmspkr_therm:33620 charging_therm:39585 disp_therm:33419 north_therm:37827 quiet_therm:36825 rfpa_therm:37960 soc_therm:40906 usb_pwr_therm:33776 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: quiet_therm:36.825 raw data: quiet_therm:36825 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: rfpa_therm:37.96 raw data: rfpa_therm:37960 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: Power rails total power: 2676.45 mW for 63111 ms
+10-23 02:30:48.041  1294  1318 I pixel-thermal: Power rails [S6M_LLDO1: 142.35 mW] [S4M_VDD_CPUCL0: 174.99 mW] [S3M_VDD_CPUCL2: 935.36 mW] [S1M_VDD_MIF: 164.97 mW] [VSYS_PWR_MMWAVE: 0.41 mW] [S5M_VDD_INT: 41.57 mW] 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: Power rails [S9M_VDD_CPUCL1_M: 11.06 mW] [S2M_VDD_CPUCL1: 59.96 mW] [VSYS_PWR_CAMERA: 0.14 mW] [VSYS_PWR_DISPLAY: 121.54 mW] [L21S_VDD2L_MEM: 5.47 mW] [S8M_LLDO2: 70.51 mW] 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: Power rails [S3S_LLDO1: 76.36 mW] [VSYS_PWR_RFFE: 8.60 mW] [VSYS_PWR_WLAN_BT: 86.00 mW] [VSYS_PWR_MODEM: 341.27 mW] [L2S_PLL_MIPI_UFS: 36.32 mW] [S4S_VDD2H_MEM: 175.96 mW] 
+10-23 02:30:48.041  1294  1318 I pixel-thermal: Power rails [S9S_VDD_AOC: 9.36 mW] [S2S_VDD_G3D: 182.87 mW] [S1S_VDD_CAM: 6.60 mW] [S7M_VDD_TPU: 0.00 mW] [L22S_UDFPS: 1.10 mW] [S5S_VDDQ_MEM: 23.67 mW] 
+10-23 02:30:48.191  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33620.00 39585.00 33419.00 37827.00 36825.00 37960.00 40906.00 33776.00 ]
+10-23 02:30:48.192  1294  1318 I native  : I0000 00:00:1792747848.191976    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:48.192  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35771.6 ]
+10-23 02:30:48.192  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35771.6 ]
+10-23 02:30:48.192  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.4387 raw data: VIRTUAL-SKIN:35438.7 VIRTUAL-SKIN-CPU-MID:35438.7 VIRTUAL-SKIN-LEGACY:35746.8 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-24.7812 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35771.6 VIRTUAL-SKIN-MODEL-CLAMPED:35771.6 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:24.7812 VIRTUAL-SKIN-MODEL-UPDATED:35438.7 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35771.6 VIRTUAL-SKIN-SUB-0:35674.4 VIRTUAL-SKIN-SUB-1:34594.4 VIRTUAL-SKIN-SUB-2:33951.8 VIRTUAL-SKIN-SUB-3:35746.8 VIRTUAL-SKIN-SUB-4:34639.5 VIRTUAL-SKIN-SUB-5:34900.7 VIRTUAL-SKIN-SUB-6:35448.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33620 charging_therm:39585 disp_therm:33419 north_therm:37827 quiet_therm:36825 rfpa_therm:37960 soc_therm:40906 usb_pwr_therm:33776 
+10-23 02:30:48.192  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:35746.8 VIRTUAL-SKIN-MODEL:35771.6 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:24.7812 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:35.2277 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:35227.7 VIRTUAL-SKIN-CHARGE-SUB-0:35222.4 VIRTUAL-SKIN-CHARGE-SUB-1:35227.7 VIRTUAL-SKIN-CHARGE-SUB-2:35063 VIRTUAL-SKIN-CHARGE-SUB-3:34900.7 VIRTUAL-SKIN-CHARGE-WIRED:35227.7 WLC_CHECK:1 btmspkr_therm:33620 charging_therm:39585 disp_therm:33419 north_therm:37827 quiet_therm:36825 rfpa_therm:37960 soc_therm:40906 thb_hda:54 usb_pwr_therm:33776 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4158.9 err=2.7723 s_power=2527 time_elapsed_ms=7009 p=329.903 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3691.38 after (PARTIAL_SYSTEM_POWER: 3896.01 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 3896.01 mW, cdev_weight: 0.120000)
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN:35.4387 raw data: VIRTUAL-SKIN:35438.7 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:35.4387 raw data: VIRTUAL-SKIN:35438.7 VIRTUAL-SKIN-SOC:35438.7 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:35.4387 raw data: VIRTUAL-SKIN:35438.7 VIRTUAL-SKIN-HINT:35438.7 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:35.4387 raw data: VIRTUAL-SKIN:35438.7 VIRTUAL-SKIN-GPU:35438.7 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.4387 raw data: VIRTUAL-SKIN:35438.7 VIRTUAL-SKIN-CPU-HIGH:35438.7 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:35.1325 raw data: VIRTUAL-SKIN-SPEAKER:35132.4 VIRTUAL-SKIN-SPEAKER-SUB-0:35132.4 btmspkr_therm:33620 charging_therm:39585 disp_therm:33419 north_therm:37827 quiet_therm:36825 rfpa_therm:37960 soc_therm:40906 usb_pwr_therm:33776 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: cellular-emergency:35.4387 raw data: VIRTUAL-SKIN:35438.7 cellular-emergency:35438.7 
+10-23 02:30:48.193  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.4387 raw data: VIRTUAL-SKIN:35438.7 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35438.7 
+10-23 02:30:48.194  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:35227.7 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:35227.7 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:48.194  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:35.2277 raw data: VIRTUAL-SKIN-CHARGE:35227.7 VIRTUAL-SKIN-CHARGE-PERSIST:35227.7 
+10-23 02:30:48.194  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=4995.5 err=5.7723 s_power=2383 time_elapsed_ms=7009 p=1229.5 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:48.194  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4177.34 after (PARTIAL_SYSTEM_POWER: 3896.01 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:48.194  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 3896.01 mW, cdev_weight: 0.210000)
+10-23 02:30:48.195  1294  1318 I pixel-thermal: Successfully update cdev chg_mdis sysfs to 1
+10-23 02:30:48.199  6685  6690 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:30:48.202  6685  6690 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:30:48.210  6685  6690 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:30:48.221  5700  5700 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:30:48.221  5700  5700 D DLObserver: plugged=1
+10-23 02:30:48.221  5700  5700 D SystemEventDataSource: onReceive: intentAction
+10-23 02:30:48.222  5700  5700 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@cde8977
+10-23 02:30:48.222  5700  5700 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:30:48.222  5700  5700 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:30:48.223  5700 10857 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:30:48.228  5700  5787 D GoogleBatteryDataSource: fetchDwellDefendStatus: ACTIVE
+10-23 02:30:48.228  5700  5787 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=0, time_sum=0 t_avg=0 lst_v=0 lst_t=0 lst_u=0, dt=0, t=0 e=0
+10-23 02:30:48.229  5700  5787 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=80), chargingStatus=EventData(value=4), maxChargingCurrent=EventData(value=3000000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=4), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=true)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:30:48.229  5700  5787 D ChargingLimitEventModule: validate()=false, chargingLimitSettings=0
+10-23 02:30:48.229  5700  5787 D DwellDefendBatteryModule: validate: true -> true
+10-23 02:30:48.229  5700  5787 D TempDefendBatteryModule: validate: false -> false
+10-23 02:30:48.235  5700  5700 D KeyguardIndicationGoogle: isChargeLimitEnabled= false, user= 0
+10-23 02:30:48.725 17068 17068 I NearbyPresence: (REDACTED) %s: Charging state changed: %b
+10-23 02:30:48.726 17068 17106 I NearbyPresence: (REDACTED) %s verified [==] new request %s equals to the old request
+10-23 02:30:49.953  5887  6093 D TemperatureStateSource: sequence=783 actualDelay=10000
+10-23 02:30:49.953  5887  6093 D TemperatureStateSource: Reading temperature: sequence=784
+10-23 02:30:49.965  1294  1294 I pixel-thermal: VIRTUAL-SKIN:35.4387 raw data: VIRTUAL-SKIN:35438.7 
+10-23 02:30:49.965  5887  6093 D TemperatureStateSource: getDeviceTemperatures: sequence=784 deviceTemperatureType=3 temperatureSource=0 temperatures=[35.438732]
+10-23 02:30:49.965  5887  6093 D BusinessScope: Enqueuing the block
+10-23 02:30:49.966  5887  6093 D TemperatureStateSource: sequence=784 waitTime=10000
+10-23 02:30:49.966  5887  7295 D BusinessScope: Start running the #1586 block
+10-23 02:30:49.968  1294  1294 I pixel-thermal: VIRTUAL-SKIN:35.4387 raw data: VIRTUAL-SKIN:35438.7 
+10-23 02:30:49.969  5887  7295 I TemperatureStateSource: temperature was set
+10-23 02:30:49.969  5887  7295 D BusinessScope: Enqueuing the block
+10-23 02:30:49.969  5887  7295 D ImpulseStateSource: Notify clients: 790
+10-23 02:30:49.969  5887  7295 D BusinessScope: Finish running the #1586 block
+10-23 02:30:49.969  5887  7295 D BusinessScope: Start running the #1587 block
+10-23 02:30:49.978  5887  7290 D BusinessScope: Finish running the #1587 block
+10-23 02:30:51.014   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:51.142  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 3]
+10-23 02:30:54.138   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:54.260  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:30:55.046  1294  1318 I pixel-thermal: north_therm:38.072 raw data: north_therm:38072 
+10-23 02:30:55.053  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [38072.00 41433.00 40231.00 33419.00 37025.00 33798.00 38316.00 33642.00 ]
+10-23 02:30:55.053  1294  1318 I native  : I0000 00:00:1792747855.053410    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:55.053  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [36269.2 36296.3 36318.4 36348.3 36374.6 36401.9 ]
+10-23 02:30:55.053  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [36269.2 36296.3 36318.4 36348.3 36374.6 36401.9 ]
+10-23 02:30:55.053  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:36430.7 LSTM-VT-PREDICTION-21SEC-BACK:36016.6 LSTM-VT-PREDICTION-28SEC-BACK:35537.6 LSTM-VT-PREDICTION-35SEC-BACK:34896.3 LSTM-VT-PREDICTION-7SEC-BACK:36671.8 LSTM-VT-PREDICTION-ERROR-14SEC:161.523 LSTM-VT-PREDICTION-ERROR-21SEC:-252.566 LSTM-VT-PREDICTION-ERROR-28SEC:-731.527 LSTM-VT-PREDICTION-ERROR-35SEC:-1372.88 LSTM-VT-PREDICTION-ERROR-7SEC:402.621 LSTM-VT-PREDICTION-NOW:36269.2 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:36269.2 btmspkr_therm:33642 charging_therm:40231 disp_therm:33419 north_therm:38072 quiet_therm:37025 rfpa_therm:38316 soc_therm:41433 usb_pwr_therm:33798 
+10-23 02:30:55.053  1294  1318 I pixel-thermal: quiet_therm:37.025 raw data: quiet_therm:37025 
+10-23 02:30:55.054  1294  1318 I pixel-thermal: rfpa_therm:38.316 raw data: rfpa_therm:38316 
+10-23 02:30:55.054  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:30:55.201  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33642.00 40231.00 33419.00 38072.00 37025.00 38316.00 41433.00 33798.00 ]
+10-23 02:30:55.201  1294  1318 I native  : I0000 00:00:1792747855.201268    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:30:55.201  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35986.4 ]
+10-23 02:30:55.201  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35986.4 ]
+10-23 02:30:55.202  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.6578 raw data: VIRTUAL-SKIN:35657.8 VIRTUAL-SKIN-CPU-MID:35657.8 VIRTUAL-SKIN-LEGACY:35978.4 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-8.0625 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35986.4 VIRTUAL-SKIN-MODEL-CLAMPED:35986.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:8.0625 VIRTUAL-SKIN-MODEL-UPDATED:35657.8 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35986.4 VIRTUAL-SKIN-SUB-0:35874.6 VIRTUAL-SKIN-SUB-1:34743.2 VIRTUAL-SKIN-SUB-2:34118.5 VIRTUAL-SKIN-SUB-3:35978.4 VIRTUAL-SKIN-SUB-4:34756.3 VIRTUAL-SKIN-SUB-5:35191.9 VIRTUAL-SKIN-SUB-6:35599.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33642 charging_therm:40231 disp_therm:33419 north_therm:38072 quiet_therm:37025 rfpa_therm:38316 soc_therm:41433 usb_pwr_therm:33798 
+10-23 02:30:55.202  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:35978.4 VIRTUAL-SKIN-MODEL:35986.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:8.0625 
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:35.4621 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:35462.1 VIRTUAL-SKIN-CHARGE-SUB-0:35462.1 VIRTUAL-SKIN-CHARGE-SUB-1:35408.6 VIRTUAL-SKIN-CHARGE-SUB-2:35222.3 VIRTUAL-SKIN-CHARGE-SUB-3:35191.9 VIRTUAL-SKIN-CHARGE-WIRED:35462.1 WLC_CHECK:1 btmspkr_therm:33642 charging_therm:40231 disp_therm:33419 north_therm:38072 quiet_therm:37025 rfpa_therm:38316 soc_therm:41433 thb_hda:54 usb_pwr_therm:33798 
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4131.01 err=2.53788 s_power=2527 time_elapsed_ms=7009 p=302.007 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3666.99 after (PARTIAL_SYSTEM_POWER: 3866.77 mW, cdev_weight: 0.120000) is excluded
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 3866.77 mW, cdev_weight: 0.120000)
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN:35.6578 raw data: VIRTUAL-SKIN:35657.8 
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:35.6578 raw data: VIRTUAL-SKIN:35657.8 VIRTUAL-SKIN-SOC:35657.8 
+10-23 02:30:55.203  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:35.6578 raw data: VIRTUAL-SKIN:35657.8 VIRTUAL-SKIN-HINT:35657.8 
+10-23 02:30:55.204  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:35.6578 raw data: VIRTUAL-SKIN:35657.8 VIRTUAL-SKIN-GPU:35657.8 
+10-23 02:30:55.204  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.6578 raw data: VIRTUAL-SKIN:35657.8 VIRTUAL-SKIN-CPU-HIGH:35657.8 
+10-23 02:30:55.204  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:35.2736 raw data: VIRTUAL-SKIN-SPEAKER:35273.6 VIRTUAL-SKIN-SPEAKER-SUB-0:35273.6 btmspkr_therm:33642 charging_therm:40231 disp_therm:33419 north_therm:38072 quiet_therm:37025 rfpa_therm:38316 soc_therm:41433 usb_pwr_therm:33798 
+10-23 02:30:55.204  1294  1318 I pixel-thermal: cellular-emergency:35.6578 raw data: VIRTUAL-SKIN:35657.8 cellular-emergency:35657.8 
+10-23 02:30:55.204  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.6578 raw data: VIRTUAL-SKIN:35657.8 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35657.8 
+10-23 02:30:55.205  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:35462.1 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:35462.1 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:30:55.205  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:35.4621 raw data: VIRTUAL-SKIN-CHARGE:35462.1 VIRTUAL-SKIN-CHARGE-PERSIST:35462.1 
+10-23 02:30:55.205  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=4945.57 err=5.53788 s_power=2383 time_elapsed_ms=7009 p=1179.57 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:30:55.205  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4133.54 after (PARTIAL_SYSTEM_POWER: 3866.77 mW, cdev_weight: 0.210000) is excluded
+10-23 02:30:55.205  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 3866.77 mW, cdev_weight: 0.210000)
+10-23 02:30:57.257   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:30:57.385  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:30:59.952  5887  6032 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:30:59.967  5887  7295 D TemperatureStateSource: sequence=784 actualDelay=10000
+10-23 02:30:59.974  5887  7295 D TemperatureStateSource: Reading temperature: sequence=785
+10-23 02:30:59.980  1294  1294 I pixel-thermal: VIRTUAL-SKIN:35.7893 raw data: VIRTUAL-SKIN:35789.3 VIRTUAL-SKIN-LEGACY:36201.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:215.07 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35986.4 VIRTUAL-SKIN-MODEL-CLAMPED:35986.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-215.07 VIRTUAL-SKIN-MODEL-UPDATED:35789.3 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35986.4 VIRTUAL-SKIN-SUB-0:36065.1 VIRTUAL-SKIN-SUB-1:34889.1 VIRTUAL-SKIN-SUB-2:34290 VIRTUAL-SKIN-SUB-3:36201.5 VIRTUAL-SKIN-SUB-4:34867.4 VIRTUAL-SKIN-SUB-5:35475.3 VIRTUAL-SKIN-SUB-6:35744.7 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33642 charging_therm:40861 disp_therm:33419 north_therm:38339 quiet_therm:37226 rfpa_therm:38673 soc_therm:41937 usb_pwr_therm:33820 
+10-23 02:30:59.981  5887  7295 D TemperatureStateSource: getDeviceTemperatures: sequence=785 deviceTemperatureType=3 temperatureSource=0 temperatures=[35.789265]
+10-23 02:30:59.981  5887  7295 D BusinessScope: Enqueuing the block
+10-23 02:30:59.981  5887  7295 D TemperatureStateSource: sequence=785 waitTime=10000
+10-23 02:30:59.981  5887  7290 D BusinessScope: Start running the #1588 block
+10-23 02:30:59.984  1294  1294 I pixel-thermal: VIRTUAL-SKIN:35.7893 raw data: VIRTUAL-SKIN:35789.3 
+10-23 02:30:59.984  5887  7290 I TemperatureStateSource: temperature was set
+10-23 02:30:59.984  5887  7290 D BusinessScope: Enqueuing the block
+10-23 02:30:59.984  5887  7290 D ImpulseStateSource: Notify clients: 791
+10-23 02:30:59.984  5887  7290 D BusinessScope: Finish running the #1588 block
+10-23 02:30:59.985  5887  7290 D BusinessScope: Start running the #1589 block
+10-23 02:30:59.987  5887  6032 D BusinessScope: Finish running the #1589 block
+10-23 02:31:00.387   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:31:00.508  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:31:02.058  1294  1318 I pixel-thermal: north_therm:38.339 raw data: north_therm:38339 
+10-23 02:31:02.069  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [38339.00 41937.00 40861.00 33419.00 37226.00 33820.00 38673.00 33642.00 ]
+10-23 02:31:02.069  1294  1318 I native  : I0000 00:00:1792747862.069679    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:31:02.070  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [36620.4 36655.8 36686.2 36723.6 36757.4 36790.9 ]
+10-23 02:31:02.070  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [36620.4 36655.8 36686.2 36723.6 36757.4 36790.9 ]
+10-23 02:31:02.070  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:36699.3 LSTM-VT-PREDICTION-21SEC-BACK:36461.9 LSTM-VT-PREDICTION-28SEC-BACK:36038.7 LSTM-VT-PREDICTION-35SEC-BACK:35557.2 LSTM-VT-PREDICTION-7SEC-BACK:36296.3 LSTM-VT-PREDICTION-ERROR-14SEC:78.9414 LSTM-VT-PREDICTION-ERROR-21SEC:-158.512 LSTM-VT-PREDICTION-ERROR-28SEC:-581.645 LSTM-VT-PREDICTION-ERROR-35SEC:-1063.17 LSTM-VT-PREDICTION-ERROR-7SEC:-324.094 LSTM-VT-PREDICTION-NOW:36620.4 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:36620.4 btmspkr_therm:33642 charging_therm:40861 disp_therm:33419 north_therm:38339 quiet_therm:37226 rfpa_therm:38673 soc_therm:41937 usb_pwr_therm:33820 
+10-23 02:31:02.071  1294  1318 I pixel-thermal: quiet_therm:37.226 raw data: quiet_therm:37226 
+10-23 02:31:02.071  1294  1318 I pixel-thermal: rfpa_therm:38.673 raw data: rfpa_therm:38673 
+10-23 02:31:02.071  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:31:02.215  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33642.00 40861.00 33419.00 38339.00 37226.00 38673.00 41937.00 33820.00 ]
+10-23 02:31:02.215  1294  1318 I native  : I0000 00:00:1792747862.215619    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:31:02.215  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [36153.2 ]
+10-23 02:31:02.215  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [36153.2 ]
+10-23 02:31:02.216  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.9349 raw data: VIRTUAL-SKIN:35934.9 VIRTUAL-SKIN-CPU-MID:35934.9 VIRTUAL-SKIN-LEGACY:36201.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:48.2734 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:36153.2 VIRTUAL-SKIN-MODEL-CLAMPED:36153.2 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-48.2734 VIRTUAL-SKIN-MODEL-UPDATED:35934.9 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:36153.2 VIRTUAL-SKIN-SUB-0:36065.1 VIRTUAL-SKIN-SUB-1:34889.1 VIRTUAL-SKIN-SUB-2:34290 VIRTUAL-SKIN-SUB-3:36201.5 VIRTUAL-SKIN-SUB-4:34867.4 VIRTUAL-SKIN-SUB-5:35475.3 VIRTUAL-SKIN-SUB-6:35744.7 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33642 charging_therm:40861 disp_therm:33419 north_therm:38339 quiet_therm:37226 rfpa_therm:38673 soc_therm:41937 usb_pwr_therm:33820 
+10-23 02:31:02.216  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:36201.5 VIRTUAL-SKIN-MODEL:36153.2 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-48.2734 
+10-23 02:31:02.217  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:35.6952 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:35695.2 VIRTUAL-SKIN-CHARGE-SUB-0:35695.2 VIRTUAL-SKIN-CHARGE-SUB-1:35579.3 VIRTUAL-SKIN-CHARGE-SUB-2:35373.4 VIRTUAL-SKIN-CHARGE-SUB-3:35475.3 VIRTUAL-SKIN-CHARGE-WIRED:35695.2 WLC_CHECK:1 btmspkr_therm:33642 charging_therm:40861 disp_therm:33419 north_therm:38339 quiet_therm:37226 rfpa_therm:38673 soc_therm:41937 thb_hda:54 usb_pwr_therm:33820 
+10-23 02:31:02.217  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4103.27 err=2.30481 s_power=2527 time_elapsed_ms=7014 p=274.272 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:31:02.217  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3655.47 after (PARTIAL_SYSTEM_POWER: 3731.70 mW, cdev_weight: 0.120000) is excluded
+10-23 02:31:02.217  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 3731.70 mW, cdev_weight: 0.120000)
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN:35.9349 raw data: VIRTUAL-SKIN:35934.9 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:35.9349 raw data: VIRTUAL-SKIN:35934.9 VIRTUAL-SKIN-SOC:35934.9 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:35.9349 raw data: VIRTUAL-SKIN:35934.9 VIRTUAL-SKIN-HINT:35934.9 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:35.9349 raw data: VIRTUAL-SKIN:35934.9 VIRTUAL-SKIN-GPU:35934.9 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.9349 raw data: VIRTUAL-SKIN:35934.9 VIRTUAL-SKIN-CPU-HIGH:35934.9 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:35.4074 raw data: VIRTUAL-SKIN-SPEAKER:35407.4 VIRTUAL-SKIN-SPEAKER-SUB-0:35407.4 btmspkr_therm:33642 charging_therm:40861 disp_therm:33419 north_therm:38339 quiet_therm:37226 rfpa_therm:38673 soc_therm:41937 usb_pwr_therm:33820 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: cellular-emergency:35.9349 raw data: VIRTUAL-SKIN:35934.9 cellular-emergency:35934.9 
+10-23 02:31:02.218  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.9349 raw data: VIRTUAL-SKIN:35934.9 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35934.9 
+10-23 02:31:02.219  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:35695.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:35695.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:31:02.219  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:35.6952 raw data: VIRTUAL-SKIN-CHARGE:35695.2 VIRTUAL-SKIN-CHARGE-PERSIST:35695.2 
+10-23 02:31:02.219  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=4895.92 err=5.30481 s_power=2383 time_elapsed_ms=7014 p=1129.92 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:31:02.219  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4112.27 after (PARTIAL_SYSTEM_POWER: 3731.70 mW, cdev_weight: 0.210000) is excluded
+10-23 02:31:02.219  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 3731.70 mW, cdev_weight: 0.210000)
+10-23 02:31:02.345   460   547 I hwc-display: Display Temperature : 33°C
+10-23 02:31:03.509   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:31:03.635  1668  5618 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 2]
+10-23 02:31:04.844  1082  1389 I RFSD    : [RfsService::Nv] ProcessMessage : RFS_IO_REQUEST
+10-23 02:31:04.844  1082  1389 D RFSD    : [RfsService::File] Seek temp file
+10-23 02:31:04.846  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.850  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.853  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.855  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.858  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.860  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.863  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.866  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.868  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.871  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.873  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.875  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.878  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.880  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.882  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.882 23748 23748 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:31:04.884  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.887  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.889  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.892  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.895  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.897  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.900  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.903  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.906  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.908  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.911  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.915  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.918  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.920  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.922  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.924  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.927  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.931  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.934  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.937  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.940  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.944  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.947  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.949  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.951  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.953  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.958  1082  1389 D RFSD    : [RfsService::File] Write temp file
+10-23 02:31:04.958  1082  1389 D RFSD    : [RfsService::File] Sync temp file
+10-23 02:31:04.959  1082  1389 I RFSD    : CNvFile::OnWriteDone
+10-23 02:31:04.959  1082  1389 D RFSD    : CNvFile::OnWriteDone : Write from temp file to nv file
+10-23 02:31:04.965  1082  1389 W RFSD    : [CsumCheckForFileAndForceCrash] /mnt/vendor/efs/nv_normal.bin checksum : verified
+10-23 02:31:04.965  1082  1389 I RFSD    : [RfsService::Nv] CsumUpdate
+10-23 02:31:04.965  1082  1389 I RFSD    : [RfsService::Nv] CsumCalc
+10-23 02:31:04.978  1082  1389 I RFSD    : [RfsService::Nv] ProcessMessage : RFS_OP_STATUS
+10-23 02:31:04.978  1082  1389 I RFSD    : [RfsService::Nv] ProcessMessage : RFS_STATUS_SUCCESS
+10-23 02:31:04.978   867  1832 I shared_modem_platform/shared_modem_platform: Modem: [PowerThermal] [RFSD] Flush Registry to Flash. fileName: ../../../SMPF/Framework/SMPFramework/Interface/Src/REG_Interface.c, lineNum: 47, nvId: 13448, nvName: !NR.MAX_HYPO_CNT, EfsSyncCount: 59, actualCP2APCount: 0
+10-23 02:31:06.638   844 11598 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:31:06.756  1668  5618 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:31:07.224  5700  5700 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:31:07.225  5700  5700 D DLObserver: plugged=1
+10-23 02:31:07.225  5700  5700 D SystemEventDataSource: onReceive: intentAction
+10-23 02:31:07.227  5700  5700 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@cde8977
+10-23 02:31:07.228  5700  5700 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:31:07.228  5700  5700 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:31:07.229  5700 10858 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:31:07.231  5700  5784 D GoogleBatteryDataSource: fetchDwellDefendStatus: ACTIVE
+10-23 02:31:07.231  5700  5784 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=0, time_sum=0 t_avg=0 lst_v=0 lst_t=0 lst_u=0, dt=0, t=0 e=0
+10-23 02:31:07.231  5700  5784 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=80), chargingStatus=EventData(value=4), maxChargingCurrent=EventData(value=3000000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=4), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=true)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:31:07.232  5700  5784 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:31:08.246 23521 23521 I native  : I0000 00:00:1792747868.246380   23521 litert_lm_lib.cc:429] BenchmarkInfo:
+10-23 02:31:08.246 23521 23521 I native  :   Init Phases (7):
+10-23 02:31:08.246 23521 23521 I native  :     - Init Conversation: 0.17 ms
+10-23 02:31:08.246 23521 23521 I native  :     - Init Executor: 25578.65 ms
+10-23 02:31:08.246 23521 23521 I native  :     - Init LLM metadata: 0.21 ms
+10-23 02:31:08.246 23521 23521 I native  :     - Init Model assets: 0.16 ms
+10-23 02:31:08.246 23521 23521 I native  :     - Init Tokenizer: 96.16 ms
+10-23 02:31:08.246 23521 23521 I native  :     - Init Total: 25579.42 ms
+10-23 02:31:08.246 23521 23521 I native  : --------------------------------------------------
+10-23 02:31:08.246 23521 23521 I native  :   Time to first token: 2.15 s
+10-23 02:31:08.246 23521 23521 I native  : --------------------------------------------------
+10-23 02:31:08.246 23521 23521 I native  :   Prefill Turns (Total 1 turns):
+10-23 02:31:08.246 23521 23521 I native  :     Prefill Turn 1: Processed 1024 tokens in 2.041475872s duration.
+10-23 02:31:08.246 23521 23521 I native  :       Prefill Speed: 501.60 tokens/sec.
+10-23 02:31:08.246 23521 23521 I native  : --------------------------------------------------
+10-23 02:31:08.246 23521 23521 I native  :   Decode Turns (Total 1 turns):
+10-23 02:31:08.246 23521 23521 I native  :     Decode Turn 1: Processed 256 tokens in 27.855317274s duration.
+10-23 02:31:08.246 23521 23521 I native  :       Decode Speed: 9.19 tokens/sec.
+10-23 02:31:08.246 23521 23521 I native  : --------------------------------------------------
+10-23 02:31:08.246 23521 23521 I native  :   TextToTokenIds Turns (Total 1 turns):
+10-23 02:31:08.246 23521 23521 I native  :     Turn 1: 61.117us, 1024 tokens
+10-23 02:31:08.246 23521 23521 I native  : --------------------------------------------------
+10-23 02:31:08.246 23521 23521 I native  : --------------------------------------------------
+10-23 02:31:08.677 23521 23521 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 02:31:08.677 23521 23521 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075e8ce62a0, name=CpuAccelerator
+10-23 02:31:08.677 23521 23521 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075e8ce5c80, name=LiteRT GPU
+10-23 02:31:08.753 23521 23521 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075e8ec9850, name=CpuAccelerator
+10-23 02:31:08.753 23521 23521 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb4000075e8ec8430, name=LiteRT GPU
+10-23 02:31:09.066  1294  1318 I pixel-thermal: north_therm:38.606 raw data: north_therm:38606 
+10-23 02:31:09.074  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [38606.00 42418.00 41456.00 33419.00 37448.00 33820.00 39029.00 33664.00 ]
+10-23 02:31:09.074  1294  1318 I native  : I0000 00:00:1792747869.074363    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:31:09.075  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [37005.1 37045.9 37081.9 37124.1 37162.9 37200.7 ]
+10-23 02:31:09.075  1294  1318 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [37005.1 37045.9 37081.9 37124.1 37162.9 37200.7 ]
+10-23 02:31:09.075  1294  1318 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:36318.4 LSTM-VT-PREDICTION-21SEC-BACK:36734.4 LSTM-VT-PREDICTION-28SEC-BACK:36489.4 LSTM-VT-PREDICTION-35SEC-BACK:36063.4 LSTM-VT-PREDICTION-7SEC-BACK:36655.8 LSTM-VT-PREDICTION-ERROR-14SEC:-686.742 LSTM-VT-PREDICTION-ERROR-21SEC:-270.738 LSTM-VT-PREDICTION-ERROR-28SEC:-515.746 LSTM-VT-PREDICTION-ERROR-35SEC:-941.695 LSTM-VT-PREDICTION-ERROR-7SEC:-349.359 LSTM-VT-PREDICTION-NOW:37005.1 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:37005.1 btmspkr_therm:33664 charging_therm:41456 disp_therm:33419 north_therm:38606 quiet_therm:37448 rfpa_therm:39029 soc_therm:42418 usb_pwr_therm:33820 
+10-23 02:31:09.075  1294  1318 I pixel-thermal: quiet_therm:37.448 raw data: quiet_therm:37448 
+10-23 02:31:09.075  1294  1318 I pixel-thermal: rfpa_therm:39.029 raw data: rfpa_therm:39029 
+10-23 02:31:09.076  1294  1318 I pixel-thermal: disp_therm:33.419 raw data: disp_therm:33419 
+10-23 02:31:09.227  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [33664.00 41456.00 33419.00 38606.00 37448.00 39029.00 42418.00 33820.00 ]
+10-23 02:31:09.227  1294  1318 I native  : I0000 00:00:1792747869.227662    1318 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:31:09.227  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [36349.7 ]
+10-23 02:31:09.227  1294  1318 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [36349.7 ]
+10-23 02:31:09.228  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:36.1008 raw data: VIRTUAL-SKIN:36100.8 VIRTUAL-SKIN-CPU-MID:36100.8 VIRTUAL-SKIN-LEGACY:36419.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:69.8359 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:36349.7 VIRTUAL-SKIN-MODEL-CLAMPED:36349.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-69.8359 VIRTUAL-SKIN-MODEL-UPDATED:36100.8 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:36349.7 VIRTUAL-SKIN-SUB-0:36247.5 VIRTUAL-SKIN-SUB-1:35030.7 VIRTUAL-SKIN-SUB-2:34467.5 VIRTUAL-SKIN-SUB-3:36419.5 VIRTUAL-SKIN-SUB-4:34970.1 VIRTUAL-SKIN-SUB-5:35748.3 VIRTUAL-SKIN-SUB-6:35894.4 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:33664 charging_therm:41456 disp_therm:33419 north_therm:38606 quiet_therm:37448 rfpa_therm:39029 soc_therm:42418 usb_pwr_therm:33820 
+10-23 02:31:09.235  1294  1318 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:36419.5 VIRTUAL-SKIN-MODEL:36349.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-69.8359 
+10-23 02:31:09.236  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:35.9223 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:35922.3 VIRTUAL-SKIN-CHARGE-SUB-0:35922.3 VIRTUAL-SKIN-CHARGE-SUB-1:35746.3 VIRTUAL-SKIN-CHARGE-SUB-2:35535.7 VIRTUAL-SKIN-CHARGE-SUB-3:35748.3 VIRTUAL-SKIN-CHARGE-WIRED:35922.3 WLC_CHECK:1 btmspkr_therm:33664 charging_therm:41456 disp_therm:33419 north_therm:38606 quiet_therm:37448 rfpa_therm:39029 soc_therm:42418 thb_hda:54 usb_pwr_therm:33820 
+10-23 02:31:09.236  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4076.25 err=2.07773 s_power=2527 time_elapsed_ms=7012 p=247.25 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:31:09.236  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3639.69 after (PARTIAL_SYSTEM_POWER: 3637.99 mW, cdev_weight: 0.120000) is excluded
+10-23 02:31:09.236  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 3637.99 mW, cdev_weight: 0.120000)
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN:36.1008 raw data: VIRTUAL-SKIN:36100.8 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SOC:36.1008 raw data: VIRTUAL-SKIN:36100.8 VIRTUAL-SKIN-SOC:36100.8 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN-HINT:36.1008 raw data: VIRTUAL-SKIN:36100.8 VIRTUAL-SKIN-HINT:36100.8 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN-GPU:36.1008 raw data: VIRTUAL-SKIN:36100.8 VIRTUAL-SKIN-GPU:36100.8 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:36.1008 raw data: VIRTUAL-SKIN:36100.8 VIRTUAL-SKIN-CPU-HIGH:36100.8 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:35.5394 raw data: VIRTUAL-SKIN-SPEAKER:35539.4 VIRTUAL-SKIN-SPEAKER-SUB-0:35539.4 btmspkr_therm:33664 charging_therm:41456 disp_therm:33419 north_therm:38606 quiet_therm:37448 rfpa_therm:39029 soc_therm:42418 usb_pwr_therm:33820 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: cellular-emergency:36.1008 raw data: VIRTUAL-SKIN:36100.8 cellular-emergency:36100.8 
+10-23 02:31:09.237  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:36.1008 raw data: VIRTUAL-SKIN:36100.8 VIRTUAL-SKIN-CPU-LIGHT-ODPM:36100.8 
+10-23 02:31:09.238  1294  1318 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:35922.3 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:35922.3 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:31:09.238  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:35.9223 raw data: VIRTUAL-SKIN-CHARGE:35922.3 VIRTUAL-SKIN-CHARGE-PERSIST:35922.3 
+10-23 02:31:09.238  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=4847.56 err=5.07773 s_power=2383 time_elapsed_ms=7012 p=1081.56 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:31:09.238  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=4083.58 after (PARTIAL_SYSTEM_POWER: 3637.99 mW, cdev_weight: 0.210000) is excluded
+10-23 02:31:09.238  1294  1318 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 3637.99 mW, cdev_weight: 0.210000)

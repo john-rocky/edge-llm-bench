@@ -1,0 +1,848 @@
+--------- beginning of main
+10-23 02:01:38.444  7930  7930 I native  : I0000 00:00:1792746098.444807    7930 litert_lm_lib.cc:629] Choose backend: gpu
+10-23 02:01:38.445  7930  7930 I native  : I0000 00:00:1792746098.445371    7930 litert_lm_lib.cc:789] executor_settings: backend: GPU
+10-23 02:01:38.445  7930  7930 I native  : backend_config:
+10-23 02:01:38.445  7930  7930 I native  : max_top_k: 64
+10-23 02:01:38.445  7930  7930 I native  : 
+10-23 02:01:38.445  7930  7930 I native  : max_tokens: 2048
+10-23 02:01:38.445  7930  7930 I native  : activation_data_type: Not set
+10-23 02:01:38.445  7930  7930 I native  : max_num_images: 0
+10-23 02:01:38.445  7930  7930 I native  : lora_rank: 0
+10-23 02:01:38.445  7930  7930 I native  : pad_token_id: -1
+10-23 02:01:38.445  7930  7930 I native  : cache_dir: 
+10-23 02:01:38.445  7930  7930 I native  : cache_file: Not set
+10-23 02:01:38.445  7930  7930 I native  : litert_dispatch_lib_dir: Not set
+10-23 02:01:38.445  7930  7930 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+10-23 02:01:38.445  7930  7930 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 02:01:38.445  7930  7930 I native  : 
+10-23 02:01:38.445  7930  7930 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 02:01:38.445  7930  7930 I native  : num_output_candidates: 1
+10-23 02:01:38.445  7930  7930 I native  : configure_magic_numbers: true
+10-23 02:01:38.445  7930  7930 I native  : verify_magic_numbers: false
+10-23 02:01:38.445  7930  7930 I native  : clear_kv_cache_before_prefill: true
+10-23 02:01:38.445  7930  7930 I native  : num_logits_to_print_after_decode: 0
+10-23 02:01:38.445  7930  7930 I native  : gpu_madvise_original_shared_tensors: true
+10-23 02:01:38.445  7930  7930 I native  : gpu_enable_metal_residency_set: false
+10-23 02:01:38.445  7930  7930 I native  : is_benchmark: true
+10-23 02:01:38.445  7930  7930 I native  : enable_profiling: false
+10-23 02:01:38.445  7930  7930 I native  : preferred_device_substr: 
+10-23 02:01:38.445  7930  7930 I native  : num_threads_to_upload: -1
+10-23 02:01:38.445  7930  7930 I native  : num_threads_to_compile: -1
+10-23 02:01:38.445  7930  7930 I native  : convert_weights_on_gpu: true
+10-23 02:01:38.445  7930  7930 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 02:01:38.445  7930  7930 I native  : optimize_shader_compilation: true
+10-23 02:01:38.445  7930  7930 I native  : cache_compiled_shaders_only: false
+10-23 02:01:38.445  7930  7930 I native  : share_constant_tensors: true
+10-23 02:01:38.445  7930  7930 I native  : sampler_handles_input: true
+10-23 02:01:38.445  7930  7930 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 02:01:38.445  7930  7930 I native  : hint_waiting_for_completion: Not set
+10-23 02:01:38.445  7930  7930 I native  : gpu_context_low_priority: Not set
+10-23 02:01:38.445  7930  7930 I native  : enable_speculative_decoding: false
+10-23 02:01:38.445  7930  7930 I native  : disable_delegate_clustering: false
+10-23 02:01:38.445  7930  7930 I native  : hint_kernel_batch_size: Not set
+10-23 02:01:38.445  7930  7930 I native  : error_on_invalid_sampled_token_id: false
+10-23 02:01:38.445  7930  7930 I native  : 
+10-23 02:01:38.445  7930  7930 I native  : 
+10-23 02:01:38.445  7930  7930 I native  : I0000 00:00:1792746098.445398    7930 litert_lm_lib.cc:796] vision_executor_settings: not set
+10-23 02:01:38.445  7930  7930 I native  : I0000 00:00:1792746098.445401    7930 litert_lm_lib.cc:802] audio_executor_settings: not set
+10-23 02:01:38.445  7930  7930 I native  : I0000 00:00:1792746098.445404    7930 litert_lm_lib.cc:825] Creating engine
+10-23 02:01:38.445  7930  7930 W native  : W0000 00:00:1792746098.445486    7930 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 02:01:38.445  7930  7930 W native  : W0000 00:00:1792746098.445492    7930 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 02:01:38.445  7930  7930 W native  : W0000 00:00:1792746098.445495    7930 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:01:38.445  7930  7930 W native  : W0000 00:00:1792746098.445498    7930 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:01:38.445  7930  7930 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:01:38.445  7930  7930 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:01:38.445  7930  7930 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:01:38.446  7930  7931 W native  : W0000 00:00:1792746098.446151    7931 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:01:38.446  7930  7931 W native  : W0000 00:00:1792746098.446406    7931 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:01:38.446  7930  7930 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000744f618c20, name=LiteRT GPU
+10-23 02:01:38.446  7930  7930 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:01:38.446  7930  7930 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000744f618de0, name=CpuAccelerator
+10-23 02:01:38.446  7930  7931 W native  : W0000 00:00:1792746098.446625    7931 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+10-23 02:01:38.446  7930  7930 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:01:38.462  7930  7930 W native  : W0000 00:00:1792746098.462470    7930 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-23 02:01:38.462  7930  7930 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:01:38.462  7930  7930 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:01:38.462  7930  7930 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:01:38.462  7930  7930 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000744f618e50, name=LiteRT GPU
+10-23 02:01:38.462  7930  7930 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:01:38.462  7930  7930 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000744f617100, name=CpuAccelerator
+10-23 02:01:38.462  7930  7930 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:01:38.463  7930  7930 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=750, num_signatures=3
+10-23 02:01:38.463  7930  7930 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1432, num_inputs=60, num_outputs=56, num_ops=994
+10-23 02:01:38.463  7930  7930 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1432, num_inputs=60, num_outputs=56, num_ops=994
+10-23 02:01:38.463  7930  7930 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1383, num_inputs=60, num_outputs=57, num_ops=936
+10-23 02:01:38.463  7930  7930 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-23 02:01:38.463  7930  7930 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+10-23 02:01:38.464  7930  7930 I litert  : [magic_number_utils.cc:536] 474 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+10-23 02:01:38.464  7930  7930 I litert  : [magic_number_utils.cc:536] 474 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+10-23 02:01:38.465  7930  7930 I litert  : [magic_number_utils.cc:536] 482 tensors of signature decode have been updated for magic number  32771 to target number 2048
+10-23 02:01:38.465  7930  7930 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:01:38.465  7930  7930 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 02:01:38.470  7930  7930 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:01:38.470  7930  7930 W libc    : Access denied finding property "ro.chipname"
+10-23 02:01:38.530  7930  7930 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-23 02:01:38.530  7930  7930 I native  : I0000 00:00:1792746098.530528    7930 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+10-23 02:01:38.530  7930  7930 I native  : I0000 00:00:1792746098.530564    7930 delegate_opencl.cc:606] options->kernel_batch_size: -1
+10-23 02:01:38.530  7930  7930 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:01:38.530  7930  7930 W libc    : Access denied finding property "ro.chipname"
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Local Branch                     : 
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Remote Branch                    : NONE
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-23 02:01:38.553  7930  7930 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-23 02:01:38.557  7930  7930 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-23 02:01:38.560  7930  7930 I SnapAlloc: Graphics lib is available
+10-23 02:01:38.562  7930  7930 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-23 02:01:38.562  7930  7930 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-23 02:01:38.563  7930  7930 I AdrenoUtils: <ReadGpuID:366>: Reading chip ID through GSL
+10-23 02:01:38.564  7930  7930 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 02:01:38.571  7930  7930 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 02:01:38.572  7930  7930 I tflite  : Loaded OpenCL library with dlopen.
+10-23 02:01:38.572  7930  7930 I litert  : [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+10-23 02:01:38.572  7930  7930 I litert  : [gpu_environment.cc:292] Reusing provided EGL environment.
+10-23 02:01:38.572  7930  7930 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-23 02:01:38.572  7930  7930 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-23 02:01:38.573  7930  7930 I tflite  : Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+10-23 02:01:38.682  1621  4894 I sensors-hal: handle_sns_client_event:191, auto_rotation_debug_2 mode,255, type,1,0 acc,9.787,0.077,0.067, ar,0, ver,12, pedo,1,e,0,i,2
+10-23 02:01:38.710  1621  4894 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):96,u(bl):100,if:0,wi:0,si:0,0(N:0)
+--------- beginning of system
+10-23 02:01:38.874 17426 17426 I wpa_supplicant: Heartbeat 834
+10-23 02:01:39.032  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:39.073  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:39.075  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:39.075  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:39.146  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:39.698   948   948 D io_stats: !@   8,0 r 234881 12863456 w 177128 7728308 d 21391 7289356 f 5314 18876 iot 129416 0 th 0 0 0 pt 0 inp 0 0 8496.722
+10-23 02:01:39.698   948   948 D io_stats: !@ Read_top(KB): litert_lm_advan(7930) 10400 kworker/7:3H(188) 112 kworker/4:0H(6789) 88
+10-23 02:01:39.698   948   948 D io_stats: !@ Write_top(KB): kworker/u17:3(6236) 49548 kworker/u17:1(2354) 40896 jbd2/sda7-8(926) 24
+10-23 02:01:39.806  2544 17542 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 2751, isSameBssidAndFreq true
+10-23 02:01:40.031  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:40.072  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:40.073  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:40.073  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:40.144  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:40.839  2106  2106 I CNSS    : /sys/wifi/max_chipset_log_size doesn't exist
+10-23 02:01:41.029  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:41.070  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:41.072  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:41.072  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:41.143  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:41.698  6716  7422 W System.err: java.net.SocketTimeoutException: timeout
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http2.Http2Stream$StreamTimeout.newTimeoutException(Http2Stream.kt:675)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http2.Http2Stream$StreamTimeout.exitAndThrowIfTimedOut(Http2Stream.kt:684)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http2.Http2Stream.takeHeaders(Http2Stream.kt:143)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http2.Http2ExchangeCodec.readResponseHeaders(Http2ExchangeCodec.kt:96)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.connection.Exchange.readResponseHeaders(Exchange.kt:106)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.CallServerInterceptor.intercept(CallServerInterceptor.kt:79)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.connection.ConnectInterceptor.intercept(ConnectInterceptor.kt:34)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.cache.CacheInterceptor.intercept(CacheInterceptor.kt:95)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.BridgeInterceptor.intercept(BridgeInterceptor.kt:83)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:76)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.logging.HttpLoggingInterceptor.intercept(HttpLoggingInterceptor.kt:221)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at com.samsung.euicc.lpaService.bootstrap.NetworkUsageCheckInterceptor.intercept(NetworkUsageCheckInterceptor.java:17)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:201)
+10-23 02:01:41.698  6716  7422 W System.err: 	at okhttp3.internal.connection.RealCall$AsyncCall.run(RealCall.kt:517)
+10-23 02:01:41.698  6716  7422 W System.err: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-23 02:01:41.698  6716  7422 W System.err: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-23 02:01:41.698  6716  7422 W System.err: 	at java.lang.Thread.run(Thread.java:1012)
+10-23 02:01:41.699  6716  7013 I ContextLogger: setErrorReport:-1146534185, error: HTTP_FAILED                                                      [at com.samsung.euicc.lpaService.gsma.phase2.state.HandleAndroidDs.getEventEntries(HandleAndroidDs.java:59)]
+10-23 02:01:41.699  6716  7013 I ContextLogger: getErrorReport:-1146534185                                                                          [at com.samsung.euicc.lpaService.gsma.phase2.state.HandleAndroidDs.getEventEntries(HandleAndroidDs.java:59)]
+10-23 02:01:41.700  6716  7013 I SLPASVC : eSIMErrorReport
+10-23 02:01:41.700  6716  7013 I SLPASVC : (10-23 02:01:41:699) HTTP_FAILED
+10-23 02:01:41.700  6716  7013 I SLPASVC : (10-23 02:01:31:457) Es10Base:ES10_GET_EUICC_CHALLENGE
+10-23 02:01:41.700  6716  7013 I SLPASVC : (10-23 02:01:19:039) Es10Base:ES10_GET_EUICC_CHALLENGE
+10-23 02:01:41.700  6716  7013 I SLPASVC : (10-23 02:01:06:823) Es10Base:ES10_GET_EUICC_CHALLENGE
+10-23 02:01:41.700  6716  7013 I SLPASVC : (10-23 02:01:06:812) HandleAndroidDs:QUERY[at com.samsung.euicc.lpaService.gsma.phase2.state.HandleAndroidDs.getEventEntries(HandleAndroidDs.java:59)]
+10-23 02:01:41.701  6716  7013 I ContextLogger: getErrorReport:-1146534185                                                                          [at com.samsung.euicc.internal.lib.contextlogger.ContextLogger.getErrorReport(ContextLogger.java:58)]
+10-23 02:01:41.701  6716  7013 E SLPASVC : AndroidDsResponse, SLPA_E_NETWORK_TEMPORARY_FAILURE                                                 [at com.samsung.euicc.message.MsgHelper.send(MsgHelper.java:50)]
+10-23 02:01:41.701  6716  7013 I ContextLogger: delete:-1146534185                                                                                  [at com.samsung.euicc.internal.lib.contextlogger.ContextLogger.clearContextLog(ContextLogger.java:39)]
+10-23 02:01:41.701  6716  6716 I SLPASVC : in progress remove : AndroidDsResponse                                                              [at com.samsung.euicc.lpaService.worker.TxHandler.addInProgressMessage(TxHandler.java:65)]
+10-23 02:01:41.701  6716  7013 I SLPASVC : request done                                                                                        [at com.samsung.euicc.lpaService.worker.RxHandler.requestDone(RxHandler.java:86)]
+10-23 02:01:41.701  6716  6716 I SLPASVC : in progress clear                                                                                   [at com.samsung.euicc.lpaService.worker.TxHandler.addInProgressMessage(TxHandler.java:68)]
+10-23 02:01:41.701  6716  7013 I SLPASVC : no pending request                                                                                  [at com.samsung.euicc.lpaService.worker.RxHandler.requestDone(RxHandler.java:89)]
+10-23 02:01:41.701  6716  6716 I SLPASVC : request done                                                                                        [at com.samsung.euicc.lpaService.worker.RxHandler.requestDone(RxHandler.java:86)]
+10-23 02:01:41.702  6716  6716 I SLPASVC : no pending request                                                                                  [at com.samsung.euicc.lpaService.worker.RxHandler.requestDone(RxHandler.java:89)]
+10-23 02:01:41.702  6716  6716 I SLPASVC : To Client: AndroidDsResponse (-1146534185, com.samsung.euicc)                                       [at com.samsung.euicc.lpaService.worker.TxHandler.sendToClient(TxHandler.java:131)]
+10-23 02:01:41.702  6716  6976 E LPAPSH  : retrieveEventResponse is null!                                                                      [at com.samsung.euicc.push.SMDSService.lambda$handleEventQuery$1(SMDSService.java:212)]
+10-23 02:01:42.027  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:42.069  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:42.070  1789  1789 I SurfaceFlinger: SFWD update time=8499094099933
+10-23 02:01:42.070  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:42.070  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:42.141  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:42.567   948   950 D io_stats: !@ cpu boost: status(ON), traffic_level(2), io_cpus(0xe2), boosted_cpus(0xe2), set_freq(2000000)
+10-23 02:01:42.732  4913  4913 D HeaderPrivacyIconsController: Do executeDelayed  [PrivacyItem(privacyType=TYPE_LOCATION, application=PrivacyApplication(packageName=com.google.android.gms, uid=10272), timeStampElapsed=8484731, paused=false, timeStampRemoved=8489745)]
+10-23 02:01:42.732  4913  4913 I HeaderPrivacyIconsController: update recentLocationPrivacyList  []
+10-23 02:01:42.733  4913  4913 I DesktopManager: notifyPrivacyItemsChanged() visible = false mDesktopMode = 710
+10-23 02:01:42.735  4913  4913 W View    : requestLayout() improperly called by com.android.systemui.qs.SecQSGradationDrawableView{ceef549 V.E...... ......ID 0,0-1080,332 #7f0a0968 app:id/qs_gradation_view} during layout: running second layout pass
+10-23 02:01:42.735  4913  4913 W View    : requestLayout() improperly called by android.widget.FrameLayout{ff0de4e V.E...... ......ID 0,153-1080,2340 #7f0a0966 app:id/qs_frame} during layout: running second layout pass
+10-23 02:01:42.834  2544 17542 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 2752, isSameBssidAndFreq true
+10-23 02:01:42.841   948   950 D io_stats: !@ cpu boost: status(ON), traffic_level(4), io_cpus(0xf3), boosted_cpus(0xf3), set_freq(2000000)
+10-23 02:01:43.031  1621  4894 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):96,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-23 02:01:43.068  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:43.068  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:43.138  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:43.564  1630  1637 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-23 02:01:43.564  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:43.564  1630  1637 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_rcv: 0
+10-23 02:01:43.564  1630  1637 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-23 02:01:43.564  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:43.564  1630  1637 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_spk: 0
+10-23 02:01:43.564  6929  8085 I SDHMS:x : SIOP:: AP:386 BAT:306 USB:297 CHG:364 PA:392 WIFI:330 CF:319 BLK:0 SUBBAT:0 LRPTHM:310 SKIN:328 SKINF:328 SKINB:319 LRP:328 LRF:328 LRB:319 APT:327 APR:318 RCV:308 SPK:292 CHGF:327 CHGR:319 MEMF:328 MEMR:319 WIFIF:324 WIFIR:314 FCAM:295 UPSPK:307 DNSPK:295 VAP:332 VWIFI:317 AMB2:266 HIGH:0 AVGCUR:-168 AVGSYS:641 POWER:-731
+10-23 02:01:43.565  6929  8085 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+10-23 02:01:43.566  2544  2544 D SemWifiP2pGoPowerSave: GopsReceiver : received : com.samsung.intent.action.CHECK_SIOP_LEVEL
+10-23 02:01:43.566  1713  7721 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+10-23 02:01:43.566  2544  2544 I SemWifiP2pGoPowerSave: siop_level = -2
+10-23 02:01:43.566  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-23 02:01:43.566  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-23 02:01:43.566  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-23 02:01:43.566  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-23 02:01:43.566  1630  1637 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+10-23 02:01:43.566  1630  1637 I PAL: API: pal_set_param: 1377: Enter: param id 3002
+10-23 02:01:43.566  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:43.566  1621  1621 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-23 02:01:43.566  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:43.566  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:43.566  1621  1621 I sensors-hal: send_sensor_config_request:652, dt=ambient_light: convert sample_period=200000000 to batch_period=200000
+10-23 02:01:43.566  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:43.566  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:43.566  6929  8085 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+10-23 02:01:43.566  1713  7721 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+10-23 02:01:43.566  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-23 02:01:43.566  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-23 02:01:43.566  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-23 02:01:43.567  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-23 02:01:43.567  1630  1637 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+10-23 02:01:43.567  1630  1637 I PAL: API: pal_set_param: 1377: Enter: param id 3001
+10-23 02:01:43.567  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:43.567  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:43.567  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:43.567  1621  4894 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for ambient_light 
+10-23 02:01:43.567  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:43.567  1621  1621 I sensors-hal: batch:368, android.sensor.light/51, period=200000000, max_latency=0 request completed
+10-23 02:01:43.567  1621  1621 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+10-23 02:01:43.568  1621  1621 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 1
+10-23 02:01:43.568  1621  1621 D SensorsFlicker: Als_common::sendCommand, send enable command
+10-23 02:01:43.572  2544  7384 D SemContextService: lock : registerCallback
+10-23 02:01:43.572  2544  7384 W CAE     : registerCallback(ContextAwareService.java:188) - [regi 01] Mutex is locked for TEST_FLAT_MOTION
+10-23 02:01:43.572  2544  7384 W CAE     : registerCallback(ContextAwareService.java:195) - [regi 04]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@3f3d774
+10-23 02:01:43.572  2544  7384 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@3f3d774
+10-23 02:01:43.572  2544  7384 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347
+10-23 02:01:43.572  2544  7384 V CAE     : start(ContextProvider.java:128)
+10-23 02:01:43.572  2544  7384 V CAE     : clear(TestFlatMotionRunner.java:126)
+10-23 02:01:43.572  2544  7384 V CAE     : enable(TestFlatMotionRunner.java:102)
+10-23 02:01:43.573  2544  4708 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-23 02:01:43.573  2544  4708 D SensorService: setSContextDataLocked 17b1
+10-23 02:01:43.573  1621  1621 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-23 02:01:43.573  1621  1621 I sensors-hal: sendContextData:303, sensor hal 4, (0xb1, 0x17, 0x0, 0x0)
+10-23 02:01:43.573  1621  1621 I sensors-hal: updateActiveSensors:390, enable:177, handle:8, algo:25231360
+10-23 02:01:43.573  1621  1621 I sensors-hal: is_restrict_mode:161, mode:normal
+10-23 02:01:43.573  1621  1621 I sensors-hal: sendContextData:108, device_position 4
+10-23 02:01:43.573  1621  1621 I sensors-hal: acquire_qsh_interface:140, acquire_qsh_interface with sensor_id 48 , conn_type 2 
+10-23 02:01:43.573  1621  1621 I sensors-hal: acquire_qsh_interface:150, returning _shared_instance[SHARED_SENSORHUBS].conn
+10-23 02:01:43.573  1621  1621 I sensors-hal: acquire_shared_instance:174, re-use existing connection for type 2 
+10-23 02:01:43.573  1621  1621 I sensors-hal: create_sensor_config_request:48, device_position create_sensor_config_request
+10-23 02:01:43.573  1621  1621 I sensors-hal: send_sensor_config_request:652, dt=device_position: convert sample_period=0 to batch_period=0
+10-23 02:01:43.573  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:43.573  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:43.574  1621  4706 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for device_position 
+10-23 02:01:43.574  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 1 ms to receive the response with 0
+10-23 02:01:43.574  2544  7384 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+10-23 02:01:43.574  2544  7384 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+10-23 02:01:43.576  2544  7384 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+10-23 02:01:43.576  2544  7384 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 1, serviceCount = 1, subCollectionCount = 0
+10-23 02:01:43.576  2544  7384 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+10-23 02:01:43.576  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+10-23 02:01:43.576  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+10-23 02:01:43.576  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : SLOCATION_RUNNER(1)
+10-23 02:01:43.576  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : CH_LOC_TRIGGER(1)
+10-23 02:01:43.577  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : FREE_FALL_DETECTION(1)
+10-23 02:01:43.577  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : TEST_FLAT_MOTION(1)
+10-23 02:01:43.577  2544  7384 W CAE     : registerCallback(ContextAwareService.java:209) - [regi 02] Mutex is unlocked for TEST_FLAT_MOTION
+10-23 02:01:43.577  2544  7384 E SemContext.CaeProvider: setAttribute() : attribute is null!
+10-23 02:01:43.577  2544  7384 D SemContextService: 	.registerCallback : 5, client= com.sec.android.sdhms
+10-23 02:01:43.577  2544  7384 D SemContextService: unlock : registerCallback
+10-23 02:01:43.577  2544  7076 E SensorService: BigData:Pakage) 5 already enabled. 
+10-23 02:01:43.644  1621  1621 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+10-23 02:01:43.644  1621  1621 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 0
+10-23 02:01:43.644  1621  1621 D SensorsFlicker: Als_common::sendCommand, send disable command
+10-23 02:01:43.671  1621  1621 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-23 02:01:43.671  1621  1621 I sensors-hal: batch:368, android.sensor.light/51, period=200000000, max_latency=0 request completed
+10-23 02:01:43.671  2544  6165 E SensorService: BigData:Pakage) 5 already disabled. 
+10-23 02:01:43.671  1621  1621 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-23 02:01:43.671  1621  1621 I sensors-hal: send_sensor_config_request:652, dt=ambient_light: convert sample_period=250000000 to batch_period=250000
+10-23 02:01:43.671  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:43.671  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:43.671  1621  4894 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for ambient_light 
+10-23 02:01:43.671  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:43.671  1621  1621 I sensors-hal: batch:368, android.sensor.light/51, period=250000000, max_latency=0 request completed
+10-23 02:01:43.699   948   948 D io_stats: !@   8,0 r 240474 13540956 w 177155 7740028 d 21391 7289356 f 5315 18877 iot 130124 0 th 0 0 0 pt 0 inp 0 0 8500.723
+10-23 02:01:43.699   948   948 D io_stats: !@ Read_top(KB): litert_lm_advan(7930) 677396 kworker/6:0H(66) 32 system_server(2544) 32
+10-23 02:01:43.699   948   948 D io_stats: !@ Write_top(KB): kworker/u17:1(2354) 11708 jbd2/sda7-8(926) 12
+10-23 02:01:43.718  1621  4706 I sensors-hal: qsh_conn_event_cb:893, SCHED_FIFO(10) for qmi_cbk
+10-23 02:01:43.718  1621  4706 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:device_position  Wakeup, msg_id=1025, ts=163334077694
+10-23 02:01:43.718  1621  4706 I sensors-hal: handle_sns_client_event:78, device_position_event: msgid:1025
+10-23 02:01:43.718  1621  4706 I sensors-hal: handle_sns_client_event:97, device_position_event: 3
+10-23 02:01:43.718  1621  4706 I sensors-hal: insert_awaking_events:859, sensor:device_position  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-23 02:01:43.718  1621  4706 I sensors-hal: insert_awaking_events:872, smp2p_event, 33.device_position, msgid:1025
+10-23 02:01:43.719  2544  4704 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :4], AP_WAKEUP
+10-23 02:01:43.719  2544  4704 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 4
+10-23 02:01:43.719  2544  4704 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 23, 3,
+10-23 02:01:43.719  2544  4704 D CAE     : display(ContextProvider.java:375) - ================= TEST_FLAT_MOTION =================
+10-23 02:01:43.719  2544  4704 I CAE     : display(ContextProvider.java:391) - Action=[3]
+10-23 02:01:43.719  2544  4701 D SemContextService: Service.updateContext() : service = Device Position
+10-23 02:01:43.719  2544  7076 D SemContextService: lock : unregisterCallback
+10-23 02:01:43.719  2544  7076 D SemContextService: Service.removeListenerLocked() : listener = com.samsung.android.hardware.context.SemContextService$Listener@d10bf58, service = Device Position, used = 0
+10-23 02:01:43.719  2544  7076 W CAE     : unregisterCallback(ContextAwareService.java:230) - [unregi 01] Mutex is locked for TEST_FLAT_MOTION
+10-23 02:01:43.719  2544  7076 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@3f3d774
+10-23 02:01:43.719  2544  7076 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347
+10-23 02:01:43.719  2544  7076 V CAE     : stop(ContextProvider.java:155)
+10-23 02:01:43.720  2544  7076 V CAE     : clear(TestFlatMotionRunner.java:126)
+10-23 02:01:43.720  2544  7076 V CAE     : disable(TestFlatMotionRunner.java:115)
+10-23 02:01:43.720  2544  4708 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-23 02:01:43.720  2544  4708 D SensorService: setSContextDataLocked 17b2
+10-23 02:01:43.720  1621  1621 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-23 02:01:43.720  1621  1621 I sensors-hal: sendContextData:303, sensor hal 4, (0xb2, 0x17, 0x0, 0x0)
+10-23 02:01:43.720  1621  1621 I sensors-hal: updateActiveSensors:390, enable:178, handle:8, algo:25231616
+10-23 02:01:43.720  1621  1621 I sensors-hal: sendContextData:108, device_position 4
+10-23 02:01:43.720  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:43.720  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:43.721  1621  4706 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for device_position 
+10-23 02:01:43.721  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:43.721  2544  7076 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+10-23 02:01:43.721  2544  7076 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+10-23 02:01:43.721  2544  7076 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+10-23 02:01:43.721  2544  7076 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 0, serviceCount = 0, subCollectionCount = 0
+10-23 02:01:43.721  2544  7076 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+10-23 02:01:43.721  2544  7076 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+10-23 02:01:43.721  2544  7076 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+10-23 02:01:43.721  2544  7076 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : SLOCATION_RUNNER(1)
+10-23 02:01:43.721  2544  7076 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : CH_LOC_TRIGGER(1)
+10-23 02:01:43.721  2544  7076 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : FREE_FALL_DETECTION(1)
+10-23 02:01:43.721  2544  7076 W CAE     : unregisterCallback(ContextAwareService.java:251) - [unregi 02] Mutex is unlocked for TEST_FLAT_MOTION
+10-23 02:01:43.721  2544  7076 D SemContextService: 	.unregisterCallback : 5, client= com.sec.android.sdhms
+10-23 02:01:43.721  2544  7076 D SemContextService: unlock : unregisterCallback
+10-23 02:01:43.829  7930  7930 I native  : I0000 00:00:1792746103.829014    7930 delegate_kernel.cc:329] Total 57 external tensors are used for delegate inputs and outputs
+10-23 02:01:43.829  7930  7930 I native  : I0000 00:00:1792746103.829184    7930 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:01:44.024  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:44.026  2544  4817 I SemWifiServiceDetector: Service det. suspended: T / T / 17625
+10-23 02:01:44.066  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:44.069  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:44.069  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:44.139  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:44.542  7930  7930 I tflite  : Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-23 02:01:44.547  7930  7930 I native  : I0000 00:00:1792746104.547579    7930 delegate_kernel.cc:329] Total 57 external tensors are used for delegate inputs and outputs
+10-23 02:01:44.547  7930  7930 I native  : I0000 00:00:1792746104.547608    7930 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:01:44.977  1621  4879 I sensors-hal: qsh_conn_event_cb:893, SCHED_FIFO(10) for qmi_cbk
+10-23 02:01:44.977  1621  4879 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:smd  Wakeup, msg_id=1025, ts=163358255935
+10-23 02:01:44.977  1621  4879 I sensors-hal: insert_awaking_events:859, sensor:smd  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-23 02:01:44.977  1621  4879 I sensors-hal: insert_awaking_events:872, smp2p_event, 24.smd, msgid:1025
+10-23 02:01:44.978  1621  4877 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:44.978  1621  4877 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:44.978  2544  2544 D SensorManager: cancelTrigger :: 172, smd  Wakeup, com.android.server.DeviceIdleController$MotionListener@6f8daa1
+10-23 02:01:44.978  2544  2544 I DeviceIdleController: cancelMotionTimeoutAlarmLocked()
+10-23 02:01:44.978 25680 25680 D SensorManager: cancelTrigger :: 172, smd  Wakeup, hmio@77e7460
+10-23 02:01:44.978  1621  4879 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for smd 
+10-23 02:01:44.978  1621  4877 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:44.979  2544  3637 I DeviceIdleController: isStationary = false
+10-23 02:01:44.979  6023  6078 I SettingManager_FLP: onDeviceStationaryChanged, false
+10-23 02:01:44.982  1621  1621 I sensors-hal: set_config:60, sample_period_ns is adjusted to 20000000 based on min/max delay_ns
+10-23 02:01:44.983  1621  1621 I sensors-hal: batch:368, android.sensor.accelerometer/11, period=20000000, max_latency=2147483647000 request completed
+10-23 02:01:44.983  1621  1621 I sensors-hal: activate:305, android.sensor.accelerometer/11 en=1
+10-23 02:01:44.983  1621  1621 I sensors-hal: acquire_qsh_interface:140, acquire_qsh_interface with sensor_id 37 , conn_type 3 
+10-23 02:01:44.983  1607  1730 E minksocket: MinkIPC ERROR: ( 1607:1730 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.983  1607  1740 E minksocket: MinkIPC ERROR: ( 1607:1740 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44801, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:2, result:0
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44802, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44803, 20]
+10-23 02:01:44.983  1607  1730 E minksocket: MinkIPC ERROR: ( 1607:1730 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44804, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44805, 20]
+10-23 02:01:44.983  1607  1740 E minksocket: MinkIPC ERROR: ( 1607:1740 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44806, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44807, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44808, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44809, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44810, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44811, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44812, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44813, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44814, 20]
+10-23 02:01:44.983  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:15, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44815, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44816, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44817, 20]
+10-23 02:01:44.984  1607  1740 E minksocket: MinkIPC ERROR: ( 1607:1740 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.984  1607  1730 E minksocket: MinkIPC ERROR: ( 1607:1730 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:2, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44818, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44819, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44820, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44821, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44822, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44823, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44824, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44825, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44826, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44827, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44828, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44829, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44830, 20]
+10-23 02:01:44.984  1621  1621 I sensors-hal: qsh_qmi:34, qsh_qmi
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:15, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44831, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44832, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44833, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:2, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44834, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44835, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44836, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44837, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44838, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44839, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44840, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44841, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44842, 20]
+10-23 02:01:44.984  1621  1621 I sensors-hal: send_sensor_config_request:582, resampler is used, set resampler config
+10-23 02:01:44.984  1621  1621 I sensors-hal: send_sensor_config_request:605, dt=accel, asked batch_period_us : 2147483647 adjusted_us : 200000000
+10-23 02:01:44.984  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44843, 20]
+10-23 02:01:44.984  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44844, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44845, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44846, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:15, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44847, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44848, 20]
+10-23 02:01:44.984  1607  1740 E minksocket: MinkIPC ERROR: ( 1607:1740 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44849, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:2, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44850, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44851, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44852, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44853, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44854, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44855, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44856, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44857, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44858, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44859, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44860, 20]
+10-23 02:01:44.984  1607  1730 E minksocket: MinkIPC ERROR: ( 1607:1730 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44861, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44862, 20]
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:15, result:0
+10-23 02:01:44.984  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44863, 20]
+10-23 02:01:44.985  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44864, 20]
+10-23 02:01:44.985  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:44.985  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:44.985  1621  1621 I sensors-hal: activate:335, android.sensor.accelerometer/11 en=1 completed
+10-23 02:01:44.985 25680 25723 D SensorManager: registerListener :: 11, lsm6dsv_0 Accelerometer Non-wakeup, 20000, 2147483647, 
+10-23 02:01:44.986  1621  1621 I sensors-hal: set_config:60, sample_period_ns is adjusted to 20000000 based on min/max delay_ns
+10-23 02:01:44.986  1621  1621 I sensors-hal: send_sensor_config_request:582, resampler is used, set resampler config
+10-23 02:01:44.986  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:44.986  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:44.987  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:44.987  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:44.987  1621  1621 I sensors-hal: batch:368, android.sensor.accelerometer/11, period=20000000, max_latency=0 request completed
+10-23 02:01:44.987  1621  1621 I sensors-hal: flush:388, android.sensor.accelerometer/11
+10-23 02:01:44.987  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:44.987  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:44.987  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:44.987  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:44.987  1621  1621 I sensors-hal: flush:394, android.sensor.accelerometer/11 completed
+10-23 02:01:44.988 25680  7995 D SensorManager: registerListener :: 11, lsm6dsv_0 Accelerometer Non-wakeup, 20000, 0, 
+10-23 02:01:45.003  7930  7930 I tflite  : Replacing 936 out of 936 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+10-23 02:01:45.006  1621  7994 I sensors-hal: handle_sns_client_event:379, [0][0] accel_sample [ 9.701,  0.051,  0.078] 8502018220926
+10-23 02:01:45.023  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:45.064  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:45.066  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:45.066  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:45.136  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:45.155  7930  7930 I native  : I0000 00:00:1792746105.155305    7930 delegate_kernel.cc:329] Total 58 external tensors are used for delegate inputs and outputs
+10-23 02:01:45.155  7930  7930 I native  : I0000 00:00:1792746105.155351    7930 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+10-23 02:01:45.493  7930  7930 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:01:45.493  7930  7930 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:01:45.493  7930  7930 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:01:45.493  7930  7930 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000744f620400, name=LiteRT GPU
+10-23 02:01:45.493  7930  7930 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:01:45.493  7930  7930 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000744f62f890, name=CpuAccelerator
+10-23 02:01:45.493  7930  7930 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667666    7930 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667718    7930 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667729    7930 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667744    7930 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667749    7930 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667753    7930 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667759    7930 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667764    7930 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667794    7930 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667808    7930 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667813    7930 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:01:45.667  7930  7930 W native  : W0000 00:00:1792746105.667818    7930 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:01:45.668  7930  7930 I native  : I0000 00:00:1792746105.668406    7930 litert_lm_lib.cc:1079] Creating conversation
+10-23 02:01:45.671  7930  7930 I native  : I0000 00:00:1792746105.671132    7930 litert_lm_lib.cc:1091] Running single-turn conversation
+10-23 02:01:45.699   948   948 D io_stats: !@   8,0 r 240711 13565736 w 177155 7740028 d 21391 7289356 f 5315 18877 iot 130252 0 th 0 0 0 pt 0 inp 0 0 8502.723
+10-23 02:01:45.861  2544 17542 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 2753, isSameBssidAndFreq true
+10-23 02:01:46.021  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:46.044   948   950 D io_stats: !@ cpu boost: status(OFF), traffic_level(0), io_cpus(0x0), boosted_cpus(0x0), set_freq(0)
+10-23 02:01:46.063  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:46.066  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:46.066  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:46.104  2544  2784 E Watchdog: !@Sync: 284 heap(MB): 103 / 113 FD: 1159 [2026-10-23 02:01:46.104]
+10-23 02:01:46.137  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:46.241  6929  6929 I SDHMS:LOAD: type: LoadsFreqs, value: 0:0:2:3515135:4473600:1017600:1784064:3532800:556800:534:1200:222
+10-23 02:01:46.669  7930  7930 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:01:46.669  7930  7930 W libc    : Access denied finding property "ro.chipname"
+10-23 02:01:46.912  7930  7930 I native  : I0000 00:00:1792746106.912086    7930 llm_litert_compiled_model_executor.cc:1552] Sampler will handle decode input tensors.
+10-23 02:01:46.987  7930  7930 I tflite  : Loaded OpenCL library with dlopen.
+10-23 02:01:47.020  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:47.021  1621  7994 I sensors-hal: handle_sns_client_event:379, [0][96] accel_sample [ 9.684, -0.029,  0.088] 8504032829156
+10-23 02:01:47.061  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:47.063  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:47.063  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:47.134  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:47.700   948   948 D io_stats: !@   8,0 r 240824 13570408 w 177170 7745260 d 21391 7289356 f 5315 18877 iot 130300 0 th 0 0 0 pt 0 inp 0 0 8504.723
+10-23 02:01:47.700   948   948 D io_stats: !@ Read_top(KB): litert_lm_advan(7930) 29280 kworker/u17:0(4544) 96 grep(8005) 44
+10-23 02:01:47.700   948   948 D io_stats: !@ Write_top(KB): kworker/u17:0(4544) 5232
+10-23 02:01:48.018  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:48.060  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:48.063  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:48.063  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:48.134  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:48.151  1621  4894 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):96,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-23 02:01:48.427  1621  1621 I sensors-hal: set_config:60, sample_period_ns is adjusted to 20000000 based on min/max delay_ns
+10-23 02:01:48.427  1621  1621 I sensors-hal: send_sensor_config_request:582, resampler is used, set resampler config
+10-23 02:01:48.427  1621  1621 I sensors-hal: send_sensor_config_request:605, dt=accel, asked batch_period_us : 2147483647 adjusted_us : 200000000
+10-23 02:01:48.427  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:48.427  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:48.428  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:48.428  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:48.428  1621  1621 I sensors-hal: batch:368, android.sensor.accelerometer/11, period=20000000, max_latency=2147483647000 request completed
+10-23 02:01:48.429 25680  7995 D SensorManager: unregisterListener
+10-23 02:01:48.432 25680 25680 D BoundBrokerSvc: onRebind: Intent { act=com.google.android.gms.common.telemetry.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiService }
+10-23 02:01:48.443 25680 25723 W AlarmManager: alarm window unlikely to be respected [CONTEXT service_id=231 ]
+10-23 02:01:48.443 25680 25723 W AlarmManager: java.lang.IllegalArgumentException: alarm "NetworkLocationActivityDetection" has short window length
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at dkwh.c(:com.google.android.gms@263737035@26.37.37 (260400-994713346):38)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at dkwg.c(:com.google.android.gms@263737035@26.37.37 (260400-994713346):18)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hmby.b(:com.google.android.gms@263737035@26.37.37 (260400-994713346):133)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkag.v(:com.google.android.gms@263737035@26.37.37 (260400-994713346):71)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkag.u(:com.google.android.gms@263737035@26.37.37 (260400-994713346):8)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkbf.q(:com.google.android.gms@263737035@26.37.37 (260400-994713346):26)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkaz.b(:com.google.android.gms@263737035@26.37.37 (260400-994713346):28)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkac.m(:com.google.android.gms@263737035@26.37.37 (260400-994713346):194)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkaa.k(:com.google.android.gms@263737035@26.37.37 (260400-994713346):56)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at hkso.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):7)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at android.os.Handler.handleCallback(Handler.java:959)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at android.os.Handler.dispatchMessage(Handler.java:100)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at dmti.lM(:com.google.android.gms@263737035@26.37.37 (260400-994713346):1)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at dmti.dispatchMessage(:com.google.android.gms@263737035@26.37.37 (260400-994713346):148)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at android.os.Looper.loopOnce(Looper.java:257)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at android.os.Looper.loop(Looper.java:342)
+10-23 02:01:48.443 25680 25723 W AlarmManager: 	at android.os.HandlerThread.run(HandlerThread.java:85)
+10-23 02:01:48.446  1621  1621 I sensors-hal: set_config:60, sample_period_ns is adjusted to 20000000 based on min/max delay_ns
+10-23 02:01:48.446  1621  1621 I sensors-hal: send_sensor_config_request:582, resampler is used, set resampler config
+10-23 02:01:48.446  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:48.446  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:48.447  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:48.447  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 1 ms to receive the response with 0
+10-23 02:01:48.447  1621  1621 I sensors-hal: batch:368, android.sensor.accelerometer/11, period=20000000, max_latency=0 request completed
+10-23 02:01:48.447  1621  1621 I sensors-hal: flush:388, android.sensor.accelerometer/11
+10-23 02:01:48.447  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:48.448  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:48.448  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:48.448  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:48.448  1621  1621 I sensors-hal: flush:394, android.sensor.accelerometer/11 completed
+10-23 02:01:48.448 25680  8025 D SensorManager: registerListener :: 11, lsm6dsv_0 Accelerometer Non-wakeup, 20000, 0, 
+10-23 02:01:48.877 17426 17426 I wpa_supplicant: Heartbeat 835
+10-23 02:01:48.893  2544 17542 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 2754, isSameBssidAndFreq true
+10-23 02:01:48.894  2544  4818 I SemWifiLinkQualityMonitor: Link stat: 576 / 476 / 1.00 (4) / 286 / -54.0 || 100.0 : 286.00 / 0.5 : 1.00 / 0.55 : 0.83 / B (B) || 2df347105520: 0.443 / 18.071 /  / N || N N / 0 / Y 2.0 / Y 0 / 8505917 0
+10-23 02:01:49.017  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:49.036  1621  7994 I sensors-hal: handle_sns_client_event:379, [0][192] accel_sample [ 9.760,  0.025,  0.073] 8506047443374
+10-23 02:01:49.058  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:49.061  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:49.061  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:49.132  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:49.174  1621  4894 I sensors-hal: handle_sns_client_event:191, auto_rotation_debug_2 mode,255, type,1,0 acc,9.701,-0.019,0.014, ar,0, ver,12, pedo,1,e,0,i,2
+10-23 02:01:49.700   948   948 D io_stats: !@   8,0 r 240831 13570440 w 177171 7745264 d 21391 7289356 f 5315 18877 iot 130316 0 th 0 0 0 pt 0 inp 0 0 8506.724
+10-23 02:01:50.016  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:50.057  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:50.060  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:50.060  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:50.131  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:50.672  2544  3626 D [SS][BattInfo]FirstUseDateData: [updateDate]
+10-23 02:01:50.672  2544  3626 D [SS][BattInfo]FirstUseDateData: [isSetupWizardCompleted]result:true
+10-23 02:01:50.672  2544  3626 D [SS][BattInfo]FirstUseDateData: [isSetupWizardCompletedByUser]result:false
+10-23 02:01:50.973  2106  2106 I CNSS    : /sys/wifi/max_chipset_log_size doesn't exist
+10-23 02:01:51.014  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:51.050  1621  7994 I sensors-hal: handle_sns_client_event:379, [0][288] accel_sample [ 9.821,  0.031,  0.057] 8508062066135
+10-23 02:01:51.056  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:51.058  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:51.058  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:51.130  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:51.701   948   948 D io_stats: !@ Read_top(KB): binder:2173_2(2173) 20 system_server(2544) 12
+10-23 02:01:51.701   948   948 D io_stats: !@ Write_top(KB): kworker/u17:0(4544) 4
+10-23 02:01:51.890  1621  1621 I sensors-hal: set_config:60, sample_period_ns is adjusted to 20000000 based on min/max delay_ns
+10-23 02:01:51.890  1621  1621 I sensors-hal: send_sensor_config_request:582, resampler is used, set resampler config
+10-23 02:01:51.890  1621  1621 I sensors-hal: send_sensor_config_request:605, dt=accel, asked batch_period_us : 2147483647 adjusted_us : 200000000
+10-23 02:01:51.890  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:51.890  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:51.892  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:51.892  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 1 ms to receive the response with 0
+10-23 02:01:51.892  1621  1621 I sensors-hal: batch:368, android.sensor.accelerometer/11, period=20000000, max_latency=2147483647000 request completed
+10-23 02:01:51.893 25680  8025 D SensorManager: unregisterListener
+10-23 02:01:51.908  2544  7384 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1792746071815
+10-23 02:01:51.910  2544  7384 D ActivityManager: Received SERVICE intent 0xda88f9e Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=1998324139 from uid 10272
+10-23 02:01:51.910  2544  7384 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 79 startTime of in progress event=1792746071815
+10-23 02:01:51.911  2544  7076 D ActivityManager: Received BROADCAST intent 0xebb7a7f Key{broadcastIntent pkg=com.google.android.gms/com.google.android.gms.personalsafety intent=act=com.google.android.gms.personalsafety.scanners.ACTION_ACTIVITY_DETECTED pkg=com.google.android.gms flags=0x2000000 u=0} requestCode=0 sent=0 from uid 10272
+10-23 02:01:51.912  2544  7384 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1792746071815
+10-23 02:01:51.913  2544  7076 D ActivityManager: Received SERVICE intent 0x8cfba95 Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=282372680 from uid 10272
+10-23 02:01:51.914  2544  7076 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1792746071815
+10-23 02:01:51.914  2544  7076 D ActivityManager: Received SERVICE intent 0xf8a07aa Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=-1112044212 from uid 10272
+10-23 02:01:51.915  2544  7384 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1792746071815
+10-23 02:01:51.916  2544  7076 D ActivityManager: Received SERVICE intent 0x3973f9b Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=-62794813 from uid 10272
+10-23 02:01:51.916  2544  7384 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1792746071815
+10-23 02:01:51.917  2544  7929 D ActivityManager: Received SERVICE intent 0xf3e6b11 Key{startService pkg=com.google.android.gms/com.google.android.gms.location_base intent=act=com.google.android.location.internal.action.AR_TRANSITION_RESULT pkg=com.google.android.gms cmp=com.google.android.gms/com.google.android.location.internal.PendingIntentCallbackService flags=0x2000000 u=0} requestCode=0 from uid 10272
+10-23 02:01:51.917  1621  1621 I sensors-hal: activate:305, android.sensor.accelerometer/11 en=0
+10-23 02:01:51.917  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:51.917  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:51.918  2544 17542 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 2755, isSameBssidAndFreq true
+10-23 02:01:51.918  1621  7994 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-23 02:01:51.918  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:51.919  1621  1621 I sensors-hal: ~qsh_qmi:61, ~qsh_qmi
+10-23 02:01:51.919  1621  1621 I sensors-hal: activate:335, android.sensor.accelerometer/11 en=0 completed
+10-23 02:01:51.919 25680 25723 D SensorManager: unregisterListener
+10-23 02:01:51.919  1607  1730 E minksocket: MinkIPC ERROR: ( 1607:1730 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44865, 20]
+10-23 02:01:51.919  1607  1740 E minksocket: MinkIPC ERROR: ( 1607:1740 ) MinkIPC_preProcess:272 Client down, but cannot find corresponding minksession
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:2, result:0
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44866, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44867, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44868, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44869, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44870, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44871, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44872, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44873, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44874, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44875, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44876, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44877, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44878, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 789] TFTP server receive poll on instance:15, result:0
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44879, 20]
+10-23 02:01:51.919  1793  1793 I tftp_server: pid=1793 tid=1793 tftp-server : INF :[tftp_server.c, 600] Dropping control packet [44880, 20]
+10-23 02:01:51.919  1621  1621 I sensors-hal: set_config:60, sample_period_ns is adjusted to 0 based on min/max delay_ns
+10-23 02:01:51.919  1621  1621 I sensors-hal: batch:368, android.sensor.significant_motion/172, period=1000000, max_latency=0 request completed
+10-23 02:01:51.919  1621  1621 I sensors-hal: activate:305, android.sensor.significant_motion/172 en=1
+10-23 02:01:51.919  1621  1621 I sensors-hal: acquire_qsh_interface:140, acquire_qsh_interface with sensor_id 14 , conn_type 1 
+10-23 02:01:51.919  1621  1621 I sensors-hal: acquire_qsh_interface:143, returning _shared_instance[SHARED_ON_CHANGE_WAKEUP].conn - wakeup 
+10-23 02:01:51.919  1621  1621 I sensors-hal: acquire_shared_instance:174, re-use existing connection for type 1 
+10-23 02:01:51.920  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:51.920  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:51.920  1621  4879 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for smd 
+10-23 02:01:51.920  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:51.920  1621  1621 I sensors-hal: activate:335, android.sensor.significant_motion/172 en=1 completed
+10-23 02:01:51.921 25680 25723 D SensorManager: requestTrigger :: 172, smd  Wakeup, hmio@126eed6
+10-23 02:01:51.983  2544  4847 D WifiConnectivityMonitor: Stop WCM Poll. cnt : 5
+10-23 02:01:51.983  2544  4847 I WifiConnectivityMonitor: LinkQualityMonitorCallback was not registered yet
+10-23 02:01:52.012  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:52.054  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:52.057  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:52.057  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:52.129  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:52.955  6929  7171 I SDHMS:N0: p2p-if:: false, , 
+10-23 02:01:53.011  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:53.052  1789  2766 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:53.054  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:53.054  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-23 02:01:53.125  1648  1962 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-23 02:01:53.160 25680 25680 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.safetynet.service.START pkg=com.google.android.gms }
+10-23 02:01:53.160 25680 25680 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.safetynet.service.START pkg=com.google.android.gms }
+10-23 02:01:53.435 25680 25680 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.telemetry.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiService }
+10-23 02:01:53.593  1630  1637 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-23 02:01:53.593  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:53.593  1630  1637 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_rcv: 0
+10-23 02:01:53.594  1630  1637 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-23 02:01:53.594  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:53.594  1630  1637 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_spk: 0
+10-23 02:01:53.595  6929  8085 I SDHMS:x : SIOP:: AP:441 BAT:309 USB:299 CHG:466 PA:445 WIFI:357 CF:333 BLK:0 SUBBAT:0 LRPTHM:315 SKIN:342 SKINF:342 SKINB:342 LRP:342 LRF:342 LRB:342 APT:340 APR:335 RCV:316 SPK:292 CHGF:338 CHGR:342 MEMF:342 MEMR:341 WIFIF:332 WIFIR:328 FCAM:296 UPSPK:308 DNSPK:295 VAP:354 VWIFI:321 AMB2:267 HIGH:0 AVGCUR:-498 AVGSYS:1308 POWER:-2168
+10-23 02:01:53.597  6929  8085 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+10-23 02:01:53.598  2544  2544 D SemWifiP2pGoPowerSave: GopsReceiver : received : com.samsung.intent.action.CHECK_SIOP_LEVEL
+10-23 02:01:53.598  1621  1621 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-23 02:01:53.598  1621  1621 I sensors-hal: send_sensor_config_request:652, dt=ambient_light: convert sample_period=200000000 to batch_period=200000
+10-23 02:01:53.598  1713  7721 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+10-23 02:01:53.598  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:53.598  2544  2544 I SemWifiP2pGoPowerSave: siop_level = -1
+10-23 02:01:53.598  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:53.598  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-23 02:01:53.598  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-23 02:01:53.598  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-23 02:01:53.598  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-23 02:01:53.598  1630  1637 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+10-23 02:01:53.598  1630  1637 I PAL: API: pal_set_param: 1377: Enter: param id 3002
+10-23 02:01:53.598  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:53.598  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:53.598  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:53.599  6929  8085 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=32
+10-23 02:01:53.599  1713  7721 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=32
+10-23 02:01:53.599  1621  4894 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for ambient_light 
+10-23 02:01:53.599  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-23 02:01:53.599  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 1 ms to receive the response with 0
+10-23 02:01:53.599  1621  1621 I sensors-hal: batch:368, android.sensor.light/51, period=200000000, max_latency=0 request completed
+10-23 02:01:53.599  1630  1637 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-23 02:01:53.599  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-23 02:01:53.599  1630  1637 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-23 02:01:53.599  1630  1637 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 32
+10-23 02:01:53.599  1630  1637 I PAL: API: pal_set_param: 1377: Enter: param id 3001
+10-23 02:01:53.599  1630  1637 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-23 02:01:53.600  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:53.600  1713  7721 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-23 02:01:53.600  1621  1621 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+10-23 02:01:53.600  1621  1621 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 1
+10-23 02:01:53.600  1621  1621 D SensorsFlicker: Als_common::sendCommand, send enable command
+10-23 02:01:53.601  7930  7930 I native  : I0000 00:00:1792746113.600967    7930 litert_lm_lib.cc:429] BenchmarkInfo:
+10-23 02:01:53.601  7930  7930 I native  :   Init Phases (7):
+10-23 02:01:53.601  7930  7930 I native  :     - Init Conversation: 0.02 ms
+10-23 02:01:53.601  7930  7930 I native  :     - Init Executor: 7222.29 ms
+10-23 02:01:53.601  7930  7930 I native  :     - Init LLM metadata: 0.01 ms
+10-23 02:01:53.601  7930  7930 I native  :     - Init Model assets: 0.01 ms
+10-23 02:01:53.601  7930  7930 I native  :     - Init Tokenizer: 286.73 ms
+10-23 02:01:53.601  7930  7930 I native  :     - Init Total: 7222.98 ms
+10-23 02:01:53.601  7930  7930 I native  : --------------------------------------------------
+10-23 02:01:53.601  7930  7930 I native  :   Time to first token: 0.95 s
+10-23 02:01:53.601  7930  7930 I native  : --------------------------------------------------
+10-23 02:01:53.601  7930  7930 I native  :   Prefill Turns (Total 1 turns):
+10-23 02:01:53.601  7930  7930 I native  :     Prefill Turn 1: Processed 1024 tokens in 917.875312ms duration.
+10-23 02:01:53.601  7930  7930 I native  :       Prefill Speed: 1115.62 tokens/sec.
+10-23 02:01:53.601  7930  7930 I native  : --------------------------------------------------
+10-23 02:01:53.601  7930  7930 I native  :   Decode Turns (Total 1 turns):
+10-23 02:01:53.601  7930  7930 I native  :     Decode Turn 1: Processed 256 tokens in 7.009592028s duration.
+10-23 02:01:53.601  7930  7930 I native  :       Decode Speed: 36.52 tokens/sec.
+10-23 02:01:53.601  7930  7930 I native  : --------------------------------------------------
+10-23 02:01:53.601  7930  7930 I native  :   TextToTokenIds Turns (Total 1 turns):
+10-23 02:01:53.601  7930  7930 I native  :     Turn 1: 43.125us, 1024 tokens
+10-23 02:01:53.601  7930  7930 I native  : --------------------------------------------------
+10-23 02:01:53.601  7930  7930 I native  : --------------------------------------------------
+10-23 02:01:53.605  2544  2672 D SemContextService: lock : registerCallback
+10-23 02:01:53.605  2544  2672 W CAE     : registerCallback(ContextAwareService.java:188) - [regi 01] Mutex is locked for TEST_FLAT_MOTION
+10-23 02:01:53.605  2544  2672 W CAE     : registerCallback(ContextAwareService.java:195) - [regi 04]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@3f3d774
+10-23 02:01:53.605  2544  2672 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@3f3d774
+10-23 02:01:53.605  2544  2672 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347
+10-23 02:01:53.605  2544  2672 V CAE     : start(ContextProvider.java:128)
+10-23 02:01:53.605  2544  2672 V CAE     : clear(TestFlatMotionRunner.java:126)
+10-23 02:01:53.605  2544  2672 V CAE     : enable(TestFlatMotionRunner.java:102)
+10-23 02:01:53.606  2544  4708 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-23 02:01:53.606  2544  4708 D SensorService: setSContextDataLocked 17b1
+10-23 02:01:53.606  1621  1621 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-23 02:01:53.606  1621  1621 I sensors-hal: sendContextData:303, sensor hal 4, (0xb1, 0x17, 0x0, 0x0)
+10-23 02:01:53.606  1621  1621 I sensors-hal: updateActiveSensors:390, enable:177, handle:8, algo:25231360
+10-23 02:01:53.606  1621  1621 I sensors-hal: is_restrict_mode:161, mode:normal
+10-23 02:01:53.606  1621  1621 I sensors-hal: sendContextData:108, device_position 4
+10-23 02:01:53.606  1621  1621 I sensors-hal: acquire_qsh_interface:140, acquire_qsh_interface with sensor_id 48 , conn_type 2 
+10-23 02:01:53.606  1621  1621 I sensors-hal: acquire_qsh_interface:150, returning _shared_instance[SHARED_SENSORHUBS].conn
+10-23 02:01:53.606  1621  1621 I sensors-hal: acquire_shared_instance:174, re-use existing connection for type 2 
+10-23 02:01:53.606  1621  1621 I sensors-hal: create_sensor_config_request:48, device_position create_sensor_config_request
+10-23 02:01:53.606  1621  1621 I sensors-hal: send_sensor_config_request:652, dt=device_position: convert sample_period=0 to batch_period=0
+10-23 02:01:53.606  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:53.606  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:53.607  1621  4706 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for device_position 
+10-23 02:01:53.607  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:53.607  2544  2672 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+10-23 02:01:53.607  2544  2672 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+10-23 02:01:53.609  2544  2672 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+10-23 02:01:53.609  2544  2672 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 1, serviceCount = 1, subCollectionCount = 0
+10-23 02:01:53.609  2544  2672 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+10-23 02:01:53.609  2544  2672 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+10-23 02:01:53.610  2544  2672 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+10-23 02:01:53.610  2544  2672 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : SLOCATION_RUNNER(1)
+10-23 02:01:53.610  2544  2672 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : CH_LOC_TRIGGER(1)
+10-23 02:01:53.610  2544  2672 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : FREE_FALL_DETECTION(1)
+10-23 02:01:53.610  2544  2672 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : TEST_FLAT_MOTION(1)
+10-23 02:01:53.610  2544  2672 W CAE     : registerCallback(ContextAwareService.java:209) - [regi 02] Mutex is unlocked for TEST_FLAT_MOTION
+10-23 02:01:53.610  2544  2672 E SemContext.CaeProvider: setAttribute() : attribute is null!
+10-23 02:01:53.610  2544  2672 D SemContextService: 	.registerCallback : 5, client= com.sec.android.sdhms
+10-23 02:01:53.610  2544  2672 D SemContextService: unlock : registerCallback
+10-23 02:01:53.610  2544  2672 E SensorService: BigData:Pakage) 5 already enabled. 
+10-23 02:01:53.677  1621  1621 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+10-23 02:01:53.678  1621  1621 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 0
+10-23 02:01:53.678  1621  1621 D SensorsFlicker: Als_common::sendCommand, send disable command
+10-23 02:01:53.702   948   948 D io_stats: !@   8,0 r 240844 13570552 w 177237 7747872 d 21391 7289356 f 5319 18881 iot 130340 0 th 0 0 0 pt 0 inp 0 0 8510.725
+10-23 02:01:53.749  1621  4706 I sensors-hal: qsh_conn_event_cb:893, SCHED_FIFO(10) for qmi_cbk
+10-23 02:01:53.749  1621  4706 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:device_position  Wakeup, msg_id=1025, ts=163526673533
+10-23 02:01:53.749  1621  4706 I sensors-hal: handle_sns_client_event:78, device_position_event: msgid:1025
+10-23 02:01:53.749  1621  4706 I sensors-hal: handle_sns_client_event:97, device_position_event: 3
+10-23 02:01:53.749  1621  4706 I sensors-hal: insert_awaking_events:859, sensor:device_position  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-23 02:01:53.749  1621  4706 I sensors-hal: insert_awaking_events:872, smp2p_event, 34.device_position, msgid:1025
+10-23 02:01:53.750  1621  4894 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):96,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-23 02:01:53.751  2544  4704 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :4], AP_WAKEUP
+10-23 02:01:53.751  2544  4704 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 4
+10-23 02:01:53.751  2544  4704 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 23, 3,
+10-23 02:01:53.752  2544  4704 D CAE     : display(ContextProvider.java:375) - ================= TEST_FLAT_MOTION =================
+10-23 02:01:53.752  2544  4704 I CAE     : display(ContextProvider.java:391) - Action=[3]
+10-23 02:01:53.752  1621  1621 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-23 02:01:53.752  1621  1621 I sensors-hal: batch:368, android.sensor.light/51, period=200000000, max_latency=0 request completed
+10-23 02:01:53.752  2544  4701 D SemContextService: Service.updateContext() : service = Device Position
+10-23 02:01:53.753  2544  7384 E SensorService: BigData:Pakage) 5 already disabled. 
+10-23 02:01:53.753  1621  1621 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+10-23 02:01:53.753  1621  1621 I sensors-hal: send_sensor_config_request:652, dt=ambient_light: convert sample_period=250000000 to batch_period=250000
+10-23 02:01:53.753  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:53.753  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:53.754  1621  4894 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for ambient_light 
+10-23 02:01:53.754  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:53.754  1621  1621 I sensors-hal: batch:368, android.sensor.light/51, period=250000000, max_latency=0 request completed
+10-23 02:01:53.755  2544  7384 D SemContextService: lock : unregisterCallback
+10-23 02:01:53.755  2544  7384 D SemContextService: Service.removeListenerLocked() : listener = com.samsung.android.hardware.context.SemContextService$Listener@f742b34, service = Device Position, used = 0
+10-23 02:01:53.755  2544  7384 W CAE     : unregisterCallback(ContextAwareService.java:230) - [unregi 01] Mutex is locked for TEST_FLAT_MOTION
+10-23 02:01:53.755  2544  7384 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@3f3d774
+10-23 02:01:53.755  2544  7384 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347
+10-23 02:01:53.756  2544  7384 V CAE     : stop(ContextProvider.java:155)
+10-23 02:01:53.756  2544  7384 V CAE     : clear(TestFlatMotionRunner.java:126)
+10-23 02:01:53.756  2544  7384 V CAE     : disable(TestFlatMotionRunner.java:115)
+10-23 02:01:53.757  2544  4708 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-23 02:01:53.757  2544  4708 D SensorService: setSContextDataLocked 17b2
+10-23 02:01:53.757  1621  1621 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-23 02:01:53.757  1621  1621 I sensors-hal: sendContextData:303, sensor hal 4, (0xb2, 0x17, 0x0, 0x0)
+10-23 02:01:53.757  1621  1621 I sensors-hal: updateActiveSensors:390, enable:178, handle:8, algo:25231616
+10-23 02:01:53.757  1621  1621 I sensors-hal: sendContextData:108, device_position 4
+10-23 02:01:53.757  1621  1621 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-23 02:01:53.757  1621  1621 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-23 02:01:53.758  1621  4706 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for device_position 
+10-23 02:01:53.758  1621  1621 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-23 02:01:53.758  2544  7384 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+10-23 02:01:53.758  2544  7384 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+10-23 02:01:53.761  2544  7384 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+10-23 02:01:53.761  2544  7384 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 0, serviceCount = 0, subCollectionCount = 0
+10-23 02:01:53.761  2544  7384 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+10-23 02:01:53.761  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+10-23 02:01:53.761  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+10-23 02:01:53.761  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : SLOCATION_RUNNER(1)
+10-23 02:01:53.761  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : CH_LOC_TRIGGER(1)
+10-23 02:01:53.761  2544  7384 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@d472347, Service : FREE_FALL_DETECTION(1)
+10-23 02:01:53.761  2544  7384 W CAE     : unregisterCallback(ContextAwareService.java:251) - [unregi 02] Mutex is unlocked for TEST_FLAT_MOTION
+10-23 02:01:53.761  2544  7384 D SemContextService: 	.unregisterCallback : 5, client= com.sec.android.sdhms
+10-23 02:01:53.762  2544  7384 D SemContextService: unlock : unregisterCallback
+10-23 02:01:53.836  7930  7930 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-23 02:01:53.836  7930  7930 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000744f617100, name=CpuAccelerator
+10-23 02:01:53.836  7930  7930 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000744f618e50, name=LiteRT GPU
+10-23 02:01:53.862  7930  7930 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000744f62f890, name=CpuAccelerator
+10-23 02:01:53.862  7930  7930 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000744f620400, name=LiteRT GPU
+10-23 02:01:54.009  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-23 02:01:54.051  1789  1920 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-23 02:01:54.053  1648  2031 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-23 02:01:54.053  1648  2031 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here

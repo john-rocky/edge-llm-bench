@@ -1,0 +1,979 @@
+--------- beginning of main
+10-23 02:02:43.298 21224 21224 I native  : I0000 00:00:1792746163.298430   21224 litert_lm_lib.cc:629] Choose backend: cpu
+10-23 02:02:43.298 21224 21224 I native  : I0000 00:00:1792746163.298639   21224 litert_lm_lib.cc:789] executor_settings: backend: CPU
+10-23 02:02:43.298 21224 21224 I native  : backend_config:
+10-23 02:02:43.298 21224 21224 I native  : kv_increment_size: 16
+10-23 02:02:43.298 21224 21224 I native  : prefill_chunk_size: -1
+10-23 02:02:43.298 21224 21224 I native  : number_of_threads: 4
+10-23 02:02:43.298 21224 21224 I native  : enable_ynnpack: false
+10-23 02:02:43.298 21224 21224 I native  : 
+10-23 02:02:43.298 21224 21224 I native  : max_tokens: 2048
+10-23 02:02:43.298 21224 21224 I native  : activation_data_type: Not set
+10-23 02:02:43.298 21224 21224 I native  : max_num_images: 0
+10-23 02:02:43.298 21224 21224 I native  : lora_rank: 0
+10-23 02:02:43.298 21224 21224 I native  : pad_token_id: -1
+10-23 02:02:43.298 21224 21224 I native  : cache_dir: 
+10-23 02:02:43.298 21224 21224 I native  : cache_file: Not set
+10-23 02:02:43.298 21224 21224 I native  : litert_dispatch_lib_dir: Not set
+10-23 02:02:43.298 21224 21224 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm
+10-23 02:02:43.298 21224 21224 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 02:02:43.298 21224 21224 I native  : 
+10-23 02:02:43.298 21224 21224 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 02:02:43.298 21224 21224 I native  : num_output_candidates: 1
+10-23 02:02:43.298 21224 21224 I native  : configure_magic_numbers: true
+10-23 02:02:43.298 21224 21224 I native  : verify_magic_numbers: false
+10-23 02:02:43.298 21224 21224 I native  : clear_kv_cache_before_prefill: true
+10-23 02:02:43.298 21224 21224 I native  : num_logits_to_print_after_decode: 0
+10-23 02:02:43.298 21224 21224 I native  : gpu_madvise_original_shared_tensors: true
+10-23 02:02:43.298 21224 21224 I native  : gpu_enable_metal_residency_set: false
+10-23 02:02:43.298 21224 21224 I native  : is_benchmark: true
+10-23 02:02:43.298 21224 21224 I native  : enable_profiling: false
+10-23 02:02:43.298 21224 21224 I native  : preferred_device_substr: 
+10-23 02:02:43.298 21224 21224 I native  : num_threads_to_upload: -1
+10-23 02:02:43.298 21224 21224 I native  : num_threads_to_compile: -1
+10-23 02:02:43.298 21224 21224 I native  : convert_weights_on_gpu: true
+10-23 02:02:43.298 21224 21224 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 02:02:43.298 21224 21224 I native  : optimize_shader_compilation: true
+10-23 02:02:43.298 21224 21224 I native  : cache_compiled_shaders_only: false
+10-23 02:02:43.298 21224 21224 I native  : share_constant_tensors: true
+10-23 02:02:43.298 21224 21224 I native  : sampler_handles_input: true
+10-23 02:02:43.298 21224 21224 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 02:02:43.298 21224 21224 I native  : hint_waiting_for_completion: Not set
+10-23 02:02:43.298 21224 21224 I native  : gpu_context_low_priority: Not set
+10-23 02:02:43.298 21224 21224 I native  : enable_speculative_decoding: false
+10-23 02:02:43.298 21224 21224 I native  : disable_delegate_clustering: false
+10-23 02:02:43.298 21224 21224 I native  : hint_kernel_batch_size: Not set
+10-23 02:02:43.298 21224 21224 I native  : error_on_invalid_sampled_token_id: false
+10-23 02:02:43.298 21224 21224 I native  : 
+10-23 02:02:43.298 21224 21224 I native  : 
+10-23 02:02:43.298 21224 21224 I native  : I0000 00:00:1792746163.298683   21224 litert_lm_lib.cc:796] vision_executor_settings: not set
+10-23 02:02:43.298 21224 21224 I native  : I0000 00:00:1792746163.298687   21224 litert_lm_lib.cc:802] audio_executor_settings: not set
+10-23 02:02:43.298 21224 21224 I native  : I0000 00:00:1792746163.298692   21224 litert_lm_lib.cc:825] Creating engine
+10-23 02:02:43.299 21224 21224 W native  : W0000 00:00:1792746163.299897   21224 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 02:02:43.299 21224 21224 W native  : W0000 00:00:1792746163.299913   21224 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 02:02:43.299 21224 21224 W native  : W0000 00:00:1792746163.299917   21224 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:02:43.299 21224 21224 W native  : W0000 00:00:1792746163.299922   21224 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:02:43.300 21224 21224 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:02:43.300 21224 21224 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:02:43.300 21224 21224 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:02:43.300 21224 21225 W native  : W0000 00:00:1792746163.300726   21225 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:02:43.300 21224 21225 W native  : W0000 00:00:1792746163.300822   21225 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:02:43.300 21224 21225 W native  : W0000 00:00:1792746163.300836   21225 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+10-23 02:02:43.302 21224 21224 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b4c3c9280, name=LiteRT GPU
+10-23 02:02:43.302 21224 21224 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:02:43.302 21224 21224 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b4c3ca080, name=CpuAccelerator
+10-23 02:02:43.302 21224 21224 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:02:43.335 21224 21224 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:02:43.335 21224 21224 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:02:43.335 21224 21224 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:02:43.335 21224 21224 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b4c3c9f30, name=LiteRT GPU
+10-23 02:02:43.335 21224 21224 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:02:43.335 21224 21224 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b4c3c9b40, name=CpuAccelerator
+10-23 02:02:43.335 21224 21224 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:02:43.335 21224 21224 W native  : W0000 00:00:1792746163.335768   21224 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+10-23 02:02:43.335 21224 21224 W native  : W0000 00:00:1792746163.335930   21224 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+10-23 02:02:43.336 21224 21224 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:02:43.337 21224 21224 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 02:02:43.341 21224 21224 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:02:43.341 21224 21224 W libc    : Access denied finding property "ro.chipname"
+10-23 02:02:43.341 21224 21224 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 02:02:43.346 21224 21224 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-23 02:02:43.347 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.347 21224 21224 I tflite  : XNNPack weight cache build for '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache' started.
+10-23 02:02:43.353 21224 21224 I tflite  : Replacing 1493 out of 1753 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 357 partitions for subgraph 0 (main).
+10-23 02:02:43.369 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.391 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.474 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.488 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.497 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.574 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.591 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.600 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.689 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.702 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.711 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.786 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.799 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.808 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.898 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.899   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:02:43.912 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.921 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:43.989 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.003 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.012 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.016  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:02:44.094 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.106 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.115 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.198 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.211 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.221 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.295 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.309 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.318 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.394 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.412 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.421 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.491 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.508 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.519 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.586 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.606 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.616 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.686 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.712 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.722 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.794 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.816 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.826 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.895 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.919 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:44.928 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.000 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.012 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.028 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.099 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.112 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.130 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.200 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.230 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.253 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.327 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.349 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.358 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.444 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.458 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.468 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.547 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.559 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.568 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.642 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.654 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.664 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.748 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.761 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.770 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.848 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.860 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.869 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.944 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.957 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:45.966 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.070 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.086 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.111 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.202 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.215 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.247 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.357 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.371 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.380 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.489 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.504 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.513 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.632 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.648 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.675 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.857 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.889 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:46.918 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.014 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.017   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:02:47.028 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.038 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.160  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:02:47.189 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.226 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.243 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.426 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.459 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.481 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.640 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.645 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:47.660 21224 21224 I tflite  : Replacing 1415 out of 1680 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 364 partitions for subgraph 1 (main).
+--------- beginning of system
+10-23 02:02:48.305  1489  5158 D ActivityManager: freezing 5704 com.google.android.permissioncontroller
+10-23 02:02:48.311  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:02:48.314  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:02:48.314  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={10283} in 6ms
+10-23 02:02:48.810 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:48.824 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:48.893 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:48.969  5880  8092 D TemperatureStateSource: sequence=498 actualDelay=10000
+10-23 02:02:48.969  5880  8092 D TemperatureStateSource: Reading temperature: sequence=499
+10-23 02:02:48.972  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26261.00 29568.00 26776.00 28856.00 28211.00 29056.00 30214.00 26261.00 ]
+10-23 02:02:48.972  5107  5107 I native  : I0000 00:00:1792746168.972759    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:02:48.972  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [27937.7 ]
+10-23 02:02:48.972  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [27937.7 ]
+10-23 02:02:48.973  5107  5107 I pixel-thermal: VIRTUAL-SKIN:27.7807 raw data: VIRTUAL-SKIN:27780.7 VIRTUAL-SKIN-LEGACY:27264.7 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-673.035 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:27937.7 VIRTUAL-SKIN-MODEL-CLAMPED:27937.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:673.035 VIRTUAL-SKIN-MODEL-UPDATED:27780.7 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:27937.7 VIRTUAL-SKIN-SUB-0:27215.4 VIRTUAL-SKIN-SUB-1:26619.1 VIRTUAL-SKIN-SUB-2:25770.2 VIRTUAL-SKIN-SUB-3:27264.7 VIRTUAL-SKIN-SUB-4:26975.5 VIRTUAL-SKIN-SUB-5:26267.5 VIRTUAL-SKIN-SUB-6:27207 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26261 charging_therm:29568 disp_therm:26776 north_therm:28856 quiet_therm:28211 rfpa_therm:29056 soc_therm:30214 usb_pwr_therm:26261 
+10-23 02:02:48.973  5880  8092 D TemperatureStateSource: getDeviceTemperatures: sequence=499 deviceTemperatureType=3 temperatureSource=0 temperatures=[27.780674]
+10-23 02:02:48.973  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:02:48.973  5880  8092 D TemperatureStateSource: sequence=499 waitTime=10000
+10-23 02:02:48.974  5880  6121 D BusinessScope: Start running the #1009 block
+10-23 02:02:48.975  5107  5107 I pixel-thermal: VIRTUAL-SKIN:27.7807 raw data: VIRTUAL-SKIN:27780.7 
+10-23 02:02:48.975  5880  6121 I TemperatureStateSource: temperature was set
+10-23 02:02:48.976  5880  6121 D BusinessScope: Enqueuing the block
+10-23 02:02:48.976  5880  6121 D ImpulseStateSource: Notify clients: 502
+10-23 02:02:48.976  5880  6121 D BusinessScope: Finish running the #1009 block
+10-23 02:02:48.976  5880  6121 D BusinessScope: Start running the #1010 block
+10-23 02:02:48.976  5880  6121 D ImpulseConnection: bindService: com.google.android.apps.turbo
+10-23 02:02:48.977  1489  5905 D ActivityManager: sync unfroze 8493 com.google.android.apps.turbo for 6
+10-23 02:02:48.978  1489  5664 D BackgroundInstallControlService: Package event received: 0
+10-23 02:02:48.979  1489  5664 D BackgroundInstallControlService: Package event received: 0
+10-23 02:02:48.979  1489  5905 W ProcessStats: Tracking association SourceState{db6163 com.google.android.pixelsystemservice/10256 ImpFg #16655} whose proc state 5 is better than process ProcessState{8e6220b com.google.android.apps.turbo/10173 pkg=com.google.android.apps.turbo} proc state 15 (5 skipped)
+10-23 02:02:48.983  5880  5880 D ImpulseConnection: onServiceConnected: ComponentInfo{com.google.android.apps.turbo/com.google.android.apps.turbo.adaptiveplatform.impulse.ImpulseClientService} service is null false
+10-23 02:02:48.984  5880  8121 D BusinessScope: Finish running the #1010 block
+10-23 02:02:48.990 21252 21252 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:02:49.358 21224 21224 I tflite  : XNNPack weight cache: written to '/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm_1792746149_2659053760.xnnpack_cache'.
+10-23 02:02:49.359 21224 21224 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2 (main).
+10-23 02:02:49.411 21224 21224 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3 (main).
+10-23 02:02:49.412 21224 21224 I tflite  : Replacing 1 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 4 (main).
+10-23 02:02:49.412 21224 21224 I tflite  : Replacing 1 out of 11 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 5 (main).
+10-23 02:02:49.440 21224 21224 I tflite  : Replacing 1 out of 9 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 6 (main).
+10-23 02:02:49.440 21224 21224 I tflite  : Replacing 1 out of 3 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 7 (main).
+10-23 02:02:49.440 21224 21224 I tflite  : Replacing 1 out of 11 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 8 (main).
+10-23 02:02:49.440 21224 21224 I tflite  : Replacing 1 out of 9 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 9 (main).
+10-23 02:02:49.661 21224 21224 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:02:49.661 21224 21224 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:02:49.661 21224 21224 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:02:49.662 21224 21224 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b4c417fd0, name=LiteRT GPU
+10-23 02:02:49.662 21224 21224 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:02:49.662 21224 21224 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b4c4180b0, name=CpuAccelerator
+10-23 02:02:49.662 21224 21224 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:02:49.911   401   401 I lowmemorykiller: Kill 'com.shannon.rcsservice:shannonrcsservice' (7109), uid 10240, oom_score_adj 995 to free 117404kB rss, 5072kB swap; reason: low watermark is breached
+10-23 02:02:49.913   401   407 E lowmemorykiller: process_mrelease 7109 failed: No such process
+10-23 02:02:49.936  1489  7807 I ActivityManager: Process com.shannon.rcsservice:shannonrcsservice (pid 7109) has died: cch+95 CEM 
+10-23 02:02:49.936  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10240/pid_7109
+10-23 02:02:49.938   758   758 I Zygote  : Process 7109 exited due to signal 9 (Killed)
+10-23 02:02:49.938   401   401 I lowmemorykiller: Kill '.ShannonImsService' (7156), uid 10230, oom_score_adj 995 to free 112232kB rss, 4128kB swap; reason: low watermark is breached
+10-23 02:02:49.967  1489  7807 I ActivityManager: Process .ShannonImsService (pid 7156) has died: cch+95 CEM 
+10-23 02:02:49.968  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10230/pid_7156
+10-23 02:02:49.968   758   758 I Zygote  : Process 7156 exited due to signal 9 (Killed)
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030754   21224 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030924   21224 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030939   21224 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030945   21224 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030951   21224 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030957   21224 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030962   21224 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:02:50.030 21224 21224 W native  : W0000 00:00:1792746170.030966   21224 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-23 02:02:50.031 21224 21224 W native  : W0000 00:00:1792746170.031021   21224 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 02:02:50.031 21224 21224 W native  : W0000 00:00:1792746170.031029   21224 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 02:02:50.031 21224 21224 W native  : W0000 00:00:1792746170.031034   21224 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:02:50.031 21224 21224 W native  : W0000 00:00:1792746170.031039   21224 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:02:50.154   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:02:50.163 21224 21224 I native  : I0000 00:00:1792746170.163897   21224 litert_lm_lib.cc:1079] Creating conversation
+10-23 02:02:50.265  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:02:50.576 21224 21224 I native  : I0000 00:00:1792746170.576065   21224 litert_lm_lib.cc:1091] Running single-turn conversation
+10-23 02:02:50.855 21224 21224 I tflite  : Replacing 2451 out of 3165 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 213 partitions for subgraph 0 (main).
+10-23 02:02:52.187  1009  1154 I RFSD    : [RfsService::Nv] ProcessMessage : RFS_IO_REQUEST
+10-23 02:02:52.187  1009  1154 D RFSD    : [RfsService::File] Seek temp file
+10-23 02:02:52.190  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.904  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.908  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.910  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.912  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.914  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.917  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.919  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.921  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.924  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.926  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.929  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.932  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.935  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.938  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.941  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.945  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.948  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.951  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.954  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.957  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.960  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.963  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.967  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.970  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.973  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.976  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.979  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.983  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.986  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.989  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.993  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.996  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:52.999  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.001  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.004  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.008  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.011  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.016  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.019  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.022  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.025  1009  1154 D RFSD    : [RfsService::File] Write temp file
+10-23 02:02:53.026  1009  1154 D RFSD    : [RfsService::File] Sync temp file
+10-23 02:02:53.027  1009  1154 I RFSD    : CNvFile::OnWriteDone
+10-23 02:02:53.027  1009  1154 D RFSD    : CNvFile::OnWriteDone : Write from temp file to nv file
+10-23 02:02:53.031  1009  1154 W RFSD    : [CsumCheckForFileAndForceCrash] /mnt/vendor/efs/nv_normal.bin checksum : verified
+10-23 02:02:53.032  1009  1154 I RFSD    : [RfsService::Nv] CsumUpdate
+10-23 02:02:53.032  1009  1154 I RFSD    : [RfsService::Nv] CsumCalc
+10-23 02:02:53.045  1009  1154 I RFSD    : [RfsService::Nv] ProcessMessage : RFS_OP_STATUS
+10-23 02:02:53.045  1009  1154 I RFSD    : [RfsService::Nv] ProcessMessage : RFS_STATUS_SUCCESS
+10-23 02:02:53.047   861  2583 I shared_modem_platform/shared_modem_platform: Modem: [PowerThermal] [RFSD] Flush Registry to Flash. fileName: ../../../SMPF/Framework/SMPFramework/Interface/Src/REG_Interface.c, lineNum: 47, nvId: 13448, nvName: !NR.MAX_HYPO_CNT, EfsSyncCount: 40, actualCP2APCount: 0
+10-23 02:02:53.152 13964 13964 D ModemService: Received: com.google.android.apps.scone.modem.ATTEMPT_MODEM_RESET
+10-23 02:02:53.152 13964 13964 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:02:53.154  1489  7807 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:02:53.178 13964 20802 D ConfigService: onHandleWork
+10-23 02:02:53.179 13964 20802 D ConfigService: onHandleAttemptModemReset
+10-23 02:02:53.181 13964 20802 D ModemUtil: Screen is on, defer actions
+10-23 02:02:53.181 13964 20802 D ConfigService: Preconditions not met, retrying after 60 seconds
+10-23 02:02:53.183 13964 20802 D ConfigService: Attempt to retry after: 60 seconds
+10-23 02:02:53.266   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:02:53.384  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:02:53.665  1489  5150 D ActivityManager: sync unfroze 15610 com.android.vending for 6
+10-23 02:02:53.673  1489  5150 D ActivityManager: sync unfroze 15647 com.android.vending:background for 6
+10-23 02:02:53.699 15610 15610 I Finsky  : [2] SCH: job service start with id 9275.
+10-23 02:02:53.777 15610 20995 I Finsky  : [210] SCH: Satisfied jobs for 9275 are: 12-1
+10-23 02:02:53.780 15610 21042 I Finsky  : [220] SCH: Job 12-1 starting
+10-23 02:02:53.781 15610 15610 I Finsky  : [2] WM::SCH: Logging work start for 12-1
+10-23 02:02:53.781 15610 15610 I Finsky  : [2] [ContentSync] job started
+10-23 02:02:53.973 15610 21284 E Finsky  : [221] [Counters] attempted to use a non-positive increment for: 9200
+10-23 02:02:53.973 15610 21284 I Finsky  : [221] App states replicator found 16 unowned apps
+10-23 02:02:53.983 15610 15641 I Finsky  : [56] Completed 0 account content syncs with 0 successful.
+10-23 02:02:53.983 15610 15610 I Finsky  : [2] [ContentSync] Installation state replication succeeded.
+10-23 02:02:53.983 15610 15610 I Finsky  : [2] SCH: jobFinished: 12-1. TimeElapsed: 203ms.
+10-23 02:02:53.984 15610 15610 I Finsky  : [2] WM::SCH: Logging work end for 12-1
+10-23 02:02:53.993 15610 15641 I Finsky  : [56] SCH: Scheduling phonesky job Id: 1-1337, CT: 1792741299004, Constraints: [{ L: 14399995, D: 52897415, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY, B: BATTERY_ANY }]
+10-23 02:02:54.000 15610 15639 I Finsky  : [54] SCH: Scheduling 1 system job(s)
+10-23 02:02:54.004 15610 15639 I Finsky  : [54] SCH: Scheduling system job Id: 9280, L: 9524999, D: 48022419, C: false, I: false, N: 1
+10-23 02:02:54.016 15610 21042 I Finsky  : [220] SCH: job service finished with id 9275.
+10-23 02:02:54.030 15610 15610 I Finsky  : [2] Memory trim requested to level 40
+10-23 02:02:54.030 15610 15610 I Finsky  : [2] Flushing in-memory image cache
+10-23 02:02:54.039 15647 15647 I Finsky:background: [2] Memory trim requested to level 40
+10-23 02:02:54.406 15610 15614 W android.vending: Reducing the number of considered missed Gc histogram windows from 473 to 100
+10-23 02:02:56.303   401   401 I lowmemorykiller: Kill 'com.android.sdm.plugins.connmo' (7670), uid 10124, oom_score_adj 995 to free 106096kB rss, 3568kB swap; reason: low watermark is breached
+10-23 02:02:56.305   401   407 E lowmemorykiller: process_mrelease 7670 failed: No such process
+10-23 02:02:56.327  1489  5905 I ActivityManager: Process com.android.sdm.plugins.connmo (pid 7670) has died: cch+95 CEM 
+10-23 02:02:56.328  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10124/pid_7670
+10-23 02:02:56.328   758   758 I Zygote  : Process 7670 exited due to signal 9 (Killed)
+10-23 02:02:56.329   401   401 I lowmemorykiller: Kill 'com.android.printspooler' (6758), uid 10103, oom_score_adj 995 to free 109472kB rss, 3628kB swap; reason: low watermark is breached
+10-23 02:02:56.331  6721 10010 D ForegroundUtils: UID: 10124 deleted.
+10-23 02:02:56.332  1489  1576 D DisplayManagerService: Drop pending events for gone uid 10124
+10-23 02:02:56.359  1489  7807 I ActivityManager: Process com.android.printspooler (pid 6758) has died: cch+95 CEM 
+10-23 02:02:56.359   758   758 I Zygote  : Process 6758 exited due to signal 9 (Killed)
+10-23 02:02:56.359  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10103/pid_6758
+10-23 02:02:56.362  1489  1576 D DisplayManagerService: Drop pending events for gone uid 10103
+10-23 02:02:56.362  6721 10010 D ForegroundUtils: UID: 10103 deleted.
+10-23 02:02:56.379   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:02:56.489  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:02:58.739  1489  1577 D ActivityManager: sync unfroze 13424 com.google.android.ext.services for 6
+10-23 02:02:58.745  1489  5664 D BackgroundInstallControlService: Package event received: 0
+10-23 02:02:58.745  1489  5664 D BackgroundInstallControlService: Package event received: 0
+10-23 02:02:58.978  5880  5971 D TemperatureStateSource: sequence=499 actualDelay=10004
+10-23 02:02:58.985  5880  5971 D TemperatureStateSource: Reading temperature: sequence=500
+10-23 02:02:58.991  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26307.00 31015.00 26776.00 29257.00 28478.00 29747.00 32774.00 26331.00 ]
+10-23 02:02:58.991  5107  5107 I native  : I0000 00:00:1792746178.991495    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:02:58.991  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [28489.1 ]
+10-23 02:02:58.991  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [28489.1 ]
+10-23 02:02:58.992  5107  5107 I pixel-thermal: VIRTUAL-SKIN:28.0641 raw data: VIRTUAL-SKIN:28064.1 VIRTUAL-SKIN-LEGACY:28036.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-452.674 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:28489.1 VIRTUAL-SKIN-MODEL-CLAMPED:28489.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:452.674 VIRTUAL-SKIN-MODEL-UPDATED:28064.1 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:28489.1 VIRTUAL-SKIN-SUB-0:28036.5 VIRTUAL-SKIN-SUB-1:26962.5 VIRTUAL-SKIN-SUB-2:26042.2 VIRTUAL-SKIN-SUB-3:27993.3 VIRTUAL-SKIN-SUB-4:27293.6 VIRTUAL-SKIN-SUB-5:27023.6 VIRTUAL-SKIN-SUB-6:27600.5 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26307 charging_therm:31015 disp_therm:26776 north_therm:29257 quiet_therm:28478 rfpa_therm:29747 soc_therm:32774 usb_pwr_therm:26331 
+10-23 02:02:58.995  5880  5971 D TemperatureStateSource: getDeviceTemperatures: sequence=500 deviceTemperatureType=3 temperatureSource=0 temperatures=[28.064064]
+10-23 02:02:58.996  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:02:58.996  5880  5971 D TemperatureStateSource: sequence=500 waitTime=10000
+10-23 02:02:58.997  5880  6121 D BusinessScope: Start running the #1011 block
+10-23 02:02:59.004  5107  5107 I pixel-thermal: VIRTUAL-SKIN:28.0641 raw data: VIRTUAL-SKIN:28064.1 
+10-23 02:02:59.004  5880  6121 I TemperatureStateSource: temperature was set
+10-23 02:02:59.005  5880  6121 D BusinessScope: Enqueuing the block
+10-23 02:02:59.005  5880  6121 D ImpulseStateSource: Notify clients: 503
+10-23 02:02:59.005  5880  6121 D BusinessScope: Finish running the #1011 block
+10-23 02:02:59.006  5880  6121 D BusinessScope: Start running the #1012 block
+10-23 02:02:59.007  5880  8092 D BusinessScope: Finish running the #1012 block
+10-23 02:02:59.491   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:02:59.608  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:03:02.610   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:02.730  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 3]
+10-23 02:03:02.892  6667  6672 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:03:03.744  6703  6952 I bcot    : (REDACTED) getHotwordActive::active query: %s, watch: %s, devices connected: %s
+10-23 02:03:03.798  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:03.802  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:03.802  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={10276} in 7ms
+10-23 02:03:03.805  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:03.808  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:03.809  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={20276} in 6ms
+10-23 02:03:04.053  1489  5158 D ActivityManager: freezing 15610 com.android.vending
+10-23 02:03:04.057  1489  5158 D ActivityManager: freezing 15647 com.android.vending:background
+10-23 02:03:04.218  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:04.221  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:04.221  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={10155} in 7ms
+10-23 02:03:05.728   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:05.847  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 02:03:07.878   450   571 I hwc-display: Display Temperature : 26°C
+10-23 02:03:08.810  1489  5158 D ActivityManager: freezing 13424 com.google.android.ext.services
+10-23 02:03:08.815  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:08.818  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:08.818  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={10276} in 7ms
+10-23 02:03:08.842   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:08.960  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 2]
+10-23 02:03:08.997  5880  5971 D TemperatureStateSource: sequence=500 actualDelay=10000
+10-23 02:03:08.997  5880  5971 D TemperatureStateSource: Reading temperature: sequence=501
+10-23 02:03:09.002  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26331.00 32062.00 26776.00 29568.00 28700.00 30169.00 34911.00 26378.00 ]
+10-23 02:03:09.002  5107  5107 I native  : I0000 00:00:1792746189.002356    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:09.002  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [28912.4 ]
+10-23 02:03:09.002  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [28912.4 ]
+10-23 02:03:09.002  5107  5107 I pixel-thermal: VIRTUAL-SKIN:28.4034 raw data: VIRTUAL-SKIN:28403.4 VIRTUAL-SKIN-LEGACY:28707 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-205.389 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:28912.4 VIRTUAL-SKIN-MODEL-CLAMPED:28912.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:205.389 VIRTUAL-SKIN-MODEL-UPDATED:28403.4 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:28912.4 VIRTUAL-SKIN-SUB-0:28707 VIRTUAL-SKIN-SUB-1:27194.6 VIRTUAL-SKIN-SUB-2:26251.3 VIRTUAL-SKIN-SUB-3:28564 VIRTUAL-SKIN-SUB-4:27532.7 VIRTUAL-SKIN-SUB-5:27589.2 VIRTUAL-SKIN-SUB-6:27917.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26331 charging_therm:32062 disp_therm:26776 north_therm:29568 quiet_therm:28700 rfpa_therm:30169 soc_therm:34911 usb_pwr_therm:26378 
+10-23 02:03:09.003  5880  5971 D TemperatureStateSource: getDeviceTemperatures: sequence=501 deviceTemperatureType=3 temperatureSource=0 temperatures=[28.403383]
+10-23 02:03:09.003  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:03:09.004  5880  5971 D TemperatureStateSource: sequence=501 waitTime=10000
+10-23 02:03:09.004  5880  5971 D BusinessScope: Start running the #1013 block
+10-23 02:03:09.011  5107  5107 I pixel-thermal: VIRTUAL-SKIN:28.4034 raw data: VIRTUAL-SKIN:28403.4 
+10-23 02:03:09.012  5880  5971 I TemperatureStateSource: temperature was set
+10-23 02:03:09.014  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:03:09.014  5880  5971 D ImpulseStateSource: Notify clients: 504
+10-23 02:03:09.014  5880  5971 D BusinessScope: Finish running the #1013 block
+10-23 02:03:09.015  5880  5971 D BusinessScope: Start running the #1014 block
+10-23 02:03:09.019  5880  8092 D BusinessScope: Finish running the #1014 block
+10-23 02:03:09.201 16857 20800 I gle.android.gms: Explicit concurrent mark compact GC freed 11MB AllocSpace bytes, 9(308KB) LOS objects, 75% free, 27MB/109MB, paused 2.292ms,8.235ms total 389.346ms
+10-23 02:03:11.959   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:12.080  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 3]
+10-23 02:03:12.523  1023  1023 W TracingMuxer: type=1400 audit(0.0:513): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:gxp_logging:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:03:13.003   790   790 W TracingMuxer: type=1400 audit(0.0:514): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:03:15.078   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:15.194  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:18.193   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:18.306  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:03:18.985  5880  6121 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:03:19.004  5880  8121 D TemperatureStateSource: sequence=501 actualDelay=10001
+10-23 02:03:19.004  5880  8121 D TemperatureStateSource: Reading temperature: sequence=502
+10-23 02:03:19.009  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26378.00 34310.00 26776.00 30348.00 29279.00 31171.00 39029.00 26471.00 ]
+10-23 02:03:19.009  5107  5107 I native  : I0000 00:00:1792746199.009201    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:19.009  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [29628.9 ]
+10-23 02:03:19.009  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [29628.9 ]
+10-23 02:03:19.009  5107  5107 I pixel-thermal: VIRTUAL-SKIN:28.8936 raw data: VIRTUAL-SKIN:28893.6 VIRTUAL-SKIN-LEGACY:30024.7 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:395.768 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:29628.9 VIRTUAL-SKIN-MODEL-CLAMPED:29628.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-395.768 VIRTUAL-SKIN-MODEL-UPDATED:28893.6 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:29628.9 VIRTUAL-SKIN-SUB-0:30024.7 VIRTUAL-SKIN-SUB-1:27709.8 VIRTUAL-SKIN-SUB-2:26767.2 VIRTUAL-SKIN-SUB-3:29729.2 VIRTUAL-SKIN-SUB-4:28027.6 VIRTUAL-SKIN-SUB-5:28781.1 VIRTUAL-SKIN-SUB-6:28595.7 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26378 charging_therm:34310 disp_therm:26776 north_therm:30348 quiet_therm:29279 rfpa_therm:31171 soc_therm:39029 usb_pwr_therm:26471 
+10-23 02:03:19.010  5880  8121 D TemperatureStateSource: getDeviceTemperatures: sequence=502 deviceTemperatureType=3 temperatureSource=0 temperatures=[28.893595]
+10-23 02:03:19.010  5880  8121 D BusinessScope: Enqueuing the block
+10-23 02:03:19.010  5880  8121 D TemperatureStateSource: sequence=502 waitTime=10000
+10-23 02:03:19.010  5880  8092 D BusinessScope: Start running the #1015 block
+10-23 02:03:19.012  5107  5107 I pixel-thermal: VIRTUAL-SKIN:28.8936 raw data: VIRTUAL-SKIN:28893.6 
+10-23 02:03:19.013  5880  8092 I TemperatureStateSource: temperature was set
+10-23 02:03:19.015  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:03:19.015  5880  8092 D ImpulseStateSource: Notify clients: 505
+10-23 02:03:19.015  5880  8092 D BusinessScope: Finish running the #1015 block
+10-23 02:03:19.016  5880  8092 D BusinessScope: Start running the #1016 block
+10-23 02:03:19.018  5880  6121 D BusinessScope: Finish running the #1016 block
+10-23 02:03:20.744 21224 21224 I tflite  : Replacing 2393 out of 3125 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 218 partitions for subgraph 1 (main).
+10-23 02:03:21.307   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:21.438  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:03:22.566   401   401 I lowmemorykiller: Kill 'com.google.android.carriersetup' (7953), uid 10234, oom_score_adj 995 to free 95928kB rss, 4808kB swap; reason: low watermark is breached
+10-23 02:03:22.568   401   407 E lowmemorykiller: process_mrelease 7953 failed: No such process
+10-23 02:03:22.593  1489  7389 I ActivityManager: Process com.google.android.carriersetup (pid 7953) has died: cch+95 CEM 
+10-23 02:03:22.594   401   401 I lowmemorykiller: Kill 'com.android.externalstorage' (8741), uid 10094, oom_score_adj 985 to free 98756kB rss, 4444kB swap; reason: low watermark is breached
+10-23 02:03:22.594  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10234/pid_7953
+10-23 02:03:22.598  1489  1576 D DisplayManagerService: Drop pending events for gone uid 10234
+10-23 02:03:22.598  6721 10010 D ForegroundUtils: UID: 10234 deleted.
+10-23 02:03:22.599   758   758 I Zygote  : Process 7953 exited due to signal 9 (Killed)
+10-23 02:03:22.611  1489  7389 I ActivityManager: Process com.android.externalstorage (pid 8741) has died: cch+85 CEM 
+10-23 02:03:22.612  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10094/pid_8741
+10-23 02:03:22.613   758   758 I Zygote  : Process 8741 exited due to signal 9 (Killed)
+10-23 02:03:22.614   401   401 I lowmemorykiller: Kill 'com.google.android.photopicker' (8722), uid 10277, oom_score_adj 985 to free 96576kB rss, 5336kB swap; reason: low watermark is breached
+10-23 02:03:22.617  6721 10010 D ForegroundUtils: UID: 10094 deleted.
+10-23 02:03:22.617  1489  1576 D DisplayManagerService: Drop pending events for gone uid 10094
+10-23 02:03:22.638  1489  7389 I ActivityManager: Process com.google.android.photopicker (pid 8722) has died: cch+85 CEM 
+10-23 02:03:22.639  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10277/pid_8722
+10-23 02:03:22.640   758   758 I Zygote  : Process 8722 exited due to signal 9 (Killed)
+10-23 02:03:22.641  6721 10010 D ForegroundUtils: UID: 10277 deleted.
+10-23 02:03:22.641  1489  1576 D DisplayManagerService: Drop pending events for gone uid 10277
+10-23 02:03:22.651   401   401 I lowmemorykiller: Kill 'com.google.android.onetimeinitializer' (9108), uid 10129, oom_score_adj 985 to free 97264kB rss, 4560kB swap; reason: low watermark is breached
+10-23 02:03:22.652   401   408 E lowmemorykiller: process_mrelease 9108 failed: No such process
+10-23 02:03:22.684  1489  7389 I ActivityManager: Process com.google.android.onetimeinitializer (pid 9108) has died: cch+85 CEM 
+10-23 02:03:22.687  1489  1576 D DisplayManagerService: Drop pending events for gone uid 10129
+10-23 02:03:22.687  1489  1606 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10129/pid_9108
+10-23 02:03:22.687  6721 10010 D ForegroundUtils: UID: 10129 deleted.
+10-23 02:03:22.689   758   758 I Zygote  : Process 9108 exited due to signal 9 (Killed)
+10-23 02:03:23.642 21403 21403 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:03:24.433   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:24.554  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:03:27.031   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:27.294  6027  6250 D EuiccConnector: handleMessage: E msg.what=3
+10-23 02:03:27.294  6027  6250 D EuiccConnector: processMsg: ConnectedState
+10-23 02:03:27.313  6027  6250 D EuiccConnector: transitionTo: destState=AvailableState
+10-23 02:03:27.313  6027  6250 D EuiccConnector: handleMessage: new destination call exit/enter
+10-23 02:03:27.313  6027  6250 D EuiccConnector: setupTempStateStackWithStatesToEnter: X mTempStateStackCount=2,curStateInfo: null
+10-23 02:03:27.313  6027  6250 D EuiccConnector: invokeExitMethods: ConnectedState
+10-23 02:03:27.313  6027  6250 D EuiccConnector: invokeExitMethods: DisconnectedState
+10-23 02:03:27.313  6027  6250 D EuiccConnector: moveTempStackToStateStack: i=1,j=0
+10-23 02:03:27.313  6027  6250 D EuiccConnector: moveTempStackToStateStack: i=0,j=1
+10-23 02:03:27.313  6027  6250 D EuiccConnector: moveTempStackToStateStack: X mStateStackTop=1,startingIndex=0,Top=AvailableState
+10-23 02:03:27.313  6027  6250 D EuiccConnector: invokeEnterMethods: UnavailableState
+10-23 02:03:27.314  6027  6250 D EuiccConnector: invokeEnterMethods: AvailableState
+10-23 02:03:27.314  6027  6250 D EuiccConnector: handleMessage: X
+10-23 02:03:27.372  6285  6285 I EuiccGoogle: [2] EuiccServiceImpl.onDestroy: onDestroy: EuiccService on destroy.
+10-23 02:03:27.552   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:27.601 16857 16857 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-23 02:03:27.672  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:28.151  5699  5792 I QuickAccessWalletTile: QAW service is unavailable, recreating the wallet client.
+10-23 02:03:28.164  5699  5792 D ControlsListingControllerImpl: Subscribing callback, service count: 0
+10-23 02:03:28.190  5699  5792 D ControlsListingControllerImpl: Unsubscribing callback
+10-23 02:03:29.006  5880  5971 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:03:29.010  5880  8092 D TemperatureStateSource: sequence=502 actualDelay=10001
+10-23 02:03:29.010  5880  8092 D TemperatureStateSource: Reading temperature: sequence=503
+10-23 02:03:29.012  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26401.00 35311.00 26776.00 30793.00 29635.00 31728.00 40476.00 26518.00 ]
+10-23 02:03:29.012  5107  5107 I native  : I0000 00:00:1792746209.012943    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:29.013  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [30147.9 ]
+10-23 02:03:29.013  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [30147.9 ]
+10-23 02:03:29.013  5107  5107 I pixel-thermal: VIRTUAL-SKIN:29.3953 raw data: VIRTUAL-SKIN:29395.3 VIRTUAL-SKIN-LEGACY:30517.1 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:369.256 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:30147.9 VIRTUAL-SKIN-MODEL-CLAMPED:30147.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-369.256 VIRTUAL-SKIN-MODEL-UPDATED:29395.3 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:30147.9 VIRTUAL-SKIN-SUB-0:30517.1 VIRTUAL-SKIN-SUB-1:27967.8 VIRTUAL-SKIN-SUB-2:27060 VIRTUAL-SKIN-SUB-3:30206.8 VIRTUAL-SKIN-SUB-4:28238.3 VIRTUAL-SKIN-SUB-5:29302 VIRTUAL-SKIN-SUB-6:28906.2 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26401 charging_therm:35311 disp_therm:26776 north_therm:30793 quiet_therm:29635 rfpa_therm:31728 soc_therm:40476 usb_pwr_therm:26518 
+10-23 02:03:29.014  5880  8092 D TemperatureStateSource: getDeviceTemperatures: sequence=503 deviceTemperatureType=3 temperatureSource=0 temperatures=[29.395306]
+10-23 02:03:29.014  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:03:29.014  5880  8092 D TemperatureStateSource: sequence=503 waitTime=10000
+10-23 02:03:29.014  5880  6121 D BusinessScope: Start running the #1017 block
+10-23 02:03:29.016  5107  5107 I pixel-thermal: VIRTUAL-SKIN:29.3953 raw data: VIRTUAL-SKIN:29395.3 
+10-23 02:03:29.016  5880  6121 I TemperatureStateSource: temperature was set
+10-23 02:03:29.017  5880  6121 D BusinessScope: Enqueuing the block
+10-23 02:03:29.017  5880  6121 D ImpulseStateSource: Notify clients: 506
+10-23 02:03:29.017  5880  6121 D BusinessScope: Finish running the #1017 block
+10-23 02:03:29.017  5880  6121 D BusinessScope: Start running the #1018 block
+10-23 02:03:29.018  5880  8121 D BusinessScope: Finish running the #1018 block
+10-23 02:03:30.673   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:30.782  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 0]
+10-23 02:03:32.388  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:32.389  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:32.389  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={10149} in 2ms
+10-23 02:03:32.390  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:32.391  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:32.391  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={20149} in 2ms
+10-23 02:03:32.798  6703 13910 I IPCThreadState: oneway function results for code 2 on binder at 0xb40000716a744410 will be dropped but finished with status UNKNOWN_TRANSACTION
+10-23 02:03:33.784   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:33.894  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 0]
+10-23 02:03:36.896   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:37.014  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:37.430  1489  5158 D ActivityManager: freezing 6285 com.google.android.euicc
+10-23 02:03:37.434  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-23 02:03:37.435  1489  5617 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-23 02:03:37.435  1489  5617 D InetDiagMessage: Destroyed live tcp sockets for uids={10149} in 3ms
+10-23 02:03:37.880   450   571 I hwc-display: Display Temperature : 26°C
+10-23 02:03:39.014  5880  8092 D TemperatureStateSource: sequence=503 actualDelay=10001
+10-23 02:03:39.014  5880  8092 D TemperatureStateSource: Reading temperature: sequence=504
+10-23 02:03:39.016  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26448.00 36981.00 26823.00 31728.00 30414.00 32818.00 42578.00 26612.00 ]
+10-23 02:03:39.016  5107  5107 I native  : I0000 00:00:1792746219.016460    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:39.016  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [30856.4 ]
+10-23 02:03:39.016  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [30856.4 ]
+10-23 02:03:39.016  5107  5107 I pixel-thermal: VIRTUAL-SKIN:29.9798 raw data: VIRTUAL-SKIN:29979.8 VIRTUAL-SKIN-LEGACY:31284.9 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:428.447 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:30856.4 VIRTUAL-SKIN-MODEL-CLAMPED:30856.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-428.447 VIRTUAL-SKIN-MODEL-UPDATED:29979.8 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:30856.4 VIRTUAL-SKIN-SUB-0:31284.9 VIRTUAL-SKIN-SUB-1:28459.8 VIRTUAL-SKIN-SUB-2:27680.6 VIRTUAL-SKIN-SUB-3:31003 VIRTUAL-SKIN-SUB-4:28606.6 VIRTUAL-SKIN-SUB-5:30194.5 VIRTUAL-SKIN-SUB-6:29480.8 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26448 charging_therm:36981 disp_therm:26823 north_therm:31728 quiet_therm:30414 rfpa_therm:32818 soc_therm:42578 usb_pwr_therm:26612 
+10-23 02:03:39.016  5880  8092 D TemperatureStateSource: getDeviceTemperatures: sequence=504 deviceTemperatureType=3 temperatureSource=0 temperatures=[29.979753]
+10-23 02:03:39.016  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:03:39.016  5880  8092 D TemperatureStateSource: sequence=504 waitTime=10000
+10-23 02:03:39.016  5880  8092 D BusinessScope: Start running the #1019 block
+10-23 02:03:39.018  5107  5107 I pixel-thermal: VIRTUAL-SKIN:29.9798 raw data: VIRTUAL-SKIN:29979.8 
+10-23 02:03:39.018  5880  8121 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:03:39.018  5880  8092 I TemperatureStateSource: temperature was set
+10-23 02:03:39.020  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:03:39.020  5880  8092 D ImpulseStateSource: Notify clients: 507
+10-23 02:03:39.020  5880  8092 D BusinessScope: Finish running the #1019 block
+10-23 02:03:39.020  5880  8092 D BusinessScope: Start running the #1020 block
+10-23 02:03:39.021  5880  8092 D BusinessScope: Finish running the #1020 block
+10-23 02:03:40.014   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:40.117  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:42.383  5699  5699 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:03:42.383  5699  5699 D DLObserver: plugged=1
+10-23 02:03:42.385  5699  5699 D SystemEventDataSource: onReceive: intentAction
+10-23 02:03:42.390  5699  5699 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@664873d
+10-23 02:03:42.391  5699  5699 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:03:42.391  5699  5699 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:03:42.391  5699 14851 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:03:42.392  5699  5815 D GoogleBatteryDataSource: fetchDwellDefendStatus: ACTIVE
+10-23 02:03:42.394  5699  5815 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=0, time_sum=0 t_avg=0 lst_v=0 lst_t=0 lst_u=0, dt=0, t=0 e=0
+10-23 02:03:42.395  5699  5815 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=80), chargingStatus=EventData(value=4), maxChargingCurrent=EventData(value=3000000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=4), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=true)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:03:42.395  5699  5815 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:03:42.555  1023  1023 W TracingMuxer: type=1400 audit(0.0:515): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:gxp_logging:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:03:42.928 16857 16857 D BoundBrokerSvc: onRebind: Intent { act=com.google.android.gms.libs.gmscorelogger.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentDirectBootAwareApiService }
+10-23 02:03:42.932  5107  5114 I pixel-thermal: THERMAL_GENL_EVENT_TZ_TRIP_UP tz_id=13 tz_temp=32195.00 trip_id=0
+10-23 02:03:42.932  5107  5114 I pixel-thermal: TZ path: /sys/devices/virtual/thermal/thermal_zone13/type type: north_therm
+10-23 02:03:42.934  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:30.3304 raw data: VIRTUAL-SKIN:30330.4 VIRTUAL-SKIN-CPU-MID:30330.4 VIRTUAL-SKIN-LEGACY:31619.8 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:763.338 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:30856.4 VIRTUAL-SKIN-MODEL-CLAMPED:30856.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-763.338 VIRTUAL-SKIN-MODEL-UPDATED:30330.4 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:30856.4 VIRTUAL-SKIN-SUB-0:31619.8 VIRTUAL-SKIN-SUB-1:28693.7 VIRTUAL-SKIN-SUB-2:27990.5 VIRTUAL-SKIN-SUB-3:31358.8 VIRTUAL-SKIN-SUB-4:28772.1 VIRTUAL-SKIN-SUB-5:30591.3 VIRTUAL-SKIN-SUB-6:29760.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26495 charging_therm:37693 disp_therm:26846 north_therm:32195 quiet_therm:30815 rfpa_therm:33330 soc_therm:43449 usb_pwr_therm:26659 
+10-23 02:03:42.940  5107  5114 I pixel-thermal: north_therm:32.195 raw data: north_therm:32195 
+10-23 02:03:42.940  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [32195.00 43449.00 37693.00 26846.00 30815.00 26659.00 33330.00 26495.00 ]
+10-23 02:03:42.940  5107  5114 I native  : I0000 00:00:1792746222.940550    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:42.942  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34767.6 34952.4 35134.5 35310.7 35479.6 35636.8 ]
+10-23 02:03:42.942  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34767.6 34952.4 35134.5 35310.7 35479.6 35636.8 ]
+10-23 02:03:42.942  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-7SEC-BACK no valid prediction samples found
+10-23 02:03:42.942  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:03:42.942  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:03:42.942  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:03:42.942  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:03:42.942  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:31619.8 VIRTUAL-SKIN-MODEL:30856.4 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-763.338 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:30.9629 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:30962.9 VIRTUAL-SKIN-CHARGE-SUB-0:30388.2 VIRTUAL-SKIN-CHARGE-SUB-1:30962.9 VIRTUAL-SKIN-CHARGE-SUB-2:29050.4 VIRTUAL-SKIN-CHARGE-SUB-3:30591.3 VIRTUAL-SKIN-CHARGE-WIRED:30962.9 WLC_CHECK:1 btmspkr_therm:26495 charging_therm:37693 disp_therm:26846 north_therm:32195 quiet_therm:30815 rfpa_therm:33330 soc_therm:43449 thb_hda:54 usb_pwr_therm:26659 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN:30.3304 raw data: VIRTUAL-SKIN:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:30.3304 raw data: VIRTUAL-SKIN:30330.4 VIRTUAL-SKIN-SOC:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:30.3304 raw data: VIRTUAL-SKIN:30330.4 VIRTUAL-SKIN-HINT:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:30.3304 raw data: VIRTUAL-SKIN:30330.4 VIRTUAL-SKIN-GPU:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:30.3304 raw data: VIRTUAL-SKIN:30330.4 VIRTUAL-SKIN-CPU-HIGH:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:30.0078 raw data: VIRTUAL-SKIN-SPEAKER:30007.8 VIRTUAL-SKIN-SPEAKER-SUB-0:30007.8 btmspkr_therm:26495 charging_therm:37693 disp_therm:26846 north_therm:32195 quiet_therm:30815 rfpa_therm:33330 soc_therm:43449 usb_pwr_therm:26659 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: cellular-emergency:30.3304 raw data: VIRTUAL-SKIN:30330.4 cellular-emergency:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:30.3304 raw data: VIRTUAL-SKIN:30330.4 VIRTUAL-SKIN-CPU-LIGHT-ODPM:30330.4 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:30962.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:30962.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:30.9629 raw data: VIRTUAL-SKIN-CHARGE:30962.9 VIRTUAL-SKIN-CHARGE-PERSIST:30962.9 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: Power rails total power: 3145.92 mW for 152462 ms
+10-23 02:03:42.944  5107  5114 I pixel-thermal: Power rails [S6M_LLDO1: 162.93 mW] [S4M_VDD_CPUCL0: 377.12 mW] [S3M_VDD_CPUCL2: 802.23 mW] [S1M_VDD_MIF: 159.25 mW] [VSYS_PWR_MMWAVE: 3.53 mW] [S5M_VDD_INT: 38.05 mW] 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: Power rails [S9M_VDD_CPUCL1_M: 15.85 mW] [S2M_VDD_CPUCL1: 657.45 mW] [VSYS_PWR_CAMERA: 0.95 mW] [VSYS_PWR_DISPLAY: 146.45 mW] [L21S_VDD2L_MEM: 6.11 mW] [S8M_LLDO2: 72.46 mW] 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: Power rails [S3S_LLDO1: 56.88 mW] [VSYS_PWR_RFFE: 9.86 mW] [VSYS_PWR_WLAN_BT: 99.78 mW] [VSYS_PWR_MODEM: 302.12 mW] [L2S_PLL_MIPI_UFS: 30.99 mW] [S4S_VDD2H_MEM: 169.22 mW] 
+10-23 02:03:42.944  5107  5114 I pixel-thermal: Power rails [S9S_VDD_AOC: 7.86 mW] [S2S_VDD_G3D: 0.63 mW] [S1S_VDD_CAM: 4.86 mW] [S7M_VDD_TPU: 0.00 mW] [L22S_UDFPS: 1.18 mW] [S5S_VDDQ_MEM: 20.15 mW] 
+10-23 02:03:43.031   790   790 W TracingMuxer: type=1400 audit(0.0:516): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:03:43.117   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:43.224  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:03:46.226   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:46.339  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:49.017  5880  5971 D TemperatureStateSource: sequence=504 actualDelay=10001
+10-23 02:03:49.017  5880  5971 D TemperatureStateSource: Reading temperature: sequence=505
+10-23 02:03:49.019  5880  6121 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:03:49.022  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26495.00 37693.00 26846.00 32195.00 30815.00 33330.00 43449.00 26659.00 ]
+10-23 02:03:49.022  5107  5107 I native  : I0000 00:00:1792746229.022113    5107 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:49.022  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [31247.9 ]
+10-23 02:03:49.022  5107  5107 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [31247.9 ]
+10-23 02:03:49.022  5107  5107 I pixel-thermal: VIRTUAL-SKIN:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-LEGACY:31619.8 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:371.9 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:31247.9 VIRTUAL-SKIN-MODEL-CLAMPED:31247.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-371.9 VIRTUAL-SKIN-MODEL-UPDATED:30697.4 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:31247.9 VIRTUAL-SKIN-SUB-0:31619.8 VIRTUAL-SKIN-SUB-1:28693.7 VIRTUAL-SKIN-SUB-2:27990.5 VIRTUAL-SKIN-SUB-3:31358.8 VIRTUAL-SKIN-SUB-4:28772.1 VIRTUAL-SKIN-SUB-5:30591.3 VIRTUAL-SKIN-SUB-6:29760.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26495 charging_therm:37693 disp_therm:26846 north_therm:32195 quiet_therm:30815 rfpa_therm:33330 soc_therm:43449 usb_pwr_therm:26659 
+10-23 02:03:49.022  5880  5971 D TemperatureStateSource: getDeviceTemperatures: sequence=505 deviceTemperatureType=3 temperatureSource=0 temperatures=[30.697395]
+10-23 02:03:49.024  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:03:49.024  5880  5971 D TemperatureStateSource: sequence=505 waitTime=10000
+10-23 02:03:49.024  5880  8092 D BusinessScope: Start running the #1021 block
+10-23 02:03:49.027  5107  5107 I pixel-thermal: VIRTUAL-SKIN:30.6974 raw data: VIRTUAL-SKIN:30697.4 
+10-23 02:03:49.028  5880  8092 I TemperatureStateSource: temperature was set
+10-23 02:03:49.029  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:03:49.029  5880  8092 D ImpulseStateSource: Notify clients: 508
+10-23 02:03:49.029  5880  8092 D BusinessScope: Finish running the #1021 block
+10-23 02:03:49.029  5880  8092 D BusinessScope: Start running the #1022 block
+10-23 02:03:49.031  5880  8092 D BusinessScope: Finish running the #1022 block
+10-23 02:03:49.336  5107  5114 I pixel-thermal: THERMAL_GENL_EVENT_TZ_TRIP_UP tz_id=7 tz_temp=33798.00 trip_id=0
+10-23 02:03:49.336  5107  5114 I pixel-thermal: TZ path: /sys/devices/virtual/thermal/thermal_zone7/type type: rfpa_therm
+10-23 02:03:49.336  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-CPU-MID:30697.4 
+10-23 02:03:49.338   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:49.346  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-NOW no valid prediction samples found
+10-23 02:03:49.346  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:03:49.346  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:03:49.346  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:03:49.346  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:03:49.346  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:31619.8 VIRTUAL-SKIN-MODEL:31247.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-371.9 
+10-23 02:03:49.346  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:30.9779 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:30977.9 VIRTUAL-SKIN-CHARGE-SUB-0:30462.1 VIRTUAL-SKIN-CHARGE-SUB-1:30977.9 VIRTUAL-SKIN-CHARGE-SUB-2:29059.7 VIRTUAL-SKIN-CHARGE-SUB-3:30660.1 VIRTUAL-SKIN-CHARGE-WIRED:30977.9 WLC_CHECK:1 btmspkr_therm:26495 charging_therm:37693 disp_therm:26846 north_therm:32195 quiet_therm:30815 rfpa_therm:33798 soc_therm:43449 thb_hda:54 usb_pwr_therm:26659 
+10-23 02:03:49.346  5107  5114 I pixel-thermal: VIRTUAL-SKIN:30.6974 raw data: VIRTUAL-SKIN:30697.4 
+10-23 02:03:49.346  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-SOC:30697.4 
+10-23 02:03:49.346  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-HINT:30697.4 
+10-23 02:03:49.346  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-GPU:30697.4 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-CPU-HIGH:30697.4 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:30.0125 raw data: VIRTUAL-SKIN-SPEAKER:30012.5 VIRTUAL-SKIN-SPEAKER-SUB-0:30012.5 btmspkr_therm:26495 charging_therm:37693 disp_therm:26846 north_therm:32195 quiet_therm:30815 rfpa_therm:33798 soc_therm:43449 usb_pwr_therm:26659 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: cellular-emergency:30.6974 raw data: VIRTUAL-SKIN:30697.4 cellular-emergency:30697.4 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:30.6974 raw data: VIRTUAL-SKIN:30697.4 VIRTUAL-SKIN-CPU-LIGHT-ODPM:30697.4 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: rfpa_therm:33.798 raw data: rfpa_therm:33798 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:30977.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:30977.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:03:49.348  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:30.9779 raw data: VIRTUAL-SKIN-CHARGE:30977.9 VIRTUAL-SKIN-CHARGE-PERSIST:30977.9 
+10-23 02:03:49.454  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 0]
+10-23 02:03:49.946  5107  5114 I pixel-thermal: north_therm:32.195 raw data: north_therm:32195 
+10-23 02:03:49.952  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [32195.00 43449.00 37693.00 26846.00 30815.00 26659.00 33798.00 26495.00 ]
+10-23 02:03:49.952  5107  5114 I native  : I0000 00:00:1792746229.952136    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:49.952  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34876.4 35062 35243.9 35419.3 35585.6 35733.1 ]
+10-23 02:03:49.952  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34876.4 35062 35243.9 35419.3 35585.6 35733.1 ]
+10-23 02:03:49.952  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-14SEC-BACK no valid prediction samples found
+10-23 02:03:49.952  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-14SEC data is under collecting
+10-23 02:03:49.952  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:03:49.952  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:03:49.952  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:03:52.453   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:52.567  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:03:53.186 13964 13964 D ModemService: Received: com.google.android.apps.scone.modem.ATTEMPT_MODEM_RESET
+10-23 02:03:53.187 13964 13964 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:03:53.187  1489  1549 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:03:53.199 13964 21281 D ConfigService: onHandleWork
+10-23 02:03:53.199 13964 21281 D ConfigService: onHandleAttemptModemReset
+10-23 02:03:53.210 13964 21281 D ModemUtil: Screen is on, defer actions
+10-23 02:03:53.210 13964 21281 D ConfigService: Preconditions not met, retrying after 60 seconds
+10-23 02:03:53.213 13964 21281 D ConfigService: Attempt to retry after: 60 seconds
+10-23 02:03:55.568   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:55.683  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:56.350  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26588.00 38940.00 26893.00 33063.00 31572.00 34243.00 44984.00 26752.00 ]
+10-23 02:03:56.350  5107  5114 I native  : I0000 00:00:1792746236.350563    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:56.350  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [31806.8 ]
+10-23 02:03:56.350  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [31806.8 ]
+10-23 02:03:56.350  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:31.1412 raw data: VIRTUAL-SKIN:31141.2 VIRTUAL-SKIN-CPU-MID:31141.2 VIRTUAL-SKIN-LEGACY:32219.6 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:412.783 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:31806.8 VIRTUAL-SKIN-MODEL-CLAMPED:31806.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-412.783 VIRTUAL-SKIN-MODEL-UPDATED:31141.2 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:31806.8 VIRTUAL-SKIN-SUB-0:32219.6 VIRTUAL-SKIN-SUB-1:29117.2 VIRTUAL-SKIN-SUB-2:28568.5 VIRTUAL-SKIN-SUB-3:31997.5 VIRTUAL-SKIN-SUB-4:29071.1 VIRTUAL-SKIN-SUB-5:31299.4 VIRTUAL-SKIN-SUB-6:30276.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26588 charging_therm:38940 disp_therm:26893 north_therm:33063 quiet_therm:31572 rfpa_therm:34243 soc_therm:44984 usb_pwr_therm:26752 
+10-23 02:03:56.355  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-NOW no valid prediction samples found
+10-23 02:03:56.356  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:03:56.356  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:03:56.356  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:03:56.356  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:03:56.356  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:32219.6 VIRTUAL-SKIN-MODEL:31806.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-412.783 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:31.4945 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:31494.5 VIRTUAL-SKIN-CHARGE-SUB-0:31001.2 VIRTUAL-SKIN-CHARGE-SUB-1:31494.5 VIRTUAL-SKIN-CHARGE-SUB-2:29555.2 VIRTUAL-SKIN-CHARGE-SUB-3:31299.4 VIRTUAL-SKIN-CHARGE-WIRED:31494.5 WLC_CHECK:1 btmspkr_therm:26588 charging_therm:38940 disp_therm:26893 north_therm:33063 quiet_therm:31572 rfpa_therm:34243 soc_therm:44984 thb_hda:54 usb_pwr_therm:26752 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN:31.1412 raw data: VIRTUAL-SKIN:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:31.1412 raw data: VIRTUAL-SKIN:31141.2 VIRTUAL-SKIN-SOC:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:31.1412 raw data: VIRTUAL-SKIN:31141.2 VIRTUAL-SKIN-HINT:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:31.1412 raw data: VIRTUAL-SKIN:31141.2 VIRTUAL-SKIN-GPU:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:31.1412 raw data: VIRTUAL-SKIN:31141.2 VIRTUAL-SKIN-CPU-HIGH:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:30.4649 raw data: VIRTUAL-SKIN-SPEAKER:30464.9 VIRTUAL-SKIN-SPEAKER-SUB-0:30464.9 btmspkr_therm:26588 charging_therm:38940 disp_therm:26893 north_therm:33063 quiet_therm:31572 rfpa_therm:34243 soc_therm:44984 usb_pwr_therm:26752 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: cellular-emergency:31.1412 raw data: VIRTUAL-SKIN:31141.2 cellular-emergency:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:31.1412 raw data: VIRTUAL-SKIN:31141.2 VIRTUAL-SKIN-CPU-LIGHT-ODPM:31141.2 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: rfpa_therm:34.243 raw data: rfpa_therm:34243 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:31494.5 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:31494.5 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:03:56.356  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:31.4945 raw data: VIRTUAL-SKIN-CHARGE:31494.5 VIRTUAL-SKIN-CHARGE-PERSIST:31494.5 
+10-23 02:03:56.954  5107  5114 I pixel-thermal: north_therm:33.063 raw data: north_therm:33063 
+10-23 02:03:56.960  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [33063.00 44984.00 38940.00 26893.00 31572.00 26752.00 34243.00 26588.00 ]
+10-23 02:03:56.960  5107  5114 I native  : I0000 00:00:1792746236.960852    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:03:56.960  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [32601.9 32738.5 32868.5 32996.2 33112.7 33213.4 ]
+10-23 02:03:56.960  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [32601.9 32738.5 32868.5 32996.2 33112.7 33213.4 ]
+10-23 02:03:56.961  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-21SEC-BACK no valid prediction samples found
+10-23 02:03:56.961  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-21SEC data is under collecting
+10-23 02:03:56.961  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:03:56.961  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:03:56.961  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:03:57.990 16857 16857 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.libs.gmscorelogger.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentDirectBootAwareApiService }
+10-23 02:03:58.154 21549 21549 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:03:58.681   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:03:58.804  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:03:59.018  5880  8121 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:03:59.025  5880  5971 D TemperatureStateSource: sequence=505 actualDelay=10000
+10-23 02:03:59.025  5880  5971 D TemperatureStateSource: Reading temperature: sequence=506
+10-23 02:03:59.029  5107  5107 I pixel-thermal: VIRTUAL-SKIN:31.4074 raw data: VIRTUAL-SKIN:31407.4 VIRTUAL-SKIN-LEGACY:32219.6 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:412.783 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:31806.8 VIRTUAL-SKIN-MODEL-CLAMPED:31806.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-412.783 VIRTUAL-SKIN-MODEL-UPDATED:31407.4 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:31806.8 VIRTUAL-SKIN-SUB-0:32219.6 VIRTUAL-SKIN-SUB-1:29117.2 VIRTUAL-SKIN-SUB-2:28568.5 VIRTUAL-SKIN-SUB-3:31997.5 VIRTUAL-SKIN-SUB-4:29071.1 VIRTUAL-SKIN-SUB-5:31299.4 VIRTUAL-SKIN-SUB-6:30276.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26588 charging_therm:38940 disp_therm:26893 north_therm:33063 quiet_therm:31572 rfpa_therm:34243 soc_therm:44984 usb_pwr_therm:26752 
+10-23 02:03:59.030  5880  5971 D TemperatureStateSource: getDeviceTemperatures: sequence=506 deviceTemperatureType=3 temperatureSource=0 temperatures=[31.407427]
+10-23 02:03:59.030  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:03:59.030  5880  5971 D TemperatureStateSource: sequence=506 waitTime=10000
+10-23 02:03:59.030  5880  6121 D BusinessScope: Start running the #1023 block
+10-23 02:03:59.035  5107  5107 I pixel-thermal: VIRTUAL-SKIN:31.4074 raw data: VIRTUAL-SKIN:31407.4 
+10-23 02:03:59.035  5880  6121 I TemperatureStateSource: temperature was set
+10-23 02:03:59.036  5880  6121 D BusinessScope: Enqueuing the block
+10-23 02:03:59.036  5880  6121 D ImpulseStateSource: Notify clients: 509
+10-23 02:03:59.036  5880  6121 D BusinessScope: Finish running the #1023 block
+10-23 02:03:59.036  5880  6121 D BusinessScope: Start running the #1024 block
+10-23 02:03:59.037  5880  8121 D BusinessScope: Finish running the #1024 block
+10-23 02:04:01.805   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:01.918  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 0]
+10-23 02:04:03.366  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26635.00 39519.00 26940.00 33486.00 31950.00 34666.00 45700.00 26799.00 ]
+10-23 02:04:03.367  5107  5114 I native  : I0000 00:00:1792746243.367040    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:03.367  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [32133.7 ]
+10-23 02:04:03.367  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [32133.7 ]
+10-23 02:04:03.367  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:31.698 raw data: VIRTUAL-SKIN:31698 VIRTUAL-SKIN-CPU-MID:31698 VIRTUAL-SKIN-LEGACY:32506.1 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:372.318 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:32133.7 VIRTUAL-SKIN-MODEL-CLAMPED:32133.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-372.318 VIRTUAL-SKIN-MODEL-UPDATED:31698 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:32133.7 VIRTUAL-SKIN-SUB-0:32506.1 VIRTUAL-SKIN-SUB-1:29319.9 VIRTUAL-SKIN-SUB-2:28857.7 VIRTUAL-SKIN-SUB-3:32303 VIRTUAL-SKIN-SUB-4:29221.3 VIRTUAL-SKIN-SUB-5:31635.7 VIRTUAL-SKIN-SUB-6:30529.3 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26635 charging_therm:39519 disp_therm:26940 north_therm:33486 quiet_therm:31950 rfpa_therm:34666 soc_therm:45700 usb_pwr_therm:26799 
+10-23 02:04:03.372  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-NOW no valid prediction samples found
+10-23 02:04:03.372  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:04:03.372  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:04:03.372  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:04:03.372  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:04:03.372  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:32506.1 VIRTUAL-SKIN-MODEL:32133.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-372.318 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:31.7535 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:31753.5 VIRTUAL-SKIN-CHARGE-SUB-0:31294.5 VIRTUAL-SKIN-CHARGE-SUB-1:31753.5 VIRTUAL-SKIN-CHARGE-SUB-2:29803.1 VIRTUAL-SKIN-CHARGE-SUB-3:31635.7 VIRTUAL-SKIN-CHARGE-WIRED:31753.5 WLC_CHECK:1 btmspkr_therm:26635 charging_therm:39519 disp_therm:26940 north_therm:33486 quiet_therm:31950 rfpa_therm:34666 soc_therm:45700 thb_hda:54 usb_pwr_therm:26799 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN:31.698 raw data: VIRTUAL-SKIN:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:31.698 raw data: VIRTUAL-SKIN:31698 VIRTUAL-SKIN-SOC:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:31.698 raw data: VIRTUAL-SKIN:31698 VIRTUAL-SKIN-HINT:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:31.698 raw data: VIRTUAL-SKIN:31698 VIRTUAL-SKIN-GPU:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:31.698 raw data: VIRTUAL-SKIN:31698 VIRTUAL-SKIN-CPU-HIGH:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:30.6889 raw data: VIRTUAL-SKIN-SPEAKER:30688.9 VIRTUAL-SKIN-SPEAKER-SUB-0:30688.9 btmspkr_therm:26635 charging_therm:39519 disp_therm:26940 north_therm:33486 quiet_therm:31950 rfpa_therm:34666 soc_therm:45700 usb_pwr_therm:26799 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: cellular-emergency:31.698 raw data: VIRTUAL-SKIN:31698 cellular-emergency:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:31.698 raw data: VIRTUAL-SKIN:31698 VIRTUAL-SKIN-CPU-LIGHT-ODPM:31698 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: rfpa_therm:34.666 raw data: rfpa_therm:34666 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:31753.5 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:31753.5 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:04:03.373  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:31.7535 raw data: VIRTUAL-SKIN-CHARGE:31753.5 VIRTUAL-SKIN-CHARGE-PERSIST:31753.5 
+10-23 02:04:03.707  6703  6989 I bcot    : (REDACTED) getHotwordActive::active query: %s, watch: %s, devices connected: %s
+10-23 02:04:03.966  5107  5114 I pixel-thermal: north_therm:33.486 raw data: north_therm:33486 
+10-23 02:04:03.972  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [33486.00 45700.00 39519.00 26940.00 31950.00 26799.00 34666.00 26635.00 ]
+10-23 02:04:03.972  5107  5114 I native  : I0000 00:00:1792746243.972442    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:03.972  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33065.5 33209.3 33346.6 33480.8 33603.8 33709.6 ]
+10-23 02:04:03.972  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33065.5 33209.3 33346.6 33480.8 33603.8 33709.6 ]
+10-23 02:04:03.972  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-28SEC-BACK no valid prediction samples found
+10-23 02:04:03.972  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-28SEC data is under collecting
+10-23 02:04:03.972  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:04:03.972  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:04:03.972  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:04:04.917   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:05.032  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:04:07.881   450   571 I hwc-display: Display Temperature : 26°C
+10-23 02:04:08.034   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:08.145  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:04:09.021  5880  8092 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:04:09.031  5880  5971 D TemperatureStateSource: sequence=506 actualDelay=10000
+10-23 02:04:09.031  5880  5971 D TemperatureStateSource: Reading temperature: sequence=507
+10-23 02:04:09.033  5107  5107 I pixel-thermal: VIRTUAL-SKIN:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-LEGACY:32776.6 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:642.877 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:32133.7 VIRTUAL-SKIN-MODEL-CLAMPED:32133.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-642.877 VIRTUAL-SKIN-MODEL-UPDATED:31872.3 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:32133.7 VIRTUAL-SKIN-SUB-0:32776.6 VIRTUAL-SKIN-SUB-1:29519.9 VIRTUAL-SKIN-SUB-2:29132.2 VIRTUAL-SKIN-SUB-3:32592.7 VIRTUAL-SKIN-SUB-4:29363.8 VIRTUAL-SKIN-SUB-5:31953.9 VIRTUAL-SKIN-SUB-6:30768.6 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26682 charging_therm:40053 disp_therm:26987 north_therm:33887 quiet_therm:32306 rfpa_therm:35089 soc_therm:46369 usb_pwr_therm:26846 
+10-23 02:04:09.033  5880  5971 D TemperatureStateSource: getDeviceTemperatures: sequence=507 deviceTemperatureType=3 temperatureSource=0 temperatures=[31.872274]
+10-23 02:04:09.033  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:04:09.033  5880  5971 D TemperatureStateSource: sequence=507 waitTime=10000
+10-23 02:04:09.033  5880  8121 D BusinessScope: Start running the #1025 block
+10-23 02:04:09.034  5107  5107 I pixel-thermal: VIRTUAL-SKIN:31.8723 raw data: VIRTUAL-SKIN:31872.3 
+10-23 02:04:09.034  5880  8121 I TemperatureStateSource: temperature was set
+10-23 02:04:09.034  5880  8121 D BusinessScope: Enqueuing the block
+10-23 02:04:09.035  5880  8121 D ImpulseStateSource: Notify clients: 510
+10-23 02:04:09.035  5880  8121 D BusinessScope: Finish running the #1025 block
+10-23 02:04:09.035  5880  8121 D BusinessScope: Start running the #1026 block
+10-23 02:04:09.035  5880  5971 D BusinessScope: Finish running the #1026 block
+10-23 02:04:10.376  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-CPU-MID:31872.3 
+10-23 02:04:10.381  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-NOW no valid prediction samples found
+10-23 02:04:10.381  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:04:10.381  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:04:10.381  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:04:10.381  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26682.00 40053.00 26987.00 33887.00 32306.00 35089.00 46369.00 26846.00 ]
+10-23 02:04:10.382  5107  5114 I native  : I0000 00:00:1792746250.382027    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [32306.7 ]
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [32306.7 ]
+10-23 02:04:10.382  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:32776.6 VIRTUAL-SKIN-MODEL:32306.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-642.877 btmspkr_therm:26682 charging_therm:40053 disp_therm:26987 north_therm:33887 quiet_therm:32306 rfpa_therm:35089 soc_therm:46369 usb_pwr_therm:26846 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:31.9982 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:31998.2 VIRTUAL-SKIN-CHARGE-SUB-0:31573.8 VIRTUAL-SKIN-CHARGE-SUB-1:31998.2 VIRTUAL-SKIN-CHARGE-SUB-2:30037.6 VIRTUAL-SKIN-CHARGE-SUB-3:31953.9 VIRTUAL-SKIN-CHARGE-WIRED:31998.2 WLC_CHECK:1 btmspkr_therm:26682 charging_therm:40053 disp_therm:26987 north_therm:33887 quiet_therm:32306 rfpa_therm:35089 soc_therm:46369 thb_hda:54 usb_pwr_therm:26846 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN:31.8723 raw data: VIRTUAL-SKIN:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-SOC:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-HINT:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-GPU:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-CPU-HIGH:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:30.9011 raw data: VIRTUAL-SKIN-SPEAKER:30901.1 VIRTUAL-SKIN-SPEAKER-SUB-0:30901.1 btmspkr_therm:26682 charging_therm:40053 disp_therm:26987 north_therm:33887 quiet_therm:32306 rfpa_therm:35089 soc_therm:46369 usb_pwr_therm:26846 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: cellular-emergency:31.8723 raw data: VIRTUAL-SKIN:31872.3 cellular-emergency:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:31.8723 raw data: VIRTUAL-SKIN:31872.3 VIRTUAL-SKIN-CPU-LIGHT-ODPM:31872.3 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: rfpa_therm:35.089 raw data: rfpa_therm:35089 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:31998.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:31998.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:04:10.382  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:31.9982 raw data: VIRTUAL-SKIN-CHARGE:31998.2 VIRTUAL-SKIN-CHARGE-PERSIST:31998.2 
+10-23 02:04:10.974  5107  5114 I pixel-thermal: north_therm:33.887 raw data: north_therm:33887 
+10-23 02:04:10.980  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [33887.00 46369.00 40053.00 26987.00 32306.00 26846.00 35089.00 26682.00 ]
+10-23 02:04:10.980  5107  5114 I native  : I0000 00:00:1792746250.980253    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:10.980  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33536.4 33685.2 33827.8 33967.3 34096.2 34208.5 ]
+10-23 02:04:10.980  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33536.4 33685.2 33827.8 33967.3 34096.2 34208.5 ]
+10-23 02:04:10.980  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-35SEC-BACK no valid prediction samples found
+10-23 02:04:10.980  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-35SEC data is under collecting
+10-23 02:04:10.980  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:04:10.980  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:04:10.980  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:04:11.146   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:11.259  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:04:12.579  1023  1023 W TracingMuxer: type=1400 audit(0.0:517): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:gxp_logging:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:04:13.059   790   790 W TracingMuxer: type=1400 audit(0.0:518): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:04:14.257   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:14.373  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 0]
+10-23 02:04:17.374   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:17.389  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26729.00 40565.00 27033.00 34287.00 32663.00 35467.00 46989.00 26893.00 ]
+10-23 02:04:17.389  5107  5114 I native  : I0000 00:00:1792746257.389489    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:17.389  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [32585 ]
+10-23 02:04:17.389  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [32585 ]
+10-23 02:04:17.389  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:32.1574 raw data: VIRTUAL-SKIN:32157.4 VIRTUAL-SKIN-CPU-MID:32157.4 VIRTUAL-SKIN-LEGACY:33031.6 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:446.555 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:32585 VIRTUAL-SKIN-MODEL-CLAMPED:32585 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-446.555 VIRTUAL-SKIN-MODEL-UPDATED:32157.4 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:32585 VIRTUAL-SKIN-SUB-0:33031.6 VIRTUAL-SKIN-SUB-1:29704.4 VIRTUAL-SKIN-SUB-2:29404.1 VIRTUAL-SKIN-SUB-3:32866.6 VIRTUAL-SKIN-SUB-4:29500.7 VIRTUAL-SKIN-SUB-5:32255.2 VIRTUAL-SKIN-SUB-6:31002.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26729 charging_therm:40565 disp_therm:27033 north_therm:34287 quiet_therm:32663 rfpa_therm:35467 soc_therm:46989 usb_pwr_therm:26893 
+10-23 02:04:17.395  5107  5114 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-NOW no valid prediction samples found
+10-23 02:04:17.395  5107  5114 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:04:17.395  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:04:17.395  5107  5114 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:04:17.395  5107  5114 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:04:17.395  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33031.6 VIRTUAL-SKIN-MODEL:32585 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-446.555 
+10-23 02:04:17.395  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:32.2552 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:32255.2 VIRTUAL-SKIN-CHARGE-SUB-0:31838.3 VIRTUAL-SKIN-CHARGE-SUB-1:32228.5 VIRTUAL-SKIN-CHARGE-SUB-2:30269 VIRTUAL-SKIN-CHARGE-SUB-3:32255.2 VIRTUAL-SKIN-CHARGE-WIRED:32255.2 WLC_CHECK:1 btmspkr_therm:26729 charging_therm:40565 disp_therm:27033 north_therm:34287 quiet_therm:32663 rfpa_therm:35467 soc_therm:46989 thb_hda:54 usb_pwr_therm:26893 
+10-23 02:04:17.395  5107  5114 I pixel-thermal: VIRTUAL-SKIN:32.1574 raw data: VIRTUAL-SKIN:32157.4 
+10-23 02:04:17.395  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:32.1574 raw data: VIRTUAL-SKIN:32157.4 VIRTUAL-SKIN-SOC:32157.4 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:32.1574 raw data: VIRTUAL-SKIN:32157.4 VIRTUAL-SKIN-HINT:32157.4 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:32.1574 raw data: VIRTUAL-SKIN:32157.4 VIRTUAL-SKIN-GPU:32157.4 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:32.1574 raw data: VIRTUAL-SKIN:32157.4 VIRTUAL-SKIN-CPU-HIGH:32157.4 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:31.1043 raw data: VIRTUAL-SKIN-SPEAKER:31104.3 VIRTUAL-SKIN-SPEAKER-SUB-0:31104.3 btmspkr_therm:26729 charging_therm:40565 disp_therm:27033 north_therm:34287 quiet_therm:32663 rfpa_therm:35467 soc_therm:46989 usb_pwr_therm:26893 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: cellular-emergency:32.1574 raw data: VIRTUAL-SKIN:32157.4 cellular-emergency:32157.4 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:32.1574 raw data: VIRTUAL-SKIN:32157.4 VIRTUAL-SKIN-CPU-LIGHT-ODPM:32157.4 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: rfpa_therm:35.467 raw data: rfpa_therm:35467 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:32255.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:32255.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:04:17.396  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:32.2552 raw data: VIRTUAL-SKIN-CHARGE:32255.2 VIRTUAL-SKIN-CHARGE-PERSIST:32255.2 
+10-23 02:04:17.490  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 0]
+10-23 02:04:17.985  5107  5114 I pixel-thermal: north_therm:34.287 raw data: north_therm:34287 
+10-23 02:04:17.990  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [34287.00 46989.00 40565.00 27033.00 32663.00 26893.00 35467.00 26729.00 ]
+10-23 02:04:17.990  5107  5114 I native  : I0000 00:00:1792746257.990694    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:17.990  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33974.9 34128.4 34275.9 34420.2 34554.4 34672.6 ]
+10-23 02:04:17.990  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33974.9 34128.4 34275.9 34420.2 34554.4 34672.6 ]
+10-23 02:04:17.991  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33346.6 LSTM-VT-PREDICTION-21SEC-BACK:32996.2 LSTM-VT-PREDICTION-28SEC-BACK:35585.6 LSTM-VT-PREDICTION-35SEC-BACK:35636.8 LSTM-VT-PREDICTION-7SEC-BACK:33685.2 LSTM-VT-PREDICTION-ERROR-14SEC:-628.324 LSTM-VT-PREDICTION-ERROR-21SEC:-978.668 LSTM-VT-PREDICTION-ERROR-28SEC:1610.68 LSTM-VT-PREDICTION-ERROR-35SEC:1661.9 LSTM-VT-PREDICTION-ERROR-7SEC:-289.711 LSTM-VT-PREDICTION-NOW:33974.9 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:33974.9 btmspkr_therm:26729 charging_therm:40565 disp_therm:27033 north_therm:34287 quiet_therm:32663 rfpa_therm:35467 soc_therm:46989 usb_pwr_therm:26893 
+10-23 02:04:19.031  5880  6121 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:04:19.034  5880  8092 D TemperatureStateSource: sequence=507 actualDelay=10000
+10-23 02:04:19.034  5880  8092 D TemperatureStateSource: Reading temperature: sequence=508
+10-23 02:04:19.034  5107  5107 I pixel-thermal: VIRTUAL-SKIN:32.1574 raw data: VIRTUAL-SKIN:32157.4 
+10-23 02:04:19.035  5880  8092 D TemperatureStateSource: getDeviceTemperatures: sequence=508 deviceTemperatureType=3 temperatureSource=0 temperatures=[32.15737]
+10-23 02:04:19.035  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:04:19.035  5880  8092 D TemperatureStateSource: sequence=508 waitTime=10000
+10-23 02:04:19.035  5880  5971 D BusinessScope: Start running the #1027 block
+10-23 02:04:19.037  5107  5107 I pixel-thermal: VIRTUAL-SKIN:32.1574 raw data: VIRTUAL-SKIN:32157.4 
+10-23 02:04:19.037  5880  5971 I TemperatureStateSource: temperature was set
+10-23 02:04:19.039  5880  5971 D BusinessScope: Enqueuing the block
+10-23 02:04:19.039  5880  5971 D ImpulseStateSource: Notify clients: 511
+10-23 02:04:19.039  5880  5971 D BusinessScope: Finish running the #1027 block
+10-23 02:04:19.039  5880  5971 D BusinessScope: Start running the #1028 block
+10-23 02:04:19.040  5880  8121 D BusinessScope: Finish running the #1028 block
+10-23 02:04:20.492   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:20.616  1489  5617 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 3]
+10-23 02:04:23.614   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:23.725  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:04:24.398  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26776.00 41067.00 27080.00 34666.00 33019.00 35846.00 47586.00 26940.00 ]
+10-23 02:04:24.398  5107  5114 I native  : I0000 00:00:1792746264.398662    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:24.398  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [32855.1 ]
+10-23 02:04:24.398  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [32855.1 ]
+10-23 02:04:24.398  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:32.4365 raw data: VIRTUAL-SKIN:32436.5 VIRTUAL-SKIN-CPU-MID:32436.5 VIRTUAL-SKIN-LEGACY:33278.9 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:423.746 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:32855.1 VIRTUAL-SKIN-MODEL-CLAMPED:32855.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-423.746 VIRTUAL-SKIN-MODEL-UPDATED:32436.5 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:32855.1 VIRTUAL-SKIN-SUB-0:33278.9 VIRTUAL-SKIN-SUB-1:29887.5 VIRTUAL-SKIN-SUB-2:29670.3 VIRTUAL-SKIN-SUB-3:33135 VIRTUAL-SKIN-SUB-4:29635.9 VIRTUAL-SKIN-SUB-5:32551.9 VIRTUAL-SKIN-SUB-6:31232.4 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26776 charging_therm:41067 disp_therm:27080 north_therm:34666 quiet_therm:33019 rfpa_therm:35846 soc_therm:47586 usb_pwr_therm:26940 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33278.9 VIRTUAL-SKIN-MODEL:32855.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-423.746 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:32.5519 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:32551.9 VIRTUAL-SKIN-CHARGE-SUB-0:32098.8 VIRTUAL-SKIN-CHARGE-SUB-1:32453.1 VIRTUAL-SKIN-CHARGE-SUB-2:30498.2 VIRTUAL-SKIN-CHARGE-SUB-3:32551.9 VIRTUAL-SKIN-CHARGE-WIRED:32551.9 WLC_CHECK:1 btmspkr_therm:26776 charging_therm:41067 disp_therm:27080 north_therm:34666 quiet_therm:33019 rfpa_therm:35846 soc_therm:47586 thb_hda:54 usb_pwr_therm:26940 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: VIRTUAL-SKIN:32.4365 raw data: VIRTUAL-SKIN:32436.5 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:32.4365 raw data: VIRTUAL-SKIN:32436.5 VIRTUAL-SKIN-SOC:32436.5 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:32.4365 raw data: VIRTUAL-SKIN:32436.5 VIRTUAL-SKIN-HINT:32436.5 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:32.4365 raw data: VIRTUAL-SKIN:32436.5 VIRTUAL-SKIN-GPU:32436.5 
+10-23 02:04:24.404  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:32.4365 raw data: VIRTUAL-SKIN:32436.5 VIRTUAL-SKIN-CPU-HIGH:32436.5 
+10-23 02:04:24.405  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:31.3027 raw data: VIRTUAL-SKIN-SPEAKER:31302.7 VIRTUAL-SKIN-SPEAKER-SUB-0:31302.7 btmspkr_therm:26776 charging_therm:41067 disp_therm:27080 north_therm:34666 quiet_therm:33019 rfpa_therm:35846 soc_therm:47586 usb_pwr_therm:26940 
+10-23 02:04:24.405  5107  5114 I pixel-thermal: cellular-emergency:32.4365 raw data: VIRTUAL-SKIN:32436.5 cellular-emergency:32436.5 
+10-23 02:04:24.405  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:32.4365 raw data: VIRTUAL-SKIN:32436.5 VIRTUAL-SKIN-CPU-LIGHT-ODPM:32436.5 
+10-23 02:04:24.405  5107  5114 I pixel-thermal: rfpa_therm:35.846 raw data: rfpa_therm:35846 
+10-23 02:04:24.405  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:32551.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:32551.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:04:24.405  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:32.5519 raw data: VIRTUAL-SKIN-CHARGE:32551.9 VIRTUAL-SKIN-CHARGE-PERSIST:32551.9 
+10-23 02:04:24.993  5107  5114 I pixel-thermal: north_therm:34.666 raw data: north_therm:34666 
+10-23 02:04:24.999  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [34666.00 47586.00 41067.00 27080.00 33019.00 26940.00 35846.00 26776.00 ]
+10-23 02:04:24.999  5107  5114 I native  : I0000 00:00:1792746264.999378    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:24.999  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34325.6 34482 34632.5 34779.7 34917.1 35038.5 ]
+10-23 02:04:24.999  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34325.6 34482 34632.5 34779.7 34917.1 35038.5 ]
+10-23 02:04:24.999  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33827.8 LSTM-VT-PREDICTION-21SEC-BACK:33480.8 LSTM-VT-PREDICTION-28SEC-BACK:33112.7 LSTM-VT-PREDICTION-35SEC-BACK:35733.1 LSTM-VT-PREDICTION-7SEC-BACK:34128.4 LSTM-VT-PREDICTION-ERROR-14SEC:-497.785 LSTM-VT-PREDICTION-ERROR-21SEC:-844.848 LSTM-VT-PREDICTION-ERROR-28SEC:-1212.88 LSTM-VT-PREDICTION-ERROR-35SEC:1407.52 LSTM-VT-PREDICTION-ERROR-7SEC:-197.25 LSTM-VT-PREDICTION-NOW:34325.6 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:34325.6 btmspkr_therm:26776 charging_therm:41067 disp_therm:27080 north_therm:34666 quiet_therm:33019 rfpa_therm:35846 soc_therm:47586 usb_pwr_therm:26940 
+10-23 02:04:26.726   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:26.841  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:04:27.326   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:29.035  5880  8092 D TemperatureStateSource: sequence=508 actualDelay=10001
+10-23 02:04:29.036  5880  8092 D TemperatureStateSource: Reading temperature: sequence=509
+10-23 02:04:29.038  5880  5971 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:04:29.041  5107  5107 I pixel-thermal: VIRTUAL-SKIN:32.604 raw data: VIRTUAL-SKIN:32603.9 VIRTUAL-SKIN-LEGACY:33525.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:670.344 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:32855.1 VIRTUAL-SKIN-MODEL-CLAMPED:32855.1 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-670.344 VIRTUAL-SKIN-MODEL-UPDATED:32603.9 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:32855.1 VIRTUAL-SKIN-SUB-0:33525.5 VIRTUAL-SKIN-SUB-1:30076.3 VIRTUAL-SKIN-SUB-2:29934.3 VIRTUAL-SKIN-SUB-3:33401.7 VIRTUAL-SKIN-SUB-4:29778.3 VIRTUAL-SKIN-SUB-5:32843.5 VIRTUAL-SKIN-SUB-6:31459 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26846 charging_therm:41548 disp_therm:27150 north_therm:35044 quiet_therm:33353 rfpa_therm:36224 soc_therm:48158 usb_pwr_therm:26987 
+10-23 02:04:29.041  5880  8092 D TemperatureStateSource: getDeviceTemperatures: sequence=509 deviceTemperatureType=3 temperatureSource=0 temperatures=[32.60395]
+10-23 02:04:29.041  5880  8092 D BusinessScope: Enqueuing the block
+10-23 02:04:29.042  5880  8092 D TemperatureStateSource: sequence=509 waitTime=10000
+10-23 02:04:29.042  5880  8121 D BusinessScope: Start running the #1029 block
+10-23 02:04:29.044  5107  5107 I pixel-thermal: VIRTUAL-SKIN:32.604 raw data: VIRTUAL-SKIN:32603.9 
+10-23 02:04:29.044  5880  8121 I TemperatureStateSource: temperature was set
+10-23 02:04:29.045  5880  8121 D BusinessScope: Enqueuing the block
+10-23 02:04:29.046  5880  8121 D ImpulseStateSource: Notify clients: 512
+10-23 02:04:29.046  5880  8121 D BusinessScope: Finish running the #1029 block
+10-23 02:04:29.048  5880  8121 D BusinessScope: Start running the #1030 block
+10-23 02:04:29.049  5880  8121 D BusinessScope: Finish running the #1030 block
+10-23 02:04:29.844   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:04:29.952  1489  5617 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 1]
+10-23 02:04:30.609  5107  5114 I pixel-thermal: quiet_therm:33.353 raw data: quiet_therm:33353 
+10-23 02:04:31.406  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [26846.00 41548.00 27150.00 35044.00 33353.00 36224.00 48158.00 26987.00 ]
+10-23 02:04:31.406  5107  5114 I native  : I0000 00:00:1792746271.406520    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:31.406  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [33156.6 ]
+10-23 02:04:31.406  5107  5114 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [33156.6 ]
+10-23 02:04:31.406  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:32.825 raw data: VIRTUAL-SKIN:32825 VIRTUAL-SKIN-CPU-MID:32825 VIRTUAL-SKIN-LEGACY:33525.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:368.918 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33156.6 VIRTUAL-SKIN-MODEL-CLAMPED:33156.6 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-368.918 VIRTUAL-SKIN-MODEL-UPDATED:32825 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33156.6 VIRTUAL-SKIN-SUB-0:33525.5 VIRTUAL-SKIN-SUB-1:30076.3 VIRTUAL-SKIN-SUB-2:29934.3 VIRTUAL-SKIN-SUB-3:33401.7 VIRTUAL-SKIN-SUB-4:29778.3 VIRTUAL-SKIN-SUB-5:32843.5 VIRTUAL-SKIN-SUB-6:31459 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:26846 charging_therm:41548 disp_therm:27150 north_therm:35044 quiet_therm:33353 rfpa_therm:36224 soc_therm:48158 usb_pwr_therm:26987 
+10-23 02:04:31.411  5107  5114 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33525.5 VIRTUAL-SKIN-MODEL:33156.6 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-368.918 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:32.8435 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:32843.5 VIRTUAL-SKIN-CHARGE-SUB-0:32358.5 VIRTUAL-SKIN-CHARGE-SUB-1:32682.4 VIRTUAL-SKIN-CHARGE-SUB-2:30725.2 VIRTUAL-SKIN-CHARGE-SUB-3:32843.5 VIRTUAL-SKIN-CHARGE-WIRED:32843.5 WLC_CHECK:1 btmspkr_therm:26846 charging_therm:41548 disp_therm:27150 north_therm:35044 quiet_therm:33353 rfpa_therm:36224 soc_therm:48158 thb_hda:54 usb_pwr_therm:26987 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN:32.825 raw data: VIRTUAL-SKIN:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SOC:32.825 raw data: VIRTUAL-SKIN:32825 VIRTUAL-SKIN-SOC:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-HINT:32.825 raw data: VIRTUAL-SKIN:32825 VIRTUAL-SKIN-HINT:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-GPU:32.825 raw data: VIRTUAL-SKIN:32825 VIRTUAL-SKIN-GPU:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:32.825 raw data: VIRTUAL-SKIN:32825 VIRTUAL-SKIN-CPU-HIGH:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:31.5039 raw data: VIRTUAL-SKIN-SPEAKER:31503.9 VIRTUAL-SKIN-SPEAKER-SUB-0:31503.9 btmspkr_therm:26846 charging_therm:41548 disp_therm:27150 north_therm:35044 quiet_therm:33353 rfpa_therm:36224 soc_therm:48158 usb_pwr_therm:26987 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: cellular-emergency:32.825 raw data: VIRTUAL-SKIN:32825 cellular-emergency:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:32.825 raw data: VIRTUAL-SKIN:32825 VIRTUAL-SKIN-CPU-LIGHT-ODPM:32825 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: rfpa_therm:36.224 raw data: rfpa_therm:36224 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:1 IS_WIRED_15W_CHECK:2 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:0 IS_WIRED_7_5W_CHECK:1 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:0 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:1 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:32843.5 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:32843.5 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:54 
+10-23 02:04:31.412  5107  5114 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:32.8435 raw data: VIRTUAL-SKIN-CHARGE:32843.5 VIRTUAL-SKIN-CHARGE-PERSIST:32843.5 
+10-23 02:04:32.002  5107  5114 I pixel-thermal: north_therm:35.044 raw data: north_therm:35044 
+10-23 02:04:32.008  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35044.00 48158.00 41548.00 27150.00 33353.00 26987.00 36224.00 26846.00 ]
+10-23 02:04:32.008  5107  5114 I native  : I0000 00:00:1792746272.008195    5114 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:04:32.008  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34696.6 34854.9 35007.7 35157.4 35298 35424.2 ]
+10-23 02:04:32.008  5107  5114 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34696.6 34854.9 35007.7 35157.4 35298 35424.2 ]
+10-23 02:04:32.008  5107  5114 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:34275.9 LSTM-VT-PREDICTION-21SEC-BACK:33967.3 LSTM-VT-PREDICTION-28SEC-BACK:33603.8 LSTM-VT-PREDICTION-35SEC-BACK:33213.4 LSTM-VT-PREDICTION-7SEC-BACK:34482 LSTM-VT-PREDICTION-ERROR-14SEC:-420.641 LSTM-VT-PREDICTION-ERROR-21SEC:-729.316 LSTM-VT-PREDICTION-ERROR-28SEC:-1092.75 LSTM-VT-PREDICTION-ERROR-35SEC:-1483.2 LSTM-VT-PREDICTION-ERROR-7SEC:-214.574 LSTM-VT-PREDICTION-NOW:34696.6 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:34696.6 btmspkr_therm:26846 charging_therm:41548 disp_therm:27150 north_therm:35044 quiet_therm:33353 rfpa_therm:36224 soc_therm:48158 usb_pwr_therm:26987 
+10-23 02:04:32.300 21224 21224 I native  : I0000 00:00:1792746272.300346   21224 litert_lm_lib.cc:429] BenchmarkInfo:
+10-23 02:04:32.300 21224 21224 I native  :   Init Phases (7):
+10-23 02:04:32.300 21224 21224 I native  :     - Init Conversation: 28.16 ms
+10-23 02:04:32.300 21224 21224 I native  :     - Init Executor: 6731.08 ms
+10-23 02:04:32.300 21224 21224 I native  :     - Init LLM metadata: 0.01 ms
+10-23 02:04:32.300 21224 21224 I native  :     - Init Model assets: 1.05 ms
+10-23 02:04:32.300 21224 21224 I native  :     - Init Tokenizer: 730.87 ms
+10-23 02:04:32.300 21224 21224 I native  :     - Init Total: 6865.14 ms
+10-23 02:04:32.300 21224 21224 I native  : --------------------------------------------------
+10-23 02:04:32.300 21224 21224 I native  :   Time to first token: 30.27 s
+10-23 02:04:32.300 21224 21224 I native  : --------------------------------------------------
+10-23 02:04:32.300 21224 21224 I native  :   Prefill Turns (Total 1 turns):
+10-23 02:04:32.300 21224 21224 I native  :     Prefill Turn 1: Processed 1024 tokens in 29.991098159s duration.
+10-23 02:04:32.300 21224 21224 I native  :       Prefill Speed: 34.14 tokens/sec.
+10-23 02:04:32.300 21224 21224 I native  : --------------------------------------------------
+10-23 02:04:32.300 21224 21224 I native  :   Decode Turns (Total 1 turns):
+10-23 02:04:32.300 21224 21224 I native  :     Decode Turn 1: Processed 256 tokens in 1m11.661508336s duration.
+10-23 02:04:32.300 21224 21224 I native  :       Decode Speed: 3.57 tokens/sec.
+10-23 02:04:32.300 21224 21224 I native  : --------------------------------------------------
+10-23 02:04:32.300 21224 21224 I native  :   TextToTokenIds Turns (Total 1 turns):
+10-23 02:04:32.300 21224 21224 I native  :     Turn 1: 583.456us, 1024 tokens
+10-23 02:04:32.300 21224 21224 I native  : --------------------------------------------------
+10-23 02:04:32.300 21224 21224 I native  : --------------------------------------------------
+10-23 02:04:32.614 21224 21224 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b4c3c9b40, name=CpuAccelerator
+10-23 02:04:32.615 21224 21224 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b4c3c9f30, name=LiteRT GPU
+10-23 02:04:32.664 21224 21224 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b4c4180b0, name=CpuAccelerator
+10-23 02:04:32.664 21224 21224 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b4c417fd0, name=LiteRT GPU
+10-23 02:04:32.772 21690 21690 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:04:32.954   850 11687 I WifiHAL : Creating message to get link statistics; iface = 47

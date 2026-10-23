@@ -1,0 +1,800 @@
+--------- beginning of main
+10-23 02:08:52.168  3670  3670 I native  : I0000 00:00:1792746532.168179    3670 litert_lm_lib.cc:629] Choose backend: cpu
+10-23 02:08:52.168  3670  3670 I native  : I0000 00:00:1792746532.168402    3670 litert_lm_lib.cc:789] executor_settings: backend: CPU
+10-23 02:08:52.168  3670  3670 I native  : backend_config:
+10-23 02:08:52.168  3670  3670 I native  : kv_increment_size: 16
+10-23 02:08:52.168  3670  3670 I native  : prefill_chunk_size: -1
+10-23 02:08:52.168  3670  3670 I native  : number_of_threads: 4
+10-23 02:08:52.168  3670  3670 I native  : enable_ynnpack: false
+10-23 02:08:52.168  3670  3670 I native  : 
+10-23 02:08:52.168  3670  3670 I native  : max_tokens: 2048
+10-23 02:08:52.168  3670  3670 I native  : activation_data_type: Not set
+10-23 02:08:52.168  3670  3670 I native  : max_num_images: 0
+10-23 02:08:52.168  3670  3670 I native  : lora_rank: 0
+10-23 02:08:52.168  3670  3670 I native  : pad_token_id: -1
+10-23 02:08:52.168  3670  3670 I native  : cache_dir: 
+10-23 02:08:52.168  3670  3670 I native  : cache_file: Not set
+10-23 02:08:52.168  3670  3670 I native  : litert_dispatch_lib_dir: Not set
+10-23 02:08:52.168  3670  3670 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm
+10-23 02:08:52.168  3670  3670 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-23 02:08:52.168  3670  3670 I native  : 
+10-23 02:08:52.168  3670  3670 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-23 02:08:52.168  3670  3670 I native  : num_output_candidates: 1
+10-23 02:08:52.168  3670  3670 I native  : configure_magic_numbers: true
+10-23 02:08:52.168  3670  3670 I native  : verify_magic_numbers: false
+10-23 02:08:52.168  3670  3670 I native  : clear_kv_cache_before_prefill: true
+10-23 02:08:52.168  3670  3670 I native  : num_logits_to_print_after_decode: 0
+10-23 02:08:52.168  3670  3670 I native  : gpu_madvise_original_shared_tensors: true
+10-23 02:08:52.168  3670  3670 I native  : gpu_enable_metal_residency_set: false
+10-23 02:08:52.168  3670  3670 I native  : is_benchmark: true
+10-23 02:08:52.168  3670  3670 I native  : enable_profiling: false
+10-23 02:08:52.168  3670  3670 I native  : preferred_device_substr: 
+10-23 02:08:52.168  3670  3670 I native  : num_threads_to_upload: -1
+10-23 02:08:52.168  3670  3670 I native  : num_threads_to_compile: -1
+10-23 02:08:52.168  3670  3670 I native  : convert_weights_on_gpu: true
+10-23 02:08:52.168  3670  3670 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-23 02:08:52.168  3670  3670 I native  : optimize_shader_compilation: true
+10-23 02:08:52.168  3670  3670 I native  : cache_compiled_shaders_only: false
+10-23 02:08:52.168  3670  3670 I native  : share_constant_tensors: true
+10-23 02:08:52.168  3670  3670 I native  : sampler_handles_input: true
+10-23 02:08:52.168  3670  3670 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-23 02:08:52.168  3670  3670 I native  : hint_waiting_for_completion: Not set
+10-23 02:08:52.168  3670  3670 I native  : gpu_context_low_priority: Not set
+10-23 02:08:52.168  3670  3670 I native  : enable_speculative_decoding: false
+10-23 02:08:52.168  3670  3670 I native  : disable_delegate_clustering: false
+10-23 02:08:52.168  3670  3670 I native  : hint_kernel_batch_size: Not set
+10-23 02:08:52.168  3670  3670 I native  : error_on_invalid_sampled_token_id: false
+10-23 02:08:52.168  3670  3670 I native  : 
+10-23 02:08:52.168  3670  3670 I native  : 
+10-23 02:08:52.168  3670  3670 I native  : I0000 00:00:1792746532.168430    3670 litert_lm_lib.cc:796] vision_executor_settings: not set
+10-23 02:08:52.168  3670  3670 I native  : I0000 00:00:1792746532.168435    3670 litert_lm_lib.cc:802] audio_executor_settings: not set
+10-23 02:08:52.168  3670  3670 I native  : I0000 00:00:1792746532.168440    3670 litert_lm_lib.cc:825] Creating engine
+10-23 02:08:52.169  3670  3670 W native  : W0000 00:00:1792746532.169365    3670 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 02:08:52.169  3670  3670 W native  : W0000 00:00:1792746532.169382    3670 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 02:08:52.169  3670  3670 W native  : W0000 00:00:1792746532.169387    3670 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:08:52.169  3670  3670 W native  : W0000 00:00:1792746532.169392    3670 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:08:52.169  3670  3670 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:08:52.169  3670  3670 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:08:52.169  3670  3670 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:08:52.170  3670  3671 W native  : W0000 00:00:1792746532.170116    3671 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:08:52.170  3670  3671 W native  : W0000 00:00:1792746532.170263    3671 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+10-23 02:08:52.170  3670  3671 W native  : W0000 00:00:1792746532.170277    3671 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+10-23 02:08:52.170  3670  3670 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959636d00, name=LiteRT GPU
+10-23 02:08:52.170  3670  3670 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:08:52.170  3670  3670 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959636600, name=CpuAccelerator
+10-23 02:08:52.170  3670  3670 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:08:52.187  3670  3670 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:08:52.187  3670  3670 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:08:52.187  3670  3670 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:08:52.187  3670  3670 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959635f70, name=LiteRT GPU
+10-23 02:08:52.187  3670  3670 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:08:52.187  3670  3670 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959635bf0, name=CpuAccelerator
+10-23 02:08:52.188  3670  3670 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:08:52.188  3670  3670 W native  : W0000 00:00:1792746532.188026    3670 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+10-23 02:08:52.188  3670  3670 W native  : W0000 00:00:1792746532.188093    3670 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+10-23 02:08:52.188  3670  3670 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:08:52.188  3670  3670 I tflite  : Initialized TensorFlow Lite runtime.
+10-23 02:08:52.195  3670  3670 W libc    : Access denied finding property "ro.mediatek.platform"
+10-23 02:08:52.195  3670  3670 W libc    : Access denied finding property "ro.chipname"
+10-23 02:08:52.195  3670  3670 W libc    : Access denied finding property "ro.hardware.chipname"
+10-23 02:08:52.203  3670  3670 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-23 02:08:52.204  3670  3670 I tflite  : XNNPack weight cache loaded from '/data/local/tmp/llmbench/models/litert-community_Qwen3-1.7B_Qwen3_1.7B.litertlm_1792746115_2056729520.xnnpack_cache'.
+10-23 02:08:52.207  3670  3670 I tflite  : Replacing 1126 out of 1298 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 221 partitions for subgraph 0 (prefill_128).
+10-23 02:08:52.218  3670  3670 I tflite  : Replacing 1070 out of 1244 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 226 partitions for subgraph 1 (decode).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 2 (odml.rms_norm.impl).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 3 (odml.rms_norm.impl_0).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 4 (odml.rms_norm.impl_1).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 5 (odml.rms_norm.impl_2).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 6 (odml.rms_norm.impl_3).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 7 (odml.rms_norm.impl_4).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 8 (odml.rms_norm.impl_5).
+10-23 02:08:52.231  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 9 (odml.rms_norm.impl_6).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 10 (odml.rms_norm.impl_7).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 11 (odml.rms_norm.impl_8).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 12 (odml.rms_norm.impl_9).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 13 (odml.rms_norm.impl_10).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 14 (odml.rms_norm.impl_11).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 15 (odml.rms_norm.impl_12).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 16 (odml.rms_norm.impl_13).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 17 (odml.rms_norm.impl_14).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 18 (odml.rms_norm.impl_15).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 19 (odml.rms_norm.impl_16).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 20 (odml.rms_norm.impl_17).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 21 (odml.rms_norm.impl_18).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 22 (odml.rms_norm.impl_19).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 23 (odml.rms_norm.impl_20).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 24 (odml.rms_norm.impl_21).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 25 (odml.rms_norm.impl_22).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 26 (odml.rms_norm.impl_23).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 27 (odml.rms_norm.impl_24).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 28 (odml.rms_norm.impl_25).
+10-23 02:08:52.232  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 29 (odml.rms_norm.impl_26).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 30 (odml.rms_norm.impl_27).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 31 (odml.rms_norm.impl_28).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 32 (odml.rms_norm.impl_29).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 33 (odml.rms_norm.impl_30).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 34 (odml.rms_norm.impl_31).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 35 (odml.rms_norm.impl_32).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 36 (odml.rms_norm.impl_33).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 37 (odml.rms_norm.impl_34).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 38 (odml.rms_norm.impl_35).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 39 (odml.rms_norm.impl_36).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 40 (odml.rms_norm.impl_37).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 41 (odml.rms_norm.impl_38).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 42 (odml.rms_norm.impl_39).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 43 (odml.rms_norm.impl_40).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 44 (odml.rms_norm.impl_41).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 45 (odml.rms_norm.impl_42).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 46 (odml.rms_norm.impl_43).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 47 (odml.rms_norm.impl_44).
+10-23 02:08:52.233  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 48 (odml.rms_norm.impl_45).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 49 (odml.rms_norm.impl_46).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 50 (odml.rms_norm.impl_47).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 51 (odml.rms_norm.impl_48).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 52 (odml.rms_norm.impl_49).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 53 (odml.rms_norm.impl_50).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 54 (odml.rms_norm.impl_51).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 55 (odml.rms_norm.impl_52).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 56 (odml.rms_norm.impl_53).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 57 (odml.rms_norm.impl_54).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 58 (odml.rms_norm.impl_55).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 59 (odml.rms_norm.impl_56).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 60 (odml.rms_norm.impl_57).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 61 (odml.rms_norm.impl_58).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 62 (odml.rms_norm.impl_59).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 63 (odml.rms_norm.impl_60).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 64 (odml.rms_norm.impl_61).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 65 (odml.rms_norm.impl_62).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 66 (odml.rms_norm.impl_63).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 67 (odml.rms_norm.impl_64).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 68 (odml.rms_norm.impl_65).
+10-23 02:08:52.234  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 69 (odml.rms_norm.impl_66).
+10-23 02:08:52.234  5219  5226 I pixel-thermal: north_therm:35.846 raw data: north_therm:35846 
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 70 (odml.rms_norm.impl_67).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 71 (odml.rms_norm.impl_68).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 72 (odml.rms_norm.impl_69).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 73 (odml.rms_norm.impl_70).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 74 (odml.rms_norm.impl_71).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 75 (odml.rms_norm.impl_72).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 76 (odml.rms_norm.impl_73).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 77 (odml.rms_norm.impl_74).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 78 (odml.rms_norm.impl_75).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 79 (odml.rms_norm.impl_76).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 80 (odml.rms_norm.impl_77).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 81 (odml.rms_norm.impl_78).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 82 (odml.rms_norm.impl_79).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 83 (odml.rms_norm.impl_80).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 84 (odml.rms_norm.impl_81).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 85 (odml.rms_norm.impl_82).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 86 (odml.rms_norm.impl_83).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 87 (odml.rms_norm.impl_84).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 88 (odml.rms_norm.impl_85).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 89 (odml.rms_norm.impl_86).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 90 (odml.rms_norm.impl_87).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 91 (odml.rms_norm.impl_88).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 92 (odml.rms_norm.impl_89).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 93 (odml.rms_norm.impl_90).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 94 (odml.rms_norm.impl_91).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 95 (odml.rms_norm.impl_92).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 96 (odml.rms_norm.impl_93).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 97 (odml.rms_norm.impl_94).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 98 (odml.rms_norm.impl_95).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 99 (odml.rms_norm.impl_96).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 100 (odml.rms_norm.impl_97).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 101 (odml.rms_norm.impl_98).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 102 (odml.rms_norm.impl_99).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 103 (odml.rms_norm.impl_100).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 104 (odml.rms_norm.impl_101).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 105 (odml.rms_norm.impl_102).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 106 (odml.rms_norm.impl_103).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 107 (odml.rms_norm.impl_104).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 108 (odml.rms_norm.impl_105).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 109 (odml.rms_norm.impl_106).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 110 (odml.rms_norm.impl_107).
+10-23 02:08:52.235  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 111 (odml.rms_norm.impl_108).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 112 (odml.rms_norm.impl_109).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 113 (odml.rms_norm.impl_110).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 114 (odml.rms_norm.impl_111).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 115 (odml.rms_norm.impl_112).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 116 (odml.rms_norm.impl_113).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 117 (odml.rms_norm.impl_114).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 118 (odml.rms_norm.impl_115).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 119 (odml.rms_norm.impl_116).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 120 (odml.rms_norm.impl_117).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 121 (odml.rms_norm.impl_118).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 122 (odml.rms_norm.impl_119).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 123 (odml.rms_norm.impl_120).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 124 (odml.rms_norm.impl_121).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 125 (odml.rms_norm.impl_122).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 126 (odml.rms_norm.impl_123).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 127 (odml.rms_norm.impl_124).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 128 (odml.rms_norm.impl_125).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 129 (odml.rms_norm.impl_126).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 130 (odml.rms_norm.impl_127).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 131 (odml.rms_norm.impl_128).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 132 (odml.rms_norm.impl_129).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 133 (odml.rms_norm.impl_130).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 134 (odml.rms_norm.impl_131).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 135 (odml.rms_norm.impl_132).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 136 (odml.rms_norm.impl_133).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 137 (odml.rms_norm.impl_134).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 138 (odml.rms_norm.impl_135).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 139 (odml.rms_norm.impl_136).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 140 (odml.rms_norm.impl_137).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 141 (odml.rms_norm.impl_138).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 142 (odml.rms_norm.impl_139).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 143 (odml.rms_norm.impl_140).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 144 (odml.rms_norm.impl_141).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 145 (odml.rms_norm.impl_142).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 146 (odml.rms_norm.impl_143).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 147 (odml.rms_norm.impl_144).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 148 (odml.rms_norm.impl_145).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 149 (odml.rms_norm.impl_146).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 150 (odml.rms_norm.impl_147).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 151 (odml.rms_norm.impl_148).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 152 (odml.rms_norm.impl_149).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 153 (odml.rms_norm.impl_150).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 154 (odml.rms_norm.impl_151).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 155 (odml.rms_norm.impl_152).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 156 (odml.rms_norm.impl_153).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 157 (odml.rms_norm.impl_154).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 158 (odml.rms_norm.impl_155).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 159 (odml.rms_norm.impl_156).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 160 (odml.rms_norm.impl_157).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 161 (odml.rms_norm.impl_158).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 162 (odml.rms_norm.impl_159).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 163 (odml.rms_norm.impl_160).
+10-23 02:08:52.236  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 164 (odml.rms_norm.impl_161).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 165 (odml.rms_norm.impl_162).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 166 (odml.rms_norm.impl_163).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 167 (odml.rms_norm.impl_164).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 168 (odml.rms_norm.impl_165).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 169 (odml.rms_norm.impl_166).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 170 (odml.rms_norm.impl_167).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 171 (odml.rms_norm.impl_168).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 172 (odml.rms_norm.impl_169).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 173 (odml.rms_norm.impl_170).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 174 (odml.rms_norm.impl_171).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 175 (odml.rms_norm.impl_172).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 176 (odml.rms_norm.impl_173).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 177 (odml.rms_norm.impl_174).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 178 (odml.rms_norm.impl_175).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 179 (odml.rms_norm.impl_176).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 180 (odml.rms_norm.impl_177).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 181 (odml.rms_norm.impl_178).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 182 (odml.rms_norm.impl_179).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 183 (odml.rms_norm.impl_180).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 184 (odml.rms_norm.impl_181).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 185 (odml.rms_norm.impl_182).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 186 (odml.rms_norm.impl_183).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 187 (odml.rms_norm.impl_184).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 188 (odml.rms_norm.impl_185).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 189 (odml.rms_norm.impl_186).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 190 (odml.rms_norm.impl_187).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 191 (odml.rms_norm.impl_188).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 192 (odml.rms_norm.impl_189).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 193 (odml.rms_norm.impl_190).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 194 (odml.rms_norm.impl_191).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 195 (odml.rms_norm.impl_192).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 196 (odml.rms_norm.impl_193).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 197 (odml.rms_norm.impl_194).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 198 (odml.rms_norm.impl_195).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 199 (odml.rms_norm.impl_196).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 200 (odml.rms_norm.impl_197).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 201 (odml.rms_norm.impl_198).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 202 (odml.rms_norm.impl_199).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 203 (odml.rms_norm.impl_200).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 204 (odml.rms_norm.impl_201).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 205 (odml.rms_norm.impl_202).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 206 (odml.rms_norm.impl_203).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 207 (odml.rms_norm.impl_204).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 208 (odml.rms_norm.impl_205).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 209 (odml.rms_norm.impl_206).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 210 (odml.rms_norm.impl_207).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 211 (odml.rms_norm.impl_208).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 212 (odml.rms_norm.impl_209).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 213 (odml.rms_norm.impl_210).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 214 (odml.rms_norm.impl_211).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 215 (odml.rms_norm.impl_212).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 216 (odml.rms_norm.impl_213).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 217 (odml.rms_norm.impl_214).
+10-23 02:08:52.237  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 218 (odml.rms_norm.impl_215).
+10-23 02:08:52.238  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 219 (odml.rms_norm.impl_216).
+10-23 02:08:52.238  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 220 (odml.rms_norm.impl_217).
+10-23 02:08:52.238  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 221 (odml.rms_norm.impl_218).
+10-23 02:08:52.238  3670  3670 I tflite  : Replacing 7 out of 7 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 222 (odml.rms_norm.impl_219).
+10-23 02:08:52.238  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 223 (odml.rms_norm.impl_220).
+10-23 02:08:52.238  3670  3670 I tflite  : Replacing 6 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 224 (odml.rms_norm.impl_221).
+10-23 02:08:52.244  3670  3670 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-23 02:08:52.244  3670  3670 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-23 02:08:52.244  3670  3670 I litert  : [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-23 02:08:52.245  3670  3670 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959694a80, name=LiteRT GPU
+10-23 02:08:52.245  3670  3670 I litert  : [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-23 02:08:52.245  3670  3670 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007959693740, name=CpuAccelerator
+10-23 02:08:52.245  3670  3670 I litert  : [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+10-23 02:08:52.339  6037  7549 W SHANNON_IMS: 5703 [CONN] Timer IMS_SUPPORT_SERVICE_TIMER expired (ConnectionTimer$ConnectionTimerTask%run:76)
+10-23 02:08:52.340  6037  7549 W SHANNON_IMS: 5704 [SIM#] Invalid sub id : -1   with slot id : 0 (SubscriptionWrapper%getSubId:55)
+10-23 02:08:52.342  6037  7549 W SHANNON_IMS: 5708 [SIM#] Invalid sub id : -1   with slot id : 0 (SubscriptionWrapper%getSubId:55)
+10-23 02:08:52.484  3670  3670 W native  : W0000 00:00:1792746532.484492    3670 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:08:52.484  3670  3670 W native  : W0000 00:00:1792746532.484603    3670 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-23 02:08:52.484  3670  3670 W native  : W0000 00:00:1792746532.484614    3670 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:08:52.484  3670  3670 W native  : W0000 00:00:1792746532.484620    3670 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-23 02:08:52.484  3670  3670 I litert  : [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+10-23 02:08:52.486  3670  3670 I tflite  : Replacing 1 out of 4 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (decode_embedder).
+10-23 02:08:52.486  3670  3670 I tflite  : Replacing 1 out of 4 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 1 (prefill_embedder_128).
+10-23 02:08:52.486  3670  3670 W native  : W0000 00:00:1792746532.486779    3670 embedding_lookup_text.cc:352] No signature key was provided. The Embedding model is expected to have exactly one signature but got 2. Using the first signature: decode_embedder
+10-23 02:08:52.486  3670  3670 W native  : W0000 00:00:1792746532.486873    3670 litert_lm_loader.cc:391] Section not found: TFLiteModel
+10-23 02:08:52.486  3670  3670 W native  : W0000 00:00:1792746532.486893    3670 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-23 02:08:52.671  3670  3670 W native  : W0000 00:00:1792746532.671642    3670 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-23 02:08:52.671  3670  3670 W native  : W0000 00:00:1792746532.671750    3670 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-23 02:08:52.671  3670  3670 W native  : W0000 00:00:1792746532.671763    3670 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:08:52.671  3670  3670 W native  : W0000 00:00:1792746532.671772    3670 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-23 02:08:52.672  3670  3670 I native  : I0000 00:00:1792746532.672301    3670 litert_lm_lib.cc:1079] Creating conversation
+10-23 02:08:52.673  3670  3670 I native  : I0000 00:00:1792746532.673537    3670 litert_lm_lib.cc:1091] Running single-turn conversation
+10-23 02:08:52.687  3670  3670 I tflite  : Replacing 1896 out of 1958 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 57 partitions for subgraph 0 (prefill_128).
+10-23 02:08:53.462  5219  5226 I pixel-thermal: rfpa_therm:35.957 raw data: rfpa_therm:35957 
+10-23 02:08:53.928   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:08:53.951  5984  6179 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:08:53.958  5984  8158 D TemperatureStateSource: sequence=2744 actualDelay=10001
+10-23 02:08:53.958  5984  8158 D TemperatureStateSource: Reading temperature: sequence=2745
+10-23 02:08:53.961  5219  5219 I pixel-thermal: VIRTUAL-SKIN:33.3696 raw data: VIRTUAL-SKIN:33369.6 VIRTUAL-SKIN-LEGACY:33172.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:-62.125 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33234.7 VIRTUAL-SKIN-MODEL-CLAMPED:33234.7 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:62.125 VIRTUAL-SKIN-MODEL-UPDATED:33369.6 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33234.7 VIRTUAL-SKIN-SUB-0:32968.8 VIRTUAL-SKIN-SUB-1:32168.3 VIRTUAL-SKIN-SUB-2:31756.9 VIRTUAL-SKIN-SUB-3:33172.5 VIRTUAL-SKIN-SUB-4:32032.6 VIRTUAL-SKIN-SUB-5:32336.1 VIRTUAL-SKIN-SUB-6:33007.1 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31060 charging_therm:36736 disp_therm:31038 north_therm:35846 quiet_therm:34755 rfpa_therm:35957 soc_therm:37738 usb_pwr_therm:30993 
+10-23 02:08:53.962  5984  8158 D TemperatureStateSource: getDeviceTemperatures: sequence=2745 deviceTemperatureType=3 temperatureSource=0 temperatures=[33.36956]
+10-23 02:08:53.962  5984  8158 D BusinessScope: Enqueuing the block
+10-23 02:08:53.962  5984  8158 D TemperatureStateSource: sequence=2745 waitTime=10000
+10-23 02:08:53.962  5984  8158 D BusinessScope: Start running the #5506 block
+10-23 02:08:53.963  5219  5219 I pixel-thermal: VIRTUAL-SKIN:33.3696 raw data: VIRTUAL-SKIN:33369.6 
+10-23 02:08:53.964  5984  8158 I TemperatureStateSource: temperature was set
+10-23 02:08:53.964  5984  8158 D BusinessScope: Enqueuing the block
+10-23 02:08:53.964  5984  8158 D ImpulseStateSource: Notify clients: 2750
+10-23 02:08:53.964  5984  8158 D BusinessScope: Finish running the #5506 block
+10-23 02:08:53.964  5984  8158 D BusinessScope: Start running the #5507 block
+10-23 02:08:53.967  5984  8158 D BusinessScope: Finish running the #5507 block
+10-23 02:08:54.024  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:08:54.643  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35846.00 37738.00 36736.00 31038.00 34755.00 30993.00 35957.00 31060.00 ]
+10-23 02:08:54.643  5219  5226 I native  : I0000 00:00:1792746534.643644    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:08:54.644  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33281.4 33321.6 33358.2 33400.5 33438.9 33479.4 ]
+10-23 02:08:54.644  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33281.4 33321.6 33358.2 33400.5 33438.9 33479.4 ]
+10-23 02:08:54.644  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33893.7 LSTM-VT-PREDICTION-21SEC-BACK:34208.6 LSTM-VT-PREDICTION-28SEC-BACK:34506.9 LSTM-VT-PREDICTION-35SEC-BACK:33888.9 LSTM-VT-PREDICTION-7SEC-BACK:33609.1 LSTM-VT-PREDICTION-ERROR-14SEC:612.312 LSTM-VT-PREDICTION-ERROR-21SEC:927.211 LSTM-VT-PREDICTION-ERROR-28SEC:1225.48 LSTM-VT-PREDICTION-ERROR-35SEC:607.48 LSTM-VT-PREDICTION-ERROR-7SEC:327.777 LSTM-VT-PREDICTION-NOW:33281.4 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:33281.4 btmspkr_therm:31060 charging_therm:36736 disp_therm:31038 north_therm:35846 quiet_therm:34755 rfpa_therm:35957 soc_therm:37738 usb_pwr_therm:30993 
+10-23 02:08:54.650  5219  5226 I pixel-thermal: quiet_therm:34.755 raw data: quiet_therm:34755 
+10-23 02:08:57.024   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:08:57.129  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:08:57.780  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31082.00 36803.00 31060.00 35623.00 34577.00 35757.00 38962.00 31038.00 ]
+10-23 02:08:57.780  5219  5226 I native  : I0000 00:00:1792746537.780689    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:08:57.780  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [33260.9 ]
+10-23 02:08:57.780  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [33260.9 ]
+10-23 02:08:57.781  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:33.3261 raw data: VIRTUAL-SKIN:33326.1 VIRTUAL-SKIN-CPU-MID:33326.1 VIRTUAL-SKIN-LEGACY:33361 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:100.152 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33260.9 VIRTUAL-SKIN-MODEL-CLAMPED:33260.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-100.152 VIRTUAL-SKIN-MODEL-UPDATED:33326.1 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33260.9 VIRTUAL-SKIN-SUB-0:33306.8 VIRTUAL-SKIN-SUB-1:32155.5 VIRTUAL-SKIN-SUB-2:31642.4 VIRTUAL-SKIN-SUB-3:33361 VIRTUAL-SKIN-SUB-4:32107.8 VIRTUAL-SKIN-SUB-5:32436.6 VIRTUAL-SKIN-SUB-6:33053.3 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31082 charging_therm:36803 disp_therm:31060 north_therm:35623 quiet_therm:34577 rfpa_therm:35757 soc_therm:38962 usb_pwr_therm:31038 
+10-23 02:08:57.787  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33361 VIRTUAL-SKIN-MODEL:33260.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-100.152 
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:32.8919 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:32891.9 VIRTUAL-SKIN-CHARGE-SUB-0:32785.1 VIRTUAL-SKIN-CHARGE-SUB-1:32891.9 VIRTUAL-SKIN-CHARGE-SUB-2:32641 VIRTUAL-SKIN-CHARGE-SUB-3:32436.6 VIRTUAL-SKIN-CHARGE-WIRED:32891.9 WLC_CHECK:1 btmspkr_therm:31082 charging_therm:36803 disp_therm:31060 north_therm:35623 quiet_therm:34577 rfpa_therm:35757 soc_therm:38962 thb_hda:53 usb_pwr_therm:31038 
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4436.87 err=5.10811 s_power=2527 time_elapsed_ms=7010 p=607.865 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=4329.33 after (PARTIAL_SYSTEM_POWER: 896.15 mW, cdev_weight: 0.120000) is excluded
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 896.15 mW, cdev_weight: 0.120000)
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN:33.3261 raw data: VIRTUAL-SKIN:33326.1 
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:33.3261 raw data: VIRTUAL-SKIN:33326.1 VIRTUAL-SKIN-SOC:33326.1 
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:33.3261 raw data: VIRTUAL-SKIN:33326.1 VIRTUAL-SKIN-HINT:33326.1 
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:33.3261 raw data: VIRTUAL-SKIN:33326.1 VIRTUAL-SKIN-GPU:33326.1 
+10-23 02:08:57.788  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:33.3261 raw data: VIRTUAL-SKIN:33326.1 VIRTUAL-SKIN-CPU-HIGH:33326.1 
+10-23 02:08:57.789  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:32.7417 raw data: VIRTUAL-SKIN-SPEAKER:32741.7 VIRTUAL-SKIN-SPEAKER-SUB-0:32741.7 btmspkr_therm:31082 charging_therm:36803 disp_therm:31060 north_therm:35623 quiet_therm:34577 rfpa_therm:35757 soc_therm:38962 usb_pwr_therm:31038 
+10-23 02:08:57.789  5219  5226 I pixel-thermal: cellular-emergency:33.3261 raw data: VIRTUAL-SKIN:33326.1 cellular-emergency:33326.1 
+10-23 02:08:57.789  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:33.3261 raw data: VIRTUAL-SKIN:33326.1 VIRTUAL-SKIN-CPU-LIGHT-ODPM:33326.1 
+10-23 02:08:57.789  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:32891.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:32891.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:08:57.789  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:32.8919 raw data: VIRTUAL-SKIN-CHARGE:32891.9 VIRTUAL-SKIN-CHARGE-PERSIST:32891.9 
+10-23 02:08:59.248  5219  5226 I pixel-thermal: north_therm:35.623 raw data: north_therm:35623 
+10-23 02:09:00.130   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:00.243  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:09:00.472  5219  5226 I pixel-thermal: rfpa_therm:35.757 raw data: rfpa_therm:35757 
+10-23 02:09:00.660  3708  3708 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:09:01.653  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35623.00 38962.00 36803.00 31060.00 34577.00 31038.00 35757.00 31082.00 ]
+10-23 02:09:01.653  5219  5226 I native  : I0000 00:00:1792746541.653707    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:01.654  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [33571.8 33611.9 33647.9 33690.5 33728.6 33769.2 ]
+10-23 02:09:01.654  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [33571.8 33611.9 33647.9 33690.5 33728.6 33769.2 ]
+10-23 02:09:01.654  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33649.3 LSTM-VT-PREDICTION-21SEC-BACK:33942.6 LSTM-VT-PREDICTION-28SEC-BACK:34256.5 LSTM-VT-PREDICTION-35SEC-BACK:34559 LSTM-VT-PREDICTION-7SEC-BACK:33321.6 LSTM-VT-PREDICTION-ERROR-14SEC:77.5117 LSTM-VT-PREDICTION-ERROR-21SEC:370.84 LSTM-VT-PREDICTION-ERROR-28SEC:684.75 LSTM-VT-PREDICTION-ERROR-35SEC:987.258 LSTM-VT-PREDICTION-ERROR-7SEC:-250.152 LSTM-VT-PREDICTION-NOW:33571.8 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:33571.8 btmspkr_therm:31082 charging_therm:36803 disp_therm:31060 north_therm:35623 quiet_therm:34577 rfpa_therm:35757 soc_therm:38962 usb_pwr_therm:31038 
+10-23 02:09:01.660  5219  5226 I pixel-thermal: quiet_therm:34.577 raw data: quiet_therm:34577 
+10-23 02:09:03.244   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:03.277  3670  3670 I tflite  : Replacing 1804 out of 1865 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 58 partitions for subgraph 1 (decode).
+10-23 02:09:03.361  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 0]
+10-23 02:09:03.957   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:03.959  5984  6024 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:09:03.962  5984  6179 D TemperatureStateSource: sequence=2745 actualDelay=10000
+10-23 02:09:03.963  5984  6179 D TemperatureStateSource: Reading temperature: sequence=2746
+10-23 02:09:03.965  5219  5219 I pixel-thermal: VIRTUAL-SKIN:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-LEGACY:33829.4 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:568.59 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:33260.9 VIRTUAL-SKIN-MODEL-CLAMPED:33260.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-568.59 VIRTUAL-SKIN-MODEL-UPDATED:33300 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:33260.9 VIRTUAL-SKIN-SUB-0:33829.4 VIRTUAL-SKIN-SUB-1:32217.3 VIRTUAL-SKIN-SUB-2:31603.6 VIRTUAL-SKIN-SUB-3:33736.5 VIRTUAL-SKIN-SUB-4:32280.1 VIRTUAL-SKIN-SUB-5:32766.6 VIRTUAL-SKIN-SUB-6:33190.4 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31127 charging_therm:37448 disp_therm:31082 north_therm:35512 quiet_therm:34466 rfpa_therm:35712 soc_therm:40746 usb_pwr_therm:31082 
+10-23 02:09:03.965  5984  6179 D TemperatureStateSource: getDeviceTemperatures: sequence=2746 deviceTemperatureType=3 temperatureSource=0 temperatures=[33.299995]
+10-23 02:09:03.965  5984  6179 D BusinessScope: Enqueuing the block
+10-23 02:09:03.966  5984  6179 D TemperatureStateSource: sequence=2746 waitTime=10000
+10-23 02:09:03.966  5984  6179 D BusinessScope: Start running the #5508 block
+10-23 02:09:03.966  5984  6179 D BusinessScope: Enqueuing the block
+10-23 02:09:03.966  5984  6179 D ImpulseStateSource: Notify clients: 2751
+10-23 02:09:03.966  5984  6179 D BusinessScope: Finish running the #5508 block
+10-23 02:09:03.967  5984  6179 D BusinessScope: Start running the #5509 block
+10-23 02:09:03.967  5984  6179 D BusinessScope: Finish running the #5509 block
+10-23 02:09:04.790  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-CPU-MID:33300 
+10-23 02:09:04.796  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31127.00 37448.00 31082.00 35512.00 34466.00 35712.00 40746.00 31082.00 ]
+10-23 02:09:04.797  5219  5226 I native  : I0000 00:00:1792746544.796866    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:04.797  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [33578.9 ]
+10-23 02:09:04.797  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [33578.9 ]
+10-23 02:09:04.797  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:33829.4 VIRTUAL-SKIN-MODEL:33578.9 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-568.59 btmspkr_therm:31127 charging_therm:37448 disp_therm:31082 north_therm:35512 quiet_therm:34466 rfpa_therm:35712 soc_therm:40746 usb_pwr_therm:31082 
+10-23 02:09:04.797  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:33.3588 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:33358.8 VIRTUAL-SKIN-CHARGE-SUB-0:33029.1 VIRTUAL-SKIN-CHARGE-SUB-1:33358.8 VIRTUAL-SKIN-CHARGE-SUB-2:32691.6 VIRTUAL-SKIN-CHARGE-SUB-3:32766.6 VIRTUAL-SKIN-CHARGE-WIRED:33358.8 WLC_CHECK:1 btmspkr_therm:31127 charging_therm:37448 disp_therm:31082 north_therm:35512 quiet_therm:34466 rfpa_therm:35712 soc_therm:40746 thb_hda:53 usb_pwr_therm:31082 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4381.31 err=4.64124 s_power=2527 time_elapsed_ms=7011 p=552.307 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=4092.2 after (PARTIAL_SYSTEM_POWER: 2409.21 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 2409.21 mW, cdev_weight: 0.120000)
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN:33.3 raw data: VIRTUAL-SKIN:33300 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-SOC:33300 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-HINT:33300 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-GPU:33300 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-CPU-HIGH:33300 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:33.0483 raw data: VIRTUAL-SKIN-SPEAKER:33048.3 VIRTUAL-SKIN-SPEAKER-SUB-0:33048.3 btmspkr_therm:31127 charging_therm:37448 disp_therm:31082 north_therm:35512 quiet_therm:34466 rfpa_therm:35712 soc_therm:40746 usb_pwr_therm:31082 
+10-23 02:09:04.798  5219  5226 I pixel-thermal: cellular-emergency:33.3 raw data: VIRTUAL-SKIN:33300 cellular-emergency:33300 
+10-23 02:09:04.799  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:33.3 raw data: VIRTUAL-SKIN:33300 VIRTUAL-SKIN-CPU-LIGHT-ODPM:33300 
+10-23 02:09:04.799  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:33358.8 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:33358.8 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:09:04.799  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:33.3588 raw data: VIRTUAL-SKIN-CHARGE:33358.8 VIRTUAL-SKIN-CHARGE-PERSIST:33358.8 
+10-23 02:09:06.259  5219  5226 I pixel-thermal: north_therm:35.512 raw data: north_therm:35512 
+10-23 02:09:06.362   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:06.462  1361  5727 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 3]
+10-23 02:09:07.481  5219  5226 I pixel-thermal: rfpa_therm:35.712 raw data: rfpa_therm:35712 
+10-23 02:09:08.662  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35534.00 42647.00 38383.00 31104.00 34443.00 31149.00 35712.00 31171.00 ]
+10-23 02:09:08.662  5219  5226 I native  : I0000 00:00:1792746548.662766    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:08.663  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [34954.3 35011.3 35063.2 35121.5 35174.4 35228.2 ]
+10-23 02:09:08.663  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [34954.3 35011.3 35063.2 35121.5 35174.4 35228.2 ]
+10-23 02:09:08.664  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33358.2 LSTM-VT-PREDICTION-21SEC-BACK:33694.9 LSTM-VT-PREDICTION-28SEC-BACK:33987.5 LSTM-VT-PREDICTION-35SEC-BACK:34305.5 LSTM-VT-PREDICTION-7SEC-BACK:33611.9 LSTM-VT-PREDICTION-ERROR-14SEC:-1596.15 LSTM-VT-PREDICTION-ERROR-21SEC:-1259.39 LSTM-VT-PREDICTION-ERROR-28SEC:-966.871 LSTM-VT-PREDICTION-ERROR-35SEC:-648.855 LSTM-VT-PREDICTION-ERROR-7SEC:-1342.43 LSTM-VT-PREDICTION-NOW:34954.3 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:34954.3 btmspkr_therm:31171 charging_therm:38383 disp_therm:31104 north_therm:35534 quiet_therm:34443 rfpa_therm:35712 soc_therm:42647 usb_pwr_therm:31149 
+10-23 02:09:08.669  5219  5226 I pixel-thermal: quiet_therm:34.443 raw data: quiet_therm:34443 
+10-23 02:09:09.460   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:09.569  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 2]
+10-23 02:09:09.883 15165 15187 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=ed97d72b-a53f-44cc-8f08-4200cf458b73, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker,com.google.apps.tiktok.sync.impl.workmanager.SyncWorker,TikTokWorker#com.google.apps.tiktok.sync.impl.workmanager.SyncWorker } ]
+10-23 02:09:10.512  1070  1070 D AOC     : A3:MSG: tmd3733_device.cc, 2358: USF: TMD3733: ALS channel zero-count entered 517 ms ago.
+10-23 02:09:11.804  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31171.00 38383.00 31104.00 35534.00 34443.00 35846.00 42647.00 31149.00 ]
+10-23 02:09:11.805  5219  5226 I native  : I0000 00:00:1792746551.805095    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:11.805  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [34083.8 ]
+10-23 02:09:11.805  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [34083.8 ]
+10-23 02:09:11.805  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:33.6135 raw data: VIRTUAL-SKIN:33613.5 VIRTUAL-SKIN-CPU-MID:33613.5 VIRTUAL-SKIN-LEGACY:34411.7 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:327.93 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:34083.8 VIRTUAL-SKIN-MODEL-CLAMPED:34083.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-327.93 VIRTUAL-SKIN-MODEL-UPDATED:33613.5 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:34083.8 VIRTUAL-SKIN-SUB-0:34411.7 VIRTUAL-SKIN-SUB-1:32351.5 VIRTUAL-SKIN-SUB-2:31645.6 VIRTUAL-SKIN-SUB-3:34197.7 VIRTUAL-SKIN-SUB-4:32502.7 VIRTUAL-SKIN-SUB-5:33219.4 VIRTUAL-SKIN-SUB-6:33386.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31171 charging_therm:38383 disp_therm:31104 north_therm:35534 quiet_therm:34443 rfpa_therm:35846 soc_therm:42647 usb_pwr_therm:31149 
+10-23 02:09:11.811  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:34411.7 VIRTUAL-SKIN-MODEL:34083.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-327.93 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:33.8778 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:33877.8 VIRTUAL-SKIN-CHARGE-SUB-0:33375.3 VIRTUAL-SKIN-CHARGE-SUB-1:33877.8 VIRTUAL-SKIN-CHARGE-SUB-2:32809.3 VIRTUAL-SKIN-CHARGE-SUB-3:33219.4 VIRTUAL-SKIN-CHARGE-WIRED:33877.8 WLC_CHECK:1 btmspkr_therm:31171 charging_therm:38383 disp_therm:31104 north_therm:35534 quiet_therm:34443 rfpa_therm:35846 soc_therm:42647 thb_hda:53 usb_pwr_therm:31149 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4319.54 err=4.12215 s_power=2527 time_elapsed_ms=7012 p=490.536 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3857.83 after (PARTIAL_SYSTEM_POWER: 3847.57 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 3847.57 mW, cdev_weight: 0.120000)
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN:33.6135 raw data: VIRTUAL-SKIN:33613.5 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:33.6135 raw data: VIRTUAL-SKIN:33613.5 VIRTUAL-SKIN-SOC:33613.5 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:33.6135 raw data: VIRTUAL-SKIN:33613.5 VIRTUAL-SKIN-HINT:33613.5 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:33.6135 raw data: VIRTUAL-SKIN:33613.5 VIRTUAL-SKIN-GPU:33613.5 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:33.6135 raw data: VIRTUAL-SKIN:33613.5 VIRTUAL-SKIN-CPU-HIGH:33613.5 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:33.4 raw data: VIRTUAL-SKIN-SPEAKER:33400 VIRTUAL-SKIN-SPEAKER-SUB-0:33400 btmspkr_therm:31171 charging_therm:38383 disp_therm:31104 north_therm:35534 quiet_therm:34443 rfpa_therm:35846 soc_therm:42647 usb_pwr_therm:31149 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: cellular-emergency:33.6135 raw data: VIRTUAL-SKIN:33613.5 cellular-emergency:33613.5 
+10-23 02:09:11.812  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:33.6135 raw data: VIRTUAL-SKIN:33613.5 VIRTUAL-SKIN-CPU-LIGHT-ODPM:33613.5 
+10-23 02:09:11.813  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:33877.8 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:33877.8 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:09:11.813  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:33.8778 raw data: VIRTUAL-SKIN-CHARGE:33877.8 VIRTUAL-SKIN-CHARGE-PERSIST:33877.8 
+10-23 02:09:12.569   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:12.678  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 02:09:13.080   804   804 I android.hardware.health-service.zumapro: Recording a sample at time 27686
+10-23 02:09:13.090  5810  5810 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:09:13.091  5810  5810 D DLObserver: plugged=1
+10-23 02:09:13.092  5810  5810 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@a2d560b
+10-23 02:09:13.092  5810  5810 D SystemEventDataSource: onReceive: intentAction
+10-23 02:09:13.092  5810  5810 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:09:13.092  5810  5810 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+--------- beginning of system
+10-23 02:09:13.092  5810  6526 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:09:13.102  5810  5915 D GoogleBatteryDataSource: fetchDwellDefendStatus: CONNECTED
+10-23 02:09:13.103  5810  5915 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=7392, time_sum=21 t_avg=352 lst_v=4429296 lst_t=343 lst_u=27576, dt=25321, t=0 e=1
+10-23 02:09:13.104  5810  5915 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=100), chargingStatus=EventData(value=1), maxChargingCurrent=EventData(value=1500000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=5), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=false)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:09:13.104  5810  5915 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:09:13.270  5219  5226 I pixel-thermal: north_therm:35.534 raw data: north_therm:35534 
+10-23 02:09:13.964  5984  8158 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:09:13.966  5984  6024 D TemperatureStateSource: sequence=2746 actualDelay=10000
+10-23 02:09:13.967  5984  6024 D TemperatureStateSource: Reading temperature: sequence=2747
+10-23 02:09:13.970  5219  5219 I pixel-thermal: VIRTUAL-SKIN:33.8016 raw data: VIRTUAL-SKIN:33801.6 VIRTUAL-SKIN-LEGACY:34411.7 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:327.93 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:34083.8 VIRTUAL-SKIN-MODEL-CLAMPED:34083.8 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-327.93 VIRTUAL-SKIN-MODEL-UPDATED:33801.6 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:34083.8 VIRTUAL-SKIN-SUB-0:34411.7 VIRTUAL-SKIN-SUB-1:32351.5 VIRTUAL-SKIN-SUB-2:31645.6 VIRTUAL-SKIN-SUB-3:34197.7 VIRTUAL-SKIN-SUB-4:32502.7 VIRTUAL-SKIN-SUB-5:33219.4 VIRTUAL-SKIN-SUB-6:33386.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31171 charging_therm:38383 disp_therm:31104 north_therm:35534 quiet_therm:34443 rfpa_therm:35846 soc_therm:42647 usb_pwr_therm:31149 
+10-23 02:09:13.971  5984  6024 D TemperatureStateSource: getDeviceTemperatures: sequence=2747 deviceTemperatureType=3 temperatureSource=0 temperatures=[33.801643]
+10-23 02:09:13.972  5984  6024 D BusinessScope: Enqueuing the block
+10-23 02:09:13.972  5984  6024 D TemperatureStateSource: sequence=2747 waitTime=10000
+10-23 02:09:13.972  5984  8154 D BusinessScope: Start running the #5510 block
+10-23 02:09:13.976  5219  5219 I pixel-thermal: VIRTUAL-SKIN:33.8016 raw data: VIRTUAL-SKIN:33801.6 
+10-23 02:09:13.977  5984  8154 I TemperatureStateSource: temperature was set
+10-23 02:09:13.977  5984  8154 D BusinessScope: Enqueuing the block
+10-23 02:09:13.978  5984  8154 D ImpulseStateSource: Notify clients: 2752
+10-23 02:09:13.978  5984  8154 D BusinessScope: Finish running the #5510 block
+10-23 02:09:13.978  5984  8154 D BusinessScope: Start running the #5511 block
+10-23 02:09:13.981  5984  8158 D BusinessScope: Finish running the #5511 block
+10-23 02:09:14.489  5219  5226 I pixel-thermal: rfpa_therm:35.846 raw data: rfpa_therm:35846 
+10-23 02:09:14.914  6794  7118 I bcot    : (REDACTED) getHotwordActive::active query: %s, watch: %s, devices connected: %s
+10-23 02:09:14.917  1067  1067 W TracingMuxer: type=1400 audit(0.0:2020): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:gxp_logging:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:09:15.669  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35534.00 42647.00 38383.00 31104.00 34443.00 31149.00 35846.00 31171.00 ]
+10-23 02:09:15.669  5219  5226 I native  : I0000 00:00:1792746555.669714    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:15.670  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [35106.4 35165.4 35219.2 35279.4 35334 35388.6 ]
+10-23 02:09:15.670  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [35106.4 35165.4 35219.2 35279.4 35334 35388.6 ]
+10-23 02:09:15.670  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:33647.9 LSTM-VT-PREDICTION-21SEC-BACK:33400.5 LSTM-VT-PREDICTION-28SEC-BACK:33736.6 LSTM-VT-PREDICTION-35SEC-BACK:34033.8 LSTM-VT-PREDICTION-7SEC-BACK:35011.3 LSTM-VT-PREDICTION-ERROR-14SEC:-1458.52 LSTM-VT-PREDICTION-ERROR-21SEC:-1705.9 LSTM-VT-PREDICTION-ERROR-28SEC:-1369.81 LSTM-VT-PREDICTION-ERROR-35SEC:-1072.66 LSTM-VT-PREDICTION-ERROR-7SEC:-95.1055 LSTM-VT-PREDICTION-NOW:35106.4 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:35106.4 btmspkr_therm:31171 charging_therm:38383 disp_therm:31104 north_therm:35534 quiet_therm:34443 rfpa_therm:35846 soc_therm:42647 usb_pwr_therm:31149 
+10-23 02:09:15.676   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:15.678  5219  5226 I pixel-thermal: quiet_therm:34.443 raw data: quiet_therm:34443 
+10-23 02:09:15.791  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 4]
+10-23 02:09:17.605   805   805 W TracingMuxer: type=1400 audit(0.0:2021): avc:  denied  { write } for  name="traced_producer" dev="tmpfs" ino=1255 scontext=u:r:hal_neuralnetworks_darwinn:s0 tcontext=u:object_r:traced_producer_socket:s0 tclass=sock_file permissive=0
+10-23 02:09:18.788   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:18.817  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31216.00 39429.00 31127.00 35668.00 34532.00 36135.00 44457.00 31193.00 ]
+10-23 02:09:18.817  5219  5226 I native  : I0000 00:00:1792746558.817296    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:18.817  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [34565.5 ]
+10-23 02:09:18.817  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [34565.5 ]
+10-23 02:09:18.817  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.1072 raw data: VIRTUAL-SKIN:34107.2 VIRTUAL-SKIN-CPU-MID:34107.2 VIRTUAL-SKIN-LEGACY:34979.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:413.953 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:34565.5 VIRTUAL-SKIN-MODEL-CLAMPED:34565.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-413.953 VIRTUAL-SKIN-MODEL-UPDATED:34107.2 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:34565.5 VIRTUAL-SKIN-SUB-0:34979.5 VIRTUAL-SKIN-SUB-1:32529 VIRTUAL-SKIN-SUB-2:31763.4 VIRTUAL-SKIN-SUB-3:34682.9 VIRTUAL-SKIN-SUB-4:32732.9 VIRTUAL-SKIN-SUB-5:33722.2 VIRTUAL-SKIN-SUB-6:33618 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31216 charging_therm:39429 disp_therm:31127 north_therm:35668 quiet_therm:34532 rfpa_therm:36135 soc_therm:44457 usb_pwr_therm:31193 
+10-23 02:09:18.823  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:34979.5 VIRTUAL-SKIN-MODEL:34565.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-413.953 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.389 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:34389 VIRTUAL-SKIN-CHARGE-SUB-0:33768.6 VIRTUAL-SKIN-CHARGE-SUB-1:34389 VIRTUAL-SKIN-CHARGE-SUB-2:32982.4 VIRTUAL-SKIN-CHARGE-SUB-3:33722.2 VIRTUAL-SKIN-CHARGE-WIRED:34389 WLC_CHECK:1 btmspkr_therm:31216 charging_therm:39429 disp_therm:31127 north_therm:35668 quiet_therm:34532 rfpa_therm:36135 soc_therm:44457 thb_hda:53 usb_pwr_therm:31193 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4258.71 err=3.61098 s_power=2527 time_elapsed_ms=7011 p=429.707 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3625.26 after (PARTIAL_SYSTEM_POWER: 5278.77 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 5278.77 mW, cdev_weight: 0.120000)
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN:34.1072 raw data: VIRTUAL-SKIN:34107.2 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:34.1072 raw data: VIRTUAL-SKIN:34107.2 VIRTUAL-SKIN-SOC:34107.2 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:34.1072 raw data: VIRTUAL-SKIN:34107.2 VIRTUAL-SKIN-HINT:34107.2 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:34.1072 raw data: VIRTUAL-SKIN:34107.2 VIRTUAL-SKIN-GPU:34107.2 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.1072 raw data: VIRTUAL-SKIN:34107.2 VIRTUAL-SKIN-CPU-HIGH:34107.2 
+10-23 02:09:18.824  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:33.7531 raw data: VIRTUAL-SKIN-SPEAKER:33753.1 VIRTUAL-SKIN-SPEAKER-SUB-0:33753.1 btmspkr_therm:31216 charging_therm:39429 disp_therm:31127 north_therm:35668 quiet_therm:34532 rfpa_therm:36135 soc_therm:44457 usb_pwr_therm:31193 
+10-23 02:09:18.825  5219  5226 I pixel-thermal: cellular-emergency:34.1072 raw data: VIRTUAL-SKIN:34107.2 cellular-emergency:34107.2 
+10-23 02:09:18.825  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.1072 raw data: VIRTUAL-SKIN:34107.2 VIRTUAL-SKIN-CPU-LIGHT-ODPM:34107.2 
+10-23 02:09:18.825  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:34389 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:34389 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:09:18.825  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.389 raw data: VIRTUAL-SKIN-CHARGE:34389 VIRTUAL-SKIN-CHARGE-PERSIST:34389 
+10-23 02:09:18.827  5219  5226 I pixel-thermal: Successfully update cdev chg_mdis sysfs to 1
+10-23 02:09:18.827  5219  5226 I pixel-thermal: Power rails total power: 3800.03 mW for 63139 ms
+10-23 02:09:18.827  5219  5226 I pixel-thermal: Power rails [S6M_LLDO1: 120.16 mW] [S4M_VDD_CPUCL0: 564.48 mW] [S3M_VDD_CPUCL2: 766.39 mW] [S1M_VDD_MIF: 310.78 mW] [VSYS_PWR_MMWAVE: 0.39 mW] [S5M_VDD_INT: 39.02 mW] 
+10-23 02:09:18.827  5219  5226 I pixel-thermal: Power rails [S9M_VDD_CPUCL1_M: 22.81 mW] [S2M_VDD_CPUCL1: 1051.79 mW] [VSYS_PWR_CAMERA: 0.05 mW] [VSYS_PWR_DISPLAY: 118.36 mW] [L21S_VDD2L_MEM: 4.57 mW] [S8M_LLDO2: 58.53 mW] 
+10-23 02:09:18.827  5219  5226 I pixel-thermal: Power rails [S3S_LLDO1: 39.68 mW] [VSYS_PWR_RFFE: 1.82 mW] [VSYS_PWR_WLAN_BT: 67.01 mW] [VSYS_PWR_MODEM: 216.70 mW] [L2S_PLL_MIPI_UFS: 17.91 mW] [S4S_VDD2H_MEM: 349.72 mW] 
+10-23 02:09:18.827  5219  5226 I pixel-thermal: Power rails [S9S_VDD_AOC: 9.46 mW] [S2S_VDD_G3D: 2.83 mW] [S1S_VDD_CAM: 9.00 mW] [S7M_VDD_TPU: 0.00 mW] [L22S_UDFPS: 0.90 mW] [S5S_VDDQ_MEM: 27.70 mW] 
+10-23 02:09:18.830  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:18.836  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:18.842  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:18.859  5810  5810 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:09:18.859  5810  5810 D DLObserver: plugged=1
+10-23 02:09:18.861  5810  5810 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@a2d560b
+10-23 02:09:18.861  5810  5810 D SystemEventDataSource: onReceive: intentAction
+10-23 02:09:18.867  5810  5911 D GoogleBatteryDataSource: fetchDwellDefendStatus: CONNECTED
+10-23 02:09:18.868  5810  5911 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=7392, time_sum=21 t_avg=352 lst_v=4424921 lst_t=335 lst_u=27692, dt=25321, t=0 e=1
+10-23 02:09:18.869  5810  5911 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=100), chargingStatus=EventData(value=1), maxChargingCurrent=EventData(value=1500000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=5), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=false)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:09:18.869  5810  5911 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:09:18.875  5810  5810 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:09:18.875  5810  5810 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:09:18.875  5810  6699 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:09:18.899  1361  5727 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 5]
+10-23 02:09:20.285  5219  5226 I pixel-thermal: north_therm:35.668 raw data: north_therm:35668 
+10-23 02:09:21.428   467   581 I hwc-display: Display Temperature : 31°C
+10-23 02:09:21.499  5219  5226 I pixel-thermal: rfpa_therm:36.536 raw data: rfpa_therm:36536 
+10-23 02:09:21.892   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:22.000  1361  5727 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:09:22.679  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [35912.00 46178.00 40476.00 31149.00 34710.00 31260.00 36536.00 31260.00 ]
+10-23 02:09:22.679  5219  5226 I native  : I0000 00:00:1792746562.679267    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:22.680  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [36389.9 36465.6 36535.2 36610.8 36680 36747.3 ]
+10-23 02:09:22.680  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [36389.9 36465.6 36535.2 36610.8 36680 36747.3 ]
+10-23 02:09:22.680  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:35063.2 LSTM-VT-PREDICTION-21SEC-BACK:33690.5 LSTM-VT-PREDICTION-28SEC-BACK:33438.9 LSTM-VT-PREDICTION-35SEC-BACK:33780.1 LSTM-VT-PREDICTION-7SEC-BACK:35165.4 LSTM-VT-PREDICTION-ERROR-14SEC:-1326.71 LSTM-VT-PREDICTION-ERROR-21SEC:-2699.46 LSTM-VT-PREDICTION-ERROR-28SEC:-2951.01 LSTM-VT-PREDICTION-ERROR-35SEC:-2609.84 LSTM-VT-PREDICTION-ERROR-7SEC:-1224.53 LSTM-VT-PREDICTION-NOW:36389.9 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:36389.9 btmspkr_therm:31260 charging_therm:40476 disp_therm:31149 north_therm:35912 quiet_therm:34710 rfpa_therm:36536 soc_therm:46178 usb_pwr_therm:31260 
+10-23 02:09:22.686  5219  5226 I pixel-thermal: quiet_therm:34.71 raw data: quiet_therm:34710 
+10-23 02:09:23.966  5984  6179 D ImpulseConnection: timeout didn't happen: com.google.android.apps.turbo
+10-23 02:09:23.973  5984  6024 D TemperatureStateSource: sequence=2747 actualDelay=10001
+10-23 02:09:23.973  5984  6024 D TemperatureStateSource: Reading temperature: sequence=2748
+10-23 02:09:23.977  5219  5219 I pixel-thermal: VIRTUAL-SKIN:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-LEGACY:35540.2 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:974.707 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:34565.5 VIRTUAL-SKIN-MODEL-CLAMPED:34565.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-974.707 VIRTUAL-SKIN-MODEL-UPDATED:34290.5 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:34565.5 VIRTUAL-SKIN-SUB-0:35540.2 VIRTUAL-SKIN-SUB-1:32750.4 VIRTUAL-SKIN-SUB-2:31945.4 VIRTUAL-SKIN-SUB-3:35180.9 VIRTUAL-SKIN-SUB-4:32970.2 VIRTUAL-SKIN-SUB-5:34246.7 VIRTUAL-SKIN-SUB-6:33886.4 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31260 charging_therm:40476 disp_therm:31149 north_therm:35912 quiet_therm:34710 rfpa_therm:36536 soc_therm:46178 usb_pwr_therm:31260 
+10-23 02:09:23.978  5984  6024 D TemperatureStateSource: getDeviceTemperatures: sequence=2748 deviceTemperatureType=3 temperatureSource=0 temperatures=[34.29053]
+10-23 02:09:23.978  5984  6024 D BusinessScope: Enqueuing the block
+10-23 02:09:23.978  5984  6024 D TemperatureStateSource: sequence=2748 waitTime=10000
+10-23 02:09:23.979  5984  8158 D BusinessScope: Start running the #5512 block
+10-23 02:09:23.983  5219  5219 I pixel-thermal: VIRTUAL-SKIN:34.2905 raw data: VIRTUAL-SKIN:34290.5 
+10-23 02:09:23.983  5984  8158 I TemperatureStateSource: temperature was set
+10-23 02:09:23.984  5984  8158 D BusinessScope: Enqueuing the block
+10-23 02:09:23.984  5984  8158 D ImpulseStateSource: Notify clients: 2753
+10-23 02:09:23.984  5984  8158 D BusinessScope: Finish running the #5512 block
+10-23 02:09:23.985  5984  8158 D BusinessScope: Start running the #5513 block
+10-23 02:09:23.988  5984  8158 D BusinessScope: Finish running the #5513 block
+10-23 02:09:24.999   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:25.105  1361  5727 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:09:25.827  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-CPU-MID:34290.5 
+10-23 02:09:25.833  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31260.00 40476.00 31149.00 35912.00 34710.00 36536.00 46178.00 31260.00 ]
+10-23 02:09:25.834  5219  5226 I native  : I0000 00:00:1792746565.834054    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:25.834  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35021 ]
+10-23 02:09:25.834  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35021 ]
+10-23 02:09:25.834  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:35540.2 VIRTUAL-SKIN-MODEL:35021 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-974.707 btmspkr_therm:31260 charging_therm:40476 disp_therm:31149 north_therm:35912 quiet_therm:34710 rfpa_therm:36536 soc_therm:46178 usb_pwr_therm:31260 
+10-23 02:09:25.834  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.8889 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:34888.9 VIRTUAL-SKIN-CHARGE-SUB-0:34188.6 VIRTUAL-SKIN-CHARGE-SUB-1:34888.9 VIRTUAL-SKIN-CHARGE-SUB-2:33196.8 VIRTUAL-SKIN-CHARGE-SUB-3:34246.7 VIRTUAL-SKIN-CHARGE-WIRED:34888.9 WLC_CHECK:1 btmspkr_therm:31260 charging_therm:40476 disp_therm:31149 north_therm:35912 quiet_therm:34710 rfpa_therm:36536 soc_therm:46178 thb_hda:53 usb_pwr_therm:31260 
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4199.22 err=3.11113 s_power=2527 time_elapsed_ms=7012 p=370.224 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3394.48 after (PARTIAL_SYSTEM_POWER: 6706.22 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 6706.22 mW, cdev_weight: 0.120000)
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN:34.2905 raw data: VIRTUAL-SKIN:34290.5 
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-SOC:34290.5 
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-HINT:34290.5 
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-GPU:34290.5 
+10-23 02:09:25.835  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-CPU-HIGH:34290.5 
+10-23 02:09:25.836  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.1131 raw data: VIRTUAL-SKIN-SPEAKER:34113.1 VIRTUAL-SKIN-SPEAKER-SUB-0:34113.1 btmspkr_therm:31260 charging_therm:40476 disp_therm:31149 north_therm:35912 quiet_therm:34710 rfpa_therm:36536 soc_therm:46178 usb_pwr_therm:31260 
+10-23 02:09:25.836  5219  5226 I pixel-thermal: cellular-emergency:34.2905 raw data: VIRTUAL-SKIN:34290.5 cellular-emergency:34290.5 
+10-23 02:09:25.836  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.2905 raw data: VIRTUAL-SKIN:34290.5 VIRTUAL-SKIN-CPU-LIGHT-ODPM:34290.5 
+10-23 02:09:25.836  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:34888.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:34888.9 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:09:25.837  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.8889 raw data: VIRTUAL-SKIN-CHARGE:34888.9 VIRTUAL-SKIN-CHARGE-PERSIST:34888.9 
+10-23 02:09:25.839  5219  5226 I pixel-thermal: Successfully update cdev chg_mdis sysfs to 2
+10-23 02:09:25.841  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:25.853  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:25.865  5810  5810 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:09:25.865  5810  5810 D DLObserver: plugged=1
+10-23 02:09:25.866  5810  5810 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@a2d560b
+10-23 02:09:25.866  5810  5810 D SystemEventDataSource: onReceive: intentAction
+10-23 02:09:25.867  5810  5810 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:09:25.867  5810  5810 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:09:25.867  5810  6700 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:09:25.873  5810  5921 D GoogleBatteryDataSource: fetchDwellDefendStatus: CONNECTED
+10-23 02:09:25.874  5810  5921 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=7392, time_sum=21 t_avg=352 lst_v=4421406 lst_t=343 lst_u=27699, dt=25321, t=0 e=1
+10-23 02:09:25.875  5810  5921 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=100), chargingStatus=EventData(value=1), maxChargingCurrent=EventData(value=1500000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=5), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=false)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:09:25.875  5810  5921 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:09:27.301  5219  5226 I pixel-thermal: north_therm:35.912 raw data: north_therm:35912 
+10-23 02:09:27.328  5219  5226 I pixel-thermal: THERMAL_GENL_EVENT_TZ_TRIP_UP tz_id=14 tz_temp=47801.00 trip_id=0
+10-23 02:09:27.328  5219  5226 I pixel-thermal: TZ path: /sys/devices/virtual/thermal/thermal_zone14/type type: soc_therm
+10-23 02:09:27.328  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:34.2905 raw data: VIRTUAL-SKIN-CPU-MID:34290.5 
+10-23 02:09:27.329  5219  5226 I pixel-thermal: sensor_name: LSTM-VT-PREDICTION-7SEC-BACK no valid prediction samples found
+10-23 02:09:27.329  5219  5226 I pixel-thermal: LSTM-VT-PREDICTION-ERROR-7SEC data is under collecting
+10-23 02:09:27.329  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM data is under collecting
+10-23 02:09:27.329  5219  5226 I pixel-thermal: Thermal sensor STATS-UPDATOR-LSTM is under collecting
+10-23 02:09:27.329  5219  5226 I pixel-thermal: thermalWatcherCallbackFunc: data under collecting for sensor: STATS-UPDATOR-LSTM
+10-23 02:09:27.329  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 
+10-23 02:09:27.329  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:34.8889 raw data: VIRTUAL-SKIN-CHARGE-WIRED:34888.9 
+10-23 02:09:27.329  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4199.22 err=3.11113 s_power=2527 time_elapsed_ms=1501 p=370.224 i=1302 d=0 compensation=0 budget transient=0 control target=2
+10-23 02:09:27.329  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3394.48 after (PARTIAL_SYSTEM_POWER: 6706.22 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:27.329  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 6706.22 mW, cdev_weight: 0.120000)
+10-23 02:09:27.330  5219  5226 I pixel-thermal: VIRTUAL-SKIN:34.5827 raw data: VIRTUAL-SKIN:34582.7 VIRTUAL-SKIN-LEGACY:36007.1 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:986.094 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35021 VIRTUAL-SKIN-MODEL-CLAMPED:35021 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-986.094 VIRTUAL-SKIN-MODEL-UPDATED:34582.7 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35021 VIRTUAL-SKIN-SUB-0:36007.1 VIRTUAL-SKIN-SUB-1:32945.3 VIRTUAL-SKIN-SUB-2:31966.9 VIRTUAL-SKIN-SUB-3:35516.6 VIRTUAL-SKIN-SUB-4:33043.2 VIRTUAL-SKIN-SUB-5:34476 VIRTUAL-SKIN-SUB-6:34040.9 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31260 charging_therm:40476 disp_therm:31149 north_therm:35912 quiet_therm:34710 rfpa_therm:37003 soc_therm:47801 usb_pwr_therm:31260 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:34.2905 raw data: VIRTUAL-SKIN-SOC:34290.5 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:34.2905 raw data: VIRTUAL-SKIN-HINT:34290.5 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:34.2905 raw data: VIRTUAL-SKIN-GPU:34290.5 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: soc_therm:47.801 raw data: soc_therm:47801 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:34.2905 raw data: VIRTUAL-SKIN-CPU-HIGH:34290.5 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.1131 raw data: VIRTUAL-SKIN-SPEAKER:34113.1 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: cellular-emergency:34.2905 raw data: cellular-emergency:34290.5 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34.2905 raw data: VIRTUAL-SKIN-CPU-LIGHT-ODPM:34290.5 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 
+10-23 02:09:27.331  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:34.8889 raw data: VIRTUAL-SKIN-CHARGE-PERSIST:34888.9 
+10-23 02:09:27.335  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:27.336  5219  5226 I pixel-thermal: Successfully update cdev chg_mdis sysfs to 3
+10-23 02:09:27.345  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:27.354  5810  5810 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:09:27.354  5810  5810 D DLObserver: plugged=1
+10-23 02:09:27.356  5810  5810 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@a2d560b
+10-23 02:09:27.356  5810  5810 D SystemEventDataSource: onReceive: intentAction
+10-23 02:09:27.356  5810  5810 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:09:27.356  5810  5810 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:09:27.357  5810  6956 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:09:27.365  5810  5931 D GoogleBatteryDataSource: fetchDwellDefendStatus: CONNECTED
+10-23 02:09:27.366  5810  5931 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=7392, time_sum=21 t_avg=352 lst_v=4420859 lst_t=344 lst_u=27700, dt=25321, t=0 e=1
+10-23 02:09:27.367  5810  5931 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=100), chargingStatus=EventData(value=1), maxChargingCurrent=EventData(value=1500000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=5), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=false)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:09:27.367  5810  5931 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:09:28.103   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:28.215  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 4]
+10-23 02:09:28.507  5219  5226 I pixel-thermal: rfpa_therm:37.003 raw data: rfpa_therm:37003 
+10-23 02:09:28.566 14308 14308 D ModemService: Received: com.google.android.apps.scone.modem.ATTEMPT_MODEM_RESET
+10-23 02:09:28.566 14308 14308 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:09:28.567  1361  7992 W JobInfo : Job 'com.google.android.apps.scone/.modem.ConfigService#100' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-23 02:09:28.589 14308  3633 D ConfigService: onHandleWork
+10-23 02:09:28.589 14308  3633 D ConfigService: onHandleAttemptModemReset
+10-23 02:09:28.593 14308  3633 D ModemUtil: Screen is on, defer actions
+10-23 02:09:28.593 14308  3633 D ConfigService: Preconditions not met, retrying after 60 seconds
+10-23 02:09:28.596 14308  3633 D ConfigService: Attempt to retry after: 60 seconds
+10-23 02:09:29.687  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [36224.00 47801.00 41525.00 31171.00 34933.00 31305.00 37003.00 31305.00 ]
+10-23 02:09:29.688  5219  5226 I native  : I0000 00:00:1792746569.687921    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:29.688  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [37086.7 37170.9 37248.6 37332.1 37408.8 37482 ]
+10-23 02:09:29.688  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [37086.7 37170.9 37248.6 37332.1 37408.8 37482 ]
+10-23 02:09:29.689  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:35219.2 LSTM-VT-PREDICTION-21SEC-BACK:35121.5 LSTM-VT-PREDICTION-28SEC-BACK:33728.6 LSTM-VT-PREDICTION-35SEC-BACK:33479.4 LSTM-VT-PREDICTION-7SEC-BACK:36465.6 LSTM-VT-PREDICTION-ERROR-14SEC:-1867.53 LSTM-VT-PREDICTION-ERROR-21SEC:-1965.24 LSTM-VT-PREDICTION-ERROR-28SEC:-3358.19 LSTM-VT-PREDICTION-ERROR-35SEC:-3607.33 LSTM-VT-PREDICTION-ERROR-7SEC:-621.16 LSTM-VT-PREDICTION-NOW:37086.7 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:37086.7 btmspkr_therm:31305 charging_therm:41525 disp_therm:31171 north_therm:36224 quiet_therm:34933 rfpa_therm:37003 soc_therm:47801 usb_pwr_therm:31305 
+10-23 02:09:29.696  5219  5226 I pixel-thermal: quiet_therm:34.933 raw data: quiet_therm:34933 
+10-23 02:09:31.212   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:31.329  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 0] [i 2]
+10-23 02:09:33.979  5984  6024 D TemperatureStateSource: sequence=2748 actualDelay=10001
+10-23 02:09:33.980  5984  6024 D TemperatureStateSource: Reading temperature: sequence=2749
+10-23 02:09:33.984  5219  5219 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31349.00 42510.00 31193.00 36580.00 35222.00 37493.00 49280.00 31349.00 ]
+10-23 02:09:33.985  5219  5219 I native  : I0000 00:00:1792746573.984928    5219 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:33.985  5219  5219 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [35895 ]
+10-23 02:09:33.985  5219  5219 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [35895 ]
+10-23 02:09:33.985  5219  5219 I pixel-thermal: VIRTUAL-SKIN:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-LEGACY:36573.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:678.445 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:35895 VIRTUAL-SKIN-MODEL-CLAMPED:35895 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-678.445 VIRTUAL-SKIN-MODEL-UPDATED:35107.6 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:35895 VIRTUAL-SKIN-SUB-0:36573.5 VIRTUAL-SKIN-SUB-1:33225 VIRTUAL-SKIN-SUB-2:32411.7 VIRTUAL-SKIN-SUB-3:36143.5 VIRTUAL-SKIN-SUB-4:33416.2 VIRTUAL-SKIN-SUB-5:35280.3 VIRTUAL-SKIN-SUB-6:34450.4 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31349 charging_therm:42510 disp_therm:31193 north_therm:36580 quiet_therm:35222 rfpa_therm:37493 soc_therm:49280 usb_pwr_therm:31349 
+10-23 02:09:33.986  5984  6024 D TemperatureStateSource: getDeviceTemperatures: sequence=2749 deviceTemperatureType=3 temperatureSource=0 temperatures=[35.107643]
+10-23 02:09:33.986  5984  6024 D BusinessScope: Enqueuing the block
+10-23 02:09:33.986  5984  6024 D TemperatureStateSource: sequence=2749 waitTime=10000
+10-23 02:09:33.986  5984  6179 D BusinessScope: Start running the #5514 block
+10-23 02:09:33.990  5219  5219 I pixel-thermal: VIRTUAL-SKIN:35.1076 raw data: VIRTUAL-SKIN:35107.6 
+10-23 02:09:33.991  5984  6179 I TemperatureStateSource: temperature was set
+10-23 02:09:33.992  5984  6179 D BusinessScope: Enqueuing the block
+10-23 02:09:33.992  5984  6179 D ImpulseStateSource: Notify clients: 2754
+10-23 02:09:33.992  5984  6179 D BusinessScope: Finish running the #5514 block
+10-23 02:09:33.992  5984  6179 D BusinessScope: Start running the #5515 block
+10-23 02:09:33.995  5984  6179 D BusinessScope: Finish running the #5515 block
+10-23 02:09:34.315  5219  5226 I pixel-thermal: north_therm:36.58 raw data: north_therm:36580 
+10-23 02:09:34.328   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:34.335  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-CPU-MID:35107.6 
+10-23 02:09:34.336  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:36573.5 VIRTUAL-SKIN-MODEL:35895 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-678.445 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:35.8142 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:35814.2 VIRTUAL-SKIN-CHARGE-SUB-0:35030.6 VIRTUAL-SKIN-CHARGE-SUB-1:35814.2 VIRTUAL-SKIN-CHARGE-SUB-2:33681.9 VIRTUAL-SKIN-CHARGE-SUB-3:35280.3 VIRTUAL-SKIN-CHARGE-WIRED:35814.2 WLC_CHECK:1 btmspkr_therm:31349 charging_therm:42510 disp_therm:31193 north_therm:36580 quiet_therm:35222 rfpa_therm:37493 soc_therm:49280 thb_hda:53 usb_pwr_therm:31349 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4089.11 err=2.18581 s_power=2527 time_elapsed_ms=7006 p=260.111 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3145.41 after (PARTIAL_SYSTEM_POWER: 7864.15 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 7864.15 mW, cdev_weight: 0.120000)
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN:35.1076 raw data: VIRTUAL-SKIN:35107.6 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-SOC:35107.6 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-HINT:35107.6 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-GPU:35107.6 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: soc_therm:49.28 raw data: soc_therm:49280 
+10-23 02:09:34.337  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-CPU-HIGH:35107.6 
+10-23 02:09:34.338  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:34.7957 raw data: VIRTUAL-SKIN-SPEAKER:34795.7 VIRTUAL-SKIN-SPEAKER-SUB-0:34795.7 btmspkr_therm:31349 charging_therm:42510 disp_therm:31193 north_therm:36580 quiet_therm:35222 rfpa_therm:37493 soc_therm:49280 usb_pwr_therm:31349 
+10-23 02:09:34.338  5219  5226 I pixel-thermal: cellular-emergency:35.1076 raw data: VIRTUAL-SKIN:35107.6 cellular-emergency:35107.6 
+10-23 02:09:34.338  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.1076 raw data: VIRTUAL-SKIN:35107.6 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35107.6 
+10-23 02:09:34.338  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:35814.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:35814.2 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:09:34.338  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:35.8142 raw data: VIRTUAL-SKIN-CHARGE:35814.2 VIRTUAL-SKIN-CHARGE-PERSIST:35814.2 
+10-23 02:09:34.339  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=4870.58 err=5.18581 s_power=2383 time_elapsed_ms=7006 p=1104.58 i=1383 d=0 compensation=0 budget transient=0 control target=2
+10-23 02:09:34.339  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=3219.11 after (PARTIAL_SYSTEM_POWER: 7864.15 mW, cdev_weight: 0.210000) is excluded
+10-23 02:09:34.339  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 7864.15 mW, cdev_weight: 0.210000)
+10-23 02:09:34.341  5219  5226 I pixel-thermal: Successfully update cdev chg_mdis sysfs to 4
+10-23 02:09:34.342  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:34.351  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:34.361  5810  5810 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:09:34.362  5810  5810 D DLObserver: plugged=1
+10-23 02:09:34.364  5810  5810 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@a2d560b
+10-23 02:09:34.364  5810  5810 D SystemEventDataSource: onReceive: intentAction
+10-23 02:09:34.365  5810  5810 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:09:34.365  5810  7232 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:09:34.365  5810  5810 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:09:34.372  5810  5930 D GoogleBatteryDataSource: fetchDwellDefendStatus: CONNECTED
+10-23 02:09:34.376  5810  5930 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=9849, time_sum=28 t_avg=351 lst_v=4418515 lst_t=351 lst_u=27707, dt=25321, t=0 e=1
+10-23 02:09:34.376  5810  5930 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=100), chargingStatus=EventData(value=1), maxChargingCurrent=EventData(value=1500000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=5), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=false)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:09:34.376  5810  5930 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:09:34.405  3852  3852 W dumpsys : Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: battery
+10-23 02:09:34.447  1361  5727 D ConnectivityService: NetReassign [no changes] [c 0] [a 1] [i 1]
+10-23 02:09:35.515  5219  5226 I pixel-thermal: rfpa_therm:37.493 raw data: rfpa_therm:37493 
+10-23 02:09:36.695  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_input: [36580.00 49280.00 42510.00 31193.00 35222.00 31349.00 37493.00 31349.00 ]
+10-23 02:09:36.696  5219  5226 I native  : I0000 00:00:1792746576.696013    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:36.696  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: model_output: [37713.4 37806.9 37893.5 37985.7 38070.4 38150 ]
+10-23 02:09:36.696  5219  5226 I pixel-thermal: VIRTUAL-SKIN-LSTM-MODEL: predicted_value: [37713.4 37806.9 37893.5 37985.7 38070.4 38150 ]
+10-23 02:09:36.697  5219  5226 I pixel-thermal: STATS-UPDATOR-LSTM:0 raw data: LSTM-VT-PREDICTION-14SEC-BACK:36535.2 LSTM-VT-PREDICTION-21SEC-BACK:35279.4 LSTM-VT-PREDICTION-28SEC-BACK:35174.4 LSTM-VT-PREDICTION-35SEC-BACK:33769.2 LSTM-VT-PREDICTION-7SEC-BACK:37170.9 LSTM-VT-PREDICTION-ERROR-14SEC:-1178.21 LSTM-VT-PREDICTION-ERROR-21SEC:-2433.98 LSTM-VT-PREDICTION-ERROR-28SEC:-2539.03 LSTM-VT-PREDICTION-ERROR-35SEC:-3944.18 LSTM-VT-PREDICTION-ERROR-7SEC:-542.469 LSTM-VT-PREDICTION-NOW:37713.4 STATS-UPDATOR-LSTM:0 VIRTUAL-SKIN-LSTM-MODEL:37713.4 btmspkr_therm:31349 charging_therm:42510 disp_therm:31193 north_therm:36580 quiet_therm:35222 rfpa_therm:37493 soc_therm:49280 usb_pwr_therm:31349 
+10-23 02:09:36.703  5219  5226 I pixel-thermal: quiet_therm:35.222 raw data: quiet_therm:35222 
+10-23 02:09:37.448   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:37.559  1361  5727 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:09:40.557   842 11899 I WifiHAL : Creating message to get link statistics; iface = 47
+10-23 02:09:40.673  1361  5727 D ConnectivityService: NetReassign [no changes] [c 1] [a 0] [i 4]
+10-23 02:09:41.327  5219  5226 I pixel-thermal: north_therm:36.981 raw data: north_therm:36981 
+10-23 02:09:41.344  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_input: [31394.00 43449.00 31216.00 36981.00 35556.00 38005.00 50675.00 31394.00 ]
+10-23 02:09:41.345  5219  5226 I native  : I0000 00:00:1792746581.345010    5226 thermal_tflite_wrapper.cc:257] ThermalTfliteInvoke
+10-23 02:09:41.345  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: model_output: [36708.5 ]
+10-23 02:09:41.345  5219  5226 I pixel-thermal: VIRTUAL-SKIN-MODEL: predicted_value: [36708.5 ]
+10-23 02:09:41.345  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-MID:35.748 raw data: VIRTUAL-SKIN:35748 VIRTUAL-SKIN-CPU-MID:35748 VIRTUAL-SKIN-LEGACY:37052.5 VIRTUAL-SKIN-LEGACY-MODEL-DIFF:343.984 VIRTUAL-SKIN-LEGACY-SHUTDOWN:0 VIRTUAL-SKIN-MODEL:36708.5 VIRTUAL-SKIN-MODEL-CLAMPED:36708.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-343.984 VIRTUAL-SKIN-MODEL-UPDATED:35748 VIRTUAL-SKIN-MODEL-UPPER-CLAMPED:36708.5 VIRTUAL-SKIN-SUB-0:37052.5 VIRTUAL-SKIN-SUB-1:33471.4 VIRTUAL-SKIN-SUB-2:32688.4 VIRTUAL-SKIN-SUB-3:36604 VIRTUAL-SKIN-SUB-4:33626.9 VIRTUAL-SKIN-SUB-5:35776.4 VIRTUAL-SKIN-SUB-6:34749.2 VT_LEGACY_WEIGHT:0 VT_MODEL_WEIGHT:1 btmspkr_therm:31394 charging_therm:43449 disp_therm:31216 north_therm:36981 quiet_therm:35556 rfpa_therm:38005 soc_therm:50675 usb_pwr_therm:31394 
+10-23 02:09:41.345  5219  5226 I pixel-thermal: STATS-UPDATOR:0 raw data: STATS-UPDATOR:0 VIRTUAL-SKIN-LEGACY:37052.5 VIRTUAL-SKIN-MODEL:36708.5 VIRTUAL-SKIN-MODEL-LEGACY-DIFF:-343.984 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED:36.242 raw data: NO_WLC:1 VIRTUAL-SKIN-CHARGE:36242 VIRTUAL-SKIN-CHARGE-SUB-0:35442 VIRTUAL-SKIN-CHARGE-SUB-1:36242 VIRTUAL-SKIN-CHARGE-SUB-2:33950.1 VIRTUAL-SKIN-CHARGE-SUB-3:35776.4 VIRTUAL-SKIN-CHARGE-WIRED:36242 WLC_CHECK:1 btmspkr_therm:31394 charging_therm:43449 disp_therm:31216 north_therm:36981 quiet_therm:35556 rfpa_therm:38005 soc_therm:50675 thb_hda:53 usb_pwr_therm:31394 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power_budget=4038.2 err=1.75798 s_power=2527 time_elapsed_ms=7007 p=209.199 i=1302 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED power budget=3115.87 after (PARTIAL_SYSTEM_POWER: 7686.07 mW, cdev_weight: 0.120000) is excluded
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-WIRED binded power rails: (PARTIAL_SYSTEM_POWER: 7686.07 mW, cdev_weight: 0.120000)
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN:35.748 raw data: VIRTUAL-SKIN:35748 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SOC:35.748 raw data: VIRTUAL-SKIN:35748 VIRTUAL-SKIN-SOC:35748 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-HINT:35.748 raw data: VIRTUAL-SKIN:35748 VIRTUAL-SKIN-HINT:35748 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-GPU:35.748 raw data: VIRTUAL-SKIN:35748 VIRTUAL-SKIN-GPU:35748 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: soc_therm:50.675 raw data: soc_therm:50675 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-HIGH:35.748 raw data: VIRTUAL-SKIN:35748 VIRTUAL-SKIN-CPU-HIGH:35748 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: VIRTUAL-SKIN-SPEAKER:35.1238 raw data: VIRTUAL-SKIN-SPEAKER:35123.8 VIRTUAL-SKIN-SPEAKER-SUB-0:35123.8 btmspkr_therm:31394 charging_therm:43449 disp_therm:31216 north_therm:36981 quiet_therm:35556 rfpa_therm:38005 soc_therm:50675 usb_pwr_therm:31394 
+10-23 02:09:41.346  5219  5226 I pixel-thermal: cellular-emergency:35.748 raw data: VIRTUAL-SKIN:35748 cellular-emergency:35748 
+10-23 02:09:41.347  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CPU-LIGHT-ODPM:35.748 raw data: VIRTUAL-SKIN:35748 VIRTUAL-SKIN-CPU-LIGHT-ODPM:35748 
+10-23 02:09:41.347  5219  5226 I pixel-thermal: CHARGING-STATS-UPDATOR:0 raw data: CHARGING-STATS-UPDATOR:0 IS_WIRED_15W:0 IS_WIRED_15W_CHECK:1 IS_WIRED_18W:0 IS_WIRED_18W_CHECK:1 IS_WIRED_5W:0 IS_WIRED_5W_CHECK:1 IS_WIRED_7_5W:1 IS_WIRED_7_5W_CHECK:2 IS_WIRED_GT18W:0 IS_WIRED_GT18W_CHECK:1 IS_WIRED_SUB5W:0 IS_WIRED_SUB5W_CHECK:1 IS_WLC:0 NO_WIRED_15W:1 NO_WIRED_18W:1 NO_WIRED_5W:1 NO_WIRED_7_5W:0 NO_WIRED_GT18W:1 NO_WIRED_SUB5W:1 NO_WLC:1 VIRTUAL-SKIN-CHARGE:36242 VIRTUAL-SKIN-CHARGE-DURING-WIRED-15W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-7-5W-STATS:36242 VIRTUAL-SKIN-CHARGE-DURING-WIRED-GT18W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WIRED-SUB5W-STATS:-1e+06 VIRTUAL-SKIN-CHARGE-DURING-WLC-STATS:-1e+06 WLC_CHECK:1 thb_hda:53 
+10-23 02:09:41.347  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST:36.242 raw data: VIRTUAL-SKIN-CHARGE:36242 VIRTUAL-SKIN-CHARGE-PERSIST:36242 
+10-23 02:09:41.347  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power_budget=4779.45 err=4.75798 s_power=2383 time_elapsed_ms=7007 p=1013.45 i=1383 d=-0 compensation=0 budget transient=0 control target=2
+10-23 02:09:41.347  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST power budget=3165.38 after (PARTIAL_SYSTEM_POWER: 7686.07 mW, cdev_weight: 0.210000) is excluded
+10-23 02:09:41.347  5219  5226 I pixel-thermal: VIRTUAL-SKIN-CHARGE-PERSIST binded power rails: (PARTIAL_SYSTEM_POWER: 7686.07 mW, cdev_weight: 0.210000)
+10-23 02:09:41.350  5219  5226 I pixel-thermal: Successfully update cdev chg_mdis sysfs to 5
+10-23 02:09:41.352  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:41.358  6751  6776 W pixelstats-vendor: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.frameworks.stats.IStats/default
+10-23 02:09:41.371  5810  5810 D DLObserver: onReceive(); android.intent.action.BATTERY_CHANGED
+10-23 02:09:41.371  5810  5810 D DLObserver: plugged=1
+10-23 02:09:41.374  5810  5810 I ReverseChargingControl: handleIntentForReverseCharging(): rtx=0 wlc=0 plgac=1 ac=1 acrtx=0 extra=1 this=com.google.android.systemui.reversecharging.ReverseChargingController@a2d560b
+10-23 02:09:41.374  5810  5810 D SystemEventDataSource: onReceive: intentAction
+10-23 02:09:41.375  5810  5810 D PowerNotificationWarningsGoogleImpl: onReceive: android.intent.action.BATTERY_CHANGED
+10-23 02:09:41.375  5810  5810 D IncompatibleChargerNotification: dispatchIntent: android.intent.action.BATTERY_CHANGED
+10-23 02:09:41.375  5810  6421 D PowerUI : can't show warning due to - plugged: true status unknown: false
+10-23 02:09:41.384  5810  5929 D GoogleBatteryDataSource: fetchDwellDefendStatus: CONNECTED
+10-23 02:09:41.385  5810  5929 D GoogleBatteryDataSource: fetchTempDefendStatus: t_sum=12341, time_sum=35 t_avg=352 lst_v=4416484 lst_t=356 lst_u=27714, dt=25321, t=0 e=1
+10-23 02:09:41.385  5810  5929 D SystemEventDataSource: updatedEventData: SystemEventData(intentAction=android.intent.action.BATTERY_CHANGED, plugged=EventData(value=1), batteryScale=EventData(value=100), batteryLevel=EventData(value=100), chargingStatus=EventData(value=1), maxChargingCurrent=EventData(value=1500000), maxChargingVoltage=EventData(value=5000000), batteryStatus=EventData(value=5), halEventData=HalEventData(dockDefendStatus=EventData(value=-3), tempDefendEventData=EventData(value=false), dwellDefendEventData=EventData(value=false)), settingsEventData=SettingsEventData(dockDefenderBypass=EventData(value=0), chargingLimitSettings=EventData(value=0), dndState=EventData(value=false), airplaneState=EventData(value=false)), frameworkApiEventData=FrameworkApiEventData(batterySaverState=EventData(value=false), extremeBatterySaverState=EventData(value=false)))
+10-23 02:09:41.386  5810  5929 D SystemEventDataSource: extra doesn't changed, no need to onEventSourceUpdate
+10-23 02:09:42.017  3670  3670 I native  : I0000 00:00:1792746582.017731    3670 litert_lm_lib.cc:429] BenchmarkInfo:
+10-23 02:09:42.017  3670  3670 I native  :   Init Phases (7):
+10-23 02:09:42.017  3670  3670 I native  :     - Init Conversation: 0.03 ms
+10-23 02:09:42.017  3670  3670 I native  :     - Init Executor: 317.53 ms
+10-23 02:09:42.017  3670  3670 I native  :     - Init LLM metadata: 0.01 ms
+10-23 02:09:42.017  3670  3670 I native  :     - Init Model assets: 0.79 ms
+10-23 02:09:42.017  3670  3670 I native  :     - Init Tokenizer: 500.87 ms
+10-23 02:09:42.017  3670  3670 I native  :     - Init Total: 503.81 ms
+10-23 02:09:42.017  3670  3670 I native  : --------------------------------------------------
+10-23 02:09:42.017  3670  3670 I native  :   Time to first token: 10.65 s
+10-23 02:09:42.017  3670  3670 I native  : --------------------------------------------------
+10-23 02:09:42.017  3670  3670 I native  :   Prefill Turns (Total 1 turns):
+10-23 02:09:42.017  3670  3670 I native  :     Prefill Turn 1: Processed 1024 tokens in 10.502182256s duration.
+10-23 02:09:42.017  3670  3670 I native  :       Prefill Speed: 97.50 tokens/sec.
+10-23 02:09:42.017  3670  3670 I native  : --------------------------------------------------
+10-23 02:09:42.017  3670  3670 I native  :   Decode Turns (Total 1 turns):
+10-23 02:09:42.017  3670  3670 I native  :     Decode Turn 1: Processed 256 tokens in 38.840594298s duration.
+10-23 02:09:42.017  3670  3670 I native  :       Decode Speed: 6.59 tokens/sec.
+10-23 02:09:42.017  3670  3670 I native  : --------------------------------------------------
+10-23 02:09:42.017  3670  3670 I native  :   TextToTokenIds Turns (Total 1 turns):
+10-23 02:09:42.017  3670  3670 I native  :     Turn 1: 90.047us, 1024 tokens
+10-23 02:09:42.017  3670  3670 I native  : --------------------------------------------------
+10-23 02:09:42.017  3670  3670 I native  : --------------------------------------------------
+10-23 02:09:42.171  3670  3670 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007959635bf0, name=CpuAccelerator
+10-23 02:09:42.171  3670  3670 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007959635f70, name=LiteRT GPU
+10-23 02:09:42.213  3670  3670 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007959693740, name=CpuAccelerator
+10-23 02:09:42.213  3670  3670 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007959694a80, name=LiteRT GPU
