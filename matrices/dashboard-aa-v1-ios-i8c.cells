@@ -1,0 +1,10 @@
+# Artificial Analysis set on the iPhone 17 Pro, LiteRT-LM v0.18.0 (matrices/dashboard-aa-v1-ios.cells header).
+# Slot i8c: Qwen3.5 4B's protocol row again, now at cool-wait=240. In slot i8b (2026-10-22, cool-wait=120) the row made no benchmark() call: the app printed its protocol note and nothing more for 60 minutes, until the cell timeout (cause unverified: a syslog of 03:18:53-03:19:23 has YouTube active and no line from the bench app). In slot i8 (2026-10-21, cool-wait=120) its run 2 started at fair after the 240 s maximum wait. The session anchor rows, then the row below, each byte-identical to its source line.
+# Source: matrices/dashboard-aa-v1-ios.cells lines 21-22 (anchors), 82
+# Estimate: 35.0 min (slot i8b's figure: this file drops its short-chat row, and the protocol row's four pauses grow by 120 s each; .dashboard/0180_aa_20261014/device/ios/README.md)
+# Run, inside the iPhone hold a keeper took:
+#   python3 scripts/dashboard_job.py iphone17pro --schedule <schedule copy with the phone's UDID> --cells matrices/dashboard-aa-v1-ios-i8c.cells --suffix 0180-aa-i8c --once --hold-held-by <keeper pid>
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3.5-4B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048 cool-wait=240
