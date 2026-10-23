@@ -1,0 +1,11 @@
+# Artificial Analysis set on the iPhone 17 Pro, LiteRT-LM v0.18.0 (matrices/dashboard-aa-v1-ios.cells header).
+# Slot i8d: Qwen3.5 4B, both rows again, the short-chat row first. Slot i8c (2026-10-23) ran the protocol row alone: its four runs printed (cold decode 12.90 tok/s; warm 13.18 / 12.12 / 13.01, spread 8.1 %, past the spread rule, every warm run starting at nominal), but no record came of them, because a protocol line imports only like a task record of the same model in the campaign (scripts/bench_matrix_iphone.sh native_import) and i8c carried none. The session anchor rows, then the rows below, each byte-identical to its source line.
+# Source: matrices/dashboard-aa-v1-ios.cells lines 21-22 (anchors), 81-82
+# Estimate: 55.0 min (slot i8c took 36 min for its anchor rows and this protocol row at cool-wait=240; + the short-chat row's cooldown, its two launches and a heat retry; .dashboard/0180_aa_20261014/device/ios/README.md)
+# Run, inside the iPhone hold a keeper took:
+#   python3 scripts/dashboard_job.py iphone17pro --schedule <schedule copy with the phone's UDID> --cells matrices/dashboard-aa-v1-ios-i8d.cells --suffix 0180-aa-i8d --once --hold-held-by <keeper pid>
+
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3.5-4B short-chat backend=gpu runs=2 cooldown=300
+ios litert-lm litert-community/Qwen3.5-4B native-benchmark-1024x256 backend=gpu cooldown=300 context-tokens=2048 cool-wait=240
