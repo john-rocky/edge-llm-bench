@@ -288,12 +288,14 @@ def plan(cells_file, device_id, campaign, args):
                       "sha256": m["sha256"], "device": model_dev,
                       "object": f"{INPUTS}/models/{m['sha256'] or 'UNCACHED'}/{filename}",
                       **({"uncached": m["uncached"]} if m.get("uncached") else {})}
-        prompt_local = os.path.join(ROOT, "prompts", "text", f"{cell['task']}.txt")
-        psha = sha256_file(prompt_local)
-        prompt_push = {"kind": "prompt", "name": f"{cell['task']}.txt", "local": prompt_local,
-                       "bytes": os.path.getsize(prompt_local), "sha256": psha, "device": prompt_dev,
-                       "object": f"{INPUTS}/prompts/{psha}/{cell['task']}.txt"}
-        push = engines + [model_push, prompt_push]
+        push = engines + [model_push]
+        # a native-benchmark row forces its token counts and reads no prompt file (run_cell.engine_command)
+        if not cell["task"].startswith("native-benchmark-"):
+            prompt_local = os.path.join(ROOT, "prompts", "text", f"{cell['task']}.txt")
+            psha = sha256_file(prompt_local)
+            push.append({"kind": "prompt", "name": f"{cell['task']}.txt", "local": prompt_local,
+                         "bytes": os.path.getsize(prompt_local), "sha256": psha, "device": prompt_dev,
+                         "object": f"{INPUTS}/prompts/{psha}/{cell['task']}.txt"})
         wargs = [f"--runs={runs}", f"--cooldown={cooldown}", f"--mask={mask or 'none'}", f"--env={env}",
                  f"--binname={binname}", f"--dir={run_cell.DEV_DIR}", f"--output_dir={OUTPUT_DIR}",
                  f"--timeout={per_run}", f"--thermal_wait={run_campaign.THERMAL_WAIT}",
@@ -451,7 +453,16 @@ def ensure_uploaded(p, bucket):
         if not f.get("local"):
             raise SystemExit(f"{f['name']}: no local file to upload")
         print(f"uploading {f['local']} ({f['bytes']:,} bytes) -> {url}", flush=True)
-        gcloud(["storage", "cp", f["local"], url])
+        for _ in range(2):
+            if gcloud(["storage", "cp", f["local"], url], check=False).returncode == 0:
+                break
+            # objects are content-addressed: two runs (two pools) copying one object at once both fail
+            # (2026-10-23, tokay-35 + pa3q-35); the other run's copy counts, otherwise copy once more
+            if gcloud(["storage", "ls", url], check=False).returncode == 0:
+                print(f"in bucket after a failed copy: {url}")
+                break
+        else:
+            raise SystemExit(f"{url}: two copies failed")
 
 
 def run_session(s, campaign_dir, args, operation=None):

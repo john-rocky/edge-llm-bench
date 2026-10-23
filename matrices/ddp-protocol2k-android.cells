@@ -1,0 +1,21 @@
+# 2026-10-23: the LiteRT-LM protocol rows of matrices/dashboard-protocol1024-v1-android.cells (1,024 forced prefill
+# tokens, 256 decode, --max_num_tokens=2048, one benchmark per process: the first launch on a unit builds the engine
+# caches, every later launch loads with them), with the same files, backends and cooldowns, for two DDP lab pools:
+# tokay-35 (Pixel 9) and pa3q-35 (Galaxy S25 Ultra).
+# No anchor rows (a lab unit has no session anchor) and no exclude-on= (those name the attached Pixel 8a; on a pool
+# without a schedule key a row that carries one is skipped as ddp-device-key-unknown).
+
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
+
+android litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-4B native-benchmark-1024x256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048
+
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048
