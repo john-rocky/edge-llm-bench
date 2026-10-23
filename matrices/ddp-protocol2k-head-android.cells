@@ -1,0 +1,12 @@
+# 2026-10-23: four rows of matrices/ddp-protocol2k-android.cells (Qwen3 0.6B, Gemma 4 E2B; CPU and GPU) on a LiteRT-LM
+# main build instead of android_pins' tag: `bench matrix <this file> --ddp <id> --engine-build main-25016d6ef`
+# (android/scripts/build_litert_lm_main.sh with LITERTLM_REF=25016d6ef6496d35cec27167a862e5e1f1fdd79c, the main
+# commit of 2026-10-23 06:11 UTC). Same protocol: 1,024 forced prefill tokens, 256 decode, --max_num_tokens=2048,
+# one benchmark per process (the first launch on a unit builds the engine caches, every later launch loads with them),
+# same files, backends and cooldowns. Pools: tokay-35 (Pixel 9) and pa3q-35 (Galaxy S25 Ultra). No anchor rows.
+
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048

@@ -47,6 +47,61 @@ LITERTLM_TAG=v0.17.0 android/scripts/build_litert_lm_main.sh   # bazel source bu
 - Both record sha256 pins in `android/engine-pins.json`; every result row
   carries `engineVersion`/`engineArtifact` from there.
 
+### Build from head or a PR
+
+`LITERTLM_REF` builds a git ref instead of a tag: a commit sha (7 to 40 hex
+digits), a branch, or a pull request's head (`pr/<N>`). Its label names the
+output directory and the pins entry: `main-<sha9>` for a sha or the branch
+`main`, `<branch>-<sha9>` for another branch (`/` written as `-`),
+`pr<N>-<sha9>` for a pull request, where `<sha9>` is the first 9 hex digits of
+the commit `git ls-remote` resolves.
+
+```bash
+LITERTLM_REF=main android/scripts/build_litert_lm_main.sh       # -> android/bin/main-<sha9>/
+LITERTLM_REF=<sha> android/scripts/build_litert_lm_main.sh      # -> android/bin/main-<sha9>/
+LITERTLM_REF=pr/<N> android/scripts/build_litert_lm_main.sh     # -> android/bin/pr<N>-<sha9>/
+LITERTLM_REF=pr/<N> LITERTLM_DRY_RUN=1 android/scripts/build_litert_lm_main.sh   # label, commit, every command; runs none
+```
+
+The script fetches that one commit (`git init`, `git fetch --depth 1`,
+`git checkout FETCH_HEAD`; git-lfs brings the `.so` files) into
+`~/.cache/apple-silicon-llm-bench/litert-lm-<label>`, runs the same bazel
+build as for a tag, and writes `android/bin/<label>/`: both tools, the GPU
+`.so` set, `SHA256SUMS` and `BUILD_INFO` (the requested ref, the commit, its
+date and subject, `git describe`, the NDK and bazel versions, the build time
+and host; no home path). It then writes the entry `litert-lm.<label>` into
+`android/engine-pins.json` with `android/scripts/pins_add.py`;
+`android_pins` is not changed.
+
+A DDP run takes that build by its label (without the flag it runs
+`android_pins`' tag):
+
+```bash
+BENCH_ANDROID_BIN_DIR=android/bin ./bench matrix <cells> --ddp <id> --engine-build <label> \
+    --dry-run --project <p> --bucket gs://<b>        # then the same without --dry-run
+```
+
+Every job then pushes the files of `<dir>/<label>/`, each checked against the
+entry first, its labels carry `engine=<label>`, and the records' witness
+stamps `engineVersion` `<label>`.
+
+An engine built elsewhere (another machine, a change that is not on GitHub):
+put its files, `litert_lm_main`, `litert_lm_advanced_main` and the GPU `.so`
+set (9 files at v0.18.0), flat in `<dir>/<label>/`, then
+
+```bash
+android/scripts/pins_add.py <label> <dir>/<label>    # --dry-run prints the entry and writes nothing
+BENCH_ANDROID_BIN_DIR=<dir> ./bench matrix <cells> --ddp <id> --engine-build <label> \
+    --project <p> --bucket gs://<b>
+```
+
+`pins_add.py` refuses (exit 2, nothing written) a directory without both
+tools or without a `.so` file, a git-lfs pointer file in place of a binary,
+and a label the file already holds (`--replace` writes it again). The
+attached-phone route's sitting check refuses a build that is not
+`android_pins`' tag: a non-pin build on an attached phone is pushed by hand
+into the flat dir and put back ("Push runtime to the device" below).
+
 ## Push runtime to the device
 
 LiteRT-LM (the tag in `android/engine-pins.json` `android_pins`, v0.18.0 since 2026-10-15):

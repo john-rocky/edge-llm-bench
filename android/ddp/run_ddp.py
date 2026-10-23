@@ -18,7 +18,10 @@ the static wrapper android/ddp/ddp_cell.sh, our own LiteRT-LM build; docs/ddp-in
     cpucapWaitSeconds in devices.json (absent: the attached-phone route's run_cell.CPUCAP_WAIT, 300 s).
 (c) pushes: the 9 engine files of android_pins' tag (each checked against engine-pins.json),
     the model (HF cache), the prompt; the wrapper is the job's binary; bucket objects are
-    content-addressed under <--bucket>/automation/inputs/edge-llm-bench/.
+    content-addressed under <--bucket>/automation/inputs/edge-llm-bench/. --engine-build <label>
+    takes the engine files from <--bin-dir>/<label>/ and checks them against the litert-lm entry
+    <label> instead (android/scripts/pins_add.py writes it), for every row of the plan; the records'
+    witness then stamps that label as engineVersion.
 (d) request bodies (the 2026-09-17 session's shape), POSTed to --project's sessions.
 (e) not with --dry-run: missing objects uploaded (gcloud storage ls / cp), one POST per session,
     the operation polled every --poll-seconds, the session read and pulled (gcloud storage cp -r)
@@ -68,6 +71,8 @@ NAME_MAX = 63
 # an argv element the platform may split at spaces must carry nothing a shell reads specially
 SAFE_COMMAND = re.compile(r"^[A-Za-z0-9_./=:,+ -]+$")
 SAFE_ENV = re.compile(r"^[A-Za-z0-9_./=:,+-]+$")
+# --engine-build: a litert-lm label of android/engine-pins.json as android/scripts/pins_add.py writes it
+ENGINE_BUILD = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 # per-run timeout cap (D7) and the margin the wrapper keeps for logcat and the pull
 RUN_TIMEOUT_CAP = 1800
 PULL_MARGIN = 120
@@ -150,7 +155,12 @@ def engine_files(bin_dir, tag, pins):
     entry (tool fields + so_files), else stop."""
     entry = pins.get("litert-lm", {}).get(tag)
     if not entry:
-        raise SystemExit(f"android/engine-pins.json has no litert-lm {tag} entry")
+        raise SystemExit(f"android/engine-pins.json has no litert-lm {tag} entry — android/scripts/pins_add.py "
+                         f"{tag} <dir>/{tag} writes it from the build's files")
+    absent = [f for f in ("litert_lm_main_sha256", "litert_lm_advanced_main_sha256") if not entry.get(f)]
+    if absent:
+        raise SystemExit(f"android/engine-pins.json litert-lm {tag} has no {' / '.join(absent)}: not a flat build "
+                         "of both tools (android/scripts/pins_add.py writes one)")
     want = {"litert_lm_main": entry.get("litert_lm_main_sha256"),
             "litert_lm_advanced_main": entry.get("litert_lm_advanced_main_sha256"),
             **entry.get("so_files", {})}
@@ -238,7 +248,8 @@ def plan(cells_file, device_id, campaign, args):
     dev = device_entry(device_id)
     key = dev.get("scheduleKey")
     pins = run_cell.load_pins()
-    tag = pins.get("android_pins", {}).get("litert-lm")
+    # --engine-build <label>: a litert-lm entry other than the pin (android_pins is never changed here)
+    tag = getattr(args, "engine_build", None) or pins.get("android_pins", {}).get("litert-lm")
     if not tag:
         raise SystemExit("android/engine-pins.json android_pins has no litert-lm tag")
     kept, skips = select_cells(cells_file, device_id, key)
@@ -594,6 +605,9 @@ def main():
     ap.add_argument("--records-only", metavar="CAMPAIGN_DIR",
                     help="records again from a campaign dir's pulled output (no network); takes nothing else")
     ap.add_argument("--bin-dir", default=run_cell.ANDROID_BIN_DIR, help="holds <tag>/<engine files>")
+    ap.add_argument("--engine-build", metavar="LABEL",
+                    help="the litert-lm entry of android/engine-pins.json whose files <bin-dir>/<LABEL>/ holds, "
+                         "instead of android_pins' tag (android/scripts/pins_add.py writes the entry)")
     ap.add_argument("--bucket", default="gs://litert-edge-portal-devicerun",
                     help="gs://<bucket>[/<prefix>] for the inputs and the session outputs")
     ap.add_argument("--project", default="litert-edge-portal", help="the Cloud project of the sessions")
@@ -601,11 +615,14 @@ def main():
     ap.add_argument("--poll-seconds", type=float, default=30)
     args = ap.parse_args()
     if args.records_only:
-        if args.cells or args.device or args.dry_run or args.resume or args.campaign:
+        if args.cells or args.device or args.dry_run or args.resume or args.campaign or args.engine_build:
             ap.error("--records-only takes the campaign dir alone")
         return records_only(args.records_only)
     if not args.cells or not args.device:
         ap.error("a cells file and --device are required (or --records-only <campaign dir>)")
+    if args.engine_build is not None and not ENGINE_BUILD.fullmatch(args.engine_build):
+        ap.error(f"--engine-build {args.engine_build!r}: a pins label, ^[A-Za-z0-9][A-Za-z0-9._-]*$ "
+                 "(android/scripts/pins_add.py)")
     args.bucket = args.bucket.rstrip("/")
     if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
         ap.error(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")

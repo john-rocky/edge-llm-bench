@@ -15,6 +15,10 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
    blob named by a 64-hex string that is not the file's sha256 (huggingface_hub 2.2.0 names a
    Xet-stored file's blob by its xet hash), through a fake huggingface_hub module (no package, no
    network): the sha256 is the file's, a billed run passes on the Hub's LFS sha256 and stops on another.
+   --engine-build <label>: android/scripts/pins_add.py into a temp copy of the pins (the entry, every
+   other key byte for byte, its refusals), the plan and record.witness with that copy, bench passing
+   the flag; build_litert_lm_main.sh's dry run with a stand-in git (each ref form's label, nothing run
+   but ls-remote).
 2. the wrapper: --print_shell = run_cell.sampler_shell for every planned job, the command arg
    whole or split at its spaces; a host run with stand-in device tools (runs, files, exit codes, a
    failing and a timed-out engine, the budget, bad args; always exit 0).
@@ -28,7 +32,10 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
    cell's two iterations and text check, firstEver, the uuid5 ids; --records-only writes the same
    files again; the witness of a changed sha.
 5. scripts/build_summary.py into a temp dir: the device column of a DDP row, never the attached
-   phone's; render_leaderboard's tree key and arm_row apart; render_dashboard's devices_for.
+   phone's; render_leaderboard's tree key and arm_row apart; render_dashboard's devices_for. Then
+   render_leaderboard.latest_session on a temp summary of those columns: a cell that mixes version tags
+   and a label keeps the newest tag's session (arm_row and render_dashboard.build too), a label-only
+   cell keeps timestamp order.
 6. android/ddp/scrub.py: each rule on one line and what it keeps; the file form (the original copied
    once, a second scrub writing the same bytes and counts, bytes that are not UTF-8 kept); the CLI.
 """
@@ -364,6 +371,251 @@ def check_model_file(tmp):
        "billed path: the hash = the Hub's LFS sha256 passes; a file the Hub gives no LFS sha256 passes on the size alone")
     ok(stopped is not None and f"sha256 {sha}" in stopped and f"the Hub's LFS sha256 is {other}" in stopped,
        f"billed path: a hash other than the Hub's LFS sha256 stops it, naming both ({stopped})")
+
+
+# ---------------------------------------------------------------- 1d. --engine-build: a pins entry other than the pin
+
+PINS_ADD = os.path.join(ROOT, "android", "scripts", "pins_add.py")
+BUILD_SH = os.path.join(ROOT, "android", "scripts", "build_litert_lm_main.sh")
+LABEL = "main-012345678"  # a stand-in build's label, of the form build_litert_lm_main.sh gives main at a commit
+# a stand-in git for build_litert_lm_main.sh's dry run: ls-remote answers from a refs file, any other call fails
+FAKE_GIT = """#!/bin/sh
+echo "$*" >> %(log)r
+if [ "$1" = ls-remote ]; then
+  shift 2
+  if [ $# -eq 0 ]; then cat %(refs)r; exit 0; fi
+  for r in "$@"; do awk -v r="$r" '$2 == r' %(refs)r; done
+  exit 0
+fi
+exit 99
+"""
+FAKE_REFS = ("1111111111111111111111111111111111111111\tHEAD\n"
+             "1111111111111111111111111111111111111111\trefs/heads/main\n"
+             "2222222222222222222222222222222222222222\trefs/heads/feature/x-y\n"
+             "3333333333333333333333333333333333333333\trefs/pull/42/head\n"
+             "4444444444444444444444444444444444444444\trefs/tags/v9.9.9\n"
+             "5555555555555555555555555555555555555555\trefs/tags/v9.9.8\n"
+             "6666666666666666666666666666666666666666\trefs/tags/v9.9.8^{}\n")
+
+
+def pins_add(*argv):
+    return subprocess.run([sys.executable, PINS_ADD] + list(argv), capture_output=True, text=True)
+
+
+def entry_shas(entry):
+    return {"litert_lm_main": entry.get("litert_lm_main_sha256"),
+            "litert_lm_advanced_main": entry.get("litert_lm_advanced_main_sha256"), **(entry.get("so_files") or {})}
+
+
+def check_engine_build(tmp, bin_dir, models):
+    print(f"--- 1d. --engine-build {LABEL}: android/scripts/pins_add.py writes the entry into a copy of the pins; "
+          "the plan, the witness and bench read it; build_litert_lm_main.sh's dry run with a stand-in git")
+    real = os.path.join(ROOT, "android", "engine-pins.json")
+    real_bytes = open(real, "rb").read()
+    pins_path = os.path.join(tmp, "engine-pins.json")
+    shutil.copyfile(real, pins_path)
+    original = open(pins_path, "rb").read()
+    names = ["litert_lm_main", "litert_lm_advanced_main"] + sorted(run_cell.load_pins()["litert-lm"][TAG]["so_files"])
+    label_bin = os.path.join(tmp, "label-bin")
+    build = os.path.join(label_bin, LABEL)
+    for name in names:
+        write(os.path.join(build, name), f"stand-in {name}\n")
+    want = {name: hashlib.sha256(f"stand-in {name}\n".encode()).hexdigest() for name in names}
+    # (i) pins_add.py
+    r = pins_add("--pins", pins_path, "--dry-run", LABEL, build)
+    printed = json.loads(r.stdout) if r.returncode == 0 else {}
+    ok(r.returncode == 0 and list(printed) == [LABEL] and entry_shas(printed[LABEL]) == want
+       and open(pins_path, "rb").read() == original,
+       f"pins_add.py --dry-run: rc 0, {{label: entry}} on stdout with the {len(names)} sha256 hashlib reads of the "
+       f"stand-in files, the pins file unchanged (rc {r.returncode})")
+    before = json.load(open(pins_path))
+    r = pins_add("--pins", pins_path, LABEL, build)
+    after = json.load(open(pins_path))
+    entry = after.get("litert-lm", {}).get(LABEL, {})
+    rest = copy.deepcopy(after)
+    rest.get("litert-lm", {}).pop(LABEL, None)
+    ending = "\n" if original.endswith(b"\n") else ""
+    others = (sorted(after) == sorted(before)
+              and all(json.dumps(after[k], sort_keys=True) == json.dumps(before[k], sort_keys=True)
+                      for k in before if k != "litert-lm")
+              and all(json.dumps(after["litert-lm"].get(k), sort_keys=True) == json.dumps(v, sort_keys=True)
+                      for k, v in before["litert-lm"].items()))
+    ok(r.returncode == 0 and r.stdout.strip() == f"pins: {LABEL} added ({len(names) - 2} so files)"
+       and entry_shas(entry) == want and list(entry) == ["requested_tag", "observed", "litert_lm_main_sha256",
+                                                          "litert_lm_advanced_main_sha256", "so_files", "built"]
+       and entry.get("requested_tag") == LABEL and entry.get("built", "").startswith("android/scripts/pins_add.py ")
+       and list(after["litert-lm"])[-1] == LABEL and others
+       and (json.dumps(rest, indent=2) + ending).encode() == original,
+       f"pins_add.py: rc 0, '{r.stdout.strip()}'; the entry = the {len(names)} sha256 under the other entries' keys; "
+       f"android_pins, the other engines and the {len(before['litert-lm'])} litert-lm entries before it unchanged "
+       f"(json.dumps(sort_keys=True) per key), the file less the entry = the original bytes, its ending included")
+    snap = open(pins_path, "rb").read()
+    r2 = pins_add("--pins", pins_path, LABEL, build)
+    refused_kept = open(pins_path, "rb").read() == snap
+    r3 = pins_add("--pins", pins_path, "--replace", "--note", "selftest replace", LABEL, build)
+    again = json.load(open(pins_path))
+    ok(r2.returncode == 2 and "--replace" in r2.stderr and refused_kept and r3.returncode == 0
+       and "replaced" in r3.stdout and entry_shas(again["litert-lm"][LABEL]) == want
+       and again["litert-lm"][LABEL]["built"] == "selftest replace"
+       and list(again["litert-lm"]) == list(after["litert-lm"]),
+       f"the same label again: rc 2 naming --replace, nothing written (rc {r2.returncode}); --replace: rc 0, "
+       f"the entry written over in its place (rc {r3.returncode})")
+
+    def broken(tag, change):
+        d = os.path.join(tmp, "label-bin-" + tag, "main-0123456ab")
+        shutil.copytree(build, d)
+        change(d)
+        snap = open(pins_path, "rb").read()
+        res = pins_add("--pins", pins_path, "main-0123456ab", d)
+        return res, open(pins_path, "rb").read() == snap
+    r4, kept4 = broken("no-main", lambda d: os.remove(os.path.join(d, "litert_lm_main")))
+    ok(r4.returncode == 2 and "no litert_lm_main" in r4.stderr and "nothing written" in r4.stderr and kept4,
+       f"a dir without litert_lm_main (the T1c kit's shape): rc 2, stderr names it, nothing written (rc {r4.returncode})")
+    pointer = "version https://git-lfs.github.com/spec/v1\noid sha256:" + "0" * 64 + "\nsize 3416880\n"
+    r5, kept5 = broken("lfs", lambda d: write(os.path.join(d, names[2]), pointer))
+    ok(r5.returncode == 2 and "git-lfs pointer" in r5.stderr and names[2] in r5.stderr and kept5,
+       f"a git-lfs pointer in place of {names[2]}: rc 2, stderr names the file, nothing written (rc {r5.returncode})")
+    snap = open(pins_path, "rb").read()
+    r6 = pins_add("--pins", pins_path, "bad/label", build)
+    ok(r6.returncode == 2 and "bad/label" in r6.stderr and open(pins_path, "rb").read() == snap,
+       f"label bad/label: rc 2, nothing written (rc {r6.returncode})")
+    # (ii) the plan reads the label's entry (run_ddp and record call run_cell.load_pins)
+    temp_pins = json.load(open(pins_path))
+
+    def fake_model(model_id, filename, dry_run):  # the selftest's model files, never the HF cache
+        path = models.get(filename)
+        if path is None:
+            path = models[filename] = os.path.join(tmp, "models", filename)
+            write(path, f"weights of {filename}\n")
+        return {"local": path, "bytes": os.path.getsize(path), "sha256": run_cell.sha256_file(path)}
+
+    def plan(engine_build, bin_root):
+        args = plan_args(bin_root)
+        args.engine_build = engine_build
+        return run_ddp.plan(DASHBOARD, "akita-35", "selftest-engine-build-android", args)
+    with patch.object(run_cell, "load_pins", lambda serial=None: copy.deepcopy(temp_pins)), \
+            patch.object(subprocess, "run", side_effect=AssertionError("subprocess in a plan")), \
+            patch.object(subprocess, "Popen", side_effect=AssertionError("subprocess in a plan")), \
+            patch.object(run_ddp, "model_file", fake_model):
+        p = plan(LABEL, label_bin)
+        p0 = plan(None, bin_dir)
+        try:
+            plan("nope", label_bin)
+            nope = None
+        except SystemExit as exc:
+            nope = str(exc)
+    engines = [[f for f in j["push"] if f["kind"] == "engine"] for j in p["jobs"]]
+    ok(p["engineTag"] == LABEL and len(p["jobs"]) == len(p0["jobs"]) > 0
+       and all(j["engineTag"] == LABEL and j["labels"]["engine"] == run_ddp.label_value(LABEL) for j in p["jobs"])
+       and all({f["name"]: f["sha256"] for f in e} == want and len(e) == len(names) for e in engines)
+       and all(f["object"] == f"{run_ddp.INPUTS}/engines/litert-lm/{LABEL}/{f['sha256']}/{f['name']}"
+               and f["device"] == f"{run_cell.DEV_DIR}/{f['name']}" and f["local"] == os.path.join(build, f["name"])
+               for e in engines for f in e),
+       f"plan(engine_build={LABEL}) on akita-35: engineTag and every job's labels.engine the label, the {len(names)} "
+       f"engine pushes from <bin-dir>/{LABEL}/ with the entry's sha256, objects engines/litert-lm/{LABEL}/<sha256>/<name> "
+       f"({len(p['jobs'])} jobs)")
+    j0 = p0["jobs"][0] if p0["jobs"] else {"push": [], "labels": {}}
+    ok(p0["engineTag"] == TAG and j0["labels"].get("engine") == run_ddp.label_value(TAG)
+       and {f["name"]: f["sha256"] for f in j0["push"] if f["kind"] == "engine"} == entry_shas(temp_pins["litert-lm"][TAG]),
+       f"plan(engine_build=None) with the label in the pins: android_pins' {TAG} and its files, as before")
+    ok(nope is not None and "has no litert-lm nope entry" in nope and "android/scripts/pins_add.py" in nope,
+       f"plan(engine_build='nope'): stops naming android/scripts/pins_add.py ({nope})")
+    # (iii) the witness stamps the label from the unit's sha256
+    dev = {f"{run_cell.DEV_DIR}/{n}": s for n, s in want.items()}
+    off = dict(dev, **{f"{run_cell.DEV_DIR}/{names[2]}": "0" * 64})
+    w1 = record.witness("litert_lm_main", dev, temp_pins)
+    w2 = record.witness("litert_lm_advanced_main", dev, temp_pins)
+    w3 = record.witness("litert_lm_main", off, temp_pins)
+    ok(w1 == (LABEL, want["litert_lm_main"]) and w2 == (LABEL, want["litert_lm_advanced_main"])
+       and w3[0].startswith(f"unknown (on-device {LABEL} litert_lm_main with lib {names[2]} unmatched"),
+       f"record.witness of the unit's sha256: {w1[0]} for either tool; one .so off -> {w3[0][:70]}")
+    # (iv) bench passes --engine-build to the driver (a subprocess reads the real pins: the pinned tag named
+    # explicitly plans as before, the stand-in label stops naming pins_add.py)
+    trap = os.path.join(tmp, "trap-bin-engine-build")
+    marker = os.path.join(tmp, "gcloud-was-called-engine-build")
+    write(os.path.join(trap, "gcloud"), f"#!/bin/sh\necho \"$@\" >> {marker}\nexit 1\n", 0o755)
+    env = dict(os.environ, PATH=trap + os.pathsep + "/usr/bin:/bin", BENCH_ANDROID_BIN_DIR=bin_dir)
+    summary_csv = os.path.join(ROOT, "results", "summary", "device-runs.csv")
+    mtime = os.path.getmtime(summary_csv) if os.path.exists(summary_csv) else None
+    bench = [sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD]
+    r7 = subprocess.run(bench + ["--ddp", "akita-35", "--dry-run", "--campaign", "selftest-dry-eb", "--engine-build", TAG],
+                        env=env, capture_output=True, text=True)
+    summary = next((json.loads(x)["summary"] for x in r7.stdout.splitlines() if x.startswith('{"summary"')), {})
+    driver = next((x for x in r7.stdout.splitlines() if x.startswith("$ ") and "run_ddp.py" in x), "")
+    ok(r7.returncode == 0 and driver.endswith(f" --engine-build {TAG}") and summary.get("engine") == TAG
+       and summary.get("jobs") == len(p0["jobs"]),
+       f"bench --ddp akita-35 --dry-run --engine-build {TAG}: run_ddp.py started with --engine-build {TAG}, the summary "
+       f"line's engine {summary.get('engine')}, {summary.get('jobs')} jobs (rc {r7.returncode})")
+    r8 = subprocess.run(bench + ["--ddp", "akita-35", "--dry-run", "--campaign", "selftest-dry-eb2", "--engine-build", LABEL],
+                        env=env, capture_output=True, text=True)
+    ok(r8.returncode == 1 and f"has no litert-lm {LABEL} entry" in r8.stderr and "android/scripts/pins_add.py" in r8.stderr,
+       f"bench --ddp --engine-build {LABEL} with the real pins: the driver stops naming android/scripts/pins_add.py "
+       f"(rc {r8.returncode})")
+    r9 = subprocess.run(bench + ["--engine-build", LABEL], env=env, capture_output=True, text=True)
+    r10 = subprocess.run(bench + ["--ddp", "akita-35", "--dry-run", "--campaign", "selftest-dry-eb3", "--engine-build",
+                                  "bad/label"], env=env, capture_output=True, text=True)
+    after_mtime = os.path.getmtime(summary_csv) if os.path.exists(summary_csv) else None
+    ok(r9.returncode == 2 and "--engine-build is for --ddp only" in r9.stderr and r10.returncode == 2
+       and "a pins label" in r10.stderr and not os.path.exists(marker) and mtime == after_mtime,
+       f"--engine-build without --ddp refuses (rc {r9.returncode}); --engine-build bad/label refuses (rc "
+       f"{r10.returncode}); no gcloud call, no summary rebuilt")
+    # (v) the two scripts parse
+    import py_compile
+    try:
+        py_compile.compile(PINS_ADD, cfile=os.path.join(tmp, "pins_add.pyc"), doraise=True)
+        compiled = True
+    except py_compile.PyCompileError as exc:
+        compiled = str(exc)
+    rb = subprocess.run(["bash", "-n", BUILD_SH], capture_output=True, text=True)
+    ok(compiled is True and rb.returncode == 0 and os.access(PINS_ADD, os.X_OK) and os.access(BUILD_SH, os.X_OK),
+       f"pins_add.py compiles, bash -n build_litert_lm_main.sh passes, both executable ({compiled}, {rb.stderr[-200:]!r})")
+    # (vi) build_litert_lm_main.sh's dry run: each ref form's label and commit from git ls-remote; nothing else run
+    fake = os.path.join(tmp, "fake-git-bin")
+    git_log = os.path.join(tmp, "fake-git.log")
+    refs = os.path.join(tmp, "fake-refs.txt")
+    write(refs, FAKE_REFS)
+    write(os.path.join(fake, "git"), FAKE_GIT % {"log": git_log, "refs": refs}, 0o755)
+    bazel_log = os.path.join(tmp, "fake-bazelisk.log")
+    write(os.path.join(fake, "bazelisk"), f"#!/bin/sh\necho \"$*\" >> {bazel_log}\nexit 99\n", 0o755)
+    home = os.path.join(tmp, "build-home")
+    ndk = os.path.join(tmp, "ndk", "29.0.0")
+    os.makedirs(home)
+    os.makedirs(ndk)
+    cases = [({"LITERTLM_REF": "main"}, 0, "main-111111111", "1" * 40),
+             ({"LITERTLM_REF": "feature/x-y"}, 0, "feature-x-y-222222222", "2" * 40),
+             ({"LITERTLM_REF": "pr/42"}, 0, "pr42-333333333", "3" * 40),
+             ({"LITERTLM_REF": "ABCDEF0123456789abcdef0123456789abcdef01"}, 0, "main-abcdef012",
+              "abcdef0123456789abcdef0123456789abcdef01"),
+             ({"LITERTLM_REF": "3333333"}, 0, "main-333333333", "3" * 40),
+             ({"LITERTLM_TAG": "v9.9.8"}, 0, "v9.9.8", "6" * 40),
+             ({"LITERTLM_REF": "v9.9.9"}, 0, "v9.9.9", "4" * 40),
+             ({"LITERTLM_REF": "x", "LITERTLM_TAG": "y"}, 1, None, None),
+             ({"LITERTLM_REF": "no-such-ref"}, 1, None, None)]
+    bad, outs = [], {}
+    for extra, want_rc, want_label, want_commit in cases:
+        e = {"PATH": fake + os.pathsep + "/usr/bin:/bin", "HOME": home, "ANDROID_NDK_HOME": ndk,
+             "LITERTLM_DRY_RUN": "1", **extra}
+        res = subprocess.run([BUILD_SH], env=e, capture_output=True, text=True, timeout=60)
+        got = dict(x.split("=", 1) for x in res.stdout.splitlines() if re.match(r"^(label|commit)=", x))
+        outs[want_label] = res.stdout
+        if (res.returncode != want_rc or got.get("label") != want_label or got.get("commit") != want_commit
+                or (want_rc and "ERROR" not in res.stderr)):
+            bad.append((extra, res.returncode, got, res.stderr[-160:]))
+    pr = outs.get("pr42-333333333", "")
+    ok(not bad and "fetch --depth 1 origin refs/pull/42/head" in pr
+       and "src=~/.cache/apple-silicon-llm-bench/litert-lm-pr42-333333333\n" in pr
+       and "pins_add.py pr42-333333333 " in pr and " --requested pr/42 " in pr and pr.rstrip().endswith("written"),
+       f"build_litert_lm_main.sh LITERTLM_DRY_RUN=1 with a stand-in git: main, a branch with a slash, pr/42, a full "
+       f"sha in capitals, a short sha (a ref's tip), an annotated tag (its peeled commit), a tag via LITERTLM_REF -> "
+       f"their labels and commits; both variables or an unknown ref -> exit 1; the pr/42 run prints its fetch, "
+       f"src and pins_add lines ({bad[:1]})")
+    calls = open(git_log).read().splitlines() if os.path.exists(git_log) else []
+    made = [n for n in os.listdir(home)] + [c[2] for c in cases if c[2] and os.path.exists(
+        os.path.join(ROOT, "android", "bin", c[2]))]
+    ok(calls and all(c.startswith("ls-remote ") for c in calls) and not os.path.exists(bazel_log) and not made,
+       f"the dry runs called git ls-remote only ({len(calls)} calls), never bazelisk, and created nothing under HOME "
+       f"or android/bin ({made[:3]})")
+    ok(open(real, "rb").read() == real_bytes, "android/engine-pins.json itself unchanged by every check above")
 
 
 # ---------------------------------------------------------------- 2. the wrapper
@@ -1129,6 +1381,61 @@ def check_summary(sum_root, att_out):
        f"render_dashboard.devices_for: the DDP unit is a column of its own after the schedule's phones ({cols})")
 
 
+def check_latest_session(tmp, sum_root):
+    print("--- 5b. render_leaderboard.latest_session on a temp summary: a cell that mixes version tags and a label "
+          "keeps the newest tag's session; a label-only cell keeps timestamp order; render_dashboard the same")
+    import datetime
+    import render_leaderboard
+    import render_dashboard
+    with open(os.path.join(sum_root, "summary", "device-runs.csv")) as fh:
+        fields = csv.DictReader(fh).fieldnames  # build_summary's columns (section 5's temp summary)
+    model, name = "litert-community/Qwen3-1.7B", "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+    # one cell per DDP device column; its sessions in capture order: (campaign, engine_version, day). In (a) the
+    # older tag runs after the newer one (a baseline re-measured) and a label after both.
+    cells = {"a": [("a-v0180", TAG, "2026-10-01"), ("a-v0170", "v0.17.0", "2026-10-02"), ("a-label", LABEL, "2026-10-03")],
+             "b": [("b-label1", "main-111111111", "2026-10-01"), ("b-label2", "pr42-222222222", "2026-10-02")],
+             "c": [("c-v0180", TAG, "2026-10-01"), ("c-label", LABEL, "2026-10-02")]}
+    camp = lambda s: f"results/raw/selftest-latest-{s}-android"  # noqa: E731
+    dev = lambda c: f"Pixel 8a (DDP selftest-{c})"  # noqa: E731
+    rows = []
+    for c, sessions in cells.items():
+        for s, engine, day in sessions:
+            for run in (1, 2):
+                r = dict.fromkeys(fields, "")
+                r.update(platform="android", device=dev(c), runtime="litert-lm-gpu", model_id=model, task="short-chat",
+                         campaign=camp(s), timestamp=f"{day}T0{run}:00:00Z", engine_version=engine,
+                         first_ever="False", cold_run="True", decode_tps="20.0")
+                rows.append(r)
+    path = os.path.join(tmp, "latest-session", "summary", "device-runs.csv")
+    os.makedirs(os.path.dirname(path))
+    with open(path, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+    by_cell = {}
+    for r in csv.DictReader(open(path)):
+        by_cell.setdefault(r["device"], []).append(r)
+    cells_file = os.path.join(tmp, "latest-session", "one.cells")
+    write(cells_file, f"android litert-lm {model} short-chat backend=gpu file={name}\n")
+    with patch.object(render_dashboard, "SUMMARY_CSV", path):
+        out, _ = render_dashboard.build(cells_file, os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json"), 10,
+                                        datetime.date(2026, 10, 16))
+    dash = {rec["device"]: rec["campaign"] for rec in out}
+
+    def picked(c):
+        sess, _ = render_leaderboard.latest_session(by_cell[dev(c)])
+        return sorted({r["campaign"] for r in sess}), render_leaderboard.arm_row(by_cell[dev(c)]), dash.get(dev(c))
+    for c, want, why in (
+            ("a", "a-v0180", f"{TAG} and v0.17.0 (captured later) and the label {LABEL} (captured last): the newest "
+                             f"tag's session"),
+            ("b", "b-label2", "two labels only (main-111111111, then pr42-222222222): the newest session, timestamp order"),
+            ("c", "c-v0180", f"{TAG}, then the label {LABEL}: the tag's session, never the label's")):
+        sess, arm, d = picked(c)
+        ok(sess == [camp(want)] and arm["campaign"] == camp(want) and d == camp(want),
+           f"cell {c}, {why}: latest_session, arm_row and render_dashboard.build all take {camp(want)} "
+           f"({sess}, {arm['campaign']}, {d}; engine {arm['engine']})")
+
+
 # ---------------------------------------------------------------- 6. scrub.py
 
 SCRUB_TOKENS = {"ssid": "<lab-ssid>", "hash": "<hash>", "ip6": "<ip6>", "mac": "<mac>", "mac-part": "<mac-part>",
@@ -1236,11 +1543,13 @@ def main():
     plans = check_plan(tmp, bin_dir, models)
     check_bench_dry_run(tmp, bin_dir)
     check_model_file(tmp)
+    check_engine_build(tmp, bin_dir, models)
     check_wrapper_strings(plans)
     check_wrapper_host_run(tmp)
     att_out, att_short, att_long, head = attached_records(tmp, raw_root, models)
     check_billed_path(tmp, raw_root, bin_dir, models, head, att_short, att_long)
     check_summary(sum_root, att_out)
+    check_latest_session(tmp, sum_root)
     check_scrub(tmp)
     if _fails:
         print(f"\n{len(_fails)} of {_count[0]} check(s) failed; temp dir kept: {tmp}")
