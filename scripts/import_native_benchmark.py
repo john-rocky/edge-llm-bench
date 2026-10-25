@@ -136,6 +136,9 @@ def to_result(rec, source: Path, device_id: str, model_id: str | None):
             "generatedTokenCount": decode,
             "decodeTokensPerSecond": num("decode_tok_s"),
             "firstTokenLatencyMS": num("ttft_ms"),
+            # init_s is the binding's init time, which adds up every init phase (Init Total
+            # included), so it reads about twice the wall clock of the engine creation
+            # (LiteRT-LM #4057; registry cli-benchmark-init-summed). Not a load time to quote.
             "loadTimeSeconds": num("init_s"),
             "memoryPeakDuringDecodeMB": num("peak_mb"),
             "memoryMedianMB": num("median_mb"),
@@ -278,7 +281,7 @@ V1_METRICS = (  # (record key, NATIVE_OK field, cast)
     ("promptTokensPerSecond", "prefill_tok_s", float),
     ("decodeTokensPerSecond", "decode_tok_s", float),
     ("firstTokenLatencyMS", "ttft_ms", float),
-    ("loadTimeSeconds", "init_s", float),
+    ("loadTimeSeconds", "init_s", float),  # LiteRT-LM: ~2x the wall clock (#4057, see to_result)
     ("memoryPeakDuringDecodeMB", "peak_mb", float),
     ("memoryMedianMB", "median_mb", float),
     ("memoryMedianResidentMB", "median_resident_mb", float),
