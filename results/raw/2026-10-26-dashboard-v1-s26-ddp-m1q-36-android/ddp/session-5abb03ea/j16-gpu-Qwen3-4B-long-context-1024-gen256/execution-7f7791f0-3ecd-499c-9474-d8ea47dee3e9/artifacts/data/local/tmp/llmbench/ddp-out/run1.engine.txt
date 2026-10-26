@@ -1,0 +1,205 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792987572.204898    6772 litert_lm_lib.cc:629] Choose backend: gpu
+I0000 00:00:1792987572.205784    6772 litert_lm_lib.cc:789] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1792987572.205825    6772 litert_lm_lib.cc:796] vision_executor_settings: not set
+I0000 00:00:1792987572.205850    6772 litert_lm_lib.cc:802] audio_executor_settings: not set
+I0000 00:00:1792987572.205879    6772 litert_lm_lib.cc:825] Creating engine
+W0000 00:00:1792987572.206001    6772 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792987572.206013    6772 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792987572.206019    6772 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792987572.206024    6772 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792987572.206031    6774 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792987572.206053    6774 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792987572.206061    6774 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000765c616830, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000765c616d00, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000765c616e50, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000765c616520, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792987572.227808    6772 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+W0000 00:00:1792987572.227873    6772 litert_lm_loader.cc:391] Section not found: ExecutorMetadataProto
+INFO: [compiled_model.cc:829] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1792987572.288101    6772 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+I0000 00:00:1792987572.288148    6772 delegate_opencl.cc:606] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: Loaded OpenCL library with dlopen.
+INFO: [gpu_environment.cc:234] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:292] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 1753 out of 1753 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (main).
+I0000 00:00:1792987584.336046    6772 delegate_kernel.cc:329] Total 73 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792987584.337139    6772 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+VERBOSE: Replacing 1680 out of 1680 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (main).
+I0000 00:00:1792987587.224681    6772 delegate_kernel.cc:329] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792987587.224861    6772 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:127] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000765c62d270, name=LiteRT GPU
+INFO: [gpu_registry.cc:135] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000765c63f950, name=CpuAccelerator
+INFO: [cpu_registry.cc:75] XNNPACK CPU accelerator registered.
+W0000 00:00:1792987587.950990    6772 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792987587.951553    6772 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1792987587.951589    6772 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792987587.951593    6772 litert_lm_loader.cc:479] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1792987587.951598    6772 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792987587.951601    6772 litert_lm_loader.cc:479] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1792987587.951605    6772 litert_lm_loader.cc:391] Section not found: TFLiteModel
+W0000 00:00:1792987587.951608    6772 litert_lm_loader.cc:479] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+W0000 00:00:1792987587.951877    6772 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792987587.951885    6772 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792987587.951889    6772 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792987587.951893    6772 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1792987587.958480    6772 litert_lm_lib.cc:1079] Creating conversation
+I0000 00:00:1792987587.961234    6772 litert_lm_lib.cc:1091] Running single-turn conversation
+I0000 00:00:1792987593.191761    6772 llm_litert_compiled_model_executor.cc:1552] Sampler will handle decode input tensors.
+INFO: Loaded OpenCL library with dlopen.
+[thought] Okay, the user wants me to list 25 distinct things that on-device AI allows a phone to do that cloud models can't. Let me start by recalling what on-device AI means. It's AI that runs directly on the phone's hardware, not relying on cloud servers. So, the key points here are local processing, no internet connection, privacy, and maybe lower latency.
+
+First, I need to think of tasks that require real-time processing. For example, real-time language translation. If a phone uses on-device AI, it can translate text as the user types, without needing an internet connection. That's one. Then, maybe things like face recognition. But wait, face recognition is usually done on the device for security. But the user is asking for things that cloud models can't do. Wait, cloud models can do face recognition too, but if the phone has local AI, it can do it without sending data. So that's a point.
+
+Another one could be real-time voice commands. If the phone can process voice commands locally, it doesn't need to send data to the cloud. That's another. Then, maybe things like local data processing for privacy. For example, if the phone can analyze photos locally, it doesn't send[/thought]
+I0000 00:00:1792987607.362999    6772 litert_lm_lib.cc:179] Captured model output: Okay, the user wants me to list 25 distinct things that on-device AI allows a phone to do that cloud models can't. Let me start by recalling what on-device AI means. It's AI that runs directly on the phone's hardware, not relying on cloud servers. So, the key points here are local processing, no internet connection, privacy, and maybe lower latency.
+
+First, I need to think of tasks that require real-time processing. For example, real-time language translation. If a phone uses on-device AI, it can translate text as the user types, without needing an internet connection. That's one. Then, maybe things like face recognition. But wait, face recognition is usually done on the device for security. But the user is asking for things that cloud models can't do. Wait, cloud models can do face recognition too, but if the phone has local AI, it can do it without sending data. So that's a point.
+
+Another one could be real-time voice commands. If the phone can process voice commands locally, it doesn't need to send data to the cloud. That's another. Then, maybe things like local data processing for privacy. For example, if the phone can analyze photos locally, it doesn't send
+
+I0000 00:00:1792987607.363384    6772 litert_lm_lib.cc:429] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 15745.83 ms
+    - Init LLM metadata: 0.01 ms
+    - Init Model assets: 0.02 ms
+    - Init Tokenizer: 266.00 ms
+    - Init Total: 15752.55 ms
+--------------------------------------------------
+  Time to first token: 4.89 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1355 tokens in 4.835910832s duration.
+      Prefill Speed: 280.20 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 14.562517026s duration.
+      Decode Speed: 17.58 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 1.342396ms, 1355 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1792987607.363604    6772 litert_lm_lib.cc:1079] Creating conversation
+I0000 00:00:1792987607.364387    6772 litert_lm_lib.cc:1091] Running single-turn conversation
+[thought] Okay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Let me start by recalling what on-device AI means. It's AI that runs directly on the phone, not relying on cloud servers. So the key points here are real-time processing, privacy, and offline capabilities.
+
+First, I need to think of tasks that require immediate processing. For example, real-time language translation. If the phone has on-device AI, it can translate text as the user types, without needing an internet connection. That's a big difference from cloud-based models which need to send data to the cloud.
+
+Then there's local image recognition. If a user takes a photo of a product, the phone can identify it instantly without uploading to the cloud. That's useful for things like finding a product in a store. But wait, I need to make sure each point is distinct. Maybe mention different use cases for image recognition, like medical imaging or security.
+
+Another point could be voice commands. On-device AI can process voice commands without sending data to the cloud, which is better for privacy. Also, real-time video analysis for security cameras. The phone can analyze video frames as they come in, not waiting for cloud processing[/thought]
+I0000 00:00:1792987626.295376    6772 litert_lm_lib.cc:179] Captured model output: Okay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Let me start by recalling what on-device AI means. It's AI that runs directly on the phone, not relying on cloud servers. So the key points here are real-time processing, privacy, and offline capabilities.
+
+First, I need to think of tasks that require immediate processing. For example, real-time language translation. If the phone has on-device AI, it can translate text as the user types, without needing an internet connection. That's a big difference from cloud-based models which need to send data to the cloud.
+
+Then there's local image recognition. If a user takes a photo of a product, the phone can identify it instantly without uploading to the cloud. That's useful for things like finding a product in a store. But wait, I need to make sure each point is distinct. Maybe mention different use cases for image recognition, like medical imaging or security.
+
+Another point could be voice commands. On-device AI can process voice commands without sending data to the cloud, which is better for privacy. Also, real-time video analysis for security cameras. The phone can analyze video frames as they come in, not waiting for cloud processing
+
+I0000 00:00:1792987626.295962    6772 litert_lm_lib.cc:429] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 15745.83 ms
+    - Init LLM metadata: 0.01 ms
+    - Init Model assets: 0.02 ms
+    - Init Tokenizer: 266.00 ms
+    - Init Total: 15752.55 ms
+--------------------------------------------------
+  Time to first token: 4.85 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1355 tokens in 4.793289946s duration.
+      Prefill Speed: 282.69 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 14.131918172s duration.
+      Decode Speed: 18.12 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 1 turns):
+    Turn 1: 3.008541ms, 1355 tokens
+--------------------------------------------------
+--------------------------------------------------
+I0000 00:00:1792987626.297363    6772 litert_lm_lib.cc:584] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 15745.83 ms
+    - Init LLM metadata: 0.01 ms
+    - Init Model assets: 0.02 ms
+    - Init Session: 0.01 ms
+    - Init Tokenizer: 266.00 ms
+    - Init Total: 15752.55 ms
+--------------------------------------------------
+  Time to first token: 4.87 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 281.44 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 17.85 tokens/sec.
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000765c616520, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000765c616e50, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000765c63f950, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000765c62d270, name=LiteRT GPU
