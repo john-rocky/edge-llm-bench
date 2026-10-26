@@ -12,7 +12,7 @@ cache_dir=<dir>).run()` (`run_one.py`, driver `run_all.sh`). The GPU path on mac
 
 | build | process 1, s | process 2, calls 1 / 2, s | cache loads failed per call in process 2 | program cache after process 1 → after process 2, bytes |
 |---|---|---|---|---|
-| 0.18.0 | 49.09 | 44.81 / 45.98 | 10 of 12 | 539,049,304 → 1,598,383,896 |
+| 0.18.0 | 49.09 * | 44.81 / 45.98 | 10 of 12 | 539,049,304 → 1,598,383,896 |
 | 0.18.1 | 47.25 | 48.96 / 47.25 | 10 of 12 | 539,049,304 → 1,598,383,896 |
 | 0.19.0.dev20261022 | 31.96 | 29.80 / 28.82 | 10 of 12 | 539,450,152 → 1,599,599,256 |
 
@@ -24,3 +24,8 @@ The program cache file grows by about 530 MB per call in process 2 (the weight c
 `s26-v0180-signature-outcomes.txt`: the Galaxy S26 (OpenCL) launch of 2026-10-24 with LiteRT-LM v0.18.0, whose console names
 each subgraph: prefill_1024 … prefill_2 (16,775–25,703 delegated nodes) fail at `ml_drift/cl/inference_context.cc:297`,
 prefill_1 (2,070 nodes) and decode (2,124 nodes) load. The iPhone 17 Pro (Metal) consoles are linked from #4178.
+
+\* Another lane's SwiftPM clone (git pack indexing, CPU) may have overlapped 20:47:08–20:47:45, the first 37 s of 0.18.0's
+process 1 (it started before the window, without the quiet wait; reported by that lane at 21:0x). Only that wall time can be
+affected; every later run fell in 20:47:45–20:53:23, when that lane only downloaded (git-lfs, about 1 % CPU). The counts and
+file sizes do not depend on CPU load.
