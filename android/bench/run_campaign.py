@@ -186,8 +186,7 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
         cmd += ["--round-index", str(rnd), "--launch-index", str(launch)]
     if gate_timed_out:
         cmd += ["--gate-timed-out"]
-    print(f"\n=== {cell['runtime']}{'/' + cell['opts'].get('backend', '') if cell['opts'].get('backend') else ''} "
-          f"{cell['model_id']} {cell['task']} ({time.strftime('%H:%M:%S')})")
+    print(f"\n=== {launch_label(cell)} ({time.strftime('%H:%M:%S')})")
     rc = subprocess.call(cmd)
     if rc:
         with open(os.path.join(out_dir, "FAILURES.txt"), "a") as fh:
@@ -198,6 +197,12 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
                         f"{cell['model_id']} {cell['task']}")
             fh.write(f"{identity} rc={rc}\n")
     return rc
+
+
+def launch_label(cell):
+    """The cell as its launch line names it (`=== <label> (HH:MM:SS)`): runtime[/backend] model task."""
+    backend = cell["opts"].get("backend")
+    return f"{cell['runtime']}{'/' + backend if backend else ''} {cell['model_id']} {cell['task']}"
 
 
 def arm_of(cell):
@@ -287,6 +292,36 @@ def apply_gate(cell, out_dir, runs):
         note(out_dir, "FLAGGED.txt",
              f"GATE_FAIL {cell_id(cell)} first='{verdict}' retry='{retry}' "
              "(retry kept; ⚠ downstream)")
+
+
+def gate_ahead(cell, out_dir, runs):
+    """After a payload cell's last round its verdict is final (no other cell writes its records): say
+    now when the gate will re-run it after the last round, so the dashboard job's release estimate
+    counts the re-run from here instead of from gate_plan (scripts/hold_eta.py). Judging only."""
+    if not GATE_RETRY:
+        return
+    verdict = gate_verdict(cell, out_dir, runs)
+    if verdict != "GATE_ERROR" and verdict.split()[0] in RETRY_VERDICTS:
+        print(f"gate ahead: {launch_label(cell)} ({verdict}) — re-run after the last round")
+
+
+def gate_plan(cells, out_dir):
+    """Say, before the first block re-run, which payload cells the gate re-runs: one line naming each
+    by its launch label. The dashboard job's release estimate reads it (scripts/hold_eta.py): each
+    re-run adds GATE_COOLDOWN and a block of the cell's runs. Without it the re-runs were known one
+    at a time: on 2026-10-26 the Galaxy S26's four (09:27-10:22) followed a round 3/3 read as the
+    sitting's end. Judging only, nothing moved or written: apply_gate judges each cell again from the
+    same records before its own re-run."""
+    if not GATE_RETRY or not cells:
+        return
+    flagged = []
+    for cell in cells:
+        verdict = gate_verdict(cell, out_dir, int(cell["opts"].get("runs", "3")))
+        if verdict != "GATE_ERROR" and verdict.split()[0] in RETRY_VERDICTS:
+            flagged.append(launch_label(cell))
+    print(f"gate plan: re-run {len(flagged)} of {len(cells)} payload cells "
+          f"({GATE_COOLDOWN}s cooldown, then one block of its runs each)"
+          + (": " + " | ".join(flagged) if flagged else ""))
 
 
 def keep_ortgenai_folders(cells, serial):
@@ -544,7 +579,10 @@ def main():
             time.sleep(int(cell["opts"].get("cooldown", COOLDOWN)))
             wait_nominal(out_dir)
             run_cell_once(cell, out_dir, 1)
+            if rnd == int(cell["opts"].get("runs", "3")):
+                gate_ahead(cell, out_dir, rnd)
         print(f"--- round {rnd}/{max_rounds} complete (publish every round)")
+    gate_plan(payload, out_dir)
     for cell in payload:  # a payload cell is complete only after its last round
         apply_gate(cell, out_dir, int(cell["opts"].get("runs", "3")))
     print(f"\ncampaign dir: {os.path.dirname(out_dir)}")

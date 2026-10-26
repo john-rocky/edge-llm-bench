@@ -734,6 +734,14 @@ def run_campaign(env, cells_path):
          cells_path], env=env)
 
 
+def run_campaign_out(env, cells_path):
+    """run_campaign, its output kept (and echoed) -> (exit code, output)."""
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_campaign.py"), cells_path],
+                       env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    sys.stdout.write(p.stdout)
+    return p.returncode, p.stdout
+
+
 def records(out_dir, prefix):
     files = sorted(f for f in glob.glob(os.path.join(out_dir, prefix + "*.json")))
     return [(f, json.load(open(f))) for f in files]
@@ -787,8 +795,11 @@ def main():
     schedule([25.0, 24.5, 20.6, 20.1])
     env["CAMPAIGN"] = "selftest-a"
     print("--- campaign A (clean capture, firstEver detection)")
-    rc = run_campaign(env, cells_a)
+    rc, out_text_a = run_campaign_out(env, cells_a)
     ok(rc == 0, f"campaign A exits 0 (got {rc})")
+    ok("gate plan: re-run 0 of 1 payload cells (" in out_text_a and "gate ahead: " not in out_text_a,
+       "the gate plan line names no re-run for a clean payload, and no gate ahead line comes before it "
+       "(the dashboard job's release estimate reads both)")
 
     out_a = os.path.join(raw_root, "selftest-a", "app-path-android")
     lit = records(out_a, "litert-lm-gpu_")
@@ -936,8 +947,18 @@ def main():
     schedule([25.0, 5.0, 24.0, 24.8])
     env["CAMPAIGN"] = "selftest-b"
     print("--- campaign B (COLLAPSE -> quarantine -> retry once)")
-    rc = run_campaign(env, cells_b)
+    rc, out_text_b = run_campaign_out(env, cells_b)
     ok(rc == 0, f"campaign B exits 0 (got {rc})")
+    plan_at = out_text_b.find("gate plan: re-run 1 of 1 payload cells (")
+    ok(plan_at >= 0 and out_text_b.count("gate plan: ") == 1
+       and out_text_b.find("litert-lm/gpu fake/model short-chat", plan_at) > plan_at
+       and 0 <= plan_at < out_text_b.find("gate: COLLAPSE"),
+       "the gate plan line names the cell to re-run by its launch label, before the re-run's own line")
+    ahead_at = out_text_b.find("gate ahead: litert-lm/gpu fake/model short-chat (COLLAPSE")
+    ok(out_text_b.count("gate ahead: ") == 1
+       and out_text_b.find("--- round 1/2 complete") < ahead_at < out_text_b.find("--- round 2/2 complete"),
+       "the gate ahead line names the cell right after its last round's launch (round 2 of 2), before the "
+       "round ends")
 
     out_b = os.path.join(raw_root, "selftest-b", "app-path-android")
     kept = records(out_b, "litert-lm-gpu_")

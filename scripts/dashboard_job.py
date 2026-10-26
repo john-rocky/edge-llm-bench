@@ -23,7 +23,9 @@ for the first pass, in this order:
               engine process / storage floor / host runner idle / the side builds the
               cells files launch are on the phone (a file whose build is missing is
               skipped by itself, the others run)
-  hold        take the sibling lane's device hold for the run (hold_cli.py)
+  hold        take the sibling lane's device hold for the run (hold_cli.py), and keep in it when
+              the sitting expects to release it, rewritten as the sitting moves (expected_release,
+              release_basis: scripts/hold_eta.py, docs/dashboard-recurring-job-v1.md §10)
   phase A     ./bench matrix matrices/anchors.cells   -> <campaign>-anchor
   admission   the fresh anchor against the newest ADMITTED session's anchor on this
               device that ran the same engine build (none: first session on that
@@ -101,6 +103,7 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from render_dashboard import CSV_PLATFORM, REGIME, load_admission, load_cells  # noqa: E402
+import hold_eta  # noqa: E402
 import regression_watch  # noqa: E402
 
 PY = sys.executable
@@ -694,6 +697,95 @@ def phase_b_files(schedule, dev, cells_override):
             + [e["cells"] for e in dev.get("extra_cells", [])])
 
 
+def phase_b_halves(dev, args, info):
+    """The storage halves phase B runs (schedule.json "split"), or None for the whole set: halves when
+    the phone's free space (preflight's free_gb) is under storage_gb_full; never for an explicit
+    --cells file (single-file mode, a targeted retake: design §5)."""
+    if dev["platform"] == "android" and dev.get("split") and not args.cells:
+        free = info.get("free_gb")
+        if free is not None and free < float(dev.get("storage_gb_full", 0)):
+            return dev["split"]
+    return None
+
+
+def phase_b_plan(schedule, dev, args, halves):
+    """(the payload files with their storage floors in order, the extra files' entries by file):
+    the halves or the whole set (an explicit --cells file alone), then the device's extra_cells
+    files (an arm measured on this device only), none for --cells."""
+    plan = ([(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
+            if halves else [(args.cells or schedule["cells"], 0.0)])
+    extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])}
+    return plan, extras
+
+
+def run_tag(cells_file, extras):
+    """A storage half's or an extra file's campaign tag: the extra entry's "tag", else the file name's
+    tail (dashboard-text-v1-android-b1.cells -> b1)."""
+    return ((extras[cells_file].get("tag") if cells_file in extras else None)
+            or re.sub(r"^.*-android-|\.cells$", "", os.path.basename(cells_file)))
+
+
+def sitting_runs(schedule, dev, args, info):
+    """The runs a sitting makes once it holds the device, in order, for the hold's release estimate
+    (scripts/hold_eta.py) -> [(kind, cells file, tag)]: the anchor phase, then phase B's files as
+    phase B picks them (the storage halves when the phone is short of space, then the extra files),
+    less a file whose side build preflight found missing, a retake file followed by its profile pair."""
+    runs = [("matrix", schedule["anchors"], "anchor")]
+    halves = phase_b_halves(dev, args, info)
+    plan, extras = phase_b_plan(schedule, dev, args, halves)
+    for cells_file in [f for f, _ in plan] + list(extras):
+        if cells_file in info.get("side_build_missing", {}):
+            continue
+        if halves or cells_file in extras:
+            tag = run_tag(cells_file, extras)
+        else:
+            tag = os.path.basename(cells_file).replace(".cells", "") if args.cells else "set"
+        runs.append(("matrix", cells_file, tag))
+        if getattr(args, "profile", False) and dev["platform"] == "android":
+            runs.append(("profile", cells_file, "profile"))
+    return runs
+
+
+def release_estimate(schedule, key, dev, args, info, hold, dry):
+    """The sitting's hold release estimate (scripts/hold_eta.py, docs/dashboard-recurring-job-v1.md
+    §10) -> a hold_eta.HoldNote that keeps expected_release / release_basis / release_updated in the
+    hold as the sitting moves, or None. The job writes only into a hold it took itself, never a
+    keeper's (--hold-held-by); a dry run logs what the hold would read and writes nothing. A retake
+    sitting the weekly set follows says so in the basis (that set takes a new hold). Nothing here
+    stops a sitting: a failure is one WARN line and no estimate."""
+    try:
+        now = datetime.datetime.now()
+        lengths = hold_eta.history(LOG_DIR, key)
+        token = PLATFORM_TOKEN[dev["platform"]]
+        # the device's expected_hours is the weekly set's: a --cells sitting (a retake) is not shared it
+        budget = float(dev.get("expected_hours") or 0) * 3600 or None
+        stages = hold_eta.plan_stages(sitting_runs(schedule, dev, args, info), dev, key, lengths,
+                                      platform_token=token, budget_s=None if args.cells else budget)
+        sitting = hold_eta.Sitting(stages, lengths)
+        then = None
+        if getattr(args, "weekly_follows", False):
+            wargs = argparse.Namespace(**dict(vars(args), cells=None, profile=False))
+            weekly = hold_eta.Sitting(hold_eta.plan_stages(sitting_runs(schedule, dev, wargs, info), dev, key,
+                                                           lengths, platform_token=token, budget_s=budget), lengths)
+            weta, _ = weekly.estimate(now)
+            then = (f"then the weekly set as its own sitting (a new hold), "
+                    f"~{hold_eta.fmt_span((weta - now).total_seconds())}")
+        if dry or not hold or not _LOG:
+            if dry:
+                eta, basis = sitting.estimate(now)
+                log(f"  the hold would read expected_release {eta.strftime(hold_eta.RELEASE_FMT)} "
+                    f"({basis}{'; ' + then if then else ''}) [dry-run]")
+            return None
+        _LOG.flush()
+        note = hold_eta.HoldNote(hold[1], os.getpid(), sitting, _LOG.name, os.path.getsize(_LOG.name),
+                                 warn=log, then=then)
+        note.update(force=True)
+        return note
+    except Exception as e:  # noqa: BLE001 — the estimate never stops a sitting
+        log(f"WARN hold release estimate off for this sitting: {type(e).__name__}: {e}")
+        return None
+
+
 # ---------------------------------------------------------------- holds
 
 def hold_acquire(schedule, dev):
@@ -764,7 +856,29 @@ def quiet_lock_release(q):
 
 # ---------------------------------------------------------------- capture
 
-def run_matrix(cells, platform, campaign, env, timeout_s, dry, ddp=None):
+# how often a running `bench matrix` / `bench profile` lets the hold's release estimate read the log
+WATCH_POLL_S = 30
+
+
+def run_logged(cmd, env, watch=None):
+    """Run cmd with its output in the job log -> its exit code. With `watch` (the hold's release
+    estimate, hold_eta.HoldNote) the estimate reads the log every WATCH_POLL_S while it runs; the
+    command, its output and its exit code are the same either way."""
+    if watch is None:
+        return subprocess.run(cmd, env=env, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT).returncode
+    with subprocess.Popen(cmd, env=env, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT) as p:
+        try:
+            while True:
+                try:
+                    return p.wait(timeout=WATCH_POLL_S)
+                except subprocess.TimeoutExpired:
+                    watch.update()
+        except BaseException:
+            p.kill()   # as subprocess.run does on any interruption
+            raise
+
+
+def run_matrix(cells, platform, campaign, env, timeout_s, dry, ddp=None, watch=None):
     # a lab unit (ddp = its catalog id): the android rows as Device Run sessions, android/ddp/run_ddp.py
     target = ["--ddp", ddp] if ddp else ["--platform", platform]
     cmd = ["gtimeout", "--kill-after=60", str(int(timeout_s)),
@@ -778,12 +892,14 @@ def run_matrix(cells, platform, campaign, env, timeout_s, dry, ddp=None):
     # log through a pipe; unbuffered, or they arrive in 8 KB chunks hours late
     # (first S26 run, 2026-09-08: round markers invisible until exit)
     e["PYTHONUNBUFFERED"] = "1"
-    p = subprocess.run(cmd, env=e, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT)
-    log(f"bench matrix exit {p.returncode}")
-    return p.returncode
+    rc = run_logged(cmd, e, watch)
+    log(f"bench matrix exit {rc}")
+    if watch is not None:
+        watch.update()
+    return rc
 
 
-def run_profile(cells, campaign, env, timeout_s, dry):
+def run_profile(cells, campaign, env, timeout_s, dry, watch=None):
     """A retake's per-op profile (docs/dashboard-autopilot-v1.md §8): `./bench profile <cells>
     --campaign <campaign>` writes, per android litert-lm native-benchmark row of the file, a control
     run and its --enable_profiling twin into <campaign>-android/profiles/ (android/bench/run_profile.py,
@@ -797,9 +913,11 @@ def run_profile(cells, campaign, env, timeout_s, dry):
     e = dict(os.environ)
     e.update(env)
     e["PYTHONUNBUFFERED"] = "1"
-    p = subprocess.run(cmd, env=e, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT)
-    log(f"bench profile exit {p.returncode}")
-    return p.returncode
+    rc = run_logged(cmd, e, watch)
+    log(f"bench profile exit {rc}")
+    if watch is not None:
+        watch.update()
+    return rc
 
 
 def device_env(dev):
@@ -1152,6 +1270,7 @@ def attempt(schedule, key, dev, attempt_no, args):
         return (list(planned) if dry else
                 [d for d in created if os.path.exists(os.path.join(ROOT, d, "SESSION.json"))])
     qlock = None
+    eta = None
     try:
         # the Mac measurement window for the whole sitting (schedule "quiet_lock"; Busy when held)
         qlock = None if dry else quiet_lock_take(dev, f"{key} {base}")
@@ -1162,10 +1281,12 @@ def attempt(schedule, key, dev, attempt_no, args):
             info["free_gb"] = android_free_gb(dev["serial"])
             log(f"free on /data: {info['free_gb']:.1f} GB" if info["free_gb"] is not None
                 else "free on /data: unknown")
+        # when the hold is expected back, in the hold itself, rewritten as the sitting moves (§10)
+        eta = release_estimate(schedule, key, dev, args, info, hold, dry)
         # --- phase A: the session anchor as its own short campaign
         anchor_camp = f"{base}-anchor"
         anchor_rel = campaign_rel(anchor_camp, platform)
-        rc = run_matrix(schedule["anchors"], platform, anchor_camp, env, 45 * 60, dry)
+        rc = run_matrix(schedule["anchors"], platform, anchor_camp, env, 45 * 60, dry, watch=eta)
         if dry:
             planned.append(anchor_rel)
             log(f"  admission would read {anchor_rel} against the newest admitted session "
@@ -1195,24 +1316,19 @@ def attempt(schedule, key, dev, attempt_no, args):
                 return EXIT_ABORTED, reason, anchor_rel, sitting_dirs()
 
         # --- phase B: the payload, whole or in storage halves
-        halves = None
         # an explicit --cells file is single-file mode (a targeted retake, design
         # §5): it names its own rows and never fans out into the storage halves
-        if platform == "android" and dev.get("split") and not args.cells:
-            free = info.get("free_gb")
-            if free is not None and free < float(dev.get("storage_gb_full", 0)):
-                halves = dev["split"]
-                log(f"free {free:.1f} GB < {dev['storage_gb_full']} GB for the whole set — "
-                    f"running {len(halves)} halves with model rotation")
-        plan = ([(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
-                if halves else [(args.cells or schedule["cells"], 0.0)])
-        timeout_s = float(dev.get("timeout_hours", 6)) * 3600 / len(plan)
+        halves = phase_b_halves(dev, args, info)
+        if halves:
+            log(f"free {info['free_gb']:.1f} GB < {dev['storage_gb_full']} GB for the whole set — "
+                f"running {len(halves)} halves with model rotation")
         # per-device extra files (schedule.json "extra_cells": an arm measured on
         # this device only, e.g. the ONNX Runtime GenAI cells on the Galaxy S26):
         # each runs after the set as its own tagged session with its own timeout
         # (the tag: the entry's "tag", else from the file name as for a half);
         # an explicit --cells retake never fans out into them
-        extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])}
+        plan, extras = phase_b_plan(schedule, dev, args, halves)
+        timeout_s = float(dev.get("timeout_hours", 6)) * 3600 / len(plan)
         plan += [(f, float(e.get("min_free_gb", 0))) for f, e in extras.items()]
         worst = EXIT_OK
         previous = []
@@ -1221,8 +1337,7 @@ def attempt(schedule, key, dev, attempt_no, args):
         for cells_file, floor in plan:
             camp = base
             if halves or cells_file in extras:
-                tag = ((extras[cells_file].get("tag") if cells_file in extras else None)
-                       or re.sub(r"^.*-android-|\.cells$", "", os.path.basename(cells_file)))
+                tag = run_tag(cells_file, extras)
                 camp = f"{base}-{tag}"
             if cells_file in info.get("side_build_missing", {}):
                 # preflight found its side build missing: no session, no rotation for it; the
@@ -1252,11 +1367,11 @@ def attempt(schedule, key, dev, attempt_no, args):
             rel_path = campaign_rel(camp, platform)
             session_timeout = (float(extras[cells_file].get("timeout_hours", 1)) * 3600
                                if cells_file in extras else timeout_s)
-            rc = run_matrix(cells_file, platform, camp, env, session_timeout, dry)
+            rc = run_matrix(cells_file, platform, camp, env, session_timeout, dry, watch=eta)
             prof_rc = None
             if getattr(args, "profile", False) and platform == "android" and rc != 124:
                 # a retake's native-benchmark row: the per-op pair in the same campaign, under the hold
-                prof_rc = run_profile(cells_file, camp, env, PROFILE_TIMEOUT_S, dry)
+                prof_rc = run_profile(cells_file, camp, env, PROFILE_TIMEOUT_S, dry, watch=eta)
             previous.append(cells_file)
             last_rel = rel_path
             if dry:
@@ -1317,13 +1432,15 @@ def attempt(schedule, key, dev, attempt_no, args):
             reason += "; skipped, side build not on the phone: " + ", ".join(no_build)
         return worst, reason, last_rel, sitting_dirs()
     finally:
+        if eta is not None:
+            eta.stop()   # no estimate written after this: the hold goes next
         quiet_lock_release(qlock)
         if HOLD_KEEPER is not None:
             log(f"hold kept by keeper pid {HOLD_KEEPER} (not acquired / not released by the job)")
         hold_release(hold)
 
 
-def retake_sitting(schedule, key, dev, args):
+def retake_sitting(schedule, key, dev, args, weekly_follows=False):
     """The device's pending retakes as one sitting before its weekly set (docs/dashboard-autopilot-v1.md
     §8) -> its exit code, or None when it has none. The cells file is generated per sitting
     (regression_watch.retake_cells_text: the platform's anchor rows, then each retake's row byte for
@@ -1331,7 +1448,8 @@ def retake_sitting(schedule, key, dev, args):
     single-file sitting), and it closes as a sitting does: its ledger line, then the post step, which
     judges it (the red segment). Exit 0 marks the retakes done with the payload campaign; another
     exit counts an attempt (abandoned after regression_watch.RETAKE_MAX_ATTEMPTS). A dry run writes
-    the generated cells file its plan names and changes no retake state."""
+    the generated cells file its plan names and changes no retake state. weekly_follows: the weekly
+    set runs after it (its hold's release estimate says so: that set takes a new hold)."""
     date = datetime.date.today().isoformat()
     try:
         gone = []
@@ -1350,7 +1468,8 @@ def retake_sitting(schedule, key, dev, args):
     ids = [e["id"] for e in entries]
     profile, why = regression_watch.profile_plan(dev["platform"], entries)
     rargs = argparse.Namespace(**dict(vars(args), cells=rel, suffix=f"retake-{slug}", profile=profile,
-                                      retake={"ids": ids, "cells_file": rel, "rows": rows}))
+                                      retake={"ids": ids, "cells_file": rel, "rows": rows},
+                                      weekly_follows=weekly_follows))
     log(f"=== retake: {len(ids)} pending for {key} ({', '.join(ids)}): one sitting over {rel} before the "
         "weekly set" + (" [dry-run]" if args.dry_run else ""))
     log(f"retake profile: {why}")
@@ -2082,7 +2201,7 @@ def main():
         if key not in retaken and not (args.cells or args.no_retake):
             # stage 3a: the device's pending retakes as their own sitting before its weekly set
             retaken.add(key)
-            rcode = retake_sitting(schedule, key, dev, args)
+            rcode = retake_sitting(schedule, key, dev, args, weekly_follows=not retake_only)
             if rcode == EXIT_BUSY:
                 retaken.discard(key)    # taken again with the device, after the busy poll
             if rcode in (EXIT_BUSY, EXIT_DEVICE) and auto and not pinned:

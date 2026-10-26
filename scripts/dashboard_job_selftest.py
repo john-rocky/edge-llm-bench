@@ -903,12 +903,186 @@ def main():
     ok(counts == [(1, 1), (2, 1), (2, 1)],
        f"cells_with_records: the exclude-on=pixel8a row is not expected on pixel8a, expected elsewhere: {counts}")
 
+    hold_estimate_cases(tmp, dj)
+
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
         return 1
     shutil.rmtree(tmp)
     print("\nselftest OK")
     return 0
+
+
+HOLD_ETA_DATA = os.path.join(ROOT, "scripts", "testdata", "hold-eta")
+
+
+def hold_estimate_cases(tmp, dj):
+    """The hold's release estimate (scripts/hold_eta.py, docs/dashboard-recurring-job-v1.md §10): the
+    keys go into an owned hold only, in one step, beside its own keys; the 2026-10-26 Galaxy S26
+    sitting's log read line by line (scripts/testdata/hold-eta: the runner's lines it reads, with the
+    gate lines today's runner adds, and the lengths of the logs before that day) gives a time within
+    30 min of the real release once round 3/3 of the main matrix is over, and names the sessions after
+    it; a running command lets the estimate read the log; a dry run says what the hold would read."""
+    import hold_eta
+    print("--- hold release estimate: written into an owned hold only, beside its keys; the 2026-10-26 "
+          "S26 log read line by line; the job's poll while a command runs; the dry-run line")
+    hdir = os.path.join(tmp, "eta-holds")
+    os.makedirs(hdir)
+    hold = os.path.join(hdir, ".device_hold")
+    own = {"pid": os.getpid(), "script": "edge-llm-bench/scripts/dashboard_job.py", "device": "S26",
+           "started": "2026-10-26 02:00:06"}
+    with open(hold, "w") as fh:
+        json.dump(own, fh)   # as device_hold.acquire writes it
+    fields = {"expected_release": "2026-10-26 12:48", "release_basis": "npu: round 2/3 done, ~40m left",
+              "release_updated": "2026-10-26 12:07:03"}
+    wrote = hold_eta.note_hold(hold, os.getpid(), fields)
+    text = open(hold).read()
+    again = hold_eta.note_hold(hold, os.getpid(), dict(fields, expected_release="2026-10-26 12:50"))
+    back = json.loads(open(hold).read())
+    ok(wrote and again and "\n" not in text.strip() and list(json.loads(text)) == list(own) + list(fields)
+       and back["expected_release"] == "2026-10-26 12:50" and len(back) == len(own) + len(fields)
+       and sorted(os.listdir(hdir)) == [".device_hold"],
+       f"note_hold: one line, the hold's own keys first and unchanged, the three keys replaced on a rewrite, "
+       f"no temp file left ({text.strip()[:80]}...)")
+    ok(dj.read_hold(hold) == back, "read_hold reads a hold with the estimate as the JSON it is")
+    foreign = dict(own, pid=os.getppid())   # a live pid that is not this process
+    with open(hold, "w") as fh:
+        json.dump(foreign, fh)
+    before = open(hold).read()
+    dj.HOLD_KEEPER = None   # an earlier case's --hold-held-by stays in the module
+    try:
+        dj.check_holds({"hold": hold}, True)
+        busy = False
+    except dj.Busy:
+        busy = True
+    with open(hold, "w") as fh:
+        json.dump(dict(foreign, **fields), fh)
+    try:
+        dj.check_holds({"hold": hold}, True)
+        busy_eta = False
+    except dj.Busy:
+        busy_eta = True
+    with open(hold, "w") as fh:
+        fh.write(before)
+    refused = hold_eta.note_hold(hold, os.getpid(), fields)
+    gone = os.path.join(hdir, ".device_hold.gone")
+    legacy = os.path.join(hdir, ".device_hold.legacy")
+    open(legacy, "w").close()
+    ok(busy and busy_eta and not refused and open(hold).read() == before
+       and not hold_eta.note_hold(gone, os.getpid(), fields) and not os.path.exists(gone)
+       and not hold_eta.note_hold(legacy, os.getpid(), fields) and open(legacy).read() == "",
+       "note_hold: another pid's hold, a missing hold and a legacy empty hold are left as they are; "
+       "check_holds reads another pid's hold as busy with the estimate keys or without")
+
+    # the 2026-10-26 Galaxy S26 sitting, read line by line with the lengths of the logs before that day
+    with open(os.path.join(HOLD_ETA_DATA, "history-s26-before-2026-10-26.json")) as fh:
+        lengths = json.load(fh)
+    schedule = {"anchors": "matrices/anchors.cells", "cells": "matrices/dashboard-text-v1.cells",
+                "devices": {"s26": {"platform": "android", "expected_hours": 10.3, "extra_cells": [
+                    {"cells": "matrices/dashboard-ortgenai-v1-android-ort.cells"},
+                    {"cells": "matrices/dashboard-npu-v1-android-s26-short.cells", "tag": "npu"}]}}}
+    rows, released = hold_eta.replay(os.path.join(HOLD_ETA_DATA, "2026-10-26-s26-job-log.txt"), "s26", schedule,
+                                     lengths, cells_root=HOLD_ETA_DATA)
+
+    def off_min(row):
+        return (row[2] - released).total_seconds() / 60
+
+    main_end = datetime.datetime(2026, 10, 26, 10, 22, 25)
+    round3 = [r for r in rows if r[1].startswith("--- round 3/3") and r[0] < main_end][:1]
+    plan_rows = [r for r in rows if r[1].startswith("gate plan: re-run 4 ")]
+    ok(released == datetime.datetime(2026, 10, 26, 12, 47, 58) and len(round3) == 1 and len(plan_rows) == 1
+       and abs(off_min(round3[0])) <= 30 and abs(off_min(plan_rows[0])) <= 30,
+       f"10-26 S26: at the main matrix's round 3/3 (and its gate plan line) the time is within 30 min of the "
+       f"release 12:47:58: {round3[0][2]:%H:%M} ({off_min(round3[0]):+.0f} min), {plan_rows[0][2]:%H:%M} "
+       f"({off_min(plan_rows[0]):+.0f} min)" if round3 and plan_rows else "10-26 S26: no round 3/3 or gate plan row")
+    aheads = [r for r in rows if r[1].startswith("gate ahead: ")]
+    ok(len(aheads) == 4 and all(f"{i} gate re-run" in r[3] for i, r in enumerate(aheads, 1))
+       and off_min(aheads[-1]) - off_min(aheads[0]) >= 30,
+       "10-26 S26: each gate ahead line during round 3 adds its re-run to the time: "
+       + ", ".join(f"{r[0]:%H:%M} {off_min(r):+.0f}" for r in aheads))
+    pending = [r for r in rows if r[0] < datetime.datetime(2026, 10, 26, 10, 22, 25)]
+    ok(pending and all(" ort ~" in r[3] and " npu ~" in r[3] for r in pending),
+       "10-26 S26: until the main matrix exits, every basis names the ONNX Runtime and NPU sessions after it")
+    tail = [r for r in rows if r[0] >= datetime.datetime(2026, 10, 26, 10, 22, 25)]
+    ok(tail and all(abs(off_min(r)) <= 10 for r in tail),
+       "10-26 S26: from the main matrix's exit on, the time is within 10 min of the release: "
+       + ", ".join(f"{r[0]:%H:%M} {off_min(r):+.0f}" for r in tail[:6]))
+    marks = [r for r in rows if r[1].startswith(("--- round", "gate plan", "[2026-10-26"))]
+    ok(len(marks) >= 15 and len({r[2] for r in marks}) >= 10,
+       f"10-26 S26: a time at each mark (runs, rounds, the gate), and it moves: {len(marks)} marks, "
+       f"{len({r[2] for r in marks})} distinct times")
+
+    # the job's poll: the estimate reads the log while a command runs and rewrites the hold (the log says
+    # the times of now, as a live sitting's does: the poll reads the clock)
+    log_path = os.path.join(tmp, "eta-job.log")
+    t0 = datetime.datetime.now().replace(microsecond=0)
+    with open(log_path, "w") as fh:
+        fh.write(f"[{t0:%Y-%m-%d %H:%M:%S}] hold taken: x\n")
+    with open(hold, "w") as fh:
+        json.dump(own, fh)
+    stages = hold_eta.plan_stages([("matrix", "matrices/anchors.cells", "anchor"),
+                                   ("matrix", "matrices/dashboard-ortgenai-v1-android-ort.cells", "ort")],
+                                  schedule["devices"]["s26"], "s26", lengths, root=HOLD_ETA_DATA)
+    said = []
+    note = hold_eta.HoldNote(hold, os.getpid(), hold_eta.Sitting(stages, lengths), log_path,
+                             os.path.getsize(log_path), warn=said.append)
+    first = note.update(now=t0, force=True)
+    with open(log_path, "a") as fh:
+        # the runner's line is written in two parts: the poll reads only whole lines
+        fh.write(f"[{t0:%Y-%m-%d %H:%M:%S}] $ gtimeout --kill-after=60 2700 /x/bench matrix matrices/anchors.cells "
+                 f"--platform android --campaign c-anchor   env: \n=== litert-lm/gpu litert-community/Qwen3-0.6B "
+                 f"short-chat ({t0:%H:%M:%S})\nrun 1/3\nrun 2")
+    calls = []
+    real_update = note.update
+
+    def counted(now=None, force=False):
+        calls.append(1)
+        return real_update(now=now, force=force)
+    note.update = counted
+    real_poll = dj.WATCH_POLL_S
+    dj.WATCH_POLL_S = 0.2
+    try:
+        rc = dj.run_logged([sys.executable, "-c", "import time, sys; time.sleep(1.0); sys.exit(3)"],
+                           dict(os.environ), watch=note)
+    finally:
+        dj.WATCH_POLL_S = real_poll
+        note.update = real_update
+    during = json.loads(open(hold).read())
+    note.stop()
+    os.remove(hold)
+    after = note.update(now=t0 + datetime.timedelta(hours=1), force=True)
+    at = datetime.datetime.strptime(during.get("expected_release", "2000-01-01 00:00"), hold_eta.RELEASE_FMT)
+    ok(first is not None and rc == 3 and len(calls) >= 3
+       and during.get("release_basis", "").startswith("anchor: 1 launch in, ~") and " ort ~" in during["release_basis"]
+       and t0 + datetime.timedelta(minutes=15) <= at <= t0 + datetime.timedelta(minutes=60)
+       and during["pid"] == os.getpid() and note.partial == b"run 2" and after is None
+       and not os.path.exists(hold) and any(s.startswith("hold release estimate: ") for s in said),
+       f"the job's poll: the command's exit code stands ({rc}), the estimate read the log {len(calls)} times while "
+       f"it ran (a half-written line waits) and the hold says the anchor run is under way, ~{(at - t0).seconds // 60} "
+       f"min to the release ({during.get('release_basis', '')[:60]}...); after stop() nothing is written, the "
+       f"released hold is not made again")
+
+    # the dry run says what the hold would read (the side-build case above: the extra file runs)
+    real_pgrep = dj.pgrep
+    dj.pgrep = lambda pattern: []
+    try:
+        state = os.path.join(tmp, "state")
+        with open(os.path.join(state, "engines.txt"), "w") as fh:
+            fh.write("/data/local/tmp/llmbench/engines/b11469-snapdragon/bin/llama-cli\n")
+        cells_dir = os.path.join(tmp, "cells")
+        sched = {"anchors": "matrices/anchors.cells", "cells": os.path.join(cells_dir, "set-android-h1.cells")}
+        dev = {"platform": "android", "display": "Fake S", "identifier": "FakeS", "serial": "FAKE-S",
+               "cpu_mask": "", "hold": os.path.join(tmp, "hold_s"), "storage_gb_full": 1, "timeout_hours": 3,
+               "expected_hours": 2,
+               "extra_cells": [{"cells": os.path.join(cells_dir, "side-android-s26-short.cells"), "tag": "npu"}]}
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code, _, _, _ = dj.attempt(sched, "s26", dev, 1, argparse.Namespace(suffix=None, dry_run=True, cells=None))
+        line = next((ln for ln in buf.getvalue().splitlines() if "the hold would read expected_release " in ln), "")
+    finally:
+        dj.pgrep = real_pgrep
+    ok(code == dj.EXIT_OK and line.endswith("[dry-run]") and "anchor ~" in line and "set ~" in line and "npu ~" in line,
+       f"a dry-run sitting logs what its hold would read, every run counted: {line.strip()[:160]}")
 
 
 if __name__ == "__main__":

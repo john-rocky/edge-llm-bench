@@ -34,7 +34,7 @@ stops where a human is needed:
 |---|---|---|
 | choose (`auto` only) | the device to measure at this firing (§3): pending this week, attached, unheld, inside its window; oldest last-admitted first | a candidate whose preflight says busy or not ready is passed over for the next; every pending device busy → poll and choose again; nothing pending → exit 0 |
 | preflight | device attached (adb / devicectl), iPhone unlocked (`devicectl device info lockState`), no sibling-lane hold with a live pid, no foreign `litert_lm*`/`llama*`/`ortgenai_run`/`model_benchmark` process on the phone, campaign lock free, no CPU-frequency cap (charge/thermal throttle), host runner idle (a `run_campaign.py` / `run_cell.py` driver on the host counts as this phone's unless it names another phone: `run_cell.py --serial` in argv, a campaign driver's `BENCH_ANDROID_SERIAL` in its environment), Mac heavy-pipeline guard, `bench doctor --platform mac`; free space on `/data`; on a phone, the side builds the cells files launch (rows with `engine-build=<tag>`: the tool under `engines/<tag>/`, `android/README.md` "Side builds") | busy → exit 3 and poll; not ready → exit 5, human; a cells file whose side build is missing is skipped by itself and the rest runs (exit 5 only when no file is left, §5) |
-| hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job) | refused → busy |
+| hold | take the sibling lane's device hold (`hold_cli.py acquire`, owner pid = the job); from then on the hold also says when the sitting expects to release it, rewritten as the sitting moves (`expected_release`, §10) | refused → busy |
 | reboot (opt-in) | on a phone whose entry carries `reboot_before`: when uptime exceeds `uptime_hours`, `adb reboot`, wait for `sys.boot_completed`, settle `settle_seconds`, `am kill-all`; uptime / MemAvailable / swap in use logged before and after (§3, the Pixel 8a memory finding) | not booted within `boot_timeout_seconds`, or the model directory unreadable (first unlock pending) → exit 5 |
 | phase A | `./bench matrix matrices/anchors.cells --platform P --campaign <base>-anchor` | timeout → exit 6 |
 | admission | the fresh primary anchor against the newest **admitted** session's anchor on the same device and the same engine build (§4) | not admitted → exit 4, retried once after a cooldown |
@@ -739,3 +739,79 @@ was not); the 1.7B / 4B Core AI cells fell inside the unreachable window.
   `ios_admissible_campaigns` helper that is not in `generate_charts.py` —
   the admission rule now lives in the job and `SESSION.json`; per-half
   storage floors are estimates until the first rotation measures them.
+
+## 10. When the device frees up: the hold's release estimate (2026-10-26)
+
+While a sitting holds a device with a hold it took itself, that hold file
+carries three more keys beside `pid` / `script` / `device` / `started`
+(`scripts/hold_eta.py`):
+
+| key | what |
+|---|---|
+| `expected_release` | `YYYY-MM-DD HH:MM`, local time: when the sitting expects to release the hold |
+| `release_basis` | what that time adds up: the run under way and its progress, then each run still to come with its minutes; it says when the gate may still add re-runs |
+| `release_updated` | `YYYY-MM-DD HH:MM:SS`: when the job last wrote them |
+
+Read them with `queue_cli.py list <hold file>` (the sibling lane's tool: the
+holder line ends in `expected release …`, the basis under it) or `cat` the
+hold. The job rewrites them at each run's start and end, each round, each
+gate line, when the time moves 10 min, and at least every 30 min; it stops
+writing before it releases the hold. A waiter still waits on the hold
+(`queue_cli.py wait`), never on the clock: the time is an estimate.
+
+Why: on 2026-10-26 the Galaxy S26 was read as free early four times: in the
+09:40s and at 09:30 (the main matrix's round 3/3 taken for the sitting's
+end), then twice at about 12:00 (with the ONNX Runtime and NPU sessions after
+it, but not the gate's block re-runs of four collapsed cells, 09:27–10:22).
+The hold was released at 12:47:58.
+
+How the time is made: the job reads its own log while each run goes (the
+runner's output goes there; `run_logged` lets the estimate read it every
+`WATCH_POLL_S`, 30 s) against the sitting's plan (`sitting_runs`: the anchor
+phase, the payload whole or in its storage halves, the extra files, a
+retake's profile pair; a file whose side build is missing left out). An
+Android run is counted launch by launch: each row of its cells file owes its
+launches (an anchor row one block of its runs, any other row one launch per
+round), each at the length it took earlier in this sitting, else its median
+in the device's newest job logs, else the device's median launch. The gate's
+re-runs come from the runner: since 2026-10-26 `android/bench/run_campaign.py`
+prints `gate ahead: <cell> (<verdict>)` right after a cell's last round (its
+verdict is final then) and `gate plan: re-run N of M payload cells …` before
+the first re-run; each counts 180 s plus a block of the cell's runs (two of
+its round launches when no block of it is on record). A Mac or iPhone run
+(their runners print no rounds) is counted whole, from its length in the
+logs, else from the device's `expected_hours`. A run past its length is taken
+to end now, so the time slips as it overruns.
+
+What it leaves out: a reboot before phase A (`reboot_before`: the first time
+is written after it); the re-runs of cells still to finish their last round
+(the basis says so); the weekly set after a retake sitting (named in the
+retake's basis, but it takes a new hold); a keeper's hold (`--hold-held-by`:
+the job never writes into a hold it did not take); the Mac's measurement
+window (`quiet_lock`), which is not a device hold.
+
+Safety: the job writes only while the hold names its own pid, and replaces
+the file in one step (`os.replace` of a temp file in the same directory: a
+reader sees the old hold or the new, never a part), on one line with the
+hold's own keys first. Every reader of these files read them by key or
+print them whole and ignore a key they do not know (checked 2026-10-26:
+`device_hold.py`, `queue_cli.py`, `hold_cli.py read`, `check_holds`, the
+lanes' drivers that `json.load` the hold, the iPhone gate scripts that read
+its first line).
+
+The 2026-10-26 S26 log replayed with the lengths of the logs before that day
+(`scripts/testdata/hold-eta/`, `python3 scripts/hold_eta.py replay …`; the
+selftest pins it), minutes from the release at 12:47:58:
+
+| when | with the two gate lines | the log as it was |
+|---|---|---|
+| hold taken 02:00, anchor end 02:10 | −62, −70 | the same |
+| main matrix round 1/3, 2/3 | −44, −45 | the same |
+| round 3, as `gate ahead` names the 4 re-runs (08:03–09:22) | −31, −20, +1, +19 | — |
+| main matrix round 3/3 | **+13** | −56 |
+| the re-runs (09:22–09:44) | +13, +3, −1, −14 | −42, −37, −27, −19 |
+| main matrix exit 10:22, ONNX Runtime exit 10:42 | +5, +6 | the same |
+| NPU rounds 1–3 | +7, +2, −1 | the same |
+
+Before round 3 the time is early by the gate's re-runs, which no line names
+yet (58 min that day); the basis says they may come.
