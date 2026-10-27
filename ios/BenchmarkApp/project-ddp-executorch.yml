@@ -1,0 +1,182 @@
+# The lab build of the bench app (project-ddp.yml's XCTest harness, iOS 18.0 floor) for one
+# competitive arm: ExecuTorch (XNNPACK on the CPU, the MLX delegate on the GPU). One arm per app: the arms' static libraries are not linked together
+# (ExecuTorch's tokenizers and LiteRT-LM both carry re2; one copy wins at load and the other arm
+# crashes in it). The adapter is the app's own (Sources/Runtimes/ExecuTorchRuntime.swift); DDPHarness makes it for
+# --runtime executorch. ios/ddp/build_xctest.sh --engine executorch builds the archive.
+#
+#   xcodegen generate --spec project-ddp-executorch.yml   (writes BenchmarkApp-ddp-executorch.xcodeproj)
+#
+# Needs Vendored/executorch: the local package ios/ddp/make_executorch_package.sh makes from an
+# ExecuTorch checkout's locally built iOS frameworks (scripts/build_apple_frameworks.sh --Release
+# --xnnpack --mlx --llm --optimized --quantized). The SwiftPM release branches
+# (project-executorch.yml) carry no MLX delegate.
+name: BenchmarkApp-ddp-executorch
+options:
+  bundleIdPrefix: com.iosllmbenchmark
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: minimal
+    # The app's bundle id; the test bundle's is derived from it. build_xctest.sh sets it from
+    # BUNDLE_ID, and run_ddp_ios_lm.py reads it back from the archive's .xctestrun.
+    DDP_BUNDLE_ID: com.iosllmbenchmark.benchmarkapp.ddp
+    # Signing, read by the app and test targets only (never by the SwiftPM targets, which refuse a
+    # provisioning profile). Defaults: Automatic signing with the app's memory entitlements.
+    # build_xctest.sh overrides them for a manual profile, e.g. a lab Mac's wildcard development
+    # profile, which cannot carry the memory entitlements (build_xctest.sh ENTITLEMENTS="" drops them; models
+    # under ~1.5 GB do not need them).
+    DDP_CODE_SIGN_STYLE: Automatic
+    DDP_CODE_SIGN_IDENTITY: Apple Development
+    DDP_PROVISIONING_PROFILE: ""
+    DDP_ENTITLEMENTS: BenchmarkApp.entitlements
+    # Extra Swift compilation conditions (build_xctest.sh SWIFT_CONDITIONS), e.g. LITERTLM_YNNPACK.
+    DDP_SWIFT_CONDITIONS: ""
+
+packages:
+  swift-huggingface:
+    url: https://github.com/huggingface/swift-huggingface
+    from: "0.8.1"
+  executorch:
+    # Local path: the package make_executorch_package.sh writes (see the header).
+    path: Vendored/executorch
+targets:
+  BenchmarkAppDDP:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Sources/BenchmarkApp.swift
+      - path: Sources/Benchmark
+      - path: Sources/Models
+      - path: Sources/Runtimes/LLMRuntime.swift
+      - path: Sources/Runtimes/HFDownloader.swift
+      # Compiles to its canImport stub without the LiteRT-LM package: the app's flags parse.
+      - path: Sources/Runtimes/MediaPipeRuntime.swift
+      - path: Sources/Runtimes/LlamaCppRuntime.swift  # its stub: the app's --llama-backend flag
+      - path: Sources/Runtimes/ExecuTorchRuntime.swift
+      - path: Sources/Runtimes/CoreAIRuntime.swift
+      - path: SourcesDDP
+      # Observed engine pins, as in project.yml: written by the pre-build phase below.
+      - path: Vendored/engine-pins.json
+        buildPhase: resources
+        optional: true
+    info:
+      path: SourcesDDP/Info.plist
+      properties:
+        CFBundleDisplayName: LLM Bench DDP
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "1"
+        NSCameraUsageDescription: "Used to benchmark live vision-language model inference (VLM) on the camera feed."
+        UILaunchScreen: {}
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes:
+          - processing
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DDP_BUNDLE_ID)
+        CODE_SIGN_ENTITLEMENTS: $(DDP_ENTITLEMENTS)
+        CODE_SIGN_STYLE: $(DDP_CODE_SIGN_STYLE)
+        CODE_SIGN_IDENTITY: $(DDP_CODE_SIGN_IDENTITY)
+        PROVISIONING_PROFILE_SPECIFIER: $(DDP_PROVISIONING_PROFILE)
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_STRICT_CONCURRENCY: minimal
+        # ExecuTorch registers its backends, kernels and prim ops from static initializers, so the
+        # archives that register are force-loaded (project-executorch.yml has the history).
+        "ET_PLATFORM[sdk=iphoneos*]": ios
+        "ET_PLATFORM[sdk=iphonesimulator*]": simulator
+        OTHER_LDFLAGS:
+          - "-ObjC"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libexecutorch_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libbackend_xnnpack_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libbackend_mlx_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libkernels_llm_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libkernels_optimized_$(ET_PLATFORM).a"
+          - "-force_load"
+          - "$(BUILT_PRODUCTS_DIR)/libkernels_quantized_$(ET_PLATFORM).a"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) BENCH_DDP_LAB $(DDP_SWIFT_CONDITIONS)"
+    preBuildScripts:
+      # The app's phase (project.yml): the declared output orders it before Copy Bundle Resources.
+      - name: Stamp engine pins
+        script: '"$SRCROOT/scripts/stamp_engine_pins.sh"'
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - $(SRCROOT)/Vendored/engine-pins.json
+    dependencies:
+      - package: swift-huggingface
+        product: HuggingFace
+      - package: executorch
+        product: executorch
+      - package: executorch
+        product: executorch_llm
+      - package: executorch
+        product: backend_xnnpack
+      - package: executorch
+        product: backend_mlx
+      - package: executorch
+        product: kernels_llm
+      - package: executorch
+        product: kernels_optimized
+      - package: executorch
+        product: kernels_quantized
+
+  # The headless run as an XCTest hosted by the app (Tests/DDP/DDPBenchmarkTests.swift): it imports
+  # the app module and calls its public DDPHarness, so it links nothing of its own.
+  BenchmarkAppDDPTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Tests/DDP
+    dependencies:
+      - target: BenchmarkAppDDP
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DDP_BUNDLE_ID).tests
+        CODE_SIGN_STYLE: $(DDP_CODE_SIGN_STYLE)
+        CODE_SIGN_IDENTITY: $(DDP_CODE_SIGN_IDENTITY)
+        PROVISIONING_PROFILE_SPECIFIER: $(DDP_PROVISIONING_PROFILE)
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  BenchmarkAppDDP:
+    build:
+      targets:
+        BenchmarkAppDDP: all
+        BenchmarkAppDDPTests: [test]
+    run:
+      config: Release
+    test:
+      # Release, so the archive build_xctest.sh sends to the lab is the build the rows come from.
+      config: Release
+      targets:
+        - BenchmarkAppDDPTests
+    profile:
+      config: Release
+    analyze:
+      config: Release
+    archive:
+      config: Release

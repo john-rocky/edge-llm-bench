@@ -76,6 +76,11 @@ public actor MediaPipeRuntime: LLMRuntime {
     /// between run 1 and run 2 (catalog X2's iPhone leg, 2026-10-17). Default off: the dashboard's
     /// iOS cells keep the drain path and the wall-clock decode rate under a cap, unchanged.
     public nonisolated(unsafe) static var engineOutputCap = false
+    /// `--litert-ynnpack on|off`: the CPU backend's YNNPACK kernels (`ExperimentalFlags.enableYnnpack`)
+    /// instead of XNNPACK's; nil leaves the engine's default. Only a LiteRT-LM built with YNNPACK
+    /// (`--define=litert_enable_ynnpack=true`) and an API that has the flag, compiled in with the
+    /// LITERTLM_YNNPACK condition (build_xctest.sh SWIFT_CONDITIONS), takes it.
+    public nonisolated(unsafe) static var enableYnnpack: Bool?
     public let kind: RuntimeKind = .mediaPipe
     public let isAvailable: Bool = true
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.liteRTLM
@@ -129,6 +134,11 @@ public actor MediaPipeRuntime: LLMRuntime {
         // clock and the token counts from the tokenizer-free fallback.
         ExperimentalFlags.optIntoExperimentalAPIs()
         ExperimentalFlags.enableBenchmark = Self.engineBenchmarkCounters
+        #if LITERTLM_YNNPACK
+        if let ynnpack = Self.enableYnnpack {
+            ExperimentalFlags.enableYnnpack = ynnpack
+        }
+        #endif
 
         let snapshot = try await HFDownloader.snapshot(for: model, runtime: kind, progress: progress)
         let modelFile = try locateModelFile(in: snapshot, expected: model.primaryFile)
@@ -203,8 +213,8 @@ public actor MediaPipeRuntime: LLMRuntime {
             backend: engineBackend,
             prefillTokens: prefillTokens,
             decodeTokens: decodeTokens,
-            maxNumTokens: maxNumTokens,
-            cacheDir: NSTemporaryDirectory()
+            cacheDir: NSTemporaryDirectory(),
+            maxNumTokens: maxNumTokens  // last, as upstream added it (and the patch for older tags)
         )
         return NativeBenchmarkInfo(
             prefillTokenCount: info.lastPrefillTokenCount,
@@ -697,14 +707,19 @@ import Foundation
 /// See `runtimes/litert-lm.md` for the integration steps.
 public final class MediaPipeRuntime: LLMRuntime, @unchecked Sendable {
     public nonisolated(unsafe) static var engineBenchmarkCounters = true
-    public nonisolated(unsafe) static var launchBackend = 0
+    /// As in the real runtime, so the app's --litert-* flags and the DDP harness compile without
+    /// the LiteRTLM package (the other engines' lab builds).
+    public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
+    public nonisolated(unsafe) static var engineOutputCap = false
+    public nonisolated(unsafe) static var enableYnnpack: Bool?
+    public enum ComputeBackend: String, Sendable { case cpu, gpu }
     public nonisolated(unsafe) static var debugSyncSend = false
     public let kind: RuntimeKind = .mediaPipe
     public let isAvailable: Bool = false
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.liteRTLM
     public var loadedModelId: String? { nil }
 
-    public init() {}
+    public init(backend: ComputeBackend = .gpu) {}
 
     public func loadModel(_ model: ModelInfo, progress: @Sendable @escaping (Double) -> Void) async throws {
         throw LLMRuntimeError.unsupported("LiteRTLM package not added to the project. See runtimes/litert-lm.md.")

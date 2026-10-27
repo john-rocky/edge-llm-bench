@@ -60,7 +60,16 @@ extract_binary_target() {  # extract_binary_target <zip-name> -> "name@tag sha25
     fi
     printf '%s' "${art}"
 }
-if [ -d "${V}/LiteRT-LM/.git" ]; then
+if [ -f "${V}/LiteRT-LM.source" ]; then
+    # A source build of the engine (e.g. CLiteRTLM.xcframework built in Google3 and assembled
+    # into a local package with no .git): its builder writes the sidecar, line 1 the version,
+    # line 2 the artifact.
+    LITERT_VER="$(sed -n 1p "${V}/LiteRT-LM.source")"
+    LITERT_ART="$(sed -n 2p "${V}/LiteRT-LM.source")"
+    if [ -n "${LITERT_VER}" ]; then
+        add_pin "litert-lm" "${LITERT_VER}" "${LITERT_ART}"
+    fi
+elif [ -d "${V}/LiteRT-LM/.git" ]; then
     LITERT_VER="$(git -C "${V}/LiteRT-LM" describe --tags --always 2>/dev/null || true)"
     # grep -F 'CLiteRTLM.xcframework.zip' cannot match the _mac lines: "_mac" sits
     # between the two fixed strings, so the two extractions stay disjoint.
@@ -76,7 +85,12 @@ fi
 if [ -d "${V}/llama.xcframework" ]; then
     if [ -f "${V}/llama.xcframework.tag" ]; then
         LLAMA_VER="$(tr -d '[:space:]' < "${V}/llama.xcframework.tag")"
-        add_pin "llama.cpp" "${LLAMA_VER}" "llama-${LLAMA_VER}-xcframework.zip"
+        if [ -f "${V}/llama.xcframework.source" ]; then
+            # A source build (its builder writes the sidecar), not the release zip of that tag.
+            add_pin "llama.cpp" "${LLAMA_VER}" "$(tr -d '\n' < "${V}/llama.xcframework.source")"
+        else
+            add_pin "llama.cpp" "${LLAMA_VER}" "llama-${LLAMA_VER}-xcframework.zip"
+        fi
     else
         add_pin "llama.cpp" "unrecorded (framework predates the tag sidecar)"
     fi
@@ -143,6 +157,32 @@ if [ -d "${ORT_FW}" ]; then
     else
         add_pin "onnxruntime-genai" "unrecorded (framework present without its sidecar tag)"
     fi
+fi
+
+# executorch — a local checkout whose frameworks were built from source (project-ddp-executorch.yml:
+# Vendored/executorch). Its git state names the source; a .patches sidecar written by the builder
+# names any patch applied on top (e.g. the MLXBackend.cpp mutable-buffer eval), so a patched
+# runtime is never stamped as the plain commit. The SwiftPM-release arm (project-executorch.yml)
+# stamps its own pin in its pre-build phase instead.
+if [ -d "${V}/executorch" ] && [ -f "${V}/executorch/Package.swift" ]; then
+    ET_VER=""
+    ET_REV=""
+    if [ -e "${V}/executorch/.git" ]; then
+        ET_VER="$(git -C "${V}/executorch" describe --tags --always --dirty 2>/dev/null || true)"
+        ET_REV="$(git -C "${V}/executorch" rev-parse HEAD 2>/dev/null || true)"
+    elif [ -f "${V}/executorch.rev" ]; then
+        # A generated wrapper package (ios/ddp/make_executorch_package.sh) has no .git of its own
+        # (git would answer for the enclosing repo): the builder records the checkout's commit.
+        ET_REV="$(tr -d '[:space:]' < "${V}/executorch.rev")"
+    fi
+    if [ -f "${V}/executorch.tag" ]; then
+        ET_VER="$(tr -d '\n' < "${V}/executorch.tag")"
+    fi
+    ET_PATCHES=""
+    if [ -f "${V}/executorch.patches" ]; then
+        ET_PATCHES="; patches: $(tr '\n' ' ' < "${V}/executorch.patches" | sed 's/ *$//')"
+    fi
+    add_pin "executorch" "${ET_VER:-unrecorded}" "built from source${ET_REV:+ @${ET_REV:0:12}}${ET_PATCHES}"
 fi
 
 PINS_JSON="{${ENTRIES}}"

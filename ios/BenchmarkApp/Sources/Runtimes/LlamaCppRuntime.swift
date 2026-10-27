@@ -47,8 +47,20 @@ public actor LlamaCppRuntime: LLMRuntime {
         llama_backend_init()
     }()
 
+    /// `--llama-backend cpu|gpu` (the app's flag; default gpu = every layer on Metal, the arm every
+    /// Apple llama.cpp row so far measured). cpu keeps every layer on the CPU (`n_gpu_layers = 0`), and
+    /// the record's runtime id becomes `llama.cpp-cpu`, as `litert-lm-cpu` does for LiteRT-LM.
+    public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
+    public enum ComputeBackend: String, Sendable { case cpu, gpu }
+    private let backend: ComputeBackend
+
+    public var recordRuntimeLabel: String {
+        backend == .cpu ? "\(kind.rawValue)-cpu" : kind.rawValue
+    }
+
     public init() {
         _ = Self.backendInit
+        backend = Self.launchBackend
     }
 
     public func prepareContext(maxContextTokens: Int) {
@@ -77,6 +89,9 @@ public actor LlamaCppRuntime: LLMRuntime {
         #if targetEnvironment(simulator)
         modelParams.n_gpu_layers = 0
         #endif
+        if backend == .cpu {
+            modelParams.n_gpu_layers = 0
+        }
         guard let m = llama_model_load_from_file(ggufPath, modelParams) else {
             throw LLMRuntimeError.loadFailed("llama_model_load_from_file returned NULL")
         }
@@ -423,6 +438,10 @@ public final class LlamaCppRuntime: LLMRuntime, @unchecked Sendable {
     public let isAvailable: Bool = false
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.llamaCpp
     public var loadedModelId: String? { nil }
+
+    /// As in the real runtime, so the app's `--llama-backend` flag parses without llama.xcframework.
+    public nonisolated(unsafe) static var launchBackend: ComputeBackend = .gpu
+    public enum ComputeBackend: String, Sendable { case cpu, gpu }
 
     public init() {}
 

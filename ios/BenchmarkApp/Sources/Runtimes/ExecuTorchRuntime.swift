@@ -70,6 +70,9 @@ public struct ExecuTorchModelSpec: Sendable {
             "55855e89ef4c3e2b35bbd8d295e774f84e36d157f190078faa59ca45af5abf31": 23,
             // long-context-1024-gen256 (prompts/text/long-context-1024-gen256.txt, 5,288 bytes)
             "2d9d2c43c2608cc6aee1414e63fef404a2c72902a554702decfc871c2203456a": 1342,
+            // long-context-1024-gen256 with the noref tail (cc27f490, 5,380 bytes rendered); counted
+            // with the same tokenizer.json through `tokenizers`, as llama.cpp and mlx-swift report it
+            "8da3e5b766d79469c34527194a14f261ef1fe796a396e1236a5d33691749f89c": 1359,
         ],
         hostPromptTokenSource: "host-tokenizer:make_prompts.py(Qwen3.5 tokenizer.json,transformers-5.19.0)"
     )

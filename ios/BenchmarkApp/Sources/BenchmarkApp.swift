@@ -234,6 +234,11 @@ enum HeadlessAutoRun {
         /// Pro: Granite 4.0 H 1B decode 31.8 -> 21.9 tok/s, LFM2 2.6B 34.7 -> 28.8 at nominal). A call
         /// that still starts warm keeps its thermal_initial. nil = no pause, calls back to back.
         var nativeCoolWaitSeconds: Int?
+        /// `--cool-wait <seconds>` (task runs): the same pause before runs 2...N of a task, for the
+        /// same reason (2026-10-27, DDP iPhone 16 Pro: LiteRT-LM CPU long-context decode 49 -> 29
+        /// tok/s and ExecuTorch XNNPACK 50 -> 43 over four back-to-back runs). Run 1 has the lab
+        /// harness's thermal gate. nil = runs back to back.
+        var coolWaitSeconds: Int? = nil
     }
 
     static func specFromLaunchArgs(_ args: [String] = CommandLine.arguments) -> Spec? {
@@ -273,6 +278,24 @@ enum HeadlessAutoRun {
             guard let backend = MediaPipeRuntime.ComputeBackend(rawValue: be) else { fatal("bad --litert-backend '\(be)'") }
             MediaPipeRuntime.launchBackend = backend
             print("YARDSTICK_NOTE litert_backend=\(be)")
+        }
+        // `--llama-backend cpu|gpu`: llama.cpp's layers on the CPU or on Metal (default gpu; the
+        // record's runtime id becomes `llama.cpp-cpu` for cpu).
+        if let be = value("--llama-backend") {
+            guard let backend = LlamaCppRuntime.ComputeBackend(rawValue: be) else { fatal("bad --llama-backend '\(be)'") }
+            LlamaCppRuntime.launchBackend = backend
+            print("YARDSTICK_NOTE llama_backend=\(be)")
+        }
+        // `--litert-ynnpack on|off`: LiteRT-LM's CPU kernels, YNNPACK or XNNPACK (a build without
+        // the LITERTLM_YNNPACK condition cannot honour it, so it refuses the flag).
+        if let ynn = value("--litert-ynnpack") {
+            guard ynn == "on" || ynn == "off" else { fatal("bad --litert-ynnpack '\(ynn)' — expected on or off") }
+            #if LITERTLM_YNNPACK
+            MediaPipeRuntime.enableYnnpack = (ynn == "on")
+            print("YARDSTICK_NOTE litert_ynnpack=\(ynn)")
+            #else
+            fatal("--litert-ynnpack: this build's LiteRT-LM has no YNNPACK switch (build with SWIFT_CONDITIONS=LITERTLM_YNNPACK)")
+            #endif
         }
         if value("--litert-send-mode") == "sync" { MediaPipeRuntime.debugSyncSend = true }
         // `--litert-output-cap engine|drain`: where a LiteRT-LM task run stops at the output
@@ -316,6 +339,11 @@ enum HeadlessAutoRun {
             guard native != nil else { fatal("--native-cool-wait requires --litert-native-benchmark") }
             nativeCoolWait = n
         }
+        var coolWait: Int?
+        if let raw = value("--cool-wait") {
+            guard let n = Int(raw), n > 0 else { fatal("bad --cool-wait '\(raw)'") }
+            coolWait = n
+        }
         // Both run here, before any runtime exists (AppSession builds the runtimes when the
         // first view appears): every autorun console names its GPU, and a purge cannot race
         // an engine that already opened its cache.
@@ -324,7 +352,8 @@ enum HeadlessAutoRun {
         return Spec(runtime: runtime, modelId: modelId, taskId: taskId, runs: runs,
                     sustainSeconds: sustainSeconds, maxTokens: maxTokens,
                     contextTokens: contextTokens, nativeBenchmark: native,
-                    coreAINativeBenchmark: coreAINative, nativeCoolWaitSeconds: nativeCoolWait)
+                    coreAINativeBenchmark: coreAINative, nativeCoolWaitSeconds: nativeCoolWait,
+                    coolWaitSeconds: coolWait)
     }
 
     /// `YARDSTICK_METAL_DEVICE`: the system default Metal device's `name` (the string a GPU
@@ -437,6 +466,19 @@ struct HeadlessRun {
     /// Ends the run with its exit code; every call is the last thing its path does.
     let finish: @MainActor (Int32) async -> Void
 
+    /// A pause of `pause` seconds, then, while the thermal state is not nominal, more waiting
+    /// (polling every 15 s) up to twice the pause in all: `--cool-wait` and `--native-cool-wait`.
+    static func coolWait(pause: Int) async -> (waited: Int, before: String, after: String) {
+        let before = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+        try? await Task.sleep(nanoseconds: UInt64(pause) * 1_000_000_000)
+        var waited = pause
+        while ProcessInfo.processInfo.thermalState != .nominal && waited < 2 * pause {
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            waited += 15
+        }
+        return (waited, before, ThermalMonitor.describe(ProcessInfo.processInfo.thermalState))
+    }
+
     func runAll() async {
         guard runtime.isAvailable else {
             await log("YARDSTICK_FATAL runtime=\(spec.runtime.rawValue) not_available")
@@ -503,8 +545,13 @@ struct HeadlessRun {
 
         let sustainNote = task.sustainSeconds.map { " sustain_s=\(Int($0))" } ?? ""
         let contextNote = spec.contextTokens.map { " context_tokens=\($0)" } ?? ""
-        await log("YARDSTICK_BEGIN runtime=\(spec.runtime.rawValue) model=\(model.id) task=\(task.id) runs=\(spec.runs)\(sustainNote)\(contextNote)")
+        let coolNote = spec.coolWaitSeconds.map { " cool_wait_s=\($0)" } ?? ""
+        await log("YARDSTICK_BEGIN runtime=\(spec.runtime.rawValue) model=\(model.id) task=\(task.id) runs=\(spec.runs)\(sustainNote)\(contextNote)\(coolNote)")
         for i in 1...spec.runs {
+            if i > 1, let pause = spec.coolWaitSeconds {
+                let w = await HeadlessRun.coolWait(pause: pause)
+                await log("YARDSTICK_NOTE cool_wait run=\(i) waited_s=\(w.waited) pause_s=\(pause) thermal_before=\(w.before) thermal_after=\(w.after)")
+            }
             let runner = BenchmarkRunner()
             let cold = (await runtime.loadedModelId) != model.id
             do {
@@ -691,16 +738,10 @@ struct HeadlessRun {
 
         for run in 1...runs {
             if let pause = coolWaitSeconds {
-                // --native-cool-wait: a pause before every call, longer while the phone is not back at
-                // nominal (at most twice the pause); the OK line still carries the state it starts at
-                let before = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
-                try? await Task.sleep(nanoseconds: UInt64(pause) * 1_000_000_000)
-                var waited = pause
-                while ProcessInfo.processInfo.thermalState != .nominal && waited < 2 * pause {
-                    try? await Task.sleep(nanoseconds: 15_000_000_000)
-                    waited += 15
-                }
-                await log("YARDSTICK_NOTE native_benchmark cool_wait run=\(run) waited_s=\(waited) pause_s=\(pause) thermal_before=\(before) thermal_after=\(ThermalMonitor.describe(ProcessInfo.processInfo.thermalState))")
+                // --native-cool-wait: a pause before every call (see coolWait); the OK line still
+                // carries the state it starts at
+                let w = await HeadlessRun.coolWait(pause: pause)
+                await log("YARDSTICK_NOTE native_benchmark cool_wait run=\(run) waited_s=\(w.waited) pause_s=\(pause) thermal_before=\(w.before) thermal_after=\(w.after)")
             }
             // Sample memory *during* the benchmark. The published 92 MB deep-context cell was a
             // single footprint read taken after `benchmark()` returned and released the engine,
