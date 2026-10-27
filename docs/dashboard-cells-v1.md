@@ -1245,7 +1245,8 @@ one CPU and one GPU sitting per phone; no page row moves.
 
 - The engine. PyPI litert-lm 0.18.1 (2026-10-19) ships one library per platform with the GPU accelerators linked in,
   built from a tree whose `version.bzl` says 0.18.1; no public commit carries that version (main's says 0.19.0 since
-  93d74126, 2026-10-06), there is no v0.18.1 tag, and the newest prebuilt libraries on main are those of b7c40ea81
+  93d74126, 2026-10-06), there was no v0.18.1 tag yet (its commit, bda624851, is of 2026-10-20 22:29 UTC, after these
+  rows were set up; see the files below), and the newest prebuilt libraries on main are those of b7c40ea81
   (2026-10-13). So the rows run main@b7c40ea81: `litert_lm_main` and `litert_lm_advanced_main` built at that commit
   with the commit's seven prebuilt android_arm64 libraries (the GPU accelerators among them; LFS oids checked): the
   side build `main-b7c40ea81` in `android/engine-pins.json`, the GPU rows; records stamp `engineVersion`
@@ -1258,7 +1259,11 @@ one CPU and one GPU sitting per phone; no page row moves.
 - The files. The current Hub file `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` (lfs sha256 `03e7da1e…2856`) and E2, a
   local export of the same model with litert-torch 0a81bf6f's `--apply_gpu_composites=True` (its GPU flag set,
   dynamic_wi4b32_afp32, prefill 128 + 1024, the official Qwen3 LlmMetadata; sha256 `fbbf0657…5b79`, not on the Hub).
-  v0.18.0's OpenCL kit builds no engine for E2 (`unexpected type name 'float4'`), so E2 has no v0.18.0 row. Model ids:
+  v0.18.0's OpenCL kit builds no engine for E2 (`unexpected type name 'float4'`), so E2 has no v0.18.0 row; nor a
+  v0.18.1 one: the v0.18.1 tag (bda624851) ships v0.18.0's prebuilt GPU and OpenCL accelerators byte for byte, and a
+  kit of them with `litert_lm_advanced_main` built at the tag (its WORKSPACE patched so that it evaluates) fails E2
+  the same way on the Galaxy S26 (2026-10-26, `results/raw/2026-10-26-t1b-qwen3-0181-s26-android/`, lane logs, no
+  records). Model ids:
   the Hub file under `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32` (the Mac catalog id of the same file), E2 under
   `litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32_gpucomposites_e2` (the candidate's form above), both with a host
   path in `file=` (pushed as they are, sha256-checked on the phone): the rows never share a cell with the page's

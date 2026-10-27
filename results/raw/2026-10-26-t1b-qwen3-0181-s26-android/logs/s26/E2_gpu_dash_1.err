@@ -1,0 +1,132 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1792988221.000236   19419 litert_lm_lib.cc:629] Choose backend: gpu
+I0000 00:00:1792988221.001201   19419 litert_lm_lib.cc:789] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/t1b0181_qwen3_06b/E2.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+
+
+I0000 00:00:1792988221.001230   19419 litert_lm_lib.cc:796] vision_executor_settings: not set
+I0000 00:00:1792988221.001235   19419 litert_lm_lib.cc:802] audio_executor_settings: not set
+I0000 00:00:1792988221.001241   19419 litert_lm_lib.cc:825] Creating engine
+W0000 00:00:1792988221.001475   19419 litert_lm_loader.cc:514] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1792988221.001495   19419 litert_lm_loader.cc:514] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1792988221.001501   19419 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1792988221.001506   19419 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:130] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+W0000 00:00:1792988221.001633   19420 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792988221.001826   19420 litert_lm_loader.cc:391] Section not found: SP_Tokenizer
+W0000 00:00:1792988221.001857   19420 litert_lm_loader.cc:391] Section not found: HF_Tokenizer_Zlib
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795400c3d0, name=LiteRT GPU
+INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795400c4b0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1792988221.019970   19419 magic_number_configs_helper.cc:337] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [gpu_registry.cc:130] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795400bb10, name=LiteRT GPU
+INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000795400c440, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=510, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=900, num_inputs=60, num_outputs=57, num_ops=406
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 534 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+INFO: [magic_number_utils.cc:536] 534 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+INFO: [magic_number_utils.cc:536] 534 tensors of signature decode have been updated for magic number  32771 to target number 2048
+INFO: [compiled_model.cc:874] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1792988221.061818   19419 delegate_opencl.cc:604] options->hint_waiting_for_completion: false
+I0000 00:00:1792988221.061857   19419 delegate_opencl.cc:606] options->kernel_batch_size: -1
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:239] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:297] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+I0000 00:00:1792988222.478122   19419 delegate_kernel.cc:329] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1792988222.478259   19419 delegate_kernel.cc:979] Initializing OpenCL-based API from serialized data.
+E0000 00:00:1792988222.686824   19419 delegate_opencl.cc:341] Failed to create litert::ml_drift::DelegateKernelLiteRt: UNKNOWN: Failed to build program executable - Build program failureBC-src-code:53:17: error: unexpected type name 'float4': expected expression
+    float4 w0 = float4(w0_x, w0_y, w0_z, w0_w);
+                ^
+BC-src-code:60:17: error: unexpected type name 'float4': expected expression
+    float4 w1 = float4(w1_x, w1_y, w1_z, w1_w);
+                ^
+BC-src-code:131:17: error: unexpected type name 'float4': expected expression
+    float4 w0 = float4(w0_x, w0_y, w0_z, w0_w);
+                ^
+BC-src-code:138:17: error: unexpected type name 'float4': expected expression
+    float4 w1 = float4(w1_x, w1_y, w1_z, w1_w);
+                ^
+4 diagnostic(s) generated.
+
+=== Source Location Trace: ===
+third_party/ml_drift/cl/cl_program.cc:81
+third_party/ml_drift/cl/cl_program.cc:225
+third_party/ml_drift/cl/cl_program.cc:237
+third_party/ml_drift/cl/program_cache.cc:104
+third_party/ml_drift/cl/inference_context.cc:242
+third_party/odml/litert/ml_drift/delegate/gpu_backend_opencl_litert.cc:333
+third_party/odml/litert/ml_drift/delegate/delegate_kernel.cc:963
+third_party/odml/litert/ml_drift/delegate/delegate_kernel.cc:884
+third_party/odml/litert/ml_drift/delegate/delegate_kernel.cc:982
+third_party/odml/litert/ml_drift/delegate/delegate_kernel.cc:334
+third_party/odml/litert/ml_drift/delegate/delegate_kernel_litert.cc:143
+ERROR: Failed to initialize kernel.
+ERROR: Restored original execution plan after delegate application failure.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000795400c440, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000795400bb10, name=LiteRT GPU
+E0000 00:00:1792988222.742308   19419 litert_lm_advanced_main.cc:384] Failed to run litert_lm: UNKNOWN: ERROR: [runtime/executor/llm_litert_compiled_model_executor_factory.cc:206]
+└ ERROR: [runtime/executor/llm_litert_compiled_model_executor.cc:1926]
+└ ERROR: [external/litert/litert/cc/litert_compiled_model.h:2049]
+└ Failed to modify graph with delegate
+=== Source Location Trace: === 
+external/litert/litert/cc/litert_macros.h:584
+runtime/core/engine_advanced_impl.cc:439
+runtime/engine/litert_lm_lib.cc:831
+runtime/engine/litert_lm_lib.cc:1034
+runtime/engine/litert_lm_advanced_main.cc:370
+

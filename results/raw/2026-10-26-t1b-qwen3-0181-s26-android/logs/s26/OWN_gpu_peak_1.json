@@ -1,0 +1,103 @@
+{
+ "leg": "OWN_gpu_peak_1",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "t1b-qwen3-s26-0181",
+  "R": "EXIT=0 WALL=11 START=1792989388 END=1792989399",
+  "S0": "uptime=917322.03 epoch=1792989388 thermal=1 pol=policy0:1996800/3628800,policy6:1977600/4742400 kgsl=1300/0/44600 batt=79/398 memavail_kb=7363664 free_kb=113487048",
+  "S1": "uptime=917332.95 epoch=1792989399 thermal=1 pol=policy0:1900800/3628800,policy6:1862400/4742400 kgsl=1300/0/55000 batt=79/396 memavail_kb=7383968 free_kb=113482372",
+  "C0": "",
+  "C1": "",
+  "C2": "4875216 OWN.litertlm_1792989388_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792989388_344671744_mldrift_weight_cache.bin;",
+  "MT": "2026-10-26 13:36:28.718972407 +0900",
+  "ARGS": "--backend=gpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 --num_iterations=1 --report_peak_memory_footprint=true",
+  "name": "OWN_gpu_peak_1",
+  "label": "OWN",
+  "backend": "gpu",
+  "kind": "peak",
+  "tag": "1",
+  "cache_mode": "cold",
+  "timeout_s": 300,
+  "exit": 0,
+  "wall_s": 11,
+  "host_wall_s": 11,
+  "host_start": 1792989388,
+  "host_end": 1792989399,
+  "ready_waited_s": 0,
+  "ready": true,
+  "rest_s": 10,
+  "hold_t0": 1792987908,
+  "cmd": "cd /data/local/tmp/t1b0181_qwen3_06b && LD_LIBRARY_PATH=/data/local/tmp/t1b0181_qwen3_06b timeout -k 10 300 ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 --num_iterations=1 --report_peak_memory_footprint=true"
+ },
+ "exit": 0,
+ "wall_s": 11,
+ "iterations": [
+  {
+   "init_executor_ms": 5404.66,
+   "init_tokenizer_ms": 452.27,
+   "init_total_ms": 5405.14,
+   "ttft_s": 0.46,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 2315.54,
+   "decode_tokens": 256,
+   "decode_tok_s": 60.73,
+   "peak_sys_mb": 634.039,
+   "peak_private_mb": 634.039
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": null,
+ "delegation": [
+  {
+   "n": 916,
+   "m": 916,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 916,
+   "m": 916,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 830,
+   "m": 830,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 916/916 CL; prefill_1024 916/916 CL; decode 830/830 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu": false,
+ "data_loss": 0,
+ "serialized_init": 3,
+ "context_from_serialized": 0,
+ "xnnpack_cache_loaded": 0,
+ "xnnpack_cache_lines": [],
+ "magic_numbers": [
+  [
+   "32771",
+   "2048"
+  ]
+ ],
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "error_lines": [],
+ "error_line_count": 0,
+ "helpfull_flags": null,
+ "text": "",
+ "text_garbage": null
+}

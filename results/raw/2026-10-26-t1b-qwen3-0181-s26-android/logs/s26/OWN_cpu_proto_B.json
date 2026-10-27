@@ -1,0 +1,6900 @@
+{
+ "leg": "OWN_cpu_proto_B",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "t1b-qwen3-s26-0181",
+  "R": "EXIT=0 WALL=46 START=1792989282 END=1792989328",
+  "S0": "uptime=917215.54 epoch=1792989282 thermal=0 pol=policy0:3628800/3628800,policy6:4742400/4742400 kgsl=1300/0/41100 batt=79/375 memavail_kb=7244464 free_kb=113155384",
+  "S1": "uptime=917262.54 epoch=1792989329 thermal=1 pol=policy0:1785600/3628800,policy6:1747200/4742400 kgsl=1300/0/52700 batt=79/398 memavail_kb=7254204 free_kb=113155308",
+  "C0": "339215320 OWN.litertlm_1792989112_344671744.xnnpack_cache;",
+  "C1": "339215320 OWN.litertlm_1792989112_344671744.xnnpack_cache;",
+  "C2": "339215320 OWN.litertlm_1792989112_344671744.xnnpack_cache;",
+  "MT": "2026-10-26 13:31:52.794972512 +0900",
+  "ARGS": "--backend=cpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 --num_iterations=3",
+  "name": "OWN_cpu_proto_B",
+  "label": "OWN",
+  "backend": "cpu",
+  "kind": "proto",
+  "tag": "B",
+  "cache_mode": "keep",
+  "timeout_s": 400,
+  "exit": 0,
+  "wall_s": 46,
+  "host_wall_s": 46,
+  "host_start": 1792989282,
+  "host_end": 1792989328,
+  "ready_waited_s": 61,
+  "ready": true,
+  "rest_s": 60,
+  "hold_t0": 1792987908,
+  "cmd": "cd /data/local/tmp/t1b0181_qwen3_06b && LD_LIBRARY_PATH=/data/local/tmp/t1b0181_qwen3_06b timeout -k 10 400 ./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 --num_iterations=3"
+ },
+ "exit": 0,
+ "wall_s": 46,
+ "iterations": [
+  {
+   "init_executor_ms": 557.65,
+   "init_tokenizer_ms": 270.51,
+   "init_total_ms": 558.3,
+   "ttft_s": 3.01,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 344.23,
+   "decode_tokens": 256,
+   "decode_tok_s": 28.96
+  },
+  {
+   "init_executor_ms": 557.65,
+   "init_tokenizer_ms": 270.51,
+   "init_total_ms": 558.3,
+   "ttft_s": 4.79,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 215.8,
+   "decode_tokens": 256,
+   "decode_tok_s": 21.56
+  },
+  {
+   "init_executor_ms": 557.65,
+   "init_tokenizer_ms": 270.51,
+   "init_total_ms": 558.3,
+   "ttft_s": 5.34,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 193.32,
+   "decode_tokens": 256,
+   "decode_tok_s": 21.41
+  }
+ ],
+ "aggregated": {
+  "n": 3,
+  "init_executor_ms": 557.65,
+  "init_tokenizer_ms": 270.51,
+  "init_total_ms": 558.3,
+  "ttft_s": 4.79,
+  "prefill_tok_s": 215.8,
+  "decode_tok_s": 21.56
+ },
+ "median_iters_2_on": {
+  "prefill_tok_s": 204.56,
+  "decode_tok_s": 21.48,
+  "ttft_s": 5.06
+ },
+ "delegation": [
+  {
+   "n": 592,
+   "m": 916,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 396,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 592,
+   "m": 916,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 396,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 507,
+   "m": 830,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 396,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 3,
+   "name": "odml.rms_norm.impl"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 4,
+   "name": "odml.rms_norm.impl_0"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 5,
+   "name": "odml.rms_norm.impl_1"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 6,
+   "name": "odml.rope.impl"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 7,
+   "name": "odml.rope.impl_0"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 8,
+   "name": "odml.cache_update.impl"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 9,
+   "name": "odml.runtime_bmm.impl"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 10,
+   "name": "odml.runtime_bmm.impl_0"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 11,
+   "name": "odml.rms_norm.impl_2"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 12,
+   "name": "odml.swiglu.impl"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 13,
+   "name": "odml.rms_norm.impl_3"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 14,
+   "name": "odml.rms_norm.impl_4"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 15,
+   "name": "odml.rms_norm.impl_5"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 16,
+   "name": "odml.rope.impl_1"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 17,
+   "name": "odml.rope.impl_2"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 18,
+   "name": "odml.cache_update.impl_0"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 19,
+   "name": "odml.runtime_bmm.impl_1"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 20,
+   "name": "odml.runtime_bmm.impl_2"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 21,
+   "name": "odml.rms_norm.impl_6"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 22,
+   "name": "odml.swiglu.impl_0"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 23,
+   "name": "odml.rms_norm.impl_7"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 24,
+   "name": "odml.rms_norm.impl_8"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 25,
+   "name": "odml.rms_norm.impl_9"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 26,
+   "name": "odml.rope.impl_3"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 27,
+   "name": "odml.rope.impl_4"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 28,
+   "name": "odml.cache_update.impl_1"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 29,
+   "name": "odml.runtime_bmm.impl_3"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 30,
+   "name": "odml.runtime_bmm.impl_4"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 31,
+   "name": "odml.rms_norm.impl_10"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 32,
+   "name": "odml.swiglu.impl_1"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 33,
+   "name": "odml.rms_norm.impl_11"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 34,
+   "name": "odml.rms_norm.impl_12"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 35,
+   "name": "odml.rms_norm.impl_13"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 36,
+   "name": "odml.rope.impl_5"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 37,
+   "name": "odml.rope.impl_6"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 38,
+   "name": "odml.cache_update.impl_2"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 39,
+   "name": "odml.runtime_bmm.impl_5"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 40,
+   "name": "odml.runtime_bmm.impl_6"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 41,
+   "name": "odml.rms_norm.impl_14"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 42,
+   "name": "odml.swiglu.impl_2"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 43,
+   "name": "odml.rms_norm.impl_15"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 44,
+   "name": "odml.rms_norm.impl_16"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 45,
+   "name": "odml.rms_norm.impl_17"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 46,
+   "name": "odml.rope.impl_7"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 47,
+   "name": "odml.rope.impl_8"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 48,
+   "name": "odml.cache_update.impl_3"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 49,
+   "name": "odml.runtime_bmm.impl_7"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 50,
+   "name": "odml.runtime_bmm.impl_8"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 51,
+   "name": "odml.rms_norm.impl_18"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 52,
+   "name": "odml.swiglu.impl_3"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 53,
+   "name": "odml.rms_norm.impl_19"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 54,
+   "name": "odml.rms_norm.impl_20"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 55,
+   "name": "odml.rms_norm.impl_21"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 56,
+   "name": "odml.rope.impl_9"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 57,
+   "name": "odml.rope.impl_10"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 58,
+   "name": "odml.cache_update.impl_4"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 59,
+   "name": "odml.runtime_bmm.impl_9"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 60,
+   "name": "odml.runtime_bmm.impl_10"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 61,
+   "name": "odml.rms_norm.impl_22"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 62,
+   "name": "odml.swiglu.impl_4"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 63,
+   "name": "odml.rms_norm.impl_23"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 64,
+   "name": "odml.rms_norm.impl_24"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 65,
+   "name": "odml.rms_norm.impl_25"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 66,
+   "name": "odml.rope.impl_11"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 67,
+   "name": "odml.rope.impl_12"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 68,
+   "name": "odml.cache_update.impl_5"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 69,
+   "name": "odml.runtime_bmm.impl_11"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 70,
+   "name": "odml.runtime_bmm.impl_12"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 71,
+   "name": "odml.rms_norm.impl_26"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 72,
+   "name": "odml.swiglu.impl_5"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 73,
+   "name": "odml.rms_norm.impl_27"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 74,
+   "name": "odml.rms_norm.impl_28"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 75,
+   "name": "odml.rms_norm.impl_29"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 76,
+   "name": "odml.rope.impl_13"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 77,
+   "name": "odml.rope.impl_14"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 78,
+   "name": "odml.cache_update.impl_6"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 79,
+   "name": "odml.runtime_bmm.impl_13"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 80,
+   "name": "odml.runtime_bmm.impl_14"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 81,
+   "name": "odml.rms_norm.impl_30"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 82,
+   "name": "odml.swiglu.impl_6"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 83,
+   "name": "odml.rms_norm.impl_31"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 84,
+   "name": "odml.rms_norm.impl_32"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 85,
+   "name": "odml.rms_norm.impl_33"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 86,
+   "name": "odml.rope.impl_15"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 87,
+   "name": "odml.rope.impl_16"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 88,
+   "name": "odml.cache_update.impl_7"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 89,
+   "name": "odml.runtime_bmm.impl_15"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 90,
+   "name": "odml.runtime_bmm.impl_16"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 91,
+   "name": "odml.rms_norm.impl_34"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 92,
+   "name": "odml.swiglu.impl_7"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 93,
+   "name": "odml.rms_norm.impl_35"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 94,
+   "name": "odml.rms_norm.impl_36"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 95,
+   "name": "odml.rms_norm.impl_37"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 96,
+   "name": "odml.rope.impl_17"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 97,
+   "name": "odml.rope.impl_18"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 98,
+   "name": "odml.cache_update.impl_8"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 99,
+   "name": "odml.runtime_bmm.impl_17"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 100,
+   "name": "odml.runtime_bmm.impl_18"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 101,
+   "name": "odml.rms_norm.impl_38"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 102,
+   "name": "odml.swiglu.impl_8"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 103,
+   "name": "odml.rms_norm.impl_39"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 104,
+   "name": "odml.rms_norm.impl_40"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 105,
+   "name": "odml.rms_norm.impl_41"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 106,
+   "name": "odml.rope.impl_19"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 107,
+   "name": "odml.rope.impl_20"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 108,
+   "name": "odml.cache_update.impl_9"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 109,
+   "name": "odml.runtime_bmm.impl_19"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 110,
+   "name": "odml.runtime_bmm.impl_20"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 111,
+   "name": "odml.rms_norm.impl_42"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 112,
+   "name": "odml.swiglu.impl_9"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 113,
+   "name": "odml.rms_norm.impl_43"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 114,
+   "name": "odml.rms_norm.impl_44"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 115,
+   "name": "odml.rms_norm.impl_45"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 116,
+   "name": "odml.rope.impl_21"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 117,
+   "name": "odml.rope.impl_22"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 118,
+   "name": "odml.cache_update.impl_10"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 119,
+   "name": "odml.runtime_bmm.impl_21"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 120,
+   "name": "odml.runtime_bmm.impl_22"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 121,
+   "name": "odml.rms_norm.impl_46"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 122,
+   "name": "odml.swiglu.impl_10"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 123,
+   "name": "odml.rms_norm.impl_47"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 124,
+   "name": "odml.rms_norm.impl_48"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 125,
+   "name": "odml.rms_norm.impl_49"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 126,
+   "name": "odml.rope.impl_23"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 127,
+   "name": "odml.rope.impl_24"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 128,
+   "name": "odml.cache_update.impl_11"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 129,
+   "name": "odml.runtime_bmm.impl_23"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 130,
+   "name": "odml.runtime_bmm.impl_24"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 131,
+   "name": "odml.rms_norm.impl_50"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 132,
+   "name": "odml.swiglu.impl_11"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 133,
+   "name": "odml.rms_norm.impl_51"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 134,
+   "name": "odml.rms_norm.impl_52"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 135,
+   "name": "odml.rms_norm.impl_53"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 136,
+   "name": "odml.rope.impl_25"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 137,
+   "name": "odml.rope.impl_26"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 138,
+   "name": "odml.cache_update.impl_12"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 139,
+   "name": "odml.runtime_bmm.impl_25"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 140,
+   "name": "odml.runtime_bmm.impl_26"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 141,
+   "name": "odml.rms_norm.impl_54"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 142,
+   "name": "odml.swiglu.impl_12"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 143,
+   "name": "odml.rms_norm.impl_55"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 144,
+   "name": "odml.rms_norm.impl_56"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 145,
+   "name": "odml.rms_norm.impl_57"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 146,
+   "name": "odml.rope.impl_27"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 147,
+   "name": "odml.rope.impl_28"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 148,
+   "name": "odml.cache_update.impl_13"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 149,
+   "name": "odml.runtime_bmm.impl_27"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 150,
+   "name": "odml.runtime_bmm.impl_28"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 151,
+   "name": "odml.rms_norm.impl_58"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 152,
+   "name": "odml.swiglu.impl_13"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 153,
+   "name": "odml.rms_norm.impl_59"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 154,
+   "name": "odml.rms_norm.impl_60"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 155,
+   "name": "odml.rms_norm.impl_61"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 156,
+   "name": "odml.rope.impl_29"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 157,
+   "name": "odml.rope.impl_30"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 158,
+   "name": "odml.cache_update.impl_14"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 159,
+   "name": "odml.runtime_bmm.impl_29"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 160,
+   "name": "odml.runtime_bmm.impl_30"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 161,
+   "name": "odml.rms_norm.impl_62"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 162,
+   "name": "odml.swiglu.impl_14"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 163,
+   "name": "odml.rms_norm.impl_63"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 164,
+   "name": "odml.rms_norm.impl_64"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 165,
+   "name": "odml.rms_norm.impl_65"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 166,
+   "name": "odml.rope.impl_31"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 167,
+   "name": "odml.rope.impl_32"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 168,
+   "name": "odml.cache_update.impl_15"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 169,
+   "name": "odml.runtime_bmm.impl_31"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 170,
+   "name": "odml.runtime_bmm.impl_32"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 171,
+   "name": "odml.rms_norm.impl_66"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 172,
+   "name": "odml.swiglu.impl_15"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 173,
+   "name": "odml.rms_norm.impl_67"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 174,
+   "name": "odml.rms_norm.impl_68"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 175,
+   "name": "odml.rms_norm.impl_69"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 176,
+   "name": "odml.rope.impl_33"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 177,
+   "name": "odml.rope.impl_34"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 178,
+   "name": "odml.cache_update.impl_16"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 179,
+   "name": "odml.runtime_bmm.impl_33"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 180,
+   "name": "odml.runtime_bmm.impl_34"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 181,
+   "name": "odml.rms_norm.impl_70"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 182,
+   "name": "odml.swiglu.impl_16"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 183,
+   "name": "odml.rms_norm.impl_71"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 184,
+   "name": "odml.rms_norm.impl_72"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 185,
+   "name": "odml.rms_norm.impl_73"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 186,
+   "name": "odml.rope.impl_35"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 187,
+   "name": "odml.rope.impl_36"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 188,
+   "name": "odml.cache_update.impl_17"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 189,
+   "name": "odml.runtime_bmm.impl_35"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 190,
+   "name": "odml.runtime_bmm.impl_36"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 191,
+   "name": "odml.rms_norm.impl_74"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 192,
+   "name": "odml.swiglu.impl_17"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 193,
+   "name": "odml.rms_norm.impl_75"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 194,
+   "name": "odml.rms_norm.impl_76"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 195,
+   "name": "odml.rms_norm.impl_77"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 196,
+   "name": "odml.rope.impl_37"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 197,
+   "name": "odml.rope.impl_38"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 198,
+   "name": "odml.cache_update.impl_18"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 199,
+   "name": "odml.runtime_bmm.impl_37"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 200,
+   "name": "odml.runtime_bmm.impl_38"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 201,
+   "name": "odml.rms_norm.impl_78"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 202,
+   "name": "odml.swiglu.impl_18"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 203,
+   "name": "odml.rms_norm.impl_79"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 204,
+   "name": "odml.rms_norm.impl_80"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 205,
+   "name": "odml.rms_norm.impl_81"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 206,
+   "name": "odml.rope.impl_39"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 207,
+   "name": "odml.rope.impl_40"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 208,
+   "name": "odml.cache_update.impl_19"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 209,
+   "name": "odml.runtime_bmm.impl_39"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 210,
+   "name": "odml.runtime_bmm.impl_40"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 211,
+   "name": "odml.rms_norm.impl_82"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 212,
+   "name": "odml.swiglu.impl_19"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 213,
+   "name": "odml.rms_norm.impl_83"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 214,
+   "name": "odml.rms_norm.impl_84"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 215,
+   "name": "odml.rms_norm.impl_85"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 216,
+   "name": "odml.rope.impl_41"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 217,
+   "name": "odml.rope.impl_42"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 218,
+   "name": "odml.cache_update.impl_20"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 219,
+   "name": "odml.runtime_bmm.impl_41"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 220,
+   "name": "odml.runtime_bmm.impl_42"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 221,
+   "name": "odml.rms_norm.impl_86"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 222,
+   "name": "odml.swiglu.impl_20"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 223,
+   "name": "odml.rms_norm.impl_87"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 224,
+   "name": "odml.rms_norm.impl_88"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 225,
+   "name": "odml.rms_norm.impl_89"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 226,
+   "name": "odml.rope.impl_43"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 227,
+   "name": "odml.rope.impl_44"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 228,
+   "name": "odml.cache_update.impl_21"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 229,
+   "name": "odml.runtime_bmm.impl_43"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 230,
+   "name": "odml.runtime_bmm.impl_44"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 231,
+   "name": "odml.rms_norm.impl_90"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 232,
+   "name": "odml.swiglu.impl_21"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 233,
+   "name": "odml.rms_norm.impl_91"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 234,
+   "name": "odml.rms_norm.impl_92"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 235,
+   "name": "odml.rms_norm.impl_93"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 236,
+   "name": "odml.rope.impl_45"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 237,
+   "name": "odml.rope.impl_46"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 238,
+   "name": "odml.cache_update.impl_22"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 239,
+   "name": "odml.runtime_bmm.impl_45"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 240,
+   "name": "odml.runtime_bmm.impl_46"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 241,
+   "name": "odml.rms_norm.impl_94"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 242,
+   "name": "odml.swiglu.impl_22"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 243,
+   "name": "odml.rms_norm.impl_95"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 244,
+   "name": "odml.rms_norm.impl_96"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 245,
+   "name": "odml.rms_norm.impl_97"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 246,
+   "name": "odml.rope.impl_47"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 247,
+   "name": "odml.rope.impl_48"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 248,
+   "name": "odml.cache_update.impl_23"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 249,
+   "name": "odml.runtime_bmm.impl_47"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 250,
+   "name": "odml.runtime_bmm.impl_48"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 251,
+   "name": "odml.rms_norm.impl_98"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 252,
+   "name": "odml.swiglu.impl_23"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 253,
+   "name": "odml.rms_norm.impl_99"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 254,
+   "name": "odml.rms_norm.impl_100"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 255,
+   "name": "odml.rms_norm.impl_101"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 256,
+   "name": "odml.rope.impl_49"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 257,
+   "name": "odml.rope.impl_50"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 258,
+   "name": "odml.cache_update.impl_24"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 259,
+   "name": "odml.runtime_bmm.impl_49"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 260,
+   "name": "odml.runtime_bmm.impl_50"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 261,
+   "name": "odml.rms_norm.impl_102"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 262,
+   "name": "odml.swiglu.impl_24"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 263,
+   "name": "odml.rms_norm.impl_103"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 264,
+   "name": "odml.rms_norm.impl_104"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 265,
+   "name": "odml.rms_norm.impl_105"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 266,
+   "name": "odml.rope.impl_51"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 267,
+   "name": "odml.rope.impl_52"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 268,
+   "name": "odml.cache_update.impl_25"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 269,
+   "name": "odml.runtime_bmm.impl_51"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 270,
+   "name": "odml.runtime_bmm.impl_52"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 271,
+   "name": "odml.rms_norm.impl_106"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 272,
+   "name": "odml.swiglu.impl_25"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 273,
+   "name": "odml.rms_norm.impl_107"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 274,
+   "name": "odml.rms_norm.impl_108"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 275,
+   "name": "odml.rms_norm.impl_109"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 276,
+   "name": "odml.rope.impl_53"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 277,
+   "name": "odml.rope.impl_54"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 278,
+   "name": "odml.cache_update.impl_26"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 279,
+   "name": "odml.runtime_bmm.impl_53"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 280,
+   "name": "odml.runtime_bmm.impl_54"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 281,
+   "name": "odml.rms_norm.impl_110"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 282,
+   "name": "odml.swiglu.impl_26"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 283,
+   "name": "odml.rms_norm.impl_111"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 284,
+   "name": "odml.rms_norm.impl_112"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 285,
+   "name": "odml.rms_norm.impl_113"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 286,
+   "name": "odml.rms_norm.impl_114"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 287,
+   "name": "odml.rope.impl_55"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 288,
+   "name": "odml.rope.impl_56"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 289,
+   "name": "odml.cache_update.impl_27"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 290,
+   "name": "odml.runtime_bmm.impl_55"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 291,
+   "name": "odml.runtime_bmm.impl_56"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 292,
+   "name": "odml.rms_norm.impl_115"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 293,
+   "name": "odml.swiglu.impl_27"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 294,
+   "name": "odml.rms_norm.impl_116"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 295,
+   "name": "odml.rms_norm.impl_117"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 296,
+   "name": "odml.rms_norm.impl_118"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 297,
+   "name": "odml.rope.impl_57"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 298,
+   "name": "odml.rope.impl_58"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 299,
+   "name": "odml.cache_update.impl_28"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 300,
+   "name": "odml.runtime_bmm.impl_57"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 301,
+   "name": "odml.runtime_bmm.impl_58"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 302,
+   "name": "odml.rms_norm.impl_119"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 303,
+   "name": "odml.swiglu.impl_28"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 304,
+   "name": "odml.rms_norm.impl_120"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 305,
+   "name": "odml.rms_norm.impl_121"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 306,
+   "name": "odml.rms_norm.impl_122"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 307,
+   "name": "odml.rope.impl_59"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 308,
+   "name": "odml.rope.impl_60"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 309,
+   "name": "odml.cache_update.impl_29"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 310,
+   "name": "odml.runtime_bmm.impl_59"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 311,
+   "name": "odml.runtime_bmm.impl_60"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 312,
+   "name": "odml.rms_norm.impl_123"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 313,
+   "name": "odml.swiglu.impl_29"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 314,
+   "name": "odml.rms_norm.impl_124"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 315,
+   "name": "odml.rms_norm.impl_125"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 316,
+   "name": "odml.rms_norm.impl_126"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 317,
+   "name": "odml.rope.impl_61"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 318,
+   "name": "odml.rope.impl_62"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 319,
+   "name": "odml.cache_update.impl_30"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 320,
+   "name": "odml.runtime_bmm.impl_61"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 321,
+   "name": "odml.runtime_bmm.impl_62"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 322,
+   "name": "odml.rms_norm.impl_127"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 323,
+   "name": "odml.swiglu.impl_30"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 324,
+   "name": "odml.rms_norm.impl_128"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 325,
+   "name": "odml.rms_norm.impl_129"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 326,
+   "name": "odml.rms_norm.impl_130"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 327,
+   "name": "odml.rope.impl_63"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 328,
+   "name": "odml.rope.impl_64"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 329,
+   "name": "odml.cache_update.impl_31"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 330,
+   "name": "odml.runtime_bmm.impl_63"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 331,
+   "name": "odml.runtime_bmm.impl_64"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 332,
+   "name": "odml.rms_norm.impl_131"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 333,
+   "name": "odml.swiglu.impl_31"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 334,
+   "name": "odml.rms_norm.impl_132"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 335,
+   "name": "odml.rms_norm.impl_133"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 336,
+   "name": "odml.rms_norm.impl_134"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 337,
+   "name": "odml.rope.impl_65"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 338,
+   "name": "odml.rope.impl_66"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 339,
+   "name": "odml.cache_update.impl_32"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 340,
+   "name": "odml.runtime_bmm.impl_65"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 341,
+   "name": "odml.runtime_bmm.impl_66"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 342,
+   "name": "odml.rms_norm.impl_135"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 343,
+   "name": "odml.swiglu.impl_32"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 344,
+   "name": "odml.rms_norm.impl_136"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 345,
+   "name": "odml.rms_norm.impl_137"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 346,
+   "name": "odml.rms_norm.impl_138"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 347,
+   "name": "odml.rope.impl_67"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 348,
+   "name": "odml.rope.impl_68"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 349,
+   "name": "odml.cache_update.impl_33"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 350,
+   "name": "odml.runtime_bmm.impl_67"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 351,
+   "name": "odml.runtime_bmm.impl_68"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 352,
+   "name": "odml.rms_norm.impl_139"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 353,
+   "name": "odml.swiglu.impl_33"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 354,
+   "name": "odml.rms_norm.impl_140"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 355,
+   "name": "odml.rms_norm.impl_141"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 356,
+   "name": "odml.rms_norm.impl_142"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 357,
+   "name": "odml.rope.impl_69"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 358,
+   "name": "odml.rope.impl_70"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 359,
+   "name": "odml.cache_update.impl_34"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 360,
+   "name": "odml.runtime_bmm.impl_69"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 361,
+   "name": "odml.runtime_bmm.impl_70"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 362,
+   "name": "odml.rms_norm.impl_143"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 363,
+   "name": "odml.swiglu.impl_34"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 364,
+   "name": "odml.rms_norm.impl_144"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 365,
+   "name": "odml.rms_norm.impl_145"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 366,
+   "name": "odml.rms_norm.impl_146"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 367,
+   "name": "odml.rope.impl_71"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 368,
+   "name": "odml.rope.impl_72"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 369,
+   "name": "odml.cache_update.impl_35"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 370,
+   "name": "odml.runtime_bmm.impl_71"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 371,
+   "name": "odml.runtime_bmm.impl_72"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 372,
+   "name": "odml.rms_norm.impl_147"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 373,
+   "name": "odml.swiglu.impl_35"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 374,
+   "name": "odml.rms_norm.impl_148"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 375,
+   "name": "odml.rms_norm.impl_149"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 376,
+   "name": "odml.rms_norm.impl_150"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 377,
+   "name": "odml.rope.impl_73"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 378,
+   "name": "odml.rope.impl_74"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 379,
+   "name": "odml.cache_update.impl_36"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 380,
+   "name": "odml.runtime_bmm.impl_73"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 381,
+   "name": "odml.runtime_bmm.impl_74"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 382,
+   "name": "odml.rms_norm.impl_151"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 383,
+   "name": "odml.swiglu.impl_36"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 384,
+   "name": "odml.rms_norm.impl_152"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 385,
+   "name": "odml.rms_norm.impl_153"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 386,
+   "name": "odml.rms_norm.impl_154"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 387,
+   "name": "odml.rope.impl_75"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 388,
+   "name": "odml.rope.impl_76"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 389,
+   "name": "odml.cache_update.impl_37"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 390,
+   "name": "odml.runtime_bmm.impl_75"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 391,
+   "name": "odml.runtime_bmm.impl_76"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 392,
+   "name": "odml.rms_norm.impl_155"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 393,
+   "name": "odml.swiglu.impl_37"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 394,
+   "name": "odml.rms_norm.impl_156"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 395,
+   "name": "odml.rms_norm.impl_157"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 396,
+   "name": "odml.rms_norm.impl_158"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 397,
+   "name": "odml.rope.impl_77"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 398,
+   "name": "odml.rope.impl_78"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 399,
+   "name": "odml.cache_update.impl_38"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 400,
+   "name": "odml.runtime_bmm.impl_77"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 401,
+   "name": "odml.runtime_bmm.impl_78"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 402,
+   "name": "odml.rms_norm.impl_159"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 403,
+   "name": "odml.swiglu.impl_38"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 404,
+   "name": "odml.rms_norm.impl_160"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 405,
+   "name": "odml.rms_norm.impl_161"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 406,
+   "name": "odml.rms_norm.impl_162"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 407,
+   "name": "odml.rope.impl_79"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 408,
+   "name": "odml.rope.impl_80"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 409,
+   "name": "odml.cache_update.impl_39"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 410,
+   "name": "odml.runtime_bmm.impl_79"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 411,
+   "name": "odml.runtime_bmm.impl_80"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 412,
+   "name": "odml.rms_norm.impl_163"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 413,
+   "name": "odml.swiglu.impl_39"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 414,
+   "name": "odml.rms_norm.impl_164"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 415,
+   "name": "odml.rms_norm.impl_165"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 416,
+   "name": "odml.rms_norm.impl_166"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 417,
+   "name": "odml.rope.impl_81"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 418,
+   "name": "odml.rope.impl_82"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 419,
+   "name": "odml.cache_update.impl_40"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 420,
+   "name": "odml.runtime_bmm.impl_81"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 421,
+   "name": "odml.runtime_bmm.impl_82"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 422,
+   "name": "odml.rms_norm.impl_167"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 423,
+   "name": "odml.swiglu.impl_40"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 424,
+   "name": "odml.rms_norm.impl_168"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 425,
+   "name": "odml.rms_norm.impl_169"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 426,
+   "name": "odml.rms_norm.impl_170"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 427,
+   "name": "odml.rope.impl_83"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 428,
+   "name": "odml.rope.impl_84"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 429,
+   "name": "odml.cache_update.impl_41"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 430,
+   "name": "odml.runtime_bmm.impl_83"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 431,
+   "name": "odml.runtime_bmm.impl_84"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 432,
+   "name": "odml.rms_norm.impl_171"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 433,
+   "name": "odml.swiglu.impl_41"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 434,
+   "name": "odml.rms_norm.impl_172"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 435,
+   "name": "odml.rms_norm.impl_173"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 436,
+   "name": "odml.rms_norm.impl_174"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 437,
+   "name": "odml.rope.impl_85"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 438,
+   "name": "odml.rope.impl_86"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 439,
+   "name": "odml.cache_update.impl_42"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 440,
+   "name": "odml.runtime_bmm.impl_85"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 441,
+   "name": "odml.runtime_bmm.impl_86"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 442,
+   "name": "odml.rms_norm.impl_175"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 443,
+   "name": "odml.swiglu.impl_42"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 444,
+   "name": "odml.rms_norm.impl_176"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 445,
+   "name": "odml.rms_norm.impl_177"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 446,
+   "name": "odml.rms_norm.impl_178"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 447,
+   "name": "odml.rope.impl_87"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 448,
+   "name": "odml.rope.impl_88"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 449,
+   "name": "odml.cache_update.impl_43"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 450,
+   "name": "odml.runtime_bmm.impl_87"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 451,
+   "name": "odml.runtime_bmm.impl_88"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 452,
+   "name": "odml.rms_norm.impl_179"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 453,
+   "name": "odml.swiglu.impl_43"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 454,
+   "name": "odml.rms_norm.impl_180"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 455,
+   "name": "odml.rms_norm.impl_181"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 456,
+   "name": "odml.rms_norm.impl_182"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 457,
+   "name": "odml.rope.impl_89"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 458,
+   "name": "odml.rope.impl_90"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 459,
+   "name": "odml.cache_update.impl_44"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 460,
+   "name": "odml.runtime_bmm.impl_89"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 461,
+   "name": "odml.runtime_bmm.impl_90"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 462,
+   "name": "odml.rms_norm.impl_183"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 463,
+   "name": "odml.swiglu.impl_44"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 464,
+   "name": "odml.rms_norm.impl_184"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 465,
+   "name": "odml.rms_norm.impl_185"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 466,
+   "name": "odml.rms_norm.impl_186"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 467,
+   "name": "odml.rope.impl_91"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 468,
+   "name": "odml.rope.impl_92"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 469,
+   "name": "odml.cache_update.impl_45"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 470,
+   "name": "odml.runtime_bmm.impl_91"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 471,
+   "name": "odml.runtime_bmm.impl_92"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 472,
+   "name": "odml.rms_norm.impl_187"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 473,
+   "name": "odml.swiglu.impl_45"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 474,
+   "name": "odml.rms_norm.impl_188"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 475,
+   "name": "odml.rms_norm.impl_189"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 476,
+   "name": "odml.rms_norm.impl_190"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 477,
+   "name": "odml.rope.impl_93"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 478,
+   "name": "odml.rope.impl_94"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 479,
+   "name": "odml.cache_update.impl_46"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 480,
+   "name": "odml.runtime_bmm.impl_93"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 481,
+   "name": "odml.runtime_bmm.impl_94"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 482,
+   "name": "odml.rms_norm.impl_191"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 483,
+   "name": "odml.swiglu.impl_46"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 484,
+   "name": "odml.rms_norm.impl_192"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 485,
+   "name": "odml.rms_norm.impl_193"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 486,
+   "name": "odml.rms_norm.impl_194"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 487,
+   "name": "odml.rope.impl_95"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 488,
+   "name": "odml.rope.impl_96"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 489,
+   "name": "odml.cache_update.impl_47"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 490,
+   "name": "odml.runtime_bmm.impl_95"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 491,
+   "name": "odml.runtime_bmm.impl_96"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 492,
+   "name": "odml.rms_norm.impl_195"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 493,
+   "name": "odml.swiglu.impl_47"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 494,
+   "name": "odml.rms_norm.impl_196"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 495,
+   "name": "odml.rms_norm.impl_197"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 496,
+   "name": "odml.rms_norm.impl_198"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 497,
+   "name": "odml.rope.impl_97"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 498,
+   "name": "odml.rope.impl_98"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 499,
+   "name": "odml.cache_update.impl_48"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 500,
+   "name": "odml.runtime_bmm.impl_97"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 501,
+   "name": "odml.runtime_bmm.impl_98"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 502,
+   "name": "odml.rms_norm.impl_199"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 503,
+   "name": "odml.swiglu.impl_48"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 504,
+   "name": "odml.rms_norm.impl_200"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 505,
+   "name": "odml.rms_norm.impl_201"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 506,
+   "name": "odml.rms_norm.impl_202"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 507,
+   "name": "odml.rope.impl_99"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 508,
+   "name": "odml.rope.impl_100"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 509,
+   "name": "odml.cache_update.impl_49"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 510,
+   "name": "odml.runtime_bmm.impl_99"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 511,
+   "name": "odml.runtime_bmm.impl_100"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 512,
+   "name": "odml.rms_norm.impl_203"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 513,
+   "name": "odml.swiglu.impl_49"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 514,
+   "name": "odml.rms_norm.impl_204"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 515,
+   "name": "odml.rms_norm.impl_205"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 516,
+   "name": "odml.rms_norm.impl_206"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 517,
+   "name": "odml.rope.impl_101"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 518,
+   "name": "odml.rope.impl_102"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 519,
+   "name": "odml.cache_update.impl_50"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 520,
+   "name": "odml.runtime_bmm.impl_101"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 521,
+   "name": "odml.runtime_bmm.impl_102"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 522,
+   "name": "odml.rms_norm.impl_207"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 523,
+   "name": "odml.swiglu.impl_50"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 524,
+   "name": "odml.rms_norm.impl_208"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 525,
+   "name": "odml.rms_norm.impl_209"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 526,
+   "name": "odml.rms_norm.impl_210"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 527,
+   "name": "odml.rope.impl_103"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 528,
+   "name": "odml.rope.impl_104"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 529,
+   "name": "odml.cache_update.impl_51"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 530,
+   "name": "odml.runtime_bmm.impl_103"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 531,
+   "name": "odml.runtime_bmm.impl_104"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 532,
+   "name": "odml.rms_norm.impl_211"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 533,
+   "name": "odml.swiglu.impl_51"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 534,
+   "name": "odml.rms_norm.impl_212"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 535,
+   "name": "odml.rms_norm.impl_213"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 536,
+   "name": "odml.rms_norm.impl_214"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 537,
+   "name": "odml.rope.impl_105"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 538,
+   "name": "odml.rope.impl_106"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 539,
+   "name": "odml.cache_update.impl_52"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 540,
+   "name": "odml.runtime_bmm.impl_105"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 541,
+   "name": "odml.runtime_bmm.impl_106"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 542,
+   "name": "odml.rms_norm.impl_215"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 543,
+   "name": "odml.swiglu.impl_52"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 544,
+   "name": "odml.rms_norm.impl_216"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 545,
+   "name": "odml.rms_norm.impl_217"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 546,
+   "name": "odml.rms_norm.impl_218"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 547,
+   "name": "odml.rope.impl_107"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 548,
+   "name": "odml.rope.impl_108"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 549,
+   "name": "odml.cache_update.impl_53"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 550,
+   "name": "odml.runtime_bmm.impl_107"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 551,
+   "name": "odml.runtime_bmm.impl_108"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 552,
+   "name": "odml.rms_norm.impl_219"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 553,
+   "name": "odml.swiglu.impl_53"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 554,
+   "name": "odml.rms_norm.impl_220"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 555,
+   "name": "odml.rms_norm.impl_221"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 556,
+   "name": "odml.rms_norm.impl_222"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 557,
+   "name": "odml.rope.impl_109"
+  },
+  {
+   "n": 16,
+   "m": 18,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 558,
+   "name": "odml.rope.impl_110"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 559,
+   "name": "odml.cache_update.impl_54"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 560,
+   "name": "odml.runtime_bmm.impl_109"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 561,
+   "name": "odml.runtime_bmm.impl_110"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 562,
+   "name": "odml.rms_norm.impl_223"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 563,
+   "name": "odml.swiglu.impl_54"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 564,
+   "name": "odml.rms_norm.impl_224"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 565,
+   "name": "odml.rms_norm.impl_225"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 566,
+   "name": "odml.rms_norm.impl_226"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 567,
+   "name": "odml.rms_norm.impl_227"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 568,
+   "name": "odml.rope.impl_111"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 569,
+   "name": "odml.rope.impl_112"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 570,
+   "name": "odml.cache_update.impl_55"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 571,
+   "name": "odml.runtime_bmm.impl_111"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 572,
+   "name": "odml.runtime_bmm.impl_112"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 573,
+   "name": "odml.rms_norm.impl_228"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 574,
+   "name": "odml.swiglu.impl_55"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 575,
+   "name": "odml.rms_norm.impl_229"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 576,
+   "name": "odml.rms_norm.impl_230"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 577,
+   "name": "odml.rms_norm.impl_231"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 578,
+   "name": "odml.rope.impl_113"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 579,
+   "name": "odml.rope.impl_114"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 580,
+   "name": "odml.cache_update.impl_56"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 581,
+   "name": "odml.runtime_bmm.impl_113"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 582,
+   "name": "odml.runtime_bmm.impl_114"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 583,
+   "name": "odml.rms_norm.impl_232"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 584,
+   "name": "odml.swiglu.impl_56"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 585,
+   "name": "odml.rms_norm.impl_233"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 586,
+   "name": "odml.rms_norm.impl_234"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 587,
+   "name": "odml.rms_norm.impl_235"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 588,
+   "name": "odml.rope.impl_115"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 589,
+   "name": "odml.rope.impl_116"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 590,
+   "name": "odml.cache_update.impl_57"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 591,
+   "name": "odml.runtime_bmm.impl_115"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 592,
+   "name": "odml.runtime_bmm.impl_116"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 593,
+   "name": "odml.rms_norm.impl_236"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 594,
+   "name": "odml.swiglu.impl_57"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 595,
+   "name": "odml.rms_norm.impl_237"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 596,
+   "name": "odml.rms_norm.impl_238"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 597,
+   "name": "odml.rms_norm.impl_239"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 598,
+   "name": "odml.rope.impl_117"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 599,
+   "name": "odml.rope.impl_118"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 600,
+   "name": "odml.cache_update.impl_58"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 601,
+   "name": "odml.runtime_bmm.impl_117"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 602,
+   "name": "odml.runtime_bmm.impl_118"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 603,
+   "name": "odml.rms_norm.impl_240"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 604,
+   "name": "odml.swiglu.impl_58"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 605,
+   "name": "odml.rms_norm.impl_241"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 606,
+   "name": "odml.rms_norm.impl_242"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 607,
+   "name": "odml.rms_norm.impl_243"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 608,
+   "name": "odml.rope.impl_119"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 609,
+   "name": "odml.rope.impl_120"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 610,
+   "name": "odml.cache_update.impl_59"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 611,
+   "name": "odml.runtime_bmm.impl_119"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 612,
+   "name": "odml.runtime_bmm.impl_120"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 613,
+   "name": "odml.rms_norm.impl_244"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 614,
+   "name": "odml.swiglu.impl_59"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 615,
+   "name": "odml.rms_norm.impl_245"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 616,
+   "name": "odml.rms_norm.impl_246"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 617,
+   "name": "odml.rms_norm.impl_247"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 618,
+   "name": "odml.rope.impl_121"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 619,
+   "name": "odml.rope.impl_122"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 620,
+   "name": "odml.cache_update.impl_60"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 621,
+   "name": "odml.runtime_bmm.impl_121"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 622,
+   "name": "odml.runtime_bmm.impl_122"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 623,
+   "name": "odml.rms_norm.impl_248"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 624,
+   "name": "odml.swiglu.impl_60"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 625,
+   "name": "odml.rms_norm.impl_249"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 626,
+   "name": "odml.rms_norm.impl_250"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 627,
+   "name": "odml.rms_norm.impl_251"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 628,
+   "name": "odml.rope.impl_123"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 629,
+   "name": "odml.rope.impl_124"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 630,
+   "name": "odml.cache_update.impl_61"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 631,
+   "name": "odml.runtime_bmm.impl_123"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 632,
+   "name": "odml.runtime_bmm.impl_124"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 633,
+   "name": "odml.rms_norm.impl_252"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 634,
+   "name": "odml.swiglu.impl_61"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 635,
+   "name": "odml.rms_norm.impl_253"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 636,
+   "name": "odml.rms_norm.impl_254"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 637,
+   "name": "odml.rms_norm.impl_255"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 638,
+   "name": "odml.rope.impl_125"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 639,
+   "name": "odml.rope.impl_126"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 640,
+   "name": "odml.cache_update.impl_62"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 641,
+   "name": "odml.runtime_bmm.impl_125"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 642,
+   "name": "odml.runtime_bmm.impl_126"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 643,
+   "name": "odml.rms_norm.impl_256"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 644,
+   "name": "odml.swiglu.impl_62"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 645,
+   "name": "odml.rms_norm.impl_257"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 646,
+   "name": "odml.rms_norm.impl_258"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 647,
+   "name": "odml.rms_norm.impl_259"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 648,
+   "name": "odml.rope.impl_127"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 649,
+   "name": "odml.rope.impl_128"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 650,
+   "name": "odml.cache_update.impl_63"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 651,
+   "name": "odml.runtime_bmm.impl_127"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 652,
+   "name": "odml.runtime_bmm.impl_128"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 653,
+   "name": "odml.rms_norm.impl_260"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 654,
+   "name": "odml.swiglu.impl_63"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 655,
+   "name": "odml.rms_norm.impl_261"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 656,
+   "name": "odml.rms_norm.impl_262"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 657,
+   "name": "odml.rms_norm.impl_263"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 658,
+   "name": "odml.rope.impl_129"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 659,
+   "name": "odml.rope.impl_130"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 660,
+   "name": "odml.cache_update.impl_64"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 661,
+   "name": "odml.runtime_bmm.impl_129"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 662,
+   "name": "odml.runtime_bmm.impl_130"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 663,
+   "name": "odml.rms_norm.impl_264"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 664,
+   "name": "odml.swiglu.impl_64"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 665,
+   "name": "odml.rms_norm.impl_265"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 666,
+   "name": "odml.rms_norm.impl_266"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 667,
+   "name": "odml.rms_norm.impl_267"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 668,
+   "name": "odml.rope.impl_131"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 669,
+   "name": "odml.rope.impl_132"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 670,
+   "name": "odml.cache_update.impl_65"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 671,
+   "name": "odml.runtime_bmm.impl_131"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 672,
+   "name": "odml.runtime_bmm.impl_132"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 673,
+   "name": "odml.rms_norm.impl_268"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 674,
+   "name": "odml.swiglu.impl_65"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 675,
+   "name": "odml.rms_norm.impl_269"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 676,
+   "name": "odml.rms_norm.impl_270"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 677,
+   "name": "odml.rms_norm.impl_271"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 678,
+   "name": "odml.rope.impl_133"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 679,
+   "name": "odml.rope.impl_134"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 680,
+   "name": "odml.cache_update.impl_66"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 681,
+   "name": "odml.runtime_bmm.impl_133"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 682,
+   "name": "odml.runtime_bmm.impl_134"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 683,
+   "name": "odml.rms_norm.impl_272"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 684,
+   "name": "odml.swiglu.impl_66"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 685,
+   "name": "odml.rms_norm.impl_273"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 686,
+   "name": "odml.rms_norm.impl_274"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 687,
+   "name": "odml.rms_norm.impl_275"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 688,
+   "name": "odml.rope.impl_135"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 689,
+   "name": "odml.rope.impl_136"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 690,
+   "name": "odml.cache_update.impl_67"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 691,
+   "name": "odml.runtime_bmm.impl_135"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 692,
+   "name": "odml.runtime_bmm.impl_136"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 693,
+   "name": "odml.rms_norm.impl_276"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 694,
+   "name": "odml.swiglu.impl_67"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 695,
+   "name": "odml.rms_norm.impl_277"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 696,
+   "name": "odml.rms_norm.impl_278"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 697,
+   "name": "odml.rms_norm.impl_279"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 698,
+   "name": "odml.rope.impl_137"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 699,
+   "name": "odml.rope.impl_138"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 700,
+   "name": "odml.cache_update.impl_68"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 701,
+   "name": "odml.runtime_bmm.impl_137"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 702,
+   "name": "odml.runtime_bmm.impl_138"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 703,
+   "name": "odml.rms_norm.impl_280"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 704,
+   "name": "odml.swiglu.impl_68"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 705,
+   "name": "odml.rms_norm.impl_281"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 706,
+   "name": "odml.rms_norm.impl_282"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 707,
+   "name": "odml.rms_norm.impl_283"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 708,
+   "name": "odml.rope.impl_139"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 709,
+   "name": "odml.rope.impl_140"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 710,
+   "name": "odml.cache_update.impl_69"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 711,
+   "name": "odml.runtime_bmm.impl_139"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 712,
+   "name": "odml.runtime_bmm.impl_140"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 713,
+   "name": "odml.rms_norm.impl_284"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 714,
+   "name": "odml.swiglu.impl_69"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 715,
+   "name": "odml.rms_norm.impl_285"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 716,
+   "name": "odml.rms_norm.impl_286"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 717,
+   "name": "odml.rms_norm.impl_287"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 718,
+   "name": "odml.rope.impl_141"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 719,
+   "name": "odml.rope.impl_142"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 720,
+   "name": "odml.cache_update.impl_70"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 721,
+   "name": "odml.runtime_bmm.impl_141"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 722,
+   "name": "odml.runtime_bmm.impl_142"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 723,
+   "name": "odml.rms_norm.impl_288"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 724,
+   "name": "odml.swiglu.impl_70"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 725,
+   "name": "odml.rms_norm.impl_289"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 726,
+   "name": "odml.rms_norm.impl_290"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 727,
+   "name": "odml.rms_norm.impl_291"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 728,
+   "name": "odml.rope.impl_143"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 729,
+   "name": "odml.rope.impl_144"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 730,
+   "name": "odml.cache_update.impl_71"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 731,
+   "name": "odml.runtime_bmm.impl_143"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 732,
+   "name": "odml.runtime_bmm.impl_144"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 733,
+   "name": "odml.rms_norm.impl_292"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 734,
+   "name": "odml.swiglu.impl_71"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 735,
+   "name": "odml.rms_norm.impl_293"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 736,
+   "name": "odml.rms_norm.impl_294"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 737,
+   "name": "odml.rms_norm.impl_295"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 738,
+   "name": "odml.rope.impl_145"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 739,
+   "name": "odml.rope.impl_146"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 740,
+   "name": "odml.cache_update.impl_72"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 741,
+   "name": "odml.runtime_bmm.impl_145"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 742,
+   "name": "odml.runtime_bmm.impl_146"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 743,
+   "name": "odml.rms_norm.impl_296"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 744,
+   "name": "odml.swiglu.impl_72"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 745,
+   "name": "odml.rms_norm.impl_297"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 746,
+   "name": "odml.rms_norm.impl_298"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 747,
+   "name": "odml.rms_norm.impl_299"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 748,
+   "name": "odml.rope.impl_147"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 749,
+   "name": "odml.rope.impl_148"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 750,
+   "name": "odml.cache_update.impl_73"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 751,
+   "name": "odml.runtime_bmm.impl_147"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 752,
+   "name": "odml.runtime_bmm.impl_148"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 753,
+   "name": "odml.rms_norm.impl_300"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 754,
+   "name": "odml.swiglu.impl_73"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 755,
+   "name": "odml.rms_norm.impl_301"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 756,
+   "name": "odml.rms_norm.impl_302"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 757,
+   "name": "odml.rms_norm.impl_303"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 758,
+   "name": "odml.rope.impl_149"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 759,
+   "name": "odml.rope.impl_150"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 760,
+   "name": "odml.cache_update.impl_74"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 761,
+   "name": "odml.runtime_bmm.impl_149"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 762,
+   "name": "odml.runtime_bmm.impl_150"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 763,
+   "name": "odml.rms_norm.impl_304"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 764,
+   "name": "odml.swiglu.impl_74"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 765,
+   "name": "odml.rms_norm.impl_305"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 766,
+   "name": "odml.rms_norm.impl_306"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 767,
+   "name": "odml.rms_norm.impl_307"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 768,
+   "name": "odml.rope.impl_151"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 769,
+   "name": "odml.rope.impl_152"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 770,
+   "name": "odml.cache_update.impl_75"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 771,
+   "name": "odml.runtime_bmm.impl_151"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 772,
+   "name": "odml.runtime_bmm.impl_152"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 773,
+   "name": "odml.rms_norm.impl_308"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 774,
+   "name": "odml.swiglu.impl_75"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 775,
+   "name": "odml.rms_norm.impl_309"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 776,
+   "name": "odml.rms_norm.impl_310"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 777,
+   "name": "odml.rms_norm.impl_311"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 778,
+   "name": "odml.rope.impl_153"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 779,
+   "name": "odml.rope.impl_154"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 780,
+   "name": "odml.cache_update.impl_76"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 781,
+   "name": "odml.runtime_bmm.impl_153"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 782,
+   "name": "odml.runtime_bmm.impl_154"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 783,
+   "name": "odml.rms_norm.impl_312"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 784,
+   "name": "odml.swiglu.impl_76"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 785,
+   "name": "odml.rms_norm.impl_313"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 786,
+   "name": "odml.rms_norm.impl_314"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 787,
+   "name": "odml.rms_norm.impl_315"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 788,
+   "name": "odml.rope.impl_155"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 789,
+   "name": "odml.rope.impl_156"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 790,
+   "name": "odml.cache_update.impl_77"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 791,
+   "name": "odml.runtime_bmm.impl_155"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 792,
+   "name": "odml.runtime_bmm.impl_156"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 793,
+   "name": "odml.rms_norm.impl_316"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 794,
+   "name": "odml.swiglu.impl_77"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 795,
+   "name": "odml.rms_norm.impl_317"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 796,
+   "name": "odml.rms_norm.impl_318"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 797,
+   "name": "odml.rms_norm.impl_319"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 798,
+   "name": "odml.rope.impl_157"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 799,
+   "name": "odml.rope.impl_158"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 800,
+   "name": "odml.cache_update.impl_78"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 801,
+   "name": "odml.runtime_bmm.impl_157"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 802,
+   "name": "odml.runtime_bmm.impl_158"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 803,
+   "name": "odml.rms_norm.impl_320"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 804,
+   "name": "odml.swiglu.impl_78"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 805,
+   "name": "odml.rms_norm.impl_321"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 806,
+   "name": "odml.rms_norm.impl_322"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 807,
+   "name": "odml.rms_norm.impl_323"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 808,
+   "name": "odml.rope.impl_159"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 809,
+   "name": "odml.rope.impl_160"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 810,
+   "name": "odml.cache_update.impl_79"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 811,
+   "name": "odml.runtime_bmm.impl_159"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 812,
+   "name": "odml.runtime_bmm.impl_160"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 813,
+   "name": "odml.rms_norm.impl_324"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 814,
+   "name": "odml.swiglu.impl_79"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 815,
+   "name": "odml.rms_norm.impl_325"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 816,
+   "name": "odml.rms_norm.impl_326"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 817,
+   "name": "odml.rms_norm.impl_327"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 818,
+   "name": "odml.rope.impl_161"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 819,
+   "name": "odml.rope.impl_162"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 820,
+   "name": "odml.cache_update.impl_80"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 821,
+   "name": "odml.runtime_bmm.impl_161"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 822,
+   "name": "odml.runtime_bmm.impl_162"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 823,
+   "name": "odml.rms_norm.impl_328"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 824,
+   "name": "odml.swiglu.impl_80"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 825,
+   "name": "odml.rms_norm.impl_329"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 826,
+   "name": "odml.rms_norm.impl_330"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 827,
+   "name": "odml.rms_norm.impl_331"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 828,
+   "name": "odml.rope.impl_163"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 829,
+   "name": "odml.rope.impl_164"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 830,
+   "name": "odml.cache_update.impl_81"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 831,
+   "name": "odml.runtime_bmm.impl_163"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 832,
+   "name": "odml.runtime_bmm.impl_164"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 833,
+   "name": "odml.rms_norm.impl_332"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 834,
+   "name": "odml.swiglu.impl_81"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 835,
+   "name": "odml.rms_norm.impl_333"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 836,
+   "name": "odml.rms_norm.impl_334"
+  },
+  {
+   "n": 7,
+   "m": 7,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 837,
+   "name": "odml.rms_norm.impl_335"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 838,
+   "name": "odml.rope.impl_165"
+  },
+  {
+   "n": 14,
+   "m": 16,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 839,
+   "name": "odml.rope.impl_166"
+  },
+  {
+   "n": 3,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 840,
+   "name": "odml.cache_update.impl_82"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 841,
+   "name": "odml.runtime_bmm.impl_165"
+  },
+  {
+   "n": 2,
+   "m": 3,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 3,
+   "subgraph": 842,
+   "name": "odml.runtime_bmm.impl_166"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 843,
+   "name": "odml.rms_norm.impl_336"
+  },
+  {
+   "n": 5,
+   "m": 5,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 844,
+   "name": "odml.swiglu.impl_82"
+  },
+  {
+   "n": 6,
+   "m": 6,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 1,
+   "subgraph": 845,
+   "name": "odml.rms_norm.impl_337"
+  },
+  {
+   "n": 2361,
+   "m": 2655,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 114,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 2615,
+   "m": 2910,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 114,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  }
+ ],
+ "delegation_summary": "prefill_128 592/916 XNN; prefill_1024 592/916 XNN; decode 507/830 XNN; decode 2361/2655 XNN; prefill_1024 2615/2910 XNN; +843 odml.* subgraph lines (423 full)",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": false,
+ "webgpu": false,
+ "data_loss": 0,
+ "serialized_init": 0,
+ "context_from_serialized": 0,
+ "xnnpack_cache_loaded": 1,
+ "xnnpack_cache_lines": [
+  "VERBOSE: XNNPack weight cache loaded from '/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm_1792989112_344671744.xnnpack_cache'.",
+  "VERBOSE: Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 8 (odml.cache_update.impl).",
+  "VERBOSE: Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 18 (odml.cache_update.impl_0).",
+  "VERBOSE: Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 28 (odml.cache_update.impl_1).",
+  "VERBOSE: Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 38 (odml.cache_update.impl_2).",
+  "VERBOSE: Replacing 3 out of 6 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for subgraph 48 (odml.cache_update.impl_3)."
+ ],
+ "magic_numbers": [
+  [
+   "32771",
+   "2048"
+  ]
+ ],
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "error_lines": [],
+ "error_line_count": 0,
+ "helpfull_flags": null,
+ "text": "",
+ "text_garbage": null
+}

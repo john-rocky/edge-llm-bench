@@ -1,0 +1,40 @@
+# T1b device preflight — written 2026-10-26 07:06:36 JST by device/preflight.sh
+
+## lane.env
+DDIR=/data/local/tmp/t1b0181_qwen3_06b  SUPERVISOR=bench-weekly-1026  KIT=/Users/USER/code/litertlm-convert/external_weights_work/r6_3986_verify_0181/kit/v0181-bda62485
+LEG_END_S=2520  KILL_S=2640  REST_S=60  READY_MAX_S=300  GSM_N=100
+cleanup_device greps: ${DDIR##*/} = t1b0181_qwen3_06b
+
+## push set (file  sha256 recomputed now  vs the value the harness checks)
+kit/litert_lm_advanced_main (40345720 B)       ff136a28e0ffcb3245a225eb105bf7e53a3a420d43363592eb148f65c9733c41  OK
+kit/libGemmaModelConstraintProvider.so (19415656 B) c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783  OK
+kit/libLiteRtGpuAccelerator.so (3416880 B)     75ee49f6f31faf44b3b5ac54f15d58abd75438bc9e2f9abcf47f24279d337bc8  OK
+kit/libLiteRtOpenClAccelerator.so (3187496 B)  dfc714a0b59d5e1bf5155db7533070bf13da28574a3bc52396a4ba22d23d893c  OK
+kit/libLiteRtTopKOpenClSampler.so (11824752 B) 0f77c888ad2a2ae044e189fd0fb87844c47fe46c8e68a677e6f204dac1096e24  OK
+kit/libLiteRtTopKWebGpuSampler.so (11793320 B) 1ab8e8b49d3c7e4fa64c5a50f58d507de2db7936e4b8fc0d008782724aa5862c  OK
+kit/libLiteRtWebGpuAccelerator.so (3203888 B)  57f8bd360a4293c57703d097a26ffa2dc89ee1884573289fdaf455f3098a6cdc  OK
+kit/libwebgpu_dawn.so (19702160 B)             657b2beb6456d50d7f6c86b315d5c2e97ad5a3870b134bcfcc2aa682ef467977  OK
+kit/litert_lm_advanced_main = KIT/SHA256SUMS line ff136a28e0ffcb3245a225eb105bf7e53a3a420d43363592eb148f65c9733c41  OK
+E2 model.litertlm (343466928 B; fsize 343466928) fbbf0657efe90a57a4f3992023e01b1431455d3c130b5ab926647b1f137e5b79  OK
+OWN 03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856 (344671744 B; fsize 344671744) 03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856  OK
+E2g E2g.litertlm ( B; fsize 343466928)           MISMATCH
+OWNg OWNg.litertlm ( B; fsize 344671744)         MISMATCH
+prompts/long-context-1024-gen256.txt           f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426  OK
+prompts/q: 16 files, sha256 of the sorted list: ecc2e754ad157028…
+prompts/gsm: 100 gn*.txt, = SHA256SUMS: 100 OK; # RENDER_CHECK — gn1.txt (host jinja2 render of the official…
+  render check: API render (str): 471 B -> IDENTICAL;API render (content-parts mapping): 471 B -> IDENTICAL;
+
+## holds: legs and estimates (seconds; the plan's per-process figures, + REST_S 60 before each timing process)
+Pixel 8a, ticket t1b-qwen3-p8a-r3 (driver run_p8a.sh; leftovers -> t1b-qwen3-p8a-r3b): prep (kit 8 files + helpfull) ~130 s with the 4 bundle pushes;
+  g_gpu E2: dash (text gate) + proto A cold / B / C = 4 processes; g_gpu OWN: proto A / B / C + dash = 4  -> 1680 s
+  g_8q gpu E2: 8 questions -> 390 s; g_cpu E2 x 1 + g_cpu OWN x 1 -> 560 s; g_peak E2 + OWN (gpu + cpu each) -> 340 s
+  total ~ 3100 s = 51 min (hold budget: legs end by LEG_END_S 2520 s, kill at 2640 s)
+Galaxy S26 hold A, ticket t1b-qwen3-s26-r4a (run_s26_a.sh; chain -> r4b run_s26_b.sh -> r4c run_s26_c.sh): prep ~130 s;
+  g_gpu E2 (dash first) + g_gpu OWN (dash last): 8 processes -> 1280 s; 8Q gpu E2 -> 260 s; g_cpu E2 x 2 + OWN x 2 -> 960 s; peak -> 340 s
+  total ~ 2970 s = 49 min
+Galaxy S26 hold B, ticket t1b-qwen3-s26-r4b: prep + GSM8K E2g gpu 100 questions x 20 s (launch estimate ~8 s each) = 2000 s budgeted
+  then E2g cpu (45 s each) for the rest of the hold: ~8 questions by the plan's figure; the rest is carried
+Galaxy S26 hold C, ticket t1b-qwen3-s26-r4c: leftovers of A / B (question by question), then OWNg gpu 100 x 20 s, OWNg cpu as far as it fits;
+  anything left after C needs another ticket (keeper_s26.sh <ticket> 45 run_s26_c.sh): the GSM8K CPU groups alone are ~2 x 100 x 45 s = 150 min by the plan's figure
+
+## result: 12 OK, 2 MISMATCH

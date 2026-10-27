@@ -1,0 +1,123 @@
+{
+ "leg": "OWN_gpu_dash_1",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "t1b-qwen3-s26-0181",
+  "R": "EXIT=0 WALL=11 START=1792988727 END=1792988738",
+  "S0": "uptime=916660.63 epoch=1792988727 thermal=0 pol=policy0:3628800/3628800,policy6:4742400/4742400 kgsl=1300/0/39500 batt=79/363 memavail_kb=7525788 free_kb=113482532",
+  "S1": "uptime=916672.24 epoch=1792988738 thermal=0 pol=policy0:3187200/3628800,policy6:3398400/4742400 kgsl=1300/0/56200 batt=79/366 memavail_kb=7534300 free_kb=113482504",
+  "C0": "4875216 OWN.litertlm_1792988293_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792988293_344671744_mldrift_weight_cache.bin;",
+  "C1": "4875216 OWN.litertlm_1792988293_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792988293_344671744_mldrift_weight_cache.bin;",
+  "C2": "4875216 OWN.litertlm_1792988293_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792988293_344671744_mldrift_weight_cache.bin;",
+  "MT": "2026-10-26 13:18:13.286972825 +0900",
+  "ARGS": "--backend=gpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --input_prompt_file=/data/local/tmp/t1b0181_qwen3_06b/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+  "name": "OWN_gpu_dash_1",
+  "label": "OWN",
+  "backend": "gpu",
+  "kind": "dash",
+  "tag": "1",
+  "cache_mode": "keep",
+  "timeout_s": 600,
+  "exit": 0,
+  "wall_s": 11,
+  "host_wall_s": 11,
+  "host_start": 1792988727,
+  "host_end": 1792988738,
+  "ready_waited_s": 31,
+  "ready": true,
+  "rest_s": 60,
+  "hold_t0": 1792987908,
+  "cmd": "cd /data/local/tmp/t1b0181_qwen3_06b && LD_LIBRARY_PATH=/data/local/tmp/t1b0181_qwen3_06b timeout -k 10 600 ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --input_prompt_file=/data/local/tmp/t1b0181_qwen3_06b/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false"
+ },
+ "exit": 0,
+ "wall_s": 11,
+ "iterations": [
+  {
+   "init_executor_ms": 1739.62,
+   "init_tokenizer_ms": 279.21,
+   "init_total_ms": 1744.09,
+   "ttft_s": 0.72,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 1891.51,
+   "decode_tokens": 256,
+   "decode_tok_s": 64.33
+  },
+  {
+   "init_executor_ms": 1739.62,
+   "init_tokenizer_ms": 279.21,
+   "init_total_ms": 1744.09,
+   "ttft_s": 0.71,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 1921.79,
+   "decode_tokens": 256,
+   "decode_tok_s": 68.6
+  }
+ ],
+ "aggregated": {
+  "n": 2,
+  "init_executor_ms": 1739.62,
+  "init_tokenizer_ms": 279.21,
+  "init_total_ms": 1744.09,
+  "ttft_s": 0.72,
+  "prefill_tok_s": 1906.65,
+  "decode_tok_s": 66.46
+ },
+ "median_iters_2_on": {
+  "prefill_tok_s": 1921.79,
+  "decode_tok_s": 68.6,
+  "ttft_s": 0.71
+ },
+ "delegation": [
+  {
+   "n": 916,
+   "m": 916,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 916,
+   "m": 916,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 830,
+   "m": 830,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 916/916 CL; prefill_1024 916/916 CL; decode 830/830 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu": false,
+ "data_loss": 0,
+ "serialized_init": 3,
+ "context_from_serialized": 3,
+ "xnnpack_cache_loaded": 0,
+ "xnnpack_cache_lines": [],
+ "magic_numbers": [
+  [
+   "32771",
+   "2048"
+  ]
+ ],
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "error_lines": [],
+ "error_line_count": 0,
+ "helpfull_flags": null,
+ "text": "[thought] Okay, I need to list 25 distinct things that on-device AI can do that a cloud model can't. Each item should have two full sentences of explanation. Let me start by recalling what on-device AI does. On-device AI refers to AI models that run locally on the device without needing to connect to the cloud. So, the tasks should be things that the device can handle on its own, not requiring external resources.\n\nFirst, I'll think of common tasks that a device can perform. For example, image recognition, data processing, natural language processing, etc. Let me list some examples and explain them.\n\nFor the first item: On-device AI can perform image recognition, which allows the device to analyze images locally, which is a common feature in many AI applications. Then, another sentence could explain that this is about processing data locally.\n\nNext, the second item: On-device AI can process and analyze data in real-time, which is crucial for applications like surveillance or analytics. Then another sentence about the device's capabilities here.\n\nWait, I need to make sure each of the 25 items is distinct. Let me check the examples provided. The user provided 17 items, 25-17, so I need to create [/thought]\n[thought] Okay, let's tackle this. The user wants me to use the provided list of 25 entries, each a different part of the text, and then list 25 distinct things on-device AI can do that a cloud model can't. Each thing needs two sentences of explanation. I need to make sure I don't stop early.\n\nFirst, I'll start by understanding what each entry is. The entries are all the same structure: they start with a sentence, then some text, then another sentence, repeating. The user wants me to use these as context and then create 25 things on-device AI can do, each with two sentences.\n\nSo, the approach is to take each of these 25 entries, parse them, and then generate 25 distinct things. Wait, but the user says \"using the passage above as context,\" so maybe they are providing 25 entries, each as a sentence, and then I need to list 25 things using these. But the way it's written here is 25 entries, each as a sentence, and then I need to list 25 things. So I need to take the 25 entries and generate 25 things, each with two sentences.\n\nWait,[/thought]",
+ "text_garbage": null
+}

@@ -1,0 +1,133 @@
+{
+ "leg": "OWN_gpu_proto_B",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "t1b-qwen3-s26-0181",
+  "R": "EXIT=0 WALL=14 START=1792988493 END=1792988507",
+  "S0": "uptime=916426.59 epoch=1792988493 thermal=0 pol=policy0:3628800/3628800,policy6:4742400/4742400 kgsl=1300/0/39500 batt=79/363 memavail_kb=7455868 free_kb=113482552",
+  "S1": "uptime=916441.36 epoch=1792988507 thermal=0 pol=policy0:2745600/3628800,policy6:2668800/4742400 kgsl=1300/0/56600 batt=79/366 memavail_kb=7511496 free_kb=113482524",
+  "C0": "4875216 OWN.litertlm_1792988293_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792988293_344671744_mldrift_weight_cache.bin;",
+  "C1": "4875216 OWN.litertlm_1792988293_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792988293_344671744_mldrift_weight_cache.bin;",
+  "C2": "4875216 OWN.litertlm_1792988293_344671744_mldrift_program_cache.bin;296 OWN.litertlm_1792988293_344671744_mldrift_weight_cache.bin;",
+  "MT": "2026-10-26 13:18:13.286972825 +0900",
+  "ARGS": "--backend=gpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 --num_iterations=3",
+  "name": "OWN_gpu_proto_B",
+  "label": "OWN",
+  "backend": "gpu",
+  "kind": "proto",
+  "tag": "B",
+  "cache_mode": "keep",
+  "timeout_s": 300,
+  "exit": 0,
+  "wall_s": 14,
+  "host_wall_s": 14,
+  "host_start": 1792988493,
+  "host_end": 1792988507,
+  "ready_waited_s": 122,
+  "ready": true,
+  "rest_s": 60,
+  "hold_t0": 1792987908,
+  "cmd": "cd /data/local/tmp/t1b0181_qwen3_06b && LD_LIBRARY_PATH=/data/local/tmp/t1b0181_qwen3_06b timeout -k 10 300 ./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/t1b0181_qwen3_06b/OWN.litertlm --benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --max_num_tokens=2048 --num_iterations=3"
+ },
+ "exit": 0,
+ "wall_s": 14,
+ "iterations": [
+  {
+   "init_executor_ms": 1771.29,
+   "init_tokenizer_ms": 274.8,
+   "init_total_ms": 1772.0,
+   "ttft_s": 0.46,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 2317.08,
+   "decode_tokens": 256,
+   "decode_tok_s": 67.91
+  },
+  {
+   "init_executor_ms": 1771.29,
+   "init_tokenizer_ms": 274.8,
+   "init_total_ms": 1772.0,
+   "ttft_s": 0.45,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 2328.95,
+   "decode_tokens": 256,
+   "decode_tok_s": 72.3
+  },
+  {
+   "init_executor_ms": 1771.29,
+   "init_tokenizer_ms": 274.8,
+   "init_total_ms": 1772.0,
+   "ttft_s": 0.45,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 2340.58,
+   "decode_tokens": 256,
+   "decode_tok_s": 72.06
+  }
+ ],
+ "aggregated": {
+  "n": 3,
+  "init_executor_ms": 1771.29,
+  "init_tokenizer_ms": 274.8,
+  "init_total_ms": 1772.0,
+  "ttft_s": 0.45,
+  "prefill_tok_s": 2328.95,
+  "decode_tok_s": 72.06
+ },
+ "median_iters_2_on": {
+  "prefill_tok_s": 2334.76,
+  "decode_tok_s": 72.18,
+  "ttft_s": 0.45
+ },
+ "delegation": [
+  {
+   "n": 916,
+   "m": 916,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 916,
+   "m": 916,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 830,
+   "m": 830,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 916/916 CL; prefill_1024 916/916 CL; decode 830/830 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu": false,
+ "data_loss": 0,
+ "serialized_init": 3,
+ "context_from_serialized": 3,
+ "xnnpack_cache_loaded": 0,
+ "xnnpack_cache_lines": [],
+ "magic_numbers": [
+  [
+   "32771",
+   "2048"
+  ]
+ ],
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "error_lines": [],
+ "error_line_count": 0,
+ "helpfull_flags": null,
+ "text": "",
+ "text_garbage": null
+}

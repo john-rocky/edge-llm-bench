@@ -1,0 +1,101 @@
+diff -ru -x logs -x run -x test -x RESULTS.md -x preflight.txt -x MAC_SIDE_PASS /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/device/keeper.sh /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5fd5c28f-a2ae-4d9c-87af-c67a49843ed3/scratchpad/t1b0181/device/keeper.sh
+--- /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/device/keeper.sh	2026-10-14 17:56:31
++++ /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5fd5c28f-a2ae-4d9c-87af-c67a49843ed3/scratchpad/t1b0181/device/keeper.sh	2026-10-26 06:46:24
+@@ -24,7 +24,7 @@
+ echo $$ > "$RUN/$TICKET.keeper.pid"
+ klog "keeper pid $$ phone $PHONE serial $SERIAL ticket $TICKET minutes $MIN driver $DRIVER next [$NEXT_TICKET $NEXT_DRIVER] then [$CHAIN_REST]"
+ python3 "$CA/queue_cli.py" enqueue "$HOLD" "$TICKET" "$SUPERVISOR" "$MIN" >> "$KLOG" 2>&1
+-python3 "$CA/queue_cli.py" wait "$HOLD" "$TICKET" $$ --timeout 10800 >> "$KLOG" 2>&1
++python3 "$CA/queue_cli.py" wait "$HOLD" "$TICKET" $$ --timeout 43200 >> "$KLOG" 2>&1
+ WRC=$?
+ if [ $WRC -ne 0 ]; then
+   klog "queue_cli wait exit $WRC (3 = 3 h timeout, still queued)"
+diff -ru -x logs -x run -x test -x RESULTS.md -x preflight.txt -x MAC_SIDE_PASS /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/device/lane.env /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5fd5c28f-a2ae-4d9c-87af-c67a49843ed3/scratchpad/t1b0181/device/lane.env
+--- /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/device/lane.env	2026-10-14 18:40:15
++++ /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5fd5c28f-a2ae-4d9c-87af-c67a49843ed3/scratchpad/t1b0181/device/lane.env	2026-10-26 07:01:10
+@@ -3,29 +3,29 @@
+ # E2 / OWN / E2g / OWNg only, hold budget 45 min. No associative arrays: macOS /bin/bash is 3.2.
+ K3=/Users/USER/code/litertlm-convert/qwen3_gpuopt_work/reexport_20261013
+ K4=/Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014
+-DEV=$K4/device
++DEV=/private/tmp/claude-501/-Users-USER-code-edge-llm-bench/9bf995ce-fd7e-48f2-9f91-dc4da0cf1331/scratchpad/t1b0181/device
+ REPO=/Users/USER/code/litertlm-convert
+ CA=$REPO/community_accel_work
+ # the push set: litert_lm_advanced_main built at LiteRT-LM b7c40ea81 (android_arm64) + the 7 prebuilt android_arm64 .so of
+ # the same commit (kit/KIT.md, kit/main-b7c40ea81/SHA256SUMS)
+-KIT=$K4/kit/main-b7c40ea81
++KIT=/Users/USER/code/litertlm-convert/external_weights_work/r6_3986_verify_0181/kit/v0181-bda62485
+ DASH_PROMPT_SRC=/Users/USER/code/edge-llm-bench/prompts/text/long-context-1024-gen256.txt
+ DASH_PROMPT_SHA=f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426
+ JJ=$K3/metadata/chat_template.qwen3.4a363c07.jinja
+ 
+ # device side: this lane's own directory, removed by name at the end of every hold (cleanup_device kills only binaries
+ # whose command line names this directory: keep DDIR's last component unique to the lane)
+-DDIR=/data/local/tmp/t1b_qwen3_06b
++DDIR=/data/local/tmp/t1b0181_qwen3_06b
+ BIN=litert_lm_advanced_main
+ KIT_FILES="litert_lm_advanced_main libGemmaModelConstraintProvider.so libLiteRtGpuAccelerator.so libLiteRtOpenClAccelerator.so libLiteRtTopKOpenClSampler.so libLiteRtTopKWebGpuSampler.so libLiteRtWebGpuAccelerator.so libwebgpu_dawn.so"
+ # sha256 of KIT/litert_lm_advanced_main (android_arm64, built at b7c40ea81 in r2; = the line in KIT/SHA256SUMS)
+-ADV_SHA=ce1f25dc982413c08d4094898f4d34dd22032af3a776081ec3dc9c3d1ba15234
++ADV_SHA=ff136a28e0ffcb3245a225eb105bf7e53a3a420d43363592eb148f65c9733c41
+ 
+ SERIAL_S26=RFGL80R6A6H
+ SERIAL_P8A=4C131JEKB15210
+ HOLD_S26=$CA/s2_npu_sweep/.device_hold
+ HOLD_P8A=$CA/s2_npu_sweep/.device_hold.pixel8a
+-SUPERVISOR=litertlm-convert-4e
++SUPERVISOR=bench-weekly-1026
+ 
+ # hold budget (launch: each hold <= 45 min): legs start only when they end before LEG_END_S after the acquire; the keeper
+ # kills the driver at KILL_S and releases before 45 min
+@@ -37,14 +37,14 @@
+ 
+ # every group of a phone's whole plan: a keeper started with a next ticket starts it when any of these is not done
+ PLAN_P8A="helpfull gpu_timing_E2 gpu_timing_OWN q8_E2_gpu cpu_timing_E2 cpu_timing_OWN peak_E2 peak_OWN"
+-PLAN_S26="helpfull gpu_timing_E2 gpu_timing_OWN q8_E2_gpu cpu_timing_E2 cpu_timing_OWN peak_E2 peak_OWN gsm_E2g_gpu gsm_E2g_cpu gsm_OWNg_gpu gsm_OWNg_cpu"
++PLAN_S26="helpfull gpu_timing_E2 gpu_timing_OWN q8_E2_gpu cpu_timing_E2 cpu_timing_OWN peak_E2 peak_OWN"
+ 
+ # bundle label -> path / sha256 / bytes (E2: K3/r1/FILES.md + LANE §1 1; OWN: ref/SHA256SUMS = LANE §1 2; E2g / OWNg:
+ # greedy/GREEDY.md, metadata-only copies with `k: 20 -> 1` in sampler_params)
+ fpath() {
+   case $1 in
+     E2) echo "$K3/out/E2/model.litertlm" ;;
+-    OWN) echo "$K4/ref/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm" ;;
++    OWN) echo "/Users/USER/.cache/huggingface/hub/models--litert-community--Qwen3-0.6B/blobs/03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856" ;;
+     E2g) echo "$K4/greedy/E2g.litertlm" ;;
+     OWNg) echo "$K4/greedy/OWNg.litertlm" ;;
+     *) return 1 ;;
+diff -ru -x logs -x run -x test -x RESULTS.md -x preflight.txt -x MAC_SIDE_PASS /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/device/make_results.py /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5fd5c28f-a2ae-4d9c-87af-c67a49843ed3/scratchpad/t1b0181/device/make_results.py
+--- /Users/USER/code/litertlm-convert/qwen3_gpuopt_work/prevalidate_20261014/device/make_results.py	2026-10-14 18:52:50
++++ /private/tmp/claude-501/-Users-USER-code-edge-llm-bench/5fd5c28f-a2ae-4d9c-87af-c67a49843ed3/scratchpad/t1b0181/device/make_results.py	2026-10-27 12:57:39
+@@ -28,7 +28,7 @@
+ # T1b r3: the dashboard-prompt topic words of plan.sh ontopic() (the hold's own text gate), repeated here for the table
+ TOPIC = ["phone", "device", "offline", "privacy", "private", "data", "latency", "internet", "network", "battery", "cloud",
+          "local", "ai", "on-device", "connection", "server", "personal", "real-time", "camera", "sensor"]
+-KIT_SUMS = os.path.join(HERE, "..", "kit", "main-b7c40ea81", "SHA256SUMS")
++KIT_SUMS = "/Users/USER/code/litertlm-convert/external_weights_work/r6_3986_verify_0181/kit/v0181-bda62485/SHA256SUMS"
+ 
+ 
+ def kit_lines():
+@@ -214,16 +214,16 @@
+ 
+ 
+ def main():
+-    md = ["# T1b — device results (generated by `make_results.py` from `logs/<phone>/*.json`; do not edit by hand)", ""]
++    md = ["# T1b on LiteRT-LM v0.18.1 — Galaxy S26 column, re-run 2026-10-26 with a copy of T1b's device scripts (generated by `make_results.py` from `logs/<phone>/*.json`; do not edit by hand)", ""]
+     kl = kit_lines()
+     adv = next((s for s, n in kl if n == "litert_lm_advanced_main"), "?")
+-    md.append("Binary: LiteRT-LM main@b7c40ea81 Android kit `kit/main-b7c40ea81/litert_lm_advanced_main` (android_arm64, "
+-              f"built at b7c40ea8178b80919f7f5af79855c922a40bfaf7, `kit/KIT.md`) sha256 `{adv}` + the same commit's "
++    md.append("Binary: LiteRT-LM v0.18.1 Android kit `litertlm-convert/external_weights_work/r6_3986_verify_0181/kit/v0181-bda62485/litert_lm_advanced_main` (android_arm64, "
++              f"built at the tag v0.18.1 = bda624851d74be34d4e1f7fac1fc4155939539c7 with the WORKSPACE local fix, `kit/KIT.md` beside it) sha256 `{adv}` + the tag's "
+               "7 prebuilt android_arm64 `.so`: " + ", ".join(f"`{n}` {s[:16]}…" for s, n in kl if n != "litert_lm_advanced_main")
+-              + " (`kit/main-b7c40ea81/SHA256SUMS`; every push verified by sha256 on the phone, `run/*.driver.log`). "
++              + " (`v0181-bda62485/SHA256SUMS`; every push verified by sha256 on the phone, `run/*.driver.log`). "
+               "Protocol row = `--benchmark=true --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 "
+               "--max_num_tokens=2048 --num_iterations=3` (process A: cache files beside the bundle removed first; B / C: kept). "
+-              "Dashboard row = run_cell.py's flags with `long-context-1024-gen256.txt`, `--max_num_tokens=2048 "
++              "Dashboard row = run_cell.py's flags with T1b's copy of `long-context-1024-gen256.txt` (the text until 2026-10-19, before the repo's commit cc27f490; sha256 f64fb515…, as in T1b's main@b7c40ea81 column), `--max_num_tokens=2048 "
+               "--max_output_tokens=256 --num_iterations=2` (iteration 1 = the dashboard's cold headline, 2 = warm). "
+               "Medians = the binary's own `Aggregated BenchmarkInfo (median of N iterations)` when printed. "
+               "Phone at start = thermal status, CPU policies capped, kgsl max MHz / thermal pwrlevel / temp, ready-gate wait.")
