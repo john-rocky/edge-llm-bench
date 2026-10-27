@@ -1,0 +1,646 @@
+--------- beginning of main
+10-26 21:00:23.985 15087 15087 I native  : I0000 00:00:1793073623.985376   15087 litert_lm_lib.cc:728] Choose backend: gpu
+10-26 21:00:23.986 15087 15087 I native  : I0000 00:00:1793073623.986107   15087 litert_lm_lib.cc:967] executor_settings: backend: GPU
+10-26 21:00:23.986 15087 15087 I native  : backend_config:
+10-26 21:00:23.986 15087 15087 I native  : max_top_k: 64
+10-26 21:00:23.986 15087 15087 I native  : 
+10-26 21:00:23.986 15087 15087 I native  : max_tokens: 2048
+10-26 21:00:23.986 15087 15087 I native  : activation_data_type: Not set
+10-26 21:00:23.986 15087 15087 I native  : max_num_images: 0
+10-26 21:00:23.986 15087 15087 I native  : lora_rank: 0
+10-26 21:00:23.986 15087 15087 I native  : pad_token_id: -1
+10-26 21:00:23.986 15087 15087 I native  : cache_dir: 
+10-26 21:00:23.986 15087 15087 I native  : cache_file: Not set
+10-26 21:00:23.986 15087 15087 I native  : litert_dispatch_lib_dir: Not set
+10-26 21:00:23.986 15087 15087 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm
+10-26 21:00:23.986 15087 15087 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-26 21:00:23.986 15087 15087 I native  : 
+10-26 21:00:23.986 15087 15087 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-26 21:00:23.986 15087 15087 I native  : num_output_candidates: 1
+10-26 21:00:23.986 15087 15087 I native  : configure_magic_numbers: true
+10-26 21:00:23.986 15087 15087 I native  : verify_magic_numbers: false
+10-26 21:00:23.986 15087 15087 I native  : clear_kv_cache_before_prefill: true
+10-26 21:00:23.986 15087 15087 I native  : num_logits_to_print_after_decode: 0
+10-26 21:00:23.986 15087 15087 I native  : gpu_madvise_original_shared_tensors: true
+10-26 21:00:23.986 15087 15087 I native  : gpu_enable_metal_residency_set: false
+10-26 21:00:23.986 15087 15087 I native  : is_benchmark: true
+10-26 21:00:23.986 15087 15087 I native  : enable_profiling: false
+10-26 21:00:23.986 15087 15087 I native  : preferred_device_substr: 
+10-26 21:00:23.986 15087 15087 I native  : num_threads_to_upload: -1
+10-26 21:00:23.986 15087 15087 I native  : num_threads_to_compile: -1
+10-26 21:00:23.986 15087 15087 I native  : convert_weights_on_gpu: true
+10-26 21:00:23.986 15087 15087 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-26 21:00:23.986 15087 15087 I native  : optimize_shader_compilation: true
+10-26 21:00:23.986 15087 15087 I native  : cache_compiled_shaders_only: false
+10-26 21:00:23.986 15087 15087 I native  : share_constant_tensors: true
+10-26 21:00:23.986 15087 15087 I native  : sampler_handles_input: true
+10-26 21:00:23.986 15087 15087 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-26 21:00:23.986 15087 15087 I native  : hint_waiting_for_completion: Not set
+10-26 21:00:23.986 15087 15087 I native  : gpu_context_low_priority: Not set
+10-26 21:00:23.986 15087 15087 I native  : enable_speculative_decoding: false
+10-26 21:00:23.986 15087 15087 I native  : disable_delegate_clustering: false
+10-26 21:00:23.986 15087 15087 I native  : hint_kernel_batch_size: Not set
+10-26 21:00:23.986 15087 15087 I native  : error_on_invalid_sampled_token_id: false
+10-26 21:00:23.986 15087 15087 I native  : mtp_gating_config: Not set
+10-26 21:00:23.986 15087 15087 I native  : 
+10-26 21:00:23.986 15087 15087 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+10-26 21:00:23.986 15087 15087 I native  : 
+10-26 21:00:23.986 15087 15087 I native  : I0000 00:00:1793073623.986134   15087 litert_lm_lib.cc:974] vision_executor_settings: not set
+10-26 21:00:23.986 15087 15087 I native  : I0000 00:00:1793073623.986138   15087 litert_lm_lib.cc:980] audio_executor_settings: not set
+10-26 21:00:23.986 15087 15087 I native  : I0000 00:00:1793073623.986141   15087 litert_lm_lib.cc:1003] Creating engine
+10-26 21:00:23.988 15087 15087 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-26 21:00:23.988 15087 15087 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-26 21:00:23.988 15087 15087 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a7661b0c0, name=LiteRT GPU
+10-26 21:00:23.988 15087 15087 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+10-26 21:00:23.988 15087 15087 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a7661b600, name=CpuAccelerator
+10-26 21:00:23.988 15087 15087 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-26 21:00:23.988 15087 15088 W native  : W0000 00:00:1793073623.988782   15088 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-26 21:00:24.004  2173  2173 I CNSS    : /sys/wifi/max_chipset_log_size doesn't exist
+10-26 21:00:24.020 15087 15087 W native  : W0000 00:00:1793073624.020929   15087 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-26 21:00:24.020 15087 15087 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-26 21:00:24.021 15087 15087 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-26 21:00:24.021 15087 15087 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a76616c10, name=LiteRT GPU
+10-26 21:00:24.021 15087 15087 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+10-26 21:00:24.021 15087 15087 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a76616200, name=CpuAccelerator
+10-26 21:00:24.021 15087 15087 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-26 21:00:24.021 15087 15087 W native  : W0000 00:00:1793073624.021041   15087 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-26 21:00:24.021 15087 15087 I litert  : [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+10-26 21:00:24.022 15087 15087 I litert  : [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+10-26 21:00:24.022 15087 15087 I litert  : [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+10-26 21:00:24.023 15087 15087 I litert  : [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+10-26 21:00:24.023 15087 15087 I litert  : [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+10-26 21:00:24.023 15087 15087 I tflite  : Initialized TensorFlow Lite runtime.
+10-26 21:00:24.035 15087 15087 W libc    : Access denied finding property "ro.mediatek.platform"
+10-26 21:00:24.035 15087 15087 W libc    : Access denied finding property "ro.chipname"
+10-26 21:00:24.049  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:24.049  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:24.050 28257 21330 I NearbySharing: Network state changed: NetworkState(isRestricted=false, isOnline=true, isCongested=false, isMetered=false, isWifiConnected=true)
+--------- beginning of system
+10-26 21:00:24.062 28926 28954 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-26 21:00:24.062 15087 15087 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-26 21:00:24.063 15087 15087 I native  : I0000 00:00:1793073624.063135   15087 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+10-26 21:00:24.063 15087 15087 I native  : I0000 00:00:1793073624.063165   15087 delegate_opencl.cc:657] options->kernel_batch_size: 0
+10-26 21:00:24.065 11839 14554 D androidtc: Initializing SystemTextClassifier, type = System
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Local Branch                     : 
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Remote Branch                    : NONE
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-26 21:00:24.075 15087 15087 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-26 21:00:24.077 15087 15087 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-26 21:00:24.080 15087 15087 I SnapAlloc: Graphics lib is available
+10-26 21:00:24.081 15087 15087 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-26 21:00:24.082 15087 15087 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-26 21:00:24.082 15087 15087 I AdrenoUtils: <ReadGpuID:366>: Reading chip ID through GSL
+10-26 21:00:24.083 15087 15087 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-26 21:00:24.087 15087 15087 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-26 21:00:24.087 15087 15087 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+10-26 21:00:24.087 15087 15087 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+10-26 21:00:24.087 15087 15087 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-26 21:00:24.087 15087 15087 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-26 21:00:24.090 15087 15087 I tflite  : Replacing 2068 out of 2068 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+10-26 21:00:24.120  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-26 21:00:24.265  2324  2324 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-26 21:00:24.268  5635  8877 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:24.268  5635  8877 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-26 21:00:24.268  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:24.300  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:24.338  1845  1845 I SurfaceFlinger: SFWD update time=9592986128525
+10-26 21:00:24.339  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:24.339  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:24.410  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:24.468  4710  4710 D Bubbles : onEntryUpdated : shouldBubbleUp=false ,key=0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:24.468  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:24.468  4710  4710 D InsignificantCoordinator: onEntryUpdated :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:24.509  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:24.511  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:24.511  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:24.512  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:24.521  1035  1037 D io_stats: !@ cpu boost: status(ON), traffic_level(4), io_cpus(0xc0), boosted_cpus(0xc0), set_freq(2000000)
+10-26 21:00:24.547  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:24.547  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:24.549  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:24.590  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:24.618  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:24.630  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:24.630  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:24.701  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:24.935  1035  1037 D io_stats: !@ cpu boost: status(ON), traffic_level(2), io_cpus(0xf0), boosted_cpus(0xf0), set_freq(2000000)
+10-26 21:00:25.046  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:25.046  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:25.117  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:25.189  1035  1035 D io_stats: !@   8,0 r 242218 13658388 w 252098 16362624 d 23516 12569248 f 6331 23076 iot 213704 0 th 0 0 0 pt 0 inp 0 0 9593.836
+10-26 21:00:25.189  1035  1035 D io_stats: !@ Read_top(KB): litert_lm_advan(15087) 356920
+10-26 21:00:25.189  1035  1035 D io_stats: !@ Write_top(KB): ndroid.systemui(4710) 24
+10-26 21:00:25.221 28926 28954 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-26 21:00:25.223 11839 14554 D androidtc: Initializing SystemTextClassifier, type = System
+10-26 21:00:25.383  1695 16847 I WifiHAL : event received NL80211_CMD_VENDOR, vendor_id = 0x1374, subcmd = 0xb6
+10-26 21:00:25.383 16852 16852 I wpa_supplicant: nl80211: Vendor event: wiphy=0 vendor_id=0x1374 subcmd=182
+10-26 21:00:25.383  2548 16848 D LOWI-9.0.1.111: [LOWI-Scan] wait_event:Wait done with Cmd 103
+10-26 21:00:25.383  2548 16848 D LOWI-9.0.1.111: [LOWI-Scan] do_listen_events: Rcvd valid Netlink Cmd 0 Err 0
+10-26 21:00:25.383  2278  2278 I cnss-daemon: nl80211 response handler invoked
+10-26 21:00:25.384  2278  2278 I cnss-daemon: nl80211_response_handler: cmd 103, vendorID 4980, subcmd 182  received
+10-26 21:00:25.423  2324  2324 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-26 21:00:25.425  5635  8877 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:25.425  5635  8877 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-26 21:00:25.425  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:25.463  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:25.504  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:25.504  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:25.574  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:25.625  4710  4710 D Bubbles : onEntryUpdated : shouldBubbleUp=false ,key=0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:25.626  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:25.626  4710  4710 D InsignificantCoordinator: onEntryUpdated :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:25.629  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:25.630  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:25.631  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:25.631  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:25.670 15087 15087 I native  : I0000 00:00:1793073625.670189   15087 delegate_kernel.cc:360] Total 32 external tensors are used for delegate inputs and outputs
+10-26 21:00:25.670 15087 15087 I native  : I0000 00:00:1793073625.670279   15087 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-26 21:00:25.670  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:25.670  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:25.672  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:25.712  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:25.739 15087 15087 I native  : I0000 00:00:1793073625.739846   15087 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-26 21:00:25.741  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:25.753  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:25.753  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:25.791 15087 15087 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-26 21:00:25.798 15087 15087 I native  : I0000 00:00:1793073625.798142   15087 delegate_kernel.cc:360] Total 31 external tensors are used for delegate inputs and outputs
+10-26 21:00:25.798 15087 15087 I native  : I0000 00:00:1793073625.798179   15087 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-26 21:00:25.824  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:25.861 15087 15087 I native  : I0000 00:00:1793073625.861888   15087 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-26 21:00:25.884 15087 15087 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+10-26 21:00:25.891 15087 15087 I native  : I0000 00:00:1793073625.891428   15087 delegate_kernel.cc:360] Total 31 external tensors are used for delegate inputs and outputs
+10-26 21:00:25.891 15087 15087 I native  : I0000 00:00:1793073625.891461   15087 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-26 21:00:25.920 15087 15087 I native  : I0000 00:00:1793073625.920358   15087 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-26 21:00:25.923 15087 15087 I tflite  : Replacing 2243 out of 2243 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+10-26 21:00:25.939 15087 15087 I native  : I0000 00:00:1793073625.939939   15087 delegate_kernel.cc:360] Total 32 external tensors are used for delegate inputs and outputs
+10-26 21:00:25.939 15087 15087 I native  : I0000 00:00:1793073625.939973   15087 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-26 21:00:25.987 15087 15087 I native  : I0000 00:00:1793073625.987672   15087 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-26 21:00:26.001 15087 15087 W native  : W0000 00:00:1793073626.001148   15087 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+10-26 21:00:26.001 15087 15087 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-26 21:00:26.001 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+10-26 21:00:26.001 15087 15087 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-26 21:00:26.001 15087 15087 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-26 21:00:26.001 15087 15087 I litert  : [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+10-26 21:00:26.002 15087 15087 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-26 21:00:26.002 15087 15087 I tflite  : Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-26 21:00:26.002 15087 15087 I litert  : [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+10-26 21:00:26.002 15087 15087 I litert  : [compiled_model.cc:2092] Tracked constant output tensor eoa_embedding with locked address
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-26 21:00:26.002 15087 15087 I litert  : [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+10-26 21:00:26.002 15087 15087 I litert  : [compiled_model.cc:2092] Tracked constant output tensor eoi_embedding with locked address
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+10-26 21:00:26.002 15087 15087 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-26 21:00:26.003 15087 15087 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-26 21:00:26.003 15087 15087 I litert  : [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+10-26 21:00:26.043 15087 15087 I tflite  : Replacing 1 out of 42 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-26 21:00:26.044 15087 15087 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-26 21:00:26.044 15087 15087 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-26 21:00:26.044 15087 15087 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a766af710, name=LiteRT GPU
+10-26 21:00:26.044 15087 15087 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+10-26 21:00:26.044 15087 15087 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a766afd30, name=CpuAccelerator
+10-26 21:00:26.044 15087 15087 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-26 21:00:26.045  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:26.045  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:26.056 15087 15087 I native  : I0000 00:00:1793073626.056310   15087 litert_lm_lib.cc:1298] Creating conversation
+10-26 21:00:26.057 15087 15087 W native  : W0000 00:00:1793073626.057018   15087 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+10-26 21:00:26.057 15087 15087 I native  : I0000 00:00:1793073626.057055   15087 litert_lm_lib.cc:1310] Running single-turn conversation
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-26 21:00:26.081 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-26 21:00:26.082 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-26 21:00:26.115  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:26.327 28926 28954 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-26 21:00:26.328 11839 14554 D androidtc: Initializing SystemTextClassifier, type = System
+10-26 21:00:26.528  2324  2324 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-26 21:00:26.530  5635  8877 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:26.530  5635  8877 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-26 21:00:26.531  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:26.547  2324 16985 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 3139, isSameBssidAndFreq true
+10-26 21:00:26.547  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:26.547  2324  4539 I SemWifiLinkQualityMonitor: Link stat: 2938 / 1985 / 1.29 (207) / 229 / -57.0 || 100.0 : 229.00 / 0.5 : 0.77 / 0.55 : 0.68 / B (B) || 2df164a05700: 0.257 / 31.140 /  / N || N N / 0 / N 2.0 / N 0 / 9595194 0
+10-26 21:00:26.585  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:26.585  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:26.656  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:26.731  4710  4710 D Bubbles : onEntryUpdated : shouldBubbleUp=false ,key=0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:26.731  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:26.731  4710  4710 D InsignificantCoordinator: onEntryUpdated :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:26.753  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:26.754  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:26.754  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:26.755  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:26.793  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:26.793  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:26.795  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:26.836  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:26.854  1692 15354 I LocSvc_ApiV02: <--- globalEventCb line 359 QMI_LOC_EVENT_WIFI_REQ_IND_V02
+10-26 21:00:26.854  1692  1860 I GnssAidl: ===> odcpiRequestCb line 291 
+10-26 21:00:26.854  2324  4214 D GnssLocationProvider: requestLocation. independentFromGnss: true, isUserEmergency: false
+10-26 21:00:26.855  2324  4456 I GnssLocationProvider: GNSS HAL Requesting location updates from network provider for 10000 millis.
+10-26 21:00:26.855  2324  4456 D LocationManagerService: network provider added registration from 1000/android[GnssService]/256DD137 -> Request[@+1s0ms LOW_POWER, duration=+10s0ms, maxUpdates=1, WorkSource{1000 android}]
+10-26 21:00:26.855  2324  4456 V LocationManagerService: network provider package android permitted = true
+10-26 21:00:26.856  2324  4456 I NSLocationProviderHelper: updateRequestInfo, uid=1000
+10-26 21:00:26.856  5993  6036 I RequestManager_FLP: request from system, change packageName by tag from system to system(GnssService)
+10-26 21:00:26.856  5993  6036 E RequestManager_FLP: [LocationManager] Location request 256DD137(Listener) network interval=1000ms (min=166ms) from system(GnssService) (1000_FINE_unknown_false_foreground)
+10-26 21:00:26.864  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:26.877  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:26.877  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:26.948  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-26 21:00:27.085  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:27.085  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:27.110 28926 28954 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-26 21:00:27.112 11839 14554 D androidtc: Initializing SystemTextClassifier, type = System
+10-26 21:00:27.155  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:27.189  1035  1035 D io_stats: !@   8,0 r 242218 13658388 w 252111 16365028 d 23516 12569248 f 6331 23076 iot 213720 0 th 0 0 0 pt 0 inp 0 0 9595.836
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-26 21:00:27.216 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-26 21:00:27.217 15087 15087 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-26 21:00:27.312  2324  2324 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-26 21:00:27.314  5635  8877 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:27.314  5635  8877 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-26 21:00:27.314  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:27.336  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:27.376  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:27.376  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:27.408 15087 15087 I tflite  : Loaded OpenCL library with dlopen.
+10-26 21:00:27.446  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-26 21:00:27.514  4710  4710 D Bubbles : onEntryUpdated : shouldBubbleUp=false ,key=0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:27.514  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:27.514  4710  4710 D InsignificantCoordinator: onEntryUpdated :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:27.544  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:27.545  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:27.545  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:27.546  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:27.584  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:27.584  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:27.587  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:27.617  5276  5287 D PhoneInterfaceManager: setDataEnabledForReason() Reason=1 Pid=2324 App=system
+10-26 21:00:27.618  5276  5287 D PhoneInterfaceManager: setDataEnabledForReason() Reason=1 Pid=2324 App=system
+10-26 21:00:27.627  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:27.655  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:27.667  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:27.667  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:27.738  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:28.083  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:28.083  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:28.154  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:28.238 28926 28954 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-26 21:00:28.240 11839 14554 D androidtc: Initializing SystemTextClassifier, type = System
+10-26 21:00:28.440  2324  2324 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-26 21:00:28.443  5635  8877 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:28.443  5635  8877 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-26 21:00:28.444  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:28.460  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:28.499  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:28.499  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:28.553  4710  4710 D AiAgentEffect: onPrivacyItemsChanged privacyItems.size = 0
+10-26 21:00:28.553  4710  4710 D AiAgentEffect: onPrivacyItemsChanged privacyItems isEmpty or found item is null
+10-26 21:00:28.553  4710  4710 D AiAgentEffect: displayEffect animState = HIDING
+10-26 21:00:28.553  4710  4710 I HeaderPrivacyIconsController: keepShowingItem  PrivacyItem(privacyType=TYPE_LOCATION, application=PrivacyApplication(packageName=com.google.android.gms, uid=10272), timeStampElapsed=9583170, paused=false, timeStampRemoved=9597200)
+10-26 21:00:28.553  4710  4710 I HeaderPrivacyIconsController: update recentLocationPrivacyList  [PrivacyItem(privacyType=TYPE_LOCATION, application=PrivacyApplication(packageName=com.google.android.gms, uid=10272), timeStampElapsed=9583170, paused=false, timeStampRemoved=9597200)]
+10-26 21:00:28.564  1035  1037 D io_stats: !@ cpu boost: status(OFF), traffic_level(0), io_cpus(0x0), boosted_cpus(0x0), set_freq(0)
+10-26 21:00:28.570  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:28.585  4710  4710 W View    : requestLayout() improperly called by com.android.systemui.qs.SecQSGradationDrawableView{9bb28b9 V.E...... ......ID 0,0-1080,332 #7f0a0968 app:id/qs_gradation_view} during layout: running second layout pass
+10-26 21:00:28.585  4710  4710 W View    : requestLayout() improperly called by android.widget.FrameLayout{32ee4fe V.E...... ......ID 0,153-1080,2340 #7f0a0966 app:id/qs_frame} during layout: running second layout pass
+10-26 21:00:28.586  4710  4710 D AiAgentEffect: hiding isVisibleView = false, isStartAnimating = false, isAnimating = false, isShowRunning = null
+10-26 21:00:28.625  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:28.625  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:28.644  4710  4710 D Bubbles : onEntryUpdated : shouldBubbleUp=false ,key=0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:28.644  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:28.645  4710  4710 D InsignificantCoordinator: onEntryUpdated :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:28.667  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:28.669  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:28.669  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:28.670  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:28.695  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:28.707  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:28.707  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:28.710  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:28.751  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:28.778  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-26 21:00:28.791  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:28.791  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:28.862  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:29.082  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:29.082  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:29.152  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:29.189  1035  1035 D io_stats: !@   8,0 r 242218 13658388 w 252124 16365080 d 23516 12569248 f 6332 23079 iot 213740 0 th 0 0 0 pt 0 inp 0 0 9597.837
+10-26 21:00:29.189  1035  1035 D io_stats: !@ Write_top(KB): kworker/u17:0(14939) 2388 system_server(2324) 36 ndroid.systemui(4710) 32
+10-26 21:00:29.277 28926 28954 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-26 21:00:29.281 11839 14554 D androidtc: Initializing SystemTextClassifier, type = System
+10-26 21:00:29.481  2324  2324 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-26 21:00:29.485  5635  8877 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:29.485  5635  8877 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-26 21:00:29.485  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:29.501  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:29.540  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:29.540  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:29.556  2324 16985 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 3140, isSameBssidAndFreq true
+10-26 21:00:29.556  2324  4539 I SemWifiLinkQualityMonitor: Link stat: 2937 / 1951 / 1.26 (231) / 229 / -57.0 || 100.0 : 229.00 / 0.5 : 0.79 / 0.55 : 0.66 / B (B) || 2df164a05700: 0.249 / 32.077 /  / N || N N / 0 / N 2.0 / N 0 / 9598203 0
+10-26 21:00:29.611  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:29.686  4710  4710 D Bubbles : onEntryUpdated : shouldBubbleUp=false ,key=0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:29.687  4710  4710 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-26 21:00:29.687  4710  4710 D InsignificantCoordinator: onEntryUpdated :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:29.709  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:29.711  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:29.712  4710  5660 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-26 21:00:29.713  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:29.748  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:29.748  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:29.750  4710  4710 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-26 21:00:29.791  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:29.800  2324  4570 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-58, CE:2, PE:2, TI:7, PTI:7, TW:0, PTW:0, Tx:697, Rx:1380, TxS:696, RxS:1377, RESULT:true, IC:0, ICT:5, WC:0, WCT:5, R:0, RC:0, IE:0, EC:0
+10-26 21:00:29.818  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:29.831  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:29.831  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:29.902  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:30.081  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:30.081  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:30.120  2324  3485 I JobServiceContext: Client timed out while executing (no jobFinished received). Sending onStop: 84f56b7 #1000/9846998 com.samsung.android.app.omcagent/.rna.BunchInstallJob
+10-26 21:00:30.121 28926 28954 E OMC_AGENT: [q2.a(254/intercept)] Binary data read fail.
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: [q2.a(257/intercept)] java.io.InterruptedIOException
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at L4.x.j(Unknown Source:13)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at L4.w.read(Unknown Source:111)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at I4.c.read(Unknown Source:10)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at P4.e.read(SourceFile:10)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at java.io.InputStream.read(InputStream.java:218)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at q2.a.intercept(Unknown Source:144)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at J4.g.b(Unknown Source:148)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at J4.g.a(Unknown Source:4)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at F4.G.a(Unknown Source:92)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at retrofit2.OkHttpCall.execute(Unknown Source:73)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at retrofit2.DefaultCallAdapterFactory$ExecutorCallbackCall.execute(Unknown Source:2)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at com.samsung.android.app.omcagent.rna.network.retrofit.GalaxyAppsRestClient.downloadPkgResponseExtractor(Unknown Source:44)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at o4.d.c(Unknown Source:924)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at k2.b.doInBackground(Unknown Source:867)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at android.os.AsyncTask$3.call(AsyncTask.java:394)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at android.os.AsyncTask$SerialExecutor$1.run(AsyncTask.java:305)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	at java.lang.Thread.run(Thread.java:1012)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 	Suppressed: java.io.InterruptedIOException: interrupted
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.x.f(Unknown Source:44)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.a.o(Unknown Source:23)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.a.o(Unknown Source:127)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.p.flush(Unknown Source:16)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at L4.y.L(Unknown Source:29)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at L4.x.c(Unknown Source:13)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at L4.x.a(Unknown Source:36)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at L4.w.close(Unknown Source:34)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.j.close(Unknown Source:2)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at I4.c.close(Unknown Source:8)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.q.close(Unknown Source:10)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at P4.e.close(Unknown Source:9)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		at q2.a.intercept(Unknown Source:239)
+10-26 21:00:30.122 28926 28954 E OMC_AGENT: 		... 14 more
+10-26 21:00:30.123  2324  8123 W CountQuotaTracker: <0>com.samsung.android.app.omcagent::timeout-total has reached 80% of it's count limit of 10
+10-26 21:00:30.124 28926 28954 I OMC_AGENT: [k2.b(893/doInBackground)] state : g / com.samsung.android.nmt.apps.t2t.languagepack.enesus / 02f34df1-9502-43ed-9e9b-a77d6bfb1346 / 2
+10-26 21:00:30.124 28926 28954 I OMC_AGENT: [p2.a(18/h)] InstallerState: g com.samsung.android.nmt.apps.t2t.languagepack.enesus
+10-26 21:00:30.124 28926 28954 I OMC_AGENT: [u2.g(288/c)] ERROR CODE : 300 com.samsung.android.nmt.apps.t2t.languagepack.enesus
+10-26 21:00:30.125 28926 28954 I OMC_AGENT: [k2.b(893/doInBackground)] state : b / com.samsung.android.nmt.apps.t2t.languagepack.enesus / 02f34df1-9502-43ed-9e9b-a77d6bfb1346 / 2
+10-26 21:00:30.127 28926 28954 I OMC_AGENT: [g2.d(50/c)] NetworkCapabilities is validated
+10-26 21:00:30.127 28926 28954 I OMC_AGENT: [g2.d(39/g)] WiFi network is connected
+10-26 21:00:30.127 28926 28954 I OMC_AGENT: [k2.b(1029/doInBackground)] connected wifi, no need wait wifi notification
+10-26 21:00:30.127 28926 28954 I OMC_AGENT: [u2.h(5/s)] remove install notification just delete
+10-26 21:00:30.128  2324  2324 D EdgeLightingManager: isCallingUserSupported : callingUserId=0, mUserId=0, isDualAppId=false, isKnoxId=false
+10-26 21:00:30.128  2324  2324 D EdgeLightingManager: hideForNotification : packageName = com.samsung.android.app.omcagent
+10-26 21:00:30.128  2324  2324 D EdgeLightingPolicyManager:NotificationGroup: remove : sbn : StatusBarNotification(pkg=com.samsung.android.app.omcagent user=UserHandle{0} id=1290 tag=null key=0|com.samsung.android.app.omcagent|1290|null|1000: Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|CAN_COLORIZE color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0))
+10-26 21:00:30.128  2324  2324 D EdgeLightingPolicyManager.NotificationGroup: group notification count : 1
+10-26 21:00:30.128  2324  2324 D EdgeLightingManager: hideForNotification : isInteractive is true
+10-26 21:00:30.131  2324  2324 D NotificationReminder: removeFromNotificationList record com.samsung.android.app.omcagent
+10-26 21:00:30.131  4710  4710 D InsignificantCoordinator: onEntryRemoved :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-26 21:00:30.131  5635  8877 I HoneySpace.NotificationListener: onNotificationRemoved com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-26 21:00:30.131  5635  5635 I HoneySpace.NotificationListener: onNotificationRemoved sbn : StatusBarNotification(pkg=com.samsung.android.app.omcagent user=UserHandle{0} id=1290 tag=null key=0|com.samsung.android.app.omcagent|1290|null|1000: Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|CAN_COLORIZE color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)), reason : 8
+10-26 21:00:30.152  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-26 21:00:30.164  4710  4710 D PluginActionManager: stopListening
+10-26 21:00:30.165  4710  4710 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.samsung.android.app.omcagent/0x50a' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.samsung.android.app.omcagent id=0x7f080233) visible user=0 ) visibleState=ICON iconColor=#ff252528 staticDrawableColor=#ff87521c decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#ff252528 notification=StatusBarNotification(pkg=com.samsung.android.app.omcagent user=UserHandle{0} id=1290 tag=null key=0|com.samsung.android.app.omcagent|1290|null|1000: Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|CAN_COLORIZE color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24135 android.view.ViewGroup.addTransientView:5137 com.android.systemui.statusbar.phone.NotificationIconContainer.onViewRemoved:107 android.view.ViewGroup.dispatchViewRemoved:5398 
+10-26 21:00:30.166  4710  4710 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-26 21:00:30.206  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:30.206  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:30.277  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:30.383  2548 16848 D LOWI-9.0.1.111: [LOWI-Scan] wait_event:Wait done with Cmd 103
+10-26 21:00:30.383 16852 16852 I wpa_supplicant: nl80211: Vendor event: wiphy=0 vendor_id=0x1374 subcmd=182
+10-26 21:00:30.384  1695 16847 I WifiHAL : event received NL80211_CMD_VENDOR, vendor_id = 0x1374, subcmd = 0xb6
+10-26 21:00:30.384  2278  2278 I cnss-daemon: nl80211 response handler invoked
+10-26 21:00:30.384  2548 16848 D LOWI-9.0.1.111: [LOWI-Scan] do_listen_events: Rcvd valid Netlink Cmd 0 Err 0
+10-26 21:00:30.384  2278  2278 I cnss-daemon: nl80211_response_handler: cmd 103, vendorID 4980, subcmd 182  received
+10-26 21:00:30.547  1696  1696 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-26 21:00:30.547  1696  1696 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-26 21:00:30.547  1696  1696 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_rcv: 0
+10-26 21:00:30.547  1696  1704 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-26 21:00:30.547  1696  1704 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-26 21:00:30.547  1696  1704 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_spk: 0
+10-26 21:00:30.548  7083  7688 I SDHMS:x : SIOP:: AP:321 BAT:239 USB:242 CHG:347 PA:333 WIFI:282 CF:262 BLK:0 SUBBAT:0 LRPTHM:247 SKIN:281 SKINF:278 SKINB:281 LRP:281 LRF:278 LRB:281 APT:278 APR:279 RCV:262 SPK:247 CHGF:271 CHGR:279 MEMF:277 MEMR:281 WIFIF:274 WIFIR:277 FCAM:240 UPSPK:247 DNSPK:240 VAP:274 VWIFI:276 AMB2:209 HIGH:0 AVGCUR:0 AVGSYS:306 POWER:0
+10-26 21:00:30.548  7083  7688 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=25
+10-26 21:00:30.550  1758  4487 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=25
+10-26 21:00:30.550  1696  1704 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-26 21:00:30.550  1696  1704 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-26 21:00:30.550  1696  1704 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-26 21:00:30.550  1696  1704 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-26 21:00:30.550  1696  1704 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 25
+10-26 21:00:30.550  1696  1704 I PAL: API: pal_set_param: 1377: Enter: param id 3002
+10-26 21:00:30.550  1696  1704 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-26 21:00:30.550  1758  4487 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-26 21:00:30.551  1758  4487 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-26 21:00:30.551  7083  7688 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=26
+10-26 21:00:30.552  1758  4487 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=26
+10-26 21:00:30.552  1696  1704 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-26 21:00:30.552  1696  1704 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-26 21:00:30.552  1696  1704 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-26 21:00:30.552  1696  1704 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-26 21:00:30.552  1696  1704 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 26
+10-26 21:00:30.552  1696  1704 I PAL: API: pal_set_param: 1377: Enter: param id 3001
+10-26 21:00:30.552  1696  1704 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-26 21:00:30.552  1758  4487 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-26 21:00:30.553  1758  4487 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-26 21:00:30.825 16852 16852 I wpa_supplicant: Heartbeat 946
+10-26 21:00:31.037  1845  2778 I VSyncReactor: Current= 24, Period= 24, Distance= 0
+10-26 21:00:31.045  1693  4615 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):83,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-26 21:00:31.078  1845  2778 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-26 21:00:31.081  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:31.081  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:31.152  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:31.190  1035  1035 D io_stats: !@   8,0 r 242219 13658392 w 252138 16367580 d 23516 12569248 f 6332 23079 iot 213756 0 th 0 0 0 pt 0 inp 0 0 9599.837
+10-26 21:00:31.791  7083  7083 I SDHMS:LOAD: type: LoadsFreqs, value: 0:0:46:1910015:4473600:1017600:1544831:3532800:556800:906:1200:222
+10-26 21:00:32.033  1692 15354 I LocSvc_ApiV02: <--- globalEventCb line 359 QMI_LOC_EVENT_WIFI_REQ_IND_V02
+10-26 21:00:32.033  1692  1860 I GnssAidl: ===> odcpiRequestCb line 291 
+10-26 21:00:32.035  1845  5636 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-26 21:00:32.077  1845  5636 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-26 21:00:32.079  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:32.079  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:32.090  2324  4538 I SemWifiServiceDetector: NSD results: [0, 0, 2, 0, 0, 1, 2, 1, 0] Traff. type 1 Thr 0
+10-26 21:00:32.150  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-26 21:00:32.511  1724  1855 E BatteryDump: !@new_battery_dump : 4315,-554,1500,1500,100,240,242,365,240,0,279,365,0,Full,NO_CHARGING,Normal,Good,USB_CDP,2,Normal,0,0,5400,0x0,0x10000,0x0,0,0,1003,v0002,0000,0000,00000000,0,0,0,0,7,4367,9980,992,0,
+10-26 21:00:32.513  2324  8137 D BatteryService: [processValuesLocked]batteryLevel:100 ,LastbatteryLevel:100 ,mPlugType:2 ,batteryStatus:5
+10-26 21:00:32.513  1730  1730 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+10-26 21:00:32.513  2324  8137 D BatteryService: [countBatteryChangedConditions]mBatteryChangedConditionCounts:[2, 1, 1, 1, 1, 8, 8, 0, 0, 1, 3, 0, 0, 0, 0, 1, 3, 1, 0, 0, 0, 1]
+10-26 21:00:32.513  2324  8137 D BatteryService: Sending ACTION_BATTERY_CHANGED: level:100, status:5, health:2, remain:0, ac:false, usb:true, wireless:false, pogo:false, misc:0x10000, charge_type:1, charger_type:0, voltage:4315, temperature:240, online:5, charging_status:0, cycle_count:0, current_avg:-367968, ps:false, hvc:false, current_event:0x0, mcc:0, mcv:0, cc:4925000, present:true, scale:100, technology:Li-ion, protection:0
+10-26 21:00:32.513  1724  1724 I sehhealth-service: updateLrpSysfs: write: 281
+10-26 21:00:32.514  2324  8137 D [SS]BattUtils: [readNode]path:/efs/FactoryApp/bsoh ,value:100.00
+10-26 21:00:32.514  2324  2324 D BatteryService: Sending ACTION_SEC_BATTERY_EVENT: misc_event:0x10000, sec_plug_type:2, online:5, charge_type:1, ps:false, hvc:false, charger_type:0, pogo_plugged:0, current_event:0x0, wc_tx_id:0
+10-26 21:00:32.514  2324  4585 I DeviceBatteryInfoService: action: android.intent.action.BATTERY_CHANGED
+10-26 21:00:32.514  2324  4585 I DeviceBatteryInfoService: phone battery level: 100
+10-26 21:00:32.514  2324  4585 I DeviceBatteryInfoService: phone battery status: 5
+10-26 21:00:32.515  2324  4420 D MotionRecognitionService: [SAR]  onReceive : ACTION_BATTERY_CHANGED, Plugged: 2
+10-26 21:00:32.515  5321  5321 I NfcWirelessCharge: chargeMode: 2, isWirelessCharging: false
+10-26 21:00:32.515  5276  5276 D SemBigDataInfoController: Intent: android.intent.action.BATTERY_CHANGED
+10-26 21:00:32.516  5276  5276 D SemBigDataInfoController: Intent: android.intent.action.BATTERY_CHANGED
+10-26 21:00:32.516  4710  4710 I PowerUI : mBootCompleted = true |  mFullyConnected = true
+10-26 21:00:32.516  4710  4710 I PowerUI : BATTERY_HEALTH_CHECK / batteryHealth : 2 / wirelessOverheat : false
+10-26 21:00:32.516  4710  4710 W PowerUI : Skip charging animation - by Plug reason
+10-26 21:00:32.516  4710  4710 W PowerUI : Skip charging sound & vibrate - by Plug reason
+10-26 21:00:32.516  4710  4710 D PowerUI : oldMisalign : false, curMisalign : false
+10-26 21:00:32.516  2324  2324 D AdaptiveBrightnessLongtermModelBuilder: Received android.intent.action.BATTERY_CHANGED
+10-26 21:00:32.516  4710 22085 D PowerUI.Notification: updateNotification mWarning = false mPlaySound = false
+10-26 21:00:32.517  4710  4710 D SamsungBatteryMeterDrawable: onBatteryLevelChanged isSomethingChanged: false
+10-26 21:00:32.517  5993  6223 W EventReceiver_FLP: BroadcastReceiver, SEC_BATTERY_EVENT
+10-26 21:00:32.517  4710  4710 D SamsungBatteryMeterDrawable: onBatteryLevelChanged isSomethingChanged: false
+10-26 21:00:32.517  4710  4710 D SamsungBatteryMeterDrawable: onBatteryLevelChanged isSomethingChanged: false
+10-26 21:00:32.517  4710  4710 D KeyguardUpdateMonitor: handleBatteryUpdate
+10-26 21:00:32.517  5993  6223 I EventReceiver_FLP: BroadcastReceiver finished
+10-26 21:00:32.517  4710  4710 D KeyguardSecIndicationController: addTrustAgentHelp false
+10-26 21:00:32.517  2324  2324 I SAccessoryManager_SAccessoryManager: onReceive: com.samsung.server.BatteryService.action.SEC_BATTERY_EVENT, misc_event: 65536, plug event: 2
+10-26 21:00:32.517  2324  3562 D SemInputExternalReceiver: extraChargerBroadcastReceiver: com.samsung.server.BatteryService.action.SEC_BATTERY_EVENT
+10-26 21:00:32.518  2324  2324 D SAccessoryManager_SAccessoryManager: batteryChanged: 2
+10-26 21:00:32.518  2324  2324 D SAccessoryManager_CoverAuthenticator: plugType = 2
+10-26 21:00:32.518  2324  3562 D SemInputDevice:SPEN: setProperty: not support cmd "SPEN_SET_WIRELESS_CHARGER_TX_ID" at supportCommands
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy:  remove Item pos = DEFAULT, type =     TRUST_AGENT_HELP
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationController: addUsbRestriction false/isSecure=false
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy:  remove Item pos = DEFAULT, type =      USB_RESTRICTION
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationController: addBatteryAndOwnerInfoIndication() battery status = BatteryStatus{status=5,level=100,plugged=2,chargingStatus=0,maxChargingWattage=-1,remaining=0ultraFastCharger=0}
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy:  add T Event pos = DEFAULT, type =              BATTERY, id =    12, text = 100%
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy: Fully charged, duration = 3000
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy:   update top pos = DEFAULT, item = [id=11|ty=BATTERY_RESTING|pr=20|txt=100%
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy: Fully charged|ti=duration=PERSISTENT|an=false] -> [id=12|ty=BATTERY|pr=40|txt=100%
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy: Fully charged|ti=duration=3000|an=false]
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationController: onIndicationChanged() return - keyguard is not visible, pos = DEFAULT, item = [id=12|ty=BATTERY|pr=40|txt=100%
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationController: Fully charged|ti=duration=3000|an=false]
+10-26 21:00:32.518  2324  2324 I SAccessoryManager_SAccessoryManager: wpc auth  mode = 0
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy: update Event pos = DEFAULT, type =      BATTERY_RESTING, id =    13, text = 100%
+10-26 21:00:32.518  4710  4710 D KeyguardSecIndicationPolicy: Fully charged
+10-26 21:00:32.518  2324  2324 I BattAuthManager_WpcAuthenticator: onReceive: com.samsung.server.BatteryService.action.SEC_BATTERY_EVENT, misc_event: 65536, plug event: 2
+10-26 21:00:32.536  4710  4710 W View    : requestLayout() improperly called by com.android.systemui.qs.SecQSGradationDrawableView{9bb28b9 V.E...... ......ID 0,0-1080,332 #7f0a0968 app:id/qs_gradation_view} during layout: running second layout pass
+10-26 21:00:32.536  4710  4710 W View    : requestLayout() improperly called by android.widget.FrameLayout{32ee4fe V.E...... ......ID 0,153-1080,2340 #7f0a0966 app:id/qs_frame} during layout: running second layout pass
+10-26 21:00:32.537  4710  4710 D PowerUI : SUPPORT_WIRELESS_CHARGER_FOD_POPUP - oldWirelessFodState : false, mWirelessFodState : false
+10-26 21:00:32.538  4710  4710 D PowerUI : SUPPORT_WATER_PROTECTION_POPUP - oldBatteryWaterConnector : false, mBatteryWaterConnector : false, oldHiccupState : false, mIsHiccupState : false
+10-26 21:00:32.538  4710  4710 D PowerUI : USB damage detection - oldTemperatureHiccupState : false, mTemperatureHiccupState : false
+10-26 21:00:32.577  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:32.577  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:32.586  2324 16985 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 3141, isSameBssidAndFreq true
+10-26 21:00:32.587  2324  4539 I SemWifiLinkQualityMonitor: Link stat: 862 / 612 / 1.32 (49) / 229 / -59.0 || 100.0 : 229.00 / 0.5 : 0.76 / 0.55 : 0.71 / B (B) || 2df164a05700: 0.283 / 28.250 /  / N || N N / 0 / N 2.0 / N 0 / 9601234 0
+10-26 21:00:32.648  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:32.842 15087 15087 I native  : I0000 00:00:1793073632.842732   15087 litert_lm_lib.cc:461] BenchmarkInfo:
+10-26 21:00:32.842 15087 15087 I native  :   Init Phases (7):
+10-26 21:00:32.842 15087 15087 I native  :     - Init Conversation: 0.06 ms
+10-26 21:00:32.842 15087 15087 I native  :     - Init Executor: 2070.01 ms
+10-26 21:00:32.842 15087 15087 I native  :     - Init LLM metadata: 0.01 ms
+10-26 21:00:32.842 15087 15087 I native  :     - Init Model assets: 0.02 ms
+10-26 21:00:32.842 15087 15087 I native  :     - Init Tokenizer: 64.46 ms
+10-26 21:00:32.842 15087 15087 I native  :     - Init Total: 2070.15 ms
+10-26 21:00:32.842 15087 15087 I native  : --------------------------------------------------
+10-26 21:00:32.842 15087 15087 I native  :   Time to first token: 1.18 s
+10-26 21:00:32.842 15087 15087 I native  : --------------------------------------------------
+10-26 21:00:32.842 15087 15087 I native  :   Prefill Turns (Total 1 turns):
+10-26 21:00:32.842 15087 15087 I native  :     Prefill Turn 1: Processed 1024 tokens in 1.159126666s duration.
+10-26 21:00:32.842 15087 15087 I native  :       Prefill Speed: 883.42 tokens/sec.
+10-26 21:00:32.842 15087 15087 I native  : --------------------------------------------------
+10-26 21:00:32.843 15087 15087 I native  :   Decode Turns (Total 1 turns):
+10-26 21:00:32.843 15087 15087 I native  :     Decode Turn 1: Processed 256 tokens in 5.6258513s duration.
+10-26 21:00:32.843 15087 15087 I native  :       Decode Speed: 45.50 tokens/sec.
+10-26 21:00:32.843 15087 15087 I native  : --------------------------------------------------
+10-26 21:00:32.843 15087 15087 I native  :   TextToTokenIds Turns (Total 0 turns):
+10-26 21:00:32.843 15087 15087 I native  :     No text to token ids turns recorded.
+10-26 21:00:32.843 15087 15087 I native  : --------------------------------------------------
+10-26 21:00:33.002 15087 15087 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a76616200, name=CpuAccelerator
+10-26 21:00:33.002 15087 15087 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a76616c10, name=LiteRT GPU
+10-26 21:00:33.016  2324  8137 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:4
+10-26 21:00:33.016  2324  8137 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-26 21:00:33.017  2324  8137 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:1
+10-26 21:00:33.017  2324  8137 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-26 21:00:33.018  2324  8137 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:3
+10-26 21:00:33.018  2324  8137 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-26 21:00:33.038 15087 15087 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a766afd30, name=CpuAccelerator
+10-26 21:00:33.038 15087 15087 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a766af710, name=LiteRT GPU
+10-26 21:00:33.077  1715  1715 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-26 21:00:33.077  1715  1715 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-26 21:00:33.134  1693  4615 I sensors-hal: handle_sns_client_event:191, auto_rotation_debug_2 mode,255, type,1,0 acc,9.528,0.038,-1.641, ar,0, ver,12, pedo,1,e,0,i,3
+10-26 21:00:33.149  1715  2061 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-26 21:00:33.191  1035  1035 D io_stats: !@   8,0 r 242220 13658396 w 252147 16367632 d 23517 12569252 f 6333 23081 iot 213776 0 th 0 0 0 pt 0 inp 0 0 9601.838
+10-26 21:00:33.191  1035  1035 D io_stats: !@ Read_top(KB): kworker/u17:3(11213) 4 ndroid.systemui(4710) 4
+10-26 21:00:33.192  1035  1035 D io_stats: !@ Write_top(KB): kworker/u17:3(11213) 2492 jbd2/sda7-8(1016) 24 vendor.samsung.(1724) 16

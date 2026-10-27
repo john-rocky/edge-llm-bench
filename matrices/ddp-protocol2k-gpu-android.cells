@@ -1,0 +1,11 @@
+# 2026-10-27: the two GPU rows of matrices/ddp-protocol2k-head-android.cells (Qwen3 0.6B, Gemma 4 E2B) for LiteRT-LM
+# main builds other than android_pins' tag: `bench matrix <this file> --ddp <id> --engine-build <label>`
+# (android/scripts/build_litert_lm_main.sh with LITERTLM_REF=<commit>; LITERTLM_GPU_ACCELERATOR=prebuilt gives the
+# -pregpu label: the checkout's prebuilt libLiteRtGpuAccelerator.so instead of the GPU accelerator built from source).
+# Same protocol as that file: 1,024 forced prefill tokens, 256 decode, --max_num_tokens=2048, one benchmark per process
+# (the first launch on a unit builds the engine caches, every later launch loads with them), same files and cooldowns.
+# Pool: pa3q-35 (Galaxy S25 Ultra). No anchor rows.
+
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm native-benchmark-1024x256 backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
