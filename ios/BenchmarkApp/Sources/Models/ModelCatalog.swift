@@ -1289,12 +1289,14 @@ public enum ModelCatalog {
             primaryFile: "Qwen3.5-0.8B_int8.litertlm"
         ),
         ModelInfo(
-            id: "litert-community/Qwen3.5-0.8B/wi4b32_afp32_gpu_cpu",
-            displayName: "Qwen3.5 0.8B (.litertlm, dynamic wi4b32 GPU+CPU build)",
+            // Not on the Hub yet: a side-loaded own export (litert-torch, Qwen3.5 gated-delta composites
+            // with explicit valid_len), staged at ~/Documents/models/litert-lm/litert-local__Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu/.
+            id: "litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu",
+            displayName: "Qwen3.5 0.8B (.litertlm, own export: dynamic wi4b32 GPU+CPU build)",
             quantization: "INT4 (dynamic, block-32 weights, FP32 act; 8-bit embedding, GPU+CPU composites, cache 32768)",
             parameterCountB: 0.8,
             onDiskSizeMB: 418,
-            hfRepoId: "litert-community/Qwen3.5-0.8B",
+            hfRepoId: "litert-local/Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu",
             hfFilePatterns: ["Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm"],
             primaryFile: "Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm"
         ),

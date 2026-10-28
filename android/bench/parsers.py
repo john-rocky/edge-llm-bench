@@ -191,7 +191,7 @@ def text_integrity(value):
     """Automated screen; retained full text is also reviewed after the sitting."""
     words = re.findall(r"[A-Za-z]+", value.lower())
     alnum = sum(ch.isalnum() for ch in value)
-    terms = bool(re.search(r"on.device|phone|local|cloud|offline|privacy|\bai\b|lorem\s+ipsum", value, re.I))
+    terms = bool(re.search(r"on.device|phone|local|cloud|offline|privacy|\bai\b", value, re.I))
     lines = [line.strip() for line in value.splitlines() if line.strip()]
     repeats = max((lines.count(line) for line in set(lines)), default=0)
     flags = []

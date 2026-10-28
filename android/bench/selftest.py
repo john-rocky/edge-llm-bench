@@ -2171,6 +2171,37 @@ def main():
                  "file=x.litertlm context-tokens=2048\n")
     errors, _ = validate_cells.validate_file(path_v)
     ok(not errors, f"validate_cells: one cpu row with and one without ynnpack=1 are two cells (got {errors})")
+
+    # BENCH_EXTRA_PINS: another harness's registry adds build labels (a Google3 LiteRT-LM build
+    # stays out of this repo's file); it never overrides a label or touches android_pins
+    import run_cell as rc_pins
+    base_pins = rc_pins.load_pins()
+    extra_path = os.path.join(tmp, "extra-pins.json")
+    saved_extra = os.environ.get("BENCH_EXTRA_PINS")
+    try:
+        with open(extra_path, "w") as fh:
+            json.dump({"_doc": "x", "litert-lm": {"google3-test": {"litert_lm_main_sha256": "ab"}}}, fh)
+        os.environ["BENCH_EXTRA_PINS"] = extra_path
+        merged = rc_pins.load_pins()
+        ok(merged["litert-lm"].get("google3-test") == {"litert_lm_main_sha256": "ab"}
+           and merged["android_pins"] == base_pins["android_pins"]
+           and all(merged["litert-lm"][k] == v for k, v in base_pins["litert-lm"].items()),
+           "BENCH_EXTRA_PINS adds a label beside the registry's, which stay as they are")
+        for bad, want in (({"litert-lm": {next(iter(base_pins["litert-lm"])): {}}}, "already in"),
+                          ({"android_pins": {"litert-lm": "x"}}, "not an engine section")):
+            with open(extra_path, "w") as fh:
+                json.dump(bad, fh)
+            try:
+                rc_pins.load_pins()
+                got = "loaded"
+            except SystemExit as e:
+                got = str(e)
+            ok(want in got, f"BENCH_EXTRA_PINS refuses {list(bad)[0]} ({want}; got {got[:80]})")
+    finally:
+        if saved_extra is None:
+            os.environ.pop("BENCH_EXTRA_PINS", None)
+        else:
+            os.environ["BENCH_EXTRA_PINS"] = saved_extra
     for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "pass --backend npu and --engine-build together"),
                        (["--runtime", "litert-lm", "--backend", "gpu", "--ynnpack", "--engine-build", npu_tag],
                         "--ynnpack is a litert-lm --backend cpu row on a side build"),

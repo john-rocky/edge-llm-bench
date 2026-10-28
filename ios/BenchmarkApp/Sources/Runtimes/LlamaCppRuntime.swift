@@ -112,7 +112,6 @@ public actor LlamaCppRuntime: LLMRuntime {
         ctxParams.n_ubatch = 512
         ctxParams.n_threads = Int32(nThreads)
         ctxParams.n_threads_batch = Int32(nThreads)
-        ctxParams.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_ENABLED
 
         guard let c = llama_init_from_model(m, ctxParams) else {
             llama_model_free(m)

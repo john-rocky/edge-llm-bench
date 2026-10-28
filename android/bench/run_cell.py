@@ -241,7 +241,12 @@ EXECUTORCH_RSS_NOTE = {
 def load_pins(serial=None):
     """android/engine-pins.json. BENCH_TEST_PINS names a fixture registry instead, for the
     FAKESELF selftest only: a side build whose sha256 the device round registers is
-    witnessed in the selftest without an entry in the real registry."""
+    witnessed in the selftest without an entry in the real registry.
+
+    BENCH_EXTRA_PINS names a second registry (same layout) whose entries are added to the
+    engine sections: builds another harness makes and registers itself (a Google3 build of
+    LiteRT-LM, which cannot be rebuilt outside Google, stays out of this repo's file). It may
+    only add labels: one already in the registry, or an android_pins / top-level key, refuses."""
     p = os.environ.get("BENCH_TEST_PINS")
     if p and serial != "FAKESELF":
         raise SystemExit("BENCH_TEST_PINS is only for the FAKESELF selftest fixture")
@@ -249,7 +254,24 @@ def load_pins(serial=None):
     if not os.path.exists(p):
         return {}
     with open(p) as fh:
-        return json.load(fh)
+        pins = json.load(fh)
+    extra = os.environ.get("BENCH_EXTRA_PINS")
+    if extra:
+        with open(extra) as fh:
+            more = json.load(fh)
+        for section, entries in more.items():
+            if section.startswith("_"):
+                continue
+            if section == "android_pins" or not isinstance(entries, dict) \
+                    or not isinstance(pins.get(section, {}), dict):
+                raise SystemExit(f"BENCH_EXTRA_PINS {extra}: {section!r} is not an engine section "
+                                 "(the extra registry only adds build labels)")
+            for label, entry in entries.items():
+                if label in pins.get(section, {}):
+                    raise SystemExit(f"BENCH_EXTRA_PINS {extra}: {section} {label!r} is already in "
+                                     f"{p} (the extra registry only adds labels)")
+                pins.setdefault(section, {})[label] = entry
+    return pins
 
 
 # the launched tool -> (engine, the pins field of its sha256); any other tool is a llama.cpp one
