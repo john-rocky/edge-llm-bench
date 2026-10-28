@@ -193,7 +193,9 @@ devices and their per-device conditions are `devices` in the same file.
    renderer reads it); its time is its last record's. So a hand-run first
    pass counts, a refused sitting does not, an anchor probe alone does not,
    and a timed-out sitting whose anchor was admitted does (its captured
-   cells stand, §5).
+   cells stand, §5). A device whose set is in parts (the Mac since
+   2026-10-28, "The Mac set in two parts" below) is pending while one of its
+   parts has no such session.
 2. **Available now.** Attached (adb state `device`; `devicectl` lists the
    iPhone as available), no sibling-lane hold with a live pid (the same files
    preflight checks), and per device: the Mac only while no capture and no
@@ -316,7 +318,9 @@ rows, "ONNX Runtime GenAI arm in the weekly set"). `schedule.json` carries them 
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×
 its longest half times three, because the job gives each half an equal share
 of the timeout; an extra file's session (below) runs under its own
-`timeout_hours` instead (S26: ONNX Runtime 1, NPU / GPU 4).
+`timeout_hours` instead (S26: ONNX Runtime 1, NPU / GPU 4). The Mac's 3.8 was the whole set
+as one sitting; since 2026-10-28 the set is two sittings, part b 3.1 and part a 2.5, each under
+the 5 h timeout ("The Mac set in two parts", below).
 
 Hold-file names differ between the sibling lanes (S26 `s2_npu_sweep/.device_hold`,
 iPhone `community_accel_work/.iphone_hold` and `.device_hold.iphone`, Pixel 8a
@@ -455,6 +459,54 @@ a file whose build is missing gets no session and no rotation, the rest of the s
 the verdict stays the sitting's, and the ledger reason names the file. A `--cells` retake of
 such a file alone is not ready (exit 5) before the hold is taken.
 
+### The Mac set in two parts (2026-10-28)
+
+The Mac's weekly set outgrew one sitting. Since 2026-10-19 it is 61 Mac cells (the four MLX
+Gemma 4 PTQ rows joined that day), 31 of them with a 300 s cooldown before them. On 2026-10-28 the
+02:00 firing took the window at 02:47, and `gtimeout` cut the payload after 300 min at 58 of the 61
+cells (24 gate re-runs, 159.5 min of cooldowns): no session admitted, so `auto` takes the Mac again
+the next night. The whole set had taken 232 and 224 min on 2026-10-19 (57 cells, 12 and 10 gate
+re-runs), and the 2026-10-16 sitting was cut the same way (44 cells, 27 re-runs). A sitting of 4 to
+5.5 h against a 5 h timeout fails on a noisy night, and it holds the Mac's window from the lanes
+into the morning.
+
+So the m4max entry of `schedule.json` carries `parts`, one sitting each, in this order:
+`matrices/dashboard-text-v1-mac-b.cells` (Qwen3 4B and Gemma 4 E4B on every arm, then the ONNX
+Runtime GenAI Qwen3 4B rows) and `matrices/dashboard-text-v1-mac-a.cells` (Qwen3 0.6B, Qwen3 1.7B
+and Gemma 4 E2B on every arm, then the ONNX Runtime GenAI Qwen3 0.6B and 1.7B rows). They are the
+parent file's Mac rows, byte for byte and in its order, and each starts with the session anchor
+row, as every Android half does (§4 re-judges each payload on its own anchor records);
+`scripts/dashboard_job_selftest.py` fails when a Mac row of the parent is in no part
+(`parts_problem`). A part is an ordinary sitting: preflight, the window, the anchor phase and
+admission, the payload, SESSION.json, the ledger line and the post. The campaign base names the
+part, `<date>-dashboard-v1-m4max-<tag>` (anchor phase `<base>-anchor-mac`, payload `<base>-mac`,
+`-r2` on an abort retry), and the payload's SESSION.json names the part's file in `cells` and its
+tag in `part`. No number is pooled across the two sessions: each is admitted on its own anchor.
+
+The week: a part is done when a session whose SESSION.json names its file was admitted since
+Monday; a session of any other file (the whole set, a `--cells` sitting, a hand run without
+SESSION.json) covers every part, as it covers a device without parts. The Mac is pending while a
+part is, and its line in the `auto` report names the pending parts. A sitting, chosen by `auto` or
+run by key, takes the first pending part in the list's order; when every part is done (a sitting
+by hand) the part whose newest session is the oldest; `python3 scripts/dashboard_job.py m4max
+--part <tag>` names one. `./bench dashboard-job m4max --dry-run` prints the part and why.
+
+Part b goes first because part a holds the session anchor's model. Both parts measure the anchor
+row (MLX Qwen3 0.6B short-chat), and the page shows a cell's newest admitted session, so with part
+a last in the week the anchor cell comes from the session of that model's other arms. Every other
+model has all its arms in one part: no cross-arm comparison spans the two sessions, except the
+anchor cell between the week's two sittings, when it shows part b's number.
+
+Lengths, from the 2026-10-28 m4max log: each cell's span that night (its start to the start of the
+next cell's cooldown; the last started cell, ONNX Runtime GenAI Qwen3 4B CPU short-chat, to the
+timeout, an upper bound), the three cells the night did not reach from the 2026-10-19 02:00 log,
+each cell's own cooldown before it in the part's order (none before a part's first row), and that
+night's preflight (1.3 min) and anchor phase (7.1 min, two gate re-runs). Part b: 186.7 min (3.1 h;
+115 min of it cooldowns); part a: 149.8 min (2.5 h; 54.5 min of cooldowns). `expected_hours` is 3.1
+and 2.5 per part and 3.1 for the device; `timeout_hours` stays 5, per sitting, 1.6 × the longer
+part. The gate re-runs a cell once at most: with a re-run on every cell, part b would take about
+4.1 h.
+
 ## 4. Session admission
 
 A sitting is admitted or refused on its **primary anchor** — the platform's
@@ -582,7 +634,7 @@ it), and `model.sha256` is the sha checked on the phone
 | artifact | path | committed? |
 |---|---|---|
 | raw records, console logs, gate quarantine | `results/raw/<campaign>/` (unchanged layout) | yes: by the post step when every dir of the sitting passes the session checker, else by a person |
-| session record | `results/raw/<campaign>/SESSION.json` (`schema: dashboard-job-session.v1`: device, cells, times, `admitted`, `verdict`, `reason`, anchor medians + engine build + reference (same build) + `reference_any_version` + ratio, runner exit, failures / flagged / skipped lines, cells expected vs with records) | yes, with the campaign |
+| session record | `results/raw/<campaign>/SESSION.json` (`schema: dashboard-job-session.v1`: device, cells, times, `admitted`, `verdict`, `reason`, anchor medians + engine build + reference (same build) + `reference_any_version` + ratio, runner exit, failures / flagged / skipped lines, cells expected vs with records, `part` on a device whose set is in parts) | yes, with the campaign |
 | accumulation layer, leaderboard | `results/summary/*.csv` (regenerated by `bench matrix`), `LEADERBOARD.md` (local) | csv yes; leaderboard no |
 | dashboard table | `DASHBOARD.md` + `.dashboard/dashboard-v1.{csv,json}` (`./bench dashboard`) | **no** — cross-runtime standings stay local; paste into the team channel |
 | job log + ledger | `logs/dashboard-job/<date>-auto.log` (the firing's device choice), `<date>-<device>.log` (the sitting, and the post step's output), `logs/dashboard-job/ledger.tsv`, `logs/dashboard-job/autopilot-ledger.tsv` (one line per post) | no |

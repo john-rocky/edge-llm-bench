@@ -1029,6 +1029,7 @@ def main():
     ok(counts == [(1, 1), (2, 1), (2, 1)],
        f"cells_with_records: the exclude-on=pixel8a row is not expected on pixel8a, expected elsewhere: {counts}")
 
+    parts_cases(tmp, dj)
     hold_estimate_cases(tmp, dj)
 
     if _fails:
@@ -1209,6 +1210,144 @@ def hold_estimate_cases(tmp, dj):
         dj.pgrep = real_pgrep
     ok(code == dj.EXIT_OK and line.endswith("[dry-run]") and "anchor ~" in line and "set ~" in line and "npu ~" in line,
        f"a dry-run sitting logs what its hold would read, every run counted: {line.strip()[:160]}")
+
+
+def parts_cases(tmp, dj):
+    """A device whose weekly set is in parts (schedule.json "parts": the Mac since 2026-10-28, design §3
+    "The Mac set in two parts"): the week is done when every part has an admitted session this week, and
+    a session of another cells file (the whole set, a hand run) covers every part; a sitting runs the
+    first part pending in the week's order, under the campaign base <date>-dashboard-v1-<key>-<tag>;
+    schedule.json's parts hold the set's rows, the session anchor row first in each."""
+    print("--- a weekly set in parts: one part per sitting, the week done when every part is")
+    with open(dj.SCHEDULE) as fh:
+        real = json.load(fh)
+    try:
+        dj.check_parts(real)
+        bad = None
+    except ValueError as e:
+        bad = str(e)
+    problems = {k: dj.parts_problem(real, d) for k, d in real["devices"].items() if dj.device_parts(d)}
+    ok(bad is None and all(v is None for v in problems.values()),
+       f"schedule.json: the parts can run, and each device's parts hold its rows of {real['cells']}, each "
+       f"once, the session anchor row first in every part ({bad or problems})")
+
+    pdir = os.path.join(tmp, "cells-parts")
+    os.makedirs(pdir)
+
+    def cells(name, *rows):
+        path = os.path.join(pdir, name)
+        with open(path, "w") as fh:
+            fh.write("\n".join(rows) + "\n")
+        return path
+    anchor = "mac x m/A short-chat anchor=1 runs=3"
+    whole = cells("set.cells", "# a comment", anchor, "mac x m/B short-chat", "ios x m/B short-chat",
+                  "mac x m/C short-chat cooldown=300", "mac x m/D short-chat cooldown=300 exclude=why")
+    pb = cells("set-mac-b.cells", anchor, "# 4B", "mac x m/C short-chat cooldown=300",
+               "mac x m/D short-chat cooldown=300 exclude=why")
+    pa = cells("set-mac-a.cells", anchor, "mac x m/B short-chat")
+    sched = {"anchors": "matrices/anchors.cells", "cells": whole}
+    dev = {"platform": "mac", "display": "Fake M", "identifier": "FakeM", "timeout_hours": 5,
+           "expected_hours": 2.9, "parts": [{"tag": "b", "cells": pb, "expected_hours": 2.9},
+                                            {"tag": "a", "cells": pa, "expected_hours": 2.6}]}
+    ok(dj.parts_problem(sched, dev) is None, "two parts that hold the set's mac rows, the anchor row first in each")
+    off = {
+        "a row in no part": dict(dev, parts=[dev["parts"][0], {"tag": "a", "cells": cells("p1.cells", anchor)}]),
+        "no anchor row first": dict(dev, parts=[dev["parts"][0], {"tag": "a", "cells": cells(
+            "p2.cells", "mac x m/B short-chat", anchor)}]),
+        "out of the set's order": dict(dev, parts=[{"tag": "b", "cells": cells(
+            "p3.cells", anchor, "mac x m/D short-chat cooldown=300 exclude=why", "mac x m/C short-chat cooldown=300")},
+            dev["parts"][1]]),
+        "a row in two parts": dict(dev, parts=[dev["parts"][0], {"tag": "a", "cells": cells(
+            "p4.cells", anchor, "mac x m/B short-chat", "mac x m/C short-chat cooldown=300")}]),
+    }
+    said = {what: dj.parts_problem(sched, d) for what, d in off.items()}
+    ok("in no part: 'mac x m/B short-chat'" in (said["a row in no part"] or "")
+       and "not the set's session anchor row" in (said["no anchor row first"] or "")
+       and "out of its order" in (said["out of the set's order"] or "")
+       and "1 in two parts" in (said["a row in two parts"] or ""),
+       f"parts that do not hold the set: each named ({said})")
+    refused = []
+    for what, d in {"tag anchor": dict(dev, parts=[{"tag": "anchor", "cells": pa}]),
+                    "a tag twice": dict(dev, parts=[{"tag": "a", "cells": pa}, {"tag": "a", "cells": pb}]),
+                    "no cells file": dict(dev, parts=[{"tag": "a"}]),
+                    "with split": dict(dev, split=[{"cells": pa}])}.items():
+        try:
+            dj.check_parts({"devices": {"m": d}})
+        except ValueError:
+            refused.append(what)
+    ok(refused == ["tag anchor", "a tag twice", "no cells file", "with split"],
+       f"check_parts refuses a reserved tag, a tag twice, a part without a file, parts with split ({refused})")
+
+    now = datetime.datetime.now().astimezone().replace(hour=2, minute=0, second=0, microsecond=0)
+
+    def row(camp, **ago):
+        t = (now - datetime.timedelta(**ago)).astimezone(datetime.timezone.utc)
+        return {"campaign": f"results/raw/{camp}", "platform": dj.CSV_PLATFORM["mac"],
+                "timestamp": t.strftime("%Y-%m-%dT%H:%M:%SZ"), "device": "FakeM"}
+    old = row("d10-dashboard-v1-m-mac", days=10)
+    b_now, a_now = row("now-dashboard-v1-m-b-mac", minutes=30), row("now-dashboard-v1-m-a-mac", minutes=20)
+    whole_now, hand_now = row("now-dashboard-v1-m-mac", minutes=30), row("now-dashboard-v1-m-byhand-mac", minutes=30)
+    names = {b_now["campaign"]: pb, a_now["campaign"]: pa, whole_now["campaign"]: whole,
+             old["campaign"]: whole}
+    real_guard = dj.mac_guard
+    dj.mac_guard = lambda: None   # the host's processes are not this test's business
+    try:
+        def state(rows, admitted=None):
+            key, _, rep = dj.resolve_device({"devices": {"m": dev}}, "auto", now=now, rows=rows,
+                                            admitted=admitted or {}, retakes={}, skip=set(), session_cells=names)
+            return key, rep[0]
+        seen = [state([old]), state([old, b_now]), state([old, b_now, a_now]), state([old, whole_now]),
+                state([old, hand_now]), state([old, b_now], admitted={b_now["campaign"]: False})]
+    finally:
+        dj.mac_guard = real_guard
+    ok(seen[0][0] == "m" and seen[0][1]["detail"].endswith("; parts b, a pending this week"),
+       f"no part this week: a candidate, both parts pending ({seen[0][1]['detail']})")
+    ok(seen[1][0] == "m" and seen[1][1]["detail"].endswith("; part a pending this week"),
+       f"part b admitted this week: still a candidate for part a ({seen[1][1]['detail']})")
+    ok([s[1]["state"] for s in seen[2:5]] == ["done", "done", "done"],
+       "every part admitted this week, or the whole set, or a hand run (no SESSION.json): done "
+       f"({[s[1]['detail'] for s in seen[2:5]]})")
+    ok(seen[5][0] == "m" and seen[5][1]["detail"].endswith("; parts b, a pending this week"),
+       f"part b's sitting refused (admitted false): both parts still pending ({seen[5][1]['detail']})")
+
+    def pick(rows, **kw):
+        args = argparse.Namespace(**dict({"cells": None, "part": None}, **kw))
+        part, why = dj.sitting_part(sched, "m", dev, args, now=now, rows=rows, admitted={}, skip=set(),
+                                    session_cells=names)
+        return (part or {}).get("tag"), why
+    picks = [pick([old]), pick([old, b_now]), pick([old, b_now, a_now]), pick([old], part="a"),
+             pick([old], cells="x.cells")]
+    try:
+        pick([old], part="zz")
+        unknown = None
+    except dj.ConfigError as e:
+        unknown = str(e)
+    ok([p[0] for p in picks] == ["b", "a", "b", "a", None] and "b admitted " in picks[1][1]
+       and unknown and "the parts of m are b, a" in unknown,
+       f"the sitting's part: the first pending in the week's order (b, then a), every part done: the one "
+       f"whose newest session is oldest (b), --part names one, --cells none, an unknown --part refused "
+       f"({picks}; {unknown})")
+
+    # a dry-run sitting of part a: its own campaign base, the part's file under the device's timeout
+    dj.HOLD_KEEPER = None   # an earlier case's --hold-held-by stays in the module
+    real = (dj.load_rows, dj.load_admission, dj.load_session_cells, dj.PREFLIGHT["mac"])
+    got = []
+    dj.load_rows, dj.load_admission = (lambda path=None: [old, b_now]), (lambda: {})
+    dj.load_session_cells = lambda: names
+    dj.PREFLIGHT["mac"] = lambda d, dry, files: got.append(files) or {}
+    buf = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            code, _, last, dirs = dj.attempt(sched, "m", dev, 1, argparse.Namespace(suffix=None, dry_run=True,
+                                                                                     cells=None, part=None))
+    finally:
+        dj.load_rows, dj.load_admission, dj.load_session_cells, dj.PREFLIGHT["mac"] = real
+    text, base = buf.getvalue(), f"{datetime.date.today().isoformat()}-dashboard-v1-m-a"
+    ok(code == dj.EXIT_OK and got == [[pa]] and dirs == [f"results/raw/{base}-anchor-mac", f"results/raw/{base}-mac"]
+       and f"gtimeout --kill-after=60 18000 {dj.ROOT}/bench matrix {pa} --platform mac --campaign {base} " in text
+       and f"part a of the week's parts b/a: {pa}, expected 2.6 h" in text and "WARN" not in text,
+       f"a dry-run sitting with part b done this week: part a, campaign base {base}, its file alone under the "
+       f"5 h timeout (exit {code}, {dirs})")
 
 
 if __name__ == "__main__":

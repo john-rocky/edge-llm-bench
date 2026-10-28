@@ -1,0 +1,63 @@
+# Mac part a of the weekly set, matrices/dashboard-text-v1.cells: Qwen3 0.6B, Qwen3 1.7B and Gemma 4 E2B on every
+# arm, then the ONNX Runtime GenAI rows of Qwen3 0.6B and 1.7B. The SAME cells, split in two for the night job: the
+# whole Mac set (61 cells) outgrew one sitting's 5-hour timeout (2026-10-28: cut after 300 min at 58 of 61 cells,
+# 24 gate re-runs), so the job measures the Mac's week as two sittings on two firings, part b first
+# (ops/dashboard-v1/schedule.json m4max "parts"; docs/dashboard-recurring-job-v1.md §3, "The Mac set in two parts").
+# Each part starts with the session anchor row, as every Android half does, and each sitting has its own anchor
+# phase and admission: no number is pooled across the two sessions. Rows are byte-identical to the parent file and
+# in its order; every arm of a model is in one part, so a model's cross-arm comparison stays in one session. The
+# anchor row aside: part b measures it too, and runs first in the week, so that the page's Qwen3 0.6B MLX
+# short-chat number comes from this part's session, with the model's other arms. A Mac row added to the parent goes
+# into its model's part at the same place (scripts/dashboard_job_selftest.py holds the parts to the parent).
+#   ./bench matrix matrices/dashboard-text-v1-mac-a.cells --platform mac
+
+# --- Qwen3-0.6B ---
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+mac core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8
+mac mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
+mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 context-tokens=2048
+mac llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+mac executorch own-export/Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-0.6B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
+
+# --- Qwen3-1.7B ---
+mac mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
+mac litert-lm litert-community/Qwen3-1.7B short-chat
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+mac core-ai core-ai/qwen3-1.7b-gpu short-chat
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8
+mac mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
+mac litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
+mac llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048
+mac executorch own-export/Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3-1.7B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048
+
+# --- Gemma 4 E2B ---
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat cooldown=300
+mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit short-chat cooldown=300
+mac mlx-swift mlx-community/gemma-4-e2b-it-4bit short-chat cooldown=300
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M short-chat cooldown=300
+mac core-ai core-ai/gemma4-e2b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 exclude=gemma4-exporter-has-no-mlx-path
+mac litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac mlx-swift mlx-community/gemma-4-e2b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300
+mac mlx-swift mlx-community/gemma-4-e2b-it-4bit long-context-1024-gen256 cooldown=300
+mac llama.cpp unsloth/gemma-4-E2B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=gemma-4-E2B-it-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-xnnpack-8da4w-g128-emb8 cooldown=300 context-tokens=2048 exclude=gemma4-runner-has-no-warm-regime
+mac executorch own-export/gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=gemma-4-E2B-it-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-gemma4-mlx-4w-g128-emb8 context-tokens=2048 exclude=gemma4-exporter-has-no-mlx-path
+
+# --- ONNX Runtime GenAI, Qwen3 0.6B and 1.7B (the Qwen3 4B rows are in part b) ---
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+mac onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=webgpu file=onnxruntime/webgpu/webgpu-int4-kld-block-32 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048

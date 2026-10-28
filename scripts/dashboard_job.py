@@ -16,8 +16,14 @@ is never chosen (by hand only: `./bench dashboard-job <key>`). A candidate whose
 preflight says busy or not ready is passed over for the next one; when every
 pending device is busy the firing polls per "retry" and chooses again. Each
 device is measured once a week; a firing with nothing pending exits 0 and leaves
-no ledger line. The sitting itself does only what a careful operator did by hand
-for the first pass, in this order:
+no ledger line. A device whose weekly set is in parts (schedule.json "parts": the
+Mac since 2026-10-28, whose whole set outgrew one sitting's timeout) takes one
+firing per part: a sitting runs one part, the first in the week's order with no
+admitted session since Monday, and the week is done when every part has one (a
+session whose SESSION.json names another cells file — the whole set, a --cells
+file, a hand run — covers every part, as it covers a device without parts);
+--part TAG runs a given part by hand. The sitting itself does only what a careful
+operator did by hand for the first pass, in this order:
 
   preflight   device attached / unlocked / not held by a sibling lane / no foreign
               engine process / storage floor / host runner idle / the side builds the
@@ -31,7 +37,8 @@ for the first pass, in this order:
               device that ran the same engine build (none: first session on that
               build): short / collapse / thermal rules (schedule.json "admission")
   phase B     ./bench matrix <dashboard cells>        -> <campaign>   (or one run per
-              storage half, rotating pushed model copies out between halves)
+              storage half, rotating pushed model copies out between halves; or the
+              sitting's part, <campaign> = <date>-dashboard-v1-<device>-<part tag>)
   close       SESSION.json in every campaign dir it created, a ledger line under
               logs/dashboard-job/, DASHBOARD.md re-rendered, hold released
 
@@ -687,6 +694,83 @@ def preflight_mac(dev, dry, cells_files=()):
 PREFLIGHT = {"android": preflight_android, "iphone": preflight_iphone, "mac": preflight_mac}
 
 
+# a part's tag names its campaigns (<date>-dashboard-v1-<key>-<tag>-<plat>): these would read as an anchor
+# probe, a retake, a stopped sitting's quarantine or a lab unit's dir to the job and the session checker
+PART_TAG_RE = re.compile(r"^[a-z][a-z0-9]{0,7}$")
+PART_TAG_RESERVED = ("anchor", "retake", "stopped", "ddp")
+
+
+def device_parts(dev):
+    """The device's weekly set in parts, one part per sitting, in the week's order (schedule.json
+    "parts": [{"tag", "cells", "expected_hours"}]), or [] for the whole set in one sitting."""
+    return list(dev.get("parts") or [])
+
+
+def check_parts(schedule):
+    """ValueError when a device's "parts" cannot run: each part needs a tag (PART_TAG_RE, not one of
+    PART_TAG_RESERVED, unique: it names the campaigns) and a cells file, and a part is the sitting's
+    one payload file, so no storage halves (split) or extra files (extra_cells) beside parts."""
+    for key, dev in (schedule.get("devices") or {}).items():
+        parts = device_parts(dev)
+        if not parts:
+            continue
+        tags = [p.get("tag") if isinstance(p, dict) else None for p in parts]
+        bad = [t for t, p in zip(tags, parts) if not isinstance(p, dict) or not p.get("cells")
+               or not PART_TAG_RE.match(t or "") or t in PART_TAG_RESERVED]
+        if bad or len(set(tags)) != len(tags):
+            raise ValueError(f"devices.{key}.parts: every part needs a cells file and a unique tag of "
+                             f"{PART_TAG_RE.pattern}, not {'/'.join(PART_TAG_RESERVED)} (got {tags})")
+        if dev.get("split") or dev.get("extra_cells"):
+            raise ValueError(f"devices.{key}: parts with split or extra_cells (a part is the sitting's one "
+                             "payload file)")
+
+
+def part_budget(dev, part):
+    """A sitting's expected length in seconds for the hold's release estimate: the part's
+    expected_hours, else the device's; None when neither is set."""
+    return float((part or {}).get("expected_hours") or dev.get("expected_hours") or 0) * 3600 or None
+
+
+def parts_problem(schedule, dev):
+    """None when the device's parts hold its platform's rows of the weekly set (schedule.json "cells"),
+    else what is off. Each part's first row of the platform is the set's session anchor row (anchor=1:
+    each part is a session of its own, re-judged on its own anchor records, §4), each part's other rows
+    are rows of the set in the set's order, and together they are the set's rows but that anchor, each
+    once. Rows compare as written, comments and blank lines aside. A row added to the set and to no part
+    would never run in the weekly job: scripts/dashboard_job_selftest.py holds schedule.json to this."""
+    token = PLATFORM_TOKEN[dev["platform"]]
+
+    def rows(path):
+        with open(os.path.join(ROOT, path), encoding="utf-8") as fh:
+            lines = [ln.split("#", 1)[0].strip() for ln in fh]
+        return [ln for ln in lines if ln.split(" ", 1)[0] == token]
+    try:
+        whole = rows(schedule["cells"])
+        anchor = next(r for r in whole if "anchor=1" in r.split())
+        bodies = []
+        for p in device_parts(dev):
+            own = rows(p["cells"])
+            if not own or own[0] != anchor:
+                return (f"part {p['tag']} ({p['cells']}): its first {token} row is not the set's session "
+                        "anchor row")
+            rest = iter(whole)
+            if not all(r in rest for r in own[1:]):
+                return (f"part {p['tag']} ({p['cells']}): a {token} row that is not in {schedule['cells']}, "
+                        "or out of its order")
+            bodies += own[1:]
+    except (OSError, StopIteration, KeyError) as e:
+        return f"parts unreadable: {type(e).__name__}: {e}"
+    want = [r for r in whole if r != anchor]
+    if sorted(bodies) == sorted(want):
+        return None
+    missing = [r for r in want if r not in bodies]
+    twice = len(bodies) - len(set(bodies))
+    return (f"the parts hold {len(bodies)} {token} rows besides the anchor, the set {len(want)}"
+            + (f"; in no part: {missing[0]!r}" + (f" and {len(missing) - 1} more" if len(missing) > 1 else "")
+               if missing else "")
+            + (f"; {twice} in two parts" if twice else ""))
+
+
 def phase_b_files(schedule, dev, cells_override):
     """The cells files phase B may run: an explicit --cells file alone (a targeted retake), or
     the whole set and the device's storage halves (the free space decides which) followed by
@@ -710,10 +794,12 @@ def phase_b_halves(dev, args, info):
 
 def phase_b_plan(schedule, dev, args, halves):
     """(the payload files with their storage floors in order, the extra files' entries by file):
-    the halves or the whole set (an explicit --cells file alone), then the device's extra_cells
-    files (an arm measured on this device only), none for --cells."""
+    the halves or the whole set (an explicit --cells file alone; the sitting's part, args.part_entry,
+    on a device whose set is in parts), then the device's extra_cells files (an arm measured on this
+    device only), none for --cells."""
+    part = getattr(args, "part_entry", None)
     plan = ([(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
-            if halves else [(args.cells or schedule["cells"], 0.0)])
+            if halves else [(args.cells or (part["cells"] if part else schedule["cells"]), 0.0)])
     extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])}
     return plan, extras
 
@@ -738,8 +824,11 @@ def sitting_runs(schedule, dev, args, info):
             continue
         if halves or cells_file in extras:
             tag = run_tag(cells_file, extras)
+        elif args.cells:
+            tag = os.path.basename(cells_file).replace(".cells", "")
         else:
-            tag = os.path.basename(cells_file).replace(".cells", "") if args.cells else "set"
+            part = getattr(args, "part_entry", None)
+            tag = part["tag"] if part else "set"
         runs.append(("matrix", cells_file, tag))
         if getattr(args, "profile", False) and dev["platform"] == "android":
             runs.append(("profile", cells_file, "profile"))
@@ -757,16 +846,19 @@ def release_estimate(schedule, key, dev, args, info, hold, dry):
         now = datetime.datetime.now()
         lengths = hold_eta.history(LOG_DIR, key)
         token = PLATFORM_TOKEN[dev["platform"]]
-        # the device's expected_hours is the weekly set's: a --cells sitting (a retake) is not shared it
-        budget = float(dev.get("expected_hours") or 0) * 3600 or None
+        # the device's expected_hours is the weekly set's (a part's, on a device whose set is in parts):
+        # a --cells sitting (a retake) is not shared it
+        budget = part_budget(dev, getattr(args, "part_entry", None))
         stages = hold_eta.plan_stages(sitting_runs(schedule, dev, args, info), dev, key, lengths,
                                       platform_token=token, budget_s=None if args.cells else budget)
         sitting = hold_eta.Sitting(stages, lengths)
         then = None
         if getattr(args, "weekly_follows", False):
             wargs = argparse.Namespace(**dict(vars(args), cells=None, profile=False))
+            wargs.part_entry = sitting_part(schedule, key, dev, wargs)[0]
             weekly = hold_eta.Sitting(hold_eta.plan_stages(sitting_runs(schedule, dev, wargs, info), dev, key,
-                                                           lengths, platform_token=token, budget_s=budget), lengths)
+                                                           lengths, platform_token=token,
+                                                           budget_s=part_budget(dev, wargs.part_entry)), lengths)
             weta, _ = weekly.estimate(now)
             then = (f"then the weekly set as its own sitting (a new hold), "
                     f"~{hold_eta.fmt_span((weta - now).total_seconds())}")
@@ -1346,13 +1438,23 @@ def attempt(schedule, key, dev, attempt_no, args):
     platform = dev["platform"]
     date = datetime.date.today().isoformat()
     suffix = ("-" + args.suffix.strip("-")) if args.suffix else ""   # always one leading dash
-    base = (f"{date}-dashboard-v1-{key}" + suffix
+    # a device whose weekly set is in parts runs one part per sitting, named in its campaigns
+    part, part_why = sitting_part(schedule, key, dev, args)
+    args = argparse.Namespace(**dict(vars(args), part_entry=part))
+    base = (f"{date}-dashboard-v1-{key}" + (f"-{part['tag']}" if part else "") + suffix
             + (f"-r{attempt_no}" if attempt_no > 1 else ""))
     env = device_env(dev)
     dry = args.dry_run
     started = time.strftime("%F %T")
     log(f"=== slot {key} ({dev['display']}, {platform}) attempt {attempt_no} campaign base {base}"
         + (" [dry-run]" if dry else ""))
+    if part:
+        log(f"part {part['tag']} of the week's parts {'/'.join(p['tag'] for p in device_parts(dev))}: "
+            f"{part['cells']}, expected {part.get('expected_hours', '?')} h ({part_why})")
+        problem = parts_problem(schedule, dev)
+        if problem:
+            log(f"WARN the parts and {schedule['cells']} differ, the weekly job misses what no part holds: "
+                f"{problem}")
 
     if HOLD_KEEPER is not None:
         # judged before the preflight, in a dry run too: the preflight's hold check reads
@@ -1361,7 +1463,8 @@ def attempt(schedule, key, dev, attempt_no, args):
         if problem:
             raise ConfigError(f"--hold-held-by {HOLD_KEEPER}: {problem}")
         log(f"--hold-held-by {HOLD_KEEPER}: the keeper holds {expand(dev.get('hold'))}")
-    info = PREFLIGHT[platform](dev, dry, phase_b_files(schedule, dev, args.cells))  # raises Busy / NotReady
+    files = phase_b_files(schedule, dev, args.cells or (part["cells"] if part else None))
+    info = PREFLIGHT[platform](dev, dry, files)  # raises Busy / NotReady
     log("preflight ok")
     if dry:
         log("plan:")
@@ -1522,6 +1625,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                                      "anchor_phase": anchor_rel, "runner_exit": rc,
                                      "cells_expected": expected, "cells_with_records": have,
                                      **({"device_lost": lost} if lost else {}),
+                                     **({"part": part["tag"]} if part else {}),
                                      **({"retake": args.retake} if getattr(args, "retake", None) else {}),
                                      **({"profile": {"exit": prof_rc, "dir": f"{rel_path}/profiles"}}
                                         if prof_rc is not None else {}),
@@ -1993,6 +2097,75 @@ def device_sessions(schedule, rows, admitted, skip=()):
     return out
 
 
+def load_session_cells():
+    """campaign (results/raw/<name>) -> the cells file its SESSION.json names (the job's sittings; a
+    hand run has no SESSION.json)."""
+    out = {}
+    for f in glob.glob(os.path.join(ROOT, "results", "raw", "*", "SESSION.json")):
+        try:
+            with open(f) as fh:
+                cells = json.load(fh).get("cells")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if cells:
+            out[os.path.relpath(os.path.dirname(f), ROOT)] = cells
+    return out
+
+
+def part_sessions(parts, sessions, session_cells):
+    """part tag -> [(ended, campaign)], newest first, of a device's admitted weekly sessions
+    (device_sessions) that cover the part: a session whose SESSION.json names a part's cells file
+    covers that part; any other (the whole set, a --cells file, a hand run) covers every part, as it
+    covers a device without parts."""
+    by_file = {p["cells"]: p["tag"] for p in parts}
+    out = {p["tag"]: [] for p in parts}
+    for t, camp in sessions:
+        tag = by_file.get(session_cells.get(camp))
+        for p in parts:
+            if tag in (None, p["tag"]):
+                out[p["tag"]].append((t, camp))
+    return out
+
+
+def parts_pending(parts, covered, monday):
+    """The tags of the parts with no admitted session since `monday` (part_sessions), in the week's order."""
+    return [p["tag"] for p in parts if not (covered[p["tag"]] and covered[p["tag"]][0][0] >= monday)]
+
+
+def sitting_part(schedule, key, dev, args, now=None, rows=None, admitted=None, skip=None,
+                 session_cells=None):
+    """(the part of the device's weekly set this sitting runs, why), or (None, "") for a device without
+    parts and for an explicit --cells file (single-file mode: a retake, a slot file). --part names it;
+    else the first part, in the week's order, with no admitted session since Monday; else (every part
+    done this week: a sitting by hand) the part whose newest admitted session is the oldest."""
+    parts = device_parts(dev)
+    if not parts or args.cells:
+        return None, ""
+    want = getattr(args, "part", None)
+    if want:
+        part = next((p for p in parts if p["tag"] == want), None)
+        if part is None:
+            raise ConfigError(f"--part {want}: the parts of {key} are {', '.join(p['tag'] for p in parts)}")
+        return part, "named by --part"
+    now = now or datetime.datetime.now().astimezone()
+    rows = load_rows() if rows is None else rows
+    admitted = load_admission() if admitted is None else admitted
+    skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
+    session_cells = load_session_cells() if session_cells is None else session_cells
+    covered = part_sessions(parts, device_sessions({"devices": {key: dev}}, rows, admitted, skip)[key],
+                            session_cells)
+    pending = parts_pending(parts, covered, week_start(now))
+    if pending:
+        done = [f"{p['tag']} admitted {covered[p['tag']][0][0]:%F %H:%M}" for p in parts
+                if p["tag"] not in pending]
+        return (next(p for p in parts if p["tag"] == pending[0]),
+                f"the first part pending this week (pending: {', '.join(pending)}"
+                + (f"; {', '.join(done)}" if done else "") + ")")
+    part = min(parts, key=lambda p: covered[p["tag"]][0][0])
+    return part, (f"every part admitted this week; the one whose newest session is the oldest "
+                  f"({covered[part['tag']][0][0]:%F %H:%M})")
+
+
 def newest_record(rows, dev):
     """When this device last produced a record in any campaign (its idle
     clock). Use by a sibling lane that leaves no record here is invisible
@@ -2023,11 +2196,13 @@ def outside_window(dev, now):
 
 
 def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=None, retakes=None,
-                   skip=None):
+                   skip=None, session_cells=None):
     """(key, dev, report). An explicit key resolves as given (report []).
 
     `auto`: the device to measure at this firing — among the devices with no
-    admitted dashboard session since Monday 00:00 local, the attached, unheld
+    admitted dashboard session since Monday 00:00 local (a device whose set is in
+    parts: while a part has none, part_sessions; `session_cells`, default the
+    SESSION.json files, names each session's cells file), the attached, unheld
     ones (the iPhone only inside its auto_window after auto_idle_hours without a
     record; the Mac only while no heavy pipeline runs), ordered by the age of
     their last admitted session, oldest first (never measured = oldest; ties
@@ -2054,6 +2229,8 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     exclude = exclude or {}
     retakes = regression_watch.pending_counts(LOG_DIR, root=ROOT) if retakes is None else retakes
     skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
+    if session_cells is None:
+        session_cells = (load_session_cells() if any(device_parts(d) for d in devices.values()) else {})
     sessions = device_sessions(schedule, rows, admitted, skip)
     monday = week_start(now)
     report, ranked = [], []
@@ -2072,7 +2249,16 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
             continue
         pending = retakes.get(k, 0)
         retake_text = f"{pending} retake{'s' if pending != 1 else ''} pending"
-        if last and last[0] >= monday:
+        parts = device_parts(dev)
+        if parts:
+            # a weekly set in parts is done when every part has an admitted session this week
+            todo = parts_pending(parts, part_sessions(parts, sessions[k], session_cells), monday)
+            week_done = not todo
+            if todo:
+                entry["detail"] += f"; part{'s' if len(todo) > 1 else ''} {', '.join(todo)} pending this week"
+        else:
+            week_done = bool(last and last[0] >= monday)
+        if week_done:
             if not pending:
                 entry.update(state="done", detail=f"admitted {last[0]:%F %H:%M} {last[1]}")
                 continue
@@ -2212,6 +2398,10 @@ def main():
     ap.add_argument("--cells", help="override the cells file (single-file mode)")
     ap.add_argument("--suffix", help="campaign-name suffix (e.g. -retake) so a second run on the "
                                      "same day does not land in that day's campaign dir")
+    ap.add_argument("--part", metavar="TAG",
+                    help="on a device whose weekly set is in parts (schedule.json \"parts\"): run this "
+                         "part (default: the first part with no admitted session this week). Not with "
+                         "auto or --cells")
     ap.add_argument("--dry-run", action="store_true",
                     help="preflight and print the plan; take no hold, capture nothing")
     ap.add_argument("--once", action="store_true",
@@ -2238,13 +2428,20 @@ def main():
     try:
         schedule = json.load(open(args.schedule))
         register_devices(schedule)
+        check_parts(schedule)
     except (OSError, ValueError) as e:
         print(f"schedule unreadable: {e}", file=sys.stderr)
         return EXIT_CONFIG
     auto = args.device == "auto"
+    if args.part is not None and (auto or args.cells):
+        ap.error("--part names a part of one device's weekly set: not with auto or --cells")
     key, dev, _ = resolve_device(schedule, args.device)
     if not auto and dev.get("platform") == "ddp" and HOLD_KEEPER is not None:
         ap.error("--hold-held-by: a lab unit (platform ddp) has no hold")
+    tags = [p["tag"] for p in device_parts(dev)] if not auto else []
+    if args.part is not None and args.part not in tags:
+        ap.error(f"--part {args.part}: the weekly set of {key} has "
+                 + (f"the parts {', '.join(tags)}" if tags else "no parts"))
     if not args.dry_run and not auto:
         other = device_lock(key)
         if other:

@@ -3,7 +3,7 @@
   "cells": "matrices/dashboard-text-v1.cells",
   "anchors": "matrices/anchors.cells",
   "stale_days": 10,
-  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week; a firing with nothing pending exits 0. A Developer Device Platform lab unit (platform ddp) is not the firing's device: no device on this host, so its weekly sitting runs after the firing's attached-device sitting (or at a firing with none), docs/dashboard-autopilot-v1.md section 9. A device whose entry says `auto`: false is never chosen by `auto` (its report line reads by-hand): it is measured only by `./bench dashboard-job <key>`, by hand, in a window the owner offers.",
+  "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week (a device whose set is in `parts`, the Mac: once per part, one part per firing); a firing with nothing pending exits 0. A Developer Device Platform lab unit (platform ddp) is not the firing's device: no device on this host, so its weekly sitting runs after the firing's attached-device sitting (or at a firing with none), docs/dashboard-autopilot-v1.md section 9. A device whose entry says `auto`: false is never chosen by `auto` (its report line reads by-hand): it is measured only by `./bench dashboard-job <key>`, by hand, in a window the owner offers.",
   "slots": [
     {
       "at": "02:00",
@@ -35,8 +35,21 @@
       "display": "Mac Studio (M4 Max)",
       "identifier": "Mac16,9",
       "window": "any firing while no heavy export pipeline runs (unified-memory contention: the runner refuses and the job passes over the Mac until it is quiet)",
-      "expected_hours": 3.8,
+      "expected_hours": 3.1,
       "timeout_hours": 5,
+      "parts": [
+        {
+          "tag": "b",
+          "cells": "matrices/dashboard-text-v1-mac-b.cells",
+          "expected_hours": 3.1
+        },
+        {
+          "tag": "a",
+          "cells": "matrices/dashboard-text-v1-mac-a.cells",
+          "expected_hours": 2.5
+        }
+      ],
+      "_parts_doc": "The Mac's weekly set as two sittings on two firings, one part each, in this order: part b (Qwen3 4B, Gemma 4 E4B) first, part a (Qwen3 0.6B / 1.7B, Gemma 4 E2B) second, because part a holds the session anchor's model and the page shows a cell's newest session. The whole set (61 cells) outgrew the 5 h timeout: on 2026-10-28 it was cut after 58 cells (24 gate re-runs, 159.5 min of cooldowns), about 5.4 h for all 61. expected_hours per part from the 2026-10-28 m4max log: each cell's span that night (its start to the next cell's cooldown; the last started cell's to the timeout; the three cells the night did not reach from the 2026-10-19 02:00 log), each cell's own cooldown before it in the part's order, and that night's preflight (1.3 min) and anchor phase (7.1 min). timeout_hours is per sitting, 1.6 x the longer part. docs/dashboard-recurring-job-v1.md section 3, 'The Mac set in two parts'",
       "env": {},
       "quiet_lock": "~/code/coreai/_GPU_LOCK"
     },
