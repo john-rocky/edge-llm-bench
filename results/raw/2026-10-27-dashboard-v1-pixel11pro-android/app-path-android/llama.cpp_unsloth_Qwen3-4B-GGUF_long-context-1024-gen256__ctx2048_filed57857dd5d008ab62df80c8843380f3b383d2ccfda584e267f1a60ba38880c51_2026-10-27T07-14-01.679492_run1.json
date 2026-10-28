@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "id": "0e202b35-117d-43e0-96aa-704830b27336",
+  "runtime": "llama.cpp",
+  "engineVersion": "b11721",
+  "engineArtifact": "edf21345a3abf767656767d8644f809e132e7ad2f94b906a04e9a3ee618849c3",
+  "model": {
+    "id": "unsloth/Qwen3-4B-GGUF",
+    "quantization": "Q4_K_M",
+    "file": "unsloth_Qwen3-4B-GGUF_Qwen3-4B-Q4_K_M.gguf",
+    "sha256": "f6f851777709861056efcdad3af01da38b31223a3ba26e61a4f8bf3a2195813a"
+  },
+  "task": "long-context-1024-gen256",
+  "timestamp": "2026-10-27T07:14:01Z",
+  "device": {
+    "modelIdentifier": "Pixel 11 Pro",
+    "systemName": "Android",
+    "systemVersion": "17",
+    "securityPatch": "2026-06-05",
+    "soc": "Tensor G6",
+    "product": "grizzly",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "greedy",
+    "cpuAffinity": "taskset 7c",
+    "cpusAllowedList": "2-6",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2649,
+        "hw": 2649,
+        "cpus": "0-1"
+      },
+      "policy2": {
+        "min": 1804,
+        "hw": 3379,
+        "cpus": "2-5"
+      },
+      "policy6": {
+        "min": 1843,
+        "hw": 4109,
+        "cpus": "6"
+      }
+    },
+    "contextTokens": 2048,
+    "promptVersion": "noref-2026-10-19",
+    "chatMode": "single-turn template default (-st)",
+    "thinking": "template-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 1,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 421.2,
+    "exitCode": 0,
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "e8e4a8cc-ca5f-405b-b0f9-a26536fc42a5",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 34.9,
+    "batteryTemperatureFinalC": 37.1,
+    "batteryLevelFinal": 1.0,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 256,
+    "engineCommand": "./llama-cli -m /data/local/tmp/llmbench/models/unsloth_Qwen3-4B-GGUF_Qwen3-4B-Q4_K_M.gguf -t 4 -c 2048 -f /data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt -n 256 --temp 0 --top-p 1 -st",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "promptTokensPerSecond": 11.8,
+    "decodeTokensPerSecond": 0.8,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "light",
+    "memoryMedianResidentMB": 5172.1875,
+    "memoryPeakResidentMB": 5172.3671875
+  },
+  "provenance": {
+    "rawLog": "llama.cpp_unsloth_Qwen3-4B-GGUF_long-context-1024-gen256__ctx2048_filed57857dd5d008ab62df80c8843380f3b383d2ccfda584e267f1a60ba38880c51_2026-10-27T07-14-01.679492_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
