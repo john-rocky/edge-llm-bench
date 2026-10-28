@@ -151,7 +151,7 @@ def select_cells(cells_file, device_id, key, all_runtimes=False):
     return kept, skips
 
 
-def engine_files(bin_dir, tag, pins):
+def engine_files(bin_dir, tag, pins, device_dir=None):
     """The 9 files of the flat LiteRT-LM build: path, bytes, sha256 — each equal to the pins
     entry (tool fields + so_files), else stop."""
     entry = pins.get("litert-lm", {}).get(tag)
@@ -175,7 +175,7 @@ def engine_files(bin_dir, tag, pins):
             raise SystemExit(f"{path}: sha256 {sha} is not the pin's {want[name]} "
                              f"(android/engine-pins.json litert-lm {tag}) — nothing is pushed")
         files.append({"kind": "engine", "name": name, "local": path, "bytes": os.path.getsize(path),
-                      "sha256": sha, "device": f"{run_cell.DEV_DIR}/{name}",
+                      "sha256": sha, "device": f"{device_dir or run_cell.DEV_DIR}/{name}",
                       "object": f"{INPUTS}/engines/litert-lm/{tag}/{sha}/{name}"})
     return files
 
@@ -185,6 +185,12 @@ def cell_engine_files(bin_dir, cell, pins, litert_tag):
     rt = cell["runtime"]
     opts = cell["opts"]
     if rt == "litert-lm":
+        # a row's engine-build= is its own build, pushed as a side build ({ENGINES_DIR}/<tag>,
+        # flat: run_cell.SIDE_DIRS), so two LiteRT-LM builds can share a session; without it
+        # the --engine-build build (else the pin) replaces the flat one
+        if opts.get("engine-build"):
+            tag = opts["engine-build"]
+            return tag, engine_files(bin_dir, tag, pins, f"{run_cell.ENGINES_DIR}/{tag}")
         return litert_tag, engine_files(bin_dir, litert_tag, pins)
     if rt == "llama.cpp":
         etag = opts.get("engine-build") or pins.get("android_pins", {}).get("llama.cpp")
@@ -243,11 +249,12 @@ def cell_engine_files(bin_dir, cell, pins, litert_tag):
                           "object": f"{INPUTS}/engines/llama.cpp/{etag}/{sha}/{name}"})
         return etag, files
     if rt == "executorch":
-        etag = run_cell.EXECUTORCH_TAG
+        # engine-build= on the row: that build's runner dirs (executorch-<label>[-<backend>]/)
+        etag = opts.get("engine-build") or run_cell.EXECUTORCH_TAG
         runner = run_cell.parsers.executorch_runner_for(opts["file"])
         if not runner:
             raise SystemExit(f"executorch: no runner for {opts['file']}")
-        binname = run_cell.executorch_binname(opts.get("backend"), runner)
+        binname = run_cell.executorch_binname(opts.get("backend"), runner, etag)
         field = f"{runner}_sha256" if opts.get("backend") == "xnnpack" else f"{runner}_{opts.get('backend')}_sha256"
         entry = pins.get("executorch", {}).get(etag) or {}
         want_sha = entry.get(field)
@@ -374,7 +381,8 @@ def plan(cells_file, device_id, campaign, args):
                     if os.path.isabs(raw_file) or raw_file.startswith(("~", "./", "../")) else raw_file)
         model_dev = f"{run_cell.DEV_DIR}/models/{cell['model_id'].replace('/', '_')}_{filename}"
         prompt_dev = f"{run_cell.DEV_DIR}/prompts/{cell['task']}.txt"
-        engine_dir = f"{run_cell.ENGINES_DIR}/{opts['engine-build']}" if opts.get("engine-build") else None
+        engine_dir = (f"{run_cell.ENGINES_DIR}/{opts['engine-build']}"
+                      if opts.get("engine-build") and rt != "executorch" else None)
         full, binname, sampler = run_campaign.planned_command(cell)
         env = run_cell.launch_env(engine_dir, opts.get("backend"), rt)
         err_file = None

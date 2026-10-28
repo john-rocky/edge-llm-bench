@@ -223,7 +223,9 @@ def records_for_execution(job, exec_dir, out_dir, meta):
             missing.append(f"{name}: empty in provenance.txt")
     runtime = job.get("runtime", "litert-lm")
     engine_build = job.get("engineBuild")
-    engine_dir = f"{run_cell.ENGINES_DIR}/{engine_build}" if engine_build else None
+    # an executorch build label names its runner dirs (in job["binname"]), not a side build dir
+    engine_dir = (f"{run_cell.ENGINES_DIR}/{engine_build}"
+                  if engine_build and runtime != "executorch" else None)
     engine_version, engine_artifact = witness(job["binname"], prov["sha"], run_cell.load_pins(), engine_dir)
     model_sha = prov["sha"].get(job["modelDevice"])
     if model_sha is None:
@@ -337,7 +339,13 @@ def records_for_execution(job, exec_dir, out_dir, meta):
             launch_checks = {"invalidDecodeCount": invalid,
                              "protocolFlags": ["invalid-decode"] if invalid else []}
         side_cond, backend_flags = {}, []
-        if engine_dir and runtime == "llama.cpp":
+        if engine_build and (runtime == "executorch" or (runtime == "llama.cpp" and not job["backend"])):
+            # an ExecuTorch build other than the pinned tag, or a llama.cpp CPU side build: the
+            # build (and its command); no device to witness (run_cell's conditions likewise)
+            side_cond = {"engineBuild": engine_build}
+            if engine_dir:
+                side_cond["engineCommand"] = f"{job['env']} {cmd}"
+        elif engine_dir and runtime == "llama.cpp":
             device = run_cell.LLAMA_DEVICES[job["backend"]]
             bench = binname == "llama-bench"
             lines = (parsers.llama_bench_device_lines(tests) if bench

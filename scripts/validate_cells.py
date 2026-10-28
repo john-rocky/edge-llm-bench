@@ -70,6 +70,7 @@ BACKENDS = {"cpu", "gpu", "npu"}
 # the backends of the Mac / iPhone LiteRT-LM rows and of the asr / vl instruments
 CPU_GPU = {"cpu", "gpu"}
 # an Android llama.cpp row: no backend= = the CPU arm `llama.cpp` (the pinned official CPU
+# build, or with engine-build= another CPU build, e.g. one built from source, as a side
 # build); backend=npu|gpu = a side build's Hexagon / Adreno OpenCL device, named by
 # engine-build=<engine-pins.json key> (docs/dashboard-cells-v1.md "NPU and Android GPU rows")
 ANDROID_LLAMA_BACKENDS = {"npu", "gpu"}
@@ -368,10 +369,10 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 if opts.get("backend") and opts["backend"] not in ANDROID_LLAMA_BACKENDS:
                     errors.append(f"{where}: android llama.cpp takes backend=npu|gpu (a side build's "
                                   "device); a row without backend= is the CPU arm `llama.cpp`")
-                if bool(opts.get("backend")) != bool(opts.get("engine-build")):
+                if opts.get("backend") and not opts.get("engine-build"):
                     errors.append(f"{where}: android llama.cpp backend=npu|gpu and engine-build=<tag> "
                                   "go together (the pinned flat build is CPU-only; engine-build= "
-                                  "alone would stamp the CPU arm with a second build)")
+                                  "alone is a CPU side build of the arm `llama.cpp`)")
             # an android litert-lm row on the NPU (arm litert-lm-npu) runs a side build: a
             # LiteRT-LM runtime with the Qualcomm dispatch libraries, named by engine-build=
             # (docs/dashboard-cells-v1.md "LiteRT-LM on the NPU"); cpu / gpu run the pinned build,
@@ -393,9 +394,11 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                                   "bundle's own KV cache: no context-tokens= (an AOT bundle's cache "
                                   "is fixed at export), no native-benchmark- / endurance- task "
                                   "(not wired; android/bench/run_cell.py refuses them)")
-            if opts.get("engine-build") and not (plat == "android" and rt in ("llama.cpp", "litert-lm")):
-                errors.append(f"{where}: engine-build= is read for android llama.cpp and litert-lm "
-                              "rows only (android/bench/run_cell.py --engine-build)")
+            # executorch: the build label names the runner dirs (executorch-<label>[-<backend>]/)
+            if opts.get("engine-build") and not (
+                    plat == "android" and rt in ("llama.cpp", "litert-lm", "executorch")):
+                errors.append(f"{where}: engine-build= is read for android llama.cpp, litert-lm and "
+                              "executorch rows only (android/bench/run_cell.py --engine-build)")
             if opts.get("ynnpack") and not (plat == "android" and rt == "litert-lm"):
                 # mac: a litert-lm backend=cpu row (bench_matrix_mac.sh -> yardstick
                 # --litert-ynnpack on; a yardstick built with YS_SWIFT_CONDITIONS=LITERTLM_YNNPACK
