@@ -79,7 +79,7 @@ an NPU / GPU arm's capped run pools at any fall, marked with it:
   (unified-memory contention) — that guard is correct; don't bypass it.
 - **The dashboard recurring job is live** (launchd `com.edge-llm-bench.dashboard-v1`:
   every night at 02:00 and 05:30 it measures the first free device — Mac, S26,
-  Pixel 8a, or the iPhone 18 Pro (05:30 firing only; the 17 Pro is by hand only) — that has no admitted session
+  Pixel 8a, Pixel 11 Pro, or the iPhone 18 Pro (05:30 firing only; the 17 Pro is by hand only) — that has no admitted session
   since Monday; each device once a week, 1.5–11 h a sitting (`expected_hours` in
   `ops/dashboard-v1/schedule.json`; the S26's took 10 h 48 min on 2026-10-26); `./bench dashboard-job
   auto --dry-run` shows which device the next firing would take). It takes the

@@ -20,7 +20,7 @@ limits the first pass taught (`docs/OPERATIONS.md`, "Known limits").
 
 ```bash
 ./bench dashboard-job auto [--dry-run]            # the pending device whose last admitted session is oldest (§3)
-./bench dashboard-job <m4max|s26|pixel8a|iphone17pro|iphone18pro> [--dry-run] [--once]   # that device, whatever the week
+./bench dashboard-job <m4max|s26|pixel8a|pixel11pro|iphone17pro|iphone18pro> [--dry-run] [--once] [--no-post]   # that device, whatever the week
 ./bench dashboard                       # re-render DASHBOARD.md (local) any time
 ```
 
@@ -269,6 +269,7 @@ bench host's):
 | Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry); v2 set 1 h 04 min (18 cells × 4 runs, 1 gate retry, 2026-09-08) | `bench doctor --platform mac` green, no yardstick running; Core AI bundles staged (advisory, `doctor` warns) | none (host); side by side with a phone sitting since 2026-09-08 (§3) |
 | Galaxy S26 | any firing; USB, screen on or off (read and stamped per launch), unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
 | Pixel 8a | any firing; USB, screen on or off (read and stamped per launch), `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
+| Pixel 11 Pro (entry since 2026-10-27) | any firing; USB, screen on or off (read and stamped per launch), `taskset 7c` on every launch (chosen on llama.cpp's anchor row, `devices/pixel-11-pro.md`) | 9 h 47 min as one session (its first sitting, by hand on 2026-10-27: ten model files' first push and two gate re-runs included) | as S26 but without the free-space fallback: no `split`, the preflight logs the free space and the whole set runs as one session (459.1 GB free at registration as the job reads it) | hold `.device_hold.pixel11pro` (+ `.device_hold.<serial>`) |
 | iPhone 17 Pro | never by `auto` (`auto: false` since 2026-10-18: the owner's daily phone, not a bench device); by hand, `./bench dashboard-job iphone17pro`, in a window the owner offers — plugged, unlocked (Auto-Lock Never), one hold at a time | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
 | iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | the 05:30 firing only (`auto_window` 05:00–08:00), after ≥4 h without a record; unlocked (Auto-Lock Never) | no sitting yet | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
 | Galaxy S26 lab unit on the Developer Device Platform (`s26-ddp`, pool m1q-36 of SM-S942U1, since 2026-10-18) | never the firing's device: after its attached sitting (or a firing with none), while `ddp_weekly` is true in `ops/autopilot/switch.json`, at most once in `interval_days` (6) | 2026-10-16 by hand: 12 of its 16 jobs in 151 device-min, 92 min wall in three streams; first job sitting 2026-10-18: 42.9 min, 2 sessions (15.3 + 25.2 min), 193.0 device-min (ROUND5) | doctor.py `check_ddp` (gcloud signed in, huggingface_hub, the pinned engine files); the plan's Device Run sessions within `ddp_max_sessions`; no phone of this host listed or touched | none on the host; billed per device minute (about 200 a week) |
@@ -290,7 +291,7 @@ one, and it lets the lock go untouched (its line, and the mtime the lanes' build
 took the free window at 02:47 while lane builds ran outside the windows, and they stood stopped for its length. A
 firing whose jobs want the window past its busy window (`retry.busy_window_minutes`) leaves the Mac to the next one.
 
-On the Galaxy S26 and the Pixel 8a the job installs nothing on the phone: the flat engine build in
+On the Galaxy S26, the Pixel 8a and the Pixel 11 Pro the job installs nothing on the phone: the flat engine build in
 `/data/local/tmp/llmbench` is replaced by hand with `android/scripts/deploy_litert_lm_android.sh`,
 which also resets the engine caches and markers.
 
@@ -300,7 +301,7 @@ figures include the first-time pushes, so steady-state sessions should be
 somewhat shorter. Cooldowns dominate everywhere (300 s before every Gemma 4
 and 4B cell). A phone sitting started at 02:00 is still running at 05:30;
 launchd skips that firing, so on such a night the iPhone waits for the next
-05:30 — with three phones and a Mac to fit into seven nights that is the
+05:30 — with four phones and a Mac to fit into seven nights that is the
 expected shape of a week, not a lost slot.
 
 The wall times above are the short-chat set. Since 2026-10-06 every sitting
@@ -312,7 +313,8 @@ arm in the weekly set, Mac leg"; +0.6 for the ONNX Runtime rows since 2026-10-09
 GenAI arm in the weekly set"), Galaxy S26 10.3 in three halves plus the ONNX Runtime session and,
 since 2026-10-09, the NPU / GPU session (+2.1, "NPU and Android GPU rows in the weekly set";
 11.5 with a gate retry per session),
-Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), iPhone 4.8 with every
+Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), Pixel 11 Pro 9.8 (its
+first sitting, 2026-10-27, as one session), iPhone 4.8 with every
 cell HOT-retried (the iPhone 18 Pro 5.8 since 2026-10-09: +1.0 for the ONNX Runtime
 rows, "ONNX Runtime GenAI arm in the weekly set"). `schedule.json` carries them as `expected_hours`, and
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×

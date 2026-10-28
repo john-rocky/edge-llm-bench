@@ -216,7 +216,7 @@ Design, cadence, device choice, admission and rerun rules:
 
 ```
 ./bench dashboard-job auto [--dry-run]                       # what launchd runs at 02:00 and 05:30 every night
-./bench dashboard-job <m4max|s26|pixel8a|iphone17pro> [--dry-run] [--once]   # that device, regardless of the week
+./bench dashboard-job <m4max|s26|pixel8a|pixel11pro|iphone17pro> [--dry-run] [--once] [--no-post]   # that device, regardless of the week
 ./bench dashboard                       # re-render DASHBOARD.md (local) any time
 ```
 

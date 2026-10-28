@@ -62,7 +62,9 @@ scripts/dashboard_post.py (docs/dashboard-autopilot-v1.md): it commits the sitti
 campaign dirs locally when every one passes scripts/session_check.py, rebuilds
 results/summary from the git index into the same commit and the private page from
 that commit, and pushes or publishes only what ops/autopilot/switch.json turns on;
-its exit code never changes the sitting's. A dry run prints that command only.
+its exit code never changes the sitting's. A dry run prints that command only, and so does
+--no-post (a sitting by hand whose commit and push wait for a person's review: the person runs
+the printed command after it).
 
 Before a device's weekly set, its pending retakes (logs/dashboard-job/retakes.json: a red point of
 the team page's rule that the post step found in a sitting, scripts/regression_watch.py) run as
@@ -118,6 +120,8 @@ SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
 # the step after a sitting that exits 0 (docs/dashboard-autopilot-v1.md): check, commit, page
 POST = os.path.join(ROOT, "scripts", "dashboard_post.py")
 POST_TIMEOUT_S = 3600
+# --no-post: the post command is printed, never run (main() sets it)
+NO_POST = False
 # a retake's per-op profile pair (`./bench profile`, android/bench/run_profile.py): control + twin
 PROFILE_TIMEOUT_S = 3600
 LOG_DIR = os.path.join(ROOT, "logs", "dashboard-job")
@@ -1411,8 +1415,10 @@ def post_sitting(code, dirs, dry, extra=()):
     if code != EXIT_OK or not dirs:
         return None
     cmd = [PY, POST] + list(extra) + list(dirs)
-    log("post: $ " + " ".join(cmd) + ("   [dry-run: printed, not run]" if dry else ""))
-    if dry:
+    log("post: $ " + " ".join(cmd) + ("   [dry-run: printed, not run]" if dry else
+                                      "   [--no-post: printed, not run; a person runs it after review]"
+                                      if NO_POST else ""))
+    if dry or NO_POST:
         return cmd
     try:
         p = subprocess.run(cmd, cwd=ROOT, stdout=_LOG or None, stderr=subprocess.STDOUT,
@@ -2419,11 +2425,15 @@ def main():
                     help="the device hold is held by this live pid (a keeper that queued for the "
                          "phone): the job neither acquires nor releases it; exit 2 when the pid is "
                          "dead or the hold names another pid. Not with auto")
+    ap.add_argument("--no-post", action="store_true",
+                    help="print the post command after a sitting that exits 0 and run nothing: no "
+                         "check, commit, page or push (a person runs it after review)")
     args = ap.parse_args()
     if args.hold_held_by is not None and args.device == "auto":
         ap.error("--hold-held-by names one device's hold: not with auto")
-    global HOLD_KEEPER
+    global HOLD_KEEPER, NO_POST
     HOLD_KEEPER = args.hold_held_by
+    NO_POST = args.no_post
 
     try:
         schedule = json.load(open(args.schedule))

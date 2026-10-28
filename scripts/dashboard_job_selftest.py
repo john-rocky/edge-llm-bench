@@ -662,6 +662,16 @@ def main():
         cmd = dj.post_sitting(dj.EXIT_OK, ["results/raw/no-such-campaign-android"], False)
     ok(cmd is not None and "post exit 2 (usage;" in buf.getvalue() and "the sitting's exit 0 stands" in buf.getvalue(),
        "a run (not dry) whose post fails: one line with its exit, the sitting's exit unchanged")
+    buf = io.StringIO()
+    dj.NO_POST = True
+    try:
+        with contextlib.redirect_stdout(buf):
+            cmd = dj.post_sitting(dj.EXIT_OK, ["results/raw/no-such-campaign-android"], False)
+    finally:
+        dj.NO_POST = False
+    ok(cmd == [dj.PY, dj.POST, "results/raw/no-such-campaign-android"]
+       and "[--no-post: printed, not run" in buf.getvalue() and "post exit" not in buf.getvalue(),
+       "--no-post: a run (not dry) that exits 0 prints the post command and runs nothing")
     proto = cells_file("proto-android-x.cells",
                        "android llama.cpp unsloth/Qwen3-0.6B-GGUF native-benchmark-1024x256 backend=npu "
                        "engine-build=b11469-snapdragon file=Qwen3-0.6B-Q4_K_M.gguf",

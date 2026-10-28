@@ -235,6 +235,8 @@ def main():
     dj.add_argument("--once", action="store_true", help="no busy polling / abort retry")
     dj.add_argument("--cells", help="override the cells file")
     dj.add_argument("--suffix", help="campaign-name suffix for a same-day retake (e.g. -retake)")
+    dj.add_argument("--no-post", action="store_true",
+                    help="print the post command, run nothing after the sitting (a person runs it after review)")
 
     au = sub.add_parser("autopilot", help="one DDP lab-unit sitting by hand, end to end: the sitting, the "
                                           "check and local commit, DASHBOARD.md, the red points, the requests")
@@ -277,6 +279,8 @@ def main():
             cmd += ["--cells", args.cells]
         if args.suffix:
             cmd.append(f"--suffix={args.suffix}")   # `=` form: a suffix may start with '-'
+        if args.no_post:
+            cmd.append("--no-post")
 
         return run(cmd)
     if args.cmd == "autopilot":

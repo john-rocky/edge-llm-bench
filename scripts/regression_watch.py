@@ -90,7 +90,8 @@ RETAKE_MAX_ATTEMPTS = 2
 RETAKE_BUSY_EXIT = 3
 
 # the Developer Device Platform lab unit of each phone's model (android/ddp/devices.json, the
-# scheduleKey of each id); the iPhone and the Mac have no route
+# scheduleKey of each id); the iPhone and the Mac have no route, nor the Pixel 11 Pro (pixel11pro:
+# android/ddp/devices.json lists no lab unit of it, 2026-10-27)
 BISECT_ROUTE = {"s26": "ddp:m1q-36", "pixel8a": "ddp:akita-35"}
 BISECT_TOOL = os.path.join("scripts", "engine_bisect.py")
 # engine_bisect.py's speed verdicts (its SPEED_SPEC): decode and prefill; memory has none
