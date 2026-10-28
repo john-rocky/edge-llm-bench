@@ -2137,7 +2137,10 @@ def main():
          "file=x.litertlm", "ynnpack=1 is a backend=cpu row on a side build"),
         ("android litert-lm m/l short-chat backend=cpu ynnpack=1 file=x.litertlm",
          "ynnpack=1 is a backend=cpu row on a side build"),
-        ("mac litert-lm m/l short-chat backend=cpu ynnpack=1", "ynnpack= is read for android litert-lm rows only"),
+        # mac: a litert-lm cpu row's yardstick --litert-ynnpack on (2026-10-27); not gpu, not ios
+        ("mac litert-lm m/l short-chat backend=cpu ynnpack=1", None),
+        ("mac litert-lm m/l short-chat backend=gpu ynnpack=1", "mac litert-lm backend=cpu rows only"),
+        ("ios litert-lm m/l short-chat backend=cpu ynnpack=1", "mac litert-lm backend=cpu rows only"),
         ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
          "file=x.litertlm context-tokens=2048", "no context-tokens="),
         ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=main-20260821-selfbuilt "

@@ -114,6 +114,26 @@
         "libllama.so": "199d166615868eb3c97c4f0d26bc2c0fa34116f8f2f397c8f871806f6e3687e6",
         "libmtmd.so": "c862dfc86d406b5c913fe8583a27c2c39201f16bde187d36e0febac3c94a1b24"
       }
+    },
+    "b11721-snapdragon": {
+      "source": "https://github.com/ggml-org/llama.cpp",
+      "commit": "ff5a23376725e5a889fa0bfb987b7541dc304da0",
+      "observed": "b11721",
+      "built_from_source": true,
+      "llama_bench_sha256": "0ac2091355096190661c405f9bc69e59ca0ee75bd0a81c50923a58d6262a98e9",
+      "llama_cli_sha256": "22933afbcf4c76771d938a15b432afca748c19f14f1a7b117e7b52dc3f407646",
+      "so_files": {
+        "libggml-base.so": "258736ab8a417e83cbb9246272f70a09d085c54e22ce73786ea858ffde656e83",
+        "libggml-cpu.so": "31d17062bdebe4ac44ce93c770ec17291a110cb39c90cc810e432ddaa30bcb78",
+        "libggml-opencl.so": "374fdca25d1de608260436b3308947e83506788e4cbf7aff400179329adcbd11",
+        "libggml.so": "fce56d3a646b0325ad93ed18097ec886739edd2bcf559bad5e84be1dc6722295",
+        "libllama-bench-impl.so": "9f6619666c582ef844cbec297feddd55502540d66c966ead5a0d8990c761e2ad",
+        "libllama-cli-impl.so": "f2882c2ae919f225b18e70a07c47af7332203586ce8b537fb188ce4bbab0c41c",
+        "libllama-common.so": "92178c4c407af0952365d0d3805cf14b1c3d2f4636142f46479703fffae99cca",
+        "libllama-server-impl.so": "aabaec4d7782744ea3b014bed00e3312d801c14d234670262c312efbc8e4a210",
+        "libllama.so": "fcc8bb7b02c4cb9cc3a266114acdaadbc85158fd584f68732e42c6355c3983e4",
+        "libmtmd.so": "9dd7acc20c0d992ced688ebc4c3a623021c77079524d8aaeb1f287b6f84553fb"
+      }
     }
   },
   "litert-lm": {
@@ -330,6 +350,42 @@
         "libwebgpu_dawn.so": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9"
       },
       "built": "android/scripts/build_litert_lm_main.sh at main-da28df6aa-pregpu (bazel source build, 2026-10-27; commit da28df6aa1761f6c52f76314f56533760c8724f0)"
+    },
+    "google3-630752d0": {
+      "requested_tag": "google3 630752d0 (p4base cl/1005018857 + local stack incl. cl/987935344)",
+      "observed": "google3-630752d0",
+      "litert_lm_main_sha256": "ab86415f0d344f3456c07c1cb0e430b00a2e1c68bee46301a9733d7225eedd5d",
+      "litert_lm_advanced_main_sha256": "622d6ad30508023015342c0774fdbd2fa3ba8a812e62e4d007538131c1045d4b",
+      "so_files": {
+        "libLiteRtGpuAccelerator.so": "43bc069e85bef7b41931481e570547c874df4edc68221ab3c4e513a260b330be",
+        "libLiteRtOpenClAccelerator.so": "d7148e037586c74bddd96dfc3f1a5e69388bda2ea31c92bcb0fa7da18868a42d",
+        "libLiteRtTopKOpenClSampler.so": "b984d3ba599a005b176fc5ef69a95b0e1d6634a55088d7eb52a1cb9ed76c1d81"
+      },
+      "built": "competitive_analysis: blaze --config=android_arm64 -c opt, 2026-10-27"
+    },
+    "google3-630752d0-fullflags": {
+      "requested_tag": "google3 630752d0 + --copt=-DGOOGLE_COMMANDLINEFLAGS_FULL_API=1",
+      "observed": "google3-630752d0-fullflags",
+      "litert_lm_main_sha256": "7ac75dcae3b751b3a69ef73c4d33e3a06eef2ecb2d74ccf520c5a940d7a00d25",
+      "litert_lm_advanced_main_sha256": "1f3fb3ce4b6fb63fcb86263ca46c5314f88266c41c0c57da273b05ba1b8f15ae",
+      "so_files": {
+        "libLiteRtGpuAccelerator.so": "00eb68bed16ba53f8e932b27ef96cd7c4d53d6ceb13c44c5dc0efd6fb0765ebc",
+        "libLiteRtOpenClAccelerator.so": "32bf21282009314d050941fdaef285228cfec74265ca96c574c05af705d014b2",
+        "libLiteRtTopKOpenClSampler.so": "64d1a6e45cbe7ca4b4983dbb35c54494f27dc548aca71c4ab2e9c623e6df0e4a"
+      },
+      "built": "competitive_analysis: blaze --config=android_arm64 -c opt --copt=-DGOOGLE_COMMANDLINEFLAGS_FULL_API=1, 2026-10-27"
+    },
+    "google3-630752d0-ynnpack": {
+      "requested_tag": "google3 630752d0 + FULL_API flags + --define=litert_enable_ynnpack=true",
+      "observed": "google3-630752d0-ynnpack",
+      "litert_lm_main_sha256": "f968ad8fb5e685d7f146a92e98988ed4f5ee9248320ab0136de6662802126f64",
+      "litert_lm_advanced_main_sha256": "01d1a20c3c177ebe8268645da287516eac9c70934100be46b56ca050bfe23338",
+      "so_files": {
+        "libLiteRtGpuAccelerator.so": "00eb68bed16ba53f8e932b27ef96cd7c4d53d6ceb13c44c5dc0efd6fb0765ebc",
+        "libLiteRtOpenClAccelerator.so": "32bf21282009314d050941fdaef285228cfec74265ca96c574c05af705d014b2",
+        "libLiteRtTopKOpenClSampler.so": "64d1a6e45cbe7ca4b4983dbb35c54494f27dc548aca71c4ab2e9c623e6df0e4a"
+      },
+      "built": "competitive_analysis: blaze --config=android_arm64 -c opt --copt=-DGOOGLE_COMMANDLINEFLAGS_FULL_API=1 --define=litert_enable_ynnpack=true, 2026-10-27"
     }
   },
   "litertlm-android": {

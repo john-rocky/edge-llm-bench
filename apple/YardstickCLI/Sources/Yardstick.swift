@@ -148,6 +148,23 @@ struct YardstickApp {
                     exit(2)
                 }
                 litertBackend = b
+            case "--litert-ynnpack":
+                // `on|off`: LiteRT-LM's CPU kernels, YNNPACK or XNNPACK (the iOS app's flag of
+                // the same name). Only a build with the LITERTLM_YNNPACK condition, linked to a
+                // LiteRT-LM built with YNNPACK (--define=litert_enable_ynnpack=true), takes it.
+                let raw = argv.value(after: &i).lowercased()
+                guard raw == "on" || raw == "off" else {
+                    FileHandle.standardError.write(Data(
+                        "bad --litert-ynnpack '\(raw)' — expected on|off\n".utf8))
+                    exit(2)
+                }
+                #if LITERTLM_YNNPACK
+                MediaPipeRuntime.enableYnnpack = (raw == "on")
+                #else
+                FileHandle.standardError.write(Data(
+                    "--litert-ynnpack: this yardstick's LiteRT-LM has no YNNPACK switch (build with YS_SWIFT_CONDITIONS=LITERTLM_YNNPACK)\n".utf8))
+                exit(2)
+                #endif
             case "--output":
                 outputPath = argv.value(after: &i)
             case "--warm":
@@ -543,7 +560,7 @@ struct YardstickApp {
         print("  llama-cpp    — llama.cpp via vendored xcframework (CPU + Metal)")
         print("  anemll       — ANEMLL via vendored anemll-swift-cli (ANE)")
         print("  apple-fm     — Apple Foundation Models (macOS 26+, Apple-Intelligence-eligible Macs)")
-        print("  litert-lm    — LiteRT-LM (google-ai-edge/LiteRT-LM, Metal GPU; `--litert-backend cpu` = XNNPACK CPU arm, stamped litert-lm-cpu)")
+        print("  litert-lm    — LiteRT-LM (google-ai-edge/LiteRT-LM, Metal GPU; `--litert-backend cpu` = CPU arm (XNNPACK; `--litert-ynnpack on` = YNNPACK), stamped litert-lm-cpu)")
         print("  core-ai      — Apple Core AI (apple/coreai-models, macOS 27; side-loaded .aimodel bundles under BENCH_COREAI_MODELS_DIR)")
         print("")
         print("Available tasks:")

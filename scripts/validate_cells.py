@@ -57,7 +57,7 @@ NATIVE_TASK = re.compile(r"^native-benchmark-\d+x\d+$")
 ENDURANCE_TASK = re.compile(r"^endurance-chat-\d+m$")
 INT_KEYS = {"runs", "context-tokens", "max-tokens", "cooldown", "cool-wait"}
 # ynnpack=1: an android litert-lm backend=cpu row on a side build with YNNPACK (run_cell.py --ynnpack,
-# arm litert-lm-cpu-ynnpack)
+# arm litert-lm-cpu-ynnpack), or a mac litert-lm backend=cpu row (yardstick --litert-ynnpack on)
 FLAG_KEYS = {"anchor", "manual", "local", "ynnpack"}          # value must be 1
 STR_KEYS = {"exclude", "exclude-on", "file", "backend", "recipe", "thinking", "engine-counters",
             "engine-build", "revision",
@@ -397,8 +397,13 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 errors.append(f"{where}: engine-build= is read for android llama.cpp and litert-lm "
                               "rows only (android/bench/run_cell.py --engine-build)")
             if opts.get("ynnpack") and not (plat == "android" and rt == "litert-lm"):
-                errors.append(f"{where}: ynnpack= is read for android litert-lm rows only "
-                              "(android/bench/run_cell.py --ynnpack)")
+                # mac: a litert-lm backend=cpu row (bench_matrix_mac.sh -> yardstick
+                # --litert-ynnpack on; a yardstick built with YS_SWIFT_CONDITIONS=LITERTLM_YNNPACK
+                # against a LiteRT-LM with --define=litert_enable_ynnpack=true)
+                if not (plat == "mac" and rt == "litert-lm" and opts.get("backend") == "cpu"):
+                    errors.append(f"{where}: ynnpack= is read for android litert-lm rows and mac "
+                                  "litert-lm backend=cpu rows only (android/bench/run_cell.py "
+                                  "--ynnpack, yardstick --litert-ynnpack)")
             if opts.get("max-tokens") and plat == "mac":
                 errors.append(f"{where}: the Mac CLI has no --max-tokens flag "
                               "(BenchmarkRunner.Configuration carries no budget "
