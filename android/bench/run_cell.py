@@ -1705,6 +1705,11 @@ ANDROID_QUANT_LABELS = {
     # sdpa, swiglu, bool mask, dynamic cache), dynamic_wi4b32_afp32, prefill 128 + 1024, the official
     # Qwen3 LlmMetadata (sha256 fbbf0657…5b79, 343,466,928 B; the lane's E2, named for its recipe)
     "Qwen3-0.6B_dynamic_wi4b32_afp32.gpucomposites-e2.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024, local candidate)",
+    # the Hub file of that export (litert-community/Qwen3-0.6B commit e6bb3e4a, 2026-10-27 22:56 UTC; 343,466,928 B,
+    # lfs 691ad7b8…):
+    # the same graph with Qwen/Qwen3-0.6B's tokenizer.json as its tokenizer section; its card: the GPU path needs a
+    # LiteRT-LM newer than 0.18.1
+    "Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024)",
     "Qwen3-0.6B.litertlm": "INT8 (dynamic weights, float KV; metadata for 0.18.0, 2026-10-12)",  # the iOS ModelCatalog string of litert-community/Qwen3-0.6B/dynamic_int8, the same Hub file (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift); side-loaded by the lu1020 YNNPACK control cells (2026-10-21)
     "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",

@@ -1,0 +1,599 @@
+--------- beginning of main
+10-27 21:00:03.429  5804  5804 I native  : I0000 00:00:1793160003.429196    5804 litert_lm_lib.cc:700] Choose backend: gpu
+10-27 21:00:03.438  5804  5804 I native  : I0000 00:00:1793160003.438364    5804 litert_lm_lib.cc:880] executor_settings: backend: GPU
+10-27 21:00:03.438  5804  5804 I native  : backend_config:
+10-27 21:00:03.438  5804  5804 I native  : max_top_k: 64
+10-27 21:00:03.438  5804  5804 I native  : 
+10-27 21:00:03.438  5804  5804 I native  : max_tokens: 2048
+10-27 21:00:03.438  5804  5804 I native  : activation_data_type: Not set
+10-27 21:00:03.438  5804  5804 I native  : max_num_images: 0
+10-27 21:00:03.438  5804  5804 I native  : lora_rank: 0
+10-27 21:00:03.438  5804  5804 I native  : pad_token_id: -1
+10-27 21:00:03.438  5804  5804 I native  : cache_dir: 
+10-27 21:00:03.438  5804  5804 I native  : cache_file: Not set
+10-27 21:00:03.438  5804  5804 I native  : litert_dispatch_lib_dir: Not set
+10-27 21:00:03.438  5804  5804 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm
+10-27 21:00:03.438  5804  5804 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-27 21:00:03.438  5804  5804 I native  : 
+10-27 21:00:03.438  5804  5804 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-27 21:00:03.438  5804  5804 I native  : num_output_candidates: 1
+10-27 21:00:03.438  5804  5804 I native  : configure_magic_numbers: true
+10-27 21:00:03.438  5804  5804 I native  : verify_magic_numbers: false
+10-27 21:00:03.438  5804  5804 I native  : clear_kv_cache_before_prefill: true
+10-27 21:00:03.438  5804  5804 I native  : num_logits_to_print_after_decode: 0
+10-27 21:00:03.438  5804  5804 I native  : gpu_madvise_original_shared_tensors: true
+10-27 21:00:03.438  5804  5804 I native  : gpu_enable_metal_residency_set: false
+10-27 21:00:03.438  5804  5804 I native  : is_benchmark: true
+10-27 21:00:03.438  5804  5804 I native  : enable_profiling: false
+10-27 21:00:03.438  5804  5804 I native  : preferred_device_substr: 
+10-27 21:00:03.438  5804  5804 I native  : num_threads_to_upload: -1
+10-27 21:00:03.438  5804  5804 I native  : num_threads_to_compile: -1
+10-27 21:00:03.438  5804  5804 I native  : convert_weights_on_gpu: true
+10-27 21:00:03.438  5804  5804 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-27 21:00:03.438  5804  5804 I native  : optimize_shader_compilation: true
+10-27 21:00:03.438  5804  5804 I native  : cache_compiled_shaders_only: false
+10-27 21:00:03.438  5804  5804 I native  : share_constant_tensors: true
+10-27 21:00:03.438  5804  5804 I native  : sampler_handles_input: true
+10-27 21:00:03.438  5804  5804 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-27 21:00:03.438  5804  5804 I native  : hint_waiting_for_completion: Not set
+10-27 21:00:03.438  5804  5804 I native  : gpu_context_low_priority: Not set
+10-27 21:00:03.438  5804  5804 I native  : enable_speculative_decoding: false
+10-27 21:00:03.438  5804  5804 I native  : disable_delegate_clustering: false
+10-27 21:00:03.438  5804  5804 I native  : hint_kernel_batch_size: Not set
+10-27 21:00:03.438  5804  5804 I native  : error_on_invalid_sampled_token_id: false
+10-27 21:00:03.438  5804  5804 I native  : 
+10-27 21:00:03.438  5804  5804 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+10-27 21:00:03.438  5804  5804 I native  : 
+10-27 21:00:03.438  5804  5804 I native  : I0000 00:00:1793160003.438439    5804 litert_lm_lib.cc:887] vision_executor_settings: not set
+10-27 21:00:03.438  5804  5804 I native  : I0000 00:00:1793160003.438468    5804 litert_lm_lib.cc:893] audio_executor_settings: not set
+10-27 21:00:03.438  5804  5804 I native  : I0000 00:00:1793160003.438493    5804 litert_lm_lib.cc:916] Creating engine
+10-27 21:00:03.446  5804  5806 W native  : W0000 00:00:1793160003.446117    5806 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-27 21:00:03.446  5804  5804 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-27 21:00:03.446  5804  5804 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-27 21:00:03.446  5804  5804 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Local Branch                     : 
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Remote Branch                    : NONE
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-27 21:00:03.495  5804  5807 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-27 21:00:03.499  5804  5807 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-27 21:00:03.504  5804  5807 I SnapAlloc: Graphics lib is available
+10-27 21:00:03.507  5804  5807 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-27 21:00:03.509  5804  5807 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-27 21:00:03.510  5804  5807 I AdrenoUtils: <ReadGpuID:366>: Reading chip ID through GSL
+10-27 21:00:03.513  5804  5804 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b6943f520, name=LiteRT GPU
+10-27 21:00:03.513  5804  5804 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-27 21:00:03.513  5804  5804 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b6943f440, name=CpuAccelerator
+10-27 21:00:03.513  5804  5804 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-27 21:00:03.542  5804  5804 W native  : W0000 00:00:1793160003.542161    5804 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-27 21:00:03.542  5804  5804 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-27 21:00:03.542  5804  5804 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-27 21:00:03.542  5804  5804 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-27 21:00:03.542  5804  5804 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b6945e070, name=LiteRT GPU
+10-27 21:00:03.542  5804  5804 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-27 21:00:03.542  5804  5804 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b6945dc10, name=CpuAccelerator
+10-27 21:00:03.542  5804  5804 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-27 21:00:03.542  5804  5804 W native  : W0000 00:00:1793160003.542522    5804 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-27 21:00:03.542  5804  5804 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-27 21:00:03.543  5804  5804 I litert  : [magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 2048
+10-27 21:00:03.543  5804  5804 I litert  : [magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 2048
+10-27 21:00:03.544  5804  5804 I litert  : [magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 2048
+10-27 21:00:03.545  5804  5804 I litert  : [magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 2048
+10-27 21:00:03.545  5804  5804 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-27 21:00:03.545  5804  5804 I tflite  : Initialized TensorFlow Lite runtime.
+10-27 21:00:03.558  5804  5804 W libc    : Access denied finding property "ro.mediatek.platform"
+10-27 21:00:03.558  5804  5804 W libc    : Access denied finding property "ro.chipname"
+10-27 21:00:03.618  5804  5804 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-27 21:00:03.619  5804  5804 I native  : I0000 00:00:1793160003.619042    5804 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+10-27 21:00:03.619  5804  5804 I native  : I0000 00:00:1793160003.619118    5804 delegate_opencl.cc:657] options->kernel_batch_size: 0
+10-27 21:00:03.619  5804  5804 W libc    : Access denied finding property "ro.mediatek.platform"
+10-27 21:00:03.619  5804  5804 W libc    : Access denied finding property "ro.chipname"
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Local Branch                     : 
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Remote Branch                    : NONE
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-27 21:00:03.621  5804  5804 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-27 21:00:03.622  5804  5804 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-27 21:00:03.622  5804  5804 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-27 21:00:03.624  5804  5804 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-27 21:00:03.632  5804  5804 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-27 21:00:03.632  5804  5804 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+10-27 21:00:03.632  5804  5804 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+10-27 21:00:03.632  5804  5804 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-27 21:00:03.632  5804  5804 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-27 21:00:03.636  5804  5804 I tflite  : Replacing 2068 out of 2068 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (decode).
+10-27 21:00:03.816  2528 18677 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 949, isSameBssidAndFreq true
+10-27 21:00:03.819  2528  4729 I SemWifiLinkQualityMonitor: Link stat: 221 / 4 / 1.50 (6) / 258 / -48.0 || 100.0 : 258.00 / 0.5 : 0.67 / 0.55 : 0.02 / G (G) || 2df4dca05700: 0.282 / 28.369 /  / N || N N / 0 / Y 2.0 / Y 0 / 3018102 0
+--------- beginning of system
+10-27 21:00:03.944   988   988 D io_stats: !@   8,0 r 189431 10333576 w 302880 25883080 d 21420 12396804 f 5897 21927 iot 291916 0 th 0 0 0 pt 0 inp 0 0 3018.229
+10-27 21:00:03.944   988   988 D io_stats: !@ Read_top(KB): system_server(2528) 62148 litert_lm_advan(5804) 47860 ch_zygote(5562) 24872
+10-27 21:00:03.944   988   988 D io_stats: !@ Write_top(KB): kworker/u17:2(4109) 195468 kworker/u17:1(3671) 180268 kworker/u18:0(4886) 49252
+10-27 21:00:04.010  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:04.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 14
+10-27 21:00:04.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=14)
+10-27 21:00:04.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 14
+10-27 21:00:04.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=14)
+10-27 21:00:04.051  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:04.053  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:04.053  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:04.123  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:04.175   826   826 I lmkd    : 0(delay), 7(swap), 50(freelimit), 0(reentrymode) memory pressure events were skipped after a kill!
+10-27 21:00:04.378 32139 32139 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.checkin.START pkg=com.google.android.gms }
+10-27 21:00:04.475 32139 32139 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
+10-27 21:00:04.554  8384  8953 I SCS@AiSearch user 0: (AppsDataWorker) [androidx.work-1] entering in doWork():  
+10-27 21:00:04.554  8384  8953 I SCS@AiSearch user 0: (AppsDataObserver) [androidx.work-1] entering in execute():  
+10-27 21:00:04.554  8384  8953 I SCS@AiSearch user 0: (AppsDataObserver-CMD_UPDATE_LIST) changed package count: 1
+10-27 21:00:04.559  8384  8953 I SCS@AiSearch user 0: (AppsDataObserver) [androidx.work-1] leaving from execute():  result is true
+10-27 21:00:04.559  8384  8953 I SCS@AiSearch user 0: (AppsDataWorker) [androidx.work-1] leaving from doWork():  
+10-27 21:00:04.559  8384  8513 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=a7561833-bf67-458c-b426-7539bb2d0d54, tags={ com.samsung.android.scs.ai.search.data.apps.AppsDataWorker, CMD_UPDATE_LIST } ]
+10-27 21:00:04.564 24702 24702 I Finsky  : [2] adop.onStartJob(127): SCH: job service start with id 9247.
+10-27 21:00:04.564  2528 11099 D PerProcessNandswap$NandswapHandler: nandswap start for non-activity com.android.vending(pid 24702) action:3 adj:250 type:2
+10-27 21:00:04.566 24702  4446 I Finsky  : [269] loj.a(328): SCH: Satisfied jobs for 9247 are: 12-1
+10-27 21:00:04.568 24702  5817 I Finsky  : [274] aaoi.accept(212): SCH: Job 12-1 starting
+10-27 21:00:04.568 24702 24702 I Finsky  : [2] ContentSyncJob.h(9): [ContentSync] job started
+10-27 21:00:04.570  2528 11099 D PerProcessNandswapNative: enable WriteBooster
+10-27 21:00:04.581  2528 11099 D PerProcessNandswap$NandswapHandler: nandswap end for non-activity com.android.vending(pid 24702) ret:18544177152 adj:250
+10-27 21:00:04.594  2528  7526 W ParceledListSlice: Element #496 is 17332 bytes.
+10-27 21:00:04.600 24702  5818 I Finsky  : [275] vdt.g(36): Completed 0 account content syncs with 0 successful.
+10-27 21:00:04.600 24702 24702 I Finsky  : [2] ContentSyncJob.a(12): [ContentSync] Installation state replication succeeded.
+10-27 21:00:04.600 24702 24702 I Finsky  : [2] adne.q(79): SCH: jobFinished: 12-1. TimeElapsed: 32ms.
+10-27 21:00:04.603 24702 24733 I Finsky  : [70] pwu.accept(61): SCH: Scheduling phonesky job Id: 1-1337, CT: 1793157239801, Constraints: [{ L: 16200000, D: 23004669, C: CHARGING_NONE, I: IDLE_NONE, N: NET_ANY }]
+10-27 21:00:04.604 24702 24761 I Finsky  : [77] lok.apply(293): SCH: Scheduling 1 system job(s)
+10-27 21:00:04.604 24702 24761 I Finsky  : [77] adnb.b(244): SCH: Scheduling system job Id: 9250, L: 13435197, D: 20239866, C: false, I: false, N: 1
+10-27 21:00:04.605 24702  5817 I Finsky  : [274] adop.a(24): SCH: job service finished with id 9247.
+10-27 21:00:04.606  2528  7526 D CompatChangeReporter: Compat change id reported: 311208629; UID 10271; state: ENABLED
+10-27 21:00:04.607 24702 24702 I Finsky  : [2] wpo.onTrimMemory(11): Memory trim requested to level 40
+10-27 21:00:04.607 24702 24702 I Finsky  : [2] aaqh.accept(118): Flushing in-memory image cache
+10-27 21:00:04.645 24702 24706 W android.vending: Reducing the number of considered missed Gc histogram windows from 190 to 100
+10-27 21:00:04.678  1664  5040 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 3239802
+10-27 21:00:05.008  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:05.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 15
+10-27 21:00:05.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=15)
+10-27 21:00:05.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 15
+10-27 21:00:05.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=15)
+10-27 21:00:05.047 32139 32139 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.dck.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsApiService }
+10-27 21:00:05.047 32139 32139 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.chimera.container.moduleinstall.ModuleInstallService.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsApiService }
+10-27 21:00:05.050  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:05.052  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:05.052  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:05.062 18570 18570 I wpa_supplicant: Heartbeat 287
+10-27 21:00:05.122  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:05.174  5804  5804 I native  : I0000 00:00:1793160005.174555    5804 delegate_kernel.cc:360] Total 32 external tensors are used for delegate inputs and outputs
+10-27 21:00:05.174  5804  5804 I native  : I0000 00:00:1793160005.174646    5804 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:00:05.263   988   991 D io_stats: !@ cpu boost: status(OFF), traffic_level(0), io_cpus(0x0), boosted_cpus(0x0), set_freq(0)
+10-27 21:00:05.291  2528  2830 I ActivityManager: Changes in 10108 5 to 15, 16 to 0
+10-27 21:00:05.944   988   988 D io_stats: !@   8,0 r 189540 10336684 w 302921 25887272 d 21420 12396804 f 5897 21928 iot 292036 0 th 0 0 0 pt 0 inp 0 0 3020.230
+10-27 21:00:06.007  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:06.025  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 16
+10-27 21:00:06.026  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=16)
+10-27 21:00:06.026  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 16
+10-27 21:00:06.026  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=16)
+10-27 21:00:06.049  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:06.050  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:06.051  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:06.121  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-27 21:00:06.201  5804  5804 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-27 21:00:06.209  5804  5804 I native  : I0000 00:00:1793160006.209419    5804 delegate_kernel.cc:360] Total 31 external tensors are used for delegate inputs and outputs
+10-27 21:00:06.209  5804  5804 I native  : I0000 00:00:1793160006.209452    5804 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:00:06.601  1652  4834 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):88,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-27 21:00:06.828  2528 18677 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 950, isSameBssidAndFreq true
+10-27 21:00:06.829  2528  4590 D ConnectivityService: notifyType CALLBACK_CAP_CHANGED for [100 WIFI]
+10-27 21:00:06.829  2528  4687 D SemWifiApNsd:Client: lpInterface:wlan0
+10-27 21:00:06.829  2528  4687 D SemWifiSwitchForIndividualAppsService: stopTCPMonitoring : already stopped
+10-27 21:00:06.829  2528  4687 I WifiConnectivityMonitor.NCC: sNetworkCallback(oCC) FULL : 100(valid: true/captive: false)
+10-27 21:00:06.830  2528  4687 I WifiConnectivityMonitor.NCC: [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED&NOT_BANDWIDTH_CONSTRAINED LinkUpBandwidth>=12000Kbps LinkDnBandwidth>=86212Kbps TransportInfo: <SSID: <unknown ssid>, BSSID: <mac>, MAC: <mac>, IP: /10.**.***.159, Security type: 2, Supplicant state: COMPLETED, Wi-Fi standard: 11ax, RSSI: -47, Link speed: 286Mbps, Tx Link speed: 286Mbps, Max Supported Tx Link speed: 286Mbps, Rx Link speed: 229Mbps, Max Supported Rx Link speed: 286Mbps, Frequency: 5700MHz, Net ID: -1, Metered hint: false, score: 60, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 1, Trusted: true, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none><none>MLO Information: , Is TID-To-Link negotiation supported by the AP: false, AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>, Vendor Data: <none>> SignalStrength: -47 AdminUids: [10330] SSID: "<lab-ssid>" UnderlyingNetworks: Null]
+10-27 21:00:06.830  4865  5067 D WifiPickerTracker: updateWifiEntries capabilities
+10-27 21:00:06.830  2528  4750 D SemApeService: Deducted link capacity (M: R=160 T=200) RSSI=-47
+10-27 21:00:06.830  2528  4759 D WifiConnectivityMonitor: HANDLE_ON_CAPABILITIES_CHANGED
+10-27 21:00:06.830  2528  4759 I WifiConnectivityMonitor: determineMode : MODE_NON_SWITCHABLE_BY_POOR_NETWORK_DETECTION_DISABLED
+10-27 21:00:06.830  2528  4759 D OpenNetworkQos[4.00]: updateBssidNoInternet: mBssidNoInternet = false
+10-27 21:00:06.830  2528  4759 D OpenNetworkQos[4.00]: getOpenNetworkQosNoInternetStatus: false
+10-27 21:00:06.830  2528  4759 D OpenNetworkQos[4.00]: getOpenNetworkQosScores: 30 0 0 
+10-27 21:00:06.830  2528  4759 D KNOX_MDM_SettingsProvider: isChangeAllowed() : name = wifi_wcm_qos_sharing_score_summary
+10-27 21:00:06.830  2528  4759 I WifiProfileShare: network QoS data was changed (internet), updateQoSData networkType: true, qosData: false
+10-27 21:00:06.831  4865  5067 D WifiPickerTracker: update AutoHotspot Entries() : bleAccessPoints -> 0
+10-27 21:00:06.831  2528  4750 D SemApeService: Deducted link capacity (M: R=160 T=200) on (wlan0) GoogleAPI(M: R=86 T=12) RSSI=-47 isDefault=false isMlo=false
+10-27 21:00:06.831  4865  5067 D WifiPickerTracker: handleNetworkCapabilitiesChanged
+10-27 21:00:06.831  2528  4687 D SemWifiApTrafficPriority: onCapabilitiesChanged Wifi:wlan0,mGapiValue:86.212Uplink: 12.0
+10-27 21:00:06.831  2528  6151 V WifiProfileShare.Caster: update wips network, size: 0
+10-27 21:00:06.831  2528  6151 D WifiProfileShare: nearby scanning settings run
+10-27 21:00:06.831  2528  6151 D WifiProfileShare: network score provider settings enabled
+10-27 21:00:06.831  2528  6151 D OpenNetworkQos[4.00]: getOpenNetworkQosScores: 30 0 0 
+10-27 21:00:06.831  2528  6151 D OpenNetworkQos[4.00]: getOpenNetworkQosNoInternetStatus: false
+10-27 21:00:06.831  2528  6151 I WifiProfileShare.Caster: current network type: 0, score: [30, 0, 0]
+10-27 21:00:06.831  2528  6151 V WifiProfileShare.Cache: update network score <mac>
+10-27 21:00:06.831  8522  8880 I HBD     : h onCapabilitiesChanged network : 100 current network state : wifi 
+10-27 21:00:06.831  2528  6151 D WifiProfileShare.ScanMatcher: getMcfDataList size:3
+10-27 21:00:06.831  2528  6151 I WifiProfileShare.Caster: qos data was updated , before:type:QOS, pBssid:<mac-part>, qosData:64 after:type:QOS, pBssid:<mac-part>, qosData:64
+10-27 21:00:06.832  2528  6151 I [MCFSDK_android_1.2.27006]_4_McfCasterImpl: isNetworkEnabled - type : 1 ret : true
+10-27 21:00:06.832  2528  6151 D WifiProfileShare.McfCast: -ME--- mIsNetworkEnabled :true
+10-27 21:00:06.832  2528  6151 D WifiProfileShare.McfCast: updateQoSData ignored, same contents
+10-27 21:00:06.832  2528  6151 D WifiProfileShare.MCF: success update QosData !
+10-27 21:00:06.832  2528  6151 I [MCFSDK_android_1.2.27006]_4_McfCasterImpl: isNetworkEnabled - type : 1 ret : true
+10-27 21:00:06.832  2528  6151 D WifiProfileShare.McfCast: -ME--- mIsNetworkEnabled :true
+10-27 21:00:06.832  2528  6151 D WifiProfileShare.McfCast: -ME--- updatePasswordDate pwdData size:3
+10-27 21:00:06.832 10008 10076 I BugleRcsEngine: Connected state: [1], networkType: [WIFI] [CONTEXT thread_id=55 ]
+10-27 21:00:06.832 10008 10104 I BugleRcsEngine: handleMessage processing message:[NOTIFY_UPTIME_IGNORE_STATE_CHANGED] with [non-null]:RcsEngineImpl reference [CONTEXT log_prefix="RcsEngineImpl[DUAL_REG]:[901f7fe4-e28e]>Handler" thread_id=61 ]
+10-27 21:00:06.833  2528  4590 W IPCThreadState: Sending oneway calls to frozen process.
+10-27 21:00:06.833 32139 32374 I NullBinder: NullBinder for android.net.action.RECOMMEND_NETWORKS triggering remote TransactionTooLargeException due to Service without Chimera impl, calling uid: 1000, calling pid: 0
+10-27 21:00:06.833 32139 32374 W gle.android.gms: Large reply transaction of 1056768 bytes, interface descriptor , code 1
+10-27 21:00:06.833  5245  9706 D txpwrJni: sendNetworkInfo start
+10-27 21:00:06.833  5245  9706 D txpwrJni: sendNetworkInfo RatType 0
+10-27 21:00:06.833  5214  8298 E PhoneInterfaceManager: getCarrierPrivilegeStatusForUid: Invalid subId
+10-27 21:00:06.834 32139 32600 D ConnectivityManager: StackLog: [android.net.ConnectivityManager.sendRequestForNetwork(ConnectivityManager.java:4692)] [android.net.ConnectivityManager.sendRequestForNetwork(ConnectivityManager.java:4859)] [android.net.ConnectivityManager.registerNetworkCallback(ConnectivityManager.java:5241)] [android.net.ConnectivityManager.registerNetworkCallback(ConnectivityManager.java:5211)] [edec.a(:com.google.android.gms@263737035@26.37.37 (260400-994713346):34)] [mjp.a(:com.google.android.gms@263737035@26.37.37 (260400-994713346):19)] [edep.j(:com.google.android.gms@263737035@26.37.37 (260400-994713346):19)] [edep.P(:com.google.android.gms@263737035@26.37.37 (260400-994713346):15)] [edep.L(:com.google.android.gms@263737035@26.37.37 (260400-994713346):7)] [edep.I(:com.google.android.gms@263737035@26.37.37 (260400-994713346):23)] [edeh.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):9)] [bqoi.d(:com.google.android.gms@263737035@26.37.37 (260400-994713346):50)] [bqoi.c(:com.google.android.gms@263737035@26.37.37 (260400-994713346):6)] [bqoi.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):33)] [java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)] [java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)] [bquk.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):8)] [java.lang.Thread.run(Thread.java:1012)]
+10-27 21:00:06.835 32139 32600 D ConnectivityManager: StackLog: [android.net.ConnectivityManager.unregisterNetworkCallback(ConnectivityManager.java:5491)] [edep.j(:com.google.android.gms@263737035@26.37.37 (260400-994713346):49)] [edep.P(:com.google.android.gms@263737035@26.37.37 (260400-994713346):15)] [edep.L(:com.google.android.gms@263737035@26.37.37 (260400-994713346):7)] [edep.I(:com.google.android.gms@263737035@26.37.37 (260400-994713346):23)] [edeh.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):9)] [bqoi.d(:com.google.android.gms@263737035@26.37.37 (260400-994713346):50)] [bqoi.c(:com.google.android.gms@263737035@26.37.37 (260400-994713346):6)] [bqoi.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):33)] [java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)] [java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)] [bquk.run(:com.google.android.gms@263737035@26.37.37 (260400-994713346):8)] [java.lang.Thread.run(Thread.java:1012)]
+10-27 21:00:06.835  2528  4590 D ConnectivityService: Rematched networks [computed 0ms] [applied 1ms] [issued 0]
+10-27 21:00:06.835 32139 32600 I NearbyMediums: Wifi changed new SSID: "<lab-ssid>"
+10-27 21:00:06.835 32139 32600 I NearbyMediums: WifiLanConnectivityInfo is not changed, skip notify.
+10-27 21:00:06.835  2528  4590 D ConnectivityService: NetworkReassignment : no changes
+10-27 21:00:06.835 10008 10104 I BugleRcsEngine: No RCS Configuration was found in Bugle for simID: redacted-pii:sim_id[chars:0,last3:] [CONTEXT log_prefix="ProvisioningEngineDataRetriever" thread_id=61 ]
+10-27 21:00:06.871  2528  4686 D UsbStatsMonitor: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 223338299396
+10-27 21:00:06.932  8522  8522 I HBD     : h onCapabilityChanged  setNetworkState currentNetworkState : wifi 
+10-27 21:00:06.932  8522  8522 I HBD     : h LogTag.TAG_LMDOWNLOAD network status is changed.
+10-27 21:00:07.006  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:07.026  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 17
+10-27 21:00:07.026  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=17)
+10-27 21:00:07.026  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 17
+10-27 21:00:07.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=17)
+10-27 21:00:07.047  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:07.049  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:07.049  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:07.073  2528  2830 I ActivityManager: Changes in 10347 5 to 15, 16 to 0
+10-27 21:00:07.081  2528  2830 I ActivityManager: Changes in 10332 5 to 15, 16 to 0
+10-27 21:00:07.082  2528  2830 I ActivityManager: Changes in 10115 5 to 15, 16 to 0
+10-27 21:00:07.082  2528  2830 I ActivityManager: Changes in 10055 5 to 15, 16 to 0
+10-27 21:00:07.107  2528  2528 I VaultKeeperService: wakelock is released!!
+10-27 21:00:07.120  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:07.218  2528  4623 W DeviceStorageMonitorService: updateBroadcasts(/data) oldLevel:0, newLevel:0, seq:1
+10-27 21:00:07.219  2528  4623 D DeviceStorageMonitorService: Available File Node Number is [12792682]
+10-27 21:00:07.219  2528  4623 W DeviceStorageMonitorService: updateBroadcasts_filenode(/data) fn_oldLevel:0, fn_newLevel:0, seq:1
+10-27 21:00:07.334 32139 32600 I NearbySharing: Network state changed: NetworkState(isRestricted=false, isOnline=true, isCongested=false, isMetered=false, isWifiConnected=true)
+10-27 21:00:07.348  5804  5804 I tflite  : Replacing 1107 out of 1107 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_128).
+10-27 21:00:07.348  2528  2830 I ActivityManager: Changes in 5009 5 to 15, 16 to 0
+10-27 21:00:07.356  5804  5804 I native  : I0000 00:00:1793160007.356162    5804 delegate_kernel.cc:360] Total 31 external tensors are used for delegate inputs and outputs
+10-27 21:00:07.356  5804  5804 I native  : I0000 00:00:1793160007.356202    5804 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:00:07.357  2528  2830 I ActivityManager: Changes in 10228 5 to 15, 56 to 0
+10-27 21:00:07.945   988   988 D io_stats: !@   8,0 r 189566 10337224 w 302961 25901436 d 21422 12401944 f 5897 21928 iot 292088 0 th 0 0 0 pt 0 inp 0 0 3022.230
+10-27 21:00:07.945   988   988 D io_stats: !@ Read_top(KB): litert_lm_advan(5804) 2312 kworker/u17:0(5581) 768 id.app.reminder(5562) 160
+10-27 21:00:07.945   988   988 D io_stats: !@ Write_top(KB): kworker/u17:3(2378) 14164 kworker/u17:0(5581) 4096 android.vending(24702) 88
+10-27 21:00:08.004  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:08.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 18
+10-27 21:00:08.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=18)
+10-27 21:00:08.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 18
+10-27 21:00:08.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=18)
+10-27 21:00:08.040  5804  5804 I tflite  : Replacing 2243 out of 2243 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (verify).
+10-27 21:00:08.046  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:08.047  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:08.047  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:08.058  5804  5804 I native  : I0000 00:00:1793160008.058232    5804 delegate_kernel.cc:360] Total 32 external tensors are used for delegate inputs and outputs
+10-27 21:00:08.058  5804  5804 I native  : I0000 00:00:1793160008.058274    5804 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:00:08.118  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:08.159  4865  5004 D Tile.SoundModeTile: handleSetListening: listening true
+10-27 21:00:08.160  4865  5004 D Tile.WifiTile: handleUpdateState isTransient=false transientEnabling =false cb.isTransient=false state.state = 2 mStateBeforeClick.value =false enabled =true
+10-27 21:00:08.160  4865  5004 D Tile.WifiTile: handleUpdateState isTransient=false transientEnabling =false cb.isTransient=false state.state = 2 mStateBeforeClick.value =false enabled =true
+10-27 21:00:08.160  4865  5004 D Tile.WifiTile: handleUpdateState isTransient=false transientEnabling =false cb.isTransient=false state.state = 2 mStateBeforeClick.value =false enabled =true
+10-27 21:00:08.161  4865  5004 D DeviceState: isESIM() :0 : false
+10-27 21:00:08.161  4865  5004 D DeviceState: isEuicc() :1 : true
+10-27 21:00:08.162  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState mIsWiFiOnlyDevice false isNoSimState true isPowerOffServiceState true mSetting.getValue() 0
+10-27 21:00:08.162  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState:  value = false, state = 1
+10-27 21:00:08.162  4865  5004 D Tile.SoundModeTile: handleUpdateState: profile 2, muteAllSound false
+10-27 21:00:08.162  4865  5004 D DeviceState: isESIM() :0 : false
+10-27 21:00:08.163  4865  5004 D DeviceState: isEuicc() :1 : true
+10-27 21:00:08.163  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState mIsWiFiOnlyDevice false isNoSimState true isPowerOffServiceState true mSetting.getValue() 0
+10-27 21:00:08.163  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState:  value = false, state = 1
+10-27 21:00:08.163  4865  5004 D Tile.SoundModeTile: handleSetListening: listening false
+10-27 21:00:08.847  1652  4423 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:activities  Wakeup, msg_id=1025, ts=58161764739
+10-27 21:00:08.847  1652  4423 I sensors-hal: handle_sns_client_event:56, activities_event: msgid:1025
+10-27 21:00:08.847  1652  4423 I sensors-hal: handle_sns_client_event:66, activities_event index 1 number 1 total 10
+10-27 21:00:08.847  1652  4423 I sensors-hal: submit_data:119, Activities 7171456.000000 ts 58161764739
+10-27 21:00:08.847  1652  4423 I sensors-hal: insert_awaking_events:859, sensor:activities  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:00:08.847  1652  4423 I sensors-hal: insert_awaking_events:872, smp2p_event, 19.activities, msgid:1025
+10-27 21:00:08.848  2528  4421 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :10], AP_WAKEUP
+10-27 21:00:08.848  2528  4421 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 10
+10-27 21:00:08.848  2528  4421 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 26, 1, 0, -37, -38, 74, 4, 2,
+10-27 21:00:08.849  2528  4421 D CAE     : display(ContextProvider.java:375) - ================= ACTIVITY_TRACKER =================
+10-27 21:00:08.849  2528  4421 I CAE     : display(ContextProvider.java:391) - Accuracy=[2], OperationMode=[0], ActivityType=[4], TimeStamp=[1793160008266]
+10-27 21:00:08.849  2528  4418 D SemContextService: Service.updateContext() : service = Activity Tracker
+10-27 21:00:08.849  2528 17169 D SemContextManager: onSemContextChanged() : event = Activity Tracker
+10-27 21:00:08.884  4865  4865 D SBluetoothControllerImpl: handleMessage : 3
+10-27 21:00:08.884  4865  4865 D SBluetoothControllerImpl: handleMessage : 2
+10-27 21:00:08.885  4865  5004 D SBluetoothTile:  handleUpdateState enabled = true connected = false connecting = false changedState =false bluetoothState = 12 enabledChanging = false state = QSTile$BooleanState[spec=Bluetooth,icon=ResourceIcon[resId=0x7f080e5c],nextIcon=null,iconSupplier=null,label=Bluetooth,secondaryLabel=,contentDescription=Bluetooth,stateDescription=null,dualLabelContentDescription=null,expandedAccessibilityClassName=null,disabledByPolicy=false,dualTarget=true,isTransient=false,state=2,sideViewCustomDrawable=null,tileClassName=null,value=true,forceExpandIcon=false]
+10-27 21:00:08.888  4865  5004 D SBluetoothTile:  handleUpdateState enabled = true connected = false connecting = false changedState =false bluetoothState = 12 enabledChanging = false state = QSTile$BooleanState[spec=Bluetooth,icon=ResourceIcon[resId=0x7f080e5c],nextIcon=null,iconSupplier=null,label=Bluetooth,secondaryLabel=,contentDescription=Bluetooth,stateDescription=null,dualLabelContentDescription=null,expandedAccessibilityClassName=null,disabledByPolicy=false,dualTarget=true,isTransient=false,state=2,sideViewCustomDrawable=null,tileClassName=null,value=true,forceExpandIcon=false]
+10-27 21:00:08.888  4865  5004 D SBluetoothTile:  handleUpdateState enabled = true connected = false connecting = false changedState =false bluetoothState = 12 enabledChanging = false state = QSTile$BooleanState[spec=Bluetooth,icon=ResourceIcon[resId=0x7f080e5c],nextIcon=null,iconSupplier=null,label=Bluetooth,secondaryLabel=,contentDescription=Bluetooth,stateDescription=null,dualLabelContentDescription=null,expandedAccessibilityClassName=null,disabledByPolicy=false,dualTarget=true,isTransient=false,state=2,sideViewCustomDrawable=null,tileClassName=null,value=true,forceExpandIcon=false]
+10-27 21:00:08.888  4865  4865 D SBluetoothControllerImpl: handleMessage : 4
+10-27 21:00:09.003  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:09.019  5804  5804 W native  : W0000 00:00:1793160009.019426    5804 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+10-27 21:00:09.022  5804  5804 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-27 21:00:09.022  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+10-27 21:00:09.022  5804  5804 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-27 21:00:09.022  5804  5804 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-27 21:00:09.022  5804  5804 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-27 21:00:09.025  5804  5804 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+10-27 21:00:09.025  5804  5804 I tflite  : Replacing 2 out of 8 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-27 21:00:09.026  5804  5804 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-27 21:00:09.026  5804  5804 I litert  : [compiled_model.cc:2095] Tracked constant output tensor eoa_embedding with locked address
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-27 21:00:09.026  5804  5804 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-27 21:00:09.026  5804  5804 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-27 21:00:09.026  5804  5804 I litert  : [compiled_model.cc:2095] Tracked constant output tensor eoi_embedding with locked address
+10-27 21:00:09.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 19
+10-27 21:00:09.027  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=19)
+10-27 21:00:09.028  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 19
+10-27 21:00:09.028  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=19)
+10-27 21:00:09.030  5804  5804 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+10-27 21:00:09.030  5804  5804 I litert  : [magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+10-27 21:00:09.030  5804  5804 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-27 21:00:09.030  5804  5804 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=2048, signature_prefix=null
+10-27 21:00:09.030  5804  5804 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-27 21:00:09.045  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:09.046  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:09.046  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:09.072  5804  5804 I tflite  : Replacing 1 out of 42 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (main).
+10-27 21:00:09.073  5804  5804 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-27 21:00:09.073  5804  5804 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-27 21:00:09.073  5804  5804 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-27 21:00:09.074  5804  5804 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b694d44a0, name=LiteRT GPU
+10-27 21:00:09.074  5804  5804 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-27 21:00:09.074  5804  5804 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007b694d4660, name=CpuAccelerator
+10-27 21:00:09.074  5804  5804 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-27 21:00:09.089  5804  5804 I native  : I0000 00:00:1793160009.089338    5804 litert_lm_lib.cc:1194] Creating conversation
+10-27 21:00:09.092  5804  5804 W native  : W0000 00:00:1793160009.092840    5804 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+10-27 21:00:09.092  5804  5804 I native  : I0000 00:00:1793160009.092871    5804 litert_lm_lib.cc:1206] Running single-turn conversation
+10-27 21:00:09.117  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-27 21:00:09.147  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-27 21:00:09.407  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-27 21:00:09.408  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-27 21:00:09.408  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-27 21:00:09.408  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-27 21:00:09.408  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-27 21:00:09.408  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-27 21:00:09.408  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-27 21:00:09.409  5804  5804 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-27 21:00:09.441  5804  5804 W libc    : Access denied finding property "ro.mediatek.platform"
+10-27 21:00:09.441  5804  5804 W libc    : Access denied finding property "ro.chipname"
+10-27 21:00:09.631  5804  5804 I tflite  : Loaded OpenCL library with dlopen.
+10-27 21:00:09.672  4865  5004 D Tile.SoundModeTile: handleSetListening: listening true
+10-27 21:00:09.673  4865  5004 D Tile.WifiTile: handleUpdateState isTransient=false transientEnabling =false cb.isTransient=false state.state = 2 mStateBeforeClick.value =false enabled =true
+10-27 21:00:09.673  4865  5004 D Tile.WifiTile: handleUpdateState isTransient=false transientEnabling =false cb.isTransient=false state.state = 2 mStateBeforeClick.value =false enabled =true
+10-27 21:00:09.673  4865  5004 D Tile.WifiTile: handleUpdateState isTransient=false transientEnabling =false cb.isTransient=false state.state = 2 mStateBeforeClick.value =false enabled =true
+10-27 21:00:09.673  4865  5004 D Tile.SoundModeTile: handleUpdateState: profile 2, muteAllSound false
+10-27 21:00:09.674  4865  5004 D Tile.SoundModeTile: handleSetListening: listening false
+10-27 21:00:09.691  4865  5004 D DeviceState: isESIM() :0 : false
+10-27 21:00:09.691  4865  5004 D DeviceState: isEuicc() :1 : true
+10-27 21:00:09.691  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState mIsWiFiOnlyDevice false isNoSimState true isPowerOffServiceState true mSetting.getValue() 0
+10-27 21:00:09.692  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState:  value = false, state = 1
+10-27 21:00:09.692  4865  5004 D DeviceState: isESIM() :0 : false
+10-27 21:00:09.693  4865  5004 D DeviceState: isEuicc() :1 : true
+10-27 21:00:09.693  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState mIsWiFiOnlyDevice false isNoSimState true isPowerOffServiceState true mSetting.getValue() 0
+10-27 21:00:09.693  4865  5004 D Tile.AirplaneModeTile:  handleUpdateState:  value = false, state = 1
+10-27 21:00:09.793  4865  4865 D SBluetoothControllerImpl: handleMessage : 3
+10-27 21:00:09.793  4865  4865 D SBluetoothControllerImpl: handleMessage : 2
+10-27 21:00:09.793  4865  5004 D SBluetoothTile:  handleUpdateState enabled = true connected = false connecting = false changedState =false bluetoothState = 12 enabledChanging = false state = QSTile$BooleanState[spec=Bluetooth,icon=ResourceIcon[resId=0x7f080e5c],nextIcon=null,iconSupplier=null,label=Bluetooth,secondaryLabel=,contentDescription=Bluetooth,stateDescription=null,dualLabelContentDescription=null,expandedAccessibilityClassName=null,disabledByPolicy=false,dualTarget=true,isTransient=false,state=2,sideViewCustomDrawable=null,tileClassName=null,value=true,forceExpandIcon=false]
+10-27 21:00:09.795  4865  5004 D SBluetoothTile:  handleUpdateState enabled = true connected = false connecting = false changedState =false bluetoothState = 12 enabledChanging = false state = QSTile$BooleanState[spec=Bluetooth,icon=ResourceIcon[resId=0x7f080e5c],nextIcon=null,iconSupplier=null,label=Bluetooth,secondaryLabel=,contentDescription=Bluetooth,stateDescription=null,dualLabelContentDescription=null,expandedAccessibilityClassName=null,disabledByPolicy=false,dualTarget=true,isTransient=false,state=2,sideViewCustomDrawable=null,tileClassName=null,value=true,forceExpandIcon=false]
+10-27 21:00:09.795  4865  5004 D SBluetoothTile:  handleUpdateState enabled = true connected = false connecting = false changedState =false bluetoothState = 12 enabledChanging = false state = QSTile$BooleanState[spec=Bluetooth,icon=ResourceIcon[resId=0x7f080e5c],nextIcon=null,iconSupplier=null,label=Bluetooth,secondaryLabel=,contentDescription=Bluetooth,stateDescription=null,dualLabelContentDescription=null,expandedAccessibilityClassName=null,disabledByPolicy=false,dualTarget=true,isTransient=false,state=2,sideViewCustomDrawable=null,tileClassName=null,value=true,forceExpandIcon=false]
+10-27 21:00:09.795  4865  4865 D SBluetoothControllerImpl: handleMessage : 4
+10-27 21:00:09.833  6933  6933 I SDHMS:LOAD: type: LoadsFreqs, value: 0:0:1:3609983:4473600:1017600:1947648:3532800:556800:652:1200:222
+10-27 21:00:09.841  2528 18677 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 951, isSameBssidAndFreq true
+10-27 21:00:09.945   988   988 D io_stats: !@   8,0 r 189922 10361516 w 302962 25901440 d 21422 12401944 f 5897 21928 iot 292188 0 th 0 0 0 pt 0 inp 0 0 3024.231
+10-27 21:00:10.028  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 20
+10-27 21:00:10.028  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=20)
+10-27 21:00:10.029  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 20
+10-27 21:00:10.029  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=20)
+10-27 21:00:10.034  6838  7109 I bbiv    : (REDACTED) getHotwordActive::active query: %s, watch: %s, devices connected: %s
+10-27 21:00:10.043  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:10.085  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:10.088  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:10.088  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:10.159  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:10.254  1655 19418 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-27 21:00:10.254  1655 19418 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:00:10.255  1655 19418 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_rcv: 0
+10-27 21:00:10.255  1655 19418 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-27 21:00:10.255  1655 19418 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:00:10.255  1655 19418 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_spk: 0
+10-27 21:00:10.257  6933  8209 I SDHMS:x : SIOP:: AP:389 BAT:281 USB:276 CHG:389 PA:392 WIFI:319 CF:300 BLK:0 SUBBAT:0 LRPTHM:287 SKIN:316 SKINF:316 SKINB:309 LRP:316 LRF:316 LRB:309 APT:315 APR:305 RCV:292 SPK:275 CHGF:313 CHGR:309 MEMF:316 MEMR:309 WIFIF:309 WIFIR:300 FCAM:275 UPSPK:284 DNSPK:275 VAP:317 VWIFI:293 AMB2:249 HIGH:0 AVGCUR:-8 AVGSYS:515 POWER:-35
+10-27 21:00:10.258  6933  8209 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=28
+10-27 21:00:10.258  1715 16037 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=28
+10-27 21:00:10.259  1655 19418 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-27 21:00:10.259  1655 19418 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-27 21:00:10.259  1655 19418 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-27 21:00:10.259  1655 19418 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-27 21:00:10.259  1655 19418 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 28
+10-27 21:00:10.259  1655 19418 I PAL: API: pal_set_param: 1377: Enter: param id 3002
+10-27 21:00:10.259  1655 19418 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:00:10.259  1715 16037 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:00:10.260  1715 16037 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:00:10.260  6933  8209 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=29
+10-27 21:00:10.260  1715  1715 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=29
+10-27 21:00:10.261  1655 19418 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-27 21:00:10.261  1655 19418 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-27 21:00:10.261  1655 19418 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-27 21:00:10.261  1655 19418 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-27 21:00:10.261  1655 19418 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 29
+10-27 21:00:10.261  1655 19418 I PAL: API: pal_set_param: 1377: Enter: param id 3001
+10-27 21:00:10.261  1655 19418 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:00:10.261  1715  1715 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:00:10.262  1715  1715 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [                 contacts = {contacts=0, raw_contacts=0, data=0, account={secphone(1)=0}, trash=0, trash_acc={}, trash_sync=0, database=contacts2.db} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [               aggregated = {} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [                  request = {ALL(0)={avg=0, cnt=9, dur=2, ops={query=9}}, calendar(5532)={avg=0, cnt=2, dur=1, ops={query=2}}, com.samsung.android.smartsuggestions(6815)={avg=1, cnt=1, dur=1, ops={query=1}}, contacts(30207)={avg=0, cnt=6, dur=0, ops={query=6}}} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [                    calls = {types={}, database=calllog.db} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [                  profile = {contacts=0, raw_contacts=0, data=0, account={secphone(1)=0}, trash=0, trash_acc={}, trash_sync=0, database=profile.db} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [               sa_profile = {contacts=0, raw_contacts=0, data=0, account={secphone(1)=0}, trash=0, trash_acc={}, trash_sync=0, database=profile_sa.db} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: [                      etc = {binders=0, country_iso=US, version=15.4.26, db_version=1901, csc=XAA/XAA, sec_enabled=false, is_roaming=false} ]
+10-27 21:00:10.721  7381  7672 V CpEventLog(u0): cp_state: ------------------------------------------------------------------------------
+10-27 21:00:10.922  1652  4834 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):88,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-27 21:00:11.029  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 21
+10-27 21:00:11.029  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=21)
+10-27 21:00:11.029  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 21
+10-27 21:00:11.029  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=21)
+10-27 21:00:11.042  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:11.084  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:11.086  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:11.086  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:11.140   999  5530 I keystore2: system/security/keystore2/watchdog/src/lib.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+10-27 21:00:11.157  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-27 21:00:11.311  2133  2133 I CNSS    : /sys/wifi/max_chipset_log_size doesn't exist
+10-27 21:00:11.451  6815  6815 I GlanceSessionWorker: Clear appWidget-3-worker resource
+10-27 21:00:11.454  6815  6815 I GlanceSessionWorker: SessionWorker appWidget-3 end
+10-27 21:00:11.454  6815  6815 I GlanceSessionWorker: closeSession appWidget-3
+10-27 21:00:11.455  6815  6815 I GlanceSession: close: this=AppWidgetSession{bc4ccbf id=3 widget=he.d }
+10-27 21:00:11.458  6815  8248 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=a4f2bfc1-0398-4479-850c-a8db7225c084, tags={ androidx.glance.session.SessionWorker } ]
+10-27 21:00:11.946   988   988 D io_stats: !@   8,0 r 189953 10361700 w 303003 25914964 d 21422 12401944 f 5898 21932 iot 292256 0 th 0 0 0 pt 0 inp 0 0 3026.231
+10-27 21:00:11.946   988   988 D io_stats: !@ Read_top(KB): litert_lm_advan(5804) 24016 kworker/u17:0(5581) 256 martsuggestions(6815) 112
+10-27 21:00:11.946   988   988 D io_stats: !@ Write_top(KB): kworker/u17:2(4109) 13220 system_server(2528) 272 soft.appmanager(28063) 24
+10-27 21:00:12.030  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 22
+10-27 21:00:12.030  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=22)
+10-27 21:00:12.031  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 22
+10-27 21:00:12.031  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=22)
+10-27 21:00:12.041  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:12.078  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-27 21:00:12.079  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-27 21:00:12.079  2528  4590 D InetDiagMessage: Destroyed live tcp sockets for uids={10347} in 2ms
+10-27 21:00:12.080  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-27 21:00:12.081  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-27 21:00:12.081  2528  4590 D InetDiagMessage: Destroyed live tcp sockets for uids={20347} in 3ms
+10-27 21:00:12.082  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:12.083  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-27 21:00:12.083  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-27 21:00:12.083  2528  4590 D InetDiagMessage: Destroyed live tcp sockets for uids={10332} in 2ms
+10-27 21:00:12.084  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:12.084  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:12.084  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+10-27 21:00:12.085  2528  4590 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+10-27 21:00:12.085  2528  4590 D InetDiagMessage: Destroyed live tcp sockets for uids={20332} in 1ms
+10-27 21:00:12.090  2528  3561 D ActivityManager: freezing 1789 com.samsung.android.forest
+10-27 21:00:12.155  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:12.874  2528 18677 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 952, isSameBssidAndFreq true
+10-27 21:00:13.031  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 23
+10-27 21:00:13.031  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=23)
+10-27 21:00:13.032  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 23
+10-27 21:00:13.032  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=23)
+10-27 21:00:13.039  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:13.081  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:13.083  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:13.083  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:13.141  1652  4834 I sensors-hal: handle_sns_client_event:191, auto_rotation_debug_2 mode,255, type,1,0 acc,9.447,1.163,-1.962, ar,0, ver,12, pedo,1,e,0,i,2
+10-27 21:00:13.155  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:13.947   988   988 D io_stats: !@   8,0 r 189970 10361768 w 303066 25915536 d 21423 12404072 f 5901 21935 iot 292284 0 th 0 0 0 pt 0 inp 0 0 3028.232
+10-27 21:00:14.032  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 24
+10-27 21:00:14.032  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=24)
+10-27 21:00:14.032  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 24
+10-27 21:00:14.033  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=24)
+10-27 21:00:14.038  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:14.080  1791  2793 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:14.082  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:14.082  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:14.154  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:00:14.293 32139 32139 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.libs.gmscorelogger.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentDirectBootAwareApiService }
+10-27 21:00:14.997  5804  5804 I native  : I0000 00:00:1793160014.997621    5804 litert_lm_lib.cc:433] BenchmarkInfo:
+10-27 21:00:14.997  5804  5804 I native  :   Init Phases (7):
+10-27 21:00:14.997  5804  5804 I native  :     - Init Conversation: 0.20 ms
+10-27 21:00:14.997  5804  5804 I native  :     - Init Executor: 5642.99 ms
+10-27 21:00:14.997  5804  5804 I native  :     - Init LLM metadata: 0.03 ms
+10-27 21:00:14.997  5804  5804 I native  :     - Init Model assets: 7.38 ms
+10-27 21:00:14.997  5804  5804 I native  :     - Init Tokenizer: 58.78 ms
+10-27 21:00:14.997  5804  5804 I native  :     - Init Total: 5650.72 ms
+10-27 21:00:14.997  5804  5804 I native  : --------------------------------------------------
+10-27 21:00:14.997  5804  5804 I native  :   Time to first token: 0.33 s
+10-27 21:00:14.998  5804  5804 I native  : --------------------------------------------------
+10-27 21:00:14.998  5804  5804 I native  :   Prefill Turns (Total 1 turns):
+10-27 21:00:14.998  5804  5804 I native  :     Prefill Turn 1: Processed 1024 tokens in 312.411563ms duration.
+10-27 21:00:14.998  5804  5804 I native  :       Prefill Speed: 3277.73 tokens/sec.
+10-27 21:00:14.998  5804  5804 I native  : --------------------------------------------------
+10-27 21:00:14.998  5804  5804 I native  :   Decode Turns (Total 1 turns):
+10-27 21:00:14.998  5804  5804 I native  :     Decode Turn 1: Processed 256 tokens in 5.590927915s duration.
+10-27 21:00:14.998  5804  5804 I native  :       Decode Speed: 45.79 tokens/sec.
+10-27 21:00:14.998  5804  5804 I native  : --------------------------------------------------
+10-27 21:00:14.998  5804  5804 I native  :   TextToTokenIds Turns (Total 0 turns):
+10-27 21:00:14.998  5804  5804 I native  :     No text to token ids turns recorded.
+10-27 21:00:14.998  5804  5804 I native  : --------------------------------------------------
+10-27 21:00:15.032  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 25
+10-27 21:00:15.033  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=25)
+10-27 21:00:15.033  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability interval count = 25
+10-27 21:00:15.033  4608  5132 I DigitalKey: [GmsCarKeyFwWorker] runCheckComponentAvailability disabled yet (count=25)
+10-27 21:00:15.036  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:00:15.064 18570 18570 I wpa_supplicant: Heartbeat 288
+10-27 21:00:15.078  1791  5022 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:00:15.081  1678  2732 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:00:15.081  1678  2732 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:00:15.152  1678  2006 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-27 21:00:15.206  5804  5804 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b6945dc10, name=CpuAccelerator
+10-27 21:00:15.206  5804  5804 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b6945e070, name=LiteRT GPU
+10-27 21:00:15.231  5804  5804 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b694d4660, name=CpuAccelerator
+10-27 21:00:15.231  5804  5804 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007b694d44a0, name=LiteRT GPU

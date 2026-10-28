@@ -1,0 +1,12 @@
+# 2026-10-28: the Qwen3-0.6B GPU composite export that litert-community/Qwen3-0.6B added in Hub commit e6bb3e4a
+# (2026-10-27 22:56 UTC; Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm; its card: the GPU path needs a
+# LiteRT-LM newer than 0.18.1), in the Qwen3 GPU row of matrices/ddp-protocol2k-gpu-android.cells with only the file
+# changed. For `bench matrix <this file> --ddp pa3q-35 --engine-build <label>` on a LiteRT-LM main build
+# (android/scripts/build_litert_lm_main.sh). Its own campaign, never the same campaign as that file's Qwen3 row: a
+# native-benchmark capture name and cell id leave the file out (run_cell.capture_stem, run_campaign.cell_id), so two
+# Qwen3-0.6B files in one campaign would share one cell's records.
+# Same protocol as that file: 1,024 forced prefill tokens, 256 decode, --max_num_tokens=2048, one benchmark per process
+# (the first launch on a unit builds the engine caches, every later launch loads with them), same cooldown.
+# Pool: pa3q-35 (Galaxy S25 Ultra). No anchor rows.
+
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm context-tokens=2048

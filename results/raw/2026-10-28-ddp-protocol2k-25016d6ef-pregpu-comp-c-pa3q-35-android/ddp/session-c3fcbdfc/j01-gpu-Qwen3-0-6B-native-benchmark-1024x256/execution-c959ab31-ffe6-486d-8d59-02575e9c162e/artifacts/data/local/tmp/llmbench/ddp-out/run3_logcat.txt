@@ -1,0 +1,719 @@
+--------- beginning of main
+10-27 21:30:19.712   887   887 I native  : I0000 00:00:1793161819.711955     887 litert_lm_lib.cc:700] Choose backend: gpu
+10-27 21:30:19.712   887   887 I native  : I0000 00:00:1793161819.712778     887 litert_lm_lib.cc:880] executor_settings: backend: GPU
+10-27 21:30:19.712   887   887 I native  : backend_config:
+10-27 21:30:19.712   887   887 I native  : max_top_k: 64
+10-27 21:30:19.712   887   887 I native  : 
+10-27 21:30:19.712   887   887 I native  : max_tokens: 2048
+10-27 21:30:19.712   887   887 I native  : activation_data_type: Not set
+10-27 21:30:19.712   887   887 I native  : max_num_images: 0
+10-27 21:30:19.712   887   887 I native  : lora_rank: 0
+10-27 21:30:19.712   887   887 I native  : pad_token_id: -1
+10-27 21:30:19.712   887   887 I native  : cache_dir: 
+10-27 21:30:19.712   887   887 I native  : cache_file: Not set
+10-27 21:30:19.712   887   887 I native  : litert_dispatch_lib_dir: Not set
+10-27 21:30:19.712   887   887 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm
+10-27 21:30:19.712   887   887 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+10-27 21:30:19.712   887   887 I native  : 
+10-27 21:30:19.712   887   887 I native  : advanced_settings: prefill_batch_sizes: [1024]
+10-27 21:30:19.712   887   887 I native  : num_output_candidates: 1
+10-27 21:30:19.712   887   887 I native  : configure_magic_numbers: true
+10-27 21:30:19.712   887   887 I native  : verify_magic_numbers: false
+10-27 21:30:19.712   887   887 I native  : clear_kv_cache_before_prefill: true
+10-27 21:30:19.712   887   887 I native  : num_logits_to_print_after_decode: 0
+10-27 21:30:19.712   887   887 I native  : gpu_madvise_original_shared_tensors: true
+10-27 21:30:19.712   887   887 I native  : gpu_enable_metal_residency_set: false
+10-27 21:30:19.712   887   887 I native  : is_benchmark: true
+10-27 21:30:19.712   887   887 I native  : enable_profiling: false
+10-27 21:30:19.712   887   887 I native  : preferred_device_substr: 
+10-27 21:30:19.712   887   887 I native  : num_threads_to_upload: -1
+10-27 21:30:19.712   887   887 I native  : num_threads_to_compile: -1
+10-27 21:30:19.712   887   887 I native  : convert_weights_on_gpu: true
+10-27 21:30:19.712   887   887 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+10-27 21:30:19.712   887   887 I native  : optimize_shader_compilation: true
+10-27 21:30:19.712   887   887 I native  : cache_compiled_shaders_only: false
+10-27 21:30:19.712   887   887 I native  : share_constant_tensors: true
+10-27 21:30:19.712   887   887 I native  : sampler_handles_input: true
+10-27 21:30:19.712   887   887 I native  : allow_src_quantized_fc_conv_ops: Not set
+10-27 21:30:19.712   887   887 I native  : hint_waiting_for_completion: Not set
+10-27 21:30:19.712   887   887 I native  : gpu_context_low_priority: Not set
+10-27 21:30:19.712   887   887 I native  : enable_speculative_decoding: false
+10-27 21:30:19.712   887   887 I native  : disable_delegate_clustering: false
+10-27 21:30:19.712   887   887 I native  : hint_kernel_batch_size: Not set
+10-27 21:30:19.712   887   887 I native  : error_on_invalid_sampled_token_id: false
+10-27 21:30:19.712   887   887 I native  : 
+10-27 21:30:19.712   887   887 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+10-27 21:30:19.712   887   887 I native  : 
+10-27 21:30:19.712   887   887 I native  : I0000 00:00:1793161819.712813     887 litert_lm_lib.cc:887] vision_executor_settings: not set
+10-27 21:30:19.712   887   887 I native  : I0000 00:00:1793161819.712817     887 litert_lm_lib.cc:893] audio_executor_settings: not set
+10-27 21:30:19.712   887   887 I native  : I0000 00:00:1793161819.712821     887 litert_lm_lib.cc:916] Creating engine
+10-27 21:30:19.712   887   887 W native  : W0000 00:00:1793161819.712964     887 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-27 21:30:19.712   887   887 W native  : W0000 00:00:1793161819.712970     887 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-27 21:30:19.712   887   887 W native  : W0000 00:00:1793161819.712974     887 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-27 21:30:19.712   887   887 W native  : W0000 00:00:1793161819.712977     887 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-27 21:30:19.713   887   887 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-27 21:30:19.713   887   887 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-27 21:30:19.713   887   887 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-27 21:30:19.713   887   888 W native  : W0000 00:00:1793161819.713204     888 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-27 21:30:19.713   887   888 W native  : W0000 00:00:1793161819.713519     888 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+10-27 21:30:19.713   887   888 W native  : W0000 00:00:1793161819.713647     888 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Local Branch                     : 
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Remote Branch                    : NONE
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-27 21:30:19.752   887   889 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-27 21:30:19.755   887   889 D qdgralloc: Fetching IMapper5 from QtiMapper5
+10-27 21:30:19.757   887   889 I SnapAlloc: Graphics lib is available
+10-27 21:30:19.764   887   889 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-27 21:30:19.765   887   889 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-27 21:30:19.766   887   889 I AdrenoUtils: <ReadGpuID:366>: Reading chip ID through GSL
+10-27 21:30:19.767   887   887 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a15478d70, name=LiteRT GPU
+10-27 21:30:19.767   887   887 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-27 21:30:19.767   887   887 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a15477c60, name=CpuAccelerator
+10-27 21:30:19.767   887   887 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-27 21:30:19.779   887   887 W native  : W0000 00:00:1793161819.779847     887 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+10-27 21:30:19.779   887   887 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-27 21:30:19.779   887   887 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-27 21:30:19.779   887   887 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-27 21:30:19.780   887   887 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a15477e20, name=LiteRT GPU
+10-27 21:30:19.780   887   887 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-27 21:30:19.780   887   887 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a15477f70, name=CpuAccelerator
+10-27 21:30:19.780   887   887 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-27 21:30:19.782   887   887 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=510, num_signatures=3
+10-27 21:30:19.782   887   887 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+10-27 21:30:19.782   887   887 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+10-27 21:30:19.782   887   887 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=900, num_inputs=60, num_outputs=57, num_ops=406
+10-27 21:30:19.782   887   887 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+10-27 21:30:19.782   887   887 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+10-27 21:30:19.783   887   887 I litert  : [magic_number_utils.cc:536] 534 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+10-27 21:30:19.783   887   887 I litert  : [magic_number_utils.cc:536] 534 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+10-27 21:30:19.784   887   887 I litert  : [magic_number_utils.cc:536] 534 tensors of signature decode have been updated for magic number  32771 to target number 2048
+10-27 21:30:19.784   887   887 I litert  : [compiled_model.cc:966] Flatbuffer model initialized directly from incoming litert model.
+10-27 21:30:19.784   887   887 I tflite  : Initialized TensorFlow Lite runtime.
+10-27 21:30:19.788   887   887 W libc    : Access denied finding property "ro.mediatek.platform"
+10-27 21:30:19.788   887   887 W libc    : Access denied finding property "ro.chipname"
+10-27 21:30:19.800   887   887 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-27 21:30:19.801   887   887 I native  : I0000 00:00:1793161819.801128     887 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+10-27 21:30:19.801   887   887 I native  : I0000 00:00:1793161819.801175     887 delegate_opencl.cc:657] options->kernel_batch_size: 0
+10-27 21:30:19.801   887   887 W libc    : Access denied finding property "ro.mediatek.platform"
+10-27 21:30:19.801   887   887 W libc    : Access denied finding property "ro.chipname"
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: QUALCOMM build                   : 7a7d1616fb, I1b2d45fd3f
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Build Date                       : 12/18/24
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.47.18.13
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Local Branch                     : 
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.15.4.0.11.00.00.1088.540
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Remote Branch                    : NONE
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Build Config                     : S P 18.0.0 AArch64
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Driver Version                   : 0800.17.11
+10-27 21:30:19.802   887   887 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+10-27 21:30:19.803   887   887 I AdrenoGLES-0: PFP: 0x01500364, ME: 0x01500012
+10-27 21:30:19.803   887   887 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+10-27 21:30:19.804   887   887 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+10-27 21:30:19.808   887   887 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-27 21:30:19.808   887   887 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+10-27 21:30:19.809   887   887 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+10-27 21:30:19.809   887   887 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+10-27 21:30:19.809   887   887 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+10-27 21:30:19.809   887   887 I tflite  : Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+10-27 21:30:19.837  1684 28311 I sensors-hal: handle_sns_client_event:379, [0][17524] accel_sample [ 9.602,  1.338, -0.483] 694088295522
+10-27 21:30:20.021  1837  2800 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:30:20.062  1837  2800 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:30:20.064  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:20.064  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:20.135  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+--------- beginning of system
+10-27 21:30:20.188  7084  7221 I SDHMS:N0: p2p-if:: false, , 
+10-27 21:30:20.306  2723  7035 D SemContextService: lock : requestToUpdate
+10-27 21:30:20.306  2723  7035 W CAE     : setCAProperty(ContextAwareService.java:509) - [setProperty 01] Mutex is locked for CH_LOC_TRIGGER
+10-27 21:30:20.307  2723  4385 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-27 21:30:20.307  2723  4385 D SensorService: setSContextDataLocked 3db8
+10-27 21:30:20.307  1684  1684 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-27 21:30:20.307  1684  1684 I sensors-hal: sendContextData:303, sensor hal 4, (0xb8, 0x3d, 0x0, 0x0)
+10-27 21:30:20.307  1684  1684 I sensors-hal: sendContextData:131, change_location_trigger 4,184
+10-27 21:30:20.307  1684  1684 I sensors-hal: sendUserData:118, change_location_trigger h 184 m 61 s 0
+10-27 21:30:20.307  1684  1684 I sensors-hal: create_send_context_data:66, change_location_trigger create_send_context_data
+10-27 21:30:20.307  1684  1684 I sensors-hal: send_context_data:701, change_location_trigger, -244018566922240, 1320970896291267344, msgid:700
+10-27 21:30:20.307  2723  7035 W CAE     : setCAProperty(ContextAwareService.java:515) - [setProperty 02] Mutex is unlocked for CH_LOC_TRIGGER
+10-27 21:30:20.307  2723  7035 D SemContextService:     .requestToUpdate() : service = Location Change Trigger
+10-27 21:30:20.307  2723  7035 D SemContextService: unlock : requestToUpdate
+10-27 21:30:20.307  2723  7035 D SemContextManager:   .requestToUpdate : listener = com.android.server.location.nsflp.NSLocationMonitor$5@714f45e, service=Location Change Trigger
+10-27 21:30:20.307  6052 11203 I NewStopController_FLP: StateChecker, check stationary message
+10-27 21:30:20.307  1684  4383 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for change_location_trigger 
+10-27 21:30:20.358  1684  4383 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:change_location_trigger  Wakeup, msg_id=1025, ts=13457046158
+10-27 21:30:20.358  1684  4383 I sensors-hal: handle_sns_client_event:85, change_location_trigger_event: msgid:1025
+10-27 21:30:20.358  1684  4383 I sensors-hal: handle_sns_client_event:108, change_location_trigger_event: 255, 255
+10-27 21:30:20.358  1684  4383 I sensors-hal: insert_awaking_events:859, sensor:change_location_trigger  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:30:20.358  1684  4383 I sensors-hal: insert_awaking_events:872, smp2p_event, 6.change_location_trigger, msgid:1025
+10-27 21:30:20.359  2723  4381 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :15], AP_WAKEUP
+10-27 21:30:20.359  2723  4381 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 15
+10-27 21:30:20.359  2723  4381 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 61, -1, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0,
+10-27 21:30:20.359  2723  4381 D CAE     : display(ContextProvider.java:375) - ================= CH_LOC_TRIGGER =================
+10-27 21:30:20.359  2723  4381 I CAE     : display(ContextProvider.java:391) - duration=[2], property=[1], result=[2], reserved=[0]
+10-27 21:30:20.359  2723  4378 D SemContextService: Service.updateContext() : service = Location Change Trigger
+10-27 21:30:20.359  2723  4429 D SemContextManager: onSemContextChanged() : event = Location Change Trigger
+10-27 21:30:20.359  2723  4429 D NSLocationMonitor: onSemContextChanged, activity : 1 result : 2 movement : 2
+10-27 21:30:20.750  1684   438 I sensors-hal: handle_sns_client_event:468, [0][4872] gyro_sample_uncal [-0.004,-0.006,-0.001] [-0.005,-0.005,-0.000] 695000533699
+10-27 21:30:20.760  1684   441 I sensors-hal: handle_sns_client_event:362, [0][2079] mag_sample_cal(magcal_available:1): ts=695011504480 ns; cal = [38.060631, -26.763433, 13.717516], uncal = [38.060631, -35.823433, 8.617516], bias = [0.000000, -9.059999, -5.100000], status=1, cal_id=0
+10-27 21:30:20.771  1684   432 I sensors-hal: handle_sns_std_sensor_event:157, [518] Pressure 1014.164, cal 0.521, sw_offset 0.000 (lsb(bit) 0x24 0x17 0x63)
+10-27 21:30:21.019  1837  1907 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:30:21.043  2723 16864 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 182, isSameBssidAndFreq true
+10-27 21:30:21.061  1837  1907 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:30:21.063  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:21.063  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:21.134  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:21.309  2723  7035 D SemContextService: lock : requestToUpdate
+10-27 21:30:21.310  2723  7035 W CAE     : setCAProperty(ContextAwareService.java:509) - [setProperty 01] Mutex is locked for CH_LOC_TRIGGER
+10-27 21:30:21.310  2723  4385 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-27 21:30:21.310  2723  4385 D SensorService: setSContextDataLocked 3db8
+10-27 21:30:21.310  1684  1684 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-27 21:30:21.311  1684  1684 I sensors-hal: sendContextData:303, sensor hal 4, (0xb8, 0x3d, 0x0, 0x0)
+10-27 21:30:21.311  1684  1684 I sensors-hal: sendContextData:131, change_location_trigger 4,184
+10-27 21:30:21.311  1684  1684 I sensors-hal: sendUserData:118, change_location_trigger h 184 m 61 s 0
+10-27 21:30:21.311  1684  1684 I sensors-hal: create_send_context_data:66, change_location_trigger create_send_context_data
+10-27 21:30:21.311  1684  1684 I sensors-hal: send_context_data:701, change_location_trigger, -244018566922240, 1320970896291267344, msgid:700
+10-27 21:30:21.311  2723  7035 W CAE     : setCAProperty(ContextAwareService.java:515) - [setProperty 02] Mutex is unlocked for CH_LOC_TRIGGER
+10-27 21:30:21.311  2723  7035 D SemContextService:     .requestToUpdate() : service = Location Change Trigger
+10-27 21:30:21.311  2723  7035 D SemContextService: unlock : requestToUpdate
+10-27 21:30:21.311  2723  7035 D SemContextManager:   .requestToUpdate : listener = com.android.server.location.nsflp.NSLocationMonitor$5@714f45e, service=Location Change Trigger
+10-27 21:30:21.311  6052 11203 I NewStopController_FLP: StateChecker, check stationary message
+10-27 21:30:21.312  1684  4383 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for change_location_trigger 
+10-27 21:30:21.317  1684  4383 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:change_location_trigger  Wakeup, msg_id=1025, ts=13475473604
+10-27 21:30:21.317  1684  4383 I sensors-hal: handle_sns_client_event:85, change_location_trigger_event: msgid:1025
+10-27 21:30:21.317  1684  4383 I sensors-hal: handle_sns_client_event:108, change_location_trigger_event: 255, 255
+10-27 21:30:21.317  1684  4383 I sensors-hal: insert_awaking_events:859, sensor:change_location_trigger  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:30:21.317  1684  4383 I sensors-hal: insert_awaking_events:872, smp2p_event, 7.change_location_trigger, msgid:1025
+10-27 21:30:21.319  2723  4381 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :15], AP_WAKEUP
+10-27 21:30:21.319  2723  4381 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 15
+10-27 21:30:21.320  2723  4381 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 61, -1, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0,
+10-27 21:30:21.320  2723  4381 D CAE     : display(ContextProvider.java:375) - ================= CH_LOC_TRIGGER =================
+10-27 21:30:21.320  2723  4381 I CAE     : display(ContextProvider.java:391) - duration=[2], property=[1], result=[2], reserved=[0]
+10-27 21:30:21.320  2723  4378 D SemContextService: Service.updateContext() : service = Location Change Trigger
+10-27 21:30:21.321  2723  4429 D SemContextManager: onSemContextChanged() : event = Location Change Trigger
+10-27 21:30:21.321  2723  4429 D NSLocationMonitor: onSemContextChanged, activity : 1 result : 2 movement : 2
+10-27 21:30:21.347   887   887 I native  : I0000 00:00:1793161821.347416     887 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-27 21:30:21.347   887   887 I native  : I0000 00:00:1793161821.347611     887 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:30:21.439   887   887 I native  : I0000 00:00:1793161821.439126     887 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-27 21:30:21.477   887   887 I tflite  : Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+10-27 21:30:21.480   887   887 I native  : I0000 00:00:1793161821.480137     887 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-27 21:30:21.480   887   887 I native  : I0000 00:00:1793161821.480163     887 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:30:21.498  1032  1032 D io_stats: !@   8,0 r 148762 8216800 w 166596 7339452 d 6712 7044180 f 3855 16287 iot 92920 0 th 0 0 0 pt 0 inp 0 0 695.755
+10-27 21:30:21.498  1032  1032 D io_stats: !@ Read_top(KB): .android.chrome(26824) 40 litert_lm_advan(887) 24 kworker/4:1H(28695) 4
+10-27 21:30:21.498  1032  1032 D io_stats: !@ Write_top(KB): kworker/u17:5(993) 16
+10-27 21:30:21.584   887   887 I native  : I0000 00:00:1793161821.584961     887 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-27 21:30:21.585   887   887 I tflite  : Replacing 406 out of 406 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+10-27 21:30:21.589   887   887 I native  : I0000 00:00:1793161821.589669     887 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+10-27 21:30:21.589   887   887 I native  : I0000 00:00:1793161821.589687     887 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+10-27 21:30:21.610   887   887 I native  : I0000 00:00:1793161821.610985     887 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629161     887 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629195     887 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629203     887 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629206     887 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629209     887 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629219     887 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629222     887 litert_lm_loader.cc:407] Section not found: TFLiteModel
+10-27 21:30:21.629   887   887 W native  : W0000 00:00:1793161821.629224     887 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+10-27 21:30:21.632   887   887 I litert  : [environment.cc:36] Creating LiteRT environment with options
+10-27 21:30:21.632   887   887 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+10-27 21:30:21.633   887   887 I litert  : [gpu_registry.cc:138] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so).
+10-27 21:30:21.633   887   887 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a154cf930, name=LiteRT GPU
+10-27 21:30:21.633   887   887 I litert  : [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+10-27 21:30:21.633   887   887 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007a154cdbe0, name=CpuAccelerator
+10-27 21:30:21.633   887   887 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+10-27 21:30:21.793   887   887 W native  : W0000 00:00:1793161821.793085     887 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+10-27 21:30:21.793   887   887 W native  : W0000 00:00:1793161821.793128     887 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+10-27 21:30:21.793   887   887 W native  : W0000 00:00:1793161821.793132     887 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-27 21:30:21.793   887   887 W native  : W0000 00:00:1793161821.793135     887 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+10-27 21:30:21.795   887   887 I native  : I0000 00:00:1793161821.795154     887 litert_lm_lib.cc:1194] Creating conversation
+10-27 21:30:21.797   887   887 I native  : I0000 00:00:1793161821.797646     887 litert_lm_lib.cc:1206] Running single-turn conversation
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-27 21:30:21.799   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-27 21:30:21.800   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-27 21:30:21.838  1687  6064 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-27 21:30:21.838  1687  6064 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:30:21.838  1687  6064 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_rcv: 0
+10-27 21:30:21.839  1687  1697 D AHAL_ModulePrimary_QTI: getVendorParameters: id count: 1
+10-27 21:30:21.839  1687  1697 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:30:21.839  1687  1697 D AHAL_SecModulePrimary: onGetSECGenericParameters get temperature for g_hw_speaker_amp_temp_spk: 0
+10-27 21:30:21.840  7084  8057 I SDHMS:x : SIOP:: AP:348 BAT:283 USB:269 CHG:340 PA:354 WIFI:324 CF:316 BLK:0 SUBBAT:0 LRPTHM:306 SKIN:311 SKINF:311 SKINB:310 LRP:311 LRF:311 LRB:310 APT:311 APR:310 RCV:309 SPK:273 CHGF:305 CHGR:305 MEMF:309 MEMR:309 WIFIF:309 WIFIR:308 FCAM:269 UPSPK:313 DNSPK:270 VAP:349 VWIFI:347 AMB2:183 HIGH:0 AVGCUR:239 AVGSYS:302 POWER:1053
+10-27 21:30:21.840  7084  8057 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=27
+10-27 21:30:21.841  1758  1868 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=27
+10-27 21:30:21.841  1687  1697 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-27 21:30:21.841  1687  1697 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-27 21:30:21.841  1687  1697 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+10-27 21:30:21.841  1687  1697 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-27 21:30:21.841  1687  1697 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 27
+10-27 21:30:21.841  1687  1697 I PAL: API: pal_set_param: 1377: Enter: param id 3002
+10-27 21:30:21.841  1687  1697 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:30:21.841  1758  1868 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:30:21.841  1758  1868 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:30:21.842  7084  8057 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+10-27 21:30:21.842  1684 28311 I sensors-hal: handle_sns_client_event:379, [0][17759] accel_sample [ 9.569,  1.335, -0.419] 696093474428
+10-27 21:30:21.842  1758  1868 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+10-27 21:30:21.842  1687  1697 D AHAL_HFP_QTI: hfp_set_parameters enter
+10-27 21:30:21.842  1687  1697 D AHAL_HFP_QTI: hfp_set_parameters Exit
+10-27 21:30:21.842  1687  1697 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+10-27 21:30:21.842  1687  1697 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+10-27 21:30:21.842  1687  1697 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+10-27 21:30:21.842  1687  1697 I PAL: API: pal_set_param: 1377: Enter: param id 3001
+10-27 21:30:21.842  1687  1697 I PAL: ResourceManager: getActiveStream_l: 6570: no active streams found for device 3 ret -2
+10-27 21:30:21.843  1758  1868 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:30:21.843  1758  1868 E ConversionHelperAidl: Function: parseAndSetVendorParameters Line: 94 Failed 
+10-27 21:30:22.018  1837  2800 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:30:22.060  1837  2800 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:30:22.062  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:22.062  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+10-27 21:30:22.125   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+10-27 21:30:22.126   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+10-27 21:30:22.127   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+10-27 21:30:22.128   887   887 W litert  : [compiled_model.cc:1738] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+10-27 21:30:22.133  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 69999 us
+10-27 21:30:22.145   887   887 W libc    : Access denied finding property "ro.mediatek.platform"
+10-27 21:30:22.145   887   887 W libc    : Access denied finding property "ro.chipname"
+10-27 21:30:22.313  2723  4768 D SemContextService: lock : requestToUpdate
+10-27 21:30:22.313  2723  4768 W CAE     : setCAProperty(ContextAwareService.java:509) - [setProperty 01] Mutex is locked for CH_LOC_TRIGGER
+10-27 21:30:22.313  2723  4385 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-27 21:30:22.313  2723  4385 D SensorService: setSContextDataLocked 3db8
+10-27 21:30:22.313  1684  1684 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-27 21:30:22.313  1684  1684 I sensors-hal: sendContextData:303, sensor hal 4, (0xb8, 0x3d, 0x0, 0x0)
+10-27 21:30:22.313  1684  1684 I sensors-hal: sendContextData:131, change_location_trigger 4,184
+10-27 21:30:22.313  1684  1684 I sensors-hal: sendUserData:118, change_location_trigger h 184 m 61 s 0
+10-27 21:30:22.313  1684  1684 I sensors-hal: create_send_context_data:66, change_location_trigger create_send_context_data
+10-27 21:30:22.313  1684  1684 I sensors-hal: send_context_data:701, change_location_trigger, -244018566922240, 1320970896291267344, msgid:700
+10-27 21:30:22.314  2723  4768 W CAE     : setCAProperty(ContextAwareService.java:515) - [setProperty 02] Mutex is unlocked for CH_LOC_TRIGGER
+10-27 21:30:22.314  2723  4768 D SemContextService:     .requestToUpdate() : service = Location Change Trigger
+10-27 21:30:22.314  2723  4768 D SemContextService: unlock : requestToUpdate
+10-27 21:30:22.314  2723  4768 D SemContextManager:   .requestToUpdate : listener = com.android.server.location.nsflp.NSLocationMonitor$5@714f45e, service=Location Change Trigger
+10-27 21:30:22.314  1684  4383 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for change_location_trigger 
+10-27 21:30:22.314  6052 11203 I NewStopController_FLP: StateChecker, check stationary message
+10-27 21:30:22.331   887   887 I native  : I0000 00:00:1793161822.331199     887 llm_litert_compiled_model_executor.cc:1748] Sampler will handle decode input tensors.
+10-27 21:30:22.341  1684  4383 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:change_location_trigger  Wakeup, msg_id=1025, ts=13495135361
+10-27 21:30:22.341  1684  4383 I sensors-hal: handle_sns_client_event:85, change_location_trigger_event: msgid:1025
+10-27 21:30:22.341  1684  4383 I sensors-hal: handle_sns_client_event:108, change_location_trigger_event: 255, 255
+10-27 21:30:22.341  1684  4383 I sensors-hal: insert_awaking_events:859, sensor:change_location_trigger  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:30:22.341  1684  4383 I sensors-hal: insert_awaking_events:872, smp2p_event, 8.change_location_trigger, msgid:1025
+10-27 21:30:22.342  2723  4381 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :15], AP_WAKEUP
+10-27 21:30:22.342  2723  4381 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 15
+10-27 21:30:22.342  2723  4381 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 61, -1, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0,
+10-27 21:30:22.343  2723  4381 D CAE     : display(ContextProvider.java:375) - ================= CH_LOC_TRIGGER =================
+10-27 21:30:22.343  2723  4381 I CAE     : display(ContextProvider.java:391) - duration=[2], property=[1], result=[2], reserved=[0]
+10-27 21:30:22.343  2723  4429 D SemContextManager: onSemContextChanged() : event = Location Change Trigger
+10-27 21:30:22.343  2723  4429 D NSLocationMonitor: onSemContextChanged, activity : 1 result : 2 movement : 2
+10-27 21:30:22.343  2723  4378 D SemContextService: Service.updateContext() : service = Location Change Trigger
+10-27 21:30:22.404   887   887 I tflite  : Loaded OpenCL library with dlopen.
+10-27 21:30:22.756  1684   438 I sensors-hal: handle_sns_client_event:468, [0][5107] gyro_sample_uncal [-0.005,-0.001, 0.000] [-0.005,-0.005,-0.000] 697005712293
+10-27 21:30:22.761  1684   441 I sensors-hal: handle_sns_client_event:362, [0][2179] mag_sample_cal(magcal_available:1): ts=697011504480 ns; cal = [41.981373, -24.546930, 10.537951], uncal = [41.981373, -33.606930, 5.437951], bias = [0.000000, -9.059999, -5.100000], status=1, cal_id=0
+10-27 21:30:22.771  1684   432 I sensors-hal: handle_sns_std_sensor_event:157, [543] Pressure 1014.167, cal 0.521, sw_offset 0.000 (lsb(bit) 0x3a 0x17 0x63)
+10-27 21:30:22.812  1724  1777 E BatteryDump: !@new_battery_dump : 4336,-1349,1000,1500,100,283,269,358,283,0,315,358,0,Full,NO_CHARGING,Additional,Good,USB_CDP,2,Normal,0,0,9300,0x20008000,0x10010000,0x0,0,0,577,v0002,0000,0000,00000000,0,0,0,0,16,4390,10000,995,0,
+10-27 21:30:22.813  1726  1726 I seh_thermal_service: getTemperaturesWithType SehTemperatureType: 3
+10-27 21:30:22.813  1724  1724 I sehhealth-service: updateLrpSysfs: write: 311
+10-27 21:30:22.813  2723  4768 D BatteryService: [processValuesLocked]batteryLevel:100 ,LastbatteryLevel:100 ,mPlugType:2 ,batteryStatus:5
+10-27 21:30:22.814  2723  4768 D BatteryService: [countBatteryChangedConditions]mBatteryChangedConditionCounts:[2, 1, 1, 1, 1, 13, 2, 0, 0, 1, 1, 0, 0, 0, 0, 2, 6, 1, 0, 0, 0, 1]
+10-27 21:30:22.814  2723  4768 D BatteryService: Sending ACTION_BATTERY_CHANGED: level:100, status:5, health:2, remain:0, ac:false, usb:true, wireless:false, pogo:false, misc:0x10010000, charge_type:1, charger_type:0, voltage:4336, temperature:283, online:5, charging_status:0, cycle_count:0, current_avg:-54687, ps:false, hvc:false, current_event:0x20008000, mcc:0, mcv:0, cc:4925000, present:true, scale:100, technology:Li-ion, protection:0
+10-27 21:30:22.815  2723  4768 D [SS]BattUtils: [readNode]path:/efs/FactoryApp/bsoh ,value:100.00
+10-27 21:30:22.816  2723  4587 I DeviceBatteryInfoService: action: android.intent.action.BATTERY_CHANGED
+10-27 21:30:22.817  2723  2723 D AdaptiveBrightnessLongtermModelBuilder: Received android.intent.action.BATTERY_CHANGED
+10-27 21:30:22.817  2723  4587 I DeviceBatteryInfoService: phone battery level: 100
+10-27 21:30:22.817  2723  4587 I DeviceBatteryInfoService: phone battery status: 5
+10-27 21:30:22.818  2723  4388 D MotionRecognitionService: [SAR]  onReceive : ACTION_BATTERY_CHANGED, Plugged: 2
+10-27 21:30:22.818  5271  5271 I NfcWirelessCharge: chargeMode: 2, isWirelessCharging: false
+10-27 21:30:22.818  4636  4636 D SamsungBatteryMeterDrawable: onBatteryLevelChanged isSomethingChanged: false
+10-27 21:30:22.818  5313  5313 D SemBigDataInfoController: Intent: android.intent.action.BATTERY_CHANGED
+10-27 21:30:22.819  5313  5313 D SemBigDataInfoController: Intent: android.intent.action.BATTERY_CHANGED
+10-27 21:30:22.819 32641 32641 I [SCPMV2][SystemMonitorReceiver]: onReceive: android.intent.action.BATTERY_CHANGED
+10-27 21:30:22.819  4636  4636 D SamsungBatteryMeterDrawable: onBatteryLevelChanged isSomethingChanged: false
+10-27 21:30:22.820  4636  4636 D SamsungBatteryMeterDrawable: onBatteryLevelChanged isSomethingChanged: false
+10-27 21:30:22.820  4636  4636 I PowerUI : mBootCompleted = true |  mFullyConnected = true
+10-27 21:30:22.820  4636  4636 I PowerUI : BATTERY_HEALTH_CHECK / batteryHealth : 2 / wirelessOverheat : false
+10-27 21:30:22.820  4636  4636 W PowerUI : Skip charging animation - by Plug reason
+10-27 21:30:22.820  4636  4636 W PowerUI : Skip charging sound & vibrate - by Plug reason
+10-27 21:30:22.821  4636  4636 D PowerUI : oldMisalign : false, curMisalign : false
+10-27 21:30:22.821  4636  5708 D PowerUI.Notification: updateNotification mWarning = false mPlaySound = false
+10-27 21:30:22.821  4636  4636 D KeyguardUpdateMonitor: handleBatteryUpdate
+10-27 21:30:22.850  1837  1907 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:30:22.852  4636  4636 W View    : requestLayout() improperly called by com.android.systemui.qs.SecQSGradationDrawableView{6be6fb7 V.E...... ......ID 0,0-1080,332 #7f0a0967 app:id/qs_gradation_view} during layout: running second layout pass
+10-27 21:30:22.852  4636  4636 W View    : requestLayout() improperly called by android.widget.FrameLayout{3a98324 V.E...... ......ID 0,153-1080,2340 #7f0a0965 app:id/qs_frame} during layout: running second layout pass
+10-27 21:30:22.891  1837  1907 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:30:22.893  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:22.893  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:22.964  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:23.014  2723  2781 I system_server: Background concurrent mark compact GC freed 49MB AllocSpace bytes, 18(360KB) LOS objects, 43% free, 63MB/111MB, paused 1.473ms,2.309ms total 195.972ms
+10-27 21:30:23.060  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:23.060  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:23.131  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:23.315  2723  7035 D SemContextService: lock : requestToUpdate
+10-27 21:30:23.315  2723  7035 W CAE     : setCAProperty(ContextAwareService.java:509) - [setProperty 01] Mutex is locked for CH_LOC_TRIGGER
+10-27 21:30:23.316  2723  4385 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-27 21:30:23.316  2723  4385 D SensorService: setSContextDataLocked 3db8
+10-27 21:30:23.316  1684  1684 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-27 21:30:23.316  1684  1684 I sensors-hal: sendContextData:303, sensor hal 4, (0xb8, 0x3d, 0x0, 0x0)
+10-27 21:30:23.316  1684  1684 I sensors-hal: sendContextData:131, change_location_trigger 4,184
+10-27 21:30:23.316  1684  1684 I sensors-hal: sendUserData:118, change_location_trigger h 184 m 61 s 0
+10-27 21:30:23.316  1684  1684 I sensors-hal: create_send_context_data:66, change_location_trigger create_send_context_data
+10-27 21:30:23.316  1684  1684 I sensors-hal: send_context_data:701, change_location_trigger, -244018566922240, 1320970896291267344, msgid:700
+10-27 21:30:23.316  2723  7035 W CAE     : setCAProperty(ContextAwareService.java:515) - [setProperty 02] Mutex is unlocked for CH_LOC_TRIGGER
+10-27 21:30:23.317  2723  7035 D SemContextService:     .requestToUpdate() : service = Location Change Trigger
+10-27 21:30:23.317  2723  7035 D SemContextService: unlock : requestToUpdate
+10-27 21:30:23.317  2723  7035 D SemContextManager:   .requestToUpdate : listener = com.android.server.location.nsflp.NSLocationMonitor$5@714f45e, service=Location Change Trigger
+10-27 21:30:23.317  6052 11203 I NewStopController_FLP: StateChecker, check stationary message
+10-27 21:30:23.317  2723  4768 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:4
+10-27 21:30:23.317  2723  4768 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-27 21:30:23.317  1684  4383 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for change_location_trigger 
+10-27 21:30:23.317  2723  4768 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:1
+10-27 21:30:23.317  2723  4768 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-27 21:30:23.318  2723  7035 I BatteryService_BatteryPropertiesRegistrar: [getProperty]id:3
+10-27 21:30:23.318  2723  7035 I BatteryService_BatteryPropertiesRegistrar: [getProperty]prop.long:-9223372036854775808 ,prop.string:null
+10-27 21:30:23.366  1684  4383 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:change_location_trigger  Wakeup, msg_id=1025, ts=13514799464
+10-27 21:30:23.366  1684  4383 I sensors-hal: handle_sns_client_event:85, change_location_trigger_event: msgid:1025
+10-27 21:30:23.366  1684  4383 I sensors-hal: handle_sns_client_event:108, change_location_trigger_event: 255, 255
+10-27 21:30:23.366  1684  4383 I sensors-hal: insert_awaking_events:859, sensor:change_location_trigger  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:30:23.366  1684  4383 I sensors-hal: insert_awaking_events:872, smp2p_event, 9.change_location_trigger, msgid:1025
+10-27 21:30:23.367  2723  4381 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :15], AP_WAKEUP
+10-27 21:30:23.367  2723  4381 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 15
+10-27 21:30:23.367  2723  4381 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 61, -1, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0,
+10-27 21:30:23.368  2723  4381 D CAE     : display(ContextProvider.java:375) - ================= CH_LOC_TRIGGER =================
+10-27 21:30:23.368  2723  4381 I CAE     : display(ContextProvider.java:391) - duration=[2], property=[1], result=[2], reserved=[0]
+10-27 21:30:23.368  2723  4378 D SemContextService: Service.updateContext() : service = Location Change Trigger
+10-27 21:30:23.368  2723  4429 D SemContextManager: onSemContextChanged() : event = Location Change Trigger
+10-27 21:30:23.368  2723  4429 D NSLocationMonitor: onSemContextChanged, activity : 1 result : 2 movement : 2
+10-27 21:30:23.498  1032  1032 D io_stats: !@   8,0 r 148877 8222632 w 166607 7339596 d 6712 7044180 f 3855 16287 iot 92972 0 th 0 0 0 pt 0 inp 0 0 697.755
+10-27 21:30:23.628  1684  4615 I sensors-hal: handle_sns_std_sensor_event:132, [SSC_LIGHT] A: 0(0),c:4,b:0,m:13,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):92,u(bl):100,if:0,wi:0,si:0,0(N:0)
+10-27 21:30:23.848  1684 28311 I sensors-hal: handle_sns_client_event:379, [0][17994] accel_sample [ 9.583,  1.352, -0.471] 698098651303
+10-27 21:30:24.003 16738 16738 I wpa_supplicant: Heartbeat 55
+10-27 21:30:24.015  1837  1907 I VSyncReactor: Current= 24, Period= 24, Distance= 1
+10-27 21:30:24.056  1837  1907 I VSyncReactor: Current= 24, Period= 24, Distance= 24
+10-27 21:30:24.059  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:24.059  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:24.061  2325  2325 I CNSS    : /sys/wifi/max_chipset_log_size doesn't exist
+10-27 21:30:24.074  2723 16864 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 183, isSameBssidAndFreq true
+10-27 21:30:24.114  7084  7084 I SDHMS:LOAD: type: LoadsFreqs, value: 0:0:9:1884672:4473600:1017600:912768:3532800:556800:515:1200:222
+10-27 21:30:24.130  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:24.261  2723  4418 D ConnectivityService: reportNetworkActive, notify 2 listeners
+10-27 21:30:24.267  2723  3478 D ActivityManager: sync unfroze 29170 com.samsung.android.app.omcagent for 6
+10-27 21:30:24.268  2723  3478 W ProcessStats: Tracking association SourceState{a139e1f system/1000 ImpBg #17664} whose proc state 6 is better than process ProcessState{faeb4e7 com.samsung.android.app.omcagent/1000 pkg=com.samsung.android.app.omcagent} proc state 15 (0 skipped)
+10-27 21:30:24.272 29170 29170 I OMC_AGENT: [com.samsung.android.app.omcagent.rna.BunchInstallJob(56/onStartJob)] =====================BunchInstallJob start
+10-27 21:30:24.299  2723  3529 E ActivityManager: Sending non-protected broadcast com.google.android.location.ALARM_WAKEUP_ACTIVITY_DETECTION from system 2723:system/1000 pkg com.google.android.gms
+10-27 21:30:24.299  2723  3529 E ActivityManager: java.lang.Throwable
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService.checkBroadcastFromSystem(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:246)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentLockedTraced(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:351)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentLocked(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:18)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService.broadcastIntentInPackage(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:78)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService$LocalService.broadcastIntentInPackage(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:57)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.PendingIntentRecord.sendInner(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:137)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService.sendIntentSender(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:14)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.am.ActivityManagerService.sendIntentSender(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:1)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at android.app.PendingIntent.sendAndReturnResult(PendingIntent.java:1130)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at android.app.PendingIntent.send(PendingIntent.java:1099)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.alarm.AlarmManagerService$DeliveryTracker.deliverLocked(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:117)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.alarm.AlarmManagerService.deliverAlarmsLocked(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:75)
+10-27 21:30:24.299  2723  3529 E ActivityManager: 	at com.android.server.alarm.AlarmManagerService$AlarmThread.run(qb/92287715 615e6c4337dadcf46a6579940adaf23f4b966a8cf278d99659c25a24b173902e:649)
+10-27 21:30:24.299  2723  3529 D ActivityManager: Received BROADCAST intent 0x1320ac4 Key{broadcastIntent pkg=com.google.android.gms/com.google.android.gms.location_base intent=act=com.google.android.location.ALARM_WAKEUP_ACTIVITY_DETECTION pkg=com.google.android.gms flags=0x4000000 u=0} requestCode=0 sent=0 from uid 1000
+10-27 21:30:24.302  1684  1684 I sensors-hal: flush:388, android.sensor.accelerometer/11
+10-27 21:30:24.302  1684  1684 I sensors-hal: send_sync_sensor_request:515, send sync request
+10-27 21:30:24.302  1684  1684 I sensors-hal: send_sync_sensor_request:544, wait for notification of response
+10-27 21:30:24.302  1684 28311 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for accel 
+10-27 21:30:24.302  1684  1684 I sensors-hal: send_sync_sensor_request:550, takes 0 ms to receive the response with 0
+10-27 21:30:24.302  1684  1684 I sensors-hal: flush:394, android.sensor.accelerometer/11 completed
+10-27 21:30:24.314  2723  7572 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 79 startTime of in progress event=1793161506993
+10-27 21:30:24.315  2723  7572 D ActivityManager: Received BROADCAST intent 0xbd4f1dc Key{broadcastIntent pkg=com.google.android.gms/com.google.android.gms.personalsafety intent=act=com.google.android.gms.personalsafety.scanners.ACTION_ACTIVITY_DETECTED pkg=com.google.android.gms flags=0x2000000 u=0} requestCode=0 sent=0 from uid 10272
+10-27 21:30:24.315  2723  4768 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1793161506999
+10-27 21:30:24.316  2723  7572 D ActivityManager: Received SERVICE intent 0xf801f86 Key{startService pkg=com.google.android.gms/com.google.android.gms.location_base intent=act=com.google.android.location.internal.action.AR_TRANSITION_RESULT pkg=com.google.android.gms cmp=com.google.android.gms/com.google.android.location.internal.PendingIntentCallbackService flags=0x2000000 u=0} requestCode=0 from uid 10272
+10-27 21:30:24.316  2723  4768 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1793161506980
+10-27 21:30:24.317  2723  4768 D ActivityManager: Received SERVICE intent 0xc6ec0ee Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=282372680 from uid 10272
+10-27 21:30:24.317  2723  7572 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1793161506980
+10-27 21:30:24.318  2723  7572 D SemContextService: lock : requestToUpdate
+10-27 21:30:24.318  2723  7572 W CAE     : setCAProperty(ContextAwareService.java:509) - [setProperty 01] Mutex is locked for CH_LOC_TRIGGER
+10-27 21:30:24.318  2723  4385 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-27 21:30:24.318  2723  4385 D SensorService: setSContextDataLocked 3db8
+10-27 21:30:24.318  2723  7556 D ActivityManager: Received SERVICE intent 0x4d98f Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=-1112044212 from uid 10272
+10-27 21:30:24.318  1684  1684 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-27 21:30:24.318  1684  1684 I sensors-hal: sendContextData:303, sensor hal 4, (0xb8, 0x3d, 0x0, 0x0)
+10-27 21:30:24.318  1684  1684 I sensors-hal: sendContextData:131, change_location_trigger 4,184
+10-27 21:30:24.318  1684  1684 I sensors-hal: sendUserData:118, change_location_trigger h 184 m 61 s 0
+10-27 21:30:24.318  1684  1684 I sensors-hal: create_send_context_data:66, change_location_trigger create_send_context_data
+10-27 21:30:24.318  1684  1684 I sensors-hal: send_context_data:701, change_location_trigger, -244018566922240, 1320970896291267344, msgid:700
+10-27 21:30:24.318  2723  4768 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1793161506980
+10-27 21:30:24.319  2723  7572 W CAE     : setCAProperty(ContextAwareService.java:515) - [setProperty 02] Mutex is unlocked for CH_LOC_TRIGGER
+10-27 21:30:24.319  2723  7572 D SemContextService:     .requestToUpdate() : service = Location Change Trigger
+10-27 21:30:24.319  2723  7572 D SemContextService: unlock : requestToUpdate
+10-27 21:30:24.319  2723  7572 D SemContextManager:   .requestToUpdate : listener = com.android.server.location.nsflp.NSLocationMonitor$5@714f45e, service=Location Change Trigger
+10-27 21:30:24.319  6052 11203 I NewStopController_FLP: StateChecker, check stationary message
+10-27 21:30:24.319  2723  7573 D ActivityManager: Received SERVICE intent 0xff4641c Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=-62794813 from uid 10272
+10-27 21:30:24.319  1684  4383 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for change_location_trigger 
+10-27 21:30:24.319  2723  7573 W AppOps  : Noting op not finished: uid 10272 pkg com.google.android.gms code 113 startTime of in progress event=1793161506980
+10-27 21:30:24.320  2723  7035 D ActivityManager: Received SERVICE intent 0xb375825 Key{startService pkg=com.google.android.gms/fused_location_provider intent=act=com.google.android.gms.location.util.nlp.RESULT cat=[targeted_intent_op_prefix:.location.util.nlp.NlpInternalApi$NlpReceiverIntentOperation] cmp=com.google.android.gms/.chimera.PersistentIntentOperationService flags=0x2000000 u=0} requestCode=1998324139 from uid 10272
+10-27 21:30:24.320 28221 28296 I ActivityScheduler: nextTriggerTime: 698576, in 0ms, detectorType: 39, FULL_TYPE alarmWindowMillis: 0
+10-27 21:30:24.326  1684  4383 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:change_location_trigger  Wakeup, msg_id=1025, ts=13533230970
+10-27 21:30:24.326  1684  4383 I sensors-hal: handle_sns_client_event:85, change_location_trigger_event: msgid:1025
+10-27 21:30:24.326  1684  4383 I sensors-hal: handle_sns_client_event:108, change_location_trigger_event: 255, 255
+10-27 21:30:24.326  1684  4383 I sensors-hal: insert_awaking_events:859, sensor:change_location_trigger  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:30:24.326  1684  4383 I sensors-hal: insert_awaking_events:872, smp2p_event, 10.change_location_trigger, msgid:1025
+10-27 21:30:24.326  2723  4381 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :15], AP_WAKEUP
+10-27 21:30:24.326  2723  4381 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 15
+10-27 21:30:24.326  2723  4381 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 61, -1, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0,
+10-27 21:30:24.326  2723  4381 D CAE     : display(ContextProvider.java:375) - ================= CH_LOC_TRIGGER =================
+10-27 21:30:24.326  2723  4381 I CAE     : display(ContextProvider.java:391) - duration=[2], property=[1], result=[2], reserved=[0]
+10-27 21:30:24.326  2723  4378 D SemContextService: Service.updateContext() : service = Location Change Trigger
+10-27 21:30:24.326  2723  4429 D SemContextManager: onSemContextChanged() : event = Location Change Trigger
+10-27 21:30:24.327  2723  4429 D NSLocationMonitor: onSemContextChanged, activity : 1 result : 2 movement : 2
+10-27 21:30:24.413  2723  7573 D CompatChangeReporter: Compat change id reported: 311402873; UID 1000; state: ENABLED
+10-27 21:30:24.413  2723  7573 D CompatChangeReporter: Compat change id reported: 323349338; UID 1000; state: ENABLED
+10-27 21:30:24.414  2723  7573 W JobInfo : Job 'com.samsung.android.app.omcagent/.rna.CheckPkgService#9870000' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-27 21:30:24.417  2723  7572 W JobInfo : Job 'com.samsung.android.app.omcagent/.rna.CheckPkgService#9870000' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-27 21:30:24.420  2723  7572 W JobInfo : Job 'com.samsung.android.app.omcagent/.rna.CheckPkgService#9870000' has a deadline with no functional constraints. The deadline won't improve job execution latency. Consider removing the deadline.
+10-27 21:30:24.429 29170 29185 E ActivityThread: Failed to find provider info for com.sec.knox.kccagent.KCClient.provider.KCProvider
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: [x2.a(41/b)] java.lang.IllegalArgumentException: Unknown authority com.sec.knox.kccagent.KCClient.provider.KCProvider
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at android.content.ContentResolver.call(ContentResolver.java:2476)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at x2.a.b(Unknown Source:14)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at k2.b.doInBackground(Unknown Source:636)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at android.os.AsyncTask$3.call(AsyncTask.java:394)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at android.os.AsyncTask$SerialExecutor$1.run(AsyncTask.java:305)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-27 21:30:24.429 29170 29185 E OMC_AGENT: 	at java.lang.Thread.run(Thread.java:1012)
+10-27 21:30:24.429 29170 29185 I OMC_AGENT: [u2.h(5/d)] add suwOngoing notification
+10-27 21:30:24.430 29170 29185 I NotificationManager: com.samsung.android.app.omcagent: notify(1290, null, Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0)) as user
+10-27 21:30:24.431 29170 29185 I OMC_AGENT: [p2.a(18/h)] InstallerState: d com.samsung.android.app.watchmanager
+10-27 21:30:24.432 11634 11992 D androidtc: Initializing SystemTextClassifier, type = System
+10-27 21:30:24.485  2723  4592 D NetdEventListenerService: DNS Requested by 100, 1000(com.samsung.android.smartface,...), SUCCESS, 50ms
+10-27 21:30:24.563   489   498 W System  : A resource failed to call close. 
+10-27 21:30:24.563   489   498 W System  : A resource failed to call close. 
+10-27 21:30:24.563 32641 32641 I [SCPMV2][ConfigurationFileFunction]: ParcelFileDescriptor close.
+10-27 21:30:24.564 32641 32641 I [SCPMV2][ConfigurationFileFunction]: ParcelFileDescriptor close.
+10-27 21:30:24.629 28221 28221 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.safetynet.service.START pkg=com.google.android.gms }
+10-27 21:30:24.632  2723  2723 I Telecom : SamsungTelecomServiceImpl : isInManagedCall - callingPackage : android / callingUser : UserHandle{0} / hasCrossUserAccess : true
+10-27 21:30:24.641  2723  2723 D NotificationReminder: addNotificationRecord record com.samsung.android.app.omcagent
+10-27 21:30:24.644  5592  8074 I HoneySpace.NotificationListener: onNotificationPosted com.samsung.android.app.omcagent: 0|com.samsung.android.app.omcagent|1290|null|1000: 0
+10-27 21:30:24.644  5592  8074 I HoneySpace.BadgeDataSourceImpl: Get notification count. PK(p='com.samsung.android.app.omcagent', u=UserHandle{0}) - forceBadgeCount: false, notification listener: 1, badge provider: 0
+10-27 21:30:24.683  4636  4636 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-27 21:30:24.722  1837  1837 I SurfaceFlinger: SFWD update time=698978758272
+10-27 21:30:24.723  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:24.723  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:24.752  1684   438 I sensors-hal: handle_sns_client_event:468, [0][5341] gyro_sample_uncal [-0.005,-0.002,-0.001] [-0.005,-0.005,-0.000] 699002355366
+10-27 21:30:24.761  1684   441 I sensors-hal: handle_sns_client_event:362, [0][2279] mag_sample_cal(magcal_available:1): ts=699011504480 ns; cal = [41.607704, -24.571993, 7.180575], uncal = [41.607704, -33.631992, 2.080576], bias = [0.000000, -9.059999, -5.100000], status=1, cal_id=0
+10-27 21:30:24.771  1684   432 I sensors-hal: handle_sns_std_sensor_event:157, [568] Pressure 1014.177, cal 0.521, sw_offset 0.000 (lsb(bit) 0x77 0x17 0x63)
+10-27 21:30:24.794  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:24.846  2723  4592 D NetdEventListenerService: DNS Requested by 100, 10278(com.android.chrome), 4(FAIL), isBlocked=true, 0ms
+10-27 21:30:24.846  4636  4636 D InterruptionStateProvider:  no Heads up : edgelighting enabled app. 0|com.samsung.android.app.omcagent|1290|null|1000
+10-27 21:30:24.846  4636  4636 D InsignificantCoordinator: onEntryAdded :0|com.samsung.android.app.omcagent|1290|null|1000 flags: 0 entrySize:0
+10-27 21:30:24.850  4636  4636 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-27 21:30:24.852  2723  4592 D NetdEventListenerService: DNS Requested by 100, 10278(com.android.chrome), 4(FAIL), isBlocked=true, 0ms
+10-27 21:30:24.859  4636  5633 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-27 21:30:24.861  4636  4636 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-27 21:30:24.862  4636  5633 D LocalImageResolver: Couldn't use ImageDecoder for drawable, falling back to non-resized load.
+10-27 21:30:24.866  4636  4636 I AppIconSolution: return adaptive icon for com.samsung.android.app.omcagent, isNight = false
+10-27 21:30:24.889  4636  4636 D PluginActionManager: startListening
+10-27 21:30:24.889  4636  4795 D PluginActionManager: queryAll com.android.systemui.action.PLUGIN_NOTIFICATION_MENU_ROW
+10-27 21:30:24.889  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:24.889  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:24.889  4636  4795 D PluginActionManager: Found 0 plugins
+10-27 21:30:24.890  4636  4636 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.samsung.android.app.omcagent/0x50a' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.samsung.android.app.omcagent id=0x7f080233) visible user=0 ) visibleState=ICON iconColor=#0 staticDrawableColor=#0 decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#0 notification=StatusBarNotification(pkg=com.samsung.android.app.omcagent user=UserHandle{0} id=1290 tag=null key=0|com.samsung.android.app.omcagent|1290|null|1000: Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|CAN_COLORIZE color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24135 android.view.ViewGroup.addViewInner:5547 android.view.ViewGroup.addView:5323 com.android.systemui.statusbar.phone.LegacyNotificationIconAreaControllerImpl.updateIconsForLayout:425 
+10-27 21:30:24.890  4636  4636 I View    : setRequestedFrameRate frameRate=-2.0, this=StatusBarIconView(slot='com.samsung.android.app.omcagent/0x50a' alpha=1.0 icon=StatusBarIcon(icon=Icon(typ=RESOURCE pkg=com.samsung.android.app.omcagent id=0x7f080233) visible user=0 ) visibleState=ICON iconColor=#ff1b6cf7 staticDrawableColor=#ff1b6cf7 decorColor=#ff1b6cf7 animationStartColor=#0 currentSetColor=#ff1b6cf7 notification=StatusBarNotification(pkg=com.samsung.android.app.omcagent user=UserHandle{0} id=1290 tag=null key=0|com.samsung.android.app.omcagent|1290|null|1000: Notification(channel=SUW_CHANNEL shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|CAN_COLORIZE color=0x00000000 category=sys groupKey=SUW_CHANNEL vis=PUBLIC semFlags=0x0 semPriority=0 semMissedCount=0))), caller=com.android.systemui.statusbar.StatusBarIconView.onAttachedToWindow:6 android.view.View.dispatchAttachedToWindow:24135 android.view.ViewGroup.addViewInner:5547 android.view.ViewGroup.addView:5323 com.android.systemui.statusbar.phone.LegacyNotificationIconAreaControllerImpl.updateIconsForLayout:425 
+10-27 21:30:24.893  4636  4636 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+10-27 21:30:25.043  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:25.055  1715  2327 I SDM     : AIScalerFeatureIntfImpl::LookupConfig: Scale ratio = 1.780000
+10-27 21:30:25.055  1715  2327 I SDM     : AIScalerParserIntfImpl::LookupConfig: Scale Ratio Match Found Here
+10-27 21:30:25.127  1715  1972 I SDM     : DisplayBase::CommitThread: Received idle timeout, panel: cmd, timeout: 70000 us
+10-27 21:30:25.156  2723  2873 E Watchdog: !@Sync: 24 heap(MB): 66 / 111 FD: 1163 [2026-10-27 21:30:25.156]
+10-27 21:30:25.320  2723  7573 D SemContextService: lock : requestToUpdate
+10-27 21:30:25.321  2723  7573 W CAE     : setCAProperty(ContextAwareService.java:509) - [setProperty 01] Mutex is locked for CH_LOC_TRIGGER
+10-27 21:30:25.321  2723  4385 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+10-27 21:30:25.321  2723  4385 D SensorService: setSContextDataLocked 3db8
+10-27 21:30:25.322  1684  1684 I sensors-hal: inject_sensor_data:412, handle 1502 send inject
+10-27 21:30:25.322  1684  1684 I sensors-hal: sendContextData:303, sensor hal 4, (0xb8, 0x3d, 0x0, 0x0)
+10-27 21:30:25.322  1684  1684 I sensors-hal: sendContextData:131, change_location_trigger 4,184
+10-27 21:30:25.322  1684  1684 I sensors-hal: sendUserData:118, change_location_trigger h 184 m 61 s 0
+10-27 21:30:25.322  1684  1684 I sensors-hal: create_send_context_data:66, change_location_trigger create_send_context_data
+10-27 21:30:25.322  1684  1684 I sensors-hal: send_context_data:701, change_location_trigger, -244018566922240, 1320970896291267344, msgid:700
+10-27 21:30:25.322  2723  7573 W CAE     : setCAProperty(ContextAwareService.java:515) - [setProperty 02] Mutex is unlocked for CH_LOC_TRIGGER
+10-27 21:30:25.322  2723  7573 D SemContextService:     .requestToUpdate() : service = Location Change Trigger
+10-27 21:30:25.322  2723  7573 D SemContextService: unlock : requestToUpdate
+10-27 21:30:25.322  2723  7573 D SemContextManager:   .requestToUpdate : listener = com.android.server.location.nsflp.NSLocationMonitor$5@714f45e, service=Location Change Trigger
+10-27 21:30:25.322  6052 11203 I NewStopController_FLP: StateChecker, check stationary message
+10-27 21:30:25.323  1684  4383 I sensors-hal: qsh_conn_resp_cb:971, resp_value = 0 for change_location_trigger 
+10-27 21:30:25.349  1684  4383 I sensors-hal: qsh_conn_event_cb:926, event[0] sensor:change_location_trigger  Wakeup, msg_id=1025, ts=13552881216
+10-27 21:30:25.349  1684  4383 I sensors-hal: handle_sns_client_event:85, change_location_trigger_event: msgid:1025
+10-27 21:30:25.349  1684  4383 I sensors-hal: handle_sns_client_event:108, change_location_trigger_event: 255, 255
+10-27 21:30:25.349  1684  4383 I sensors-hal: insert_awaking_events:859, sensor:change_location_trigger  Wakeup, msg_id=1025, awaking:0, smp2p:1
+10-27 21:30:25.349  1684  4383 I sensors-hal: insert_awaking_events:872, smp2p_event, 11.change_location_trigger, msgid:1025
+10-27 21:30:25.351  2723  4381 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :15], AP_WAKEUP
+10-27 21:30:25.351  2723  4381 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 15
+10-27 21:30:25.351  2723  4381 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 61, -1, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0,
+10-27 21:30:25.352  2723  4381 D CAE     : display(ContextProvider.java:375) - ================= CH_LOC_TRIGGER =================
+10-27 21:30:25.352  2723  4381 I CAE     : display(ContextProvider.java:391) - duration=[2], property=[1], result=[2], reserved=[0]
+10-27 21:30:25.353  2723  4378 D SemContextService: Service.updateContext() : service = Location Change Trigger
+10-27 21:30:25.353  2723  4429 D SemContextManager: onSemContextChanged() : event = Location Change Trigger
+10-27 21:30:25.353  2723  4429 D NSLocationMonitor: onSemContextChanged, activity : 1 result : 2 movement : 2
+10-27 21:30:25.447  2723   976 D TrafficStats: tagSocket(1042) with statsTag=0xffffff81, statsUid=-1
+10-27 21:30:25.449  2723   976 D TrafficStats: tagSocket(1053) with statsTag=0xffffff81, statsUid=-1
+10-27 21:30:25.450  2723   976 D TrafficStats: tagSocket(1055) with statsTag=0xffffff81, statsUid=-1
+10-27 21:30:25.451  2723   976 D TrafficStats: tagSocket(1066) with statsTag=0xffffff81, statsUid=-1
+10-27 21:30:25.499  1032  1032 D io_stats: !@   8,0 r 148915 8223420 w 166609 7339604 d 6712 7044180 f 3855 16287 iot 93028 0 th 0 0 0 pt 0 inp 0 0 699.756
+10-27 21:30:25.500  1032  1032 D io_stats: !@ Read_top(KB): litert_lm_advan(887) 5568 id.app.omcagent(29170) 452 kworker/u17:5(993) 256
+10-27 21:30:25.500  1032  1032 D io_stats: !@ Write_top(KB): kworker/u17:5(993) 128 vendor.samsung.(1724) 8 ndroid.systemui(4636) 8
+10-27 21:30:25.508 29170 29185 I OMC_AGENT: [o4.d(843/c)] DOWNLOAD URI(com.samsung.android.app.watchmanager/false) : https://cflare-dn.gw.samsungapps.com/astore_bin/atom/2026/0923/prePost_20260923052440265.apk?ctnt_id=000009036127&bsize=15239179&cpi=1823544036&ch=V&verify=1793161836-GPWBXyZjuH5alkud9lPRXFwY2hLHM2gVcBmAb6juC4A%3D
+10-27 21:30:25.538   887   887 I native  : I0000 00:00:1793161825.538612     887 litert_lm_lib.cc:433] BenchmarkInfo:
+10-27 21:30:25.538   887   887 I native  :   Init Phases (7):
+10-27 21:30:25.538   887   887 I native  :     - Init Conversation: 0.13 ms
+10-27 21:30:25.538   887   887 I native  :     - Init Executor: 2080.09 ms
+10-27 21:30:25.538   887   887 I native  :     - Init LLM metadata: 0.01 ms
+10-27 21:30:25.539   887   887 I native  :     - Init Model assets: 0.02 ms
+10-27 21:30:25.539   887   887 I native  :     - Init Tokenizer: 292.83 ms
+10-27 21:30:25.539   887   887 I native  :     - Init Total: 2082.30 ms
+10-27 21:30:25.539   887   887 I native  : --------------------------------------------------
+10-27 21:30:25.539   887   887 I native  :   Time to first token: 0.34 s
+10-27 21:30:25.539   887   887 I native  : --------------------------------------------------
+10-27 21:30:25.539   887   887 I native  :   Prefill Turns (Total 1 turns):
+10-27 21:30:25.539   887   887 I native  :     Prefill Turn 1: Processed 1024 tokens in 326.618177ms duration.
+10-27 21:30:25.539   887   887 I native  :       Prefill Speed: 3135.16 tokens/sec.
+10-27 21:30:25.539   887   887 I native  : --------------------------------------------------
+10-27 21:30:25.539   887   887 I native  :   Decode Turns (Total 1 turns):
+10-27 21:30:25.539   887   887 I native  :     Decode Turn 1: Processed 256 tokens in 3.413228124s duration.
+10-27 21:30:25.539   887   887 I native  :       Decode Speed: 75.00 tokens/sec.
+10-27 21:30:25.539   887   887 I native  : --------------------------------------------------
+10-27 21:30:25.539   887   887 I native  :   TextToTokenIds Turns (Total 0 turns):
+10-27 21:30:25.539   887   887 I native  :     No text to token ids turns recorded.
+10-27 21:30:25.539   887   887 I native  : --------------------------------------------------
+10-27 21:30:25.550  2723  4592 D NetdEventListenerService: DNS Requested by 100, 1000(com.samsung.android.smartface,...), SUCCESS, 40ms
+10-27 21:30:25.653  2723   976 D WifiConnectivityMonitor.DnsThread:  [|207] [] [] []
+10-27 21:30:25.654  2723  4572 D WifiConnectivityMonitor.NetworkStatsAnalyzer: DNS resultType : 0, responseTime : 207
+10-27 21:30:25.654  2723  4570 D OpenNetworkQos[4.00]: updateBssidLatestDnsResultType - result: 0
+10-27 21:30:25.654  2723  4570 D OpenNetworkQos[4.00]: updateBssidNoInternet: mBssidNoInternet = false
+10-27 21:30:25.654  2723  4570 D OpenNetworkQos[4.00]: getOpenNetworkQosNoInternetStatus: false
+10-27 21:30:25.654  2723  4570 D OpenNetworkQos[4.00]: getOpenNetworkQosScores: 26 0 0 
+10-27 21:30:25.654  2723  4570 D KNOX_MDM_SettingsProvider: isChangeAllowed() : name = wifi_wcm_qos_sharing_score_summary
+10-27 21:30:25.655  2723  4570 I WifiProfileShare: network QoS data was changed (internet), updateQoSData networkType: true, qosData: false
+10-27 21:30:25.655  2723  6203 V WifiProfileShare.Caster: update wips network, size: 0
+10-27 21:30:25.655  2723  6203 D WifiProfileShare: nearby scanning settings run
+10-27 21:30:25.655  2723  6203 D WifiProfileShare: network score provider settings enabled
+10-27 21:30:25.655  2723  6203 D OpenNetworkQos[4.00]: getOpenNetworkQosScores: 26 0 0 
+10-27 21:30:25.655  2723  6203 D OpenNetworkQos[4.00]: getOpenNetworkQosNoInternetStatus: false
+10-27 21:30:25.656  2723  6203 I WifiProfileShare.Caster: current network type: 0, score: [26, 0, 0]
+10-27 21:30:25.656  2723  6203 V WifiProfileShare.Cache: update network score <mac>
+10-27 21:30:25.656  2723  6203 D WifiProfileShare.ScanMatcher: getMcfDataList size:3
+10-27 21:30:25.656  2723  6203 I WifiProfileShare.Caster: qos data was updated , before:type:QOS, pBssid:<mac-part>, qosData:64 after:type:QOS, pBssid:<mac-part>, qosData:64
+10-27 21:30:25.656  2723  6203 I [MCFSDK_android_1.2.27006]_4_McfCasterImpl: isNetworkEnabled - type : 1 ret : true
+10-27 21:30:25.656  2723  6203 D WifiProfileShare.McfCast: -ME--- mIsNetworkEnabled :true
+10-27 21:30:25.657  2723  6203 D WifiProfileShare.McfCast: updateQoSData ignored, same contents
+10-27 21:30:25.657  2723  6203 D WifiProfileShare.MCF: success update QosData !
+10-27 21:30:25.657  2723  6203 I [MCFSDK_android_1.2.27006]_4_McfCasterImpl: isNetworkEnabled - type : 1 ret : true
+10-27 21:30:25.657  2723  6203 D WifiProfileShare.McfCast: -ME--- mIsNetworkEnabled :true
+10-27 21:30:25.657  2723  6203 D WifiProfileShare.McfCast: -ME--- updatePasswordDate pwdData size:3
+10-27 21:30:25.690   887   887 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a15477f70, name=CpuAccelerator
+10-27 21:30:25.690   887   887 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a15477e20, name=LiteRT GPU
+10-27 21:30:25.713   887   887 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a154cdbe0, name=CpuAccelerator
+10-27 21:30:25.713   887   887 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007a154cf930, name=LiteRT GPU
+10-27 21:30:25.854  1684 28311 I sensors-hal: handle_sns_client_event:379, [0][18229] accel_sample [ 9.578,  1.373, -0.524] 700103825887
