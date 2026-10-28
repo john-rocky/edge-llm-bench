@@ -277,6 +277,17 @@ heavy job waits on (`quiet_wait.py`, the guard hook); a lock another lane holds 
 Before that the runner's name-based guard only refused to start, and an export from another lane ran on top of a
 sitting on 2026-10-19 12:39.
 
+Bench work goes last (user 2026-10-22; in the job since 2026-10-28): a free window that any other job wants is busy
+the same way. With the flock taken, before writing its label, the sitting counts the jobs `quiet_rank.py` counts for
+a window: a window waiter registered in `<lock>.waiters/<pid>` (`quiet_hold.py`), a job registered in
+`<lock>.yield_waiters/<pid>` while it waits for a build slot, and the job a held `<lock>.yield_slots/<i>` names
+(`quiet_yield.py`: a lane's build or export that runs outside the windows and stops while one is open). A
+registration counts while its process lives, is not stopped, and started before the file was written. The Mac
+priority of 2026-10-28 ranks the nightly dashboard last, so every such job counts, the other bench work's too. Any
+one, and it lets the lock go untouched (its line, and the mtime the lanes' build gap reads). On 2026-10-28 a sitting
+took the free window at 02:47 while lane builds ran outside the windows, and they stood stopped for its length. A
+firing whose jobs want the window past its busy window (`retry.busy_window_minutes`) leaves the Mac to the next one.
+
 On the Galaxy S26 and the Pixel 8a the job installs nothing on the phone: the flat engine build in
 `/data/local/tmp/llmbench` is replaced by hand with `android/scripts/deploy_litert_lm_android.sh`,
 which also resets the engine caches and markers.

@@ -811,11 +811,111 @@ def hold_release(h):
     log(f"hold released: {path}" if rc == 0 else f"WARN hold release failed: {out.strip()}")
 
 
+QUIET_SCHEDULED = re.compile(r"\d+\s+(?:adopted|thaw)\s+(\d+)")  # a scheduler's slot line names its root
+
+
+def quiet_lock_others(path):
+    """What the other jobs want of the Mac window at `path` -> a reason, or None when nothing.
+    Counted as quiet_rank.py counts the jobs a window waits for (~/code/standup/tools/quiet:
+    window_blockers): a quiet_hold.py window waiter registered in `<lock>.waiters/<pid>`
+    (hold_waiters), a quiet_yield.py job registered in `<lock>.yield_waiters/<pid>` while it waits for
+    a build slot (waiting_jobs), and the job a held `<lock>.yield_slots/<i>` names (running_jobs): the
+    pid its line starts with, or the root of a scheduler's `<pid> adopted|thaw <root>` line. quiet_yield
+    jobs are the lanes' builds and exports that run outside the windows and stop while one is open.
+    A registration counts while its process lives, is not stopped (SIGSTOP from outside: it cannot take
+    its turn) and started before the file was written (else the pid was reused); a slot's job counts
+    stopped too (it keeps the slot); the lock line's holder and this process's ancestors never count.
+    Every such job counts: the user's Mac priority (~/code/standup/state/mac-priority.txt, 2026-10-28)
+    ranks the nightly dashboard last, with the other bench work (bench goes last, user 2026-10-22), so
+    the job reads no ranks, and it lets the bench-rank jobs go first too, where quiet_hold orders them by
+    waiting time. quiet_rank's scan for quiet_yield waiters from before the registry (2026-10-28 09:05)
+    is left out. 2026-10-28 02:47: a sitting took the free window while lane builds ran outside the
+    windows, and they stood stopped for its length."""
+    rc, out = sh(["ps", "-A", "-o", "pid=,ppid=,stat=,lstart="], env=dict(os.environ, LC_ALL="C"))
+    procs = {}                                  # pid -> (ppid, state, start); {} when ps fails
+    for ln in out.splitlines() if rc == 0 else []:
+        f = ln.split()
+        try:
+            procs[int(f[0])] = (int(f[1]), f[2],
+                                time.mktime(time.strptime(" ".join(f[3:8]), "%a %b %d %H:%M:%S %Y")))
+        except (IndexError, ValueError):
+            continue
+    skip, pid = {os.getpid()}, os.getpid()
+    while pid in procs and procs[pid][0] > 1 and procs[pid][0] not in skip:
+        pid = procs[pid][0]
+        skip.add(pid)
+    skip.add(os.getppid())
+
+    def alive(pid):
+        if not procs:
+            return pid_alive(pid)
+        return pid in procs and not procs[pid][1].startswith("Z")
+
+    def registered(directory, holder=None):
+        out = []
+        try:
+            names = sorted(os.listdir(directory))
+        except OSError:
+            return out
+        for name in names:
+            f = os.path.join(directory, name)
+            try:
+                written, text = os.stat(f).st_mtime, open(f, encoding="utf-8", errors="replace").read()
+            except OSError:
+                continue
+            pid = int(name) if name.isdigit() else None
+            if (pid is None or pid in skip or pid == holder or not alive(pid)
+                    or (procs and (procs[pid][1].startswith("T") or procs[pid][2] > written + 1))):
+                continue
+            out.append((pid, text.strip()))
+        return out
+
+    running, sdir = [], path + ".yield_slots"
+    try:
+        slots = sorted(os.listdir(sdir), key=lambda s: (len(s), s))
+    except OSError:
+        slots = []
+    for name in slots:
+        try:
+            sfd = os.open(os.path.join(sdir, name), os.O_RDONLY)
+        except OSError:
+            continue
+        try:
+            try:
+                fcntl.flock(sfd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(sfd, fcntl.LOCK_UN)
+                line = ""
+            except BlockingIOError:
+                line = os.read(sfd, 4096).decode("utf-8", "replace")
+        except OSError:
+            line = ""
+        finally:
+            os.close(sfd)
+        m = QUIET_SCHEDULED.match(line) or re.match(r"(\d+)", line)
+        if m and int(m.group(1)) not in skip and alive(int(m.group(1))):
+            running.append((int(m.group(1)), f"slot {name}: {line.strip()}"))
+    busy = {pid for pid, _ in running}
+    slot_waiters = [(pid, text) for pid, text in registered(path + ".yield_waiters") if pid not in busy]
+    try:
+        m = re.search(r"\bpid\s+(\d+)", open(path, encoding="utf-8", errors="replace").read())
+    except OSError:
+        m = None
+    window_waiters = registered(path + ".waiters", int(m.group(1)) if m else None)
+    why = [f"{len(jobs)} job(s) {what} (pid {jobs[0][0]}: {jobs[0][1][:80]})"
+           for jobs, what in ((window_waiters, "waiting for the window"),
+                              (slot_waiters, "waiting for a build slot"), (running, "holding a build slot"))
+           if jobs]
+    return "; ".join(why) or None
+
+
 def quiet_lock_take(dev, label):
     """The Mac measurement window for a sitting: flock the lock file schedule.json names in
     "quiet_lock" (the machine's ~/code/coreai/_GPU_LOCK: every other lane's heavy job waits on it
     through quiet_wait.py and the guard hook) and write the `timing` label the others read. None
-    when the device names no lock. A lock another process holds = Busy (the job's busy retry).
+    when the device names no lock. A lock another process holds = Busy (the job's busy retry), and
+    so is a free one other jobs want (quiet_lock_others): counted with the flock taken, so no lane
+    window opens between the count and the take, then let go untouched (its line, and the mtime
+    quiet_hold.py's build gap reads).
     2026-10-19 12:39: an export from another lane ran on top of a Mac sitting because the sitting
     held no lock; the runner's name-based guard only refuses to start."""
     path = expand(dev.get("quiet_lock"))
@@ -831,6 +931,14 @@ def quiet_lock_take(dev, label):
             holder = "?"
         os.close(fd)
         raise Busy(f"the Mac measurement window is held by another lane: {holder or path}")
+    try:
+        others = quiet_lock_others(path)
+        if others:
+            raise Busy(f"the Mac measurement window goes to the other jobs first (bench goes last): {others}")
+    except BaseException:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+        raise
     line = f"dashboard-job {label} timing pid {os.getpid()} since {time.strftime('%Y-%m-%dT%H:%M:%S%z')}"
     os.ftruncate(fd, 0)
     os.lseek(fd, 0, 0)

@@ -193,6 +193,132 @@ def main():
        and open(qpath).read() == "" and busy and dj.quiet_lock_take({}, "x") is None,
        f"quiet lock: label written and flock held during the sitting, empty and free after, Busy while another "
        f"process holds it, none without schedule quiet_lock ({held}, {free_after}, {busy})")
+    # bench work goes last: a free window other jobs want is Busy too, counted as quiet_rank.py counts the
+    # jobs a window waits for (a live, not stopped waiter registered in <lock>.waiters/ or
+    # <lock>.yield_waiters/, the job a held <lock>.yield_slots/<i> names), and the lock is let go
+    # untouched (line and mtime)
+    import signal as _signal
+    wdir, ydir, sdir = qpath + ".waiters", qpath + ".yield_waiters", qpath + ".yield_slots"
+    for d in (wdir, ydir, sdir):
+        os.makedirs(d)
+
+    def lock_free():
+        fd = os.open(qpath, os.O_RDONLY)
+        try:
+            _fcntl.flock(fd, _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+            return True
+        except OSError:
+            return False
+        finally:
+            os.close(fd)
+
+    def take(label):
+        """-> (Busy's reason or None, the lock's line while taken, its flock held while taken)"""
+        try:
+            q = dj.quiet_lock_take({"quiet_lock": qpath}, label)
+        except dj.Busy as e:
+            return str(e), None, None
+        try:
+            return None, open(qpath).read(), not lock_free()
+        finally:
+            dj.quiet_lock_release(q)
+
+    def untouched():
+        return lock_free() and open(qpath).read() == "" and os.stat(qpath).st_mtime_ns == 10 ** 18
+
+    def register(directory, pid, text, mtime=None):
+        path = os.path.join(directory, str(pid))
+        with open(path, "w") as fh:
+            fh.write(text)
+        if mtime:
+            os.utime(path, (mtime, mtime))
+        return path
+
+    kids = []
+
+    def child(code, *args):
+        p = subprocess.Popen([sys.executable, "-c", code, *args], stdout=subprocess.PIPE, text=True)
+        kids.append(p)
+        return p
+
+    def hold_slot(name, line):
+        """a child that holds slot `name`, its line `line` ({pid} = the child's pid) -> (child, held)"""
+        p = child("import fcntl, os, sys, time\n"
+                  "fd = os.open(sys.argv[1], os.O_RDWR | os.O_CREAT, 0o644)\n"
+                  "fcntl.flock(fd, fcntl.LOCK_EX)\n"
+                  "os.write(fd, sys.argv[2].replace('{pid}', str(os.getpid())).encode())\n"
+                  "print('held', flush=True)\n"
+                  "time.sleep(60)\n", os.path.join(sdir, name), line)
+        return p, p.stdout.readline().strip() == "held"
+
+    live, stopped = child("import time; time.sleep(60)"), child("import time; time.sleep(60)")
+    gone = subprocess.Popen([sys.executable, "-c", "pass"])
+    gone.wait()
+    try:
+        os.utime(qpath, ns=(10 ** 18, 10 ** 18))
+        # waiter case: a live window waiter (quiet_hold), whatever its class word, then a live job
+        # waiting for a build slot (quiet_yield)
+        w = register(wdir, live.pid, "lane x timing")
+        waiter_why = take("m4max waiter")[0]
+        register(wdir, live.pid, "bench edge-llm-bench x timing")
+        bench_why = take("m4max bench waiter")[0]
+        waiter_left = untouched()
+        os.unlink(w)
+        y = register(ydir, live.pid, "bash build.sh")
+        yield_why = take("m4max yield waiter")[0]
+        yield_left = untouched()
+        os.unlink(y)
+        # slot case: a held slot whose line starts with its job's pid, then a scheduler's line that
+        # names a live root
+        h0, h0_held = hold_slot("0", "{pid} bazel --batch build //x")
+        slot_why = take("m4max slot")[0]
+        h0.kill()
+        h0.wait()
+        h6, h6_held = hold_slot("6", f"{{pid}} adopted {live.pid}")
+        sched_why = take("m4max adopted")[0]
+        slot_left = untouched()
+        h6.kill()
+        h6.wait()
+        # free case: no job that can take its turn: dead pids' files, a file older than its pid's process
+        # (a reused pid), a stopped waiter, the lock line's holder, held slots whose line names a dead
+        # job, slot 0 released with its holder
+        os.kill(stopped.pid, _signal.SIGSTOP)
+        os.waitpid(stopped.pid, os.WUNTRACED)
+        register(wdir, gone.pid, "lane y timing")
+        register(ydir, gone.pid, "bash y.sh")
+        register(ydir, live.pid, "bash old.sh", mtime=10 ** 9)
+        register(wdir, stopped.pid, "lane s timing")
+        register(ydir, stopped.pid, "bash s.sh")
+        register(wdir, live.pid, "lane h timing")
+        with open(qpath, "w") as fh:
+            fh.write(f"lane h timing pid {live.pid} since 2099-01-01T00:00:00+0900")
+        h1, h1_held = hold_slot("1", f"{gone.pid} bazel --batch build //y")
+        h7, h7_held = hold_slot("7", f"{{pid}} thaw {gone.pid} z")
+        free_why, free_line, free_held = take("m4max free")
+    finally:
+        for p in kids:
+            if p.poll() is None:
+                p.kill()
+                p.wait()
+    ok(waiter_why is not None and f"1 job(s) waiting for the window (pid {live.pid}: lane x timing)" in waiter_why
+       and bench_why is not None and f"(pid {live.pid}: bench edge-llm-bench x timing)" in bench_why
+       and "build slot" not in waiter_why and waiter_left,
+       f"quiet lock, bench goes last: a live window waiter registered next to the lock = Busy, a bench one "
+       f"too, the lock let go untouched ({waiter_why}; {bench_why}; untouched {waiter_left})")
+    ok(yield_why is not None and f"1 job(s) waiting for a build slot (pid {live.pid}: bash build.sh)" in yield_why
+       and "waiting for the window" not in yield_why and yield_left,
+       f"quiet lock, bench goes last: a live job registered waiting for a build slot = Busy, the lock let go "
+       f"untouched ({yield_why}; untouched {yield_left})")
+    ok(h0_held and h6_held and slot_why is not None
+       and f"1 job(s) holding a build slot (pid {h0.pid}: slot 0: {h0.pid} bazel" in slot_why
+       and sched_why is not None and f"(pid {live.pid}: slot 6: {h6.pid} adopted {live.pid})" in sched_why
+       and "waiting for" not in slot_why + sched_why and slot_left,
+       f"quiet lock, bench goes last: a held build slot = Busy for the job its line names (a scheduler's "
+       f"line: its root), the lock let go untouched ({slot_why}; {sched_why}; untouched {slot_left})")
+    ok(h1_held and h7_held and free_why is None and (free_line or "").startswith("dashboard-job m4max free timing pid ")
+       and free_held and open(qpath).read() == "",
+       f"quiet lock, bench goes last: dead and reused-pid files, a stopped waiter, the lock line's holder, "
+       f"slots held for dead jobs and a released slot leave it free: taken and released ({free_why})")
     ok(not heavy("node /x/claude --prompt 'release/llm-benchmark --model'"), "mac guard: llm-benchmark named inside another argv is not heavy")
 
     def attached(*serials):
