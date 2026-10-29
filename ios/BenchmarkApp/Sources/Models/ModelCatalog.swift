@@ -406,6 +406,16 @@ public enum ModelCatalog {
             primaryFile: "Qwen_Qwen3.5-0.8B-Q4_K_M.gguf"
         ),
         ModelInfo(
+            id: "unsloth/Qwen3.5-0.8B-GGUF/Q4_0",
+            displayName: "Qwen 3.5 0.8B Q4_0 (GGUF)",
+            quantization: "Q4_0",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 484,
+            hfRepoId: "unsloth/Qwen3.5-0.8B-GGUF",
+            hfFilePatterns: ["Qwen3.5-0.8B-Q4_0.gguf"],
+            primaryFile: "Qwen3.5-0.8B-Q4_0.gguf"
+        ),
+        ModelInfo(
             id: "unsloth/Qwen3.5-2B-GGUF/Q4_K_M",
             displayName: "Qwen 3.5 2B Q4_K_M (GGUF)",
             quantization: "Q4_K_M",
@@ -1279,6 +1289,18 @@ public enum ModelCatalog {
             primaryFile: "Qwen3.5-0.8B_int8.litertlm"
         ),
         ModelInfo(
+            // Not on the Hub yet: a side-loaded own export (litert-torch, Qwen3.5 gated-delta composites
+            // with explicit valid_len), staged at ~/Documents/models/litert-lm/litert-local__Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu/.
+            id: "litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu",
+            displayName: "Qwen3.5 0.8B (.litertlm, own export: dynamic wi4b32 GPU+CPU build)",
+            quantization: "INT4 (dynamic, block-32 weights, FP32 act; 8-bit embedding, GPU+CPU composites, cache 32768)",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 418,
+            hfRepoId: "litert-local/Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu",
+            hfFilePatterns: ["Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm"],
+            primaryFile: "Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm"
+        ),
+        ModelInfo(
             id: "litert-community/Qwen3.5-2B",
             displayName: "Qwen3.5 2B (.litertlm, int8)",
             quantization: "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float), fp32 activations declared",
@@ -1340,6 +1362,26 @@ public enum ModelCatalog {
             hfRepoId: "own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
             hfFilePatterns: ["*.pte", "tokenizer.json"],
             primaryFile: "Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte"
+        ),
+        ModelInfo(
+            id: "own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            displayName: "Qwen3.5 0.8B (own export, ET XNNPACK 8da4w)",
+            quantization: "8da4w: int8 dynamic per-token asymmetric activations x int4 symmetric weights, group 128, HQQ scale-only (every Linear incl. lm_head); embedding int8 per-row (embedding_byte); fp32 compute and KV cache; own export, ExecuTorch 1.5.1",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 617,
+            hfRepoId: "own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+            hfFilePatterns: ["*.pte", "tokenizer.json"],
+            primaryFile: "Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte"
+        ),
+        ModelInfo(
+            id: "own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048",
+            displayName: "Qwen3.5 0.8B (own export, ET MLX 4w)",
+            quantization: "4w: int4 symmetric weight-only, group 128, HQQ scale-only (every Linear incl. lm_head), fp32 activations; embedding int8 per-row (embedding_byte, outside the delegate); fp32 compute and KV cache; MLX delegate; own export, ExecuTorch 1.5.1",
+            parameterCountB: 0.8,
+            onDiskSizeMB: 627,
+            hfRepoId: "own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048",
+            hfFilePatterns: ["*.pte", "tokenizer.json"],
+            primaryFile: "Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048.pte"
         ),
         ModelInfo(
             id: "executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET",

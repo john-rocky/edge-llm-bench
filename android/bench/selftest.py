@@ -2126,7 +2126,12 @@ def main():
          "file=x.litertlm context-tokens=2048 exclude=aot-cache-length-1024", None),
         ("android llama.cpp m/g short-chat backend=cpu file=x.gguf", "takes backend=npu|gpu"),
         ("android llama.cpp m/g short-chat backend=npu file=x.gguf", "go together"),
-        ("android llama.cpp m/g short-chat engine-build=b11469-snapdragon file=x.gguf", "go together"),
+        # engine-build= alone: a CPU side build of the arm llama.cpp (e.g. one built from source)
+        ("android llama.cpp m/g short-chat engine-build=src-ff5a23376725 file=x.gguf", None),
+        ("android executorch own-export/q-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-x.pte "
+         "recipe=r engine-build=v1.5.1-rebuild-x", None),
+        ("mac executorch own-export/q-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3-0.6B-x.pte "
+         "recipe=r engine-build=v1.5.1-rebuild-x", "engine-build= is read for android"),
         ("mac litert-lm m/l short-chat backend=npu", "backend=npu is an android"),
         ("android litert-lm m/l short-chat backend=npu file=x.litertlm", "go together"),
         # a cpu / gpu row may name a LiteRT-LM side build (2026-10-20); ynnpack=1 = a cpu row on one
@@ -2137,13 +2142,16 @@ def main():
          "file=x.litertlm", "ynnpack=1 is a backend=cpu row on a side build"),
         ("android litert-lm m/l short-chat backend=cpu ynnpack=1 file=x.litertlm",
          "ynnpack=1 is a backend=cpu row on a side build"),
-        ("mac litert-lm m/l short-chat backend=cpu ynnpack=1", "ynnpack= is read for android litert-lm rows only"),
+        # mac: a litert-lm cpu row's yardstick --litert-ynnpack on (2026-10-27); not gpu, not ios
+        ("mac litert-lm m/l short-chat backend=cpu ynnpack=1", None),
+        ("mac litert-lm m/l short-chat backend=gpu ynnpack=1", "mac litert-lm backend=cpu rows only"),
+        ("ios litert-lm m/l short-chat backend=cpu ynnpack=1", "mac litert-lm backend=cpu rows only"),
         ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
          "file=x.litertlm context-tokens=2048", "no context-tokens="),
         ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=main-20260821-selfbuilt "
          "file=x.litertlm", "no native-benchmark-"),
         ("ios litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt",
-         "engine-build= is read for android llama.cpp and litert-lm rows only"),
+         "engine-build= is read for android llama.cpp, litert-lm and executorch rows only"),
         ("android litert-lm m/l asr-rtf-librispeech-82s backend=npu file=x.litertlm", "asr-rtf-* needs backend=cpu|gpu"),
         ("android llama.cpp m/g short-chat backend=tpu engine-build=b file=x.gguf", "want cpu|gpu|npu"),
     ]
@@ -2168,6 +2176,66 @@ def main():
                  "file=x.litertlm context-tokens=2048\n")
     errors, _ = validate_cells.validate_file(path_v)
     ok(not errors, f"validate_cells: one cpu row with and one without ynnpack=1 are two cells (got {errors})")
+
+    # Side builds of every competitive arm: a source build runs beside the pinned one, by label.
+    # llama.cpp CPU (engine-build= alone): the flat build's command, the side build's tools
+    # and libs; ExecuTorch: the label's runner dirs; neither touches the flat DEV_DIR build.
+    import run_campaign as rcmp
+    def plan_of(line):
+        cell = {"platform": "android", "runtime": line[0], "model_id": line[1], "task": "short-chat",
+                "opts": dict(kv.split("=", 1) for kv in line[2:])}
+        return rcmp.planned_command(cell)
+    cmd, binary, _ = plan_of(["llama.cpp", "unsloth/Qwen3-0.6B-GGUF", "file=q.gguf",
+                              "engine-build=src-ff5a23376725"])
+    eng = f"{rcmp.ENGINES_DIR}/src-ff5a23376725"
+    ok(binary == "llama-cli" and f"LD_LIBRARY_PATH={eng}/lib " in cmd
+       and f"{eng}/bin/llama-cli -m " in cmd and " -t 4 " in cmd and "-ngl" not in cmd
+       and "--device" not in cmd and "GGML_HEXAGON" not in cmd,
+       f"llama.cpp CPU side build: the flat build's flags from its own bin/ and lib/ (got {cmd!r})")
+    flat, _, _ = plan_of(["llama.cpp", "unsloth/Qwen3-0.6B-GGUF", "file=q.gguf"])
+    ok("LD_LIBRARY_PATH=. " in flat and " ./llama-cli -m " in flat,
+       f"llama.cpp CPU without engine-build= stays the flat pinned build (got {flat!r})")
+    cmd, binary, _ = plan_of(["executorch", "own-export/q", "backend=vulkan", "local=1",
+                              "file=Qwen3-0.6B-x.pte", "recipe=r", "engine-build=v1.5.1-rebuild-x"])
+    ok(binary == "executorch-v1.5.1-rebuild-x-vulkan/llama_main"
+       and "exec ./executorch-v1.5.1-rebuild-x-vulkan/llama_main " in cmd and "engines/" not in cmd,
+       f"executorch engine-build=: the label's runner dir (got {binary!r}, {cmd!r})")
+    _, binary, _ = plan_of(["executorch", "own-export/q", "backend=xnnpack", "local=1",
+                            "file=Qwen3-0.6B-x.pte", "recipe=r"])
+    import run_cell as rc_tag
+    ok(binary == f"executorch-{rc_tag.EXECUTORCH_TAG}/llama_main",
+       f"executorch without engine-build=: the pinned tag's runner (got {binary!r})")
+
+    # BENCH_EXTRA_PINS: another harness's registry adds build labels (a Google3 LiteRT-LM build
+    # stays out of this repo's file); it never overrides a label or touches android_pins
+    import run_cell as rc_pins
+    base_pins = rc_pins.load_pins()
+    extra_path = os.path.join(tmp, "extra-pins.json")
+    saved_extra = os.environ.get("BENCH_EXTRA_PINS")
+    try:
+        with open(extra_path, "w") as fh:
+            json.dump({"_doc": "x", "litert-lm": {"google3-test": {"litert_lm_main_sha256": "ab"}}}, fh)
+        os.environ["BENCH_EXTRA_PINS"] = extra_path
+        merged = rc_pins.load_pins()
+        ok(merged["litert-lm"].get("google3-test") == {"litert_lm_main_sha256": "ab"}
+           and merged["android_pins"] == base_pins["android_pins"]
+           and all(merged["litert-lm"][k] == v for k, v in base_pins["litert-lm"].items()),
+           "BENCH_EXTRA_PINS adds a label beside the registry's, which stay as they are")
+        for bad, want in (({"litert-lm": {next(iter(base_pins["litert-lm"])): {}}}, "already in"),
+                          ({"android_pins": {"litert-lm": "x"}}, "not an engine section")):
+            with open(extra_path, "w") as fh:
+                json.dump(bad, fh)
+            try:
+                rc_pins.load_pins()
+                got = "loaded"
+            except SystemExit as e:
+                got = str(e)
+            ok(want in got, f"BENCH_EXTRA_PINS refuses {list(bad)[0]} ({want}; got {got[:80]})")
+    finally:
+        if saved_extra is None:
+            os.environ.pop("BENCH_EXTRA_PINS", None)
+        else:
+            os.environ["BENCH_EXTRA_PINS"] = saved_extra
     for argv, want in ((["--runtime", "litert-lm", "--backend", "npu"], "pass --backend npu and --engine-build together"),
                        (["--runtime", "litert-lm", "--backend", "gpu", "--ynnpack", "--engine-build", npu_tag],
                         "--ynnpack is a litert-lm --backend cpu row on a side build"),
@@ -2177,7 +2245,7 @@ def main():
                          "--context-tokens", "2048"], "no --context-tokens"),
                        (["--runtime", "llama.cpp", "--backend", "cpu"], "without --backend is the CPU arm"),
                        (["--runtime", "llama.cpp", "--backend", "npu"], "pass --backend and --engine-build together"),
-                       (["--runtime", "llama.cpp", "--engine-build", "b11469-snapdragon"], "together")):
+                       (["--runtime", "llama.cpp", "--backend", "gpu"], "pass --backend and --engine-build together")):
         # --file: a runner that let the arguments through would push the local fixture to the
         # fake phone, never ask the Hub
         p = subprocess.run([sys.executable, os.path.join(ROOT, "android", "bench", "run_cell.py"), *argv,

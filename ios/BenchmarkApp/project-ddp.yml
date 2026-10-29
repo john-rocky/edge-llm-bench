@@ -28,6 +28,17 @@ settings:
     # The app's bundle id; the test bundle's is derived from it. build_xctest.sh sets it from
     # BUNDLE_ID, and run_ddp_ios_lm.py reads it back from the archive's .xctestrun.
     DDP_BUNDLE_ID: com.iosllmbenchmark.benchmarkapp.ddp
+    # Signing, read by the app and test targets only (never by the SwiftPM targets, which refuse a
+    # provisioning profile). Defaults: Automatic signing with the app's memory entitlements.
+    # build_xctest.sh overrides them for a manual profile, e.g. a lab Mac's wildcard development
+    # profile, which cannot carry the memory entitlements (build_xctest.sh ENTITLEMENTS="" drops them; models
+    # under ~1.5 GB do not need them).
+    DDP_CODE_SIGN_STYLE: Automatic
+    DDP_CODE_SIGN_IDENTITY: Apple Development
+    DDP_PROVISIONING_PROFILE: ""
+    DDP_ENTITLEMENTS: BenchmarkApp.entitlements
+    # Extra Swift compilation conditions (build_xctest.sh SWIFT_CONDITIONS), e.g. LITERTLM_YNNPACK.
+    DDP_SWIFT_CONDITIONS: ""
 
 packages:
   swift-huggingface:
@@ -50,6 +61,7 @@ targets:
       - path: Sources/Runtimes/LLMRuntime.swift
       - path: Sources/Runtimes/HFDownloader.swift
       - path: Sources/Runtimes/MediaPipeRuntime.swift
+      - path: Sources/Runtimes/LlamaCppRuntime.swift  # its stub: the app's --llama-backend flag
       - path: Sources/Runtimes/CoreAIRuntime.swift
       - path: SourcesDDP
       # Observed engine pins, as in project.yml: written by the pre-build phase below.
@@ -81,12 +93,15 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(DDP_BUNDLE_ID)
-        CODE_SIGN_ENTITLEMENTS: BenchmarkApp.entitlements
+        CODE_SIGN_ENTITLEMENTS: $(DDP_ENTITLEMENTS)
+        CODE_SIGN_STYLE: $(DDP_CODE_SIGN_STYLE)
+        CODE_SIGN_IDENTITY: $(DDP_CODE_SIGN_IDENTITY)
+        PROVISIONING_PROFILE_SPECIFIER: $(DDP_PROVISIONING_PROFILE)
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_STRICT_CONCURRENCY: minimal
         OTHER_LDFLAGS: "-ObjC"
         ENABLE_USER_SCRIPT_SANDBOXING: NO
-        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) BENCH_DDP_LAB"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) BENCH_DDP_LAB $(DDP_SWIFT_CONDITIONS)"
     preBuildScripts:
       # The app's phase (project.yml): the declared output orders it before Copy Bundle Resources.
       - name: Stamp engine pins
@@ -113,6 +128,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(DDP_BUNDLE_ID).tests
+        CODE_SIGN_STYLE: $(DDP_CODE_SIGN_STYLE)
+        CODE_SIGN_IDENTITY: $(DDP_CODE_SIGN_IDENTITY)
+        PROVISIONING_PROFILE_SPECIFIER: $(DDP_PROVISIONING_PROFILE)
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:

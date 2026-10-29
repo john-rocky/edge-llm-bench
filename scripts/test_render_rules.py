@@ -514,10 +514,11 @@ class ExecuTorchArm(unittest.TestCase):
         bad = {
             self.ROW.format(plat="android", task="short-chat", backend="gpu", extra=""): "backend=<qnn|vulkan|xnnpack>",
             self.ROW.format(plat="mac", task="short-chat", backend="vulkan", extra=""): "backend=<coreml|metal|mlx|xnnpack>",
-            # the iPhone app (project-executorch.yml) links XNNPACK only and records the cell's
-            # context-tokens= as the run's allocation
+            # the iPhone app links XNNPACK (project-executorch.yml; the lab build
+            # project-ddp-executorch.yml also MLX) and records the cell's context-tokens= as the
+            # run's allocation
             self.ROW.format(plat="ios", task="short-chat", backend="coreml", extra=" context-tokens=2048"):
-                "backend=<xnnpack>",
+                "backend=<mlx|xnnpack>",
             self.ROW.format(plat="ios", task="short-chat", backend="xnnpack", extra=""):
                 "an ios executorch row needs context-tokens=",
             self.ROW.format(plat="ios", task="short-chat", backend="xnnpack", extra=" context-tokens=2048 runs=1"):

@@ -141,18 +141,33 @@ def epoch(phase):
     return (float(s), "s") if s.isdigit() else (None, None)
 
 
-def witness(binname, shas, pins):
+def witness(binname, shas, pins, engine_dir=None):
     """run_cell.observed_engine's rule on the shas the wrapper read on the unit: the pins tag whose
     entry holds the launched tool's sha in its field (run_cell.pin_key) and, beside it on the
     unit, every so_files entry of that tag; else 'unknown (…)' in observed_engine's wording."""
+    if binname.split("/")[0].startswith("executorch-"):
+        build_dir, runner = binname.split("/", 1)
+        backend = next((b for b in run_cell.EXECUTORCH_BACKENDS if build_dir.endswith("-" + b)), "")
+        field = f"{runner}_{backend}_sha256" if backend else f"{runner}_sha256"
+        sha = shas.get(f"{run_cell.DEV_DIR}/{binname}")
+        if sha is None:
+            return f"unknown (on-device {binname} sha not in provenance.txt)", None
+        for tag, entry in pins.get("executorch", {}).items():
+            if entry.get(field) == sha:
+                return tag, sha
+        return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
     engine, field = run_cell.pin_key(binname)
-    sha = shas.get(f"{run_cell.DEV_DIR}/{binname}")
+    dev_path = (run_cell.side_path(engine_dir, run_cell.SIDE_DIRS[engine][0], binname)
+                if engine_dir else f"{run_cell.DEV_DIR}/{binname}")
+    sha = shas.get(dev_path)
     if sha is None:
         return f"unknown (on-device {binname} sha not in provenance.txt)", None
     for tag, entry in pins.get(engine, {}).items():
         if entry.get(field) == sha:
             libs = entry.get("so_files") or {}
-            bad = [name for name in sorted(libs) if shas.get(f"{run_cell.DEV_DIR}/{name}") != libs[name]]
+            bad = [name for name in sorted(libs)
+                   if shas.get(run_cell.side_path(engine_dir, run_cell.SIDE_DIRS[engine][1], name)
+                               if engine_dir else f"{run_cell.DEV_DIR}/{name}") != libs[name]]
             if bad:
                 return (f"unknown (on-device {tag} {binname} with lib {', '.join(bad)} "
                         "unmatched in android/engine-pins.json)"), sha
@@ -206,7 +221,12 @@ def records_for_execution(job, exec_dir, out_dir, meta):
         props[name] = prov["props"].get(name) or None
         if props[name] is None:
             missing.append(f"{name}: empty in provenance.txt")
-    engine_version, engine_artifact = witness(job["binname"], prov["sha"], run_cell.load_pins())
+    runtime = job.get("runtime", "litert-lm")
+    engine_build = job.get("engineBuild")
+    # an executorch build label names its runner dirs (in job["binname"]), not a side build dir
+    engine_dir = (f"{run_cell.ENGINES_DIR}/{engine_build}"
+                  if engine_build and runtime != "executorch" else None)
+    engine_version, engine_artifact = witness(job["binname"], prov["sha"], run_cell.load_pins(), engine_dir)
     model_sha = prov["sha"].get(job["modelDevice"])
     if model_sha is None:
         missing.append(f"model.sha256: no provenance.txt line for {job['modelDevice']}")
@@ -221,9 +241,17 @@ def records_for_execution(job, exec_dir, out_dir, meta):
     sampler, cmd, binname = job["sampler"], job["command"], job["binname"]
     model_dev = job["modelDevice"]
     stem = job["stem"]
+    et = None
+    if runtime == "executorch":
+        et = parsers.executorch_inputs(run_cell.EXECUTORCH_MODEL_DIR, job["file"], job["task"],
+                                       job.get("recipe"), ROOT)
+    prompt_text = None
+    if engine_dir and not job["task"].startswith("native-benchmark-"):
+        with open(os.path.join(ROOT, "prompts", "text", f"{job['task']}.txt")) as fh:
+            prompt_text = fh.read()
     # D10: every job starts on a clean unit; as on the attached-phone route, every run until the first
-    # clean exit is (or may be finishing) the cache build
-    cache_built = False
+    # clean exit is (or may be finishing) the cache build (litert-lm, or llama.cpp GPU side build)
+    cache_built = not (runtime == "litert-lm" or (engine_dir and job["backend"] == "gpu" and binname != "llama-bench"))
     for i in range(1, job["runs"] + 1):
         log_path = os.path.join(ddp_out, f"run{i}.log")
         if not os.path.isfile(log_path):
@@ -267,31 +295,87 @@ def records_for_execution(job, exec_dir, out_dir, meta):
         start_capped = st["gate"].get("cpucap_timed_out") == "1"
         gate_timed_out = st["gate"].get("thermal_gate_timed_out") == "1"
         cpu_flags = (["cpu-capped"] if cpu_capped else []) + (["cpu-capped-at-start"] if start_capped else [])
-        cache, cache_missing = engine_cache(console, job["backend"], f"run{i}.log")
-        if cache_missing:
-            run_missing.append(cache_missing)
+        cache = None
+        if runtime == "litert-lm":
+            cache, cache_missing = engine_cache(console, job["backend"], f"run{i}.log")
+            if cache_missing:
+                run_missing.append(cache_missing)
         launch_id = record_uuid(meta, i)
+        et_fields = None
+        tests = None
+        cold = True
         if paired:
             iteration_metrics, launch_checks = parsers.context_prompt_results(console, job["contextTokens"], budget)
             iteration_metrics += [{} for _ in range(max(0, 2 - len(iteration_metrics)))]
             metrics = iteration_metrics[0]
+        elif runtime == "llama.cpp" and job["task"].startswith("native-benchmark-"):
+            tests = parsers.parse_llama_bench_json(console)
+            metrics = {}
+            for t in tests:
+                if t["kind"] == "prefill":
+                    metrics["promptTokensPerSecond"] = t["avg_ts"]
+                    metrics["promptTokenCount"] = t["n_prompt"]
+                else:
+                    metrics["decodeTokensPerSecond"] = t["avg_ts"]
+                    metrics["generatedTokenCount"] = t["n_gen"]
+            cold = False
+            invalid = console.lower().count("invalid decode")
+            launch_checks = {"invalidDecodeCount": invalid,
+                             "protocolFlags": ["invalid-decode"] if invalid else []}
+        elif runtime == "llama.cpp":
+            metrics = parsers.parse_llama_cli(console)
+            invalid = console.lower().count("invalid decode")
+            launch_checks = {"invalidDecodeCount": invalid,
+                             "protocolFlags": ["invalid-decode"] if invalid else []}
+        elif et:
+            et_fields = run_cell.executorch_fields(console, et, budget, job["contextTokens"])
+            metrics = dict(et_fields["metrics"])
+            invalid = console.lower().count("invalid decode")
+            launch_checks = {"invalidDecodeCount": invalid,
+                             "protocolFlags": (["invalid-decode"] if invalid else []) + list(et_fields["flags"])}
         else:
             metrics = parsers.parse_litert(console)
             invalid = console.lower().count("invalid decode")
             launch_checks = {"invalidDecodeCount": invalid,
                              "protocolFlags": ["invalid-decode"] if invalid else []}
+        side_cond, backend_flags = {}, []
+        if engine_build and (runtime == "executorch" or (runtime == "llama.cpp" and not job["backend"])):
+            # an ExecuTorch build other than the pinned tag, or a llama.cpp CPU side build: the
+            # build (and its command); no device to witness (run_cell's conditions likewise)
+            side_cond = {"engineBuild": engine_build}
+            if engine_dir:
+                side_cond["engineCommand"] = f"{job['env']} {cmd}"
+        elif engine_dir and runtime == "llama.cpp":
+            device = run_cell.LLAMA_DEVICES[job["backend"]]
+            bench = binname == "llama-bench"
+            lines = (parsers.llama_bench_device_lines(tests) if bench
+                     else parsers.llama_backend_lines(console))
+            side_cond = {"engineBuild": engine_build, "ggmlDevice": device, "nGpuLayers": 99,
+                         "threads": run_cell.SIDE_THREADS,
+                         "flashAttn": "auto (llama-bench default)" if bench else "on",
+                         "ubatch": run_cell.SIDE_UBATCH if not bench or job["backend"] == "npu"
+                         else "512 (llama-bench default)",
+                         "hexagonOpPoll": 1, "engineCommand": f"{job['env']} {cmd}",
+                         "backendRegistered": lines}
+            if not parsers.llama_backend_registered(lines, device, run_cell.LLAMA_DEVICE_BUFFERS[device],
+                                                    binname, tests):
+                backend_flags = ["backend-not-registered"]
         if exit_code != 0:
             launch_checks["protocolFlags"].append(f"engine-exit-{exit_code}")
-        metrics.update({"coldRun": True, "harnessStamp": HARNESS_STAMP,
+        metrics.update({"coldRun": cold, "harnessStamp": HARNESS_STAMP + (run_cell.EXECUTORCH_STAMP if et else ""),
                         "initialThermalState": thermal_name, "finalThermalState": end_name})
         if rss_mb is not None:
             metrics["memoryMedianResidentMB"] = rss_mb
         high_water = [int(line.split()[1]) for line in console.splitlines() if line.startswith("VmHWM:")]
         if high_water:
             metrics["memoryPeakResidentMB"] = max(high_water) / 1024
+        if et:
+            engine_peak = metrics.get("memoryPeakEngineReportedMB")
+            if engine_peak and engine_peak > metrics.get("memoryPeakResidentMB", 0):
+                metrics["memoryPeakResidentMB"] = engine_peak
         if not cache_built:
             metrics["firstEver"] = True
-        if exit_code == 0 and not cache_built and not launch_checks.get("protocolFlags"):
+        if exit_code == 0 and not cache_built and not launch_checks.get("protocolFlags") and not backend_flags:
             cache_built = True
 
         when = datetime.datetime.fromtimestamp(int(t_start), datetime.timezone.utc)
@@ -316,16 +400,27 @@ def records_for_execution(job, exec_dir, out_dir, meta):
                            **cpu_cond,
                            "contextTokens": job["ctxNote"],
                            **({"promptVersion": job["promptVersion"]} if job.get("promptVersion") else {}),
+                           **({"chatMode": "single-turn template default (-st)"}
+                              if runtime == "llama.cpp" and not job["task"].startswith("native-") else {}),
                            "thermalRawStatus": raw_status,
                            "thermalRawStatusFinal": end_status,
                            **scr, "elapsedSeconds": elapsed,
-                           "exitCode": exit_code, "engineCache": cache},
+                           "exitCode": exit_code,
+                           **({"engineCache": cache} if cache is not None else {}),
+                           **side_cond},
             "metrics": metrics,
-            "provenance": {"rawLog": console_name, "harness": HARNESS, "rssBasis": run_cell.RSS_BASIS,
+            "provenance": {"rawLog": console_name, "harness": HARNESS,
+                           "rssBasis": run_cell.RSS_BASIS + (run_cell.SIDE_RSS_NOTE if engine_dir else ""),
                            "modelShaSource": "device",
                            "ddpSessionDir": meta["ddpSessionDir"], "wrapper": WRAPPER_REL,
                            "wrapperSha256": job["wrapper"]["sha256"]},
         }
+        if et:
+            rec["model"].update(et_fields["model"])
+            rec["conditions"].update(et_fields["conditions"], warm=False)
+            rec["provenance"].update(et_fields["provenance"])
+            rec["provenance"]["rssBasis"] += run_cell.EXECUTORCH_RSS_NOTE[et["runner"]]
+            rec["outputSample"] = (et_fields["text"] or "")[:200]
         rec["conditions"].update({
             "roundIndex": None, "launchIndex": None,
             "launchID": launch_id, "elapsedScope": "whole-launch",
@@ -337,7 +432,7 @@ def records_for_execution(job, exec_dir, out_dir, meta):
             "thermalGateTimeoutNonNominal": gate_timed_out and thermal_name != "nominal",
             "initialThermalNonNominal": thermal_name != "nominal",
             "outputTokenBudget": budget,
-            "engineCommand": cmd, **launch_checks,
+            "engineCommand": f"{job['env']} {cmd}" if engine_dir else cmd, **launch_checks,
         })
         rec["conditions"]["ddp"] = {
             "sessionId": meta["sessionId"], "jobId": meta["jobId"], "executionId": meta["executionId"],
@@ -351,7 +446,14 @@ def records_for_execution(job, exec_dir, out_dir, meta):
             rec["provenance"]["ddpMissing"] = run_missing
         samples = iteration_metrics if paired else [metrics]
         checking = os.environ.get("BENCH_TEXT_CHECK", "1") == "1"
-        printed_texts = parsers.context_prompt_texts(console) if paired and checking else None
+        if paired and checking:
+            printed_texts = parsers.context_prompt_texts(console)
+        elif engine_dir and binname != "llama-bench" and checking:
+            printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
+        elif et and checking:
+            printed_texts = [et_fields["text"] or ""]
+        else:
+            printed_texts = None
         any_text_failure = False
         for iteration, sample in enumerate(samples, 1):
             row = {**rec, "id": record_uuid(meta, i, iteration),
@@ -378,13 +480,15 @@ def records_for_execution(job, exec_dir, out_dir, meta):
                     fh.write(value)
                 row["provenance"]["decodedText"] = text_name
                 any_text_failure |= bool(row["conditions"]["protocolFlags"])
-            if cpu_flags:
-                row["conditions"]["protocolFlags"] = list(row["conditions"].get("protocolFlags", [])) + cpu_flags
+            if cpu_flags or backend_flags:
+                row["conditions"]["protocolFlags"] = (list(row["conditions"].get("protocolFlags", []))
+                                                      + cpu_flags + backend_flags)
             name = f"{stem}_{stamp}_run{i}{'_iter' + str(iteration) if paired else ''}.json"
             with open(os.path.join(out_dir, name), "w") as fh:
                 json.dump(row, fh, indent=2)
         d = metrics.get("decodeTokensPerSecond")
-        clean = bool(exit_code == 0 and d and not launch_checks.get("protocolFlags") and not any_text_failure)
+        clean = bool(exit_code == 0 and d and not launch_checks.get("protocolFlags")
+                     and not any_text_failure and not backend_flags)
         written.append((os.path.join(out_dir, f"{stem}_{stamp}_run{i}"), clean))
         notes.append(f"{where} run {i}/{job['runs']} {'OK' if clean else f'FAIL(exit={exit_code})'} "
                      f"decode={d} thermal={thermal_name}->{end_name}")

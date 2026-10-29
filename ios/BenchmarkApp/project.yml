@@ -253,6 +253,11 @@ targets:
         # next to the tool binary in Products/Release — without it the litert dylib only
         # resolves when the binary happens to run from a directory on the llama rpath.
         LD_RUNPATH_SEARCH_PATHS: "@executable_path $(SRCROOT)/Vendored/llama.xcframework/macos-arm64_x86_64"
+        # Extra Swift compilation conditions for the yardstick only
+        # (scripts/build_yardstick_mac.sh YS_SWIFT_CONDITIONS), e.g. LITERTLM_YNNPACK
+        # for a LiteRT-LM built with YNNPACK (`--litert-ynnpack`).
+        YS_SWIFT_CONDITIONS: ""
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) $(YS_SWIFT_CONDITIONS)"
     preBuildScripts:
       # Tool targets bundle no resources; this refreshes Vendored/engine-pins.json so the
       # CLI can stamp rows via BENCH_ENGINE_PINS_FILE (see EnginePins.swift). No declared

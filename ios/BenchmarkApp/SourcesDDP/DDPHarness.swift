@@ -19,7 +19,9 @@ public struct DDPOutcome: Sendable {
     public let newFiles: [String]
 }
 
-/// The lab build's entry (ios/BenchmarkApp/project-ddp.yml). Developer Device Platform runs iOS as
+/// The lab build's entry (ios/BenchmarkApp/project-ddp.yml for LiteRT-LM, and one
+/// project-ddp-<engine>.yml per other engine: llamacpp, executorch, mlx; one engine per app, as their
+/// static libraries clash). Developer Device Platform runs iOS as
 /// XCTest: before the test the lab pushes the model into the app's model directory and
 /// Documents/yardstick_args.json, a JSON array of the words the attached iPhone's driver
 /// (scripts/bench_matrix_iphone.sh) gives the app after `--`; after it, the lab pulls
@@ -93,15 +95,15 @@ public enum DDPHarness {
         }
         let code: Int32
         var added: [String] = []
-        if spec.runtime != .mediaPipe {
-            // The lab build links LiteRT-LM only; the app's line for a runtime it cannot run.
+        if makeRuntime(spec.runtime) == nil {
+            // The runtimes this lab build links: the app's line for a runtime it cannot run.
             log("YARDSTICK_FATAL runtime=\(spec.runtime.rawValue) not_available")
             code = 2
-        } else if let missing = missingModelFile(modelId: spec.modelId) {
+        } else if let missing = missingModelFile(runtime: spec.runtime, modelId: spec.modelId) {
             log("YARDSTICK_FATAL model_file_missing path=\(missing) (pushed by the lab; nothing is downloaded)")
             code = modelMissingCode
         } else {
-            let runtime = MediaPipeRuntime(backend: MediaPipeRuntime.launchBackend)
+            let runtime = makeRuntime(spec.runtime)!
             kept.append(runtime)
             let gate = await waitForNominalThermal(maxSeconds: 600, pollSeconds: 30, log: log)
             write("waited_s=\(gate.waited)\nstate=\(gate.state)\ntimed_out=\(gate.timedOut ? 1 : 0)\n",
@@ -161,9 +163,39 @@ public enum DDPHarness {
     /// (HFDownloader.modelDirectory + primaryFile), or when the id is not in the catalog (the run
     /// reports that itself); else that path, relative to the container. A file pushed flat into
     /// Documents/ is moved there first.
-    private static func missingModelFile(modelId: String) -> String? {
-        guard let model = ModelCatalog.liteRTLM.first(where: { $0.id == modelId }) else { return nil }
-        let dir = HFDownloader.modelDirectory(runtime: .mediaPipe, hfRepoId: model.hfRepoId)
+    /// The runtimes this lab build links (project-ddp.yml): nil for the others.
+    @MainActor
+    private static func makeRuntime(_ kind: RuntimeKind) -> (any LLMRuntime)? {
+        switch kind {
+        case .mediaPipe:
+            return MediaPipeRuntime(backend: MediaPipeRuntime.launchBackend)
+        #if canImport(llama)
+        case .llamaCpp:
+            return LlamaCppRuntime()
+        #endif
+        #if canImport(ExecuTorchLLM)
+        case .executorch:
+            return ExecuTorchRuntime()
+        #endif
+        #if canImport(MLXLLM)
+        case .mlxSwift:
+            return MLXRuntime()
+        #endif
+        default:
+            return nil
+        }
+    }
+
+    private static func missingModelFile(runtime: RuntimeKind, modelId: String) -> String? {
+        let catalog: [ModelInfo]
+        switch runtime {
+        case .llamaCpp: catalog = ModelCatalog.llamaCpp
+        case .executorch: catalog = ModelCatalog.executorch
+        case .mlxSwift: catalog = ModelCatalog.mlx
+        default: catalog = ModelCatalog.liteRTLM
+        }
+        guard let model = catalog.first(where: { $0.id == modelId }) else { return nil }
+        let dir = HFDownloader.modelDirectory(runtime: runtime, hfRepoId: model.hfRepoId)
         let fm = FileManager.default
         if model.primaryFile.isEmpty {
             let present = ((try? fm.contentsOfDirectory(atPath: dir.path)) ?? []).contains { !$0.hasPrefix(".") }

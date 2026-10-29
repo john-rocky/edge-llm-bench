@@ -1,0 +1,46 @@
+{
+ "_doc": "The competitive arms' catalog ids run_ddp_ios_lm.py takes with --runtime (llama.cpp, executorch, mlx-swift) -> the Hub repo and the files the app reads, as in ios/BenchmarkApp/Sources/Models/ModelCatalog.swift (hfRepoId; primaryFile, plus the tokenizer an ExecuTorch export needs and the files an MLX snapshot needs). Each file is pushed to Documents/models/<runtime>/<hfRepoId with '/' as '__'>/<file>, HFDownloader.modelDirectory's path. An own export (own-export/..., litert-local/...) is not on the Hub: pass its files with --model-file. models.json keeps the LiteRT-LM ids that Daisuke's self-test pins; the competitive LiteRT-LM export is here.",
+ "litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu": {
+  "runtime": "litert-lm",
+  "hfRepoId": "litert-local/Qwen3.5-0.8B-wi4b32-afp32-gpu-cpu",
+  "files": [
+   "Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm"
+  ]
+ },
+ "unsloth/Qwen3.5-0.8B-GGUF/Q4_0": {
+  "runtime": "llama.cpp",
+  "hfRepoId": "unsloth/Qwen3.5-0.8B-GGUF",
+  "files": [
+   "Qwen3.5-0.8B-Q4_0.gguf"
+  ]
+ },
+ "own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048": {
+  "runtime": "executorch",
+  "hfRepoId": "own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048",
+  "files": [
+   "Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte",
+   "tokenizer.json"
+  ]
+ },
+ "own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048": {
+  "runtime": "executorch",
+  "hfRepoId": "own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048",
+  "files": [
+   "Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048.pte",
+   "tokenizer.json"
+  ]
+ },
+ "mlx-community/Qwen3.5-0.8B-MLX-4bit": {
+  "runtime": "mlx-swift",
+  "hfRepoId": "mlx-community/Qwen3.5-0.8B-MLX-4bit",
+  "files": [
+   "config.json",
+   "model.safetensors",
+   "model.safetensors.index.json",
+   "tokenizer.json",
+   "tokenizer_config.json",
+   "chat_template.jinja",
+   "vocab.json"
+  ]
+ }
+}

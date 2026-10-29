@@ -367,11 +367,14 @@ def planned_command(cell):
         budgets = dict(line.strip().split("\t") for line in fh)
     ctx = int(opts["context-tokens"]) if opts.get("context-tokens") else None
     limit = int(opts["max-tokens"]) if opts.get("max-tokens") else None
-    engine_dir = f"{ENGINES_DIR}/{opts['engine-build']}" if opts.get("engine-build") else None
+    # engine-build= on an executorch row names its runner dirs, not an {ENGINES_DIR} side build
+    engine_dir = (f"{ENGINES_DIR}/{opts['engine-build']}"
+                  if opts.get("engine-build") and cell["runtime"] != "executorch" else None)
     command, binary, sampler, _ = engine_command(
         cell["runtime"], opts.get("backend"), model, cell["task"], prompt,
         int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx,
-        engine_dir=engine_dir, ynnpack=opts.get("ynnpack") == "1")
+        engine_dir=engine_dir, ynnpack=opts.get("ynnpack") == "1",
+        engine_build=opts.get("engine-build"))
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
     env = launch_env(engine_dir, opts.get("backend"), cell["runtime"])
     return f"cd {DEV_DIR} && {env} {affinity}{command}", binary, sampler

@@ -241,7 +241,12 @@ EXECUTORCH_RSS_NOTE = {
 def load_pins(serial=None):
     """android/engine-pins.json. BENCH_TEST_PINS names a fixture registry instead, for the
     FAKESELF selftest only: a side build whose sha256 the device round registers is
-    witnessed in the selftest without an entry in the real registry."""
+    witnessed in the selftest without an entry in the real registry.
+
+    BENCH_EXTRA_PINS names a second registry (same layout) whose entries are added to the
+    engine sections: builds another harness makes and registers itself (a Google3 build of
+    LiteRT-LM, which cannot be rebuilt outside Google, stays out of this repo's file). It may
+    only add labels: one already in the registry, or an android_pins / top-level key, refuses."""
     p = os.environ.get("BENCH_TEST_PINS")
     if p and serial != "FAKESELF":
         raise SystemExit("BENCH_TEST_PINS is only for the FAKESELF selftest fixture")
@@ -249,7 +254,24 @@ def load_pins(serial=None):
     if not os.path.exists(p):
         return {}
     with open(p) as fh:
-        return json.load(fh)
+        pins = json.load(fh)
+    extra = os.environ.get("BENCH_EXTRA_PINS")
+    if extra:
+        with open(extra) as fh:
+            more = json.load(fh)
+        for section, entries in more.items():
+            if section.startswith("_"):
+                continue
+            if section == "android_pins" or not isinstance(entries, dict) \
+                    or not isinstance(pins.get(section, {}), dict):
+                raise SystemExit(f"BENCH_EXTRA_PINS {extra}: {section!r} is not an engine section "
+                                 "(the extra registry only adds build labels)")
+            for label, entry in entries.items():
+                if label in pins.get(section, {}):
+                    raise SystemExit(f"BENCH_EXTRA_PINS {extra}: {section} {label!r} is already in "
+                                     f"{p} (the extra registry only adds labels)")
+                pins.setdefault(section, {})[label] = entry
+    return pins
 
 
 # the launched tool -> (engine, the pins field of its sha256); any other tool is a llama.cpp one
@@ -668,7 +690,7 @@ def capture_stem(runtime, backend, model_id, task, file_hint=None,
 
 
 def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_tokens,
-                   context_tokens, engine_dir=None, ynnpack=False):
+                   context_tokens, engine_dir=None, ynnpack=False, engine_build=None):
     """The on-device command line for one run. Returns (cmd, binname, sampler, ctx_note).
     engine_dir = a side build ({ENGINES_DIR}/<tag>): the tool by absolute path; llama.cpp
     with every layer on the backend's device, LiteRT-LM on the NPU, or LiteRT-LM on cpu / gpu
@@ -729,6 +751,21 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
         if backend and not engine_dir:
             raise SystemExit(f"llama.cpp backend={backend} runs a side build: the cell needs "
                              "engine-build=<tag> (the pinned flat build is CPU-only)")
+        if engine_dir and not backend:
+            # A CPU side build (cells engine-build= without backend=; arm llama.cpp): another
+            # build of the CPU arm, e.g. one built from source, laid out as a side build
+            # ({ENGINES_DIR}/<tag>/{bin,lib}) so it never touches the flat pinned build. It runs
+            # exactly as the flat build does (-t 4 under the CPU mask, the same flags); only
+            # the tools' path and the libraries' dir (launch_env) differ.
+            tool_dir = f"{engine_dir}/bin"
+            if task.startswith("native-benchmark-"):
+                p, d = task[len("native-benchmark-"):].split("x")
+                return (f"{tool_dir}/llama-bench -m {model_dev} -t 4 -p {p} -n {d} -o json"), \
+                    "llama-bench", "n/a (llama-bench)", "llama-bench-managed"
+            think = f" {LLAMA_THINKING_OFF_FLAGS}" if llama_thinking_off(model_dev) else ""
+            return (f"{tool_dir}/llama-cli -m {model_dev} -t 4 -c {ctx} -f {prompt_dev} "
+                    f"-n {max_tokens or budget} --temp 0 --top-p 1 -st{think}"), \
+                "llama-cli", "greedy", ctx
         if engine_dir:
             # Side build, the wrapper's defaults (SIDE_THREADS above). -lv 4 comes before
             # --device: b11469's llama-cli logs errors only by default, ggml / llama INFO lines
@@ -775,7 +812,7 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
         if runner is None:
             raise SystemExit(f"executorch: no runner for {os.path.basename(model_dev)} "
                              "(parsers.executorch_runner_for knows Qwen 3 and Gemma 4)")
-        binname = executorch_binname(backend, runner)
+        binname = executorch_binname(backend, runner, engine_build)
         tokenizer_dev, rendered_dev = executorch_device_paths(model_dev, task)
         prompt_arg = (f"--prompt_file={rendered_dev}" if runner == "llama_main"
                       else f'--prompt="$(cat {prompt_dev})"')
@@ -799,9 +836,10 @@ def engine_command(runtime, backend, model_dev, task, prompt_dev, budget, max_to
     raise SystemExit(f"unknown android runtime {runtime!r}")
 
 
-def executorch_binname(backend, runner):
-    """executorch-<tag>[-<backend>]/<runner>, relative to DEV_DIR (and to ANDROID_BIN_DIR)."""
-    return f"executorch-{EXECUTORCH_TAG}{'' if backend == 'xnnpack' else '-' + backend}/{runner}"
+def executorch_binname(backend, runner, tag=None):
+    """executorch-<tag>[-<backend>]/<runner>, relative to DEV_DIR (and to ANDROID_BIN_DIR).
+    tag: a build label (cells engine-build= / --engine-build), else EXECUTORCH_TAG."""
+    return f"executorch-{tag or EXECUTORCH_TAG}{'' if backend == 'xnnpack' else '-' + backend}/{runner}"
 
 
 def executorch_device_paths(model_dev, task):
@@ -881,7 +919,8 @@ def dry_run(args, arm, engine_dir):
     prompt_dev = f"{DEV_DIR}/prompts/{args.task}.txt"
     cmd, binname, sampler, _ = engine_command(args.runtime, args.backend, model_dev, args.task, prompt_dev,
                                               budget, args.max_tokens, args.context_tokens,
-                                              engine_dir=engine_dir, ynnpack=args.ynnpack)
+                                              engine_dir=engine_dir, ynnpack=args.ynnpack,
+                                              engine_build=args.engine_build)
     affinity = f"taskset {CPU_MASK} " if CPU_MASK else ""
     plan.update(command=f"cd {DEV_DIR} && {launch_env(engine_dir, args.backend, args.runtime)} {affinity}{cmd} "
                         f">{DEV_DIR}/run_out.txt 2>&1 </dev/null",
@@ -928,6 +967,9 @@ def launch_env(engine_dir=None, backend=None, runtime="llama.cpp"):
     if runtime == "litert-lm":
         return (f'LD_LIBRARY_PATH={engine_dir} '
                 f'ADSP_LIBRARY_PATH="{engine_dir}/dsp;/system/lib/rfsa/adsp;/vendor/lib/rfsa/adsp;/dsp"')
+    if not backend:
+        # a llama.cpp CPU side build: its own lib/, no device settings
+        return f"LD_LIBRARY_PATH={engine_dir}/lib"
     env = f"LD_LIBRARY_PATH={engine_dir}/lib ADSP_LIBRARY_PATH={engine_dir}/lib"
     if backend == "npu":
         env += f" GGML_HEXAGON_DEVICES={LLAMA_DEVICES[backend]}"
@@ -1197,9 +1239,9 @@ def main():
                  "or endurance- task (not wired)")
     if args.runtime == "llama.cpp" and args.backend == "cpu":
         ap.error("llama.cpp without --backend is the CPU arm (`llama.cpp`); --backend takes npu|gpu")
-    if args.runtime == "llama.cpp" and bool(args.backend) != bool(args.engine_build):
+    if args.runtime == "llama.cpp" and args.backend and not args.engine_build:
         ap.error("llama.cpp on npu|gpu is a side build: pass --backend and --engine-build together "
-                 "(--engine-build alone would stamp the CPU arm `llama.cpp` with a second build)")
+                 "(--engine-build alone is a CPU side build of the `llama.cpp` arm)")
     ort = args.runtime == "onnxruntime-genai"
     if ort and (args.backend != "cpu" or args.engine_build):
         ap.error("onnxruntime-genai on Android takes --backend cpu (the official AAR is CPU-only) "
@@ -1207,10 +1249,13 @@ def main():
     if ort and not args.file:
         ap.error("onnxruntime-genai needs --file <the GenAI folder in the HF repo, or a local folder>")
     arm = arm_name(args.runtime, args.backend, args.ynnpack)
-    engine_dir = f"{ENGINES_DIR}/{args.engine_build}" if args.engine_build else None
+    # an executorch build label names its runner dirs (executorch-<label>[-<backend>]/ under
+    # DEV_DIR, as EXECUTORCH_TAG does), not an {ENGINES_DIR} side build
+    engine_dir = (f"{ENGINES_DIR}/{args.engine_build}"
+                  if args.engine_build and args.runtime != "executorch" else None)
     if args.runtime == "executorch":
-        if args.backend not in EXECUTORCH_BACKENDS or args.engine_build:
-            ap.error("executorch needs --backend xnnpack|vulkan|qnn (arm identity) and no --engine-build")
+        if args.backend not in EXECUTORCH_BACKENDS:
+            ap.error("executorch needs --backend xnnpack|vulkan|qnn (arm identity)")
         if not args.file or not args.recipe:
             ap.error("executorch needs --file <the .pte, under ET_MODEL_DIR> and --recipe <alias>")
     elif args.backend in EXECUTORCH_BACKENDS or args.recipe:
@@ -1277,13 +1322,13 @@ def main():
     if not args.task.startswith("native-benchmark-"):
         prompt_dev, budget = push_prompt(args.task, args.serial)
         prompt_ver = prompt_version(args.task)
-        if engine_dir:  # the text the chat tool echoes before its reply (llama_cli_reply)
+        if engine_dir and args.backend:  # the text the chat tool echoes before its reply (llama_cli_reply)
             with open(os.path.join(ROOT, "prompts", "text", f"{args.task}.txt")) as fh:
                 prompt_text = fh.read()
     cmd, binname, sampler, ctx_note = engine_command(
         args.runtime, args.backend, model_dev, args.task,
         prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir,
-        ynnpack=args.ynnpack)
+        ynnpack=args.ynnpack, engine_build=args.engine_build)
     litert_npu = args.runtime == "litert-lm" and bool(engine_dir) and args.backend == "npu"
     # a LiteRT-LM cpu / gpu build other than the flat pin: the flat build's commands and
     # records, plus the build's tag, its env + command, its lines and YNNPACK's
@@ -1443,6 +1488,13 @@ def main():
             if off:
                 side_cond["backendOffReason"] = off
                 backend_flags = ["backend-not-registered"]
+        elif et and args.engine_build:
+            # an ExecuTorch build other than the pinned tag (its runner dirs carry the label)
+            side_cond = {"engineBuild": args.engine_build}
+        elif engine_dir and not args.backend:
+            # a llama.cpp CPU side build: the build and the exact command; it runs on the CPU
+            # as the flat build does, so there is no device to witness
+            side_cond = {"engineBuild": args.engine_build, "engineCommand": f"{env} {cmd}"}
         elif engine_dir:
             device = LLAMA_DEVICES[args.backend]
             bench = binname == "llama-bench"
@@ -1543,7 +1595,8 @@ def main():
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
                            "rssBasis": RSS_BASIS + (LITERT_NPU_RSS_NOTE if litert_npu
-                                                    else SIDE_RSS_NOTE if engine_dir and not litert_side
+                                                    else SIDE_RSS_NOTE if engine_dir and args.backend
+                                                    and not litert_side
                                                     else ""),
                            "modelShaSource": model_sha_source},
         }
@@ -1604,7 +1657,7 @@ def main():
             printed_texts = parsers.context_prompt_texts(console)
         elif litert_npu and checking:
             printed_texts = [parsers.litert_reply(console)]
-        elif engine_dir and not litert_side and binname != "llama-bench" and checking:
+        elif engine_dir and args.backend and not litert_side and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
         elif et and checking:
             printed_texts = [et_fields["text"] or ""]
@@ -1712,6 +1765,7 @@ ANDROID_QUANT_LABELS = {
     "Qwen3-0.6B_dynamic_wi4b32_afp32_gpu_composites.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export 2026-10-13, prefill 128 + 1024)",
     "Qwen3-0.6B.litertlm": "INT8 (dynamic weights, float KV; metadata for 0.18.0, 2026-10-12)",  # the iOS ModelCatalog string of litert-community/Qwen3-0.6B/dynamic_int8, the same Hub file (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift); side-loaded by the lu1020 YNNPACK control cells (2026-10-21)
     "Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+    "Qwen3.5-0.8B_wi4b32_afp32_gpu_cpu.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU+CPU composite export, cache 32768)",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     # 2026-09-14 dtype-only pair: one litert-torch main (6d4c622) GPU-graph export of
     # Qwen3-1.7B per recipe (fused qkv/gate_up, odml.rope + cache composites, bool mask,
@@ -1749,7 +1803,7 @@ def guess_quant(dev_path):
         if base.endswith(known):
             return label
     low = base.lower()
-    for pat in ("q4_k_m", "q8_0", "f16", "fp16"):
+    for pat in ("q4_k_m", "q4_0", "q8_0", "f16", "fp16"):
         if pat in low:
             return pat.upper() if pat.startswith("q") else pat
     return "unrecorded (artifact name carries no quant label)"

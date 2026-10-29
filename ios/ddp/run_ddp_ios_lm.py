@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runs one LiteRT-LM cell of the bench app on a Developer Device Platform (DDP) iPhone and writes its records.
+"""Runs one cell of the bench app on a Developer Device Platform (DDP) iPhone and writes its records.
 
 DDP runs iOS as XCTest (`gcloud beta device-run sessions submit xctest`). The archive from
 ios/ddp/build_xctest.sh holds the lab build of the app (ios/BenchmarkApp/project-ddp.yml) and its test
@@ -20,12 +20,18 @@ back, and the app's records are written with the session's identity:
 
   ios/ddp/run_ddp_ios_lm.py --device iphone16pro-18-3 --model-id litert-community/Qwen3-1.7B --backend gpu --dry-run
   ios/ddp/run_ddp_ios_lm.py --device iphone16pro-18-3 --model-id litert-community/Qwen3-1.7B --backend gpu  # billed
+  ios/ddp/run_ddp_ios_lm.py --runtime llama.cpp --model-id unsloth/Qwen3.5-0.8B-GGUF/Q4_0 --backend cpu …
+  ios/ddp/run_ddp_ios_lm.py --runtime executorch --model-id own-export/<…> --model-file <pte> --model-file <tokenizer> …
+  ios/ddp/run_ddp_ios_lm.py --runtime mlx-swift --model-id mlx-community/Qwen3.5-0.8B-MLX-4bit …
   ios/ddp/run_ddp_ios_lm.py … --collect <session id>     # wait for a session submitted earlier with the same flags
   ios/ddp/run_ddp_ios_lm.py --records-only results/raw/<campaign>/ddp/<session id>     # records again, no network
 
 --dry-run prints the plan (JSON lines, then one table) and the gcloud command, and runs no subprocess:
 no gcloud, no network (the model is looked up in the local HF cache only); paths are printed
-relative to the repository, or with ~ for the home directory. The model ids are ios/ddp/models.json's.
+relative to the repository, or with ~ for the home directory. The model ids are ios/ddp/models.json's
+(LiteRT-LM) and ios/ddp/models_competitive.json's (the llama.cpp, ExecuTorch and MLX arms; one lab build
+per arm: build_xctest.sh --engine, whose archive is the default --archive of the --runtime). A model not
+on the Hub (an own export) is pushed from local files: --model-file, once per file of the entry.
 
 Exit status (as litert-samples' run_ddp_ios.py): 0 the job passed and its records are written; 2 bad
 inputs (a model id not in models.json, a timeout outside 1m-1h, no archive or one without a manifest
@@ -54,10 +60,27 @@ import zipfile
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 MODELS = HERE / "models.json"
+MODELS_COMPETITIVE = HERE / "models_competitive.json"
 DEFAULT_ARCHIVE = HERE / "out" / "BenchmarkApp-ddp-xctest.zip"
 INPUTS = "automation/inputs/edge-llm-bench"
-RUNTIME = "litert-lm"  # RuntimeKind.mediaPipe's raw value: --runtime, the model directory, the console name
-MODEL_DIR = "/Documents/models/litert-lm"  # HFDownloader.modelDirectory(runtime: .mediaPipe, …)
+RUNTIME = "litert-lm"  # RuntimeKind.mediaPipe's raw value: the default --runtime
+# --runtime (a RuntimeKind raw value) -> the lab build's archive (build_xctest.sh --engine), the app's
+# backend flag and its values (none: the arm is fixed by the model, e.g. an ExecuTorch export's delegate).
+RUNTIMES = {
+    "litert-lm": {"archive": "BenchmarkApp-ddp-xctest.zip", "flag": "--litert-backend", "backends": ("cpu", "gpu")},
+    "llama.cpp": {"archive": "BenchmarkApp-ddp-llamacpp-xctest.zip", "flag": "--llama-backend",
+                  "backends": ("cpu", "gpu")},
+    "executorch": {"archive": "BenchmarkApp-ddp-executorch-xctest.zip", "flag": None, "backends": ()},
+    "mlx-swift": {"archive": "BenchmarkApp-ddp-mlx-xctest.zip", "flag": None, "backends": ()},
+}
+
+
+def model_dir(runtime: str) -> str:
+    """HFDownloader.modelDirectory(runtime:, …): Documents/models/<runtime raw value>."""
+    return f"/Documents/models/{runtime}"
+
+
+MODEL_DIR = model_dir(RUNTIME)
 ARGS_DEST = "/Documents/yardstick_args.json"
 PULL = ("/Documents/results", "/Documents/out")
 # --xctest-timeout by backend (results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md (f))
@@ -113,8 +136,30 @@ def tail(text: str, lines: int = 8) -> str:
 
 
 def load_models() -> dict:
-    with open(MODELS) as fh:
-        return {k: v for k, v in json.load(fh).items() if not k.startswith("_")}
+    """models.json (LiteRT-LM) and models_competitive.json; every entry gets its runtime and file list."""
+    out = {}
+    for path, default_runtime in ((MODELS, RUNTIME), (MODELS_COMPETITIVE, None)):
+        if not path.is_file():
+            continue
+        with open(path) as fh:
+            for k, v in json.load(fh).items():
+                if k.startswith("_"):
+                    continue
+                v = dict(v)
+                v.setdefault("runtime", default_runtime)
+                v["files"] = list(v.get("files") or [v["file"]])
+                v.setdefault("file", v["files"][0])
+                out[k] = v
+    return out
+
+
+def record_runtime_label(runtime: str, backend, model_id: str) -> str:
+    """The record's runtime id, as the app's adapters write it (recordRuntimeLabel)."""
+    if runtime in ("litert-lm", "llama.cpp"):
+        return runtime if backend != "cpu" else f"{runtime}-cpu"
+    if runtime == "executorch":
+        return "executorch-mlx" if "-mlx-" in model_id else "executorch-xnnpack"
+    return runtime
 
 
 def parse_build_info(text: str) -> dict:
@@ -200,17 +245,18 @@ def model_file(hf_repo: str, filename: str, offline: bool) -> dict:
             "sha256": blob if SHA256.fullmatch(blob) else sha256_file(real)}
 
 
-def yardstick_args(model_id: str, task: str, runs: int, context_tokens, backend: str) -> list:
+def yardstick_args(model_id: str, task: str, runs: int, context_tokens, backend, runtime: str = RUNTIME) -> list:
     """The app's argv after `--`, in scripts/bench_matrix_iphone.sh's order."""
-    args = ["--yardstick-autorun", "--runtime", RUNTIME, "--model-id", model_id, "--task", task, "--runs", str(runs)]
+    args = ["--yardstick-autorun", "--runtime", runtime, "--model-id", model_id, "--task", task, "--runs", str(runs)]
     if context_tokens:
         args += ["--context-tokens", str(context_tokens)]
-    return args + ["--litert-backend", backend]
+    flag = RUNTIMES[runtime]["flag"]
+    return args + ([flag, backend] if flag and backend else [])
 
 
-def console_name(model_id: str, task: str) -> str:
+def console_name(model_id: str, task: str, runtime: str = RUNTIME) -> str:
     """scripts/bench_matrix_iphone.sh: console_$(echo "${rt}_${mid}_${task}" | tr '/.' '__').txt"""
-    return "console_" + re.sub(r"[/.]", "_", f"{RUNTIME}_{model_id}_{task}") + ".txt"
+    return "console_" + re.sub(r"[/.]", "_", f"{runtime}_{model_id}_{task}") + ".txt"
 
 
 def timeout_minutes(text: str) -> int:
@@ -224,7 +270,20 @@ def plan(args) -> dict:
     """Everything a submission needs, checked; no subprocess, no network in a dry run."""
     models = load_models()
     if args.model_id not in models:
-        raise InputError(f"--model-id {args.model_id!r} is not in {shown(MODELS)} ({', '.join(sorted(models))})")
+        raise InputError(f"--model-id {args.model_id!r} is not in {shown(MODELS)} or {shown(MODELS_COMPETITIVE)} "
+                         f"({', '.join(sorted(models))})")
+    entry = models[args.model_id]
+    runtime = args.runtime
+    if runtime not in RUNTIMES:
+        raise InputError(f"--runtime {runtime!r}: one of {', '.join(RUNTIMES)}")
+    if entry["runtime"] != runtime:
+        raise InputError(f"--model-id {args.model_id!r} is a {entry['runtime']} model, not {runtime}; pass "
+                         f"--runtime {entry['runtime']}")
+    backends = RUNTIMES[runtime]["backends"]
+    if backends and args.backend not in backends:
+        raise InputError(f"--backend: {' or '.join(backends)} for {runtime}")
+    if not backends and args.backend:
+        raise InputError(f"--backend: {runtime} takes none (the model fixes the arm)")
     if not DEVICE.fullmatch(args.device or ""):
         raise InputError(f"--device {args.device!r}: a DDP device id, e.g. iphone16pro-18-3")
     if not CAMPAIGN.fullmatch(args.campaign):
@@ -235,49 +294,67 @@ def plan(args) -> dict:
         raise InputError(f"--context-tokens {args.context_tokens}: a positive token count")
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", args.task):
         raise InputError(f"--task {args.task!r}: a task id of the app (BenchmarkTaskCatalog), e.g. short-chat")
-    timeout = args.timeout or TIMEOUT[args.backend]
+    timeout = args.timeout or TIMEOUT[args.backend or "gpu"]
     minutes = timeout_minutes(timeout)
     if not 1 <= minutes <= 60:
         raise InputError(f"--timeout {timeout!r} is not between 1m and 1h (the lab's --xctest-timeout range)")
     if not re.fullmatch(r"[a-z0-9][a-z0-9.-]*", args.xcode_version):
         raise InputError(f"--xcode-version {args.xcode_version!r}: an id of `gcloud beta device-run software-versions list`")
-    archive_path = pathlib.Path(args.archive)
+    archive_path = pathlib.Path(args.archive or HERE / "out" / RUNTIMES[runtime]["archive"])
     if not archive_path.is_file():
         raise InputError(f"no test archive at {shown(archive_path)}; run ios/ddp/build_xctest.sh first")
     archive = read_archive(archive_path)
     archive["object"] = f"{INPUTS}/ios-xctest/{archive['sha256']}/{archive_path.name}"
     archive["url"] = f"{args.bucket}/{archive['object']}"
-    entry = models[args.model_id]
-    # the cache only: a billed run downloads an uncached model later, before its upload
-    model = model_file(entry["hfRepoId"], entry["file"], offline=True)
-    model["object"] = f"{INPUTS}/models/{model['sha256'] or 'UNCACHED'}/{entry['file']}"
-    model["url"] = f"{args.bucket}/{model['object']}"
     bundle = archive["bundleId"]
-    model["dest"] = f"{MODEL_DIR}/{entry['hfRepoId'].replace('/', '__')}/{entry['file']}"
-    if args.flat_model_push:  # DDPHarness moves a file pushed into Documents/ to the model directory
-        model["dest"] = f"/Documents/{entry['file']}"
+    local_files = {pathlib.Path(f).name: pathlib.Path(f) for f in (args.model_file or [])}
+    if local_files and set(local_files) != set(entry["files"]):
+        raise InputError(f"--model-file names {sorted(local_files)}; {args.model_id} needs {entry['files']}")
+    model_list = []
+    for name in entry["files"]:
+        if name in local_files:
+            path = local_files[name]
+            if not path.is_file():
+                raise InputError(f"--model-file {shown(path)}: no such file")
+            model = {"local": str(path.resolve()), "bytes": path.stat().st_size, "sha256": sha256_file(path)}
+        else:
+            # the cache only: a billed run downloads an uncached model later, before its upload
+            model = model_file(entry["hfRepoId"], name, offline=True)
+        model["file"] = name
+        model["object"] = f"{INPUTS}/models/{model['sha256'] or 'UNCACHED'}/{name}"
+        model["url"] = f"{args.bucket}/{model['object']}"
+        model["dest"] = f"{model_dir(runtime)}/{entry['hfRepoId'].replace('/', '__')}/{name}"
+        if args.flat_model_push:  # DDPHarness moves a file pushed into Documents/ to the model directory
+            model["dest"] = f"/Documents/{name}"
+        model_list.append(model)
+    model = model_list[0]
     run = uuid.uuid4().hex[:12]
     campaign_dir = pathlib.Path(args.raw_root) / args.campaign
     args_file = campaign_dir / "ddp" / f"args-{run}.json"
-    record_runtime = RUNTIME if args.backend == "gpu" else f"{RUNTIME}-cpu"  # MediaPipeRuntime.recordRuntimeLabel
+    record_runtime = record_runtime_label(runtime, args.backend, args.model_id)
+    build_info = archive["buildInfo"]
+    engine_version = build_info.get("engine_version") or build_info.get("litert_lm", "unknown")
     labels = {"harness": "edge-llm-bench", "campaign": label_value(args.campaign),
               "runtime": label_value(record_runtime), "model": label_value(args.model_id.replace("/", "--")),
-              "task": label_value(args.task), "backend": args.backend, "deviceid": label_value(args.device),
-              "engine": label_value(archive["buildInfo"].get("litert_lm", "unknown")), "run": run}
-    for source in (model["url"], str(args_file)):
+              "task": label_value(args.task), "backend": args.backend or "model", "deviceid": label_value(args.device),
+              "engine": label_value(engine_version), "run": run}
+    for source in [m["url"] for m in model_list] + [str(args_file)]:
         if "," in source or "=" in source:
             raise InputError(f"{source}: gcloud takes no ',' or '=' in a pushed path")
     return {"device": args.device, "modelId": args.model_id, "hfRepoId": entry["hfRepoId"], "file": entry["file"],
-            "backend": args.backend, "recordRuntime": record_runtime, "task": args.task, "runs": args.runs,
+            "runtime": runtime, "backend": args.backend or "model", "recordRuntime": record_runtime,
+            "task": args.task, "runs": args.runs,
             "contextTokens": args.context_tokens, "timeout": timeout, "timeoutMinutes": minutes,
             "xcodeVersion": args.xcode_version, "project": args.project, "bucket": args.bucket,
             "campaign": args.campaign, "campaignDir": str(campaign_dir), "argsFile": str(args_file),
-            "args": yardstick_args(args.model_id, args.task, args.runs, args.context_tokens, args.backend),
-            "bundleId": bundle, "archive": archive, "model": model, "labels": labels, "run": run,
-            "push": [{"source": model["url"], "dest": f"{bundle}:{model['dest']}"},
-                     {"source": str(args_file), "dest": f"{bundle}:{ARGS_DEST}"}],
+            "args": yardstick_args(args.model_id, args.task, args.runs, args.context_tokens, args.backend, runtime)
+            + list(args.app_arg or []),
+            "bundleId": bundle, "archive": archive, "model": model, "models": model_list, "labels": labels,
+            "run": run,
+            "push": [{"source": m["url"], "dest": f"{bundle}:{m['dest']}"} for m in model_list]
+                    + [{"source": str(args_file), "dest": f"{bundle}:{ARGS_DEST}"}],
             "pull": [f"{bundle}:{p}" for p in PULL],
-            "consoleName": console_name(args.model_id, args.task)}
+            "consoleName": console_name(args.model_id, args.task, runtime)}
 
 
 def submit_command(p: dict) -> list:
@@ -317,14 +394,16 @@ def print_plan(p: dict, collect=None) -> None:
             ("backend / record runtime", f"{p['backend']} / {p['recordRuntime']}"),
             ("task / runs / context", f"{p['task']} / {p['runs']} / {p['contextTokens'] or 'derived by the app'}"),
             ("push 1 (model)", f"{m['url']} → {p['push'][0]['dest']}"),
-            ("push 2 (argv)", f"{shown(p['argsFile'])} → {p['push'][1]['dest']}"),
+            ("push (argv)", f"{shown(p['argsFile'])} → {p['push'][-1]['dest']}"),
             ("pull", ", ".join(p["pull"])),
             ("--xctest-timeout", p["timeout"]),
             ("--xcode-version", p["xcodeVersion"]),
             (f"labels ({len(p['labels'])})", ", ".join(f"{k}={v}" for k, v in p["labels"].items())),
             ("archive", f"{shown(a['local'])} ({a['bytes']:,} bytes, sha256 {a['sha256']}) → {a['url']}"),
-            ("archive BUILD_INFO", f"litert_lm={a['buildInfo'].get('litert_lm')}, "
-                                   f"{a['buildInfo'].get('litert_lm_artifact')}, {a['buildInfo'].get('xcode')}"),
+            ("archive BUILD_INFO", f"{a['buildInfo'].get('engine_runtime', 'litert-lm')}="
+                                   f"{a['buildInfo'].get('engine_version') or a['buildInfo'].get('litert_lm')}, "
+                                   f"{a['buildInfo'].get('engine_artifact') or a['buildInfo'].get('litert_lm_artifact')}, "
+                                   f"{a['buildInfo'].get('xcode')}"),
             ("records", f"{shown(p['campaignDir'])}/device-jsonl/, {p['consoleName']}")]
     print("\n| field | value |\n|---|---|")
     for k, v in rows:
@@ -338,6 +417,10 @@ def print_plan(p: dict, collect=None) -> None:
 # ---------------------------------------------------------------- gcloud (the billed path)
 
 def gcloud(*args, project=None) -> str:
+    # Some gcloud installs carry `device-run ... xctest` on the alpha track only:
+    # DDP_GCLOUD_TRACK=alpha selects it.
+    if args[:2] == ("beta", "device-run"):
+        args = (os.environ.get("DDP_GCLOUD_TRACK", "beta"), *args[1:])
     cmd = ["gcloud", *args] + ([f"--project={project}"] if project else [])
     try:
         res = subprocess.run(cmd, capture_output=True, text=True)
@@ -605,11 +688,22 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
     ap.add_argument("--device", help="a DDP iPhone id (gcloud beta device-run devices list), e.g. iphone16pro-18-3")
     ap.add_argument("--model-id", help="an id of ios/ddp/models.json (the app's catalog id)")
-    ap.add_argument("--backend", choices=["cpu", "gpu"], help="the app's --litert-backend (arm identity)")
+    ap.add_argument("--runtime", default=RUNTIME, choices=sorted(RUNTIMES),
+                    help="the app's --runtime: the arm, and the lab build it needs (default: %(default)s)")
+    ap.add_argument("--backend", choices=["cpu", "gpu"],
+                    help="the arm's backend flag: --litert-backend (litert-lm) or --llama-backend (llama.cpp); "
+                         "executorch and mlx-swift take none")
+    ap.add_argument("--app-arg", action="append", metavar="WORD",
+                    help="one more word for the app's argv, after the cell's own (repeat it), e.g. "
+                         "--app-arg=--litert-ynnpack --app-arg=on")
+    ap.add_argument("--model-file", action="append", metavar="PATH",
+                    help="push this local file instead of the Hub's (an own export); once per file of the entry")
     ap.add_argument("--task", default="short-chat", help="the app's --task (default: %(default)s)")
     ap.add_argument("--runs", type=int, default=4, help="the app's --runs: run 1 cold, 2..N warm (default: %(default)s)")
     ap.add_argument("--context-tokens", type=int, help="the app's --context-tokens (default: derived by the app)")
-    ap.add_argument("--archive", default=str(DEFAULT_ARCHIVE), help="the archive build_xctest.sh wrote (default: %(default)s)")
+    ap.add_argument("--archive", default=None,
+                    help="the archive build_xctest.sh wrote (default: ios/ddp/out/<the --runtime's archive>, "
+                         f"e.g. {DEFAULT_ARCHIVE.name} for litert-lm)")
     ap.add_argument("--campaign", default=None,
                     help="results/raw/<campaign> (default: <today>-ddp-<device>-ios)")
     ap.add_argument("--timeout", default=None, help="the lab's --xctest-timeout, 1m to 1h (default: gpu 15m, cpu 30m)")
@@ -630,8 +724,10 @@ def main() -> int:
         if args.device or args.model_id or args.backend or args.collect or args.dry_run:
             ap.error("--records-only takes the session dir alone")
         return records_only(pathlib.Path(args.records_only))
-    if not (args.device and args.model_id and args.backend):
-        ap.error("--device, --model-id and --backend are required (or --records-only <session dir>)")
+    if not (args.device and args.model_id):
+        ap.error("--device and --model-id are required (or --records-only <session dir>)")
+    if RUNTIMES[args.runtime]["backends"] and not args.backend:
+        ap.error(f"--backend is required for --runtime {args.runtime}")
     args.bucket = args.bucket.rstrip("/")
     if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
         ap.error(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")
@@ -662,12 +758,14 @@ def main() -> int:
             return EXIT_INPUT
         p["catalog"] = {k: device.get(k) for k in ("name", "displayName", "osVersion", "modelCode", "platform")}
         if sid is None:
-            if p["model"].get("uncached") or not p["model"].get("sha256"):
-                p["model"].pop("uncached", None)
-                p["model"].update(model_file(p["hfRepoId"], p["file"], offline=False))
-                p["model"]["object"] = f"{INPUTS}/models/{p['model']['sha256']}/{p['file']}"
-                p["model"]["url"] = p["push"][0]["source"] = f"{p['bucket']}/{p['model']['object']}"
-            ensure_object(p["model"].get("local"), p["model"]["url"])
+            for i, m in enumerate(p["models"]):
+                if m.get("uncached") or not m.get("sha256"):
+                    m.pop("uncached", None)
+                    m.update(model_file(p["hfRepoId"], m["file"], offline=False))
+                    m["object"] = f"{INPUTS}/models/{m['sha256']}/{m['file']}"
+                    m["url"] = p["push"][i]["source"] = f"{p['bucket']}/{m['object']}"
+                ensure_object(m.get("local"), m["url"])
+            p["model"] = p["models"][0]
             ensure_object(p["archive"]["local"], p["archive"]["url"])
             submitted = gcloud_json(*submit_command(p), project=p["project"])
             sid = session_id(submitted) or find_session(p["run"], p["project"])
@@ -680,8 +778,8 @@ def main() -> int:
         shutil.copyfile(p["argsFile"], session_dir / "args.json")
         os.remove(p["argsFile"])
         plan_out = home_as_tilde(json.loads(json.dumps(p)))
-        for part in ("model", "archive"):
-            plan_out[part].pop("local", None)  # host paths stay out of the campaign dir
+        for part in [plan_out["model"], plan_out["archive"]] + plan_out.get("models", []):
+            part.pop("local", None)  # host paths stay out of the campaign dir
         plan_out["sessionId"] = sid
         write_json(session_dir / "plan.json", plan_out)
         session = wait_for_session(sid, p["project"], (p["timeoutMinutes"] + WAIT_MARGIN_MIN) * 60)

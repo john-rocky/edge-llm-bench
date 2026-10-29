@@ -1,0 +1,42 @@
+# Qwen3.5-0.8B competitive benchmark matrix for Apple Silicon (macOS & iOS), CPU & GPU
+# Apples-to-apples quantization across all frameworks (4-bit weights + 8-bit embeddings):
+# - litert-lm (CPU YNNPACK & GPU Metal; XNNPACK hangs on this model's prefill): 4-bit block-32 export (dynamic_wi4b32_afp32, 8-bit embedding, GPU+CPU composites)
+# - llama.cpp (Metal GPU / Accelerate): unsloth/Qwen3.5-0.8B-GGUF/Q4_0 (Q4_0 weights + Q8_0 embedding)
+# - executorch (CPU XNNPACK 8da4w-g128-emb8 & GPU MLX delegate 4w-g128-emb8)
+# - mlx-swift (Apple GPU): mlx-community/Qwen3.5-0.8B-MLX-4bit (4-bit group-64 affine)
+
+# ============================= macOS =============================
+
+# --- macOS: short-chat (context-tokens=2048) ---
+mac litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu short-chat backend=cpu context-tokens=2048 runs=4 ynnpack=1 local=1
+mac litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu short-chat backend=gpu context-tokens=2048 runs=4 local=1
+mac llama.cpp unsloth/Qwen3.5-0.8B-GGUF/Q4_0 short-chat context-tokens=2048 runs=4
+mac executorch own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+mac mlx-swift mlx-community/Qwen3.5-0.8B-MLX-4bit short-chat context-tokens=2048 runs=4
+
+# --- macOS: long-context-1024-gen256 (context-tokens=2048) ---
+mac litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu long-context-1024-gen256 backend=cpu context-tokens=2048 runs=4 ynnpack=1 local=1
+mac litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu long-context-1024-gen256 backend=gpu context-tokens=2048 runs=4 local=1
+mac llama.cpp unsloth/Qwen3.5-0.8B-GGUF/Q4_0 long-context-1024-gen256 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+mac executorch own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+mac mlx-swift mlx-community/Qwen3.5-0.8B-MLX-4bit long-context-1024-gen256 context-tokens=2048 runs=4
+
+# ============================== iOS ==============================
+
+# --- iOS: short-chat (context-tokens=2048) ---
+ios litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu short-chat backend=cpu context-tokens=2048 runs=4 local=1
+ios litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu short-chat backend=gpu context-tokens=2048 runs=4 local=1
+ios llama.cpp unsloth/Qwen3.5-0.8B-GGUF/Q4_0 short-chat context-tokens=2048 runs=4
+ios executorch own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 short-chat backend=xnnpack local=1 file=Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+ios executorch own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048 short-chat backend=mlx local=1 file=Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+ios mlx-swift mlx-community/Qwen3.5-0.8B-MLX-4bit short-chat context-tokens=2048 runs=4
+
+# --- iOS: long-context-1024-gen256 (context-tokens=2048) ---
+ios litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu long-context-1024-gen256 backend=cpu context-tokens=2048 runs=4 local=1
+ios litert-lm litert-local/qwen3.5-0.8b-wi4b32-afp32-gpu-cpu long-context-1024-gen256 backend=gpu context-tokens=2048 runs=4 local=1
+ios llama.cpp unsloth/Qwen3.5-0.8B-GGUF/Q4_0 long-context-1024-gen256 context-tokens=2048 runs=4
+ios executorch own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048 long-context-1024-gen256 backend=xnnpack local=1 file=Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048.pte recipe=et1.5.1-xnnpack-8da4w-g128-emb8 context-tokens=2048 runs=4
+ios executorch own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048 long-context-1024-gen256 backend=mlx local=1 file=Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048.pte recipe=et1.5.1-mlx-4w-g128-emb8 context-tokens=2048 runs=4
+ios mlx-swift mlx-community/Qwen3.5-0.8B-MLX-4bit long-context-1024-gen256 context-tokens=2048 runs=4

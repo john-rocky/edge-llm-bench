@@ -83,6 +83,9 @@ def parse_litert(text):
     count and speed; before 2026-10-20 the parser summed the counts and kept the last speed, which
     on those builds was the short turn's. A one-turn console reads the same either way."""
     text = cut_aggregated(text)
+    blocks = RE_BENCHMARK_INFO.split(text)
+    if len(blocks) > 1:
+        text = blocks[-1]
     m = {}
     ttft = _last_float(RE_TTFT, text)
     if ttft is not None:
@@ -711,7 +714,7 @@ def executorch_runner_for(name):
     low = os.path.basename(name).lower()
     if re.search(r"gemma-?4", low):
         return "gemma4_e2e_runner"
-    if re.search(r"qwen3-", low):
+    if re.search(r"qwen3(?:[._]5)?[-_]", low):
         return "llama_main"
     return None
 

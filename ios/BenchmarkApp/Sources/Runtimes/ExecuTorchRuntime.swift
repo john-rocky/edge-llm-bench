@@ -15,6 +15,8 @@ public struct ExecuTorchModelSpec: Sendable {
         /// passed for thinking, so no empty think block is added and the model thinks
         /// (the host-rendered prompts of the Mac and Android arms, byte for byte).
         case qwen3ChatML = "qwen3-chatml"
+        /// Qwen 3.5's chat template for one user turn with `<think>\n\n</think>\n\n` appended.
+        case qwen35ChatML = "qwen3.5-chatml"
     }
 
     /// Tokenizer file in the model directory (`TextRunner` picks the format from it).
@@ -38,6 +40,8 @@ public struct ExecuTorchModelSpec: Sendable {
             return prompt
         case .qwen3ChatML:
             return "<|im_start|>user\n" + prompt + "<|im_end|>\n<|im_start|>assistant\n"
+        case .qwen35ChatML:
+            return "<|im_start|>user\n" + prompt + "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
         }
     }
 
@@ -57,10 +61,28 @@ public struct ExecuTorchModelSpec: Sendable {
         hostPromptTokenSource: "host-tokenizer:make_prompts.py(Qwen3 tokenizer.json,transformers-5.0.0rc1)"
     )
 
+    private static let qwen35 = ExecuTorchModelSpec(
+        tokenizerFile: "tokenizer.json",
+        contextTokens: 2048,
+        template: .qwen35ChatML,
+        hostPromptTokens: [
+            // short-chat (prompts/text/short-chat.txt, 117 bytes rendered)
+            "55855e89ef4c3e2b35bbd8d295e774f84e36d157f190078faa59ca45af5abf31": 23,
+            // long-context-1024-gen256 (prompts/text/long-context-1024-gen256.txt, 5,288 bytes)
+            "2d9d2c43c2608cc6aee1414e63fef404a2c72902a554702decfc871c2203456a": 1342,
+            // long-context-1024-gen256 with the noref tail (cc27f490, 5,380 bytes rendered); counted
+            // with the same tokenizer.json through `tokenizers`, as llama.cpp and mlx-swift report it
+            "8da3e5b766d79469c34527194a14f261ef1fe796a396e1236a5d33691749f89c": 1359,
+        ],
+        hostPromptTokenSource: "host-tokenizer:make_prompts.py(Qwen3.5 tokenizer.json,transformers-5.19.0)"
+    )
+
     private static let table: [String: ExecuTorchModelSpec] = [
         "own-export/Qwen3-0.6B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048": qwen3,
         "own-export/Qwen3-1.7B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048": qwen3,
         "own-export/Qwen3-4B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048": qwen3,
+        "own-export/Qwen3.5-0.8B-ET1.5.1-xnnpack-8da4w-emb8-ctx2048": qwen35,
+        "own-export/Qwen3.5-0.8B-ET1.5.1-mlx-4w-emb8-ctx2048": qwen35,
         "executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET": ExecuTorchModelSpec(
             tokenizerFile: "tokenizer.model",
             contextTokens: 2048,
@@ -92,15 +114,20 @@ import ExecuTorchLLM
 ///   `generated_tokens`); the reply is one token longer, the one prefill sampled.
 /// - prompt tokens = the spec's host count for this rendered prompt (0 when unlisted).
 ///
-/// Every own export here is XNNPACK-delegated and this build links only that delegate, so
-/// the record's runtime is the arm id `executorch-xnnpack`.
+/// Every own export here is XNNPACK-delegated or MLX-delegated; the record's runtime is
+/// `executorch-mlx` for `-mlx-` exports and `executorch-xnnpack` otherwise.
 public actor ExecuTorchRuntime: LLMRuntime {
     public let kind: RuntimeKind = .executorch
     public let isAvailable: Bool = true
     public nonisolated let supportedModels: [ModelInfo] = ModelCatalog.executorch
 
     public private(set) var loadedModelId: String?
-    public var recordRuntimeLabel: String { "executorch-xnnpack" }
+    public var recordRuntimeLabel: String {
+        if let loadedModelId, loadedModelId.contains("-mlx-") {
+            return "executorch-mlx"
+        }
+        return "executorch-xnnpack"
+    }
 
     private var runner: TextRunner?
     private var spec: ExecuTorchModelSpec?

@@ -7,7 +7,9 @@
 #
 # Env: DD_MAC (derivedData, default <repo>/.build/dd-mac — repo-local so two
 # checkouts never share a binary; the old ~/bench-dd-mac default let a fresh
-# clone run another checkout's stale yardstick).
+# clone run another checkout's stale yardstick). YS_SWIFT_CONDITIONS: extra
+# Swift compilation conditions for the yardstick target (e.g. LITERTLM_YNNPACK,
+# which compiles in `--litert-ynnpack` for a LiteRT-LM built with YNNPACK).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 DD_MAC="${DD_MAC:-$REPO/.build/dd-mac}"
@@ -29,6 +31,7 @@ LOG="$(mktemp)"
 if ! xcodebuild -project "$REPO/ios/BenchmarkApp/BenchmarkApp.xcodeproj" -scheme yardstick \
   -configuration Release -destination "platform=macOS,arch=arm64" -derivedDataPath "$DD_MAC" \
   -skipPackagePluginValidation -skipMacroValidation ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
+  YS_SWIFT_CONDITIONS="${YS_SWIFT_CONDITIONS:-}" \
   build > "$LOG" 2>&1; then
   grep -E "\.swift:[0-9]+:[0-9]+: error|xcodebuild: error|BUILD FAILED" "$LOG" | sort -u | head -20 >&2
   echo "xcodebuild failed — full log: $LOG" >&2

@@ -28,6 +28,8 @@ RUNS=1
 COOLDOWN=0
 MASK=none
 ENV="LD_LIBRARY_PATH=."
+ENV_SET=0
+ERR_FILE=""
 BINNAME=""
 DIR=/data/local/tmp/llmbench
 OUTPUT_DIR=""
@@ -49,7 +51,15 @@ for ARG in "$@"; do
     --runs=*) RUNS="${ARG#*=}" ;;
     --cooldown=*) COOLDOWN="${ARG#*=}" ;;
     --mask=*) MASK="${ARG#*=}" ;;
-    --env=*) ENV="${ARG#*=}" ;;
+    --env=*)
+      if [ "$ENV_SET" = 0 ]; then
+        ENV="${ARG#*=}"
+        ENV_SET=1
+      else
+        ENV="$ENV ${ARG#*=}"
+      fi
+      ;;
+    --err_file=*) ERR_FILE="${ARG#*=}" ;;
     --binname=*) BINNAME="${ARG#*=}" ;;
     --dir=*) DIR="${ARG#*=}" ;;
     --output_dir=*) OUTPUT_DIR="${ARG#*=}" ;;
@@ -77,7 +87,11 @@ CPUFREQ=/sys/devices/system/cpu/cpufreq
 CPU_HEAD='for p in '"$CPUFREQ"'/policy*; do h=; r=; read h <$p/cpuinfo_max_freq; read r <$p/related_cpus; echo "CPUPOLICY ${p##*/} ${h:--} $r"; done; '
 CPU_TICK='c=CPUMAX; for f in '"$CPUFREQ"'/policy*/scaling_max_freq; do m=; read m <$f; c="$c ${m:--}"; done; [ "$c" = "$pc" ] || echo "$c"; pc=$c; '
 RSS_COMMAND="grep -E 'VmRSS|VmHWM|Cpus_allowed_list'"
-SHELL_STR="cd $DIR && $ENV $TASKSET_PREFIX$TIMEOUT_PREFIX$CMD >$OUT_FILE 2>&1 </dev/null & pid=\$!; $CPU_HEAD${CPU_TICK}sleep 1; epid=\$(pgrep -n -f $BINNAME); [ -z \"\$epid\" ] && epid=\$pid; sk=; while kill -0 \$pid 2>/dev/null; do $RSS_COMMAND /proc/\$epid/status 2>/dev/null; ${CPU_TICK}sleep 0.5; done; wait \$pid; ec=\$?; echo ===ENGINE_OUTPUT===; cat $OUT_FILE; echo EXIT_CODE=\$ec"
+if [ -z "$ERR_FILE" ]; then
+  SHELL_STR="cd $DIR && $ENV $TASKSET_PREFIX$TIMEOUT_PREFIX$CMD >$OUT_FILE 2>&1 </dev/null & pid=\$!; $CPU_HEAD${CPU_TICK}sleep 1; epid=\$(pgrep -n -f $BINNAME); [ -z \"\$epid\" ] && epid=\$pid; sk=; while kill -0 \$pid 2>/dev/null; do $RSS_COMMAND /proc/\$epid/status 2>/dev/null; ${CPU_TICK}sleep 0.5; done; wait \$pid; ec=\$?; echo ===ENGINE_OUTPUT===; cat $OUT_FILE; echo EXIT_CODE=\$ec"
+else
+  SHELL_STR="cd $DIR && $ENV $TASKSET_PREFIX$TIMEOUT_PREFIX$CMD >$OUT_FILE 2>$ERR_FILE </dev/null & pid=\$!; $CPU_HEAD${CPU_TICK}sleep 1; epid=\$(pgrep -n -f $BINNAME); [ -z \"\$epid\" ] && epid=\$pid; sk=; while kill -0 \$pid 2>/dev/null; do $RSS_COMMAND /proc/\$epid/status 2>/dev/null; ${CPU_TICK}sleep 0.5; done; wait \$pid; ec=\$?; echo ===ENGINE_OUTPUT===; cat $OUT_FILE; echo EXIT_CODE=\$ec; echo ===ENGINE_STDERR===; cat $ERR_FILE 2>/dev/null; rm -f $ERR_FILE"
+fi
 
 if [ "$PRINT_SHELL" = 1 ]; then
   printf '%s\n' "$SHELL_STR"
@@ -107,8 +121,14 @@ if [ -n "$BAD" ]; then
 fi
 
 # a pushed binary may arrive without the execute bit (09-17 session); the .so files are dlopen'ed
-for B in litert_lm_main litert_lm_advanced_main "$BINNAME"; do
+for B in litert_lm_main litert_lm_advanced_main llama-cli llama-bench "$BINNAME"; do
   [ -f "$DIR/$B" ] && chmod 755 "$DIR/$B"
+done
+for B in "$DIR"/engines/*/bin/* "$DIR"/executorch-*/*; do
+  [ -f "$B" ] && chmod 755 "$B"
+done
+for D in "$DIR"/engines/*; do
+  [ -d "$D" ] && mkdir -p "$D/clcache"
 done
 
 PROV="$OUTPUT_DIR/provenance.txt"
@@ -128,7 +148,7 @@ PROV="$OUTPUT_DIR/provenance.txt"
     echo "arg: $ARG"
   done
   echo "sha256:"
-  sha256sum "$DIR"/litert_lm_main "$DIR"/litert_lm_advanced_main "$DIR"/*.so "$DIR"/models/* "$DIR"/prompts/* 2>&1
+  sha256sum "$DIR"/litert_lm_main "$DIR"/litert_lm_advanced_main "$DIR"/llama-cli "$DIR"/llama-bench "$DIR"/*.so "$DIR"/engines/*/bin/* "$DIR"/engines/*/lib/*.so "$DIR"/executorch-*/* "$DIR"/models/* "$DIR"/prompts/* 2>&1
 } > "$PROV"
 say "provenance written"
 
