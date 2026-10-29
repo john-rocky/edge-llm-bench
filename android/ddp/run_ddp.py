@@ -416,9 +416,12 @@ def plan(cells_file, device_id, campaign, args):
         if per_run < 60:
             raise SystemExit(f"{run_campaign.cell_id(cell)}: {runs} runs + cooldowns leave {per_run} s per run "
                              f"in --job-timeout {args.job_timeout}")
-        arm = run_cell.arm_name(rt, opts.get("backend"))
+        # ynnpack=1 (a litert-lm cpu row on a side build): the command carries --enable_ynnpack=true
+        # (run_campaign.planned_command), so the arm and the capture stem say so, as in run_cell.py
+        ynnpack = opts.get("ynnpack") == "1"
+        arm = run_cell.arm_name(rt, opts.get("backend"), ynnpack)
         stem = run_cell.capture_stem(rt, opts.get("backend"), cell["model_id"], cell["task"],
-                                     filename, ctx)
+                                     filename, ctx, ynnpack=ynnpack)
         if rt == "executorch":
             model_push = {"kind": "model", "name": filename, "local": et["pte"],
                           "bytes": os.path.getsize(et["pte"]), "sha256": et["pteSha256"],
