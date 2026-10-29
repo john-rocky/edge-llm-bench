@@ -147,10 +147,12 @@ def make_archive(path, format_version=1, bundle=BUNDLE, build_info=BUILD_INFO, m
 
 def env_for(tmp, gcloud=True, extra=None):
     fake = os.path.join(tmp, "fake")
+    empty = os.path.join(tmp, "no-gcloud-bin")
+    os.makedirs(empty, exist_ok=True)
     # HF_HUB_OFFLINE: no driver run of the selftest may reach the Hub, whatever path it takes
     env = {**os.environ, "FAKE_GCLOUD_DIR": fake, "FAKE_GCLOUD_LOG": os.path.join(tmp, "gcloud.log"),
            "BENCH_RAW_ROOT": os.path.join(tmp, "raw"), "HF_HUB_CACHE": os.path.join(tmp, "hf"),
-           "HF_HUB_OFFLINE": "1", "PATH": (f"{fake}:" if gcloud else "") + "/usr/bin:/bin"}
+           "HF_HUB_OFFLINE": "1", "PATH": f"{fake}:/usr/bin:/bin" if gcloud else empty}
     env.pop("HF_HOME", None)
     env.update(extra or {})
     return env
@@ -182,8 +184,9 @@ def flag(cmd, name):
 def check_models():
     print("--- 1. ios/ddp/models.json against ModelCatalog.swift (ModelCatalog.liteRTLM)")
     text = open(CATALOG).read()
-    start = text.index("public static let liteRTLM: [ModelInfo] = [")
-    block = text[start:text.index("\n    ]\n", start)]
+    # the list literal, bare or wrapped in withExtra("litert-lm", [...]) (the extra catalog)
+    start = text.index("public static let liteRTLM: [ModelInfo] = ")
+    block = text[start:text.index("\n    ]", start)]
     catalog = {}
     for m in re.finditer(r"ModelInfo\((.*?)\n        \)", block, re.S):
         fields = dict(re.findall(r'(\w+): "([^"]*)"', m.group(1)))
@@ -307,7 +310,60 @@ def check_dry_runs(tmp, shas):
     r = driver(["--records-only", tmp, "--device", DEVICE], env)
     ok(r.returncode == 2 and "takes the session dir alone" in r.stderr, f"--records-only with other flags: exit 2 ({r.returncode})")
     ok(gcloud_calls(tmp) == [], "the refusals called gcloud 0 times")
+    check_extra_catalog(tmp, archive, env)
     return archive
+
+
+def check_extra_catalog(tmp, archive, env):
+    """--extra-catalog / BENCH_EXTRA_CATALOG: another harness's ids added add-only, the file pushed to
+    Documents/models/extra-catalog.json (before the argv); ModelCatalog.swift reads the same file."""
+    text = open(CATALOG).read()
+    ok(all(f'public static let {name}: [ModelInfo] = withExtra("{rt}", [' in text
+           for name, rt in (("mlx", "mlx-swift"), ("llamaCpp", "llama.cpp"), ("liteRTLM", "litert-lm"),
+                            ("executorch", "executorch")))
+       and 'appendingPathComponent("extra-catalog.json")' in text and 'environment["BENCH_EXTRA_CATALOG"]' in text,
+       "ModelCatalog.swift: mlx / llamaCpp / liteRTLM / executorch take the extra catalog's entries (withExtra), "
+       "read from BENCH_EXTRA_CATALOG or Documents/models/extra-catalog.json")
+    extra = os.path.join(tmp, "extra-catalog.json")
+    pte, tok = os.path.join(tmp, "x-ctx2048.pte"), os.path.join(tmp, "tokenizer.json")
+    write(pte, "stand-in pte\n")
+    write(tok, "{}\n")
+    entry = {"id": "own-export/X-ctx2048", "displayName": "X", "quantization": "q", "hfRepoId": "own-export/X-ctx2048",
+             "hfFilePatterns": ["*.pte", "tokenizer.json"], "primaryFile": "x-ctx2048.pte",
+             "files": ["x-ctx2048.pte", "tokenizer.json"]}
+    write(extra, json.dumps({"_doc": "selftest", "executorch": [entry]}))
+    base = ["--device", DEVICE, "--runtime", "executorch", "--model-id", entry["id"], "--model-file", pte,
+            "--model-file", tok, "--archive", archive, "--campaign", "x", "--project", PROJECT, "--bucket", BUCKET,
+            "--dry-run"]
+    for how, argv, e in (("--extra-catalog", base + ["--extra-catalog", extra], env),
+                         ("BENCH_EXTRA_CATALOG", base, {**env, "BENCH_EXTRA_CATALOG": extra})):
+        r = driver(argv, e)
+        rows = json_lines(r.stdout)
+        push = (flag(rows.get("command") or [], "--other-files-to-push") or "").split(",")
+        dests = [x.partition("=")[2] for x in push]
+        ok(r.returncode == 0 and len(push) == 4
+           and dests[:2] == [f"{BUNDLE}:/Documents/models/executorch/own-export__X-ctx2048/x-ctx2048.pte",
+                             f"{BUNDLE}:/Documents/models/executorch/own-export__X-ctx2048/tokenizer.json"]
+           and push[2] == f"{os.path.realpath(extra)}={BUNDLE}:/Documents/models/extra-catalog.json"
+           and dests[3] == f"{BUNDLE}:/Documents/yardstick_args.json"
+           and rows.get("args", [])[:6] == ["--yardstick-autorun", "--runtime", "executorch", "--model-id", entry["id"],
+                                            "--task"],
+           f"{how}: the extra id runs; push = its 2 files, the catalog -> Documents/models/extra-catalog.json, "
+           f"the argv ({r.returncode}; {dests}; {r.stderr[-200:]!r})")
+    r = driver(base, env)
+    ok(r.returncode == 2 and "is not in" in r.stderr, f"without the extra catalog the id is unknown: exit 2 ({r.returncode})")
+    dup = {**entry, "id": CELLS[0][0]}
+    for bad, want in (({"litert-lm": [dup]}, "is already in"), ({"mlx": [entry]}, "is not a list under a runtime"),
+                      ({"executorch": [{"id": "x"}]}, "without id, hfRepoId and primaryFile"),
+                      ({"executorch": [entry, entry]}, "twice")):
+        write(extra, json.dumps(bad))
+        r = driver(base + ["--extra-catalog", extra], env)
+        ok(r.returncode == 2 and want in r.stderr,
+           f"--extra-catalog refuses {want!r}: exit 2 ({r.returncode}; {r.stderr.strip()[-120:]!r})")
+    write(extra, "{not json")
+    r = driver(base + ["--extra-catalog", extra], env)
+    ok(r.returncode == 2 and "--extra-catalog" in r.stderr, f"a file that does not parse: exit 2 ({r.returncode})")
+    ok(gcloud_calls(tmp) == [], "the extra-catalog dry runs called gcloud 0 times")
 
 
 # ---------------------------------------------------------------- 3. the billed path
@@ -557,6 +613,69 @@ def check_summary(tmp, camp, template):
        f"the attached iPhone's record keeps its own device ({sorted({r['device'] for r in att_rows})})")
 
 
+# ---------------------------------------------------------------- 5. run_ddp_ios_matrix
+
+def check_matrix(tmp, archive, shas, template):
+    print("--- 5. run_ddp_ios_matrix: cells plan, register_archive_builder, BENCH_RAW_ROOT, --no-keep-raw")
+    sys.path.insert(0, HERE)
+    import run_ddp_ios_matrix as mat
+    cells_file = os.path.join(tmp, "matrix.cells")
+    write(cells_file, (
+        "mac litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu runs=4\n"
+        "ios litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu context-tokens=2048 runs=4\n"
+        "ios litert-lm litert-community/Qwen3-1.7B/int8 short-chat backend=cpu ynnpack=1 runs=2\n"
+        "ios litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu exclude=skip-me\n"
+        "ios litert-lm litert-community/gemma-4-E2B-it-litert-lm energy backend=gpu manual=1\n"
+    ))
+    planned = mat.plan_cells([cells_file], None, "litert", {}, None)
+    ok(len(planned) == 2 and [c.name for c in planned] == ["litert-lm-gpu", "litert-lm-cpu"]
+       and planned[1].app_args == ("--litert-ynnpack", "on"),
+       f"plan_cells picks the 2 runnable ios rows and wires ynnpack=1 ({[c.name for c in planned]})")
+    # --model-dir with unstaged paths succeeds in dry_run and fails outside dry_run.
+    unstaged = {"litert-community/qwen3-1.7b": mat.pathlib.Path(tmp) / "not-yet-staged"}
+    ok(len(mat.plan_cells([cells_file], None, "litert", unstaged, None, dry_run=True)) == 2,
+       "plan_cells dry_run=True allows unstaged --model-dir paths")
+    try:
+        mat.plan_cells([cells_file], None, "litert", unstaged, None, dry_run=False)
+        ok(False, "plan_cells dry_run=False must reject missing --model-dir files")
+    except ValueError as exc:
+        ok("missing local file(s)" in str(exc), f"plan_cells dry_run=False rejects missing files ({exc})")
+    recs, stale = fixture_records(template)
+    stage_fake(tmp, describe_json())
+    stage_execution(tmp, recs, stale)
+    sha, _ = shas["litert-community/Qwen3-1.7B"]
+    model_obj = f"automation/inputs/edge-llm-bench/models/{sha}/Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm"
+    write(os.path.join(tmp, "fake", "bucket", "fake-bucket", model_obj), "already there\n")
+
+    built_calls = []
+
+    def custom_builder(engines, archives_dir, args):
+        built_calls.append(tuple(engines))
+        os.makedirs(archives_dir, exist_ok=True)
+        shutil.copyfile(archive, os.path.join(archives_dir, "BenchmarkApp-ddp-litert-xctest.zip"))
+        return 0
+
+    mat.register_archive_builder("custom", custom_builder)
+    one_cell = os.path.join(tmp, "one.cells")
+    write(one_cell, "ios litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu context-tokens=2048 runs=4\n")
+    raw_dir = os.path.join(tmp, "matrix-raw")
+    arch_dir = os.path.join(tmp, "matrix-archives")
+    with patch.dict(os.environ, env_for(tmp, extra={"BENCH_RAW_ROOT": raw_dir}), clear=True):
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc = mat.main([one_cell, "--device", DEVICE, "--project", PROJECT, "--bucket", BUCKET,
+                           "--campaign", "mat-camp", "--archives-dir", arch_dir,
+                           "--archive-builder", "custom", "--no-keep-raw"])
+    camp_dir = os.path.join(raw_dir, "mat-camp")
+    plan_path = os.path.join(camp_dir, "ddp", SID, "plan.json")
+    plan_data = json.load(open(plan_path)) if os.path.exists(plan_path) else {}
+    ok(rc == 0 and built_calls == [("litert",)]
+       and len(glob.glob(os.path.join(camp_dir, "device-jsonl", "*.json"))) == 4
+       and "--context-tokens" in plan_data.get("args", [])
+       and not os.path.exists(os.path.join(camp_dir, "ddp-raw")),
+       f"register_archive_builder + BENCH_RAW_ROOT + --no-keep-raw: rc={rc}, 4 records, --context-tokens forwarded, "
+       "ddp-raw removed")
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="ios-ddp-selftest-")
     try:
@@ -565,6 +684,7 @@ def main():
         archive = check_dry_runs(tmp, shas)
         camp, template = check_billed(tmp, archive, shas)
         check_summary(tmp, camp, template)
+        check_matrix(tmp, archive, shas, template)
     except Exception as exc:  # noqa: BLE001 — a crash is a failure with the temp dir kept
         import traceback
         traceback.print_exc()

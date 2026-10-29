@@ -691,6 +691,36 @@ EXECUTORCH_RECIPES = {
                  "quantization.embedding_quantize": None, "model.dtype_override": None},
     },
 }
+
+
+def executorch_recipes():
+    """EXECUTORCH_RECIPES plus the aliases of BENCH_EXTRA_RECIPES, read at lookup time.
+
+    BENCH_EXTRA_RECIPES names a JSON file {alias: {runner, executorch, label, yaml|args|defaults}}
+    (the layout above): recipes another harness's exporter writes, whose aliases its own cells
+    name, stay out of this file (as BENCH_EXTRA_PINS keeps its builds out of
+    android/engine-pins.json; android/bench/run_cell.load_pins). It may only add aliases: one
+    already defined here refuses, as does an entry without runner / executorch / label."""
+    path = os.environ.get("BENCH_EXTRA_RECIPES")
+    if not path:
+        return EXECUTORCH_RECIPES
+    with open(path) as fh:
+        more = json.load(fh)
+    merged = dict(EXECUTORCH_RECIPES)
+    for alias, entry in more.items():
+        if alias.startswith("_"):
+            continue
+        if alias in EXECUTORCH_RECIPES:
+            raise SystemExit(f"BENCH_EXTRA_RECIPES {path}: recipe alias {alias!r} is already in "
+                             "parsers.EXECUTORCH_RECIPES (the extra recipes only add aliases)")
+        if not (isinstance(entry, dict) and all(isinstance(entry.get(k), str)
+                                                for k in ("runner", "executorch", "label"))):
+            raise SystemExit(f"BENCH_EXTRA_RECIPES {path}: recipe alias {alias!r} needs runner, "
+                             "executorch and label (parsers.EXECUTORCH_RECIPES layout)")
+        merged[alias] = entry
+    return merged
+
+
 EXECUTORCH_SAMPLER = "greedy (--temperature 0: argmax)"
 RE_ET_THREADS = re.compile(r"(?:Resetting threadpool with num threads =|Setting threadpool to) (\d+)")
 RE_ET_METADATA = re.compile(r"Metadata: (\w+) = (-?\d+)")
@@ -740,9 +770,9 @@ def executorch_recipe_problems(alias, recipe):
     """What makes a staged artifact's recipe.json disagree with the cells' recipe= alias
     (EXECUTORCH_RECIPES) -> [problem, ...]; [] = the label applies. recipe = the
     <stem>.recipe.json dict the export wrote beside the .pte."""
-    want = EXECUTORCH_RECIPES.get(alias)
+    want = executorch_recipes().get(alias)
     if want is None:
-        return [f"recipe alias {alias!r} has no label (parsers.EXECUTORCH_RECIPES)"]
+        return [f"recipe alias {alias!r} has no label (parsers.EXECUTORCH_RECIPES, BENCH_EXTRA_RECIPES)"]
     problems = []
     if str(recipe.get("executorch")) != want["executorch"]:
         problems.append(f"recipe.json executorch {recipe.get('executorch')!r} != {want['executorch']!r}")
@@ -949,7 +979,8 @@ def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
     problems = executorch_recipe_problems(alias, recipe)
     if problems:
         raise ValueError(f"{os.path.basename(recipe_path)} vs recipe={alias}: " + "; ".join(problems))
-    runner = EXECUTORCH_RECIPES[alias]["runner"]
+    recipes = executorch_recipes()
+    runner = recipes[alias]["runner"]
     if executorch_runner_for(pte) != runner:
         raise ValueError(f"{os.path.basename(pte)}: the name's model family runs "
                          f"{executorch_runner_for(pte)!r}, the recipe {runner!r}")
@@ -1002,7 +1033,7 @@ def executorch_inputs(model_dir, pte_file, task, alias, repo_root):
         recipe_sha = hashlib.sha256(fh.read()).hexdigest()
     context, context_source = executorch_context_tokens(recipe)
     return {"pte": pte, "pteSha256": pte_sha, "recipePath": recipe_path, "recipeSha256": recipe_sha,
-            "recipe": recipe, "alias": alias, "label": EXECUTORCH_RECIPES[alias]["label"],
+            "recipe": recipe, "alias": alias, "label": recipes[alias]["label"],
             "runner": runner, "tokenizer": tokenizer, "tokenizerSha256": tokenizer_sha,
             "prompt": prompt, "promptSha256": prompt_sha, "promptText": prompt_text,
             "promptManifest": manifest, "contextTokens": context, "contextSource": context_source,

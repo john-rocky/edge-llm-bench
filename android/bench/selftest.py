@@ -2142,10 +2142,14 @@ def main():
          "file=x.litertlm", "ynnpack=1 is a backend=cpu row on a side build"),
         ("android litert-lm m/l short-chat backend=cpu ynnpack=1 file=x.litertlm",
          "ynnpack=1 is a backend=cpu row on a side build"),
-        # mac: a litert-lm cpu row's yardstick --litert-ynnpack on (2026-10-27); not gpu, not ios
+        # mac / ios / windows: a litert-lm cpu row's --litert-ynnpack on (mac 2026-10-27: the yardstick; ios: the
+        # DDP app, run_ddp_ios_lm.py --app-arg; windows: litert_lm_advanced_main_windows.exe); not gpu
         ("mac litert-lm m/l short-chat backend=cpu ynnpack=1", None),
-        ("mac litert-lm m/l short-chat backend=gpu ynnpack=1", "mac litert-lm backend=cpu rows only"),
-        ("ios litert-lm m/l short-chat backend=cpu ynnpack=1", "mac litert-lm backend=cpu rows only"),
+        ("ios litert-lm m/l short-chat backend=cpu ynnpack=1", None),
+        ("windows litert-lm m/l short-chat backend=cpu ynnpack=1 context-tokens=2048", None),
+        ("mac litert-lm m/l short-chat backend=gpu ynnpack=1", "mac / ios / windows litert-lm backend=cpu rows only"),
+        ("ios litert-lm m/l short-chat backend=gpu ynnpack=1", "mac / ios / windows litert-lm backend=cpu rows only"),
+        ("windows litert-lm m/l short-chat backend=gpu ynnpack=1 context-tokens=2048", "mac / ios / windows litert-lm backend=cpu rows only"),
         ("android litert-lm m/l long-context-1024-gen256 backend=npu engine-build=main-20260821-selfbuilt "
          "file=x.litertlm context-tokens=2048", "no context-tokens="),
         ("android litert-lm m/l native-benchmark-1024x256 backend=npu engine-build=main-20260821-selfbuilt "
@@ -2176,6 +2180,28 @@ def main():
                  "file=x.litertlm context-tokens=2048\n")
     errors, _ = validate_cells.validate_file(path_v)
     ok(not errors, f"validate_cells: one cpu row with and one without ynnpack=1 are two cells (got {errors})")
+    # --catalog + BENCH_EXTRA_CATALOG: the extra catalog's ids count as catalog ids (ModelCatalog.swift
+    # appends them at load); without it the same row is refused
+    cat_path = os.path.join(tmp, "yardstick-list.json")
+    extra_cat = os.path.join(tmp, "extra-catalog.json")
+    with open(cat_path, "w") as fh:
+        json.dump({"models": {"llama.cpp": [{"id": "hub/compiled"}]}}, fh)
+    with open(extra_cat, "w") as fh:
+        json.dump({"_doc": "x", "llama.cpp": [{"id": "other/extra-gguf"}]}, fh)
+    with open(path_v, "w") as fh:
+        fh.write("mac llama.cpp other/extra-gguf short-chat runs=4\n")
+    saved_cat = os.environ.pop("BENCH_EXTRA_CATALOG", None)
+    try:
+        without = validate_cells.validate_file(path_v, validate_cells.load_catalog(cat_path))[0]
+        os.environ["BENCH_EXTRA_CATALOG"] = extra_cat
+        with_extra = validate_cells.validate_file(path_v, validate_cells.load_catalog(cat_path))[0]
+    finally:
+        os.environ.pop("BENCH_EXTRA_CATALOG", None)
+        if saved_cat is not None:
+            os.environ["BENCH_EXTRA_CATALOG"] = saved_cat
+    ok(any("not in the llama.cpp catalog" in e for e in without) and not with_extra,
+       f"validate_cells --catalog: an id of BENCH_EXTRA_CATALOG is a catalog id (without it {without}; "
+       f"with it {with_extra})")
 
     # Side builds of every competitive arm: a source build runs beside the pinned one, by label.
     # llama.cpp CPU (engine-build= alone): the flat build's command, the side build's tools
@@ -2534,6 +2560,36 @@ def main():
        f"Mac writer: the r1 cold launch's record (decode 110.63, ru_maxrss 1198.0 MiB, v1.5.1 by the "
        f"lock's sha; schema {'validated' if not unchecked else 'not checked here: ' + unchecked})")
 
+    # the Mac witness reads BENCH_EXTRA_PINS too (add-only, as load_pins): another harness's mac build
+    # registered there (mac_<runner>[_<backend>]_sha256) is stamped with its label; a label that is
+    # the lock's pinned tag refuses; an unmatched sha stays "unknown"
+    saved_extra_mac = os.environ.get("BENCH_EXTRA_PINS")
+    extra_mac = os.path.join(tmp, "engine-pins.extra-mac.json")
+    try:
+        os.environ["BENCH_EXTRA_PINS"] = extra_mac
+        with open(extra_mac, "w") as fh:
+            json.dump({"executorch": {"v1.5.1-src-3b606839": {
+                "mac_llama_main_sha256": "a" * 64, "mac_llama_main_mlx_sha256": "b" * 64}}}, fh)
+        got_x = executorch_mac.witness("llama_main", "a" * 64)
+        got_m = executorch_mac.witness("llama_main", "b" * 64, backend="mlx")
+        got_u = executorch_mac.witness("llama_main", "c" * 64)
+        with open(extra_mac, "w") as fh:
+            json.dump({"executorch": {"v1.5.1": {"mac_llama_main_sha256": "a" * 64}}}, fh)
+        try:
+            executorch_mac.witness("llama_main", "a" * 64)
+            refused_pin = False
+        except SystemExit:
+            refused_pin = True
+    finally:
+        if saved_extra_mac is None:
+            os.environ.pop("BENCH_EXTRA_PINS", None)
+        else:
+            os.environ["BENCH_EXTRA_PINS"] = saved_extra_mac
+    ok(got_x == "v1.5.1-src-3b606839" and got_m == "v1.5.1-src-3b606839"
+       and got_u.startswith("unknown (mac llama_main sha unmatched") and refused_pin,
+       f"Mac witness + BENCH_EXTRA_PINS: xnnpack {got_x!r}, mlx {got_m!r}, unmatched {got_u!r}, "
+       f"the pinned tag refused: {refused_pin}")
+
     # a llama_main prompt rendered from another text of the task (the 1K task's "passage above" tail,
     # sha256 f64fb515…, before 2026-10-19) is refused with the re-render command, never run
     listing = os.path.join(et_models, stem + ".prompts", "prompts.json")
@@ -2556,6 +2612,39 @@ def main():
     ok(parsers.executorch_inputs(et_models, f"{stem}.pte", "long-context-1024-gen256", alias, ROOT)["promptSha256"]
        == hashlib.sha256(rd("long-context-1024-gen256.qwen3-chat.txt").encode()).hexdigest(),
        "executorch_inputs takes the render again once its source is the repository prompt")
+
+    # BENCH_EXTRA_RECIPES: another harness's recipe aliases, added at lookup time (add-only, as
+    # load_pins): its alias labels the staged export; an alias already in EXECUTORCH_RECIPES, or an
+    # entry without runner / executorch / label, refuses; unset = the compiled table only
+    saved_recipes = os.environ.get("BENCH_EXTRA_RECIPES")
+    extra_recipes = os.path.join(tmp, "executorch-recipes.extra.json")
+    extra_alias = "selftest-extra-xnnpack-8da4w-emb8"
+    try:
+        os.environ["BENCH_EXTRA_RECIPES"] = extra_recipes
+        with open(extra_recipes, "w") as fh:
+            json.dump({"_doc": "x", extra_alias: {**parsers.EXECUTORCH_RECIPES[alias],
+                                                  "label": "another harness's label"}}, fh)
+        got_extra = parsers.executorch_inputs(et_models, f"{stem}.pte", "short-chat", extra_alias, ROOT)
+        refusals = []
+        for bad in ({alias: parsers.EXECUTORCH_RECIPES[alias]}, {"x-no-label": {"runner": "llama_main"}}):
+            with open(extra_recipes, "w") as fh:
+                json.dump(bad, fh)
+            try:
+                parsers.executorch_recipe_problems(alias, recipe)
+                refusals.append("loaded")
+            except SystemExit as e:
+                refusals.append(str(e))
+    finally:
+        if saved_recipes is None:
+            os.environ.pop("BENCH_EXTRA_RECIPES", None)
+        else:
+            os.environ["BENCH_EXTRA_RECIPES"] = saved_recipes
+    unset = parsers.executorch_recipe_problems(extra_alias, recipe)
+    ok(got_extra["label"] == "another harness's label" and got_extra["alias"] == extra_alias
+       and "is already in parsers.EXECUTORCH_RECIPES" in refusals[0] and "needs runner" in refusals[1]
+       and unset and "has no label" in unset[0],
+       f"BENCH_EXTRA_RECIPES adds an alias (label {got_extra['label']!r}); refuses a compiled alias and an "
+       f"entry without a label ({[r[:60] for r in refusals]}); unset, the alias is unknown ({unset})")
 
     # BENCH_SITTING=1 on LiteRT-LM's flat build (2026-10-15): the expected tag is the registry's
     # current Android pin (engine-pins.json android_pins), the field the launched tool's —
