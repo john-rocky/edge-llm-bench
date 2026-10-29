@@ -20,8 +20,8 @@ back, and the app's records are written with the session's identity:
 
   ios/ddp/run_ddp_ios_lm.py --device iphone16pro-18-3 --model-id litert-community/Qwen3-1.7B --backend gpu --dry-run
   ios/ddp/run_ddp_ios_lm.py --device iphone16pro-18-3 --model-id litert-community/Qwen3-1.7B --backend gpu  # billed
-  ios/ddp/run_ddp_ios_lm.py --runtime llama.cpp --model-id unsloth/Qwen3.5-0.8B-GGUF/Q4_0 --backend cpu …
-  ios/ddp/run_ddp_ios_lm.py --runtime executorch --model-id own-export/<…> --model-file <pte> --model-file <tokenizer> …
+  ios/ddp/run_ddp_ios_lm.py --runtime llama.cpp --extra-catalog <file> --model-id <an id of it> --backend cpu …
+  ios/ddp/run_ddp_ios_lm.py --runtime executorch --extra-catalog <file> --model-id own-export/<…> --model-file <pte> --model-file <tokenizer> …
   ios/ddp/run_ddp_ios_lm.py --runtime mlx-swift --model-id mlx-community/Qwen3.5-0.8B-MLX-4bit …
   ios/ddp/run_ddp_ios_lm.py … --collect <session id>     # wait for a session submitted earlier with the same flags
   ios/ddp/run_ddp_ios_lm.py --records-only results/raw/<campaign>/ddp/<session id>     # records again, no network
@@ -32,6 +32,10 @@ relative to the repository, or with ~ for the home directory. The model ids are 
 (LiteRT-LM) and ios/ddp/models_competitive.json's (the llama.cpp, ExecuTorch and MLX arms; one lab build
 per arm: build_xctest.sh --engine, whose archive is the default --archive of the --runtime). A model not
 on the Hub (an own export) is pushed from local files: --model-file, once per file of the entry.
+--extra-catalog PATH (default: env BENCH_EXTRA_CATALOG) adds the ids of another harness's catalog file
+({"<runtime>": [<ModelInfo fields, plus "files">]}, the file ModelCatalog.swift reads) to those two
+files, add-only (an id already there is refused, exit 2), and pushes it to
+Documents/models/extra-catalog.json so the app's catalog holds the same ids.
 
 Exit status (as litert-samples' run_ddp_ios.py): 0 the job passed and its records are written; 2 bad
 inputs (a model id not in models.json, a timeout outside 1m-1h, no archive or one without a manifest
@@ -82,6 +86,7 @@ def model_dir(runtime: str) -> str:
 
 MODEL_DIR = model_dir(RUNTIME)
 ARGS_DEST = "/Documents/yardstick_args.json"
+EXTRA_CATALOG_DEST = "/Documents/models/extra-catalog.json"  # ModelCatalog.loadExtraCatalog reads it
 PULL = ("/Documents/results", "/Documents/out")
 # --xctest-timeout by backend (results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md (f))
 TIMEOUT = {"gpu": "15m", "cpu": "30m"}
@@ -135,8 +140,9 @@ def tail(text: str, lines: int = 8) -> str:
     return "\n".join(text.strip().splitlines()[-lines:])
 
 
-def load_models() -> dict:
-    """models.json (LiteRT-LM) and models_competitive.json; every entry gets its runtime and file list."""
+def load_models(extra_catalog=None) -> dict:
+    """models.json (LiteRT-LM) and models_competitive.json, plus the entries of extra_catalog (a
+    BENCH_EXTRA_CATALOG file); every entry gets its runtime and file list."""
     out = {}
     for path, default_runtime in ((MODELS, RUNTIME), (MODELS_COMPETITIVE, None)):
         if not path.is_file():
@@ -150,6 +156,44 @@ def load_models() -> dict:
                 v["files"] = list(v.get("files") or [v["file"]])
                 v.setdefault("file", v["files"][0])
                 out[k] = v
+    if extra_catalog:
+        for k, v in load_extra_catalog(extra_catalog).items():
+            if k in out:
+                raise InputError(f"--extra-catalog {shown(extra_catalog)}: {k!r} is already in {shown(MODELS)} or "
+                                 f"{shown(MODELS_COMPETITIVE)} (the extra catalog only adds ids)")
+            out[k] = v
+    return out
+
+
+def load_extra_catalog(path) -> dict:
+    """A BENCH_EXTRA_CATALOG file -> {id: {"runtime", "hfRepoId", "files", "file"}}. The file is
+    {"<runtime>": [<entry>, ...]} with the cells runtime words of RUNTIMES as keys (keys starting
+    with _ are comments); an entry has ModelInfo's fields (ios/BenchmarkApp/Sources/Models/
+    ModelCatalog.swift reads the same file) and an optional "files", the files pushed together
+    (default: [primaryFile])."""
+    try:
+        with open(path) as fh:
+            data = json.load(fh)
+    except (OSError, ValueError) as exc:
+        raise InputError(f"--extra-catalog {shown(path)}: {exc}") from None
+    if not isinstance(data, dict):
+        raise InputError(f"--extra-catalog {shown(path)}: not a {{runtime: [entries]}} object")
+    out = {}
+    for runtime, entries in data.items():
+        if runtime.startswith("_"):
+            continue
+        if runtime not in RUNTIMES or not isinstance(entries, list):
+            raise InputError(f"--extra-catalog {shown(path)}: {runtime!r} is not a list under a runtime of "
+                             f"{', '.join(RUNTIMES)}")
+        for e in entries:
+            if not (isinstance(e, dict) and all(isinstance(e.get(k), str) and e.get(k)
+                                                for k in ("id", "hfRepoId", "primaryFile"))):
+                raise InputError(f"--extra-catalog {shown(path)}: a {runtime} entry without id, hfRepoId and "
+                                 f"primaryFile ({str(e)[:80]})")
+            if e["id"] in out:
+                raise InputError(f"--extra-catalog {shown(path)}: {e['id']!r} twice")
+            files = list(e.get("files") or [e["primaryFile"]])
+            out[e["id"]] = {"runtime": runtime, "hfRepoId": e["hfRepoId"], "files": files, "file": files[0]}
     return out
 
 
@@ -268,7 +312,8 @@ def timeout_minutes(text: str) -> int:
 
 def plan(args) -> dict:
     """Everything a submission needs, checked; no subprocess, no network in a dry run."""
-    models = load_models()
+    extra = args.extra_catalog
+    models = load_models(extra)
     if args.model_id not in models:
         raise InputError(f"--model-id {args.model_id!r} is not in {shown(MODELS)} or {shown(MODELS_COMPETITIVE)} "
                          f"({', '.join(sorted(models))})")
@@ -338,7 +383,13 @@ def plan(args) -> dict:
               "runtime": label_value(record_runtime), "model": label_value(args.model_id.replace("/", "--")),
               "task": label_value(args.task), "backend": args.backend or "model", "deviceid": label_value(args.device),
               "engine": label_value(engine_version), "run": run}
-    for source in [m["url"] for m in model_list] + [str(args_file)]:
+    extra_push = []
+    extra_info = None
+    if extra:
+        extra_path = pathlib.Path(extra).expanduser().resolve()
+        extra_info = {"path": str(extra_path), "sha256": sha256_file(extra_path)}
+        extra_push = [{"source": str(extra_path), "dest": f"{bundle}:{EXTRA_CATALOG_DEST}"}]
+    for source in [m["url"] for m in model_list] + [x["source"] for x in extra_push] + [str(args_file)]:
         if "," in source or "=" in source:
             raise InputError(f"{source}: gcloud takes no ',' or '=' in a pushed path")
     return {"device": args.device, "modelId": args.model_id, "hfRepoId": entry["hfRepoId"], "file": entry["file"],
@@ -351,7 +402,8 @@ def plan(args) -> dict:
             + list(args.app_arg or []),
             "bundleId": bundle, "archive": archive, "model": model, "models": model_list, "labels": labels,
             "run": run,
-            "push": [{"source": m["url"], "dest": f"{bundle}:{m['dest']}"} for m in model_list]
+            "extraCatalog": extra_info,
+            "push": [{"source": m["url"], "dest": f"{bundle}:{m['dest']}"} for m in model_list] + extra_push
                     + [{"source": str(args_file), "dest": f"{bundle}:{ARGS_DEST}"}],
             "pull": [f"{bundle}:{p}" for p in PULL],
             "consoleName": console_name(args.model_id, args.task, runtime)}
@@ -590,7 +642,8 @@ def ddp_conditions(sid: str, p: dict, session: dict) -> dict:
             "modelObject": p["model"]["url"], "modelSha256": p["model"]["sha256"],
             "modelDestination": p["push"][0]["dest"],
             "archiveObject": p["archive"]["url"], "archiveSha256": p["archive"]["sha256"],
-            "archiveBuildInfo": p["archive"]["buildInfo"]}
+            "archiveBuildInfo": p["archive"]["buildInfo"],
+            **({"extraCatalogSha256": p["extraCatalog"]["sha256"]} if p.get("extraCatalog") else {})}
 
 
 def lay_out(session_dir: pathlib.Path) -> dict:
@@ -683,7 +736,7 @@ def records_only(session_dir: pathlib.Path) -> int:
 
 # ---------------------------------------------------------------- main
 
-def main() -> int:
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
     ap.add_argument("--device", help="a DDP iPhone id (gcloud beta device-run devices list), e.g. iphone16pro-18-3")
@@ -696,6 +749,10 @@ def main() -> int:
     ap.add_argument("--app-arg", action="append", metavar="WORD",
                     help="one more word for the app's argv, after the cell's own (repeat it), e.g. "
                          "--app-arg=--litert-ynnpack --app-arg=on")
+    ap.add_argument("--extra-catalog", metavar="PATH", default=os.environ.get("BENCH_EXTRA_CATALOG") or None,
+                    help="another harness's catalog file ({runtime: [ModelInfo fields + files]}): its ids are added "
+                         "(add-only) and it is pushed to Documents/models/extra-catalog.json (default: env "
+                         "BENCH_EXTRA_CATALOG)")
     ap.add_argument("--model-file", action="append", metavar="PATH",
                     help="push this local file instead of the Hub's (an own export); once per file of the entry")
     ap.add_argument("--task", default="short-chat", help="the app's --task (default: %(default)s)")
@@ -719,7 +776,7 @@ def main() -> int:
                     help="submit nothing: wait for this session (submitted with the same flags) and write its records")
     ap.add_argument("--records-only", metavar="SESSION_DIR",
                     help="records again from results/raw/<campaign>/ddp/<session> (no network); takes nothing else")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     if args.records_only:
         if args.device or args.model_id or args.backend or args.collect or args.dry_run:
             ap.error("--records-only takes the session dir alone")
@@ -777,6 +834,8 @@ def main() -> int:
         session_dir.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(p["argsFile"], session_dir / "args.json")
         os.remove(p["argsFile"])
+        if p.get("extraCatalog"):  # the catalog the app read, beside its argv
+            shutil.copyfile(p["extraCatalog"]["path"], session_dir / "extra-catalog.json")
         plan_out = home_as_tilde(json.loads(json.dumps(p)))
         for part in [plan_out["model"], plan_out["archive"]] + plan_out.get("models", []):
             part.pop("local", None)  # host paths stay out of the campaign dir

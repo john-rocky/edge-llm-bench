@@ -20,8 +20,11 @@ An executor must leave the campaign's records in `campaign_dir` (the same files 
 runner writes) and return the runner's exit status. The runner's environment knobs (RUNS,
 BASE_COOLDOWN, ROUNDS, GATE_RETRY, ET_MODEL_DIR, YS_BIN, ...) are the executor's to pass on.
 
-  scripts/run_mac_matrix.py matrices/qwen3_5-0_8b-apple.cells --campaign 2026-10-27-qwen35-mac
-  scripts/run_mac_matrix.py matrices/qwen3_5-0_8b-apple.cells --dry-run
+  scripts/run_mac_matrix.py <cells> --campaign <date>-<name>-mac
+  scripts/run_mac_matrix.py <cells> --dry-run
+
+A cells file may live anywhere (another harness's own matrices included): it is read from the
+path given, relative to the current directory.
 """
 
 import argparse
@@ -51,16 +54,19 @@ def mac_rows(cells_path: Path) -> list:
 
 
 def run_local(cells: list, campaign: str, campaign_dir: Path, args) -> int:
-    """bench_matrix_mac.sh on this Mac. It writes <repo>/results/raw/<campaign>/ itself."""
+    """bench_matrix_mac.sh on this Mac, once per cells file (its `run` takes one), in order, into
+    the one campaign. It writes <repo>/results/raw/<campaign>/ itself."""
     if campaign_dir != REPO / "results" / "raw" / campaign:
         print(f"run_mac_matrix: the local runner writes {REPO / 'results' / 'raw' / campaign}, "
               f"not BENCH_RAW_ROOT ({campaign_dir})", file=sys.stderr)
         return 2
-    cmd = ["bash", str(RUNNER), "run", *[str(c) for c in cells]]
-    if args.dry_run:
-        cmd.append("--dry-run")
     env = dict(os.environ, CAMPAIGN=campaign)
-    return subprocess.run(cmd, env=env, check=False).returncode
+    for cells_file in cells:
+        cmd = ["bash", str(RUNNER), "run", str(cells_file)] + (["--dry-run"] if args.dry_run else [])
+        rc = subprocess.run(cmd, env=env, check=False).returncode
+        if rc:
+            return rc
+    return 0
 
 
 EXECUTORS = {"local": run_local}

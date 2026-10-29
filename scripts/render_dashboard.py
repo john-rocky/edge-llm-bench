@@ -74,10 +74,10 @@ DEFAULT_CELLS = os.path.join("matrices", "dashboard-text-v1.cells")
 DEFAULT_SCHEDULE = os.path.join("ops", "dashboard-v1", "schedule.json")
 SUMMARY_CSV = os.path.join(ROOT, "results", "summary", "device-runs.csv")
 # cells-file platform token -> device-runs.csv platform value
-CSV_PLATFORM = {"ios": "ios", "mac": "mac", "android": "android"}
+CSV_PLATFORM = {"ios": "ios", "mac": "mac", "android": "android", "windows": "windows"}
 # headline regime per platform: Apple lanes have in-process warm runs, the
-# Android CLIs do not (methodology/android.md) — the column header says which
-REGIME = {"ios": "warm", "mac": "warm", "android": "cold"}
+# Android and Windows CLIs compare fresh-process cold runs — the column header says which
+REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
 # the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark
 # entry; methodology/agreed-protocol-gemma4.md, docs/dashboard-cells-v1.md)
 PROTOCOL_TASK_PREFIX = "native-benchmark-"
@@ -117,10 +117,10 @@ def arm_of(plat, runtime, opts):
     (onnxruntime-genai-cpu / onnxruntime-genai-webgpu)."""
     if runtime == "onnxruntime-genai" and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
-    if plat == "android" and runtime == "litert-lm" and opts.get("ynnpack") == "1":
+    if plat in ("android", "windows") and runtime == "litert-lm" and opts.get("ynnpack") == "1":
         # a CPU row with YNNPACK asked for (cells ynnpack=1, run_cell.py --ynnpack)
         return f"{runtime}-{opts['backend']}-ynnpack"
-    if plat == "android" and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
+    if plat in ("android", "windows") and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
     if plat in ("mac", "ios") and runtime == "litert-lm" and opts.get("backend") == "cpu":
         # the iPhone app stamps litert-lm-cpu as the Mac CLI does (BenchmarkApp --litert-backend cpu);
@@ -182,25 +182,27 @@ def grid_sections(dcells):
 
 
 def load_cells(path):
-    """Active + excluded cells of the file, in file order."""
+    """Active + excluded cells of one or more files, in file order."""
+    paths = [path] if isinstance(path, (str, os.PathLike)) else list(path)
     cells = []
-    with open(path) as fh:
-        for lineno, raw in enumerate(fh, 1):
-            line = raw.split("#", 1)[0].strip()
-            if not line:
-                continue
-            plat, rt, mid, task, opts = parse_line(line)
-            if opts.get("manual") == "1":
-                continue
-            cells.append({
-                "platform": plat, "runtime": rt, "arm": arm_of(plat, rt, opts),
-                "model_id": mid, "task": task, "opts": opts, "line": lineno,
-                "model": model_row(mid), "exclude": opts.get("exclude"),
-                # {schedule.json device key: reason}; exclusion() reads it per device
-                "exclude_on": parse_exclude_on(opts["exclude-on"]) if opts.get("exclude-on") else {},
-                "anchor": opts.get("anchor") == "1",
-                "context_tokens": ctx_key(opts.get("context-tokens")),
-            })
+    for p in paths:
+        with open(p) as fh:
+            for lineno, raw in enumerate(fh, 1):
+                line = raw.split("#", 1)[0].strip()
+                if not line:
+                    continue
+                plat, rt, mid, task, opts = parse_line(line)
+                if opts.get("manual") == "1":
+                    continue
+                cells.append({
+                    "platform": plat, "runtime": rt, "arm": arm_of(plat, rt, opts),
+                    "model_id": mid, "task": task, "opts": opts, "line": lineno,
+                    "model": model_row(mid), "exclude": opts.get("exclude"),
+                    # {schedule.json device key: reason}; exclusion() reads it per device
+                    "exclude_on": parse_exclude_on(opts["exclude-on"]) if opts.get("exclude-on") else {},
+                    "anchor": opts.get("anchor") == "1",
+                    "context_tokens": ctx_key(opts.get("context-tokens")),
+                })
     # two artifacts of one arm on one row would collide in the matrix view —
     # give those cells their full logical name back (recipe visible in the row);
     # one artifact at several context-tokens= allocations is a row per
@@ -215,16 +217,27 @@ def load_cells(path):
     return cells
 
 
-def load_admission():
+def load_admission(raw_dirs=None):
     """campaign (results/raw/<name>) -> admitted? from the job's SESSION.json.
     Absent file = admitted (hand-run and first-pass sessions)."""
     out = {}
-    for f in glob.glob(os.path.join(ROOT, "results", "raw", "*", "SESSION.json")):
-        try:
-            d = json.load(open(f))
-        except (OSError, ValueError):
-            continue
-        out[rel(os.path.dirname(f))] = bool(d.get("admitted", True))
+    roots = [os.path.join(ROOT, "results", "raw")] if raw_dirs is None else list(raw_dirs)
+    for rdir in roots:
+        for f in glob.glob(os.path.join(rdir, "**", "SESSION.json"), recursive=True):
+            try:
+                d = json.load(open(f))
+            except (OSError, ValueError):
+                continue
+            camp_dir = os.path.dirname(f)
+            admitted = bool(d.get("admitted", True))
+            out[rel(camp_dir)] = admitted
+            if raw_dirs is not None:
+                abs_r = os.path.abspath(rdir)
+                abs_c = os.path.abspath(camp_dir)
+                if abs_c == abs_r:
+                    out[os.path.basename(abs_r) or "flat"] = admitted
+                elif abs_c.startswith(abs_r + os.sep):
+                    out[os.path.relpath(abs_c, abs_r)] = admitted
     return out
 
 
@@ -289,13 +302,23 @@ MEM_NOTE = ("mem MB / mem peak MB = the median over the session's runs of each r
             "(load included, decimal MB) — methodology/memory.md \"Peak memory\".")
 
 
+def _is_deep_cpu_cap_counted(c):
+    """True when a CPU arm pooled runs capped >CPU_CAP_MAX_DROP_PCT via --include-cpu-capped."""
+    if c.get("arm") in CPU_CAP_EXEMPT_ARMS:
+        return False
+    drop = c.get("cpu_capped_counted_max_drop")
+    return (drop is not None and drop > CPU_CAP_MAX_DROP_PCT) or (
+        bool(c.get("include_cpu_capped")) and drop is None)
+
+
 def cap_mark(c):
     """The mark a measured cell carries when runs of its pool ran under a CPU frequency cap
-    (cpu-cap-rule): "◇ cpu-capped ≤15 % (k of N runs)" for the runs within the line, and on an
+    (cpu-cap-rule): "◇ cpu-capped ≤15 % (k of N runs)" for the runs within the line, on an
     accelerator arm (render_leaderboard.CPU_CAP_EXEMPT_ARMS, whose capped runs all pool)
-    "◇ cpu-capped, counted (accelerator arm), max drop D % (k of N runs)", D = the largest fall
-    among them; N = the session's runs that would have pooled; "" when none did (or the caps
-    were not read)."""
+    "◇ cpu-capped, counted (accelerator arm), max drop D % (k of N runs)", and on a CPU arm
+    when --include-cpu-capped pooled runs above the line
+    "⚠ cpu-capped >15 %, counted (--include-cpu-capped), max drop D % (k of N runs)", D = the
+    largest fall among them; N = the session's runs that would have pooled; "" when none did."""
     k, _, n = (c.get("cpu_capped_counted") or "").partition("/")
     if k in ("", "0"):
         return ""
@@ -303,22 +326,31 @@ def cap_mark(c):
         drop = c.get("cpu_capped_counted_max_drop")
         drop = "not recorded" if drop is None else f"{drop:.1f} %"
         return f"◇ cpu-capped, counted (accelerator arm), max drop {drop} ({k} of {n} runs)"
+    if _is_deep_cpu_cap_counted(c):
+        drop = c.get("cpu_capped_counted_max_drop")
+        drop = "not recorded" if drop is None else f"{drop:.1f} %"
+        return f"⚠ cpu-capped >{CAP_LINE}, counted (--include-cpu-capped), max drop {drop} ({k} of {n} runs)"
     return f"◇ cpu-capped ≤{CAP_LINE} ({k} of {n} runs)"
 
 
 def cap_marked_text(cells):
-    """The coverage line's count of measured cells marked ◇ (cap_mark), CPU arms and
-    accelerator arms apart: " (2 with runs cpu-capped ≤15 %, ◇)",
-    " (1 with runs cpu-capped on an accelerator arm, counted, ◇)", both joined by "; ";
-    "" when none is marked."""
+    """The coverage line's count of measured cells marked ◇ or ⚠ (cap_mark), CPU arms and
+    accelerator arms apart."""
     marked = [c for c in cells if c["status"] == "measured" and cap_mark(c)]
     accel = sum(1 for c in marked if c.get("arm") in CPU_CAP_EXEMPT_ARMS)
+    deep_cpu = sum(1 for c in marked if _is_deep_cpu_cap_counted(c))
+    shallow_cpu = len(marked) - accel - deep_cpu
     parts = []
-    if len(marked) - accel:
-        parts.append(f"{len(marked) - accel} with runs cpu-capped ≤{CAP_LINE}")
+    if shallow_cpu:
+        parts.append(f"{shallow_cpu} with runs cpu-capped ≤{CAP_LINE}")
     if accel:
         parts.append(f"{accel} with runs cpu-capped on an accelerator arm, counted")
-    return f" ({'; '.join(parts)}, ◇)" if parts else ""
+    if deep_cpu:
+        parts.append(f"{deep_cpu} with runs cpu-capped >{CAP_LINE} on a CPU arm, counted (--include-cpu-capped, ⚠)")
+    if not parts:
+        return ""
+    suffix = "" if (deep_cpu and not shallow_cpu and not accel) else ", ◇"
+    return f" ({'; '.join(parts)}{suffix})"
 
 
 def grid_text(c):
@@ -346,16 +378,18 @@ def grid_text(c):
     return t
 
 
-def build(cells_path, schedule_path, stale_days, today):
-    rows = list(csv.DictReader(open(SUMMARY_CSV))) if os.path.exists(SUMMARY_CSV) else []
-    admitted = load_admission()
+def build(cells_path, schedule_path, stale_days, today, summary_csv=None, raw_dirs=None,
+          include_cpu_capped=False):
+    csv_path = SUMMARY_CSV if summary_csv is None else summary_csv
+    rows = list(csv.DictReader(open(csv_path))) if os.path.exists(csv_path) else []
+    admitted = load_admission() if raw_dirs is None else load_admission(raw_dirs=raw_dirs)
     rows = [r for r in rows if admitted.get(r["campaign"], True)]
     cells = load_cells(cells_path)
     schedule = load_schedule(schedule_path)
     keys_of = device_keys(schedule)
 
     out_cells = []
-    for plat in ("mac", "ios", "android"):
+    for plat in ("mac", "ios", "android", "windows"):
         plat_cells = [c for c in cells if c["platform"] == plat]
         if not plat_cells:
             continue
@@ -404,7 +438,9 @@ def build(cells_path, schedule_path, stale_days, today):
                 if why:
                     rec.update(status="excluded", reason=why)
                 elif sel:
-                    a = arm_row(sel)
+                    a = arm_row(sel, include_cpu_capped=include_cpu_capped)
+                    if include_cpu_capped:
+                        rec["include_cpu_capped"] = True
                     regime = headline_regime(plat, c["task"], a)
                     if regime == "warm":
                         dec, spread, n = a["warm"], a["spread"], a["warm_n"]
@@ -454,14 +490,23 @@ def build(cells_path, schedule_path, stale_days, today):
     return out_cells, cells
 
 
-def render_md(out_cells, cells_path, stale_days, today):
+def _cells_title(cells_path):
+    if isinstance(cells_path, (str, os.PathLike)):
+        return f"`{rel(cells_path)}`"
+    return ", ".join(f"`{rel(p)}`" for p in cells_path)
+
+
+def render_md(out_cells, cells_path, stale_days, today, include_cpu_capped=False):
     L = []
-    L.append(f"# Dashboard v1 — `{rel(cells_path)}`")
+    L.append(f"# Dashboard v1 — {_cells_title(cells_path)}")
     L.append("")
     L.append(f"Rendered {today.isoformat()} by `scripts/render_dashboard.py` from "
              "`results/summary/device-runs.csv` (the same `arm_row` aggregation as "
              "LEADERBOARD.md: latest admitted capture session per cell, never pooled "
-             "across sessions, cache-build runs excluded). Local file — the repo does "
+             "across sessions, cache-build runs excluded"
+             + ("; `--include-cpu-capped` active — CPU runs capped >15 % are pooled and marked ⚠"
+                if include_cpu_capped else "")
+             + "). Local file — the repo does "
              "not publish cross-runtime standings.")
     L.append("")
     L.append("Reading rules: **warm** = median of same-session warm runs (Apple lanes); "
@@ -620,8 +665,9 @@ CSV_FIELDS = ["platform", "device", "device_display", "regime", "model", "arm", 
               "cold_tps"]
 
 
-def write_outputs(out_cells, md, md_path, out_dir):
+def write_outputs(out_cells, md, md_path, out_dir, include_cpu_capped=False):
     os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(md_path)) or ".", exist_ok=True)
     with atomic_write(md_path, "w") as fh:
         fh.write(md)
     with atomic_write(os.path.join(out_dir, "dashboard-v1.csv"), "w", newline="") as fh:
@@ -634,15 +680,25 @@ def write_outputs(out_cells, md, md_path, out_dir):
                 if isinstance(row[k], float):
                     row[k] = round(row[k], 2)
             w.writerow(row)
+    payload = {"generated": datetime.datetime.now().isoformat(timespec="seconds"),
+               "cells": out_cells}
+    if include_cpu_capped:
+        payload["include_cpu_capped"] = True
     with atomic_write(os.path.join(out_dir, "dashboard-v1.json"), "w") as fh:
-        json.dump({"generated": datetime.datetime.now().isoformat(timespec="seconds"),
-                   "cells": out_cells}, fh, indent=1)
+        json.dump(payload, fh, indent=1)
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--cells", default=os.path.join(ROOT, DEFAULT_CELLS))
+    ap.add_argument("--cells", action="append", default=None,
+                    help=f"cells file(s) (repeatable; default: {DEFAULT_CELLS})")
+    ap.add_argument("--summary-csv", default=None,
+                    help="summary device-runs.csv path (default: <repo>/results/summary/device-runs.csv)")
+    ap.add_argument("--raw-dir", action="append", default=None,
+                    help="raw campaign directory for SESSION.json admission (repeatable)")
+    ap.add_argument("--include-cpu-capped", action="store_true",
+                    help="pool CPU-arm runs capped >15 %% (marked with a ⚠ warning badge; for shared DDP lab phones)")
     ap.add_argument("--schedule", default=os.path.join(ROOT, DEFAULT_SCHEDULE))
     ap.add_argument("--stale-days", type=int, default=None,
                     help="default: schedule.json stale_days, else 10")
@@ -650,19 +706,27 @@ def main():
     ap.add_argument("--out-dir", default=os.path.join(ROOT, ".dashboard"))
     ap.add_argument("--check", action="store_true",
                     help="render into a temp dir only (CI: the script runs on the shipped raw)")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+    cells_arg = args.cells if args.cells else os.path.join(ROOT, DEFAULT_CELLS)
+    if isinstance(cells_arg, list) and len(cells_arg) == 1:
+        cells_arg = cells_arg[0]
     stale_days = args.stale_days
     if stale_days is None:
         stale_days = load_schedule(args.schedule).get("stale_days", 10)
     today = datetime.date.today()
-    out_cells, cells = build(args.cells, args.schedule, stale_days, today)
-    md = render_md(out_cells, args.cells, stale_days, today)
+    out_cells, cells = build(cells_arg, args.schedule, stale_days, today,
+                             summary_csv=args.summary_csv, raw_dirs=args.raw_dir,
+                             include_cpu_capped=args.include_cpu_capped)
+    md = render_md(out_cells, cells_arg, stale_days, today,
+                   include_cpu_capped=args.include_cpu_capped)
     if args.check:
         tmp = tempfile.mkdtemp(prefix="dashboard-check-")
-        write_outputs(out_cells, md, os.path.join(tmp, "DASHBOARD.md"), tmp)
+        write_outputs(out_cells, md, os.path.join(tmp, "DASHBOARD.md"), tmp,
+                      include_cpu_capped=args.include_cpu_capped)
         print(f"rendered {len(out_cells)} device-cells from {len(cells)} file cells into {tmp}")
         return 0
-    write_outputs(out_cells, md, args.md, args.out_dir)
+    write_outputs(out_cells, md, args.md, args.out_dir,
+                  include_cpu_capped=args.include_cpu_capped)
     n_meas = sum(1 for c in out_cells if c["status"] == "measured")
     n_stale = sum(1 for c in out_cells if c["stale"])
     print(f"wrote {rel(args.md)} and {rel(args.out_dir)}/dashboard-v1.{{csv,json}}: "

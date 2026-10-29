@@ -20,18 +20,17 @@ Outputs (overwritten each run — derived data, raw stays canonical):
 Stdlib only. Idempotent. New writers should emit schema/result.v1.json natively;
 this script is the bridge for pre-v1 records.
 """
-import csv, glob, json, os, sys
+import argparse, csv, glob, json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench_common import atomic_write, corrected_engine  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "results", "summary")
-os.makedirs(OUT, exist_ok=True)
 
 
-def rel(p):
-    return os.path.relpath(p, ROOT)
+def rel(p, base=None):
+    return os.path.relpath(p, ROOT if base is None else base)
 
 
 QUALITY_EXTRA = ["schema_version", "timestamp", "runtime", "thinking",
@@ -39,7 +38,9 @@ QUALITY_EXTRA = ["schema_version", "timestamp", "runtime", "thinking",
                  "model_id", "model_quantization"]
 
 
-def build_quality():
+def build_quality(out_dir=None):
+    target_out = OUT if out_dir is None else out_dir
+    os.makedirs(target_out, exist_ok=True)
     rows = []
     # regression/*/ holds re-captures made by `./reproduce ... --regress` (condition 3);
     # they accumulate alongside the published reports, distinguished by `source`.
@@ -80,7 +81,7 @@ def build_quality():
             "model_id": d.get("model", {}).get("id"),
             "model_quantization": d.get("model", {}).get("quantization"),
         })
-    path = os.path.join(OUT, "quality.csv")
+    path = os.path.join(target_out, "quality.csv")
     # a fresh checkout (e.g. the carved-out harness repo) starts with no
     # quality reports — emit a header-only csv instead of crashing
     fields = list(rows[0].keys()) if rows else (
@@ -139,20 +140,29 @@ def prompt_version_of(d):
     return v if isinstance(v, str) and v else None
 
 
-def campaign_dir_of(f):
+def campaign_dir_of(f, raw_dirs=None):
     """The results/raw/<campaign> dir a record file lies in, at any depth, or None for a flat
     results/raw/*.jsonl file."""
-    parts = os.path.abspath(f).split(os.sep)
+    abs_f = os.path.abspath(f)
+    if raw_dirs:
+        for rdir in raw_dirs:
+            abs_r = os.path.abspath(rdir)
+            if abs_f.startswith(abs_r + os.sep):
+                rest = abs_f[len(abs_r) + 1:].split(os.sep)
+                if len(rest) >= 2:
+                    return os.path.join(abs_r, rest[0])
+                return None
+    parts = abs_f.split(os.sep)
     for i in range(len(parts) - 3, 0, -1):
         if parts[i] == "raw" and parts[i - 1] == "results":
             return os.sep.join(parts[:i + 2])
     return None
 
 
-def text_screen_of(f, cache):
+def text_screen_of(f, cache, raw_dirs=None):
     """The text_screen.json of the campaign dir a record file lies in, or None (a flat file, no
     sidecar, one that does not parse or names another schema); read once per dir."""
-    d = campaign_dir_of(f)
+    d = campaign_dir_of(f, raw_dirs=raw_dirs)
     if d is None:
         return None
     if d not in cache:
@@ -278,7 +288,7 @@ def backend_registered_of(d):
 
 
 def platform_of(d):
-    """ios / mac / android, from the record itself (never from file paths)."""
+    """ios / mac / android / windows, from the record itself (never from file paths)."""
     dev = d.get("device", {})
     sysname = (dev.get("systemName") or "").lower()
     if sysname.startswith("ios"):
@@ -287,6 +297,8 @@ def platform_of(d):
         return "mac"
     if sysname.startswith("android"):
         return "android"
+    if sysname.startswith("windows"):
+        return "windows"
     mi = dev.get("modelIdentifier") or ""
     if mi.startswith(("iPhone", "iPad")):
         return "ios"
@@ -295,16 +307,32 @@ def platform_of(d):
     return d.get("platform") or ""
 
 
-def iter_device_records():
+DEVICE_FIELDS = [
+    "source", "campaign", "platform", "timestamp", "runtime", "schema_version",
+    "engine_version", "engine_stamped", "engine_artifact", "model_id", "model_file",
+    "quantization", "task", "prompt_version", "harness_stamp", "decode_tps",
+    "decode_tps_wall", "prefill_tps", "prompt_tokens", "gen_tokens", "ttft_ms",
+    "mem_footprint_median_mb", "mem_resident_median_mb", "energy_j_per_tok",
+    "thermal_initial", "thermal_final", "battery_state", "cold_run", "first_ever",
+    "context_tokens", "device", "os_version", "mem_footprint_peak_mb",
+    "mem_resident_peak_mb", "text_check", "cpu_capped", "cpu_max_freq",
+    "backend_registered", "cpu_cap_drop_pct",
+]
+
+
+def iter_device_records(raw_dirs=None):
     """Yield (path, record) across the three raw shapes, campaign shapes first
     so UUID dedup drops the flat re-imports, not the campaign originals."""
     seen_ids = set()
-    campaign_files = sorted(
-        glob.glob(os.path.join(ROOT, "results", "raw", "**", "app-path*", "*.json"),
-                  recursive=True)
-        + glob.glob(os.path.join(ROOT, "results", "raw", "**", "device-jsonl", "*.json"),
-                    recursive=True))
-    for f in campaign_files:
+    roots = [os.path.join(ROOT, "results", "raw")] if raw_dirs is None else list(raw_dirs)
+    campaign_files = []
+    for rdir in roots:
+        if os.path.isfile(rdir) and rdir.endswith(".json"):
+            campaign_files.append(rdir)
+        else:
+            campaign_files.extend(glob.glob(os.path.join(rdir, "**", "app-path*", "*.json"), recursive=True))
+            campaign_files.extend(glob.glob(os.path.join(rdir, "**", "device-jsonl", "*.json"), recursive=True))
+    for f in sorted(set(campaign_files)):
         try:
             d = json.load(open(f))
         except Exception:
@@ -316,9 +344,19 @@ def iter_device_records():
             seen_ids.add(rid)
         yield f, d
     # flat top-level jsonl (RESULTS.md pipeline) + campaign-dir jsonl (the Mac
-    # matrix/protocol runners append one JSONL per cell inside the campaign dir)
-    jsonl_files = (sorted(glob.glob(os.path.join(ROOT, "results", "raw", "*.jsonl")))
-                   + sorted(glob.glob(os.path.join(ROOT, "results", "raw", "*", "*.jsonl"))))
+    # and Windows matrix/protocol runners append one JSONL per cell inside the campaign dir)
+    jsonl_files = []
+    if raw_dirs is None:
+        rdir = roots[0]
+        jsonl_files = (sorted(glob.glob(os.path.join(rdir, "*.jsonl")))
+                       + sorted(glob.glob(os.path.join(rdir, "*", "*.jsonl"))))
+    else:
+        for rdir in roots:
+            if os.path.isfile(rdir) and rdir.endswith(".jsonl"):
+                jsonl_files.append(rdir)
+            else:
+                jsonl_files.extend(glob.glob(os.path.join(rdir, "**", "*.jsonl"), recursive=True))
+        jsonl_files = sorted(set(jsonl_files))
     for f in jsonl_files:
         txt = open(f).read().strip()
         if not txt:
@@ -357,25 +395,53 @@ def iter_device_records():
             yield f, d
 
 
-def build_device():
+def _source_and_campaign(f, raw_dirs):
+    parent = os.path.dirname(f)
+    if raw_dirs is None:
+        if os.path.basename(parent) == "raw":
+            return rel(f), "flat"
+        if os.path.basename(os.path.dirname(parent)) == "raw":
+            return rel(f), rel(parent)
+        return rel(f), rel(os.path.dirname(parent))
+    abs_f = os.path.abspath(f)
+    abs_root = os.path.abspath(ROOT)
+    if abs_f.startswith(abs_root + os.sep):
+        src = rel(abs_f)
+    else:
+        src = abs_f
+        for rdir in raw_dirs:
+            abs_r = os.path.abspath(rdir)
+            if abs_f.startswith(abs_r + os.sep):
+                src = os.path.relpath(abs_f, abs_r)
+                break
+    leaf = os.path.basename(parent)
+    camp_dir = os.path.dirname(parent) if (leaf.startswith("app-path") or leaf == "device-jsonl") else parent
+    for rdir in raw_dirs:
+        abs_r = os.path.abspath(rdir)
+        if os.path.abspath(camp_dir) == abs_r:
+            return src, os.path.basename(abs_r) or "flat"
+        if os.path.abspath(camp_dir).startswith(abs_r + os.sep):
+            return src, os.path.relpath(os.path.abspath(camp_dir), abs_r)
+    return src, (rel(camp_dir) if os.path.abspath(camp_dir).startswith(abs_root + os.sep)
+                 else os.path.basename(camp_dir))
+
+
+def build_device(raw_dirs=None, out_dir=None):
     """device-runs.csv. A DDP lab unit's record (device.ddp, android/ddp/record.py) gets the
     device "<modelIdentifier> (DDP <catalog id>)", never the attached phone's identifier."""
+    target_out = OUT if out_dir is None else out_dir
+    os.makedirs(target_out, exist_ok=True)
     rows = []
     screens = {}    # campaign dir -> its text_screen.json (text_screen_of)
-    for f, d in iter_device_records():
+    records = iter_device_records() if raw_dirs is None else iter_device_records(raw_dirs=raw_dirs)
+    for f, d in records:
         m, dev, model = d.get("metrics", {}), d.get("device", {}), d.get("model", {})
         if not m:
             continue
         cpu_capped, cpu_max_freq = cpu_cap_of(d)
-        parent = os.path.dirname(f)
-        if os.path.basename(parent) == "raw":
-            campaign = "flat"                       # results/raw/x.jsonl
-        elif os.path.basename(os.path.dirname(parent)) == "raw":
-            campaign = rel(parent)                  # results/raw/<campaign>/x.jsonl
-        else:
-            campaign = rel(os.path.dirname(parent))  # .../<campaign>/app-path*/x.json
+        source, campaign = _source_and_campaign(f, raw_dirs)
         rows.append({
-            "source": rel(f),
+            "source": source,
             "campaign": campaign,
             "platform": platform_of(d),
             "timestamp": d.get("timestamp"),
@@ -424,7 +490,7 @@ def build_device():
             # the decoded-text verdict (2026-10-06), appended last like the peaks:
             # a FAIL run is a row, never a measurement (text-check-rule); a Mac / iPhone
             # run's from its dir's text_screen.json (2026-10-19)
-            "text_check": text_check_of(d, text_screen_of(f, screens)),
+            "text_check": text_check_of(d, text_screen_of(f, screens, raw_dirs=raw_dirs)),
             # the CPU frequency cap during the run (2026-10-07), appended after it:
             # a capped run is a row, never a measurement (cpu-cap-rule)
             "cpu_capped": cpu_capped,
@@ -437,17 +503,20 @@ def build_device():
             "cpu_cap_drop_pct": cpu_cap_drop_of(d),
         })
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
-    path = os.path.join(OUT, "device-runs.csv")
+    path = os.path.join(target_out, "device-runs.csv")
+    fields = list(rows[0].keys()) if rows else DEVICE_FIELDS
     with atomic_write(path, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+        w = csv.DictWriter(fh, fieldnames=fields)
         w.writeheader(); w.writerows(rows)
     return path, len(rows)
 
 
-def build_history():
+def build_history(out_dir=None):
     """Flatten results/regression-reports/*/verdicts.json into history.csv —
     the per-cell verdict series behind release-over-release tracking. The
     committed verdicts.json files are the canon; this is derived."""
+    target_out = OUT if out_dir is None else out_dir
+    os.makedirs(target_out, exist_ok=True)
     rows = []
     for f in sorted(glob.glob(os.path.join(ROOT, "results", "regression-reports",
                                            "*", "verdicts.json"))):
@@ -467,7 +536,7 @@ def build_history():
                 "anchor_cell": anchor.get("cell"),
                 "baseline": d.get("baseline"), "candidate": d.get("candidate"),
             })
-    path = os.path.join(OUT, "history.csv")
+    path = os.path.join(target_out, "history.csv")
     fields = ["report", "mode", "verdict", "cell", "metric", "base_median",
               "cand_median", "raw_delta_pct", "normalized_delta_pct",
               "anchor_cell", "baseline", "candidate"]
@@ -477,11 +546,19 @@ def build_history():
     return path, len(rows)
 
 
-def main():
-    qp, qn = build_quality()
-    dp, dn = build_device()
-    hp, hn = build_history()
-    readme = os.path.join(OUT, "README.md")
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--raw-dir", action="append", default=None,
+                    help="raw results directory (repeatable; default: <repo>/results/raw)")
+    ap.add_argument("--out-dir", default=None,
+                    help="output summary directory (default: <repo>/results/summary)")
+    args = ap.parse_args(argv)
+    target_out = OUT if args.out_dir is None else args.out_dir
+    os.makedirs(target_out, exist_ok=True)
+    qp, qn = build_quality(out_dir=target_out)
+    dp, dn = build_device(raw_dirs=args.raw_dir, out_dir=target_out)
+    hp, hn = build_history(out_dir=target_out)
+    readme = os.path.join(target_out, "README.md")
     with atomic_write(readme, "w") as fh:
         fh.write(
             "# results/summary — derived, machine-readable accumulation\n\n"
