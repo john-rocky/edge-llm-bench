@@ -4,6 +4,7 @@
   "anchors": "matrices/anchors.cells",
   "stale_days": 10,
   "_slots_doc": "launchd runs `./bench dashboard-job auto` at these local times every night (the plist template carries the same times). `auto` measures, among the devices with no admitted dashboard session since Monday 00:00 local, the attached unheld one whose last admitted session is oldest — the iPhone only inside its auto_window after auto_idle_hours without a record, the Mac only while no heavy export pipeline runs. One device per firing; each device once a week (a device whose set is in `parts`, the Mac: once per part, one part per firing); a firing with nothing pending exits 0. A Developer Device Platform lab unit (platform ddp) is not the firing's device: no device on this host, so its weekly sitting runs after the firing's attached-device sitting (or at a firing with none), docs/dashboard-autopilot-v1.md section 9. A device whose entry says `auto`: false is never chosen by `auto` (its report line reads by-hand): it is measured only by `./bench dashboard-job <key>`, by hand, in a window the owner offers.",
+  "_release_by_doc": "A device's release_by (\"HH:MM\" local; docs/dashboard-recurring-job-v1.md \u00a711): its sitting gives the hold back by the first such time after the firing began. Before the hold, the anchor phase and the first payload run must be expected to end by then, else the device is passed over for the firing; before each later run, a run expected to end past it is not started (a run under way is never stopped, so the overshoot is at most that run's; the gate's re-runs are inside their run); the whole set gives way to the storage halves when only they fit. The runs left over run at a later firing the same week, and a device's week is done only when every run of its plan (the set or each half, each extra file) has an admitted session since Monday. 08:00 on the Galaxy S26 and the Pixel 8a, from the sibling lanes' keeper logs (2026-10-23..31: 303 keeper runs, 182 on the S26's hold and 121 on the Pixel 8a's, none on another device's; the one wait behind a dashboard sitting: a lane queued at 07:30 on 2026-10-26 and got the S26 at 12:48, 317 min later, when the 02:00 sitting gave it back; the morning lanes come from about 07:30, 2026-10-26 and 2026-10-28) and from the 14 firings a week: with the newest run lengths in the job logs (S26: anchor 13 min, halves a 3.3 h, b1 2.2 h, b2 2.0 h, ort 21 min, npu 2.1 h; Pixel 8a: anchor 12 min, a 4.9 h, b1 10 min, b2 5 min) the S26's week is two sittings from 02:00, a + b1 (given back about 07:40) and b2 + ort + npu (about 06:40), and the Pixel 8a's one (about 07:20, its 2026-10-27 sitting ended 07:18); with the Pixel 11 Pro's one, the iPhone 18 Pro's one at 05:30 and the Mac's two parts, the week fills 6 of the 7 nights and leaves one for a retry. 07:30 would cut the S26 after a and need a third sitting (anchor + npu, 2.3 h) that fits only a 02:00 firing: 7 of 7 nights. No release_by on the Pixel 11 Pro (its set is one run of about 9.6 h with no halves, so any time before noon passes it over at every firing; no keeper log names its hold) nor the iPhone 18 Pro (one run of about 5.8 h at the 05:30 firing; no keeper log names its hold); the Mac (no device hold) and the lab units (no hold) are outside it. `--release-by HH:MM|none` overrides it for one invocation.",
   "slots": [
     {
       "at": "02:00",
@@ -64,6 +65,7 @@
         "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.s26",
         "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.RFGL80R6A6H"
       ],
+      "release_by": "08:00",
       "storage_gb_full": 28,
       "split": [
         {
@@ -109,6 +111,7 @@
       "hold_also_check": [
         "~/code/litertlm-convert/community_accel_work/s2_npu_sweep/.device_hold.4C131JEKB15210"
       ],
+      "release_by": "08:00",
       "storage_gb_full": 28,
       "split": [
         {

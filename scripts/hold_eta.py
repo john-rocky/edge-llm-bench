@@ -36,7 +36,11 @@ gate's lines):
   its last round may add one, and the basis says so;
 - any other run (the Mac and iPhone runners print no rounds) counts as a whole: its length in the
   device's recent logs, else the device's expected_hours (schedule.json) shared out;
-- a stage that runs past its length is taken to end now: the time slips as it overruns.
+- a stage that runs past its length is taken to end now: the time slips as it overruns;
+- a device with a release_by (schedule.json, docs/dashboard-recurring-job-v1.md §11): a run not yet
+  started whose end would pass it is not started (dashboard_job.attempt), so the time ends with the
+  runs before it and the basis names the runs left for a later firing (Sitting.start_length is the
+  length the job tests a run by).
 
 The job writes the keys only into a hold it took itself (never a keeper's), replacing the file in
 one step (os.replace: a reader sees the old hold or the new, never a part of one) and only while
@@ -157,11 +161,13 @@ class Sitting:
     """A sitting's runs as its job log tells them, and what is left of them at a time.
 
     stages: the plan in order (plan_stages); a run the log starts that the plan does not name is
-    added where it starts (a history log is read with no plan at all). lengths: history()."""
+    added where it starts (a history log is read with no plan at all). lengths: history(). deadline:
+    the device's release_by for this sitting (dashboard_job.release_deadline), or None."""
 
-    def __init__(self, stages=(), lengths=None):
+    def __init__(self, stages=(), lengths=None, deadline=None):
         self.stages = list(stages)
         self.hist = lengths or {"launches": {}, "stages": {}, "leads": {}}
+        self.deadline = deadline
         self.current = None
         self.clock = None           # the newest time the log has said
         self.released = None
@@ -409,14 +415,41 @@ class Sitting:
                 words += f", {len(st.ahead)} gate re-run{'s' if len(st.ahead) > 1 else ''} ahead"
         return max(left, 0.0), words, gate_open
 
+    def start_length(self, st, own=None):
+        """Seconds a run not yet started is taken to need when the job decides whether to start it before
+        the device's release_by: its count (stage_left: the launches its rows owe, the lead) or, when
+        longer, its newest whole length on record (history: the file's last run on this device that
+        exited 0), which holds the gate's re-runs that run had; no line names a re-run before the run
+        starts. The newest, not a median: a cells file grows (the S26's whole set took 3.3 h in
+        September, 8.2 h on 2026-10-26), and a median of both is neither."""
+        own = self.own_lengths() if own is None else own
+        counted = self.stage_left(st, datetime.datetime.now(), own)[0] if st.start is None else 0.0
+        newest = (self.hist["stages"].get(st.key) or [None])[0]
+        return max(counted, newest or 0.0)
+
     def estimate(self, now):
-        """(expected release datetime, basis) at `now`."""
+        """(expected release datetime, basis) at `now`. With a deadline (release_by), a run not yet started
+        counts its start_length, the length the job tests it by, and the walk ends at the first such run that
+        would end past the deadline from the time the runs before it are taken to end: the job does not start
+        that run nor any after it (dashboard_job.attempt), and the basis names them. A retake's profile pair
+        goes with its matrix run, never alone."""
         own = self.own_lengths()
-        total, parts, open_gates = 0.0, [], []
+        total, parts, open_gates, cut = 0.0, [], [], []
         for st in self.stages:
             if st.skipped or st.end is not None:
                 continue
+            if cut:
+                cut.append(st.tag)
+                continue
             left, words, gate_open = self.stage_left(st, now, own)
+            if self.deadline is not None and st.start is None:
+                left = self.start_length(st, own)
+                need = left + (0.0 if st.kind == "profile" else sum(
+                    self.start_length(p, own) for p in self.stages
+                    if p.kind == "profile" and p.cells == st.cells and p.start is None and not p.skipped))
+                if st.kind != "profile" and now + datetime.timedelta(seconds=total + need) > self.deadline:
+                    cut.append(st.tag)
+                    continue
             total += left
             if gate_open:
                 open_gates.append(st.tag)
@@ -424,13 +457,15 @@ class Sitting:
                 parts.append(f"{st.tag}: {words + ', ' if words else ''}~{fmt_span(left)} left")
             else:
                 parts.append(f"{st.tag} ~{fmt_span(left)}")
+        tail = (f"; release_by {self.deadline:%H:%M}: {', '.join(cut)} not started, left for a later firing"
+                if cut else "")
         if not parts:
-            return now, "nothing left to run"
+            return now, "nothing left to run" + tail
         basis = parts[0] + ("; then " + ", ".join(parts[1:]) if len(parts) > 1 else "")
         if open_gates:
             basis += (f" (+ any re-run the gate adds for a cell of {', '.join(open_gates)} still to finish "
                       f"its last round: {GATE_COOLDOWN_S // 60} min + a block of the cell's runs each)")
-        return now + datetime.timedelta(seconds=total), basis
+        return now + datetime.timedelta(seconds=total), basis + tail
 
 
 # ---------------------------------------------------------------- history and the plan

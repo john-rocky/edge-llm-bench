@@ -17,6 +17,13 @@ campaign dirs it would create, after its done line, and any other exit
 prints none. A pending retake (stage 3a) makes a device done this week a
 candidate again, ahead of the others, and a retake sitting is not the week's
 session (the retake sitting itself: scripts/regression_watch_selftest.py).
+A device's release_by (design §11): a run expected to end past it is not
+started and the sitting closes with the runs it finished and gives the hold
+back (a fake bench and hold tool in a temp ROOT), the whole set gives way to
+the storage halves, a sitting whose first runs cannot fit is passed over
+before its hold; the runs left over run at the next sitting under a fresh
+campaign name, and the week counts as done only when every run of the plan
+was admitted.
 
   python3 scripts/dashboard_job_selftest.py     # exit 0 = pass
 """
@@ -1041,6 +1048,7 @@ def main():
 
     parts_cases(tmp, dj)
     hold_estimate_cases(tmp, dj)
+    release_by_cases(tmp, dj)
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
@@ -1358,6 +1366,308 @@ def parts_cases(tmp, dj):
        and f"part a of the week's parts b/a: {pa}, expected 2.6 h" in text and "WARN" not in text,
        f"a dry-run sitting with part b done this week: part a, campaign base {base}, its file alone under the "
        f"5 h timeout (exit {code}, {dirs})")
+
+
+# a fake `bench` in a temp ROOT for the release_by sittings: `matrix <cells> ... --campaign <c>` leaves the
+# campaign dir and a line in calls.txt, exit 0, at once
+FAKE_MATRIX_BENCH = '''#!/usr/bin/env python3
+import os, sys
+a = sys.argv[1:]
+root = os.path.dirname(os.path.abspath(__file__))
+if a[:1] == ["matrix"]:
+    camp = a[a.index("--campaign") + 1]
+    os.makedirs(os.path.join(root, "results", "raw", camp + "-android"), exist_ok=True)
+    with open(os.path.join(root, "calls.txt"), "a") as fh:
+        fh.write(a[1] + " " + camp + "\\n")
+sys.exit(0)
+'''
+
+# the sibling lane's hold tool as the job calls it (hold_cli.py acquire <path> <script> <pid> | release <path> <pid>)
+FAKE_HOLD_CLI = '''#!/usr/bin/env python3
+import json, os, sys
+cmd, path = sys.argv[1], sys.argv[2]
+if cmd == "acquire":
+    if os.path.exists(path):
+        print("held")
+        sys.exit(1)
+    with open(path, "w") as fh:
+        json.dump({"pid": int(sys.argv[4]), "script": sys.argv[3], "device": "S26", "started": "now"}, fh)
+elif cmd == "release" and os.path.exists(path):
+    os.remove(path)
+with open(path + ".calls", "a") as fh:
+    fh.write(cmd + "\\n")
+'''
+
+
+def release_by_cases(tmp, dj):
+    """A device's release_by (schedule.json "HH:MM", design §11): the deadline is the first such time after the
+    invocation began; the week is done only when every run of the plan (the set or each of its halves, each extra
+    file) has an admitted session since Monday; before the hold the anchor phase and the first payload run must
+    fit (else TooLate: auto passes the device over), the whole set gives way to the halves when only they fit, and
+    a run expected to end past release_by is not started. A real sitting against a fake bench and hold tool in a
+    temp ROOT: the runs before the cut run, the hold is given back, the ledger reason names the runs left; the
+    next sitting runs those under a fresh campaign name and the week is then done."""
+    print("--- release_by: the deadline, the week's plan, the cut before a run, the pass-over, the carry-over")
+    D = datetime.datetime
+    at2 = D(2026, 11, 2, 2, 0)
+    dl = [dj.release_deadline({"release_by": "08:00"}, t) for t in (at2, D(2026, 11, 2, 5, 30), D(2026, 11, 2, 13, 0),
+                                                                    D(2026, 11, 2, 8, 0))]
+    over = [dj.release_deadline({"release_by": "08:00"}, at2, "none"), dj.release_deadline({}, at2, "06:30"),
+            dj.release_deadline({}, at2)]
+    ok(dl == [D(2026, 11, 2, 8, 0), D(2026, 11, 2, 8, 0), D(2026, 11, 3, 8, 0), D(2026, 11, 3, 8, 0)]
+       and over == [None, D(2026, 11, 2, 6, 30), None],
+       f"release_deadline: the first release_by after the start (02:00, 05:30 -> that morning; 13:00, 08:00 -> the "
+       f"next); --release-by none lifts it, HH:MM sets it; no release_by, none ({dl}; {over})")
+    refused = []
+    for v in ("8:00", "24:00", "08:60", "0800"):
+        try:
+            dj.check_release_by({"devices": {"x": {"release_by": v}}})
+        except ValueError:
+            refused.append(v)
+    with open(dj.SCHEDULE) as fh:
+        real = json.load(fh)
+    try:
+        dj.check_release_by(real)
+        real_bad = None
+    except ValueError as e:
+        real_bad = str(e)
+    held = {k: d.get("release_by") for k, d in real["devices"].items() if d.get("release_by")}
+    ok(refused == ["8:00", "24:00", "08:60", "0800"] and real_bad is None and held
+       and all(real["devices"][k].get("hold") and real["devices"][k]["platform"] in ("android", "iphone") for k in held),
+       f"check_release_by: HH:MM only; schedule.json's release_by parse, each on a device with a hold ({held})")
+
+    rdir = os.path.join(tmp, "release-by")
+    os.makedirs(rdir)
+
+    def cells(name, *rows):
+        path = os.path.join(rdir, name)
+        with open(path, "w") as fh:
+            fh.write("\n".join(rows) + "\n")
+        return path
+    anchor = "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf"
+    setf = cells("rb-set.cells", anchor, "android llama.cpp m/A short-chat", "android llama.cpp m/B short-chat")
+    h1 = cells("rb-set-android-h1.cells", anchor, "android llama.cpp m/A short-chat")
+    h2 = cells("rb-set-android-h2.cells", anchor, "android llama.cpp m/B short-chat")
+    xf = cells("rb-x-android-x.cells", anchor, "android llama.cpp m/C short-chat")
+    sx = {"platform": "android", "display": "Fake X", "identifier": "FakeX", "serial": "FAKE-X", "cpu_mask": "",
+          "hold": os.path.join(rdir, "hold_x"), "storage_gb_full": 100, "timeout_hours": 6,
+          "split": [{"cells": h1, "min_free_gb": 1}, {"cells": h2, "min_free_gb": 1}],
+          "extra_cells": [{"cells": xf, "tag": "x", "min_free_gb": 1, "timeout_hours": 1}]}
+    sched = {"anchors": "matrices/anchors.cells", "cells": setf, "devices": {"sx": sx}}
+
+    # the week's plan (plan_left): what a session covers is the file its SESSION.json names
+    now = datetime.datetime.now().astimezone().replace(hour=2, minute=0, second=0, microsecond=0)
+    monday = dj.week_start(now)
+    def camp(tag):
+        return f"results/raw/w-dashboard-v1-sx-{tag}-android"
+    names = {camp("set"): setf, camp("h1"): h1, camp("h2"): h2, camp("x"): xf,
+             camp("slot"): os.path.join(rdir, "slot.cells")}
+
+    def left(*tags, old=()):
+        camps, old = [camp(t) for t in tags], [camp(t) for t in old]
+        sess = [(now - datetime.timedelta(minutes=10), c) for c in camps]
+        sess += [(now - datetime.timedelta(days=8), c) for c in old]
+        return dj.plan_left(sched, sx, sess, names, monday)
+    got = {"none": left(), "set": left("set"), "h1": left("h1"), "all": left("h1", "h2", "x"),
+           "hand": left("byhand"), "slot": left("slot"), "last week": left(old=("set", "x"))}
+    ok(got["none"] == {"set": "whole", "extras": [xf]} and got["set"] == {"set": None, "extras": [xf]}
+       and got["h1"] == {"set": [h2], "extras": [xf]} and got["all"] == {"set": None, "extras": []}
+       and got["hand"] == {"set": None, "extras": []} and got["slot"] == got["none"] and got["last week"] == got["none"],
+       f"plan_left: nothing this week = the set and the extra; the set's file covers the set; a half itself; all "
+       f"halves and the extra = done; a hand run (no SESSION.json) the whole plan; a --cells slot file nothing; last "
+       f"week's sessions nothing ({got})")
+    ok(dj.left_tags(sx, got["none"]) == ["set", "x"] and dj.left_tags(sx, got["h1"]) == ["h2", "x"],
+       "left_tags names the runs left by their campaign tags")
+
+    # the week count in auto: a device with runs left is a candidate and its report names them
+    with open(os.path.join(tmp, "state", "devices.txt"), "w") as fh:
+        fh.write("FAKE-X\nFAKE-Y\n")
+    real_pgrep = dj.pgrep
+    dj.pgrep = lambda pattern: []
+
+    def row(tag, **ago):
+        t = (now - datetime.timedelta(**ago)).astimezone(datetime.timezone.utc)
+        return {"campaign": camp(tag), "platform": "android", "timestamp": t.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "device": "FakeX"}
+    states = []
+    for rows in ([row("h1", minutes=30)], [row("h1", minutes=30), row("h2", minutes=20), row("x", minutes=10)],
+                 [row("slot", minutes=30)], [row("byhand", minutes=30)]):
+        k, _, rep = dj.resolve_device(sched, "auto", now=now, rows=rows, admitted={}, retakes={}, skip=set(),
+                                      session_cells=names)
+        states.append((k, rep[0]["state"], rep[0]["detail"]))
+    ok(states[0][:2] == ("sx", "candidate") and states[0][2].endswith("; h2, x pending this week")
+       and states[1][1] == "done" and states[2][:2] == ("sx", "candidate") and states[3][1] == "done",
+       f"resolve_device: half h1 admitted this week = still a candidate, h2 and x named; every run = done; a --cells "
+       f"slot session = still a candidate; a hand run = done ({states})")
+
+    # the job logs the estimate reads lengths from: the anchors 10 min, the whole set 8 h, h1 1 min, h2 4 h, x 3 h
+    def history_log(key):
+        t, lines = D(2026, 10, 1, 2, 0), []
+        for f, minutes in (("matrices/anchors.cells", 10), (setf, 480), (h1, 1), (h2, 240), (xf, 180)):
+            lines.append(f"[{t:%Y-%m-%d %H:%M:%S}] $ gtimeout --kill-after=60 9000 /x/bench matrix {f} --platform "
+                         f"android --campaign c   env: ")
+            t += datetime.timedelta(minutes=minutes)
+            lines.append(f"[{t:%Y-%m-%d %H:%M:%S}] bench matrix exit 0")
+        with open(os.path.join(dj.LOG_DIR, f"2026-10-01-{key}.log"), "w") as fh:
+            fh.write("\n".join(lines) + "\n")
+    for k in ("sx", "sw", "sy"):
+        history_log(k)
+
+    def at_hhmm(**ahead):
+        return (datetime.datetime.now() + datetime.timedelta(**ahead)).strftime("%H:%M")
+
+    def dry(dev_key, dev, release_by, **kw):
+        args = argparse.Namespace(suffix=None, dry_run=True, cells=None, part=None, release_by=release_by,
+                                  started_at=datetime.datetime.now(), **kw)
+        buf = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buf):
+                code, reason, _, dirs = dj.attempt(dict(sched, devices={dev_key: dev}), dev_key, dev, 1, args)
+        except dj.TooLate as e:
+            return "late", str(e), [], buf.getvalue()
+        return code, reason, dirs, buf.getvalue()
+
+    def matrix(text, f):
+        return any(f"bench matrix {f} --platform android" in ln for ln in text.splitlines())
+    real_rows, real_adm, real_cells = dj.load_rows, dj.load_admission, dj.load_session_cells
+    dj.load_rows, dj.load_admission, dj.load_session_cells = (lambda path=None: []), (lambda: {}), (lambda: {})
+    dj.HOLD_KEEPER = None
+    try:
+        # a dry run: anchor ~20 min, h1 ~10 min, h2 4 h fit in 5 h; x (3 h) does not
+        code, reason, dirs, text = dry("sx", sx, at_hhmm(hours=5))
+        base = f"{datetime.date.today().isoformat()}-dashboard-v1-sx"
+        cut_line = next((ln for ln in text.splitlines() if "x (~3h00m) would end" in ln), "")
+        ok(code == dj.EXIT_OK and matrix(text, h1) and matrix(text, h2) and not matrix(text, xf)
+           and "not started; the sitting closes with the runs it finished and gives the hold back; left for a later "
+               "firing this week: x [dry-run]" in cut_line
+           and dirs == [f"results/raw/{base}-{t}-android" for t in ("anchor", "h1", "h2")]
+           and reason.endswith("release_by " + at_hhmm(hours=5) + ": not started, left for a later firing this week: x"),
+           f"a dry run with release_by 5 h ahead: h1 and h2 run, x is not started (the cut line, the dirs, the reason: "
+           f"{cut_line.strip()[:150]}; {reason})")
+        eta_line = next((ln for ln in text.splitlines() if "the hold would read expected_release" in ln), "")
+        ok("x not started, left for a later firing" in eta_line and " x ~" not in eta_line,
+           f"the hold's estimate ends with the runs before the cut and names x: {eta_line.strip()[-120:]}")
+        # the whole set gives way to its halves: free 60 GB above storage_gb_full 28 runs the set whole, 8 h
+        sw = dict(sx, storage_gb_full=28, hold=os.path.join(rdir, "hold_w"))
+        code, reason, dirs, text = dry("sw", sw, at_hhmm(hours=5))
+        ok(code == dj.EXIT_OK and "running its storage halves instead" in text and matrix(text, h1)
+           and not matrix(text, setf) and "running 2 halves with model rotation: the whole set would end past" in text,
+           f"the whole set (~8 h) would end past release_by: the halves run instead (exit {code}, {reason})")
+        code, reason, dirs, text = dry("sw", sw, "none")
+        ok(code == dj.EXIT_OK and matrix(text, setf) and not matrix(text, h1) and "release_by" not in text,
+           "--release-by none: the whole set, no release_by line")
+        # nothing fits: TooLate before the hold
+        code, why, dirs, text = dry("sx", sx, at_hhmm(minutes=10))
+        ok(code == "late" and "nothing started" in why and "bench matrix" not in text,
+           f"release_by 10 min ahead: the anchor phase and h1 do not fit — TooLate before the hold, no run ({why})")
+        # carry-over: h1 admitted this week -> h2 and x run, nothing else
+        dj.load_rows = lambda path=None: [row("h1", minutes=30)]
+        dj.load_session_cells = lambda: {camp("h1"): h1}
+        code, reason, dirs, text = dry("sx", sx, "none")
+        ok(code == dj.EXIT_OK and "the week's plan: h2, x left by this week's earlier sittings" in text
+           and matrix(text, h2) and matrix(text, xf) and not matrix(text, h1) and not matrix(text, setf)
+           and "running the halves this week's earlier sittings left (h2), with model rotation" in text,
+           f"the next sitting of the week runs what is left (h2, x), not h1, not the whole set (exit {code})")
+    finally:
+        dj.load_rows, dj.load_admission, dj.load_session_cells = real_rows, real_adm, real_cells
+
+    # auto passes a device whose release_by leaves no room over for the next candidate, and polls it no more
+    sy = dict(sx, identifier="FakeY", serial="FAKE-Y", hold=os.path.join(rdir, "hold_y"))
+    sched_auto = os.path.join(rdir, "schedule-auto.json")
+    with open(sched_auto, "w") as fh:
+        json.dump(dict(sched, devices={"sx": dict(sx, release_by=at_hhmm(minutes=10)), "sy": sy}), fh)
+    real_rows, real_adm, real_cells = dj.load_rows, dj.load_admission, dj.load_session_cells
+    dj.load_rows, dj.load_admission, dj.load_session_cells = (lambda path=None: []), (lambda: {}), (lambda: {})
+
+    def job(sched_path, *argv):
+        buf = io.StringIO()
+        saved = sys.argv
+        sys.argv = ["dashboard_job.py", *argv, "--schedule", sched_path]
+        try:
+            with contextlib.redirect_stdout(buf):
+                code = dj.main()
+        finally:
+            sys.argv = saved
+        return code, buf.getvalue().splitlines()
+    try:
+        code, lines = job(sched_auto, "auto", "--dry-run", "--no-ddp", "--no-retake")
+    finally:
+        dj.load_rows, dj.load_admission, dj.load_session_cells = real_rows, real_adm, real_cells
+    i_late = next((i for i, ln in enumerate(lines) if "TOO LATE: release_by" in ln), None)
+    i_sy = next((i for i, ln in enumerate(lines) if "auto chose sy" in ln), None)
+    rep = [ln for ln in lines if ln.split("] ", 1)[-1].strip().startswith("sx ")]
+    ok(code == dj.EXIT_OK and i_late is not None and i_sy is not None and i_late < i_sy
+       and any("waiting" in ln and "release_by" in ln for ln in rep),
+       f"auto: sx's release_by 10 min ahead leaves no room — passed over (waiting), sy chosen (exit {code})")
+
+    # a real sitting in a temp ROOT (fake bench, hold tool, adb): h1 runs, h2 would end past release_by 2 h ahead
+    froot = os.path.join(tmp, "rb-root")
+    os.makedirs(os.path.join(froot, "results", "raw"))
+    with open(os.path.join(froot, "bench"), "w") as fh:
+        fh.write(FAKE_MATRIX_BENCH)
+    os.chmod(os.path.join(froot, "bench"), 0o755)
+    cli = os.path.join(rdir, "hold_cli.py")
+    with open(cli, "w") as fh:
+        fh.write(FAKE_HOLD_CLI)
+    gt = os.path.join(tmp, "bin", "gtimeout")   # GNU coreutils' name on macOS; CI has none
+    with open(gt, "w") as fh:
+        fh.write("#!/bin/sh\nshift 2\nexec \"$@\"\n")
+    os.chmod(gt, 0o755)
+    sched_real = os.path.join(rdir, "schedule-real.json")
+    with open(sched_real, "w") as fh:
+        json.dump(dict(sched, hold_cli=cli, devices={"sx": sx}), fh)
+    made = []
+
+    def rows_now(path=None):
+        """the summary's rows of the payload dirs the fake bench made (a record each, now)"""
+        out = []
+        for d in sorted(os.listdir(os.path.join(froot, "results", "raw"))):
+            if "-anchor-" not in d and os.path.exists(os.path.join(froot, "results", "raw", d, "SESSION.json")):
+                t = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                out.append({"campaign": f"results/raw/{d}", "platform": "android", "timestamp": t, "device": "FakeX",
+                            "runtime": "llama.cpp", "model_id": "m/A", "task": "short-chat"})
+        return out
+    real = (dj.ROOT, dj.load_rows, dj.load_admission, dj.admit)
+    dj.ROOT, dj.load_rows, dj.load_admission = froot, rows_now, (lambda: {})
+    dj.admit = lambda schedule, dev, rel, platform: (True, "anchor nominal (selftest)", {"anchors": []})
+    try:
+        code1, lines1 = job(sched_real, "sx", "--once", "--no-post", "--no-retake", "--release-by", at_hhmm(hours=2))
+        dj._unlock(".job.lock.sx")      # main() keeps its device lock to the process's end
+        calls1 = open(os.path.join(froot, "calls.txt")).read().split("\n")
+        hold_gone = not os.path.exists(sx["hold"])
+        hold_calls = open(sx["hold"] + ".calls").read().split()
+        led = open(os.path.join(dj.LOG_DIR, "ledger.tsv")).read().splitlines()[-1].split("\t")
+        base = f"{datetime.date.today().isoformat()}-dashboard-v1-sx"
+        s1 = json.load(open(os.path.join(froot, "results", "raw", f"{base}-h1-android", "SESSION.json")))
+        post = next((ln for ln in lines1 if "post: $ " in ln), "")
+        made = [c.split()[0] for c in calls1 if c]
+        ok(code1 == dj.EXIT_OK and made == ["matrices/anchors.cells", h1] and hold_gone and hold_calls == ["acquire", "release"]
+           and led[2:5] == ["sx", f"results/raw/{base}-h1-android", "OK"]
+           and led[5].endswith("not started, left for a later firing this week: h2, x")
+           and s1.get("release_by") and s1.get("cells") == h1
+           and post.endswith(f" {dj.POST} results/raw/{base}-anchor-android results/raw/{base}-h1-android   "
+                             "[--no-post: printed, not run; a person runs it after review]"),
+           f"a real sitting: the anchor phase and h1 run, h2 (~4 h) is not started, the hold is given back, the ledger "
+           f"reason names h2 and x, SESSION.json carries release_by, the post is over anchor + h1 (exit {code1}; {made}; "
+           f"{led[5][-80:]})")
+        # the next sitting the same day: the runs left, under the next free campaign name (-r2)
+        code2, lines2 = job(sched_real, "sx", "--once", "--no-post", "--no-retake", "--release-by", "none")
+        dj._unlock(".job.lock.sx")
+        calls2 = [c.split() for c in open(os.path.join(froot, "calls.txt")).read().split("\n") if c][len(made):]
+        ok(code2 == dj.EXIT_OK and [c[0] for c in calls2] == ["matrices/anchors.cells", h2, xf]
+           and [c[1] for c in calls2] == [f"{base}-r2-anchor", f"{base}-r2-h2", f"{base}-r2-x"]
+           and any("is on disk from an earlier sitting today" in ln for ln in lines2),
+           f"the next sitting runs h2 and x only, under {base}-r2 (the day's first campaign is on disk): {calls2}")
+        k, _, rep = dj.resolve_device(dict(sched, devices={"sx": sx}), "auto", rows=rows_now(), admitted={},
+                                      retakes={}, skip=set())
+        ok(rep[0]["state"] == "done", f"after both sittings the week is done: {rep[0]['state']} ({rep[0]['detail']})")
+    finally:
+        dj.ROOT, dj.load_rows, dj.load_admission, dj.admit = real
+        dj.pgrep, dj.NO_POST = real_pgrep, False
+        for s in ("FAKE-X", "FAKE-Y"):
+            lock = f"/tmp/edge-llm-bench-android-{s}.lock"   # the preflight's campaign-lock probe
+            if os.path.exists(lock):
+                os.remove(lock)
 
 
 if __name__ == "__main__":

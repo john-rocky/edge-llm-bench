@@ -880,3 +880,92 @@ selftest pins it), minutes from the release at 12:47:58:
 
 Before round 3 the time is early by the gate's re-runs, which no line names
 yet (58 min that day); the basis says they may come.
+
+## 11. Giving the device back by a time: release_by (2026-10-31)
+
+A device with `release_by` in schedule.json (`"HH:MM"`, local time) gets its
+hold back by the first such time after the firing began. Set on the Galaxy
+S26 and the Pixel 8a, both 08:00; the reason is `_release_by_doc` in
+schedule.json.
+
+Why: on 2026-10-26 a sibling lane queued for the S26 at 07:30 and got it at
+12:48, 317 min later, when the 02:00 sitting (10.8 h) gave the hold back.
+The sibling lanes' keeper logs of 2026-10-23..31 (303 keeper runs, 182 on
+the S26's hold, 121 on the Pixel 8a's) show the morning lanes arriving from
+about 07:30; that was the one wait behind a dashboard sitting.
+
+What the job does (`scripts/dashboard_job.py`):
+
+- Before the hold (`window_plan`): the anchor phase and the first payload
+  run must be expected to end by release_by. If not, nothing starts and no
+  hold is taken (`TooLate`): `auto` passes the device over for this firing
+  (state `waiting`, not polled again) and takes the next candidate; a device
+  named by key exits 3; an abort retry that no longer fits keeps the abort's
+  verdict.
+- The whole set gives way to the storage halves when it would end past
+  release_by and the device has halves: the same rows, one session each, so
+  the sitting can stop between them.
+- Before each later run (a half, an extra file): a run expected to end past
+  release_by is not started, nor any run after it. A run under way is never
+  stopped, so the overshoot is at most that run's estimate error. The gate's
+  re-runs happen inside their run (`run_campaign.py`), so they count toward
+  its length and are never a cut point. The length tested is
+  `hold_eta.Sitting.start_length`: the launches the run's rows owe, or its
+  newest whole length in the job logs when that is longer (a median would
+  mix set versions).
+- The sitting closes with the runs it finished. The ledger reason names the
+  runs left (`release_by 08:00: not started, left for a later firing this
+  week: b2, ort, npu`), each payload SESSION.json carries `release_by`, and
+  the post step judges the dirs it wrote. When no payload run fits after the
+  anchor phase (the anchor overran its estimate), the sitting exits 3 and
+  posts nothing.
+- The hold's estimate (§10) ends with the runs before the cut and names the
+  rest.
+
+The week count: a device's week is done only when every run of its plan has
+an admitted session since Monday 00:00 local, meaning the whole set or each
+storage half, plus each extra file (`plan_left`). What a session covers is
+the cells file its SESSION.json names: the set file covers the whole set, a
+half or an extra file covers itself, and a hand run with no SESSION.json
+covers the whole plan, as before. A `--cells` file (a slot or a by-hand
+retake) covers nothing. Before this change any admitted `-dashboard-v1-`
+session completed the week. Retakes still do not count, and the Mac's parts
+rule (§3, 2026-10-28) is unchanged.
+
+Carry-over: the next sitting of the week runs only the runs left
+(`sitting_left`). Rotation drops the copies of every other half of the
+device, also the halves that earlier sittings ran. `auto` reports the device
+as `last admitted …; b2, ort, npu pending this week`. A second sitting on the
+same day takes the campaign name `…-r2` (then `-r3`, …) when that day's dirs
+are on disk, because admission pools the rows of one campaign name.
+Admission is unchanged: each sitting is judged on its own anchor, with the
+same thermal and collapse lines. A run that is not admitted stays pending
+and runs again at a later firing, as a whole sitting that was not admitted
+did before. So does an extra file skipped for a missing side build; a
+firing that finds only that file left reports the device not ready (exit 5)
+until the side build is back on the phone.
+
+With the newest run lengths in the job logs, the S26's week takes two
+sittings from 02:00: a + b1 (hold back about 07:40) and b2 + ort + npu
+(about 06:40). The Pixel 8a's takes one (about 07:20). With the Pixel 11
+Pro's one, the iPhone 18 Pro's one at 05:30 and the Mac's two parts, the
+week fills 6 of the 7 nights. Not covered: the Pixel 11 Pro and the iPhone
+18 Pro (one long run each, no halves, no keeper log names their holds), the
+Mac (no device hold; its window is `quiet_lock`), the lab units (no hold),
+and the iPhone 17 Pro (by hand only).
+
+By hand: `./bench dashboard-job <key> --release-by HH:MM` sets another time
+for one invocation, and `--release-by none` lifts it. A dry run logs the cut
+line: `--dry-run` takes no hold and starts nothing, but its preflight runs
+adb on the phone.
+
+Check on the device: the first sitting this changes is the S26's first from
+Monday 2026-11-02 (auto takes the device whose last admitted session is the
+oldest; the Mac, when its window is free, may come first). Started at 02:00
+it should run a + b1, give the hold back about 07:40, and leave b2, ort and
+npu for a later firing that week; at 05:30 neither the S26 nor the Pixel 8a
+has room before 08:00 for its anchor phase and a first run, and auto passes
+it over. The day's auto log (`logs/dashboard-job/<date>-auto.log`) names the
+device each firing took; the S26's log (`logs/dashboard-job/<date>-s26.log`)
+shows the `release_by` lines, and the ledger reason names the runs left; the
+S26's second sitting that week runs them.

@@ -22,7 +22,17 @@ firing per part: a sitting runs one part, the first in the week's order with no
 admitted session since Monday, and the week is done when every part has one (a
 session whose SESSION.json names another cells file — the whole set, a --cells
 file, a hand run — covers every part, as it covers a device without parts);
---part TAG runs a given part by hand. The sitting itself does only what a careful
+--part TAG runs a given part by hand. A device without parts is done for the week when every run
+of its weekly plan has an admitted session since Monday: the set (its file, or each of its storage
+halves) and each extra file; a session counts for the file its SESSION.json names, a hand run with
+no SESSION.json for the whole plan, a --cells file (a slot, a coverage run) for none of it. A device
+with a release_by (schedule.json, "HH:MM" local; docs/dashboard-recurring-job-v1.md §11) gives its
+hold back by the first such time after the firing began: before the hold, the anchor phase and the
+first payload run must be expected to end by then (else the device is passed over this firing, as
+TooLate; the whole set gives way to the storage halves when only they fit); before each later run,
+a run expected to end past it is not started, and the sitting closes with the runs it finished. The
+runs left over run at a later firing of the week; a run under way is never stopped. --release-by
+HH:MM|none sets or lifts it for one invocation. The sitting itself does only what a careful
 operator did by hand for the first pass, in this order:
 
   preflight   device attached / unlocked / not held by a sibling lane / no foreign
@@ -171,6 +181,11 @@ class NotReady(Exception):
 
 class ConfigError(Exception):
     """The invocation cannot run as given (exit 2)."""
+
+
+class TooLate(Exception):
+    """The sitting's first runs would end past the device's release_by: nothing started, no hold taken;
+    `auto` passes the device over for this firing, a device by key exits 3."""
 
 
 # --hold-held-by: the pid that took the device hold for this sitting (None = the job takes it)
@@ -729,6 +744,30 @@ def check_parts(schedule):
                              "payload file)")
 
 
+RELEASE_BY_RE = re.compile(r"^([01]\d|2[0-3]):([0-5]\d)$")
+
+
+def check_release_by(schedule):
+    """ValueError when a device's release_by is not "HH:MM" (local, 24 h)."""
+    for key, dev in (schedule.get("devices") or {}).items():
+        v = dev.get("release_by")
+        if v is not None and not RELEASE_BY_RE.match(str(v)):
+            raise ValueError(f"devices.{key}.release_by: \"HH:MM\" local time, not {v!r}")
+
+
+def release_deadline(dev, start, override=None):
+    """When a sitting of `dev` in an invocation begun at `start` (naive local time) gives its hold back: the
+    first release_by (schedule.json "HH:MM", local) after `start`, so a firing's busy polls, its abort
+    retry and its retake sitting keep that morning's time; --release-by (`override`) "HH:MM" replaces it,
+    "none" lifts it. None when neither sets one."""
+    text = dev.get("release_by") if override is None else override
+    if not text or str(text).lower() == "none":
+        return None
+    m = RELEASE_BY_RE.match(str(text))
+    t = start.replace(hour=int(m.group(1)), minute=int(m.group(2)), second=0, microsecond=0)
+    return t if t > start else t + datetime.timedelta(days=1)
+
+
 def part_budget(dev, part):
     """A sitting's expected length in seconds for the hold's release estimate: the part's
     expected_hours, else the device's; None when neither is set."""
@@ -775,23 +814,33 @@ def parts_problem(schedule, dev):
             + (f"; {twice} in two parts" if twice else ""))
 
 
-def phase_b_files(schedule, dev, cells_override):
+def phase_b_files(schedule, dev, cells_override, left=None):
     """The cells files phase B may run: an explicit --cells file alone (a targeted retake), or
     the whole set and the device's storage halves (the free space decides which) followed by
-    its extra files."""
+    its extra files; with `left` (sitting_left: earlier sittings this week ran the rest), only the
+    runs it names."""
     if cells_override:
         return [cells_override]
-    return ([schedule["cells"]] + [h["cells"] for h in dev.get("split", [])]
-            + [e["cells"] for e in dev.get("extra_cells", [])])
+    if left is None:
+        return ([schedule["cells"]] + [h["cells"] for h in dev.get("split", [])]
+                + [e["cells"] for e in dev.get("extra_cells", [])])
+    rest = ([] if left["set"] is None else list(left["set"]) if isinstance(left["set"], list)
+            else [schedule["cells"]] + [h["cells"] for h in dev.get("split", [])])
+    return rest + [e["cells"] for e in dev.get("extra_cells", []) if e["cells"] in left["extras"]]
 
 
 def phase_b_halves(dev, args, info):
     """The storage halves phase B runs (schedule.json "split"), or None for the whole set: halves when
-    the phone's free space (preflight's free_gb) is under storage_gb_full; never for an explicit
-    --cells file (single-file mode, a targeted retake: design §5)."""
+    the phone's free space (preflight's free_gb) is under storage_gb_full, or when the whole set would end
+    past the device's release_by and the halves fit (info window_halves: window_plan); the halves still to
+    run this week when earlier sittings ran the others (args.week_left, sitting_left), and none when they
+    ran the set; never for an explicit --cells file (single-file mode, a targeted retake: design §5)."""
     if dev["platform"] == "android" and dev.get("split") and not args.cells:
+        left = getattr(args, "week_left", None)
+        if left is not None and left["set"] != "whole":
+            return [h for h in dev["split"] if h["cells"] in (left["set"] or [])] or None
         free = info.get("free_gb")
-        if free is not None and free < float(dev.get("storage_gb_full", 0)):
+        if (free is not None and free < float(dev.get("storage_gb_full", 0))) or info.get("window_halves"):
             return dev["split"]
     return None
 
@@ -799,12 +848,19 @@ def phase_b_halves(dev, args, info):
 def phase_b_plan(schedule, dev, args, halves):
     """(the payload files with their storage floors in order, the extra files' entries by file):
     the halves or the whole set (an explicit --cells file alone; the sitting's part, args.part_entry,
-    on a device whose set is in parts), then the device's extra_cells files (an arm measured on this
-    device only), none for --cells."""
+    on a device whose set is in parts; none when this week's sittings ran the set, args.week_left), then
+    the device's extra_cells files (an arm measured on this device only) still to run this week, none
+    for --cells."""
     part = getattr(args, "part_entry", None)
-    plan = ([(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
-            if halves else [(args.cells or (part["cells"] if part else schedule["cells"]), 0.0)])
-    extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])}
+    left = None if args.cells else getattr(args, "week_left", None)
+    if halves:
+        plan = [(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
+    elif left is not None and left["set"] != "whole":
+        plan = []
+    else:
+        plan = [(args.cells or (part["cells"] if part else schedule["cells"]), 0.0)]
+    extras = {} if args.cells else {e["cells"]: e for e in dev.get("extra_cells", [])
+                                    if left is None or e["cells"] in left["extras"]}
     return plan, extras
 
 
@@ -839,12 +895,13 @@ def sitting_runs(schedule, dev, args, info):
     return runs
 
 
-def release_estimate(schedule, key, dev, args, info, hold, dry):
+def release_estimate(schedule, key, dev, args, info, hold, dry, deadline=None):
     """The sitting's hold release estimate (scripts/hold_eta.py, docs/dashboard-recurring-job-v1.md
     §10) -> a hold_eta.HoldNote that keeps expected_release / release_basis / release_updated in the
     hold as the sitting moves, or None. The job writes only into a hold it took itself, never a
     keeper's (--hold-held-by); a dry run logs what the hold would read and writes nothing. A retake
-    sitting the weekly set follows says so in the basis (that set takes a new hold). Nothing here
+    sitting the weekly set follows says so in the basis (that set takes a new hold). With the device's
+    release_by (`deadline`, §11) the time ends with the runs expected to end by then. Nothing here
     stops a sitting: a failure is one WARN line and no estimate."""
     try:
         now = datetime.datetime.now()
@@ -855,17 +912,21 @@ def release_estimate(schedule, key, dev, args, info, hold, dry):
         budget = part_budget(dev, getattr(args, "part_entry", None))
         stages = hold_eta.plan_stages(sitting_runs(schedule, dev, args, info), dev, key, lengths,
                                       platform_token=token, budget_s=None if args.cells else budget)
-        sitting = hold_eta.Sitting(stages, lengths)
+        sitting = hold_eta.Sitting(stages, lengths, deadline=deadline)
         then = None
         if getattr(args, "weekly_follows", False):
             wargs = argparse.Namespace(**dict(vars(args), cells=None, profile=False))
             wargs.part_entry = sitting_part(schedule, key, dev, wargs)[0]
+            wargs.week_left = sitting_left(schedule, key, dev, wargs)
             weekly = hold_eta.Sitting(hold_eta.plan_stages(sitting_runs(schedule, dev, wargs, info), dev, key,
                                                            lengths, platform_token=token,
-                                                           budget_s=part_budget(dev, wargs.part_entry)), lengths)
-            weta, _ = weekly.estimate(now)
+                                                           budget_s=part_budget(dev, wargs.part_entry)), lengths,
+                                      deadline=deadline)
+            # from when this sitting is expected to end: the weekly set's runs meet release_by from there
+            mine, _ = sitting.estimate(now)
+            weta, _ = weekly.estimate(mine)
             then = (f"then the weekly set as its own sitting (a new hold), "
-                    f"~{hold_eta.fmt_span((weta - now).total_seconds())}")
+                    f"~{hold_eta.fmt_span((weta - mine).total_seconds())}")
         if dry or not hold or not _LOG:
             if dry:
                 eta, basis = sitting.estimate(now)
@@ -880,6 +941,67 @@ def release_estimate(schedule, key, dev, args, info, hold, dry):
     except Exception as e:  # noqa: BLE001 — the estimate never stops a sitting
         log(f"WARN hold release estimate off for this sitting: {type(e).__name__}: {e}")
         return None
+
+
+def run_start_test(sitting, cells_file, at, profile=False):
+    """(seconds the run of `cells_file` is taken to need, the time it would end) when it starts at `at`, for
+    the release_by test: hold_eta.Sitting.start_length of its stage (the launches its rows owe, or its newest
+    whole length on record when longer: the gate's re-runs are inside a run, counted, never a cut point),
+    with the retake profile pair that follows it; (None, None) when the sitting has no such stage."""
+    st = next((s for s in sitting.stages if s.kind == "matrix" and s.cells == cells_file
+               and s.start is None and not s.skipped), None)
+    if st is None:
+        return None, None
+    own = sitting.own_lengths()
+    need = sitting.start_length(st, own)
+    if profile:
+        need += sum(sitting.start_length(p, own) for p in sitting.stages
+                    if p.kind == "profile" and p.cells == cells_file and p.start is None)
+    return need, at + datetime.timedelta(seconds=need)
+
+
+def window_plan(schedule, key, dev, args, info, deadline, now=None):
+    """Before the hold, a sitting of a device with a release_by (`deadline`, release_deadline) -> the
+    hold_eta.Sitting of its runs, which the cut between runs reads where the hold's own estimate is not
+    kept (a dry run, a failed estimate). The whole set gives way to the storage halves (info window_halves)
+    when it would end past the deadline after the anchor phase and the device has halves: the same rows,
+    one session each, so a sitting can stop between them. TooLate when the anchor phase and the first
+    payload run would not end by then: no hold, nothing runs (docs/dashboard-recurring-job-v1.md §11)."""
+    now = now or datetime.datetime.now()
+    lengths = hold_eta.history(LOG_DIR, key)
+    budget = None if args.cells else part_budget(dev, getattr(args, "part_entry", None))
+
+    def sitting():
+        return hold_eta.Sitting(hold_eta.plan_stages(sitting_runs(schedule, dev, args, info), dev, key, lengths,
+                                                     platform_token=PLATFORM_TOKEN[dev["platform"]], budget_s=budget),
+                                lengths, deadline=deadline)
+
+    def first_of(s):
+        return next((st for st in s.stages[1:] if st.kind == "matrix"), None)
+    s = sitting()
+    anchor_s = s.start_length(s.stages[0])
+    after_anchor = now + datetime.timedelta(seconds=anchor_s)
+    first = first_of(s)
+    if (first is not None and first.cells == schedule["cells"]
+            and phase_b_halves(dev, args, dict(info, window_halves=True))):
+        need, end = run_start_test(s, first.cells, after_anchor)
+        if end > deadline:
+            info["window_halves"] = True
+            log(f"release_by {deadline:%F %H:%M}: the whole set (~{hold_eta.fmt_span(need)}) would end "
+                f"{end:%H:%M} after the anchor phase — running its storage halves instead (the same rows, one "
+                "session each, so the sitting can stop between them)")
+            s = sitting()
+            first = first_of(s)
+    if first is None:
+        return s
+    need, end = run_start_test(s, first.cells, after_anchor,
+                               profile=getattr(args, "profile", False) and dev["platform"] == "android")
+    if end > deadline:
+        raise TooLate(f"release_by {deadline:%F %H:%M}: the anchor phase (~{hold_eta.fmt_span(anchor_s)}) and "
+                      f"{first.tag} (~{hold_eta.fmt_span(need)}) would end {end:%H:%M}; nothing started")
+    log(f"release_by {deadline:%F %H:%M}: the anchor phase and {first.tag} (~{hold_eta.fmt_span(need)}) are "
+        f"expected to end {end:%H:%M}; a later run expected to end past release_by is not started")
+    return s
 
 
 # ---------------------------------------------------------------- holds
@@ -1446,14 +1568,26 @@ def attempt(schedule, key, dev, attempt_no, args):
     suffix = ("-" + args.suffix.strip("-")) if args.suffix else ""   # always one leading dash
     # a device whose weekly set is in parts runs one part per sitting, named in its campaigns
     part, part_why = sitting_part(schedule, key, dev, args)
-    args = argparse.Namespace(**dict(vars(args), part_entry=part))
-    base = (f"{date}-dashboard-v1-{key}" + (f"-{part['tag']}" if part else "") + suffix
-            + (f"-r{attempt_no}" if attempt_no > 1 else ""))
+    # the weekly plan's runs that earlier sittings this week left (a sitting stopped at release_by, §11)
+    left = sitting_left(schedule, key, dev, args)
+    args = argparse.Namespace(**dict(vars(args), part_entry=part, week_left=left))
+    stem = f"{date}-dashboard-v1-{key}" + (f"-{part['tag']}" if part else "") + suffix
+    n = attempt_no
+    # a weekly sitting never runs in a campaign an earlier sitting of the day ran in (its anchor phase's
+    # dir is on disk): admit() would pool both sittings' anchor rows (memory
+    # stopped-sitting-needs-a-new-campaign-name); the next -r<n> is free
+    while not args.cells and os.path.isdir(os.path.join(ROOT, campaign_rel(
+            stem + (f"-r{n}" if n > 1 else "") + "-anchor", platform))):
+        n += 1
+    base = stem + (f"-r{n}" if n > 1 else "")
     env = device_env(dev)
     dry = args.dry_run
     started = time.strftime("%F %T")
     log(f"=== slot {key} ({dev['display']}, {platform}) attempt {attempt_no} campaign base {base}"
         + (" [dry-run]" if dry else ""))
+    if n != attempt_no:
+        log(f"campaign base {base}: {campaign_rel(stem + (f'-r{attempt_no}' if attempt_no > 1 else '') + '-anchor', platform)}"
+            " is on disk from an earlier sitting today")
     if part:
         log(f"part {part['tag']} of the week's parts {'/'.join(p['tag'] for p in device_parts(dev))}: "
             f"{part['cells']}, expected {part.get('expected_hours', '?')} h ({part_why})")
@@ -1461,6 +1595,12 @@ def attempt(schedule, key, dev, attempt_no, args):
         if problem:
             log(f"WARN the parts and {schedule['cells']} differ, the weekly job misses what no part holds: "
                 f"{problem}")
+    if left is not None:
+        log(f"the week's plan: {', '.join(left_tags(dev, left))} left by this week's earlier sittings — "
+            "this sitting runs those")
+    # the device's release_by: the hold is given back by then (§11); never into a keeper's hold
+    deadline = None if HOLD_KEEPER is not None else release_deadline(
+        dev, getattr(args, "started_at", None) or datetime.datetime.now(), getattr(args, "release_by", None))
 
     if HOLD_KEEPER is not None:
         # judged before the preflight, in a dry run too: the preflight's hold check reads
@@ -1469,9 +1609,11 @@ def attempt(schedule, key, dev, attempt_no, args):
         if problem:
             raise ConfigError(f"--hold-held-by {HOLD_KEEPER}: {problem}")
         log(f"--hold-held-by {HOLD_KEEPER}: the keeper holds {expand(dev.get('hold'))}")
-    files = phase_b_files(schedule, dev, args.cells or (part["cells"] if part else None))
+    files = phase_b_files(schedule, dev, args.cells or (part["cells"] if part else None), left)
     info = PREFLIGHT[platform](dev, dry, files)  # raises Busy / NotReady
     log("preflight ok")
+    # before the hold: the anchor phase and the first payload run must end by release_by (TooLate)
+    fit = window_plan(schedule, key, dev, args, info, deadline) if deadline is not None else None
     if dry:
         log("plan:")
     if HOLD_KEEPER is not None:
@@ -1499,7 +1641,10 @@ def attempt(schedule, key, dev, attempt_no, args):
             log(f"free on /data: {info['free_gb']:.1f} GB" if info["free_gb"] is not None
                 else "free on /data: unknown")
         # when the hold is expected back, in the hold itself, rewritten as the sitting moves (§10)
-        eta = release_estimate(schedule, key, dev, args, info, hold, dry)
+        eta = release_estimate(schedule, key, dev, args, info, hold, dry, deadline)
+        # a dry run's clock for the release_by test: each run taken to end when it is expected to
+        clock = (datetime.datetime.now() + datetime.timedelta(seconds=fit.start_length(fit.stages[0]))
+                 if fit is not None and dry else None)
         # --- phase A: the session anchor as its own short campaign
         anchor_camp = f"{base}-anchor"
         anchor_rel = campaign_rel(anchor_camp, platform)
@@ -1537,21 +1682,35 @@ def attempt(schedule, key, dev, attempt_no, args):
         # §5): it names its own rows and never fans out into the storage halves
         halves = phase_b_halves(dev, args, info)
         if halves:
-            log(f"free {info['free_gb']:.1f} GB < {dev['storage_gb_full']} GB for the whole set — "
-                f"running {len(halves)} halves with model rotation")
+            free = info.get("free_gb")
+            if left is not None and left["set"] != "whole":
+                log(f"running the halves this week's earlier sittings left ({', '.join(run_tag(h['cells'], {}) for h in halves)}), "
+                    "with model rotation")
+            elif free is not None and free < float(dev.get("storage_gb_full", 0)):
+                log(f"free {free:.1f} GB < {dev['storage_gb_full']} GB for the whole set — "
+                    f"running {len(halves)} halves with model rotation")
+            else:
+                log(f"running {len(halves)} halves with model rotation: the whole set would end past release_by")
         # per-device extra files (schedule.json "extra_cells": an arm measured on
         # this device only, e.g. the ONNX Runtime GenAI cells on the Galaxy S26):
         # each runs after the set as its own tagged session with its own timeout
         # (the tag: the entry's "tag", else from the file name as for a half);
         # an explicit --cells retake never fans out into them
         plan, extras = phase_b_plan(schedule, dev, args, halves)
-        timeout_s = float(dev.get("timeout_hours", 6)) * 3600 / len(plan)
+        timeout_s = float(dev.get("timeout_hours", 6)) * 3600 / max(len(plan), 1)
         plan += [(f, float(e.get("min_free_gb", 0))) for f, e in extras.items()]
         worst = EXIT_OK
         previous = []
         last_rel = None
         no_build = []
-        for cells_file, floor in plan:
+        cut = []        # the runs release_by left for a later firing (§11)
+
+        def tag_of(cells_file):
+            if halves or cells_file in extras:
+                return run_tag(cells_file, extras)
+            return part["tag"] if part else ("set" if cells_file == schedule["cells"]
+                                             else os.path.basename(cells_file).replace(".cells", ""))
+        for i, (cells_file, floor) in enumerate(plan):
             camp = base
             if halves or cells_file in extras:
                 tag = run_tag(cells_file, extras)
@@ -1564,14 +1723,36 @@ def attempt(schedule, key, dev, attempt_no, args):
                     "'Side builds')")
                 no_build.append(os.path.basename(cells_file))
                 continue
+            if deadline is not None:
+                # release_by (§11): a run expected to end past it is not started, nor any after it;
+                # the run under way was never stopped. The hold's own estimate has read this sitting's
+                # launches; a dry run's clock is the plan's
+                at = clock if dry else datetime.datetime.now()
+                need, end = run_start_test(eta.sitting if eta is not None else fit, cells_file, at,
+                                           profile=getattr(args, "profile", False) and platform == "android")
+                if need is None and eta is not None:
+                    need, end = run_start_test(fit, cells_file, at,
+                                               profile=getattr(args, "profile", False) and platform == "android")
+                if need is None:
+                    log(f"WARN release_by: no estimate of {cells_file}; it runs")
+                elif end > deadline:
+                    cut = [tag_of(f) for f, _ in plan[i:]]
+                    log(f"release_by {deadline:%F %H:%M}: {tag_of(cells_file)} (~{hold_eta.fmt_span(need)}) "
+                        f"would end {end:%H:%M} — not started; the sitting closes with the runs it finished "
+                        f"and gives the hold back; left for a later firing this week: {', '.join(cut)}"
+                        + (" [dry-run]" if dry else ""))
+                    break
+                elif dry:
+                    clock = end
             if halves:
                 free = android_free_gb(dev["serial"]) if not dry else info.get("free_gb")
                 log(f"free before {tag}: {free:.1f} GB (floor {floor:g} GB)" if free is not None
                     else f"free before {tag}: unknown (floor {floor:g} GB)")
                 if free is None or free < floor:
                     # rotate out every OTHER half's copies (last week's leftover
-                    # half included), never this half's own
-                    others = [h["cells"] for h in halves if h["cells"] != cells_file]
+                    # half included), never this half's own: every half of the device, also
+                    # those an earlier sitting this week ran (args.week_left)
+                    others = [h["cells"] for h in dev["split"] if h["cells"] != cells_file]
                     dropped = android_rotate(dev["serial"], others, cells_file, dry)
                     free = android_free_gb(dev["serial"]) if not dry else free
                     log(f"rotated out {len(dropped)} pushed copies; free now "
@@ -1632,6 +1813,8 @@ def attempt(schedule, key, dev, attempt_no, args):
                                      "cells_expected": expected, "cells_with_records": have,
                                      **({"device_lost": lost} if lost else {}),
                                      **({"part": part["tag"]} if part else {}),
+                                     **({"release_by": deadline.strftime("%Y-%m-%d %H:%M")}
+                                        if deadline is not None else {}),
                                      **({"retake": args.retake} if getattr(args, "retake", None) else {}),
                                      **({"profile": {"exit": prof_rc, "dir": f"{rel_path}/profiles"}}
                                         if prof_rc is not None else {}),
@@ -1648,6 +1831,13 @@ def attempt(schedule, key, dev, attempt_no, args):
         reason = "ok" if worst == EXIT_OK else VERDICT_NAME[worst].lower()
         if no_build:
             reason += "; skipped, side build not on the phone: " + ", ".join(no_build)
+        if cut:
+            why = f"release_by {deadline:%H:%M}: not started, left for a later firing this week: {', '.join(cut)}"
+            if last_rel is None:
+                # the anchor phase ran and no payload run fits after it (it overran its estimate):
+                # nothing measured, no post; the device is tried again at a later firing
+                return EXIT_BUSY, f"{why} (no payload run fits after the anchor phase)", anchor_rel, sitting_dirs()
+            reason += f"; {why}"
         return worst, reason, last_rel, sitting_dirs()
     finally:
         if eta is not None:
@@ -2172,6 +2362,62 @@ def sitting_part(schedule, key, dev, args, now=None, rows=None, admitted=None, s
                   f"({covered[part['tag']][0][0]:%F %H:%M})")
 
 
+def plan_left(schedule, dev, sessions, session_cells, monday):
+    """What of a device's weekly plan (a device without parts) has no admitted session since `monday`
+    (`sessions`: device_sessions of the device, newest first; `session_cells`: campaign -> the cells file
+    its SESSION.json names) -> {"set": "whole" (none of it: the sitting runs the set whole or in its
+    storage halves, phase_b_halves) | [its split files still to run, in their order] | None (done),
+    "extras": [its extra files still to run, in their order]}. A session counts for the file its
+    SESSION.json names: the set's file covers the set and its halves, a half or an extra file itself; a
+    hand run with no SESSION.json covers the whole plan, as any admitted session covered the week until
+    2026-10-31; a --cells file (a slot, a coverage run, a retake by hand) covers none of it. Since then a
+    sitting can stop at the device's release_by with runs left (§11), and the week is done only when
+    every run of the plan was admitted."""
+    files, hand = set(), False
+    for t, camp in sessions:
+        if t < monday:
+            continue
+        f = session_cells.get(camp)
+        hand = hand or f is None
+        files.add(f)
+    split = [h["cells"] for h in dev.get("split", [])]
+    if hand or (schedule.get("cells") and schedule["cells"] in files):
+        rest = None
+    elif split and any(f in files for f in split):
+        rest = [f for f in split if f not in files] or None
+    else:
+        rest = "whole"
+    extras = [] if hand else [e["cells"] for e in dev.get("extra_cells", []) if e["cells"] not in files]
+    return {"set": rest, "extras": extras}
+
+
+def left_tags(dev, left):
+    """The runs `left` (plan_left) names, by their campaign tags: "set", a half's or an extra file's tag."""
+    extras = {e["cells"]: e for e in dev.get("extra_cells", [])}
+    out = ["set"] if left["set"] == "whole" else [run_tag(f, extras) for f in left["set"] or []]
+    return out + [run_tag(f, extras) for f in left["extras"]]
+
+
+def sitting_left(schedule, key, dev, args, now=None, rows=None, admitted=None, skip=None, session_cells=None):
+    """The runs of the weekly plan a sitting makes when earlier sittings this week made the others
+    (plan_left), or None for the whole plan: nothing of it admitted this week, or all of it (a sitting by
+    key on a week done runs it all again, as before), a device whose set is in parts (sitting_part), an
+    explicit --cells file."""
+    if device_parts(dev) or args.cells or dev.get("platform") == "ddp":
+        return None
+    now = now or datetime.datetime.now().astimezone()
+    rows = load_rows() if rows is None else rows
+    admitted = load_admission() if admitted is None else admitted
+    skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
+    session_cells = load_session_cells() if session_cells is None else session_cells
+    left = plan_left(schedule, dev, device_sessions({"devices": {key: dev}}, rows, admitted, skip)[key],
+                     session_cells, week_start(now))
+    if (left["set"] is None and not left["extras"]) or (
+            left["set"] == "whole" and len(left["extras"]) == len(dev.get("extra_cells", []))):
+        return None
+    return left
+
+
 def newest_record(rows, dev):
     """When this device last produced a record in any campaign (its idle
     clock). Use by a sibling lane that leaves no record here is invisible
@@ -2205,9 +2451,10 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
                    skip=None, session_cells=None):
     """(key, dev, report). An explicit key resolves as given (report []).
 
-    `auto`: the device to measure at this firing — among the devices with no
-    admitted dashboard session since Monday 00:00 local (a device whose set is in
-    parts: while a part has none, part_sessions; `session_cells`, default the
+    `auto`: the device to measure at this firing — among the devices whose weekly
+    plan is not all admitted since Monday 00:00 local (plan_left: the set, or each
+    of its storage halves, and each extra file; a device whose set is in parts:
+    while a part has none, part_sessions; `session_cells`, default the
     SESSION.json files, names each session's cells file), the attached, unheld
     ones (the iPhone only inside its auto_window after auto_idle_hours without a
     record; the Mac only while no heavy pipeline runs), ordered by the age of
@@ -2235,8 +2482,7 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
     exclude = exclude or {}
     retakes = regression_watch.pending_counts(LOG_DIR, root=ROOT) if retakes is None else retakes
     skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
-    if session_cells is None:
-        session_cells = (load_session_cells() if any(device_parts(d) for d in devices.values()) else {})
+    session_cells = load_session_cells() if session_cells is None else session_cells
     sessions = device_sessions(schedule, rows, admitted, skip)
     monday = week_start(now)
     report, ranked = [], []
@@ -2263,7 +2509,12 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
             if todo:
                 entry["detail"] += f"; part{'s' if len(todo) > 1 else ''} {', '.join(todo)} pending this week"
         else:
-            week_done = bool(last and last[0] >= monday)
+            # done when every run of the weekly plan has an admitted session this week (plan_left): a
+            # sitting stopped at release_by leaves runs for a later firing (§11)
+            left = plan_left(schedule, dev, sessions[k], session_cells, monday)
+            week_done = left["set"] is None and not left["extras"]
+            if not week_done and last and last[0] >= monday:
+                entry["detail"] += f"; {', '.join(left_tags(dev, left))} pending this week"
         if week_done:
             if not pending:
                 entry.update(state="done", detail=f"admitted {last[0]:%F %H:%M} {last[1]}")
@@ -2428,9 +2679,16 @@ def main():
     ap.add_argument("--no-post", action="store_true",
                     help="print the post command after a sitting that exits 0 and run nothing: no "
                          "check, commit, page or push (a person runs it after review)")
+    ap.add_argument("--release-by", metavar="HH:MM|none",
+                    help="give the hold back by this local time (the first after this invocation began) "
+                         "instead of the device's schedule.json release_by; none: no such time")
     args = ap.parse_args()
     if args.hold_held_by is not None and args.device == "auto":
         ap.error("--hold-held-by names one device's hold: not with auto")
+    if args.release_by is not None and args.release_by.lower() != "none" and not RELEASE_BY_RE.match(args.release_by):
+        ap.error(f"--release-by {args.release_by}: HH:MM local time, or none")
+    # the invocation's start: a sitting's release_by is the first after it (release_deadline)
+    args.started_at = datetime.datetime.now()
     global HOLD_KEEPER, NO_POST
     HOLD_KEEPER = args.hold_held_by
     NO_POST = args.no_post
@@ -2439,6 +2697,7 @@ def main():
         schedule = json.load(open(args.schedule))
         register_devices(schedule)
         check_parts(schedule)
+        check_release_by(schedule)
     except (OSError, ValueError) as e:
         print(f"schedule unreadable: {e}", file=sys.stderr)
         return EXIT_CONFIG
@@ -2503,46 +2762,69 @@ def main():
                     time.sleep(poll)
                     tried = {k: v for k, v in tried.items() if v[0] != "busy"}
                     continue
+                late = [e for e in report if e["state"] == "waiting" and e["key"] in tried]
                 if notready:
                     code, reason = EXIT_DEVICE, "; ".join(f"{e['key']}: {e['detail']}" for e in notready)
                 elif busy:
                     code, reason = EXIT_BUSY, "busy: " + ", ".join(busy)
+                elif late:
+                    code, reason = EXIT_OK, "nothing to measure now: " + "; ".join(
+                        f"{e['key']}: {e['detail']}" for e in late)
                 else:
                     code, reason = EXIT_OK, "nothing pending this week"
                 break
             open_log(key)
             log(f"auto chose {key} (the decision is in {datetime.date.today().isoformat()}-auto.log)")
             retake_only = any(e["key"] == key and e.get("weekly_done") for e in report)
+        late = None   # TooLate: the device's release_by leaves no room for this sitting's first runs (§11)
         if key not in retaken and not (args.cells or args.no_retake):
             # stage 3a: the device's pending retakes as their own sitting before its weekly set
             retaken.add(key)
-            rcode = retake_sitting(schedule, key, dev, args, weekly_follows=not retake_only)
-            if rcode == EXIT_BUSY:
+            try:
+                rcode = retake_sitting(schedule, key, dev, args, weekly_follows=not retake_only)
+            except TooLate as e:
+                retaken.discard(key)    # nothing ran: no ledger line, no retake attempt
+                late = e
+            if late is None and rcode == EXIT_BUSY:
                 retaken.discard(key)    # taken again with the device, after the busy poll
-            if rcode in (EXIT_BUSY, EXIT_DEVICE) and auto and not pinned:
+            if late is None and rcode in (EXIT_BUSY, EXIT_DEVICE) and auto and not pinned:
                 tried[key] = ("busy" if rcode == EXIT_BUSY else "not-ready",
                               f"its retake sitting: {VERDICT_NAME[rcode]}")
                 _unlock(f".job.lock.{key}")
                 open_log("auto")
                 continue
-            if retake_only:
+            if late is None and retake_only:
                 code = EXIT_OK if rcode is None else rcode
                 reason = ("the retake sitting only: the weekly set is done this week" if rcode is not None
                           else "nothing to retake (expired or superseded, or the retake state unusable: the log says which)")
                 camp, sitting, own_ledger = "", [], True
                 break
-        sitting = []
-        try:
-            code, reason, camp, sitting = attempt(schedule, key, dev, attempt_no, args)
-        except Busy as e:
-            code, reason = EXIT_BUSY, str(e)
-            log(f"BUSY: {e}")
-        except NotReady as e:
-            code, reason = EXIT_DEVICE, str(e)
-            log(f"DEVICE: {e}")
-        except ConfigError as e:
-            code, reason = EXIT_CONFIG, str(e)
-            log(f"CONFIG: {e}")
+        if late is None:
+            sitting = []
+            try:
+                code, reason, camp, sitting = attempt(schedule, key, dev, attempt_no, args)
+            except TooLate as e:
+                late = e
+            except Busy as e:
+                code, reason = EXIT_BUSY, str(e)
+                log(f"BUSY: {e}")
+            except NotReady as e:
+                code, reason = EXIT_DEVICE, str(e)
+                log(f"DEVICE: {e}")
+            except ConfigError as e:
+                code, reason = EXIT_CONFIG, str(e)
+                log(f"CONFIG: {e}")
+        if late is not None:
+            log(f"TOO LATE: {late}")
+            if auto and not pinned:
+                # passed over for this firing, not polled again: the time to release_by only gets shorter
+                tried[key] = ("waiting", str(late))
+                _unlock(f".job.lock.{key}")
+                open_log("auto")
+                continue
+            # by key: busy (exit 3); an abort retry that no longer fits keeps the abort's verdict
+            code, reason = (EXIT_ABORTED, f"{reason}; the retry not started: {late}") if pinned else (EXIT_BUSY, str(late))
+            break
         if auto and not pinned and code in (EXIT_BUSY, EXIT_DEVICE):
             # pass over this device now; a busy one is reconsidered after the poll
             tried[key] = ("busy" if code == EXIT_BUSY else "not-ready", reason)
