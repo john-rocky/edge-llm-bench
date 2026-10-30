@@ -5,6 +5,10 @@ import HuggingFace
 /// the app's `Documents/models/<runtime>/<repo-id>/` directory. Used by every
 /// runtime adapter that does not have its own download mechanism.
 public enum HFDownloader {
+    /// hfRepoId namespaces with no Hub repo behind them: the side-loaded own exports. `own` is
+    /// also a Hub user's name, so a download there could fetch someone else's files.
+    static let sideLoadedNamespaces = ["litert-local/", "own/"]
+
     public static func snapshot(
         for model: ModelInfo,
         runtime: RuntimeKind,
@@ -18,6 +22,13 @@ public enum HFDownloader {
            !contents.isEmpty {
             progress(1)
             return target
+        }
+
+        // A side-loaded id is never asked of the Hub: its missing file is reported here, with the
+        // place it goes (as ExecuTorchRuntime does for own-export/), not as the Hub's HTTP error.
+        if sideLoadedNamespaces.contains(where: { model.hfRepoId.hasPrefix($0) }) {
+            throw LLMRuntimeError.loadFailed(
+                "\(model.primaryFile) not found in \(target.path) (\(model.hfRepoId) is side-loaded, not on the Hub)")
         }
 
         try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
