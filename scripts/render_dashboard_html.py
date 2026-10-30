@@ -88,12 +88,13 @@ def git_head():
         return ""
 
 
-def history_rows(cells):
+def history_rows(cells, summary_csv=None, raw_dirs=None, include_cpu_capped=False):
     """One arm_row per admitted campaign of every cell in the JSON."""
-    if not os.path.exists(SUMMARY_CSV):
+    csv_path = SUMMARY_CSV if summary_csv is None else summary_csv
+    if not os.path.exists(csv_path):
         return []
-    rows = list(csv.DictReader(open(SUMMARY_CSV)))
-    admitted = load_admission()
+    rows = list(csv.DictReader(open(csv_path)))
+    admitted = load_admission() if raw_dirs is None else load_admission(raw_dirs=raw_dirs)
     rows = [r for r in rows if admitted.get(r["campaign"], True)]
     out = []
     for c in cells:
@@ -110,7 +111,7 @@ def history_rows(cells):
         for r in sel:
             by_campaign.setdefault(r["campaign"], []).append(r)
         for camp, group in by_campaign.items():
-            a = arm_row(group)
+            a = arm_row(group, include_cpu_capped=include_cpu_capped)
             if c["regime"] == "warm":
                 dec, spread, n = a["warm"], a["spread"], a["warm_n"]
             else:
@@ -263,8 +264,12 @@ def grid_entry(c, dmax):
     flags = []
     if (c["spread_pct"] or 0) > SPREAD_FLAG:
         flags.append(f"<span class=\"flag warn\">spread {c['spread_pct']:.0f}%</span>")
-    if cap_mark(c):
-        flags.append(f"<span class=\"flag\">{esc(cap_mark(c))}</span>")
+    cm = cap_mark(c)
+    if cm:
+        if cm.startswith("⚠"):
+            flags.append(f"<span class=\"flag warn\">{esc(cm[2:].lstrip())}</span>")
+        else:
+            flags.append(f"<span class=\"flag\">{esc(cm)}</span>")
     if c["stale"]:
         flags.append("<span class=\"flag stale\">stale</span>")
     if flags:
@@ -272,7 +277,8 @@ def grid_entry(c, dmax):
     return tip, "".join(parts)
 
 
-def render(cells, bandwidth, generated, stale_days, history, open_details, head):
+def render(cells, bandwidth, generated, stale_days, history, open_details, head,
+           include_cpu_capped=False):
     for c in cells:
         # a JSON written before 2026-10-06 lacks these (one task, no allocation)
         c.setdefault("context_tokens", "")
@@ -288,7 +294,7 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
                             set()).add(h["campaign"])
     tasks = list(dict.fromkeys(c["task"] for c in cells))
 
-    order = {"mac": 0, "ios": 1, "android": 2}
+    order = {"mac": 0, "ios": 1, "android": 2, "windows": 3}
     devs = sorted(by_dev, key=lambda k: (order.get(k[0], 9), k[1]))
 
     L = []
@@ -303,7 +309,10 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
     L.append(f"<p class=\"sub\">Rendered {esc(generated[:16].replace('T', ' '))} from the harness's summary layer"
              f"{' at commit ' + esc(head) if head else ''} · {n_meas} measured cells"
              f" · one number per device × model × runtime × task (and KV allocation where the cell pins one), "
-             "from the latest admitted capture session of that cell.</p>")
+             "from the latest admitted capture session of that cell"
+             + (f" · <b>--include-cpu-capped active</b> (CPU-arm runs capped &gt;{CAP_LINE} pooled with ▲ warning)"
+                if include_cpu_capped else "")
+             + ".</p>")
     L.append("<div class=\"rules\">")
     L.append("<p><b>Number</b> = decode tokens/s: the median of one session's runs — warm runs on the Apple devices, "
              "fresh-process (cold) runs on Android, where the CLI has no warm regime. Sessions are never pooled; "
@@ -322,7 +331,12 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
              f"{CAP_LINE} below the maximum; they count, and the number says so "
              "· ◇ cpu-capped, counted (accelerator arm), max drop D % (k of N runs) = the same on an Android NPU or GPU arm, "
              "whose capped runs count whatever the fall (the CPUs carry the engine's host side there); D = the largest fall "
-             "among them.</p>")
+             "among them"
+             + (f" · ▲ cpu-capped &gt;{CAP_LINE}, counted (--include-cpu-capped), max drop D % (k of N runs) = on a CPU arm "
+                "when rendered with --include-cpu-capped (e.g. shared DDP lab phones that start capped), CPU-capped runs past "
+                "the line are pooled with this warning instead of leaving the cell empty"
+                if include_cpu_capped else "")
+             + ".</p>")
     L.append("<p><b>Recipe</b>: each runtime runs its own published artifact and quantization (shown under the number, in full in the "
              "detail table) — a different recipe is a different deployment profile, not a win.</p>")
     L.append("</div>")
@@ -455,19 +469,27 @@ def render(cells, bandwidth, generated, stale_days, history, open_details, head)
     return "\n".join(L)
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json", default=DEFAULT_JSON)
+    ap.add_argument("--summary-csv", default=None,
+                    help="summary device-runs.csv path (default: <repo>/results/summary/device-runs.csv)")
+    ap.add_argument("--raw-dir", action="append", default=None,
+                    help="raw campaign directory for SESSION.json admission (repeatable)")
+    ap.add_argument("--include-cpu-capped", action="store_true",
+                    help="pool CPU-arm runs capped >15 %% in history CSV (auto-enabled when JSON carries include_cpu_capped)")
     ap.add_argument("--out", default=DEFAULT_OUT)
     ap.add_argument("--history", default=DEFAULT_HISTORY, help="history CSV path ('' to skip)")
     ap.add_argument("--stale-days", type=int, default=10)
     ap.add_argument("--open-details", action="store_true", help="expand every detail table (print / PDF)")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     d = json.load(open(args.json))
     cells = d["cells"]
+    inc_cap = bool(args.include_cpu_capped or d.get("include_cpu_capped"))
     bandwidth = json.load(open(BANDWIDTH_JSON)) if os.path.exists(BANDWIDTH_JSON) else {}
-    hist = history_rows(cells)
+    hist = history_rows(cells, summary_csv=args.summary_csv, raw_dirs=args.raw_dir,
+                        include_cpu_capped=inc_cap)
     if args.history:
         os.makedirs(os.path.dirname(args.history) or ".", exist_ok=True)
         with open(args.history, "w", newline="") as fh:
@@ -475,14 +497,16 @@ def main():
             w.writeheader()
             w.writerows(hist)
     page = render(cells, bandwidth, d.get("generated", datetime.datetime.now().isoformat()),
-                  args.stale_days, hist, args.open_details, git_head())
+                  args.stale_days, hist, args.open_details, git_head(),
+                  include_cpu_capped=inc_cap)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w") as fh:
         fh.write(page)
     n_meas = sum(1 for c in cells if c["status"] == "measured")
     print(f"wrote {rel(args.out)} ({n_meas} measured cells)"
           + (f" and {rel(args.history)} ({len(hist)} cell-sessions)" if args.history else ""))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

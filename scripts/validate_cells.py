@@ -5,7 +5,8 @@
   python3 scripts/validate_cells.py --require-anchor matrices/release-regression-litert.cells
   python3 scripts/validate_cells.py --catalog catalog.json matrices/apple-warm-matrix.cells
 
---catalog: output of `yardstick list --json`; model ids are checked against it
+--catalog: output of `yardstick list --json`; model ids are checked against it (and against
+BENCH_EXTRA_CATALOG's ids, when that env names an extra catalog file)
 (cells with local=1 or platform=android are exempt — android ids are HF repos
 resolved by the android driver, not ModelCatalog entries).
 exclude-on=<device key>[,<key>…]:<reason> keys are checked against the devices
@@ -20,7 +21,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_SCHEDULE = os.path.join(ROOT, "ops", "dashboard-v1", "schedule.json")
-PLATFORMS = {"ios", "mac", "android"}
+PLATFORMS = {"ios", "mac", "android", "windows"}
 RUNTIMES = {"mlx-swift", "llama.cpp", "coreml-llm", "litert-lm", "executorch",
             "anemll", "apple-fm", "core-ai", "cactus",
             # the LiteRT runtime itself (ai-edge-litert CompiledModel) driven by a
@@ -349,13 +350,27 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 errors.append(f"{where}: energy task requires manual=1 "
                               "(unplug discipline is a human step)")
             if opts.get("backend") and not (
-                    plat == "android" or (plat == "mac" and rt in ("litert-lm", "onnxruntime-genai", "core-ai"))
+                    plat in ("android", "windows")
+                    or (plat == "mac" and rt in ("litert-lm", "onnxruntime-genai", "core-ai"))
                     or (plat == "ios" and rt in ("litert-lm", "onnxruntime-genai", "core-ai")) or rt == "executorch"):
-                errors.append(f"{where}: backend= is for android cells and mac / ios "
+                errors.append(f"{where}: backend= is for android / windows cells and mac / ios "
                               "litert-lm, onnxruntime-genai and core-ai cells only (the Mac and iPhone "
                               "runners forward it as --litert-backend, the ORT GenAI driver as its "
                               "execution provider; core-ai's backend=ane is arm identity only; every "
                               "other Apple arm encodes its backend in the model id)")
+            if plat == "windows":
+                if rt not in ("litert-lm", "llama.cpp"):
+                    errors.append(f"{where}: windows v1 rows are litert-lm or llama.cpp "
+                                  "(scripts/run_windows_matrix.py)")
+                elif rt == "litert-lm" and opts.get("backend") not in CPU_GPU:
+                    errors.append(f"{where}: windows litert-lm needs backend=cpu|gpu (arm identity)")
+                elif rt == "llama.cpp" and opts.get("backend") not in (None, "gpu"):
+                    errors.append(f"{where}: windows llama.cpp takes no backend= (CPU) or backend=gpu (Vulkan)")
+                if (NATIVE_TASK.match(task) or ENDURANCE_TASK.match(task) or ASR_TASK.match(task)
+                        or VL_TASK.match(task) or TTS_TASK.match(task)):
+                    errors.append(f"{where}: windows v1 supports prompt tasks only")
+                if not opts.get("exclude") and opts.get("manual") != "1" and not int(opts.get("context-tokens", "0")):
+                    errors.append(f"{where}: windows rows need context-tokens=<allocation>")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
                               "(arm identity; run_cell refuses it — the anchors.cells "
@@ -403,8 +418,11 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 # mac: a litert-lm backend=cpu row (bench_matrix_mac.sh -> yardstick
                 # --litert-ynnpack on; a yardstick built with YS_SWIFT_CONDITIONS=LITERTLM_YNNPACK
                 # against a LiteRT-LM with --define=litert_enable_ynnpack=true)
-                if not (plat == "mac" and rt == "litert-lm" and opts.get("backend") == "cpu"):
-                    errors.append(f"{where}: ynnpack= is read for android litert-lm rows and mac "
+                # ios: the same, through the DDP app (run_ddp_ios_lm.py --app-arg=--litert-ynnpack
+                # --app-arg=on; the LiteRT-LM lab build compiled with LITERTLM_YNNPACK)
+                # windows: litert_lm_advanced_main_windows.exe --litert_lm_enable_ynnpack=true
+                if not (plat in ("mac", "ios", "windows") and rt == "litert-lm" and opts.get("backend") == "cpu"):
+                    errors.append(f"{where}: ynnpack= is read for android litert-lm rows and mac / ios / windows "
                                   "litert-lm backend=cpu rows only (android/bench/run_cell.py "
                                   "--ynnpack, yardstick --litert-ynnpack)")
             if opts.get("max-tokens") and plat == "mac":
@@ -454,7 +472,7 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                                       f"{dev.get('platform')} device; the row is {plat}")
             # uzu and the Mac onnxruntime-genai driver resolve HF ids themselves (no
             # yardstick catalog); iPhone onnxruntime-genai rows are app catalog entries
-            if (catalog is not None and plat != "android" and rt != "uzu"
+            if (catalog is not None and plat not in ("android", "windows") and rt != "uzu"
                     and not (plat == "mac" and rt == "onnxruntime-genai")
                     and opts.get("local") != "1" and opts.get("exclude") is None):
                 if mid not in catalog.get(rt, []):
@@ -468,11 +486,20 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
 
 
 def load_catalog(path):
-    """yardstick list --json -> {runtime: [model ids]}."""
+    """yardstick list --json -> {runtime: [model ids]}, plus the ids of BENCH_EXTRA_CATALOG (the
+    extra catalog ModelCatalog.swift appends at load, {runtime: [ModelInfo]}): a yardstick that read
+    it lists them already, one that did not would refuse the rows the extra catalog is for."""
     data = json.load(open(path))
     cat = {}
     for rt, models in data.get("models", data).items():
         cat[rt] = [m["id"] if isinstance(m, dict) else m for m in models]
+    extra = os.environ.get("BENCH_EXTRA_CATALOG")
+    if extra:
+        with open(extra) as fh:
+            for rt, models in json.load(fh).items():
+                if not rt.startswith("_"):
+                    ids = cat.setdefault(rt, [])
+                    ids += [m["id"] for m in models if m["id"] not in ids]
     return cat
 
 

@@ -51,6 +51,16 @@ One call is one cell and one session: one device, one job, `--runs` runs in one 
 runs 2 to N warm, as one launch of the app on the attached iPhone). The model ids are `models.json`'s
 (the app's catalog ids; `selftest.py` compares them with `ModelCatalog.swift`).
 
+Another harness's models that are not compiled into `ModelCatalog.swift` (own exports, side-loaded
+files) come in an extra catalog file: `--extra-catalog PATH` (default: env `BENCH_EXTRA_CATALOG`),
+`{"<runtime>": [<ModelInfo fields>, ...]}` keyed by the cells runtime word (`litert-lm`, `llama.cpp`,
+`executorch`, `mlx-swift`), each entry with an optional `files` list (what is pushed together; default
+`[primaryFile]`). Its ids are added to `models.json` / `models_competitive.json` add-only (an id
+already there exits 2), and the file is pushed to `<app>:/Documents/models/extra-catalog.json`, where
+`ModelCatalog.swift` appends its entries to the compiled lists at launch (the Mac yardstick reads the
+file `BENCH_EXTRA_CATALOG` names). The session dir keeps a copy; `conditions.ddp.extraCatalogSha256`
+names it.
+
 | flag | value |
 |---|---|
 | `--test` | the archive, uploaded once to `<bucket>/automation/inputs/edge-llm-bench/ios-xctest/<sha256>/` |

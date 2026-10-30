@@ -55,7 +55,7 @@ public enum ModelCatalog {
     /// Models the MLX Swift adapter can load. Curated 2026-05 — all
     /// entries verified present on `huggingface.co/mlx-community`.
     /// Sizes are approximate (verified via HF API or by download).
-    public static let mlx: [ModelInfo] = [
+    public static let mlx: [ModelInfo] = withExtra("mlx-swift", [
         // --- Tiny — fits any device, including iPhone with headroom ---
         ModelInfo(
             id: "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
@@ -327,11 +327,11 @@ public enum ModelCatalog {
             onDiskSizeMB: 1700,
             hfRepoId: "mlx-community/Ministral-3-3B-Instruct-2512-4bit"
         ),
-    ]
+    ])
 
     /// Models the llama.cpp adapter can load.
     /// One `.gguf` file per entry, downloaded from the listed HF repo.
-    public static let llamaCpp: [ModelInfo] = [
+    public static let llamaCpp: [ModelInfo] = withExtra("llama.cpp", [
         // Google's own QAT GGUF — the llama.cpp arm's best available build, and the one
         // cross-runtime tables should use. The third-party Q4_K_M below is PTQ.
         // ⚠️ UNLOADABLE as shipped (verified 2026-07-18): llama.cpp aborts loading its vocab —
@@ -533,7 +533,7 @@ public enum ModelCatalog {
             hfFilePatterns: ["MiniCPM5-2B-Q4_K_M.gguf"],
             primaryFile: "MiniCPM5-2B-Q4_K_M.gguf"
         ),
-    ]
+    ])
 
     /// Models the LiteRT-LM adapter can load.
     ///
@@ -550,7 +550,7 @@ public enum ModelCatalog {
     /// in higher precision and memory-mapped (E2B ≈ 0.79 GB decoder + 1.12 GB
     /// mmap'd embeddings ≈ 2.59 GB on disk). Context window 32k. Qwen3-0.6B is
     /// the mixed blockwise-INT4 artifact (gs32 weights, INT8 embeddings).
-    public static let liteRTLM: [ModelInfo] = [
+    public static let liteRTLM: [ModelInfo] = withExtra("litert-lm", [
         // NOT uniform int4 — this is Google's wNa8o8 MOBILE schema (bit-identical to
         // `google/gemma-4-E2B-it-qat-mobile-transformers`): targeted 2-bit decode layers,
         // optimized KV cache, and STATIC INT8 ACTIVATIONS. It is a co-designed weights+runtime
@@ -1320,7 +1320,7 @@ public enum ModelCatalog {
             hfFilePatterns: ["Qwen3.5-4B_mixed_int4.litertlm"],
             primaryFile: "Qwen3.5-4B_mixed_int4.litertlm"
         ),
-    ]
+    ])
 
     /// Back-compat alias. The adapter and earlier call sites refer to this
     /// runtime's catalog as `mediaPipe`; LiteRT-LM is the current name.
@@ -1328,7 +1328,7 @@ public enum ModelCatalog {
 
     /// Models the ExecuTorch adapter can load: a `.pte` plus the tokenizer its
     /// `ExecuTorchModelSpec` names (ExecuTorchRuntime.swift).
-    public static let executorch: [ModelInfo] = [
+    public static let executorch: [ModelInfo] = withExtra("executorch", [
         // Own exports (docs/executorch-arm-v1.md): ExecuTorch 1.5.1's own exporter with the
         // tree's qwen3_xnnpack_q8da4w.yaml, run by us, not published artifacts. No Hub repo
         // behind the id: the .pte and tokenizer.json are side-loaded into
@@ -1393,7 +1393,7 @@ public enum ModelCatalog {
             hfFilePatterns: ["*.pte", "tokenizer.model"],
             primaryFile: "Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte"
         ),
-    ]
+    ])
 
     /// Models the ANEMLL adapter can load.
     /// Each repo ships a multi-file bundle (embeddings + FFN chunks + lm_head + meta.yaml + tokenizer files).
@@ -1862,4 +1862,76 @@ public enum ModelCatalog {
 
     /// Default model picked when the app first launches.
     public static let defaultModel: ModelInfo = mlx[0]
+
+    // MARK: - Extra catalog (BENCH_EXTRA_CATALOG)
+
+    /// Entries another harness adds to `mlx`, `llamaCpp`, `liteRTLM` (and so `mediaPipe`) and
+    /// `executorch` at load, so its side-loaded models stay out of this file (as BENCH_EXTRA_PINS
+    /// keeps its builds out of android/engine-pins.json). JSON `{"<runtime>": [<entry>, ...]}`,
+    /// keyed by the cells runtime word (`mlx-swift`, `llama.cpp`, `litert-lm`, `executorch`);
+    /// an entry has ModelInfo's Codable fields (id, displayName, quantization, hfRepoId,
+    /// hfFilePatterns, primaryFile required; parameterCountB, onDiskSizeMB, chatTemplateThinking
+    /// optional). Unknown keys are ignored: `files` (what the drivers push / stage together) and
+    /// top-level `_`-keys such as `_doc`. The file is the one env BENCH_EXTRA_CATALOG names (the
+    /// Mac yardstick), else `<Documents>/models/extra-catalog.json` when present (the iOS DDP lab
+    /// app, where ios/ddp/run_ddp_ios_lm.py --extra-catalog pushes it; on a Mac, ~/Documents/models/).
+    ///
+    /// Add-only: an id already in the compiled list is skipped with a message on stderr and the
+    /// compiled entry wins. (The Python drivers refuse such a file instead, as load_pins does; a
+    /// static initializer has no clean way to stop the app, so here it is skipped.) A file that
+    /// cannot be read or parsed is reported on stderr and ignored.
+    static let extraCatalog: [String: [ModelInfo]] = loadExtraCatalog()
+
+    static func loadExtraCatalog() -> [String: [ModelInfo]] {
+        let fm = FileManager.default
+        var url: URL? = nil
+        if let path = ProcessInfo.processInfo.environment["BENCH_EXTRA_CATALOG"], !path.isEmpty {
+            url = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+        } else if let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let candidate = docs.appendingPathComponent("models").appendingPathComponent("extra-catalog.json")
+            if fm.fileExists(atPath: candidate.path) {
+                url = candidate
+            }
+        }
+        guard let source = url else { return [:] }
+        do {
+            let data = try Data(contentsOf: source)
+            guard let top = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw CocoaError(.coderReadCorrupt)
+            }
+            var out: [String: [ModelInfo]] = [:]
+            for (runtime, value) in top where !runtime.hasPrefix("_") {
+                // an array only: data(withJSONObject:) raises (not throws) on a bare string or number
+                guard let list = value as? [Any], JSONSerialization.isValidJSONObject(list) else {
+                    throw CocoaError(.coderReadCorrupt)
+                }
+                let entries = try JSONSerialization.data(withJSONObject: list)
+                out[runtime] = try JSONDecoder().decode([ModelInfo].self, from: entries)
+            }
+            return out
+        } catch {
+            extraCatalogNote("\(source.path): ignored, not a {runtime: [ModelInfo]} file (\(error))")
+            return [:]
+        }
+    }
+
+    /// `compiled` plus the extra catalog's entries for `runtime` whose ids it does not hold.
+    static func withExtra(_ runtime: String, _ compiled: [ModelInfo]) -> [ModelInfo] {
+        guard let extra = extraCatalog[runtime], !extra.isEmpty else { return compiled }
+        var ids = Set(compiled.map { $0.id })
+        var out = compiled
+        for model in extra {
+            if ids.contains(model.id) {
+                extraCatalogNote("\(runtime) \(model.id) is already in the catalog; skipped (the compiled entry stays)")
+                continue
+            }
+            ids.insert(model.id)
+            out.append(model)
+        }
+        return out
+    }
+
+    private static func extraCatalogNote(_ message: String) {
+        FileHandle.standardError.write(Data("BENCH_EXTRA_CATALOG: \(message)\n".utf8))
+    }
 }

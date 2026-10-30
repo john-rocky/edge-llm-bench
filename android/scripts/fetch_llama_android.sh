@@ -25,20 +25,26 @@
 # Env:
 #   LLAMA_TAG     release tag (default: b11721 — keep in lockstep with the Apple arm)
 #   LLAMA_FLAVOR  empty (the CPU-only asset) or snapdragon
+#   BENCH_BIN_ROOT   where engine binaries live (default: <repo>/android/bin)
+#   LLAMA_PINS_FILE  the registry the pin is written to (default: <repo>/android/engine-pins.json);
+#                    e.g. another harness's BENCH_EXTRA_PINS registry, so a label that is not on
+#                    main never touches this repo's
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+BIN_ROOT="${BENCH_BIN_ROOT:-$REPO_ROOT/android/bin}"
+PINS_FILE="${LLAMA_PINS_FILE:-$REPO_ROOT/android/engine-pins.json}"
 TAG="${LLAMA_TAG:-b11721}"
 FLAVOR="${LLAMA_FLAVOR:-}"
 case "$FLAVOR" in
   "")
-    OUT="$REPO_ROOT/android/bin/llama-$TAG"
+    OUT="$BIN_ROOT/llama-$TAG"
     TAR="llama-$TAG-bin-android-arm64.tar.gz"
     PIN="$TAG"
     TOOLS="$OUT"
     ;;
   snapdragon)
-    OUT="$REPO_ROOT/android/bin/llama-$TAG-snapdragon"
+    OUT="$BIN_ROOT/llama-$TAG-snapdragon"
     TAR="llama-$TAG-bin-android-arm64-snapdragon.tar.gz"
     PIN="$TAG-snapdragon"
     TOOLS="$OUT/bin"
@@ -68,10 +74,9 @@ else
      lib/libllama-cli-impl.so lib/libllama-bench-impl.so | tee SHA256SUMS)
 fi
 
-python3 - "$REPO_ROOT" "$TAG" "$OUT" "$TAR" "$PIN" "$TOOLS" "$FLAVOR" <<'PY'
+python3 - "$PINS_FILE" "$TAG" "$OUT" "$TAR" "$PIN" "$TOOLS" "$FLAVOR" <<'PY'
 import json, os, sys, hashlib, struct
-root, tag, out, tar, pin, tools, flavor = sys.argv[1:8]
-pins_path = os.path.join(root, "android", "engine-pins.json")
+pins_path, tag, out, tar, pin, tools, flavor = sys.argv[1:8]
 pins = json.load(open(pins_path)) if os.path.exists(pins_path) else {}
 def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()

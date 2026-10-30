@@ -39,6 +39,7 @@ import build_summary  # noqa: E402
 import render_dashboard  # noqa: E402
 import render_dashboard_html  # noqa: E402
 import render_leaderboard  # noqa: E402
+import run_windows_matrix  # noqa: E402
 import validate_cells  # noqa: E402
 from render_leaderboard import arm_row  # noqa: E402
 
@@ -635,6 +636,263 @@ class ProtocolRegime(unittest.TestCase):
         self.assertIn("| 61.0 (cold) |", grid[0])
         self.assertTrue(any("20.5 (warm)" in g for g in grid))
         self.assertTrue(any("51.9 (cold first call 50.9)" in g for g in grid))
+
+
+class CliAndUpstreamAdditions(unittest.TestCase):
+    """CLI flags (--raw-dir, --out-dir, --summary-csv, --cells, --include-cpu-capped) and
+    Windows matrix / cells validation."""
+
+    def test_build_summary_cli_raw_dir_out_dir_and_windows(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-cli-") as tmp:
+            # 1) Empty raw dir produces a header-only device-runs.csv matching DEVICE_FIELDS
+            empty_raw = os.path.join(tmp, "empty-raw")
+            empty_out = os.path.join(tmp, "empty-out")
+            os.makedirs(empty_raw)
+            with patch.object(build_summary, "ROOT", tmp):
+                self.assertIsNone(build_summary.main(["--raw-dir", empty_raw, "--out-dir", empty_out]))
+            with open(os.path.join(empty_out, "device-runs.csv"), newline="") as fh:
+                reader = csv.reader(fh)
+                self.assertEqual(next(reader), build_summary.DEVICE_FIELDS)
+                self.assertEqual(list(reader), [])
+
+            # 2) Nested Windows JSONL + Android app-path JSON in custom --raw-dir -> --out-dir
+            raw_root = os.path.join(tmp, "custom-raw")
+            win_camp = os.path.join(raw_root, "qwen3.5", "windows", "2026-10-29-windows")
+            and_camp = os.path.join(raw_root, "qwen3.5", "android", "2026-10-29-android", "app-path-android")
+            os.makedirs(win_camp)
+            os.makedirs(and_camp)
+            with open(os.path.join(win_camp, "litert-lm-gpu_org_model_short-chat.jsonl"), "w") as fh:
+                fh.write(json.dumps({
+                    "schemaVersion": 1, "id": "win-rec-1", "runtime": "litert-lm-gpu",
+                    "engineVersion": "21f113ea6eba", "timestamp": "2026-10-29T10:00:00Z",
+                    "task": "short-chat", "model": {"id": "org/model", "quantization": "wi4b32_afp32"},
+                    "device": {"systemName": "Windows", "modelIdentifier": "Precision 7960"},
+                    "conditions": {"contextTokens": 2048, "textCheck": {"status": "PASS", "flags": []}},
+                    "metrics": {"decodeTokensPerSecond": 182.5, "promptTokensPerSecond": 1400.0,
+                                "firstTokenLatencyMS": 35.0, "memoryPeakResidentMB": 910.0, "coldRun": True},
+                }) + "\n")
+            with open(os.path.join(and_camp, "r1.json"), "w") as fh:
+                json.dump({
+                    "schemaVersion": 1, "id": "and-rec-1", "runtime": "litert-lm-cpu-ynnpack",
+                    "engineVersion": "21f113ea6eba", "timestamp": "2026-10-29T10:05:00Z",
+                    "task": "short-chat", "model": {"id": "org/model", "quantization": "wi4b32_afp32"},
+                    "device": {"systemName": "Android", "modelIdentifier": "SM-S942U",
+                               "ddp": {"deviceId": "m1q-36"}},
+                    "conditions": {"contextTokens": 2048, "protocolFlags": ["cpu-capped"],
+                                   "cpuMaxFreqMHz": {"policy6": {"min": 3100, "hw": 4742, "cpus": "6-7"}},
+                                   "cpusAllowedList": "6-7",
+                                   "textCheck": {"status": "PASS", "flags": []}},
+                    "metrics": {"decodeTokensPerSecond": 29.4, "coldRun": True},
+                }, fh)
+            out_dir = os.path.join(tmp, "custom-summary")
+            with patch.object(build_summary, "ROOT", tmp):
+                build_summary.main(["--raw-dir", raw_root, "--out-dir", out_dir])
+            with open(os.path.join(out_dir, "device-runs.csv"), newline="") as fh:
+                got = {r["platform"]: r for r in csv.DictReader(fh)}
+            self.assertEqual(set(got), {"windows", "android"})
+            self.assertEqual(got["windows"]["device"], "Precision 7960")
+            self.assertEqual(got["windows"]["campaign"], "qwen3.5/windows/2026-10-29-windows")
+            self.assertEqual(got["android"]["campaign"], "qwen3.5/android/2026-10-29-android")
+            self.assertEqual(got["android"]["cpu_cap_drop_pct"], "34.6")
+
+    def test_include_cpu_capped_pools_deep_cpu_cap_with_warning_badge(self):
+        # Shared DDP Galaxy S26 (m1q-36) CPU arm capped 40.1% (>15%):
+        # default excludes all 3 runs; --include-cpu-capped pools them with an explicit ⚠ badge.
+        capped = [dict(row(v, True, "PASS", False, "litert-lm-cpu-ynnpack", "org/model", m),
+                       cpu_capped="true", cpu_max_freq="p0 1704/1704 p4 1418/2367",
+                       cpu_cap_drop_pct="40.1", task="short-chat", context_tokens="2048")
+                  for m, v in ((10, 31.2), (11, 32.0), (12, 30.8))]
+        with tempfile.TemporaryDirectory(prefix="render-rules-inccap-") as tmp:
+            summary = os.path.join(tmp, "device-runs.csv")
+            with open(summary, "w", newline="") as fh:
+                w = csv.DictWriter(fh, fieldnames=FIELDS + CPU_FIELDS + BACKEND_FIELDS + DROP_FIELDS)
+                w.writeheader()
+                w.writerows(capped)
+            cells = os.path.join(tmp, "ddp.cells")
+            with open(cells, "w") as fh:
+                fh.write("android litert-lm org/model short-chat backend=cpu ynnpack=1 "
+                         "engine-build=side context-tokens=2048\n")
+            no_sched = os.path.join(tmp, "no-schedule.json")
+
+            # Default: excluded under cpu-cap-rule
+            out_def, _ = render_dashboard.build(cells, no_sched, 10, TODAY, summary_csv=summary, raw_dirs=[tmp])
+            self.assertEqual(out_def[0]["status"], "cpu-capped")
+            self.assertIsNone(out_def[0]["decode_tps"])
+
+            # Opt-in --include-cpu-capped via CLI: render_dashboard -> render_dashboard_html
+            out_dir = os.path.join(tmp, "dash")
+            md_path = os.path.join(out_dir, "DASHBOARD.md")
+            html_path = os.path.join(out_dir, "dashboard-v1.html")
+            hist_path = os.path.join(out_dir, "dashboard-v1-history.csv")
+            self.assertEqual(render_dashboard.main([
+                "--cells", cells, "--summary-csv", summary, "--raw-dir", tmp,
+                "--schedule", no_sched, "--md", md_path, "--out-dir", out_dir,
+                "--include-cpu-capped",
+            ]), 0)
+            payload = json.load(open(os.path.join(out_dir, "dashboard-v1.json")))
+            self.assertTrue(payload.get("include_cpu_capped"))
+            c = payload["cells"][0]
+            self.assertEqual((c["status"], c["decode_tps"], c["n"], c["cpu_capped_counted"]),
+                             ("measured", 31.2, 3, "3/3"))
+            want_mark = "⚠ cpu-capped >15 %, counted (--include-cpu-capped), max drop 40.1 % (3 of 3 runs)"
+            self.assertEqual(render_dashboard.cap_mark(c), want_mark)
+
+            md = open(md_path).read()
+            self.assertIn(want_mark, md)
+            self.assertIn("`--include-cpu-capped` active", md)
+            self.assertIn("1 with runs cpu-capped >15 % on a CPU arm, counted (--include-cpu-capped, ⚠)", md)
+
+            self.assertEqual(render_dashboard_html.main([
+                "--json", os.path.join(out_dir, "dashboard-v1.json"),
+                "--summary-csv", summary, "--raw-dir", tmp,
+                "--out", html_path, "--history", hist_path,
+            ]), 0)
+            page = open(html_path).read()
+            self.assertIn("--include-cpu-capped active", page)
+            self.assertIn("flag warn\">cpu-capped &gt;15 %, counted (--include-cpu-capped), max drop 40.1 % (3 of 3 runs)",
+                          page)
+            hist = list(csv.DictReader(open(hist_path, newline="")))
+            self.assertEqual(len(hist), 1)
+            self.assertEqual((hist[0]["arm"], hist[0]["decode_tps"], hist[0]["cpu_capped_counted"]),
+                             ("litert-lm-cpu-ynnpack", "31.2", "3/3"))
+
+    def test_validate_windows_cells(self):
+        good = (
+            "windows litert-lm org/model short-chat backend=cpu ynnpack=1 context-tokens=2048\n"
+            "windows litert-lm org/model long-context-1024-gen256 backend=gpu context-tokens=2048\n"
+            "windows llama.cpp org/gguf short-chat context-tokens=2048\n"
+            "windows llama.cpp org/gguf long-context-1024-gen256 backend=gpu context-tokens=2048\n"
+        )
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincells-") as tmp:
+            p = os.path.join(tmp, "win.cells")
+            with open(p, "w") as fh:
+                fh.write(good)
+            # windows rows are exempt from --catalog just like android rows
+            self.assertEqual(validate_cells.validate_file(p, catalog={"litert-lm": [], "llama.cpp": []}),
+                             ([], []))
+            bad = {
+                "windows mlx-swift org/model short-chat context-tokens=2048\n":
+                    "windows v1 rows are litert-lm or llama.cpp",
+                "windows litert-lm org/model short-chat context-tokens=2048\n":
+                    "windows litert-lm needs backend=cpu|gpu",
+                "windows llama.cpp org/gguf short-chat backend=cpu context-tokens=2048\n":
+                    "windows llama.cpp takes no backend= (CPU) or backend=gpu (Vulkan)",
+                "windows litert-lm org/model short-chat backend=gpu ynnpack=1 context-tokens=2048\n":
+                    "ynnpack= is read for android litert-lm rows and mac / ios / windows litert-lm backend=cpu rows only",
+                "windows litert-lm org/model short-chat backend=gpu\n":
+                    "windows rows need context-tokens=",
+                "windows litert-lm org/model native-benchmark-1024x256 backend=gpu context-tokens=2048\n":
+                    "windows v1 supports prompt tasks only",
+            }
+            for line, want in bad.items():
+                with open(p, "w") as fh:
+                    fh.write(line)
+                errors, _ = validate_cells.validate_file(p)
+                self.assertTrue(any(want in e for e in errors), f"{want!r} not in {errors} for {line.strip()}")
+
+    def test_windows_matrix_runner_plan_and_records_to_dashboard(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winrun-") as tmp:
+            cells_path = os.path.join(tmp, "win.cells")
+            with open(cells_path, "w") as fh:
+                fh.write(
+                    "windows litert-lm org/model short-chat backend=cpu ynnpack=1 context-tokens=2048 runs=2\n"
+                    "windows llama.cpp org/gguf short-chat backend=gpu context-tokens=2048 runs=2\n"
+                )
+            litert_file = os.path.join(tmp, "model.litertlm")
+            gguf_file = os.path.join(tmp, "model-Q4_0.gguf")
+            for fpath in (litert_file, gguf_file):
+                with open(fpath, "wb") as fh:
+                    fh.write(b"x" * 1024)
+            pins = run_windows_matrix.load_pins()
+            vk_label = run_windows_matrix.pinned_label(pins, "gpu")
+            vk_pin = pins[vk_label]
+
+            def fake_executor(plan, campaign_dir, args):
+                inv = "inv-1"
+                logs = campaign_dir / "omnilab" / inv
+                logs.mkdir(parents=True, exist_ok=True)
+                binaries = {run_windows_matrix.LITERT_EXE: "deadbeef"}
+                for k, v in (vk_pin.get("dll_files") or {}).items():
+                    binaries[f"llama-gpu/{k}"] = v
+                binaries["llama-gpu/llama-cli.exe"] = vk_pin["llama_cli_sha256"]
+                (logs / "host.json").write_text(json.dumps({
+                    "model": "Precision 7960 Tower", "os": "Windows 11 Pro",
+                    "cpu": "Intel Xeon w7-3455", "gpus": [{"name": "NVIDIA RTX 4090"}],
+                    "memoryBytes": 64 * 2**30, "binaries": binaries,
+                }))
+                reply = ("Local on-device AI runs privately offline on your phone or workstation "
+                         "without sending sensitive prompts to any cloud server.")
+                litert_console = (
+                    "I0000 00:00:1.0 1 litert_lm_lib.cc:1] Choose backend: cpu\n"
+                    "max_tokens: 2048\nenable_ynnpack: 1\n"
+                    "INFO: delegates/ynnpack/ynnpack_delegate.cc:1\n"
+                    "I0000 00:00:1.1 1 litert_lm_lib.cc:2] Running single-turn conversation\n"
+                    f"{reply}\n"
+                    "BenchmarkInfo:\n  Time to first token: 0.050 s\n"
+                    "  Prefill Turn 1: Processed 24 tokens in 20.0ms duration.\n"
+                    "  Prefill Speed: 1200.0 tokens/sec\n"
+                    "  Decode Turn 1: Processed 32 tokens in 400.0ms duration.\n"
+                    "  Decode Speed: 80.0 tokens/sec\n"
+                    "I0000 00:00:1.6 1 litert_lm_lib.cc:2] Running single-turn conversation\n"
+                    f"{reply}\n"
+                    "BenchmarkInfo:\n  Time to first token: 0.045 s\n"
+                    "  Prefill Turn 1: Processed 24 tokens in 18.0ms duration.\n"
+                    "  Prefill Speed: 1333.3 tokens/sec\n"
+                    "  Decode Turn 1: Processed 32 tokens in 380.0ms duration.\n"
+                    "  Decode Speed: 84.2 tokens/sec\n"
+                )
+                prompt_txt = run_windows_matrix.prompt_file("short-chat").read_text(encoding="utf-8")
+                llama_console = (
+                    "load_backend: using device Vulkan0 (NVIDIA RTX 4090)\n"
+                    "load_tensors: Vulkan0 model buffer size = 512.00 MiB\n"
+                    "load_tensors: offloaded 29/29 layers to GPU\n"
+                    f"> {prompt_txt}\n{reply}\n"
+                    "[ Prompt: 2500.0 t/s | Generation: 195.5 t/s ]\n"
+                )
+                for r_idx, console in (("r00", litert_console), ("r01", llama_console)):
+                    for run_i in (1, 2):
+                        (logs / f"{r_idx}_run{run_i}.json").write_text(json.dumps({
+                            "exitCode": 0, "timedOut": False,
+                            "start": f"2026-10-29T12:00:0{run_i}Z",
+                            "elapsedSeconds": 1.2, "peakWorkingSetBytes": 800 * 2**20,
+                            "command": "test.exe",
+                        }))
+                        (logs / f"{r_idx}_run{run_i}.log").write_text(console)
+                clean, total = run_windows_matrix.write_records(
+                    plan, campaign_dir, inv, litert_label="21f113ea6eba", pins=pins)
+                return 0 if clean == total == 4 else 1
+
+            run_windows_matrix.register_executor("fake-omnilab", fake_executor)
+            try:
+                raw_dir = os.path.join(tmp, "raw")
+                with patch.dict(os.environ, {"BENCH_RAW_ROOT": raw_dir}):
+                    rc = run_windows_matrix.main([
+                        cells_path, "--executor", "fake-omnilab", "--campaign", "2026-10-29-win",
+                        "--litert-label", "21f113ea6eba",
+                        "--model-file", f"litert-lm:org/model={litert_file}",
+                        "--model-file", f"llama.cpp:org/gguf={gguf_file}",
+                    ])
+                self.assertEqual(rc, 0)
+            finally:
+                run_windows_matrix.EXECUTORS.pop("fake-omnilab", None)
+
+            sum_dir = os.path.join(tmp, "summary")
+            dash_dir = os.path.join(tmp, "dash")
+            with patch.object(build_summary, "ROOT", tmp):
+                build_summary.main(["--raw-dir", raw_dir, "--out-dir", sum_dir])
+            self.assertEqual(render_dashboard.main([
+                "--cells", cells_path, "--summary-csv", os.path.join(sum_dir, "device-runs.csv"),
+                "--raw-dir", raw_dir, "--schedule", os.path.join(tmp, "no-sched.json"),
+                "--md", os.path.join(dash_dir, "DASHBOARD.md"), "--out-dir", dash_dir,
+            ]), 0)
+            j = json.load(open(os.path.join(dash_dir, "dashboard-v1.json")))
+            by_arm = {c["arm"]: (c["status"], c["decode_tps"], c["n"]) for c in j["cells"]}
+            # run 1 of litert-lm is firstEver (dropped); run 2 iter 1 is cold (80.0)
+            # run 1 of llama.cpp-gpu is firstEver (dropped); run 2 is cold (195.5)
+            self.assertEqual(by_arm, {
+                "litert-lm-cpu-ynnpack": ("measured", 80.0, 1),
+                "llama.cpp-gpu": ("measured", 195.5, 1),
+            })
 
 
 if __name__ == "__main__":
