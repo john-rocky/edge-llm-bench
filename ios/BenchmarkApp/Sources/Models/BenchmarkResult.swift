@@ -79,19 +79,24 @@ public struct BenchmarkResult: Codable, Sendable, Identifiable {
 
 /// The `conditions` keys an Apple record carries (the Android runner writes many more).
 /// Since 2026-10-19 llama.cpp reports how it built the prompt from the model's chat template,
-/// and every runtime the version of a task prompt that changed under the same id.
+/// and every runtime the version of a task prompt that changed under the same id; since
+/// 2026-10-30 llama.cpp also reports its flash attention setting.
 public struct RunConditions: Codable, Sendable {
     /// `jinja` (the model file's own template, rendered) | `builtin` (llama.cpp's built-in
     /// template set) | `bare` (no template: the run is not a measurement).
     public let chatTemplate: String?
     /// What the template was told about thinking; `nil` when no template applied.
     public let thinking: Thinking?
+    /// llama.cpp's flash attention: the setting it was handed (`auto` | `enabled` | `disabled`)
+    /// and, for `auto`, what it set it to (`auto, set to enabled`); `nil` for other runtimes.
+    public let flashAttn: String?
     /// `BenchmarkTask.promptVersion` of the run's task; `nil` (no key) = the id's first text.
     public let promptVersion: String?
 
-    public init(chatTemplate: String?, thinking: Thinking?, promptVersion: String? = nil) {
+    public init(chatTemplate: String?, thinking: Thinking?, flashAttn: String? = nil, promptVersion: String? = nil) {
         self.chatTemplate = chatTemplate
         self.thinking = thinking
+        self.flashAttn = flashAttn
         self.promptVersion = promptVersion
     }
 
@@ -101,7 +106,7 @@ public struct RunConditions: Codable, Sendable {
     static func record(_ runtime: RunConditions?, promptVersion: String?) -> RunConditions? {
         guard runtime != nil || promptVersion != nil else { return nil }
         return RunConditions(chatTemplate: runtime?.chatTemplate, thinking: runtime?.thinking,
-                             promptVersion: promptVersion)
+                             flashAttn: runtime?.flashAttn, promptVersion: promptVersion)
     }
 
     /// `true` / `false` in the JSON when `enable_thinking` was passed, `"template-default"`

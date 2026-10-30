@@ -34,6 +34,10 @@ public actor LlamaCppRuntime: LLMRuntime {
     private var templateThinking: Bool?
     /// How the last `generate` built its prompt, carried into its record.
     private var lastConditions: RunConditions?
+    /// The loaded context's flash attention setting, for the record (`conditions.flashAttn`): the
+    /// `flash_attn_type` handed to `llama_init_from_model`, by llama.cpp's own name, and for `auto`
+    /// what llama.cpp set it to ("auto, set to enabled", from its log line: `flashAttnLogged`).
+    private var flashAttn: String?
 
     /// KV context size handed to `llama_init_from_model`. llama.cpp allocates its KV to
     /// `n_ctx` up front, so this is most of what a memory cell measures — it used to be
@@ -44,8 +48,45 @@ public actor LlamaCppRuntime: LLMRuntime {
     private var contextBudget: Int32 = 4096
 
     private static let backendInit: Void = {
+        llama_log_set({ _, text, _ in LlamaCppRuntime.logLine(text) }, nil)
         llama_backend_init()
     }()
+
+    /// What llama.cpp set an `auto` flash attention to (`enabled` | `disabled`), from the line it
+    /// logs while it creates the context: b11721 "resolve_fused_ops: Flash Attention enabled" or
+    /// "… Flash Attention not supported, set to disabled", b8999 "sched_reserve: Flash Attention was
+    /// auto, set to enabled". Kept by `logLine`; `loadModel` clears it before `llama_init_from_model`
+    /// and reads it after. Guarded by `flashAttnLock`: llama.cpp logs from whatever thread it is on.
+    private nonisolated(unsafe) static var flashAttnLogged: String?
+    private static let flashAttnLock = NSLock()
+
+    /// The lock taken outside `loadModel`: NSLock's lock() is unavailable in an async function.
+    private static func setFlashAttnLogged(_ setting: String?) {
+        flashAttnLock.lock()
+        flashAttnLogged = setting
+        flashAttnLock.unlock()
+    }
+
+    private static func readFlashAttnLogged() -> String? {
+        flashAttnLock.lock()
+        defer { flashAttnLock.unlock() }
+        return flashAttnLogged
+    }
+
+    /// llama.cpp's (and ggml's) logger: every line goes to stderr, as their default logger writes
+    /// it, and the flash attention line is kept as well.
+    private static func logLine(_ text: UnsafePointer<CChar>?) {
+        guard let text else { return }
+        let line = String(cString: text)
+        if let r = line.range(of: "Flash Attention was auto, set to ") {
+            setFlashAttnLogged(line[r.upperBound...].trimmingCharacters(in: .whitespacesAndNewlines))
+        } else if line.contains("Flash Attention not supported, set to disabled") {
+            setFlashAttnLogged("disabled")
+        } else if line.contains("Flash Attention enabled") {
+            setFlashAttnLogged("enabled")
+        }
+        FileHandle.standardError.write(Data(bytes: text, count: strlen(text)))
+    }
 
     /// `--llama-backend cpu|gpu` (the app's flag; default gpu = every layer on Metal, the arm every
     /// Apple llama.cpp row so far measured). cpu keeps every layer on the CPU (`n_gpu_layers = 0`), and
@@ -113,12 +154,15 @@ public actor LlamaCppRuntime: LLMRuntime {
         ctxParams.n_threads = Int32(nThreads)
         ctxParams.n_threads_batch = Int32(nThreads)
 
+        Self.setFlashAttnLogged(nil)
         guard let c = llama_init_from_model(m, ctxParams) else {
             llama_model_free(m)
             self.model = nil
             throw LLMRuntimeError.loadFailed("llama_init_from_model returned NULL")
         }
         self.context = c
+        let flashAttnAsked = String(cString: llama_flash_attn_type_name(ctxParams.flash_attn_type))
+        self.flashAttn = Self.readFlashAttnLogged().map { "\(flashAttnAsked), set to \($0)" } ?? flashAttnAsked
 
         self.batch = llama_batch_init(2048, 0, 1)
 
@@ -153,6 +197,7 @@ public actor LlamaCppRuntime: LLMRuntime {
         jinjaUnavailable = nil
         templateThinking = nil
         lastConditions = nil
+        flashAttn = nil
         loadedModelId = nil
     }
 
@@ -200,7 +245,7 @@ public actor LlamaCppRuntime: LLMRuntime {
         // <|im_start|> tokenize as special tokens, not literal text; addBOS adds the vocab's
         // BOS once (the jinja render's own leading <bos> is dropped, the built-in set writes none).
         let built = buildPrompt(prompt)
-        lastConditions = RunConditions(chatTemplate: built.path, thinking: built.thinking)
+        lastConditions = RunConditions(chatTemplate: built.path, thinking: built.thinking, flashAttn: flashAttn)
         let promptTokens = tokenize(text: built.text, addBOS: true, parseSpecial: built.path != "bare")
 
         var b = batch ?? llama_batch_init(Int32(max(promptTokens.count, 2048)), 0, 1)
