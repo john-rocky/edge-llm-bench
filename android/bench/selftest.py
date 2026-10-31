@@ -2114,6 +2114,28 @@ def main():
          "promptTokenCount": 1355, "generatedTokenCount": 256}]
        and k2_checks["protocolFlags"] == [],
        f"main@b7c40ea81 1K: Prefill Turn 1's count and speed, not the second turn's (got {its2} {k2_checks})")
+    # LiteRT-LM v0.19.0 (the release build, Galaxy S26, 2026-10-31): short chat runs two prefill turns too (Turn 2
+    # = 148 tokens after the reply), the 1K task two per iteration (Turn 2 = 2 tokens) and an Aggregated block after
+    # them, the protocol path one; the values are the stored records' (results/raw/2026-10-31-d178-v0190-paths-s26-android)
+    v19 = lambda task: lrd(f"s26-v0.19.0-gpu-qwen3-0.6b-{task}.console.txt")
+    ok(rounded(parsers.parse_litert(v19("short-chat"))) == {
+        "firstTokenLatencyMS": 150.0, "promptTokensPerSecond": 139.3, "decodeTokensPerSecond": 82.08,
+        "promptTokenCount": 19, "generatedTokenCount": 468},
+       "v0.19.0 short-chat: Prefill Turn 1 (19 tokens at 139.30 tok/s), not Turn 2 (148 at 525.64)")
+    its3, k3_checks = parsers.context_prompt_results(v19("long-context-1024-gen256"), 2048, 256)
+    ok([rounded(m) for m in its3] == [
+        {"firstTokenLatencyMS": 1090.0, "promptTokensPerSecond": 1257.17, "decodeTokensPerSecond": 70.23,
+         "promptTokenCount": 1355, "generatedTokenCount": 256},
+        {"firstTokenLatencyMS": 1150.0, "promptTokensPerSecond": 1188.83, "decodeTokensPerSecond": 73.5,
+         "promptTokenCount": 1355, "generatedTokenCount": 256}]
+       and k3_checks == {"allocationWitnessTokens": [2048], "invalidDecodeCount": 0, "protocolFlags": []},
+       f"v0.19.0 1K: two iterations, Prefill Turn 1 each, the Aggregated block no third (got {its3} {k3_checks})")
+    v19p = v19("native-benchmark-1024x256")
+    ok(rounded(parsers.parse_litert(v19p)) == {
+        "firstTokenLatencyMS": 700.0, "promptTokensPerSecond": 1482.53, "decodeTokensPerSecond": 74.57,
+        "promptTokenCount": 1024, "generatedTokenCount": 256}
+       and len(parsers.parse_litert_iterations(v19p)) == 1,
+       "v0.19.0 protocol: one prefill turn of 1024 tokens, one decode turn of 256")
 
     # the cells grammar of the side builds (validate_cells) and the runner's refusals
     sys.path.insert(0, os.path.join(ROOT, "scripts"))

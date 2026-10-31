@@ -30,7 +30,7 @@ LITERTLM_DIR="${VENDORED_DIR}/LiteRT-LM"
 # vendors the engine behind the published rows (the old v0.13.1 default handed
 # fresh users an engine three releases behind the leaderboard; 2026-08-26
 # rehearsal). Bump this WITH the lock, per release, never casually.
-LITERTLM_TAG="${LITERTLM_TAG:-v0.16.0}"
+LITERTLM_TAG="${LITERTLM_TAG:-v0.19.0}"
 
 mkdir -p "${VENDORED_DIR}"
 
@@ -102,6 +102,29 @@ fi
 if ! grep -q "maxNumTokens: Int? = nil" "${LITERTLM_DIR}/swift/Benchmark.swift"; then
     echo "Applying litert-lm-swift-benchmark-maxnumtokens.patch …"
     git -C "${LITERTLM_DIR}" apply "$(pwd)/patches/litert-lm-swift-benchmark-maxnumtokens.patch"
+fi
+# Release-zip patch (committed: patches/litert-lm-<tag>-package-release-zips.patch): the v0.19.0
+# tag's Package.swift still names the v0.18.1 CLiteRTLM zips (url + checksum of both binaryTargets),
+# so a clean v0.19.0 clone links the v0.18.1 engine (found 2026-10-31). The patch points both at the
+# tag's own release assets (checksum = the release's sha256). A Package.swift that names another
+# release's zips with no patch for this tag stops here.
+if ! grep -q "releases/download/${LITERTLM_TAG}/CLiteRTLM.xcframework.zip" "${LITERTLM_DIR}/Package.swift"; then
+    PKG_PATCH="$(pwd)/patches/litert-lm-${LITERTLM_TAG}-package-release-zips.patch"
+    if [ ! -f "${PKG_PATCH}" ]; then
+        echo "ERROR: ${LITERTLM_DIR}/Package.swift does not name the ${LITERTLM_TAG} release zips, and there is no ${PKG_PATCH}." >&2
+        exit 1
+    fi
+    echo "Applying $(basename "${PKG_PATCH}") …"
+    git -C "${LITERTLM_DIR}" apply "${PKG_PATCH}"
+fi
+# Local API patch (committed: patches/litert-lm-swift-benchmarkinfo-turns.patch): from v0.19.0 one
+# message can run more than one prefill turn, and BenchmarkInfo's last* fields read the last one,
+# not the prompt's (the Mac's 1K task read 392 of its 1,355 tokens, 2026-10-31). The patch adds every
+# turn's counts and speeds; MediaPipeRuntime reads the turn the prompt ran in. Written against
+# v0.19.0's swift/ sources. Guarded = idempotent.
+if ! grep -q "prefillTokenCounts" "${LITERTLM_DIR}/swift/Benchmark.swift"; then
+    echo "Applying litert-lm-swift-benchmarkinfo-turns.patch …"
+    git -C "${LITERTLM_DIR}" apply "$(pwd)/patches/litert-lm-swift-benchmarkinfo-turns.patch"
 fi
 
 # 4. CoreML-LLM (john-rocky). Local SwiftPM package (CoreMLLLM product) for the CoreML/ANE

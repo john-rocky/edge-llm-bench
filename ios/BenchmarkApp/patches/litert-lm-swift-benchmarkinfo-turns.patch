@@ -1,0 +1,64 @@
+diff --git a/swift/Benchmark.swift b/swift/Benchmark.swift
+index af27419..5c554cd 100644
+--- a/swift/Benchmark.swift
++++ b/swift/Benchmark.swift
+@@ -41,6 +41,16 @@ public struct BenchmarkInfo {
+   /// requested one, e.g. for a model whose KV cache size is fixed when it is compiled. 0 if the
+   /// engine didn't report it.
+   public let maxNumTokens: Int
++
++  /// Every prefill turn's token count and tokens per second, oldest first. One message can run
++  /// more than one prefill turn (v0.19.0: the prompt, then a turn after the reply), so the
++  /// `last*` fields above can describe a turn other than the prompt's.
++  public var prefillTokenCounts: [Int] = []
++  public var prefillTokensPerSecond: [Double] = []
++
++  /// Every decode turn's token count and tokens per second, oldest first.
++  public var decodeTokenCounts: [Int] = []
++  public var decodeTokensPerSecond: [Double] = []
+ }
+ 
+ /// Runs a benchmark on the LiteRT-LM engine.
+diff --git a/swift/Conversation.swift b/swift/Conversation.swift
+index a01aef2..24e1265 100644
+--- a/swift/Conversation.swift
++++ b/swift/Conversation.swift
+@@ -708,7 +708,7 @@ public final class Conversation: Sendable {
+         Int32(0), "litert_lm_benchmark_info_get_max_num_tokens", makeError
+       ) { litert_lm_benchmark_info_get_max_num_tokens(benchmarkInfoPtr, $0) })
+ 
+-    return BenchmarkInfo(
++    var info = BenchmarkInfo(
+       initTimeInSecond: initTimeInSecond,
+       timeToFirstTokenInSecond: timeToFirstTokenInSecond,
+       lastPrefillTokenCount: lastPrefillTokenCount,
+@@ -717,6 +717,29 @@ public final class Conversation: Sendable {
+       lastDecodeTokensPerSecond: lastDecodeTokensPerSec,
+       maxNumTokens: maxNumTokens
+     )
++    for index in 0..<numPrefillTurns {
++      info.prefillTokenCounts.append(
++        try Int(
++          LiteRTLMError.get(
++            0, "litert_lm_benchmark_info_get_prefill_token_count_at", makeError
++          ) { litert_lm_benchmark_info_get_prefill_token_count_at(benchmarkInfoPtr, index, $0) }))
++      info.prefillTokensPerSecond.append(
++        try LiteRTLMError.get(
++          0.0, "litert_lm_benchmark_info_get_prefill_tokens_per_sec_at", makeError
++        ) { litert_lm_benchmark_info_get_prefill_tokens_per_sec_at(benchmarkInfoPtr, index, $0) })
++    }
++    for index in 0..<numDecodeTurns {
++      info.decodeTokenCounts.append(
++        try Int(
++          LiteRTLMError.get(
++            0, "litert_lm_benchmark_info_get_decode_token_count_at", makeError
++          ) { litert_lm_benchmark_info_get_decode_token_count_at(benchmarkInfoPtr, index, $0) }))
++      info.decodeTokensPerSecond.append(
++        try LiteRTLMError.get(
++          0.0, "litert_lm_benchmark_info_get_decode_tokens_per_sec_at", makeError
++        ) { litert_lm_benchmark_info_get_decode_tokens_per_sec_at(benchmarkInfoPtr, index, $0) })
++    }
++    return info
+   }
+ 
+   /// Internal Helper Function to convert a JSON string to a `Message`.

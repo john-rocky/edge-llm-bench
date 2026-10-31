@@ -43,6 +43,23 @@ enum LiteRTPrebuiltAccelerator {
     }
 }
 
+extension BenchmarkInfo {
+    /// The prefill turn at `index` (token count, tokens per second), nil when the engine reported
+    /// fewer turns. From LiteRT-LM v0.19.0 one message can run more than one prefill turn (the
+    /// Mac's 1K task: the 1,355-token prompt, then a later turn), and `lastPrefillTokenCount` then
+    /// reads the later one (392 on 2026-10-31). The turn lists come from
+    /// `patches/litert-lm-swift-benchmarkinfo-turns.patch`.
+    func prefillTurn(_ index: Int) -> (count: Int, tokensPerSecond: Double)? {
+        guard index >= 0, index < prefillTokenCounts.count, index < prefillTokensPerSecond.count else { return nil }
+        return (prefillTokenCounts[index], prefillTokensPerSecond[index])
+    }
+
+    /// Every turn's token counts, for the console (`YARDSTICK_NOTE litert_turns`).
+    var turnsNote: String {
+        "prefill=\(prefillTokenCounts) decode=\(decodeTokenCounts)"
+    }
+}
+
 
 /// LiteRT-LM adapter — wraps Google's official `google-ai-edge/LiteRT-LM`
 /// Swift API (`import LiteRTLM`, ≥ 0.12.0).
@@ -216,10 +233,13 @@ public actor MediaPipeRuntime: LLMRuntime {
             cacheDir: NSTemporaryDirectory(),
             maxNumTokens: maxNumTokens  // last, as upstream added it (and the patch for older tags)
         )
+        // One benchmark() call sends one message: its first prefill turn is the synthetic prompt.
+        let prefill = info.prefillTurn(0)
+        FileHandle.standardError.write("YARDSTICK_NOTE litert_turns \(info.turnsNote) prompt_turn=0\n".data(using: .utf8)!)
         return NativeBenchmarkInfo(
-            prefillTokenCount: info.lastPrefillTokenCount,
+            prefillTokenCount: prefill?.count ?? 0,
             decodeTokenCount: info.lastDecodeTokenCount,
-            prefillTokensPerSecond: info.lastPrefillTokensPerSecond,
+            prefillTokensPerSecond: prefill?.tokensPerSecond ?? 0,
             decodeTokensPerSecond: info.lastDecodeTokensPerSecond,
             timeToFirstTokenSeconds: info.timeToFirstTokenInSecond,
             initTimeSeconds: info.initTimeInSecond
@@ -320,6 +340,7 @@ public actor MediaPipeRuntime: LLMRuntime {
             var turnError: Error?
             var watchdogFired: String?
             var attempt = 0
+            var prefillTurnsBefore = 0
 
             attemptLoop: while true {
                 attempt += 1
@@ -356,6 +377,8 @@ public actor MediaPipeRuntime: LLMRuntime {
                         let note = "YARDSTICK_NOTE sync_send prompt_chars=\(promptText.count) prompt_head=\(promptText.prefix(48).replacingOccurrences(of: "\n", with: " ")) reply_head=\(probeText.prefix(160).replacingOccurrences(of: "\n", with: " "))\n"
                         FileHandle.standardError.write(note.data(using: .utf8)!)
                     }
+                    // This turn's prompt prefill is the first prefill turn its send runs.
+                    prefillTurnsBefore = (try? conversation.getBenchmarkInfo())?.prefillTokenCounts.count ?? 0
                     for try await chunk in conversation.sendMessageStream(
                         Message(promptText), maxOutputTokens: cap
                     ) {
@@ -435,8 +458,8 @@ public actor MediaPipeRuntime: LLMRuntime {
                 ttftMS: firstChunkAt.map { ($0 - turnStart) * 1000 },
                 wallSeconds: turnEnd - turnStart,
                 chunkCount: chunkCount,
-                prefillTokens: bench.map { $0.lastPrefillTokenCount },
-                prefillTokensPerSecond: bench.map { $0.lastPrefillTokensPerSecond },
+                prefillTokens: bench?.prefillTurn(prefillTurnsBefore)?.count,
+                prefillTokensPerSecond: bench?.prefillTurn(prefillTurnsBefore)?.tokensPerSecond,
                 decodeTokens: decodeTokens,
                 decodeTokensPerSecond: bench.map { $0.lastDecodeTokensPerSecond },
                 decodeTokensPerSecondWallClock: wallRate,
@@ -581,6 +604,10 @@ public actor MediaPipeRuntime: LLMRuntime {
             }
         }
 
+        // The prompt's prefill is the first turn this send runs: count the turns before it (0 on
+        // a fresh conversation; the sync probe above runs its own).
+        let prefillTurnsBefore = (try? conversation.getBenchmarkInfo())?.prefillTokenCounts.count ?? 0
+
         // `engineOutputCap`: the engine stops at the budget itself (nil = the stock unbounded
         // stream, capped and drained below as before).
         for try await chunk in conversation.sendMessageStream(
@@ -655,7 +682,11 @@ public actor MediaPipeRuntime: LLMRuntime {
         let decodeBench = (capped && !Self.engineOutputCap) ? nil : bench
         let decodeTokens = (decodeBench.map { $0.lastDecodeTokenCount } ?? 0) > 0
             ? decodeBench!.lastDecodeTokenCount : tokenCount
-        let promptTokens = bench?.lastPrefillTokenCount ?? 0
+        let promptTurn = bench?.prefillTurn(prefillTurnsBefore)
+        if let b = bench {
+            FileHandle.standardError.write("YARDSTICK_NOTE litert_turns \(b.turnsNote) prompt_turn=\(prefillTurnsBefore)\n".data(using: .utf8)!)
+        }
+        let promptTokens = promptTurn?.count ?? 0
         let generateTime: TimeInterval = {
             if let b = decodeBench, b.lastDecodeTokensPerSecond > 0, b.lastDecodeTokenCount > 0 {
                 return Double(b.lastDecodeTokenCount) / b.lastDecodeTokensPerSecond
@@ -663,8 +694,8 @@ public actor MediaPipeRuntime: LLMRuntime {
             return wallGenerate
         }()
         let promptTime: TimeInterval = {
-            if let b = bench, b.lastPrefillTokensPerSecond > 0, b.lastPrefillTokenCount > 0 {
-                return Double(b.lastPrefillTokenCount) / b.lastPrefillTokensPerSecond
+            if let t = promptTurn, t.tokensPerSecond > 0, t.count > 0 {
+                return Double(t.count) / t.tokensPerSecond
             }
             return wallPrefill
         }()

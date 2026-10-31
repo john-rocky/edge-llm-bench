@@ -40,14 +40,19 @@
         }
       },
       "mac": {
-        "tag": "v0.18.0",
-        "since": "2026-10-19",
+        "tag": "v0.19.0",
+        "since": "2026-10-31",
         "previous": {
-          "tag": "v0.16.0",
-          "since": "2026-09-18",
-          "note": "Withdrawn 2026-10-19: the block registered 2026-10-18 said v0.18.0 since 2026-10-12. The dashboard job's Mac yardstick (.build/dd-mac/Build/Products/Release/yardstick, built 2026-09-18 05:00) links @rpath/libCLiteRTLM_mac.dylib and the dylib beside it is the v0.16.0 artifact's (142,807,744 bytes, dated 2026-08-11, sha256 ae31a93f...); the v0.18.0 dylib exists only in .build/dd-mac-0180 (2026-10-07), which the job never ran. The engineVersion v0.18.0 the Mac LiteRT-LM records stamp from 2026-10-12 on comes from BENCH_ENGINE_PINS_FILE = ios/BenchmarkApp/Vendored/engine-pins.json (written 2026-10-07 by the dd-mac-0180 build's pre-build stamp), not from the loaded binary: the 2026-10-12, 10-16 and 10-19 Mac LiteRT-LM rows are v0.16.0 measurements. This block names what ran (v0.16.0 since the 2026-09-18 build) so the session checker holds those stamps (engine-stamp) until the rebuilt yardstick replaces .build/dd-mac; then this block moves to the new tag with that day. Found by round r9 (results/raw/2026-10-18-bench-autopilot-dev/ROUND9.md), confirmed by the supervisor with otool -L and the dylib's sha."
+          "tag": "v0.18.0",
+          "since": "2026-10-19",
+          "previous": {
+            "tag": "v0.16.0",
+            "since": "2026-09-18",
+            "note": "Withdrawn 2026-10-19: the block registered 2026-10-18 said v0.18.0 since 2026-10-12. The dashboard job's Mac yardstick (.build/dd-mac/Build/Products/Release/yardstick, built 2026-09-18 05:00) links @rpath/libCLiteRTLM_mac.dylib and the dylib beside it is the v0.16.0 artifact's (142,807,744 bytes, dated 2026-08-11, sha256 ae31a93f...); the v0.18.0 dylib exists only in .build/dd-mac-0180 (2026-10-07), which the job never ran. The engineVersion v0.18.0 the Mac LiteRT-LM records stamp from 2026-10-12 on comes from BENCH_ENGINE_PINS_FILE = ios/BenchmarkApp/Vendored/engine-pins.json (written 2026-10-07 by the dd-mac-0180 build's pre-build stamp), not from the loaded binary: the 2026-10-12, 10-16 and 10-19 Mac LiteRT-LM rows are v0.16.0 measurements. This block names what ran (v0.16.0 since the 2026-09-18 build) so the session checker holds those stamps (engine-stamp) until the rebuilt yardstick replaces .build/dd-mac; then this block moves to the new tag with that day. Found by round r9 (results/raw/2026-10-18-bench-autopilot-dev/ROUND9.md), confirmed by the supervisor with otool -L and the dylib's sha."
+          },
+          "note": "From the 2026-10-19 rebuild on: .build/dd-mac is the yardstick built that day with the vendored LiteRT-LM v0.18.0 (the dylib beside it, sha256 9526db9ee35e7eb4..., is the v0.18.0 artifact's; proven by one smoke launch with DYLD_PRINT_LIBRARIES before the switch) and llama.cpp b11721; the 2026-09-18 yardstick (v0.16.0 dylib) is kept as .build/dd-mac-0918-litert0160-llama8999. The 2026-10-19 02:00 sitting still ran the old binary (its records stamp v0.18.0 from the pins file and hold on engine-stamp, prompt-tokens, partial, failures); the first sitting on this build is the by-hand weekly started after this registration."
         },
-        "note": "From the 2026-10-19 rebuild on: .build/dd-mac is the yardstick built that day with the vendored LiteRT-LM v0.18.0 (the dylib beside it, sha256 9526db9ee35e7eb4..., is the v0.18.0 artifact's; proven by one smoke launch with DYLD_PRINT_LIBRARIES before the switch) and llama.cpp b11721; the 2026-09-18 yardstick (v0.16.0 dylib) is kept as .build/dd-mac-0918-litert0160-llama8999. The 2026-10-19 02:00 sitting still ran the old binary (its records stamp v0.18.0 from the pins file and hold on engine-stamp, prompt-tokens, partial, failures); the first sitting on this build is the by-hand weekly started after this registration."
+        "note": "From the 2026-10-31 swap on: .build/dd-mac is the yardstick built that day from this commit's tree with the vendored LiteRT-LM v0.19.0 plus patches/litert-lm-v0.19.0-package-release-zips.patch (the tag's Package.swift names the v0.18.1 zips) and patches/litert-lm-swift-benchmarkinfo-turns.patch (the dylib beside it, sha256 65ddc8f1ded860fd..., is the v0.19.0 CLiteRTLM_mac.xcframework.zip's; proven with DYLD_PRINT_LIBRARIES before the switch) and llama.cpp b11721 (unchanged). One launch each on the dashboard Qwen3 0.6B file read the prompt's token count as the v0.18.0 records do (short chat 19, the 1K task 1,355, the 1024/256 protocol 1,024; an unpatched v0.19.0 app records the last prefill turn, 392 for the 1K task). The yardstick it replaces (built 2026-10-20 15:40, v0.18.0 dylib 9526db9e...) is kept as .build/dd-mac-1020-litert0180. The rows stamp v0.19.0 from ios/BenchmarkApp/Vendored/engine-pins.json, re-vendored in the same minutes."
       },
       "ios": {
         "tag": "v0.18.0",
@@ -55,16 +60,26 @@
         "note": "The iPhone 18 Pro's weekly app rebuilt on v0.18.0 (the .build/dd-ios-0180-18pro tree, CLiteRTLM.xcframework.zip@v0.18.0) and installed 2026-10-19; its records stamp v0.16.0 through 2026-10-17 (default_tag). Registered the same day."
       },
       "android": {
-        "built_by": "android/scripts/build_litert_lm_main.sh (bazel + NDK r28b+; releases ship no Android binary, verified v0.14-v0.16 and v0.18.0)",
+        "built_by": "android/scripts/build_litert_lm_main.sh (bazel + NDK r28b+; releases ship no Android binary, verified v0.14-v0.16, v0.18.0 and v0.19.0)",
         "macos_host_flag": "--enable_platform_specific_config (rules_rust E0463 otherwise; google-ai-edge/LiteRT-LM#3247)",
-        "tag": "v0.18.0",
-        "since": "2026-10-15",
-        "note": "Android dashboard pin since 2026-10-15 (v0.16.0 before): the Galaxy S26 Gemma 4 E2B GPU protocol cell read 25.9 tok/s decode at 1024/256 on v0.16.0 while 0.18-era builds of LiteRT-LM read 44-47 on the same phone and file (results/raw/2026-10-11-s26-gallery-vs-binary). The endurance cells stay on v0.16.0 (not in the weekly set): litert_lm_endurance_main_sha256 below is the v0.16.0 build.",
-        "tag_built": "v0.18.0",
-        "observed": "v0.18.0",
-        "litert_lm_main_sha256": "54832c4992f932aec76e85be546b63dcb1e2820236d76c8f38d66c0ecc62774a",
-        "gpu_so_count": 7,
-        "litert_lm_advanced_main_sha256": "cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815",
+        "tag": "v0.19.0",
+        "since": "2026-10-31",
+        "previous": {
+          "tag": "v0.18.0",
+          "since": "2026-10-15",
+          "note": "Android dashboard pin since 2026-10-15 (v0.16.0 before): the Galaxy S26 Gemma 4 E2B GPU protocol cell read 25.9 tok/s decode at 1024/256 on v0.16.0 while 0.18-era builds of LiteRT-LM read 44-47 on the same phone and file (results/raw/2026-10-11-s26-gallery-vs-binary). The endurance cells stay on v0.16.0 (not in the weekly set): litert_lm_endurance_main_sha256 below is the v0.16.0 build.",
+          "tag_built": "v0.18.0",
+          "observed": "v0.18.0",
+          "litert_lm_main_sha256": "54832c4992f932aec76e85be546b63dcb1e2820236d76c8f38d66c0ecc62774a",
+          "gpu_so_count": 7,
+          "litert_lm_advanced_main_sha256": "cf3636070a8e51b0ea13d9a4a8b26fc9a2f9aa38f9e1c7687fe009ce7550f815"
+        },
+        "note": "Android dashboard pin since 2026-10-31 (v0.18.0 before, under previous): built from the v0.19.0 tag (771b06e1a) by android/scripts/build_litert_lm_main.sh on 2026-10-31 (bazel 7.6.1, NDK 29.0.13113456). The tag's prebuilt/android_arm64 has five .so (v0.18.0: seven; no TopK sampler library), and the binaries link the GPU accelerator statically (S26 log: \"Statically linked GPU accelerator registered\", 916 / 916 prefill and 830 / 830 decode nodes on LITERT_CL for the Qwen3 0.6B file). Deployed to the Galaxy S26, Pixel 8a and Pixel 11 Pro on 2026-10-31 (deploy_litert_lm_android.sh --reset-caches, exit 0). One launch of each runner path on the S26 read Prefill Turn 1 as the prompt (short chat 19, the 1024-token text task 1,355 in both iterations, the 1024/256 protocol 1,024): android/bench/testdata/litert-lm/s26-v0.19.0-gpu-qwen3-0.6b-*.console.txt. The endurance cells stay on v0.16.0 (not in the weekly set): litert_lm_endurance_main_sha256 below is the v0.16.0 build.",
+        "tag_built": "v0.19.0",
+        "observed": "v0.19.0",
+        "litert_lm_main_sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+        "gpu_so_count": 5,
+        "litert_lm_advanced_main_sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
         "note_advanced_main": "synthetic PxD rows need litert_lm_advanced_main — only it consumes --benchmark_prefill/decode_tokens (verified in source AND on device: plain main ran its ~20-token default prompt regardless of the flags)",
         "litert_lm_endurance_main_sha256": "791d0f17ac6f010bbf248a205637bf9da76d0420dc95b44bdc955527bf52d567",
         "endurance_driver_source_sha256": "46fb3bff85c9e5f1979020a1ee66c0825372a65341d571cf5d09197af2adfb3d",

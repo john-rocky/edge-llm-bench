@@ -71,6 +71,8 @@ import run_ddp  # noqa: E402
 import record  # noqa: E402
 
 TAG = run_cell.load_pins()["android_pins"]["litert-lm"]  # the pinned LiteRT-LM Android tag (android/engine-pins.json)
+# the pin's engine files: its two tools and its so_files (v0.18.0: seven .so, v0.19.0: five)
+ENGINE_FILES = 2 + len(run_cell.load_pins()["litert-lm"][TAG]["so_files"])
 import scrub  # noqa: E402
 
 DASHBOARD = os.path.join(ROOT, "matrices", "dashboard-text-v1.cells")
@@ -226,14 +228,14 @@ def check_plan(tmp, bin_dir, models):
                     f"(key <= 32 B, value <= 1024 B), displayName <= 63 B and the regex, executionTimeout '<n>s' in "
                     f"60..10800, args <= 100, one action per type, --command= last ({bad_req[:1]})")
     j1 = plans["akita-35"]["jobs"][0]
-    ok(len(j1["push"]) == 11 and [f["kind"] for f in j1["push"]].count("engine") == 9
+    ok(len(j1["push"]) == ENGINE_FILES + 2 and [f["kind"] for f in j1["push"]].count("engine") == ENGINE_FILES
        and j1["wrapper"]["object"].endswith("/ddp_cell.sh") and all(f["sha256"] in f["object"] for f in j1["push"]),
-       "push = 9 engine files + model + prompt, content-addressed objects; the wrapper is the job's binary")
+       f"push = {ENGINE_FILES} engine files + model + prompt, content-addressed objects; the wrapper is the job's binary")
     pins = run_cell.load_pins()["litert-lm"][TAG]
     want_sha = {"litert_lm_main": pins["litert_lm_main_sha256"],
                 "litert_lm_advanced_main": pins["litert_lm_advanced_main_sha256"], **pins["so_files"]}
     got_sha = {f["name"]: f["sha256"] for f in j1["push"] if f["kind"] == "engine"}
-    ok(got_sha == want_sha, f"the 9 engine files' sha256 = android/engine-pins.json litert-lm {TAG}")
+    ok(got_sha == want_sha, f"the {ENGINE_FILES} engine files' sha256 = android/engine-pins.json litert-lm {TAG}")
     # D14: the CPU-cap wait is the id's cpucapWaitSeconds (m1q-36 0), else the attached-phone route's 300 s
     default_wait = 300 if "CPUCAP_WAIT" not in os.environ else run_cell.CPUCAP_WAIT
     waits = {dev: sorted({a for j in plans[dev]["jobs"] for a in j["args"] if a.startswith("--cpucap_wait=")})
@@ -1088,8 +1090,9 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
     out = os.path.join(campaign, "app-path-android")
     gcalls = open(glog).read().splitlines() if os.path.exists(glog) else []
     uploads = [c for c in gcalls if c.startswith("storage cp ") and not c.startswith("storage cp -r")]
-    ok(rc in (0, 1) and len(st["posts"]) == 1 and len(uploads) == 14,
-       f"one POST for the session's 2 jobs; 14 objects uploaded (9 engine, 2 models, 2 prompts, the wrapper) "
+    ok(rc in (0, 1) and len(st["posts"]) == 1 and len(uploads) == ENGINE_FILES + 5,
+       f"one POST for the session's 2 jobs; {ENGINE_FILES + 5} objects uploaded ({ENGINE_FILES} engine, 2 models, 2 prompts, "
+       f"the wrapper) "
        f"(rc {rc}, posts {len(st['posts'])}, uploads {len(uploads)}){'' if rc in (0, 1) else printed[-600:]}")
     req = json.load(open(os.path.join(ddp, "request-1.json"))) if os.path.exists(os.path.join(ddp, "request-1.json")) else None
     ok(req is not None and st["posts"] and req == st["posts"][0]
@@ -1170,8 +1173,8 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
         rc2, _ = run_driver([cells, "--campaign", "selftest-ddp-again-android"] + common, env)
     gcalls2 = open(glog).read().splitlines()[len(gcalls):]
     ok(rc2 in (0, 1) and not [x for x in gcalls2 if x.startswith("storage cp ") and not x.startswith("storage cp -r")]
-       and len([x for x in gcalls2 if x.startswith("storage ls ")]) == 14,
-       f"a second campaign checks the 14 objects (storage ls) and uploads none (rc {rc2})")
+       and len([x for x in gcalls2 if x.startswith("storage ls ")]) == ENGINE_FILES + 5,
+       f"a second campaign checks the {ENGINE_FILES + 5} objects (storage ls) and uploads none (rc {rc2})")
     # a 4xx answer to the POST: its body kept verbatim, nothing else
     st["reject"] = {"error": {"code": 400, "message": "Invalid value at 'session.session_config' (fake)",
                               "status": "INVALID_ARGUMENT"}}
