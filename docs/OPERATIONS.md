@@ -42,8 +42,8 @@ loudly instead of rebuilding the summary and looking like a capture.
    - Android: `LITERTLM_TAG=v0.16.0 android/scripts/build_litert_lm_main.sh`
      (it writes the tag's `android/engine-pins.json` entry), then
      `android/scripts/deploy_litert_lm_android.sh <tag> <serial> --reset-caches` on every
-     phone: it pushes the two tools and the seven `.so` files to the flat
-     `/data/local/tmp/llmbench/`, compares the phone's sha256 of all nine with the pin
+     phone: it pushes the two tools and the tag's `.so` files to the flat
+     `/data/local/tmp/llmbench/`, compares the phone's sha256 of all of them with the pin
      (exit 1 on any mismatch) and deletes the bundles' engine caches with their firstEver
      markers; `--check` later compares without pushing. Bump the tag in
      `android/engine-pins.json` `android_pins` (what `BENCH_SITTING=1`'s pin check expects)
@@ -310,11 +310,11 @@ ran on 2026-10-16: `results/raw/2026-10-16-ddp-linux-first-run-akita-35-android/
   outside a venv, Ubuntu 24.04's pip stops with `externally-managed-environment`);
   a gated Hub repo needs a token on the host. `./bench doctor --platform ddp`
   checks the python version, gcloud and its sign-in, `huggingface_hub` and the
-  9 engine files below (not the project's API or the bucket).
+  engine files below (not the project's API or the bucket).
 - The pinned LiteRT-LM Android files in `android/bin/<tag>/` (the tag is
   `android/engine-pins.json` `android_pins`), or in `$BENCH_ANDROID_BIN_DIR/<tag>/`:
   the release asset `android-litert-lm-<tag>` ("Engine acquisition" in
-  `android/README.md`) or a source build. The driver checks all 9 files against
+  `android/README.md`) or a source build. The driver checks all the files against
   the pins before it uploads anything.
 - A build that is not the pin (LiteRT-LM main, a pull request, a build made
   elsewhere): its files in `$BENCH_ANDROID_BIN_DIR/<label>/` and its entry

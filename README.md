@@ -131,8 +131,8 @@ Android SDK.
   `python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub`
   (a stock Debian / Ubuntu needs the `python3-venv` package first: `sudo apt install python3-venv`).
   A gated model repo needs your Hugging Face token on the host.
-- The pinned LiteRT-LM Android binaries: the 9 files (`litert_lm_main`,
-  `litert_lm_advanced_main`, 7 GPU `.so`) of the tag that
+- The pinned LiteRT-LM Android binaries: the files (`litert_lm_main`,
+  `litert_lm_advanced_main` and the tag's `.so` files: 7 in all at v0.19.0) of the tag that
   `android/engine-pins.json` `android_pins` `litert-lm` names, in
   `android/bin/<tag>/` (or `$BENCH_ANDROID_BIN_DIR/<tag>/`). They come from
   this repo's GitHub release `android-litert-lm-<tag>`; the release for the
@@ -152,7 +152,7 @@ Without the release, `LITERTLM_TAG=$TAG ANDROID_NDK_HOME=<NDK r28b+> android/scr
 builds the tag from source (bazelisk; it writes that build's sha256 into
 `android/engine-pins.json`, so the driver's check passes with it and the
 records carry its sha256 in `engineArtifact`). Before anything is uploaded,
-the driver checks each of the 9 files against the sha256 that
+the driver checks each of the files against the sha256 that
 `android/engine-pins.json` pins for the tag. LiteRT-LM main, a pull request or
 a build made elsewhere runs with `--engine-build <label>` instead:
 [`android/README.md`](android/README.md), "Build from head or a PR".
@@ -160,7 +160,7 @@ a build made elsewhere runs with `--engine-build <label>` instead:
 Then check the checkout with no network and nothing billed: the selftest runs
 the plan, the job wrapper, the billed path and the records against a fake
 gcloud, a temp dir as the bucket and a fake Device Run server on localhost, and
-checks the 9 files against `android/engine-pins.json`.
+checks the files against `android/engine-pins.json`.
 
 ```bash
 ./android/ddp/selftest.py      # last line: ddp selftest OK (<N> checks); exit 0

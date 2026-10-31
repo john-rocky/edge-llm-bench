@@ -86,8 +86,8 @@ entry first, its labels carry `engine=<label>`, and the records' witness
 stamps `engineVersion` `<label>`.
 
 An engine built elsewhere (another machine, a change that is not on GitHub):
-put its files, `litert_lm_main`, `litert_lm_advanced_main` and the GPU `.so`
-set (9 files at v0.18.0), flat in `<dir>/<label>/`, then
+put its files, `litert_lm_main`, `litert_lm_advanced_main` and the tag's `.so`
+set (7 files at v0.19.0, 9 at v0.18.0), flat in `<dir>/<label>/`, then
 
 ```bash
 android/scripts/pins_add.py <label> <dir>/<label>    # --dry-run prints the entry and writes nothing
@@ -104,14 +104,14 @@ into the flat dir and put back ("Push runtime to the device" below).
 
 ## Push runtime to the device
 
-LiteRT-LM (the tag in `android/engine-pins.json` `android_pins`, v0.18.0 since 2026-10-15):
+LiteRT-LM (the tag in `android/engine-pins.json` `android_pins`, v0.19.0 since 2026-10-31):
 
 ```bash
-android/scripts/deploy_litert_lm_android.sh v0.18.0 <serial> --reset-caches
+android/scripts/deploy_litert_lm_android.sh v0.19.0 <serial> --reset-caches
 ```
 
-It pushes `litert_lm_main`, `litert_lm_advanced_main` and the seven GPU `.so` files to the flat
-`/data/local/tmp/llmbench/`, compares the phone's sha256 of all nine with the tag's pin (exit 1 on
+It pushes `litert_lm_main`, `litert_lm_advanced_main` and the tag's `.so` files (five at v0.19.0) to the flat
+`/data/local/tmp/llmbench/`, compares the phone's sha256 of all of them with the tag's pin (exit 1 on
 any mismatch: the witness reads the tools' sha only, so a stale `.so` would otherwise go unseen),
 and with `--reset-caches` deletes every LiteRT-LM bundle's engine caches and firstEver markers on
 the phone (the same paths the dashboard job's storage rotation deletes; models and records stay).
@@ -219,8 +219,8 @@ stamp `unknown (…)` and a sitting stops the cell before it launches.
 LiteRT-LM on the CPU or the GPU on a build other than the flat pin (cells
 `backend=cpu|gpu engine-build=<tag>`, arms `litert-lm-cpu` / `litert-lm-gpu`;
 since 2026-10-20) sits flat in `/data/local/tmp/llmbench/engines/<tag>/` too:
-its `litert_lm_main`, its `litert_lm_advanced_main` and the seven prebuilt
-libraries of the commit it was built at, the nine files the flat build has.
+its `litert_lm_main`, its `litert_lm_advanced_main` and the prebuilt
+libraries of the commit it was built at, the same set of files the flat build has.
 The runner starts the tools by absolute path with `LD_LIBRARY_PATH=$E` (the
 accelerator and sampler libraries load by name), runs the flat build's
 commands, and the witness reads both tools and the seven libs against the
