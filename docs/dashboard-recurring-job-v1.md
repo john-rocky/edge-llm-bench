@@ -269,7 +269,7 @@ bench host's):
 | Mac Studio (M4 Max) | any firing with no export pipeline running (the runner refuses while one runs; the job passes the Mac over until it is quiet) | 1 h 13 min (15 cells × 4 runs, 1 gate retry); v2 set 1 h 04 min (18 cells × 4 runs, 1 gate retry, 2026-09-08) | `bench doctor --platform mac` green, no yardstick running; Core AI bundles staged (advisory, `doctor` warns) | none (host); side by side with a phone sitting since 2026-09-08 (§3) |
 | Galaxy S26 | any firing; USB, screen on or off (read and stamped per launch), unmasked (`BENCH_CPU_MASK=`) | 3 h 23 min (15 cells × 3 runs, one session) | attached, campaign lock free, no foreign engine process, no frequency cap, ≥28 GB free or it falls back to halves | hold `s2_npu_sweep/.device_hold` |
 | Pixel 8a | any firing; USB, screen on or off (read and stamped per launch), `taskset f0` | 4 h 02 min as three sessions (a 1 h 41, b1 1 h 15, b2 1 h 06) + pushes | as S26; free space below 28 GB → halves with rotation | hold `.device_hold.pixel8a` (+ `.device_hold.<serial>`) |
-| Pixel 11 Pro (entry since 2026-10-27) | any firing; USB, screen on or off (read and stamped per launch), `taskset 7c` on every launch (chosen on llama.cpp's anchor row, `devices/pixel-11-pro.md`) | 9 h 47 min as one session (its first sitting, by hand on 2026-10-27: ten model files' first push and two gate re-runs included) | as S26 but without the free-space fallback: no `split`, the preflight logs the free space and the whole set runs as one session (459.1 GB free at registration as the job reads it) | hold `.device_hold.pixel11pro` (+ `.device_hold.<serial>`) |
+| Pixel 11 Pro (entry since 2026-10-27) | any firing (from 05:30 its `release_by` 08:00 leaves no room, §11); USB, screen on or off (read and stamped per launch), `taskset 7c` on every launch (chosen on llama.cpp's anchor row, `devices/pixel-11-pro.md`) | 9 h 47 min as one session (its first sitting, by hand on 2026-10-27: ten model files' first push and two gate re-runs included); since 2026-10-31 the S26's three halves in two sittings, a, then b1 + b2 (§11) | as S26; under `release_by` the halves run whatever the free space (459.1 GB free at registration as the job reads it: no half's floor rotates a copy out) | hold `.device_hold.pixel11pro` (+ `.device_hold.<serial>`), the sibling lanes' hold for this phone too (since 2026-10-31) |
 | iPhone 17 Pro | never by `auto` (`auto: false` since 2026-10-18: the owner's daily phone, not a bench device); by hand, `./bench dashboard-job iphone17pro`, in a window the owner offers — plugged, unlocked (Auto-Lock Never), one hold at a time | 1 h 53 min for 12 cells with every cell HOT-retried; about 25 min more for the E4B cells | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running | hold `community_accel_work/.iphone_hold` (+ `.device_hold.iphone`) |
 | iPhone 18 Pro (entry since 2026-10-06; the bench iPhone, kept on USB) | the 05:30 firing only (`auto_window` 05:00–08:00), after ≥4 h without a record; unlocked (Auto-Lock Never) | no sitting yet | attached, `lockState` unlocked, app installed, no `bench_matrix_iphone` running; `udid` is the UDID `devicectl list devices` prints | hold `~/code/coreai/ondevice/.device_hold` (the iPhone lanes' lockfile) + the iPhone 17 Pro's two names |
 | Galaxy S26 lab unit on the Developer Device Platform (`s26-ddp`, pool m1q-36 of SM-S942U1, since 2026-10-18) | never the firing's device: after its attached sitting (or a firing with none), while `ddp_weekly` is true in `ops/autopilot/switch.json`, at most once in `interval_days` (6) | 2026-10-16 by hand: 12 of its 16 jobs in 151 device-min, 92 min wall in three streams; first job sitting 2026-10-18: 42.9 min, 2 sessions (15.3 + 25.2 min), 193.0 device-min (ROUND5) | doctor.py `check_ddp` (gcloud signed in, huggingface_hub, the pinned engine files); the plan's Device Run sessions within `ddp_max_sessions`; no phone of this host listed or touched | none on the host; billed per device minute (about 200 a week) |
@@ -313,8 +313,12 @@ arm in the weekly set, Mac leg"; +0.6 for the ONNX Runtime rows since 2026-10-09
 GenAI arm in the weekly set"), Galaxy S26 10.3 in three halves plus the ONNX Runtime session and,
 since 2026-10-09, the NPU / GPU session (+2.1, "NPU and Android GPU rows in the weekly set";
 11.5 with a gate retry per session),
-Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), Pixel 11 Pro 9.8 (its
-first sitting, 2026-10-27, as one session), iPhone 4.8 with every
+Pixel 8a 11.1 (13.8 at the 2026-10-02 retry rate), Pixel 11 Pro 10.2 in the
+S26's three halves over two sittings since 2026-10-31 (its first sitting,
+2026-10-27, took 9.8 as one session; that day's launches and two gate
+re-runs, cut into the halves' rows, give a 4.45, b1 2.63 and b2 2.72 with each
+half's own anchor block, and each of the two sittings adds its anchor phase,
+0.2; timeout 20 = 1.5 × a × 3), iPhone 4.8 with every
 cell HOT-retried (the iPhone 18 Pro 5.8 since 2026-10-09: +1.0 for the ONNX Runtime
 rows, "ONNX Runtime GenAI arm in the weekly set"). `schedule.json` carries them as `expected_hours`, and
 `timeout_hours` = 1.5 × the estimate — for a phone in storage halves, 1.5 ×
@@ -885,14 +889,18 @@ yet (58 min that day); the basis says they may come.
 
 A device with `release_by` in schedule.json (`"HH:MM"`, local time) gets its
 hold back by the first such time after the firing began. Set on the Galaxy
-S26 and the Pixel 8a, both 08:00; the reason is `_release_by_doc` in
-schedule.json.
+S26, the Pixel 8a and the Pixel 11 Pro, all 08:00; the reasons are in
+`_release_by_doc` in schedule.json.
 
 Why: on 2026-10-26 a sibling lane queued for the S26 at 07:30 and got it at
 12:48, 317 min later, when the 02:00 sitting (10.8 h) gave the hold back.
 The sibling lanes' keeper logs of 2026-10-23..31 (303 keeper runs, 182 on
 the S26's hold, 121 on the Pixel 8a's) show the morning lanes arriving from
-about 07:30; that was the one wait behind a dashboard sitting.
+about 07:30; that was the one wait behind a dashboard sitting. The Pixel 11
+Pro got the same time later on 2026-10-31, when the sibling lanes took it as
+a development phone: their hold for it is the file the job takes (`hold`),
+and its first weekly sitting ran 13:46–23:33 (2026-10-27), a lane's whole
+day.
 
 What the job does (`scripts/dashboard_job.py`):
 
@@ -945,14 +953,23 @@ did before. So does an extra file skipped for a missing side build; a
 firing that finds only that file left reports the device not ready (exit 5)
 until the side build is back on the phone.
 
-With the newest run lengths in the job logs, the S26's week takes two
-sittings from 02:00: a + b1 (hold back about 07:40) and b2 + ort + npu
-(about 06:40). The Pixel 8a's takes one (about 07:20). With the Pixel 11
-Pro's one, the iPhone 18 Pro's one at 05:30 and the Mac's two parts, the
-week fills 6 of the 7 nights. Not covered: the Pixel 11 Pro and the iPhone
-18 Pro (one long run each, no halves, no keeper log names their holds), the
-Mac (no device hold; its window is `quiet_lock`), the lab units (no hold),
-and the iPhone 17 Pro (by hand only).
+With the newest run lengths in the job logs, each phone's first sitting of
+the week starts at 02:00 (from 05:30 none has room before 08:00 for its
+anchor phase and a). The S26's week takes two sittings from 02:00: a + b1
+(hold back about 07:40) and b2 + ort + npu (about 06:40). The Pixel 8a's
+takes one (about 07:20). The Pixel 11 Pro runs the S26's three halves and
+takes two: a (about 06:20) and b1 + b2 (about 07:00); if its halves take
+what their rows took on 2026-10-27 (4.45, 2.63 and 2.72 h, two gate re-runs
+included), about 06:40 and 07:35. Each of these five phone nights also
+covers the 05:30 firing; the iPhone 18 Pro's one at 05:30 and the Mac's two
+parts take the other two nights, so the week fills 7 of the 7 nights and
+leaves none for a retry. A lab unit's sitting that follows a Mac part can
+take that night's 05:30 firing too; the week still fits. A night that
+fails is taken again by hand, once, in the day (decided 2026-10-31). Not
+covered: the iPhone 18 Pro (one long run, no halves, no
+keeper log names its hold), the Mac (no device hold; its window is
+`quiet_lock`), the lab units (no hold), and the iPhone 17 Pro (by hand
+only).
 
 By hand: `./bench dashboard-job <key> --release-by HH:MM` sets another time
 for one invocation, and `--release-by none` lifts it. A dry run logs the cut
@@ -963,9 +980,12 @@ Check on the device: the first sitting this changes is the S26's first from
 Monday 2026-11-02 (auto takes the device whose last admitted session is the
 oldest; the Mac, when its window is free, may come first). Started at 02:00
 it should run a + b1, give the hold back about 07:40, and leave b2, ort and
-npu for a later firing that week; at 05:30 neither the S26 nor the Pixel 8a
-has room before 08:00 for its anchor phase and a first run, and auto passes
-it over. The day's auto log (`logs/dashboard-job/<date>-auto.log`) names the
+npu for a later firing that week; at 05:30 none of the three phones has
+room before 08:00 for its anchor phase and a, and auto passes it over. The day's auto log (`logs/dashboard-job/<date>-auto.log`) names the
 device each firing took; the S26's log (`logs/dashboard-job/<date>-s26.log`)
 shows the `release_by` lines, and the ledger reason names the runs left; the
-S26's second sitting that week runs them.
+S26's second sitting that week runs them. The Pixel 11 Pro's first sitting
+under it (on the night auto's order gives it) should log `running its storage
+halves instead`, run a only, give the hold back about 06:20 (06:40 with a
+gate re-run) and leave b1 and b2; its second should run b1 + b2 and give the
+hold back about 07:00 (07:35), in `logs/dashboard-job/<date>-pixel11pro.log`.

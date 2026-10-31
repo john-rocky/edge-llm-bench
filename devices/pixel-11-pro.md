@@ -12,16 +12,19 @@
   has been read for Tensor G6, so `devices/memory-bandwidth.json` carries
   `null` and the `bw util` column renders n/a, as for the Pixel 8a.
 - Storage: 462 GiB `/data` (df, KiB / 1024²), 459.1 GB free at registration
-  as the job counts it (KiB / 10^6, 2026-10-27 13:29; 437.8 GiB). The whole
-  weekly set runs as one session: the entry has no `split`. After the first
-  sitting the bench's directory on the phone (`/data/local/tmp/llmbench`:
-  the engines, the models and the caches LiteRT-LM writes beside each
-  bundle) held 40.8 GB (`du -sk`, KiB / 10^6, 2026-10-27); `storage_gb_full`
-  41 records it, though the job reads it only for an entry with a `split`.
-  Without one the job never falls back to halves; a full disk fails the push
-  (a `FAILURES.txt` line and adb's "No space left on device" in the
-  sitting's log, no record) or the run (a record with its exit code) — never
-  silently.
+  as the job counts it (KiB / 10^6, 2026-10-27 13:29; 437.8 GiB). The first
+  weekly sitting ran the whole set as one session; since 2026-10-31 the entry
+  carries the Galaxy S26's three storage halves (`split`) and `release_by`
+  08:00, so the set runs as halves over two sittings a week
+  (docs/dashboard-recurring-job-v1.md §11). After the first sitting the
+  bench's directory on the phone (`/data/local/tmp/llmbench`: the engines,
+  the models and the caches LiteRT-LM writes beside each bundle) held
+  40.8 GB (`du -sk`, KiB / 10^6, 2026-10-27); `storage_gb_full` 41 records
+  it. The halves' floors (`min_free_gb` 18 / 10 / 13) sit far below the free
+  space, so no half rotates another's copies out and all three halves' files
+  stay on the phone; a full disk fails the push (a `FAILURES.txt` line and
+  adb's "No space left on device" in the sitting's log, no record) or the
+  run (a record with its exit code) — never silently.
 - First measured: 2026-10-27, Android 17 (SDK 37), build
   CD1A.260618.001.A7, security patch 2026-06-05; the records carry
   `device.systemVersion` / `device.securityPatch` per run.

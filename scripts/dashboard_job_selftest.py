@@ -1404,9 +1404,10 @@ def release_by_cases(tmp, dj):
     invocation began; the week is done only when every run of the plan (the set or each of its halves, each extra
     file) has an admitted session since Monday; before the hold the anchor phase and the first payload run must
     fit (else TooLate: auto passes the device over), the whole set gives way to the halves when only they fit, and
-    a run expected to end past release_by is not started. A real sitting against a fake bench and hold tool in a
-    temp ROOT: the runs before the cut run, the hold is given back, the ledger reason names the runs left; the
-    next sitting runs those under a fresh campaign name and the week is then done."""
+    a run expected to end past release_by is not started; schedule.json's storage halves hold the set's rows, each
+    once. A real sitting against a fake bench and hold tool in a temp ROOT: the runs before the cut run, the hold is
+    given back, the ledger reason names the runs left; the next sitting runs those under a fresh campaign name and
+    the week is then done."""
     print("--- release_by: the deadline, the week's plan, the cut before a run, the pass-over, the carry-over")
     D = datetime.datetime
     at2 = D(2026, 11, 2, 2, 0)
@@ -1435,6 +1436,14 @@ def release_by_cases(tmp, dj):
     ok(refused == ["8:00", "24:00", "08:60", "0800"] and real_bad is None and held
        and all(real["devices"][k].get("hold") and real["devices"][k]["platform"] in ("android", "iphone") for k in held),
        f"check_release_by: HH:MM only; schedule.json's release_by parse, each on a device with a hold ({held})")
+    # under release_by the halves are the week's set (the S26 and the Pixel 11 Pro run them every week, the Pixel 8a
+    # for its storage): a row in no half never runs, so they are held to the parts' rule (parts_problem)
+    halves = {k: dj.parts_problem(real, dict(d, parts=[{"tag": dj.run_tag(h["cells"], {}), "cells": h["cells"]}
+                                                       for h in d["split"]]))
+              for k, d in real["devices"].items() if d.get("split")}
+    ok(halves and all(v is None for v in halves.values()),
+       f"schedule.json: each device's storage halves hold its rows of {real['cells']}, each once, the session anchor "
+       f"row first in every half ({halves})")
 
     rdir = os.path.join(tmp, "release-by")
     os.makedirs(rdir)
