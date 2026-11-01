@@ -1,0 +1,230 @@
+{
+ "leg": "W17B_kpy_gpu_dash_1",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "s29q3-s26-e",
+  "R": "EXIT=0 WALL=23 START=1793250478 END=1793250501 PID=7013 MEMMIN=na MEMGUARD_KB= OOMADJ=-1000",
+  "S0": "uptime=1178411.58 epoch=1793250478 thermal=1 pol=policy0:3628800/3628800,policy6:4742400/4742400 kgsl=1300/0/43800 batt=79/391 memavail_kb=7332524 free_kb=113497304",
+  "S1": "uptime=1178434.63 epoch=1793250501 thermal=2 pol=policy0:3513600/3628800,policy6:3974400/4742400 kgsl=902/5/57400 batt=79/397 memavail_kb=7344276 free_kb=113497212",
+  "C0": "5315696 W17B.litertlm_1793250059_977184032_mldrift_program_cache.bin;296 W17B.litertlm_1793250059_977184032_mldrift_weight_cache.bin;",
+  "C1": "5315696 W17B.litertlm_1793250059_977184032_mldrift_program_cache.bin;296 W17B.litertlm_1793250059_977184032_mldrift_weight_cache.bin;",
+  "C2": "5315696 W17B.litertlm_1793250059_977184032_mldrift_program_cache.bin;296 W17B.litertlm_1793250059_977184032_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 14:00:59.487996633 +0900",
+  "ARGS": "dash /data/local/tmp/s29q3_0190/W17B.litertlm gpu /data/local/tmp/s29q3_0190/long-context-1024-gen256.txt",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel dash /data/local/tmp/s29q3_0190/W17B.litertlm gpu /data/local/tmp/s29q3_0190/long-context-1024-gen256.txt  (runleg.sh: time limit 600 s)",
+  "name": "W17B_kpy_gpu_dash_1",
+  "label": "W17B",
+  "backend": "gpu",
+  "kind": "dash",
+  "tag": "1",
+  "cache_mode": "keep",
+  "timeout_s": 600,
+  "exit": 0,
+  "wall_s": 23,
+  "host_wall_s": 23,
+  "host_start": 1793250478,
+  "host_end": 1793250501,
+  "ready_waited_s": 41,
+  "ready": false,
+  "rest_s": 30,
+  "hold_t0": 1793248009,
+  "memguard_kb": null,
+  "memavail_min_kb": null,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 23,
+ "iterations": [
+  {
+   "init_total_ms": 9282.3,
+   "ttft_s": 1.39413603775,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 978.7636230262763,
+   "decode_tokens": 256,
+   "decode_tok_s": 36.8932123341787,
+   "turns": {
+    "prefill": [
+     {
+      "tokens": 1338,
+      "tokens_per_s": 978.7636230262763
+     },
+     {
+      "tokens": 2,
+      "tokens_per_s": 11.4283877907059
+     }
+    ],
+    "decode": [
+     {
+      "tokens": 256,
+      "tokens_per_s": 36.8932123341787
+     }
+    ]
+   },
+   "turn_used": "turn 1 of each kind",
+   "wall_s": 8.49
+  },
+  {
+   "init_total_ms": 9282.35,
+   "ttft_s": 1.4122830315,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 965.6639295179999,
+   "decode_tokens": 256,
+   "decode_tok_s": 37.442212139529175,
+   "turns": {
+    "prefill": [
+     {
+      "tokens": 1338,
+      "tokens_per_s": 965.6639295179999
+     },
+     {
+      "tokens": 2,
+      "tokens_per_s": 10.006728524259712
+     }
+    ],
+    "decode": [
+     {
+      "tokens": 256,
+      "tokens_per_s": 37.442212139529175
+     }
+    ]
+   },
+   "turn_used": "turn 1 of each kind",
+   "wall_s": 8.43
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": {
+  "prefill_tok_s": 965.66,
+  "decode_tok_s": 37.44,
+  "ttft_s": 1.41
+ },
+ "delegation": [
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 936,
+   "m": 936,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 936,
+   "m": 936,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 994/994 CL; prefill_1024 994/994 CL; decode 936/936 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuBufferFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuTexture",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuTextureFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuImageBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuImageBufferFp16"
+ ],
+ "opencl_lines": [
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBufferFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClTexture",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClTextureFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBufferPacked",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClImageBuffer"
+ ],
+ "data_loss": 0,
+ "serialized_init": 6,
+ "context_from_serialized": 6,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 305,
+ "kv_buffer_req_warnings": 336,
+ "error_lines": [
+  "10-29 14:07:59.418  7013  7013 E Adreno-AppProfiles: QSPM AIDL service doesn't exist",
+  "10-29 14:07:59.419  7013  7013 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 2,
+ "memguard_kb": null,
+ "memavail_min_kb": null,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "dash",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "set_min_log_severity(VERBOSE); Engine(model, backend, max_num_tokens=2048, enable_benchmark=True); per iteration create_conversation() + send_message(prompt, max_output_tokens=256); 2 iterations",
+  "engine_s": 4.49,
+  "prompt_tokens_raw": 1330,
+  "prompt_sha256": "f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426",
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": "VERBOSE"
+ },
+ "replies": [
+  {
+   "text": "",
+   "channels": {
+    "thought": "Okay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not cloud.\n\nFirst, I need to recall what on-device AI does. On-device AI processes data locally, which means it doesn't send data to the cloud. So, things like real-time processing, local model execution, etc. But I need to make sure each item is unique and not overlapping with the cloud's limitations.\n\nLet me start brainstorming. On-device AI can handle tasks without internet, like image recognition, voice assistants, etc. But cloud models might not do that because they rely on cloud services. Wait, but the user wants on-device features that a cloud can't do. So, maybe things like local model execution, real-time processing, and data privacy.\n\nBut I need to ensure each of the 25 items is distinct. Let me think of different areas. Maybe data processing, real-time decisions, local computation, user interaction, model optimization, edge computing, local storage, privacy, personalization, security, adaptive features, local data processing, edge AI, local AI, and maybe"
+   }
+  },
+  {
+   "text": "",
+   "channels": {
+    "thought": "Okay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not cloud.\n\nFirst, I need to recall what on-device AI does. On-device AI processes data locally, which means it doesn't send data to the cloud. So, things like real-time processing, local model execution, etc. But I need to make sure each item is unique and not overlapping with the cloud's limitations.\n\nLet me start brainstorming. On-device AI can handle tasks without internet, like image recognition, voice assistants, etc. But cloud models might not do that because they rely on cloud services. Wait, but the user wants on-device features that a cloud can't do. So, maybe things like local model execution, real-time processing, and data privacy.\n\nBut I need to ensure each of the 25 items is distinct. Let me think of different areas. Maybe data processing, real-time decisions, local computation, user interaction, model optimization, edge computing, local storage, privacy, personalization, security, adaptive features, local data processing, edge AI, local AI, and maybe"
+   }
+  }
+ ],
+ "text": "Okay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not cloud.\n\nFirst, I need to recall what on-device AI does. On-device AI processes data locally, which means it doesn't send data to the cloud. So, things like real-time processing, local model execution, etc. But I need to make sure each item is unique and not overlapping with the cloud's limitations.\n\nLet me start brainstorming. On-device AI can handle tasks without internet, like image recognition, voice assistants, etc. But cloud models might not do that because they rely on cloud services. Wait, but the user wants on-device features that a cloud can't do. So, maybe things like local model execution, real-time processing, and data privacy.\n\nBut I need to ensure each of the 25 items is distinct. Let me think of different areas. Maybe data processing, real-time decisions, local computation, user interaction, model optimization, edge computing, local storage, privacy, personalization, security, adaptive features, local data processing, edge AI, local AI, and maybe\n\nOkay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not cloud.\n\nFirst, I need to recall what on-device AI does. On-device AI processes data locally, which means it doesn't send data to the cloud. So, things like real-time processing, local model execution, etc. But I need to make sure each item is unique and not overlapping with the cloud's limitations.\n\nLet me start brainstorming. On-device AI can handle tasks without internet, like image recognition, voice assistants, etc. But cloud models might not do that because they rely on cloud services. Wait, but the user wants on-device features that a cloud can't do. So, maybe things like local model execution, real-time processing, and data privacy.\n\nBut I need to ensure each of the 25 items is distinct. Let me think of different areas. Maybe data processing, real-time decisions, local computation, user interaction, model optimization, edge computing, local storage, privacy, personalization, security, adaptive features, local data processing, edge AI, local AI, and maybe",
+ "text_garbage": null
+}

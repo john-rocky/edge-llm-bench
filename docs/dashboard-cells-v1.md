@@ -1645,3 +1645,16 @@ same text); the page marks the break back.
    §12), the records stay in raw. Is the wi4b32 file expected to answer a
    prompt of about 1.3K tokens on the Android GPU with v0.16.0, and is there
    a file or a setting the GPU row should use instead?
+
+## Qwen3 1.7B and 4B GPU-composite files on LiteRT-LM 0.19.0 (2026-10-29)
+
+On the Galaxy S26 with the PyPI litert-lm-api 0.19.0 Android wheel on the phone's CPython (not this repo's Android
+build; lane logs, no records: `results/raw/2026-10-29-t1c-qwen3-0190-s26-android/`), litert-community's
+`Qwen3-1.7B_dynamic_wi8_afp32_gpu_composites.litertlm` and `Qwen3-4B_dynamic_wi4b32_afp32_gpu_composites.litertlm`
+built the OpenCL engine with every node on the GPU and ran the protocol 1024 / 256 at 2,063.7 / 29.69 and
+525.6 / 19.54 tok/s (prefill / decode, median over 3 processes), against 516.1 / 15.39 for `Qwen3_1.7B.litertlm` and
+368.9 / 18.86 for `qwen3_4b_mixed_int4.litertlm` in the same holds. On 2026-10-31 those two names took the
+GPU-composite exports (Hub commits ebb4eef4 and 965e091f; that dir holds no run of those bytes), so from the first
+sitting on the v0.19.0 pin the 1.7B CPU cells and both 4B cells run other bytes under the same names; the 1.7B GPU
+cells' `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` did not change (1,187.0 / 38.80 on the protocol, in its own hold
+that day).

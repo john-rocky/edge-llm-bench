@@ -1,0 +1,66 @@
+W0000 00:00:1793248898.340173   30076 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1793248898.340267   30076 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1793248898.340272   30076 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793248898.340275   30076 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793248898.340286   30080 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793248898.340388   30080 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793248898.340415   30080 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007756209620, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb4000077562094d0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000775620a260, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007756209e70, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793248898.345816   30076 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+INFO: [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1793248898.361778   30076 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+I0000 00:00:1793248898.361807   30076 delegate_opencl.cc:657] options->kernel_batch_size: 0
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:315] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 1298 out of 1298 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+I0000 00:00:1793248900.152151   30076 delegate_kernel.cc:360] Total 112 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793248900.152556   30076 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793248900.257065   30076 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 1244 out of 1244 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (decode).
+I0000 00:00:1793248900.961807   30076 delegate_kernel.cc:360] Total 113 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793248900.962088   30076 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793248901.019967   30076 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+W0000 00:00:1793248901.032508   30076 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+W0000 00:00:1793248901.032548   30076 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248901.032561   30076 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1793248901.032566   30076 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248901.032569   30076 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+INFO: [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+VERBOSE: Replacing 1 out of 4 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 0 (decode_embedder).
+VERBOSE: Replacing 1 out of 4 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 2 partitions for subgraph 1 (prefill_embedder_128).
+W0000 00:00:1793248901.037904   30076 embedding_lookup_text.cc:352] No signature key was provided. The Embedding model is expected to have exactly one signature but got 2. Using the first signature: decode_embedder
+W0000 00:00:1793248901.038342   30076 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248901.038352   30076 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007756235840, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000775623d9c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793248901.330765   30076 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1793248901.330805   30076 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1793248901.330809   30076 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793248901.330812   30076 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1793248901.330891   30076 session_advanced.cc:76] Benchmark has num_prefill_tokens > 0; forcing apply_prompt_template_in_session to false.
+I0000 00:00:1793248917.298674   30076 session_advanced.cc:76] Benchmark has num_prefill_tokens > 0; forcing apply_prompt_template_in_session to false.
+I0000 00:00:1793248936.581734   30076 session_advanced.cc:76] Benchmark has num_prefill_tokens > 0; forcing apply_prompt_template_in_session to false.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007756209e70, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000775620a260, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000775623d9c0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007756235840, name=LiteRT GPU

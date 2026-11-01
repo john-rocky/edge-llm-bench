@@ -1,0 +1,154 @@
+{
+ "leg": "N4_kpy_gpu_q2_1",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "s29q3-s26-f",
+  "R": "EXIT=0 WALL=14 START=1793253278 END=1793253292 PID=9061 MEMMIN=4071168 MEMGUARD_KB=400000 OOMADJ=-1000",
+  "S0": "uptime=1181211.17 epoch=1793253278 thermal=2 pol=policy0:3187200/3628800,policy6:3398400/4742400 kgsl=1200/1/51200 batt=78/430 memavail_kb=7701556 free_kb=109630348",
+  "S1": "uptime=1181226.09 epoch=1793253293 thermal=2 pol=policy0:3302400/3628800,policy6:3648000/4742400 kgsl=1300/0/57700 batt=78/428 memavail_kb=7763612 free_kb=109630276",
+  "C0": "5212744 N4.litertlm_1793253251_2272915968_mldrift_program_cache.bin;296 N4.litertlm_1793253251_2272915968_mldrift_weight_cache.bin;",
+  "C1": "5212744 N4.litertlm_1793253251_2272915968_mldrift_program_cache.bin;296 N4.litertlm_1793253251_2272915968_mldrift_weight_cache.bin;",
+  "C2": "5212744 N4.litertlm_1793253251_2272915968_mldrift_program_cache.bin;296 N4.litertlm_1793253251_2272915968_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 14:54:11.963995415 +0900",
+  "ARGS": "q /data/local/tmp/s29q3_0190/N4.litertlm gpu /data/local/tmp/s29q3_0190/q/qn2.txt",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel q /data/local/tmp/s29q3_0190/N4.litertlm gpu /data/local/tmp/s29q3_0190/q/qn2.txt  (runleg.sh: time limit 180 s, memguard MemAvailable < 400000 kB on two 2 s reads)",
+  "name": "N4_kpy_gpu_q2_1",
+  "label": "N4",
+  "backend": "gpu",
+  "kind": "q2",
+  "tag": "1",
+  "cache_mode": "keep",
+  "timeout_s": 180,
+  "exit": 0,
+  "wall_s": 14,
+  "host_wall_s": 15,
+  "host_start": 1793253278,
+  "host_end": 1793253293,
+  "ready_waited_s": 0,
+  "ready": true,
+  "rest_s": 3,
+  "hold_t0": 1793252213,
+  "memguard_kb": 400000,
+  "memavail_min_kb": 4071168,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 14,
+ "iterations": [],
+ "aggregated": null,
+ "median_iters_2_on": null,
+ "delegation": [
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 518,
+   "m": 518,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 518,
+   "m": 518,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 556/556 CL; prefill_1024 556/556 CL; decode 518/518 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [],
+ "opencl_lines": [
+  "I0000 00:00:1793253279.392823    9061 delegate_opencl.cc:655] options->hint_waiting_for_completion: false",
+  "I0000 00:00:1793253279.392864    9061 delegate_opencl.cc:657] options->kernel_batch_size: 0",
+  "INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.",
+  "I0000 00:00:1793253290.515177    9061 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793253290.655467    9061 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793253290.711343    9061 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data."
+ ],
+ "data_loss": 0,
+ "serialized_init": 6,
+ "context_from_serialized": 6,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 238,
+ "kv_buffer_req_warnings": 288,
+ "error_lines": [
+  "10-29 14:54:39.429  9061  9061 E Adreno-AppProfiles: QSPM AIDL service doesn't exist",
+  "10-29 14:54:39.430  9061  9061 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 2,
+ "memguard_kb": 400000,
+ "memavail_min_kb": 4071168,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "q",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "Engine(model, backend, max_num_tokens=1280); create_session(); run_prefill([prompt]); run_decode()",
+  "engine_s": null,
+  "prompt_tokens_raw": null,
+  "prompt_sha256": "1c991b64a20687f02dc7a245115d4dd3163bd1171947de6c83e7157534efc0ed",
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": null
+ },
+ "replies": [
+  {
+   "text": "<think>\n\n</think>\n\nThe capital of Japan is Tokyo.",
+   "wall_s": 1.24
+  }
+ ],
+ "text": "<think>\n\n</think>\n\nThe capital of Japan is Tokyo.",
+ "text_garbage": null
+}

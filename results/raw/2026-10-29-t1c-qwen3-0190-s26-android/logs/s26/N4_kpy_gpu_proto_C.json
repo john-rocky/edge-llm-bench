@@ -1,0 +1,181 @@
+{
+ "leg": "N4_kpy_gpu_proto_C",
+ "meta": {
+  "PHONE": "s26",
+  "SERIAL": "RFGL80R6A6H",
+  "TICKET": "s29q3-s26-f",
+  "R": "EXIT=0 WALL=58 START=1793253193 END=1793253251 PID=8493 MEMMIN=3480824 MEMGUARD_KB=400000 OOMADJ=-1000",
+  "S0": "uptime=1181126.41 epoch=1793253193 thermal=0 pol=policy0:3628800/3628800,policy6:4742400/4742400 kgsl=1300/0/41500 batt=79/378 memavail_kb=7605812 free_kb=109630420",
+  "S1": "uptime=1181184.46 epoch=1793253251 thermal=2 pol=policy0:2112000/3628800,policy6:2112000/4742400 kgsl=902/5/56600 batt=78/432 memavail_kb=7561164 free_kb=109630316",
+  "C0": "5213440 N4.litertlm_1793252667_2272915968_mldrift_program_cache.bin;296 N4.litertlm_1793252667_2272915968_mldrift_weight_cache.bin;",
+  "C1": "5213440 N4.litertlm_1793252667_2272915968_mldrift_program_cache.bin;296 N4.litertlm_1793252667_2272915968_mldrift_weight_cache.bin;",
+  "C2": "5213440 N4.litertlm_1793252667_2272915968_mldrift_program_cache.bin;296 N4.litertlm_1793252667_2272915968_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 14:44:27.795995638 +0900",
+  "ARGS": "proto /data/local/tmp/s29q3_0190/N4.litertlm gpu",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel proto /data/local/tmp/s29q3_0190/N4.litertlm gpu  (runleg.sh: time limit 300 s, memguard MemAvailable < 400000 kB on two 2 s reads)",
+  "name": "N4_kpy_gpu_proto_C",
+  "label": "N4",
+  "backend": "gpu",
+  "kind": "proto",
+  "tag": "C",
+  "cache_mode": "keep",
+  "timeout_s": 300,
+  "exit": 0,
+  "wall_s": 58,
+  "host_wall_s": 58,
+  "host_start": 1793253193,
+  "host_end": 1793253251,
+  "ready_waited_s": 163,
+  "ready": true,
+  "rest_s": 30,
+  "hold_t0": 1793252213,
+  "memguard_kb": 400000,
+  "memavail_min_kb": 3480824,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 58,
+ "iterations": [
+  {
+   "init_total_ms": 18587.56,
+   "ttft_s": 1.96805729125,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 534.1837182004606,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.564186888961725,
+   "wall_s": 24.18
+  },
+  {
+   "init_total_ms": 18587.66,
+   "ttft_s": 1.9991473075,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 525.6205393317515,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.617914148851806,
+   "wall_s": 15.0
+  },
+  {
+   "init_total_ms": 18587.93,
+   "ttft_s": 2.190654603,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 478.7476939514872,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.327067777497717,
+   "wall_s": 15.39
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": {
+  "prefill_tok_s": 502.18,
+  "decode_tok_s": 19.47,
+  "ttft_s": 2.09
+ },
+ "delegation": [
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 518,
+   "m": 518,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 518,
+   "m": 518,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 556/556 CL; prefill_1024 556/556 CL; decode 518/518 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [],
+ "opencl_lines": [
+  "I0000 00:00:1793253194.356750    8493 delegate_opencl.cc:655] options->hint_waiting_for_completion: false",
+  "I0000 00:00:1793253194.356781    8493 delegate_opencl.cc:657] options->kernel_batch_size: 0",
+  "INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.",
+  "I0000 00:00:1793253203.002724    8493 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793253203.158662    8493 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793253203.239321    8493 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data."
+ ],
+ "data_loss": 0,
+ "serialized_init": 6,
+ "context_from_serialized": 6,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 241,
+ "kv_buffer_req_warnings": 288,
+ "error_lines": [
+  "10-29 14:53:14.375  8493  8493 E Adreno-AppProfiles: QSPM AIDL service doesn't exist",
+  "10-29 14:53:14.376  8493  8493 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 2,
+ "memguard_kb": 400000,
+ "memavail_min_kb": 3480824,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "proto",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "Benchmark(model, backend, prefill_tokens=1024, decode_tokens=256, max_num_tokens=2048); with ... as b: b.run() x 3",
+  "engine_s": null,
+  "prompt_tokens_raw": null,
+  "prompt_sha256": null,
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": null
+ },
+ "replies": [],
+ "text": "",
+ "text_garbage": null
+}

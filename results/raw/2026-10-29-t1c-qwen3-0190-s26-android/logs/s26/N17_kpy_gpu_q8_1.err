@@ -1,0 +1,296 @@
+W0000 00:00:1793248592.692222   28623 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1793248592.692357   28623 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1793248592.692386   28623 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793248592.692328   28627 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793248592.692464   28627 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793248592.692393   28623 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793248592.692490   28627 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000730d20c820, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000730d20d1c0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000730d20e180, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000730d20dee0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=510, num_signatures=3
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=820, num_inputs=60, num_outputs=57, num_ops=436
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=820, num_inputs=60, num_outputs=57, num_ops=436
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=787, num_inputs=60, num_outputs=57, num_ops=406
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=1280, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 534 tensors of signature prefill_128 have been updated for magic number  32771 to target number 1280
+INFO: [magic_number_utils.cc:536] 534 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 1280
+INFO: [magic_number_utils.cc:536] 534 tensors of signature decode have been updated for magic number  32771 to target number 1280
+INFO: [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1793248592.761783   28623 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+I0000 00:00:1793248592.761843   28623 delegate_opencl.cc:657] options->kernel_batch_size: 0
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:315] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+I0000 00:00:1793248595.848978   28623 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793248595.849281   28623 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793248595.947598   28623 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+I0000 00:00:1793248596.035620   28623 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793248596.035678   28623 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793248596.108987   28623 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 406 out of 406 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+I0000 00:00:1793248596.119606   28623 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793248596.119643   28623 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793248596.148505   28623 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+W0000 00:00:1793248596.184729   28623 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248596.184770   28623 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1793248596.184782   28623 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248596.184789   28623 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1793248596.184798   28623 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248596.184820   28623 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1793248596.184827   28623 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793248596.184835   28623 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000730d2292a0, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000730d2294d0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793248596.377203   28623 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1793248596.377244   28623 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1793248596.377253   28623 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793248596.377260   28623 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+
+I0000 00:00:1793248596.891263   28638 llm_litert_compiled_model_executor.cc:1823] Sampler will handle decode input tensors.
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000730d20dee0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000730d20e180, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000730d2294d0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000730d2292a0, name=LiteRT GPU
