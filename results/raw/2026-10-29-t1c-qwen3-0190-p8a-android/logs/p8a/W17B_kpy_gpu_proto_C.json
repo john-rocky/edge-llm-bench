@@ -1,0 +1,183 @@
+{
+ "leg": "W17B_kpy_gpu_proto_C",
+ "meta": {
+  "PHONE": "p8a",
+  "SERIAL": "4C131JEKB15210",
+  "TICKET": "s29q3-p8a-b",
+  "R": "EXIT=0 WALL=60 START=1793252029 END=1793252089 PID=25803 MEMMIN=na MEMGUARD_KB= OOMADJ=-1000",
+  "S0": "uptime=1194287.18 epoch=1793252028 thermal=1 pol=policy0:1704000/1704000,policy4:2367000/2367000,policy8:2914000/2914000 kgsl=none batt=100/379 memavail_kb=4078448 free_kb=19922488",
+  "S1": "uptime=1194349.45 epoch=1793252090 thermal=1 pol=policy0:955000/1704000,policy4:1065000/2367000,policy8:1164000/2914000 kgsl=none batt=100/377 memavail_kb=4057624 free_kb=19922320",
+  "C0": "5086448 W17B.litertlm_1793251725_977184032_mldrift_program_cache.bin;860237224 W17B.litertlm_1793251725_977184032_mldrift_weight_cache.bin;",
+  "C1": "5086448 W17B.litertlm_1793251725_977184032_mldrift_program_cache.bin;860237224 W17B.litertlm_1793251725_977184032_mldrift_weight_cache.bin;",
+  "C2": "5086448 W17B.litertlm_1793251725_977184032_mldrift_program_cache.bin;860237224 W17B.litertlm_1793251725_977184032_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 14:28:45.122044256 +0900",
+  "ARGS": "proto /data/local/tmp/s29q3_0190/W17B.litertlm gpu",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel proto /data/local/tmp/s29q3_0190/W17B.litertlm gpu  (runleg.sh: time limit 300 s)",
+  "name": "W17B_kpy_gpu_proto_C",
+  "label": "W17B",
+  "backend": "gpu",
+  "kind": "proto",
+  "tag": "C",
+  "cache_mode": "keep",
+  "timeout_s": 300,
+  "exit": 0,
+  "wall_s": 60,
+  "host_wall_s": 61,
+  "host_start": 1793252027,
+  "host_end": 1793252088,
+  "ready_waited_s": 66,
+  "ready": true,
+  "rest_s": 30,
+  "hold_t0": 1793249872,
+  "memguard_kb": null,
+  "memavail_min_kb": null,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 60,
+ "iterations": [
+  {
+   "init_total_ms": 14280.98,
+   "ttft_s": 3.82884594125,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 271.14973844969046,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.107733626788313,
+   "wall_s": 23.8
+  },
+  {
+   "init_total_ms": 14281.43,
+   "ttft_s": 3.80814108225,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 272.5660807429416,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.51068932055781,
+   "wall_s": 16.88
+  },
+  {
+   "init_total_ms": 14281.43,
+   "ttft_s": 3.8109392895,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 272.3985747309591,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.326681409388403,
+   "wall_s": 17.01
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": {
+  "prefill_tok_s": 272.48,
+  "decode_tok_s": 19.42,
+  "ttft_s": 3.81
+ },
+ "delegation": [
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 936,
+   "m": 936,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 936,
+   "m": 936,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 994/994 CL; prefill_1024 994/994 CL; decode 936/936 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [
+  "W0000 00:00:1793252030.144333   25803 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.",
+  "10-29 14:33:50.144 25803 25803 W native  : W0000 00:00:1793252030.144333   25803 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGP"
+ ],
+ "opencl_lines": [
+  "I0000 00:00:1793252030.091335   25803 delegate_opencl.cc:655] options->hint_waiting_for_completion: false",
+  "I0000 00:00:1793252030.091432   25803 delegate_opencl.cc:657] options->kernel_batch_size: 0",
+  "INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.",
+  "W0000 00:00:1793252030.144333   25803 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.",
+  "I0000 00:00:1793252035.775110   25803 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793252035.964164   25803 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data."
+ ],
+ "data_loss": 0,
+ "serialized_init": 6,
+ "context_from_serialized": 6,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 198,
+ "kv_buffer_req_warnings": 224,
+ "error_lines": [
+  "10-29 14:33:50.127 25803 25803 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 1,
+ "memguard_kb": null,
+ "memavail_min_kb": null,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "proto",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "Benchmark(model, backend, prefill_tokens=1024, decode_tokens=256, max_num_tokens=2048); with ... as b: b.run() x 3",
+  "engine_s": null,
+  "prompt_tokens_raw": null,
+  "prompt_sha256": null,
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": null
+ },
+ "replies": [],
+ "text": "",
+ "text_garbage": null
+}

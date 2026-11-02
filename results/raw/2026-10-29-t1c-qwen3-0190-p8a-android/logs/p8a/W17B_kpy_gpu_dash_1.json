@@ -1,0 +1,229 @@
+{
+ "leg": "W17B_kpy_gpu_dash_1",
+ "meta": {
+  "PHONE": "p8a",
+  "SERIAL": "4C131JEKB15210",
+  "TICKET": "s29q3-p8a-b",
+  "R": "EXIT=0 WALL=50 START=1793252166 END=1793252216 PID=26248 MEMMIN=na MEMGUARD_KB= OOMADJ=-1000",
+  "S0": "uptime=1194424.59 epoch=1793252165 thermal=1 pol=policy0:1704000/1704000,policy4:2367000/2367000,policy8:2914000/2914000 kgsl=none batt=100/379 memavail_kb=4067416 free_kb=19922348",
+  "S1": "uptime=1194476.04 epoch=1793252217 thermal=1 pol=policy0:955000/1704000,policy4:1065000/2367000,policy8:1164000/2914000 kgsl=none batt=100/378 memavail_kb=4073960 free_kb=19922044",
+  "C0": "5086448 W17B.litertlm_1793251725_977184032_mldrift_program_cache.bin;860237224 W17B.litertlm_1793251725_977184032_mldrift_weight_cache.bin;",
+  "C1": "5086448 W17B.litertlm_1793251725_977184032_mldrift_program_cache.bin;860237224 W17B.litertlm_1793251725_977184032_mldrift_weight_cache.bin;",
+  "C2": "5086448 W17B.litertlm_1793251725_977184032_mldrift_program_cache.bin;860237224 W17B.litertlm_1793251725_977184032_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 14:28:45.122044256 +0900",
+  "ARGS": "dash /data/local/tmp/s29q3_0190/W17B.litertlm gpu /data/local/tmp/s29q3_0190/long-context-1024-gen256.txt",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel dash /data/local/tmp/s29q3_0190/W17B.litertlm gpu /data/local/tmp/s29q3_0190/long-context-1024-gen256.txt  (runleg.sh: time limit 600 s)",
+  "name": "W17B_kpy_gpu_dash_1",
+  "label": "W17B",
+  "backend": "gpu",
+  "kind": "dash",
+  "tag": "1",
+  "cache_mode": "keep",
+  "timeout_s": 600,
+  "exit": 0,
+  "wall_s": 50,
+  "host_wall_s": 51,
+  "host_start": 1793252164,
+  "host_end": 1793252215,
+  "ready_waited_s": 44,
+  "ready": true,
+  "rest_s": 30,
+  "hold_t0": 1793249872,
+  "memguard_kb": null,
+  "memavail_min_kb": null,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 50,
+ "iterations": [
+  {
+   "init_total_ms": 13966.77,
+   "ttft_s": 5.707483412,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 236.64368398830737,
+   "decode_tokens": 256,
+   "decode_tok_s": 18.721957199396652,
+   "turns": {
+    "prefill": [
+     {
+      "tokens": 1338,
+      "tokens_per_s": 236.64368398830737
+     },
+     {
+      "tokens": 2,
+      "tokens_per_s": 2.983753078093756
+     }
+    ],
+    "decode": [
+     {
+      "tokens": 256,
+      "tokens_per_s": 18.721957199396652
+     }
+    ]
+   },
+   "turn_used": "turn 1 of each kind",
+   "wall_s": 20.02
+  },
+  {
+   "init_total_ms": 13966.96,
+   "ttft_s": 5.6345588502499995,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 239.70032897048216,
+   "decode_tokens": 256,
+   "decode_tok_s": 19.015369216290665,
+   "turns": {
+    "prefill": [
+     {
+      "tokens": 1338,
+      "tokens_per_s": 239.70032897048216
+     },
+     {
+      "tokens": 2,
+      "tokens_per_s": 2.993694312813951
+     }
+    ],
+    "decode": [
+     {
+      "tokens": 256,
+      "tokens_per_s": 19.015369216290665
+     }
+    ]
+   },
+   "turn_used": "turn 1 of each kind",
+   "wall_s": 19.76
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": {
+  "prefill_tok_s": 239.7,
+  "decode_tok_s": 19.02,
+  "ttft_s": 5.63
+ },
+ "delegation": [
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 936,
+   "m": 936,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 994,
+   "m": 994,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 936,
+   "m": 936,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 994/994 CL; prefill_1024 994/994 CL; decode 936/936 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuBufferFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuTexture",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuTextureFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuImageBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuImageBufferFp16"
+ ],
+ "opencl_lines": [
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBufferFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClTexture",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClTextureFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBufferPacked",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClImageBuffer"
+ ],
+ "data_loss": 0,
+ "serialized_init": 6,
+ "context_from_serialized": 6,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 294,
+ "kv_buffer_req_warnings": 336,
+ "error_lines": [
+  "10-29 14:36:07.409 26248 26248 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 1,
+ "memguard_kb": null,
+ "memavail_min_kb": null,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "dash",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "set_min_log_severity(VERBOSE); Engine(model, backend, max_num_tokens=2048, enable_benchmark=True); per iteration create_conversation() + send_message(prompt, max_output_tokens=256); 2 iterations",
+  "engine_s": 6.63,
+  "prompt_tokens_raw": 1330,
+  "prompt_sha256": "f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426",
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": "VERBOSE"
+ },
+ "replies": [
+  {
+   "text": "",
+   "channels": {
+    "thought": "Okay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not in the cloud.\n\nFirst, I need to recall what on-device AI is. It refers to processing data locally on the phone, not sending it to the cloud. So, the phone handles tasks like image recognition, voice recognition, etc., locally. The cloud model would be running on the server or cloud, not the device.\n\nNow, thinking about the 25 items. Let's start brainstorming. \n\n1. Real-time processing: On-device AI can process data instantly, like translating speech in real time without delays. Cloud models might take longer to process, but the phone can do it locally.\n\n2. Reduced latency: Since the phone is handling it locally, there's no delay from the cloud. For example, voice assistants can respond immediately.\n\n3. Data minimization: The phone can process data locally, not sending all data to the cloud, which is better for privacy. Cloud models might have to send more data, increasing risk of data breaches.\n\n4. Enhanced security: By processing data locally"
+   }
+  },
+  {
+   "text": "",
+   "channels": {
+    "thought": "Okay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not in the cloud.\n\nFirst, I need to recall what on-device AI is. It refers to processing data locally on the phone, not sending it to the cloud. So, the phone handles tasks like image recognition, voice recognition, etc., locally. The cloud model would be running on the server or cloud, not the device.\n\nNow, thinking about the 25 items. Let's start brainstorming. \n\n1. Real-time processing: On-device AI can process data instantly, like translating speech in real time without delays. Cloud models might take longer to process, but the phone can do it locally.\n\n2. Reduced latency: Since the phone is handling it locally, there's no delay from the cloud. For example, voice assistants can respond immediately.\n\n3. Data minimization: The phone can process data locally, not sending all data to the cloud, which is better for privacy. Cloud models might have to send more data, increasing risk of data breaches.\n\n4. Enhanced security: By processing data locally"
+   }
+  }
+ ],
+ "text": "Okay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not in the cloud.\n\nFirst, I need to recall what on-device AI is. It refers to processing data locally on the phone, not sending it to the cloud. So, the phone handles tasks like image recognition, voice recognition, etc., locally. The cloud model would be running on the server or cloud, not the device.\n\nNow, thinking about the 25 items. Let's start brainstorming. \n\n1. Real-time processing: On-device AI can process data instantly, like translating speech in real time without delays. Cloud models might take longer to process, but the phone can do it locally.\n\n2. Reduced latency: Since the phone is handling it locally, there's no delay from the cloud. For example, voice assistants can respond immediately.\n\n3. Data minimization: The phone can process data locally, not sending all data to the cloud, which is better for privacy. Cloud models might have to send more data, increasing risk of data breaches.\n\n4. Enhanced security: By processing data locally\n\nOkay, let's tackle this query. The user wants me to list 25 distinct things that on-device AI lets a phone do, which a cloud model can't. And each item needs two full sentences explaining why it's possible on-device but not in the cloud.\n\nFirst, I need to recall what on-device AI is. It refers to processing data locally on the phone, not sending it to the cloud. So, the phone handles tasks like image recognition, voice recognition, etc., locally. The cloud model would be running on the server or cloud, not the device.\n\nNow, thinking about the 25 items. Let's start brainstorming. \n\n1. Real-time processing: On-device AI can process data instantly, like translating speech in real time without delays. Cloud models might take longer to process, but the phone can do it locally.\n\n2. Reduced latency: Since the phone is handling it locally, there's no delay from the cloud. For example, voice assistants can respond immediately.\n\n3. Data minimization: The phone can process data locally, not sending all data to the cloud, which is better for privacy. Cloud models might have to send more data, increasing risk of data breaches.\n\n4. Enhanced security: By processing data locally",
+ "text_garbage": null
+}

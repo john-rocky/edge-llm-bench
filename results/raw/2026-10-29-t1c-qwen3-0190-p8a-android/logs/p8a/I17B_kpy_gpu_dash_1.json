@@ -1,0 +1,245 @@
+{
+ "leg": "I17B_kpy_gpu_dash_1",
+ "meta": {
+  "PHONE": "p8a",
+  "SERIAL": "4C131JEKB15210",
+  "TICKET": "s29q3-p8a-a",
+  "R": "EXIT=0 WALL=82 START=1793249455 END=1793249537 PID=16532 MEMMIN=na MEMGUARD_KB= OOMADJ=-1000",
+  "S0": "uptime=1191713.40 epoch=1793249454 thermal=1 pol=policy0:1704000/1704000,policy4:2367000/2367000,policy8:2914000/2914000 kgsl=none batt=100/383 memavail_kb=4327212 free_kb=14608216",
+  "S1": "uptime=1191797.99 epoch=1793249539 thermal=1 pol=policy0:955000/1704000,policy4:910000/2367000,policy8:1164000/2914000 kgsl=none batt=100/381 memavail_kb=4351408 free_kb=14607816",
+  "C0": "4847960 I17B.litertlm_1793248699_2056729520_mldrift_program_cache.bin;1725655840 I17B.litertlm_1793248699_2056729520_mldrift_weight_cache.bin;",
+  "C1": "4847960 I17B.litertlm_1793248699_2056729520_mldrift_program_cache.bin;1725655840 I17B.litertlm_1793248699_2056729520_mldrift_weight_cache.bin;",
+  "C2": "4847960 I17B.litertlm_1793248699_2056729520_mldrift_program_cache.bin;1725655840 I17B.litertlm_1793248699_2056729520_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 13:38:19.446042778 +0900",
+  "ARGS": "dash /data/local/tmp/s29q3_0190/I17B.litertlm gpu /data/local/tmp/s29q3_0190/long-context-1024-gen256.txt",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel dash /data/local/tmp/s29q3_0190/I17B.litertlm gpu /data/local/tmp/s29q3_0190/long-context-1024-gen256.txt  (runleg.sh: time limit 600 s)",
+  "name": "I17B_kpy_gpu_dash_1",
+  "label": "I17B",
+  "backend": "gpu",
+  "kind": "dash",
+  "tag": "1",
+  "cache_mode": "keep",
+  "timeout_s": 600,
+  "exit": 0,
+  "wall_s": 82,
+  "host_wall_s": 83,
+  "host_start": 1793249453,
+  "host_end": 1793249536,
+  "ready_waited_s": 87,
+  "ready": true,
+  "rest_s": 30,
+  "hold_t0": 1793247541,
+  "memguard_kb": null,
+  "memavail_min_kb": null,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 82,
+ "iterations": [
+  {
+   "init_total_ms": 14685.78,
+   "ttft_s": 5.8356306579999995,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 233.75172478265495,
+   "decode_tokens": 256,
+   "decode_tok_s": 8.959873127838115,
+   "turns": {
+    "prefill": [
+     {
+      "tokens": 1338,
+      "tokens_per_s": 233.75172478265495
+     },
+     {
+      "tokens": 2,
+      "tokens_per_s": 3.9393264235171137
+     }
+    ],
+    "decode": [
+     {
+      "tokens": 256,
+      "tokens_per_s": 8.959873127838115
+     }
+    ]
+   },
+   "turn_used": "turn 1 of each kind",
+   "wall_s": 34.83
+  },
+  {
+   "init_total_ms": 14685.99,
+   "ttft_s": 5.742181474000001,
+   "prefill_tokens": 1338,
+   "prefill_tok_s": 237.6175153871766,
+   "decode_tokens": 256,
+   "decode_tok_s": 8.986062885239537,
+   "turns": {
+    "prefill": [
+     {
+      "tokens": 1338,
+      "tokens_per_s": 237.6175153871766
+     },
+     {
+      "tokens": 2,
+      "tokens_per_s": 3.9378812619720205
+     }
+    ],
+    "decode": [
+     {
+      "tokens": 256,
+      "tokens_per_s": 8.986062885239537
+     }
+    ]
+   },
+   "turn_used": "turn 1 of each kind",
+   "wall_s": 34.67
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": {
+  "prefill_tok_s": 237.62,
+  "decode_tok_s": 8.99,
+  "ttft_s": 5.74
+ },
+ "delegation": [
+  {
+   "n": 1298,
+   "m": 1298,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 1244,
+   "m": 1244,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "decode"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 0,
+   "name": "decode_embedder"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 1,
+   "name": "prefill_embedder_128"
+  },
+  {
+   "n": 1298,
+   "m": 1298,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 1244,
+   "m": 1244,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "decode"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 0,
+   "name": "decode_embedder"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 1,
+   "name": "prefill_embedder_128"
+  }
+ ],
+ "delegation_summary": "prefill_128 1298/1298 CL; decode 1244/1244 CL; decode_embedder 1/4 XNN; prefill_embedder_128 1/4 XNN",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuBufferFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuTexture",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuTextureFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuImageBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type WebGpuImageBufferFp16"
+ ],
+ "opencl_lines": [
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBuffer",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBufferFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClTexture",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClTextureFp16",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClBufferPacked",
+  "VERBOSE: [tensor_buffer_registry.cc:54] Custom tensor buffer handler is registered for buffer type OpenClImageBuffer"
+ ],
+ "data_loss": 0,
+ "serialized_init": 4,
+ "context_from_serialized": 4,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 116,
+ "kv_buffer_req_warnings": 0,
+ "error_lines": [
+  "10-29 13:50:58.215 16532 16532 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 1,
+ "memguard_kb": null,
+ "memavail_min_kb": null,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "dash",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "set_min_log_severity(VERBOSE); Engine(model, backend, max_num_tokens=2048, enable_benchmark=True); per iteration create_conversation() + send_message(prompt, max_output_tokens=256); 2 iterations",
+  "engine_s": 6.99,
+  "prompt_tokens_raw": 1330,
+  "prompt_sha256": "f64fb5151d79d1dd64bcb2adcad67ddfb6a1605a8ac1aeffd6c442d36e0ef426",
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": "VERBOSE"
+ },
+ "replies": [
+  {
+   "text": "",
+   "channels": {
+    "thought": "Okay, let's see. The user wants me to list 25 distinct things that on-device AI on a phone can do that a cloud model can't. Each item needs two full sentences explaining why it's better for on-device AI.\n\nFirst, I need to recall what on-device AI is. It's processing data locally on the phone, not sending it to the cloud. So, things like real-time processing, privacy, and reduced latency come to mind.\n\nLet me start brainstorming. For example, real-time processing. The phone can handle tasks instantly without waiting for the cloud. That's a good one. Then privacy, since data stays on the device. But I need to make sure each point is unique.\n\nAnother thing is battery life. If the phone uses less power by processing locally, that's a benefit. Also, reduced latency for tasks like voice recognition or camera processing. Maybe edge computing, where the phone handles tasks instead of relying on the cloud.\n\nWait, the user said \"on-device AI lets a phone do that a cloud model cannot.\" So I need to focus on things that the phone can do without cloud, like processing data locally, not relying on cloud services, etc.\n\nLet me check if I have 25. Maybe"
+   }
+  },
+  {
+   "text": "",
+   "channels": {
+    "thought": "Okay, let's see. The user wants me to list 25 distinct things that on-device AI on a phone can do that a cloud model can't. Each item needs two full sentences explaining why it's better for on-device AI.\n\nFirst, I need to recall what on-device AI is. It's processing data locally on the phone, not sending it to the cloud. So, things like real-time processing, privacy, and reduced latency come to mind.\n\nLet me start brainstorming. For example, real-time processing. The phone can handle tasks instantly without waiting for the cloud. That's a good one. Then privacy, since data stays on the device. But I need to make sure each point is unique.\n\nAnother thing is battery life. If the phone uses less power by processing locally, that's a benefit. Also, reduced latency for tasks like voice recognition or camera processing. Maybe edge computing, where the phone handles tasks instead of relying on the cloud.\n\nWait, the user said \"on-device AI lets a phone do that a cloud model cannot.\" So I need to focus on things that the phone can do without cloud, like processing data locally, not relying on cloud services, etc.\n\nLet me check if I have 25. Maybe"
+   }
+  }
+ ],
+ "text": "Okay, let's see. The user wants me to list 25 distinct things that on-device AI on a phone can do that a cloud model can't. Each item needs two full sentences explaining why it's better for on-device AI.\n\nFirst, I need to recall what on-device AI is. It's processing data locally on the phone, not sending it to the cloud. So, things like real-time processing, privacy, and reduced latency come to mind.\n\nLet me start brainstorming. For example, real-time processing. The phone can handle tasks instantly without waiting for the cloud. That's a good one. Then privacy, since data stays on the device. But I need to make sure each point is unique.\n\nAnother thing is battery life. If the phone uses less power by processing locally, that's a benefit. Also, reduced latency for tasks like voice recognition or camera processing. Maybe edge computing, where the phone handles tasks instead of relying on the cloud.\n\nWait, the user said \"on-device AI lets a phone do that a cloud model cannot.\" So I need to focus on things that the phone can do without cloud, like processing data locally, not relying on cloud services, etc.\n\nLet me check if I have 25. Maybe\n\nOkay, let's see. The user wants me to list 25 distinct things that on-device AI on a phone can do that a cloud model can't. Each item needs two full sentences explaining why it's better for on-device AI.\n\nFirst, I need to recall what on-device AI is. It's processing data locally on the phone, not sending it to the cloud. So, things like real-time processing, privacy, and reduced latency come to mind.\n\nLet me start brainstorming. For example, real-time processing. The phone can handle tasks instantly without waiting for the cloud. That's a good one. Then privacy, since data stays on the device. But I need to make sure each point is unique.\n\nAnother thing is battery life. If the phone uses less power by processing locally, that's a benefit. Also, reduced latency for tasks like voice recognition or camera processing. Maybe edge computing, where the phone handles tasks instead of relying on the cloud.\n\nWait, the user said \"on-device AI lets a phone do that a cloud model cannot.\" So I need to focus on things that the phone can do without cloud, like processing data locally, not relying on cloud services, etc.\n\nLet me check if I have 25. Maybe",
+ "text_garbage": null
+}

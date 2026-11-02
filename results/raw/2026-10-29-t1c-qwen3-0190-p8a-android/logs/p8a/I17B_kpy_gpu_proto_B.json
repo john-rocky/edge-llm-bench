@@ -1,0 +1,199 @@
+{
+ "leg": "I17B_kpy_gpu_proto_B",
+ "meta": {
+  "PHONE": "p8a",
+  "SERIAL": "4C131JEKB15210",
+  "TICKET": "s29q3-p8a-a",
+  "R": "EXIT=0 WALL=110 START=1793249016 END=1793249126 PID=15047 MEMMIN=na MEMGUARD_KB= OOMADJ=-1000",
+  "S0": "uptime=1191274.54 epoch=1793249015 thermal=1 pol=policy0:1704000/1704000,policy4:2367000/2367000,policy8:2914000/2914000 kgsl=none batt=100/378 memavail_kb=4384780 free_kb=14608484",
+  "S1": "uptime=1191386.48 epoch=1793249127 thermal=1 pol=policy0:955000/1704000,policy4:712000/2367000,policy8:880000/2914000 kgsl=none batt=100/376 memavail_kb=4372676 free_kb=14608340",
+  "C0": "4847960 I17B.litertlm_1793248699_2056729520_mldrift_program_cache.bin;1725655840 I17B.litertlm_1793248699_2056729520_mldrift_weight_cache.bin;",
+  "C1": "4847960 I17B.litertlm_1793248699_2056729520_mldrift_program_cache.bin;1725655840 I17B.litertlm_1793248699_2056729520_mldrift_weight_cache.bin;",
+  "C2": "4847960 I17B.litertlm_1793248699_2056729520_mldrift_program_cache.bin;1725655840 I17B.litertlm_1793248699_2056729520_mldrift_weight_cache.bin;",
+  "MT": "2026-10-29 13:38:19.446042778 +0900",
+  "ARGS": "proto /data/local/tmp/s29q3_0190/I17B.litertlm gpu",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel proto /data/local/tmp/s29q3_0190/I17B.litertlm gpu  (runleg.sh: time limit 300 s)",
+  "name": "I17B_kpy_gpu_proto_B",
+  "label": "I17B",
+  "backend": "gpu",
+  "kind": "proto",
+  "tag": "B",
+  "cache_mode": "keep",
+  "timeout_s": 300,
+  "exit": 0,
+  "wall_s": 110,
+  "host_wall_s": 111,
+  "host_start": 1793249014,
+  "host_end": 1793249125,
+  "ready_waited_s": 130,
+  "ready": true,
+  "rest_s": 30,
+  "hold_t0": 1793247541,
+  "memguard_kb": null,
+  "memavail_min_kb": null,
+  "oom_score_adj": -1000
+ },
+ "exit": 0,
+ "wall_s": 110,
+ "iterations": [
+  {
+   "init_total_ms": 17104.94,
+   "ttft_s": 4.22771528725,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 248.70040123816935,
+   "decode_tokens": 256,
+   "decode_tok_s": 9.065246582456059,
+   "wall_s": 40.93
+  },
+  {
+   "init_total_ms": 17105.36,
+   "ttft_s": 4.16171377175,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 252.78539480639495,
+   "decode_tokens": 256,
+   "decode_tok_s": 9.021458058240686,
+   "wall_s": 32.43
+  },
+  {
+   "init_total_ms": 17105.33,
+   "ttft_s": 4.17555859125,
+   "prefill_tokens": 1024,
+   "prefill_tok_s": 251.94728642938207,
+   "decode_tokens": 256,
+   "decode_tok_s": 8.991484090746189,
+   "wall_s": 32.54
+  }
+ ],
+ "aggregated": null,
+ "median_iters_2_on": {
+  "prefill_tok_s": 252.37,
+  "decode_tok_s": 9.01,
+  "ttft_s": 4.17
+ },
+ "delegation": [
+  {
+   "n": 1298,
+   "m": 1298,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 1244,
+   "m": 1244,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "decode"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 0,
+   "name": "decode_embedder"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 1,
+   "name": "prefill_embedder_128"
+  },
+  {
+   "n": 1298,
+   "m": 1298,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 1244,
+   "m": 1244,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "decode"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 0,
+   "name": "decode_embedder"
+  },
+  {
+   "n": 1,
+   "m": 4,
+   "delegate": "TfLiteXNNPackDelegate",
+   "partitions": 2,
+   "subgraph": 1,
+   "name": "prefill_embedder_128"
+  }
+ ],
+ "delegation_summary": "prefill_128 1298/1298 CL; decode 1244/1244 CL; decode_embedder 1/4 XNN; prefill_embedder_128 1/4 XNN",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [
+  "W0000 00:00:1793249019.072512   15047 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.",
+  "10-29 13:43:39.072 15047 15047 W native  : W0000 00:00:1793249019.072512   15047 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGP"
+ ],
+ "opencl_lines": [
+  "I0000 00:00:1793249018.892639   15047 delegate_opencl.cc:655] options->hint_waiting_for_completion: false",
+  "I0000 00:00:1793249018.892972   15047 delegate_opencl.cc:657] options->kernel_batch_size: 0",
+  "INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.",
+  "W0000 00:00:1793249019.072512   15047 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.",
+  "I0000 00:00:1793249025.069280   15047 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793249026.046900   15047 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data."
+ ],
+ "data_loss": 0,
+ "serialized_init": 4,
+ "context_from_serialized": 4,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 77,
+ "kv_buffer_req_warnings": 0,
+ "error_lines": [
+  "10-29 13:43:38.992 15047 15047 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 1,
+ "memguard_kb": null,
+ "memavail_min_kb": null,
+ "memguard_line": null,
+ "legpy": {
+  "kind": "proto",
+  "versions": {
+   "python": "3.14.8",
+   "platform": "android",
+   "machine": "aarch64",
+   "litert-lm-api": "0.19.0"
+  },
+  "lib": {
+   "path": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/liblitert-lm.so",
+   "bytes": 22656360,
+   "sha256": "28fa8433febc49a99f4bd3ef8cb82c2912457cfe274d97944debeabdeb97fc78"
+  },
+  "call": "Benchmark(model, backend, prefill_tokens=1024, decode_tokens=256, max_num_tokens=2048); with ... as b: b.run() x 3",
+  "engine_s": null,
+  "prompt_tokens_raw": null,
+  "prompt_sha256": null,
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": "/data/local/tmp/s29q3_0190/kpy/wheel/litert_lm/__init__.py",
+  "lib_loaded": null,
+  "log_severity": null
+ },
+ "replies": [],
+ "text": "",
+ "text_garbage": null
+}
