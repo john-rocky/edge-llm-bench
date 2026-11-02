@@ -219,12 +219,13 @@ def arm_row(rows):
     for r in sess:
         # corrected_quant also restores an audited label for rows recorded
         # without one (the Android Qwen3-4B LiteRT case), so it runs on every row
-        q, c = corrected_quant(r["runtime"], r["model_id"], r["quantization"] or "")
+        q, c = corrected_quant(r["runtime"], r["model_id"], r["quantization"] or "", r)
         if q:
             quants.add(q)
             qcorr = qcorr or c
     quants = sorted(quants)
     engines = sorted({r["engine_version"] for r in sess if r["engine_version"]})
+    files = sorted({os.path.basename(r.get("model_file") or "") for r in sess} - {""})
     return {
         "warm": wmed, "warm_n": len(warm), "spread": spread,
         "cold": cold[-1] if cold else None,
@@ -239,6 +240,8 @@ def arm_row(rows):
         "quant": (" / ".join(quants) or "unrecorded") + ("†" if qcorr else ""),
         "engine": " / ".join(engines) or "pre-stamp",
         "date": date, "n": len(meas),
+        # the session's model file when it ran one file (bench_common.artifact_entry's dated entries)
+        "model_file": files[0] if len(files) == 1 else "",
         # runs the text check kept out of the pool, the flags they raised, and
         # how many of the would-be pool were checked at all (0 = no text check)
         "text_fail_n": len(text_fail),
@@ -380,7 +383,7 @@ def generate():
                     if a["warm"] and a["spread"] > SPREAD_FLAG:
                         warm_txt += f" ⚠spread {a['spread']:.0f}%"
                     headline = a["warm"] if plat != "android" else a["cold_median"]
-                    bw = fmt_bw(bandwidth_utilization(headline, rt, mid, dev, plat))
+                    bw = fmt_bw(bandwidth_utilization(headline, rt, mid, dev, plat, a["model_file"], a["date"]))
                     lines.append(
                         f"| {rt} | `{mid}` | {a['quant']} | {a['engine']} | {warm_txt} | "
                         f"{fmt(a['cold'])} | {bw} | {fmt(a['prefill'])} | {fmt(a['ttft'])} | "

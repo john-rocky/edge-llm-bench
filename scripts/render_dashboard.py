@@ -445,7 +445,10 @@ def build(cells_path, schedule_path, stale_days, today):
                         # the rate
                         rec.update(status="cpu-capped", spread_pct=None,
                                    reason=f"cpu-capped >{CAP_LINE} ({a['cpu_capped_n']} of {would} runs)")
-                    u = bandwidth_utilization(dec, c["arm"], c["model_id"], ident, plat)
+                    # the cell's file and the session's date pick a dated registry entry (a Hub file
+                    # replaced in place: bench_common.artifact_entry)
+                    u = bandwidth_utilization(dec, c["arm"], c["model_id"], ident, plat,
+                                              os.path.basename(c["opts"].get("file") or ""), captured)
                     if u:
                         rec.update(artifact_bytes=u["artifact_bytes"], stream_bytes=u["bytes"],
                                    bw_ceiling_gbps=u["gbps"], bw_basis=u["basis"],

@@ -1,5 +1,5 @@
 {
- "_doc": "Bytes of the artifact each arm loads per dashboard model id, with the source of the number (scripts/artifact_bytes.py --refresh reads `bytes` from the Hub/local file; --check re-verifies). Read by scripts/bench_common.py artifact_bytes() for the 'bw util' column: decode tok/s x bytes-per-token / the device ceiling in devices/memory-bandwidth.json. `bytes` = the whole artifact; `streamed_bytes` (where present) = the bytes a decode step actually reads — the artifact's tensor bytes minus tables gathered per token (Gemma 4's per-layer-embedding table; a LiteRT bundle's separate input-embedding table; audio/vision/drafter sections) — computed by scripts/artifact_streamed_bytes.py on the file named in `streamed_basis`; the column uses streamed_bytes when present, else bytes. Keys: arm = the device-runs.csv runtime string (Android LiteRT carries its backend), model_id = as the records carry it (Apple llama.cpp ids include /Q4_K_M, Android ids do not), platform (optional) = an entry that applies to one platform only. Tied embeddings are streamed as the LM head and stay counted; the figure is an estimate of bytes per token, never a bus counter.",
+ "_doc": "Bytes of the artifact each arm loads per dashboard model id, with the source of the number (scripts/artifact_bytes.py --refresh reads `bytes` from the Hub/local file; --check re-verifies). Read by scripts/bench_common.py artifact_bytes() for the 'bw util' column: decode tok/s x bytes-per-token / the device ceiling in devices/memory-bandwidth.json. `bytes` = the whole artifact; `streamed_bytes` (where present) = the bytes a decode step actually reads — the artifact's tensor bytes minus tables gathered per token (Gemma 4's per-layer-embedding table; a LiteRT bundle's separate input-embedding table; audio/vision/drafter sections) — computed by scripts/artifact_streamed_bytes.py on the file named in `streamed_basis`; the column uses streamed_bytes when present, else bytes. Keys: arm = the device-runs.csv runtime string (Android LiteRT carries its backend), model_id = as the records carry it (Apple llama.cpp ids include /Q4_K_M, Android ids do not), platform (optional) = an entry that applies to one platform only. Tied embeddings are streamed as the LM head and stay counted; the figure is an estimate of bytes per token, never a bus counter. `since` (with platform and files): an entry for one content of a file the Hub replaced in place under the same name; it applies to a row of one of its `files` captured (UTC date) on or after `since`, the latest one winning over the entries without `since` (bench_common.artifact_entry); rows of other files, or a caller that names no file and date, get the entries without it.",
  "artifacts": [
   {
    "arm": "litert-lm",
@@ -59,6 +59,132 @@
    "streamed_checked": "2026-09-08"
   },
   {
+   "arm": "litert-lm-cpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "since": "2026-08-05",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android rows of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm captured since 2026-08-05 (UTC): the 2026-08-05 GPU-graph build (Hub 8414150f, 2026-08-05T14:31Z), sha256 e3e29010; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 344437808,
+   "checked": "2026-11-03",
+   "revision": "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+   "resolved_files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 335504440,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 335,504,440 B; no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "since": "2026-08-05",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android rows of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm captured since 2026-08-05 (UTC): the 2026-08-05 GPU-graph build (Hub 8414150f, 2026-08-05T14:31Z), sha256 e3e29010; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 344437808,
+   "checked": "2026-11-03",
+   "revision": "8414150f2e9dcc82449bcc9c5abc404b399a4d06",
+   "resolved_files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 335504440,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 335,504,440 B; no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "since": "2026-09-21",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android rows of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm captured since 2026-09-21 (UTC): the litert-torch re-export of 2026-09-21 (Hub a3c5d805, 2026-09-21T05:17Z), sha256 03e7da1e; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 344671744,
+   "checked": "2026-11-03",
+   "revision": "a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76",
+   "resolved_files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 335504528,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 335,504,528 B; no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "since": "2026-09-21",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android rows of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm captured since 2026-09-21 (UTC): the litert-torch re-export of 2026-09-21 (Hub a3c5d805, 2026-09-21T05:17Z), sha256 03e7da1e; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 344671744,
+   "checked": "2026-11-03",
+   "revision": "a3c5d805ae362dff7f580bc25f2dfb9a5a7eaa76",
+   "resolved_files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 335504528,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 335,504,528 B; no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "since": "2026-10-31",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android rows of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm captured since 2026-10-31 (UTC): the GPU-composite export with external weights (Hub 2670e142, 2026-10-31T04:49Z), sha256 bf1aba9c; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 343490560,
+   "checked": "2026-11-03",
+   "revision": "2670e142a0d16a1b685be6604e5b4f2b31a826d7",
+   "resolved_files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 335504520,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 335,504,520 B, weights in the TFLiteWeights section counted once per (group, offset); no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-0.6B",
+   "since": "2026-10-31",
+   "source": "hf:litert-community/Qwen3-0.6B",
+   "files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "note": "Android rows of Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm captured since 2026-10-31 (UTC): the GPU-composite export with external weights (Hub 2670e142, 2026-10-31T04:49Z), sha256 bf1aba9c; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 343490560,
+   "checked": "2026-11-03",
+   "revision": "2670e142a0d16a1b685be6604e5b4f2b31a826d7",
+   "resolved_files": [
+    "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+   ],
+   "streamed_bytes": 335504520,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 335,504,520 B, weights in the TFLiteWeights section counted once per (group, offset); no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
    "arm": "litert-lm",
    "model_id": "litert-community/Qwen3-1.7B",
    "source": "hf:litert-community/Qwen3-1.7B",
@@ -116,6 +242,48 @@
    "streamed_checked": "2026-09-08"
   },
   {
+   "arm": "litert-lm-cpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-1.7B",
+   "since": "2026-10-31",
+   "source": "hf:litert-community/Qwen3-1.7B",
+   "files": [
+    "Qwen3_1.7B.litertlm"
+   ],
+   "note": "Android rows of Qwen3_1.7B.litertlm captured since 2026-10-31 (UTC): the dynamic_wi8_afp32 GPU-composite export with external weights (Hub ebb4eef4, 2026-10-31T04:56Z), sha256 e4059962; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 1754890240,
+   "checked": "2026-11-03",
+   "revision": "ebb4eef4c07c0ecf019fa3cf7b501771d44ca21f",
+   "resolved_files": [
+    "Qwen3_1.7B.litertlm"
+   ],
+   "streamed_bytes": 1720947860,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 1,720,947,860 B, weights in the TFLiteWeights section counted once per (group, offset); no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-1.7B",
+   "since": "2026-10-31",
+   "source": "hf:litert-community/Qwen3-1.7B",
+   "files": [
+    "Qwen3_1.7B.litertlm"
+   ],
+   "note": "Android rows of Qwen3_1.7B.litertlm captured since 2026-10-31 (UTC): the dynamic_wi8_afp32 GPU-composite export with external weights (Hub ebb4eef4, 2026-10-31T04:56Z), sha256 e4059962; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 1754890240,
+   "checked": "2026-11-03",
+   "revision": "ebb4eef4c07c0ecf019fa3cf7b501771d44ca21f",
+   "resolved_files": [
+    "Qwen3_1.7B.litertlm"
+   ],
+   "streamed_bytes": 1720947860,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 1,720,947,860 B, weights in the TFLiteWeights section counted once per (group, offset); no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
    "arm": "litert-lm",
    "model_id": "litert-community/Qwen3-4B",
    "source": "hf:litert-community/Qwen3-4B",
@@ -171,6 +339,48 @@
    "streamed_basis": "litertlm: decode section 2,652,292,388 B minus the int8 embed_tokens lookup table 388,956,160 B",
    "streamed_tool": "scripts/artifact_streamed_bytes.py",
    "streamed_checked": "2026-09-08"
+  },
+  {
+   "arm": "litert-lm-cpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-4B",
+   "since": "2026-10-31",
+   "source": "hf:litert-community/Qwen3-4B",
+   "files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "note": "Android rows of qwen3_4b_mixed_int4.litertlm captured since 2026-10-31 (UTC): the dynamic wi4b32 GPU-composite export with external weights (Hub 965e091f, 2026-10-31T05:08Z), sha256 4877b236; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 2272935936,
+   "checked": "2026-11-03",
+   "revision": "965e091f07b566834b6af1dfe92b143dc92f46e7",
+   "resolved_files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 2263313592,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 2,263,313,592 B, weights in the TFLiteWeights section counted once per (group, offset); no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
+  },
+  {
+   "arm": "litert-lm-gpu",
+   "platform": "android",
+   "model_id": "litert-community/Qwen3-4B",
+   "since": "2026-10-31",
+   "source": "hf:litert-community/Qwen3-4B",
+   "files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "note": "Android rows of qwen3_4b_mixed_int4.litertlm captured since 2026-10-31 (UTC): the dynamic wi4b32 GPU-composite export with external weights (Hub 965e091f, 2026-10-31T05:08Z), sha256 4877b236; the file was replaced in place under the same name, so the entry is scoped by file and date (bench_common.artifact_entry)",
+   "bytes": 2272935936,
+   "checked": "2026-11-03",
+   "revision": "965e091f07b566834b6af1dfe92b143dc92f46e7",
+   "resolved_files": [
+    "qwen3_4b_mixed_int4.litertlm"
+   ],
+   "streamed_bytes": 2263313592,
+   "streamed_basis": "litertlm: the TFLiteModel section's tensor bytes, 2,263,313,592 B, weights in the TFLiteWeights section counted once per (group, offset); no separate lookup table matched",
+   "streamed_tool": "scripts/artifact_streamed_bytes.py",
+   "streamed_checked": "2026-11-03"
   },
   {
    "arm": "litert-lm",

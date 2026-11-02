@@ -186,47 +186,76 @@ def bandwidth_ceiling(device_identifier: str):
     return d.get("gbps"), d.get("basis", ""), d.get("source", "")
 
 
-def artifact_entry(arm: str, model_id: str, platform: str = ""):
+def file_is(model_file: str, files) -> bool:
+    """A row's model file is one of `files`: its basename ends with one of them (the
+    Android runner's device path prefixes the model id, `litert-community_Qwen3-0.6B_<file>`;
+    android/bench/run_cell.py guess_quant matches the same way)."""
+    base = _os.path.basename(model_file or "")
+    return bool(base) and any(base.endswith(f) for f in files or [])
+
+
+def artifact_entry(arm: str, model_id: str, platform: str = "",
+                   model_file: str = "", captured: str = ""):
     """The registry entry for (arm, model id), or None. `arm` is the
     device-runs.csv runtime string (Android LiteRT carries its backend:
     litert-lm-cpu / litert-lm-gpu). An entry with a `platform` wins over a
-    platform-less one for that platform."""
-    best = None
+    platform-less one for that platform.
+
+    An entry with `since` (a UTC date) is one content of a Hub file that was
+    replaced in place under the same name (litert-community/Qwen3-0.6B, -1.7B,
+    -4B: 2026-09-21 and 2026-10-31): it applies to a row whose model file
+    (model_file: the row's model_file or the cell's file=) is one of its
+    `files` and whose capture date (captured: YYYY-MM-DD, UTC, the session's
+    date) is on or after `since`; the latest such entry wins over every
+    entry without `since`. A caller that passes no file or date gets the
+    entries without `since` only."""
+    best, dated = None, None
     for e in _load_json(ARTIFACT_BYTES_JSON).get("artifacts", []):
         if e.get("arm") != arm or e.get("model_id") != model_id:
             continue
         plat = e.get("platform") or ""
         if plat and plat != platform:
             continue
+        since = e.get("since") or ""
+        if since:
+            if (captured and captured[:10] >= since and file_is(model_file, e.get("files"))
+                    and (dated is None or since > dated["since"])):
+                dated = e
+            continue
         if best is None or (plat and not (best.get("platform") or "")):
             best = e
+    if dated is not None:
+        return dated
     # A llama.cpp side build on another device (llama.cpp-npu / llama.cpp-gpu, the
     # Android NPU / GPU rows since 2026-10-07) loads the same GGUF the CPU arm's row
     # registers (cells file= is the same file), so its bytes are that entry's.
     if best is None and arm.startswith("llama.cpp-"):
-        return artifact_entry("llama.cpp", model_id, platform)
+        return artifact_entry("llama.cpp", model_id, platform, model_file, captured)
     return best
 
 
-def artifact_bytes(arm: str, model_id: str, platform: str = ""):
+def artifact_bytes(arm: str, model_id: str, platform: str = "",
+                   model_file: str = "", captured: str = ""):
     """Bytes a decode step reads for this cell: the entry's `streamed_bytes`
     (artifact minus per-token-gathered tables, scripts/artifact_streamed_bytes.py)
-    when present, else the whole artifact's `bytes`; None = not registered."""
-    e = artifact_entry(arm, model_id, platform)
+    when present, else the whole artifact's `bytes`; None = not registered.
+    model_file / captured: artifact_entry."""
+    e = artifact_entry(arm, model_id, platform, model_file, captured)
     if not e:
         return None
     return e.get("streamed_bytes") or e.get("bytes")
 
 
 def bandwidth_utilization(decode_tps, arm: str, model_id: str,
-                          device_identifier: str, platform: str = ""):
+                          device_identifier: str, platform: str = "",
+                          model_file: str = "", captured: str = ""):
     """-> dict(pct, bytes, artifact_bytes, streamed, gbps, basis) or None when
     any input is missing. pct = decode_tps * bytes / (gbps * 1e9) * 100, with
     bytes = the per-token figure (streamed_bytes if registered, else the
-    artifact)."""
+    artifact). model_file / captured: artifact_entry."""
     if not decode_tps:
         return None
-    e = artifact_entry(arm, model_id, platform)
+    e = artifact_entry(arm, model_id, platform, model_file, captured)
     gbps, basis, _ = bandwidth_ceiling(device_identifier)
     nbytes = (e.get("streamed_bytes") or e.get("bytes")) if e else None
     if not nbytes or not gbps:
@@ -246,7 +275,28 @@ def fmt_bw(u, estimate_mark: str = "~") -> str:
     return f"{mark}{u['pct']:.1f}%"
 
 
-def corrected_quant(runtime: str, model_id: str, quant: str) -> tuple[str, bool]:
+# litert-community/Qwen3-{0.6B,1.7B,4B}: on 2026-10-31 (UTC; Hub commits 2670e142, ebb4eef4, 965e091f,
+# 04:49-05:08) the Hub replaced three files in place, under the same names, with GPU-composite exports
+# that keep their weights in a separate section (the cards since: "a new LiteRT Torch export ... GPU
+# composite ops", "external weights"). android/bench/run_cell.py labels a file by its name, so the Android
+# rows captured since carry the replaced files' labels (first: the Galaxy S26 sitting of 2026-11-01 UTC).
+# The records' model sha256 (read 2026-11-03): every Android LiteRT-LM row of these files captured before
+# 2026-10-31 holds an earlier content, every row since the new one. -> (model id, file, first UTC date,
+# labels the rows carry, the label of the content they ran: the recipe as the Hub card states it)
+REPLACED_FILE_LABELS = (
+    ("litert-community/Qwen3-0.6B", "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm", "2026-10-31",
+     ("INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",),
+     "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export, external weights; Hub file of 2026-10-31)"),
+    ("litert-community/Qwen3-1.7B", "Qwen3_1.7B.litertlm", "2026-10-31",
+     ("INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",),
+     "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export, external weights; Hub file of 2026-10-31)"),
+    ("litert-community/Qwen3-4B", "qwen3_4b_mixed_int4.litertlm", "2026-10-31",
+     ("INT4 (mixed, blockwise gs32)",),
+     "INT4 (dynamic, block-32 weights, FP32 act; GPU-composite export, external weights; Hub file of 2026-10-31)"),
+)
+
+
+def corrected_quant(runtime: str, model_id: str, quant: str, row=None) -> tuple[str, bool]:
     """Apply the audited in-place quantization-label correction (quant-label-rule):
     Gemma-4 .litertlm bundles are the wNa8o8 mobile schema, not uniform int4 —
     early rows recorded "INT4 (QAT)" before the 2026-07-17 audit corrected the
@@ -255,11 +305,19 @@ def corrected_quant(runtime: str, model_id: str, quant: str) -> tuple[str, bool]
     .litertlm bundle — + gemma-4 only); other labels render as recorded.
     Until 2026-10-06 only the bare `litert-lm` arm was corrected, so the Mac
     litert-lm-cpu Gemma 4 long-context rows rendered "INT4 (QAT)" beside the
-    GPU arm's wNa8o8. Returns (label, corrected?).
+    GPU arm's wNa8o8. row (a device-runs.csv row: platform, model_file,
+    timestamp) scopes REPLACED_FILE_LABELS; without it that correction is not
+    applied. Returns (label, corrected?).
     """
     if (runtime.startswith("litert-lm") and "gemma-4" in model_id.lower()
             and quant == "INT4 (QAT)"):
         return "wNa8o8 (int2/int4/int8 + int8 activations, QAT)", True
+    if row is not None and row.get("platform") == "android" and runtime in ("litert-lm-cpu", "litert-lm-gpu"):
+        for mid, fname, since, carried, label in REPLACED_FILE_LABELS:
+            if (model_id == mid and (row.get("timestamp") or "")[:10] >= since
+                    and file_is(row.get("model_file"), [fname])
+                    and (quant in carried or not quant or quant.startswith("unrecorded"))):
+                return label, True
     # Android Qwen3-4B LiteRT records written before 2026-10-06 carry no label:
     # android/bench/run_cell.py's label table lacked qwen3_4b_mixed_int4.litertlm
     # (the only file those cells run) while the Mac catalog labels the same file

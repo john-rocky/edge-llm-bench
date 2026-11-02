@@ -168,27 +168,43 @@ def litertlm_sections(path):
             so = meta.SectionMetadata().Objects(i)
             dtype = litertlm_core.any_section_data_type_to_string(so.DataType())
             size = so.EndOffset() - so.BeginOffset()
-            if "TFLite" not in dtype:
+            # a TFLiteWeights section (a model exported with external weights, the
+            # litert-community Qwen3 files since 2026-10-31) is the raw bytes the
+            # TFLiteModel section's tensors name by external buffer id, not a
+            # flatbuffer: its bytes are counted through that model (below)
+            if "TFLite" not in dtype or dtype == "TFLiteWeights":
                 out.append((i, dtype, size, [], 0, []))
                 continue
             fh.seek(so.BeginOffset())
             m = tfl.Model.GetRootAs(bytearray(fh.read(size)), 0)
             sigs = [m.SignatureDefs(k).SignatureKey().decode() for k in range(m.SignatureDefsLength())]
+            # external weights: a tensor names its bytes by an external buffer id
+            # (Tensor.external_buffer -> Model.external_buffers: id, group, offset,
+            # length), the bytes sitting in the TFLiteWeights section
+            ext = {}
+            if hasattr(m, "ExternalBuffersLength"):
+                for k in range(m.ExternalBuffersLength()):
+                    eb = m.ExternalBuffers(k)
+                    ext[eb.Id()] = (eb.Group(), eb.Offset(), eb.Length())
             seen, total, gathered = set(), 0, []
             for g in range(m.SubgraphsLength()):
                 sg = m.Subgraphs(g)
                 for t in range(sg.TensorsLength()):
                     tn = sg.Tensors(t)
-                    b = tn.Buffer()
-                    if b in seen or b >= m.BuffersLength():
-                        continue
-                    bb = m.Buffers(b)
-                    n = bb.DataLength()
-                    if n == 0:
-                        try:
-                            n = bb.Size()
-                        except Exception:  # noqa: BLE001 — older schema without Size()
-                            n = 0
+                    b, n = tn.Buffer(), 0
+                    if b not in seen and b < m.BuffersLength():
+                        bb = m.Buffers(b)
+                        n = bb.DataLength()
+                        if n == 0:
+                            try:
+                                n = bb.Size()
+                            except Exception:  # noqa: BLE001 — older schema without Size()
+                                n = 0
+                    # ids of the prefill and decode graphs alias the same bytes: one count per
+                    # (group, offset)
+                    eid = tn.ExternalBuffer() if ext and not n else 0
+                    if eid in ext and ("ext",) + ext[eid][:2] not in seen:
+                        n, b = ext[eid][2], ("ext",) + ext[eid][:2]
                     if n:
                         seen.add(b)
                         total += n
