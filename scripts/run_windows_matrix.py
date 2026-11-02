@@ -11,11 +11,11 @@ landed host logs (`<campaign>/<log_subdir>/<invocation>/`).
   scripts/run_windows_matrix.py --fetch-only [--engines-dir D]
   scripts/run_windows_matrix.py <cells...> --campaign <date>-windows --model-dir <id>=<dir>...
 
-Another harness (e.g. an OmniLab Windows RTX executor) registers its transport and calls `main`:
+Another harness (e.g. a remote Windows RTX lab executor) registers its transport and calls `main`:
 
   import run_windows_matrix
-  run_windows_matrix.register_executor("omnilab", fn)  # fn(plan, campaign_dir, args) -> (rc, invocation)
-  sys.exit(run_windows_matrix.main(["--executor", "omnilab", ...]))
+  run_windows_matrix.register_executor("lab", fn)  # fn(plan, campaign_dir, args) -> int
+  sys.exit(run_windows_matrix.main(["--executor", "lab", ...]))
 """
 
 import argparse
@@ -25,6 +25,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import sys
 import urllib.request
 import uuid
@@ -117,6 +118,20 @@ def load_pins(pins_path: pathlib.Path = PINS_PATH) -> dict:
         for label, entry in (extra.get("windows_llama.cpp") or {}).items():
             if label in pins:
                 raise SystemExit(f"BENCH_EXTRA_PINS {extra_path}: windows_llama.cpp {label!r} is already "
+                                 f"in {pins_path} (the extra registry only adds labels)")
+            pins[label] = entry
+    return pins
+
+
+def load_litert_pins(pins_path: pathlib.Path = PINS_PATH) -> dict:
+    """windows/engine-pins.json's litert-lm entries, plus BENCH_EXTRA_PINS's windows_litert-lm (add-only)."""
+    pins = dict(json.loads(pins_path.read_text(encoding="utf-8")).get("litert-lm") or {})
+    extra_path = os.environ.get("BENCH_EXTRA_PINS")
+    if extra_path:
+        extra = json.loads(pathlib.Path(extra_path).read_text(encoding="utf-8"))
+        for label, entry in (extra.get("windows_litert-lm") or {}).items():
+            if label in pins:
+                raise SystemExit(f"BENCH_EXTRA_PINS {extra_path}: windows_litert-lm {label!r} is already "
                                  f"in {pins_path} (the extra registry only adds labels)")
             pins[label] = entry
     return pins
@@ -312,8 +327,30 @@ def read_json(path: pathlib.Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def catalog_quantization(runtime: str, model_id: str, extra_catalog: str | None = None) -> str:
-    """Quantization string from BENCH_EXTRA_CATALOG when present, else 'unknown'."""
+_ISO_TS = re.compile(
+    r"^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|z|([+-])(\d{2}):?(\d{2}))?$"
+)
+
+
+def utc_timestamp(text: str) -> str | None:
+    """ISO-8601 timestamp (including PowerShell Get-Date -Format o's 7 fractional digits and local
+    offset) -> YYYY-MM-DDTHH:MM:SSZ in UTC."""
+    m = _ISO_TS.match((text or "").strip())
+    if not m:
+        return None
+    date_s, time_s, sign, off_h, off_m = m.groups()
+    dt = datetime.datetime.strptime(f"{date_s}T{time_s}", "%Y-%m-%dT%H:%M:%S")
+    if sign:
+        delta = datetime.timedelta(hours=int(off_h), minutes=int(off_m))
+        tz = datetime.timezone(delta if sign == "+" else -delta)
+    else:
+        tz = datetime.timezone.utc
+    return dt.replace(tzinfo=tz).astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def catalog_quantization(runtime: str, model_id: str, extra_catalog: str | None = None,
+                         model_file: str | pathlib.Path = "") -> str:
+    """Quantization string from BENCH_EXTRA_CATALOG when present, else run_cell.guess_quant."""
     path = extra_catalog or os.environ.get("BENCH_EXTRA_CATALOG")
     if path and pathlib.Path(path).is_file():
         data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
@@ -321,7 +358,7 @@ def catalog_quantization(runtime: str, model_id: str, extra_catalog: str | None 
             if isinstance(entry, dict) and entry.get("id", "").lower() == model_id.lower():
                 if entry.get("quantization"):
                     return entry["quantization"]
-    return "unknown"
+    return run_cell.guess_quant(str(model_file))
 
 
 def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_SUBSTR):
@@ -358,8 +395,9 @@ def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_S
 
 def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                   litert_label: str = "unknown", pins: dict | None = None,
-                  extra_catalog: str | None = None, default_model: str = "Windows PC",
-                  harness: str = HARNESS, log_subdir: str = "omnilab") -> tuple:
+                  litert_pins: dict | None = None, extra_catalog: str | None = None,
+                  default_model: str = "Windows PC", harness: str = HARNESS,
+                  log_subdir: str = "host-logs") -> tuple:
     """Write schema/result.v1.json `<campaign_dir>/<stem>.jsonl` from `<log_subdir>/<invocation>/`."""
     logs = campaign_dir / log_subdir / invocation
     host = read_json(logs / "host.json")
@@ -374,14 +412,27 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
         "batteryState": "unknown",
     }
     pins = pins if pins is not None else load_pins()
+    litert_pins = litert_pins if litert_pins is not None else load_litert_pins()
     checking = os.environ.get("BENCH_TEXT_CHECK", "1") == "1"
     built, clean, total = set(), 0, 0
     (campaign_dir / "decoded").mkdir(parents=True, exist_ok=True)
     for row in plan.rows:
         path, size = plan.models[model_key(row)]
-        quant = catalog_quantization(row.runtime, row.model_id, extra_catalog)
+        quant = catalog_quantization(row.runtime, row.model_id, extra_catalog, path.name)
         if row.runtime == "litert-lm":
             build = version = litert_label
+            lpin = litert_pins.get(build)
+            if lpin is None:
+                version = f"unknown ({LITERT_EXE} label {build!r} not in windows/engine-pins.json)"
+            else:
+                want = dict(lpin.get("dll_files") or {})
+                want[LITERT_EXE] = lpin.get("litert_lm_advanced_main_windows_sha256") or lpin.get("sha256")
+                bad = sorted(
+                    n for n, sha in want.items()
+                    if (shas.get(n) if n == LITERT_EXE else shas.get(f"litert/{n}", shas.get(n))) != sha
+                )
+                if bad:
+                    version = f"unknown ({', '.join(bad)} unmatched in {build})"
             artifact = f"{LITERT_EXE} sha256:{shas.get(LITERT_EXE)}"
         else:
             build = version = pinned_label(pins, row.backend)
@@ -466,7 +517,7 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                             "onDiskSizeBytes": size,
                         },
                         "task": row.task,
-                        "timestamp": start[:19] + "Z" if len(start) >= 19 else None,
+                        "timestamp": utc_timestamp(start),
                         "device": device,
                         "conditions": cond,
                         "metrics": metrics,
@@ -492,7 +543,7 @@ def run_unconfigured(plan: Plan, campaign_dir: pathlib.Path, args) -> int:
     if args.dry_run:
         return 0
     print("run_windows_matrix: no local Windows host runner configured; register an executor "
-          "(e.g. --executor omnilab)", file=sys.stderr)
+          "(e.g. --executor lab)", file=sys.stderr)
     return 2
 
 

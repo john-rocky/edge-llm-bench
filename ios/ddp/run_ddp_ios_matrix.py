@@ -14,7 +14,7 @@ Another harness (e.g. a Linux orchestrator that builds signed XCTest archives on
 can register its own archive builder:
 
   import run_ddp_ios_matrix
-  run_ddp_ios_matrix.register_archive_builder("omnilab", fn)  # fn(engines, archives_dir, args) -> int
+  run_ddp_ios_matrix.register_archive_builder("lab", fn)  # fn(engines, archives_dir, args) -> int
 
 Local / own-export model files (`--model-dir <model_id>=<dir>` or `--models-root <dir>`) are passed
 as `--model-file` to `run_ddp_ios_lm.py`; public Hub entries without a local directory are fetched
@@ -76,7 +76,8 @@ class IosCell:
     @property
     def name(self) -> str:
         backend = self.opts.get("backend")
-        return f"{self.runtime}-{backend}" if backend else self.runtime
+        arm = f"{self.runtime}-{backend}" if backend else self.runtime
+        return f"{arm}-ynnpack" if self.opts.get("ynnpack") == "1" else arm
 
     @property
     def app_args(self) -> tuple:
@@ -120,8 +121,9 @@ def resolve_local_files(runtime: str, model_id: str, entry: dict, model_dirs: di
 def plan_cells(cells_files: list, extra_catalog: str | None, engines_csv: str | None,
                model_dirs: dict, models_root: pathlib.Path | None, dry_run: bool = False) -> list:
     """Parse ios rows from cells_files, filter by selected engines, and resolve local model files."""
+    filtering = bool(engines_csv and engines_csv != "all")
     wanted = set(ENGINES)
-    if engines_csv and engines_csv != "all":
+    if filtering:
         tokens = [e.strip() for e in engines_csv.split(",") if e.strip()]
         mapped = set()
         for t in tokens:
@@ -146,10 +148,10 @@ def plan_cells(cells_files: list, extra_catalog: str | None, engines_csv: str | 
             plat, rt, mid, task, opts = validate_cells.parse_line(line)
             if plat != "ios" or opts.get("manual") == "1" or opts.get("exclude"):
                 continue
+            if filtering and ENGINE_OF_RUNTIME.get(rt) not in wanted:
+                continue
             if rt not in ENGINE_OF_RUNTIME:
                 raise ValueError(f"{path}:{lineno}: ios runtime {rt!r} has no DDP lab build")
-            if ENGINE_OF_RUNTIME[rt] not in wanted:
-                continue
             hit = catalog.get(mid.lower())
             if hit is None:
                 raise ValueError(f"{path}:{lineno}: {mid!r} is not in ios/ddp/models*.json "
@@ -266,7 +268,7 @@ def main(argv=None) -> int:
     ap.add_argument("--extra-catalog", default=os.environ.get("BENCH_EXTRA_CATALOG") or None,
                     help="extra catalog JSON pushed to Documents/models/extra-catalog.json")
     ap.add_argument("--no-keep-raw", action="store_true",
-                    help="remove <campaign>/ddp-raw/ raw pull dirs after records are written")
+                    help="remove <campaign>/ddp-raw/ raw pull dirs after a clean run (kept on failure)")
     ap.add_argument("--dry-run", action="store_true", help="plan every session, submit nothing")
     args = ap.parse_args(argv)
 
@@ -317,7 +319,7 @@ def main(argv=None) -> int:
         if rc != 0:
             failures.append(f"{cell.name} {cell.model_id} {cell.task} (exit {rc})")
 
-    if args.no_keep_raw and not args.dry_run and (campaign_dir / "ddp-raw").is_dir():
+    if args.no_keep_raw and not failures and not args.dry_run and (campaign_dir / "ddp-raw").is_dir():
         shutil.rmtree(campaign_dir / "ddp-raw", ignore_errors=True)
 
     if failures:

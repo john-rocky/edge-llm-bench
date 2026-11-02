@@ -123,7 +123,7 @@ def history_rows(cells, summary_csv=None, raw_dirs=None, include_cpu_capped=Fals
                 continue
             # the session's runs that would have pooled, as render_dashboard.build counts them
             would = a["n"] + a["text_fail_n"] + a["cpu_capped_n"]
-            out.append({
+            entry = {
                 "platform": c["platform"], "device": c["device"],
                 "device_display": c["device_display"], "regime": c["regime"],
                 "model": c["model"], "arm": c["arm"], "model_id": c["model_id"],
@@ -140,7 +140,13 @@ def history_rows(cells, summary_csv=None, raw_dirs=None, include_cpu_capped=Fals
                 "text_fail": f"{a['text_fail_n']}/{would}" if a["text_checked_n"] else "",
                 # same "k/N" as the dashboard's cpu_capped_counted ("" = caps not read)
                 "cpu_capped_counted": f"{a['cpu_capped_counted_n']}/{would}" if a["cpu_read_n"] else "",
-            })
+            }
+            if include_cpu_capped:
+                entry["cpu_capped_counted_max_drop"] = (
+                    round(a["cpu_capped_counted_max_drop"], 1)
+                    if a["cpu_capped_counted_max_drop"] is not None else ""
+                )
+            out.append(entry)
     out.sort(key=lambda r: (r["platform"], r["device"], r["model"], r["arm"], r["task"],
                             r["context_tokens"], r["captured"]))
     return out
@@ -490,10 +496,11 @@ def main(argv=None):
     bandwidth = json.load(open(BANDWIDTH_JSON)) if os.path.exists(BANDWIDTH_JSON) else {}
     hist = history_rows(cells, summary_csv=args.summary_csv, raw_dirs=args.raw_dir,
                         include_cpu_capped=inc_cap)
+    hist_fields = HISTORY_FIELDS + (["cpu_capped_counted_max_drop"] if inc_cap else [])
     if args.history:
         os.makedirs(os.path.dirname(args.history) or ".", exist_ok=True)
         with open(args.history, "w", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=HISTORY_FIELDS)
+            w = csv.DictWriter(fh, fieldnames=hist_fields)
             w.writeheader()
             w.writerows(hist)
     page = render(cells, bandwidth, d.get("generated", datetime.datetime.now().isoformat()),

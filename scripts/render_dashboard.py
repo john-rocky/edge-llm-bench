@@ -117,9 +117,9 @@ def arm_of(plat, runtime, opts):
     (onnxruntime-genai-cpu / onnxruntime-genai-webgpu)."""
     if runtime == "onnxruntime-genai" and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
-    if plat in ("android", "windows") and runtime == "litert-lm" and opts.get("ynnpack") == "1":
-        # a CPU row with YNNPACK asked for (cells ynnpack=1, run_cell.py --ynnpack)
-        return f"{runtime}-{opts['backend']}-ynnpack"
+    if plat in ("android", "windows", "ios") and runtime == "litert-lm" and opts.get("ynnpack") == "1":
+        # a CPU row with YNNPACK asked for (cells ynnpack=1: run_cell.py --ynnpack, run_ddp_ios_lm.lay_out)
+        return f"{runtime}-{opts.get('backend', 'cpu')}-ynnpack"
     if plat in ("android", "windows") and runtime in ("litert-lm", "llama.cpp") and opts.get("backend"):
         return f"{runtime}-{opts['backend']}"
     if plat in ("mac", "ios") and runtime == "litert-lm" and opts.get("backend") == "cpu":
@@ -670,14 +670,15 @@ def write_outputs(out_cells, md, md_path, out_dir, include_cpu_capped=False):
     os.makedirs(os.path.dirname(os.path.abspath(md_path)) or ".", exist_ok=True)
     with atomic_write(md_path, "w") as fh:
         fh.write(md)
+    csv_fields = CSV_FIELDS + (["cpu_capped_counted_max_drop"] if include_cpu_capped else [])
     with atomic_write(os.path.join(out_dir, "dashboard-v1.csv"), "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=CSV_FIELDS)
+        w = csv.DictWriter(fh, fieldnames=csv_fields)
         w.writeheader()
         for c in out_cells:
-            row = {k: c.get(k) for k in CSV_FIELDS}
+            row = {k: c.get(k) for k in csv_fields}
             for k in ("decode_tps", "spread_pct", "prefill_tps", "ttft_ms", "mem_mb", "bw_util_pct",
-                      "mem_peak_mb", "cold_tps"):
-                if isinstance(row[k], float):
+                      "mem_peak_mb", "cold_tps", "cpu_capped_counted_max_drop"):
+                if k in row and isinstance(row[k], float):
                     row[k] = round(row[k], 2)
             w.writerow(row)
     payload = {"generated": datetime.datetime.now().isoformat(timespec="seconds"),

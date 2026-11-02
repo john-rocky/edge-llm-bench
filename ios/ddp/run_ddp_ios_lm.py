@@ -206,6 +206,11 @@ def record_runtime_label(runtime: str, backend, model_id: str) -> str:
     return runtime
 
 
+def has_litert_ynnpack(argv: list) -> bool:
+    """True when the app's argv enables LiteRT-LM's YNNPACK CPU kernels (--litert-ynnpack on)."""
+    return any(argv[i:i + 2] == ["--litert-ynnpack", "on"] for i in range(len(argv) - 1))
+
+
 def parse_build_info(text: str) -> dict:
     """BUILD_INFO's key=value lines (build_xctest.sh)."""
     out = {}
@@ -678,6 +683,7 @@ def lay_out(session_dir: pathlib.Path) -> dict:
         cond.update(thermalGateWaitedSeconds=int(waited) if waited.isdigit() else None,
                     thermalGateTimedOut=gate.get("timed_out") == "1", thermalGateState=gate.get("state"))
     out = campaign_dir / "device-jsonl"
+    ynnpack_arm = p["recordRuntime"] == "litert-lm-cpu" and has_litert_ynnpack(p.get("args") or [])
     records = []
     for name in names:
         if name not in index:
@@ -698,6 +704,8 @@ def lay_out(session_dir: pathlib.Path) -> dict:
         if got != (p["recordRuntime"], p["modelId"], p["task"]):
             notes.append(f"{name}: runtime / model / task {got} is not this cell's; not written")
             continue
+        if ynnpack_arm:
+            rec["runtime"] = "litert-lm-cpu-ynnpack"
         records.append((rec.get("timestamp") or "", name, rec))
     for i, (_, name, rec) in enumerate(sorted(records), 1):
         rec.setdefault("device", {})["ddp"] = device_ddp

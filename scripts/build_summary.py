@@ -346,17 +346,14 @@ def iter_device_records(raw_dirs=None):
     # flat top-level jsonl (RESULTS.md pipeline) + campaign-dir jsonl (the Mac
     # and Windows matrix/protocol runners append one JSONL per cell inside the campaign dir)
     jsonl_files = []
-    if raw_dirs is None:
-        rdir = roots[0]
-        jsonl_files = (sorted(glob.glob(os.path.join(rdir, "*.jsonl")))
-                       + sorted(glob.glob(os.path.join(rdir, "*", "*.jsonl"))))
-    else:
-        for rdir in roots:
-            if os.path.isfile(rdir) and rdir.endswith(".jsonl"):
-                jsonl_files.append(rdir)
-            else:
-                jsonl_files.extend(glob.glob(os.path.join(rdir, "**", "*.jsonl"), recursive=True))
-        jsonl_files = sorted(set(jsonl_files))
+    for rdir in roots:
+        if os.path.isfile(rdir) and rdir.endswith(".jsonl"):
+            jsonl_files.append(rdir)
+        else:
+            jsonl_files.extend(sorted(glob.glob(os.path.join(rdir, "*.jsonl"))))
+            jsonl_files.extend(sorted(glob.glob(os.path.join(rdir, "*", "*.jsonl"))))
+    if raw_dirs is not None:
+        jsonl_files = list(dict.fromkeys(jsonl_files))
     for f in jsonl_files:
         txt = open(f).read().strip()
         if not txt:

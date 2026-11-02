@@ -28,6 +28,8 @@ import csv
 import datetime
 import json
 import os
+import pathlib
+import shutil
 import sys
 import tempfile
 import unittest
@@ -387,10 +389,16 @@ class Dashboard(unittest.TestCase):
 
     def test_an_apple_cpu_row_is_the_cpu_arm(self):
         # Mac and iPhone LiteRT-LM rows with backend=cpu are the litert-lm-cpu arm (the records'
-        # stamp); without backend= they stay the bare GPU arm (2026-10-19: the iOS branch was missing)
+        # stamp); without backend= they stay the bare GPU arm (2026-10-19: the iOS branch was missing).
+        # An iOS ynnpack=1 CPU row stamps litert-lm-cpu-ynnpack (run_ddp_ios_lm.lay_out) so it never
+        # pools with XNNPACK CPU runs.
         for plat in ("mac", "ios"):
             self.assertEqual(render_dashboard.arm_of(plat, "litert-lm", {"backend": "cpu"}), "litert-lm-cpu")
             self.assertEqual(render_dashboard.arm_of(plat, "litert-lm", {}), "litert-lm")
+        self.assertEqual(
+            render_dashboard.arm_of("ios", "litert-lm", {"backend": "cpu", "ynnpack": "1"}),
+            "litert-lm-cpu-ynnpack",
+        )
 
     def test_a_cpu_arm_keeps_the_line(self):
         # the exemption is a list of arm names (render_leaderboard.CPU_CAP_EXEMPT_ARMS): the arms an
@@ -655,12 +663,20 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 self.assertEqual(next(reader), build_summary.DEVICE_FIELDS)
                 self.assertEqual(list(reader), [])
 
-            # 2) Nested Windows JSONL + Android app-path JSON in custom --raw-dir -> --out-dir
+            # 2) Two-level --raw-dir (repeatable per parent) reads <raw-dir>/<campaign>/*.jsonl and
+            #    app-path*/device-jsonl JSONs while ignoring deeper .jsonl files (e.g. DDP collections).
             raw_root = os.path.join(tmp, "custom-raw")
-            win_camp = os.path.join(raw_root, "qwen3.5", "windows", "2026-10-29-windows")
-            and_camp = os.path.join(raw_root, "qwen3.5", "android", "2026-10-29-android", "app-path-android")
-            os.makedirs(win_camp)
+            win_root = os.path.join(raw_root, "qwen3.5", "windows")
+            and_root = os.path.join(raw_root, "qwen3.5", "android")
+            win_camp = os.path.join(win_root, "2026-10-29-windows")
+            and_camp = os.path.join(and_root, "2026-10-29-android", "app-path-android")
+            os.makedirs(os.path.join(win_camp, "ddp"))
             os.makedirs(and_camp)
+            with open(os.path.join(win_camp, "ddp", "collection.jsonl"), "w") as fh:
+                fh.write(json.dumps({
+                    "id": "ddp-col-1", "model": "string-model", "device": "string-device",
+                    "metrics": {"decodeTokensPerSecond": 999.0},
+                }) + "\n")
             with open(os.path.join(win_camp, "litert-lm-gpu_org_model_short-chat.jsonl"), "w") as fh:
                 fh.write(json.dumps({
                     "schemaVersion": 1, "id": "win-rec-1", "runtime": "litert-lm-gpu",
@@ -686,13 +702,15 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 }, fh)
             out_dir = os.path.join(tmp, "custom-summary")
             with patch.object(build_summary, "ROOT", tmp):
-                build_summary.main(["--raw-dir", raw_root, "--out-dir", out_dir])
+                build_summary.main(["--raw-dir", win_root, "--raw-dir", and_root, "--out-dir", out_dir])
             with open(os.path.join(out_dir, "device-runs.csv"), newline="") as fh:
-                got = {r["platform"]: r for r in csv.DictReader(fh)}
+                rows = list(csv.DictReader(fh))
+            self.assertEqual(len(rows), 2)
+            got = {r["platform"]: r for r in rows}
             self.assertEqual(set(got), {"windows", "android"})
             self.assertEqual(got["windows"]["device"], "Precision 7960")
-            self.assertEqual(got["windows"]["campaign"], "qwen3.5/windows/2026-10-29-windows")
-            self.assertEqual(got["android"]["campaign"], "qwen3.5/android/2026-10-29-android")
+            self.assertEqual(got["windows"]["campaign"], "2026-10-29-windows")
+            self.assertEqual(got["android"]["campaign"], "2026-10-29-android")
             self.assertEqual(got["android"]["cpu_cap_drop_pct"], "34.6")
 
     def test_include_cpu_capped_pools_deep_cpu_cap_with_warning_badge(self):
@@ -714,10 +732,26 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                          "engine-build=side context-tokens=2048\n")
             no_sched = os.path.join(tmp, "no-schedule.json")
 
-            # Default: excluded under cpu-cap-rule
-            out_def, _ = render_dashboard.build(cells, no_sched, 10, TODAY, summary_csv=summary, raw_dirs=[tmp])
+            # Default: excluded under cpu-cap-rule, and CSV headers match main byte-for-byte
+            def_dir = os.path.join(tmp, "dash-def")
+            self.assertEqual(render_dashboard.main([
+                "--cells", cells, "--summary-csv", summary, "--raw-dir", tmp,
+                "--schedule", no_sched, "--md", os.path.join(def_dir, "DASHBOARD.md"),
+                "--out-dir", def_dir,
+            ]), 0)
+            out_def = json.load(open(os.path.join(def_dir, "dashboard-v1.json")))["cells"]
             self.assertEqual(out_def[0]["status"], "cpu-capped")
             self.assertIsNone(out_def[0]["decode_tps"])
+            with open(os.path.join(def_dir, "dashboard-v1.csv"), newline="") as fh:
+                self.assertEqual(next(csv.reader(fh)), render_dashboard.CSV_FIELDS)
+            self.assertEqual(render_dashboard_html.main([
+                "--json", os.path.join(def_dir, "dashboard-v1.json"),
+                "--summary-csv", summary, "--raw-dir", tmp,
+                "--out", os.path.join(def_dir, "dashboard-v1.html"),
+                "--history", os.path.join(def_dir, "dashboard-v1-history.csv"),
+            ]), 0)
+            with open(os.path.join(def_dir, "dashboard-v1-history.csv"), newline="") as fh:
+                self.assertEqual(next(csv.reader(fh)), render_dashboard_html.HISTORY_FIELDS)
 
             # Opt-in --include-cpu-capped via CLI: render_dashboard -> render_dashboard_html
             out_dir = os.path.join(tmp, "dash")
@@ -736,6 +770,8 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                              ("measured", 31.2, 3, "3/3"))
             want_mark = "⚠ cpu-capped >15 %, counted (--include-cpu-capped), max drop 40.1 % (3 of 3 runs)"
             self.assertEqual(render_dashboard.cap_mark(c), want_mark)
+            dash_csv = list(csv.DictReader(open(os.path.join(out_dir, "dashboard-v1.csv"), newline="")))
+            self.assertEqual(dash_csv[0]["cpu_capped_counted_max_drop"], "40.1")
 
             md = open(md_path).read()
             self.assertIn(want_mark, md)
@@ -753,8 +789,11 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                           page)
             hist = list(csv.DictReader(open(hist_path, newline="")))
             self.assertEqual(len(hist), 1)
-            self.assertEqual((hist[0]["arm"], hist[0]["decode_tps"], hist[0]["cpu_capped_counted"]),
-                             ("litert-lm-cpu-ynnpack", "31.2", "3/3"))
+            self.assertEqual(
+                (hist[0]["arm"], hist[0]["decode_tps"], hist[0]["cpu_capped_counted"],
+                 hist[0]["cpu_capped_counted_max_drop"]),
+                ("litert-lm-cpu-ynnpack", "31.2", "3/3", "40.1"),
+            )
 
     def test_validate_windows_cells(self):
         good = (
@@ -806,12 +845,18 @@ class CliAndUpstreamAdditions(unittest.TestCase):
             pins = run_windows_matrix.load_pins()
             vk_label = run_windows_matrix.pinned_label(pins, "gpu")
             vk_pin = pins[vk_label]
+            litert_sha = "ab" * 32
+            extra_pins_path = os.path.join(tmp, "extra-pins.json")
+            with open(extra_pins_path, "w") as fh:
+                json.dump({"windows_litert-lm": {
+                    "21f113ea6eba": {"litert_lm_advanced_main_windows_sha256": litert_sha},
+                }}, fh)
 
             def fake_executor(plan, campaign_dir, args):
                 inv = "inv-1"
-                logs = campaign_dir / "omnilab" / inv
+                logs = campaign_dir / "host-logs" / inv
                 logs.mkdir(parents=True, exist_ok=True)
-                binaries = {run_windows_matrix.LITERT_EXE: "deadbeef"}
+                binaries = {run_windows_matrix.LITERT_EXE: litert_sha}
                 for k, v in (vk_pin.get("dll_files") or {}).items():
                     binaries[f"llama-gpu/{k}"] = v
                 binaries["llama-gpu/llama-cli.exe"] = vk_pin["llama_cli_sha256"]
@@ -853,28 +898,67 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     for run_i in (1, 2):
                         (logs / f"{r_idx}_run{run_i}.json").write_text(json.dumps({
                             "exitCode": 0, "timedOut": False,
-                            "start": f"2026-10-29T12:00:0{run_i}Z",
+                            # PowerShell Get-Date -Format o local offset with 7 fractional digits.
+                            "start": f"2026-10-29T21:00:0{run_i}.1234567+09:00",
                             "elapsedSeconds": 1.2, "peakWorkingSetBytes": 800 * 2**20,
                             "command": "test.exe",
                         }))
                         (logs / f"{r_idx}_run{run_i}.log").write_text(console)
                 clean, total = run_windows_matrix.write_records(
                     plan, campaign_dir, inv, litert_label="21f113ea6eba", pins=pins)
+                # Also verify an unregistered litert_label lands as unknown (...).
+                unpinned_dir = pathlib.Path(tmp) / "unpinned-camp"
+                shutil.copytree(campaign_dir, unpinned_dir)
+                run_windows_matrix.write_records(
+                    plan, unpinned_dir, inv, litert_label="unpinned-label", pins=pins,
+                    litert_pins={})
+                unpinned_rec = json.loads(
+                    (unpinned_dir / "litert-lm-cpu-ynnpack_org_model_short-chat.jsonl")
+                    .read_text().splitlines()[-1]
+                )
+                self.assertTrue(unpinned_rec["engineVersion"].startswith("unknown ("))
                 return 0 if clean == total == 4 else 1
 
-            run_windows_matrix.register_executor("fake-omnilab", fake_executor)
+            run_windows_matrix.register_executor("fake-lab", fake_executor)
             try:
                 raw_dir = os.path.join(tmp, "raw")
-                with patch.dict(os.environ, {"BENCH_RAW_ROOT": raw_dir}):
+                with patch.dict(os.environ, {
+                    "BENCH_RAW_ROOT": raw_dir,
+                    "BENCH_EXTRA_PINS": extra_pins_path,
+                }):
                     rc = run_windows_matrix.main([
-                        cells_path, "--executor", "fake-omnilab", "--campaign", "2026-10-29-win",
+                        cells_path, "--executor", "fake-lab", "--campaign", "2026-10-29-win",
                         "--litert-label", "21f113ea6eba",
                         "--model-file", f"litert-lm:org/model={litert_file}",
                         "--model-file", f"llama.cpp:org/gguf={gguf_file}",
                     ])
                 self.assertEqual(rc, 0)
             finally:
-                run_windows_matrix.EXECUTORS.pop("fake-omnilab", None)
+                run_windows_matrix.EXECUTORS.pop("fake-lab", None)
+
+            litert_recs = [
+                json.loads(ln) for ln in open(
+                    os.path.join(
+                        raw_dir, "2026-10-29-win",
+                        "litert-lm-cpu-ynnpack_org_model_short-chat.jsonl",
+                    )
+                ) if ln.strip()
+            ]
+            llama_recs = [
+                json.loads(ln) for ln in open(
+                    os.path.join(
+                        raw_dir, "2026-10-29-win",
+                        "llama.cpp-gpu_org_gguf_short-chat.jsonl",
+                    )
+                ) if ln.strip()
+            ]
+            self.assertEqual(litert_recs[0]["engineVersion"], "21f113ea6eba")
+            self.assertEqual(litert_recs[0]["timestamp"], "2026-10-29T12:00:01Z")
+            self.assertEqual(
+                litert_recs[0]["model"]["quantization"],
+                "unrecorded (artifact name carries no quant label)",
+            )
+            self.assertEqual(llama_recs[0]["model"]["quantization"], "Q4_0")
 
             sum_dir = os.path.join(tmp, "summary")
             dash_dir = os.path.join(tmp, "dash")

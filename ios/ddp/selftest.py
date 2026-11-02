@@ -622,15 +622,21 @@ def check_matrix(tmp, archive, shas, template):
     cells_file = os.path.join(tmp, "matrix.cells")
     write(cells_file, (
         "mac litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu runs=4\n"
+        "ios core-ai apple/Foundation-Models short-chat backend=ane\n"
         "ios litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu context-tokens=2048 runs=4\n"
         "ios litert-lm litert-community/Qwen3-1.7B/int8 short-chat backend=cpu ynnpack=1 runs=2\n"
         "ios litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu exclude=skip-me\n"
         "ios litert-lm litert-community/gemma-4-E2B-it-litert-lm energy backend=gpu manual=1\n"
     ))
     planned = mat.plan_cells([cells_file], None, "litert", {}, None)
-    ok(len(planned) == 2 and [c.name for c in planned] == ["litert-lm-gpu", "litert-lm-cpu"]
+    ok(len(planned) == 2 and [c.name for c in planned] == ["litert-lm-gpu", "litert-lm-cpu-ynnpack"]
        and planned[1].app_args == ("--litert-ynnpack", "on"),
-       f"plan_cells picks the 2 runnable ios rows and wires ynnpack=1 ({[c.name for c in planned]})")
+       f"plan_cells (--engines litert) skips core-ai, picks the 2 runnable ios rows and names ynnpack=1 ({[c.name for c in planned]})")
+    try:
+        mat.plan_cells([cells_file], None, "all", {}, None)
+        ok(False, "plan_cells (--engines all) must still reject core-ai")
+    except ValueError as exc:
+        ok("has no DDP lab build" in str(exc), f"plan_cells (--engines all) rejects core-ai ({exc})")
     # --model-dir with unstaged paths succeeds in dry_run and fails outside dry_run.
     unstaged = {"litert-community/qwen3-1.7b": mat.pathlib.Path(tmp) / "not-yet-staged"}
     ok(len(mat.plan_cells([cells_file], None, "litert", unstaged, None, dry_run=True)) == 2,
@@ -674,6 +680,35 @@ def check_matrix(tmp, archive, shas, template):
        and not os.path.exists(os.path.join(camp_dir, "ddp-raw")),
        f"register_archive_builder + BENCH_RAW_ROOT + --no-keep-raw: rc={rc}, 4 records, --context-tokens forwarded, "
        "ddp-raw removed")
+
+    # ynnpack=1 cpu session stamps litert-lm-cpu-ynnpack on records after matching litert-lm-cpu;
+    # and --no-keep-raw keeps ddp-raw/ when a session fails so --records-only can still read it back.
+    cpu_recs = []
+    for name, rec in recs[:2]:
+        crec = json.loads(json.dumps(rec))
+        crec["runtime"] = "litert-lm-cpu"
+        crec["model"]["id"] = "litert-community/Qwen3-1.7B/int8"
+        cname = name.replace("litert-lm_", "litert-lm-cpu_").replace("Qwen3-1.7B_", "Qwen3-1.7B_int8_")
+        cpu_recs.append((cname, crec))
+    sha_i8, _ = shas["litert-community/Qwen3-1.7B/int8"]
+    i8_obj = f"automation/inputs/edge-llm-bench/models/{sha_i8}/Qwen3_1.7B.litertlm"
+    write(os.path.join(tmp, "fake", "bucket", "fake-bucket", i8_obj), "already there\n")
+    ynn_cell = os.path.join(tmp, "ynn.cells")
+    write(ynn_cell, "ios litert-lm litert-community/Qwen3-1.7B/int8 short-chat backend=cpu ynnpack=1 runs=2\n")
+    stage_fake(tmp, describe_json(result="FAILED"))
+    stage_execution(tmp, cpu_recs, stale)
+    with patch.dict(os.environ, env_for(tmp, extra={"BENCH_RAW_ROOT": raw_dir}), clear=True):
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            rc_fail = mat.main([ynn_cell, "--device", DEVICE, "--project", PROJECT, "--bucket", BUCKET,
+                                "--campaign", "mat-ynn-fail", "--archives-dir", arch_dir,
+                                "--archive-builder", "prebuilt", "--no-keep-raw"])
+    ynn_camp = os.path.join(raw_dir, "mat-ynn-fail")
+    ynn_written = [json.load(open(f)) for f in sorted(glob.glob(os.path.join(ynn_camp, "device-jsonl", "*.json")))]
+    ok(rc_fail == 1 and len(ynn_written) == 2
+       and {r["runtime"] for r in ynn_written} == {"litert-lm-cpu-ynnpack"}
+       and os.path.isdir(os.path.join(ynn_camp, "ddp-raw", SID)),
+       f"ynnpack=1 stamps litert-lm-cpu-ynnpack and --no-keep-raw keeps ddp-raw on failure "
+       f"(rc={rc_fail}, runtimes={[r['runtime'] for r in ynn_written]})")
 
 
 def main():
