@@ -589,7 +589,13 @@ def main():
     engines = os.path.join(state, "engines.txt")
     real_pgrep = dj.pgrep
     dj.pgrep = lambda pattern: []   # host drivers of other lanes are not this test's business
-    base = f"{datetime.date.today().isoformat()}-dashboard-v1-s26"
+    # the base attempt() picks today: the first -r<n> whose anchor phase is not on disk (a real S26 sitting of
+    # the day has its dirs in results/raw: 2026-11-02 JST made this read -r2)
+    base, n = f"{datetime.date.today().isoformat()}-dashboard-v1-s26", 1
+    while os.path.isdir(os.path.join(dj.ROOT, dj.campaign_rel(base + (f"-r{n}" if n > 1 else "") + "-anchor",
+                                                              "android"))):
+        n += 1
+    base += f"-r{n}" if n > 1 else ""
 
     def plan(cells=None):
         args = argparse.Namespace(suffix=None, dry_run=True, cells=cells)
@@ -1049,6 +1055,7 @@ def main():
     parts_cases(tmp, dj)
     hold_estimate_cases(tmp, dj)
     release_by_cases(tmp, dj)
+    gate_deadline_cases(tmp, dj)
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
@@ -1376,9 +1383,23 @@ a = sys.argv[1:]
 root = os.path.dirname(os.path.abspath(__file__))
 if a[:1] == ["matrix"]:
     camp = a[a.index("--campaign") + 1]
-    os.makedirs(os.path.join(root, "results", "raw", camp + "-android"), exist_ok=True)
+    d = os.path.join(root, "results", "raw", camp + "-android")
+    os.makedirs(d, exist_ok=True)
+    dl, row = os.environ.get("BENCH_GATE_DEADLINE"), os.environ.get("FAKE_DEFER_ROW")
+    if dl and row:
+        # as android/bench/run_campaign.py under BENCH_GATE_DEADLINE: a re-run of `row` would end past it
+        try:
+            rows = [ln.split("#", 1)[0].strip() for ln in open(a[1])]
+        except OSError:
+            rows = []
+        if row in rows:
+            os.makedirs(os.path.join(d, "app-path-android"), exist_ok=True)
+            with open(os.path.join(d, "app-path-android", "GATE_DEFERRED.txt"), "a") as fh:
+                fh.write("GATE_DEFERRED llama.cpp m/A short-chat context-tokens=default file=auto verdict=COLLAPSE 30 "
+                         "~9 min would end 08:01:00, past the deadline 07:58:00; 3 records quarantined, not re-run: "
+                         "row=" + row + "\\n")
     with open(os.path.join(root, "calls.txt"), "a") as fh:
-        fh.write(a[1] + " " + camp + "\\n")
+        fh.write(a[1] + " " + camp + (" deadline=" + dl if dl else "") + "\\n")
 sys.exit(0)
 '''
 
@@ -1542,10 +1563,11 @@ def release_by_cases(tmp, dj):
     dj.load_rows, dj.load_admission, dj.load_session_cells = (lambda path=None: []), (lambda: {}), (lambda: {})
     dj.HOLD_KEEPER = None
     try:
-        # a dry run: anchor ~20 min, h1 ~10 min, h2 4 h fit in 5 h; x (3 h) does not
+        # a dry run: anchor ~20 min, h1 ~10 min, h2 4 h fit in 5 h; x (3 h) does not (h2 and x follow a payload
+        # run: their start test adds hold_eta.CAP_WAIT_S, 5 min)
         code, reason, dirs, text = dry("sx", sx, at_hhmm(hours=5))
         base = f"{datetime.date.today().isoformat()}-dashboard-v1-sx"
-        cut_line = next((ln for ln in text.splitlines() if "x (~3h00m) would end" in ln), "")
+        cut_line = next((ln for ln in text.splitlines() if "x (~3h05m) would end" in ln), "")
         ok(code == dj.EXIT_OK and matrix(text, h1) and matrix(text, h2) and not matrix(text, xf)
            and "not started; the sitting closes with the runs it finished and gives the hold back; left for a later "
                "firing this week: x [dry-run]" in cut_line
@@ -1678,6 +1700,305 @@ def release_by_cases(tmp, dj):
             if os.path.exists(lock):
                 os.remove(lock)
 
+
+
+def gate_deadline_cases(tmp, dj):
+    """The gate's re-runs under release_by (design §11, since 2026-11-02, when the Galaxy S26 gave its hold back at
+    08:07:52 after two re-runs that followed b1's last round): the Android runner starts a block re-run only when it
+    ends by release_by less hold_eta.GATE_RESERVE_S (BENCH_GATE_DEADLINE) and defers the others, their capture
+    quarantined, the row in GATE_DEFERRED.txt; the hold's estimate counts the gate's re-runs up to that time; the start
+    test counts a run's rounds (and CAP_WAIT_S after a payload run); the week counts a deferred cell as not done and
+    the device's next sitting takes it first, in its rerun run."""
+    import types
+    import time as real_time
+    import hold_eta
+    print("--- the gate under release_by: the 2026-11-02 S26 b1 timeline through the runner, the estimate, the start "
+          "test, the week's rerun run")
+    D = datetime.datetime
+    sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
+    import run_campaign as rc
+
+    # 1. the runner fed the 2026-11-02 Galaxy S26 b1 timeline: round 3/3 over at 07:45:16 (the first re-run's launch
+    # at 07:48:16 less the 180 s cooldown), two cells flagged; the launches it timed for them that morning (the
+    # launch line to its record's time, results/raw/2026-11-02-dashboard-v1-s26-b1-android: short-chat 28 / 60 / 38 s,
+    # long-context 163 / 245 / 160 s, its third launch 07:42:33 -> 07:45:13)
+    anchors, payload, _ = rc.parse_cells(os.path.join(HOLD_ETA_DATA, "matrices", "dashboard-text-v1-android-b1.cells"))
+    short = next(c for c in payload if c["runtime"] == "llama.cpp" and c["task"] == "short-chat")
+    long_ = next(c for c in payload if c["runtime"] == "llama.cpp" and c["task"].startswith("long-context"))
+    clock = [D(2026, 11, 2, 7, 45, 16).timestamp()]
+    ran = []
+    saved = (rc.time, rc.gate_verdict, rc.cell_records, rc.run_cell_once, rc.wait_nominal, dict(rc.LAUNCH_WALL))
+    rc.time = types.SimpleNamespace(time=lambda: clock[0], sleep=lambda s: clock.__setitem__(0, clock[0] + s),
+                                    strftime=real_time.strftime, localtime=real_time.localtime)
+    rc.LAUNCH_WALL.clear()
+    rc.LAUNCH_WALL.update({rc.cell_id(short, True): [28.0, 60.0, 38.0], rc.cell_id(long_, True): [163.0, 245.0, 160.0]})
+    first = {rc.cell_id(short): "COLLAPSE 23", rc.cell_id(long_): "COLLAPSE 34"}
+    rc.gate_verdict = lambda cell, out_dir, runs, previous=(): ("OK" if any(r[0] == rc.cell_id(cell) for r in ran)
+                                                                else first[rc.cell_id(cell)])
+    rc.cell_records = lambda cell, out_dir: []
+    rc.wait_nominal = lambda out_dir: "nominal"
+
+    def fake_run(cell, out_dir, runs, *a, **k):
+        ran.append((rc.cell_id(cell), runs, D.fromtimestamp(clock[0])))
+        clock[0] += 288   # the short-chat block that morning: 07:48:16 -> 07:53:04
+        return 0
+    rc.run_cell_once = fake_run
+    gout = os.path.join(tmp, "gate-deadline-out")
+    os.makedirs(gout)
+    deadline = D(2026, 11, 2, 8, 0).timestamp() - hold_eta.GATE_RESERVE_S
+    buf = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            rc.apply_gate(short, gout, 3, deadline=deadline)
+            rc.apply_gate(long_, gout, 3, deadline=deadline)
+    finally:
+        rc.time, rc.gate_verdict, rc.cell_records, rc.run_cell_once, rc.wait_nominal = saved[:5]
+        rc.LAUNCH_WALL.clear()
+        rc.LAUNCH_WALL.update(saved[5])
+    said = buf.getvalue()
+    deferred_txt = open(os.path.join(gout, "GATE_DEFERRED.txt")).read() if os.path.exists(
+        os.path.join(gout, "GATE_DEFERRED.txt")) else ""
+    end = D.fromtimestamp(clock[0])
+    ok(ran == [(rc.cell_id(short), 3, D(2026, 11, 2, 7, 48, 16))] and end == D(2026, 11, 2, 7, 53, 4)
+       and "gate: COLLAPSE 23 — quarantine + cooldown 180s, re-run once" in said
+       and "gate: COLLAPSE 34 — quarantined, re-run deferred: ~19 min would end 08:12:19, past the deadline 07:58:00"
+       in said and deferred_txt.count("\n") == 1
+       and deferred_txt.startswith(f"GATE_DEFERRED {rc.cell_id(long_, True)} verdict=COLLAPSE 34 ")
+       and deferred_txt.rstrip("\n").endswith("row=" + long_["row"]),
+       f"2026-11-02 S26 b1 through the runner, deadline 07:58: the short-chat re-run (~10 min counted) runs 07:48:16 "
+       f"-> 07:53:04, the long-context one (~19 min counted) would end 08:12:19 and is deferred, its row in "
+       f"GATE_DEFERRED.txt; "
+       f"the runner's last line {end:%H:%M:%S} where the hold went back at 08:07:52 ({ran})")
+    # without a deadline the gate re-runs as it always has
+    ran.clear()
+    clock[0] = D(2026, 11, 2, 7, 45, 16).timestamp()
+    rc.time = types.SimpleNamespace(time=lambda: clock[0], sleep=lambda s: clock.__setitem__(0, clock[0] + s),
+                                    strftime=real_time.strftime, localtime=real_time.localtime)
+    rc.LAUNCH_WALL.update({rc.cell_id(short, True): [60.0], rc.cell_id(long_, True): [245.0]})
+    rc.gate_verdict = lambda cell, out_dir, runs, previous=(): ("OK" if any(r[0] == rc.cell_id(cell) for r in ran)
+                                                                else first[rc.cell_id(cell)])
+    rc.cell_records, rc.wait_nominal, rc.run_cell_once = (lambda cell, out_dir: []), (lambda out_dir: "nominal"), fake_run
+    gout2 = os.path.join(tmp, "gate-deadline-out2")
+    os.makedirs(gout2)
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc.apply_gate(short, gout2, 3, deadline=rc.GATE_DEADLINE)
+            rc.apply_gate(long_, gout2, 3, deadline=None)
+    finally:
+        rc.time, rc.gate_verdict, rc.cell_records, rc.run_cell_once, rc.wait_nominal = saved[:5]
+        rc.LAUNCH_WALL.clear()
+        rc.LAUNCH_WALL.update(saved[5])
+    ok(rc.GATE_DEADLINE == float("inf") and [r[0] for r in ran] == [rc.cell_id(short), rc.cell_id(long_)]
+       and not os.path.exists(os.path.join(gout2, "GATE_DEFERRED.txt")),
+       "no BENCH_GATE_DEADLINE (and an anchor row's gate, deadline None): both cells re-run, nothing deferred")
+
+    # 2. the hold's estimate over that sitting's log, its b1 tail as the runner prints it now (testdata README)
+    with open(os.path.join(HOLD_ETA_DATA, "history-s26-before-2026-11-02.json")) as fh:
+        lengths = json.load(fh)
+    halves = [{"cells": f"matrices/dashboard-text-v1-android-{h}.cells"} for h in ("a", "b1", "b2")]
+    sched26 = {"anchors": "matrices/anchors.cells", "cells": "matrices/dashboard-text-v1.cells",
+               "devices": {"s26": {"platform": "android", "expected_hours": 10.3, "split": halves, "extra_cells": [
+                   {"cells": "matrices/dashboard-ortgenai-v1-android-ort.cells"},
+                   {"cells": "matrices/dashboard-npu-v1-android-s26-short.cells", "tag": "npu"}]}}}
+    log1102 = os.path.join(HOLD_ETA_DATA, "2026-11-02-s26-job-log.txt")
+    dl = D(2026, 11, 2, 8, 0)
+    rows, released = hold_eta.replay(log1102, "s26", sched26, lengths, halves=True, cells_root=HOLD_ETA_DATA,
+                                     deadline=dl)
+    b1_start = D(2026, 11, 2, 5, 34, 35)
+    late = [r for r in rows if r[2] > dl - datetime.timedelta(seconds=hold_eta.GATE_RESERVE_S)]
+    aheads = [r for r in rows if r[1].startswith("gate ahead: llama.cpp unsloth/Qwen3-4B-GGUF")]
+    defer_row = next((r for r in rows if "re-run deferred" in r[1]), None)
+    ok(released == D(2026, 11, 2, 7, 53, 16) and rows and not late and len(aheads) == 2
+       and all("only one that ends by 07:58" in r[3] or "only when the re-run ends by 07:58" in r[3]
+               for r in rows if b1_start <= r[0] < D(2026, 11, 2, 7, 45))
+       and defer_row is not None and "1 deferred (release_by)" in defer_row[3]
+       and abs((defer_row[2] - defer_row[0]).total_seconds()) < 60
+       and all("b2, ort, npu not started" in r[3] for r in rows if r[0] >= b1_start),
+       f"2026-11-02 S26, b1's tail as the runner prints it now: no estimate past 07:58 at any mark "
+       f"(the old one read 08:05 at 07:24:50 and 08:19 at 07:45:23), the deferral read as resolved, b2 / ort / npu "
+       f"named as left; the hold back at {released:%H:%M:%S}" if released else "2026-11-02 replay: no release")
+    # 3. the lengths it leaves: a run's rounds apart from its gate re-runs; the start test counts the rounds
+    hdir = os.path.join(tmp, "gate-deadline-logs")
+    os.makedirs(hdir)
+    shutil.copy(log1102, os.path.join(hdir, "2026-11-02-s26.log"))
+    h = hold_eta.history(hdir, "s26")
+    rnd = {k.split("|", 1)[1]: v[0] for k, v in h["rounds"].items()}
+    whole = {k.split("|", 1)[1]: v[0] for k, v in h["stages"].items()}
+    b1f, af = halves[1]["cells"], halves[0]["cells"]
+    # b1 05:34:35 -> round 3/3 07:45:16 -> exit 07:53:14; a 02:11:11 -> 05:23:52 (its re-run's launch 05:26:52) -> 05:34:34
+    ok((rnd.get(b1f), whole.get(b1f), rnd.get(af), whole.get(af)) == (7841.0, 8319.0, 11561.0, 12203.0),
+       f"history: b1's rounds 2h10m41s of its 2h18m39s (one re-run, one deferred), a's 3h12m41s of 3h23m23s "
+       f"(seconds: rounds {[rnd.get(b1f), rnd.get(af)]}, whole {[whole.get(b1f), whole.get(af)]})")
+    stages = hold_eta.plan_stages([("matrix", "matrices/anchors.cells", "anchor"), ("matrix", af, "a"),
+                                   ("matrix", b1f, "b1")], sched26["devices"]["s26"], "s26", h, root=HOLD_ETA_DATA)
+    sit = hold_eta.Sitting(stages, h, deadline=dl)
+    sa, sb = sit.start_length(stages[1]), sit.start_length(stages[2])
+    cb = sit.stage_split(stages[2], D.now(), {})[0]
+    ok(abs(sa - max(sit.stage_split(stages[1], D.now(), {})[0], 11561.0)) < 61
+       and abs(sb - (max(cb, 7841.0) + hold_eta.CAP_WAIT_S)) < 61 and sb < whole[b1f] + hold_eta.CAP_WAIT_S,
+       f"start test: a (after the anchor phase) its rounds ~{sa / 60:.0f} min; b1 (after a) its rounds and "
+       f"{hold_eta.CAP_WAIT_S // 60} min for the CPU cap ~{sb / 60:.0f} min, not its whole length with the re-runs")
+
+    # 4. the week: a deferred row is not done until a later admitted session carries it without deferring it again
+    gdir = os.path.join(tmp, "gate-week")
+    os.makedirs(gdir)
+
+    def cells(name, *lines):
+        path = os.path.join(gdir, name)
+        with open(path, "w") as fh:
+            fh.write("\n".join(lines) + "\n")
+        return path
+    anchor = "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf"
+    rowA, rowB = "android llama.cpp m/A short-chat", "android llama.cpp m/B short-chat"
+    setf = cells("g-set.cells", anchor, rowA, rowB, "android llama.cpp m/C short-chat")
+    h1 = cells("g-set-android-h1.cells", anchor, rowA, rowB)
+    h2 = cells("g-set-android-h2.cells", anchor, "android llama.cpp m/C short-chat")
+    xf = cells("g-x-android-x.cells", anchor, "android llama.cpp m/D short-chat")
+    sz = {"platform": "android", "display": "Fake Z", "identifier": "FakeZ", "serial": "FAKE-Z", "cpu_mask": "",
+          "hold": os.path.join(gdir, "hold_z"), "storage_gb_full": 100, "timeout_hours": 6,
+          "split": [{"cells": h1, "min_free_gb": 1}, {"cells": h2, "min_free_gb": 2}],
+          "extra_cells": [{"cells": xf, "tag": "x", "min_free_gb": 3, "timeout_hours": 1}]}
+    sched = {"anchors": "matrices/anchors.cells", "cells": setf, "devices": {"sz": sz}}
+    now = D.now().astimezone()
+    monday = dj.week_start(now)
+    t1 = max(now - datetime.timedelta(hours=3), monday + datetime.timedelta(minutes=1))
+    t2 = max(now - datetime.timedelta(hours=1), t1 + datetime.timedelta(minutes=1))
+    c1, c2 = "results/raw/2026-01-05-dashboard-v1-sz-h1-android", "results/raw/2026-01-05-dashboard-v1-sz-r2-rerun-android"
+    names = {c1: h1, c2: "logs/x/rerun.cells"}
+
+    def left(sessions, gate):
+        return dj.plan_left(sched, sz, sorted(sessions, reverse=True), names, monday, gate)
+    got = {"deferred": left([(t1, c1)], {c1: {"deferred": [rowA]}}),
+           "carried": left([(t1, c1), (t2, c2)], {c1: {"deferred": [rowA]}, c2: {"carries": [rowA]}}),
+           "again": left([(t1, c1), (t2, c2)], {c1: {"deferred": [rowA]}, c2: {"carries": [rowA], "deferred": [rowA]}}),
+           "last week": left([(monday - datetime.timedelta(hours=5), c1)], {c1: {"deferred": [rowA]}}),
+           "hand": left([(t1, c1), (t2, "results/raw/2026-01-05-dashboard-v1-sz-byhand-android")],
+                        {c1: {"deferred": [rowA]}})}
+    ok(got["deferred"] == {"set": [h2], "extras": [xf], "rerun": [rowA]}
+       and got["carried"] == {"set": [h2], "extras": [xf]} and got["again"] == got["deferred"]
+       and "rerun" not in got["last week"] and got["hand"] == {"set": None, "extras": []}
+       and dj.left_tags(sz, got["deferred"]) == ["rerun", "h2", "x"],
+       f"plan_left: a row the gate deferred this week is left (rerun) until a later session carries it; deferred "
+       f"again, it stays; last week's, or a week with a hand run, leaves none ({got})")
+    rows_t = [{"campaign": c1, "platform": "android", "device": "FakeZ",
+               "timestamp": t1.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")},
+              {"campaign": "results/raw/2026-01-05-dashboard-v1-sz-h2-android", "platform": "android", "device": "FakeZ",
+               "timestamp": t1.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")},
+              {"campaign": "results/raw/2026-01-05-dashboard-v1-sz-x-android", "platform": "android", "device": "FakeZ",
+               "timestamp": t1.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}]
+    names3 = {c1: h1, "results/raw/2026-01-05-dashboard-v1-sz-h2-android": h2,
+              "results/raw/2026-01-05-dashboard-v1-sz-x-android": xf}
+    with open(os.path.join(tmp, "state", "devices.txt"), "w") as fh:
+        fh.write("FAKE-Z\n")
+    real_pgrep = dj.pgrep
+    dj.pgrep = lambda pattern: []
+    try:
+        k, _, rep = dj.resolve_device(sched, "auto", now=now, rows=rows_t, admitted={}, retakes={}, skip=set(),
+                                      session_cells=names3, session_gate={c1: {"deferred": [rowA]}})
+        k2, _, rep2 = dj.resolve_device(sched, "auto", now=now, rows=rows_t, admitted={}, retakes={}, skip=set(),
+                                        session_cells=names3, session_gate={})
+    finally:
+        dj.pgrep = real_pgrep
+    ok(k == "sz" and rep[0]["state"] == "candidate" and rep[0]["detail"].endswith("; rerun pending this week")
+       and rep2[0]["state"] == "done",
+       f"resolve_device: every run of the plan admitted and a deferred cell left = a candidate, the rerun named; none "
+       f"deferred = done ({rep[0]['detail']}; {rep2[0]['state']})")
+
+    # 5. a real sitting in a temp ROOT (fake bench, hold tool, adb): the runner defers m/A in h1; the next sitting
+    # runs it first in its rerun run (anchor row + m/A), then the rest of the week
+    froot = os.path.join(tmp, "gate-root")
+    os.makedirs(os.path.join(froot, "results", "raw"))
+    with open(os.path.join(froot, "bench"), "w") as fh:
+        fh.write(FAKE_MATRIX_BENCH)
+    os.chmod(os.path.join(froot, "bench"), 0o755)
+    cli = os.path.join(gdir, "hold_cli.py")
+    with open(cli, "w") as fh:
+        fh.write(FAKE_HOLD_CLI)
+    sched_path = os.path.join(gdir, "schedule.json")
+    with open(sched_path, "w") as fh:
+        json.dump(dict(sched, hold_cli=cli), fh)
+    t, lines = D(2026, 10, 1, 2, 0), []
+    for f, minutes in (("matrices/anchors.cells", 10), (setf, 480), (h1, 60), (h2, 240), (xf, 180)):
+        lines.append(f"[{t:%Y-%m-%d %H:%M:%S}] $ gtimeout --kill-after=60 9000 /x/bench matrix {f} --platform "
+                     f"android --campaign c   env: ")
+        t += datetime.timedelta(minutes=minutes)
+        lines.append(f"[{t:%Y-%m-%d %H:%M:%S}] bench matrix exit 0")
+    with open(os.path.join(dj.LOG_DIR, "2026-10-01-sz.log"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+    def rows_now(path=None):
+        out = []
+        for d in sorted(os.listdir(os.path.join(froot, "results", "raw"))):
+            if "-anchor-" not in d and os.path.exists(os.path.join(froot, "results", "raw", d, "SESSION.json")):
+                stamp = D.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                out.append({"campaign": f"results/raw/{d}", "platform": "android", "timestamp": stamp,
+                            "device": "FakeZ", "runtime": "llama.cpp", "model_id": "m/B", "task": "short-chat"})
+        return out
+
+    def job(*argv):
+        buf = io.StringIO()
+        saved_argv = sys.argv
+        sys.argv = ["dashboard_job.py", *argv, "--schedule", sched_path]
+        try:
+            with contextlib.redirect_stdout(buf):
+                code = dj.main()
+        finally:
+            sys.argv = saved_argv
+        dj._unlock(".job.lock.sz")
+        return code, buf.getvalue().splitlines()
+    real = (dj.ROOT, dj.load_rows, dj.load_admission, dj.admit, dj.pgrep)
+    dj.ROOT, dj.load_rows, dj.load_admission = froot, rows_now, (lambda: {})
+    dj.admit = lambda schedule, dev, rel, platform: (True, "anchor nominal (selftest)", {"anchors": []})
+    dj.pgrep = lambda pattern: []
+    os.environ["FAKE_DEFER_ROW"] = rowA
+    try:
+        hhmm = (D.now() + datetime.timedelta(hours=2)).strftime("%H:%M")
+        code1, lines1 = job("sz", "--once", "--no-post", "--no-retake", "--release-by", hhmm)
+        os.environ.pop("FAKE_DEFER_ROW", None)
+        calls1 = [c.split() for c in open(os.path.join(froot, "calls.txt")).read().split("\n") if c]
+        base = f"{datetime.date.today().isoformat()}-dashboard-v1-sz"
+        s1 = json.load(open(os.path.join(froot, "results", "raw", f"{base}-h1-android", "SESSION.json")))
+        dl_line = next((ln for ln in lines1 if "the gate starts a block re-run only when it ends by" in ln), "")
+        ok(code1 == dj.EXIT_OK and [c[0] for c in calls1] == ["matrices/anchors.cells", h1]
+           and all(len(c) == 3 and c[2].startswith("deadline=") for c in calls1)
+           and [d["row"] for d in s1.get("gate_deferred", [])] == [rowA]
+           and any("gate: 1 re-run deferred at release_by" in ln for ln in lines1) and dl_line,
+           f"sitting 1 (release_by 2 h ahead): anchor + h1 run with BENCH_GATE_DEADLINE, the runner defers m/A, "
+           f"h1's SESSION.json names it (gate_deferred) and the log says so (exit {code1}; {calls1}; "
+           f"{dl_line.split('] ', 1)[-1][:90]})")
+        k3, _, rep3 = dj.resolve_device(sched, "auto", rows=rows_now(), admitted={}, retakes={}, skip=set())
+        code2, lines2 = job("sz", "--once", "--no-post", "--no-retake", "--release-by", "none")
+        calls2 = [c.split() for c in open(os.path.join(froot, "calls.txt")).read().split("\n") if c][len(calls1):]
+        gen = os.path.join(dj.LOG_DIR, f"rerun-{datetime.date.today().isoformat()}-sz.cells")
+        body = [ln for ln in open(gen).read().splitlines() if ln and not ln.startswith("#")] if os.path.exists(gen) else []
+        s2 = json.load(open(os.path.join(froot, "results", "raw", f"{base}-r2-rerun-android", "SESSION.json"))) \
+            if os.path.exists(os.path.join(froot, "results", "raw", f"{base}-r2-rerun-android", "SESSION.json")) else {}
+        ok(rep3[0]["state"] == "candidate" and "rerun, h2, x pending this week" in rep3[0]["detail"]
+           and code2 == dj.EXIT_OK and [c[0] for c in calls2] == ["matrices/anchors.cells", gen, h2, xf]
+           and [c[1] for c in calls2] == [f"{base}-r2-anchor", f"{base}-r2-rerun", f"{base}-r2-h2", f"{base}-r2-x"]
+           and all(len(c) == 2 for c in calls2) and body == [anchor, rowA] and s2.get("carries") == [rowA]
+           and s2.get("cells") == gen,
+           f"sitting 2: the rerun run first (its file: the set's anchor row, then m/A), then h2 and x; its "
+           f"SESSION.json carries m/A ({rep3[0]['detail']}; {[c[:2] for c in calls2]})")
+        k4, _, rep4 = dj.resolve_device(sched, "auto", rows=rows_now(), admitted={}, retakes={}, skip=set())
+        ok(rep4[0]["state"] == "done", f"after both sittings the week is done: {rep4[0]['state']} ({rep4[0]['detail']})")
+        # a dry run says what its hold would read and plans the rerun run first
+        with open(os.path.join(froot, "results", "raw", f"{base}-r2-rerun-android", "SESSION.json"), "w") as fh:
+            json.dump(dict(s2, carries=[]), fh)
+        code5, lines5 = job("sz", "--once", "--no-post", "--no-retake", "--dry-run", "--release-by", hhmm)
+        eta = next((ln for ln in lines5 if "the hold would read expected_release" in ln), "")
+        rerun_at = next((i for i, ln in enumerate(lines5) if f"--campaign {base}-r3-rerun " in ln), None)
+        h2_at = next((i for i, ln in enumerate(lines5) if f"bench matrix {h2} " in ln), None)
+        ok(code5 == dj.EXIT_OK and rerun_at is not None and (h2_at is None or rerun_at < h2_at)
+           and "BENCH_GATE_DEADLINE=" in lines5[rerun_at] and "rerun ~" in eta,
+           f"a dry run with m/A left again: the rerun run planned first under BENCH_GATE_DEADLINE, the hold's "
+           f"estimate counts it ({eta.split('expected_release', 1)[-1][:110]})")
+    finally:
+        os.environ.pop("FAKE_DEFER_ROW", None)
+        dj.ROOT, dj.load_rows, dj.load_admission, dj.admit, dj.pgrep = real
+        lock = "/tmp/edge-llm-bench-android-FAKE-Z.lock"   # the preflight's campaign-lock probe
+        if os.path.exists(lock):
+            os.remove(lock)
 
 if __name__ == "__main__":
     sys.exit(main())

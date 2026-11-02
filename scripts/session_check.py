@@ -909,8 +909,17 @@ class Check:
             self.add("runner-exit", f"runner_exit {rc}")
         if phase == "payload":
             exp, have = s.get("cells_expected"), s.get("cells_with_records")
+            # a cell whose gate re-run release_by deferred has its capture quarantined and no record here; the
+            # job's week takes it at a later sitting (SESSION.json gate_deferred, docs/dashboard-recurring-job-v1.md
+            # §11)
+            deferred = [d for d in s.get("gate_deferred") or [] if isinstance(d, dict)]
             if isinstance(exp, int) and isinstance(have, int) and have < exp:
-                self.add("partial", f"{have} of {exp} cells with records (SESSION.json)")
+                if deferred and have + len(deferred) >= exp:
+                    self.note(f"{have} of {exp} cells with records: the gate deferred {len(deferred)} re-run"
+                              f"{'s' if len(deferred) > 1 else ''} at release_by (quarantined, left for a later "
+                              f"sitting this week): " + "; ".join(short(d.get("cell"), 90) for d in deferred))
+                else:
+                    self.add("partial", f"{have} of {exp} cells with records (SESSION.json)")
         for line in self.lines("FAILURES.txt"):
             self.add("failures", f"{line} (cell records in the dir: {self.cell_records(line, recs)})")
         for line in self.lines("FLAGGED.txt"):
@@ -923,6 +932,8 @@ class Check:
                 self.note(f"FLAGGED (retry kept, renders ⚠): {short(line, 160)}")
         for line in self.lines("SKIPPED.txt"):
             self.note(f"SKIPPED: {short(line, 160)}")
+        for line in self.lines("GATE_DEFERRED.txt"):
+            self.note(f"GATE_DEFERRED: {short(line, 160)}")
         if "non-nominal start" in reason:
             self.note(f"admission: {short(reason, 160)}")
         if self.kind == JOB_DDP:

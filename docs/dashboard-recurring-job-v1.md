@@ -847,7 +847,10 @@ re-runs come from the runner: since 2026-10-26 `android/bench/run_campaign.py`
 prints `gate ahead: <cell> (<verdict>)` right after a cell's last round (its
 verdict is final then) and `gate plan: re-run N of M payload cells …` before
 the first re-run; each counts 180 s plus a block of the cell's runs (two of
-its round launches when no block of it is on record). A Mac or iPhone run
+its round launches when no block of it is on record). On a device with
+release_by the re-runs count only up to the gate's deadline, release_by less
+2 min (§11): the runner defers a later one, and the basis says `the gate
+re-runs a cell only when the re-run ends by HH:MM`. A Mac or iPhone run
 (their runners print no rounds) is counted whole, from its length in the
 logs, else from the device's `expected_hours`. A run past its length is taken
 to end now, so the time slips as it overruns.
@@ -885,6 +888,14 @@ selftest pins it), minutes from the release at 12:47:58:
 Before round 3 the time is early by the gate's re-runs, which no line names
 yet (58 min that day); the basis says they may come.
 
+The 2026-11-02 S26 log replayed with release_by 08:00 (`replay --deadline`;
+`2026-11-02-s26-job-log.txt` there is that night's log to b1's last round,
+then the tail the runner prints under the deadline, made from that night's
+times): no estimate is later than 07:58 at any mark, and the hold is released
+at 07:53:16 with the long-context re-run deferred. The log as it ran read
+08:05 at 07:24:50 and 08:19 at 07:45:23 (the re-runs named but not bounded),
+and the hold came back at 08:07:52.
+
 ## 11. Giving the device back by a time: release_by (2026-10-31)
 
 A device with `release_by` in schedule.json (`"HH:MM"`, local time) gets its
@@ -915,12 +926,37 @@ What the job does (`scripts/dashboard_job.py`):
   the sitting can stop between them.
 - Before each later run (a half, an extra file): a run expected to end past
   release_by is not started, nor any run after it. A run under way is never
-  stopped, so the overshoot is at most that run's estimate error. The gate's
-  re-runs happen inside their run (`run_campaign.py`), so they count toward
-  its length and are never a cut point. The length tested is
-  `hold_eta.Sitting.start_length`: the launches the run's rows owe, or its
-  newest whole length in the job logs when that is longer (a median would
-  mix set versions).
+  stopped, so the overshoot is at most that run's estimate error. The length
+  tested is `hold_eta.Sitting.start_length`: the launches the run's rows owe,
+  or the newest length of its rounds in the job logs when that is longer (a
+  median would mix set versions), plus 5 min (`CAP_WAIT_S`, the most one
+  launch waits for the CPU cap to lift) when a payload run comes before it in
+  the sitting: that run leaves the phone hot (2026-11-02 S26 b1 after a:
+  90 s; 2026-10-14 b2: 100 s). The gate's re-runs are not in it; the next
+  point bounds them.
+- The gate's block re-runs come after a run's last round, inside the runner
+  (`run_campaign.py`). On an Android device the job hands the runner
+  `BENCH_GATE_DEADLINE`, release_by less 2 min (`hold_eta.GATE_RESERVE_S`:
+  after the runner's last line the job rebuilds the summary, writes
+  SESSION.json and renders before it gives the hold back). The runner starts
+  a re-run only when its 180 s cooldown and block (the cell's runs at its
+  longest one-run launch this session, with their cooldowns) end by then. A
+  later one is deferred: the flagged capture is quarantined as before
+  (`*.json.attempt1`), no record of the cell stands, `GATE_DEFERRED.txt`
+  names the cell, its verdict and its row, and the run's SESSION.json lists
+  it under `gate_deferred`. An anchor row's re-run is never deferred (it runs
+  first, and the session's admission reads it). `session_check.py` reads a
+  payload dir whose cells without records are only those as PASS with a
+  note, and the post step's commit message counts them. Why: on 2026-11-02
+  the S26's b1 finished its last round at 07:45; the gate re-ran two
+  collapsed cells (07:48–07:53 and 07:56–08:07), and the hold came back at
+  08:07:52. Under the deadline the runner defers the second (counted at
+  about 19 min from 07:53, past 07:58), and the hold comes back at about 07:53
+  (`scripts/testdata/hold-eta/` holds that night's log with the tail the
+  runner now prints; the selftest replays it). In the phones' job logs from
+  2026-09-25 to 2026-11-02 the gate
+  re-ran 0 to 5 cells after a run's last round, 7 to 34 min each with its
+  cooldown, at most 65 min in one run (Pixel 8a, 2026-10-02).
 - The sitting closes with the runs it finished. The ledger reason names the
   runs left (`release_by 08:00: not started, left for a later firing this
   week: b2, ort, npu`), each payload SESSION.json carries `release_by`, and
@@ -938,7 +974,10 @@ half or an extra file covers itself, and a hand run with no SESSION.json
 covers the whole plan, as before. A `--cells` file (a slot or a by-hand
 retake) covers nothing. Before this change any admitted `-dashboard-v1-`
 session completed the week. Retakes still do not count, and the Mac's parts
-rule (§3, 2026-10-28) is unchanged.
+rule (§3, 2026-10-28) is unchanged. A row whose gate re-run release_by
+deferred keeps the week open (`plan_left` `rerun`) until a later admitted
+session that week carries it (its SESSION.json `carries`) without deferring
+it again; `auto` reports it as `rerun, … pending this week`.
 
 Carry-over: the next sitting of the week runs only the runs left
 (`sitting_left`). Rotation drops the copies of every other half of the
@@ -953,20 +992,47 @@ did before. So does an extra file skipped for a missing side build; a
 firing that finds only that file left reports the device not ready (exit 5)
 until the side build is back on the phone.
 
-With the newest run lengths in the job logs, each phone's first sitting of
-the week starts at 02:00 (from 05:30 none has room before 08:00 for its
-anchor phase and a). The S26's week takes two sittings from 02:00: a + b1
-(hold back about 07:40) and b2 + ort + npu (about 06:40). The Pixel 8a's
-takes one (about 07:20). The Pixel 11 Pro runs the S26's three halves and
-takes two: a (about 06:20) and b1 + b2 (about 07:00); if its halves take
-what their rows took on 2026-10-27 (4.45, 2.63 and 2.72 h, two gate re-runs
-included), about 06:40 and 07:35. Each of these five phone nights also
-covers the 05:30 firing; the iPhone 18 Pro's one at 05:30 and the Mac's two
-parts take the other two nights, so the week fills 7 of the 7 nights and
-leaves none for a retry. A lab unit's sitting that follows a Mac part can
-take that night's 05:30 firing too; the week still fits. A night that
-fails is taken again by hand, once, in the day (decided 2026-10-31). Not
-covered: the iPhone 18 Pro (one long run, no halves, no
+The deferred rows run first at the device's next sitting, right after the
+anchor phase: the rerun run, campaign `<base>-rerun`, over
+`logs/dashboard-job/rerun-<date>-<key>.cells` (generated, not a committed
+matrix: the set's session anchor row, so the session is judged on its own
+anchor, then each deferred row byte for byte, once). Its free-space floor is
+the largest of the halves and extra files that hold its rows, and on a phone
+with halves, when short of space, it rotates out the halves' copies (its own
+models kept) as a half does. Its own gate
+meets the same deadline; a row deferred again stays pending. A retake
+sitting whose gate deferred a re-run stays in the retake queue as busy (not
+an attempt), so a later firing takes it again.
+
+With the newest run lengths in the job logs (the start test's: S26 anchor
+13 min, a 3.3 h, b1 2.3 h, b2 2.1 h, ort 26 min, npu 2.2 h; Pixel 8a anchor
+12 min, a 4.9 h, b1 16 min, b2 10 min; Pixel 11 Pro anchor 13 min, a 4.1 h,
+b1 2.7 h, b2 2.3 h; a run after a payload run with its 5 min) and each
+half's newest gate re-runs after its rounds (S26 a one of 11 min, b1 two of
+8 and 15 min; Pixel 11 Pro a one of 18 min, b2 one of 33 min; Pixel 8a none
+since 2026-10-07), each phone's first sitting of the week starts at 02:00
+(from 05:30 none has room before 08:00 for its anchor phase and a). The
+S26's week takes two sittings from 02:00: a + b1, given back by 08:00 (after
+a's re-run, b1's two would end past 07:58 and are deferred), then the rerun
+run, b2, ort and npu (about 07:45). The Pixel 8a's takes one (about 07:30).
+The Pixel 11 Pro runs the S26's three halves and takes two: a (about 06:35,
+its re-run included) and b1 + b2 (about 07:40); about 06:40 and 07:45 if its
+halves take what their rows took on 2026-10-27. Each of these five phone
+nights also covers the 05:30 firing; the iPhone 18 Pro's one at 05:30 and
+the Mac's two parts take the other two nights, so the week fills 7 of the 7
+nights and leaves none for a retry. With every re-run any sitting since
+2026-09-25 had in each half at once (S26 b2 two more, 8 and 26 min; Pixel 8a
+a two, 8 min each), the S26 needs a third, short sitting (npu, 2.2 h) that a
+05:30 firing holds. A simulation of two weeks of firings with the job's own
+decisions (`resolve_device`, `window_plan`, the start test, the gate's
+deadline, `plan_left`) admits every device's plan within each week's 14
+firings: with no re-runs, the newest or every one at once, the rerun run's
+rows flagging again, the Pixel 11 Pro at its 2026-10-27 lengths, the Mac's
+two parts on the Sunday before, a lab unit's sitting of 61 or 90 min, and
+each of the 120 orders of the five devices' last sessions. A lab unit's
+sitting that follows a Mac part can take that night's 05:30 firing too. A
+night that fails is taken again by hand, once, in the day (decided
+2026-10-31). Not covered: the iPhone 18 Pro (one long run, no halves, no
 keeper log names its hold), the Mac (no device hold; its window is
 `quiet_lock`), the lab units (no hold), and the iPhone 17 Pro (by hand
 only).
@@ -976,16 +1042,24 @@ for one invocation, and `--release-by none` lifts it. A dry run logs the cut
 line: `--dry-run` takes no hold and starts nothing, but its preflight runs
 adb on the phone.
 
-Check on the device: the first sitting this changes is the S26's first from
-Monday 2026-11-02 (auto takes the device whose last admitted session is the
-oldest; the Mac, when its window is free, may come first). Started at 02:00
-it should run a + b1, give the hold back about 07:40, and leave b2, ort and
-npu for a later firing that week; at 05:30 none of the three phones has
-room before 08:00 for its anchor phase and a, and auto passes it over. The day's auto log (`logs/dashboard-job/<date>-auto.log`) names the
-device each firing took; the S26's log (`logs/dashboard-job/<date>-s26.log`)
-shows the `release_by` lines, and the ledger reason names the runs left; the
-S26's second sitting that week runs them. The Pixel 11 Pro's first sitting
-under it (on the night auto's order gives it) should log `running its storage
-halves instead`, run a only, give the hold back about 06:20 (06:40 with a
-gate re-run) and leave b1 and b2; its second should run b1 + b2 and give the
-hold back about 07:00 (07:35), in `logs/dashboard-job/<date>-pixel11pro.log`.
+Check on the device: the S26's first sitting under release_by
+(2026-11-02, 02:00) ran a + b1 and left b2, ort and npu, as planned, but gave
+the hold back at 08:07:52 because of b1's gate re-runs; the gate's deadline
+above came after that night. From the next sitting of a phone with
+release_by, its log
+(`logs/dashboard-job/<date>-<key>.log`) carries `the gate starts a block
+re-run only when it ends by 07:58 (BENCH_GATE_DEADLINE)`, and the hold comes
+back by 08:00. The first night a re-run would end past 07:58, the runner
+prints `gate: <verdict> — quarantined, re-run deferred: ~N min would end …,
+past the deadline 07:58:00`, the job logs `gate: 1 re-run deferred at
+release_by (…)`, the payload dir holds `GATE_DEFERRED.txt`, and the post
+step commits it with the deferral counted. That device's next sitting logs
+`the week's plan: 1 cell whose gate re-run release_by deferred earlier this
+week — the rerun run over logs/dashboard-job/rerun-<date>-<key>.cells after
+the anchor phase` and runs `<base>-rerun` before its other runs. The
+day's auto log (`logs/dashboard-job/<date>-auto.log`) names the device each
+firing took. The Pixel 11 Pro's first sitting under release_by (on the night
+auto's order gives it) should log `running its storage halves instead`, run
+a only, give the hold back about 06:20 (06:35 with a gate re-run) and leave
+b1 and b2; its second should run b1 + b2 and give the hold back about 07:05
+(07:40), in `logs/dashboard-job/<date>-pixel11pro.log`.

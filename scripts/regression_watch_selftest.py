@@ -431,7 +431,14 @@ def main():
     gen = os.path.relpath(os.path.join(dj.LOG_DIR, f"retake-{today}-s26.cells"), ROOT)
     r_m = index(lines, f"bench matrix {gen} --platform android --campaign {base}-retake-gemma4e2b-cpu-short-chat ")
     r_a = index(lines, f"--campaign {base}-retake-gemma4e2b-cpu-short-chat-anchor ")
-    w_a = index(lines, f"--campaign {base}-anchor ")
+    # the weekly set's base: the first -r<n> whose anchor phase is not on disk (a real S26 sitting of the day has
+    # its dirs in results/raw: 2026-11-02 JST made this read -r2); the retake's --cells sitting keeps the day's base
+    wbase, n = base, 1
+    while os.path.isdir(os.path.join(dj.ROOT, dj.campaign_rel(wbase + (f"-r{n}" if n > 1 else "") + "-anchor",
+                                                              "android"))):
+        n += 1
+    wbase += f"-r{n}" if n > 1 else ""
+    w_a = index(lines, f"--campaign {wbase}-anchor ")
     ok(code == 0 and None not in (r_m, r_a, w_a) and r_a < r_m < w_a,
        f"dry run: the retake sitting's anchor and its bench matrix line (…-retake-<slug>) before the weekly set's (exit {code})")
     posts = [i for i, ln in enumerate(lines) if "post: $ " in ln]
@@ -451,11 +458,11 @@ def main():
     code, lines = job("s26", "--dry-run", "--once")
     pm = index(lines, f"bench matrix {gen} --platform android --campaign {base}-retake-qwen306b-gpu-protocol-1024 ")
     pp = index(lines, f"bench profile {gen} --campaign {base}-retake-qwen306b-gpu-protocol-1024")
-    ok(code == 0 and None not in (pm, pp) and pm < pp < index(lines, f"--campaign {base}-anchor "),
+    ok(code == 0 and None not in (pm, pp) and pm < pp < index(lines, f"--campaign {wbase}-anchor "),
        "an android native-benchmark retake: ./bench profile over the same file into the payload campaign, after its matrix line")
     rw.save_state(dj.LOG_DIR, rw.RETAKES, [])
     code, lines = job("s26", "--dry-run", "--once")
-    ok(code == 0 and index(lines, "-retake-") is None and index(lines, f"--campaign {base}-anchor ") is not None,
+    ok(code == 0 and index(lines, "-retake-") is None and index(lines, f"--campaign {wbase}-anchor ") is not None,
        "no pending retake: no retake line, the weekly set as before")
     rw.save_state(dj.LOG_DIR, rw.RETAKES, [cpu_entry])
     code, lines = job("s26", "--dry-run", "--once", "--no-retake")
@@ -480,7 +487,7 @@ def main():
     code, lines = job("auto", "--dry-run")
     ok(code == 0 and index(lines, "auto chose s26") is not None
        and index(lines, f"--campaign {base}-retake-gemma4e2b-cpu-short-chat ") is not None
-       and index(lines, f"--campaign {base}-anchor ") is None
+       and index(lines, f"--campaign {wbase}-anchor ") is None
        and index(lines, "=== done: OK (the retake sitting only: the weekly set is done this week)") is not None,
        "auto, the weekly set done this week and a retake pending: the firing runs the retake sitting only")
     rw.save_state(dj.LOG_DIR, rw.RETAKES, [])
@@ -495,7 +502,7 @@ def main():
     write(os.path.join(dj.LOG_DIR, rw.RETAKES), "{not json")
     code, lines = job("s26", "--dry-run", "--once")
     ok(code == 0 and index(lines, "WARN retake state unusable") is not None and index(lines, "-retake-") is None
-       and index(lines, f"--campaign {base}-anchor ") is not None,
+       and index(lines, f"--campaign {wbase}-anchor ") is not None,
        "an unreadable retakes.json: one WARN line, no retake, the weekly set as before")
     dj.pgrep = real_pgrep
     lock = "/tmp/edge-llm-bench-android-FAKE-S.lock"   # the preflight's campaign-lock probe

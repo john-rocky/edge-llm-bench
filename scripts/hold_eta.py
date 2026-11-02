@@ -40,7 +40,10 @@ gate's lines):
 - a device with a release_by (schedule.json, docs/dashboard-recurring-job-v1.md §11): a run not yet
   started whose end would pass it is not started (dashboard_job.attempt), so the time ends with the
   runs before it and the basis names the runs left for a later firing (Sitting.start_length is the
-  length the job tests a run by).
+  length the job tests a run by: the run's rounds, and CAP_WAIT_S when it follows a payload run); the
+  Android runner starts a gate re-run only when it ends by release_by less GATE_RESERVE_S
+  (BENCH_GATE_DEADLINE, android/bench/run_campaign.py) and defers the others (`gate: ... re-run
+  deferred`), so the gate's re-runs are counted up to that time and no further.
 
 The job writes the keys only into a hold it took itself (never a keeper's), replacing the file in
 one step (os.replace: a reader sees the old hold or the new, never a part of one) and only while
@@ -66,6 +69,16 @@ FIELDS = ("expected_release", "release_basis", "release_updated")
 RELEASE_FMT = "%Y-%m-%d %H:%M"
 # android/bench/run_campaign.py GATE_COOLDOWN: the wait before each block re-run
 GATE_COOLDOWN_S = 180
+# release_by less this is the runner's BENCH_GATE_DEADLINE (dashboard_job.attempt): after the runner's last line
+# `bench matrix` rebuilds the summary and the job reads the phone's storage, writes SESSION.json and renders the
+# dashboard before it gives the hold back (2026-11-02 Galaxy S26: the runner's last run ended about 08:07:40,
+# `bench matrix exit` 08:07:50, hold released 08:07:52)
+GATE_RESERVE_S = 120
+# android/bench/run_cell.py CPUCAP_WAIT: the longest a launch waits for the CPU cap to lift. A run that follows a
+# payload run starts on a phone the run before it left hot (2026-11-02 S26 b1 after a: 90 s; 2026-10-14 b2: 100 s),
+# so its start test adds it; right after the anchor phase the job logs since 2026-09-25 show 0 s in the weekly
+# sittings from 02:00 and 10-40 s in sittings by hand in the day
+CAP_WAIT_S = 300
 DEFAULT_LAUNCH_S = 300.0   # no launch on record at all
 DEFAULT_LEAD_S = 30.0      # a run's start to its first launch, none on record
 MIN_SHARE_S = 600.0        # a whole run with no length on record gets at least this
@@ -88,6 +101,7 @@ ROUND = re.compile(r"^--- round (\d+)/(\d+) complete")
 GATE_AHEAD = re.compile(r"^gate ahead: (\S+ \S+ \S+) \(")
 GATE_PLAN = re.compile(r"^gate plan: re-run (\d+) of \d+ payload cells[^:]*(?::\s*(.*))?$")
 GATE_RERUN = re.compile(r"^gate: .* re-run once")
+GATE_DEFER = re.compile(r"^gate: .* re-run deferred")
 
 
 def launch_label(runtime, backend, model_id, task):
@@ -114,10 +128,11 @@ def _median(values):
 
 
 class Launch:
-    __slots__ = ("label", "start", "runs", "end", "rerun", "before_gate")
+    __slots__ = ("label", "start", "runs", "end", "rerun", "tail", "before_gate")
 
-    def __init__(self, label, start, runs, rerun):
+    def __init__(self, label, start, runs, rerun, tail=False):
         self.label, self.start, self.runs, self.rerun = label, start, runs, rerun
+        self.tail = tail           # a gate re-run after the last round (not an anchor row's)
         self.end = None
         self.before_gate = False   # its end is the gate's start, not a launch's: no length
 
@@ -141,6 +156,9 @@ class Stage:
         self.gate = None            # the labels the gate plan names; None = no plan line
         self.announced = 0          # re-runs the gate announced (`gate: ... re-run once`)
         self.announced_at = None
+        self.deferred = 0           # re-runs the gate did not start (`gate: ... re-run deferred`, release_by)
+        self.deferred_late = 0      # of them, announced first (deferred after the cooldown)
+        self.anchor_gate = False    # an anchor row's re-run announced before the rounds: its block is next
         self.in_gate = False
 
     @property
@@ -168,6 +186,9 @@ class Sitting:
         self.stages = list(stages)
         self.hist = lengths or {"launches": {}, "stages": {}, "leads": {}}
         self.deadline = deadline
+        # the Android runner's BENCH_GATE_DEADLINE: no gate re-run ends past it
+        self.gate_deadline = (deadline - datetime.timedelta(seconds=GATE_RESERVE_S)
+                              if deadline is not None else None)
         self.current = None
         self.clock = None           # the newest time the log has said
         self.released = None
@@ -228,13 +249,17 @@ class Sitting:
             self._close_launch(t)
             label = f"{m.group(1)} {m.group(2)} {m.group(3)}"
             if st.in_gate:
-                runs, rerun = st.runs_of(label), True
+                runs, rerun, tail = st.runs_of(label), True, True
+            elif st.anchor_gate:
+                # an anchor row's block re-run (apply_gate right after the row's block, before the rounds)
+                runs, rerun, tail = st.anchor_runs(label) or st.runs_of(label), True, False
+                st.anchor_gate = False
             else:
                 runs = st.anchor_runs(label)
                 if runs and any(l.label == label and l.runs == runs for l in st.launches):
                     runs = None   # the anchor's block ran; another launch of it is a round's
-                runs, rerun = (runs or 1), False
-            st.launches.append(Launch(label, t, runs, rerun))
+                runs, rerun, tail = (runs or 1), False, False
+            st.launches.append(Launch(label, t, runs, rerun, tail))
             return False
         m = RUN_LINE.match(line)
         if m and st.launches and st.launches[-1].end is None:
@@ -263,9 +288,22 @@ class Sitting:
             self.events += 1
             return True
         if GATE_RERUN.match(line):
+            self._close_launch(self.clock, timed=False)
+            self.events += 1
+            if st.gate is None and not (st.rounds_total and st.rounds == st.rounds_total):
+                # before the rounds end: an anchor row's re-run, not the payload's gate
+                st.anchor_gate = True
+                return True
             st.in_gate = True
             st.announced += 1
             st.announced_at = self.clock
+            return True
+        if GATE_DEFER.match(line):
+            started = sum(1 for l in st.launches if l.tail)
+            if st.announced > started + st.deferred_late:
+                st.deferred_late += 1   # the announced re-run, deferred after its cooldown
+            st.in_gate = True
+            st.deferred += 1
             self._close_launch(self.clock, timed=False)
             self.events += 1
             return True
@@ -357,12 +395,18 @@ class Sitting:
     # ------------------------------------------------------------ the estimate
     def stage_left(self, st, now, own):
         """(seconds left in the run at `now`, its progress words, whether the gate is still uncounted)."""
+        rounds, gate, words, gate_open = self.stage_split(st, now, own)
+        return rounds + gate, words, gate_open
+
+    def stage_split(self, st, now, own):
+        """(seconds left at `now` of the run's rounds, of its gate re-runs, its progress words, whether the gate
+        is still uncounted)."""
         if st.rows is None:
             whole = self._whole(st) or MIN_SHARE_S
             if st.start is None:
-                return whole, "", False
+                return whole, 0.0, "", False
             gone = (now - st.start).total_seconds()
-            return max(whole - gone, 0.0), f"{fmt_span(gone)} in", False
+            return max(whole - gone, 0.0), 0.0, f"{fmt_span(gone)} in", False
         owed = collections.Counter()
         for label, runs, anchor in st.rows:
             if anchor:
@@ -371,32 +415,37 @@ class Sitting:
                 owed[(label, 1)] += runs
         done = collections.Counter(l.key for l in st.launches if not l.rerun)
         left = sum(max(n - done[key], 0) * self.length(key, own) for key, n in owed.items())
+        gate = 0.0
         cur = st.launches[-1] if st.launches else None
         if cur is not None and cur.end is None:
-            left += max(self.length(cur.key, own) - (now - cur.start).total_seconds(), 0.0)
+            cur_left = max(self.length(cur.key, own) - (now - cur.start).total_seconds(), 0.0)
+            if cur.tail:
+                gate += cur_left
+            else:
+                left += cur_left
         payload = any(not anchor for _, _, anchor in st.rows)
         gate_open = False
+        started = sum(1 for l in st.launches if l.tail)
         if st.gate is not None:
-            started = sum(1 for l in st.launches if l.rerun)
-            for label in st.gate[started:]:
+            # each gate line resolves the plan's next cell: a re-run started, or one deferred (release_by)
+            for label in st.gate[started + st.deferred:]:
                 if label:
-                    left += GATE_COOLDOWN_S + self.length((label, st.runs_of(label)), own)
+                    gate += GATE_COOLDOWN_S + self.length((label, st.runs_of(label)), own)
                 else:   # a plan line whose names did not parse: the device's median launch
-                    left += GATE_COOLDOWN_S + self._typical(own) * block_launches(3)
-            if st.announced > started and st.announced_at is not None:
+                    gate += GATE_COOLDOWN_S + self._typical(own) * block_launches(3)
+            if st.announced > started + st.deferred_late and st.announced_at is not None:
                 # the announced re-run is in its cooldown
-                left -= min((now - st.announced_at).total_seconds(), GATE_COOLDOWN_S)
+                gate -= min((now - st.announced_at).total_seconds(), GATE_COOLDOWN_S)
         elif st.in_gate:
             # a runner that names no plan: only the re-run it announced is counted
-            started = sum(1 for l in st.launches if l.rerun)
-            if st.announced > started and st.announced_at is not None:
-                left += max(GATE_COOLDOWN_S - (now - st.announced_at).total_seconds(), 0.0) \
+            if st.announced > started + st.deferred_late and st.announced_at is not None:
+                gate += max(GATE_COOLDOWN_S - (now - st.announced_at).total_seconds(), 0.0) \
                     + self._typical(own) * block_launches(3)
         else:
             # the rounds still run: the re-runs the runner already named (`gate ahead:`), and the
             # cells still to finish their last round may add more
             for label in st.ahead:
-                left += GATE_COOLDOWN_S + self.length((label, st.runs_of(label)), own)
+                gate += GATE_COOLDOWN_S + self.length((label, st.runs_of(label)), own)
             gate_open = payload   # until the plan line (seconds after the last round) names them all
         if st.start is None:
             left += self._lead(st)
@@ -404,28 +453,39 @@ class Sitting:
             words = ""
         elif st.in_gate:
             n = len(st.gate) if st.gate is not None else st.announced
-            started = sum(1 for l in st.launches if l.rerun)
             words = (f"round {st.rounds}/{st.rounds_total} done, gate re-runs "
-                     + (f"{started}/{n} started" if st.gate is not None else f"{started} so far, no plan line"))
+                     + (f"{started}/{n} started" if st.gate is not None else f"{started} so far, no plan line")
+                     + (f", {st.deferred} deferred (release_by)" if st.deferred else ""))
         else:
             n = len([l for l in st.launches if not l.rerun])
             words = (f"round {st.rounds}/{st.rounds_total} done" if st.rounds
                      else f"{n} launch{'' if n == 1 else 'es'} in")
             if st.ahead:
                 words += f", {len(st.ahead)} gate re-run{'s' if len(st.ahead) > 1 else ''} ahead"
-        return max(left, 0.0), words, gate_open
+        return max(left, 0.0), max(gate, 0.0), words, gate_open
+
+    def follows_payload(self, st):
+        """Whether a payload run of this sitting comes before `st` (the anchor phase is no payload run)."""
+        idx = self.stages.index(st) if st in self.stages else len(self.stages)
+        return any(p.kind == "matrix" and p.tag != "anchor" and not p.skipped for p in self.stages[:idx])
 
     def start_length(self, st, own=None):
         """Seconds a run not yet started is taken to need when the job decides whether to start it before
-        the device's release_by: its count (stage_left: the launches its rows owe, the lead) or, when
-        longer, its newest whole length on record (history: the file's last run on this device that
-        exited 0), which holds the gate's re-runs that run had; no line names a re-run before the run
-        starts. The newest, not a median: a cells file grows (the S26's whole set took 3.3 h in
-        September, 8.2 h on 2026-10-26), and a median of both is neither."""
+        the device's release_by: its rounds, counted (stage_split: the launches its rows owe, the lead) or,
+        when longer, the newest length on record of the file's rounds (history "rounds": the file's last
+        run on this device that exited 0, to the end of its last round), and CAP_WAIT_S on an Android run
+        that follows a payload run of the sitting. Not the gate's re-runs: on a device with a release_by
+        the runner starts one only when it ends by then (BENCH_GATE_DEADLINE), so the run's rounds are
+        the part that cannot give way (2026-11-02 S26 b1: rounds 2h11m, then two re-runs to 2h33m). The
+        newest, not a median: a cells file grows (the S26's whole set took 3.3 h in September, 8.2 h on
+        2026-10-26), and a median of both is neither. A history without rounds lengths (written before
+        2026-11-02) gives its newest whole length."""
         own = self.own_lengths() if own is None else own
-        counted = self.stage_left(st, datetime.datetime.now(), own)[0] if st.start is None else 0.0
-        newest = (self.hist["stages"].get(st.key) or [None])[0]
-        return max(counted, newest or 0.0)
+        counted = self.stage_split(st, datetime.datetime.now(), own)[0] if st.start is None else 0.0
+        rounds = self.hist.get("rounds")
+        newest = ((rounds.get(st.key) if rounds is not None else self.hist["stages"].get(st.key)) or [None])[0]
+        cap = CAP_WAIT_S if st.rows is not None and st.kind == "matrix" and self.follows_payload(st) else 0.0
+        return max(counted, newest or 0.0) + cap
 
     def estimate(self, now):
         """(expected release datetime, basis) at `now`. With a deadline (release_by), a run not yet started
@@ -434,22 +494,29 @@ class Sitting:
         that run nor any after it (dashboard_job.attempt), and the basis names them. A retake's profile pair
         goes with its matrix run, never alone."""
         own = self.own_lengths()
-        total, parts, open_gates, cut = 0.0, [], [], []
+        total, parts, open_gates, cut, bounded = 0.0, [], [], [], False
+        gd = self.gate_deadline
         for st in self.stages:
             if st.skipped or st.end is not None:
                 continue
             if cut:
                 cut.append(st.tag)
                 continue
-            left, words, gate_open = self.stage_left(st, now, own)
+            rounds, gate, words, gate_open = self.stage_split(st, now, own)
             if self.deadline is not None and st.start is None:
-                left = self.start_length(st, own)
-                need = left + (0.0 if st.kind == "profile" else sum(
+                rounds, gate = self.start_length(st, own), 0.0
+                need = rounds + (0.0 if st.kind == "profile" else sum(
                     self.start_length(p, own) for p in self.stages
                     if p.kind == "profile" and p.cells == st.cells and p.start is None and not p.skipped))
                 if st.kind != "profile" and now + datetime.timedelta(seconds=total + need) > self.deadline:
                     cut.append(st.tag)
                     continue
+            if gd is not None and st.rows is not None and gate > 0:
+                # the runner starts a re-run only when it ends by the gate deadline: none is counted past it
+                room = max((gd - now).total_seconds() - total - rounds, 0.0)
+                if gate > room:
+                    gate, bounded = room, True
+            left = rounds + gate
             total += left
             if gate_open:
                 open_gates.append(st.tag)
@@ -464,7 +531,11 @@ class Sitting:
         basis = parts[0] + ("; then " + ", ".join(parts[1:]) if len(parts) > 1 else "")
         if open_gates:
             basis += (f" (+ any re-run the gate adds for a cell of {', '.join(open_gates)} still to finish "
-                      f"its last round: {GATE_COOLDOWN_S // 60} min + a block of the cell's runs each)")
+                      f"its last round: {GATE_COOLDOWN_S // 60} min + a block of the cell's runs each"
+                      + (f", only one that ends by {gd:%H:%M}" if gd is not None else "") + ")")
+        if bounded:
+            basis += (f" (the gate re-runs a cell only when the re-run ends by {gd:%H:%M}: a later one is deferred, "
+                      "its cell left for a later sitting this week)")
         return now + datetime.timedelta(seconds=total), basis + tail
 
 
@@ -473,10 +544,11 @@ class Sitting:
 def history(log_dir, key, before=None, n=HISTORY_LOGS):
     """Lengths from the device's newest job logs (logs/dashboard-job/<date>-<key>.log, at most n,
     dated before `before` when given) -> {"launches": {"<label>|<runs>": [s, ...]},
-    "stages": {"<kind>|<cells>": [s, ...]}, "leads": {...}}, newest first. Only runs that exited 0
-    count; a launch whose end is the gate's start does not."""
+    "stages": {"<kind>|<cells>": [s, ...]}, "leads": {...}, "rounds": {"<kind>|<cells>": [s, ...]}},
+    newest first ("rounds": a run to the end of its last round, its gate re-runs left out). Only runs
+    that exited 0 count; a launch whose end is the gate's start does not."""
     out = {"launches": collections.defaultdict(list), "stages": collections.defaultdict(list),
-           "leads": collections.defaultdict(list)}
+           "leads": collections.defaultdict(list), "rounds": collections.defaultdict(list)}
     paths = sorted(glob.glob(os.path.join(log_dir, f"*-{key}.log")), reverse=True)
     if before:
         paths = [p for p in paths if os.path.basename(p)[:10] < before]
@@ -492,6 +564,10 @@ def history(log_dir, key, before=None, n=HISTORY_LOGS):
             if st.end is None or st.rc != 0 or st.start is None:
                 continue
             out["stages"][st.key].append((st.end - st.start).total_seconds())
+            # to the end of the last round: the first re-run after it began GATE_COOLDOWN_S before its launch
+            tail = next((l for l in st.launches if l.tail), None)
+            rounds_end = min(tail.start - datetime.timedelta(seconds=GATE_COOLDOWN_S), st.end) if tail else st.end
+            out["rounds"][st.key].append(max((rounds_end - st.start).total_seconds(), 0.0))
             if st.launches:
                 out["leads"][st.key].append((st.launches[0].start - st.start).total_seconds())
             for l in reversed(st.launches):
@@ -678,9 +754,10 @@ def _replay_runs(schedule, dev, halves, skip):
     return runs
 
 
-def replay(log_path, key, schedule, lengths, halves=False, skip=(), cells_root=ROOT):
+def replay(log_path, key, schedule, lengths, halves=False, skip=(), cells_root=ROOT, deadline=None):
     """Feed a sitting's job log line by line -> [(time, the line that moved it, release, basis)], and
-    the time its hold was released (None if the log never says)."""
+    the time its hold was released (None if the log never says). `deadline`: the sitting's release_by
+    (a datetime), as the job hands it to the estimate."""
     dev = schedule["devices"][key]
     sitting = None
     rows = []
@@ -693,7 +770,7 @@ def replay(log_path, key, schedule, lengths, halves=False, skip=(), cells_root=R
                 stages = plan_stages(_replay_runs(schedule, dev, halves, skip), dev, key, lengths, root=cells_root,
                                      platform_token=REPLAY_TOKEN.get(dev.get("platform"), dev.get("platform")),
                                      budget_s=float(dev.get("expected_hours") or 0) * 3600 or None)
-                sitting = Sitting(stages, lengths)
+                sitting = Sitting(stages, lengths, deadline=deadline)
                 sitting.feed(ln)
                 eta, basis = sitting.estimate(sitting.clock)
                 rows.append((sitting.clock, "hold taken", eta, basis))
@@ -724,13 +801,14 @@ def main(argv=None):
     r.add_argument("--halves", action="store_true", help="the sitting ran the storage halves")
     r.add_argument("--skip", action="append", default=[], help="a cells file the sitting skipped")
     r.add_argument("--cells-dir", default=ROOT, help="where the cells files' paths resolve")
+    r.add_argument("--deadline", help="the sitting's release_by, YYYY-MM-DD HH:MM")
     args = ap.parse_args(argv)
     if args.cmd == "history":
         lengths = history(args.log_dir, args.key, before=args.before)
         if args.json:
             print(json.dumps(lengths, indent=1, sort_keys=True))
         else:
-            for kind in ("stages", "leads", "launches"):
+            for kind in ("stages", "rounds", "leads", "launches"):
                 for k, v in sorted(lengths[kind].items()):
                     print(f"{kind:8} {k}: median {fmt_span(_median(v[:HISTORY_KEEP]))} of {len(v)}")
         return 0
@@ -741,7 +819,8 @@ def main(argv=None):
     else:
         lengths = history(args.log_dir, args.key, before=before)
     rows, released = replay(args.log, args.key, _schedule(args.schedule), lengths, halves=args.halves,
-                            skip=args.skip, cells_root=args.cells_dir)
+                            skip=args.skip, cells_root=args.cells_dir,
+                            deadline=datetime.datetime.strptime(args.deadline, RELEASE_FMT) if args.deadline else None)
     for t, what, eta, basis in rows:
         off = f"{(eta - released).total_seconds() / 60:+.0f} min" if released else "?"
         print(f"{t:%H:%M:%S}  release {eta:%H:%M} ({off})  {what}\n          {basis}")

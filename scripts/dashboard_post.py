@@ -609,6 +609,7 @@ def sitting_facts(top, dirs, results=None):
         "payload_ratios": [primary_anchor(s).get("ratio") for s in payloads],
         "failures": [ln for d in dirs for ln in read_lines(os.path.join(top, d), "FAILURES.txt")],
         "flagged": flagged,
+        "deferred": [ln for d in dirs for ln in read_lines(os.path.join(top, d), "GATE_DEFERRED.txt")],
         "skipped": [ln for d in dirs for ln in read_lines(os.path.join(top, d), "SKIPPED.txt")],
         "screen": screen_facts(results),
     }
@@ -703,6 +704,9 @@ def commit_message(f, lines_a, lines_b, waived):
     retries = [ln for ln in f["flagged"] if not re.search(r"\b(LEVEL|DEGENERATE|GATE_ERROR)\b", ln)]
     if retries:
         msg += f"; gate retries kept: {len(retries)} (FLAGGED.txt)"
+    if f.get("deferred"):
+        msg += (f"; gate re-runs deferred at release_by: {len(f['deferred'])} (GATE_DEFERRED.txt; quarantined, "
+                "taken at a later sitting this week)")
     if f["skipped"]:
         msg += f"; SKIPPED: {len(f['skipped'])} lines"
     if waived:

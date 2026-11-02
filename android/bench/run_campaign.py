@@ -30,7 +30,12 @@ Order and discipline (fairness rules as code):
     quarantined in raw (*.json.attempt1, outside build_summary's glob) and
     re-runs ONCE as a block after GATE_COOLDOWN s; a flagged retry stands
     with a FLAGGED.txt note. SHORT never retries (failed-runs-stay).
-    GATE_RETRY=0 disables. The cold-only regime trips COLLAPSE (50% bar,
+    GATE_RETRY=0 disables. BENCH_GATE_DEADLINE=<epoch s> (the dashboard
+    job's release_by, scripts/dashboard_job.py): a payload cell's block
+    re-run expected to end later is not started; its flagged capture is
+    quarantined all the same and GATE_DEFERRED.txt names the cell and its
+    row, for a later sitting (docs/dashboard-recurring-job-v1.md §11). An
+    anchor row's re-run is never deferred. The cold-only regime trips COLLAPSE (50% bar,
     slowest/median or median/fastest), not SPREAD — Android cold trials
     legitimately spread 15-30%. The retry is also judged for LEVEL: its
     median under half the quarantined capture's un-collapsed median (a
@@ -65,6 +70,10 @@ COOLDOWN = int(os.environ.get("COOLDOWN", "120"))
 THERMAL_WAIT = int(os.environ.get("THERMAL_WAIT", "600"))
 GATE_COOLDOWN = int(os.environ.get("GATE_COOLDOWN", "180"))
 GATE_RETRY = os.environ.get("GATE_RETRY", "1") == "1"
+# the time the gate's block re-runs of the payload must end by (epoch seconds; unset = none): the dashboard
+# job's release_by less what it does after this runner exits (scripts/dashboard_job.py GATE_RESERVE_S)
+GATE_DEADLINE = float(os.environ.get("BENCH_GATE_DEADLINE") or "inf")
+LAUNCH_WALL = {}   # cell id -> seconds of each of its one-run launches this session (run_cell_once)
 SERIAL = os.environ.get("BENCH_ANDROID_SERIAL")
 STRICT_SMOKE = os.environ.get("BENCH_STRICT_SMOKE") == "1"
 
@@ -80,7 +89,8 @@ def parse_cells(path):
         parts = line.split()
         if parts[0] != "android" or len(parts) < 4:
             continue
-        cell = {"runtime": parts[1], "model_id": parts[2], "task": parts[3], "opts": {}}
+        cell = {"runtime": parts[1], "model_id": parts[2], "task": parts[3], "opts": {},
+                "row": line}   # as written, its comment aside: GATE_DEFERRED.txt names it
         for kv in parts[4:]:
             k, _, v = kv.partition("=")
             cell["opts"][k] = v
@@ -187,7 +197,10 @@ def run_cell_once(cell, out_dir, runs, rnd=None, launch=None, gate_timed_out=Fal
     if gate_timed_out:
         cmd += ["--gate-timed-out"]
     print(f"\n=== {launch_label(cell)} ({time.strftime('%H:%M:%S')})")
+    t0 = time.time()
     rc = subprocess.call(cmd)
+    if runs == 1:
+        LAUNCH_WALL.setdefault(cell_id(cell, True), []).append(time.time() - t0)
     if rc:
         with open(os.path.join(out_dir, "FAILURES.txt"), "a") as fh:
             # a side build's line names its arm (llama.cpp-npu …), every other line keeps
@@ -265,10 +278,43 @@ def gate_verdict(cell, out_dir, runs, previous=()):
     return r.stdout.strip() or "GATE_ERROR"
 
 
-def apply_gate(cell, out_dir, runs):
+def rerun_block_s(cell, runs):
+    """Seconds the block re-run of `cell` (one launch of `runs` runs, run_cell.py --cooldown COOLDOWN) is taken
+    to need once it starts: `runs` times the cell's longest one-run launch this session, plus the cooldowns
+    between its runs. The longest, not the median: a launch that pushed its model or waited for the CPU cap
+    counts whole (2026-11-02 Galaxy S26, llama.cpp Qwen3-4B, the launch line to its record: short-chat 28, 60
+    and 38 s, long-context 163, 245 and 160 s; their blocks took 4.8 and 11.7 min, where this counts 7.0 and
+    16.2)."""
+    walls = LAUNCH_WALL.get(cell_id(cell, True)) or [300.0]
+    return runs * max(walls) + (runs - 1) * COOLDOWN
+
+
+def defer_rerun(cell, out_dir, runs, verdict, quarantined, need_s, deadline):
+    """The re-run would end past BENCH_GATE_DEADLINE: not started. The flagged capture stays quarantined (no
+    number pools it, spread-rule) and GATE_DEFERRED.txt names the cell and its row as written, for the
+    sitting that takes the cell later (scripts/dashboard_job.py, the week's plan)."""
+    if not quarantined:
+        for f in cell_records(cell, out_dir)[-runs * records_per_launch(cell):]:
+            os.rename(f, f + ".attempt1")  # stays in raw for audit, outside the *.json glob
+            quarantined.append(f + ".attempt1")
+    end = time.time() + need_s
+    why = (f"~{need_s / 60:.0f} min would end {time.strftime('%H:%M:%S', time.localtime(end))}, past the "
+           f"deadline {time.strftime('%H:%M:%S', time.localtime(deadline))}")
+    print(f"gate: {verdict} — quarantined, re-run deferred: {why} (a later sitting takes the cell)")
+    with open(os.path.join(out_dir, "GATE_DEFERRED.txt"), "a") as fh:
+        fh.write(f"GATE_DEFERRED {cell_id(cell, True)} verdict={verdict} {why}; {len(quarantined)} records "
+                 f"quarantined, not re-run: row={cell.get('row', '')}\n")
+    note(out_dir, "session_provenance.txt",
+         f"gate deferred {cell_id(cell)} verdict={verdict} ({why}: quarantined, no block re-run)")
+
+
+def apply_gate(cell, out_dir, runs, deadline=None):
     """Judge a completed cell; quarantine + re-run ONCE if flagged (spread-rule
     as code, mac/iPhone parity). The retry is a consecutive block — disclosed
-    in session_provenance.txt because it deviates from per-round interleaving."""
+    in session_provenance.txt because it deviates from per-round interleaving.
+    With a `deadline` (epoch s, BENCH_GATE_DEADLINE; a payload cell only) a
+    re-run expected to end past it is not started (defer_rerun): judged before
+    the cooldown, and again after it and the thermal wait."""
     if not GATE_RETRY:
         return
     verdict = gate_verdict(cell, out_dir, runs)
@@ -277,8 +323,13 @@ def apply_gate(cell, out_dir, runs):
         return
     if verdict.split()[0] not in RETRY_VERDICTS:
         return  # OK, or SHORT — a crash/timeout is never retried (failed-runs-stay)
-    print(f"gate: {verdict} — quarantine + cooldown {GATE_COOLDOWN}s, re-run once")
     quarantined = []
+    if deadline is not None and deadline != float("inf"):
+        need = GATE_COOLDOWN + rerun_block_s(cell, runs)
+        if time.time() + need > deadline:
+            defer_rerun(cell, out_dir, runs, verdict, quarantined, need, deadline)
+            return
+    print(f"gate: {verdict} — quarantine + cooldown {GATE_COOLDOWN}s, re-run once")
     for f in cell_records(cell, out_dir)[-runs * records_per_launch(cell):]:
         os.rename(f, f + ".attempt1")  # stays in raw for audit, outside the *.json glob
         quarantined.append(f + ".attempt1")
@@ -286,6 +337,12 @@ def apply_gate(cell, out_dir, runs):
          f"gate retry {cell_id(cell)} verdict={verdict} (block re-run, not interleaved)")
     time.sleep(GATE_COOLDOWN)
     wait_nominal(out_dir)
+    if deadline is not None and deadline != float("inf"):
+        need = rerun_block_s(cell, runs)
+        if time.time() + need > deadline:
+            # the cooldown and the thermal wait left too little
+            defer_rerun(cell, out_dir, runs, verdict, quarantined, need, deadline)
+            return
     run_cell_once(cell, out_dir, runs)
     retry = gate_verdict(cell, out_dir, runs, previous=quarantined)
     if retry == "GATE_ERROR" or retry.split()[0] in RETRY_VERDICTS + ("LEVEL",):
@@ -587,7 +644,7 @@ def main():
         print(f"--- round {rnd}/{max_rounds} complete (publish every round)")
     gate_plan(payload, out_dir)
     for cell in payload:  # a payload cell is complete only after its last round
-        apply_gate(cell, out_dir, int(cell["opts"].get("runs", "3")))
+        apply_gate(cell, out_dir, int(cell["opts"].get("runs", "3")), deadline=GATE_DEADLINE)
     print(f"\ncampaign dir: {os.path.dirname(out_dir)}")
     return 0
 

@@ -82,7 +82,9 @@ an NPU / GPU arm's capped run pools at any fall, marked with it:
   Pixel 8a, Pixel 11 Pro, or the iPhone 18 Pro (05:30 firing only; the 17 Pro is by hand only) — whose weekly
   plan is not all admitted since Monday; 1.5–11 h a sitting (`expected_hours` in
   `ops/dashboard-v1/schedule.json`; the S26's took 10 h 48 min on 2026-10-26), but a phone with `release_by`
-  there (S26, Pixel 8a, Pixel 11 Pro: 08:00) starts no run expected to end past it and runs the rest of its week at a
+  there (S26, Pixel 8a, Pixel 11 Pro: 08:00) starts no run expected to end past it, nor a gate re-run that would end
+  past 07:58 (its capture quarantined, `GATE_DEFERRED.txt`; the device's next sitting re-runs the cell first, the
+  `-rerun` run), and runs the rest of its week at a
   later firing (design §11; the week then fills 7 of the 7 nights and leaves no retry night: a lost night is taken
   again by hand in the day); `./bench dashboard-job auto --dry-run` shows which device the next firing
   would take). It takes the

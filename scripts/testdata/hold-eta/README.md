@@ -28,3 +28,30 @@ Replay by hand:
 
     python3 scripts/hold_eta.py replay scripts/testdata/hold-eta/2026-10-26-s26-job-log.txt s26 \
       --history scripts/testdata/hold-eta/history-s26-before-2026-10-26.json --cells-dir scripts/testdata/hold-eta
+
+## 2026-11-02: the gate's deadline (`gate_deadline_cases`)
+
+The 2026-11-02 Galaxy S26 sitting under release_by 08:00 (design §11): a and
+b1 ran, b1 finished its last round at 07:45, the gate re-ran two collapsed
+cells to 08:07, and the hold was released at 08:07:52.
+
+- `2026-11-02-s26-job-log.txt`: `logs/dashboard-job/2026-11-02-s26.log`
+  cut the same way, from its first line to b1's `--- round 3/3 complete`;
+  the job's `hold release estimate` lines are cut to their mark, and the
+  post step's lines are left out. Then the tail the runner and the job print
+  under `BENCH_GATE_DEADLINE` (07:58), made from that night's times: the
+  `gate plan:` line, the short-chat re-run as it ran (07:48:16, its three
+  runs), the long-context re-run deferred at 07:53:04 (`re-run deferred: ~19
+  min would end 08:12:19`: three times its longest launch that morning, 245 s,
+  with the cooldowns), the run's exit at 07:53:14 and the job's closing
+  lines to `hold released` at 07:53:16. The account name is `USER`.
+- `matrices/dashboard-text-v1-android-{a,b1,b2}.cells`: the `android` rows of
+  the S26's storage halves (unchanged since 2026-10-07).
+- `history-s26-before-2026-11-02.json`:
+  `python3 scripts/hold_eta.py history s26 --before 2026-11-02 --json` on the
+  bench host; it carries the `rounds` lengths (a run's rounds apart from its
+  gate re-runs).
+
+    python3 scripts/hold_eta.py replay scripts/testdata/hold-eta/2026-11-02-s26-job-log.txt s26 \
+      --history scripts/testdata/hold-eta/history-s26-before-2026-11-02.json --cells-dir scripts/testdata/hold-eta \
+      --halves --deadline "2026-11-02 08:00"

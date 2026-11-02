@@ -44,6 +44,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -1024,6 +1025,43 @@ def main():
        f"first capture judged COLLAPSE 20 (median 5.0 under half the fastest 25.0): {txt3.strip()!r}")
     ok("retry='LEVEL 20'" in txt3,
        "retry judged LEVEL 20 (median 5.1 of the quarantined un-collapsed 25.0), kept with the flag")
+
+    # --- campaign B4 / B5: the gate's re-run under BENCH_GATE_DEADLINE (the dashboard job's release_by,
+    # docs/dashboard-recurring-job-v1.md §11): one that would end past it is not started, its capture is
+    # quarantined all the same and GATE_DEFERRED.txt names the cell and its row; a deadline far ahead re-runs
+    # as campaign B did
+    cells_b4 = os.path.join(tmp, "b4.cells")
+    b4_row = f"android litert-lm fake/model short-chat runs=2 backend=gpu file={litert_model}"
+    with open(cells_b4, "w") as fh:
+        fh.write(b4_row + "  # the row as written, this comment aside\n")
+    schedule([25.0, 5.0])
+    env_b4 = dict(env, CAMPAIGN="selftest-b4", BENCH_GATE_DEADLINE=str(int(time.time()) - 1))
+    print("--- campaign B4 (COLLAPSE, BENCH_GATE_DEADLINE passed -> quarantined, re-run deferred)")
+    rc, out_text_b4 = run_campaign_out(env_b4, cells_b4)
+    out_b4 = os.path.join(raw_root, "selftest-b4", "app-path-android")
+    deferred_b4 = os.path.join(out_b4, "GATE_DEFERRED.txt")
+    line_b4 = open(deferred_b4).read() if os.path.exists(deferred_b4) else ""
+    ok(rc == 0 and "gate: COLLAPSE" in out_text_b4 and "— quarantined, re-run deferred: ~" in out_text_b4
+       and "re-run once" not in out_text_b4 and out_text_b4.count("=== litert-lm/gpu fake/model short-chat") == 2,
+       f"campaign B4 exits 0 (got {rc}); the gate defers the re-run past the deadline: no block launch after the "
+       "two round launches")
+    ok(len(records(out_b4, "litert-lm-gpu_")) == 0 and len(glob.glob(os.path.join(out_b4, "*.json.attempt1"))) == 2,
+       "the deferred cell's flagged pair is quarantined as .attempt1, no record stands")
+    ok(line_b4.count("\n") == 1 and line_b4.startswith("GATE_DEFERRED litert-lm-gpu fake/model short-chat ")
+       and " verdict=COLLAPSE " in line_b4 and line_b4.rstrip("\n").endswith("not re-run: row=" + b4_row),
+       f"GATE_DEFERRED.txt: one line, the cell, its verdict and its row as written (no comment): {line_b4.strip()[:150]}")
+    ok("gate deferred" in open(os.path.join(out_b4, "session_provenance.txt")).read()
+       and not os.path.exists(os.path.join(out_b4, "FLAGGED.txt")),
+       "the deferral disclosed in session_provenance.txt; no FLAGGED.txt (nothing kept to flag)")
+    schedule([25.0, 5.0, 24.0, 24.8])
+    env_b5 = dict(env, CAMPAIGN="selftest-b5", BENCH_GATE_DEADLINE=str(int(time.time()) + 3600))
+    print("--- campaign B5 (COLLAPSE, BENCH_GATE_DEADLINE an hour ahead -> re-run once, as B)")
+    rc, out_text_b5 = run_campaign_out(env_b5, cells_b4)
+    out_b5 = os.path.join(raw_root, "selftest-b5", "app-path-android")
+    kept_b5 = records(out_b5, "litert-lm-gpu_")
+    ok(rc == 0 and "re-run once" in out_text_b5 and not os.path.exists(os.path.join(out_b5, "GATE_DEFERRED.txt"))
+       and [r["metrics"]["decodeTokensPerSecond"] for _, r in kept_b5] == [24.0, 24.8],
+       f"campaign B5: a deadline an hour ahead leaves room, the block re-run stands as in B (exit {rc})")
 
     # --- campaign C: endurance session, completed --------------------------
     # Scripted driver output; the HOST derives the verdicts (decay windows,

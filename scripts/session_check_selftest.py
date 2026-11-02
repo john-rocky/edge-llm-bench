@@ -548,6 +548,28 @@ def main():
     ok(any("SPREAD" in n for n in r["notes"]) and sum(f["rule"] == "flagged" for f in r["findings"]) == 1,
        "a SPREAD retry is a note (renders ⚠), the LEVEL retry the one flagged finding")
 
+    print("--- partial: the cells whose gate re-run release_by deferred are a note, any other missing cell a HOLD")
+    dfr = [{"cell": "llama.cpp m/x short-chat", "verdict": "COLLAPSE 34", "row": "android llama.cpp m/x short-chat"}]
+    da = anchor_dir(raw, "2099-03-02-dashboard-v1-m4max-anchor-mac")
+    dp = payload_dir(raw, "2099-03-02-dashboard-v1-m4max-mac", os.path.basename(da), cells_expected=3,
+                     cells_with_records=2, gate_deferred=dfr)
+    with open(os.path.join(dp, "GATE_DEFERRED.txt"), "w") as fh:
+        fh.write("GATE_DEFERRED llama.cpp m/x short-chat verdict=COLLAPSE 34 ~15 min would end 08:08:13, past the "
+                 "deadline 07:58:00; 3 records quarantined, not re-run: row=android llama.cpp m/x short-chat\n")
+    rc, res, out = run([da, dp], history=hist)
+    r = res[os.path.basename(dp)]
+    ok(rc == 0 and r["verdict"] == "PASS" and "partial" not in rules(r)
+       and any("the gate deferred 1 re-run at release_by" in n for n in r["notes"])
+       and any(n.startswith("GATE_DEFERRED: ") for n in r["notes"]),
+       f"2 of 3 cells with records, the third deferred at release_by: PASS with two notes ({sorted(rules(r))})")
+    da = anchor_dir(raw, "2099-03-03-dashboard-v1-m4max-anchor-mac")
+    dp = payload_dir(raw, "2099-03-03-dashboard-v1-m4max-mac", os.path.basename(da), cells_expected=3,
+                     cells_with_records=1, gate_deferred=dfr)
+    rc, res, out = run([da, dp], history=hist)
+    r = res[os.path.basename(dp)]
+    ok(rc == 1 and r["verdict"] == "HOLD" and "partial" in rules(r) and clean(r, {"partial"}),
+       f"1 of 3 with records and one deferred: one more is missing, HOLD partial ({sorted(rules(r))})")
+
     print("--- the text screen: a Mac / iPhone text cell's reply proxies per run go into text_screen.json, a note")
     # a llama.cpp cell, so the screen's cases read no LiteRT-LM pin (engine-stamp, pin-drift)
     llama = f"llama.cpp {LLAMA_MODEL} short-chat ({LLAMA})"
