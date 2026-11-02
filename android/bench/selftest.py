@@ -219,6 +219,10 @@ def engine(cmd):
         # a LiteRT-LM cpu / gpu side build: its lines, then the flat build's output below
         for line in litert_side_lines(cmd):
             print(line)
+        mpath = re.search(r"--model_path=(\\S+)", cmd)
+        if "--backend=gpu" in cmd and mpath:
+            # as the engine does: the GPU program cache beside the model path it was given
+            open(mp(mpath.group(1)) + "_1700000000_27_mldrift_program_cache.bin", "a").close()
     if side and "/bin/llama-bench " in cmd:
         sys.stdout.write(BENCH_HTP0)
     elif "./llama-cli" in cmd or (side and "/bin/llama-cli " in cmd):
@@ -408,6 +412,15 @@ def shell(cmd):
         import glob as _g
         paths = [seg.split()[1] for seg in cmd.split("&&") if seg.strip().startswith("ls ")]
         print("present" if all(_g.glob(mp(p)) for p in paths) else "absent")
+        return 0
+    if cmd.startswith("mkdir -p") and " && ln -sf " in cmd:
+        # run_cell.side_model_path: a side build's link to the pushed model, in the build's dir
+        mk, ln = cmd.split(" && ")
+        os.makedirs(mp(mk.split()[-1]), exist_ok=True)
+        src, dst = ln.split()[-2:]
+        if os.path.lexists(mp(dst)):
+            os.remove(mp(dst))
+        os.symlink(mp(src), mp(dst))
         return 0
     if cmd.startswith("mkdir -p") and "touch" in cmd:
         mk, touch = cmd.split("&&")
@@ -2709,6 +2722,10 @@ def main():
     print(f"--- campaign S (LiteRT-LM cpu / gpu side build {sb_tag} under BENCH_SITTING=1: gpu short-chat x2, "
           "cpu protocol, cpu protocol with ynnpack=1)")
     env_s = dict(env, CAMPAIGN="selftest-s", BENCH_TEST_PINS=sb_pins_path, BENCH_SITTING="1")
+    # a marker from before the side builds read the model through their own link (caches beside
+    # the flat copy, which they no longer read): it must not count (run 1 below stays firstEver)
+    os.makedirs(os.path.join(dev, "markers"), exist_ok=True)
+    open(os.path.join(dev, "markers", os.path.basename(sb_model) + f".gpu.{sb_tag}.cachebuilt"), "w").close()
     rc = run_campaign(env_s, cells_s)
     ok(rc == 0, f"campaign S exits 0 (got {rc})")
     out_s = os.path.join(raw_root, "selftest-s", "app-path-android")
@@ -2720,7 +2737,8 @@ def main():
                  "XNNPACK CPU accelerator registered."] + [
         f"Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph {i} ({s})."
         for i, s in enumerate(("prefill_128", "prefill_1024", "decode"))]
-    sc_cmd = (f"{sb_dev}/litert_lm_main --backend=gpu --model_path={sb_model} "
+    sb_link = f"{sb_dev}/models/{os.path.basename(sb_model)}"  # run_cell.side_model_path
+    sc_cmd = (f"{sb_dev}/litert_lm_main --backend=gpu --model_path={sb_link} "
               "--input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false")
     if len(gpu_s) == 2:
         r, c = gpu_s[0], gpu_s[0]["conditions"]
@@ -2734,7 +2752,7 @@ def main():
            f"side gpu: backendRegistered = the build's lines (addresses as <addr>), not flagged "
            f"(got {c.get('backendRegistered')}, flags {c.get('protocolFlags')})")
         ok([x["metrics"].get("firstEver") for x in gpu_s] == [True, None]
-           and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".gpu.{sb_tag}.cachebuilt"))
+           and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".gpu.{sb_tag}.sidecache.cachebuilt"))
            and r["provenance"]["rssBasis"] == gpu_s[1]["provenance"]["rssBasis"]
            and "not in VmRSS" not in r["provenance"]["rssBasis"],
            f"side gpu: the build's own cache marker (run 1 firstEver), rssBasis as the flat build's "
@@ -2752,22 +2770,45 @@ def main():
            f"{c0.get('protocolFlags')})")
         ok(c1.get("enableYnnpack") is True and c1.get("ynnpackLines") == {"ops": 2, "partitions": 3}
            and c1.get("engineCommand") == (f"LD_LIBRARY_PATH={sb_dev} {sb_dev}/litert_lm_advanced_main --backend=cpu "
-                                           f"--model_path={sb_model} --benchmark --benchmark_prefill_tokens=1024 "
+                                           f"--model_path={sb_link} --benchmark --benchmark_prefill_tokens=1024 "
                                            "--benchmark_decode_tokens=256 --async=false --max_num_tokens=2048 "
                                            "--enable_ynnpack=true")
            and "max_tokens: 2048" in c1.get("backendRegistered", []) and not c1.get("protocolFlags"),
            f"side cpu, ynnpack on: --enable_ynnpack=true, YNNPACK's per-op lines and partitions counted, the KV echo "
            f"kept, not flagged (got {c1.get('ynnpackLines')}, {c1.get('engineCommand')!r})")
-        ok(os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".cpu-ynnpack.{sb_tag}.cachebuilt"))
-           and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".cpu.{sb_tag}.cachebuilt")),
+        ok(os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".cpu-ynnpack.{sb_tag}.sidecache.cachebuilt"))
+           and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".cpu.{sb_tag}.sidecache.cachebuilt")),
            "side cpu: each arm keeps its own cache marker")
     else:
         ok(False, f"one side cpu record and one with ynnpack (got {len(cpu_s)}, {len(ynn_s)})")
+    link_path = os.path.join(sb_eng, "models", os.path.basename(sb_model))
+    ok(os.path.islink(link_path) and os.readlink(link_path) == os.path.join(dev, "models", os.path.basename(sb_model)),
+       f"side build: the model read through a link in the build's dir to the pushed copy (its caches beside the "
+       f"link, apart from the flat build's): {link_path} -> {os.readlink(link_path) if os.path.islink(link_path) else None}")
     shells = open(cmds).read().splitlines() if os.path.exists(cmds) else []
     ok(len(shells) == 4 and all(s.startswith(f"cd /data/local/tmp/llmbench && LD_LIBRARY_PATH={sb_dev} taskset f0 "
                                              f"{sb_dev}/litert_lm_") for s in shells)
        and {n: open(os.path.join(dev, n)).read() for n in ("litert_lm_main", "litert_lm_advanced_main")} == flat_before,
        f"side build: every shell runs the build's own tool and libs, the flat dir untouched: {shells[:1]}")
+    sb_cache = glob.glob(link_path + "_*_mldrift_program_cache.bin")
+    ok(len(sb_cache) == 1 and not glob.glob(os.path.join(dev, "models", os.path.basename(sb_model)) + "_*"),
+       f"side gpu: the program cache beside the build's link, none beside the flat copy (got {sb_cache})")
+    # the marker counts only while the program cache is there: a later sitting reads warm (marker
+    # and cache), and a removed side dir (the marker left behind) reads firstEver again
+    with open(cells_s, "w") as fh:
+        fh.write(f"android litert-lm fake/side short-chat runs=1 backend=gpu engine-build={sb_tag} local=1 "
+                 f"file={litert_model}\n")
+    warm_cold = []
+    for camp, drop in (("selftest-s3", False), ("selftest-s4", True)):
+        if drop:
+            shutil.rmtree(os.path.join(sb_eng, "models"))
+        schedule([42.0])
+        run_campaign(dict(env_s, CAMPAIGN=camp), cells_s)
+        got = [r for _, r in records(os.path.join(raw_root, camp, "app-path-android"), "litert-lm-gpu_")]
+        warm_cold.append([x["metrics"].get("firstEver") for x in got])
+    ok(warm_cold == [[None], [True]],
+       f"side gpu: marker + cache = warm, marker without the cache (side dir removed) = firstEver "
+       f"(got {warm_cold})")
     open(os.path.join(state, "ynn_silent"), "w").close()
     with open(cells_s, "w") as fh:
         fh.write(f"android litert-lm fake/side native-benchmark-1024x256 runs=1 backend=cpu engine-build={sb_tag} "

@@ -28,11 +28,24 @@
 #                     (nothing cloned, fetched, built or written)
 #   ANDROID_NDK_HOME  NDK path (default: newest under ~/Library/Android/sdk/ndk)
 #   LITERTLM_SRC      scratch clone dir (default: ~/.cache/apple-silicon-llm-bench/litert-lm-<label>)
-#   LITERTLM_GPU_ACCELERATOR  prebuilt: empty the Android branches of runtime/executor:default_static_gpu_accelerator
-#                     and runtime/components:default_static_gpu_samplers in the checkout, so the binaries load the
-#                     checkout's prebuilt libLiteRtGpuAccelerator.so (and top-k sampler) at run time, the GPU path of
-#                     the v0.18.0 build; the label gets -pregpu. Unset: as the checkout builds (main of 2026-10-23 links
-#                     a GPU accelerator and sampler built from source into an Android binary)
+#   LITERTLM_GPU_ACCELERATOR  prebuilt: empty the Android branch of runtime/executor:default_static_gpu_accelerator
+#                     in the checkout, so the binaries load the checkout's prebuilt libLiteRtGpuAccelerator.so at run
+#                     time (log: "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered"), the GPU
+#                     path of the v0.18.0 build; the label gets -pregpu. Unset: as the checkout builds (main of
+#                     2026-10-23 and v0.19.0 link a GPU accelerator and sampler built from source into an Android binary)
+#   LITERTLM_GPU_SAMPLER  with LITERTLM_GPU_ACCELERATOR=prebuilt only: prebuilt = empty the Android branch of
+#                     runtime/components:default_static_gpu_samplers too, so the binaries load the checkout's prebuilt
+#                     libLiteRtTopKOpenClSampler.so; static = keep the checkout's top-k sampler built from source. Default:
+#                     prebuilt when the checkout ships libLiteRtTopKOpenClSampler.so (v0.18.x, main of 2026-10-23), static
+#                     when it does not (main da28df6aa of 2026-10-27 and v0.19.0 ship none: emptied, the engine logs "GPU
+#                     sampler unavailable" and samples on the CPU, decode 46.6 against 78 tok/s on the Galaxy S26; the
+#                     main-da28df6aa-pregpu build of 2026-10-27 is that form, LITERTLM_GPU_SAMPLER=prebuilt rebuilds it)
+#   LITERTLM_BAZEL_BATCH  1: run bazel with --batch (no server outside this process tree), as a build under
+#                     ~/code/standup/tools/quiet/quiet_yield.py needs to be paused whole; the outputs are the same
+#   LITERTLM_BAZEL_JOBS   N: bazel build --jobs=N (fewer actions side by side: less memory, a longer build); the
+#                     outputs are the same
+#   The BUILD files a prebuilt build empties are put back (git checkout) when the script exits, so the checkout
+#   builds as the tag again; a checkout whose BUILD files are already changed is refused.
 #
 # Output: android/bin/<label>/ = both tools, every prebuilt/android_arm64/*.so of the checkout,
 # SHA256SUMS (the tools and the .so files) and BUILD_INFO (requested ref, label, commit, describe,
@@ -192,6 +205,22 @@ case "$GPU_ACCEL" in
   prebuilt) LABEL="$LABEL-pregpu" ;;
   *) echo "ERROR: LITERTLM_GPU_ACCELERATOR=$GPU_ACCEL: only prebuilt (or unset)" >&2; exit 1 ;;
 esac
+GPU_SAMPLER="${LITERTLM_GPU_SAMPLER:-}"
+case "$GPU_SAMPLER" in
+  "") ;;
+  prebuilt|static)
+    [[ "$GPU_ACCEL" == "prebuilt" ]] || {
+      echo "ERROR: LITERTLM_GPU_SAMPLER=$GPU_SAMPLER needs LITERTLM_GPU_ACCELERATOR=prebuilt" >&2; exit 1; } ;;
+  *) echo "ERROR: LITERTLM_GPU_SAMPLER=$GPU_SAMPLER: prebuilt or static (or unset)" >&2; exit 1 ;;
+esac
+BAZEL_STARTUP=()
+[[ "${LITERTLM_BAZEL_BATCH:-}" != "1" ]] || BAZEL_STARTUP=(--batch)
+BAZEL_ARGS=()
+if [[ -n "${LITERTLM_BAZEL_JOBS:-}" ]]; then
+  [[ "$LITERTLM_BAZEL_JOBS" =~ ^[1-9][0-9]*$ ]] || {
+    echo "ERROR: LITERTLM_BAZEL_JOBS=$LITERTLM_BAZEL_JOBS: a whole number of actions" >&2; exit 1; }
+  BAZEL_ARGS=(--jobs="$LITERTLM_BAZEL_JOBS")
+fi
 [[ "$LABEL" =~ $LABEL_RE ]] || {
   echo "ERROR: label '$LABEL' (from $REQUESTED) is not of the form $LABEL_RE" >&2; exit 1; }
 
@@ -266,22 +295,46 @@ echo "== bazel build (android_arm64) — first build takes 10-20 min"
 # default); ONLY advanced_main consumes --benchmark_prefill_tokens /
 # --benchmark_decode_tokens (verified in v0.16.0 sources — the plain main
 # silently runs its default prompt instead), so synthetic PxD rows need it.
+EDITED=()
+put_back() {
+  # the BUILD files a prebuilt build emptied, back to the checkout's (the checkout builds as the tag again)
+  [[ -z "$DRY_RUN" && ${#EDITED[@]} -gt 0 ]] || return 0
+  git -C "$SRC" checkout -- "${EDITED[@]}" && echo "== put back: ${EDITED[*]}"
+}
 if [[ "$GPU_ACCEL" == "prebuilt" ]]; then
+  if [[ -z "$GPU_SAMPLER" ]]; then
+    GPU_SAMPLER=static
+    [[ ! -f "$SO_SRC/libLiteRtTopKOpenClSampler.so" ]] || GPU_SAMPLER=prebuilt
+    [[ -z "$DRY_RUN" ]] || GPU_SAMPLER="prebuilt if the checkout ships libLiteRtTopKOpenClSampler.so, else static"
+  fi
+  echo "== GPU accelerator: prebuilt ($(tilde "$SO_SRC")/libLiteRtGpuAccelerator.so, loaded at run time); top-k sampler: $GPU_SAMPLER"
+  if [[ -z "$DRY_RUN" ]] && ! git -C "$SRC" diff --quiet -- runtime/executor/BUILD runtime/components/BUILD; then
+    echo "ERROR: $(tilde "$SRC"): runtime/executor/BUILD or runtime/components/BUILD is already changed (an earlier" \
+         "prebuilt build that did not put it back?): git -C $(tilde "$SRC") checkout -- runtime/executor/BUILD" \
+         "runtime/components/BUILD, then run again" >&2
+    exit 1
+  fi
+  trap put_back EXIT
   # the Android branch of the select in runtime/executor/BUILD -> no statically linked GPU accelerator; the
   # registry then dlopens libLiteRtGpuAccelerator.so next to the binary (log: "Dynamically loaded GPU accelerator")
+  EDITED+=(runtime/executor/BUILD)
   run perl -0pi -e 's|("\@platforms//os:android": \[)\s*"\@litert//litert/runtime/accelerators/gpu:ml_drift_gpu_accelerator",\s*(\],)|$1$2|' \
     "$SRC/runtime/executor/BUILD"
-  # and the static OpenCL top-k sampler, which is created from the static accelerator's device (runtime/components/BUILD:
-  # default_static_gpu_samplers), so the sampler is the prebuilt libLiteRtTopKOpenClSampler.so as in the v0.18.0 build
-  run perl -0pi -e 's|("\@platforms//os:android": \[)":top_k_opencl_sampler_static"(\],)|$1$2|' \
-    "$SRC/runtime/components/BUILD"
-  for b in runtime/executor/BUILD runtime/components/BUILD; do
+  if [[ "$GPU_SAMPLER" == "prebuilt" ]]; then
+    # and the static OpenCL top-k sampler (runtime/components/BUILD: default_static_gpu_samplers), so the sampler is
+    # the prebuilt libLiteRtTopKOpenClSampler.so as in the v0.18.0 build; a checkout without that file samples on the
+    # CPU ("GPU sampler unavailable")
+    EDITED+=(runtime/components/BUILD)
+    run perl -0pi -e 's|("\@platforms//os:android": \[)":top_k_opencl_sampler_static"(\],)|$1$2|' \
+      "$SRC/runtime/components/BUILD"
+  fi
+  for b in "${EDITED[@]}"; do
     [[ -n "$DRY_RUN" ]] || grep -q '"@platforms//os:android": \[\],' "$SRC/$b" || {
       echo "ERROR: $b: the Android static GPU line was not found to empty" >&2; exit 1; }
   done
 fi
-run_in "$SRC" bazelisk build --config=android_arm64 --enable_platform_specific_config \
-  //runtime/engine:litert_lm_main //runtime/engine:litert_lm_advanced_main
+run_in "$SRC" bazelisk ${BAZEL_STARTUP[@]+"${BAZEL_STARTUP[@]}"} build --config=android_arm64 --enable_platform_specific_config \
+  ${BAZEL_ARGS[@]+"${BAZEL_ARGS[@]}"} //runtime/engine:litert_lm_main //runtime/engine:litert_lm_advanced_main
 
 run mkdir -p "$OUT"
 run cp -f "$SRC/bazel-bin/runtime/engine/litert_lm_main" "$OUT/litert_lm_main"
@@ -309,6 +362,12 @@ else
     echo "built=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "host_arch=$(uname -m)"
     echo "gpu_accelerator=${GPU_ACCEL:-as built (static from source on main of 2026-10-23)}"
+    if [[ "$GPU_ACCEL" == "prebuilt" ]]; then
+      echo "gpu_accelerator_file=prebuilt/android_arm64/libLiteRtGpuAccelerator.so sha256 $(shasum -a 256 "$OUT/libLiteRtGpuAccelerator.so" | cut -c1-64)"
+      echo "gpu_sampler=$GPU_SAMPLER"
+    fi
+    echo "bazel_startup=${BAZEL_STARTUP[*]+${BAZEL_STARTUP[*]}}"
+    echo "bazel_args=${BAZEL_ARGS[*]+${BAZEL_ARGS[*]}}"
   } | no_home > "$OUT/BUILD_INFO"
   cat "$OUT/BUILD_INFO"
 fi
@@ -316,9 +375,16 @@ fi
 # Record the observed build (registry = requested tag or ref, witness = observed describe + sha256),
 # same registry/witness convention as environment.lock.json engine_version_stamping; android_pins
 # (the dashboard pin) is not touched: a pin bump is a person's decision (docs/OPERATIONS.md)
+NOTE="android/scripts/build_litert_lm_main.sh at $LABEL (bazel source build, $(date +%Y-%m-%d); commit $COMMIT)"
+PIN_EXTRA=()
+if [[ "$GPU_ACCEL" == "prebuilt" ]]; then
+  NOTE="$NOTE; LITERTLM_GPU_ACCELERATOR=prebuilt: runtime/executor:default_static_gpu_accelerator's Android branch emptied, the GPU accelerator = the checkout's prebuilt/android_arm64/libLiteRtGpuAccelerator.so (Google's build, in so_files), loaded at run time; top-k sampler: $GPU_SAMPLER"
+  # a release tag's prebuilt-accelerator build is that release: its rows stamp the tag (run_cell.py engine_version),
+  # and the build is told apart by engineArtifact (the tool's sha256) and a side build's conditions.engineBuild
+  [[ -z "$TAG" ]] || PIN_EXTRA=(--engine-version "$TAG")
+fi
 run python3 "$REPO_ROOT/android/scripts/pins_add.py" "$LABEL" "$OUT" --requested "$REQUESTED" \
-  --observed "$OBSERVED" --note "android/scripts/build_litert_lm_main.sh at $LABEL (bazel source build, $(date +%Y-%m-%d); commit $COMMIT)" \
-  --replace
+  --observed "$OBSERVED" --note "$NOTE" ${PIN_EXTRA[@]+"${PIN_EXTRA[@]}"} --replace
 
 if [[ -n "$DRY_RUN" ]]; then
   echo "== dry run: nothing cloned, fetched, built or written"

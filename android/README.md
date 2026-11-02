@@ -231,7 +231,19 @@ accelerator only under `--define=litert_enable_ynnpack=true`), and a launch
 that asks for it and logs none of YNNPACK's lines (its per-op
 `tflite/delegates/ynnpack/` lines, its `YNNPackDelegate` partitions), or logs
 them without asking, is flagged `backend-not-registered`
-(`conditions.ynnpackLines`, `backendOffReason`).
+(`conditions.ynnpackLines`, `backendOffReason`). Since 2026-11-03 such a build
+reads the model through a link of its own, `$E/models/<file>` → the pushed copy
+in `models/`: LiteRT-LM names its caches after the model path, so the build's
+GPU program and weight caches and XNNPACK cache sit beside its link, apart from
+the flat build's; its firstEver marker is `<file>.<backend>.<tag>.sidecache…`,
+and on the GPU it counts only while the program cache beside the link is there.
+`v0.19.0-pregpu` (2026-11-03) is v0.19.0 at the pin's commit with Google's
+prebuilt GPU accelerator loaded at run time instead of the one built from source
+(`LITERTLM_TAG=v0.19.0 LITERTLM_GPU_ACCELERATOR=prebuilt
+android/scripts/build_litert_lm_main.sh`; the top-k sampler stays the source
+build's, as the tag ships no prebuilt sampler); its pin carries
+`engine_version: v0.19.0`, so its rows stamp v0.19.0 and name the build in
+`conditions.engineBuild`.
 
 ```bash
 E=/data/local/tmp/llmbench/engines/main-b7c40ea81

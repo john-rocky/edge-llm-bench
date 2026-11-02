@@ -3,14 +3,16 @@
 every .so beside them, as the "litert-lm" entry <label>.
 
   android/scripts/pins_add.py <label> <dir> [--pins <path>] [--requested <text>] [--observed <text>]
-                              [--note <text>] [--dry-run] [--replace]
+                              [--note <text>] [--engine-version <text>] [--dry-run] [--replace]
 
 <dir> holds litert_lm_main, litert_lm_advanced_main and the GPU .so files flat: the layout
 android/scripts/build_litert_lm_main.sh writes to android/bin/<label>/ (it calls this script), and the
 one `bench matrix --ddp <id> --engine-build <label>` reads from <BENCH_ANDROID_BIN_DIR>/<label>/. The
 entry has the keys of the other litert-lm entries: requested_tag and observed (default: the label),
 litert_lm_main_sha256, litert_lm_advanced_main_sha256, so_files (every *.so directly in <dir>, by name;
-subdirectories are not read) and built (--note; default "android/scripts/pins_add.py <date> from <dir name>").
+subdirectories are not read) and built (--note; default "android/scripts/pins_add.py <date> from <dir name>");
+with --engine-version, engine_version too: the version a row on this build stamps (run_cell.py reads it in place
+of the label; a release tag's prebuilt-accelerator build, <tag>-pregpu, stamps the tag).
 
 Refused with exit 2, the reason on stderr and nothing written: a label outside
 ^[A-Za-z0-9][A-Za-z0-9._-]*$; a missing tool (named); no .so file; a git-lfs pointer in place of a
@@ -54,7 +56,7 @@ def is_lfs_pointer(path):
         return fh.read(len(LFS_POINTER)) == LFS_POINTER
 
 
-def build_entry(label, build_dir, requested=None, observed=None, note=None):
+def build_entry(label, build_dir, requested=None, observed=None, note=None, engine_version=None):
     """The litert-lm entry of build_dir; Refused naming every problem of the directory."""
     if not os.path.isdir(build_dir):
         raise Refused(f"{build_dir}: not a directory")
@@ -75,12 +77,15 @@ def build_entry(label, build_dir, requested=None, observed=None, note=None):
         raise Refused(f"{build_dir}: " + "; ".join(problems)
                       + " (a build dir holds litert_lm_main, litert_lm_advanced_main and the GPU .so files flat)")
     shas = {f: sha256_file(os.path.join(build_dir, f)) for f in list(TOOLS) + libs}
-    return {"requested_tag": requested or label, "observed": observed or label,
-            "litert_lm_main_sha256": shas["litert_lm_main"],
-            "litert_lm_advanced_main_sha256": shas["litert_lm_advanced_main"],
-            "so_files": {f: shas[f] for f in libs},
-            "built": note or (f"android/scripts/pins_add.py {datetime.date.today().isoformat()} "
-                              f"from {os.path.basename(os.path.normpath(build_dir))}")}
+    entry = {"requested_tag": requested or label, "observed": observed or label}
+    if engine_version:
+        entry["engine_version"] = engine_version
+    entry.update({"litert_lm_main_sha256": shas["litert_lm_main"],
+                  "litert_lm_advanced_main_sha256": shas["litert_lm_advanced_main"],
+                  "so_files": {f: shas[f] for f in libs},
+                  "built": note or (f"android/scripts/pins_add.py {datetime.date.today().isoformat()} "
+                                    f"from {os.path.basename(os.path.normpath(build_dir))}")})
+    return entry
 
 
 def load(path):
@@ -161,13 +166,15 @@ def main(argv=None):
     ap.add_argument("--requested", help="requested_tag: the tag or git ref asked for (default: the label)")
     ap.add_argument("--observed", help="observed: git describe --tags --always of the source (default: the label)")
     ap.add_argument("--note", help="built: how the build was made (default: this script, the date, the dir name)")
+    ap.add_argument("--engine-version", help="engine_version: the version a row on this build stamps (default: none, "
+                    "the rows stamp the label)")
     ap.add_argument("--dry-run", action="store_true", help="print the entry as JSON; write nothing")
     ap.add_argument("--replace", action="store_true", help="write over an entry of the same label")
     args = ap.parse_args(argv)
     try:
         if not LABEL.fullmatch(args.label):
             raise Refused(f"label {args.label!r} is not of the form ^[A-Za-z0-9][A-Za-z0-9._-]*$")
-        entry = build_entry(args.label, args.dir, args.requested, args.observed, args.note)
+        entry = build_entry(args.label, args.dir, args.requested, args.observed, args.note, args.engine_version)
         if args.dry_run:
             print(json.dumps({args.label: entry}, indent=2), flush=True)
             dry_run_note(args.pins, args.label, entry)

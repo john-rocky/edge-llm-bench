@@ -383,7 +383,8 @@ def plan(cells_file, device_id, campaign, args):
         prompt_dev = f"{run_cell.DEV_DIR}/prompts/{cell['task']}.txt"
         engine_dir = (f"{run_cell.ENGINES_DIR}/{opts['engine-build']}"
                       if opts.get("engine-build") and rt != "executorch" else None)
-        full, binname, sampler = run_campaign.planned_command(cell)
+        # own_link=False: a row-level LiteRT-LM side build reads the flat model path here (one job = one unit)
+        full, binname, sampler = run_campaign.planned_command(cell, own_link=False)
         env = run_cell.launch_env(engine_dir, opts.get("backend"), rt)
         err_file = None
         et = None

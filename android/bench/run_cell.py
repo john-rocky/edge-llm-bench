@@ -356,6 +356,22 @@ def observed_engine(binname, pins, serial, engine_dir=None):
     return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
 
 
+def side_model_path(engine_dir, model_dev):
+    """The path a LiteRT-LM cpu / gpu side build reads the model through: a link in the build's
+    own dir to the pushed copy in {DEV_DIR}/models. LiteRT-LM names its caches after the model
+    path (<path>_<mtime>_<size>_mldrift_program_cache.bin and the GPU weight cache, or
+    <path>_<mtime>_<size>.xnnpack_cache, beside it: ExecutorSettingsBase::GetProgramCacheFile /
+    GetWeightCacheFile, v0.19.0), and litert_lm_main takes no --cache_dir. In the v0.19.0 source
+    the GPU delegate's serialized programs are keyed by the file's basename, mtime and size and
+    the delegate options' fingerprint, nothing that names the accelerator build (ML Drift
+    delegate_kernel.cc ComputeOptionsFingerprint; the prebuilt accelerator's own key is not
+    readable). Read through the flat path, a side build would load and overwrite the flat
+    build's caches of the same file (2026-11-03: the v0.19.0-pregpu build beside the flat
+    v0.19.0 one, same commit, another GPU accelerator); through the link, each build keeps its
+    own caches beside its link, and the model bytes are the same file."""
+    return f"{engine_dir}/models/{os.path.basename(model_dev)}"
+
+
 def side_path(engine_dir, sub, name):
     """A file of a side build on the device: <engine_dir>/<sub>/<name>, or flat."""
     return f"{engine_dir}/{sub}/{name}" if sub else f"{engine_dir}/{name}"
@@ -917,7 +933,9 @@ def dry_run(args, arm, engine_dir):
     if args.runtime == "onnxruntime-genai":  # a GenAI folder, pushed as <repo>_<folder name>/
         model_dev = ortgenai_dev_dir(args.model_id, args.file)
     prompt_dev = f"{DEV_DIR}/prompts/{args.task}.txt"
-    cmd, binname, sampler, _ = engine_command(args.runtime, args.backend, model_dev, args.task, prompt_dev,
+    model_cmd = (side_model_path(engine_dir, model_dev)
+                 if args.runtime == "litert-lm" and engine_dir and args.backend in ("cpu", "gpu") else model_dev)
+    cmd, binname, sampler, _ = engine_command(args.runtime, args.backend, model_cmd, args.task, prompt_dev,
                                               budget, args.max_tokens, args.context_tokens,
                                               engine_dir=engine_dir, ynnpack=args.ynnpack,
                                               engine_build=args.engine_build)
@@ -1325,14 +1343,20 @@ def main():
         if engine_dir and args.backend:  # the text the chat tool echoes before its reply (llama_cli_reply)
             with open(os.path.join(ROOT, "prompts", "text", f"{args.task}.txt")) as fh:
                 prompt_text = fh.read()
+    # a LiteRT-LM cpu / gpu build other than the flat pin: the flat build's commands and
+    # records, plus the build's tag, its env + command, its lines and YNNPACK's; it reads the
+    # model through a link in its own dir, so its caches stay apart from the flat build's
+    # (side_model_path)
+    litert_side = args.runtime == "litert-lm" and bool(engine_dir) and args.backend in ("cpu", "gpu")
+    model_cmd = model_dev
+    if litert_side:
+        model_cmd = side_model_path(engine_dir, model_dev)
+        adb(["shell", f"mkdir -p {os.path.dirname(model_cmd)} && ln -sf {model_dev} {model_cmd}"], args.serial)
     cmd, binname, sampler, ctx_note = engine_command(
-        args.runtime, args.backend, model_dev, args.task,
+        args.runtime, args.backend, model_cmd, args.task,
         prompt_dev, budget, args.max_tokens, args.context_tokens, engine_dir=engine_dir,
         ynnpack=args.ynnpack, engine_build=args.engine_build)
     litert_npu = args.runtime == "litert-lm" and bool(engine_dir) and args.backend == "npu"
-    # a LiteRT-LM cpu / gpu build other than the flat pin: the flat build's commands and
-    # records, plus the build's tag, its env + command, its lines and YNNPACK's
-    litert_side = args.runtime == "litert-lm" and bool(engine_dir) and args.backend in ("cpu", "gpu")
     quantization = None
     if litert_npu:  # the label and the KV cache of an own NPU export, by its sha256
         quantization, ctx_note = own_npu_bundle(model_sha)
@@ -1379,14 +1403,20 @@ def main():
     cache_built = True
     marker = None
     if args.runtime == "litert-lm":
-        # a side build's caches are its own (another engine rebuilds them): its marker names the
-        # build, and YNNPACK's runs keep one of their own
-        build_key = (("-ynnpack" if args.ynnpack else "") + f".{args.engine_build}") if litert_side else ""
+        # a side build's caches are its own, beside its link to the model (side_model_path): its
+        # marker names the build and that cache place (".sidecache": a marker written while the
+        # side builds still read the flat path describes caches they no longer read), and
+        # YNNPACK's runs keep one of their own. A GPU side build's marker counts only while its
+        # program cache is there (a removed side dir leaves the markers behind).
+        build_key = ((("-ynnpack" if args.ynnpack else "") + f".{args.engine_build}.sidecache")
+                     if litert_side else "")
         marker = (f"{DEV_DIR}/markers/"
                   f"{os.path.basename(model_dev)}.{args.backend}{build_key}.cachebuilt")
         if paired:
             marker = marker.replace(".cachebuilt", f".{engine_artifact}.ctx{args.context_tokens}.cachebuilt")
-        out = adb(["shell", f"ls {marker} >/dev/null 2>&1 && echo present || echo absent"],
+        cache_there = (f" && ls {model_cmd}_*_mldrift_program_cache.bin >/dev/null 2>&1"
+                       if litert_side and args.backend == "gpu" else "")
+        out = adb(["shell", f"ls {marker} >/dev/null 2>&1{cache_there} && echo present || echo absent"],
                   args.serial)
         cache_built = "present" in out
     elif engine_dir and args.backend == "gpu" and binname != "llama-bench":

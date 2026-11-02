@@ -512,6 +512,14 @@ def render_md(out_cells, cells_path, stale_days, today):
              "derivation or an estimate, not a vendor figure; n/a where no ceiling is "
              "citable or the artifact is unregistered. An estimate, not a bus counter.")
     L.append("")
+    L.append("Engine builds: from 2026-11-03 the Galaxy S26's LiteRT-LM GPU cells are re-measured on the side build "
+             "`v0.19.0-pregpu` (`android/engine-pins.json`): LiteRT-LM v0.19.0, the Android pin's commit, with Google's "
+             "prebuilt GPU accelerator (the tag's `prebuilt/android_arm64/libLiteRtGpuAccelerator.so`, loaded at run "
+             "time) in place of the flat v0.19.0 build's, built from source and linked in. Its rows stamp engine v0.19.0 "
+             "and name the build in `conditions.engineBuild`; a cell shows its newest session's build, so the S26 GPU "
+             "cells not yet re-measured, every other Android device's v0.19.0 GPU cells and each sitting's anchor phase "
+             "stay on the flat build.")
+    L.append("")
 
     by_dev = {}
     for c in out_cells:

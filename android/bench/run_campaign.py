@@ -61,7 +61,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from device_probe import thermal_status, adb  # noqa: E402
-from run_cell import (arm_name, capture_stem, context_prompt, engine_command, launch_env,  # noqa: E402
+from run_cell import (arm_name, capture_stem, context_prompt, engine_command, launch_env, side_model_path,  # noqa: E402
                       ortgenai_dev_dir, remove_ortgenai_folder, DEV_DIR, CPU_MASK, ENGINES_DIR)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -409,8 +409,11 @@ def round_schedule(anchors, payload, rounds):
             yield rnd, launch, cell
 
 
-def planned_command(cell):
-    """Pure command construction: no downloads, probes, locks or device calls."""
+def planned_command(cell, own_link=True):
+    """Pure command construction: no downloads, probes, locks or device calls. own_link=False
+    keeps a LiteRT-LM cpu / gpu side build on the flat model path (the DDP route: one job = one
+    lab unit, so no other build's caches sit beside the copy, and the job command carries no
+    mkdir / ln for run_cell.side_model_path's link)."""
     opts = cell["opts"]
     filename = opts.get("file")
     if not filename:
@@ -427,6 +430,8 @@ def planned_command(cell):
     # engine-build= on an executorch row names its runner dirs, not an {ENGINES_DIR} side build
     engine_dir = (f"{ENGINES_DIR}/{opts['engine-build']}"
                   if opts.get("engine-build") and cell["runtime"] != "executorch" else None)
+    if own_link and cell["runtime"] == "litert-lm" and engine_dir and opts.get("backend") in ("cpu", "gpu"):
+        model = side_model_path(engine_dir, model)  # the build's own link to the model (run_cell.side_model_path)
     command, binary, sampler, _ = engine_command(
         cell["runtime"], opts.get("backend"), model, cell["task"], prompt,
         int(budgets[cell["task"]]) if cell["task"] in budgets else None, limit, ctx,
