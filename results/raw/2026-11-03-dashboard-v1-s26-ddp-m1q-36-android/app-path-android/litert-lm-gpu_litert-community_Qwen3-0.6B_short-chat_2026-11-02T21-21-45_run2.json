@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "id": "73287a21-8400-50ef-99d5-45323118281c",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.19.0",
+  "engineArtifact": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",
+    "file": "litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "bf1aba9ce8d963124407353c6aa4cbf72eba78db21ae133de983eac672ce83e0"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-11-02T21:21:45Z",
+  "device": {
+    "modelIdentifier": "SM-S942U1",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-01-01",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 1.0,
+    "batteryState": "charging",
+    "ddp": {
+      "deviceId": "m1q-36",
+      "buildFingerprint": "samsung/m1quew/m1q:16/BP4A.251205.006/S942U1UEU1AZAD_OYM1AZAD:user/release-keys",
+      "serial": "RFGL319PBKP"
+    }
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3187.2,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 3398.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": "bundle-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 7.0,
+    "exitCode": 0,
+    "engineCache": {
+      "xnnpackWeightCache": "absent",
+      "gpuCache": "not-loaded"
+    },
+    "roundIndex": null,
+    "launchIndex": null,
+    "launchID": "6c9ba8fc-fcfb-5616-b9d4-0fb84c5c2295",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 26.1,
+    "batteryTemperatureFinalC": 26.1,
+    "batteryLevelFinal": 1.0,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 128,
+    "engineCommand": "./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped",
+      "cpu-capped-at-start"
+    ],
+    "ddp": {
+      "sessionId": "session-4bc3965c",
+      "jobId": "6911461a-63ad-4efd-9b60-f8959d9adaab",
+      "executionId": "8e53906c-93a1-4a9c-8089-efc04ac700dc",
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "buildFingerprint": "samsung/m1quew/m1q:16/BP4A.251205.006/S942U1UEU1AZAD_OYM1AZAD:user/release-keys",
+      "serial": "RFGL319PBKP",
+      "product": "m1q",
+      "jobStartTime": "2026-11-02T21:18:14.496Z",
+      "jobEndTime": "2026-11-02T21:24:11.276Z",
+      "executionStartTime": "2026-11-02T21:19:21.369Z",
+      "executionEndTime": "2026-11-02T21:24:07.238Z",
+      "executionTimeout": "3600s",
+      "resultType": "PASSED",
+      "runIndex": 2
+    },
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 140.0,
+    "promptTokensPerSecond": 153.31,
+    "decodeTokensPerSecond": 75.84,
+    "promptTokenCount": 19,
+    "generatedTokenCount": 267,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1+ddp-route-c",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 772.72265625,
+    "memoryPeakResidentMB": 774.05859375
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_Qwen3-0.6B_short-chat_2026-11-02T21-21-45_run2.log",
+    "harness": "android/ddp/run_ddp.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device",
+    "ddpSessionDir": "ddp/session-4bc3965c/j02-gpu-Qwen3-0-6B-short-chat/execution-8e53906c-93a1-4a9c-8089-efc04ac700dc",
+    "wrapper": "android/ddp/ddp_cell.sh",
+    "wrapperSha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b"
+  }
+}

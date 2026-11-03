@@ -1,0 +1,1509 @@
+--------- beginning of main
+11-02 13:19:22.014 12969 12969 I native  : I0000 00:00:1793654362.014389   12969 litert_lm_lib.cc:728] Choose backend: gpu
+11-02 13:19:22.015 12969 12969 I native  : I0000 00:00:1793654362.015083   12969 litert_lm_lib.cc:967] executor_settings: backend: GPU
+11-02 13:19:22.015 12969 12969 I native  : backend_config:
+11-02 13:19:22.015 12969 12969 I native  : max_top_k: 64
+11-02 13:19:22.015 12969 12969 I native  : 
+11-02 13:19:22.015 12969 12969 I native  : max_tokens: 2048
+11-02 13:19:22.015 12969 12969 I native  : activation_data_type: Not set
+11-02 13:19:22.015 12969 12969 I native  : max_num_images: 0
+11-02 13:19:22.015 12969 12969 I native  : lora_rank: 0
+11-02 13:19:22.015 12969 12969 I native  : pad_token_id: -1
+11-02 13:19:22.015 12969 12969 I native  : cache_dir: 
+11-02 13:19:22.015 12969 12969 I native  : cache_file: Not set
+11-02 13:19:22.015 12969 12969 I native  : litert_dispatch_lib_dir: Not set
+11-02 13:19:22.015 12969 12969 I native  : model_assets: model_path: /data/local/tmp/llmbench/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+11-02 13:19:22.015 12969 12969 I native  : fake_weights_mode: FAKE_WEIGHTS_NONE
+11-02 13:19:22.015 12969 12969 I native  : 
+11-02 13:19:22.015 12969 12969 I native  : advanced_settings: prefill_batch_sizes: []
+11-02 13:19:22.015 12969 12969 I native  : num_output_candidates: 1
+11-02 13:19:22.015 12969 12969 I native  : configure_magic_numbers: true
+11-02 13:19:22.015 12969 12969 I native  : verify_magic_numbers: false
+11-02 13:19:22.015 12969 12969 I native  : clear_kv_cache_before_prefill: true
+11-02 13:19:22.015 12969 12969 I native  : num_logits_to_print_after_decode: 0
+11-02 13:19:22.015 12969 12969 I native  : gpu_madvise_original_shared_tensors: true
+11-02 13:19:22.015 12969 12969 I native  : gpu_enable_metal_residency_set: false
+11-02 13:19:22.015 12969 12969 I native  : is_benchmark: true
+11-02 13:19:22.015 12969 12969 I native  : enable_profiling: false
+11-02 13:19:22.015 12969 12969 I native  : preferred_device_substr: 
+11-02 13:19:22.015 12969 12969 I native  : num_threads_to_upload: -1
+11-02 13:19:22.015 12969 12969 I native  : num_threads_to_compile: -1
+11-02 13:19:22.015 12969 12969 I native  : convert_weights_on_gpu: true
+11-02 13:19:22.015 12969 12969 I native  : wait_for_weights_conversion_complete_in_benchmark: true
+11-02 13:19:22.015 12969 12969 I native  : optimize_shader_compilation: true
+11-02 13:19:22.015 12969 12969 I native  : cache_compiled_shaders_only: false
+11-02 13:19:22.015 12969 12969 I native  : share_constant_tensors: true
+11-02 13:19:22.015 12969 12969 I native  : sampler_handles_input: true
+11-02 13:19:22.015 12969 12969 I native  : allow_src_quantized_fc_conv_ops: Not set
+11-02 13:19:22.015 12969 12969 I native  : hint_waiting_for_completion: Not set
+11-02 13:19:22.015 12969 12969 I native  : gpu_context_low_priority: Not set
+11-02 13:19:22.015 12969 12969 I native  : enable_speculative_decoding: false
+11-02 13:19:22.015 12969 12969 I native  : disable_delegate_clustering: false
+11-02 13:19:22.015 12969 12969 I native  : hint_kernel_batch_size: Not set
+11-02 13:19:22.015 12969 12969 I native  : error_on_invalid_sampled_token_id: false
+11-02 13:19:22.015 12969 12969 I native  : mtp_gating_config: Not set
+11-02 13:19:22.015 12969 12969 I native  : 
+11-02 13:19:22.015 12969 12969 I native  : speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+11-02 13:19:22.015 12969 12969 I native  : 
+11-02 13:19:22.015 12969 12969 I native  : I0000 00:00:1793654362.015108   12969 litert_lm_lib.cc:974] vision_executor_settings: not set
+11-02 13:19:22.015 12969 12969 I native  : I0000 00:00:1793654362.015112   12969 litert_lm_lib.cc:980] audio_executor_settings: not set
+11-02 13:19:22.015 12969 12969 I native  : I0000 00:00:1793654362.015117   12969 litert_lm_lib.cc:1003] Creating engine
+11-02 13:19:22.015 12969 12969 W native  : W0000 00:00:1793654362.015203   12969 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+11-02 13:19:22.015 12969 12969 W native  : W0000 00:00:1793654362.015213   12969 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+11-02 13:19:22.015 12969 12969 W native  : W0000 00:00:1793654362.015217   12969 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+11-02 13:19:22.015 12969 12969 W native  : W0000 00:00:1793654362.015221   12969 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+11-02 13:19:22.015 12969 12969 I litert  : [environment.cc:36] Creating LiteRT environment with options
+11-02 13:19:22.015 12969 12969 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+11-02 13:19:22.015 12969 12969 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000748ec148a0, name=LiteRT GPU
+11-02 13:19:22.015 12969 12969 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-02 13:19:22.015 12969 12972 W native  : W0000 00:00:1793654362.015251   12972 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+11-02 13:19:22.015 12969 12969 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000748ec13db0, name=CpuAccelerator
+11-02 13:19:22.015 12969 12969 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+11-02 13:19:22.015 12969 12972 W native  : W0000 00:00:1793654362.015366   12972 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+11-02 13:19:22.015 12969 12972 W native  : W0000 00:00:1793654362.015401   12972 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+11-02 13:19:22.027 12969 12969 W native  : W0000 00:00:1793654362.027179   12969 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+11-02 13:19:22.027 12969 12969 I litert  : [environment.cc:36] Creating LiteRT environment with options
+11-02 13:19:22.027 12969 12969 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+11-02 13:19:22.027 12969 12969 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000748ec13d40, name=LiteRT GPU
+11-02 13:19:22.027 12969 12969 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-02 13:19:22.027 12969 12969 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000748ec14980, name=CpuAccelerator
+11-02 13:19:22.027 12969 12969 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:101] Loaded: num_subgraphs=510, num_signatures=3
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=934, num_inputs=60, num_outputs=57, num_ops=436
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=900, num_inputs=60, num_outputs=57, num_ops=406
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:113] Magic number configs: num_configs=1
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+11-02 13:19:22.029 12969 12969 I litert  : [magic_number_utils.cc:536] 534 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+11-02 13:19:22.030 12969 12969 I litert  : [magic_number_utils.cc:536] 534 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+11-02 13:19:22.030 12969 12969 I litert  : [magic_number_utils.cc:536] 534 tensors of signature decode have been updated for magic number  32771 to target number 2048
+11-02 13:19:22.030 12969 12969 I litert  : [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+11-02 13:19:22.030 12969 12969 I tflite  : Initialized TensorFlow Lite runtime.
+11-02 13:19:22.035 12969 12969 W libc    : Access denied finding property "ro.mediatek.platform"
+11-02 13:19:22.035 12969 12969 W libc    : Access denied finding property "ro.chipname"
+11-02 13:19:22.074 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=boost timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:22.074  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+--------- beginning of system
+11-02 13:19:22.075  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:22.076  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=120.00002, presentationDeadlineNanos=9333443, appVsyncOffsetNanos=8333111, frameRateOverrides=[]
+11-02 13:19:22.086  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:22.087  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:22.091  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 239
+11-02 13:19:22.102 12969 12969 I native  : I0000 00:00:1793654362.102233   12969 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+11-02 13:19:22.102 12969 12969 I native  : I0000 00:00:1793654362.102272   12969 delegate_opencl.cc:657] options->kernel_batch_size: 0
+11-02 13:19:22.104  3146  5753 I Pageboost: Launcher App Execution
+11-02 13:19:22.104  3146  5753 E Pageboost: ioinfo read failed
+11-02 13:19:22.120  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:22.146  3146 20633 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 1933, isSameBssidAndFreq true
+11-02 13:19:22.146  3146  5602 I SemWifiLinkQualityMonitor: Link stat: 270 / 255 / 1.00 (4) / 286 / -54.0 || 100.0 : 286.00 / 0.5 : 1.00 / 0.55 : 0.94 / B (B) || 2df45b705300: 1.324 / 6.042 / N / V || N N / 0 0 / Y 2.0 / Y -1 0.000 0.000 / Y / X 0 / 5999279 0 0 || Invalid
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: QUALCOMM build                   : bacff47b1e, I498f01ff61
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Build Date                       : 11/20/25
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: OpenGL ES Shader Compiler Version: E031.50.19.13
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Local Branch                     : 
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.VENDOR.16.2.0.R1.11.00.00.1277.089
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Remote Branch                    : NONE
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Reconstruct Branch               : NOTHING
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Build Config                     : C P 20.0.0 AArch64
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Driver Version                   : 0842.19.3
+11-02 13:19:22.150 12969 12969 I AdrenoGLES-0: Process Name                     : litert_lm_advanced_main
+11-02 13:19:22.151 12969 12969 W libbinder.BackendUnifiedServiceManager: Thread Pool max thread count is 0. Cannot cache binder as linkToDeath cannot be implemented. serviceName: android.hardware.graphics.allocator.IAllocator/default
+11-02 13:19:22.155 12969 12969 D qdgralloc: Fetching IMapper5 from QtiMapper5
+11-02 13:19:22.161 12969 12969 I SnapAlloc: Graphics lib is available
+11-02 13:19:22.163 12969 12969 I AdrenoGLES-0: PFP: 0x01510594, ME: 0x01510025
+11-02 13:19:22.164 12969 12969 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+11-02 13:19:22.165 12969 12969 I AdrenoUtils: <ReadGpuID:1333>: Reading chip ID through GSL
+11-02 13:19:22.166 12969 12969 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)
+11-02 13:19:22.167 12969 12969 W libc    : Access denied finding property "vendor.gfx.perf_hint"
+11-02 13:19:22.168 12969 12969 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+11-02 13:19:22.168 12969 12969 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+11-02 13:19:22.168 12969 12969 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+11-02 13:19:22.168 12969 12969 I litert  : [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+11-02 13:19:22.168 12969 12969 I litert  : [environment.cc:47] Adding options to the existing LiteRT environment
+11-02 13:19:22.169 12969 12969 I tflite  : Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).
+11-02 13:19:22.179  2518 12784 I NuPlayerRenderer: [audio] notifyEOS() End of Stream, delayUs : 0
+11-02 13:19:22.179  2518 12725 V NuPlayer: reached audio EOS
+11-02 13:19:22.179  2518 12725 V NuPlayerDriver: notifyListener_l(0xb4000076dde19220), playback complete, loop setting(0, 0)
+11-02 13:19:22.179  2518 12725 V MediaPlayerService: [3] notify (2, 0, 0)
+11-02 13:19:22.179  2518 12725 V NuPlayer: updatePlaybackTimer(stop)  time        5996910501408 (onPause)
+11-02 13:19:22.179  2518 12725 V NuPlayer: updatePlaybackTimer()  log            2402590988
+11-02 13:19:22.179  2518 12725 I GenericSource: pause
+11-02 13:19:22.179  6060 10264 V MediaPlayerNative: message received msg=2, ext1=0, ext2=0
+11-02 13:19:22.179  6060 10264 V MediaPlayerNative: playback complete
+11-02 13:19:22.179  2518 12784 I NuPlayerRenderer: onPause
+11-02 13:19:22.179  2518 12728 I GenericSource: kWhatPause
+11-02 13:19:22.179  2518 12784 I MediaClock: setPlaybackRate rate : 0.000000
+11-02 13:19:22.179  2518 12784 V AudioSink: stop
+11-02 13:19:22.180  2518 12725 V MediaPlayerService: [3] notify (211, 0, 0)
+11-02 13:19:22.180  6060 10264 V MediaPlayerNative: message received msg=211, ext1=0, ext2=0
+11-02 13:19:22.180  2518  8091 V MediaPlayerService: [3] enableAudioDeviceCallback, 0
+11-02 13:19:22.180  2518  8091 V AudioSink: enableAudioDeviceCallback, 0
+11-02 13:19:22.180  6060 12718 D RingtonePlayer: onCompletion() abandoning AudioFocus
+11-02 13:19:22.180  3146  5568 D MediaRouterService: onAudioPlayerActiveStateChanged: uid=10047, active=false, delaying
+11-02 13:19:22.180  3146  4268 I MediaFocusControl: abandonAudioFocus() from uid/pid 10047/6060 clientId=android.media.AudioManager@def28d5 callingPack=com.android.systemui
+11-02 13:19:22.180  3146  4268 D AS.AudioService: [Android Auto] isConnectedAndroidAuto = false
+11-02 13:19:22.180  3146  4268 D MediaFocusControl: abandonAudioFocus, clientId = android.media.AudioManager@def28d5
+11-02 13:19:22.180  3146  4268 D MediaFocusControl: selectFocusStack, uid = 10047, appDevice = 0, device = 2
+11-02 13:19:22.180  3146  4268 I MediaFocusControl: removeFocusStackEntry client:android.media.AudioManager@def28d5
+11-02 13:19:22.181  3146  4268 I EasyMuteController: onCompletion
+11-02 13:19:22.181  3146  4268 D MotionRecognitionManager: @ member 0 = com.android.server.notification.EasyMuteController$1@b623c5c
+11-02 13:19:22.181  3146  4268 D MotionRecognitionService:   .unregisterCallback : 0, client=com.android.server.notification.EasyMuteController$1@b623c5c
+11-02 13:19:22.181  3146  4268 D MotionRecognitionService: Acc/Gyro will be disabled by motion sensor  = 1
+11-02 13:19:22.181  6060  6637 D SoundCraft.PlayingAudioConditionHandler: onPlaybackConfigChanged : lastStartedPackageName=null, lastStartedUid=-1, newStartedUid=-1, newStartPackageName=null, thread=Thread[RoutineHandlerThread,5,main]
+11-02 13:19:22.181  3146  4268 D MotionRecognitionService: Acc/Gyro will be disabled by motion sensor  = 2
+11-02 13:19:22.181  2024  2024 I sensors-hal: activate:313, android.sensor.accelerometer/11 en=0
+11-02 13:19:22.181  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:22.181  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:22.182  3146  8804 D EdmStorageProvider: getCount(AppSeparationTable) - 0
+11-02 13:19:22.182  3146  8804 D KnoxMUMContainerPolicy: getAppSeparationConfig(): no record. Return null
+11-02 13:19:22.182  7632  7661 I SAContentProvider: insert() : content value is VOICE_BOOST_EFFECT=0
+11-02 13:19:22.182  7632  7661 I AudioPathManager: loadAudioPath() : loaded audio path is speaker (0)
+11-02 13:19:22.182  2024 12722 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for accel 
+11-02 13:19:22.182  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+11-02 13:19:22.182  7632  7661 I SAContentProvider: insertForVoiceBoost() : inserted mode is 0
+11-02 13:19:22.182  7632  7661 I AudioPathManager: loadAudioPath() : loaded audio path is speaker (0)
+11-02 13:19:22.182  2024  2024 I sensors-hal: ~qmiSession:80, ~qmiSession
+11-02 13:19:22.182  2024  2024 I sensors-hal: activate:343, android.sensor.accelerometer/11 en=0 completed
+11-02 13:19:22.183  2024  2024 I sensors-hal: activate:313, android.sensor.gyroscope/41 en=0
+11-02 13:19:22.183  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:22.183  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:22.183  7632  7661 I EffectManager: setEffectVoiceBoostAll() : parameter is 0,0,0,0,0,0,0,0
+11-02 13:19:22.183  7632  7661 I AudioManager: setParameters keyValuePairs = g_voice_booster_preset_all=0,0,0,0,0,0,0,0
+11-02 13:19:22.183  2135 16105 V APM_AudioPolicyManager: setAudioPolicyConfig: g_voice_booster_preset_all=0,0,0,0,0,0,0,0
+11-02 13:19:22.183  2135 16105 I SecAudioParamPolicy: g_voice_booster_preset_all: 0 
+11-02 13:19:22.183  2024 12727 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for sensor_temperature 
+11-02 13:19:22.183  2135 16105 I AudioEffectExtendAction: get g_voice_booster_preset_all received 0,0,0,0,0,0,0,0
+11-02 13:19:22.183  2135 16105 I AudioFlinger: enableVoiceBooster_l all preset
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.183  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.183  2024  2024 I sensors-hal: setCallBacks:357, suid(low=12986599621890695239,high=12157428791024543539) is alread registered
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 10000, index 7
+11-02 13:19:22.183  2024  2024 I sensors-hal: setCallBacks:362, update callbacks with new one
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.183  2135 16105 I AudioFlinger: updateVoiceBoosterState curDevice 10000, index 7
+11-02 13:19:22.183  7632  7661 I LocalBroadcastManager: sendLocalBroadcast() : action is 1
+11-02 13:19:22.183  2024  2024 I sensors-hal: send_req:385, sent request to gyro_cal (low=12986599621890695239high=12157428791024543539), reqeuest_count = 1
+11-02 13:19:22.183  2024  2024 I sensors-hal: deactivate:313, sent disable request. wait for response for it
+11-02 13:19:22.183  2024  2024 I sensors-hal: operator():316, resp_received = 0 in wait_for
+11-02 13:19:22.184  6060  6691 I AudioEraserUtils: [Set] Audio eraser strength = 0
+11-02 13:19:22.184  2024 12727 I sensors-hal: handle_resp_cb:391, resp_value = 0 for gyro_cal before acuiring the lock, pending request = 1
+11-02 13:19:22.184  2024  2024 I sensors-hal: operator():316, resp_received = 1 in wait_for
+11-02 13:19:22.184  2024  2024 I sensors-hal: setCallBacks:349, suid(low=12986599621890695239,high=12157428791024543539) is new. register callbacks
+11-02 13:19:22.184  2024  2024 E sensors-hal: setCallBacks:351, all callbacks are null for new suid. no need to register it
+11-02 13:19:22.184  2024  2024 E sensors-hal: deactivate:337, all callbacks are null, no need to register it
+11-02 13:19:22.184  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:22.184  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:22.184  2024 12727 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for gyro 
+11-02 13:19:22.184  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+11-02 13:19:22.184  2024  2024 I sensors-hal: ~qmiSession:80, ~qmiSession
+11-02 13:19:22.184  2024  2024 I sensors-hal: activate:343, android.sensor.gyroscope/41 en=0 completed
+11-02 13:19:22.185  3146  4268 D SensorManager: unregisterListener
+11-02 13:19:22.185  3146  4268 D MotionRecognitionService:   .finalizeMotionEngine
+11-02 13:19:22.185  3146  4268 I MotionRecognitionManager:   .unregisterListener : / listener count = 1->0, name :com.android.server.notification.EasyMuteController$1@b623c5c
+11-02 13:19:22.185  3146  4268 I EasyMuteController: UnReg. OverTurn
+11-02 13:19:22.185  6060 12718 D RingtonePlayer: onCompletion queue size=0
+11-02 13:19:22.185  6060 12718 D RingtonePlayer: in onCompletion quitting looper Looper (Thread-25, tid 210) {2d84dc7}
+11-02 13:19:22.185  6060 12718 I NotificationPlayer: About to release MediaPlayer piid:199 due to onCompletion
+11-02 13:19:22.185  6060 12718 V MediaPlayer: resetDrmState:  mDrmInfo=null mDrmProvisioningThread=null mPrepareDrmInProgress=false mActiveDrmScheme=false
+11-02 13:19:22.185  6060 12718 V MediaPlayer: cleanDrmObj: mDrmObj=null mDrmSessionId=null
+11-02 13:19:22.185  6060 12718 V MediaPlayer-JNI: release
+11-02 13:19:22.185  6060 12718 V MediaPlayerNative: setListener
+11-02 13:19:22.185  6060 12718 V MediaPlayerNative: disconnect
+11-02 13:19:22.185  2518  8091 V MediaPlayerService: disconnect(3) from AttributionSource AttributionSourceState{pid: 6060, uid: 10047, deviceId: 0, packageName: com.android.systemui, attributionTag: (null), token: binder:0xb40000759de27c40, renouncedPermissions: [], next: []}
+11-02 13:19:22.185  2518  8091 D NuPlayerDriver: reset(0xb4000076dde19220) at state 6
+11-02 13:19:22.185  2518  8091 V NuPlayerDriver: updateMetrics(0xb4000076dde19220) from reset at state 6
+11-02 13:19:22.185  2518  8091 V NuPlayer: updateInternalTimers()
+11-02 13:19:22.185  2518  8091 V NuPlayer: updatePlaybackTimer(snap)  time                    0 (updateInternalTimers)
+11-02 13:19:22.185  2518  8091 V NuPlayer: updateRebufferingTimer(snap)  time                    0 (exiting 0)
+11-02 13:19:22.185  2518  8091 V NuPlayerDriver: logMetrics(0xb4000076dde19220) from reset at state 6
+11-02 13:19:22.185  6060  6637 D SoundCraft.PlayingAudioConditionHandler: onPlaybackConfigChanged : lastStartedPackageName=null, lastStartedUid=-1, newStartedUid=-1, newStartPackageName=null, thread=Thread[RoutineHandlerThread,5,main]
+11-02 13:19:22.185  2518 12725 V NuPlayer: kWhatReset
+11-02 13:19:22.185  2518 12725 I MediaMonitor: stop time 5999313177
+11-02 13:19:22.185  2518 12725 V NuPlayer: setDecoderBooster enable = No
+11-02 13:19:22.185  2518 12725 V NuPlayer: updatePlaybackTimer(stop)  time                    0 (kWhatReset)
+11-02 13:19:22.185  2518 12725 V NuPlayer: updateRebufferingTimer(stop)  time                    0 (exiting 1)
+11-02 13:19:22.185  2518 12725 V NuPlayer: performDecoderFlush audio=2, video=2
+11-02 13:19:22.185  2518 12725 V NuPlayer: [audio] flushDecoder needShutdown=1
+11-02 13:19:22.185  2518 12725 V NuPlayer: postponing action mFlushingAudio=2, mFlushingVideo=0
+11-02 13:19:22.185  2518 12785 I NuPlayerRenderer: flush audio, notifyComplete 1, shutdown Yes
+11-02 13:19:22.186  2518 12784 I NuPlayerRenderer: flushing audio
+11-02 13:19:22.186  2518 12784 I NuPlayerRenderer: onFlush mAudioDrainGeneration : 2
+11-02 13:19:22.186  7632  7661 I SAContentProvider: insert() : content value is VOICE_BOOST_EFFECT=0
+11-02 13:19:22.186  7632  7661 I AudioPathManager: loadAudioPath() : loaded audio path is speaker (0)
+11-02 13:19:22.186  2518 12784 V AudioSink: flush
+11-02 13:19:22.186  7632  7661 I SAContentProvider: insertForVoiceBoost() : inserted mode is 0
+11-02 13:19:22.186  2518 12784 V AudioSink: stop
+11-02 13:19:22.186  7632  7661 I AudioPathManager: loadAudioPath() : loaded audio path is speaker (0)
+11-02 13:19:22.186  2518 12785 D NuPlayerRenderer: signalTimeDiscontinuity() mHasAudio = 0 , mHasVideo = 0
+11-02 13:19:22.186  2518 12725 V NuPlayer: renderer audio flush completed.
+11-02 13:19:22.186  7632  7661 I EffectManager: setEffectVoiceBoostAll() : parameter is 0,0,0,0,0,0,0,0
+11-02 13:19:22.186  2518 12786 I CCodec  : [c2.android.vorbis.decoder] state->set(FLUSHING)
+11-02 13:19:22.186  7632  7661 I AudioManager: setParameters keyValuePairs = g_voice_booster_preset_all=0,0,0,0,0,0,0,0
+11-02 13:19:22.186  2135  3246 V APM_AudioPolicyManager: setAudioPolicyConfig: g_voice_booster_preset_all=0,0,0,0,0,0,0,0
+11-02 13:19:22.186  2135  3246 I SecAudioParamPolicy: g_voice_booster_preset_all: 0 
+11-02 13:19:22.186  2518 12786 I CCodec  : [c2.android.vorbis.decoder] state->set(FLUSHED)
+11-02 13:19:22.186  2518 12725 V NuPlayer: decoder audio flush completed
+11-02 13:19:22.186  2518 12725 V NuPlayer: initiating audio decoder shutdown
+11-02 13:19:22.186  2135  3372 I AudioEffectExtendAction: get g_voice_booster_preset_all received 0,0,0,0,0,0,0,0
+11-02 13:19:22.186  2135  3372 I AudioFlinger: enableVoiceBooster_l all preset
+11-02 13:19:22.186  2518 12786 I CCodec  : [c2.android.vorbis.decoder] state->set(RELEASING)
+11-02 13:19:22.186  2518 12975 I CCodec  : [release][3739] component -> surface
+11-02 13:19:22.186  2518 12725 V NuPlayer: audio shutdown completed
+11-02 13:19:22.186  2518 12725 V NuPlayer: both audio and video are flushed now.
+11-02 13:19:22.186  2518 12725 V NuPlayer: performReset
+11-02 13:19:22.186  2518 12725 V NuPlayer: updatePlaybackTimer(stop)  time                    0 (performReset)
+11-02 13:19:22.186  2518 12725 V NuPlayer: updateRebufferingTimer(stop)  time                    0 (exiting 1)
+11-02 13:19:22.186  2518 12975 I CCodec  : [c2.android.vorbis.decoder] state->set(RELEASED)
+11-02 13:19:22.186  2518 12725 D NuPlayerDriver: notifyResetComplete(0xb4000076dde19220)
+11-02 13:19:22.186  2518 12786 I Codec2Client: Component destructing
+11-02 13:19:22.186  2518  8091 V NuPlayerDriver: ~NuPlayerDriver(0xb4000076dde19220)
+11-02 13:19:22.186  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.186  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.186  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.187  2518  8091 V NuPlayerDriver: updateMetrics(0xb4000076dde19220) from destructor at state 0
+11-02 13:19:22.187  2549  2549 I libbinder.BpBinder: onLastStrongRef automatically unlinking death recipients for descriptor: 'android.hardware.media.bufferpool2.IClientManager'
+11-02 13:19:22.187  2518  8091 V NuPlayer: updateInternalTimers()
+11-02 13:19:22.187  2518  8091 V NuPlayer: updatePlaybackTimer(snap)  time                    0 (updateInternalTimers)
+11-02 13:19:22.187  2518  8091 V NuPlayer: updateRebufferingTimer(snap)  time                    0 (exiting 0)
+11-02 13:19:22.187  2518  8091 V NuPlayerDriver: logMetrics(0xb4000076dde19220) from destructor at state 0
+11-02 13:19:22.187  2518  8091 V NuPlayerDriver: nothing to record (only 3 fields)
+11-02 13:19:22.187  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.187  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.187  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 10000, index 7
+11-02 13:19:22.187  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 2, index 0
+11-02 13:19:22.187  2135  3372 I AudioFlinger: updateVoiceBoosterState curDevice 10000, index 7
+11-02 13:19:22.187  2518  8091 V MediaPlayerService: Client(3) destructor AttributionSource = AttributionSourceState{pid: 6060, uid: 10047, deviceId: 0, packageName: com.android.systemui, attributionTag: (null), token: binder:0xb40000759de27c40, renouncedPermissions: [], next: []}
+11-02 13:19:22.187  2518  8091 V MediaPlayerService: disconnect(3) from AttributionSource AttributionSourceState{pid: 6060, uid: 10047, deviceId: 0, packageName: com.android.systemui, attributionTag: (null), token: binder:0xb40000759de27c40, renouncedPermissions: [], next: []}
+11-02 13:19:22.187  7632  7661 I LocalBroadcastManager: sendLocalBroadcast() : action is 1
+11-02 13:19:22.187  6060 12718 V MediaPlayerNative: destructor
+11-02 13:19:22.187  6060 12718 V MediaPlayerNative: disconnect
+11-02 13:19:22.187  2518 12786 I MediaCodec: Codec shutdown complete
+11-02 13:19:22.187  6060  6691 I AudioEraserUtils: [Set] Audio eraser strength = 0
+11-02 13:19:22.187  2518 12785 I NuPlayerDecoder: kWhatAsyncReleaseComplete
+11-02 13:19:22.187  2549  2549 D AidlBufferPool: Destruction - bufferpool2 0xb400007015e0c8b8 cached: 0/0M, 0/0% in use; allocs: 0, 0% recycled; transfers: 0, 0% unfetched
+11-02 13:19:22.187  2518 12785 I CCodecBufferChannel: CCodecBufferChannel destructing c2.android.vorbis.decoder#288
+11-02 13:19:22.187  2518 12785 V AudioSink: +++ close
+11-02 13:19:22.187  2518 12785 V AudioSink: --- close
+11-02 13:19:22.188  2518 12785 W AMessage: failed to post message as target looper for handler 0 is gone.
+11-02 13:19:22.237  2135  3302 I SoundBoosterEffectPlus: SB_setVolume(0xb400006f51e0e450)
+11-02 13:19:22.237  2135  3302 I SoundBoosterEffectPlus: command EFFECT_CMD_SET_VOLUME left = 0.000000, right =0.000000
+11-02 13:19:22.237  2135  3302 I SoundBooster_Interface2090_a64: [AE_FW_LOG] BuffClear() mInstanceID: 0, mMode: 2, iSED_inst_addr:0xb400006ffdbbb500
+11-02 13:19:22.237  2135  3302 I SoundBoosterEffectPlus: SB_reset SoundBooster sessionId(-1301)
+11-02 13:19:22.237  2135  3302 I SAG_EQ_2090 a64: SetVolumeFloat() mInstanceID [0] VolumeFloat [-100.000000] mModeFW [2] mMode [2] mTSCnt[250]
+11-02 13:19:22.237  2135  3302 I SAG_EQ_2090 a64: mInstanceID [0] mIsVolumeTableValid yes 
+11-02 13:19:22.237  2135  3302 I SAG_EQ_2090 a64: SetBypassMode() mInstanceID [0] BypassMode [1] mModeFW [2] mMode [2] mTSCnt [250]
+11-02 13:19:22.237  2135  3302 I SAG_EQ_2090 a64: SetBypassMode mInstanceID [0] mModeFW [2] mMode [2] mSB_TrueByPass [0] mTSCnt [250]
+11-02 13:19:22.237  2135  3264 V APM_AudioPolicyManager: stopOutput portId 32
+11-02 13:19:22.237  2135  3264 V APM_AudioPolicyManager: stopOutput() output 13, stream 5, session 201
+11-02 13:19:22.237  2135  3264 V APM_AudioPolicyManager: setBeaconMute(1) mBeaconMuteRefCount=0 mBeaconPlayingRefCount=0
+11-02 13:19:22.237  2135  3264 V APM_AudioPolicyManager: getNewOutputDevices selected devices AUDIO_DEVICE_NONE
+11-02 13:19:22.237  2135  3264 V APM_AudioPolicyManager: setOutputDevices caller stopSource[[portId:1][io:13, primary_out]] device AUDIO_DEVICE_NONE delayMs 218
+11-02 13:19:22.238  2135  3264 V APM_AudioPolicyManager: setOutputDevices caller stopSource[[portId:1][io:13, primary_out]] setting same device AUDIO_DEVICE_NONE or null device, force=0, patch handle=4
+11-02 13:19:22.238  2135  3264 V APM_AudioPolicyManager: releaseOutput portId 32
+11-02 13:19:22.238  2135  3264 V APM_AudioPolicyManager: releaseOutput() 13
+11-02 13:19:22.323  3146  7702 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:22.324  3146  7702 D SGM:GameManager: identifyGamePackage. com.google.testing.helium.utp.android.companion.backdrop, mCurrentUserId: 0, callingMethodInfo: com.samsung.android.game.IGameManagerService$Stub.onTransact(IGameManagerService.java:247)
+11-02 13:19:22.440  2105  3170 I thermal_core: pivot(AP) : 332, skin : 314
+11-02 13:19:22.440  2105  3170 I vendor.samsung.hardware.thermal-service: index = 9.400000
+11-02 13:19:22.440  2105  3170 I vendor.samsung.hardware.thermal-service: 2 / 10
+11-02 13:19:22.620  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:22.824  3146  4268 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:22.881  7758  7875 I n2      : limitCPUFreq:: freq = 3398400
+11-02 13:19:22.881  7758  7875 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/7758@3, type = 301993986
+11-02 13:19:22.881  2059  2167 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 30120444 [7758 / 3]  HINT :     list : [CPUMaxFreq / 3398400] 
+11-02 13:19:22.881  2059 12599 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 30299246
+11-02 13:19:23.004  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:23.008  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:23.008 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=dirty hint, reason=category counts, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:23.016  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: DirtyHint
+11-02 13:19:23.074  3146 13375 I AfterimageCompensationService: AfcThread mLuminance : 1 , AfpcPeriodCount : 198 , rotation : 0 , AOD : false
+11-02 13:19:23.074  3146 13375 D mAFPC_ABC: [READ] Start nativeDataRead : size : 1
+11-02 13:19:23.075  3146 13375 I SurfaceComposerClient: captureDisplay:Display-4630946778867403923
+11-02 13:19:23.075  2078  3204 I SnapAlloc: Using graphics libs for alignment calculations
+11-02 13:19:23.075  2206  2863 I SurfaceFlinger: Capture layer list: 	 com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220(preserveDisplayColors:0)
+11-02 13:19:23.075  2206  2863 I SurfaceFlinger: Capture layer list: 	 StatusBar$_6060#94(preserveDisplayColors:0)
+11-02 13:19:23.075  2206  2863 I SurfaceFlinger: Capture layer list: 	 com.sec.android.app.launcher/com.samsung.app.honeyspace.edge.edgepanel.app.CocktailBarService$_6609#189(preserveDisplayColors:0)
+11-02 13:19:23.075  2206  2863 I SurfaceFlinger: Capture layer list: 	 NavigationBar0$_6060#93(preserveDisplayColors:0)
+11-02 13:19:23.076  2206  2281 D SurfaceFlinger: [SEC_SF_EFFECTS] drawLayersInternal,1334, Rendering layer ScreenCaptureFillLayer at index 0
+11-02 13:19:23.076  2206  2281 D SurfaceFlinger: [SEC_SF_EFFECTS] drawLayersInternal,1334, Rendering layer com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220 at index 1
+11-02 13:19:23.076  2206  2281 D SurfaceFlinger: [SEC_SF_EFFECTS] drawLayersInternal,1334, Rendering layer StatusBar$_6060#94 at index 2
+11-02 13:19:23.076  2206  2281 D SurfaceFlinger: [SEC_SF_EFFECTS] drawLayersInternal,1334, Rendering layer com.sec.android.app.launcher/com.samsung.app.honeyspace.edge.edgepanel.app.CocktailBarService$_6609#189 at index 3
+11-02 13:19:23.076  2206  2281 D SurfaceFlinger: [SEC_SF_EFFECTS] drawLayersInternal,1334, Rendering layer NavigationBar0$_6060#93 at index 4
+11-02 13:19:23.078  3146 13375 D mAFPC_ABC: [READ] luminance = 1
+11-02 13:19:23.078  3146 13375 D mAFPC_ABC: [READ] w = 1080, h = 2340, s = 8, f = 4, s_size = 10183680, luminance = 1, count = 198, captureOrientation = 0
+11-02 13:19:23.087  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:23.107  3146 13375 E mAFPC_ABC: [READ] [TYPE : 0] saProcess : 0
+11-02 13:19:23.107  3146 13375 D mAFPC_ABC: [READ] END nativeDataRead
+11-02 13:19:23.114  3146  4379 D SemInputMotionEventDispatcher: registerMotionEventListener: already registered: com.samsung.android.hardware.secinputdev.taas.ExternalApi$5@65ef0b
+11-02 13:19:23.121  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:23.325  3146  4268 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:23.441  2105  3170 I thermal_core: pivot(AP) : 335, skin : 314
+11-02 13:19:23.441  2105  3170 I vendor.samsung.hardware.thermal-service: index = 15.000000
+11-02 13:19:23.441  2105  3170 I vendor.samsung.hardware.thermal-service: 3 / 10
+11-02 13:19:23.622  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:23.758 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:23.759  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:23.763  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:23.768  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:23.772  1195  1195 D io_stats: !@   8,0 r 380849 27715544 w 224633 22978360 d 21030 17669912 f 6375 32131 iot 51324 0 th 0 0 0 pt 0 inp 0 0 6000.906
+11-02 13:19:23.773  1195  1195 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(12969) 16928 gestions:search:high(7226) 912 martsuggestions:high(7806) 244
+11-02 13:19:23.773  1195  1195 D io_stats: !@ Write_top(KB): kworker/u33:0:/(10940) 257532 kworker/u33:2:/(8879) 57128 kworker/u33:4:/(9484) 49160
+11-02 13:19:23.826  3146  7702 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.001 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:24.005  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:24.009  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:24.010  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:24.011  2206  2206 D SurfaceFlinger: setDesiredMode 4630946778867403923 {mode={fps=60.00 Hz, modePtr={id=0, vsyncRate=240.00 Hz, peakRefreshRate=120.00 Hz}}, emitEvent=false, force=false}
+11-02 13:19:24.011  2206  2206 I SurfaceFlinger: [4630946778867403923] ActiveRenderFps : 60
+11-02 13:19:24.011  2206  2206 I SurfaceFlinger: com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220 voted ExplicitCategory with category: Normal
+11-02 13:19:24.011  2206  2206 I SurfaceFlinger: com.sec.android.app.launcher/com.samsung.app.honeyspace.edge.edgepanel.app.CocktailBarService$_6609#189 voted ExplicitCategory with category: NoPreference
+11-02 13:19:24.011  2206  2206 I SurfaceFlinger: StatusBar$_6060#94 voted ExplicitCategory with category: NoPreference
+11-02 13:19:24.011  2206  2206 I SurfaceFlinger: NavigationBar0$_6060#93 voted ExplicitCategory with category: NoPreference
+11-02 13:19:24.011  2206  2206 I SurfaceFlinger: scored - choose 60.00 Hz
+11-02 13:19:24.011  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:24.013  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:24.013  3146  3318 D WindowManager: DeferredDisplayUpdater: partially applying DisplayInfo(1080 x 2340) immediately
+11-02 13:19:24.013  3146 10591 D LiftUpHandler: [LTW] Stopped already.
+11-02 13:19:24.013  3146  3146 D SGM:GameDisplayListener: onDisplayChanged. displayId: 0, state: 2
+11-02 13:19:24.013  3146  3146 D AODManagerService: requestReCalToTSP IsSingleTouchMode = falserequestedReCalToTSP = false / previousDisplayState = ON
+11-02 13:19:24.013  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue screen_state=on
+11-02 13:19:24.014  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 8
+11-02 13:19:24.014  2049  2061 I PAL: ResourceManager: setParameter: 8087: Screen State:1
+11-02 13:19:24.014  2049 19944 D AHAL_Module: updateScreenState: usb: 1
+11-02 13:19:24.014  2049  2062 D AHAL_Module: updateScreenState: r_submix: 1
+11-02 13:19:24.014  2049  2061 D AHAL_Module: updateScreenState: bluetooth: 1
+11-02 13:19:24.014  3146  4390 D SGM:FgCheckThread: onLooperPrepared(), msg: MSG_LCD_ON
+11-02 13:19:24.014  3146  5529 D AS.DesktopUtils: isDesktopWindowing( false )
+11-02 13:19:24.014  3146  5529 D AS.DesktopModeHelper: setDesktopModePath caller = onDisplayChanged #Id=0, isInDesktopWindowing=false, isAudioOutputToDisplay : false
+11-02 13:19:24.014  6060  6060 D DisplayLifecycle: updateDisplay id = 0
+11-02 13:19:24.015  6060  6340 D StackScroller: onDisplayChanged for predraw skip to 2
+11-02 13:19:24.015  3146  8804 D WifiDisplayAdapter: isFitToActiveDisplayLocked : false
+11-02 13:19:24.015  6609 12544 I HoneySpace.Memory-Monitor: current state = 2, didTrim = false
+11-02 13:19:24.015  6609 11473 I HoneySpace.RefreshRateSource: singleFrameMs 16
+11-02 13:19:24.015  8217  8217 I HBD     : DeX g DeX mode state change in non-main thread 
+11-02 13:19:24.015  8217  8217 I HBD     : DeX g DeX mode state change: 3 
+11-02 13:19:24.042 12969 12969 I native  : I0000 00:00:1793654364.042696   12969 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+11-02 13:19:24.042 12969 12969 I native  : I0000 00:00:1793654364.042788   12969 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+11-02 13:19:24.045  1010  1010 I lmkd    : cached 1, sandbox(not0) 0
+11-02 13:19:24.046  1010  1010 I lmkd    : Reclaim 'com.samsung.android.knox.analytics.uploader' (29932), uid 10159, oom_score_adj 999, state 10 to free 102364kB rss, 15188kB swap; reason: low watermark is breached or filecache is low (5005248kB).; level: 1
+11-02 13:19:24.053  3146  4268 I ActivityManager: Process com.samsung.android.knox.analytics.uploader (pid 29932) has died: cch+99 SVC (1255,4949)
+11-02 13:19:24.053  1904  1904 I Zygote  : Process 29932 exited due to signal 9 (Killed)
+11-02 13:19:24.053  3146  4268 W ActivityManager: Scheduling restart of crashed service com.samsung.android.knox.analytics.uploader/.job.Job in 1000ms for start-requested
+11-02 13:19:24.053  3146  3344 I libprocessgroup: Removed cgroup /sys/fs/cgroup/apps/uid_10159/pid_29932
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.054  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.056  7767  7880 V OsAgent : broadcastSystemEvent - 7
+11-02 13:19:24.079  1195  1197 D io_stats: !@ cpu-boost: status(OFF), traffic_level(0), io_cpus(0x0), boosted_cpus(0x0), set_freq(0)
+11-02 13:19:24.082  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:24.106  6897  6943 I RequestManager_FLP: onOpChanged, op=0 / packageName=com.sec.android.app.launcher
+11-02 13:19:24.107  2135  3302 D StreamHalAidl: [out|ioHandle:13] standby
+11-02 13:19:24.107  2135  3302 D StreamHalAidl: [out|ioHandle:13] pause
+11-02 13:19:24.107  2135  3302 D StreamHalAidl: [out|ioHandle:13] flush
+11-02 13:19:24.107  2049  3282 I PAL: API: pal_stream_stop: 503: Enter. Stream handle :0xb400007821409590K
+11-02 13:19:24.107  2049  3282 D AGM: graph: graph_stop: 971 entry graph_handle 0x147534c
+11-02 13:19:24.111  2049  3282 D AGM: graph: graph_stop: 1021 exit, ret 0
+11-02 13:19:24.111  2049  3282 I PAL: ResourceManager: voteSleepMonitor: 2126: Unvoting done for nlpi use case, lpi votes 0, nlpi votes : 0
+11-02 13:19:24.111  2049  3282 I PAL: SpeakerProtectionTI: spkrProtProcessingMode: 436: Flag 0
+11-02 13:19:24.111  2049  3282 I PAL: SpeakerProtectionTI: smartpa_get_bigdata: 1880: mDeviceAttr.id 3
+11-02 13:19:24.111  2049  3282 I AGM: session: session_obj_get_tag_with_module_info: 1925 : aif_id=28 , session mode=0
+11-02 13:19:24.111  2049  3282 I PAL: PayloadBuilder: payloadTISPConfig: 4860: TI Speakerprotection get_param payload: param_id 0x10080ef0 - 3824
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: smartpa_get_bigdata: 1949: [TI-SmartPA] session data [maxT 32, maxX 0.000 (silence), cntTmax 0 cntXmax 0] for channel 0
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: printBigdata: 1856: [TI-SmartPA] big data [MaxTemp 32, MaxTemp(keep) 32, MaxExc 0.000, TOC 0 EOC 0] for channel 0
+11-02 13:19:24.112  2049  3282 I PAL: PayloadBuilder: payloadTISPConfig: 4860: TI Speakerprotection get_param payload: param_id 0x20080ef0 - 3824
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: smartpa_get_bigdata: 1949: [TI-SmartPA] session data [maxT 32, maxX 0.156, cntTmax 0 cntXmax 0] for channel 1
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: printBigdata: 1856: [TI-SmartPA] big data [MaxTemp 32, MaxTemp(keep) 32, MaxExc 0.156, TOC 0 EOC 0] for channel 1
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: smartpa_get_bigdata: 1972: [TI-SmartPA] silence count stats: current(0) total(0) for channel 0
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: smartpa_get_bigdata: 1972: [TI-SmartPA] silence count stats: current(0) total(0) for channel 1
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: spkrProtSetSpkrStatus: 245: Speaker used last time 6001
+11-02 13:19:24.112  2049  3282 I PAL: SpeakerProtectionTI: spkrProtProcessingMode: 887: Closing VI path
+11-02 13:19:24.112  2049  3282 I AGM: session: session_obj_get_tag_with_module_info: 1925 : aif_id=29 , session mode=1
+11-02 13:19:24.112  2049  3282 D AGM: graph: graph_stop: 971 entry graph_handle 0x47534c
+11-02 13:19:24.113  2049  3282 D AGM: graph: graph_stop: 1021 exit, ret 0
+11-02 13:19:24.113  2049  3282 I AGM: API: agm_session_aif_connect: 660 disconnecting aifid:29 with session id=121
+11-02 13:19:24.113  2049  3282 D AGM: graph: graph_stop: 971 entry graph_handle 0x47534c
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 79 *************************Metadata*************************
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 80 GKV size:1
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 83 key:0xa3000000, value:0xa3000009 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 87 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: CKV count:1
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 90 key:0xbf000000, value:0x2 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 92 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 94 Property ID:134217744
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 95 property count:1
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 98 Property Values: 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 100 0x2 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 102 
+11-02 13:19:24.113  2049  3282 D AGM: metadata: metadata_print: 103 ****************Metadata Done***************************
+11-02 13:19:24.113  2049  3282 D AGM: metadata: 
+11-02 13:19:24.114  2049  3282 D AGM: graph: graph_stop: 1021 exit, ret 0
+11-02 13:19:24.114  2049  3282 I AGM: device: device_close: 568 PCM device 29 closed
+11-02 13:19:24.114  2049  3282 I AGM: device: device_set_metadata: 717 Setting device metadata for TDM-LPAIF-TX-PRIMARY
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 79 *************************Metadata*************************
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 80 GKV size:0
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 87 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: CKV count:0
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 92 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 94 Property ID:134217744
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 95 property count:2
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 98 Property Values: 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 100 0x2 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 100 0x5 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 102 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 103 ****************Metadata Done***************************
+11-02 13:19:24.114  2049  3282 D AGM: metadata: 
+11-02 13:19:24.114  2049  3282 I PAL: ResourceManager: freeFrontEndIds: 5746: stream type 1, freeing 121
+11-02 13:19:24.114  2049  3282 I AgmIpc::Server: removeSessionHandle removing handle b400007821404890 for session 121
+11-02 13:19:24.114  2049  3282 D AGM: session: session_close: 1336 enter
+11-02 13:19:24.114  2049  3282 D AGM: graph: graph_close: 796 entry handle 0x47534c
+11-02 13:19:24.114  2049  3282 D AGM: graph: graph_close: 819 exit, ret 0
+11-02 13:19:24.114  2049  3282 D AGM: session: session_close: 1393 exit, ret 0
+11-02 13:19:24.114  2049  3282 I PAL: API: pal_stream_stop: 568: Exit. status 0
+11-02 13:19:24.114  2049  3282 I PAL: API: pal_stream_close: 338: Enter. Stream handle :0xb400007821409590K
+11-02 13:19:24.114  2049  3282 I AGM: API: agm_session_aif_connect: 660 disconnecting aifid:28 with session id=126
+11-02 13:19:24.114  2049  3282 D AGM: graph: graph_stop: 971 entry graph_handle 0x147534c
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 79 *************************Metadata*************************
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 80 GKV size:4
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 83 key:0xa1000000, value:0xa1000014 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 83 key:0xab000000, value:0x1 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 83 key:0xa2000000, value:0xa2000001 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 83 key:0xac000000, value:0xac000002 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 87 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: CKV count:2
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 90 key:0xa4000000, value:0x0 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 90 key:0xd2000000, value:0x0 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 92 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 94 Property ID:134217744
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 95 property count:3
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 98 Property Values: 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 100 0x3 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 100 0x2 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 100 0x5 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 102 
+11-02 13:19:24.114  2049  3282 D AGM: metadata: metadata_print: 103 ****************Metadata Done***************************
+11-02 13:19:24.114  2049  3282 D AGM: metadata: 
+11-02 13:19:24.115  2049  3282 D AGM: graph: graph_stop: 1021 exit, ret 0
+11-02 13:19:24.122  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.139  2049  3282 I AGM: device: device_close: 568 PCM device 28 closed
+11-02 13:19:24.139  2049  3282 I AGM: device: device_set_metadata: 717 Setting device metadata for TDM-LPAIF-RX-PRIMARY
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 79 *************************Metadata*************************
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 80 GKV size:0
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 87 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: CKV count:0
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 92 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 94 Property ID:134217744
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 95 property count:2
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 98 Property Values: 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 100 0x2 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 100 0x5 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 102 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 103 ****************Metadata Done***************************
+11-02 13:19:24.139  2049  3282 D AGM: metadata: 
+11-02 13:19:24.139  2049  3282 I AGM: session: session_obj_set_sess_aif_metadata: 1889 Setting metadata for sess_id 126, aif id 28
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 79 *************************Metadata*************************
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 80 GKV size:0
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 87 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: CKV count:0
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 92 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 94 Property ID:134217744
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 95 property count:1
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 98 Property Values: 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 100 0x3 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 102 
+11-02 13:19:24.139  2049  3282 D AGM: metadata: metadata_print: 103 ****************Metadata Done***************************
+11-02 13:19:24.139  2049  3282 D AGM: metadata: 
+11-02 13:19:24.139  2049  3282 I AGM: session: session_obj_set_sess_aif_metadata: 1894 Exit
+11-02 13:19:24.139  2049  3282 I AgmIpc::Server: removeSessionHandle removing handle b400007821408090 for session 126
+11-02 13:19:24.139  2049  3282 D AGM: session: session_close: 1336 enter
+11-02 13:19:24.139  2049  3282 D AGM: graph: graph_close: 796 entry handle 0x147534c
+11-02 13:19:24.140  2049  3282 D AGM: graph: graph_close: 819 exit, ret 0
+11-02 13:19:24.140  2049  3282 D AGM: session: session_close: 1393 exit, ret 0
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: freeFrontEndIds: 5746: stream type 8, freeing 126
+11-02 13:19:24.140  2049  3282 I PAL: Device: close: 361: Enter. deviceCount 1 for device id 3 (PAL_DEVICE_OUT_SPEAKER)
+11-02 13:19:24.140  2049  3282 I PAL: Device: close: 381: Exit. deviceCount 0 for device id 3 (PAL_DEVICE_OUT_SPEAKER), exit status 0
+11-02 13:19:24.140  2049  3282 I PAL: STUtils: GetConcurrencyInfo: 972: stream type 8 Tx conc 0, Rx conc 1, concurrency allowed
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 17
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 17
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 23
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 25
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 30
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 17
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 23
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 25
+11-02 13:19:24.140  2049  3282 I PAL: ResourceManager: getActiveStreamByType_l: 4557: Could not find any active stream for stream type 30
+11-02 13:19:24.141  2049  3282 I PAL: ResourceManager: deregisterStream: 2961: stream type 8
+11-02 13:19:24.141  2049  3282 I PAL: Stream: destroy: 286: Exit. status 0
+11-02 13:19:24.141  2049  3282 D AHAL_StreamOut_QTI: standby : usecase: PRIMARY_PLAYBACK, mix port config id:45, IoHandle:13 
+11-02 13:19:24.267  3146  3341 W ActivityManager: Rescheduling restart of crashed service com.samsung.android.knox.analytics.uploader/.job.Job in 29786ms for mem-pressure-event
+11-02 13:19:24.327  3146  4268 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.442  2105  3170 I thermal_core: pivot(AP) : 344, skin : 314
+11-02 13:19:24.442  2105  3170 I vendor.samsung.hardware.thermal-service: index = 19.600000
+11-02 13:19:24.442  2105  3170 I vendor.samsung.hardware.thermal-service: 4 / 10
+11-02 13:19:24.610 12969 12969 I tflite  : Replacing 436 out of 436 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).
+11-02 13:19:24.613 12969 12969 I native  : I0000 00:00:1793654364.613715   12969 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+11-02 13:19:24.613 12969 12969 I native  : I0000 00:00:1793654364.613741   12969 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+11-02 13:19:24.623  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.623  3146  5600 I SemWifiServiceDetector: Service det. suspended: T / T / 20706
+11-02 13:19:24.752 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:24.753  1010  1010 I lmkd    : cached 1, sandbox(not0) 0
+11-02 13:19:24.753  1010  1010 I lmkd    : Reclaim 'com.samsung.android.aicore' (4755), uid 10117, oom_score_adj 995, state 19 to free 97980kB rss, 13768kB swap; reason: low watermark is breached or filecache is low (4351432kB).; level: 1
+11-02 13:19:24.755  3146  6901 D ActivityManager: sync unfroze 4755 com.samsung.android.aicore for 17
+11-02 13:19:24.757  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:24.759  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:24.760  1010  1010 I lmkd    : cached 1, sandbox(not0) 0
+11-02 13:19:24.760  1010  1010 I lmkd    : Reclaim 'com.samsung.android.vision.model' (4725), uid 10241, oom_score_adj 995, state 19 to free 96568kB rss, 15056kB swap; reason: low watermark is breached or filecache is low (4351440kB).; level: 1
+11-02 13:19:24.760  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:24.760  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:24.760  1904  1904 I Zygote  : Process 4755 exited due to signal 9 (Killed)
+11-02 13:19:24.761  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:24.762  3146  6901 D ActivityManager: sync unfroze 4725 com.samsung.android.vision.model for 17
+11-02 13:19:24.763  3146  4268 I ActivityManager: Process com.samsung.android.aicore (pid 4755) has died: cch+95 CEM (1429,4346)
+11-02 13:19:24.763  3146  3344 I libprocessgroup: Removed cgroup /sys/fs/cgroup/apps/uid_10117/pid_4755
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.764  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.765  1010  1039 I lowmemorykiller: Process 4725 was reaped in 4ms
+11-02 13:19:24.765  7767  7880 V OsAgent : broadcastSystemEvent - 7
+11-02 13:19:24.768  3146  4268 I ActivityManager: Process com.samsung.android.vision.model (pid 4725) has died: cch+95 CEM (1427,4346)
+11-02 13:19:24.768  1904  1904 I Zygote  : Process 4725 exited due to signal 9 (Killed)
+11-02 13:19:24.768  1010  1010 I lmkd    : cached 1, sandbox(not0) 0
+11-02 13:19:24.768  3146  3344 I libprocessgroup: Removed cgroup /sys/fs/cgroup/apps/uid_10241/pid_4725
+11-02 13:19:24.768  1010  1010 I lmkd    : Reclaim 'com.facebook.system' (4285), uid 10077, oom_score_adj 995, state 19 to free 98760kB rss, 13652kB swap; reason: low watermark is breached or filecache is low (4351452kB).; level: 1
+11-02 13:19:24.768  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.768  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.768  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.768  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.769  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.769  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.769  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.769  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.769  3146  6901 D ActivityManager: sync unfroze 4285 com.facebook.system for 17
+11-02 13:19:24.770  7767  7880 V OsAgent : broadcastSystemEvent - 7
+11-02 13:19:24.773  1010  1038 I lowmemorykiller: Process 4285 was reaped in 4ms
+11-02 13:19:24.775  1904  1904 I Zygote  : Process 4285 exited due to signal 9 (Killed)
+11-02 13:19:24.776  3146  4268 I ActivityManager: Process com.facebook.system (pid 4285) has died: cch+95 CEM (1434,4346)
+11-02 13:19:24.776  3146  3344 I libprocessgroup: Removed cgroup /sys/fs/cgroup/apps/uid_10077/pid_4285
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.android.settings and userId: 0
+11-02 13:19:24.776  3146  3318 W PackageConfigPersister: App-specific configuration not found for packageName: com.sec.android.app.launcher and userId: 0
+11-02 13:19:24.776  7767  7880 V OsAgent : broadcastSystemEvent - 7
+11-02 13:19:24.780  2518  8004 D AidlBufferPoolAcc: evictor expired: 1, evicted: 0
+11-02 13:19:24.781  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 40
+11-02 13:19:24.786  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:24.835 12969 12969 I tflite  : Replacing 406 out of 406 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode).
+11-02 13:19:24.840 12969 12969 I native  : I0000 00:00:1793654364.840238   12969 delegate_kernel.cc:360] Total 58 external tensors are used for delegate inputs and outputs
+11-02 13:19:24.840 12969 12969 I native  : I0000 00:00:1793654364.840263   12969 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+11-02 13:19:24.884  3146  3341 I ActivityManager: Changes in 10121 5 to 15, 440 to 256
+11-02 13:19:24.884  3146  3341 I ActivityManager: Changes in 10067 5 to 15, 400 to 256
+11-02 13:19:24.982  1010  1010 I lmkd    : 1(delay), 0(swap), 0(freelimit), 0(reentrymode) memory pressure events were skipped after a kill!
+11-02 13:19:25.004 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:25.007  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:25.011  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:25.011  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:25.012  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:25.013  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:25.059  7767  7880 V OsAgent : broadcastSystemEvent - 7
+11-02 13:19:25.084  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087097   12969 litert_lm_loader.cc:407] Section not found: TFLiteModel
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087140   12969 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087147   12969 litert_lm_loader.cc:407] Section not found: TFLiteModel
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087150   12969 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087154   12969 litert_lm_loader.cc:407] Section not found: TFLiteModel
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087158   12969 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087162   12969 litert_lm_loader.cc:407] Section not found: TFLiteModel
+11-02 13:19:25.087 12969 12969 W native  : W0000 00:00:1793654365.087165   12969 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+11-02 13:19:25.090 12969 12969 I litert  : [environment.cc:36] Creating LiteRT environment with options
+11-02 13:19:25.090 12969 12969 W litert  : [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+11-02 13:19:25.090 12969 12969 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000748ec38940, name=LiteRT GPU
+11-02 13:19:25.090 12969 12969 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-02 13:19:25.090 12969 12969 I litert  : [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb40000748ec2e680, name=CpuAccelerator
+11-02 13:19:25.090 12969 12969 I litert  : [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+11-02 13:19:25.124  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:25.154  3146 20633 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 1934, isSameBssidAndFreq true
+11-02 13:19:25.290 12969 12969 W native  : W0000 00:00:1793654365.290293   12969 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+11-02 13:19:25.290 12969 12969 W native  : W0000 00:00:1793654365.290339   12969 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+11-02 13:19:25.290 12969 12969 W native  : W0000 00:00:1793654365.290344   12969 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+11-02 13:19:25.290 12969 12969 W native  : W0000 00:00:1793654365.290349   12969 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+11-02 13:19:25.292 12969 12969 I native  : I0000 00:00:1793654365.292899   12969 litert_lm_lib.cc:1298] Creating conversation
+11-02 13:19:25.293  3146  3341 I ActivityManager: Changes in 10059 10 to 15, 0 to 256
+11-02 13:19:25.296 12969 12969 I native  : I0000 00:00:1793654365.296979   12969 litert_lm_lib.cc:1310] Running single-turn conversation
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+11-02 13:19:25.300 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+11-02 13:19:25.400 20512 20512 I wpa_supplicant: Heartbeat 586
+11-02 13:19:25.443  2105  3170 I thermal_core: pivot(AP) : 346, skin : 314
+11-02 13:19:25.443  2105  3170 I vendor.samsung.hardware.thermal-service: index = 23.400000
+11-02 13:19:25.443  2105  3170 I vendor.samsung.hardware.thermal-service: 5 / 10
+11-02 13:19:25.625  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:25.754 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:25.758  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:25.762  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:25.762  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:25.763  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:25.764  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:25.773  1195  1195 D io_stats: !@   8,0 r 380910 27717268 w 224633 22978360 d 21030 17669912 f 6375 32131 iot 51332 0 th 0 0 0 pt 0 inp 0 0 6002.907
+11-02 13:19:25.780  2549  2838 D AidlBufferPoolAcc: evictor expired: 1, evicted: 0
+11-02 13:19:25.783  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 40
+11-02 13:19:25.787  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 239
+11-02 13:19:25.797  3146  3341 I ActivityManager: Changes in 10144 5 to 15, 400 to 256
+11-02 13:19:25.798  3146  3341 W ActivityManager: Rescheduling restart of crashed service com.samsung.android.knox.analytics.uploader/.job.Job in 0ms for mem-pressure-event
+11-02 13:19:25.799  3146  3342 D CompatChangeReporter: Compat change id reported: 151861875; UID 10159; state: ENABLED
+11-02 13:19:25.814  1904  1904 D Zygote  : Forked child process 13006
+11-02 13:19:25.815  3146  3343 I ActivityManager: Start proc 13006:com.samsung.android.knox.analytics.uploader/u0a159 for service {com.samsung.android.knox.analytics.uploader/com.samsung.android.knox.analytics.uploader.job.Job}
+11-02 13:19:25.830 13006 13006 I Zygote  : Process 13006 created for com.samsung.android.knox.analytics.uploader
+11-02 13:19:25.831 13006 13006 I lytics.uploader: Using CollectorTypeCMC GC.
+11-02 13:19:25.840  3146  4268 I ActivityManager: Changes in 10159 20 to 19, 0 to 384
+11-02 13:19:25.841  7767  7880 V OsAgent : broadcastSystemEvent - 7
+11-02 13:19:25.859  3146  7702 D CompatChangeReporter: Compat change id reported: 311402873; UID 10159; state: ENABLED
+11-02 13:19:25.859  3146  7702 D CompatChangeReporter: Compat change id reported: 323349338; UID 10159; state: ENABLED
+11-02 13:19:25.859 13006 13006 I Knox    : 0x03002
+11-02 13:19:25.859 13006 13006 I Knox    : 0x01000
+11-02 13:19:25.860  3146  7702 I ActivityManager: Changes in 10159 10 to 10, 384 to 256
+11-02 13:19:26.005 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:26.008  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:26.012  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:26.013  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:26.014  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:26.015  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:26.085  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:26.093 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+11-02 13:19:26.093 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+11-02 13:19:26.093 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+11-02 13:19:26.093 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+11-02 13:19:26.093 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+11-02 13:19:26.094 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+11-02 13:19:26.095 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+11-02 13:19:26.126  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:26.164  2024  6426 I sensors-hal: handle_sns_std_sensor_event:127, [SSC_LIGHT] A: 0(0),c:6,b:0,m:0xd,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):107,u(bl):100,if:107,sm:0,si:0,ps:0(N:8)
+11-02 13:19:26.444  2105  3170 I thermal_core: pivot(AP) : 364, skin : 314
+11-02 13:19:26.444  2105  3170 I vendor.samsung.hardware.thermal-service: index = 30.200000
+11-02 13:19:26.444  2105  3170 I vendor.samsung.hardware.thermal-service: 6 / 2
+11-02 13:19:26.463  7758  8691 I SDHMS:x : SIOP:: AP:364 BAT:302 USB:303 CHG:329 PA:361 WIFI:318 CF:314 BLK:0 SUBBAT:0 LRPTHM:321 SKIN:320 SKINF:320 SKINB:314 LRP:320 LRF:320 LRB:314 APT:319 APR:313 RCV:308 SPK:292 CHGF:318 CHGR:307 MEMF:320 MEMR:314 WIFIF:313 WIFIR:311 VAP:312 VWIFI:306 AMB2:284 NNP:312 OOD:44 AVGCUR:2 AVGSYS:205 POWER:8
+11-02 13:19:26.466  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:26.467  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:26.467  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:26.467  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:26.467  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:26.467  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:26.467  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:26.468  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:26.467  3146  3146 D SemWifiP2pGoPowerSave: GopsReceiver : received : com.samsung.intent.action.CHECK_SIOP_LEVEL
+11-02 13:19:26.468  2024  2024 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+11-02 13:19:26.468  2024  2024 I sensors-hal: send_sensor_config_request:661, dt=ambient_light: convert sample_period=200000000 to batch_period=200000
+11-02 13:19:26.468  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:26.468  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:26.468  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:26.468  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:26.468  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:26.468  3146  3146 I SemWifiP2pGoPowerSave: siop_level = -2
+11-02 13:19:26.468  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:26.468  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:26.468  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:26.469  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:26.469  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:26.469  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:26.469  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:26.470  2024  6426 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for ambient_light 
+11-02 13:19:26.470  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 1 ms to receive the response with 0
+11-02 13:19:26.470  2024  2024 I sensors-hal: batch:376, android.sensor.light/51, period=200000000, max_latency=0 request completed
+11-02 13:19:26.470  2024  2024 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+11-02 13:19:26.471  2024  2024 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 1
+11-02 13:19:26.471  2024 13022 D SensorsFlicker: Als_common::sendCommand, send enable command
+11-02 13:19:26.471  3146  7702 D SemContextService: lock : registerCallback
+11-02 13:19:26.471  3146  7702 W CAE     : registerCallback(ContextAwareService.java:188) - [regi 01] Mutex is locked for TEST_FLAT_MOTION
+11-02 13:19:26.471  3146  7702 W CAE     : registerCallback(ContextAwareService.java:195) - [regi 04]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@c63b4d2
+11-02 13:19:26.471  3146  7702 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@c63b4d2
+11-02 13:19:26.471  3146  7702 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d
+11-02 13:19:26.472  3146  7702 V CAE     : start(ContextProvider.java:128)
+11-02 13:19:26.472  3146  7702 V CAE     : clear(TestFlatMotionRunner.java:126)
+11-02 13:19:26.472  3146  7702 V CAE     : enable(TestFlatMotionRunner.java:102)
+11-02 13:19:26.472  3146  5441 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+11-02 13:19:26.472  3146  5441 D SensorService: setSContextDataLocked 17b1
+11-02 13:19:26.472  2024  2024 I sensors-hal: inject_sensor_data:420, handle 1502 send inject
+11-02 13:19:26.472  2024  2024 I sensors-hal: sendContextData:343, sensor hal 4, (0xb1, 0x17, 0x0, 0x0)
+11-02 13:19:26.472  2024  2024 I sensors-hal: updateActiveSensors:434, enable:177, handle:8, algo:25231360
+11-02 13:19:26.472  2024  2024 I sensors-hal: is_restrict_mode:163, mode:normal
+11-02 13:19:26.472  2024  2024 I sensors-hal: sendContextData:108, device_position 4
+11-02 13:19:26.472  2024  2024 I sensors-hal: acquire_session_interface:169, acquire_session_interface with sensor_id 47 , conn_type 2 
+11-02 13:19:26.472  2024  2024 I sensors-hal: acquire_session_interface:179, returning _shared_instance[SHARED_SENSORHUBS].session
+11-02 13:19:26.472  2024  2024 I sensors-hal: acquire_shared_instance:209, re-use existing connection for type 2 
+11-02 13:19:26.472  2024  2024 I sensors-hal: setCallBacks:349, suid(low=11077485164857655296,high=1320970896291267344) is new. register callbacks
+11-02 13:19:26.472  2024  2024 I sensors-hal: create_sensor_config_request:48, device_position create_sensor_config_request
+11-02 13:19:26.472  2024  2024 I sensors-hal: send_sensor_config_request:661, dt=device_position: convert sample_period=0 to batch_period=0
+11-02 13:19:26.472  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:26.472  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:26.474  2024  5439 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for device_position 
+11-02 13:19:26.474  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 1 ms to receive the response with 0
+11-02 13:19:26.474  3146  7702 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+11-02 13:19:26.474  3146  7702 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+11-02 13:19:26.476  3146  7702 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+11-02 13:19:26.476  3146  7702 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 1, serviceCount = 1, subCollectionCount = 0
+11-02 13:19:26.476  3146  7702 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : ACTIVITY_TRACKER_BATCH(1)
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : PEDOMETER(1)
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : SLOCATION_RUNNER(1)
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : CH_LOC_TRIGGER(1)
+11-02 13:19:26.476  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : FREE_FALL_DETECTION(1)
+11-02 13:19:26.477  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : TEST_FLAT_MOTION(1)
+11-02 13:19:26.477  3146  7702 W CAE     : registerCallback(ContextAwareService.java:209) - [regi 02] Mutex is unlocked for TEST_FLAT_MOTION
+11-02 13:19:26.477  3146  7702 E SemContext.CaeProvider: setAttribute() : attribute is null!
+11-02 13:19:26.477  3146  7702 D SemContextService: 	.registerCallback : 7, client= com.sec.android.sdhms
+11-02 13:19:26.477  3146  7702 D SemContextService: unlock : registerCallback
+11-02 13:19:26.477  3146  4268 E SensorService: BigData:Pakage) 5 already enabled. 
+11-02 13:19:26.478  7758  7875 I n2      : limitCPUFreq:: freq = 2880000
+11-02 13:19:26.478  7758  7875 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/7758@3, type = 301993986
+11-02 13:19:26.478  2059  2167 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 30120444 [7758 / 3]  HINT :     list : [CPUMaxFreq / 2880000] 
+11-02 13:19:26.484  2024  2024 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+11-02 13:19:26.484  2024  2024 I sensors-hal: batch:376, android.sensor.light/51, period=200000000, max_latency=0 request completed
+11-02 13:19:26.484  3146  4268 E SensorService: BigData:Pakage) 5 already disabled. 
+11-02 13:19:26.484  2024  2024 I sensors-hal: set_config:64, no need to adjust sample_period_ns due to reporting_mode = 2
+11-02 13:19:26.484  2024  2024 I sensors-hal: send_sensor_config_request:661, dt=ambient_light: convert sample_period=250000000 to batch_period=250000
+11-02 13:19:26.484  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:26.484  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:26.485  2024  6426 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for ambient_light 
+11-02 13:19:26.485  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+11-02 13:19:26.485  2024  2024 I sensors-hal: batch:376, android.sensor.light/51, period=250000000, max_latency=0 request completed
+11-02 13:19:26.548  2024  2024 D SensorsFlicker: Als_common::setDelay, handle : 1 time : 10000000ns
+11-02 13:19:26.549  2024  2024 D SensorsFlicker: Als_common::enable, handle : 1, mode : 1, en : 0
+11-02 13:19:26.549  2024 13024 D SensorsFlicker: Als_common::sendCommand, send disable command
+11-02 13:19:26.549 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+11-02 13:19:26.550 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+11-02 13:19:26.551 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+11-02 13:19:26.552 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+11-02 13:19:26.552 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+11-02 13:19:26.552 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+11-02 13:19:26.552 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+11-02 13:19:26.552 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+11-02 13:19:26.552 12969 12969 W litert  : [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+11-02 13:19:26.621  2024  5439 I sensors-hal: qsh_conn_event_cb:897, SCHED_FIFO(10) for qmi_cbk
+11-02 13:19:26.621  2024  5439 I sensors-hal: qsh_conn_event_cb:930, event[0] sensor:device_position  Wakeup, msg_id=1025, ts=115385273391
+11-02 13:19:26.621  2024  5439 I sensors-hal: handle_sns_client_event:78, device_position_event: msgid:1025
+11-02 13:19:26.621  2024  5439 I sensors-hal: handle_sns_client_event:97, device_position_event: 3
+11-02 13:19:26.621  2024  5439 I sensors-hal: insert_awaking_events:876, smp2p_event, 16.device_position, msgid:1025
+11-02 13:19:26.622  3146  5437 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :4], AP_WAKEUP
+11-02 13:19:26.622  3146  5437 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 4
+11-02 13:19:26.622  3146  5437 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 23, 3,
+11-02 13:19:26.623  3146  5437 D CAE     : display(ContextProvider.java:375) - ================= TEST_FLAT_MOTION =================
+11-02 13:19:26.623  3146  5437 I CAE     : display(ContextProvider.java:391) - Action=[3]
+11-02 13:19:26.623  3146  5434 D SemContextService: Service.updateContext() : service = Device Position
+11-02 13:19:26.623  3146  7702 D SemContextService: lock : unregisterCallback
+11-02 13:19:26.623  3146  7702 D SemContextService: Service.removeListenerLocked() : listener = com.samsung.android.hardware.context.SemContextService$Listener@1d9b007, service = Device Position, used = 0
+11-02 13:19:26.623  3146  7702 W CAE     : unregisterCallback(ContextAwareService.java:230) - [unregi 01] Mutex is locked for TEST_FLAT_MOTION
+11-02 13:19:26.623  3146  7702 W CAE     : getListener(ListenerListManager.java:127) - [getListener1]  com.samsung.android.contextaware.ContextAwareManager$CaListenerDelegate@c63b4d2
+11-02 13:19:26.623  3146  7702 W CAE     : getListener(ListenerListManager.java:128) - [getListener2]  com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d
+11-02 13:19:26.623  3146  7702 V CAE     : stop(ContextProvider.java:155)
+11-02 13:19:26.624  3146  7702 V CAE     : clear(TestFlatMotionRunner.java:126)
+11-02 13:19:26.624  3146  7702 V CAE     : disable(TestFlatMotionRunner.java:115)
+11-02 13:19:26.624  3146  5441 D SensorService: setSContextDataLocked ints length 2 , byte length 4
+11-02 13:19:26.624  3146  5441 D SensorService: setSContextDataLocked 17b2
+11-02 13:19:26.624  2024  2024 I sensors-hal: inject_sensor_data:420, handle 1502 send inject
+11-02 13:19:26.624  2024  2024 I sensors-hal: sendContextData:343, sensor hal 4, (0xb2, 0x17, 0x0, 0x0)
+11-02 13:19:26.624  2024  2024 I sensors-hal: updateActiveSensors:434, enable:178, handle:8, algo:25231616
+11-02 13:19:26.624  2024  2024 I sensors-hal: sendContextData:108, device_position 4
+11-02 13:19:26.624  2024  2024 I sensors-hal: send_sync_sensor_request:517, send sync request
+11-02 13:19:26.624  2024  2024 I sensors-hal: send_sync_sensor_request:550, wait for notification of response
+11-02 13:19:26.625  2024  5439 I sensors-hal: qsh_conn_resp_cb:975, resp_value = 0 for device_position 
+11-02 13:19:26.625  2024  2024 I sensors-hal: send_sync_sensor_request:556, takes 0 ms to receive the response with 0
+11-02 13:19:26.625  3146  7702 D CAE     : getFaultDetectionResult(TestFlatMotionRunner.java:139) - true
+11-02 13:19:26.625  3146  7702 I CAE     : notifyCmdProcessResultObserver(ContextProvider.java:627) - CheckResult = 0, Cause = Success
+11-02 13:19:26.627  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:26.627  3146  7702 D CAE     : doCommendProcess(ContextAwareService.java:396) - complete notify the operation result.
+11-02 13:19:26.627  3146  7702 I CAE     : displayUsedCountForService(ContextAwareService.java:460) - totalCnt = 0, serviceCount = 0, subCollectionCount = 0
+11-02 13:19:26.627  3146  7702 D CAE     : showListenerList(ContextAwareService.java:325) - ===== Context Aware Service List =====
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : ACTIVITY_TRACKER_INTERRUPT(1)
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : ACTIVITY_TRACKER_CURRENT_INFO(1)
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : ACTIVITY_TRACKER_BATCH(1)
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : PEDOMETER(1)
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : SLOCATION_RUNNER(1)
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : CH_LOC_TRIGGER(1)
+11-02 13:19:26.628  3146  7702 I CAE     : showListenerList(ContextAwareService.java:334) - Listener : com.samsung.android.contextaware.manager.ContextAwareService$Listener@e8cc35d, Service : FREE_FALL_DETECTION(1)
+11-02 13:19:26.628  3146  7702 W CAE     : unregisterCallback(ContextAwareService.java:251) - [unregi 02] Mutex is unlocked for TEST_FLAT_MOTION
+11-02 13:19:26.628  3146  7702 D SemContextService: 	.unregisterCallback : 7, client= com.sec.android.sdhms
+11-02 13:19:26.628  3146  7702 D SemContextService: unlock : unregisterCallback
+11-02 13:19:26.757 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:26.759  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:26.762  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:26.763  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:26.763  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:26.764  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:26.809 12969 12969 I native  : I0000 00:00:1793654366.809581   12969 llm_litert_compiled_model_executor.cc:1748] Sampler will handle decode input tensors.
+11-02 13:19:26.905 12969 12969 I tflite  : Loaded OpenCL library with dlopen.
+11-02 13:19:27.002 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:27.005  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:27.009  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:27.010  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:27.011  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:27.011  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:27.082  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:27.128  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:27.276  2188  2235 D HeatmapThread: ECT: FG batch read OK, samples=10
+11-02 13:19:27.276  2188  2235 D HeatmapThread: ECT: running ectMain for 10 samples
+11-02 13:19:27.279  2188  2235 D HeatmapThread: Heatmap currtime: 29894239 , prevtime: 29894232 , plugstarttime: 29471649 , prevv_dsoh_update_time: 29894232
+11-02 13:19:27.279  2188  2235 D HeatmapThread: cam(heatmap) updating
+11-02 13:19:27.279  2188  2235 D HeatmapThread: ECT: process_fg_batch_and_run_ect start
+11-02 13:19:27.464  2105  3170 I thermal_core: pivot(AP) : 364, skin : 320
+11-02 13:19:27.464  2105  3170 I vendor.samsung.hardware.thermal-service: index = 35.400000
+11-02 13:19:27.464  2105  3170 I vendor.samsung.hardware.thermal-service: 1 / 2
+11-02 13:19:27.629  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:27.665  2024  6426 I sensors-hal: handle_sns_client_event:193, auto_rotation_debug_2 mode,255, type,1,0 acc,9.399,0.742,2.206, ar,255, ver,15, pedo,1,e,1,i,3
+11-02 13:19:27.753 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:27.757  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:27.761  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:27.761  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:27.762  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:27.762  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:27.774  1195  1195 D io_stats: !@   8,0 r 380959 27718060 w 224680 22995756 d 21031 17669916 f 6375 32133 iot 51352 0 th 0 0 0 pt 0 inp 0 0 6004.907
+11-02 13:19:27.774  1195  1195 D io_stats: !@ Read_top(KB): litert_lm_advan:normal(12969) 1724 lytics.uploader:high(13006) 744 kworker/u33:1:/(12268) 28
+11-02 13:19:27.774  1195  1195 D io_stats: !@ Write_top(KB): kworker/u33:1:/(12268) 17292 jbd2/sda7-8:/(1167) 68 kworker/u33:4:/(9484) 32
+11-02 13:19:27.780  2549  2838 D AidlBufferPool: bufferpool2 0xb400007015e0acf8 : 0(0 size) total buffers - 0(0 size) used buffers - 114/118 (recycle/alloc) - 4/117 (fetch/transfer)
+11-02 13:19:27.780  2549  2838 D AidlBufferPoolAcc: evictor expired: 2, evicted: 1
+11-02 13:19:27.780  2518  8004 D AidlBufferPool: bufferpool2 0xb4000076dde1c7b8 : 0(0 size) total buffers - 0(0 size) used buffers - 117/125 (recycle/alloc) - 8/240 (fetch/transfer)
+11-02 13:19:27.781  2518  8004 D AidlBufferPoolAcc: evictor expired: 1, evicted: 1
+11-02 13:19:28.003 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:28.007  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:28.011  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:28.011  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:28.012  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:28.013  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:28.084  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:28.130  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:28.165  3146 20633 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 1935, isSameBssidAndFreq true
+11-02 13:19:28.465  2105  3170 I thermal_core: pivot(AP) : 369, skin : 320
+11-02 13:19:28.465  2105  3170 I vendor.samsung.hardware.thermal-service: index = 41.000000
+11-02 13:19:28.465  2105  3170 I vendor.samsung.hardware.thermal-service: 2 / 2
+11-02 13:19:28.483  7758  8691 I SDHMS:x : SIOP:: AP:368 BAT:303 USB:303 CHG:338 PA:367 WIFI:324 CF:319 BLK:0 SUBBAT:0 LRPTHM:326 SKIN:322 SKINF:322 SKINB:317 LRP:322 LRF:322 LRB:317 APT:321 APR:315 RCV:309 SPK:290 CHGF:320 CHGR:306 MEMF:322 MEMR:317 WIFIF:314 WIFIR:313 VAP:314 VWIFI:306 AMB2:283 NNP:312 OOD:44 AVGCUR:2 AVGSYS:205 POWER:8
+11-02 13:19:28.483  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:28.484  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:28.484  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:28.484  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:28.484  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:28.484  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:28.484  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:28.485  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:28.485  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:28.485  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:28.485  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:28.486  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:28.486  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:28.486  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:28.486  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:28.486  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:28.486  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:28.486  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:28.630  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:28.753 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:28.758  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:28.762  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:28.762  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:28.763  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:28.764  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:28.802  3146  7702 D EdmStorageProvider: getCount(AppSeparationTable) - 0
+11-02 13:19:28.802  3146  7702 D KnoxMUMContainerPolicy: getAppSeparationConfig(): no record. Return null
+11-02 13:19:28.803 25741 25741 D BoundBrokerSvc: onRebind: Intent { act=com.google.android.gms.libs.gmscorelogger.service.START dat=chimera-action:/... xflg=0x4 cmp=com.google.android.gms/.chimera.PersistentDirectBootAwareApiService }
+11-02 13:19:28.822  3146  4332 D ActivityManager: freezing 32494 com.samsung.android.provider.filterprovider
+11-02 13:19:28.825  3146  4332 D ActivityManager: freezing 32198 com.google.android.packageinstaller
+11-02 13:19:28.829  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:28.830  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:28.830  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={10084} in 3ms
+11-02 13:19:28.870  3146  4332 D ActivityManager: freezing 29082 com.samsung.android.forest
+11-02 13:19:28.924  3146  4332 D ActivityManager: freezing 4907 com.android.vending:instant_app_installer
+11-02 13:19:28.925  3146  4332 D ActivityManager: freezing 4841 com.android.vending:quick_launch
+11-02 13:19:29.005 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:29.008  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:29.012  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:29.013  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:29.013  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:29.014 12610 12622 W panion.backdrop: userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+11-02 13:19:29.014  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:29.086  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:29.130  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:29.207  3146  4332 D ActivityManager: freezing 4622 com.android.vending
+11-02 13:19:29.208  3146  4332 D ActivityManager: freezing 26776 com.android.vending:background
+11-02 13:19:29.210  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:29.211  3146  5484 D InetDiagMessage: Destroyed 2 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:29.211  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={10271} in 2ms
+11-02 13:19:29.211  3146  5484 D ConnectivityService: Freezing callbacks for UID 10271
+11-02 13:19:29.284  7758  7758 I SDHMS:LOAD: type: LoadsFreqs, value: 0:0:25:1767935:3398400:0:1856256:3187200:0:537:902:0
+11-02 13:19:29.285  1228 12506 I keystore2: system/security/keystore2/watchdog/src/lib.rs:371 - Watchdog thread idle -> terminating. Have a great day.
+11-02 13:19:29.483  2105  3170 I thermal_core: pivot(AP) : 372, skin : 322
+11-02 13:19:29.483  2105  3170 I vendor.samsung.hardware.thermal-service: index = 45.000000
+11-02 13:19:29.483  2105  3170 I vendor.samsung.hardware.thermal-service: 1 / 2
+11-02 13:19:29.631  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:29.757 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:29.760  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:29.764  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:29.764  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:29.765  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:29.765  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:29.775  1195  1195 D io_stats: !@   8,48 r 1326 339204 w 1857 476160 d 0 0 f 0 0 iot 668 0 th 0 0 0 pt 0 inp 0 0 6006.908
+11-02 13:19:29.775  1195  1195 D io_stats: !@   8,0 r 380961 27718068 w 224729 22996340 d 21031 17669916 f 6376 32139 iot 51356 0 th 0 0 0 pt 0 inp 0 0 6006.908
+11-02 13:19:29.878  1195  1197 D io_stats: !@ ufs-boost: status(OFF)
+11-02 13:19:29.888  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:29.889  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:29.889  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={10121} in 2ms
+11-02 13:19:29.890  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:29.891  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:29.891  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={20121} in 2ms
+11-02 13:19:29.892  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:29.893  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:29.893  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={10067} in 2ms
+11-02 13:19:29.894  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:29.895  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:29.895  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={20067} in 2ms
+11-02 13:19:30.003 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:30.006  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:30.010  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:30.010  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:30.011  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:30.011  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:30.082  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:30.132  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:30.484  2105  3170 I thermal_core: pivot(AP) : 375, skin : 322
+11-02 13:19:30.485  2105  3170 I vendor.samsung.hardware.thermal-service: index = 49.200000
+11-02 13:19:30.485  2105  3170 I vendor.samsung.hardware.thermal-service: 2 / 2
+11-02 13:19:30.503  7758  8691 I SDHMS:x : SIOP:: AP:375 BAT:304 USB:303 CHG:345 PA:372 WIFI:330 CF:323 BLK:0 SUBBAT:0 LRPTHM:330 SKIN:324 SKINF:324 SKINB:319 LRP:324 LRF:324 LRB:319 APT:322 APR:317 RCV:311 SPK:288 CHGF:321 CHGR:306 MEMF:324 MEMR:319 WIFIF:316 WIFIR:315 VAP:315 VWIFI:306 AMB2:283 NNP:314 OOD:43 AVGCUR:2 AVGSYS:205 POWER:8
+11-02 13:19:30.505  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:30.505  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:30.506  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:30.506  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:30.506  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:30.506  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:30.506  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:30.506  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:30.507  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:30.507  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:30.507  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:30.507  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:30.507  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:30.507  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:30.507  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:30.507  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:30.508  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:30.508  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:30.509  7758  7875 I n2      : limitCPUFreq:: freq = 2668800
+11-02 13:19:30.509  7758  7875 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/7758@3, type = 301993986
+11-02 13:19:30.509  2059  2167 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 30120444 [7758 / 3]  HINT :     list : [CPUMaxFreq / 2668800] 
+11-02 13:19:30.632  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:30.753 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:30.757  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:30.761  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:30.761  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:30.762  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:30.763  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:30.782  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 40
+11-02 13:19:30.786  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:30.799  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:30.800  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:30.800  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={10144} in 2ms
+11-02 13:19:30.801  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-02 13:19:30.802  3146  5484 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-02 13:19:30.802  3146  5484 D InetDiagMessage: Destroyed live tcp sockets for uids={20144} in 2ms
+11-02 13:19:30.964  2024  6426 I sensors-hal: handle_sns_std_sensor_event:127, [SSC_LIGHT] A: 0(0),c:6,b:0,m:0xd,cl:0,l:0,s:0,l0:0,l1:0,s0:0,s1:0,acl:3,opr:0.21,f(r):107,u(bl):100,if:107,sm:0,si:0,ps:0(N:8)
+11-02 13:19:31.004 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:31.007  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:31.011  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:31.011  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:31.013  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:31.013  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:31.024 12969 12969 I native  : I0000 00:00:1793654371.024741   12969 litert_lm_lib.cc:211] Captured model output: Okay, the user wants me to list 25 distinct things that on-device AI can do, similar to how a cloud model can't, and explain each in two sentences. Let me start by recalling what on-device AI does. On-device AI usually refers to applications that run locally without needing to connect to the cloud, which allows for more control and privacy.
+11-02 13:19:31.024 12969 12969 I native  : 
+11-02 13:19:31.024 12969 12969 I native  : First, I need to think of different tasks. Let's brainstorm: image processing, text analysis, data analysis, natural language processing, maybe even predictive analytics. Each of these can be a distinct thing. For each, I need to explain it in two sentences.
+11-02 13:19:31.024 12969 12969 I native  : 
+11-02 13:19:31.024 12969 12969 I native  : For example, image processing: "On-device AI can analyze and manipulate images in real-time, enabling features like object recognition and content generation." Then explain another way: "By handling data locally, it avoids the cloud's dependency on external services, making it ideal for applications like self-driving cars."
+11-02 13:19:31.024 12969 12969 I native  : 
+11-02 13:19:31.024 12969 12969 I native  : Wait, but the user said to list 25. Let me make sure I have 25 distinct things. Let me think of 25 categories. Maybe 25 different tasks each with two sentences. Let me check if I can list 25.
+11-02 13:19:31.024 12969 12969 I native  : 
+11-02 13:19:31.024 12969 12969 I native  : Wait, the user mentioned that the numbered blocks are filler, so I
+11-02 13:19:31.024 12969 12969 I native  : 
+11-02 13:19:31.025 12969 12969 I native  : I0000 00:00:1793654371.025595   12969 litert_lm_lib.cc:461] BenchmarkInfo:
+11-02 13:19:31.025 12969 12969 I native  :   Init Phases (7):
+11-02 13:19:31.025 12969 12969 I native  :     - Init Conversation: 0.10 ms
+11-02 13:19:31.025 12969 12969 I native  :     - Init Executor: 3275.06 ms
+11-02 13:19:31.025 12969 12969 I native  :     - Init LLM metadata: 0.01 ms
+11-02 13:19:31.025 12969 12969 I native  :     - Init Model assets: 0.01 ms
+11-02 13:19:31.025 12969 12969 I native  :     - Init Tokenizer: 269.76 ms
+11-02 13:19:31.025 12969 12969 I native  :     - Init Total: 3277.76 ms
+11-02 13:19:31.026 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:31.026 12969 12969 I native  :   Time to first token: 1.27 s
+11-02 13:19:31.026 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:31.026 12969 12969 I native  :   Prefill Turns (Total 2 turns):
+11-02 13:19:31.026 12969 12969 I native  :     Prefill Turn 1: Processed 1355 tokens in 1.249681562s duration.
+11-02 13:19:31.026 12969 12969 I native  :       Prefill Speed: 1084.28 tokens/sec.
+11-02 13:19:31.026 12969 12969 I native  :     Prefill Turn 2: Processed 2 tokens in 154.1225ms duration.
+11-02 13:19:31.026 12969 12969 I native  :       Prefill Speed: 12.98 tokens/sec.
+11-02 13:19:31.026 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:31.026 12969 12969 I native  :   Decode Turns (Total 1 turns):
+11-02 13:19:31.026 12969 12969 I native  :     Decode Turn 1: Processed 256 tokens in 4.318851144s duration.
+11-02 13:19:31.026 12969 12969 I native  :       Decode Speed: 59.28 tokens/sec.
+11-02 13:19:31.026 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:31.027 12969 12969 I native  :   TextToTokenIds Turns (Total 0 turns):
+11-02 13:19:31.027 12969 12969 I native  :     No text to token ids turns recorded.
+11-02 13:19:31.027 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:31.027 12969 12969 I native  : I0000 00:00:1793654371.027129   12969 litert_lm_lib.cc:1298] Creating conversation
+11-02 13:19:31.029 12969 12969 I native  : I0000 00:00:1793654371.029685   12969 litert_lm_lib.cc:1310] Running single-turn conversation
+11-02 13:19:31.084  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:31.133  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:31.196  3146 20633 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 1936, isSameBssidAndFreq true
+11-02 13:19:31.504  2105  3170 I thermal_core: pivot(AP) : 380, skin : 324
+11-02 13:19:31.504  2105  3170 I vendor.samsung.hardware.thermal-service: index = 50.400000
+11-02 13:19:31.504  2105  3170 I vendor.samsung.hardware.thermal-service: 1 / 2
+11-02 13:19:31.615  3146  4268 D PowerManagerService: [api] setMasterBrightnessLimit : lowerLimit : -1  upperLimit : 1275  mMasterBrightnessLimitPeriod : 200 (uid: 1000 pid: 7758)
+11-02 13:19:31.616  3146  3424 D PowerManagerService: [api] BrightnessLimitRunnable done
+11-02 13:19:31.634  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:31.755 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:31.759  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:31.761  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:31.762  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:31.763  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:31.763  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 239
+11-02 13:19:31.775  1195  1195 D io_stats: !@ Read_top(KB): f2fs_ckpt-254:6:/(1455) 8
+11-02 13:19:31.775  1195  1195 D io_stats: !@ Write_top(KB): system_server:normal(3146) 272 f2fs_ckpt-254:6:/(1455) 200 kworker/4:1:/(12098) 136
+11-02 13:19:32.003 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:32.009  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:32.010  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:32.011  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:32.012  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:32.013  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:32.083  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:32.135  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:32.355  2024  5439 I sensors-hal: qsh_conn_event_cb:930, event[0] sensor:activities  Wakeup, msg_id=1025, ts=115495360538
+11-02 13:19:32.355  2024  5439 I sensors-hal: handle_sns_client_event:57, activities_event: msgid:1025
+11-02 13:19:32.355  2024  5439 I sensors-hal: handle_sns_client_event:67, activities_event index 1 number 1 total 10
+11-02 13:19:32.355  2024  5439 I sensors-hal: submit_data:121, Activities 0.000000 ts 115495360538
+11-02 13:19:32.355  2024  5439 I sensors-hal: insert_awaking_events:876, smp2p_event, 3.activities, msgid:1025026
+11-02 13:19:32.356  3146  5437 D CAE     : onGetSensorHubData(SensorHubParserProvider.java:92) - onGetSensorHubData Event [event buffer len :10], AP_WAKEUP
+11-02 13:19:32.357  3146  5437 I CAE     : parse(SensorHubParserProvider.java:188) - buffer size = 10
+11-02 13:19:32.357  3146  5437 I CAE     : parse(SensorHubParserProvider.java:199) - 1, 1, 26, 2, 4, -109, 122, 44, 4, 1,
+11-02 13:19:32.357  3146  5437 D CAE     : display(ContextProvider.java:375) - ================= ACTIVITY_TRACKER_INTERRUPT =================
+11-02 13:19:32.357  3146  5437 I CAE     : display(ContextProvider.java:391) - Accuracy=[1], OperationMode=[1], ActivityType=[4], TimeStamp=[1793654372357]
+11-02 13:19:32.357  3146  5434 D SemContextService: Service.updateContext() : service = Activity Notification
+11-02 13:19:32.358  3146  3146 D SemContextManager: onSemContextChanged() : event = Activity Notification
+11-02 13:19:32.358  3146  5894 D SemContextManager: onSemContextChanged() : event = Activity Notification
+11-02 13:19:32.361 20068 20100 I [CE]_ContextEngineReceiver: onReceive - action: com.samsung.android.mocca.ACTION_MOBILE_ACTIVITY_NOTIFICATION_EVENT
+11-02 13:19:32.362 20068 20100 I [CE]_MovingContextProvider: Phone Activity - event: 4, 1
+11-02 13:19:32.363 20068 20100 I [CE]_RealtimeMovingContextProvider: onReceive - Not started
+11-02 13:19:32.505  2105  3170 I thermal_core: pivot(AP) : 387, skin : 324
+11-02 13:19:32.505  2105  3170 I vendor.samsung.hardware.thermal-service: index = 54.200000
+11-02 13:19:32.505  2105  3170 I vendor.samsung.hardware.thermal-service: 2 / 2
+11-02 13:19:32.524  7758  8691 I SDHMS:x : SIOP:: AP:387 BAT:306 USB:303 CHG:355 PA:388 WIFI:335 CF:327 BLK:0 SUBBAT:0 LRPTHM:333 SKIN:326 SKINF:326 SKINB:320 LRP:326 LRF:326 LRB:320 APT:324 APR:317 RCV:310 SPK:286 CHGF:323 CHGR:305 MEMF:326 MEMR:320 WIFIF:316 WIFIR:315 VAP:316 VWIFI:307 AMB2:282 NNP:314 OOD:43 AVGCUR:2 AVGSYS:205 POWER:8
+11-02 13:19:32.524  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:32.524  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:32.525  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:32.525  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:32.525  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:32.525  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:32.525  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:32.525  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:32.525  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:32.526  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:32.526  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:32.526  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:32.526  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:32.526  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:32.526  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:32.526  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:32.527  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:32.527  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:32.636  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:32.753 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:32.759  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:32.759  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:32.760  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:32.760  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:32.764  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:33.006 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:33.010  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:33.014  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:33.014  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:33.015  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:33.015  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:33.086  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:33.110  2105  2105 I seh_thermal_service: setScenarioHinthint:1
+11-02 13:19:33.111  7758  7758 I n2      : limitGPUFreq:: freq = 902
+11-02 13:19:33.111  7758  7758 I SemDvfsHyPerManager: acquire hyper - SIOP_GPU_FREQ_MAX/7758@5, type = 536875010
+11-02 13:19:33.112  7758  7758 I n2      : limitCPUFreq:: freq = 3398400
+11-02 13:19:33.112  7758  7758 I SemDvfsHyPerManager: acquire hyper - SIOP_ARM_MAX/7758@3, type = 301993986
+11-02 13:19:33.112  7758  7758 I SDHMS:SEND: on = true, type = 2
+11-02 13:19:33.112  2059  2167 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 30135971 [7758 / 5]  HINT :     list : [GPUMaxFreq / 902] 
+11-02 13:19:33.112  2059  2167 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 30120444 [7758 / 3]  HINT :     list : [CPUMaxFreq / 3398400] 
+11-02 13:19:33.113  2105  2105 I thermal_core: pivot(AP) : 386, skin : 326
+11-02 13:19:33.113  2105  2105 I vendor.samsung.hardware.thermal-service: index = 56.400000
+11-02 13:19:33.113  2105  2105 E thermal_core: skip_to_update: 608
+11-02 13:19:33.114  7758  8691 I SDHMS:x : SIOP:: AP:387 BAT:306 USB:303 CHG:355 PA:388 WIFI:335 CF:327 BLK:0 SUBBAT:0 LRPTHM:333 SKIN:326 SKINF:326 SKINB:320 LRP:326 LRF:326 LRB:320 APT:324 APR:317 RCV:310 SPK:286 CHGF:323 CHGR:305 MEMF:326 MEMR:320 WIFIF:316 WIFIR:315 VAP:316 VWIFI:307 AMB2:282 NNP:314 OOD:43 AVGCUR:2 AVGSYS:205 POWER:8
+11-02 13:19:33.114  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:33.115  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:33.115  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:33.115  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:33.115  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:33.115  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:33.115  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:33.116  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:33.116  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:33.116  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:33.116  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:33.116  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:33.116  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:33.116  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:33.116  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:33.116  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:33.117  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:33.117  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:33.137  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:33.638  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:33.757 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:33.761  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:33.765  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:33.765  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:33.766  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:33.767  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:33.949 25741 25741 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:/... xflg=0x4 cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
+11-02 13:19:34.005 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:34.007  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:34.011  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:34.012  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:34.012  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 236
+11-02 13:19:34.013  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:34.084  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:34.106  2059 12702 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 5010214
+11-02 13:19:34.115  2105  3170 I thermal_core: pivot(AP) : 386, skin : 326
+11-02 13:19:34.115  2105  3170 I vendor.samsung.hardware.thermal-service: index = 58.400000
+11-02 13:19:34.133  7758  8691 I SDHMS:x : SIOP:: AP:386 BAT:307 USB:302 CHG:358 PA:385 WIFI:338 CF:329 BLK:0 SUBBAT:0 LRPTHM:336 SKIN:327 SKINF:327 SKINB:320 LRP:327 LRF:327 LRB:320 APT:326 APR:320 RCV:312 SPK:287 CHGF:326 CHGR:312 MEMF:327 MEMR:320 WIFIF:322 WIFIR:317 VAP:317 VWIFI:307 AMB2:281 NNP:314 OOD:43 AVGCUR:3 AVGSYS:581 POWER:13
+11-02 13:19:34.133  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:34.133  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:34.133  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:34.134  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:34.134  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:34.134  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:34.134  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:34.134  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:34.134  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:34.134  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:34.134  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:34.134  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:34.134  2049 19944 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:34.134  2049 19944 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:34.134  2049 19944 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:34.134  2049 19944 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:34.135  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:34.135  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:34.138  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:34.227  3146 20633 D SemWifiUsabilityStatsMonitor: onWifiUsabilityStats - seqNum 1937, isSameBssidAndFreq true
+11-02 13:19:34.639  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:34.756 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:34.759  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:34.763  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:34.763  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:34.764  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:34.765  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:35.004 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:35.009  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:35.010  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:35.011  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:35.012  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:35.013  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:35.083  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:35.133  2105  3170 I thermal_core: pivot(AP) : 387, skin : 327
+11-02 13:19:35.133  2105  3170 I vendor.samsung.hardware.thermal-service: index = 59.800000
+11-02 13:19:35.139  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:35.152  7758  8691 I SDHMS:x : SIOP:: AP:387 BAT:308 USB:303 CHG:360 PA:386 WIFI:340 CF:331 BLK:0 SUBBAT:0 LRPTHM:337 SKIN:327 SKINF:327 SKINB:321 LRP:327 LRF:327 LRB:321 APT:327 APR:321 RCV:313 SPK:287 CHGF:327 CHGR:315 MEMF:327 MEMR:320 WIFIF:324 WIFIR:318 VAP:318 VWIFI:308 AMB2:281 NNP:313 OOD:43 AVGCUR:3 AVGSYS:581 POWER:13
+11-02 13:19:35.152  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:35.152  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:35.153  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:35.153  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:35.153  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:35.153  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:35.153  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:35.153  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:35.153  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:35.154  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:35.154  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:35.154  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:35.154  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:35.154  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:35.154  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:35.154  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:35.155  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:35.155  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:35.401 20512 20512 I wpa_supplicant: Heartbeat 587
+11-02 13:19:35.489  3146  3355 D BatteryExternalStatsWorker: update stats : procstate-change (10)
+11-02 13:19:35.489  3146  3355 D BatteryExternalStatsWorker: Fetch WiFi data
+11-02 13:19:35.489  3146  3355 D BatteryExternalStatsWorker: Update Rail Energy data
+11-02 13:19:35.518  3146  3355 D BatteryExternalStatsWorker: mStats lock released
+11-02 13:19:35.523  3146  3355 D BatteryExternalStatsWorker: Update wifi state
+11-02 13:19:35.523  3146  3355 D BatteryExternalStatsWorker: done updateExternalStatsLocked
+11-02 13:19:35.639  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:35.754 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:35.760  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:35.761  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:35.761  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:35.762  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:35.764  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:36.004 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:36.006  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:36.010  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:36.011  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 237
+11-02 13:19:36.011  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:36.012  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:36.083  2083  2287 I SDM     : DisplayBase::CommitThread: Received Idle Timeout, panel: video, timeout: 70000 us
+11-02 13:19:36.140  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:36.152  2105  3170 I thermal_core: pivot(AP) : 389, skin : 327
+11-02 13:19:36.152  2105  3170 I vendor.samsung.hardware.thermal-service: index = 61.000000
+11-02 13:19:36.171  7758  8691 I SDHMS:x : SIOP:: AP:389 BAT:309 USB:303 CHG:361 PA:386 WIFI:342 CF:332 BLK:0 SUBBAT:0 LRPTHM:339 SKIN:329 SKINF:329 SKINB:322 LRP:329 LRF:329 LRB:322 APT:329 APR:322 RCV:314 SPK:288 CHGF:328 CHGR:319 MEMF:328 MEMR:320 WIFIF:327 WIFIR:319 VAP:318 VWIFI:308 AMB2:280 NNP:311 OOD:44 AVGCUR:3 AVGSYS:581 POWER:13
+11-02 13:19:36.171  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_spk=29
+11-02 13:19:36.171  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_spk=29
+11-02 13:19:36.172  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_spk
+11-02 13:19:36.172  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:36.172  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_spk: 29
+11-02 13:19:36.172  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3002
+11-02 13:19:36.172  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:36.172  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:36.172  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:36.173  7758  8691 I AudioManager: setParameters keyValuePairs = g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:36.173  2135  3372 D AudioFlinger: setParameters: filtered dev setParameters keyvalue g_hw_speaker_amp_temp_rcv=31
+11-02 13:19:36.173  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: configured g_hw_speaker_amp_temp_rcv
+11-02 13:19:36.173  2049  2061 D AHAL_SecModulePrimary: processSetVendorParameters: handler set on Feature:0
+11-02 13:19:36.173  2049  2061 D AHAL_SecModulePrimary: onSetSECGenericParameters set temperature for g_hw_speaker_amp_temp_rcv: 31
+11-02 13:19:36.173  2049  2061 I PAL: API: pal_set_param: 1406: Enter: param id 3001
+11-02 13:19:36.173  2049  2061 I PAL: ResourceManager: getActiveStream_l: 4510: no active streams found for device 3 ret -2
+11-02 13:19:36.173  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:36.174  2135  3372 E DeviceHalAidl: Function: parseAndSetVendorParameters Line: 414 Failed 
+11-02 13:19:36.434 12969 12969 I native  : I0000 00:00:1793654376.434579   12969 litert_lm_lib.cc:211] Captured model output: Okay, I need to list 25 distinct things that on-device AI can do compared to what a cloud model can't. Each item should have two full sentences explaining it. Let me start by recalling common AI capabilities.
+11-02 13:19:36.434 12969 12969 I native  : 
+11-02 13:19:36.434 12969 12969 I native  : First, on-device AI can process user inputs directly from the device, like a voice assistant. So, explaining that involves mentioning how it uses the device's sensors and context. Then, maybe something like how it can't run the same models as the cloud, which is about cloud services. Wait, but the user wants to list things on-device AI can do, not cloud models. So, each item needs to be about on-device capabilities.
+11-02 13:19:36.434 12969 12969 I native  : 
+11-02 13:19:36.434 12969 12969 I native  : Wait, the user said to list 25 things on-device AI can do, each with two sentences. Let me think of common capabilities: voice recognition, image processing, predictive analytics, etc. For each, two sentences. Let me check if I have 25.
+11-02 13:19:36.434 12969 12969 I native  : 
+11-02 13:19:36.434 12969 12969 I native  : Possible items: voice recognition, image processing, predictive analytics, etc. Let me make sure each has two sentences. Let me list them out, check for 25, and ensure they're distinct and each explanation is complete.
+11-02 13:19:36.434 12969 12969 I native  : 
+11-02 13:19:36.434 12969 12969 I native  : 1. **Voice Assistant**: On-device AI allows voice recognition directly from the device
+11-02 13:19:36.434 12969 12969 I native  : 
+11-02 13:19:36.434 12969 12969 I native  : I0000 00:00:1793654376.434886   12969 litert_lm_lib.cc:461] BenchmarkInfo:
+11-02 13:19:36.434 12969 12969 I native  :   Init Phases (7):
+11-02 13:19:36.434 12969 12969 I native  :     - Init Conversation: 0.08 ms
+11-02 13:19:36.434 12969 12969 I native  :     - Init Executor: 3275.06 ms
+11-02 13:19:36.434 12969 12969 I native  :     - Init LLM metadata: 0.01 ms
+11-02 13:19:36.434 12969 12969 I native  :     - Init Model assets: 0.01 ms
+11-02 13:19:36.435 12969 12969 I native  :     - Init Tokenizer: 269.76 ms
+11-02 13:19:36.435 12969 12969 I native  :     - Init Total: 3277.76 ms
+11-02 13:19:36.435 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.435 12969 12969 I native  :   Time to first token: 1.25 s
+11-02 13:19:36.435 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.435 12969 12969 I native  :   Prefill Turns (Total 2 turns):
+11-02 13:19:36.435 12969 12969 I native  :     Prefill Turn 1: Processed 1355 tokens in 1.236401823s duration.
+11-02 13:19:36.435 12969 12969 I native  :       Prefill Speed: 1095.92 tokens/sec.
+11-02 13:19:36.435 12969 12969 I native  :     Prefill Turn 2: Processed 19 tokens in 153.412187ms duration.
+11-02 13:19:36.435 12969 12969 I native  :       Prefill Speed: 123.85 tokens/sec.
+11-02 13:19:36.435 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.435 12969 12969 I native  :   Decode Turns (Total 1 turns):
+11-02 13:19:36.435 12969 12969 I native  :     Decode Turn 1: Processed 256 tokens in 4.002935624s duration.
+11-02 13:19:36.435 12969 12969 I native  :       Decode Speed: 63.95 tokens/sec.
+11-02 13:19:36.435 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.435 12969 12969 I native  :   TextToTokenIds Turns (Total 0 turns):
+11-02 13:19:36.435 12969 12969 I native  :     No text to token ids turns recorded.
+11-02 13:19:36.435 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.435 12969 12969 I native  : I0000 00:00:1793654376.435703   12969 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 2 iterations):
+11-02 13:19:36.435 12969 12969 I native  :   Init Phases (7):
+11-02 13:19:36.436 12969 12969 I native  :     - Init Conversation: 0.09 ms
+11-02 13:19:36.436 12969 12969 I native  :     - Init Executor: 3275.06 ms
+11-02 13:19:36.436 12969 12969 I native  :     - Init LLM metadata: 0.01 ms
+11-02 13:19:36.436 12969 12969 I native  :     - Init Model assets: 0.01 ms
+11-02 13:19:36.436 12969 12969 I native  :     - Init Session: 0.07 ms
+11-02 13:19:36.436 12969 12969 I native  :     - Init Tokenizer: 269.76 ms
+11-02 13:19:36.436 12969 12969 I native  :     - Init Total: 3277.76 ms
+11-02 13:19:36.436 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.436 12969 12969 I native  :   Time to first token: 1.26 s
+11-02 13:19:36.436 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.436 12969 12969 I native  :     Prefill Turn 1:
+11-02 13:19:36.436 12969 12969 I native  :       Prefill Speed: 1090.10 tokens/sec.
+11-02 13:19:36.436 12969 12969 I native  :     Prefill Turn 2:
+11-02 13:19:36.436 12969 12969 I native  :       Prefill Speed: 68.41 tokens/sec.
+11-02 13:19:36.436 12969 12969 I native  :     Decode Turn 1:
+11-02 13:19:36.436 12969 12969 I native  :       Decode Speed: 61.61 tokens/sec.
+11-02 13:19:36.436 12969 12969 I native  : --------------------------------------------------
+11-02 13:19:36.537 12969 12969 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000748ec14980, name=CpuAccelerator
+11-02 13:19:36.537 12969 12969 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000748ec13d40, name=LiteRT GPU
+11-02 13:19:36.565 12969 12969 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000748ec2e680, name=CpuAccelerator
+11-02 13:19:36.565 12969 12969 I litert  : [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb40000748ec38940, name=LiteRT GPU
+11-02 13:19:36.640  3146  5585 W PackageConfigPersister: App-specific configuration not found for packageName: com.google.testing.helium.utp.android.companion.backdrop and userId: 0
+11-02 13:19:36.758 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=no preference, reason=idle timeout, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:36.762  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: NoPreference
+11-02 13:19:36.764  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:36.765  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[]
+11-02 13:19:36.766  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 1
+11-02 13:19:36.770  2206  6220 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240
+11-02 13:19:37.004 12610 12610 I VRI[BackdropActivity]@2c219aa: call setFrameRateCategory category=normal, reason=intermittent, vri=VRI[BackdropActivity]@2c219aa
+11-02 13:19:37.012  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 4
+11-02 13:19:37.012  2206  2206 I SurfaceFlinger: [com.google.testing.helium.utp.android.companion.backdrop/com.google.testing.helium.utp.android.companion.backdrop.BackdropActivity$_12610#220] setFrameRateCategory: Normal
+11-02 13:19:37.013  3146  3320 D LocalDisplayAdapter: updateActiveModeLocked for d=4630946778867403923, mActiveModeId=1, mActiveSfDisplayMode=DisplayMode{id=0, width=1080, height=2340, xDpi=409.43283, yDpi=409.90344, peakRefreshRate=120.00001, vsyncRate=240.00005, appVsyncOffsetNanos=8333111, presentationDeadlineNanos=9333444, supportedHdrTypes=[4, 2, 3], group=0}
+11-02 13:19:37.014  3146  3320 I DisplayDeviceRepository: Display device changed render timings: "Built-in Screen", renderFrameRate=60.00001, presentationDeadlineNanos=9333444, appVsyncOffsetNanos=16666440, frameRateOverrides=[{uid=10364 frameRateHz=60.00001}]
+11-02 13:19:37.016  2206  2863 I SurfaceFlinger: Current= 240, Period= 240, Distance= 240

@@ -1,0 +1,1302 @@
+{
+  "index": 2,
+  "displayName": "elb-2026-11-03-dashboard-v1-s26-ddp-m1q-36-android-s2",
+  "jobs": [
+    {
+      "index": 9,
+      "displayName": "j09-cpu-gemma-4-E2B-it-litert-lm-short-chat",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+        "task": "short-chat",
+        "opts": {
+          "backend": "cpu",
+          "cooldown": "300",
+          "file": "gemma-4-E2B-it.litertlm"
+        },
+        "row": "android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm"
+      },
+      "cellId": "litert-lm-cpu litert-community/gemma-4-E2B-it-litert-lm short-chat context-tokens=default file=gemma-4-E2B-it.litertlm",
+      "stem": "litert-lm-cpu_litert-community_gemma-4-E2B-it-litert-lm_short-chat",
+      "arm": "litert-lm-cpu",
+      "runtime": "litert-lm",
+      "backend": "cpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/gemma-4-E2B-it-litert-lm",
+      "file": "gemma-4-E2B-it.litertlm",
+      "task": "short-chat",
+      "contextTokens": null,
+      "ctxNote": "bundle-default",
+      "budget": 128,
+      "maxTokens": null,
+      "promptVersion": null,
+      "paired": false,
+      "binname": "litert_lm_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-cpu_litert-community_gemma-4-E2B-it-litert-lm_short-chat",
+        "--command=./litert_lm_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-cpu_litert-community_gemma-4-e2b-it-litert-lm_short-c",
+        "runtime": "litert-lm-cpu",
+        "model": "litert-community--gemma-4-e2b-it-litert-lm",
+        "task": "short-chat",
+        "backend": "cpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "gemma-4-E2B-it.litertlm",
+          "bytes": 2588147712,
+          "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
+          "device": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c/gemma-4-E2B-it.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "short-chat.txt",
+          "bytes": 48,
+          "sha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+          "device": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50/short-chat.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+      "estimate": {
+        "elapsedSeconds": 22.2,
+        "basis": "max of 3 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 1000,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 10,
+      "displayName": "j10-gpu-gemma-4-E2B-it-litert-lm-short-chat",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+        "task": "short-chat",
+        "opts": {
+          "backend": "gpu",
+          "cooldown": "300",
+          "file": "gemma-4-E2B-it.litertlm"
+        },
+        "row": "android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm"
+      },
+      "cellId": "litert-lm-gpu litert-community/gemma-4-E2B-it-litert-lm short-chat context-tokens=default file=gemma-4-E2B-it.litertlm",
+      "stem": "litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_short-chat",
+      "arm": "litert-lm-gpu",
+      "runtime": "litert-lm",
+      "backend": "gpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/gemma-4-E2B-it-litert-lm",
+      "file": "gemma-4-E2B-it.litertlm",
+      "task": "short-chat",
+      "contextTokens": null,
+      "ctxNote": "bundle-default",
+      "budget": 128,
+      "maxTokens": null,
+      "promptVersion": null,
+      "paired": false,
+      "binname": "litert_lm_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_short-chat",
+        "--command=./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-gpu_litert-community_gemma-4-e2b-it-litert-lm_short-c",
+        "runtime": "litert-lm-gpu",
+        "model": "litert-community--gemma-4-e2b-it-litert-lm",
+        "task": "short-chat",
+        "backend": "gpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "gemma-4-E2B-it.litertlm",
+          "bytes": 2588147712,
+          "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
+          "device": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c/gemma-4-E2B-it.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "short-chat.txt",
+          "bytes": 48,
+          "sha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+          "device": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50/short-chat.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+      "estimate": {
+        "elapsedSeconds": 18.6,
+        "basis": "max of 3 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 984,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 11,
+      "displayName": "j11-cpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+        "task": "long-context-1024-gen256",
+        "opts": {
+          "backend": "cpu",
+          "cooldown": "300",
+          "file": "gemma-4-E2B-it.litertlm",
+          "context-tokens": "2048"
+        },
+        "row": "android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048"
+      },
+      "cellId": "litert-lm-cpu litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 context-tokens=2048 file=gemma-4-E2B-it.litertlm",
+      "stem": "litert-lm-cpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75",
+      "arm": "litert-lm-cpu",
+      "runtime": "litert-lm",
+      "backend": "cpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/gemma-4-E2B-it-litert-lm",
+      "file": "gemma-4-E2B-it.litertlm",
+      "task": "long-context-1024-gen256",
+      "contextTokens": 2048,
+      "ctxNote": 2048,
+      "budget": 256,
+      "maxTokens": null,
+      "promptVersion": "noref-2026-10-19",
+      "paired": true,
+      "binname": "litert_lm_advanced_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_advanced_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-cpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75",
+        "--command=./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-cpu_litert-community_gemma-4-e2b-it-litert-lm_long-co",
+        "runtime": "litert-lm-cpu",
+        "model": "litert-community--gemma-4-e2b-it-litert-lm",
+        "task": "long-context-1024-gen256",
+        "backend": "cpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "gemma-4-E2B-it.litertlm",
+          "bytes": 2588147712,
+          "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
+          "device": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c/gemma-4-E2B-it.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "long-context-1024-gen256.txt",
+          "bytes": 5311,
+          "sha256": "740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe",
+          "device": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe/long-context-1024-gen256.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+      "estimate": {
+        "elapsedSeconds": 20.1,
+        "basis": "max of 6 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 990,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 12,
+      "displayName": "j12-gpu-gemma-4-E2B-it-litert-lm-long-context-1024-gen256",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/gemma-4-E2B-it-litert-lm",
+        "task": "long-context-1024-gen256",
+        "opts": {
+          "backend": "gpu",
+          "cooldown": "300",
+          "file": "gemma-4-E2B-it.litertlm",
+          "context-tokens": "2048"
+        },
+        "row": "android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048"
+      },
+      "cellId": "litert-lm-gpu litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 context-tokens=2048 file=gemma-4-E2B-it.litertlm",
+      "stem": "litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75",
+      "arm": "litert-lm-gpu",
+      "runtime": "litert-lm",
+      "backend": "gpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/gemma-4-E2B-it-litert-lm",
+      "file": "gemma-4-E2B-it.litertlm",
+      "task": "long-context-1024-gen256",
+      "contextTokens": 2048,
+      "ctxNote": 2048,
+      "budget": 256,
+      "maxTokens": null,
+      "promptVersion": "noref-2026-10-19",
+      "paired": true,
+      "binname": "litert_lm_advanced_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_advanced_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-gpu_litert-community_gemma-4-E2B-it-litert-lm_long-context-1024-gen256__ctx2048_filecc74888a3a34daff9b242d593ee644fb0f8c363134b5403efef7e4d598128e75",
+        "--command=./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-gpu_litert-community_gemma-4-e2b-it-litert-lm_long-co",
+        "runtime": "litert-lm-gpu",
+        "model": "litert-community--gemma-4-e2b-it-litert-lm",
+        "task": "long-context-1024-gen256",
+        "backend": "gpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "gemma-4-E2B-it.litertlm",
+          "bytes": 2588147712,
+          "sha256": "181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c",
+          "device": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/181938105e0eefd105961417e8da75903eacda102c4fce9ce90f50b97139a63c/gemma-4-E2B-it.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "long-context-1024-gen256.txt",
+          "bytes": 5311,
+          "sha256": "740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe",
+          "device": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe/long-context-1024-gen256.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+      "estimate": {
+        "elapsedSeconds": 17.6,
+        "basis": "max of 6 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 979,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 13,
+      "displayName": "j13-cpu-Qwen3-4B-short-chat",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/Qwen3-4B",
+        "task": "short-chat",
+        "opts": {
+          "backend": "cpu",
+          "cooldown": "300",
+          "file": "qwen3_4b_mixed_int4.litertlm",
+          "exclude-on": "pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+        },
+        "row": "android litert-lm litert-community/Qwen3-4B short-chat backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+      },
+      "cellId": "litert-lm-cpu litert-community/Qwen3-4B short-chat context-tokens=default file=qwen3_4b_mixed_int4.litertlm",
+      "stem": "litert-lm-cpu_litert-community_Qwen3-4B_short-chat",
+      "arm": "litert-lm-cpu",
+      "runtime": "litert-lm",
+      "backend": "cpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/Qwen3-4B",
+      "file": "qwen3_4b_mixed_int4.litertlm",
+      "task": "short-chat",
+      "contextTokens": null,
+      "ctxNote": "bundle-default",
+      "budget": 128,
+      "maxTokens": null,
+      "promptVersion": null,
+      "paired": false,
+      "binname": "litert_lm_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-cpu_litert-community_Qwen3-4B_short-chat",
+        "--command=./litert_lm_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-cpu_litert-community_qwen3-4b_short-chat",
+        "runtime": "litert-lm-cpu",
+        "model": "litert-community--qwen3-4b",
+        "task": "short-chat",
+        "backend": "cpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "qwen3_4b_mixed_int4.litertlm",
+          "bytes": 2272935936,
+          "sha256": "4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce",
+          "device": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce/qwen3_4b_mixed_int4.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "short-chat.txt",
+          "bytes": 48,
+          "sha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+          "device": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50/short-chat.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+      "estimate": {
+        "elapsedSeconds": 176.6,
+        "basis": "max of 3 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 1695,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 14,
+      "displayName": "j14-gpu-Qwen3-4B-short-chat",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/Qwen3-4B",
+        "task": "short-chat",
+        "opts": {
+          "backend": "gpu",
+          "cooldown": "300",
+          "file": "qwen3_4b_mixed_int4.litertlm",
+          "exclude-on": "pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+        },
+        "row": "android litert-lm litert-community/Qwen3-4B short-chat backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+      },
+      "cellId": "litert-lm-gpu litert-community/Qwen3-4B short-chat context-tokens=default file=qwen3_4b_mixed_int4.litertlm",
+      "stem": "litert-lm-gpu_litert-community_Qwen3-4B_short-chat",
+      "arm": "litert-lm-gpu",
+      "runtime": "litert-lm",
+      "backend": "gpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/Qwen3-4B",
+      "file": "qwen3_4b_mixed_int4.litertlm",
+      "task": "short-chat",
+      "contextTokens": null,
+      "ctxNote": "bundle-default",
+      "budget": 128,
+      "maxTokens": null,
+      "promptVersion": null,
+      "paired": false,
+      "binname": "litert_lm_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-gpu_litert-community_Qwen3-4B_short-chat",
+        "--command=./litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-gpu_litert-community_qwen3-4b_short-chat",
+        "runtime": "litert-lm-gpu",
+        "model": "litert-community--qwen3-4b",
+        "task": "short-chat",
+        "backend": "gpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "qwen3_4b_mixed_int4.litertlm",
+          "bytes": 2272935936,
+          "sha256": "4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce",
+          "device": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce/qwen3_4b_mixed_int4.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "short-chat.txt",
+          "bytes": 48,
+          "sha256": "870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50",
+          "device": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/870aafb98e570e8fa1343ec051180237f4587233f49c0cc1391724e086d42d50/short-chat.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/short-chat.txt",
+      "estimate": {
+        "elapsedSeconds": 64.6,
+        "basis": "max of 3 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 1191,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 15,
+      "displayName": "j15-cpu-Qwen3-4B-long-context-1024-gen256",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/Qwen3-4B",
+        "task": "long-context-1024-gen256",
+        "opts": {
+          "backend": "cpu",
+          "cooldown": "300",
+          "file": "qwen3_4b_mixed_int4.litertlm",
+          "context-tokens": "2048",
+          "exclude-on": "pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+        },
+        "row": "android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+      },
+      "cellId": "litert-lm-cpu litert-community/Qwen3-4B long-context-1024-gen256 context-tokens=2048 file=qwen3_4b_mixed_int4.litertlm",
+      "stem": "litert-lm-cpu_litert-community_Qwen3-4B_long-context-1024-gen256__ctx2048_file603f2522a496602ec0d73d9fe7963848e8e66616addc2f5e982ec91b4be07010",
+      "arm": "litert-lm-cpu",
+      "runtime": "litert-lm",
+      "backend": "cpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/Qwen3-4B",
+      "file": "qwen3_4b_mixed_int4.litertlm",
+      "task": "long-context-1024-gen256",
+      "contextTokens": 2048,
+      "ctxNote": 2048,
+      "budget": 256,
+      "maxTokens": null,
+      "promptVersion": "noref-2026-10-19",
+      "paired": true,
+      "binname": "litert_lm_advanced_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_advanced_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-cpu_litert-community_Qwen3-4B_long-context-1024-gen256__ctx2048_file603f2522a496602ec0d73d9fe7963848e8e66616addc2f5e982ec91b4be07010",
+        "--command=./litert_lm_advanced_main --backend=cpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-cpu_litert-community_qwen3-4b_long-context-1024-gen25",
+        "runtime": "litert-lm-cpu",
+        "model": "litert-community--qwen3-4b",
+        "task": "long-context-1024-gen256",
+        "backend": "cpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "qwen3_4b_mixed_int4.litertlm",
+          "bytes": 2272935936,
+          "sha256": "4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce",
+          "device": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce/qwen3_4b_mixed_int4.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "long-context-1024-gen256.txt",
+          "bytes": 5311,
+          "sha256": "740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe",
+          "device": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe/long-context-1024-gen256.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+      "estimate": {
+        "elapsedSeconds": 122.2,
+        "basis": "max of 6 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 1450,
+        "overTimeout": false
+      },
+      "session": 2
+    },
+    {
+      "index": 16,
+      "displayName": "j16-gpu-Qwen3-4B-long-context-1024-gen256",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/Qwen3-4B",
+        "task": "long-context-1024-gen256",
+        "opts": {
+          "backend": "gpu",
+          "cooldown": "300",
+          "file": "qwen3_4b_mixed_int4.litertlm",
+          "context-tokens": "2048",
+          "exclude-on": "pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+        },
+        "row": "android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash"
+      },
+      "cellId": "litert-lm-gpu litert-community/Qwen3-4B long-context-1024-gen256 context-tokens=2048 file=qwen3_4b_mixed_int4.litertlm",
+      "stem": "litert-lm-gpu_litert-community_Qwen3-4B_long-context-1024-gen256__ctx2048_file603f2522a496602ec0d73d9fe7963848e8e66616addc2f5e982ec91b4be07010",
+      "arm": "litert-lm-gpu",
+      "runtime": "litert-lm",
+      "backend": "gpu",
+      "engineBuild": null,
+      "recipe": null,
+      "modelId": "litert-community/Qwen3-4B",
+      "file": "qwen3_4b_mixed_int4.litertlm",
+      "task": "long-context-1024-gen256",
+      "contextTokens": 2048,
+      "ctxNote": 2048,
+      "budget": 256,
+      "maxTokens": null,
+      "promptVersion": "noref-2026-10-19",
+      "paired": true,
+      "binname": "litert_lm_advanced_main",
+      "sampler": "engine-default",
+      "command": "./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false",
+      "env": "LD_LIBRARY_PATH=.",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 300,
+      "perRunTimeout": 960,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "v0.19.0",
+      "args": [
+        "--runs=3",
+        "--cooldown=300",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=.",
+        "--binname=litert_lm_advanced_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=960",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-gpu_litert-community_Qwen3-4B_long-context-1024-gen256__ctx2048_file603f2522a496602ec0d73d9fe7963848e8e66616addc2f5e982ec91b4be07010",
+        "--command=./litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt --max_num_tokens=2048 --max_output_tokens=256 --num_iterations=2 --async=false --benchmark --benchmark_prefill_tokens=0 --benchmark_decode_tokens=0 --use_session=false"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-03-dashboard-v1-s26-ddp-m1q-36-android",
+        "cell": "litert-lm-gpu_litert-community_qwen3-4b_long-context-1024-gen25",
+        "runtime": "litert-lm-gpu",
+        "model": "litert-community--qwen3-4b",
+        "task": "long-context-1024-gen256",
+        "backend": "gpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "v0-19-0"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49603152,
+          "sha256": "de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4",
+          "device": "/data/local/tmp/llmbench/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/de8c840290ff971aef6142287216478bded351f23d175414856ea21f7825e3d4/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 49973408,
+          "sha256": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+          "device": "/data/local/tmp/llmbench/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtGpuAccelerator.so",
+          "bytes": 3431800,
+          "sha256": "49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8",
+          "device": "/data/local/tmp/llmbench/libLiteRtGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtOpenClAccelerator.so",
+          "bytes": 3202416,
+          "sha256": "ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5",
+          "device": "/data/local/tmp/llmbench/libLiteRtOpenClAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtWebGpuAccelerator.so",
+          "bytes": 3218808,
+          "sha256": "5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c",
+          "device": "/data/local/tmp/llmbench/libLiteRtWebGpuAccelerator.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "qwen3_4b_mixed_int4.litertlm",
+          "bytes": 2272935936,
+          "sha256": "4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce",
+          "device": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/4877b236f09c0b519958612afeb3c6fc6575c7ce56080d0d3a5406150e0ff9ce/qwen3_4b_mixed_int4.litertlm"
+        },
+        {
+          "kind": "prompt",
+          "name": "long-context-1024-gen256.txt",
+          "bytes": 5311,
+          "sha256": "740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe",
+          "device": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+          "object": "automation/inputs/edge-llm-bench/prompts/740112dbbb11f873ec6c905fab30be30b431acff09d78d38c815b02a83f753fe/long-context-1024-gen256.txt"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10250,
+        "sha256": "bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b",
+        "object": "automation/inputs/edge-llm-bench/wrapper/bb4a53178599a773a758d54576789f315154d57f774cc1312527ad7487fb5b6b/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_Qwen3-4B_qwen3_4b_mixed_int4.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/long-context-1024-gen256.txt",
+      "estimate": {
+        "elapsedSeconds": 52.7,
+        "basis": "max of 6 local SM-S942Q runs at v0.19.0",
+        "jobSeconds": 1137,
+        "overTimeout": false
+      },
+      "session": 2
+    }
+  ]
+}
