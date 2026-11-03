@@ -134,7 +134,7 @@ ACTION = {
     "reply-empty": "read the replies (session_check.py --markdown lists one per cell)",
     "reply-loop": "read the replies: a loop is a failed run (fairness-rules §4)",
     "reply-off-task": "read the replies: an answer to another question is a failed run",
-    "gen-budget": "the run decoded past its budget: read the log (thought channel?) before the rate counts",
+    "gen-budget": "the run decoded past its budget: read the log (thought channel?) before the rate counts; a DDP sitting's LiteRT-LM short-chat cells after a LiteRT-LM pin move: litert_lm_main never applies --max_output_tokens and only the DDP route's records name the budget (dad937b1), so once one log reads as a whole reply with the attached phones' count, ops/session-check/allow-list.tsv takes a line for the new tag",
     "invalid-decode": "'Invalid decode' lines void the rate: read the log",
     "model-sha-source": "the bytes on the phone were not hashed: re-push (push_verified), or say so in a hand commit",
     "debug-build": "a Debug build's numbers never count: install the Release build and re-run",
