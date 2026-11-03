@@ -1,0 +1,20 @@
+# 2026-11-03 S26 native pregpu round 1, slot 2 of 2 (campaign suffix native-s2): two more Galaxy S26 LiteRT-LM GPU
+# protocol rows (native-benchmark-1024x256 = litert_lm_advanced_main --benchmark, prefill forced to exactly 1024
+# tokens, decode 256, context 2048; methodology/agreed-protocol-gemma4.md "The spec") on the side build
+# v0.19.0-pregpu (LiteRT-LM v0.19.0 at the Android pin's commit with Google's prebuilt GPU accelerator, loaded at run
+# time; android/engine-pins.json litert-lm.v0.19.0-pregpu, engine_version v0.19.0), the weekly Android GPU build since
+# D-449. Slot 1 = matrices/native-pregpu-s26-r1-s1-android.cells (Qwen3 0.6B, Gemma 4 E2B).
+# First row = the Android session anchor row of matrices/d449-pregpu-s26-s7-android.cells byte for byte (the
+# payload's admission is judged on it, the primary anchor). Then two GPU rows of
+# matrices/dashboard-protocol1024-v1-android.cells byte for byte with engine-build=v0.19.0-pregpu after backend=gpu,
+# as the weekly files' D-449 rows are written (runs, cooldown, file=, context-tokens and exclude-on unchanged: the
+# rows' own cooldowns, 120 s for Qwen3 1.7B, 300 s for Gemma 4 E4B; docs/dashboard-cells-v1.md; exclude-on=pixel8a
+# is inert on this phone). Qwen3 4B waits for a later slot.
+# Estimate: about 39 min of a 45-min hold = the anchor phase 10.7 + this file's anchor row 4.3 + three rounds of
+# (Qwen3 1.7B 120 + 14 + 3 s, Gemma 4 E4B 300 + 21 + 3 s) 23.1 + 1 (the 2026-11-03 d449pg-s7 sitting's run spacing;
+# the launch lengths of the 2026-10-19 records of these rows).
+# Run, inside the device hold a keeper took (the job neither takes nor releases it):
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/native-pregpu-s26-r1-s2-android.cells --suffix native-s2 --once --hold-held-by <keeper pid> --no-post
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
