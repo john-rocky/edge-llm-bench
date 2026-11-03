@@ -145,9 +145,10 @@ GPU_ACCELERATOR_ARMS = ("litert-lm-gpu",)
 # version) before the sitting is held for a person; the one place the line is set
 PREFILL_DROP_PCT = 25.0
 # the arms prefill-drop reads: LiteRT-LM's (litert-lm, -cpu, -cpu-ynnpack, -gpu, -npu: the page's subject,
-# ops/autopilot/regression-watch.json subject_arms). An anchor's llama.cpp short-chat prefill moves 40-61 %
-# between admitted sittings on the Pixel 8a (the dry run of 2026-11-03 over every Android sitting since
-# 2026-10-01: 19 of the 27 dirs the line would have held), which the admission ratio and the regression watch read
+# ops/autopilot/regression-watch.json subject_arms). llama.cpp's short-chat prefill fell 25-61 % between admitted
+# sittings, mostly the anchor's Qwen3 0.6B row on the Pixel 8a (the dry run of 2026-11-03 over every Android
+# dashboard sitting since 2026-10-01: 19 of the 27 dirs the line would have held on every arm, 18 of them Pixel 8a
+# sittings), which the admission ratio and the regression watch read
 PREFILL_DROP_ARM_PREFIX = "litert-lm"
 # the rules whose finding means "do not commit"; every other rule's finding is a HOLD
 FAIL_RULES = {"session-missing", "not-admitted", "stopped-sitting", "logcat-unscrubbed",
