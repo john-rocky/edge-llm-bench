@@ -1,0 +1,13 @@
+# 2026-11-03 D-449 round 3, slot 1 of 3 (campaign suffix d449pg-s4; round 2 ran s1-s3): the Galaxy S26 LiteRT-LM GPU
+# cell Qwen3-4B long-context-1024-gen256 (ctx 2048) of the weekly set (matrices/dashboard-text-v1.cells) on the side
+# build v0.19.0-pregpu: LiteRT-LM v0.19.0 (771b06e1, the Android pin's commit) with Google's prebuilt GPU accelerator
+# (the tag's prebuilt/android_arm64/libLiteRtGpuAccelerator.so, loaded at run time; android/engine-pins.json
+# litert-lm.v0.19.0-pregpu, engine_version v0.19.0) in /data/local/tmp/llmbench/engines/v0.19.0-pregpu/, reading the
+# model through its own link there (run_cell.side_model_path: its GPU caches apart from the flat build's). The flat
+# v0.19.0 build (its GPU accelerator built from source and linked in) is not touched. Same row, file and options as the
+# weekly cells plus engine-build=; page rows (the campaign name carries dashboard). First row = the Android session
+# anchor (the payload's admission reads it). One 300 s-cooldown cell per slot: with the anchor phase and this anchor
+# row (about 19 min) it fills a 45-min hold.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/d449-pregpu-s26-s4-android.cells --suffix d449pg-s4 --once --hold-held-by <keeper pid> --no-post
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
