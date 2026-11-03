@@ -804,6 +804,27 @@ def check_wrapper_host_run(tmp):
        and "bad args" in (open(os.path.join(out_bad, "wrapper.log")).read()
                           if os.path.exists(os.path.join(out_bad, "wrapper.log")) else ""),
        "no --command: no run, the reason in wrapper.log, exit 0")
+    # a row's LiteRT-LM side build (engine-build=, BENCH_DDP_ALL_RUNTIMES=1): its tools and libs side by side in
+    # engines/<tag>/ (run_cell.SIDE_DIRS), pushed without the execute bit. Before 2026-11-03 (D-449 r5) the wrapper
+    # read the sha256 of neither (record.witness: engine unknown, the sitting held at engine-stamp)
+    side = os.path.join(dev, "engines", "v0.0.0-selftest-side")
+    write(os.path.join(side, "litert_lm_main"), FAKE_ENGINE, 0o644)
+    write(os.path.join(side, "litert_lm_advanced_main"), "not run\n", 0o644)
+    write(os.path.join(side, "libLiteRtGpuAccelerator.so"), "fake gpu accelerator\n")
+    side_cmd = (f"{side}/litert_lm_main --backend=gpu --model_path={dev}/models/m.litertlm "
+                f"--input_prompt_file={dev}/prompts/short-chat.txt --max_output_tokens=128 --async=false")
+    out_side = os.path.join(dev, "ddp-out-side")
+    r = run(out_side, command=side_cmd, runs=1, env=f"LD_LIBRARY_PATH={side}")
+    prov = record.parse_provenance(open(os.path.join(out_side, "provenance.txt")).read()) \
+        if os.path.exists(os.path.join(out_side, "provenance.txt")) else {"sha": {}}
+    t = open(os.path.join(out_side, "run1.log")).read() if os.path.exists(os.path.join(out_side, "run1.log")) else ""
+    want = {f"{side}/{n}": hashlib.sha256(open(os.path.join(side, n), "rb").read()).hexdigest()
+            for n in ("litert_lm_main", "litert_lm_advanced_main", "libLiteRtGpuAccelerator.so")}
+    ok(r.returncode == 0 and "EXIT_CODE=0" in t and all(prov["sha"].get(p) == s for p, s in want.items())
+       and os.access(os.path.join(side, "litert_lm_main"), os.X_OK),
+       f"a LiteRT-LM side build in engines/<tag>/ pushed without the execute bit: the wrapper sets it (the run exits "
+       f"0) and provenance.txt holds the sha256 of its litert_lm_main, litert_lm_advanced_main and .so "
+       f"({sorted(p.rsplit('/', 1)[1] for p in want if p in prov['sha'])})")
 
 
 # ---------------------------------------------------------------- 3. the attached-phone route's FAKESELF records
@@ -1249,6 +1270,7 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
        f"({[r['provenance'].get('ddpMissing') for r in r1]})")
     check_build_name(tmp, ddp, plan_s, session, recs)
     check_gpu_accelerator(tmp, ddp, plan_s, session)
+    check_side_build_row(tmp, ddp, plan_s, session)
     server.shutdown()
     return out
 
@@ -1376,6 +1398,90 @@ def check_build_name(tmp, ddp, plan_s, session, flat_recs):
     ok(flat_recs and all("engineBuild" not in r["conditions"] and "backendRegistered" not in r["conditions"]
                          for r in flat_recs.values()),
        f"the billed path's flat {TAG} records carry neither engineBuild nor backendRegistered ({len(flat_recs)} records)")
+
+
+def check_side_build_row(tmp, ddp, plan_s, session):
+    """D-449 r5 (2026-11-03): a row's engine-build= on a lab unit (BENCH_DDP_ALL_RUNTIMES=1; run_ddp pushes the
+    build to engines/<tag>/ beside the flat one, the job carries engineBuild = engineTag = the tag). With the unit's
+    sha256 of engines/<tag>/'s tools and libs in provenance.txt (ddp_cell.sh reads them since r5) the witness names
+    the entry's engine_version and the record the build; without them (a provenance.txt from the wrapper before r5,
+    the 2026-11-03 d449pg sitting's) the engine stays unknown and no build is named. The text check's parser goes by
+    the engine: a LiteRT-LM chat launch of the side build is not text-checked, as the flat build's and run_cell's side
+    build's (before r5 llama_cli_reply read it as an empty reply: text-fail on every run); a 1K launch's texts are
+    checked; a llama.cpp side build's chat reply is still read by llama_cli_reply."""
+    label = f"{TAG}-selftest-side"
+    pins = run_cell.load_pins()
+    entry = copy.deepcopy(pins["litert-lm"][TAG])
+    stand = {n: hashlib.sha256(f"stand-in {label} {n}\n".encode()).hexdigest()
+             for n in ("litert_lm_main", "litert_lm_advanced_main")}
+    side_pins = copy.deepcopy(pins)
+    side_pins["litert-lm"][label] = dict(entry, engine_version=TAG, litert_lm_main_sha256=stand["litert_lm_main"],
+                                         litert_lm_advanced_main_sha256=stand["litert_lm_advanced_main"])
+    engine_dir = f"{run_cell.ENGINES_DIR}/{label}"
+    unit_shas = dict(stand, **(entry.get("so_files") or {}))
+    prompt = open(os.path.join(ROOT, "prompts", "text", "short-chat.txt")).read()
+    reply = "On-device AI runs the model on the phone itself, so it works offline and keeps your data on the device."
+
+    def records(name, backend, witnessed=True, llama=False):
+        job = next(j for j in plan_s["jobs"] if j.get("backend") == backend)
+        jr = next(r for r in session["sessionReport"]["jobReports"] if r["displayName"] == job["displayName"])
+        ex, rel = record.execution_dirs("session-test0001", jr)[0]
+        meta = {"sessionId": "session-test0001", "jobId": jr["id"], "jobDisplayName": jr["displayName"],
+                "executionId": ex["id"], "jobStartTime": jr["startTime"], "jobEndTime": jr["endTime"],
+                "executionStartTime": ex["startTime"], "executionEndTime": ex["endTime"],
+                "resultType": "PASSED", "ddpSessionDir": f"ddp/{rel}"}
+        copy_dir = os.path.join(tmp, f"side-row-{name}")
+        shutil.copytree(os.path.join(ddp, rel), copy_dir)
+        if witnessed:
+            prov_path = glob.glob(os.path.join(copy_dir, "artifacts", "**", "provenance.txt"), recursive=True)[0]
+            extra = "".join(f"{sha}  {engine_dir}/{n}\n" for n, sha in sorted(unit_shas.items()))
+            write(prov_path, open(prov_path).read().replace("sha256:\n", "sha256:\n" + extra, 1))
+        side_job = dict(job, engineBuild=label, engineTag=label, env=f"LD_LIBRARY_PATH={engine_dir}")
+        if llama:
+            # a llama.cpp CPU side build's chat launch: llama-cli echoes the prompt, then the reply, then its rates
+            side_job.update(runtime="llama.cpp", arm="llama.cpp", backend="", binname="llama-cli",
+                            engineBuild="b0000-selftest-side", engineTag="b0000-selftest-side")
+            for log in glob.glob(os.path.join(copy_dir, "artifacts", "**", "run*.log"), recursive=True):
+                head, _, rest = open(log).read().partition("===ENGINE_OUTPUT===\n")
+                tail = rest[rest.rindex("EXIT_CODE="):]
+                write(log, f"{head}===ENGINE_OUTPUT===\n> {prompt}{reply}\n\n"
+                           f"[ Prompt: 200.0 t/s | Generation: 20.0 t/s ]\n{tail}")
+        out = os.path.join(tmp, f"side-row-out-{name}")
+        os.makedirs(out)
+        with patch.object(run_cell, "load_pins", lambda serial=None: copy.deepcopy(side_pins)):
+            record.records_for_execution(side_job, copy_dir, out, meta)
+        recs = [json.load(open(f)) for f in sorted(glob.glob(os.path.join(out, "*.json")))]
+        return recs, side_job, sorted(glob.glob(os.path.join(out, "*.decoded.txt")))
+
+    def text_flags(r):
+        return [f for f in r["conditions"].get("protocolFlags", []) if f.startswith("text-")]
+
+    chat, job, texts = records("chat", "cpu")
+    ok(chat and not texts and all(r["engineVersion"] == TAG and r["engineArtifact"] == stand[job["binname"]]
+                                  and r["conditions"].get("engineBuild") == label
+                                  and "textCheck" not in r["conditions"] and not text_flags(r)
+                                  and "decodedText" not in r["provenance"] for r in chat),
+       f"a LiteRT-LM chat row on engines/{label}/ with the unit's shas of its files: engineVersion {TAG}, "
+       f"engineArtifact the {job['binname']} the unit holds, conditions.engineBuild {label}; no text check, no "
+       f".decoded.txt ({len(chat)} records; {[(r['engineVersion'], r['conditions'].get('engineBuild')) for r in chat][:1]})")
+    long_, _, texts = records("1k", "gpu")
+    ok(long_ and len(texts) == len(long_)
+       and all(r["engineVersion"] == TAG and r["engineArtifact"] == stand["litert_lm_advanced_main"]
+               and r["conditions"].get("engineBuild") == label and r["conditions"].get("textCheck")
+               and r["conditions"].get("gpuAccelerator") for r in long_),
+       f"a LiteRT-LM 1K row on the same build: engineVersion {TAG}, conditions.engineBuild {label}, each iteration's "
+       f"text checked with its .decoded.txt, the GPU accelerator named ({len(long_)} records, {len(texts)} texts)")
+    old, _, _ = records("unwitnessed", "cpu", witnessed=False)
+    ok(old and all(r["engineVersion"].startswith("unknown (on-device litert_lm_main sha not in provenance.txt)")
+                   and "engineBuild" not in r["conditions"] for r in old),
+       f"the same chat row when provenance.txt holds no engines/{label}/ line (the wrapper before r5): engine "
+       f"unknown, no engineBuild ({old[0]['engineVersion'] if old else None})")
+    llama, _, texts = records("llama", "cpu", witnessed=False, llama=True)
+    got = [open(t).read() for t in texts]
+    ok(llama and len(texts) == len(llama) and got == [reply] * len(llama)
+       and all(r["conditions"].get("textCheck") for r in llama),
+       f"a llama.cpp side build's chat row: llama_cli_reply still reads its reply after the prompt's echo, text "
+       f"checked ({len(llama)} records; {got[:1]})")
 
 
 def check_engine_cache(short, long_):

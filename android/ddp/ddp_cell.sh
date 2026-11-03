@@ -124,7 +124,10 @@ fi
 for B in litert_lm_main litert_lm_advanced_main llama-cli llama-bench "$BINNAME"; do
   [ -f "$DIR/$B" ] && chmod 755 "$DIR/$B"
 done
-for B in "$DIR"/engines/*/bin/* "$DIR"/executorch-*/*; do
+# a side build in engines/<tag>/: llama.cpp's tools in bin/ (libs in lib/), LiteRT-LM's tools and libs
+# side by side in the dir itself (run_cell.SIDE_DIRS)
+for B in "$DIR"/engines/*/bin/* "$DIR"/engines/*/litert_lm_main "$DIR"/engines/*/litert_lm_advanced_main \
+         "$DIR"/executorch-*/*; do
   [ -f "$B" ] && chmod 755 "$B"
 done
 for D in "$DIR"/engines/*; do
@@ -148,7 +151,8 @@ PROV="$OUTPUT_DIR/provenance.txt"
     echo "arg: $ARG"
   done
   echo "sha256:"
-  sha256sum "$DIR"/litert_lm_main "$DIR"/litert_lm_advanced_main "$DIR"/llama-cli "$DIR"/llama-bench "$DIR"/*.so "$DIR"/engines/*/bin/* "$DIR"/engines/*/lib/*.so "$DIR"/executorch-*/* "$DIR"/models/* "$DIR"/prompts/* 2>&1
+  # every engine file record.witness reads: the flat build, a side build's in either layout (above), ExecuTorch's
+  sha256sum "$DIR"/litert_lm_main "$DIR"/litert_lm_advanced_main "$DIR"/llama-cli "$DIR"/llama-bench "$DIR"/*.so "$DIR"/engines/*/bin/* "$DIR"/engines/*/lib/*.so "$DIR"/engines/*/litert_lm_main "$DIR"/engines/*/litert_lm_advanced_main "$DIR"/engines/*/*.so "$DIR"/executorch-*/* "$DIR"/models/* "$DIR"/prompts/* 2>&1
 } > "$PROV"
 say "provenance written"
 

@@ -489,10 +489,15 @@ def records_for_execution(job, exec_dir, out_dir, meta):
         if run_missing:
             rec["provenance"]["ddpMissing"] = run_missing
         samples = iteration_metrics if paired else [metrics]
+        # the text check's parser by the engine, as run_cell: a context-prompt launch's texts
+        # (context_prompt_texts); a llama.cpp side build's chat reply (llama_cli_reply, after its echo
+        # of the prompt); a LiteRT-LM cpu / gpu chat launch, flat or side build, is not text-checked
+        # on either route (litert_lm_main echoes no prompt and logs no "Running single-turn
+        # conversation" line, so neither reply parser reads it; DDP wires no LiteRT-LM NPU build)
         checking = os.environ.get("BENCH_TEXT_CHECK", "1") == "1"
         if paired and checking:
             printed_texts = parsers.context_prompt_texts(console)
-        elif engine_dir and binname != "llama-bench" and checking:
+        elif engine_dir and runtime == "llama.cpp" and binname != "llama-bench" and checking:
             printed_texts = [parsers.llama_cli_reply(console, prompt_text)]
         elif et and checking:
             printed_texts = [et_fields["text"] or ""]
