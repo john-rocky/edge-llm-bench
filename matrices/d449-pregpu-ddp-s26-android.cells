@@ -1,0 +1,14 @@
+# D-449 round 3, the lab Galaxy S26 units (DDP m1q-36, ops/dashboard-v1/schedule.json device s26-ddp): the LiteRT-LM
+# GPU rows of matrices/dashboard-ddp-v1-android-s26.cells that no attached-S26 sitting of rounds 2-3 measures on the
+# side build v0.19.0-pregpu (LiteRT-LM v0.19.0 at the Android pin's commit with Google's prebuilt GPU accelerator,
+# loaded at run time; android/engine-pins.json litert-lm.v0.19.0-pregpu, engine_version v0.19.0): Gemma 4 E4B
+# short-chat and 1K long-context, and Qwen3 0.6B short-chat (every attached sitting's anchor phase measures that cell
+# on the flat build, after round 2's side-build run of it).
+# Rows: those rows byte for byte with engine-build=v0.19.0-pregpu after backend=gpu. A row's engine-build= runs on
+# DDP only with run_ddp's all-runtimes switch: launched as
+#   BENCH_DDP_ALL_RUNTIMES=1 python3 scripts/dashboard_job.py s26-ddp --cells <this file> --suffix d449pg --once --no-post
+# (the job's DDP route writes SESSION.json; run_ddp pushes the build to engines/v0.19.0-pregpu/ on each unit and
+# reads the model at its flat path, one job = one unit; record.py names the build in conditions.engineBuild).
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E4B-it.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
