@@ -1,0 +1,20 @@
+# 2026-11-04 D-541, one Galaxy S26 slot (campaign suffix d541q35): litert-community/Qwen3.5-0.8B
+# (Qwen3.5-0.8B_int8.litertlm, Hub main LFS sha256 25447e25..., 964,566,992 B, unchanged since 2026-10-16) on the
+# LiteRT team's protocol row, native-benchmark-1024x256 = litert_lm_advanced_main --benchmark, prefill forced to
+# exactly 1024 tokens, decode 256, context 2048 (methodology/agreed-protocol-gemma4.md "The spec"), as the Qwen3 and
+# Gemma 4 rows of matrices/dashboard-protocol1024-v1-android.cells are written: the GPU row on the side build
+# v0.19.0-pregpu (LiteRT-LM v0.19.0 at the Android pin's commit with Google's prebuilt GPU accelerator, loaded at run
+# time; android/engine-pins.json litert-lm.v0.19.0-pregpu, engine_version v0.19.0), the weekly Android GPU build since
+# D-449, first; the CPU row on the flat pinned build (v0.19.0) after it.
+# First row = the Android llama.cpp session anchor row of matrices/anchors.cells byte for byte (the payload's
+# admission is judged on it, the primary anchor; the job's anchor phase runs both Android rows of anchors.cells
+# before this file). No cooldown= (the runner's 120 s, the 0.6B / 1.7B class: docs/dashboard-cells-v1.md) and no
+# runs= (the runner's default of 3 runs per row, round by round: GPU, CPU, GPU, CPU, GPU, CPU).
+# Estimate: about 36 min of a 45-min hold = the anchor phase 10.7 + this file's anchor row 4.4 + the model's first
+# push 1 + three GPU launches of (120 + up to 110 s of GPU engine creation, the card's Galaxy S26 figures 74-107 s
+# on v0.18.0 + 10 s) 12 + three CPU launches of (120 + 12 + 10 s) 7.1 + 0.5.
+# Run, inside the device hold a keeper took (the job neither takes nor releases it):
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/d541-qwen35-s26-android.cells --suffix d541q35 --once --hold-held-by <keeper pid> --no-post
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=cpu file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048
