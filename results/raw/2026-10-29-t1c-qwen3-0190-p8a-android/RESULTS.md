@@ -1,6 +1,6 @@
-# RESULTS — Pixel 8a, PyPI litert-lm-api 0.19.0 Android wheel (2026-10-29)
+# RESULTS — Pixel 8a, PyPI litert-lm-api 0.19.0 Android wheel (2026-10-29; N4 sittings 2026-11-02 and 2026-11-03)
 
-Generated on 2026-11-02 by the lane's `summarize.py` from `logs/p8a/` of this dir (its only arithmetic: the median over runs and processes, and the new-vs-compared ratio). The output follows as printed, its device header line with this dir's path.
+Generated on 2026-11-02 by the lane's `summarize.py` from `logs/p8a/` of this dir (its only arithmetic: the median over runs and processes, and the new-vs-compared ratio). The output follows as printed, its device header line with this dir's path. The two dated sections after it were made the same way on their days, from `logs/p8a-2026-11-02/` and `logs/p8a-2026-11-03/`.
 
 ```
 
@@ -40,3 +40,20 @@ selftest: exit 0, versions {'python': '3.14.8', 'platform': 'android', 'machine'
 ```
 
 The process's own stop line (`logs/p8a-2026-11-02/N4_kpy_gpu_proto_A.err`, last line; the parsed `memguard_line` of `N4_kpy_gpu_proto_A.json`): `MEMGUARD: MemAvailable 140776 kB < 400000 at 1793605749: killed`.
+
+## 2026-11-03: N4, one GPU and one CPU protocol process (its own sitting)
+
+The same tool on `logs/p8a-2026-11-03/` (2026-11-03), as printed, its device header line with this dir's path:
+
+```
+
+## Pixel 8a (logs/p8a-2026-11-03), PyPI litert-lm-api 0.19.0 Android wheel on CPython 3.14.8
+device: 2026-11-03 12:19:27 model=Pixel 8a release=16 build_id=CP1A.260505.005 fingerprint=google/akita/akita:16/CP1A.260505.005/15081906:user/release-keys
+selftest: exit 0, versions {'python': '3.14.8', 'platform': 'android', 'machine': 'aarch64', 'litert-lm-api': '0.19.0'}, lib sha256 28fa8433febc49a9
+
+### N4 vs M4B
+- GPU protocol N4: median over 0 processes - / - tok/s; A - / - (runs ; ready=True, thermal 0, kgsl none; exit 137: 11-03 12:22:10.328  3579  3579 E libEGL  : call to OpenGL ES API with no current context (logged once per thread))
+- CPU protocol A N4: 16.7 / 4.89 tok/s (runs prefill 24.7 / 16.7 / 12.9, decode 5.46 / 4.60 / 4.89; ceilings at start policy0:1704000/1704000,policy4:2367000/2367000,policy8:2914000/2914000; exit 0)
+```
+
+The GPU process's own stop line (`logs/p8a-2026-11-03/N4_kpy_gpu_proto_A.err`, last line): `MEMGUARD: MemAvailable 360076 kB < 400000 at 1793676206: killed`. Its first run finished before the stop. That run is in its stdout (`N4_kpy_gpu_proto_A.out`) and not in the tool's line above, because `legpy.py` prints the run list in one line at the end of the process, which a stopped process never reaches. It is one run of a stopped process, not a rate: `iteration 1: prefill 106.2 tok/s (1024), decode 9.59 tok/s (256), init 74845 ms, ttft 9.748 s`.

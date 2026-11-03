@@ -1659,14 +1659,17 @@ sitting on the v0.19.0 pin the 1.7B CPU cells and both 4B cells run other bytes 
 cells' `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` did not change (1,187.0 / 38.80 on the protocol, in its own hold
 that day).
 
-## Qwen3 1.7B and 4B GPU-composite files on LiteRT-LM 0.19.0, Pixel 8a (2026-10-29, 2026-11-02)
+## Qwen3 1.7B and 4B GPU-composite files on LiteRT-LM 0.19.0, Pixel 8a (2026-10-29, 2026-11-02, 2026-11-03)
 
 On the Pixel 8a with the wheel and harness of the S26 section above (lane logs, no records:
 `results/raw/2026-10-29-t1c-qwen3-0190-p8a-android/`), `Qwen3-1.7B_dynamic_wi8_afp32_gpu_composites.litertlm` built
 the OpenCL engine with every node on the GPU and ran the protocol 1024 / 256 at 753.9 / 14.83 tok/s (prefill /
 decode, median over 3 processes), against 251.8 / 9.01 for `Qwen3_1.7B.litertlm` in the same hold;
 `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm`, the file of this phone's 1.7B GPU cells, ran 271.3 / 19.46 that day.
-`Qwen3-4B_dynamic_wi4b32_afp32_gpu_composites.litertlm` has no rate there: in one process on 2026-11-02 its GPU engine
-was built, and 2 s after the benchmark's session was created the lane's memory guard (MemAvailable under 400,000 kB)
-stopped it, as on a lab Pixel 8a in T1c's 2026-10-16 round with T1c's own 4B export. The Pixel 8a's Qwen3-4B rows
-stay out (section "Per-device exclusion").
+`Qwen3-4B_dynamic_wi4b32_afp32_gpu_composites.litertlm` has no GPU rate there. Its GPU engine was built in both
+sittings and the lane's memory guard (MemAvailable under 400,000 kB) stopped the process: on 2026-11-02 2 s after the
+benchmark's session was created (as on a lab Pixel 8a in T1c's 2026-10-16 round with T1c's own 4B export); on
+2026-11-03, with background apps stopped first, after one finished run, 3 s after the second run's session was
+created. Its CPU process of 2026-11-03 ran the protocol under the same guard at 16.7 / 4.89 tok/s (median of 3 runs),
+a sustained figure: the CPU ceilings were 22–60 % below their maxima at its end, past this repo's cpu-cap line. The Pixel 8a's Qwen3-4B rows stay out (section "Per-device
+exclusion").
