@@ -1,0 +1,12 @@
+# 2026-11-03 D-449 round 5, one Galaxy S26 slot (campaign suffix d449pg-s7; rounds 2-3 ran s1-s6): the Android rows of
+# matrices/anchors.cells byte for byte, after the weekly switch moved its LiteRT-LM GPU anchor row to the side build
+# v0.19.0-pregpu (LiteRT-LM v0.19.0 at the Android pin's commit with Google's prebuilt GPU accelerator, loaded at run
+# time; android/engine-pins.json litert-lm.v0.19.0-pregpu, engine_version v0.19.0, in
+# /data/local/tmp/llmbench/engines/v0.19.0-pregpu/ on the phone since round 3). Every by-hand slot of rounds 2-3 ran
+# its anchor phase on the flat build, so the page's Galaxy S26 Qwen3 0.6B short-chat GPU row (the cell of the newest
+# session, anchor phases included) still shows the flat build; this sitting's anchor phase and payload both run that
+# row on the side build. First row = the Android session anchor (the payload's admission reads it). No other cell:
+# the anchor phase and these two rows fill about 25 minutes of a 45-min hold.
+#   BENCH_SITTING=1 python3 scripts/dashboard_job.py s26 --cells matrices/d449-pregpu-s26-s7-android.cells --suffix d449pg-s7 --once --hold-held-by <keeper pid> --no-post
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
