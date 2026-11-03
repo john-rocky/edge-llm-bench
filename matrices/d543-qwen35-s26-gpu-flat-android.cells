@@ -1,0 +1,14 @@
+# 2026-11-04 D-543, arm A of one by-hand Galaxy S26 A/B (not page rows: the campaign names hold no `dashboard`, so
+# the team page never reads them as a weekly sitting): litert-community/Qwen3.5-0.8B (Qwen3.5-0.8B_int8.litertlm, Hub
+# main LFS sha256 25447e25..., 964,566,992 B) on the LiteRT team's protocol row, native-benchmark-1024x256 =
+# litert_lm_advanced_main --benchmark, prefill forced to exactly 1024 tokens, decode 256, context 2048
+# (methodology/agreed-protocol-gemma4.md "The spec"), LiteRT-LM GPU on the flat pinned build v0.19.0 (commit 771b06e1;
+# its GPU accelerator built from source and linked into the binary: "Statically linked GPU accelerator"). Arm B is
+# matrices/d543-qwen35-s26-gpu-pregpu-android.cells: the same row on the side build v0.19.0-pregpu (the same commit
+# with Google's prebuilt libLiteRtGpuAccelerator.so loaded at run time), the only variable of the pair.
+# One launch per runner start (runs=1); d543_work/slot.sh starts the two arms' runners in the order A B B A A B, each
+# arm into its own campaign dir (2026-11-04-d543-qwen35-gpu-flat-s26-android / ...-pregpu-...), so the gate judges one
+# build's newest run only; the runner's 120 s cooldown before each launch. This row = the GPU row of
+# matrices/d541-qwen35-s26-android.cells without its engine-build= (= the Qwen3 0.6B GPU row of
+# matrices/dashboard-protocol1024-v1-android.cells with the model id and file swapped), runs=1 added.
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=gpu file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048 runs=1
