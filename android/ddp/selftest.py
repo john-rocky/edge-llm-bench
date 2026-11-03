@@ -30,7 +30,9 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
    counts), records; a 4xx body kept verbatim; the records' keys, witness, model sha, conditions.ddp,
    conditions.engineCache (built / loaded / GPU not-loaded / GPU loaded / absent), raw log, the 1K
    cell's two iterations and text check, firstEver, the uuid5 ids; --records-only writes the same
-   files again; the witness of a changed sha.
+   files again; the witness of a changed sha; conditions.engineBuild (record.litert_build_name) of a
+   plan-wide --engine-build whose entry stamps another tag's engine_version, not of a label the
+   witness did not see or that is its own engineVersion, and a CPU delegate on its GPU signature flagged.
 5. scripts/build_summary.py into a temp dir: the device column of a DDP row, never the attached
    phone's; render_leaderboard's tree key and arm_row apart; render_dashboard's devices_for. Then
    render_leaderboard.latest_session on a temp summary of those columns: a cell that mixes version tags
@@ -1240,8 +1242,84 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
        and any("run1.log has neither" in m for m in r1[0]["provenance"].get("ddpMissing", [])),
        f"a CPU run with neither XNNPACK cache line: engineCache absent / absent, the reason in provenance.ddpMissing "
        f"({[r['provenance'].get('ddpMissing') for r in r1]})")
+    check_build_name(tmp, ddp, plan_s, session, recs)
     server.shutdown()
     return out
+
+
+def check_build_name(tmp, ddp, plan_s, session, flat_recs):
+    """record.litert_build_name on the billed path's GPU execution: a plan-wide --engine-build whose
+    pins entry stamps another tag's engine_version (v0.19.0-pregpu's shape: engine v0.19.0, Google's
+    prebuilt GPU accelerator) names its build in conditions.engineBuild; a label the witness did not
+    see or that is its own engineVersion does not; a CPU delegate on a GPU signature is flagged."""
+    label = f"{TAG}-selftest-pregpu"
+    pins = run_cell.load_pins()
+    job = next(j for j in plan_s["jobs"] if j.get("backend") == "gpu")
+    jr = next(r for r in session["sessionReport"]["jobReports"] if r["displayName"] == job["displayName"])
+    ex, rel = record.execution_dirs("session-test0001", jr)[0]
+    meta = {"sessionId": "session-test0001", "jobId": jr["id"], "jobDisplayName": jr["displayName"],
+            "executionId": ex["id"], "jobStartTime": jr["startTime"], "jobEndTime": jr["endTime"],
+            "executionStartTime": ex["startTime"], "executionEndTime": ex["endTime"],
+            "resultType": "PASSED", "ddpSessionDir": f"ddp/{rel}"}
+    stand = {n: hashlib.sha256(f"stand-in {label} {n}\n".encode()).hexdigest()
+             for n in ("litert_lm_main", "litert_lm_advanced_main")}
+    with_version = copy.deepcopy(pins)
+    with_version["litert-lm"][label] = dict(copy.deepcopy(pins["litert-lm"][TAG]), engine_version=TAG,
+                                            litert_lm_main_sha256=stand["litert_lm_main"],
+                                            litert_lm_advanced_main_sha256=stand["litert_lm_advanced_main"])
+    own_version = copy.deepcopy(with_version)
+    own_version["litert-lm"][label].pop("engine_version")
+    cpu_line = ("VERBOSE: Replacing 12 out of 12 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 "
+                "partitions for subgraph 3 (prefill_seq_128).")
+    accel = "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered."
+
+    def records(name, pins_doc, tool_shas, extra_line=None):
+        copy_dir = os.path.join(tmp, f"build-name-{name}")
+        shutil.copytree(os.path.join(ddp, rel), copy_dir)
+        prov_path = glob.glob(os.path.join(copy_dir, "artifacts", "**", "provenance.txt"), recursive=True)[0]
+        text = open(prov_path).read()
+        for tool, sha in tool_shas.items():
+            line = next(x for x in text.splitlines() if x.endswith(f"/{tool}"))
+            text = text.replace(line, sha + "  " + line.split("  ", 1)[1])
+        write(prov_path, text)
+        if extra_line:
+            for log in glob.glob(os.path.join(copy_dir, "artifacts", "**", "run*.log"), recursive=True):
+                write(log, open(log).read().replace("===ENGINE_OUTPUT===\n",
+                                                    "===ENGINE_OUTPUT===\n" + extra_line + "\n", 1))
+        out = os.path.join(tmp, f"build-name-out-{name}")
+        os.makedirs(out)
+        with patch.object(run_cell, "load_pins", lambda serial=None: copy.deepcopy(pins_doc)):
+            record.records_for_execution(dict(job, engineTag=label), copy_dir, out, meta)
+        return [json.load(open(f)) for f in sorted(glob.glob(os.path.join(out, "*.json")))]
+
+    pg = records("pregpu", with_version, stand)
+    ok(len(pg) == 4 and all(r["engineVersion"] == TAG and r["engineArtifact"] == stand["litert_lm_advanced_main"]
+                            and r["conditions"].get("engineBuild") == label
+                            and accel in r["conditions"].get("backendRegistered", [])
+                            and "backendOffReason" not in r["conditions"]
+                            and "backend-not-registered" not in r["conditions"].get("protocolFlags", []) for r in pg),
+       f"plan-wide --engine-build {label} (entry engine_version {TAG}, the unit holds its tools): engineVersion {TAG}, "
+       f"engineArtifact its advanced_main, conditions.engineBuild {label}, backendRegistered with the Dynamically "
+       f"loaded line, no off-device flag ({len(pg)} records; {[r['conditions'].get('engineBuild') for r in pg][:1]})")
+    unseen = records("unwitnessed", with_version, {})
+    ok(len(unseen) == 4 and all(r["engineVersion"] == TAG and r["engineArtifact"] == pins["litert-lm"][TAG][
+        "litert_lm_advanced_main_sha256"] and "engineBuild" not in r["conditions"]
+                                and "backendRegistered" not in r["conditions"] for r in unseen),
+       f"the same job when the unit holds the flat {TAG} tools (the witness never saw {label}'s): no engineBuild, "
+       f"no backendRegistered ({len(unseen)} records)")
+    own = records("own-version", own_version, stand)
+    ok(len(own) == 4 and all(r["engineVersion"] == label and "engineBuild" not in r["conditions"] for r in own),
+       f"a label that is its own engineVersion (no engine_version in its entry, as main-<sha> builds): engineVersion "
+       f"{label}, no engineBuild ({len(own)} records)")
+    off = records("cpu-delegate", with_version, stand, cpu_line)
+    ok(len(off) == 4 and all(r["conditions"].get("engineBuild") == label
+                             and r["conditions"].get("backendOffReason") == "a signature on TfLiteXNNPackDelegate"
+                             and "backend-not-registered" in r["conditions"].get("protocolFlags", []) for r in off),
+       f"a GPU launch of {label} whose log shows a prefill signature on TfLiteXNNPackDelegate: backendOffReason and "
+       f"the backend-not-registered flag ({[r['conditions'].get('backendOffReason') for r in off][:1]})")
+    ok(flat_recs and all("engineBuild" not in r["conditions"] and "backendRegistered" not in r["conditions"]
+                         for r in flat_recs.values()),
+       f"the billed path's flat {TAG} records carry neither engineBuild nor backendRegistered ({len(flat_recs)} records)")
 
 
 def check_engine_cache(short, long_):

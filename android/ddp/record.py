@@ -9,6 +9,9 @@ android/bench/run_cell.py main's extended record (run_cell 1405-1563), plus:
   conditions.engineCache  what the engine's caches did in the run, read from its raw log (D13):
                   xnnpackWeightCache built / loaded / absent, gpuCache loaded / not-loaded / absent
   device.ddp      catalog id, fingerprint, serial (scripts/build_summary.py: the device column)
+  conditions.engineBuild (+ backendRegistered, backendOffReason)  a LiteRT-LM build whose name
+                  engineVersion does not carry (litert_build_name: v0.19.0-pregpu stamps v0.19.0),
+                  with run_cell's LiteRT-LM side-build lines and off-device check
   provenance      ddpSessionDir, wrapper, wrapperSha256 (+ ddpMissing: what the unit did not give)
 A value the unit did not report stays null with its reason in provenance.ddpMissing — never
 estimated. The witness is the shas the wrapper read on the unit (provenance.txt) against
@@ -175,6 +178,23 @@ def witness(binname, shas, pins, engine_dir=None):
     return f"unknown (on-device {binname} sha unmatched in android/engine-pins.json)", sha
 
 
+def litert_build_name(job, engine_artifact, pins):
+    """conditions.engineBuild of a LiteRT-LM job, or None: the job's build (engineTag, the plan's
+    --engine-build or a row's engine-build=) when its pins entry stamps another tag's engine_version
+    (v0.19.0-pregpu stamps engineVersion v0.19.0, so without this the record names no build) and
+    the witness saw that entry's tool (engine_artifact is its litert_lm_main or advanced_main sha).
+    A tag that is its own engineVersion (a flat pin, a main-<sha> label) gives None, so records of
+    every older campaign come out the same from run_ddp.py --records-only."""
+    if job.get("runtime", "litert-lm") != "litert-lm":
+        return None
+    tag = job.get("engineTag")
+    entry = pins.get("litert-lm", {}).get(tag) or {}
+    tools = {entry.get("litert_lm_main_sha256"), entry.get("litert_lm_advanced_main_sha256")} - {None}
+    if engine_artifact in tools and entry.get("engine_version", tag) != tag:
+        return tag
+    return None
+
+
 def engine_cache(console, backend, log_name):
     """conditions.engineCache of one run from its raw log -> (value, ddpMissing reason or None).
     xnnpackWeightCache: "built" (a 'weight cache build for' line), "loaded" ('weight cache loaded from'
@@ -226,7 +246,9 @@ def records_for_execution(job, exec_dir, out_dir, meta):
     # an executorch build label names its runner dirs (in job["binname"]), not a side build dir
     engine_dir = (f"{run_cell.ENGINES_DIR}/{engine_build}"
                   if engine_build and runtime != "executorch" else None)
-    engine_version, engine_artifact = witness(job["binname"], prov["sha"], run_cell.load_pins(), engine_dir)
+    pins = run_cell.load_pins()
+    engine_version, engine_artifact = witness(job["binname"], prov["sha"], pins, engine_dir)
+    litert_build = litert_build_name(job, engine_artifact, pins)
     model_sha = prov["sha"].get(job["modelDevice"])
     if model_sha is None:
         missing.append(f"model.sha256: no provenance.txt line for {job['modelDevice']}")
@@ -339,7 +361,21 @@ def records_for_execution(job, exec_dir, out_dir, meta):
             launch_checks = {"invalidDecodeCount": invalid,
                              "protocolFlags": ["invalid-decode"] if invalid else []}
         side_cond, backend_flags = {}, []
-        if engine_build and (runtime == "executorch" or (runtime == "llama.cpp" and not job["backend"])):
+        if litert_build:
+            # as run_cell's LiteRT-LM side build: the build's name and lines (the backend it chose,
+            # the accelerators registered, the signatures' delegation; on the CPU, YNNPACK's lines);
+            # a launch that shows another device is flagged and kept out of every pool
+            lines = parsers.litert_side_lines(console)
+            side_cond = {"engineBuild": litert_build, "backendRegistered": lines}
+            counts = parsers.ynnpack_counts(console)
+            ynnpack = job["arm"] == run_cell.arm_name("litert-lm", "cpu", True)
+            if job["backend"] == "cpu":
+                side_cond.update(enableYnnpack=ynnpack, ynnpackLines=counts)
+            off = parsers.litert_side_off_device(lines, job["backend"], ynnpack, counts)
+            if off:
+                side_cond["backendOffReason"] = off
+                backend_flags = ["backend-not-registered"]
+        elif engine_build and (runtime == "executorch" or (runtime == "llama.cpp" and not job["backend"])):
             # an ExecuTorch build other than the pinned tag, or a llama.cpp CPU side build: the
             # build (and its command); no device to witness (run_cell's conditions likewise)
             side_cond = {"engineBuild": engine_build}
