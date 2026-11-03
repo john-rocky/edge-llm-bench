@@ -167,13 +167,16 @@ def check_plan(tmp, bin_dir, models):
             write(path, f"weights of {filename}\n")
         return {"local": path, "bytes": os.path.getsize(path), "sha256": run_cell.sha256_file(path)}
 
+    no_switch = {k: v for k, v in os.environ.items() if k != "BENCH_DDP_ALL_RUNTIMES"}
     with patch.object(subprocess, "run", side_effect=AssertionError("subprocess in a plan")), \
             patch.object(subprocess, "Popen", side_effect=AssertionError("subprocess in a plan")), \
-            patch.object(run_ddp, "model_file", fake_model):
+            patch.object(run_ddp, "model_file", fake_model), patch.dict(os.environ, no_switch, clear=True):
         for dev in ("akita-35", "m1q-36", "caiman-35"):
             plans[dev] = run_ddp.plan(DASHBOARD, dev, f"selftest-{dev}-android", plan_args(bin_dir))
-    # the weekly LiteRT-LM GPU rows run the side build v0.19.0-pregpu (engine-build=, D-449): a row's side build is
-    # not wired on DDP (side-build-not-wired-on-ddp, ahead of exclude-on), so the CPU rows are the jobs
+    # the weekly LiteRT-LM GPU rows run the side build v0.19.0-pregpu (engine-build=, D-449). Without run_ddp's
+    # all-runtimes switch (a by-hand `bench matrix --ddp`) a row's side build is not wired on DDP
+    # (side-build-not-wired-on-ddp, ahead of exclude-on), so the CPU rows are the jobs here; the weekly slot sets the
+    # switch and runs them (check_weekly_slot)
     want = {"akita-35": (6, 1, 10, 4, "pixel8a"), "m1q-36": (10, 2, 10, 0, None), "caiman-35": (6, 1, 10, 0, None)}
     for dev, (jobs, sessions, rt, on, key) in want.items():
         p = plans[dev]
@@ -187,7 +190,9 @@ def check_plan(tmp, bin_dir, models):
            f"(got {reasons.count('runtime-not-wired-on-ddp')} + {len(keyed)}: {sorted({k for _, k in keyed})})")
     sides = {dev: [r for _, r, _ in plans[dev]["skips"]].count("side-build-not-wired-on-ddp") for dev in want}
     ok(all(n == 10 for n in sides.values()),
-       f"the 10 LiteRT-LM GPU rows on the side build skip as side-build-not-wired-on-ddp ({sides})")
+       f"without the all-runtimes switch the 10 LiteRT-LM GPU rows on the side build skip as "
+       f"side-build-not-wired-on-ddp ({sides})")
+    check_weekly_slot(tmp, bin_dir, fake_model)
     unk = [r for _, r, _ in plans["caiman-35"]["skips"] if r == "ddp-device-key-unknown"]
     ok(len(unk) == 4 and all(j["mask"] == "" for j in plans["caiman-35"]["jobs"]),
        f"caiman-35 (no schedule key): the 4 litert-lm CPU rows with an exclude-on skip as ddp-device-key-unknown, "
@@ -287,6 +292,79 @@ def check_plan(tmp, bin_dir, models):
        f"an engine file one byte off its pin stops the plan, naming it ({stopped})")
     shutil.rmtree(bad_bin)
     return plans
+
+
+def check_weekly_slot(tmp, bin_dir, fake_model):
+    """The dashboard job's weekly lab-unit slot (ops/dashboard-v1/schedule.json s26-ddp: its cells file and env;
+    scripts/dashboard_job.py hands the env to the plan and the run) runs the weekly set's LiteRT-LM GPU rows on their
+    side build (D-449, 2026-11-03): the env sets BENCH_DDP_ALL_RUNTIMES=1, so run_ddp wires each row's engine-build=
+    and pushes that build to engines/<tag>/ beside the flat one. The side build's files are stand-ins in a temp bin
+    dir with their sha256 in a copy of the pins (CI's bin dir holds the pinned build only); the flat CPU rows push
+    the pinned build's real files. Without the env the same file's GPU rows skip as side-build-not-wired-on-ddp."""
+    sched = run_ddp.load_json(run_ddp.SCHEDULE)["devices"]["s26-ddp"]
+    cells_file = os.path.join(ROOT, sched["cells"])
+    env = sched.get("env") or {}
+    anchors, payload, _ = run_campaign.parse_cells(cells_file)
+    rows = anchors + payload
+    w_anchors, w_payload, _ = run_campaign.parse_cells(DASHBOARD)
+    weekly_gpu = sorted((c["model_id"], c["task"], c["opts"].get("engine-build"))
+                        for c in w_anchors + w_payload
+                        if c["runtime"] == "litert-lm" and c["opts"].get("backend") == "gpu")
+    pins = run_cell.load_pins()
+    temp_pins = copy.deepcopy(pins)
+    slot_bin = os.path.join(tmp, "weekly-slot-bin")
+    os.makedirs(slot_bin)
+    os.symlink(os.path.join(os.path.abspath(bin_dir), TAG), os.path.join(slot_bin, TAG))
+    stand = {}
+    for label in sorted({b for _, _, b in weekly_gpu if b}):
+        entry = temp_pins["litert-lm"][label]
+        names = ["litert_lm_main", "litert_lm_advanced_main"] + sorted(entry.get("so_files") or {})
+        for name in names:
+            write(os.path.join(slot_bin, label, name), f"stand-in {label} {name}\n")
+        stand[label] = {n: hashlib.sha256(f"stand-in {label} {n}\n".encode()).hexdigest() for n in names}
+        entry["litert_lm_main_sha256"] = stand[label]["litert_lm_main"]
+        entry["litert_lm_advanced_main_sha256"] = stand[label]["litert_lm_advanced_main"]
+        entry["so_files"] = {n: s for n, s in stand[label].items() if n.endswith(".so")}
+
+    def plan(switch_env):
+        base = {k: v for k, v in os.environ.items() if k != "BENCH_DDP_ALL_RUNTIMES"}
+        with patch.object(run_cell, "load_pins", lambda serial=None: copy.deepcopy(temp_pins)), \
+                patch.object(subprocess, "run", side_effect=AssertionError("subprocess in a plan")), \
+                patch.object(subprocess, "Popen", side_effect=AssertionError("subprocess in a plan")), \
+                patch.object(run_ddp, "model_file", fake_model), patch.dict(os.environ, dict(base, **switch_env),
+                                                                             clear=True):
+            return run_ddp.plan(cells_file, sched["ddp_id"], "selftest-weekly-slot-android", plan_args(slot_bin))
+    p, p0 = plan(env), plan({})
+    gpu = [j for j in p["jobs"] if j["backend"] == "gpu"]
+    cpu = [j for j in p["jobs"] if j["backend"] == "cpu"]
+    flat = entry_shas(pins["litert-lm"][TAG])
+    bad = []
+    for j in gpu:
+        label = j["engineBuild"]
+        engines = {f["name"]: f for f in j["push"] if f["kind"] == "engine"}
+        if (label not in stand or j["engineTag"] != label or {n: f["sha256"] for n, f in engines.items()} != stand[label]
+                or any(f["device"] != f"{run_cell.ENGINES_DIR}/{label}/{n}" for n, f in engines.items())
+                or f"LD_LIBRARY_PATH={run_cell.ENGINES_DIR}/{label}" not in j["env"]):
+            bad.append(j["displayName"])
+    for j in cpu:
+        engines = {f["name"]: f for f in j["push"] if f["kind"] == "engine"}
+        if (j["engineBuild"] or j["engineTag"] != TAG or {n: f["sha256"] for n, f in engines.items()} != flat
+                or any(f["device"] != f"{run_cell.DEV_DIR}/{n}" for n, f in engines.items())):
+            bad.append(j["displayName"])
+    got_gpu = sorted((j["modelId"], j["task"], j["engineBuild"]) for j in gpu)
+    ok(env.get("BENCH_DDP_ALL_RUNTIMES") == "1" and not p["skips"] and len(p["jobs"]) == len(rows)
+       and got_gpu == weekly_gpu and len(cpu) == len(rows) - len(gpu) and not bad
+       and len(p["sessions"]) == -(-len(rows) // 8),
+       f"the weekly slot (schedule.json s26-ddp: {sched['cells']}, env {env}) on {sched['ddp_id']}: {len(p['jobs'])} jobs "
+       f"in {len(p['sessions'])} sessions, none skipped; its {len(gpu)} GPU jobs = the weekly set's LiteRT-LM GPU rows, "
+       f"each on its engine-build ({sorted({b for _, _, b in got_gpu})}) pushed to {run_cell.ENGINES_DIR}/<tag>/ with "
+       f"LD_LIBRARY_PATH there; its {len(cpu)} CPU jobs on the pinned {TAG} (off: {bad[:2]})")
+    skipped = [c for c, r, _ in p0["skips"] if r == "side-build-not-wired-on-ddp"]
+    side_rows = [c for c in rows if c["opts"].get("engine-build")]
+    ok(len(p0["jobs"]) == len(rows) - len(side_rows) and len(skipped) == len(side_rows) > 0
+       and all(c["opts"].get("backend") == "gpu" for c in skipped),
+       f"the same file without the env: the {len(skipped)} GPU rows skip as side-build-not-wired-on-ddp, "
+       f"{len(p0['jobs'])} CPU jobs")
 
 
 def check_bench_dry_run(tmp, bin_dir):

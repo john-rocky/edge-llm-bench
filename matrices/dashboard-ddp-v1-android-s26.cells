@@ -22,9 +22,10 @@
 # Since 2026-11-03 the 10 GPU rows carry engine-build=v0.19.0-pregpu, as the weekly set's do (D-449): Google's
 # prebuilt GPU accelerator, loaded at run time (android/engine-pins.json litert-lm.v0.19.0-pregpu, engine_version
 # v0.19.0). A flat GPU row on a lab unit logs the source-built accelerator and fails scripts/session_check.py
-# gpu-accelerator-static. The DDP route wires a row's engine-build only under run_ddp's all-runtimes switch
-# (--all-runtimes, or BENCH_DDP_ALL_RUNTIMES=1, as the 2026-11-03 d449pg2 sitting ran); without it these rows skip as
-# side-build-not-wired-on-ddp and the sitting runs the 10 CPU rows.
+# gpu-accelerator-static. run_ddp wires a row's engine-build only under its all-runtimes switch: the dashboard job's
+# s26-ddp sitting sets it (ops/dashboard-v1/schedule.json s26-ddp env BENCH_DDP_ALL_RUNTIMES=1, handed to the plan
+# and the run alike; the sessions still run one after another), so the weekly sitting runs all 20 rows. A by-hand
+# `./bench matrix <this file> --ddp m1q-36` without it skips the GPU rows as side-build-not-wired-on-ddp.
 
 android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm

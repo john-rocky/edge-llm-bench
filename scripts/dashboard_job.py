@@ -2079,13 +2079,14 @@ def ddp_doctor():
     return sh([PY, "-c", code, os.path.join(ROOT, "scripts")], timeout=180)
 
 
-def ddp_plan(cells, ddp_id, campaign):
+def ddp_plan(cells, ddp_id, campaign, env=None):
     """The plan `bench matrix <cells> --ddp <id> --dry-run` prints (android/ddp/run_ddp.py: no gcloud,
     no network, the models looked up in the local HF cache only) -> {jobs, sessions, skipped, cells:
     (arm, model id, task) per job, skips, upload_objects, upload_bytes, uncached, device_minutes (run_ddp's
-    own estimate), engine}; ConfigError with the output's tail when it prints no summary."""
+    own estimate), engine}; ConfigError with the output's tail when it prints no summary. env: the unit's
+    (schedule.json), over this process's, as the sitting's run gets it."""
     rc, out = sh([os.path.join(ROOT, "bench"), "matrix", cells, "--ddp", ddp_id, "--campaign", campaign,
-                  "--dry-run"], timeout=900)
+                  "--dry-run"], timeout=900, env=dict(os.environ, **env) if env else None)
     plan, summary, upload = {"cells": [], "skips": []}, None, {}
     for ln in out.splitlines():
         if not ln.startswith("{"):
@@ -2211,7 +2212,10 @@ def ddp_sitting(schedule, key, dev, args, cells=None, suffix=None):
     ddp_max_sessions: nothing is billed past the cap), then `bench matrix <cells> --ddp <id>` under
     gtimeout timeout_hours (it uploads what the bucket lacks, runs the sessions one after another, pulls,
     scrubs the logcats, writes the records, rebuilds the summary), then SESSION.json: admitted when the
-    sitting wrote records (DDP_REASON; anchor null), the sessions, jobs and device minutes."""
+    sitting wrote records (DDP_REASON; anchor null), the sessions, jobs and device minutes. The unit's env
+    (schedule.json) goes to the plan and the run alike: s26-ddp's BENCH_DDP_ALL_RUNTIMES=1 makes run_ddp wire
+    each row's engine-build=, the weekly GPU rows' side build v0.19.0-pregpu (D-449, 2026-11-03), with the
+    sessions still one after another (the --all-runtimes flag would create them all first)."""
     dry = args.dry_run
     ddp_id, cells = dev.get("ddp_id"), cells or dev.get("cells")
     if not ddp_id or not cells:
@@ -2236,7 +2240,8 @@ def ddp_sitting(schedule, key, dev, args, cells=None, suffix=None):
     for ln in out.splitlines():
         if ln.strip():
             log("  " + ln.strip())
-    plan = ddp_plan(cells, ddp_id, camp)
+    env = dict(dev.get("env", {}))
+    plan = ddp_plan(cells, ddp_id, camp, env)
     log(f"ddp plan: {plan['jobs']} jobs in {plan['sessions']} Device Run sessions on {ddp_id} (engine "
         f"{plan['engine']}), {plan['skipped']} rows skipped; {plan['upload_objects']} upload candidates, "
         f"{plan['upload_bytes'] / 1e9:.2f} GB (the run uploads what the bucket lacks); run_ddp's estimate "
@@ -2252,7 +2257,7 @@ def ddp_sitting(schedule, key, dev, args, cells=None, suffix=None):
                           f"ddp_max_sessions is {cap}: nothing started")
     if dry:
         log("plan:")
-    rc = run_matrix(cells, "ddp", camp, {}, float(dev.get("timeout_hours", 6)) * 3600, dry, ddp=ddp_id)
+    rc = run_matrix(cells, "ddp", camp, env, float(dev.get("timeout_hours", 6)) * 3600, dry, ddp=ddp_id)
     if dry:
         log(f"  SESSION.json would read admitted true once the sitting writes records ({DDP_REASON}), anchor "
             "null, ddp {id, sessions, jobs, device_minutes}")

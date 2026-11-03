@@ -763,8 +763,8 @@ def main():
     doctor = {"rc": 0}
     plans = []
 
-    def fake_plan(cells, ddp_id, campaign):
-        plans.append((cells, ddp_id, campaign))
+    def fake_plan(cells, ddp_id, campaign, env=None):
+        plans.append((cells, ddp_id, campaign, env))
         return {"cells": [("litert-lm-cpu", "m/A", "short-chat"), ("litert-lm-gpu", "m/A", "short-chat")],
                 "skips": ["litert-lm-cpu m/B short-chat: x (exclude-on s26)"], "jobs": 2,
                 "sessions": doctor.get("sessions", 1), "skipped": 1, "device_minutes": 30.0,
@@ -842,6 +842,18 @@ def main():
     ok(code == dj.EXIT_OK and at(lines, f"bench matrix {unit_cells} --ddp fake-1 --campaign {ucamp}") is not None
        and at(lines, "SESSION.json would read admitted true") is not None,
        f"the lab unit by hand (dashboard_job.py unit): its sitting, exit {code}")
+    # the unit's env (schedule.json; s26-ddp sets BENCH_DDP_ALL_RUNTIMES=1, D-449) goes to its plan and its run alike
+    with open(sched_ddp, "w") as fh:
+        json.dump(dict(sched, devices={"s26": s26, "unit": dict(unit, env={"BENCH_DDP_ALL_RUNTIMES": "1"})}), fh)
+    n_plans = len(plans)
+    code, lines = job_ddp("unit", "--dry-run")
+    got_env = plans[-1][3] if len(plans) > n_plans else None
+    ok(code == dj.EXIT_OK and got_env == {"BENCH_DDP_ALL_RUNTIMES": "1"}
+       and at(lines, f"bench matrix {unit_cells} --ddp fake-1 --campaign {ucamp}   env: "
+                     "BENCH_DDP_ALL_RUNTIMES='1'") is not None,
+       f"the unit's env (schedule.json) reaches its plan and its bench matrix line alike (exit {code}; plan env {got_env})")
+    with open(sched_ddp, "w") as fh:
+        json.dump(dict(sched, devices={"s26": s26, "unit": unit}), fh)
     set_switch(True, cap=1)
     doctor["sessions"] = 2
     code, lines = job_ddp("unit", "--dry-run")
