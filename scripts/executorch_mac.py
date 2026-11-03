@@ -96,16 +96,41 @@ def witness(runner, binary_sha, backend="xnnpack"):
     arms.executorch.mac.binaries for the XNNPACK builds, arms.executorch.mac.backends.<backend>
     .binaries for another delegate's build — the observed build, never the newest pin."""
     where = "arms.executorch.mac" + ("" if backend == "xnnpack" else f".backends.{backend}")
+    tag = None
     try:
         lock = json.loads((REPO / "environment.lock.json").read_text())
         arm = lock["arms"]["executorch"]
+        tag = arm["tag"]
         mac = arm["mac"] if backend == "xnnpack" else arm["mac"]["backends"][backend]
         entry = mac["binaries"][runner]
         if entry.get("sha256") == binary_sha:
             return arm["tag"]
     except (OSError, ValueError, KeyError, TypeError):
         pass
+    extra = extra_pins_witness(runner, binary_sha, backend, tag)
+    if extra:
+        return extra
     return f"unknown (mac {runner} sha unmatched in environment.lock.json {where})"
+
+
+def extra_pins_witness(runner, binary_sha, backend, pinned_tag):
+    """The label of BENCH_EXTRA_PINS's executorch section (the second registry another harness's
+    builds are registered in; android/bench/run_cell.load_pins) whose mac_<runner>[_<backend>]_sha256
+    is this binary's sha256, else None. Add-only, as load_pins: a label equal to the lock's
+    pinned tag refuses (the extra registry never redefines the pin)."""
+    path = os.environ.get("BENCH_EXTRA_PINS")
+    if not path:
+        return None
+    with open(path) as fh:
+        extra = json.load(fh)
+    field = f"mac_{runner}_sha256" if backend == "xnnpack" else f"mac_{runner}_{backend}_sha256"
+    for label, entry in (extra.get("executorch") or {}).items():
+        if label == pinned_tag:
+            raise SystemExit(f"BENCH_EXTRA_PINS {path}: executorch {label!r} is the pinned tag "
+                             "(the extra registry only adds labels)")
+        if isinstance(entry, dict) and entry.get(field) == binary_sha:
+            return entry.get("engine_version", label)
+    return None
 
 
 def runner_command(binary, inputs, budget, warm):

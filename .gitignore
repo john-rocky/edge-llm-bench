@@ -32,6 +32,7 @@ Pods/
 *.onnx
 *.tflite
 *.task
+*.litertlm
 
 # Per-instance results — keep raw/ structure but ignore device-private dumps unless contributed via PR
 results/raw/local-*
@@ -61,6 +62,7 @@ results/raw/**/pulled/
 # (rule 5 in CLAUDE.md). Does not re-include pulled/ (an ignored dir stays ignored whole).
 !results/raw/**/*.log
 android/bin/
+windows/bin/
 results/raw/*/ddp-raw/
 # DDP: a Device Run execution's own logcat.txt (ddp/<session>/<job>/execution-<id>/logcat.txt, the unit's whole
 # log, lines outside the runs included) stays on disk and out of every commit, as d6077c6b and the earlier DDP
@@ -96,5 +98,6 @@ results/raw/**/profiles/system/*.xml
 # AsrBench: bazel-built static library + prebuilt Metal dylib (scripts/build_asr_bench_ios.sh)
 ios/AsrBench/Frameworks/
 
-# ExecuTorch own exports: symlinks to the external drive plus templated prompts (never commit)
+# ExecuTorch / LiteRT own exports: symlinks to the external drive plus templated prompts (never commit)
 /models/executorch/
+/models/litert/

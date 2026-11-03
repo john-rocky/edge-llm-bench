@@ -137,22 +137,25 @@ def latest_session(rows):
     return sess, max((r["timestamp"] or "")[:10] for r in sess)
 
 
-def shallow_cap(r, arm=None):
+def shallow_cap(r, arm=None, include_cpu_capped=False):
     """A row flagged cpu-capped that pools, counted (cpu-cap-rule): on an arm of
     CPU_CAP_EXEMPT_ARMS whatever its fall, on every other arm when its engine CPUs' clock
     ceiling fell by at most CPU_CAP_MAX_DROP_PCT (summary cpu_cap_drop_pct, read as the
-    column shows it). arm = the row's arm, by default its runtime column. A CPU arm's
-    flagged row without the column (a summary built before 2026-10-08) is not shallow and
-    stays out, as every flagged run did then."""
+    column shows it), or when include_cpu_capped=True (opt-in for shared lab phones whose
+    CPUs start capped >15 %, marked explicitly on the surfaces). arm = the row's arm, by
+    default its runtime column. A CPU arm's flagged row without the column (a summary built
+    before 2026-10-08) is not shallow and stays out unless include_cpu_capped=True."""
     if r.get("cpu_capped") != "true":
         return False
+    if include_cpu_capped:
+        return True
     if (r.get("runtime") if arm is None else arm) in CPU_CAP_EXEMPT_ARMS:
         return True
     drop = fnum(r.get("cpu_cap_drop_pct"))
     return drop is not None and drop <= CPU_CAP_MAX_DROP_PCT
 
 
-def arm_row(rows):
+def arm_row(rows, include_cpu_capped=False):
     """One leaderboard line from one cell's latest-session rows."""
     sess, date = latest_session(rows)
     # firstEver rows are the engine-cache build (cold-warm-split: reported
@@ -170,20 +173,24 @@ def arm_row(rows):
     # more than CPU_CAP_MAX_DROP_PCT below its hardware maximum measured the phone's
     # cap, not the engine — same treatment again, after the text check (a run that
     # failed both counts as a text failure); a shallower cap pools, counted below, and
-    # so does any cap on an accelerator arm (CPU_CAP_EXEMPT_ARMS, shallow_cap);
-    # .get: summaries built before 2026-10-07 have no cpu_capped
-    cpu_capped = [r for r in meas if r.get("cpu_capped") == "true" and not shallow_cap(r)]
+    # so does any cap on an accelerator arm (CPU_CAP_EXEMPT_ARMS, shallow_cap) or when
+    # include_cpu_capped=True; .get: summaries built before 2026-10-07 have no cpu_capped
+    cpu_capped = [r for r in meas
+                  if r.get("cpu_capped") == "true"
+                  and not shallow_cap(r, include_cpu_capped=include_cpu_capped)]
     cpu_read = sum(1 for r in meas if r.get("cpu_capped"))
-    meas = [r for r in meas if r.get("cpu_capped") != "true" or shallow_cap(r)]
+    meas = [r for r in meas
+            if r.get("cpu_capped") != "true"
+            or shallow_cap(r, include_cpu_capped=include_cpu_capped)]
     # a llama.cpp side build's run whose own device lines did not show the cell's
     # device (npu / gpu) measured another device — same treatment, last; .get:
     # summaries built before 2026-10-07 have no backend_registered column
     backend_off = [r for r in meas if r.get("backend_registered") == "false"]
     meas = [r for r in meas if r.get("backend_registered") != "false"]
     # the pool's runs that ran under a cap within the line (any cap on an accelerator
-    # arm): they count, and the surfaces mark the number with how many there were and,
-    # on an accelerator arm, the largest fall among them
-    capped_counted = [r for r in meas if shallow_cap(r)]
+    # arm, or when include_cpu_capped=True): they count, and the surfaces mark the
+    # number with how many there were and the largest fall among them
+    capped_counted = [r for r in meas if shallow_cap(r, include_cpu_capped=include_cpu_capped)]
     counted_drops = [fnum(r.get("cpu_cap_drop_pct")) for r in capped_counted]
     counted_drops = [v for v in counted_drops if v is not None]
     warm = [fnum(r["decode_tps"]) for r in meas if r["cold_run"] == "False"]
