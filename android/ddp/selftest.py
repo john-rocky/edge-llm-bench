@@ -4,9 +4,9 @@ results/raw/2026-10-15-ddp-backend-dev/DESIGN.md).
 
   BENCH_ANDROID_BIN_DIR=<dir with <pinned tag>/> ./android/ddp/selftest.py   # exit 0 = pass; temp kept on failure
 
-1. plan (no subprocess, no network): matrices/dashboard-text-v1.cells on akita-35 (8 jobs, 1
-   session), m1q-36 (16 jobs, 2 sessions) and caiman-35 (no schedule key); skip reasons with their
-   key; each job's --command= = run_campaign.planned_command's engine command, --env / --mask apart;
+1. plan (no subprocess, no network): matrices/dashboard-text-v1.cells on akita-35 (6 jobs, 1
+   session), m1q-36 (10 jobs, 2 sessions) and caiman-35 (no schedule key); skip reasons with their
+   key (the GPU rows' side build: side-build-not-wired-on-ddp); each job's --command= = run_campaign.planned_command's engine command, --env / --mask apart;
    the request against the API contract's field names and limits; the engine files against the
    pins (one changed byte stops the plan); the CPU-cap wait per id (devices.json cpucapWaitSeconds:
    m1q-36 0, akita-35 the default 300); --project / --bucket in the plan and the request; bench
@@ -172,7 +172,9 @@ def check_plan(tmp, bin_dir, models):
             patch.object(run_ddp, "model_file", fake_model):
         for dev in ("akita-35", "m1q-36", "caiman-35"):
             plans[dev] = run_ddp.plan(DASHBOARD, dev, f"selftest-{dev}-android", plan_args(bin_dir))
-    want = {"akita-35": (12, 2, 10, 8, "pixel8a"), "m1q-36": (20, 3, 10, 0, None), "caiman-35": (12, 2, 10, 0, None)}
+    # the weekly LiteRT-LM GPU rows run the side build v0.19.0-pregpu (engine-build=, D-449): a row's side build is
+    # not wired on DDP (side-build-not-wired-on-ddp, ahead of exclude-on), so the CPU rows are the jobs
+    want = {"akita-35": (6, 1, 10, 4, "pixel8a"), "m1q-36": (10, 2, 10, 0, None), "caiman-35": (6, 1, 10, 0, None)}
     for dev, (jobs, sessions, rt, on, key) in want.items():
         p = plans[dev]
         reasons = [r for _, r, _ in p["skips"]]
@@ -183,9 +185,12 @@ def check_plan(tmp, bin_dir, models):
            and all(k == key for _, k in keyed),
            f"{dev}: skips = {rt} llama.cpp rows + {on} exclude-on rows with key {key} "
            f"(got {reasons.count('runtime-not-wired-on-ddp')} + {len(keyed)}: {sorted({k for _, k in keyed})})")
+    sides = {dev: [r for _, r, _ in plans[dev]["skips"]].count("side-build-not-wired-on-ddp") for dev in want}
+    ok(all(n == 10 for n in sides.values()),
+       f"the 10 LiteRT-LM GPU rows on the side build skip as side-build-not-wired-on-ddp ({sides})")
     unk = [r for _, r, _ in plans["caiman-35"]["skips"] if r == "ddp-device-key-unknown"]
-    ok(len(unk) == 8 and all(j["mask"] == "" for j in plans["caiman-35"]["jobs"]),
-       f"caiman-35 (no schedule key): the 8 litert-lm rows with an exclude-on skip as ddp-device-key-unknown, "
+    ok(len(unk) == 4 and all(j["mask"] == "" for j in plans["caiman-35"]["jobs"]),
+       f"caiman-35 (no schedule key): the 4 litert-lm CPU rows with an exclude-on skip as ddp-device-key-unknown, "
        f"no mask (got {len(unk)})")
     sched = run_ddp.load_json(run_ddp.SCHEDULE)["devices"]
     bad_cmd, bad_req = [], []
@@ -296,8 +301,8 @@ def check_bench_dry_run(tmp, bin_dir):
                         "--dry-run", "--campaign", "selftest-dry"], env=env, capture_output=True, text=True)
     after = os.path.getmtime(summary_csv) if os.path.exists(summary_csv) else None
     ok(r.returncode == 0 and "skip: ios rows are not run on DDP" in r.stdout
-       and "skip: mac rows are not run on DDP" in r.stdout and '"jobs": 8' in r.stdout,
-       f"bench --ddp akita-35 --dry-run: rc 0, ios / mac rows skipped, 8 jobs (rc {r.returncode}, {r.stderr[-300:]!r})")
+       and "skip: mac rows are not run on DDP" in r.stdout and '"jobs": 6' in r.stdout,
+       f"bench --ddp akita-35 --dry-run: rc 0, ios / mac rows skipped, 6 jobs (rc {r.returncode}, {r.stderr[-300:]!r})")
     ok(not os.path.exists(marker), "the dry run never ran gcloud (a gcloud first on PATH that records calls)")
     ok(before == after, "the dry run rebuilt no summary")
     r2 = subprocess.run([sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD, "--dry-run"],
@@ -641,7 +646,7 @@ def check_wrapper_strings(plans):
                 n += 1
                 if got != want:
                     bad.append((dev, j["displayName"], split))
-    ok(not bad and n == 64, f"{n} wrapper strings byte-equal to sampler_shell (differ: {bad[:2]})")
+    ok(not bad and n == 32, f"{n} wrapper strings byte-equal to sampler_shell (differ: {bad[:2]})")
 
 
 FAKE_DEVICE_TOOLS = {

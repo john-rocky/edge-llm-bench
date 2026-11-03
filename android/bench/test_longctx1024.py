@@ -188,8 +188,14 @@ class AndroidLaunchContract(unittest.TestCase):
             o = c["opts"]
             model = f"{cell.DEV_DIR}/models/{c['model_id'].replace('/', '_')}_{o['file']}"
             prompt = f"{cell.DEV_DIR}/prompts/{TASK}.txt"
+            # a GPU row on a side build (engine-build=, D-449) runs that build's tool and reads the
+            # model through the build's own link (run_cell.side_model_path)
+            engine_dir = f"{cell.ENGINES_DIR}/{o['engine-build']}" if o.get("engine-build") else None
+            if engine_dir:
+                model = cell.side_model_path(engine_dir, model)
             command, binary, sampler, note = cell.engine_command(
-                "litert-lm", o["backend"], model, TASK, prompt, BUDGET, None, int(o["context-tokens"]))
+                "litert-lm", o["backend"], model, TASK, prompt, BUDGET, None, int(o["context-tokens"]),
+                engine_dir=engine_dir, engine_build=o.get("engine-build"))
             self.assertEqual(binary, "litert_lm_advanced_main")
             self.assertEqual(note, CTX)
             for flag in (f"--backend={o['backend']}", f"--model_path={model}", f"--input_prompt_file={prompt}",

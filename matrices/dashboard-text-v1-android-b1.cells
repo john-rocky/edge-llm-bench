@@ -7,13 +7,14 @@
 # Half B is itself split in two on the Pixel 8a (14 GB free on the day): B1 = Qwen3 4B, B2 = Gemma 4 E4B,
 # each with the anchor; remove the previous half's pushes between them.
 #   ./bench matrix matrices/dashboard-text-v1-android-b1.cells --platform android
+# The LiteRT-LM GPU rows run the side build v0.19.0-pregpu (engine-build=, as in the parent file; D-449).
 
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 # Pixel 8a: the Qwen3-4B / Gemma 4 E4B rows are exclude-on=pixel8a since 2026-10-07 (they do not fit its 8 GB;
 # docs/dashboard-cells-v1.md "Per-device exclusion"); every other device runs them.
 android litert-lm litert-community/Qwen3-4B short-chat backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/Qwen3-4B short-chat backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/Qwen3-4B short-chat backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android llama.cpp unsloth/Qwen3-4B-GGUF short-chat cooldown=300 file=Qwen3-4B-Q4_K_M.gguf exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android llama.cpp unsloth/Qwen3-4B-GGUF long-context-1024-gen256 cooldown=300 file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash

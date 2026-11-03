@@ -77,7 +77,7 @@ ANCHORS = "\n".join([
     "# selftest anchors",
     "mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3",
     "mac litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3",
-    "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
+    "android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm",
     "android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf",
 ]) + "\n"
 
@@ -372,6 +372,9 @@ def main():
     os.chmod(os.path.join(bin_dir, "adb"), 0o755)
     os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
     write(os.path.join(fstate, "devices.txt"), "FAKE-A\nFAKE-B\nFAKE-S\n")
+    # the fake phone holds every side build the real anchors file launches: a retake sitting's file starts with
+    # those anchor rows, and the job skips a file whose build the phone lacks (android_side_builds_missing)
+    write(os.path.join(fstate, "engines.txt"), "\n".join(dj.side_build_tools("matrices/anchors.cells")) + "\n")
     real_pgrep = dj.pgrep
     dj.pgrep = lambda pattern: []     # host drivers of other lanes are not this test's business
     jnow = datetime.datetime.now().astimezone().replace(hour=2, minute=0, second=0, microsecond=0)

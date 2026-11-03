@@ -14,6 +14,10 @@
 # litert-community/Qwen3-0.6B: their page rows moved to the catalog id
 # litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32. The iOS LiteRT-LM anchor runs the dynamic INT8 bundle (dynamic_int8) from
 # 2026-10-19 12:2x: the INT4 build fails at engine creation on the iPhone's Metal GPU (docs/dashboard-cells-v1.md).
+# The Android LiteRT-LM GPU anchor runs the side build v0.19.0-pregpu (engine-build=; android/engine-pins.json: LiteRT-LM
+# v0.19.0 at the Android pin's commit with Google's prebuilt GPU accelerator, loaded at run time; engine_version v0.19.0),
+# as the weekly Android GPU rows do (D-449). The job's side-build preflight reads the payload files only, not this one,
+# so that build must sit in /data/local/tmp/llmbench/engines/v0.19.0-pregpu/ on every Android phone the job measures.
 
 ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=3
@@ -21,5 +25,5 @@ ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat anchor=1 runs=
 mac mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
 mac litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat anchor=1 runs=3
 
-android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf

@@ -12,13 +12,15 @@
 # 2026-10-19: the Qwen3 0.6B LiteRT-LM anchor row moved from qwen3_0_6b_mixed_int4.litertlm (its template drops the
 # user turn on LiteRT-LM v0.18.0, google-ai-edge/LiteRT-LM#3688) to Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 # (dynamic INT4, block-32 weights, FP32 act), with the weekly rows (matrices/anchors.cells).
+# The LiteRT-LM GPU rows and the LiteRT-LM anchor row run the side build v0.19.0-pregpu (engine-build=, as in
+# dashboard-text-v1-android-b1.cells and matrices/anchors.cells; D-449).
 
 
 # ---- android, storage half b1 (mirror of dashboard-text-v1-android-b1.cells) ----
-android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
 # Pixel 8a: the Qwen3-4B / Gemma 4 E4B rows are exclude-on=pixel8a since 2026-10-07 (they do not fit its 8 GB;
 # docs/dashboard-cells-v1.md "Per-device exclusion"); every other device runs them.
 android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android llama.cpp unsloth/Qwen3-4B-GGUF long-context-1024-gen256 cooldown=300 file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
