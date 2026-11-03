@@ -19,24 +19,30 @@
 # The CPU rows run and are recorded but give no number: the lab units hold their CPU clock ceilings below
 # the cpu-cap-rule line from the start (devices.json m1q-36 _note), so the team page takes the GPU rows
 # only (litert-bench-dashboard build.py STAND_IN).
+# Since 2026-11-03 the 10 GPU rows carry engine-build=v0.19.0-pregpu, as the weekly set's do (D-449): Google's
+# prebuilt GPU accelerator, loaded at run time (android/engine-pins.json litert-lm.v0.19.0-pregpu, engine_version
+# v0.19.0). A flat GPU row on a lab unit logs the source-built accelerator and fails scripts/session_check.py
+# gpu-accelerator-static. The DDP route wires a row's engine-build only under run_ddp's all-runtimes switch
+# (--all-runtimes, or BENCH_DDP_ALL_RUNTIMES=1, as the 2026-11-03 d449pg2 sitting ran); without it these rows skip as
+# side-build-not-wired-on-ddp and the sitting runs the 10 CPU rows.
 
 android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
-android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
 android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
-android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
 android litert-lm litert-community/Qwen3-1.7B short-chat backend=cpu file=Qwen3_1.7B.litertlm
-android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
+android litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm
 android litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 backend=cpu file=Qwen3_1.7B.litertlm context-tokens=2048
-android litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 backend=gpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
 android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm
-android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E2B-it.litertlm
 android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=cpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
-android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=gpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E2B-it.litertlm context-tokens=2048
 android litert-lm litert-community/Qwen3-4B short-chat backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/Qwen3-4B short-chat backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/Qwen3-4B short-chat backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=cpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/Qwen3-4B long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=qwen3_4b_mixed_int4.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E4B-it.litertlm exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
 android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=cpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
-android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=gpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
+android litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 backend=gpu engine-build=v0.19.0-pregpu cooldown=300 file=gemma-4-E4B-it.litertlm context-tokens=2048 exclude-on=pixel8a:pixel8a-8gb-4b-class-does-not-fit-swap-thrash
