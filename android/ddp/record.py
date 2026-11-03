@@ -12,6 +12,9 @@ android/bench/run_cell.py main's extended record (run_cell 1405-1563), plus:
   conditions.engineBuild (+ backendRegistered, backendOffReason)  a LiteRT-LM build whose name
                   engineVersion does not carry (litert_build_name: v0.19.0-pregpu stamps v0.19.0),
                   with run_cell's LiteRT-LM side-build lines and off-device check
+  conditions.gpuAccelerator, gpuAcceleratorLine  a LiteRT-LM GPU run's accelerator, prebuilt-dynamic /
+                  static-source / unknown, and the engine's line it was read from
+                  (parsers.litert_gpu_accelerator, as run_cell)
   provenance      ddpSessionDir, wrapper, wrapperSha256 (+ ddpMissing: what the unit did not give)
 A value the unit did not report stays null with its reason in provenance.ddpMissing — never
 estimated. The witness is the shas the wrapper read on the unit (provenance.txt) against
@@ -396,6 +399,11 @@ def records_for_execution(job, exec_dir, out_dir, meta):
             if not parsers.llama_backend_registered(lines, device, run_cell.LLAMA_DEVICE_BUFFERS[device],
                                                     binname, tests):
                 backend_flags = ["backend-not-registered"]
+        # as run_cell: every LiteRT-LM GPU run, flat or side build, names where its GPU accelerator
+        # came from, with the engine's line (scripts/session_check.py gpu-accelerator-static)
+        if job["arm"] == "litert-lm-gpu":
+            accel_value, accel_line = parsers.litert_gpu_accelerator(console)
+            side_cond = dict(side_cond, gpuAccelerator=accel_value, gpuAcceleratorLine=accel_line)
         if exit_code != 0:
             launch_checks["protocolFlags"].append(f"engine-exit-{exit_code}")
         metrics.update({"coldRun": cold, "harnessStamp": HARNESS_STAMP + (run_cell.EXECUTORCH_STAMP if et else ""),

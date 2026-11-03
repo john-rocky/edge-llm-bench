@@ -13,7 +13,8 @@ docs/session-check-v1.md. Verdicts:
         (ops/session-check/allow-list.tsv: rule, dir glob, detail substring, commit, reason)
   HOLD  a person decides: a timeout, a partial sitting, a FAILURES / LEVEL / DEGENERATE line,
         a text-check FAIL, an engine stamp off the registry, a prompt that did not reach the
-        engine whole, an Android reply that fails the machine proxies (a Mac / iPhone reply
+        engine whole, a cell's prefill more than PREFILL_DROP_PCT below its previous admitted
+        sitting on the same file (prefill-drop), an Android reply that fails the machine proxies (a Mac / iPhone reply
         that fails them is screened into text_screen.json instead, a note), a dir that is not
         a job campaign
         (a DDP dir is a job campaign when the job's SESSION.json names it: a lab unit's sitting,
@@ -24,7 +25,9 @@ docs/session-check-v1.md. Verdicts:
         cell of an older release than the newest one a platform's pin names on the sitting's day
         (pin-drift), a LiteRT-LM headline cell off the agreed protocol (protocol-off: context 2048,
         or N for a declared context ladder, a model id ending in _ctx<N>; the protocol cell also
-        prefill 1024 and decode 256). These two take no allow-list line
+        prefill 1024 and decode 256). These two take no allow-list line. An Android LiteRT-LM GPU
+        cell whose runs did not all load Google's prebuilt GPU accelerator at run time
+        (gpu-accelerator-static: conditions.gpuAccelerator, or the raw log's registration line)
 
 Exit 0 = every dir PASS, 1 = a HOLD or a FAIL, 2 = usage. Reads: the dirs, the git index and
 HEAD of the repo that holds them (tracked files, the committed results/summary as the history of
@@ -57,12 +60,13 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 sys.path.insert(0, os.path.join(ROOT, "android", "ddp"))
 from build_summary import (TEXT_SCREEN, TEXT_SCREEN_SCHEMA, cell_key_of, context_tokens_of,  # noqa: E402
-                           cpu_cap_drop_of, platform_of, prompt_version_of)
+                           cpu_cap_drop_of, device_row, platform_of, prompt_version_of)
 from cell_gate import degenerate  # noqa: E402
 from dashboard_job import anchor_cells, session_stats  # noqa: E402
-from parsers import (RE_LLAMA_BRACKET, RE_LLAMA_LOG, RE_ORTGENAI_OUTPUT, litert_reply,  # noqa: E402
-                     llama_cli_reply, text_integrity)
-from render_leaderboard import CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT  # noqa: E402
+from parsers import (GPU_ACCELERATOR_PREBUILT, RE_LLAMA_BRACKET, RE_LLAMA_LOG,  # noqa: E402
+                     RE_ORTGENAI_OUTPUT, litert_gpu_accelerator, litert_reply, llama_cli_reply,
+                     text_integrity)
+from render_leaderboard import CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT, arm_row  # noqa: E402
 from scrub import scrub_text  # noqa: E402
 
 ALLOW_LIST = os.path.join(ROOT, "ops", "session-check", "allow-list.tsv")
@@ -129,9 +133,26 @@ LITERT_RUNTIMES = ("litert-lm", "litert-lm-cpu", "litert-lm-gpu")
 LITERT_PIN_BLOCKS = ("mac", "android", "ios")
 # a LiteRT-LM release tag (v0.18.0); main@1dadd00c, main-20260821-selfbuilt and the like are not
 RELEASE_TAG_RE = re.compile(r"v?(\d+)\.(\d+)(?:\.(\d+))?")
+# gpu-accelerator-static (D-449, 2026-11-03): the arms whose records name the GPU accelerator they ran
+# (Android LiteRT-LM GPU: run_cell.py and android/ddp/record.py write conditions.gpuAccelerator from the
+# engine's registration line, parsers.litert_gpu_accelerator; a record from before reads its raw log).
+# Only Google's prebuilt accelerator, loaded at run time, measures the engine the page names: the one
+# bazel compiled from the open-source tree read 0.3-0.6x its GPU prefill on the same phone and file
+# (the Galaxy S26 A/B of 2026-11-03, one LiteRT-LM commit and file: 1,506.9 against 2,617.9 tok/s)
+GPU_ACCELERATOR_ARMS = ("litert-lm-gpu",)
+# prefill-drop (D-449): the % a cell's prefill (render_leaderboard.arm_row) may fall below the same cell's
+# in its previous admitted sitting (same device, arm, model id, model sha256, task, context and prompt
+# version) before the sitting is held for a person; the one place the line is set
+PREFILL_DROP_PCT = 25.0
+# the arms prefill-drop reads: LiteRT-LM's (litert-lm, -cpu, -cpu-ynnpack, -gpu, -npu: the page's subject,
+# ops/autopilot/regression-watch.json subject_arms). An anchor's llama.cpp short-chat prefill moves 40-61 %
+# between admitted sittings on the Pixel 8a (the dry run of 2026-11-03 over every Android sitting since
+# 2026-10-01: 19 of the 27 dirs the line would have held), which the admission ratio and the regression watch read
+PREFILL_DROP_ARM_PREFIX = "litert-lm"
 # the rules whose finding means "do not commit"; every other rule's finding is a HOLD
 FAIL_RULES = {"session-missing", "not-admitted", "stopped-sitting", "logcat-unscrubbed",
-              "big-file", "secret", "pair-broken", "pin-drift", "protocol-off"}
+              "big-file", "secret", "pair-broken", "pin-drift", "protocol-off",
+              "gpu-accelerator-static"}
 # the team's rules take no allow-list line: the fix is the pin bump and a re-measurement
 NO_ALLOW_RULES = ("pin-drift", "protocol-off")
 # platform blocks of environment.lock.json registered after the fact: the newest registry's block,
@@ -185,6 +206,14 @@ def model_file_of(r):
     return os.path.basename(str(m.get("file") or m.get("primaryFile") or ""))
 
 
+def prefill_key(row):
+    """prefill-drop's cell of a summary row (build_summary.device_row): platform, device, arm, model id,
+    task, context, prompt version and file name ('' where the row names none); the model sha256 is
+    matched beside it."""
+    return (row.get("platform"), row.get("device"), row.get("runtime"), row.get("model_id"), row.get("task"),
+            str(row.get("context_tokens") or ""), row.get("prompt_version") or "", row.get("model_file") or "")
+
+
 def cell_of(r):
     """A cell as findings name it: arm, model, task and the engine build its records stamp; the key
     of text_screen.json's cells too (build_summary.cell_key_of, which reads them back)."""
@@ -234,6 +263,7 @@ class Repo:
         self.top = top
         self._status = None
         self._history = None
+        self._shas = {}
         self._registry = {}
         self._registry_commits = None
         self._job_campaigns = None
@@ -267,6 +297,29 @@ class Repo:
                 rc, text = run(["git", "-C", self.top, "show", "HEAD:results/summary/device-runs.csv"])
             self._history = list(csv.DictReader(io.StringIO(text))) if text else []
         return self._history
+
+    def record_sha(self, source, raw):
+        """model.sha256 of the record a summary row names (its source, results/raw/...): the file in
+        the results/raw that holds the checked dirs (raw), in this tree, or as committed at HEAD;
+        None when none of them reads (a .jsonl source holds several records: no one sha)."""
+        if source not in self._shas:
+            rec = None
+            tail = source[len("results/raw/"):] if source.startswith("results/raw/") else None
+            for c in ([os.path.join(raw, tail)] if tail else []) + ([os.path.join(self.top, source)] if self.top else []):
+                try:
+                    with open(c) as fh:
+                        rec = json.load(fh)
+                    break
+                except (OSError, ValueError):
+                    continue
+            if rec is None and self.top:
+                rc, out = run(["git", "-C", self.top, "show", f"HEAD:{source}"])
+                try:
+                    rec = json.loads(out) if rc == 0 else None
+                except ValueError:
+                    rec = None
+            self._shas[source] = ((rec.get("model") or {}).get("sha256") or None) if isinstance(rec, dict) else None
+        return self._shas[source]
 
     def registry_at(self, when, day=None):
         """(android pins, environment.lock.json, where) as committed at the newest change at or
@@ -1047,6 +1100,8 @@ class Check:
             self.check_cell_text(cell, items, task, plat)
             self.check_cell_counts(cell, items, plat, rt, task, hist)
             self.check_cell_protocol(cell, items, rt, task)
+            self.check_cell_gpu_accelerator(cell, items, plat, rt)
+            self.check_cell_prefill(cell, items, when)
             if plat == "android" and sha_fix:
                 late = [r for _, r in items if (parse_time(r.get("timestamp")) or sha_fix) >= sha_fix
                         and (r.get("provenance") or {}).get("modelShaSource") != "device"]
@@ -1254,6 +1309,103 @@ class Check:
             self.note(f"prompt history: none on this build for {cell}; prompt {mine} tokens matches "
                       + ", ".join(f"{e} {m}" for e, m in sorted(modes.items())))
 
+    def check_cell_gpu_accelerator(self, cell, items, plat, rt):
+        """gpu-accelerator-static: an Android LiteRT-LM GPU cell whose runs did not all use Google's
+        prebuilt GPU accelerator, loaded at run time (conditions.gpuAccelerator prebuilt-dynamic). A
+        record without the field (written before 2026-11-03) is read from its raw log with the same
+        parser (parsers.litert_gpu_accelerator); no log reads unknown. One finding per cell: the runs
+        off, their values and the first line read for the first value off (none: no line in the log)."""
+        if plat != "android" or rt not in GPU_ACCELERATOR_ARMS:
+            return
+        values, lines, from_log = collections.Counter(), {}, 0
+        for p, r in items:
+            c = r.get("conditions") or {}
+            value, line = c.get("gpuAccelerator"), c.get("gpuAcceleratorLine")
+            if value is None:
+                _, found = resolve_raw_log(p, r, self.path, self.repo.top)
+                text = cache_text(found, self.texts) if found else None
+                value, line = litert_gpu_accelerator(text) if text else ("unknown", None)
+                from_log += 1
+            values[value] += 1
+            lines.setdefault(value, line)
+        off = [v for v in values if v != GPU_ACCELERATOR_PREBUILT]
+        if not off:
+            return
+        n_off = sum(values[v] for v in off)
+        self.add("gpu-accelerator-static",
+                 f"{cell}: {n_off} of {len(items)} GPU runs on "
+                 + ", ".join(f"{v} x{values[v]}" for v in sorted(off))
+                 + f" (line: {lines[sorted(off)[0]] or 'none in the log'}"
+                 + (f"; {from_log} records read from their raw log" if from_log else "")
+                 + f"); only {GPU_ACCELERATOR_PREBUILT} counts")
+
+    def prefill_index(self):
+        """(platform, device, arm, model id, task, context, prompt version, model file) -> [(campaign,
+        newest timestamp, rows)], newest first, over the committed summary's rows of admitted dashboard
+        sittings (campaign names holding -dashboard-v1-, SESSION.json not refusing it)."""
+        key = ("prefill", id(self.repo))
+        if key not in self.ctx["hist_cache"]:
+            admitted = self.ctx["admission"](self.raw)
+            camps = collections.defaultdict(lambda: collections.defaultdict(list))
+            for r in self.repo.history(self.ctx["history"]):
+                camp = os.path.basename(r.get("campaign") or "")
+                if DASHBOARD_CAMPAIGN not in camp or STOPPED_RE.search(camp) or not admitted.get(camp, True):
+                    continue
+                camps[prefill_key(r)][camp].append(r)
+            idx = {}
+            for k, by_camp in camps.items():
+                idx[k] = sorted(((c, max((parse_time(r.get("timestamp")) for r in rows if parse_time(r.get("timestamp"))),
+                                         default=None), rows) for c, rows in by_camp.items()),
+                                key=lambda x: x[1] or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc),
+                                reverse=True)
+            self.ctx["hist_cache"][key] = idx
+        return self.ctx["hist_cache"][key]
+
+    def check_cell_prefill(self, cell, items, when):
+        """prefill-drop: a cell whose prefill (render_leaderboard.arm_row of this sitting's runs, read as
+        the summary reads them: build_summary.device_row) is more than PREFILL_DROP_PCT below the same
+        cell's in the newest earlier admitted sitting of the committed summary: same device, arm, model
+        id, model sha256 (read from that sitting's records), task, context and prompt version, another
+        sitting. LiteRT-LM arms only (PREFILL_DROP_ARM_PREFIX). A record without model.sha256 (the Mac and
+        iPhone runners record none) and a cell without such a sitting (a new file, a first sitting, a new
+        prompt version) are not compared. One finding per cell."""
+        groups = collections.defaultdict(list)
+        for p, r in items:
+            if not (r.get("runtime") or "").startswith(PREFILL_DROP_ARM_PREFIX):
+                continue
+            row = device_row(p, r, self.ctx["screens"], campaign=f"results/raw/{self.name}")
+            if row is not None:
+                groups[(prefill_key(row), (r.get("model") or {}).get("sha256"))].append(row)
+        sitting = self.ctx["sitting_of"](self.raw, self.name)
+        idx = self.prefill_index()
+        for (k, sha), rows in groups.items():
+            mine = arm_row(rows)["prefill"]
+            if mine is None or not sha:
+                continue
+            prev = None
+            for camp, t, hrows in idx.get(k, []):
+                if t is None or (when and t >= when) or self.ctx["sitting_of"](self.raw, camp) == sitting:
+                    continue
+                same = [h for h in hrows if self.repo.record_sha(h.get("source") or "", self.raw) == sha]
+                value = arm_row(same)["prefill"] if same else None
+                if value:
+                    prev = (camp, value)
+                    break
+            self.ctx["prefill_seen"].append({"dir": self.name, "cell": cell, "device": k[1], "context": k[5],
+                                             "sha": sha, "prefill": mine, "previous": prev})
+            if prev is None:
+                self.note(f"prefill: {cell} on {k[1]}, file {sha[:12]}: no earlier admitted sitting on this "
+                          f"file, not compared")
+                continue
+            camp, value = prev
+            drop = (value - mine) / value * 100
+            self.note(f"prefill: {cell} on {k[1]}, file {sha[:12]}: {mine:.1f} against {value:.1f} in {camp} "
+                      f"({-drop:+.1f} %)")
+            if drop > PREFILL_DROP_PCT:
+                self.add("prefill-drop", f"{cell} on {k[1]}, context {k[5] or 'none'}, file {sha[:12]}: "
+                                         f"prefill {mine:.1f} tok/s, {drop:.1f} % below {value:.1f} in {camp} "
+                                         f"(the cell's previous admitted sitting; line {PREFILL_DROP_PCT:g} %)")
+
     def check_pin_drift(self, stamps, pins, lock, where, day):
         """pin-drift: a LiteRT-LM arm's records stamp an older release than the newest one a
         platform's pin names on the sitting's day (newest_litert): on the page that cell would read
@@ -1452,7 +1604,7 @@ def make_context(args, names):
     return {"repos": {}, "allow": load_allow_list(args.allow_list), "history": args.history,
             "ledger": args.ledger, "job_logs": args.job_logs, "names": names,
             "sessions": sessions, "admission": admission, "sitting_of": sitting_of,
-            "hist_cache": {}, "sha_fix": sha_fix, "user": user if user not in ("", "USER") else None,
+            "hist_cache": {}, "screens": {}, "prefill_seen": [], "sha_fix": sha_fix, "user": user if user not in ("", "USER") else None,
             "write_screen": args.text_screen, "version": checker_version()}
 
 

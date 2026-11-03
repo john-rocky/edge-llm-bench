@@ -136,6 +136,8 @@ ACTION = {
     "reply-off-task": "read the replies: an answer to another question is a failed run",
     "gen-budget": "the run decoded past its budget: read the log (thought channel?) before the rate counts; a DDP sitting's LiteRT-LM short-chat cells after a LiteRT-LM pin move: litert_lm_main never applies --max_output_tokens and only the DDP route's records name the budget (dad937b1), so once one log reads as a whole reply with the attached phones' count, ops/session-check/allow-list.tsv takes a line for the new tag",
     "invalid-decode": "'Invalid decode' lines void the rate: read the log",
+    "gpu-accelerator-static": "a GPU row not on Google's prebuilt GPU accelerator (the record's gpuAccelerator, or its log's registration line): re-measure the cell on a build whose log says 'Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered' (the side build v0.19.0-pregpu, android/README.md); an allow-list line only with the commit that says why this build's GPU number counts",
+    "prefill-drop": "prefill fell past the line against the cell's previous admitted sitting on the same file: read both sittings' logs (accelerator line, engine build, prompt tokens, thermal) before the number counts; an allow-list line when the fall is the cell's real speed",
     "model-sha-source": "the bytes on the phone were not hashed: re-push (push_verified), or say so in a hand commit",
     "debug-build": "a Debug build's numbers never count: install the Release build and re-run",
     "raw-log-missing": "a number without its stored report is not a measurement: find the log or set the record aside",

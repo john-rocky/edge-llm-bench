@@ -1540,6 +1540,13 @@ def main():
             if not parsers.llama_backend_registered(lines, device, LLAMA_DEVICE_BUFFERS[device],
                                                     binname, tests):
                 backend_flags = ["backend-not-registered"]
+        # every LiteRT-LM GPU launch, flat or side build: where its GPU accelerator came from, with
+        # the engine's line (parsers.litert_gpu_accelerator); scripts/session_check.py holds a GPU
+        # row that is not prebuilt-dynamic (gpu-accelerator-static, docs/session-check-v1.md)
+        accel_cond = {}
+        if arm == "litert-lm-gpu":
+            accel_value, accel_line = parsers.litert_gpu_accelerator(console)
+            accel_cond = {"gpuAccelerator": accel_value, "gpuAcceleratorLine": accel_line}
 
         if extended and not paired:
             invalid = console.lower().count("invalid decode")
@@ -1621,7 +1628,7 @@ def main():
                            "thermalRawStatus": raw_status,
                            "thermalRawStatusFinal": end_status,
                            **screen, "elapsedSeconds": round(elapsed, 1),
-                           "exitCode": exit_code, **side_cond},
+                           "exitCode": exit_code, **side_cond, **accel_cond},
             "metrics": metrics,
             "provenance": {"rawLog": console_name, "harness": "android/bench/run_cell.py",
                            "rssBasis": RSS_BASIS + (LITERT_NPU_RSS_NOTE if litert_npu

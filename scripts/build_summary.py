@@ -423,82 +423,97 @@ def _source_and_campaign(f, raw_dirs):
                  else os.path.basename(camp_dir))
 
 
+def device_row(f, d, screens, campaign=None, raw_dirs=None):
+    """One device-runs.csv row of the record d stored at f, or None for a record without metrics;
+    screens caches each campaign dir's text_screen.json (text_screen_of). raw_dirs: build_device's
+    --raw-dir dirs (None = this tree's results/raw), which name the source and campaign columns
+    (_source_and_campaign). campaign: the column's value when f is not under this tree
+    (scripts/session_check.py reads a sitting's records into rows for render_leaderboard.arm_row,
+    prefill-drop). A DDP lab unit's record (device.ddp, android/ddp/record.py) gets the device
+    "<modelIdentifier> (DDP <catalog id>)", never the attached phone's identifier."""
+    m, dev, model = d.get("metrics", {}), d.get("device", {}), d.get("model", {})
+    if not m:
+        return None
+    cpu_capped, cpu_max_freq = cpu_cap_of(d)
+    source, found = _source_and_campaign(f, raw_dirs)
+    if campaign is None:
+        campaign = found
+    return {
+        "source": source,
+        "campaign": campaign,
+        "platform": platform_of(d),
+        "timestamp": d.get("timestamp"),
+        "runtime": d.get("runtime"),
+        "schema_version": d.get("schemaVersion"),
+        "engine_version": corrected_engine(campaign, platform_of(d), d.get("runtime") or "", d.get("engineVersion"))[0],
+        "engine_stamped": d.get("engineVersion"),
+        "engine_artifact": d.get("engineArtifact"),
+        "model_id": model.get("id"),
+        "model_file": os.path.basename(str(model.get("file") or model.get("primaryFile") or "")) or None,
+        "quantization": model.get("quantization"),
+        "task": d.get("task"),
+        # the version of the task's prompt text (2026-10-19, prompts/text/versions.tsv): the 1K
+        # task's text changed under its id, and a series across two versions is never compared
+        "prompt_version": prompt_version_of(d),
+        "harness_stamp": m.get("harnessStamp"),
+        "decode_tps": m.get("decodeTokensPerSecond"),
+        "decode_tps_wall": m.get("decodeTokensPerSecondWallClock"),
+        "prefill_tps": m.get("promptTokensPerSecond"),
+        "prompt_tokens": m.get("promptTokenCount"),
+        "gen_tokens": m.get("generatedTokenCount"),
+        "ttft_ms": m.get("firstTokenLatencyMS"),
+        "mem_footprint_median_mb": m.get("memoryMedianMB"),
+        "mem_resident_median_mb": m.get("memoryMedianResidentMB"),
+        "energy_j_per_tok": m.get("energyJoulesPerToken"),
+        "thermal_initial": m.get("initialThermalState"),
+        "thermal_final": m.get("finalThermalState"),
+        "battery_state": dev.get("batteryState"),
+        "cold_run": m.get("coldRun"),
+        "first_ever": m.get("firstEver"),
+        # KV allocation the run was configured with (2026-09-18): the
+        # long-context column measures one cell at several allocations,
+        # and a derived row without this axis would pool them.
+        "context_tokens": context_tokens_of(d, m),
+        "device": (f"{dev.get('modelIdentifier')} (DDP {dev['ddp'].get('deviceId')})"
+                   if isinstance(dev.get("ddp"), dict) else
+                   DEVICE_ALIASES.get(dev.get("modelIdentifier"), dev.get("modelIdentifier"))),
+        "os_version": dev.get("systemVersion"),
+        # peak memory (2026-10-06), appended so every earlier column keeps
+        # its position: the phys_footprint high-water of the Apple sampler
+        # (the field is named "during decode"; its window is the whole
+        # generation, load excluded) and the resident high-water each
+        # writer records (methodology/memory.md "Peak memory")
+        "mem_footprint_peak_mb": m.get("memoryPeakDuringDecodeMB"),
+        "mem_resident_peak_mb": m.get("memoryPeakResidentMB"),
+        # the decoded-text verdict (2026-10-06), appended last like the peaks:
+        # a FAIL run is a row, never a measurement (text-check-rule); a Mac / iPhone
+        # run's from its dir's text_screen.json (2026-10-19)
+        "text_check": text_check_of(d, text_screen_of(f, screens, raw_dirs=raw_dirs)),
+        # the CPU frequency cap during the run (2026-10-07), appended after it:
+        # a capped run is a row, never a measurement (cpu-cap-rule)
+        "cpu_capped": cpu_capped,
+        "cpu_max_freq": cpu_max_freq,
+        # a llama.cpp side build's device lines (2026-10-07), appended after them:
+        # a run off the cell's device is a row, never a measurement
+        "backend_registered": backend_registered_of(d),
+        # how far the engine CPUs' clock ceiling fell (2026-10-08), appended last: a
+        # capped run within the line pools, counted (cpu-cap-rule)
+        "cpu_cap_drop_pct": cpu_cap_drop_of(d),
+    }
+
+
 def build_device(raw_dirs=None, out_dir=None):
-    """device-runs.csv. A DDP lab unit's record (device.ddp, android/ddp/record.py) gets the
-    device "<modelIdentifier> (DDP <catalog id>)", never the attached phone's identifier."""
+    """device-runs.csv: device_row of every record (iter_device_records) under this tree's
+    results/raw or the --raw-dir dirs, written into results/summary or --out-dir."""
     target_out = OUT if out_dir is None else out_dir
     os.makedirs(target_out, exist_ok=True)
     rows = []
     screens = {}    # campaign dir -> its text_screen.json (text_screen_of)
     records = iter_device_records() if raw_dirs is None else iter_device_records(raw_dirs=raw_dirs)
     for f, d in records:
-        m, dev, model = d.get("metrics", {}), d.get("device", {}), d.get("model", {})
-        if not m:
-            continue
-        cpu_capped, cpu_max_freq = cpu_cap_of(d)
-        source, campaign = _source_and_campaign(f, raw_dirs)
-        rows.append({
-            "source": source,
-            "campaign": campaign,
-            "platform": platform_of(d),
-            "timestamp": d.get("timestamp"),
-            "runtime": d.get("runtime"),
-            "schema_version": d.get("schemaVersion"),
-            "engine_version": corrected_engine(campaign, platform_of(d), d.get("runtime") or "", d.get("engineVersion"))[0],
-            "engine_stamped": d.get("engineVersion"),
-            "engine_artifact": d.get("engineArtifact"),
-            "model_id": model.get("id"),
-            "model_file": os.path.basename(str(model.get("file") or model.get("primaryFile") or "")) or None,
-            "quantization": model.get("quantization"),
-            "task": d.get("task"),
-            # the version of the task's prompt text (2026-10-19, prompts/text/versions.tsv): the 1K
-            # task's text changed under its id, and a series across two versions is never compared
-            "prompt_version": prompt_version_of(d),
-            "harness_stamp": m.get("harnessStamp"),
-            "decode_tps": m.get("decodeTokensPerSecond"),
-            "decode_tps_wall": m.get("decodeTokensPerSecondWallClock"),
-            "prefill_tps": m.get("promptTokensPerSecond"),
-            "prompt_tokens": m.get("promptTokenCount"),
-            "gen_tokens": m.get("generatedTokenCount"),
-            "ttft_ms": m.get("firstTokenLatencyMS"),
-            "mem_footprint_median_mb": m.get("memoryMedianMB"),
-            "mem_resident_median_mb": m.get("memoryMedianResidentMB"),
-            "energy_j_per_tok": m.get("energyJoulesPerToken"),
-            "thermal_initial": m.get("initialThermalState"),
-            "thermal_final": m.get("finalThermalState"),
-            "battery_state": dev.get("batteryState"),
-            "cold_run": m.get("coldRun"),
-            "first_ever": m.get("firstEver"),
-            # KV allocation the run was configured with (2026-09-18): the
-            # long-context column measures one cell at several allocations,
-            # and a derived row without this axis would pool them.
-            "context_tokens": context_tokens_of(d, m),
-            "device": (f"{dev.get('modelIdentifier')} (DDP {dev['ddp'].get('deviceId')})"
-                       if isinstance(dev.get("ddp"), dict) else
-                       DEVICE_ALIASES.get(dev.get("modelIdentifier"), dev.get("modelIdentifier"))),
-            "os_version": dev.get("systemVersion"),
-            # peak memory (2026-10-06), appended so every earlier column keeps
-            # its position: the phys_footprint high-water of the Apple sampler
-            # (the field is named "during decode"; its window is the whole
-            # generation, load excluded) and the resident high-water each
-            # writer records (methodology/memory.md "Peak memory")
-            "mem_footprint_peak_mb": m.get("memoryPeakDuringDecodeMB"),
-            "mem_resident_peak_mb": m.get("memoryPeakResidentMB"),
-            # the decoded-text verdict (2026-10-06), appended last like the peaks:
-            # a FAIL run is a row, never a measurement (text-check-rule); a Mac / iPhone
-            # run's from its dir's text_screen.json (2026-10-19)
-            "text_check": text_check_of(d, text_screen_of(f, screens, raw_dirs=raw_dirs)),
-            # the CPU frequency cap during the run (2026-10-07), appended after it:
-            # a capped run is a row, never a measurement (cpu-cap-rule)
-            "cpu_capped": cpu_capped,
-            "cpu_max_freq": cpu_max_freq,
-            # a llama.cpp side build's device lines (2026-10-07), appended after them:
-            # a run off the cell's device is a row, never a measurement
-            "backend_registered": backend_registered_of(d),
-            # how far the engine CPUs' clock ceiling fell (2026-10-08), appended last: a
-            # capped run within the line pools, counted (cpu-cap-rule)
-            "cpu_cap_drop_pct": cpu_cap_drop_of(d),
-        })
+        row = device_row(f, d, screens, raw_dirs=raw_dirs)
+        if row is not None:
+            rows.append(row)
     rows.sort(key=lambda r: (r["campaign"], r["timestamp"] or ""))
     path = os.path.join(target_out, "device-runs.csv")
     fields = list(rows[0].keys()) if rows else DEVICE_FIELDS

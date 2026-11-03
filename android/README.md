@@ -243,7 +243,12 @@ prebuilt GPU accelerator loaded at run time instead of the one built from source
 android/scripts/build_litert_lm_main.sh`; the top-k sampler stays the source
 build's, as the tag ships no prebuilt sampler); its pin carries
 `engine_version: v0.19.0`, so its rows stamp v0.19.0 and name the build in
-`conditions.engineBuild`.
+`conditions.engineBuild`. After any LiteRT-LM Android build, read one GPU
+launch's log: unless it says `Dynamically loaded GPU
+accelerator(libLiteRtGpuAccelerator.so) registered`, measure no GPU row on that
+build. Every GPU record names it in `conditions.gpuAccelerator` (with
+`gpuAcceleratorLine`), and the post holds a GPU row that is not
+`prebuilt-dynamic` (`gpu-accelerator-static`, docs/session-check-v1.md).
 
 ```bash
 E=/data/local/tmp/llmbench/engines/main-b7c40ea81

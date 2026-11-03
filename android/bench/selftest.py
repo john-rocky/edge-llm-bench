@@ -761,7 +761,41 @@ def records(out_dir, prefix):
     return [(f, json.load(open(f))) for f in files]
 
 
+GPU_DYNAMIC_LINE = "INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered."
+GPU_STATIC_LINE = "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered."
+
+
+def check_gpu_accelerator_parser():
+    """parsers.litert_gpu_accelerator on synthetic engine output (the forms of the Galaxy S26 logs of
+    2026-10-20, 2026-10-26, 2026-11-02 and 2026-11-03): the GPU accelerator's provenance a LiteRT-LM GPU
+    record carries (conditions.gpuAccelerator / gpuAcceleratorLine)."""
+    sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
+    import parsers
+    head = "VmRSS:\t  520000 kB\n===ENGINE_OUTPUT===\n"
+    attempt = "INFO: [gpu_registry.cc:130] Attempting to load GPU accelerator(libLiteRtGpuAccelerator.so)."
+    cases = [
+        ("dynamic", head + attempt + "\n" + GPU_DYNAMIC_LINE + "\nINFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.",
+         ("prebuilt-dynamic", GPU_DYNAMIC_LINE)),
+        ("static", head + GPU_STATIC_LINE + "\n" + GPU_STATIC_LINE, ("static-source", GPU_STATIC_LINE)),
+        ("neither", head + "INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.", ("unknown", None)),
+        ("a failed load", head + attempt, ("unknown", None)),
+        ("both", head + GPU_STATIC_LINE + "\n" + GPU_DYNAMIC_LINE,
+         ("unknown", GPU_STATIC_LINE + " | " + GPU_DYNAMIC_LINE)),
+        ("another file", head + GPU_DYNAMIC_LINE.replace("libLiteRtGpuAccelerator", "libLiteRtOpenClAccelerator"),
+         ("unknown", GPU_DYNAMIC_LINE.replace("libLiteRtGpuAccelerator", "libLiteRtOpenClAccelerator"))),
+        ("a static line before the engine output", GPU_STATIC_LINE + "\n" + head + GPU_DYNAMIC_LINE,
+         ("prebuilt-dynamic", GPU_DYNAMIC_LINE)),
+        ("no marker, blanks folded", "  INFO:  [gpu_registry.cc:121]   Statically linked GPU accelerator registered.  ",
+         ("static-source", GPU_STATIC_LINE)),
+        ("no text", "", ("unknown", None)),
+    ]
+    for name, text, want in cases:
+        got = parsers.litert_gpu_accelerator(text)
+        ok(got == want, f"gpu accelerator parser, {name}: {want} (got {got})")
+
+
 def main():
+    check_gpu_accelerator_parser()
     tmp = tempfile.mkdtemp(prefix="android-lane-selftest-")
     state = os.path.join(tmp, "state")
     dev = os.path.join(state, "dev")
@@ -830,6 +864,12 @@ def main():
         want = hashlib.sha256(open(litert_model, "rb").read()).hexdigest()
         ok(r1["model"]["sha256"] == want, "model sha256 is the pushed artifact's")
         ok(r1["metrics"]["decodeTokensPerSecond"] == 25.0, "decode parsed from engine output")
+        ok([(r["conditions"].get("gpuAccelerator"), r["conditions"].get("gpuAcceleratorLine")) for _, r in lit]
+           == [("unknown", None)] * 2,
+           "flat gpu: every record names gpuAccelerator, unknown with no line (the fake flat engine prints no "
+           f"registration line) (got {[(r['conditions'].get('gpuAccelerator'), r['conditions'].get('gpuAcceleratorLine')) for _, r in lit]})")
+        ok(all("gpuAccelerator" not in r["conditions"] for _, r in lla),
+           "a llama.cpp record names no gpuAccelerator")
         ok(os.path.exists(os.path.join(out_a, r1["provenance"]["rawLog"])),
            "raw console log stored next to the record (stored-report-rule)")
     # VmHWM is read on every launch, not only under BENCH_STRICT_SMOKE (unset here)
@@ -2840,6 +2880,10 @@ def main():
         ok(c.get("backendRegistered") == gpu_lines and not c.get("protocolFlags") and "enableYnnpack" not in c,
            f"side gpu: backendRegistered = the build's lines (addresses as <addr>), not flagged "
            f"(got {c.get('backendRegistered')}, flags {c.get('protocolFlags')})")
+        ok(all((x["conditions"].get("gpuAccelerator"), x["conditions"].get("gpuAcceleratorLine"))
+               == ("prebuilt-dynamic", GPU_DYNAMIC_LINE) for x in gpu_s),
+           f"side gpu: gpuAccelerator prebuilt-dynamic with the engine's Dynamically loaded line "
+           f"(got {[(x['conditions'].get('gpuAccelerator'), x['conditions'].get('gpuAcceleratorLine')) for x in gpu_s]})")
         ok([x["metrics"].get("firstEver") for x in gpu_s] == [True, None]
            and os.path.exists(os.path.join(dev, "markers", os.path.basename(sb_model) + f".gpu.{sb_tag}.sidecache.cachebuilt"))
            and r["provenance"]["rssBasis"] == gpu_s[1]["provenance"]["rssBasis"]
@@ -2850,6 +2894,9 @@ def main():
         ok(False, f"two side gpu records (got {len(gpu_s)})")
     if len(cpu_s) == 1 and len(ynn_s) == 1:
         c0, c1 = cpu_s[0]["conditions"], ynn_s[0]["conditions"]
+        ok("gpuAccelerator" not in c0 and "gpuAccelerator" not in c1,
+           "side cpu: no gpuAccelerator on a CPU record (LiteRT registers the GPU accelerator on every "
+           "launch; the CPU number does not depend on it)")
         ok((cpu_s[0]["runtime"], ynn_s[0]["runtime"]) == ("litert-lm-cpu", "litert-lm-cpu-ynnpack")
            and cpu_s[0]["engineArtifact"] == ynn_s[0]["engineArtifact"] == sb_sha["litert_lm_advanced_main"],
            f"side cpu: XNNPACK and YNNPACK are two arms of one binary (got {cpu_s[0]['runtime']}, {ynn_s[0]['runtime']})")

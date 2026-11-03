@@ -82,8 +82,11 @@ open(os.path.join(d, "ddp", "session-fake0001", "j01", "run1_logcat.txt"), "w").
 if os.environ.get("FAKE_RECORDS") != "0":
     for arm, model, task, runs in rows:
         log = f"{arm}_{model.replace('/', '_')}_{task}_run.log"
+        # a GPU arm's log names Google's prebuilt accelerator (session_check gpu-accelerator-static)
+        accel = ("INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) "
+                 "registered.\n" if arm.endswith("-gpu") else "")
         open(os.path.join(app, log), "w").write(
-            "===ENGINE_OUTPUT===\ninput_prompt: What does on-device AI mean?\n" + __ON_TASK__
+            "===ENGINE_OUTPUT===\n" + accel + "input_prompt: What does on-device AI mean?\n" + __ON_TASK__
             + "\nBenchmarkInfo:\n  Prefill Turn 1: Processed 19 tokens\n")
         for i in range(runs):
             rec = {"schemaVersion": 1, "id": f"{camp}-{i}", "runtime": arm, "engineVersion": "v0.18.0",

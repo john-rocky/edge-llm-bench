@@ -478,6 +478,46 @@ def litert_side_lines(text):
     return out
 
 
+# Where a LiteRT-LM GPU launch's GPU accelerator came from (D-449, 2026-11-03): the engine's own
+# registration line (gpu_registry.cc). The forms on the Galaxy S26:
+#   INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.        (v0.19.0, 2026-11-02)
+#   INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.
+#                                (main@b7c40ea81 2026-10-20, v0.18.0 2026-10-26, v0.19.0-pregpu 2026-11-03)
+# The Android engines here are android/bin builds of android/scripts/build_litert_lm_main.sh: a
+# statically linked accelerator is the one bazel compiled from the open-source tree (its default
+# since 2026-10-23; GPU prefill 0.3-0.6x of Google's on the same phone and file, d449_work/ROUND1.md
+# in the bench checkout), a dynamically loaded libLiteRtGpuAccelerator.so is the tag's
+# prebuilt/android_arm64 file (Google's build; the witness checks its sha against the pins entry's
+# so_files). Google's PyPI wheel prints the static line too: the value names this harness's builds,
+# not what the line means everywhere.
+GPU_ACCELERATOR_PREBUILT = "prebuilt-dynamic"
+GPU_ACCELERATOR_FILE = "libLiteRtGpuAccelerator.so"
+GPU_ACCELERATOR_LINES = (
+    ("prebuilt-dynamic", re.compile(r"Dynamically loaded GPU accelerator\((\S+)\) registered")),
+    ("static-source", re.compile(r"Statically linked GPU accelerator registered")),
+)
+
+
+def litert_gpu_accelerator(text):
+    """(conditions.gpuAccelerator, conditions.gpuAcceleratorLine) of a LiteRT-LM GPU launch from its
+    engine output: "prebuilt-dynamic" with the line that dynamically loaded libLiteRtGpuAccelerator.so,
+    "static-source" with the Statically linked line, else "unknown": neither line (no log, another
+    log level, a build that prints neither, a load that failed), both, or another file loaded. The
+    line is the first one found, blanks folded (both lines joined by " | "; None when there is none)."""
+    found = {}
+    for line in (text or "").split("===ENGINE_OUTPUT===", 1)[-1].splitlines():
+        for value, rx in GPU_ACCELERATOR_LINES:
+            m = rx.search(line)
+            if m and value not in found:
+                found[value] = (re.sub(r"\s+", " ", line.strip()), m.groups()[0] if m.groups() else None)
+    if len(found) != 1:
+        return "unknown", " | ".join(line for line, _ in found.values()) or None
+    (value, (line, loaded)), = found.items()
+    if value == GPU_ACCELERATOR_PREBUILT and loaded != GPU_ACCELERATOR_FILE:
+        return "unknown", line
+    return value, line
+
+
 def ynnpack_counts(text):
     """{"ops": YNNPACK's per-op lines, "partitions": its partitions} in one launch's engine output."""
     engine = text.split("===ENGINE_OUTPUT===", 1)[-1]

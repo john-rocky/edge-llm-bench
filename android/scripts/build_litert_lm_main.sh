@@ -33,6 +33,9 @@
 #                     time (log: "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered"), the GPU
 #                     path of the v0.18.0 build; the label gets -pregpu. Unset: as the checkout builds (main of
 #                     2026-10-23 and v0.19.0 link a GPU accelerator and sampler built from source into an Android binary)
+#                     After a build, read one GPU launch's log for the accelerator line: unless it says "Dynamically
+#                     loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered", measure no GPU row on that build
+#                     (scripts/session_check.py gpu-accelerator-static holds such rows: docs/session-check-v1.md)
 #   LITERTLM_GPU_SAMPLER  with LITERTLM_GPU_ACCELERATOR=prebuilt only: prebuilt = empty the Android branch of
 #                     runtime/components:default_static_gpu_samplers too, so the binaries load the checkout's prebuilt
 #                     libLiteRtTopKOpenClSampler.so; static = keep the checkout's top-k sampler built from source. Default:

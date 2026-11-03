@@ -194,6 +194,8 @@ OFF_TASK = ("Sure! Here is a short story about a dragon who learns to bake bread
 PIN_RULES = {"engine-stamp", "pin-drift"}
 
 _fails = []
+GPU_DYNAMIC_LINE = "INFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered."
+GPU_STATIC_LINE = "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered."
 
 
 def ok(cond, msg):
@@ -234,6 +236,9 @@ def ddp_record(i, runtime, engine, model="litert-community/Qwen3-1.7B", task="sh
            "conditions": {"protocolFlags": ["cpu-capped", "cpu-capped-at-start"],
                           "ddp": {"sessionId": "session-fake0001", "deviceId": "m1q-36"}},
            "provenance": {"modelShaSource": "device"}}
+    if runtime == "litert-lm-gpu":
+        # as android/ddp/record.py writes a GPU run on Google's prebuilt accelerator (D-449)
+        rec["conditions"].update(gpuAccelerator="prebuilt-dynamic", gpuAcceleratorLine=GPU_DYNAMIC_LINE)
     if log:
         rec["provenance"]["rawLog"] = log
     return rec
@@ -434,6 +439,162 @@ def clean(r, expected, pin=False):
         print(f"  stray {r['name']}: {sorted(extra & PIN_RULES)} beyond what the case expects "
               f"(LEADER {LEADER_PLATFORM}, {LEADER_TAG}; the newest release {NEWEST})")
     return not extra
+
+
+def gate_unit(raw, name, model, runs, accel="field-dynamic", sha="a" * 64, minutes=0, admitted=True,
+              runtime="litert-lm-gpu"):
+    """A lab unit's sitting for the D-449 gate: one short-chat cell of `model`, run 1 firstEver, prefill
+    `runs` (one value a run), the model sha256 `sha`, timed `minutes` from now, one engine log whose
+    accelerator line is set by `accel`: field-dynamic / field-static / field-unknown = the record names
+    it (the log carries the matching line or none), log-static / log-dynamic = the record names nothing
+    and its log carries the line (a record written before the field), no-log = neither field nor log."""
+    log = f"{runtime}_{model.replace('/', '_')}_short-chat_{name}_run1.log"
+    line = {"field-dynamic": GPU_DYNAMIC_LINE, "field-static": GPU_STATIC_LINE, "log-static": GPU_STATIC_LINE,
+            "log-dynamic": GPU_DYNAMIC_LINE}.get(accel)
+    recs = []
+    for i, v in enumerate(runs):
+        r = ddp_record(i, runtime, PINS["litert-lm"], model=model, log=None if accel == "no-log" else log)
+        r["timestamp"] = now(minutes + i)
+        r["model"].update(sha256=sha, file=model.split("/")[-1] + ".litertlm")
+        r["metrics"]["promptTokensPerSecond"] = v
+        r["conditions"].pop("gpuAccelerator", None)
+        r["conditions"].pop("gpuAcceleratorLine", None)
+        if accel.startswith("field-") and runtime == "litert-lm-gpu":
+            r["conditions"].update(gpuAccelerator=accel[len("field-"):].replace("dynamic", "prebuilt-dynamic")
+                                   .replace("static", "static-source"),
+                                   gpuAcceleratorLine=line)
+        recs.append(r)
+    unit = ddp_unit(raw, name, cells=[recs])
+    if accel != "no-log":
+        with open(os.path.join(unit, "app-path-android", log), "w") as fh:
+            fh.write("===ENGINE_OUTPUT===\n" + (line + "\n" if line else "")
+                     + "input_prompt: What does on-device AI mean?\n" + ON_TASK
+                     + "\nBenchmarkInfo:\n  Prefill Turn 1: Processed 19 tokens\n")
+    if not admitted:
+        sp = os.path.join(unit, "SESSION.json")
+        doc = json.load(open(sp))
+        doc.update(admitted=False, verdict="REFUSED", reason="anchor ratio out of the band")
+        json.dump(doc, open(sp, "w"), indent=1)
+    return unit
+
+
+def check_gpu_gate(tmp):
+    """D-449 (2026-11-03): gpu-accelerator-static and prefill-drop on lab-unit sittings of their own temp
+    results/raw, the committed history a csv of build_summary.device_row rows of the earlier sittings."""
+    print("--- the GPU accelerator gate and the prefill line (D-449)")
+    raw = os.path.join(tmp, "gate", "results", "raw")
+    os.makedirs(raw)
+    day = "2099-08-0"
+    # gpu-accelerator-static: the field, or the raw log of a record written before it
+    g = {k: gate_unit(raw, f"{day}1-dashboard-v1-s26-ddp-m1q-36-g{k}-android", f"fake/g{k}", [900, 1000, 1000], accel=a)
+         for k, a in (("1", "field-dynamic"), ("2", "field-static"), ("3", "field-unknown"), ("4", "log-static"),
+                      ("5", "log-dynamic"), ("6", "no-log"))}
+    gcpu = gate_unit(raw, f"{day}1-dashboard-v1-s26-ddp-m1q-36-gcpu-android", "fake/gcpu", [900, 1000, 1000],
+                     accel="log-static", runtime="litert-lm-cpu")
+    # prefill-drop: history sittings two hours before the checked ones, each case its own model id
+    hist_units = [
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp1-android", "fake/p1", [500, 1000, 1000], minutes=-120),
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp2-android", "fake/p2", [500, 1000, 1000], minutes=-120),
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp3-android", "fake/p3", [500, 1000, 1000], minutes=-120),
+        # p5: an admitted sitting at 1000, then a refused one at 2000 (never the line's reference)
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp5a-android", "fake/p5", [500, 1000, 1000], minutes=-180),
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp5b-android", "fake/p5", [500, 2000, 2000], minutes=-120,
+                  admitted=False),
+        # p6: an older admitted sitting at 2000, a newer one at 1000 (the newer is the reference)
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp6a-android", "fake/p6", [500, 2000, 2000], minutes=-180),
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp6b-android", "fake/p6", [500, 1000, 1000], minutes=-120),
+        # p7: a sitting after the checked one at 2000 (never a reference), one before at 1000
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp7a-android", "fake/p7", [500, 1000, 1000], minutes=-120),
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp7b-android", "fake/p7", [500, 2000, 2000], minutes=120),
+        # p8: exactly on the line
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp8-android", "fake/p8", [500, 1000, 1000], minutes=-120),
+        # p9: a static GPU sitting that falls: both findings
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp9-android", "fake/p9", [500, 1000, 1000], minutes=-120),
+        # p10: p1's history and fall on a llama.cpp cell (an anchor's arm): not read
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp10-android", "fake/p10", [500, 1000, 1000], minutes=-120,
+                  accel="log-dynamic", runtime="llama.cpp"),
+    ]
+    p = {"1": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p1-android", "fake/p1", [400, 700, 700]),
+         "2": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p2-android", "fake/p2", [400, 800, 800]),
+         "3": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p3-android", "fake/p3", [400, 700, 700], sha="b" * 64),
+         "5": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p5-android", "fake/p5", [400, 800, 800]),
+         "6": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p6-android", "fake/p6", [400, 800, 800]),
+         "7": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p7-android", "fake/p7", [400, 800, 800]),
+         "8": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p8-android", "fake/p8", [400, 750, 750]),
+         "9": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p9-android", "fake/p9", [400, 600, 600],
+                        accel="field-static"),
+         "10": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p10-android", "fake/p10", [400, 700, 700],
+                         accel="log-dynamic", runtime="llama.cpp")}
+    hist = os.path.join(tmp, "gate-history.csv")
+    rows = []
+    for u in hist_units:
+        name = os.path.basename(u)
+        for f in sorted(os.listdir(os.path.join(u, "app-path-android"))):
+            if f.endswith(".json"):
+                path = os.path.join(u, "app-path-android", f)
+                row = build_summary.device_row(path, json.load(open(path)), {}, campaign=f"results/raw/{name}")
+                rows.append(dict(row, source=f"results/raw/{name}/app-path-android/{f}"))
+    with open(hist, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    checked = list(g.values()) + [gcpu] + list(p.values())
+    rc, res, out = run(checked, history=hist)
+    got = {n: rules(r) for n, r in res.items()}
+    find = lambda d, rule: [f for f in res[os.path.basename(d)]["findings"] if f["rule"] == rule]
+    acc = lambda d: "gpu-accelerator-static" in got.get(os.path.basename(d), set())
+    ok(not acc(g["1"]) and not acc(g["5"]),
+       "gpuAccelerator prebuilt-dynamic in the record, or (no field) the log's Dynamically loaded line: no "
+       "gpu-accelerator-static")
+    ok(all(acc(g[k]) for k in ("2", "3", "4", "6")),
+       "static-source or unknown in the record, the log's Statically linked line, no field and no log: "
+       f"gpu-accelerator-static ({ {k: sorted(got.get(os.path.basename(g[k]), set())) for k in ('2', '3', '4', '6')} })")
+    f2, f4, f6 = (find(g[k], "gpu-accelerator-static") for k in ("2", "4", "6"))
+    ok(f2 and f2[0]["severity"] == "FAIL" and "3 of 3 GPU runs on static-source x3" in f2[0]["detail"]
+       and GPU_STATIC_LINE in f2[0]["detail"] and res[os.path.basename(g["2"])]["verdict"] == "FAIL",
+       f"the finding is a FAIL naming the runs and the line ({f2[0]['detail'] if f2 else None})")
+    ok(f4 and "3 records read from their raw log" in f4[0]["detail"] and GPU_STATIC_LINE in f4[0]["detail"],
+       f"a record without the field is read from its raw log ({f4[0]['detail'] if f4 else None})")
+    ok(f6 and "unknown x3" in f6[0]["detail"] and "none in the log" in f6[0]["detail"],
+       f"no field and no log: unknown, no line ({f6[0]['detail'] if f6 else None})")
+    ok(not acc(gcpu), "a CPU arm's run with the Statically linked line: not read (GPU arms only)")
+    drop = lambda d: "prefill-drop" in got.get(os.path.basename(d), set())
+    fp1 = find(p["1"], "prefill-drop")
+    ok(fp1 and fp1[0]["severity"] == "HOLD" and "prefill 700.0 tok/s, 30.0 % below 1000.0 in "
+       f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp1-android" in fp1[0]["detail"]
+       and res[os.path.basename(p["1"])]["verdict"] in ("HOLD", "FAIL"),
+       f"30 % below the previous admitted sitting on the same file (firstEver run out): prefill-drop, a HOLD "
+       f"({fp1[0]['detail'] if fp1 else None})")
+    noted = lambda d, text: any(text in n for n in res[os.path.basename(d)]["notes"])
+    ref = lambda k, h, pct: noted(p[k], f"in {day}2-dashboard-v1-s26-ddp-m1q-36-{h}-android ({pct} %)")
+    ok(not drop(p["2"]) and ref("2", "hp2", "-20.0"), "20 % below: compared (a note), no prefill-drop")
+    ok(not drop(p["3"]) and noted(p["3"], "file bbbbbbbbbbbb: no earlier admitted sitting on this file, not compared"),
+       "another model sha256 (a new file): not compared (a note), no prefill-drop")
+    ok(not drop(p["5"]) and ref("5", "hp5a", "-20.0"),
+       "a newer refused sitting at 2000 is no reference: compared with the admitted one (1000), no prefill-drop")
+    ok(not drop(p["6"]) and ref("6", "hp6b", "-20.0"),
+       "the newest earlier admitted sitting (1000) is the reference, not an older one (2000): no prefill-drop")
+    ok(not drop(p["7"]) and ref("7", "hp7a", "-20.0"),
+       "a sitting after the checked one is no reference: compared with the one before (1000), no prefill-drop")
+    ok(not drop(p["8"]) and ref("8", "hp8", "-25.0"),
+       "exactly 25 % below: on the line, no prefill-drop (the line is 'more than')")
+    ok(drop(p["9"]) and acc(p["9"]), "a static GPU sitting 40 % below: both findings")
+    ok(not drop(p["10"]) and not noted(p["10"], "prefill: llama.cpp"),
+       "a llama.cpp cell 30 % below (p1's history and fall on an anchor's arm): not read (LiteRT-LM arms only)")
+    # an allow-list line passes each finding, named by its commit and reason
+    allow = os.path.join(tmp, "allow-gate.tsv")
+    with open(allow, "w") as fh:
+        fh.write(f"gpu-accelerator-static\t{os.path.basename(g['2'])}\tre:^litert-lm-gpu fake/g2 short-chat \t"
+                 "0123abc\ta build whose GPU number counts for this case\n")
+        fh.write(f"prefill-drop\t*-p1-android\tfake/p1\t0123abc\tthe fall is the cell's real speed for this case\n")
+    rc, res2, out = run([g["2"], p["1"]], history=hist, allow=allow)
+    a2 = [f for f in res2[os.path.basename(g["2"])]["findings"] if f["rule"] == "gpu-accelerator-static"]
+    a1 = [f for f in res2[os.path.basename(p["1"])]["findings"] if f["rule"] == "prefill-drop"]
+    ok(a2 and all(f["allowed_by"] and f["allowed_by"]["commit"] == "0123abc" for f in a2)
+       and "gpu-accelerator-static" not in rules(res2[os.path.basename(g["2"])]),
+       "an allow-list line excuses gpu-accelerator-static (listed, allowed_by its commit)")
+    ok(a1 and all(f["allowed_by"] for f in a1) and "prefill-drop" not in rules(res2[os.path.basename(p["1"])]),
+       "an allow-list line excuses prefill-drop")
 
 
 def main():
@@ -1052,6 +1213,8 @@ def main():
     ok(got(ip, "litert-lm") == ["PASS:screen"] * 4 and set((screen_of(ip) or {"cells": {}})["cells"]) == {
         f"litert-lm litert-community/Qwen3-1.7B short-chat ({OLD})", mlx},
        "an iPhone payload's text cells are screened alike (its FAIL on pin-drift aside): PASS:screen")
+
+    check_gpu_gate(tmp)
 
     print("--- usage")
     rc, res, out = run([os.path.join(raw, "no-such-dir")], history=hist)

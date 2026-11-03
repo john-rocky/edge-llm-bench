@@ -1248,8 +1248,59 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
        f"a CPU run with neither XNNPACK cache line: engineCache absent / absent, the reason in provenance.ddpMissing "
        f"({[r['provenance'].get('ddpMissing') for r in r1]})")
     check_build_name(tmp, ddp, plan_s, session, recs)
+    check_gpu_accelerator(tmp, ddp, plan_s, session)
     server.shutdown()
     return out
+
+
+def check_gpu_accelerator(tmp, ddp, plan_s, session):
+    """D-449 (2026-11-03): a lab unit's LiteRT-LM GPU record names its GPU accelerator, flat build or side
+    build (conditions.gpuAccelerator / gpuAcceleratorLine, parsers.litert_gpu_accelerator as run_cell):
+    the GPU job's logs as pulled (the unit loaded Google's prebuilt .so) -> prebuilt-dynamic with that
+    line; the same logs with the Statically linked line instead (the flat v0.19.0 build's, the 2026-11-03
+    DDP sitting) -> static-source; with neither -> unknown, no line. A CPU job's records name none."""
+    static = "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered."
+    accel_res = [rx for _, rx in record.parsers.GPU_ACCELERATOR_LINES]
+
+    def records(name, backend, line=None, strip=False):
+        job = next(j for j in plan_s["jobs"] if j.get("backend") == backend)
+        jr = next(r for r in session["sessionReport"]["jobReports"] if r["displayName"] == job["displayName"])
+        ex, rel = record.execution_dirs("session-test0001", jr)[0]
+        meta = {"sessionId": "session-test0001", "jobId": jr["id"], "jobDisplayName": jr["displayName"],
+                "executionId": ex["id"], "jobStartTime": jr["startTime"], "jobEndTime": jr["endTime"],
+                "executionStartTime": ex["startTime"], "executionEndTime": ex["endTime"],
+                "resultType": "PASSED", "ddpSessionDir": f"ddp/{rel}"}
+        copy_dir = os.path.join(tmp, f"gpu-accel-{name}")
+        shutil.copytree(os.path.join(ddp, rel), copy_dir)
+        for log in glob.glob(os.path.join(copy_dir, "artifacts", "**", "run*.log"), recursive=True):
+            text = open(log).read()
+            if strip:
+                text = "".join(x for x in text.splitlines(True) if not any(rx.search(x) for rx in accel_res))
+            if line:
+                text = text.replace("===ENGINE_OUTPUT===\n", "===ENGINE_OUTPUT===\n" + line + "\n", 1)
+            write(log, text)
+        out = os.path.join(tmp, f"gpu-accel-out-{name}")
+        os.makedirs(out)
+        record.records_for_execution(job, copy_dir, out, meta)
+        return [json.load(open(f)) for f in sorted(glob.glob(os.path.join(out, "*.json")))]
+
+    def got(recs):
+        return [(r["conditions"].get("gpuAccelerator"), r["conditions"].get("gpuAcceleratorLine")) for r in recs]
+
+    pulled = records("pulled", "gpu")
+    ok(pulled and all(v == "prebuilt-dynamic" and line and "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so)"
+                      " registered" in line for v, line in got(pulled)),
+       f"DDP gpu, the logs as pulled: gpuAccelerator prebuilt-dynamic with the Dynamically loaded line "
+       f"({len(pulled)} records; {got(pulled)[:1]})")
+    st = records("static", "gpu", line=static, strip=True)
+    ok(st and got(st) == [("static-source", static)] * len(st),
+       f"DDP gpu, the Statically linked line instead: gpuAccelerator static-source with it ({got(st)[:1]})")
+    none = records("none", "gpu", strip=True)
+    ok(none and got(none) == [("unknown", None)] * len(none),
+       f"DDP gpu, neither line: gpuAccelerator unknown, no line ({got(none)[:1]})")
+    cpu = records("cpu", "cpu")
+    ok(cpu and all("gpuAccelerator" not in r["conditions"] for r in cpu),
+       f"DDP cpu: no gpuAccelerator ({len(cpu)} records)")
 
 
 def check_build_name(tmp, ddp, plan_s, session, flat_recs):

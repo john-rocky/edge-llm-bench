@@ -587,8 +587,10 @@ def main():
     write(run_logcat, "10-12 13:47:01.000  1000  1100 I litert: engine loaded\n")
     write(os.path.join(exe, "logcat.txt"), "10-12 13:47:00.000  1000  1100 I ActivityManager: unit log\n")
     log_name = "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-10-12T13-47-00_run1.log"
+    # a lab unit's GPU log names Google's prebuilt accelerator (session_check gpu-accelerator-static)
     write(os.path.join(ud, "app-path-android", log_name),
-          "===ENGINE_OUTPUT===\ninput_prompt: What does on-device AI mean?\n" + ON_TASK + "\nBenchmarkInfo:\n")
+          "===ENGINE_OUTPUT===\nINFO: [gpu_registry.cc:138] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) "
+          "registered.\ninput_prompt: What does on-device AI mean?\n" + ON_TASK + "\nBenchmarkInfo:\n")
     for i in range(3):
         write(os.path.join(ud, "app-path-android", f"run{i + 1}.json"), json.dumps({
             "schemaVersion": 1, "id": str(uuid.uuid4()), "runtime": "litert-lm-gpu", "engineVersion": "v0.0.1",
