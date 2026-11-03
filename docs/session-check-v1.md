@@ -128,8 +128,9 @@ is the pin bump (a person decides) and a re-measurement, not an excuse.
 Two kinds of lines: known exceptions that hold for any dir (the Mac llama.cpp teardown abort,
 c7b60c2b; the Qwen3 0.6B LiteRT-LM bundle whose chat template predates 0.18 and leaves the user
 turn empty on every v0.18.0 sitting, e3010721 / edab6ed9; `gen-budget` on a DDP sitting's
-LiteRT-LM short-chat cells at v0.18.0, dad937b1: the DDP records name the `--max_output_tokens`
-budget that `litert_lm_main` decodes past, the attached route's records name none), and per-dir
+LiteRT-LM short-chat cells at v0.18.0, dad937b1, and at v0.19.0, cde05ae1: the DDP records name the
+`--max_output_tokens` budget that `litert_lm_main` decodes past, the attached route's records name
+none; one line per tag, taken after a pin move once one log reads as a whole reply), and per-dir
 lines for committed sittings whose commit message explained the finding.
 
 ## The text screen (`text_screen.json`, 2026-10-19)
