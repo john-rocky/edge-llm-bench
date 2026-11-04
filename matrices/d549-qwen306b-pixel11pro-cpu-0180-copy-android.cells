@@ -1,0 +1,20 @@
+# 2026-11-04 D-549 sitting 3, arm A of one by-hand Pixel 11 Pro A/B (not page rows: the campaign names hold no
+# `dashboard`, so the team page never reads them as a weekly sitting): sitting 2 (results/raw/2026-11-04-d549ac-*,
+# Pixel 8a) on a second phone, the same form. Every launch of both arms builds its XNNPACK weight cache:
+# d549_work/slot_p11.sh deletes both arms' caches of this copy and its firstEver markers before each launch.
+# The file: litert-community/Qwen3-0.6B Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm (Hub main LFS sha256
+# bf1aba9ce8d9..., 343,490,560 B, the file of Hub commit 2670e142, 2026-10-31) as the renamed host copy of sitting 2
+# (an APFS clone of the HF cache blob, sha256 checked), so its phone copy, caches and markers are this sitting's own
+# and the night job's files on the phone stay untouched; both arms read that one phone copy (arm A through
+# run_cell.side_model_path's link in engines/v0.18.0/models).
+# Task native-benchmark-1024x256 = litert_lm_advanced_main --benchmark, prefill forced to exactly 1024 tokens, decode
+# 256, context 2048.
+# LiteRT-LM CPU on the side build v0.18.0 (android/engine-pins.json litert-lm.v0.18.0 = android/bin/v0.18.0), pushed
+# for the sitting into /data/local/tmp/llmbench/engines/v0.18.0 and removed after it.
+# Arm B is matrices/d549-qwen306b-pixel11pro-cpu-0190-copy-android.cells (the flat pinned v0.19.0). One launch per
+# runner start (runs=1), order A B B A A B, each arm into its own campaign dir (this one:
+# 2026-11-04-d549ad-qwen306b-cpu-0180-pixel11pro-android); the runner's 120 s cooldown and thermal wait before each
+# launch, taskset 7c (ops/dashboard-v1/schedule.json pixel11pro cpu_mask), BENCH_SITTING=1. No anchor on this phone:
+# the GPU anchor row's file= is the night job's copy, which on this phone is not the Hub main file, so the runner would
+# push over it. This row = sitting 2's arm A row byte for byte.
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu engine-build=v0.18.0 file=~/code/edge-llm-bench/d549_work/copy/d549copy-Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=1
