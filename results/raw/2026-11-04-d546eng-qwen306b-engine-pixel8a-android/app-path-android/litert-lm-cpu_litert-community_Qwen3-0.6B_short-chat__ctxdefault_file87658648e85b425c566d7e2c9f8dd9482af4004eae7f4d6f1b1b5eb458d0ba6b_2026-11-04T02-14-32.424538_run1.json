@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "e1b14ab8-87cf-48fa-b2c5-4e25272d74a0",
+  "runtime": "litert-lm-cpu",
+  "engineVersion": "v0.18.0",
+  "engineArtifact": "54832c4992f932aec76e85be546b63dcb1e2820236d76c8f38d66c0ecc62774a",
+  "model": {
+    "id": "litert-community/Qwen3-0.6B",
+    "quantization": "unrecorded (artifact name carries no quant label)",
+    "file": "litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a-copy2.litertlm",
+    "sha256": "03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-11-04T02:14:32Z",
+  "device": {
+    "modelIdentifier": "Pixel 8a",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-05-05",
+    "soc": "Tensor G3",
+    "product": "akita",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset f0",
+    "cpusAllowedList": "4-8",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 1425,
+        "hw": 1704,
+        "cpus": "0-3"
+      },
+      "policy4": {
+        "min": 1836,
+        "hw": 2367,
+        "cpus": "4-7"
+      },
+      "policy8": {
+        "min": 1885,
+        "hw": 2914,
+        "cpus": "8"
+      }
+    },
+    "contextTokens": "bundle-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 1,
+    "screen": "Awake",
+    "screenSource": "env",
+    "elapsedSeconds": 50.5,
+    "exitCode": 0,
+    "engineBuild": "v0.18.0",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/v0.18.0 /data/local/tmp/llmbench/engines/v0.18.0/litert_lm_main --backend=cpu --model_path=/data/local/tmp/llmbench/engines/v0.18.0/models/litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a-copy2.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+    "backendRegistered": [
+      "RegisterAccelerator: ptr=<addr>, name=LiteRT GPU",
+      "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 592 out of 916 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 396 partitions for subgraph 0 (prefill_128).",
+      "Replacing 592 out of 916 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 396 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 507 out of 830 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 396 partitions for subgraph 2 (decode).",
+      "Replacing 2615 out of 2910 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 114 partitions for subgraph 0 (prefill_128).",
+      "Replacing 2361 out of 2655 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 114 partitions for subgraph 2 (decode)."
+    ],
+    "enableYnnpack": false,
+    "ynnpackLines": {
+      "ops": 0,
+      "partitions": 0
+    },
+    "roundIndex": 2,
+    "launchIndex": 8,
+    "launchID": "402b0ce5-1d25-4ce1-9a9b-9aa590613771",
+    "elapsedScope": "whole-launch",
+    "stateAndMemoryScope": "whole-launch",
+    "batteryTemperatureInitialC": 34.7,
+    "batteryTemperatureFinalC": 34.7,
+    "batteryLevelFinal": 1.0,
+    "thermalGateTimedOut": false,
+    "thermalGateTimeoutNonNominal": false,
+    "initialThermalNonNominal": false,
+    "outputTokenBudget": 128,
+    "invalidDecodeCount": 0,
+    "protocolFlags": [
+      "cpu-capped"
+    ],
+    "iterationIndex": 1,
+    "regime": "cold-process"
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 2830.0,
+    "promptTokensPerSecond": 6.98,
+    "decodeTokensPerSecond": 9.34,
+    "promptTokenCount": 19,
+    "generatedTokenCount": 421,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "light",
+    "memoryMedianResidentMB": 1551.39453125,
+    "memoryPeakResidentMB": 1568.75390625
+  },
+  "provenance": {
+    "rawLog": "litert-lm-cpu_litert-community_Qwen3-0.6B_short-chat__ctxdefault_file87658648e85b425c566d7e2c9f8dd9482af4004eae7f4d6f1b1b5eb458d0ba6b_2026-11-04T02-14-32.424538_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}

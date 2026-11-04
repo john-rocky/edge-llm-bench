@@ -1,0 +1,27 @@
+# 2026-11-04 D-546 engine A/B, one by-hand Pixel 8a sitting (not page rows: the campaign name holds no `dashboard`, so
+# the team page never reads it as a weekly sitting): is the Pixel 8a Qwen3 0.6B CPU short-chat decode drop of
+# 2026-11-03 (10.25 -> 8.75 tok/s, LiteRT-LM v0.18.0 + the old Hub file -> v0.19.0 + the new one) the engine? The file
+# A/B of the same morning (matrices/d546-qwen306b-pixel8a-file-ab-android.cells, commit 6a118468) ran both files on
+# the flat v0.19.0 in one hold: short-chat 9.05 on the old file, 9.01 / 8.97 on the new one, so the file is not it.
+# Here the OLD file (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm at Hub revision e6bb3e4a, sha256
+# 03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856) runs on two engines in one hold:
+# - LiteRT-LM v0.18.0, the Android pin from 2026-10-15 to 2026-10-31 and the 2026-10-27 sitting's engine: the build
+#   android/engine-pins.json litert-lm "v0.18.0" names (android/bin/v0.18.0), pushed as a side build into
+#   /data/local/tmp/llmbench/engines/v0.18.0 (rows engine-build=v0.18.0; run_cell.py reads the model through a link in
+#   that dir, so the build keeps its own XNNPACK cache);
+# - the flat pinned v0.19.0: these two rows are lines 21 and 22 of the file A/B cells byte for byte.
+# The v0.18.0 rows run a second local copy of the same bytes under another name (..._rev-e6bb3e4a-copy2.litertlm):
+# run_campaign.cell_id and the record names carry no engine-build, so two rows that differ only in it would be one cell
+# to the runner. Each record states its file's sha256; d546_work checked both host copies = the Hub LFS oid above.
+# Neither name ends in a label key: the records carry quantization "unrecorded"; the recipe is the old file's.
+# Rows: the two Android rows of matrices/anchors.cells byte for byte, the 1K rows (v0.18.0, v0.19.0), then the
+# short-chat rows (v0.18.0, v0.19.0). d546_work/slot_eng.sh runs this file once under the Pixel 8a's hold (taskset f0,
+# BENCH_SITTING=1) in the runner's ROUNDS mode (ROUNDS=2, round 2 in reverse order): the short-chat rows run
+# v0.18.0, v0.19.0, v0.19.0, v0.18.0 back to back, the 1K rows before and after them; BENCH_SESSION_DEADLINE starts
+# no launch past 25 min, so round 2's last rows (1K v0.18.0, the anchors) may not run.
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu engine-build=v0.18.0 file=~/code/edge-llm-bench/d546_work/old_file/Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a-copy2.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=~/code/edge-llm-bench/d546_work/old_file/Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu engine-build=v0.18.0 file=~/code/edge-llm-bench/d546_work/old_file/Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a-copy2.litertlm
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=~/code/edge-llm-bench/d546_work/old_file/Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a.litertlm
