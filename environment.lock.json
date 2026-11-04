@@ -55,9 +55,14 @@
         "note": "From the 2026-10-31 swap on: .build/dd-mac is the yardstick built that day from this commit's tree with the vendored LiteRT-LM v0.19.0 plus patches/litert-lm-v0.19.0-package-release-zips.patch (the tag's Package.swift names the v0.18.1 zips) and patches/litert-lm-swift-benchmarkinfo-turns.patch (the dylib beside it, sha256 65ddc8f1ded860fd..., is the v0.19.0 CLiteRTLM_mac.xcframework.zip's; proven with DYLD_PRINT_LIBRARIES before the switch) and llama.cpp b11721 (unchanged). One launch each on the dashboard Qwen3 0.6B file read the prompt's token count as the v0.18.0 records do (short chat 19, the 1K task 1,355, the 1024/256 protocol 1,024; an unpatched v0.19.0 app records the last prefill turn, 392 for the 1K task). The yardstick it replaces (built 2026-10-20 15:40, v0.18.0 dylib 9526db9e...) is kept as .build/dd-mac-1020-litert0180. The rows stamp v0.19.0 from ios/BenchmarkApp/Vendored/engine-pins.json, re-vendored in the same minutes."
       },
       "ios": {
-        "tag": "v0.18.0",
-        "since": "2026-10-19",
-        "note": "The iPhone 18 Pro's weekly app rebuilt on v0.18.0 (the .build/dd-ios-0180-18pro tree, CLiteRTLM.xcframework.zip@v0.18.0) and installed 2026-10-19; its records stamp v0.16.0 through 2026-10-17 (default_tag). Registered the same day."
+        "tag": "v0.19.0",
+        "since": "2026-11-04",
+        "previous": {
+          "tag": "v0.18.0",
+          "since": "2026-10-19",
+          "note": "The iPhone 18 Pro's weekly app rebuilt on v0.18.0 (the .build/dd-ios-0180-18pro tree, CLiteRTLM.xcframework.zip@v0.18.0) and installed 2026-10-19; its records stamp v0.16.0 through 2026-10-17 (default_tag). Registered the same day."
+        },
+        "note": "From the 2026-11-04 install on: the iPhone 18 Pro's weekly app (com.example.CoreMLLLMChat, Release, team MFN25KNUGJ; main binary sha256 4dcc0651d622ffaa...) is the build of that day from the side tree .build/dd-ios-0190-18pro/src (git archive of 47e0a778; Vendored as the 2026-10-19 app's tree: Package.resolved c9fef2ba..., llama.cpp b11721, mlx-swift 60bd0d78, core-ai 1.0.0-10-gbd3c539, ONNX Runtime GenAI 0.17.0) with the vendored LiteRT-LM v0.19.0 (771b06e1a) plus patches/litert-lm-v0.19.0-package-release-zips.patch and patches/litert-lm-swift-benchmarkinfo-turns.patch, the checkout the Mac yardstick was built from on 2026-10-31. Its embedded CLiteRTLM.framework (LC_UUID 4B9C1362-C2DB-3FD0-8E08-3E0590345ABD) is the ios-arm64 slice of the v0.19.0 CLiteRTLM.xcframework.zip (sha256 b7b2450f..., the release's digest; the slice e117c008...). Upstream re-tagged v0.19.0 on 2026-11-02 at 83ce6067, one commit after 771b06e1a that changes only Package.swift (to the v0.19.0 zips: byte for byte the patched file) and README.md; the zips' digests did not change. The pin it replaces (.build/dd-ios-pin, main binary 50eaab37..., v0.18.0, CLiteRTLM LC_UUID 8B273118) is kept as .build/dd-ios-pin-50eaab37. The records stamp v0.19.0 from the engine-pins.json the app bundles (= ios/BenchmarkApp/Vendored/engine-pins.json)."
       },
       "android": {
         "built_by": "android/scripts/build_litert_lm_main.sh (bazel + NDK r28b+; releases ship no Android binary, verified v0.14-v0.16, v0.18.0 and v0.19.0)",
