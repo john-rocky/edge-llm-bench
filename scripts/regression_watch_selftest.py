@@ -29,6 +29,9 @@ Pins:
       scripts/engine_bisect.py is in the tree); on a later UTC day than the red point too; the same
       engine, or a retake back within the line, -> no request
   (e) the draft beside a request: EN and JA, the numbers and the row, no refused word
+  (f) a retake still red against a previous point whose records name another model.sha256 (the file replaced under
+      its name, the engine changed too) -> no request and no draft, the note "file changed (<sha> -> <sha>, ...)";
+      the same sha256 on both points, or a point whose records name none -> the engine rule as before
 
   python3 scripts/regression_watch_selftest.py     # exit 0 = pass
 """
@@ -564,6 +567,59 @@ def main():
         resp = rw.respond(retake_world(decode, 15, engine), [f"results/raw/{RTA}", f"results/raw/{RT}"], root, st, cfg, now=now)
         ok(not rw.load_state(st, rw.REQUESTS) and resp["judged"][0]["result"] == ("red-stays" if decode == 9.0 else "cleared"),
            f"{what}: no request ({resp['judged'][0]['result']}; {resp['notes'][-1][:90]})")
+
+    print("--- (f) a red that stays across a model file change (the records' model.sha256) -> no request, no draft, "
+          "whatever the engines; the same file -> the request")
+    FNAME = "litert-community_gemma-4-E2B-it-litert-lm_gemma-4-E2B-it.litertlm"
+
+    def file_world(prev_sha, retake_sha, tag):
+        """The (d) world on another engine (v0.16.0 -> v0.18.0), each row of the previous point W2 and of the retake
+        RT pointing at a record of its own (the summary's source column) that names the sha256 given (None: no
+        sha256 field)."""
+        rows_ = [dict(r) for r in rows] + runs(RT, S, "android", cpu, GEMMA, "short-chat", 16, 18, "v0.18.0", 9.0, 50.0,
+                                               2000)
+        n = 0
+        for r in rows_:
+            camp = os.path.basename(r["campaign"])
+            if r["runtime"] != cpu or camp not in (W2, RT):
+                continue
+            sha = prev_sha if camp == W2 else retake_sha
+            rel = f"results/raw/{camp}/app-path-android/{tag}-{n}.json"
+            model = {"id": GEMMA, "file": FNAME, **({"sha256": sha} if sha else {})}
+            write(os.path.join(root, rel), json.dumps({"model": model}))
+            r["source"], n = rel, n + 1
+        path = os.path.join(tmp, f"file-{tag}.csv")
+        write_summary(path, rows_)
+        session(root, RT, "s26", cells=gen_rel, retake={"ids": [e["id"]], "cells_file": gen_rel, "rows": [CPU_ROW]})
+        session(root, RTA, "s26", phase="anchor")
+        st = os.path.join(tmp, f"state-file-{tag}")
+        rw.save_state(st, rw.RETAKES, [dict(rw.load_state(state, rw.RETAKES)[0], result=None, status="done")])
+        return st, rw.respond(rw.compute(root, path, cfg), [f"results/raw/{RTA}", f"results/raw/{RT}"], root, st, cfg,
+                              now=now)
+    OLD_SHA, NEW_SHA = "03e7da1eb110" + "0" * 52, "bf1aba9ce8d9" + "1" * 52
+    st, resp = file_world(OLD_SHA, NEW_SHA, "moved")
+    j = (resp["judged"] or [{}])[0]
+    fc = ((j.get("metrics") or [{}])[0]).get("file_changed") or {}
+    drafts = [f for f in os.listdir(st) if f.startswith("regression-")]
+    note = next((n for n in resp["notes"] if "file changed" in n), "")
+    ok(j.get("result") == "red-stays" and j["metrics"][0].get("engine_changed") is True
+       and fc.get("from") == OLD_SHA and fc.get("to") == NEW_SHA and fc.get("same_name") is True,
+       f"the verdict names the move: red stays, engine v0.16.0 -> v0.18.0 and file {OLD_SHA[:12]} -> {NEW_SHA[:12]} "
+       f"under one name ({j.get('result')}, {fc})")
+    ok(not rw.load_state(st, rw.REQUESTS) and not drafts and not resp["requests"]
+       and f"file changed (03e7da1eb110 -> bf1aba9ce8d9, the same file name {FNAME} with other bytes" in note
+       and "no bisect request" in note
+       and (rw.load_state(st, rw.RETAKES)[0].get("file_changed") or {}).get("to") == NEW_SHA,
+       f"the file change wins over the engine change: no request, no draft, the note says so ({note[:150]})")
+    st, resp = file_world(OLD_SHA, OLD_SHA, "same")
+    reqs = rw.load_state(st, rw.REQUESTS)
+    ok(len(reqs) == 1 and reqs[0].get("good") == "v0.16.0" and reqs[0].get("bad") == "v0.18.0"
+       and os.path.exists(os.path.join(st, "regression-2026-09-16-gemma4e2b-cpu-short-chat.md"))
+       and not any("file changed" in n for n in resp["notes"]),
+       "the same sha256 on both points: the engine rule as before, one request and its draft")
+    st, resp = file_world(None, NEW_SHA, "half")
+    ok(len(rw.load_state(st, rw.REQUESTS)) == 1 and not any("file changed" in n for n in resp["notes"]),
+       "a point whose records name no sha256 (written before the field): no file verdict, the engine rule as before")
 
     print("--- (e) the draft beside the request")
     draft = os.path.join(state, "regression-2026-09-16-gemma4e2b-cpu-short-chat.md")

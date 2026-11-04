@@ -38,7 +38,10 @@ retake's verdict a bisect request, in the state files under --state-dir:
                         sitting before its weekly set (retake_cells_text) and marks them done.
   bisect-requests.json  a retake sitting's point still red against the red point's own previous
                         point (diff_pct, the same threshold) on another engine build than that
-                        point's -> one pending request: good / bad engine labels, the row, the
+                        point's and on the same model file (the two points' records' model.sha256;
+                        a red that stays across a file change gets a note, "file changed (<sha> ->
+                        <sha>, ...)", and no request and no draft, whatever the engines) -> one
+                        pending request: good / bad engine labels, the row, the
                         verdict for scripts/engine_bisect.py, its route (the lab unit of the
                         phone's model on the Developer Device Platform; none for the iPhone and
                         the Mac) and the command when that tool is in the tree. Nothing starts it.
@@ -301,6 +304,9 @@ def build_series(defs, devices, rows, cfg):
                     "status": status,
                     "decode_tps": dec, "n": n, "spread_pct": None if status.startswith(NO_NUMBER) else spread,
                     "prefill_tps": a["prefill"], "mem_peak_mb": a["mem_peak"],
+                    # the point's records (the summary's source column): a retake's verdict reads their
+                    # model.sha256 (point_files), which the summary does not carry
+                    "sources": sorted({r["source"] for r in crows if r.get("source")}),
                     "vs_prev": dict.fromkeys(metrics)})
             points.sort(key=lambda p: (p["captured"], p["campaign"]))
             days = {}
@@ -780,12 +786,56 @@ def bisect_command(root, entry, metric, good, bad, route):
     return cmd, None, notes
 
 
-def judge(entry, s, retake_name, cfg):
+def point_files(root, p, cache=None):
+    """{model.sha256: {model.file, ...}} of a point's records (its sources, read under `root`), or {} when none of
+    them names a sha256 (a record that cannot be read, or one written without the field, is left out)."""
+    out = {}
+    cache = {} if cache is None else cache
+    for src in (p or {}).get("sources") or ():
+        if src not in cache:
+            try:
+                with open(os.path.join(root, src)) as fh:
+                    d = json.load(fh)
+                m = d.get("model") if isinstance(d, dict) else None
+                cache[src] = ((m.get("sha256") or "", os.path.basename(str(m.get("file") or "")))
+                              if isinstance(m, dict) else ("", ""))
+            except (OSError, ValueError):
+                cache[src] = ("", "")
+        sha, name = cache[src]
+        if sha:
+            out.setdefault(sha, set()).add(name)
+    return out
+
+
+def file_change(prev_files, files):
+    """The model file between two points (point_files of each) -> None when it did not change or either side names
+    no sha256, else {"from", "to"} (the sha256s, '+'-joined when a point ran two) and "same_name" (both points ran
+    one file name: the bytes behind that name were replaced, as a Hub file replaced under its name is) and "names"."""
+    if not prev_files or not files or set(prev_files) == set(files):
+        return None
+    names = sorted({n for v in prev_files.values() for n in v}), sorted({n for v in files.values() for n in v})
+    return {"from": "+".join(sorted(prev_files)), "to": "+".join(sorted(files)),
+            "same_name": len(names[0]) == 1 and names[0] == names[1], "names": [names[0], names[1]]}
+
+
+def file_change_text(fc):
+    """file changed (<sha 12> -> <sha 12>, ...): the words a note and a withdrawn request carry."""
+    short = ["+".join(x[:12] for x in side.split("+")) for side in (fc["from"], fc["to"])]
+    how = (f"the same file name {fc['names'][0][0]} with other bytes: replaced under its name, as on the Hub"
+           if fc["same_name"] else f"{'+'.join(fc['names'][0]) or '?'} -> {'+'.join(fc['names'][1]) or '?'}")
+    return f"file changed ({short[0]} -> {short[1]}, {how})"
+
+
+def judge(entry, s, retake_name, cfg, root=None):
     """A retake's verdict -> (result, per metric): each red metric of the retake sitting's point
     against the red point's own previous point (the page's diff_pct and threshold). On the red
     point's UTC day the retake is the page's shown point and this is its vs_prev; on a later day
-    the page compares the retake with the red point itself, which a regression that stays passes."""
+    the page compares the retake with the red point itself, which a regression that stays passes.
+    With `root`, each compared metric also says whether the model file moved between the two points
+    (file_change of their records' model.sha256, None when it did not or a side names none): a red
+    that stays across a file change is not an engine build's alone (respond writes no request)."""
     pts = {p["campaign"]: p for p in s["points"]} if s else {}
+    cache = {}
     p = pts.get(retake_name)
     out = []
     for m in entry["metrics"]:
@@ -810,6 +860,8 @@ def judge(entry, s, retake_name, cfg):
             row.update(pct=pct, value=v, prev_value=pv, red=pct < -SPREAD_FLAG, engine=p["engine"],
                        prev_engine=prev["engine"], engine_changed=p["engine"] != prev["engine"],
                        captured=p["captured"])
+            if root is not None:
+                row["file_changed"] = file_change(point_files(root, prev, cache), point_files(root, p, cache))
         out.append(row)
     if any(r.get("red") for r in out):
         return "red-stays", out
@@ -899,7 +951,7 @@ def respond(doc, sitting, root, state_dir, cfg, now=None, dry=False):
                 out["notes"].append(f"{len(mine)} red in a retake sitting without a queued retake (by hand): logged")
             for e in targets:
                 s = by_key.get(tuple(e["series"]))
-                result, judged = judge(e, s, payload, cfg)
+                result, judged = judge(e, s, payload, cfg, root=root)
                 e.update(result=result, judged=judged, judged_at=now_text(now), retake_campaign=e.get("retake_campaign")
                          or (f"results/raw/{payload}" if payload else None))
                 staying = [r for r in judged if r.get("red")]
@@ -908,6 +960,16 @@ def respond(doc, sitting, root, state_dir, cfg, now=None, dry=False):
                 out["judged"].append({"id": e["id"], "result": result, "metrics": judged})
                 out["notes"].append(f"retake {e['id']}: {result} ({text})")
                 if result != "red-stays":
+                    continue
+                # the model file first: a red that stays across a change of the file's bytes (the records'
+                # model.sha256) is no engine build's alone, even when the engine changed too (2026-11-04: the
+                # Pixel 8a Qwen3 0.6B CPU reds compared v0.18.0 + the file Hub commit 2670e142 replaced under its
+                # name with v0.19.0 + the new file) — no bisect request, no draft
+                moved = next((r["file_changed"] for r in staying if r.get("file_changed")), None)
+                if moved:
+                    e["file_changed"] = moved
+                    out["notes"].append(f"retake {e['id']}: red stays, {file_change_text(moved)}: not an engine "
+                                        "build change alone, no bisect request")
                     continue
                 changed = [r for r in staying if r["engine_changed"]]
                 if not changed:
