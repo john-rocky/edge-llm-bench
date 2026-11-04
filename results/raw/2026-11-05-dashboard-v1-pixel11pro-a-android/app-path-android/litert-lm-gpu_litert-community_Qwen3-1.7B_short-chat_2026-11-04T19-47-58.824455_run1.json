@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "id": "818c392e-51e4-47a9-9c99-02af94ed7048",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.19.0",
+  "engineArtifact": "11c2cde974b6e1d27f4b8e8d74973f8f7316835baf2a99b98904cb9bea5a0339",
+  "model": {
+    "id": "litert-community/Qwen3-1.7B",
+    "quantization": "INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build)",
+    "file": "litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm",
+    "sha256": "2a72330b504a6596d53a2c00923c57173b10f1b83e6a541213ffec08d1fc5de8"
+  },
+  "task": "short-chat",
+  "timestamp": "2026-11-04T19:47:58Z",
+  "device": {
+    "modelIdentifier": "Pixel 11 Pro",
+    "systemName": "Android",
+    "systemVersion": "17",
+    "securityPatch": "2026-09-01",
+    "soc": "Tensor G6",
+    "product": "grizzly",
+    "batteryLevel": 1.0,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "taskset 7c",
+    "cpusAllowedList": "2-6",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 2649,
+        "hw": 2649,
+        "cpus": "0-1"
+      },
+      "policy2": {
+        "min": 3379,
+        "hw": 3379,
+        "cpus": "2-5"
+      },
+      "policy6": {
+        "min": 4109,
+        "hw": 4109,
+        "cpus": "6"
+      }
+    },
+    "contextTokens": "bundle-default",
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "15",
+    "elapsedSeconds": 47.0,
+    "exitCode": 0,
+    "engineBuild": "v0.19.0-pregpu",
+    "engineCommand": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/v0.19.0-pregpu /data/local/tmp/llmbench/engines/v0.19.0-pregpu/litert_lm_main --backend=gpu --model_path=/data/local/tmp/llmbench/engines/v0.19.0-pregpu/models/litert-community_Qwen3-1.7B_Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm --input_prompt_file=/data/local/tmp/llmbench/prompts/short-chat.txt --max_output_tokens=128 --async=false",
+    "backendRegistered": [
+      "RegisterAccelerator: ptr=<addr>, name=LiteRT GPU",
+      "Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered.",
+      "RegisterAccelerator: ptr=<addr>, name=CpuAccelerator",
+      "XNNPACK CPU accelerator registered.",
+      "Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_128).",
+      "Replacing 994 out of 994 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_1024).",
+      "Replacing 936 out of 936 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (decode)."
+    ],
+    "gpuAccelerator": "prebuilt-dynamic",
+    "gpuAcceleratorLine": "INFO: [gpu_registry.cc:146] Dynamically loaded GPU accelerator(libLiteRtGpuAccelerator.so) registered."
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 430.0,
+    "promptTokensPerSecond": 50.84,
+    "decodeTokensPerSecond": 18.84,
+    "promptTokenCount": 19,
+    "generatedTokenCount": 671,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 390.83203125,
+    "memoryPeakResidentMB": 472.1796875
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-community_Qwen3-1.7B_short-chat_2026-11-04T19-47-58.824455_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}
