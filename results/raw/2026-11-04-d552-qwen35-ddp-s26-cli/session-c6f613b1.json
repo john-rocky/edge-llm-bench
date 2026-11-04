@@ -1,0 +1,182 @@
+{
+  "name": "projects/litert-edge-portal/locations/global/sessions/session-c6f613b1",
+  "sessionConfig": {
+    "displayName": "litert-cli-benchmark-09453875",
+    "jobConfigs": [
+      {
+        "displayName": "gpu-m1q-36",
+        "action": {
+          "androidNativeBinary": {
+            "androidNativeBinary": {
+              "gcsInputFile": {
+                "path": "gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-09453875/litert_lm_run.sh"
+              }
+            },
+            "executionTimeout": "1800s",
+            "args": [
+              "--backend=gpu",
+              "--model_path=/data/local/tmp/litert-cli/Qwen3.5-0.8B_int8.litertlm",
+              "--benchmark=true",
+              "--benchmark_prefill_tokens=1024",
+              "--benchmark_decode_tokens=256",
+              "--max_num_tokens=1280",
+              "--num_iterations=5",
+              "--report_peak_memory_footprint=true",
+              "--metric_proto_file_path=/data/local/tmp/litert-cli/metrics.pb"
+            ]
+          }
+        },
+        "allocationConfig": {
+          "deviceConfigs": [
+            {
+              "requirement": {
+                "deviceId": "m1q-36"
+              },
+              "actions": [
+                {
+                  "androidPushFiles": {
+                    "fileConfigs": [
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/litert-cli/inputs/litert-cli-benchmark-09453875/Qwen3.5-0.8B_int8.litertlm"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/litert-cli/Qwen3.5-0.8B_int8.litertlm"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/litert-cli/litert_lm_advanced_main"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert/binaries/latest/android_arm64/litert_lm/libGemmaModelConstraintProvider.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/litert-cli/libGemmaModelConstraintProvider.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert/binaries/latest/android_arm64/litert_lm/libLiteRtDispatch_MediaTek.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/litert-cli/libLiteRtDispatch_MediaTek.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert/binaries/latest/android_arm64/litert_lm/libLiteRtDispatch_Qualcomm.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/litert-cli/libLiteRtDispatch_Qualcomm.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert/binaries/latest/android_arm64/litert_lm/libwebgpu_dawn.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/litert-cli/libwebgpu_dawn.so"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "androidPullFiles": {
+                    "paths": [
+                      "/data/local/tmp/litert-cli/metrics.pb",
+                      "/data/local/tmp/litert-cli/provenance.txt"
+                    ]
+                  }
+                },
+                {
+                  "androidLogcat": {}
+                }
+              ]
+            }
+          ]
+        },
+        "labels": {
+          "tool": "litert-cli",
+          "accelerator": "gpu",
+          "model": "Qwen3.5-0.8B_int8.litertlm",
+          "runtime": "litert-lm"
+        }
+      }
+    ],
+    "outputDirectoryConfig": {
+      "gcsOutputDirectory": {
+        "path": "gs://litert-edge-portal-devicerun/litert-cli/sessions"
+      }
+    }
+  },
+  "sessionReport": {
+    "id": "f5567404-3f19-410a-aba5-5efd983c83d9",
+    "jobReports": [
+      {
+        "id": "79ace8bb-910d-44f3-a208-4e155e8aeb0f",
+        "displayName": "gpu-m1q-36",
+        "executionReports": [
+          {
+            "id": "3e251a40-0288-40c6-a4d2-696207b18ef4",
+            "displayName": "execution-000",
+            "startTime": "2026-11-04T05:05:07.150Z",
+            "endTime": "2026-11-04T05:09:52.686Z",
+            "status": {
+              "statusType": "DONE"
+            },
+            "result": {
+              "resultType": "PASSED"
+            },
+            "outputFiles": [
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/litert-cli/sessions/session-c6f613b1/gpu-m1q-36/execution-000/artifacts/data/local/tmp/litert-cli/provenance.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/litert-cli/sessions/session-c6f613b1/gpu-m1q-36/execution-000/logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/litert-cli/sessions/session-c6f613b1/gpu-m1q-36/execution-000/artifacts/data/local/tmp/litert-cli/metrics.pb"
+                }
+              }
+            ]
+          }
+        ],
+        "startTime": "2026-11-04T05:03:40.262Z",
+        "endTime": "2026-11-04T05:09:54.364Z",
+        "status": {
+          "statusType": "DONE"
+        },
+        "result": {
+          "resultType": "PASSED"
+        },
+        "labels": {
+          "accelerator": "gpu",
+          "model": "Qwen3.5-0.8B_int8.litertlm",
+          "tool": "litert-cli",
+          "runtime": "litert-lm"
+        }
+      }
+    ],
+    "startTime": "2026-11-04T05:03:37.788Z",
+    "endTime": "2026-11-04T05:09:56.325Z",
+    "status": {
+      "statusType": "DONE"
+    },
+    "result": {
+      "resultType": "PASSED"
+    }
+  },
+  "createTime": "2026-11-04T05:03:34.807295220Z"
+}

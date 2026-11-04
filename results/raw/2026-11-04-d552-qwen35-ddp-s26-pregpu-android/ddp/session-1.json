@@ -1,0 +1,303 @@
+{
+  "name": "projects/litert-edge-portal/locations/global/sessions/session-96a755ec",
+  "sessionConfig": {
+    "displayName": "elb-2026-11-04-d552-qwen35-ddp-s26-pregpu-android-s1",
+    "jobConfigs": [
+      {
+        "displayName": "j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256",
+        "action": {
+          "androidNativeBinary": {
+            "androidNativeBinary": {
+              "gcsInputFile": {
+                "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/wrapper/de4748615e79e0ed0e579ff1f70cef63eca0c8a6d005d1e405fc1a227c04efe8/ddp_cell.sh"
+              }
+            },
+            "executionTimeout": "3600s",
+            "args": [
+              "--runs=3",
+              "--cooldown=120",
+              "--mask=none",
+              "--env=LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/v0.19.0-pregpu",
+              "--binname=litert_lm_advanced_main",
+              "--dir=/data/local/tmp/llmbench",
+              "--output_dir=/data/local/tmp/llmbench/ddp-out",
+              "--timeout=1080",
+              "--thermal_wait=600",
+              "--cpucap_wait=0",
+              "--budget=3480",
+              "--cell=litert-lm-gpu_litert-community_Qwen3.5-0.8B_native-benchmark-1024x256",
+              "--command=/data/local/tmp/llmbench/engines/v0.19.0-pregpu/litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048"
+            ]
+          }
+        },
+        "allocationConfig": {
+          "deviceConfigs": [
+            {
+              "requirement": {
+                "deviceId": "m1q-36"
+              },
+              "actions": [
+                {
+                  "androidPushFiles": {
+                    "fileConfigs": [
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/11c2cde974b6e1d27f4b8e8d74973f8f7316835baf2a99b98904cb9bea5a0339/litert_lm_main"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/litert_lm_main"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/0827261d4edf6ddac350879d9336cdee914fc6fc2536122a7bc7d5f760c04712/litert_lm_advanced_main"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/litert_lm_advanced_main"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/libGemmaModelConstraintProvider.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/49055120bddce4f4bfb681ae1b929094ef22b238b5d9b91e8e57aeddcd58f8c8/libLiteRtGpuAccelerator.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/libLiteRtGpuAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/ef9776d87b0a4fe4793e8fa3f325dd9fecca4a2faaace14973bae6c6be2698a5/libLiteRtOpenClAccelerator.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/libLiteRtOpenClAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/5952041260e13c719754903c95d2400c813785b1f7d0de6495f401b2d0ef956c/libLiteRtWebGpuAccelerator.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/libLiteRtWebGpuAccelerator.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/engines/litert-lm/v0.19.0-pregpu/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/engines/v0.19.0-pregpu/libwebgpu_dawn.so"
+                      },
+                      {
+                        "sourceFile": {
+                          "gcsInputFile": {
+                            "path": "gs://litert-edge-portal-devicerun/automation/inputs/edge-llm-bench/models/25447e2550082aed6145bbc755ec4da5d535f98f6a0c386865fdae2ccb88aed1/Qwen3.5-0.8B_int8.litertlm"
+                          }
+                        },
+                        "destinationPath": "/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "androidPullFiles": {
+                    "paths": [
+                      "/data/local/tmp/llmbench/ddp-out"
+                    ]
+                  }
+                },
+                {
+                  "androidLogcat": {}
+                }
+              ]
+            }
+          ]
+        },
+        "labels": {
+          "harness": "edge-llm-bench",
+          "campaign": "2026-11-04-d552-qwen35-ddp-s26-pregpu-android",
+          "cell": "litert-lm-gpu_litert-community_qwen3-5-0-8b_native-benchmark-10",
+          "runtime": "litert-lm-gpu",
+          "model": "litert-community--qwen3-5-0-8b",
+          "task": "native-benchmark-1024x256",
+          "backend": "gpu",
+          "devicekey": "s26",
+          "deviceid": "m1q-36",
+          "engine": "v0-19-0-pregpu"
+        }
+      }
+    ],
+    "outputDirectoryConfig": {
+      "gcsOutputDirectory": {
+        "path": "gs://litert-edge-portal-devicerun/automation/sessions"
+      }
+    }
+  },
+  "sessionReport": {
+    "id": "c5067200-457a-495a-8e65-877cd287fd8c",
+    "jobReports": [
+      {
+        "id": "c781c368-8ea9-49f3-8b87-45cb1e52e072",
+        "displayName": "j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256",
+        "executionReports": [
+          {
+            "id": "c63c3939-9dc6-4721-8149-dec00c53f797",
+            "displayName": "execution-000",
+            "startTime": "2026-11-04T04:53:57.646Z",
+            "endTime": "2026-11-04T05:04:44.109Z",
+            "status": {
+              "statusType": "DONE"
+            },
+            "result": {
+              "resultType": "PASSED"
+            },
+            "outputFiles": [
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run3.exit"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run2_logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run1.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run3.state"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run3.engine.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run2.err"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run1_logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run3.err"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run2.engine.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/provenance.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run1.engine.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run3.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run1.err"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run2.state"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/wrapper.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run1.exit"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run2.log"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run2.exit"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run3_logcat.txt"
+                }
+              },
+              {
+                "gcsOutputFile": {
+                  "path": "gs://litert-edge-portal-devicerun/automation/sessions/session-96a755ec/j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256/execution-000/artifacts/data/local/tmp/llmbench/ddp-out/run1.state"
+                }
+              }
+            ]
+          }
+        ],
+        "startTime": "2026-11-04T04:52:24.918Z",
+        "endTime": "2026-11-04T05:04:48.134Z",
+        "status": {
+          "statusType": "DONE"
+        },
+        "result": {
+          "resultType": "PASSED"
+        },
+        "labels": {
+          "devicekey": "s26",
+          "deviceid": "m1q-36",
+          "model": "litert-community--qwen3-5-0-8b",
+          "campaign": "2026-11-04-d552-qwen35-ddp-s26-pregpu-android",
+          "harness": "edge-llm-bench",
+          "cell": "litert-lm-gpu_litert-community_qwen3-5-0-8b_native-benchmark-10",
+          "task": "native-benchmark-1024x256",
+          "runtime": "litert-lm-gpu",
+          "backend": "gpu",
+          "engine": "v0-19-0-pregpu"
+        }
+      }
+    ],
+    "startTime": "2026-11-04T04:52:22.181Z",
+    "endTime": "2026-11-04T05:04:50.988Z",
+    "status": {
+      "statusType": "DONE"
+    },
+    "result": {
+      "resultType": "PASSED"
+    }
+  },
+  "createTime": "2026-11-04T04:52:19.352022126Z"
+}

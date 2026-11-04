@@ -1,0 +1,153 @@
+{
+  "index": 1,
+  "displayName": "elb-2026-11-04-d552-qwen35-ddp-s26-public-android-s1",
+  "jobs": [
+    {
+      "index": 1,
+      "displayName": "j01-litert-lm-gpu-Qwen3-5-0-8B-native-benchmark-1024x256",
+      "cell": {
+        "runtime": "litert-lm",
+        "model_id": "litert-community/Qwen3.5-0.8B",
+        "task": "native-benchmark-1024x256",
+        "opts": {
+          "backend": "gpu",
+          "engine-build": "public-0.19.0-20261029",
+          "file": "Qwen3.5-0.8B_int8.litertlm",
+          "context-tokens": "2048",
+          "runs": "3"
+        },
+        "row": "android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048 runs=3"
+      },
+      "cellId": "litert-lm-gpu litert-community/Qwen3.5-0.8B native-benchmark-1024x256 context-tokens=2048 file=Qwen3.5-0.8B_int8.litertlm",
+      "stem": "litert-lm-gpu_litert-community_Qwen3.5-0.8B_native-benchmark-1024x256",
+      "arm": "litert-lm-gpu",
+      "runtime": "litert-lm",
+      "backend": "gpu",
+      "engineBuild": "public-0.19.0-20261029",
+      "recipe": null,
+      "modelId": "litert-community/Qwen3.5-0.8B",
+      "file": "Qwen3.5-0.8B_int8.litertlm",
+      "task": "native-benchmark-1024x256",
+      "contextTokens": 2048,
+      "ctxNote": 2048,
+      "budget": null,
+      "maxTokens": null,
+      "promptVersion": null,
+      "paired": false,
+      "binname": "litert_lm_advanced_main",
+      "sampler": "engine-default",
+      "command": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048",
+      "env": "LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/public-0.19.0-20261029",
+      "mask": "",
+      "runs": 3,
+      "cooldown": 120,
+      "perRunTimeout": 1080,
+      "cpucapWait": 0,
+      "executionTimeout": 3600,
+      "deviceId": "m1q-36",
+      "deviceKey": "s26",
+      "engineTag": "public-0.19.0-20261029",
+      "args": [
+        "--runs=3",
+        "--cooldown=120",
+        "--mask=none",
+        "--env=LD_LIBRARY_PATH=/data/local/tmp/llmbench/engines/public-0.19.0-20261029",
+        "--binname=litert_lm_advanced_main",
+        "--dir=/data/local/tmp/llmbench",
+        "--output_dir=/data/local/tmp/llmbench/ddp-out",
+        "--timeout=1080",
+        "--thermal_wait=600",
+        "--cpucap_wait=0",
+        "--budget=3480",
+        "--cell=litert-lm-gpu_litert-community_Qwen3.5-0.8B_native-benchmark-1024x256",
+        "--command=/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_advanced_main --backend=gpu --model_path=/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm --benchmark --benchmark_prefill_tokens=1024 --benchmark_decode_tokens=256 --async=false --max_num_tokens=2048"
+      ],
+      "labels": {
+        "harness": "edge-llm-bench",
+        "campaign": "2026-11-04-d552-qwen35-ddp-s26-public-android",
+        "cell": "litert-lm-gpu_litert-community_qwen3-5-0-8b_native-benchmark-10",
+        "runtime": "litert-lm-gpu",
+        "model": "litert-community--qwen3-5-0-8b",
+        "task": "native-benchmark-1024x256",
+        "backend": "gpu",
+        "devicekey": "s26",
+        "deviceid": "m1q-36",
+        "engine": "public-0-19-0-20261029"
+      },
+      "push": [
+        {
+          "kind": "engine",
+          "name": "litert_lm_main",
+          "bytes": 49992096,
+          "sha256": "6d4a117dd3053e62b4576bce17c6c1d8e7b65adf067ed90a1bf10e4d20eea0ef",
+          "device": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/6d4a117dd3053e62b4576bce17c6c1d8e7b65adf067ed90a1bf10e4d20eea0ef/litert_lm_main"
+        },
+        {
+          "kind": "engine",
+          "name": "litert_lm_advanced_main",
+          "bytes": 50381032,
+          "sha256": "8e199c6b3fb438cb94943567a279f9e1f994d57c3e1f4667084fc8ae2d06a6eb",
+          "device": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/litert_lm_advanced_main",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/8e199c6b3fb438cb94943567a279f9e1f994d57c3e1f4667084fc8ae2d06a6eb/litert_lm_advanced_main"
+        },
+        {
+          "kind": "engine",
+          "name": "libGemmaModelConstraintProvider.so",
+          "bytes": 19415656,
+          "sha256": "c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783",
+          "device": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libGemmaModelConstraintProvider.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/c7c7188b831ae75fcc7ec6fe613118365b311995805423a4ca265372f07f4783/libGemmaModelConstraintProvider.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtDispatch_MediaTek.so",
+          "bytes": 330264,
+          "sha256": "fb440b72c045f9e1f804dee4eab66446fe5076a25d9621dcff4f1fceb6e31c95",
+          "device": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libLiteRtDispatch_MediaTek.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/fb440b72c045f9e1f804dee4eab66446fe5076a25d9621dcff4f1fceb6e31c95/libLiteRtDispatch_MediaTek.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libLiteRtDispatch_Qualcomm.so",
+          "bytes": 674448,
+          "sha256": "5aef1c5d1e5476d10bc3ff7685cd65852bb7ae26ce76cade50b98c3b8755efb9",
+          "device": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libLiteRtDispatch_Qualcomm.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/5aef1c5d1e5476d10bc3ff7685cd65852bb7ae26ce76cade50b98c3b8755efb9/libLiteRtDispatch_Qualcomm.so"
+        },
+        {
+          "kind": "engine",
+          "name": "libwebgpu_dawn.so",
+          "bytes": 19747368,
+          "sha256": "bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9",
+          "device": "/data/local/tmp/llmbench/engines/public-0.19.0-20261029/libwebgpu_dawn.so",
+          "object": "automation/inputs/edge-llm-bench/engines/litert-lm/public-0.19.0-20261029/bfaa7e59f07cc6b828262830832c8a9703db1b045346944c48b00af4a7290bb9/libwebgpu_dawn.so"
+        },
+        {
+          "kind": "model",
+          "name": "Qwen3.5-0.8B_int8.litertlm",
+          "bytes": 964566992,
+          "sha256": "25447e2550082aed6145bbc755ec4da5d535f98f6a0c386865fdae2ccb88aed1",
+          "device": "/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm",
+          "object": "automation/inputs/edge-llm-bench/models/25447e2550082aed6145bbc755ec4da5d535f98f6a0c386865fdae2ccb88aed1/Qwen3.5-0.8B_int8.litertlm"
+        }
+      ],
+      "wrapper": {
+        "kind": "wrapper",
+        "name": "ddp_cell.sh",
+        "bytes": 10700,
+        "sha256": "de4748615e79e0ed0e579ff1f70cef63eca0c8a6d005d1e405fc1a227c04efe8",
+        "object": "automation/inputs/edge-llm-bench/wrapper/de4748615e79e0ed0e579ff1f70cef63eca0c8a6d005d1e405fc1a227c04efe8/ddp_cell.sh"
+      },
+      "modelDevice": "/data/local/tmp/llmbench/models/litert-community_Qwen3.5-0.8B_Qwen3.5-0.8B_int8.litertlm",
+      "promptDevice": "/data/local/tmp/llmbench/prompts/native-benchmark-1024x256.txt",
+      "estimate": {
+        "elapsedSeconds": 99.7,
+        "basis": "max of 3 local SM-S942Q runs at public-0.19.0-20261029",
+        "jobSeconds": 989,
+        "overTimeout": false
+      },
+      "session": 1
+    }
+  ]
+}

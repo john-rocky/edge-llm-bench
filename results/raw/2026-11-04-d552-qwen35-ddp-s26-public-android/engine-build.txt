@@ -1,0 +1,14 @@
+# engine-build.txt — the LiteRT-LM binary of this campaign's records (D-552; written by d552_work/engine_build.py)
+records: 3 (app-path-android/*.json); engineVersion public-0.19.0-20261029; conditions.engineBuild None
+litert_lm_advanced_main sha256 on the unit (sha256sum by android/ddp/ddp_cell.sh = record engineArtifact): 8e199c6b3fb438cb94943567a279f9e1f994d57c3e1f4667084fc8ae2d06a6eb
+GPU accelerator line in the run logs: Statically linked
+local copy: android/bin/public-0.19.0-20261029/litert_lm_advanced_main (gitignored), sha256 8e199c6b3fb438cb94943567a279f9e1f994d57c3e1f4667084fc8ae2d06a6eb = the run's
+version strings in it (`strings -n 3 -t d`, the bare x.y.z strings, decimal offset): 1.3.1 at 1707205, 1.4.0 at 2264256, 0.19.0 at 2415518
+android/bin/public-0.19.0-20261029/BUILD_INFO (gitignored; these lines copied as they are):
+  label=public-0.19.0-20261029
+  source=gs://litert/binaries/latest/android_arm64/litert_lm/ (Google's public LiteRT-LM Android arm64 binaries; not built here)
+  fetched=2026-11-04 09:33:55 JST, gcloud storage cp, every object's md5 = the bucket's md5_hash
+  objects=litert_lm_advanced_main 50381032 B 2026-10-29T01:43:56Z md5 oPTCaNNanCPz4WduvNSMDQ==; litert_lm_main 49992096 B 2026-10-29T01:43:57Z md5 SwgkdYbR3GsfcPJ372zT4A==; libGemmaModelConstraintProvider.so 19415656 B 2026-10-29T01:43:51Z md5 8PL5e754dvD1lfllE/5IpA==; libwebgpu_dawn.so 19747368 B 2026-10-29T01:42:02Z md5 mZ86SkiahW4J3xzoO+rotw==; libLiteRtDispatch_Qualcomm.so 674448 B 2026-10-29T01:43:50Z md5 wk4Gg6ofrBS2mTgFdTUM2A==; libLiteRtDispatch_MediaTek.so 330264 B 2026-10-29T01:43:49Z md5 fiBgeA/KIXX3blNRxV9wew==
+  version_string=0.19.0 (strings of litert_lm_advanced_main: the same string at the same place as in the v0.19.0 tag build android/bin/v0.19.0)
+  gpu_accelerator=compiled in (strings name ml_drift_gpu_accelerator.cc, as the v0.19.0 tag build; main HEAD's builds name ml_drift_cl_gl)
+  buildid=3169c7bdc9eee7c7634e8ae3730a8d36 (litert_lm_advanced_main, file(1))
