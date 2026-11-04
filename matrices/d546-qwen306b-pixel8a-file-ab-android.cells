@@ -1,0 +1,24 @@
+# 2026-11-04 D-546, one by-hand Pixel 8a A/B (not page rows: the campaign name holds no `dashboard`, so the team page never
+# reads it as a weekly sitting): is the Pixel 8a Qwen3 0.6B CPU red of 2026-11-03 (long-context-1024-gen256 peak memory
+# 1,500.9 -> 1,929.2 MB, short-chat decode 10.25 -> 8.75 tok/s) the file or the engine? Its two points moved both:
+# 2026-10-27 = LiteRT-LM v0.18.0 + Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm sha256 03e7da1eb110... (the Hub file of commit
+# a3c5d805, 2026-09-21; still the file at e6bb3e4a, 2026-10-27), 2026-11-03 / 11-04 = v0.19.0 + the file Hub commit
+# 2670e142 (2026-10-31 04:49 UTC) replaced under the same name, sha256 bf1aba9ce8d9... Here both files run on the flat
+# pinned v0.19.0 in one hold, so the file is the only variable of each pair.
+# Rows: the two Android rows of matrices/anchors.cells byte for byte (the session anchor), then the 1K and short-chat
+# rows on the OLD file, then the same two rows on the NEW file = matrices/dashboard-text-v1-android-a.cells lines 19 and
+# 16 byte for byte. The old rows differ only in file=: a local copy of the old file, renamed so that it is pushed beside
+# the new one (run_cell.py ensure_model side-loads a file= path that exists; the record names it
+# litert-community_Qwen3-0.6B_Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a.litertlm and states its sha256, which
+# d546_work checked = the Hub LFS oid 03e7da1eb1108b50dffaa9bb52cc7bcbad2eb0c66ca990267f480c1e545d2856 at e6bb3e4a). The
+# name ends in no label key, so its records carry quantization "unrecorded"; the recipe is the old file's, the label
+# the 2026-10-27 records carry ("INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)").
+# d546_work/slot.sh runs this file once under the Pixel 8a's hold (taskset f0, BENCH_SITTING=1) in the runner's ROUNDS
+# mode (ROUNDS=2: one launch per cell per round, the order reversed in round 2, so each old / new pair is adjacent
+# in A B B A order; the gate off; BENCH_SESSION_DEADLINE stops before a launch that would end past the slot's line).
+android litert-lm litert-community/Qwen3-0.6B short-chat anchor=1 runs=3 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+android llama.cpp unsloth/Qwen3-0.6B-GGUF short-chat anchor=1 runs=3 file=Qwen3-0.6B-Q4_K_M.gguf
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=~/code/edge-llm-bench/d546_work/old_file/Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=~/code/edge-llm-bench/d546_work/old_file/Qwen3-0.6B_dynamic_wi4b32_afp32_rev-e6bb3e4a.litertlm
+android litert-lm litert-community/Qwen3-0.6B long-context-1024-gen256 backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
