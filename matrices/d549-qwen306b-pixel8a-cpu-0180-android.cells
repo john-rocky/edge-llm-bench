@@ -1,0 +1,19 @@
+# 2026-11-04 D-549, arm A of one by-hand Pixel 8a A/B (not page rows: the campaign names hold no `dashboard`, so the
+# team page never reads them as a weekly sitting): litert-community/Qwen3-0.6B (Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm,
+# Hub main LFS sha256 bf1aba9ce8d9..., 343,490,560 B, the file of Hub commit 2670e142, 2026-10-31) on the LiteRT team's
+# protocol row, native-benchmark-1024x256 = litert_lm_advanced_main --benchmark, prefill forced to exactly 1024 tokens,
+# decode 256, context 2048 (methodology/agreed-protocol-gemma4.md "The spec"), LiteRT-LM CPU on the side build v0.18.0
+# (android/engine-pins.json litert-lm.v0.18.0 = android/bin/v0.18.0, the Android pin from 2026-10-15 to 2026-10-31),
+# pushed for the sitting into /data/local/tmp/llmbench/engines/v0.18.0 (run_cell.py reads the model through a link in
+# that dir, so this build keeps its own XNNPACK cache) and removed after it.
+# Arm B is matrices/d549-qwen306b-pixel8a-cpu-0190-android.cells (the flat pinned v0.19.0): the same file bytes and the
+# same forced token counts, so the build is the one variable. The D-546 engine A/B (results/raw/2026-11-04-d546eng-
+# qwen306b-engine-pixel8a-android) ran free generation, where the two builds produced different token sequences.
+# One launch per runner start (runs=1), started by d549_work/slot.sh in the order A B B A A B, each arm into its own
+# campaign dir (this one: 2026-11-04-d549ab-qwen306b-cpu-0180-pixel8a-android); the runner's 120 s cooldown and thermal
+# wait before each launch, taskset f0 (the dashboard job's Pixel 8a mask), BENCH_SITTING=1 (each launch checked against
+# its pins entry). engine-build= is not part of a cell's key (run_campaign.cell_id, the record names), hence one file
+# and one campaign dir per arm (D-543). The anchors (matrices/anchors.cells, its two Android rows) run first as their
+# own campaign. This row = the CPU row of matrices/d541-qwen35-s26-android.cells with the model and the file changed,
+# engine-build=v0.18.0 and runs=1 added.
+android litert-lm litert-community/Qwen3-0.6B native-benchmark-1024x256 backend=cpu engine-build=v0.18.0 file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=1
