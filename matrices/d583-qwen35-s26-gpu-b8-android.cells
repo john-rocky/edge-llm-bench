@@ -1,0 +1,4 @@
+# 2026-11-05 D-583, by hand on the Galaxy S26 (not page rows: no `dashboard` in the campaign names): the bytes of d583-qwen35-s26-gpu-b6-android.cells under their own file name
+# (so the GPU program cache stays apart) at context 4096 on the flat pinned build v0.19.0: the file's KV is sized by the runtime, the Hub file's KV is fixed at 4096 by its graph, so at context 2048
+# the two arms also differ in KV length; this row holds the KV length at the Hub file's. Not on the Hub. One launch per runner start (runs=1).
+android litert-lm litert-local/Qwen3.5-0.8B-int8-composites-b8 native-benchmark-1024x256 backend=gpu file=~/code/litertlm-convert/qwen35_08b_composite_work/r1/out/B8_int8_pair_hubmeta_ctx4096/Qwen3.5-0.8B_int8_composites_b8.litertlm context-tokens=4096 local=1 runs=1
