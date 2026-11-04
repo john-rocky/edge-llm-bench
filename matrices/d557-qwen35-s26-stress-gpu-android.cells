@@ -1,0 +1,19 @@
+# 2026-11-04 D-557, one by-hand Galaxy S26 hold (not page rows: the campaign name holds no `dashboard`, so the team
+# page never reads it as a weekly sitting): litert-community/Qwen3.5-0.8B (Qwen3.5-0.8B_int8.litertlm, Hub main LFS
+# sha256 25447e25..., 964,566,992 B, unchanged since 2026-10-16) on three prefill counts around the file's prefill
+# signatures (17 = 16 + 1, 1023 = 1024 - 1, 1025 = 1024 + 1), decode 256, context 2048: the protocol row
+# native-benchmark-1024x256 (methodology/agreed-protocol-gemma4.md "The spec") with the prefill count moved, i.e.
+# litert_lm_advanced_main --benchmark --benchmark_prefill_tokens=<P> --benchmark_decode_tokens=256
+# --max_num_tokens=2048 (android/bench/run_cell.py engine_command). LiteRT-LM GPU on the side build v0.19.0-pregpu
+# (android/engine-pins.json: LiteRT-LM v0.19.0 at the Android pin's commit with Google's prebuilt GPU accelerator,
+# loaded at run time; engine_version v0.19.0), the build of the page's Galaxy S26 x Qwen3.5-0.8B GPU row
+# (results/raw/2026-11-04-dashboard-v1-s26-d541q35b-android). These rows = the GPU row of
+# matrices/d541-qwen35-s26-android.cells with the task's prefill count changed.
+# The session anchor rows run before this file as their own campaign (matrices/anchors.cells, its two Android rows), so
+# this file holds no anchor row. No runs= (the runner's default of 3 runs per row, round by round: 17, 1023, 1025,
+# 17, ...), no cooldown= (the runner's 120 s, the 0.6B / 1.7B class: docs/dashboard-cells-v1.md).
+# Estimate: one launch = 120 s cooldown + up to 112 s of GPU engine creation (D-543: 65-112 s, 10 of the 12 programs
+# rebuilt from DATA_LOSS each launch) + about 15 s, so about 37 min for the nine launches.
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-17x256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1023x256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1025x256 backend=gpu engine-build=v0.19.0-pregpu file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048
