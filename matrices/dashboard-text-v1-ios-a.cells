@@ -1,0 +1,52 @@
+# iPhone 18 Pro part a of the weekly set, matrices/dashboard-text-v1.cells: Qwen3 0.6B, Qwen3 1.7B and Gemma 4 E4B on
+# every arm, then the ONNX Runtime GenAI rows of Qwen3 0.6B and 1.7B. The SAME cells, split in two for the night job:
+# since 2026-11-04 the iPhone 18 Pro gives its hold back by 08:00 (ops/dashboard-v1/schedule.json iphone18pro
+# release_by: the sibling lanes queue for the phone in the morning; the whole set held it 05:30-09:38 on 2026-11-04 and
+# 05:30-10:16 on 2026-10-29), and the 05:30 firing leaves 2.5 h, so the job measures the phone's week as two sittings on
+# two 05:30 firings, part b first (schedule.json iphone18pro "parts"; docs/dashboard-recurring-job-v1.md §3, "The iPhone
+# 18 Pro set in two parts", and §11). The parts are balanced on the two newest sittings' lengths (with the preflight and
+# anchor phase: b 2.41 h and a 2.41 h on 2026-10-29, b 2.16 h and a 2.03 h on 2026-11-04) with every arm of a model in
+# one part, so a model's cross-arm comparison stays in one session. This part holds the session anchor's model and runs
+# last in the week, so the page's Qwen3 0.6B MLX short-chat number comes from this part's session, with the model's
+# other arms. Each part starts with the session anchor row, and each sitting has its own anchor phase and admission: no
+# number is pooled across the two sessions. Rows are byte-identical to the parent file and in its order (its notes on
+# these rows stay there). An iOS row added to the parent goes into its model's part at the same place
+# (scripts/dashboard_job_selftest.py holds the parts to the parent).
+#   ./bench matrix matrices/dashboard-text-v1-ios-a.cells --platform iphone
+
+# --- Qwen3-0.6B ---
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 short-chat
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 short-chat backend=cpu
+ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat
+ios core-ai core-ai/qwen3-0.6b-4bit-gpu short-chat
+ios mlx-swift mlx-community/Qwen3-0.6B-4bit long-context-1024-gen256
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_int8 long-context-1024-gen256 context-tokens=2048
+ios litert-lm litert-community/Qwen3-0.6B/dynamic_wi4b32_afp32 long-context-1024-gen256 backend=cpu context-tokens=2048
+ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+
+# --- Qwen3-1.7B ---
+ios mlx-swift mlx-community/Qwen3-1.7B-4bit short-chat
+ios litert-lm litert-community/Qwen3-1.7B short-chat
+ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M short-chat
+ios core-ai core-ai/qwen3-1.7b-gpu short-chat
+ios mlx-swift mlx-community/Qwen3-1.7B-4bit long-context-1024-gen256
+ios litert-lm litert-community/Qwen3-1.7B long-context-1024-gen256 context-tokens=2048
+ios llama.cpp unsloth/Qwen3-1.7B-GGUF/Q4_K_M long-context-1024-gen256 context-tokens=2048
+
+# --- Gemma 4 E4B ---
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat cooldown=300
+ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit short-chat cooldown=300 exclude=app-killed-at-model-load-sigkill
+ios mlx-swift mlx-community/gemma-4-e4b-it-4bit short-chat cooldown=300
+ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M short-chat cooldown=300
+ios core-ai core-ai/gemma4-e4b-gpu short-chat cooldown=300 exclude=ple-bundle-needs-unpublished-engine-patch
+ios litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256 cooldown=300 context-tokens=2048
+ios mlx-swift mlx-community/gemma-4-e4b-it-qat-OptiQ-4bit long-context-1024-gen256 cooldown=300 exclude=app-killed-at-model-load-sigkill
+ios mlx-swift mlx-community/gemma-4-e4b-it-4bit long-context-1024-gen256 cooldown=300
+ios llama.cpp unsloth/gemma-4-E4B-it-GGUF/Q4_K_M long-context-1024-gen256 cooldown=300 context-tokens=2048
+
+# --- ONNX Runtime GenAI ---
+ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-0.6B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=da1453100cf3ff33ef56d17983fc7a8648706db6 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX short-chat backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
+ios onnxruntime-genai onnx-community/Qwen3-1.7B-ONNX long-context-1024-gen256 backend=cpu file=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 context-tokens=2048
