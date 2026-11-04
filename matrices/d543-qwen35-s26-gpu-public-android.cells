@@ -1,0 +1,11 @@
+# 2026-11-04 D-543 slot 4, one by-hand Galaxy S26 row (not a page row: the campaign names hold no `dashboard`, so the
+# team page never reads them as a weekly sitting): litert-community/Qwen3.5-0.8B (Qwen3.5-0.8B_int8.litertlm, Hub main
+# LFS sha256 25447e25..., 964,566,992 B) on the LiteRT team's protocol row, native-benchmark-1024x256 =
+# litert_lm_advanced_main --benchmark, prefill forced to exactly 1024 tokens, decode 256, context 2048
+# (methodology/agreed-protocol-gemma4.md "The spec"), LiteRT-LM GPU on the side build public-0.19.0-20261029: Google's
+# public LiteRT-LM Android arm64 binaries as published in gs://litert/binaries/latest/android_arm64/litert_lm/
+# (objects 2026-10-29; the binary's version string 0.19.0; the GPU accelerator compiled in; not built here;
+# android/engine-pins.json litert-lm.public-0.19.0-20261029). Three launches in one runner start (runs=3: one process
+# each, the runner's 120 s cooldown and thermal wait before each), after the session anchor rows (matrices/anchors.cells),
+# by d543_work/slot4_body.sh into its own campaign dir (2026-11-04-d543-s4-qwen35-gpu-public-s26-android).
+android litert-lm litert-community/Qwen3.5-0.8B native-benchmark-1024x256 backend=gpu engine-build=public-0.19.0-20261029 file=Qwen3.5-0.8B_int8.litertlm context-tokens=2048 runs=3
