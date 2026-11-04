@@ -9,8 +9,8 @@
 #
 # One arm per archive (--engine; the arms' static libraries are not linked together):
 #   litert      ios/BenchmarkApp/project-ddp.yml             Vendored/LiteRT-LM (the tag's checkout +
-#               ios/BenchmarkApp/patches/litert-lm-swift-benchmark-maxnumtokens.patch: scripts/bootstrap.sh
-#               step 3, LITERTLM_TAG=v0.18.0)
+#               ios/BenchmarkApp/patches/litert-lm-swift-benchmarkinfo-turns.patch: scripts/bootstrap.sh
+#               step 3, LITERTLM_TAG=v0.19.0)
 #   llamacpp    ios/BenchmarkApp/project-ddp-llamacpp.yml    Vendored/llama.xcframework (+ .tag)
 #   executorch  ios/BenchmarkApp/project-ddp-executorch.yml  Vendored/executorch (the package
 #               ios/ddp/make_executorch_package.sh makes from a checkout's locally built frameworks)
@@ -61,12 +61,16 @@ case "$ENGINE" in
   litert)
     LITERT="$V/LiteRT-LM"
     if [ ! -f "$LITERT/Package.swift" ]; then
-      echo "no $LITERT: GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --branch v0.18.0" \
+      echo "no $LITERT: GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --branch v0.19.0" \
         "https://github.com/google-ai-edge/LiteRT-LM.git $LITERT, then apply the patch below" >&2
       exit 2
     fi
     if ! grep -q "maxNumTokens: Int? = nil" "$LITERT/swift/Benchmark.swift"; then
       echo "$LITERT is not patched: git -C $LITERT apply $APP_DIR/patches/litert-lm-swift-benchmark-maxnumtokens.patch" >&2
+      exit 2
+    fi
+    if ! grep -q "prefillTokenCounts" "$LITERT/swift/Benchmark.swift"; then
+      echo "$LITERT is not patched: git -C $LITERT apply $APP_DIR/patches/litert-lm-swift-benchmarkinfo-turns.patch" >&2
       exit 2
     fi ;;
   llamacpp)

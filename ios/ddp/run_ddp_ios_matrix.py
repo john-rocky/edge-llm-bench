@@ -192,7 +192,10 @@ def session_argv(cell: IosCell, archive: pathlib.Path, args) -> list:
         argv += ["--context-tokens", str(cell.opts["context-tokens"])]
     cool_wait = int(cell.opts.get("cool-wait", args.cool_wait))
     if cool_wait > 0:
-        argv += ["--app-arg=--cool-wait", f"--app-arg={cool_wait}", "--timeout", "30m"]
+        # A native-benchmark row's pause is the app's --native-cool-wait (scripts/bench_matrix_iphone.sh
+        # passes the same); the native path reads no --cool-wait.
+        flag = "--native-cool-wait" if cell.task.startswith(run_ddp_ios_lm.NATIVE_TASK_PREFIX) else "--cool-wait"
+        argv += [f"--app-arg={flag}", f"--app-arg={cool_wait}", "--timeout", "30m"]
     runs = int(cell.opts.get("runs", args.runs))
     argv += [
         "--task", cell.task,

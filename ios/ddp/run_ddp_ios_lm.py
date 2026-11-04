@@ -99,6 +99,11 @@ LABEL_MAX = 63
 CAMPAIGN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 DEVICE = re.compile(r"[a-z0-9][a-z0-9-]*")
 SHA256 = re.compile(r"[0-9a-f]{64}")
+# --task native-benchmark-<prefill>x<decode> (the cells grammar, scripts/validate_cells.py NATIVE_TASK):
+# the app calls LiteRT-LM's own benchmark() instead of a task and writes one record per call
+# (HeadlessAutoRun.nativeTaskSize in ios/BenchmarkApp/Sources/BenchmarkApp.swift).
+NATIVE_TASK_PREFIX = "native-benchmark-"
+NATIVE_TASK = re.compile(NATIVE_TASK_PREFIX + r"[1-9]\d*x[1-9]\d*")
 EXIT_INPUT, EXIT_GCLOUD, EXIT_JOB, EXIT_RESULTS, EXIT_INTERRUPTED = 2, 3, 4, 5, 130
 
 
@@ -344,6 +349,11 @@ def plan(args) -> dict:
         raise InputError(f"--context-tokens {args.context_tokens}: a positive token count")
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", args.task):
         raise InputError(f"--task {args.task!r}: a task id of the app (BenchmarkTaskCatalog), e.g. short-chat")
+    if args.task.startswith(NATIVE_TASK_PREFIX):
+        if not NATIVE_TASK.fullmatch(args.task):
+            raise InputError(f"--task {args.task!r}: {NATIVE_TASK_PREFIX}<prefill>x<decode>, e.g. {NATIVE_TASK_PREFIX}1024x256")
+        if runtime != RUNTIME:
+            raise InputError(f"--task {args.task!r} is LiteRT-LM's own benchmark(): --runtime {RUNTIME}, not {runtime}")
     timeout = args.timeout or TIMEOUT[args.backend or "gpu"]
     minutes = timeout_minutes(timeout)
     if not 1 <= minutes <= 60:
@@ -763,7 +773,9 @@ def main(argv=None) -> int:
                          "BENCH_EXTRA_CATALOG)")
     ap.add_argument("--model-file", action="append", metavar="PATH",
                     help="push this local file instead of the Hub's (an own export); once per file of the entry")
-    ap.add_argument("--task", default="short-chat", help="the app's --task (default: %(default)s)")
+    ap.add_argument("--task", default="short-chat",
+                    help="the app's --task, or native-benchmark-<prefill>x<decode> for LiteRT-LM's own benchmark() "
+                         "(default: %(default)s)")
     ap.add_argument("--runs", type=int, default=4, help="the app's --runs: run 1 cold, 2..N warm (default: %(default)s)")
     ap.add_argument("--context-tokens", type=int, help="the app's --context-tokens (default: derived by the app)")
     ap.add_argument("--archive", default=None,
@@ -906,7 +918,8 @@ def main(argv=None) -> int:
         print(f"# {note}")
     console = session_dir / "console.txt"
     for line in console.read_text(errors="replace").splitlines() if console.exists() else []:
-        if line.startswith(("YARDSTICK_RUN_OK", "YARDSTICK_RUN_FAIL", "YARDSTICK_FATAL", "YARDSTICK_ALL_DONE")):
+        if line.startswith(("YARDSTICK_RUN_OK", "YARDSTICK_NATIVE_OK", "YARDSTICK_RUN_FAIL", "YARDSTICK_FATAL",
+                            "YARDSTICK_ALL_DONE")):
             print("  " + line[:200])
     print(f"{laid['records']} record(s) -> {shown(campaign_dir / 'device-jsonl')}; yardstick.done {laid['done']}; "
           f"session files {shown(session_dir)}")

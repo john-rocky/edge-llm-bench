@@ -29,8 +29,17 @@ public actor ResultStore {
     public nonisolated var resultsDirectory: URL { directory }
 
     public func save(_ result: BenchmarkResult) throws -> URL {
-        let url = directory.appendingPathComponent("\(filename(for: result)).json")
-        let data = try encoder.encode(result)
+        try save(result, runtime: result.runtime, modelId: result.model.id, task: result.task,
+                 timestamp: result.timestamp)
+    }
+
+    /// A record that is no `BenchmarkResult` (a native-benchmark call, HeadlessRun.runNativeBenchmark):
+    /// the same directory, file name and encoder.
+    func save<Record: Encodable & Sendable>(_ record: Record, runtime: String, modelId: String, task: String,
+                                            timestamp: Date) throws -> URL {
+        let name = filename(runtime: runtime, modelId: modelId, task: task, timestamp: timestamp)
+        let url = directory.appendingPathComponent("\(name).json")
+        let data = try encoder.encode(record)
         try data.write(to: url, options: [.atomic])
         return url
     }
@@ -52,13 +61,13 @@ public actor ResultStore {
         }
     }
 
-    private func filename(for result: BenchmarkResult) -> String {
+    private func filename(runtime: String, modelId: String, task: String, timestamp: Date) -> String {
         let formatter = ISO8601DateFormatter()
         // fractional seconds: two runs that end in the same second (MLX Qwen3 0.6B short-chat, ~0.6 s a run)
         // overwrote each other on the phone and the anchor phase read 2 of 3 records (2026-10-19 12:45)
         formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withFractionalSeconds]
-        let stamp = formatter.string(from: result.timestamp)
+        let stamp = formatter.string(from: timestamp)
             .replacingOccurrences(of: ":", with: "-")
-        return "\(result.runtime)_\(result.model.id.replacingOccurrences(of: "/", with: "_"))_\(result.task)_\(stamp)"
+        return "\(runtime)_\(modelId.replacingOccurrences(of: "/", with: "_"))_\(task)_\(stamp)"
     }
 }

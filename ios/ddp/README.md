@@ -25,9 +25,9 @@ Android; a wait that runs out is logged and the run goes on), writes the wait to
 `--xctest-timeout`.
 
 ```bash
-# Vendored/LiteRT-LM: the tag's checkout + the maxNumTokens patch (scripts/bootstrap.sh step 3)
-GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --branch v0.18.0 https://github.com/google-ai-edge/LiteRT-LM.git ios/BenchmarkApp/Vendored/LiteRT-LM
-git -C ios/BenchmarkApp/Vendored/LiteRT-LM apply "$PWD/ios/BenchmarkApp/patches/litert-lm-swift-benchmark-maxnumtokens.patch"
+# Vendored/LiteRT-LM: the tag's checkout + the BenchmarkInfo turns patch (ios/BenchmarkApp/scripts/bootstrap.sh step 3)
+GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --branch v0.19.0 https://github.com/google-ai-edge/LiteRT-LM.git ios/BenchmarkApp/Vendored/LiteRT-LM
+git -C ios/BenchmarkApp/Vendored/LiteRT-LM apply "$PWD/ios/BenchmarkApp/patches/litert-lm-swift-benchmarkinfo-turns.patch"
 DEVELOPMENT_TEAM=<team id> BUNDLE_ID=<app id> DEVELOPER_DIR=/Applications/Xcode.app ios/ddp/build_xctest.sh
 ```
 
@@ -69,6 +69,8 @@ names it.
 | `--xctest-timeout` | 15m for gpu, 30m for cpu (`--timeout`); the lab takes 1m to 1h, preparation and cleanup not included |
 | `--xcode-version` | `xcode-26-2` (`gcloud beta device-run software-versions list`) |
 | `--labels` | harness, campaign, runtime, model, task, backend, deviceid, engine, run (the session is found by `run`) |
+
+A LiteRT-LM cell's task can be `native-benchmark-<prefill>x<decode>` (`--task native-benchmark-1024x256 --context-tokens 2048`): the app calls the engine's own `benchmark()`, the call `scripts/bench_matrix_iphone.sh` reaches with `--litert-native-benchmark`, and writes one record per call with what the call measured (its token counts in `metrics.promptTokenCount` and `metrics.generatedTokenCount`); `run_ddp_ios_matrix.py` passes a row's `cool-wait=` as `--native-cool-wait`.
 
 `--dry-run` prints the plan and the command and runs nothing. `--collect <session id>` waits for a
 session submitted earlier and writes it; `--records-only results/raw/<campaign>/ddp/<session id>`

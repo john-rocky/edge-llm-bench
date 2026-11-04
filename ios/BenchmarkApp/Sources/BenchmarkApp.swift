@@ -222,6 +222,12 @@ enum HeadlessAutoRun {
         /// analogue of Cactus's `cactus_benchmark_tokens`. litert-lm only. `--runs` = calls
         /// in this process, back to back (default 1): run 1 is cold, runs 2...N warm.
         var nativeBenchmark: (prefill: Int, decode: Int)?
+        /// `--task native-benchmark-<prefill>x<decode>` (a cells row's task, which the lab driver
+        /// ios/ddp/run_ddp_ios_lm.py passes as it stands; litert-lm only): that task id, with
+        /// `nativeBenchmark` set from it. These calls also write one record each, under this task.
+        /// nil with `--litert-native-benchmark` (the attached iPhone's driver): no record there, the
+        /// driver imports the console lines (scripts/import_native_benchmark.py).
+        var nativeRecordTask: String? = nil
         /// `--coreai-native-benchmark <prefillTokens>x<decodeTokens>`: Apple's `llm-benchmark`
         /// measurement on the Core AI stock path (`CoreAIRuntime.nativeBenchmarkStock`) instead
         /// of a task; `--runs` = timed trials after one warmup trial (printed as trial 0, cold).
@@ -312,10 +318,19 @@ enum HeadlessAutoRun {
             MediaPipeRuntime.engineBenchmarkCounters = (counters == "on")
             print("YARDSTICK_NOTE litert_engine_counters=\(counters)")
         }
-        let native: (prefill: Int, decode: Int)? = value("--litert-native-benchmark").flatMap {
+        var native: (prefill: Int, decode: Int)? = value("--litert-native-benchmark").flatMap {
             let parts = $0.split(separator: "x")
             guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]) else { return nil }
             return (p, d)
+        }
+        var nativeRecordTask: String?
+        if runtime == .mediaPipe, let size = nativeTaskSize(taskId) {
+            // The flag next to the task could measure something else under the task's name.
+            guard value("--litert-native-benchmark") == nil else {
+                fatal("--task \(taskId) and --litert-native-benchmark are exclusive")
+            }
+            native = size
+            nativeRecordTask = taskId
         }
         // A malformed value fails here rather than falling through to the task path, which
         // would measure something else under the cell's name.
@@ -352,8 +367,19 @@ enum HeadlessAutoRun {
         return Spec(runtime: runtime, modelId: modelId, taskId: taskId, runs: runs,
                     sustainSeconds: sustainSeconds, maxTokens: maxTokens,
                     contextTokens: contextTokens, nativeBenchmark: native,
+                    nativeRecordTask: nativeRecordTask,
                     coreAINativeBenchmark: coreAINative, nativeCoolWaitSeconds: nativeCoolWait,
                     coolWaitSeconds: coolWait)
+    }
+
+    /// The token counts in a `native-benchmark-<prefill>x<decode>` task id (the cells grammar,
+    /// scripts/validate_cells.py NATIVE_TASK); nil for any other id, which stays an unknown task.
+    static func nativeTaskSize(_ taskId: String) -> (prefill: Int, decode: Int)? {
+        let prefix = "native-benchmark-"
+        guard taskId.hasPrefix(prefix) else { return nil }
+        let parts = taskId.dropFirst(prefix.count).split(separator: "x", omittingEmptySubsequences: false)
+        guard parts.count == 2, let p = Int(parts[0]), let d = Int(parts[1]), p > 0, d > 0 else { return nil }
+        return (p, d)
     }
 
     /// `YARDSTICK_METAL_DEVICE`: the system default Metal device's `name` (the string a GPU
@@ -454,6 +480,50 @@ struct HeadlessRunnerView: View {
 }
 #endif
 
+/// One `--task native-benchmark-<P>x<D>` call as a record: schema v1 (schema/result.v1.json), a task
+/// run's top-level keys, and in `metrics` only what the call measured, under the keys
+/// scripts/import_native_benchmark.py --schema-v1 gives the attached iPhone's YARDSTICK_NATIVE_OK
+/// lines. `BenchmarkResult` cannot carry it: `Metrics` requires a stop reason, a peak thermal state,
+/// a rolling decode rate and a battery delta, and this path reads none of them.
+private struct NativeBenchmarkRecord: Encodable, Sendable {
+    struct Measured: Encodable, Sendable {
+        let coldRun: Bool
+        let promptTokenCount: Int
+        let generatedTokenCount: Int
+        let promptTokensPerSecond: Double
+        let decodeTokensPerSecond: Double
+        let firstTokenLatencyMS: Double
+        let loadTimeSeconds: Double
+        let memoryPeakDuringDecodeMB: Double
+        let memoryMedianMB: Double?
+        let memoryMedianResidentMB: Double?
+        let memorySampleCount: Int
+        let memoryPostTeardownFootprintMB: Double
+        let contextTokensConfigured: Int
+        let wallSeconds: Double
+        let initialThermalState: String
+        let finalThermalState: String
+        let harnessStamp: String
+    }
+    struct Conditions: Encodable, Sendable {
+        let instrument: String
+        let run: Int
+        let runs: Int
+    }
+    var id = UUID()
+    var schemaVersion = 1
+    let timestamp: Date
+    let device: DeviceSnapshot
+    let runtime: String
+    let engineVersion: String?
+    let engineArtifact: String?
+    let model: ModelInfo
+    let modelRevision: String?
+    let task: String
+    let metrics: Measured
+    let conditions: Conditions
+}
+
 /// The headless run without its view: the view above hands it the runtime, its printer and its
 /// exit; the lab build's harness (SourcesDDP/DDPHarness.swift, an XCTest's entry) hands it a
 /// printer that also writes Documents/out/ and a finish that keeps the code instead of exiting.
@@ -498,7 +568,8 @@ struct HeadlessRun {
         if let native = spec.nativeBenchmark {
             await runNativeBenchmark(runtime: runtime, model: model, spec: native,
                                      runs: spec.runs, contextTokensValue: spec.contextTokens,
-                                     coolWaitSeconds: spec.nativeCoolWaitSeconds)
+                                     coolWaitSeconds: spec.nativeCoolWaitSeconds,
+                                     recordTask: spec.nativeRecordTask)
             return
         }
         guard var task = BenchmarkTaskCatalog.task(for: spec.taskId) else {
@@ -713,9 +784,12 @@ struct HeadlessRun {
     /// `benchmark()` builds and releases its own engine on every call, so run 1 is cold
     /// (the first call in the process) and runs 2...N are warm only in the sense that the
     /// process and the on-disk caches are: each one still loads a new engine.
+    ///
+    /// `recordTask` (`--task native-benchmark-<P>x<D>`): each call also writes one record under
+    /// that task (`NativeBenchmarkRecord`).
     private func runNativeBenchmark(
         runtime: any LLMRuntime, model: ModelInfo, spec: (prefill: Int, decode: Int),
-        runs: Int, contextTokensValue: Int?, coolWaitSeconds: Int? = nil
+        runs: Int, contextTokensValue: Int?, coolWaitSeconds: Int? = nil, recordTask: String? = nil
     ) async {
         #if canImport(LiteRTLM)
         guard let litert = runtime as? MediaPipeRuntime else {
@@ -747,6 +821,7 @@ struct HeadlessRun {
             // single footprint read taken after `benchmark()` returned and released the engine,
             // which is not the same quantity as the in-run peaks it was tabulated against.
             let thermalInitial = ThermalMonitor.describe(ProcessInfo.processInfo.thermalState)
+            let deviceAtStart = recordTask == nil ? nil : DeviceSnapshot.capture()
             let sampler = MemorySampler()
             await sampler.start()
             do {
@@ -761,6 +836,7 @@ struct HeadlessRun {
                 let medianMB = await sampler.medianMB
                 let medianResidentMB = await sampler.medianResidentMB
                 let samples = await sampler.sampleCount
+                let teardownFootprintMB = MemoryMonitor.footprintMB()
                 await log(String(
                     format: "YARDSTICK_NATIVE_OK run=%d runs=%d cold=%d prefill_tokens=%d prefill_tok_s=%.2f decode_tokens=%d decode_tok_s=%.2f ttft_ms=%.1f init_s=%.2f context_tokens=%d peak_mb=%.0f median_mb=%.0f median_resident_mb=%.0f samples=%d teardown_footprint_mb=%.0f thermal_initial=%@ thermal_final=%@ wall_s=%.3f harness=%@",
                     run, runs, run == 1 ? 1 : 0,
@@ -768,10 +844,50 @@ struct HeadlessRun {
                     info.decodeTokenCount, info.decodeTokensPerSecond,
                     info.timeToFirstTokenSeconds * 1000, info.initTimeSeconds,
                     contextTokens, peakMB, medianMB, medianResidentMB, samples,
-                    MemoryMonitor.footprintMB(),
+                    teardownFootprintMB,
                     thermalInitial, thermalFinal, wallSeconds,
                     BenchmarkRunner.harnessStamp
                 ))
+                if let recordTask, var device = deviceAtStart {
+                    // As BenchmarkRunner: the battery fields say where the run ended.
+                    let battery = DeviceSnapshot.currentBattery()
+                    device.batteryState = battery.state
+                    device.batteryLevel = battery.level
+                    let record = NativeBenchmarkRecord(
+                        timestamp: Date(), device: device, runtime: await runtime.recordRuntimeLabel,
+                        engineVersion: EnginePins.version(for: runtime.kind),
+                        engineArtifact: EnginePins.artifact(for: runtime.kind),
+                        model: model, modelRevision: HFDownloader.resolvedRevision(hfRepoId: model.hfRepoId),
+                        task: recordTask,
+                        metrics: .init(
+                            coldRun: run == 1,
+                            promptTokenCount: info.prefillTokenCount,
+                            generatedTokenCount: info.decodeTokenCount,
+                            promptTokensPerSecond: info.prefillTokensPerSecond,
+                            decodeTokensPerSecond: info.decodeTokensPerSecond,
+                            firstTokenLatencyMS: info.timeToFirstTokenSeconds * 1000,
+                            loadTimeSeconds: info.initTimeSeconds,
+                            memoryPeakDuringDecodeMB: peakMB,
+                            memoryMedianMB: medianMB > 0 ? medianMB : nil,
+                            memoryMedianResidentMB: medianResidentMB > 0 ? medianResidentMB : nil,
+                            memorySampleCount: samples,
+                            memoryPostTeardownFootprintMB: teardownFootprintMB,
+                            contextTokensConfigured: contextTokens,
+                            wallSeconds: wallSeconds,
+                            initialThermalState: thermalInitial,
+                            finalThermalState: thermalFinal,
+                            harnessStamp: BenchmarkRunner.harnessStamp),
+                        conditions: .init(
+                            instrument: "litert-lm native benchmark() via BenchmarkApp --task \(recordTask)",
+                            run: run, runs: runs))
+                    do {
+                        _ = try await ResultStore.shared.save(record, runtime: record.runtime, modelId: model.id,
+                                                              task: recordTask, timestamp: record.timestamp)
+                    } catch {
+                        // The XCTest fails on the missing record; the console says why.
+                        await log("YARDSTICK_WARN native_record_not_written run=\(run) \(error.localizedDescription)")
+                    }
+                }
             } catch {
                 await sampler.stop()
                 await log("YARDSTICK_FATAL native_benchmark_failed run=\(run) runs=\(runs) \(error.localizedDescription)")

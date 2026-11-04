@@ -20,6 +20,9 @@ results/raw/2026-10-16-build-ref-iphone-lm-dev/DESIGN-D1.md).
    before run 1) -> three keys of conditions.ddp; plan.json writes the home directory as ~.
 4. scripts/build_summary.py into a temp dir: the device column of a DDP iPhone row, never the
    attached iPhone's.
+5. run_ddp_ios_matrix.py: the cells plan, register_archive_builder, BENCH_RAW_ROOT, --no-keep-raw.
+6. native-benchmark-<P>x<D> rows: the app's argv and the refusals, the records the app writes for them
+   through the billed path and build_summary, and a row's cool-wait= as --native-cool-wait.
 """
 import contextlib
 import csv
@@ -60,6 +63,7 @@ CELLS = [("litert-community/Qwen3-1.7B", "gpu", "15m"), ("litert-community/Qwen3
          ("litert-community/gemma-4-E2B-it-litert-lm", "gpu", "15m"),
          ("litert-community/gemma-4-E2B-it-litert-lm", "cpu", "30m")]
 LABEL = re.compile(r"[a-z0-9_-]{1,63}")
+NATIVE_TASK = "native-benchmark-1024x256"
 
 FAKE_GCLOUD = r"""#!/bin/bash
 # Stand-in gcloud for ios/ddp/selftest.py: answers from files in $FAKE_GCLOUD_DIR; every call is
@@ -711,6 +715,122 @@ def check_matrix(tmp, archive, shas, template):
        f"(rc={rc_fail}, runtimes={[r['runtime'] for r in ynn_written]})")
 
 
+# ---------------------------------------------------------------- 6. native-benchmark rows
+
+def native_records(template):
+    """Two records of the Qwen3-1.7B GPU native-benchmark-1024x256 cell in the shape the app writes
+    (NativeBenchmarkRecord in ios/BenchmarkApp/Sources/BenchmarkApp.swift: no parameters, no outputSample,
+    in metrics what the call measured), and one stale record of an earlier session."""
+    base = fixture_records(template)[0][0][1]
+    recs = []
+    for i, stamp in enumerate(["2026-10-17T00-03-05.120Z", "2026-10-17T00-04-20.340Z", "2026-10-16T09-00-00.000Z"]):
+        rec = {"id": str(uuid.uuid4()).upper(), "schemaVersion": 1,
+               "timestamp": f"{stamp[:13]}:{stamp[14:16]}:{stamp[17:19]}Z", "device": base["device"],
+               "runtime": "litert-lm", "engineVersion": base["engineVersion"], "engineArtifact": base["engineArtifact"],
+               "model": base["model"], "task": NATIVE_TASK,
+               "metrics": {"coldRun": i == 0, "promptTokenCount": 1024, "generatedTokenCount": 256,
+                           "promptTokensPerSecond": 900.0, "decodeTokensPerSecond": 40.0, "firstTokenLatencyMS": 1200.5,
+                           "loadTimeSeconds": 6.1, "memoryPeakDuringDecodeMB": 2100.0, "memoryMedianMB": 1800.0,
+                           "memoryMedianResidentMB": 2500.0, "memorySampleCount": 120,
+                           "memoryPostTeardownFootprintMB": 300.0, "contextTokensConfigured": 2048, "wallSeconds": 20.5,
+                           "initialThermalState": "nominal", "finalThermalState": "nominal",
+                           "harnessStamp": "2026-07-30-agreed-protocol-r4"},
+               "conditions": {"instrument": f"litert-lm native benchmark() via BenchmarkApp --task {NATIVE_TASK}",
+                              "run": i + 1, "runs": 2}}
+        recs.append((f"litert-lm_litert-community_Qwen3-1.7B_{NATIVE_TASK}_{stamp}.json", rec))
+    return recs[:2], recs[2]
+
+
+def check_native(tmp, archive, template):
+    print("--- 6. native-benchmark rows: the argv, the refusals, the records, the summary, the matrix's cool-wait")
+    sys.path.insert(0, HERE)
+    import run_ddp_ios_matrix as mat
+    import validate_cells
+    mid = "litert-community/Qwen3-1.7B"
+    env = env_for(tmp)
+    # the app's map: the same words as the cells grammar, and the counts the engine reports, not the request
+    app = open(os.path.join(ROOT, "ios", "BenchmarkApp", "Sources", "BenchmarkApp.swift")).read()
+    ok('let prefix = "native-benchmark-"' in app and "promptTokenCount: info.prefillTokenCount" in app
+       and "generatedTokenCount: info.decodeTokenCount" in app,
+       "BenchmarkApp.swift maps the task and records the engine's token counts")
+    ok(mat.run_ddp_ios_lm.NATIVE_TASK.fullmatch(NATIVE_TASK) and validate_cells.NATIVE_TASK.match(NATIVE_TASK),
+       "the driver and scripts/validate_cells.py read one task name")
+    # the dry run: the task goes to the app as it stands
+    r = driver(["--device", DEVICE, "--model-id", mid, "--backend", "gpu", "--archive", archive, "--campaign", "x",
+                "--task", NATIVE_TASK, "--context-tokens", "2048", "--runs", "2", "--dry-run"], env)
+    rows = json_lines(r.stdout)
+    labels = dict(kv.split("=", 1) for kv in (flag(rows.get("command") or [], "--labels") or "").split(",") if "=" in kv)
+    ok(r.returncode == 0 and rows.get("args") == ["--yardstick-autorun", "--runtime", "litert-lm", "--model-id", mid,
+                                                  "--task", NATIVE_TASK, "--runs", "2", "--context-tokens", "2048",
+                                                  "--litert-backend", "gpu"]
+       and labels.get("task") == NATIVE_TASK,
+       f"the app's argv and the task label carry {NATIVE_TASK} ({rows.get('args')})")
+    # the refusals, before any gcloud call
+    open(os.path.join(tmp, "gcloud.log"), "w").close()
+    base = ["--device", DEVICE, "--archive", archive, "--campaign", "x", "--dry-run"]
+    litert = ["--model-id", mid, "--backend", "gpu"]
+    for extra, why in ((litert + ["--task", "native-benchmark-1024"], "a task with no decode count"),
+                       (litert + ["--task", "native-benchmark-0x256"], "a zero token count"),
+                       (["--runtime", "llama.cpp", "--model-id", "unsloth/Qwen3.5-0.8B-GGUF/Q4_0", "--backend", "gpu",
+                         "--task", NATIVE_TASK], "another runtime")):
+        r = driver(base + extra, env)
+        ok(r.returncode == 2 and "native-benchmark" in r.stderr, f"exit 2 for {why} ({r.returncode}: {r.stderr.strip()[-120:]!r})")
+    ok(gcloud_calls(tmp) == [], "the refusals called gcloud 0 times")
+    # the billed path: the records as the app writes them, none added, none lost
+    recs, stale = native_records(template)
+    stage_fake(tmp, describe_json())
+    stage_execution(tmp, recs, stale)
+    write(os.path.join(tmp, "fake", "execution", "artifacts", "console.txt"),
+          "YARDSTICK_BEGIN native_benchmark model=litert-community/Qwen3-1.7B prefill=1024 decode=256 runs=2\n"
+          + "".join(f"YARDSTICK_NATIVE_OK run={i} runs=2 prefill_tokens=1024 decode_tokens=256\n" for i in (1, 2)))
+    r = billed(tmp, archive, "selftest-ios-ddp-native", extra=("--task", NATIVE_TASK, "--context-tokens", "2048", "--runs", "2"))
+    camp = os.path.join(tmp, "raw", "selftest-ios-ddp-native")
+    written = {os.path.basename(f): json.load(open(f)) for f in glob.glob(os.path.join(camp, "device-jsonl", "*.json"))}
+    ok(r.returncode == 0 and sorted(written) == sorted(n for n, _ in recs),
+       f"rc 0; device-jsonl/ = the 2 records named in records.txt ({r.returncode}, {sorted(written)}, {r.stderr[-200:]!r})")
+    good = True
+    for idx, (name, rec) in enumerate(recs, 1):
+        got = written.get(name) or {}
+        cond = dict(got.get("conditions") or {})
+        ddp = cond.pop("ddp", {})
+        good &= (got.get("metrics") == rec["metrics"] and cond == rec["conditions"] and ddp.get("runIndex") == idx
+                 and got.get("task") == NATIVE_TASK and "parameters" not in got and "outputSample" not in got)
+    ok(good, "each record: metrics and conditions as the app wrote them, plus conditions.ddp; no parameters, no outputSample")
+    ok("YARDSTICK_NATIVE_OK run=2" in r.stdout
+       and os.path.isfile(os.path.join(camp, "console_litert-lm_litert-community_Qwen3-1_7B_native-benchmark-1024x256.txt")),
+       "the driver prints the native lines; the console keeps the attached runner's name")
+    # the summary: the row build_summary makes of them
+    sum_root = os.path.join(tmp, "sumroot-native")
+    shutil.copytree(os.path.join(camp, "device-jsonl"),
+                    os.path.join(sum_root, "results", "raw", "selftest-ios-ddp-native", "device-jsonl"))
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import build_summary
+    with patch.object(build_summary, "ROOT", sum_root), patch.object(build_summary, "OUT", os.path.join(sum_root, "summary")):
+        os.makedirs(build_summary.OUT, exist_ok=True)
+        with contextlib.redirect_stdout(io.StringIO()):
+            path, _ = build_summary.build_device()
+    rows = list(csv.DictReader(open(path)))
+    ok(len(rows) == 2 and {r["task"] for r in rows} == {NATIVE_TASK} and {r["prompt_tokens"] for r in rows} == {"1024"}
+       and {r["gen_tokens"] for r in rows} == {"256"} and {r["context_tokens"] for r in rows} == {"2048"}
+       and {r["device"] for r in rows} == {"iPhone17,1 (DDP iphone16pro-18-3)"}
+       and sorted(r["cold_run"] for r in rows) == ["False", "True"],
+       f"build_summary: 2 rows, 1024 / 256 at context 2048, the DDP device column, one cold ({rows[:1]})")
+    # the matrix: a row's cool-wait= is the native path's flag there, the task path's elsewhere
+    cells = os.path.join(tmp, "native.cells")
+    write(cells, f"ios litert-lm {mid} {NATIVE_TASK} backend=gpu context-tokens=2048 runs=2 cool-wait=60\n"
+                 f"ios litert-lm {mid} short-chat backend=gpu runs=2\n")
+    native_cell, task_cell = mat.plan_cells([cells], None, "litert", {}, None)
+    ns = mat.argparse.Namespace(device=DEVICE, extra_catalog=None, cool_wait=45, runs=4, project=PROJECT, bucket=BUCKET,
+                                campaign="x", dry_run=True)
+    argv = mat.session_argv(native_cell, mat.pathlib.Path(archive), ns)
+    ok(argv[argv.index("--task") + 1] == NATIVE_TASK and "--app-arg=--native-cool-wait" in argv and "--app-arg=60" in argv
+       and "--app-arg=--cool-wait" not in argv,
+       f"session_argv: {NATIVE_TASK} with --native-cool-wait 60 ({argv})")
+    argv = mat.session_argv(task_cell, mat.pathlib.Path(archive), ns)
+    ok("--app-arg=--cool-wait" in argv and "--app-arg=--native-cool-wait" not in argv,
+       f"session_argv: a task row keeps --cool-wait ({argv})")
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="ios-ddp-selftest-")
     try:
@@ -720,6 +840,7 @@ def main():
         camp, template = check_billed(tmp, archive, shas)
         check_summary(tmp, camp, template)
         check_matrix(tmp, archive, shas, template)
+        check_native(tmp, archive, template)
     except Exception as exc:  # noqa: BLE001 — a crash is a failure with the temp dir kept
         import traceback
         traceback.print_exc()
