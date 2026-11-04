@@ -1807,6 +1807,20 @@ ANDROID_QUANT_LABELS = {
     # (ios/BenchmarkApp/Sources/Models/ModelCatalog.swift; its card's File / Recipe table: int8, the 36
     # GatedDeltaNet decay/gate projections float since 2026-10-12)
     "Qwen3.5-0.8B_int8.litertlm": "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float)",
+    # 2026-11-05 D-583 local exports, side-loaded by a file= path (not on the Hub): public litert-torch export_hf
+    # --apply_gpu_composites=True. b0 / b1 / b2 = main 54b7962, cache 4096, the Hub file's prefill ladder, the same TFLite section
+    # (b2 carries the Hub file's metadata and tokenizer sections and fp32 declared; b1 the metadata the exporter writes by itself, type
+    # qwen3, no declaration, so the runtime's fp16 default; b0 LiteRT-LM's own Qwen3.5 metadata, generic, no declaration). b6 / b7 = the
+    # same forms of b2 / b1 from 65aafa4 (gated_delta_update with 6 inputs, for the v0.19.0 GPU parser). c1 / c0 = main 54b7962, cache
+    # 32768, prefill 128 + 1024, the forms of b1 / b0. a1 = the Hub file with llm_model_type qwen3 in its metadata, its TFLite bytes unchanged.
+    "Qwen3.5-0.8B_int8_composites_b2.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, Hub file's metadata, fp32 declared, local candidate)",
+    "Qwen3.5-0.8B_int8_composites_b1.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, exporter's metadata, no activation declared, local candidate)",
+    "Qwen3.5-0.8B_int8_composites_b0.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, official metadata, no activation declared, local candidate)",
+    "Qwen3.5-0.8B_int8_composites_b6.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 65aafa4, Hub file's metadata, fp32 declared, local candidate)",
+    "Qwen3.5-0.8B_int8_composites_b7.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 65aafa4, exporter's metadata, no activation declared, local candidate)",
+    "Qwen3.5-0.8B_wi4b32_composites_c1.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, cache 32768, prefill 128 + 1024, exporter's metadata, no activation declared, local candidate)",
+    "Qwen3.5-0.8B_wi4b32_composites_c0.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, cache 32768, prefill 128 + 1024, official metadata, no activation declared, local candidate)",
+    "Qwen3.5-0.8B_int8_hub_typed_a1.litertlm": "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float); the Hub file with llm_model_type qwen3, local candidate",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     # 2026-09-14 dtype-only pair: one litert-torch main (6d4c622) GPU-graph export of
     # Qwen3-1.7B per recipe (fused qkv/gate_up, odml.rope + cache composites, bool mask,

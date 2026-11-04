@@ -1,0 +1,8 @@
+# 2026-11-05 D-583, by hand on the Galaxy S26 (not page rows: the campaign names hold no `dashboard`, so the team page
+# never reads them as a weekly sitting): Qwen3.5-0.8B int8 exported by public litert-torch main 54b7962 with
+# --apply_gpu_composites=True (gated_delta_update + odml.* composites), re-packed with the Hub file's LlmMetadata and tokenizer
+# sections and fp32 GPU activations declared, so this file and litert-community/Qwen3.5-0.8B's Qwen3.5-0.8B_int8.litertlm differ
+# in the graph only (the TFLite section and the executor metadata that describes it). Not on the Hub. The control is
+# matrices/d576-qwen35-s26-gpu-main-android.cells: the same build, the same task, the same hold. One launch per runner start
+# (runs=1), started by the round's slot.sh.
+android litert-lm litert-local/Qwen3.5-0.8B-int8-composites-b2 native-benchmark-1024x256 backend=gpu engine-build=main-de80bb14f file=~/code/litertlm-convert/qwen35_08b_composite_work/r1/out/B2_int8_main_hubmeta/Qwen3.5-0.8B_int8_composites_b2.litertlm context-tokens=2048 local=1 runs=1
