@@ -1,7 +1,7 @@
 # The Windows column of the dashboard, v1: one Windows PC, Gemma 4 E2B, short-chat. Run by hand over SSH through
 # scripts/windows_ssh_executor.py (windows/README.md), not by the night job. Same recipe rule as everywhere: a row's
 # file= is what it measures, and each arm's file is its own (quant-per-arm-rule).
-# runs=3: a new invocation purges the engine caches, so run 1 of a row writes them and is not admitted (firstEver).
+# runs=3: a new invocation purges the engine caches, so run 1 of a LiteRT-LM or Vulkan row is not admitted (firstEver).
 #
 # LiteRT-LM v0.19.0 built on the host. The NPU row is the repo's bundle for Intel Panther Lake, on the Intel dispatch.
 windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=cpu file=gemma-4-E2B-it.litertlm context-tokens=2048 runs=3

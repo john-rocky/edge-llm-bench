@@ -209,9 +209,9 @@ BENCH_WINDOWS_SSH_HOST=<host> python3 scripts/windows_ssh_executor.py /tmp/one-w
 
 Exit 0 means every run is clean; exit 1 means a run is not, and the record carries the reason.
 
-- **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take the universal file, `npu` takes the bundle
+- **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take `gemma-4-E2B-it.litertlm`, `npu` takes the bundle
   of the PC's SoC and no `context-tokens=`. The GPU row checks that the log's `Selected adapter:` line names NVIDIA.
-- **Run 1 of a row is the cache build.** A new campaign removes the engine's caches, so `firstEver` marks run 1 and
+- **Run 1 of a LiteRT-LM or Vulkan row is the cache build.** A new campaign removes the engine's caches, so `firstEver` marks run 1 and
   `runs=3` leaves two to read. Read the cold and warm records apart: on the GPU a fresh process's first prefill is far
   slower than its second.
 - **Read the host's load.** `conditions.hostBefore` and `hostAfter` carry the CPU, the top processes and the GPU around

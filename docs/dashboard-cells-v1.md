@@ -1696,8 +1696,8 @@ and its campaign names carry no `dashboard`, so the team page does not read them
 
 Reading the rows. The headline regime is cold, as on Android: a fresh process's first conversation. LiteRT-LM's rows also
 carry the same process's second conversation as warm. Each sitting starts with the engines' caches removed, so run 1 of
-a row that keeps a cache writes it and that conversation is not admitted (`firstEver`), which is why the rows have
-`runs=3`. The page's prefill and TTFT columns are `arm_row`'s medians over every admitted record, here three warm to two
+the LiteRT-LM rows and of the Vulkan row is not admitted (`firstEver`), which is why the rows have `runs=3`; the llama.cpp
+CPU row admits all three. The page's prefill and TTFT columns are `arm_row`'s medians over every admitted record, here three warm to two
 cold, so on LiteRT-LM's rows they read the warm figures. That matters on the GPU row: the columns say about 20 ms and
 about 1200 tok/s, while a fresh process's first prefill took about a second at about 20 tok/s. The cold records hold
 those figures (`firstTokenLatencyMS`, `promptTokensPerSecond`).

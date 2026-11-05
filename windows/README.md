@@ -25,11 +25,11 @@ which is how the job runs.
        -Src C:\src\LiteRT-LM -OutputBase C:\bzl -EngineDir C:\Users\me\bench\engines\litert -DxcDir <dir>
    ```
 
-   LiteRT-LM has no Windows release asset, so the build is the host's own. Its `pins.json` is the entry
-   `BENCH_EXTRA_PINS` takes (`windows_litert-lm`) for a label the registry does not hold; a record whose sha256s do
-   not match its label is stamped `unknown`. A rebuild needs its own label: two builds of the same commit and flags came
-   out the same size and 9 bytes apart (the first in the PE header), so their sha256s differ, and they ran at the same
-   rates.
+   LiteRT-LM has no Windows release asset, so the build is the host's own. `windows/engine-pins.json` lists builds by
+   label, and a record names its label only when the sha256s of the tool and DLLs on the host match that entry; otherwise
+   it says `unknown`. For a build the file does not list, point `BENCH_EXTRA_PINS` at the `pins.json` the script writes.
+   A rebuild needs its own label: two builds of the same commit and flags came out the same size and 9 bytes apart, so
+   their sha256s differ. One GPU run of the second matched the row.
 
 2. For the NPU row, copy the OpenVINO runtime that build fetched to `<root>\engines\openvino`:
    `<OutputBase>\external\intel_openvino\openvino\runtime\bin\intel64\Release\*` and the non-debug DLLs of
@@ -59,20 +59,24 @@ with other work, `BENCH_WINDOWS_BUSY_FILE` and `BENCH_WINDOWS_BUSY_LABEL` name a
 - **System code page.** MSVC reads BOM-less UTF-8 sources in the system code page. On a Japanese Windows (932) the
   build stops in litert's `stablehlo_reduce_window.cc` with `C4430`, and a string literal elsewhere could change with no
   error, so the build script passes `/utf-8` to every action.
-- **DirectX shader compiler.** Dawn's D3D12 backend will not create a device without `dxcompiler.dll` and `dxil.dll`
-  beside the tool (`DynamicLib.Open: dxcompiler.dll Windows Error: 87`). The tag's `prebuilt/windows_x86_64` has neither;
-  the PyPI wheel `litert-lm-api` carries both (`-DxcDir`).
+- **DirectX shader compiler.** With neither `dxcompiler.dll` nor `dxil.dll` beside the tool, Dawn's D3D12 backend does not
+  create a device (`DynamicLib.Open: dxcompiler.dll Windows Error: 87`). The tag's `prebuilt/windows_x86_64` has neither,
+  and the README note its build doc links to is not there; the PyPI wheel `litert-lm-api` carries both (`-DxcDir`).
 - **Two GPUs.** The rows take the discrete one, and the record keeps and checks LiteRT-LM's `Selected adapter:` line,
-  because the flag is not what picks it: ml_drift's `webgpu/environment.cc` asks Dawn by power preference, and
-  `--preferred_device_substr=Intel` still selected the NVIDIA GPU. Windows' per-app graphics preference does move it:
-  `GpuPreference=1;` under `HKCU:\Software\Microsoft\DirectX\UserGpuPreferences`, with the tool's path as the value's
-  name, selected `Intel(R) Graphics`. The rows do not use that. The Vulkan llama.cpp takes `GGML_VK_VISIBLE_DEVICES`.
+  because the flag is not what picks it. `--preferred_device_substr=Intel` still selected the NVIDIA GPU: the value
+  reaches the delegate's options, nothing on the WebGPU path reads it at this tag's litert pin, and ml_drift's
+  `webgpu/environment.cc` asks Dawn by a power preference that comes from the GPU priority. Windows' per-app graphics
+  preference does move it: `GpuPreference=1;` under `HKCU:\Software\Microsoft\DirectX\UserGpuPreferences`, with the
+  tool's path as the value's name, selected `Intel(R) Graphics`. The rows do not use that. The Vulkan llama.cpp takes
+  `GGML_VK_VISIBLE_DEVICES`.
 - **CPU threads.** The rows pass no thread flag, as on the Mac (Android's llama.cpp rows pass `-t 4` to fit their core
   mask), so each engine runs its default: LiteRT-LM's is 4 and the record states it; llama-cli's was 16 on this 16-core
-  CPU, where the Vulkan row's log prints it. On this hybrid CPU (4 P cores, 12 others) LiteRT-LM's decode rate peaks at
-  2 threads and falls at every count from there up to 16, while its prefill rate peaks at 6. Placement is part of it:
-  the same 4 threads under a process affinity on the P cores gain about 15 % on both rates. A thread count here is a
-  lever to measure, not one to raise.
+  CPU, where the Vulkan row's log prints it. On this hybrid CPU (4 P cores, 12 others) LiteRT-LM's decode rate is best at
+  2 to 3 threads and falls at every count from there up to 16, while its second-conversation prefill rate peaks at 6.
+  Placement is part of it: the same 4 threads under a process affinity on the P cores gained about 15 % on decode and on
+  that prefill, and nothing on the first prefill. A Windows process (`WorkloadsSessionHost`) held about 0.9 core through
+  these runs, and the cause of the fall is not established. More threads are not a faster row here: measure a count
+  before passing one.
 - **YNNPACK.** `--enable_ynnpack=true` is refused by the tag's Windows build (`the YNNPACK accelerator is not registered
   or linked`), and `--define=litert_enable_ynnpack=true` does not build with MSVC: its dependency slinky stops at
   `slinky/base/arithmetic.h` with `C2665` on `__builtin_add_overflow`.
@@ -81,9 +85,10 @@ with other work, `BENCH_WINDOWS_BUSY_FILE` and `BENCH_WINDOWS_BUSY_LABEL` name a
 - **`gemma-4-E2B-it-gpu.litertlm`.** Its decoder section is `tf_lite_artisan_text_decoder`, which selects the engine
   `GPU_ARTISAN`. The tag's open source has no such executor, so a build from source stops at
   `NOT_FOUND: No available engine for backend: GPU_ARTISAN`. The GPU row measures `gemma-4-E2B-it.litertlm`.
-- **The GPU accelerator is the one built from source.** `prebuilt/windows_x86_64/libLiteRtWebGpuAccelerator.dll` of the
-  tag, loaded by a tool of the same tag built without the static accelerator, registers, selects the adapter and then
-  stops with an access violation inside the DLL (`0xc0000005`, on both GPUs). The static accelerator runs, and it is the
-  form Google's PyPI wheel carries (its log says `Statically linked GPU accelerator registered`).
+- **The GPU accelerator is the one built from source.** It runs, and it is the form Google's PyPI wheel carries (its log
+  says `Statically linked GPU accelerator registered`). `prebuilt/windows_x86_64/libLiteRtWebGpuAccelerator.dll` of the
+  tag did not run in the one way tried: loaded by a tool of the same tag built in the default link mode without the static
+  accelerator, it registers, selects the NVIDIA adapter and stops with an access violation inside the DLL (`0xc0000005`,
+  nine runs of nine). The Intel GPU and `--define=litert_runtime_link_mode=dynamic` have not been tried.
 - **The NPU file is per SoC.** `backend=npu` rows name the bundle of their SoC with `file=` and take no
   `context-tokens=`: the bundle's KV cache is fixed at export.
