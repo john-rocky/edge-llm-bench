@@ -1821,6 +1821,7 @@ ANDROID_QUANT_LABELS = {
     "Qwen3.5-0.8B_int8_composites_b8.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 65aafa4, Hub file's metadata, fp32 declared, local candidate)",
     "Qwen3.5-0.8B_wi4b32_composites_c1.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, cache 32768, prefill 128 + 1024, exporter's metadata, no activation declared, local candidate)",
     "Qwen3.5-0.8B_wi4b32_composites_c0.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU-composite export 2026-11-05 main 54b7962, cache 32768, prefill 128 + 1024, official metadata, no activation declared, local candidate)",
+    "Qwen3.5-0.8B_wi4b32_composites_c6.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU-composite export 2026-11-05 65aafa4, cache 32768, prefill 128 + 1024, exporter's metadata, no activation declared, local candidate)",
     "Qwen3.5-0.8B_int8_hub_typed_a1.litertlm": "int8 dynamic on linears + embedding (convs, delta rule, GatedDeltaNet decay/gate projections float); the Hub file with llm_model_type qwen3, local candidate",
     "Qwen3_1.7B.litertlm": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; CPU-recipe file)",
     # 2026-09-14 dtype-only pair: one litert-torch main (6d4c622) GPU-graph export of
