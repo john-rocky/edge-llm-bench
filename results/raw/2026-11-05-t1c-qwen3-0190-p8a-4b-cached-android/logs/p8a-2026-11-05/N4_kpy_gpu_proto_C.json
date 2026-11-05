@@ -1,0 +1,142 @@
+{
+ "leg": "N4_kpy_gpu_proto_C",
+ "meta": {
+  "PHONE": "p8a",
+  "SERIAL": "4C131JEKB15210",
+  "TICKET": "t1c-p8a-4b-1105",
+  "R": "EXIT=137 WALL=39 START=1793861226 END=1793861265 PID=13507 MEMMIN=357428 MEMGUARD_KB=400000 OOMADJ=-1000",
+  "S0": "uptime=1803495.49 epoch=1793861225 thermal=1 pol=policy0:1704000/1704000,policy4:2367000/2367000,policy8:2914000/2914000 kgsl=none batt=100/393 memavail_kb=3900368 free_kb=16053588",
+  "S1": "uptime=1803537.31 epoch=1793861267 thermal=1 pol=policy0:1328000/1704000,policy4:1221000/2367000,policy8:1885000/2914000 kgsl=none batt=100/393 memavail_kb=4237172 free_kb=16053980",
+  "C0": "5043000 N4.litertlm_1793860430_2272915968_mldrift_program_cache.bin;2011150872 N4.litertlm_1793860430_2272915968_mldrift_weight_cache.bin;",
+  "C1": "5043000 N4.litertlm_1793860430_2272915968_mldrift_program_cache.bin;2011150872 N4.litertlm_1793860430_2272915968_mldrift_weight_cache.bin;",
+  "C2": "5043000 N4.litertlm_1793860430_2272915968_mldrift_program_cache.bin;2011150872 N4.litertlm_1793860430_2272915968_mldrift_weight_cache.bin;",
+  "MT": "2026-11-05 15:33:50.416014141 +0900",
+  "ARGS": "proto /data/local/tmp/s29q3_0190/N4.litertlm gpu",
+  "kit": "kpy",
+  "cmd": "cd /data/local/tmp/s29q3_0190/kpy && PYTHONHOME=/data/local/tmp/s29q3_0190/kpy/py LD_LIBRARY_PATH=/data/local/tmp/s29q3_0190/kpy/py/lib HOME=/data/local/tmp/s29q3_0190 TMPDIR=/data/local/tmp/s29q3_0190/tmp PYTHONUTF8=1 PYTHONNOUSERSITE=1 ./py/bin/python3 -s -B /data/local/tmp/s29q3_0190/legpy.py /data/local/tmp/s29q3_0190/kpy/wheel proto /data/local/tmp/s29q3_0190/N4.litertlm gpu  (runleg.sh: time limit 600 s, memguard MemAvailable < 400000 kB on two 2 s reads)",
+  "name": "N4_kpy_gpu_proto_C",
+  "label": "N4",
+  "backend": "gpu",
+  "kind": "proto",
+  "tag": "C",
+  "cache_mode": "keep",
+  "timeout_s": 600,
+  "exit": 137,
+  "wall_s": 39,
+  "host_wall_s": 40,
+  "host_start": 1793861225,
+  "host_end": 1793861265,
+  "ready_waited_s": 141,
+  "ready": true,
+  "rest_s": 30,
+  "hold_t0": 1793860267,
+  "memguard_kb": 400000,
+  "memavail_min_kb": 357428,
+  "oom_score_adj": -1000
+ },
+ "exit": 137,
+ "wall_s": 39,
+ "iterations": [],
+ "aggregated": null,
+ "median_iters_2_on": null,
+ "delegation": [
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 518,
+   "m": 518,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 0,
+   "name": "prefill_128"
+  },
+  {
+   "n": 556,
+   "m": 556,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 1,
+   "name": "prefill_1024"
+  },
+  {
+   "n": 518,
+   "m": 518,
+   "delegate": "LITERT_CL",
+   "partitions": 1,
+   "subgraph": 2,
+   "name": "decode"
+  }
+ ],
+ "delegation_summary": "prefill_128 556/556 CL; prefill_1024 556/556 CL; decode 518/518 CL",
+ "accelerators": [
+  "CpuAccelerator",
+  "LiteRT GPU"
+ ],
+ "opencl_device": true,
+ "webgpu_lines": [
+  "W0000 00:00:1793861230.274323   13507 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.",
+  "11-05 15:47:10.274 13507 13507 W native  : W0000 00:00:1793861230.274323   13507 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGP"
+ ],
+ "opencl_lines": [
+  "I0000 00:00:1793861230.143801   13507 delegate_opencl.cc:655] options->hint_waiting_for_completion: false",
+  "I0000 00:00:1793861230.144045   13507 delegate_opencl.cc:657] options->kernel_batch_size: 0",
+  "INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.",
+  "W0000 00:00:1793861230.274323   13507 gpu_model_builder.cc:4459] Weights preparation on Gpu is disabled for PowerVR, Broadcom, Mali GPUs and non-OpenCL/WebGPU/Metal backends.",
+  "I0000 00:00:1793861250.866630   13507 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.",
+  "I0000 00:00:1793861251.484769   13507 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data."
+ ],
+ "data_loss": 0,
+ "serialized_init": 6,
+ "context_from_serialized": 6,
+ "validation_errors": 0,
+ "build_program_failures": 0,
+ "shape_mismatch": 0,
+ "logcat_lines": 224,
+ "kv_buffer_req_warnings": 288,
+ "error_lines": [
+  "11-05 15:47:10.242 13507 13507 E libEGL  : call to OpenGL ES API with no current context (logged once per thread)"
+ ],
+ "error_line_count": 1,
+ "memguard_kb": 400000,
+ "memavail_min_kb": 357428,
+ "memguard_line": "MEMGUARD: MemAvailable 358900 kB < 400000 at 1793861265: killed",
+ "legpy": {
+  "kind": null,
+  "versions": null,
+  "lib": null,
+  "call": null,
+  "engine_s": null,
+  "prompt_tokens_raw": null,
+  "prompt_sha256": null,
+  "error": null,
+  "traceback": null,
+  "litert_lm_file": null,
+  "lib_loaded": null,
+  "log_severity": null
+ },
+ "replies": [],
+ "text": "",
+ "text_garbage": null
+}
