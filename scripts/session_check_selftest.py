@@ -513,6 +513,9 @@ def check_gpu_gate(tmp):
         # p10: p1's history and fall on a llama.cpp cell (an anchor's arm): not read
         gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp10-android", "fake/p10", [500, 1000, 1000], minutes=-120,
                   accel="log-dynamic", runtime="llama.cpp"),
+        # p11, p12: a firstEver run that would move the cell's median if it pooled, up and down
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp11-android", "fake/p11", [500, 1000, 1000], minutes=-120),
+        gate_unit(raw, f"{day}2-dashboard-v1-s26-ddp-m1q-36-hp12-android", "fake/p12", [500, 1000, 1000], minutes=-120),
     ]
     p = {"1": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p1-android", "fake/p1", [400, 700, 700]),
          "2": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p2-android", "fake/p2", [400, 800, 800]),
@@ -524,7 +527,9 @@ def check_gpu_gate(tmp):
          "9": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p9-android", "fake/p9", [400, 600, 600],
                         accel="field-static"),
          "10": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p10-android", "fake/p10", [400, 700, 700],
-                         accel="log-dynamic", runtime="llama.cpp")}
+                         accel="log-dynamic", runtime="llama.cpp"),
+         "11": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p11-android", "fake/p11", [2000, 500, 900]),
+         "12": gate_unit(raw, f"{day}3-dashboard-v1-s26-ddp-m1q-36-p12-android", "fake/p12", [100, 700, 900])}
     hist = os.path.join(tmp, "gate-history.csv")
     rows = []
     for u in hist_units:
@@ -581,6 +586,12 @@ def check_gpu_gate(tmp):
     ok(drop(p["9"]) and acc(p["9"]), "a static GPU sitting 40 % below: both findings")
     ok(not drop(p["10"]) and not noted(p["10"], "prefill: llama.cpp"),
        "a llama.cpp cell 30 % below (p1's history and fall on an anchor's arm): not read (LiteRT-LM arms only)")
+    ok(drop(p["11"]) and ref("11", "hp11", "-30.0"),
+       "a fast firstEver run (2000) stays out of the pool as the summary keeps it out: the median of 500 and 900 "
+       "is 30 % below, prefill-drop (pooled it would read 900, 10 % below: the Pixel 11 Pro miss of 2026-11-05)")
+    ok(not drop(p["12"]) and ref("12", "hp12", "-20.0"),
+       "a slow firstEver run (100) stays out of the pool: the median of 700 and 900 is 20 % below, no prefill-drop "
+       "(pooled it would read 700, 30 % below, a false HOLD)")
     # an allow-list line passes each finding, named by its commit and reason
     allow = os.path.join(tmp, "allow-gate.tsv")
     with open(allow, "w") as fh:

@@ -59,7 +59,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 sys.path.insert(0, os.path.join(ROOT, "android", "bench"))
 sys.path.insert(0, os.path.join(ROOT, "android", "ddp"))
-from build_summary import (TEXT_SCREEN, TEXT_SCREEN_SCHEMA, cell_key_of, context_tokens_of,  # noqa: E402
+from build_summary import (TEXT_SCREEN, TEXT_SCREEN_SCHEMA, as_csv_row, cell_key_of, context_tokens_of,  # noqa: E402
                            cpu_cap_drop_of, device_row, platform_of, prompt_version_of)
 from cell_gate import degenerate  # noqa: E402
 from dashboard_job import anchor_cells, session_stats  # noqa: E402
@@ -1364,7 +1364,7 @@ class Check:
 
     def check_cell_prefill(self, cell, items, when):
         """prefill-drop: a cell whose prefill (render_leaderboard.arm_row of this sitting's runs, read as
-        the summary reads them: build_summary.device_row) is more than PREFILL_DROP_PCT below the same
+        the summary reads them: build_summary.device_row, as_csv_row) is more than PREFILL_DROP_PCT below the same
         cell's in the newest earlier admitted sitting of the committed summary: same device, arm, model
         id, model sha256 (read from that sitting's records), task, context and prompt version, another
         sitting. LiteRT-LM arms only (PREFILL_DROP_ARM_PREFIX). A record without model.sha256 (the Mac and
@@ -1376,6 +1376,7 @@ class Check:
                 continue
             row = device_row(p, r, self.ctx["screens"], campaign=f"results/raw/{self.name}")
             if row is not None:
+                row = as_csv_row(row)
                 groups[(prefill_key(row), (r.get("model") or {}).get("sha256"))].append(row)
         sitting = self.ctx["sitting_of"](self.raw, self.name)
         idx = self.prefill_index()

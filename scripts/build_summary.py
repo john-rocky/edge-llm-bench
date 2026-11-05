@@ -502,6 +502,15 @@ def device_row(f, d, screens, campaign=None, raw_dirs=None):
     }
 
 
+def as_csv_row(row):
+    """A device_row as a reader of device-runs.csv gets it back: csv.DictWriter writes str(value) and
+    None as ''. render_leaderboard.arm_row compares those strings (first_ever "True", cold_run "True" /
+    "False"), so a row that never went through the file comes through here first: a bool True is not
+    "True" (2026-11-05: prefill-drop pooled a firstEver run, read 96.7 tok/s where the page read 78.18,
+    and passed a 28.7 % fall)."""
+    return {k: "" if v is None else str(v) for k, v in row.items()}
+
+
 def build_device(raw_dirs=None, out_dir=None):
     """device-runs.csv: device_row of every record (iter_device_records) under this tree's
     results/raw or the --raw-dir dirs, written into results/summary or --out-dir."""
