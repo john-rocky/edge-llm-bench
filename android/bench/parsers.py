@@ -407,12 +407,23 @@ LITERT_NPU_LINE_PATTERNS = (
     re.compile(r"^litert_dispatch_lib_dir: .*"),
     re.compile(r"RegisterAccelerator: ptr=\w+, name=NpuAccelerator"),
     re.compile(r"NPU accelerator registered\."),
-    re.compile(r"Loading shared library: \S*libLiteRtDispatch\S*"),
+    re.compile(r"Loading shared library: \S*LiteRtDispatch\S*"),
     re.compile(r"Loaded plugin at: \S+"),
     re.compile(r"\bBackendType\s+: \S+"),
     re.compile(r"Replacing \d+ out of \d+ node\(s\) with delegate \(DispatchDelegate\) node.*"),
     re.compile(r"Creating new QNN context for bytecode \w+ \(size \d+\)"),
+    # the Intel dispatch on Windows (LiteRT-LM v0.19.0, litert/vendors/intel_openvino):
+    #   INFO: [litert_dispatch.cc:208] Loading shared library: C:/.../LiteRtDispatch.dll
+    #   INFO: [.../dispatch/invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU
+    #   INFO: [.../openvino_version_info.cc:279] [OpenVINO Dispatch] Runtime version: OpenVINO 2026.4.1-...
+    #   INFO: [.../openvino_version_info.cc:128] [OpenVINO Dispatch]   Device 'NPU' full name: Intel(R) AI Boost
+    re.compile(r"OpenVINO partition '[^']*' using device: \w+"),
+    re.compile(r"\[OpenVINO Dispatch\]\s+Runtime version: .+"),
+    re.compile(r"\[OpenVINO Dispatch\]\s+Device 'NPU' (?:full name|Level Zero / NPU driver version|NPU compiler version): .+"),
 )
+
+
+RE_OPENVINO_ON_NPU = re.compile(r"OpenVINO partition '[^']*' using device: NPU$")
 
 
 def litert_npu_lines(text):
@@ -425,6 +436,8 @@ def litert_npu_lines(text):
             m = rx.search(line)
             if m:
                 found = re.sub(r"\b0x[0-9a-fA-F]+\b", "<addr>", re.sub(r"\s+", " ", m.group(0).strip()))
+                # Windows prints a pointer without its 0x
+                found = re.sub(r"\bptr=[0-9A-Fa-f]+", "ptr=<addr>", found)
                 if found not in out:
                     out.append(found)
                 break
@@ -452,6 +465,10 @@ LITERT_SIDE_LINE_PATTERNS = (
     re.compile(r"^enable_ynnpack: \w+"),
     re.compile(r"RegisterAccelerator: ptr=\w+, name=.+"),
     re.compile(r"Dynamically loaded GPU accelerator\(\S+\) registered\."),
+    re.compile(r"Statically linked GPU accelerator registered\."),
+    # WebGPU's choice among the adapters (Windows: "Selected adapter: NVIDIA GeForce RTX 5080 Laptop GPU,
+    # arch=blackwell, vendor=nvidia, backend=Direct3D 12, adapterType=Discrete GPU")
+    re.compile(r"Selected adapter: .+"),
     re.compile(r"[XY]NNPACK CPU accelerator registered\."),
     re.compile(r"Replacing \d+ out of \d+ node\(s\) with delegate \(\S+\) node, yielding \d+ partitions? for "
                r"subgraph \d+ \((?:prefill\w*|decode\w*)\)\.?"),
@@ -472,6 +489,8 @@ def litert_side_lines(text):
             m = rx.search(line)
             if m:
                 found = re.sub(r"\b0x[0-9a-fA-F]+\b", "<addr>", re.sub(r"\s+", " ", m.group(0).strip()))
+                # Windows prints a pointer without its 0x
+                found = re.sub(r"\bptr=[0-9A-Fa-f]+", "ptr=<addr>", found)
                 if found not in out:
                     out.append(found)
                 break
@@ -549,11 +568,11 @@ def litert_npu_registered(lines):
     """Did this LiteRT-LM launch run on the NPU? It chose the npu backend, LiteRT registered
     its NPU accelerator, and the dispatch delegate took at least one of the model's subgraphs
     (an NPU that registers while the model runs on XNNPACK — a bundle with nothing compiled
-    for this NPU — shows no DispatchDelegate line). Anything less is a launch that may have
-    run elsewhere."""
+    for this NPU — shows no DispatchDelegate line; the Intel dispatch on Windows logs the device
+    its partition took instead). Anything less is a launch that may have run elsewhere."""
     return ("Choose backend: npu" in lines
             and any(ln.endswith("name=NpuAccelerator") or ln == "NPU accelerator registered." for ln in lines)
-            and any("with delegate (DispatchDelegate)" in ln for ln in lines))
+            and any("with delegate (DispatchDelegate)" in ln or RE_OPENVINO_ON_NPU.search(ln) for ln in lines))
 
 
 # the lines a LiteRT-LM launch logs among its printed reply: absl's ("W0000 00:00:1787447197.923067

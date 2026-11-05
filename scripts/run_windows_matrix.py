@@ -26,6 +26,7 @@ import json
 import os
 import pathlib
 import re
+import shlex
 import sys
 import urllib.request
 import uuid
@@ -50,6 +51,16 @@ ROW_KEYS = {"backend", "context-tokens", "runs", "ynnpack", "local", "file", "ex
 LLAMA_FLAVOR = {"": "cpu", "gpu": "vulkan"}
 ANDROID_FLAGS = ("-t", "-ub", "--device")
 UNSAFE = frozenset(' \t"%!^&|<>')
+# run_cell's --chat-template-kwargs value for a Gemma 4 GGUF, quoted for sh: on the host one word, quoted for
+# cmd.exe and CommandLineToArgvW (no blank, its quotes balanced), the one word exempt from UNSAFE.
+THINKING_OFF_SH = shlex.quote('{"enable_thinking":false}')
+THINKING_OFF_CMD = r'"{\"enable_thinking\":false}"'
+# The KV cache an NPU bundle was exported with, by file (conditions.contextTokens, the form of Android's own bundles:
+# "aot-fixed-<n>"). The file's metadata does not state it and the settings echo reads 0; the source is written per row.
+NPU_CACHE_TOKENS = {
+    # the engine's refusal of a longer prefill on the host: "Exceeding the maximum number of tokens allowed: 4200 >= 4096"
+    "gemma-4-E2B-it_intel_PTL.litertlm": 4096,
+}
 
 
 def raw_root() -> pathlib.Path:
@@ -106,7 +117,7 @@ class Plan:
 
 
 def model_key(row: WinRow) -> str:
-    return f"{row.runtime} {row.model_id.lower()}"
+    return f"{row.runtime} {row.model_id.lower()} {row.file_opt}".rstrip()
 
 
 def load_pins(pins_path: pathlib.Path = PINS_PATH) -> dict:
@@ -194,8 +205,8 @@ def load_rows(cells_files: list, engines: list | None = None) -> list:
             if set(opts) - ROW_KEYS:
                 problems.append(f"{where}: unsupported option(s): {sorted(set(opts) - ROW_KEYS)}")
             if rt == "litert-lm":
-                if backend not in ("cpu", "gpu"):
-                    problems.append(f"{where}: litert-lm needs backend=cpu|gpu")
+                if backend not in ("cpu", "gpu", "npu"):
+                    problems.append(f"{where}: litert-lm needs backend=cpu|gpu|npu")
             elif rt == "llama.cpp":
                 if backend not in LLAMA_FLAVOR:
                     problems.append(f"{where}: llama.cpp takes no backend= (CPU) or backend=gpu")
@@ -203,7 +214,12 @@ def load_rows(cells_files: list, engines: list | None = None) -> list:
                 problems.append(f"{where}: runtime must be litert-lm or llama.cpp")
             if task.startswith(("native-", "endurance-")):
                 problems.append(f"{where}: only prompt tasks are supported on windows")
-            if not ctx.isdigit():
+            if backend == "npu":
+                if ctx:
+                    problems.append(f"{where}: no context-tokens= on the NPU (a bundle's cache is fixed at export)")
+                if not opts.get("file"):
+                    problems.append(f"{where}: the NPU row needs file=<the bundle of this SoC>")
+            elif not ctx.isdigit():
                 problems.append(f"{where}: needs context-tokens=")
             if ynnpack and (rt, backend) != ("litert-lm", "cpu"):
                 problems.append(f"{where}: ynnpack=1 is for litert-lm backend=cpu rows only")
@@ -211,6 +227,12 @@ def load_rows(cells_files: list, engines: list | None = None) -> list:
             runs = int(opts.get("runs", "3"))
             rows.append(WinRow(len(rows), rt, backend, mid, task, runs, int(ctx or 0),
                                ynnpack, arm, opts.get("file", "")))
+    seen = {}
+    for row in rows:
+        if row.stem in seen:
+            problems.append(f"{row.stem}: two rows of one arm, model and task (files {seen[row.stem]!r} and "
+                            f"{row.file_opt!r}) would share a capture file and pool in one cell")
+        seen.setdefault(row.stem, row.file_opt)
     if problems:
         raise ValueError("; ".join(problems))
     return rows
@@ -239,11 +261,11 @@ def lab_args(row: WinRow, model_filename: str, budget: int, gpu_substr: str = GP
         f"{{job}}\\prompts\\{row.task}.txt",
         budget,
         None,
-        row.ctx,
+        row.ctx or None,
         engine_dir="E",
         ynnpack=row.ynnpack,
     )[0]
-    words, out = cmd.split()[1:], []
+    words, out = cmd.replace(THINKING_OFF_SH, THINKING_OFF_CMD).split()[1:], []
     while words:
         word = words.pop(0)
         if row.runtime == "llama.cpp" and word in ANDROID_FLAGS:
@@ -252,14 +274,22 @@ def lab_args(row: WinRow, model_filename: str, budget: int, gpu_substr: str = GP
             out.append(word)
     if row.arm == "litert-lm-gpu":
         out.append(f"--preferred_device_substr={gpu_substr}")
+    if row.arm == "litert-lm-npu":
+        # run_cell's NPU line carries a Qualcomm setting and a phone's dispatch dir: on the Intel dispatch the
+        # engine's defaults (Google's page runs none of its NPU flags), the dispatch DLL beside the tool, and the
+        # two iterations of the cpu / gpu rows, so that all three arms read the same regimes
+        out = [w for w in out if not w.startswith(("--use_hw_cache_update_for_npu=", "--litert_dispatch_lib_dir="))]
+        out += ["--litert_dispatch_lib_dir={tool_dir}", "--num_iterations=2", "--use_session=false"]
     for a in out:
-        if UNSAFE & set(a):
+        if a != THINKING_OFF_CMD and UNSAFE & set(a):
             raise ValueError(f"{row.stem}: {a!r} contains a cmd.exe metacharacter")
     return out
 
 
 def parse_model_specs(specs: list) -> dict:
-    """`--model-file [<runtime>:]<model_id>=<path>[:<size>]` -> {(rt_or_empty, mid.lower()): (Path, size)}."""
+    """`--model-file [<runtime>:]<model_id>=<path>[:<size>]` -> {(rt_or_empty, mid.lower()): (Path, size)},
+    and {(rt_or_empty, mid.lower(), file name): (Path, size)} for a row that names its file=. An id given
+    several files has no plain entry (None): each of its rows has to name one."""
     out = {}
     for item in specs or []:
         lhs, sep, rhs = item.partition("=")
@@ -276,14 +306,21 @@ def parse_model_specs(specs: list) -> dict:
         path = pathlib.Path(rhs).expanduser()
         if size is None and path.is_file():
             size = path.stat().st_size
-        out[(rt, mid.lower())] = (path, size)
+        out[(rt, mid.lower(), path.name)] = (path, size)
+        plain = (rt, mid.lower())
+        out[plain] = None if plain in out and out[plain] != (path, size) else (path, size)
     return out
 
 
 def resolve_model(row: WinRow, model_specs: dict) -> tuple:
-    hit = model_specs.get((row.runtime, row.model_id.lower())) or model_specs.get(("", row.model_id.lower()))
+    mid = row.model_id.lower()
+    hit = None
+    if row.file_opt:
+        hit = model_specs.get((row.runtime, mid, row.file_opt)) or model_specs.get(("", mid, row.file_opt))
+    hit = hit or model_specs.get((row.runtime, mid)) or model_specs.get(("", mid))
     if hit is None:
-        raise ValueError(f"{row.runtime} {row.model_id}: pass --model-file {row.model_id}=<path>")
+        name = row.file_opt or "<path>"
+        raise ValueError(f"{row.runtime} {row.model_id}: pass --model-file {row.model_id}={name}")
     path, size = hit
     if size is None:
         if not path.is_file():
@@ -361,7 +398,24 @@ def catalog_quantization(runtime: str, model_id: str, extra_catalog: str | None 
     return run_cell.guess_quant(str(model_file))
 
 
+def engine_threads(console: str):
+    """The CPU thread count the launch's log states (LiteRT-LM's settings echo, llama-cli at -lv 4), else the fact that
+    no flag set one. Rows pass no thread flag, so each engine runs its default (windows/README.md)."""
+    m = re.search(r"^number_of_threads: (\d+)", console, re.M) or re.search(r"\bn_threads = (\d+)", console)
+    return int(m.group(1)) if m else "engine default"
+
+
 def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_SUBSTR):
+    if row.arm == "litert-lm-npu":
+        # The settings echo reads max_tokens: 0 on a bundle (its cache is fixed at export), so there is no
+        # allocation to hold the launch to: the budget flag stays, the two allocation flags do not apply.
+        samples, cond = parsers.context_prompt_results(console, 0, ctx["budget"])
+        cond["protocolFlags"] = [f for f in cond["protocolFlags"]
+                                 if f != "allocation-witness-mismatch" and not f.endswith("-context-budget-exceeded")]
+        lines = parsers.litert_npu_lines(console)
+        cond["backendRegistered"] = lines
+        samples = list(samples) + [{}] * max(0, 2 - len(samples))
+        return samples, cond, parsers.context_prompt_texts(console), not parsers.litert_npu_registered(lines)
     if row.runtime == "litert-lm":
         samples, cond = parsers.context_prompt_results(console, row.ctx, ctx["budget"])
         lines = parsers.litert_side_lines(console)
@@ -370,10 +424,15 @@ def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_S
         if row.backend == "cpu":
             cond.update(enableYnnpack=row.ynnpack, ynnpackLines=counts)
         off = parsers.litert_side_off_device(lines, row.backend, row.ynnpack, counts)
+        if row.backend == "gpu":
+            cond["gpuAccelerator"], cond["gpuAcceleratorLine"] = parsers.litert_gpu_accelerator(console)
+            adapters = [ln for ln in lines if ln.startswith("Selected adapter: ")]
+            if adapters and gpu_substr not in adapters[-1]:
+                off = off or adapters[-1]
         if off:
             cond["backendOffReason"] = off
         samples = list(samples) + [{}] * max(0, 2 - len(samples))
-        return samples, cond, parsers.context_prompt_texts(console), bool(off), True
+        return samples, cond, parsers.context_prompt_texts(console), bool(off)
     invalid = console.lower().count("invalid decode")
     cond = {
         "invalidDecodeCount": invalid,
@@ -390,7 +449,7 @@ def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_S
         cond.update(ggmlDevice=device, nGpuLayers=99, flashAttn="on", backendRegistered=lines)
         off = device is None or not parsers.llama_backend_registered(lines, device, device, "llama-cli")
     samples = [parsers.parse_llama_cli(console)]
-    return samples, cond, texts, off, bool(row.backend)
+    return samples, cond, texts, off
 
 
 def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
@@ -409,8 +468,10 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
         "chip": host.get("cpu"),
         "gpu": [g.get("name") for g in host.get("gpus") or []],
         "physicalMemoryMB": (host.get("memoryBytes") or 0) // 2**20,
-        "batteryState": "unknown",
+        "batteryState": host.get("batteryState") or "unknown",
     }
+    if host.get("batteryLevel") is not None:
+        device["batteryLevel"] = host["batteryLevel"]
     pins = pins if pins is not None else load_pins()
     litert_pins = litert_pins if litert_pins is not None else load_litert_pins()
     checking = os.environ.get("BENCH_TEXT_CHECK", "1") == "1"
@@ -425,6 +486,7 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
             if lpin is None:
                 version = f"unknown ({LITERT_EXE} label {build!r} not in windows/engine-pins.json)"
             else:
+                version = lpin.get("engine_version") or build
                 want = dict(lpin.get("dll_files") or {})
                 want[LITERT_EXE] = lpin.get("litert_lm_advanced_main_windows_sha256") or lpin.get("sha256")
                 bad = sorted(
@@ -457,7 +519,7 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                 continue
             log_file = logs / f"{name}.log"
             console = log_file.read_text(errors="replace") if log_file.is_file() else ""
-            samples, checks, texts, off, checked = _launch_fields(row, console, ctx)
+            samples, checks, texts, off = _launch_fields(row, console, ctx)
             exit_code, timed_out = meta.get("exitCode"), bool(meta.get("timedOut"))
             flags = list(checks.get("protocolFlags") or [])
             if timed_out:
@@ -481,7 +543,10 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                     cond = {
                         **checks,
                         "sampler": "engine-default" if paired else "greedy",
-                        "contextTokens": row.ctx,
+                        "threads": engine_threads(console),
+                        "contextTokens": row.ctx or (
+                            f"aot-fixed-{NPU_CACHE_TOKENS[path.name]}" if path.name in NPU_CACHE_TOKENS
+                            else "aot-fixed (cache length unrecorded)"),
                         "outputTokenBudget": ctx["budget"],
                         "elapsedSeconds": meta.get("elapsedSeconds"),
                         "exitCode": None if timed_out else exit_code,
@@ -492,9 +557,13 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                         "regime": ("cold" if i == 1 else "warm") if paired else "cold-process",
                         "protocolFlags": pflags,
                     }
+                    if meta.get("before"):
+                        cond["hostBefore"] = meta["before"]
+                    if meta.get("after"):
+                        cond["hostAfter"] = meta["after"]
                     if prompt_ver:
                         cond["promptVersion"] = prompt_ver
-                    if checked and checking:
+                    if checking:
                         verdict = parsers.text_integrity(value)
                         pflags.extend(verdict["flags"])
                         text_failed |= bool(verdict["flags"])

@@ -14,7 +14,7 @@ below produces *wrong-looking-right* numbers, which is worse than an error.
 ```
 
 First-time setup and honest per-lane durations: README "Setup" (Mac ~45 min,
-Android ~15 min, iPhone half a day + GUI signing). Runbooks:
+Android ~15 min, iPhone half a day + GUI signing, Windows ~1 h: `windows/README.md`). Runbooks:
 `docs/OPERATIONS.md`. What breaks from a clean clone and why:
 `docs/first-run-rehearsal-2026-08-26.md`.
 

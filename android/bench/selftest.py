@@ -793,6 +793,27 @@ def check_gpu_accelerator_parser():
         got = parsers.litert_gpu_accelerator(text)
         ok(got == want, f"gpu accelerator parser, {name}: {want} (got {got})")
 
+    # the Windows forms of a launch's identity lines (LiteRT-LM v0.19.0 on a Core Ultra 386H + RTX 5080 Laptop)
+    adapter = ("Selected adapter: NVIDIA GeForce RTX 5080 Laptop GPU, arch=blackwell, vendor=nvidia, "
+               "backend=Direct3D 12, adapterType=Discrete GPU")
+    lines = parsers.litert_side_lines(
+        "I0000 00:00:1793876263.686542 21104 litert_lm_lib.cc:728] Choose backend: gpu\n"
+        "RegisterAccelerator: ptr=000002773460AAF0, name=GPU WebGPU\n"
+        "I0000 00:00:1793876268.923325 21104 environment.cc:526] " + adapter + "\n")
+    ok(lines == ["Choose backend: gpu", "RegisterAccelerator: ptr=<addr>, name=GPU WebGPU", adapter],
+       f"windows side lines: a pointer without 0x folds, the adapter line is kept (got {lines})")
+    npu_head = ("I0000 00:00:1793876323.0 8388 litert_lm_lib.cc:728] Choose backend: npu\n"
+                "RegisterAccelerator: ptr=000001C4D6DD87A0, name=NpuAccelerator\n"
+                "INFO: [litert_dispatch.cc:208] Loading shared library: C:/x/LiteRtDispatch.dll\n")
+    on_npu = "INFO: [invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU\n"
+    on_cpu = on_npu.replace("device: NPU", "device: CPU")
+    ok(parsers.litert_npu_registered(parsers.litert_npu_lines(npu_head + on_npu)),
+       "windows npu lines: the partition on the NPU registers the launch")
+    ok(not parsers.litert_npu_registered(parsers.litert_npu_lines(npu_head + on_cpu)),
+       "windows npu lines: a partition on another device does not")
+    ok(not parsers.litert_npu_registered(parsers.litert_npu_lines(npu_head)),
+       "windows npu lines: the dispatch loaded and no partition does not")
+
 
 def main():
     check_gpu_accelerator_parser()
@@ -2247,6 +2268,12 @@ def main():
          "recipe=r engine-build=v1.5.1-rebuild-x", "engine-build= is read for android"),
         ("mac litert-lm m/l short-chat backend=npu", "backend=npu is an android"),
         ("android litert-lm m/l short-chat backend=npu file=x.litertlm", "go together"),
+        # windows: the Intel dispatch, one file per SoC, the bundle's own KV cache
+        ("windows litert-lm m/l short-chat backend=npu file=x_intel_PTL.litertlm", None),
+        ("windows litert-lm m/l short-chat backend=npu", "needs file="),
+        ("windows litert-lm m/l short-chat backend=npu file=x_intel_PTL.litertlm context-tokens=2048",
+         "no context-tokens="),
+        ("windows llama.cpp m/g short-chat backend=npu file=x.gguf context-tokens=2048", "windows llama.cpp takes no"),
         # a cpu / gpu row may name a LiteRT-LM side build (2026-10-20); ynnpack=1 = a cpu row on one
         ("android litert-lm m/l short-chat backend=gpu engine-build=main-20260821-selfbuilt file=x.litertlm", None),
         ("android litert-lm m/l native-benchmark-1024x256 backend=cpu engine-build=main-20260821-selfbuilt "

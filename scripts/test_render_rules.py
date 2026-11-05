@@ -24,12 +24,14 @@ Fixtures live in temp dirs; results/ is neither read nor written.
 
   python3 scripts/test_render_rules.py
 """
+import argparse
 import csv
 import datetime
 import json
 import os
 import pathlib
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -977,6 +979,217 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 "litert-lm-cpu-ynnpack": ("measured", 80.0, 1),
                 "llama.cpp-gpu": ("measured", 195.5, 1),
             })
+
+
+class WindowsRunnerRows(unittest.TestCase):
+    """The windows rows as a real machine meets them: a Gemma 4 GGUF, several files of one model id."""
+
+    def cells(self, tmp, text):
+        path = os.path.join(tmp, "win.cells")
+        with open(path, "w") as fh:
+            fh.write(text)
+        return path
+
+    def test_gemma4_gguf_thinking_off_is_one_cmd_safe_word(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-wingguf-") as tmp:
+            cells = self.cells(tmp, "windows llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat backend=gpu "
+                                    "file=gemma-4-E2B-it-Q4_K_M.gguf context-tokens=2048\n")
+            specs = run_windows_matrix.parse_model_specs(
+                ["llama.cpp:unsloth/gemma-4-E2B-it-GGUF=gemma-4-E2B-it-Q4_K_M.gguf:3106738272"])
+            plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+        args = plan.job["launches"][0]["args"]
+        at = args.index("--chat-template-kwargs")
+        self.assertEqual(args[at + 1], r'"{\"enable_thinking\":false}"')
+        self.assertNotIn("--device", args)
+
+    def test_other_metacharacters_still_refused(self):
+        row = run_windows_matrix.WinRow(0, "litert-lm", "cpu", "org/m", "short-chat", 1, 2048, False, "litert-lm-cpu")
+        with self.assertRaisesRegex(ValueError, "metacharacter"):
+            run_windows_matrix.lab_args(row, "a&b.litertlm", 128)
+
+    def test_file_picks_among_the_files_of_one_id(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winfile-") as tmp:
+            cells = self.cells(tmp, (
+                "windows litert-lm org/m short-chat backend=cpu file=m.litertlm context-tokens=2048\n"
+                "windows litert-lm org/m short-chat backend=gpu file=m-gpu.litertlm context-tokens=2048\n"))
+            specs = run_windows_matrix.parse_model_specs(
+                ["litert-lm:org/m=m.litertlm:10", "litert-lm:org/m=m-gpu.litertlm:20"])
+            plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+            self.assertEqual(sorted((m["name"], m["bytes"]) for m in plan.job["models"]),
+                             [("m-gpu.litertlm", 20), ("m.litertlm", 10)])
+            self.assertIn("--model_path={model:m-gpu.litertlm}", plan.job["launches"][1]["args"])
+            # a row that names no file cannot pick among two
+            bare = self.cells(tmp, "windows litert-lm org/m short-chat backend=cpu context-tokens=2048\n")
+            with self.assertRaisesRegex(ValueError, "--model-file"):
+                run_windows_matrix.plan_job([bare], "c", run_windows_matrix.load_pins(), specs)
+
+    def test_two_files_of_one_arm_model_task_refused(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winstem-") as tmp:
+            cells = self.cells(tmp, (
+                "windows litert-lm org/m short-chat backend=gpu file=a.litertlm context-tokens=2048\n"
+                "windows litert-lm org/m short-chat backend=gpu file=b.litertlm context-tokens=2048\n"))
+            with self.assertRaisesRegex(ValueError, "share a capture file"):
+                run_windows_matrix.load_rows([cells])
+
+    def test_the_record_states_the_thread_count_its_log_states(self):
+        head = "I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: cpu\nnumber_of_threads: 4\nmax_tokens: 2048\n"
+        with tempfile.TemporaryDirectory(prefix="render-rules-winthreads-") as tmp:
+            clean, recs = self.records(tmp, "backend=cpu file=m.litertlm context-tokens=2048", head)
+        self.assertEqual(clean, 1)
+        self.assertEqual(recs[0]["conditions"]["threads"], 4)
+        self.assertEqual(run_windows_matrix.engine_threads("x n_threads = 16 (n_threads_batch = 16) / 16"), 16)
+        self.assertEqual(run_windows_matrix.engine_threads("no such line"), "engine default")
+
+    def test_npu_row_runs_the_bundle_on_its_own_cache(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winnpu-") as tmp:
+            cells = self.cells(tmp, "windows litert-lm org/m short-chat backend=npu file=m_intel_PTL.litertlm\n")
+            specs = run_windows_matrix.parse_model_specs(["litert-lm:org/m=m_intel_PTL.litertlm:10"])
+            plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+            args = plan.job["launches"][0]["args"]
+            self.assertIn("--backend=npu", args)
+            self.assertIn("--litert_dispatch_lib_dir={tool_dir}", args)
+            self.assertFalse([a for a in args if a.startswith("--max_num_tokens")])
+            self.assertFalse([a for a in args if a.startswith("--use_hw_cache_update_for_npu")])
+            # no file: nothing says which SoC's bundle; an allocation: a bundle has none to set
+            for bad, want in (("backend=npu", "needs file="),
+                              ("backend=npu file=m.litertlm context-tokens=2048", "no context-tokens=")):
+                path = self.cells(tmp, f"windows litert-lm org/m short-chat {bad}\n")
+                with self.assertRaisesRegex(ValueError, want):
+                    run_windows_matrix.load_rows([path])
+
+    # One engine process as the host's logs carry it (the line forms of LiteRT-LM v0.19.0's Windows tool).
+    ITERATION = (
+        "I0000 00:00:2.0 1 litert_lm_lib.cc:1310] Running single-turn conversation\n"
+        "On-device AI means the model runs on your own phone or laptop, not on a server far away, so your words "
+        "stay with you and the answers come back even with no network at all.\n"
+        "I0000 00:00:3.0 1 litert_lm_lib.cc:461] BenchmarkInfo:\n"
+        "  Time to first token: 0.26 s\n"
+        "  Prefill Turns (Total 1 turns):\n"
+        "    Prefill Turn 1: Processed 20 tokens in 231.7962ms duration.\n"
+        "      Prefill Speed: 86.28 tokens/sec.\n"
+        "  Decode Turns (Total 1 turns):\n"
+        "    Decode Turn 1: Processed 128 tokens in 3.2842774s duration.\n"
+        "      Decode Speed: 38.97 tokens/sec.\n")
+
+    def records(self, tmp, row, head, model="m.litertlm"):
+        """write_records over one run's fake host logs: (clean runs, the run's records)."""
+        cells = self.cells(tmp, f"windows litert-lm org/m short-chat {row}\n")
+        specs = run_windows_matrix.parse_model_specs([f"litert-lm:org/m={model}:10"])
+        plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+        camp = pathlib.Path(tmp) / "c"
+        logs = camp / "host-logs" / "inv"
+        logs.mkdir(parents=True)
+        (logs / "host.json").write_text(json.dumps({"model": "PC", "os": "Windows 11", "cpu": "x", "binaries": {}}))
+        (logs / "r00_run1.json").write_text(json.dumps({
+            "exitCode": 0, "timedOut": False, "start": "2026-11-05T20:00:00.0000000+09:00", "elapsedSeconds": 10,
+            "peakWorkingSetBytes": 1 << 30, "command": "tool", "before": {"quietGate": "quiet"},
+            "after": {"cpuBusyPercent": 3}}))
+        (logs / "r00_run1.log").write_text(head + self.ITERATION + self.ITERATION)
+        clean, _ = run_windows_matrix.write_records(plan, camp, "inv", litert_pins={}, harness="test")
+        with open(camp / f"{plan.rows[0].stem}.jsonl") as fh:
+            return clean, [json.loads(line) for line in fh]
+
+    NPU_HEAD = ("I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: npu\nmax_tokens: 0\n"
+                "RegisterAccelerator: ptr=000001C4D6DD87A0, name=NpuAccelerator\n"
+                "INFO: [invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU\n")
+
+    def test_npu_records_hold_the_device_not_an_allocation(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winnpurec-") as tmp:
+            clean, recs = self.records(tmp, "backend=npu file=gemma-4-E2B-it_intel_PTL.litertlm", self.NPU_HEAD,
+                                       model="gemma-4-E2B-it_intel_PTL.litertlm")
+        self.assertEqual(clean, 1)
+        cond = recs[0]["conditions"]
+        self.assertEqual(cond["protocolFlags"], [])
+        self.assertEqual(cond["contextTokens"], "aot-fixed-4096")
+        self.assertIn("OpenVINO partition '(unnamed)' using device: NPU", cond["backendRegistered"])
+        self.assertEqual(cond["hostBefore"], {"quietGate": "quiet"})
+        self.assertEqual(cond["hostAfter"], {"cpuBusyPercent": 3})
+        self.assertIn("Intel PTL NPU bundle", recs[0]["model"]["quantization"])
+
+    def test_npu_record_of_a_bundle_on_another_device_is_flagged(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winnpuoff-") as tmp:
+            clean, recs = self.records(tmp, "backend=npu file=other.litertlm",
+                                       self.NPU_HEAD.replace("device: NPU", "device: CPU"), model="other.litertlm")
+        self.assertEqual(clean, 0)
+        self.assertIn("backend-not-registered", recs[0]["conditions"]["protocolFlags"])
+        self.assertEqual(recs[0]["conditions"]["contextTokens"], "aot-fixed (cache length unrecorded)")
+
+    def test_gpu_record_on_the_other_adapter_is_flagged(self):
+        head = ("I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: gpu\nmax_tokens: 2048\n"
+                "I0000 00:00:1.5 1 environment.cc:526] Selected adapter: Intel(R) Graphics, vendor=intel, "
+                "backend=Direct3D 12, adapterType=Integrated GPU\n"
+                "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.\n")
+        with tempfile.TemporaryDirectory(prefix="render-rules-wingpuoff-") as tmp:
+            clean, recs = self.records(tmp, "backend=gpu file=m.litertlm context-tokens=2048", head)
+        self.assertEqual(clean, 0)
+        cond = recs[0]["conditions"]
+        self.assertTrue(cond["backendOffReason"].startswith("Selected adapter: Intel"))
+        self.assertIn("backend-not-registered", cond["protocolFlags"])
+        self.assertEqual(cond["gpuAccelerator"], "static-source")
+
+
+class WindowsSshExecutor(unittest.TestCase):
+    """scripts/windows_ssh_executor.py with its transport faked: the job goes up, its logs come down as records."""
+
+    def run_job(self, tmp, invocation=None):
+        import windows_ssh_executor as ex
+        cells = os.path.join(tmp, "win.cells")
+        with open(cells, "w") as fh:
+            fh.write("windows litert-lm org/m short-chat backend=npu file=m_intel_PTL.litertlm runs=1\n")
+        specs = run_windows_matrix.parse_model_specs(["litert-lm:org/m=m_intel_PTL.litertlm:10"])
+        plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+        seen = {"commands": [], "job": None}
+
+        def fake_ssh(command, timeout=300, check=True, runner=None):
+            del timeout, check, runner
+            seen["commands"].append(command)
+            out = "JOBDONE OK\n" if "job.done" in command else "0\n" if "Win32_Process" in command else ""
+            return subprocess.CompletedProcess([], 0, out, "")
+
+        def fake_up(local, remote, runner=None):
+            del remote, runner
+            if pathlib.Path(local).is_dir():
+                seen["job"] = json.loads((pathlib.Path(local) / "job.json").read_text())
+
+        def fake_down(remote, local, runner=None):
+            del runner
+            logs = pathlib.Path(local) / remote.rsplit("\\", 1)[1]
+            logs.mkdir(parents=True, exist_ok=True)
+            (logs / "host.json").write_text(json.dumps({"model": "PC", "binaries": {}}))
+            (logs / "r00_run1.json").write_text(json.dumps({
+                "exitCode": 0, "timedOut": False, "start": "2026-11-05T20:00:00.0000000+09:00",
+                "peakWorkingSetBytes": 1 << 30, "command": "tool"}))
+            (logs / "r00_run1.log").write_text(WindowsRunnerRows.NPU_HEAD + WindowsRunnerRows.ITERATION * 2)
+
+        args = argparse.Namespace(dry_run=False, litert_label="v", extra_catalog=None, engines_dir=None)
+        env = {"BENCH_WINDOWS_ROOT": r"C:\b", "BENCH_WINDOWS_MODEL_DIR": r"C:\m", "BENCH_WINDOWS_INVOCATION": invocation or ""}
+        with patch.dict(os.environ, env), patch.object(ex, "ssh", fake_ssh), patch.object(ex, "scp_up", fake_up), \
+                patch.object(ex, "scp_down", fake_down):
+            rc = ex.run(plan, pathlib.Path(tmp) / "c", args)
+        return rc, seen, plan
+
+    def test_job_lands_as_records(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winssh-") as tmp:
+            rc, seen, plan = self.run_job(tmp)
+            self.assertEqual(rc, 0)
+            self.assertEqual(seen["job"]["launches"][0]["env"], {"Path": r"C:\b\engines\openvino;%PATH%"})
+            started = [c for c in seen["commands"] if "Win32_Process" in c]
+            self.assertEqual(len(started), 1)
+            self.assertIn("-PurgeEngineCaches", started[0])
+            with open(pathlib.Path(tmp) / "c" / f"{plan.rows[0].stem}.jsonl") as fh:
+                recs = [json.loads(line) for line in fh]
+            self.assertEqual(len(recs), 2)
+            self.assertEqual(recs[0]["provenance"]["harness"], "scripts/windows_ssh_executor.py")
+            self.assertEqual(recs[0]["conditions"]["protocolFlags"], [])
+
+    def test_a_resumed_job_keeps_the_caches_and_its_records_are_written_once(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winresume-") as tmp:
+            rc, seen, _ = self.run_job(tmp, invocation="inv1")
+            self.assertEqual(rc, 0)
+            self.assertNotIn("-PurgeEngineCaches", [c for c in seen["commands"] if "Win32_Process" in c][0])
+            rc, seen, _ = self.run_job(tmp, invocation="inv1")
+            self.assertEqual(rc, 2)
+            self.assertEqual(seen["commands"], [])
 
 
 if __name__ == "__main__":

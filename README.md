@@ -5,7 +5,8 @@ devices — built to run continuously, not as one-off campaigns.
 
 - **Engines**: LiteRT-LM, llama.cpp, MLX, Apple Core AI, Cactus — every pin
   lives in `environment.lock.json`
-- **Devices**: Mac Studio (M4 Max), iPhone 17 Pro, Pixel 8a, Galaxy S26 —
+- **Devices**: Mac Studio (M4 Max), iPhone 17 Pro, Pixel 8a, Galaxy S26,
+  a Windows laptop (Core Ultra 9 386H / RTX 5080 Laptop) —
   one schema (`schema/result.v1.json`), one accumulation layer, one
   leaderboard
 
@@ -96,6 +97,11 @@ device).
 **iPhone lane** — the heavy one: building and installing BenchmarkApp needs
 Xcode signing plus two increased-memory entitlements that are GUI-only. Plan
 half a day the first time; `docs/OPERATIONS.md` has the runbook.
+
+**Windows lane** — driven over SSH from another machine; LiteRT-LM has no
+Windows release asset, so the engine is built on the host (about 50 min on a
+16-core laptop) and llama.cpp comes from the pinned release assets:
+`windows/README.md`.
 
 Mac and iPhone captures self-police: a run that starts hot, lands with wide
 trial spread, or records no decode at all is quarantined and retried once
@@ -269,13 +275,13 @@ Full rules, cited by slug from the code: [`methodology/fairness-rules.md`](metho
 the arm builds at its pinned version but has no stored captures yet. **n/a**
 always carries its reason — that is part of the method, not an apology.
 
-| engine | Mac Studio (M4 Max) | iPhone 17 Pro | Pixel 8a | Galaxy S26 |
-|---|---|---|---|---|
-| LiteRT-LM | measured | measured | measured (cpu, gpu) | measured (cpu, gpu) |
-| llama.cpp | wired | wired | measured (cpu) | measured (cpu) |
-| MLX | measured | measured | n/a — Apple-only | n/a — Apple-only |
-| Core AI | measured (Qwen3 0.6B / 1.7B / 4B, own exports; Gemma 4 rows excluded with the reason) | measured | n/a — Apple-only | n/a — Apple-only |
-| Cactus | n/a — no Mac arm | wired | planned | planned |
+| engine | Mac Studio (M4 Max) | iPhone 17 Pro | Pixel 8a | Galaxy S26 | Windows laptop (Core Ultra 9 386H / RTX 5080 Laptop) |
+|---|---|---|---|---|---|
+| LiteRT-LM | measured | measured | measured (cpu, gpu) | measured (cpu, gpu) | measured (cpu, gpu, npu; Gemma 4 E2B) |
+| llama.cpp | wired | wired | measured (cpu) | measured (cpu) | measured (cpu, vulkan; Gemma 4 E2B) |
+| MLX | measured | measured | n/a — Apple-only | n/a — Apple-only | n/a — Apple-only |
+| Core AI | measured (Qwen3 0.6B / 1.7B / 4B, own exports; Gemma 4 rows excluded with the reason) | measured | n/a — Apple-only | n/a — Apple-only | n/a — Apple-only |
+| Cactus | n/a — no Mac arm | wired | planned | planned | n/a — no Windows arm |
 
 - Android LiteRT NPU is n/a on both devices — the NPU path is Early Access
   only (`methodology/android.md`).

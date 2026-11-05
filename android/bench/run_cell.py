@@ -1836,6 +1836,9 @@ ANDROID_QUANT_LABELS = {
     "Qwen3-1.7B_wi4b32_gpuflags_norope.litertlm": "INT4 (dynamic_wi4b32_afp32: block-32 weights, FP32 act; GPU-graph export 2026-09-14, rope inlined, dtype-only twin of the INT8 file)",
     "gemma-4-E2B-it.litertlm": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
     "gemma-4-E4B-it.litertlm": "wNa8o8 (int2/int4/int8 + int8 activations, QAT)",
+    # the repo's NPU bundle for Intel Panther Lake (Google's LiteRT-LM NPU page: context 4096); the repo states no
+    # quantization recipe for it, and its compiled graphs are not the wNa8o8 file's
+    "gemma-4-E2B-it_intel_PTL.litertlm": "Intel PTL NPU bundle, AOT, context 4096 (recipe not stated by the repo)",
     # same artifact + label as the Mac endurance baseline row (thinking bundle,
     # disclosed there; ModelCatalog "Granite 4.2 3B (.litertlm, thinking)")
     "granite-4.2-3b_int4.litertlm": "int4 BOCTAV4 (block32, int8 embedder)",

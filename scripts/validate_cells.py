@@ -362,14 +362,22 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                 if rt not in ("litert-lm", "llama.cpp"):
                     errors.append(f"{where}: windows v1 rows are litert-lm or llama.cpp "
                                   "(scripts/run_windows_matrix.py)")
-                elif rt == "litert-lm" and opts.get("backend") not in CPU_GPU:
-                    errors.append(f"{where}: windows litert-lm needs backend=cpu|gpu (arm identity)")
+                elif rt == "litert-lm" and opts.get("backend") not in CPU_GPU | {"npu"}:
+                    errors.append(f"{where}: windows litert-lm needs backend=cpu|gpu|npu (arm identity)")
                 elif rt == "llama.cpp" and opts.get("backend") not in (None, "gpu"):
                     errors.append(f"{where}: windows llama.cpp takes no backend= (CPU) or backend=gpu (Vulkan)")
                 if (NATIVE_TASK.match(task) or ENDURANCE_TASK.match(task) or ASR_TASK.match(task)
                         or VL_TASK.match(task) or TTS_TASK.match(task)):
                     errors.append(f"{where}: windows v1 supports prompt tasks only")
-                if not opts.get("exclude") and opts.get("manual") != "1" and not int(opts.get("context-tokens", "0")):
+                if rt == "litert-lm" and opts.get("backend") == "npu":
+                    # a compiled NPU bundle's cache length is fixed at export, and the bundle is per SoC
+                    if opts.get("context-tokens"):
+                        errors.append(f"{where}: windows litert-lm backend=npu runs on the bundle's own KV cache: "
+                                      "no context-tokens= (an AOT bundle's cache is fixed at export)")
+                    if not opts.get("file"):
+                        errors.append(f"{where}: windows litert-lm backend=npu needs file=<the bundle of this SoC> "
+                                      "(quant-per-arm-rule: the recipe travels with the row)")
+                elif not opts.get("exclude") and opts.get("manual") != "1" and not int(opts.get("context-tokens", "0")):
                     errors.append(f"{where}: windows rows need context-tokens=<allocation>")
             if plat == "android" and rt == "litert-lm" and not opts.get("backend"):
                 errors.append(f"{where}: android litert-lm needs backend=cpu|gpu "
@@ -377,9 +385,13 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                               "android litert row shipped without one and had never "
                               "actually run until the S26 first session hit it)")
             # backend=npu: the Android arms llama.cpp-npu (a side build's Hexagon HTP) and
-            # litert-lm-npu (the Qualcomm dispatch); the Mac / iPhone runners take cpu|gpu
-            if opts.get("backend") == "npu" and not (plat == "android" and rt in ("llama.cpp", "litert-lm")):
-                errors.append(f"{where}: backend=npu is an android llama.cpp / litert-lm row only")
+            # litert-lm-npu (the Qualcomm dispatch), the Windows arm litert-lm-npu (the Intel
+            # OpenVINO dispatch); the Mac / iPhone runners take cpu|gpu
+            if opts.get("backend") == "npu" and not (
+                    (plat == "android" and rt in ("llama.cpp", "litert-lm"))
+                    or (plat == "windows" and rt == "litert-lm")):
+                errors.append(f"{where}: backend=npu is an android llama.cpp / litert-lm or a windows "
+                              "litert-lm row only")
             if plat == "android" and rt == "llama.cpp":
                 if opts.get("backend") and opts["backend"] not in ANDROID_LLAMA_BACKENDS:
                     errors.append(f"{where}: android llama.cpp takes backend=npu|gpu (a side build's "

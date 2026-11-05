@@ -1678,3 +1678,30 @@ inside each process, past this repo's spread-rule bar, and the CPU ceilings were
 end. Its CPU process of 2026-11-03 ran the protocol under the same guard at 16.7 / 4.89 tok/s (median of 3 runs), a
 sustained figure: the CPU ceilings were 22–60 % below their maxima at its end, past this repo's cpu-cap line. The
 Pixel 8a's Qwen3-4B rows stay out (section "Per-device exclusion").
+
+## Windows column (2026-11-05)
+
+`matrices/dashboard-windows-v1.cells`, one laptop (Core Ultra 9 386H, RTX 5080 Laptop), Gemma 4 E2B, `short-chat`,
+run by hand over SSH (`windows/README.md`). It is not in `dashboard-text-v1.cells`: the night job has no Windows device,
+and its campaign names carry no `dashboard`, so the team page does not read them. Render the column with
+`python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells`.
+
+| row | engine | file | allocation |
+|---|---|---|---|
+| `litert-lm-cpu` | LiteRT-LM v0.19.0, built on the host | `gemma-4-E2B-it.litertlm` | 2048 |
+| `litert-lm-gpu` | same, the accelerator built from source, Direct3D 12 on the discrete GPU | `gemma-4-E2B-it.litertlm` | 2048 |
+| `litert-lm-npu` | same, the Intel dispatch on OpenVINO 2026.4.1 | `gemma-4-E2B-it_intel_PTL.litertlm` | fixed at export: 4096 |
+| `llama.cpp` | b11721 release asset | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
+| `llama.cpp-gpu` | b11721 Vulkan release asset, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
+
+Reading the rows. The headline regime is cold, as on Android: a fresh process's first conversation. LiteRT-LM's rows also
+carry the same process's second conversation as warm. Each sitting starts with the engines' caches removed, so run 1 of
+a row that keeps a cache writes it and that conversation is not admitted (`firstEver`), which is why the rows have
+`runs=3`. The page's prefill and TTFT columns are `arm_row`'s medians over every admitted record, here three warm to two
+cold, so on LiteRT-LM's rows they read the warm figures. That matters on the GPU row: the columns say about 20 ms and
+about 1200 tok/s, while a fresh process's first prefill took about a second at about 20 tok/s. The cold records hold
+those figures (`firstTokenLatencyMS`, `promptTokensPerSecond`).
+
+Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
+the accelerator, the thread counts and YNNPACK. Two sittings were taken on 2026-11-05, `2026-11-05-windows-s1` and
+`2026-11-05-windows`; each stands alone and they are not pooled.

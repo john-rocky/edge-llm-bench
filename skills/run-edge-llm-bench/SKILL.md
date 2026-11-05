@@ -1,6 +1,6 @@
 ---
 name: run-edge-llm-bench
-description: Measure a LiteRT-LM bundle's prefill and decode speed, resident memory and thermal state on a connected Android phone or a Mac, or on a Developer Device Platform lab phone with no adb, with edge-llm-bench, ad hoc - write the cells, run them, read the stored record. Use when asked to measure a .litertlm bundle on a real device now, to measure a bundle that is not published yet (side-loaded file), to repeat a measurement at a newer LiteRT-LM build, or to trace a quoted number back to its raw record. iPhone cells use the same file once the app is installed (a GUI signing step).
+description: Measure a LiteRT-LM bundle's prefill and decode speed, resident memory and thermal state on a connected Android phone or a Mac, on a Developer Device Platform lab phone with no adb, or on a Windows PC over SSH, with edge-llm-bench, ad hoc - write the cells, run them, read the stored record. Use when asked to measure a .litertlm bundle on a real device now, to measure a bundle that is not published yet (side-loaded file), to repeat a measurement at a newer LiteRT-LM build, or to trace a quoted number back to its raw record. iPhone cells use the same file once the app is installed (a GUI signing step).
 ---
 
 # Run edge-llm-bench ad hoc
@@ -42,7 +42,7 @@ two increased-memory entitlements, GUI only). Plugging, signing, thermal environ
 <platform> <runtime> <model-id> <task> [key=value ...]
 ```
 
-`platform` is `android` | `mac` | `ios`; `runtime` here is `litert-lm`;
+`platform` is `android` | `mac` | `ios` | `windows`; `runtime` here is `litert-lm`;
 `model-id` is the Hugging Face repo; `task` is `short-chat` (~20-token prompt;
 the Mac and iPhone runners cap generation at 128 tokens, while the Android
 CLI at v0.16.0 ignores the cap and runs to the model's own stop, so read
@@ -190,6 +190,32 @@ the red points and pending requests, and ends on one screen of next steps (`docs
 - **The switch.** `ops/autopilot/switch.json` `ddp_weekly` turns that slot on and
   `ddp_max_sessions` caps one sitting's sessions; set `ddp_weekly` false when you
   run the weekly DDP set on your side, so the two do not both bill it.
+
+## A Windows PC over SSH
+
+`windows/README.md` is the setup: LiteRT-LM has no Windows release asset, so the engine is built on the PC
+(`windows/build_litert_lm.ps1`, about 50 min the first time), and the PC needs an OpenSSH server with PowerShell as its
+shell and the model files in one dir. Windows cells do not go through `./bench matrix`:
+
+```bash
+cat > /tmp/one-windows.cells <<'EOF'
+windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu file=gemma-4-E2B-it.litertlm context-tokens=2048 runs=3
+EOF
+python3 scripts/validate_cells.py /tmp/one-windows.cells
+BENCH_WINDOWS_SSH_HOST=<host> python3 scripts/windows_ssh_executor.py /tmp/one-windows.cells \
+    --campaign <date>-windows-<what> --litert-label v0.19.0 \
+    --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it.litertlm:2588147712
+```
+
+Exit 0 means every run is clean; exit 1 means a run is not, and the record carries the reason.
+
+- **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take the universal file, `npu` takes the bundle
+  of the PC's SoC and no `context-tokens=`. The GPU row checks that the log's `Selected adapter:` line names NVIDIA.
+- **Run 1 of a row is the cache build.** A new campaign removes the engine's caches, so `firstEver` marks run 1 and
+  `runs=3` leaves two to read. Read the cold and warm records apart: on the GPU a fresh process's first prefill is far
+  slower than its second.
+- **Read the host's load.** `conditions.hostBefore` and `hostAfter` carry the CPU, the top processes and the GPU around
+  the run; `quietGate` is `timeout` when the run started on a host that never went quiet.
 
 ## Symptoms
 

@@ -1,6 +1,6 @@
 # Matrix cell files
 
-One line per benchmark cell, shared by every platform runner (Mac, iPhone, Android)
+One line per benchmark cell, shared by every platform runner (Mac, iPhone, Android, Windows)
 and by the regression tooling. This is the model-agnostic replacement for the
 per-campaign cell lists in `scripts/cells_*.txt` (those stay frozen as provenance
 for their published campaigns).
@@ -12,8 +12,9 @@ for their published campaigns).
 ```
 
 - Whitespace-separated, `#` starts a comment, blank lines ignored.
-- `platform`: `ios` | `mac` | `android`. Runners filter to their own platform and
-  ignore the rest, so one file can describe a cross-platform matrix.
+- `platform`: `ios` | `mac` | `android` | `windows`. Runners filter to their own platform and
+  ignore the rest, so one file can describe a cross-platform matrix. `windows` rows run through
+  `scripts/windows_ssh_executor.py` (`windows/README.md`), not through `./bench matrix`.
 - `runtime`: a `RuntimeKind` raw value (`mlx-swift`, `llama.cpp`, `litert-lm`,
   `core-ai`, `cactus`, `coreml-llm`, `executorch`, `anemll`, `apple-fm`),
   `uzu` (Mac-only Python SDK driver; `docs/uzu-arm-v1.md`), or
