@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "5eb236e0-ed5c-49ea-9d76-fabc5fbebb87",
+  "runtime": "litert-lm-gpu",
+  "engineVersion": "v0.19.0",
+  "engineArtifact": "2e0b50979206be39f00d676ec1363546fdfe6ae95eec5d4dff074617448b7937",
+  "model": {
+    "id": "litert-local/Qwen3.5-0.8B-int8-composites-b7",
+    "quantization": "INT8 (dynamic_wi8_afp32: int8 weights, FP32 act; GPU-composite export 2026-11-05 65aafa4, exporter's metadata, no activation declared, local candidate)",
+    "file": "litert-local_Qwen3.5-0.8B-int8-composites-b7_Qwen3.5-0.8B_int8_composites_b7.litertlm",
+    "sha256": "60971f673b67c47b6c7f55ebbac912eccf2719ccb1f41741c7050ce7177e04f9"
+  },
+  "task": "native-benchmark-1024x256",
+  "timestamp": "2026-11-04T23:06:47Z",
+  "device": {
+    "modelIdentifier": "SM-S942Q",
+    "systemName": "Android",
+    "systemVersion": "16",
+    "securityPatch": "2026-08-05",
+    "soc": "SM8850",
+    "product": "m1q",
+    "batteryLevel": 0.79,
+    "batteryState": "charging"
+  },
+  "conditions": {
+    "sampler": "engine-default",
+    "cpuAffinity": "none",
+    "cpusAllowedList": "0-7",
+    "cpuMaxFreqMHz": {
+      "policy0": {
+        "min": 3628.8,
+        "hw": 3628.8,
+        "cpus": "0-5"
+      },
+      "policy6": {
+        "min": 4742.4,
+        "hw": 4742.4,
+        "cpus": "6-7"
+      }
+    },
+    "contextTokens": 2048,
+    "thermalRawStatus": 0,
+    "thermalRawStatusFinal": 0,
+    "screen": "on-usb",
+    "screenSource": "measured",
+    "stayOnWhilePluggedIn": "2",
+    "elapsedSeconds": 13.5,
+    "exitCode": 0,
+    "gpuAccelerator": "static-source",
+    "gpuAcceleratorLine": "INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered."
+  },
+  "metrics": {
+    "firstTokenLatencyMS": 1350.0,
+    "promptTokensPerSecond": 768.06,
+    "decodeTokensPerSecond": 56.48,
+    "promptTokenCount": 1024,
+    "generatedTokenCount": 256,
+    "coldRun": true,
+    "harnessStamp": "2026-08-android-cli-v1",
+    "initialThermalState": "nominal",
+    "finalThermalState": "nominal",
+    "memoryMedianResidentMB": 729.76171875,
+    "memoryPeakResidentMB": 1148.1953125,
+    "firstEver": true
+  },
+  "provenance": {
+    "rawLog": "litert-lm-gpu_litert-local_Qwen3.5-0.8B-int8-composites-b7_native-benchmark-1024x256_2026-11-04T23-06-47.559383_run1.log",
+    "harness": "android/bench/run_cell.py",
+    "rssBasis": "VmRSS and VmHWM from /proc/<engine pid>/status, read every 0.5 s from 1 s after launch until the engine process exits (load, prefill and decode inside the window); memoryMedianResidentMB = median of the VmRSS reads, memoryPeakResidentMB = the largest VmHWM read (the kernel's resident high-water mark since process start); kB / 1024",
+    "modelShaSource": "device"
+  }
+}

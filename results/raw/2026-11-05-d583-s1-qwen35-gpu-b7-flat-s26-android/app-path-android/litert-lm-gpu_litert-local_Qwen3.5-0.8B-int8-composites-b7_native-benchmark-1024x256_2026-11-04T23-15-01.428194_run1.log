@@ -1,0 +1,445 @@
+CPUPOLICY policy0 3628800 0 1 2 3 4 5
+CPUPOLICY policy6 4742400 6 7
+CPUMAX 3628800 4742400
+VmHWM:	 1169764 kB
+VmRSS:	  673296 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  657544 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  675936 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  720076 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  719948 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  719948 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723932 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723932 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723796 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723796 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723796 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723796 kB
+Cpus_allowed_list:	0-7
+CPUMAX 3628800 4512000
+VmHWM:	 1169764 kB
+VmRSS:	  723796 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  723388 kB
+Cpus_allowed_list:	0-7
+VmHWM:	 1169764 kB
+VmRSS:	  712232 kB
+Cpus_allowed_list:	0-7
+===ENGINE_OUTPUT===
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793834092.662430   10000 litert_lm_lib.cc:728] Choose backend: gpu
+I0000 00:00:1793834092.670418   10000 litert_lm_lib.cc:967] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: /data/local/tmp/llmbench/models/litert-local_Qwen3.5-0.8B-int8-composites-b7_Qwen3.5-0.8B_int8_composites_b7.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: [1024]
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+mtp_gating_config: Not set
+
+speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+
+I0000 00:00:1793834092.670442   10000 litert_lm_lib.cc:974] vision_executor_settings: not set
+I0000 00:00:1793834092.670445   10000 litert_lm_lib.cc:980] audio_executor_settings: not set
+I0000 00:00:1793834092.670449   10000 litert_lm_lib.cc:1003] Creating engine
+W0000 00:00:1793834092.670965   10000 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1793834092.670973   10000 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1793834092.670976   10000 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793834092.670979   10000 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793834092.670983   10004 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793834092.671003   10004 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793834092.671007   10004 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c96c0ed40, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c96c0f8a0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793834092.994028   10000 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c96c0d6f0, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c96c0e5d0, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [magic_number_utils.cc:101] Loaded: num_subgraphs=1968, num_signatures=12
+INFO: [magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=0, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_512, subgraph_index=1, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_256, subgraph_index=2, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=3, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_64, subgraph_index=4, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_32, subgraph_index=5, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_16, subgraph_index=6, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_8, subgraph_index=7, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_4, subgraph_index=8, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_2, subgraph_index=9, num_tensors=1382, num_inputs=52, num_outputs=49, num_ops=965
+INFO: [magic_number_utils.cc:109]   signature=prefill_1, subgraph_index=10, num_tensors=1370, num_inputs=52, num_outputs=49, num_ops=955
+INFO: [magic_number_utils.cc:109]   signature=decode, subgraph_index=11, num_tensors=1370, num_inputs=52, num_outputs=49, num_ops=955
+INFO: [magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [magic_number_utils.cc:120]   config[0]: magic_number=4099, target_number=2048, signature_prefix=null
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_1024 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_512 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_256 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_128 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_64 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_32 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_16 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_8 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_4 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_2 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 116 tensors of signature prefill_1 have been updated for magic number  4099 to target number 2048
+INFO: [magic_number_utils.cc:536] 115 tensors of signature decode have been updated for magic number  4099 to target number 2048
+INFO: [compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Initialized TensorFlow Lite runtime.
+I0000 00:00:1793834093.130142   10000 delegate_opencl.cc:655] options->hint_waiting_for_completion: false
+I0000 00:00:1793834093.130183   10000 delegate_opencl.cc:657] options->kernel_batch_size: 0
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+INFO: [gpu_environment.cc:315] Reusing provided EGL environment.
+INFO: [gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [environment.cc:47] Adding options to the existing LiteRT environment
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 0 (prefill_1024).
+I0000 00:00:1793834094.307342   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.307832   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.411811   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 1 (prefill_512).
+I0000 00:00:1793834094.458970   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.459003   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.515769   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 2 (prefill_256).
+I0000 00:00:1793834094.522948   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.522970   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.563664   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 3 (prefill_128).
+I0000 00:00:1793834094.571552   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.571572   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.609565   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 4 (prefill_64).
+I0000 00:00:1793834094.617282   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.617303   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.656954   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 5 (prefill_32).
+I0000 00:00:1793834094.664443   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.664464   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.701151   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 6 (prefill_16).
+I0000 00:00:1793834094.708366   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.708399   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.732419   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 7 (prefill_8).
+I0000 00:00:1793834094.739548   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.739567   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.775422   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 8 (prefill_4).
+I0000 00:00:1793834094.782410   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.782430   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.806799   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 965 out of 965 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 9 (prefill_2).
+I0000 00:00:1793834094.813904   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.813924   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.843035   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 955 out of 955 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 10 (prefill_1).
+I0000 00:00:1793834094.860124   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.860164   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.890524   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+VERBOSE: Replacing 955 out of 955 node(s) with delegate (LITERT_CL) node, yielding 1 partitions for subgraph 11 (decode).
+I0000 00:00:1793834094.897700   10000 delegate_kernel.cc:360] Total 50 external tensors are used for delegate inputs and outputs
+I0000 00:00:1793834094.897722   10000 delegate_kernel.cc:1015] Initializing OpenCL-based API from serialized data.
+I0000 00:00:1793834094.918402   10000 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+W0000 00:00:1793834094.955517   10000 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793834094.955537   10000 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1793834094.955542   10000 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793834094.955545   10000 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1793834094.955548   10000 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793834094.955551   10000 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1793834094.955554   10000 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793834094.955557   10000 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+INFO: [environment.cc:36] Creating LiteRT environment with options
+WARNING: [npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c96c632f0, name=LiteRT GPU
+INFO: [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [accelerator_registry.cc:54] RegisterAccelerator: ptr=0xb400007c96c67340, name=CpuAccelerator
+INFO: [cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793834094.984583   10000 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+W0000 00:00:1793834094.984610   10000 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1793834094.984614   10000 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1793834094.984617   10000 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+I0000 00:00:1793834094.985387   10000 litert_lm_lib.cc:1298] Creating conversation
+I0000 00:00:1793834094.987973   10000 litert_lm_lib.cc:1310] Running single-turn conversation
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_6`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_13`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_21`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_10`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_14`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_18`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_0`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_22`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_2`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_1`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_8`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_9`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_4`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_16`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_5`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_12`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_17`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_c_20`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+
+WARNING: [compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_r_6`.
+
+I0000 00:00:1793834096.501981   10000 llm_litert_compiled_model_executor.cc:1748] Sampler will handle decode input tensors.
+INFO: Loaded OpenCL library with dlopen.
+I0000 00:00:1793834100.807013   10000 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.02 ms
+    - Init Executor: 2313.58 ms
+    - Init LLM metadata: 0.10 ms
+    - Init Model assets: 0.35 ms
+    - Init Tokenizer: 446.79 ms
+    - Init Total: 2314.91 ms
+--------------------------------------------------
+  Time to first token: 1.34 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 1024 tokens in 1.325267031s duration.
+      Prefill Speed: 772.67 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 256 tokens in 4.492833956s duration.
+      Decode Speed: 56.98 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c96c0e5d0, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c96c0d6f0, name=LiteRT GPU
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c96c67340, name=CpuAccelerator
+INFO: [accelerator_registry.cc:43] DestroyAccelerator: ptr=0xb400007c96c632f0, name=LiteRT GPU
+EXIT_CODE=0
