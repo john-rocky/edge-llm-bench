@@ -11,6 +11,7 @@ writes the same `schema/result.v1.json` records as the other lanes.
 | `windows/build_litert_lm.ps1` | builds LiteRT-LM from a tag and stages it with its registry entry |
 | `windows/engine-pins.json` | the registry: the llama.cpp release assets, the LiteRT-LM builds |
 | `matrices/dashboard-windows-v1.cells` | the rows of the dashboard's Windows column |
+| `windows/NOTES-v0.19.0.md` | what building and running v0.19.0 on one PC showed, with the numbers and logs |
 
 ## Setup
 

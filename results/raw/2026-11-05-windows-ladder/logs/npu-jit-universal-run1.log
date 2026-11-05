@@ -1,0 +1,243 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793879699.062987   22480 litert_lm_lib.cc:728] Choose backend: npu
+I0000 00:00:1793879699.063351   22480 litert_lm_lib.cc:967] executor_settings: backend: NPU
+backend_config:
+enable_neon_for_npu_greedy_sampling: true
+use_hw_masking_for_npu: true
+use_hw_cache_update_for_npu: true
+enable_npu_debug_logging: false
+
+max_tokens: 0
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: C:\Users\USER\bench\engines\litert
+model_assets: model_path: C:\Users\USER\models\gemma-4-E2B-it.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+mtp_gating_config: Not set
+
+speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+
+I0000 00:00:1793879699.063789   22480 litert_lm_lib.cc:974] vision_executor_settings: not set
+I0000 00:00:1793879699.063818   22480 litert_lm_lib.cc:980] audio_executor_settings: not set
+I0000 00:00:1793879699.063843   22480 litert_lm_lib.cc:1003] Creating engine
+W0000 00:00:1793879699.065579   22480 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793879699.065659   22480 litert_lm_loader.cc:497] TFLite model for type: tf_lite_aux not found. Skipping.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EA250E3CF0, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EA250E2F10, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793879699.065869   18684 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1793879699.094289   22480 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EA250E3DB0, name=NpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/npu_registry.cc:30] NPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EA250E3330, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EA250E3870, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1793879699.094430   22480 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1793879699.094494   22480 litert_lm_loader.cc:497] TFLite model for type: tf_lite_aux not found. Skipping.
+W0000 00:00:1793879699.094506   22480 llm_litert_compiled_model_executor_factory.cc:299] NPU backend requested, but TF_LITE_AUX is not packaged in the model. Using the generic LiteRT compiler-plugin path.
+W0000 00:00:1793879699.094519   22480 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=976, num_signatures=4
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=decode, subgraph_index=0, num_tensors=2703, num_inputs=35, num_outputs=32, num_ops=2068
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=2, num_tensors=1454, num_inputs=35, num_outputs=30, num_ops=1107
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=verify, subgraph_index=3, num_tensors=2887, num_inputs=35, num_outputs=32, num_ops=2243
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 439 tensors of signature decode have been updated for magic number  32003 to target number 4096
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 271 tensors of signature prefill_1024 have been updated for magic number  32003 to target number 4096
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 270 tensors of signature prefill_128 have been updated for magic number  32003 to target number 4096
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 444 tensors of signature verify have been updated for magic number  32003 to target number 4096
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1628] Failed to apply compiler plugins: No compiler plugin found
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1793879702.583754   22480 litert_lm_loader.cc:407] Section not found: ExecutorMetadataProto
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=embedder, subgraph_index=0, num_tensors=16, num_inputs=1, num_outputs=1, num_ops=8
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=eoa, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:2092] Tracked constant output tensor eoa_embedding with locked address
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=eoi, subgraph_index=0, num_tensors=1, num_inputs=0, num_outputs=1, num_ops=0
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/runtime/compiled_model.cc:2092] Tracked constant output tensor eoi_embedding with locked address
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=1, num_signatures=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=per_layer_embedder, subgraph_index=0, num_tensors=83, num_inputs=1, num_outputs=1, num_ops=42
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32003, target_number=4096, signature_prefix=null
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EAAF647F40, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001EAAF6474C0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+I0000 00:00:1793879704.239758   22480 litert_lm_lib.cc:1298] Creating conversation
+W0000 00:00:1793879704.240751   22480 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1793879704.240802   22480 litert_lm_lib.cc:1310] Running single-turn conversation
+Imagine you have a super-smart brain (an Artificial Intelligence) that lives **right on your device**, like your smartphone, laptop, or smart watch, instead of needing to constantly send everything to a giant, faraway computer (the cloud).
+
+**On-device AI simply means that the smart thinking and learning happens directly on the device you are using.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 🧠 The Old Way (Cloud AI)
+
+Think of this like asking a massive, super-powerful expert (a giant server in the cloud) to do all your thinking:
+
+* **You ask:** "
+I0000 00:00:1793879715.613206   22480 litert_lm_lib.cc:211] Captured model output: Imagine you have a super-smart brain (an Artificial Intelligence) that lives **right on your device**, like your smartphone, laptop, or smart watch, instead of needing to constantly send everything to a giant, faraway computer (the cloud).
+
+**On-device AI simply means that the smart thinking and learning happens directly on the device you are using.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 🧠 The Old Way (Cloud AI)
+
+Think of this like asking a massive, super-powerful expert (a giant server in the cloud) to do all your thinking:
+
+* **You ask:** "
+
+I0000 00:00:1793879715.613307   22480 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.11 ms
+    - Init Executor: 5174.08 ms
+    - Init LLM metadata: 0.07 ms
+    - Init Model assets: 1.33 ms
+    - Init Tokenizer: 60.62 ms
+    - Init Total: 5175.87 ms
+--------------------------------------------------
+  Time to first token: 1.27 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 20 tokens in 1.1911487s duration.
+      Prefill Speed: 16.79 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 10.1805628s duration.
+      Decode Speed: 12.57 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1793879715.613435   22480 litert_lm_lib.cc:1298] Creating conversation
+W0000 00:00:1793879715.614174   22480 mel_filterbank.cc:163] Missing 10 bands  starting at 0 in mel-frequency design. Perhaps too many channels or not enough frequency resolution in spectrum. (fft_length: 257 sample_rate: 16000 mel_channel_count: 128 lower_frequency_limit: 0 upper_frequency_limit: 8000
+I0000 00:00:1793879715.614202   22480 litert_lm_lib.cc:1310] Running single-turn conversation
+Imagine you have a super-smart brain (an Artificial Intelligence) that lives **right on your device**, like your smartphone, laptop, or smart watch, instead of needing to constantly send everything to a giant, faraway computer (the cloud).
+
+**On-device AI simply means that the smart thinking and learning happens directly on the device you are using.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 🧠 The Old Way (Cloud AI)
+
+Think of this like asking a massive, super-powerful expert (a giant server in the cloud) to do all your thinking:
+
+* **You ask:** "
+I0000 00:00:1793879726.767241   22480 litert_lm_lib.cc:211] Captured model output: Imagine you have a super-smart brain (an Artificial Intelligence) that lives **right on your device**, like your smartphone, laptop, or smart watch, instead of needing to constantly send everything to a giant, faraway computer (the cloud).
+
+**On-device AI simply means that the smart thinking and learning happens directly on the device you are using.**
+
+Here’s a breakdown using simple analogies:
+
+---
+
+### 🧠 The Old Way (Cloud AI)
+
+Think of this like asking a massive, super-powerful expert (a giant server in the cloud) to do all your thinking:
+
+* **You ask:** "
+
+I0000 00:00:1793879726.767322   22480 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.05 ms
+    - Init Executor: 5174.08 ms
+    - Init LLM metadata: 0.07 ms
+    - Init Model assets: 1.33 ms
+    - Init Tokenizer: 60.62 ms
+    - Init Total: 5175.87 ms
+--------------------------------------------------
+  Time to first token: 1.13 s
+--------------------------------------------------
+  Prefill Turns (Total 1 turns):
+    Prefill Turn 1: Processed 20 tokens in 1.0557715s duration.
+      Prefill Speed: 18.94 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 10.0966388s duration.
+      Decode Speed: 12.68 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1793879726.767494   22480 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.08 ms
+    - Init Executor: 5174.08 ms
+    - Init LLM metadata: 0.07 ms
+    - Init Model assets: 1.33 ms
+    - Init Session: 0.02 ms
+    - Init Tokenizer: 60.62 ms
+    - Init Total: 5175.87 ms
+--------------------------------------------------
+  Time to first token: 1.20 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 17.87 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 12.63 tokens/sec.
+--------------------------------------------------
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001EA250E3DB0, name=NpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001EA250E3330, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001EA250E3870, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001EAAF647F40, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001EAAF6474C0, name=CpuAccelerator
