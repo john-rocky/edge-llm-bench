@@ -160,8 +160,9 @@ marker past the job, write `<label> <time>` into it yourself, leave the two vari
   tool's path as the value's name, selected `Intel(R) Graphics`. The rows do not use that. The Vulkan llama.cpp takes
   `GGML_VK_VISIBLE_DEVICES`.
 - **CPU threads.** The rows pass no thread flag, as on the Mac (Android's llama.cpp rows pass `-t 4` to fit their core
-  mask), so each engine runs its default: LiteRT-LM's is 4 and the record states it; llama-cli's was 16 on this 16-core
-  CPU, where the Vulkan row's log prints it. On this hybrid CPU (4 P cores, 12 others) LiteRT-LM's decode rate is best at
+  mask), so each engine runs its default: LiteRT-LM's is 4, which the CPU row's record states (`conditions.threads`; the GPU
+  and NPU rows' logs print no count, so theirs read `engine default`); llama-cli's was 16 on this 16-core CPU, where
+  the Vulkan row's log prints it. On this hybrid CPU (4 P cores, 12 others) LiteRT-LM's decode rate is best at
   2 to 3 threads and falls at every count from there up to 16, while its second-conversation prefill rate peaks at 6.
   Placement is part of it: the same 4 threads under a process affinity on the P cores gained about 15 % on decode and on
   that prefill, and nothing on the first prefill. A Windows process (`WorkloadsSessionHost`) held about 0.9 core through
