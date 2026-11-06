@@ -1693,17 +1693,22 @@ and its campaign names carry no `dashboard`, so the team page does not read them
 | `litert-lm-npu` | same, the Intel dispatch on OpenVINO 2026.4.1 | `gemma-4-E2B-it_intel_PTL.litertlm` | fixed at export: 4096 |
 | `llama.cpp` | b11721 release asset | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 | `llama.cpp-gpu` | b11721 Vulkan release asset, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
+| `llama.cpp-cuda` | b11721 CUDA 13.4 release asset, with that release's CUDA runtime zip, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 
 Reading the rows. The headline regime is cold, as on Android: a fresh process's first conversation. LiteRT-LM's rows also
 carry the same process's second conversation as warm. Each sitting starts with the engines' caches removed, so run 1 of
 the LiteRT-LM rows and of the Vulkan row is not admitted (`firstEver`), which is why the rows have `runs=3`; the llama.cpp
-CPU row admits all three. The page's prefill and TTFT columns read the headline regime too (`arm_row`, from
+CPU row admits all three. Run 1 of the CUDA row is not admitted either (the runner marks run 1 `firstEver` on every
+llama.cpp row that has a `backend=`): in the two sittings with that row it read 5.2 and 6.9 % below the median of the
+row's other two runs. The page's prefill and TTFT columns read the headline regime too (`arm_row`, from
 2026-11-06), so on LiteRT-LM's rows they are a fresh process's first conversation: on the GPU row about a second to the
 first token at about 20 tok/s. The warm records hold the second conversation's figures, about 20 ms and about 1200
 tok/s on 2026-11-05 (`firstTokenLatencyMS`, `promptTokensPerSecond`).
 
 Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
-the accelerator, the thread counts and YNNPACK. Seven sittings were taken, two on 2026-11-05 (`2026-11-05-windows-s1`,
-`2026-11-05-windows`) and five on 2026-11-06 (`2026-11-06-windows-drift-s1`, `-drift2-s1`, `-drift2`, `-drift3-s1`,
-`-drift3`); each stands alone, none are pooled, and the column shows each cell's latest. How far the rows moved between
+the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA row runs. Nine sittings were taken: two on
+2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
+`-drift2-s1`, `-drift2`, `-drift3-s1`, `-drift3`), and two with the CUDA row just after midnight JST on 2026-11-07
+(`2026-11-06-windows-cuda-s1`, `-cuda`, named for the UTC date of their records); each stands alone, none are pooled,
+and the column shows each cell's latest. How far the rows moved between
 them is in `windows/README.md` ("Reproducibility").

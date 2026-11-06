@@ -125,6 +125,14 @@ whose model file is missing stops before its first run. For one cell, the skill 
 `results/raw/<campaign>/`: one `.jsonl` per row with a line per record, the generated texts in `decoded/`, the host's
 logs in `host-logs/<invocation>/`.
 
+The llama.cpp rows need no step on the host. The executor downloads the zips `windows/engine-pins.json` pins into
+`windows/bin` on the Mac (`BENCH_WINDOWS_BIN_DIR` names another dir), checks each zip's size and sha256, and expands them
+on the host into `<root>\engines\llama-cpu`, `<root>\engines\llama-gpu` (the Vulkan asset) and `<root>\engines\llama-cuda`
+(the CUDA asset, with the CUDA runtime zip of the same release expanded into the same dir). It skips a dir whose
+`llama-cli.exe` and every DLL the registry lists for the label already have the registry's sha256s, and stops with
+`error: ...` when any of them still differs after the copy. A record names the label in `engineVersion` only when the
+files in the run's dir matched it (`unknown (<files> unmatched in <label>)` otherwise).
+
 `--litert-label` names the build the LiteRT-LM rows run: your own label with `BENCH_EXTRA_PINS`, or `v0.19.0` on the host
 whose build `windows/engine-pins.json` lists. Before the job is staged, the executor stops with `error: ...` and exit 1
 when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build. After the
@@ -181,7 +189,19 @@ an older one over), leave the two variables unset, and remove it at the end.
   `webgpu/environment.cc` asks Dawn by a power preference that comes from the GPU priority. Windows' per-app graphics
   preference does move it: `GpuPreference=1;` under `HKCU:\Software\Microsoft\DirectX\UserGpuPreferences`, with the
   tool's path as the value's name, selected `Intel(R) Graphics`. The rows do not use that. The Vulkan llama.cpp takes
-  `GGML_VK_VISIBLE_DEVICES`.
+  `GGML_VK_VISIBLE_DEVICES`. The CUDA llama.cpp needs no variable: the NVIDIA GPU is the host's only CUDA device
+  (`ggml_cuda_init: found 1 CUDA devices`, then `using device CUDA0 (NVIDIA GeForce RTX 5080 Laptop GPU)`), and the
+  asset carries no other GPU backend.
+- **The CUDA asset.** b11721 publishes two Windows x64 CUDA assets, built with CUDA 12.4 and with CUDA 13.4, and a CUDA
+  runtime zip for each (`cudart-llama-bin-win-cuda-<version>-x64.zip`, with the `cudart64`, `cublas64` and `cublasLt64`
+  DLLs). The `llama.cpp-cuda` row runs 13.4 with its runtime zip, both pinned in `windows/engine-pins.json`. The host has
+  no CUDA toolkit; the NVIDIA driver (591.74 here) and the runtime zip are what the row needs. 13.4's `ggml-cuda.dll`
+  carries kernels compiled for the RTX 5080's compute capability 12.0 (its log reads
+  `CUDA : ARCHS = 750,800,860,890,900,1200,1210`). 12.4's carries compiled kernels for 8.6 and 8.9 only and PTX for 5.0
+  to 9.0 (`ARCHS = 500,610,700,750,800,860,890,900`); that PTX the driver compiles for the GPU the first time a process
+  loads it, and keeps the result in its own cache (`%APPDATA%\NVIDIA\ComputeCache`, which the job does not remove). In
+  two runs by hand on this PC (not records), 12.4's first run took 200 s, its warm-up 1 min 48 s and its 20-token prompt
+  87 s, with new files landing in that cache meanwhile; its second run took 4 s in all.
 - **CPU threads.** The rows pass no thread flag, as on the Mac (Android's llama.cpp rows pass `-t 4` to fit their core
   mask), so each engine runs its default: LiteRT-LM's is 4, which the CPU row's record states (`conditions.threads`; the GPU
   and NPU rows' logs print no count, so theirs read `engine default`); llama-cli's was 16 on this 16-core CPU, where
@@ -263,3 +283,17 @@ decode fell. Peak memory (`arm_row`'s median for the sitting) stayed within 2.4 
 LiteRT-LM GPU row and within 0.3 % on the other rows, in every sitting. So on this PC a row's figure from one sitting
 did not carry to a sitting taken on another day: set figures side by side only within one sitting, or across sittings
 taken back to back.
+
+Two more sittings, `2026-11-06-windows-cuda-s1` and `2026-11-06-windows-cuda`, ran the column with the CUDA row added,
+back to back at 00:02 and 00:19 JST on 2026-11-07 (2026-11-06 in UTC, the date of the records' `timestamp` and of their
+names). Their `host.json` lists the seven sittings' 133 engine files unchanged plus the 54 of
+`<root>\engines\llama-cuda` (187 in all); the model files and the invocation were the same, and every run was clean and
+quiet. From the first to the second, the cold decode median moved by -1.0 % on `litert-lm-cpu`, -0.7 % on
+`litert-lm-npu`, +1.9 % on `llama.cpp-gpu` and +0.4 % on `llama.cpp-cuda` (cold spreads 4.26 and 0.58 %, 1.08 and
+0.11 %, 2.16 and 3.34 %, 0.34 and 1.69 %). `litert-lm-gpu` read `out` in the first (13.88 %) and `llama.cpp` in both
+(21.07 and 16.26 %), so those two rows have no change figure. During both sittings SSH sessions opened on the host about
+17 times a minute (the host's `OpenSSH/Operational` log): two of them a minute were the executor's own poll (one every
+30 s), the rest other SSH clients. In the llama.cpp CPU row, whose 16 threads (llama-cli's default here, "CPU threads"
+above) take every logical CPU, the three runs during which three or four sessions opened read 9 to 19 % below the mean
+of the three with two or none: six runs, a correlation, the cause not established. Keep other SSH clients off the host
+during a sitting.
