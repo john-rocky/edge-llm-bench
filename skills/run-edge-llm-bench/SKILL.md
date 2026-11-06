@@ -257,8 +257,10 @@ read the flags in the first line before the spread.
   `SPREAD_FLAG` (`scripts/render_leaderboard.py`), and `scripts/cell_gate.py`, the gate other lanes run after a
   capture, holds their warm decode to it (the Windows lane runs none). A regime past it does not agree (`spread-rule`,
   the table at the top of `methodology/fairness-rules.md`): do not quote it. The page's Windows rows read the cold
-  median, so a cold spread past 5 % means running the cell again under a new `--campaign`. The same `--campaign`
-  appends the new records to the old `.jsonl`, and the two sittings do not pool.
+  median, so a cold spread past 5 % means running the cell again under a new `--campaign` (the same name with `-r2`,
+  then `-r3`). The same `--campaign` appends the new records to the old `.jsonl`, and the two sittings do not pool.
+  Rename the thrown-out sitting's `.jsonl` to `.jsonl.attempt1`: the summary reads `*.jsonl` only, and the repo keeps
+  such a file as the audit trail.
 - **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
