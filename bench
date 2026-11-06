@@ -237,6 +237,12 @@ def main():
     dj.add_argument("--suffix", help="campaign-name suffix for a same-day retake (e.g. -retake)")
     dj.add_argument("--no-post", action="store_true",
                     help="print the post command, run nothing after the sitting (a person runs it after review)")
+    dj.add_argument("--part", metavar="TAG",
+                    help="a device whose weekly set is in parts: run this part (default: the first part "
+                         "with no admitted session this week)")
+    dj.add_argument("--release-by", metavar="HH:MM|none",
+                    help="give the hold back by this local time instead of schedule.json's release_by; "
+                         "none: no such time (docs/dashboard-recurring-job-v1.md section 11)")
 
     au = sub.add_parser("autopilot", help="one DDP lab-unit sitting by hand, end to end: the sitting, the "
                                           "check and local commit, DASHBOARD.md, the red points, the requests")
@@ -281,6 +287,10 @@ def main():
             cmd.append(f"--suffix={args.suffix}")   # `=` form: a suffix may start with '-'
         if args.no_post:
             cmd.append("--no-post")
+        if args.part:
+            cmd += ["--part", args.part]
+        if args.release_by:
+            cmd += ["--release-by", args.release_by]
 
         return run(cmd)
     if args.cmd == "autopilot":
