@@ -225,7 +225,8 @@ README's rule (Run) from the host's own names, which come from
 While the job runs, the executor prints the host's log as `host: ...` lines. On 2026-11-06 the three runs took 2 min
 on the host, after a wait of at most 30 min for a quiet one (total CPU under 25 %, NVIDIA memory in use under 800 MiB).
 
-Exit 0 means every run is clean (`== 3/3 runs clean`). Exit 1 means a run is not - its record carries the reason in
+Exit 0 means every run is clean (`== 3/3 runs clean`); it does not look at the spread, which only the block's last
+line prints. Exit 1 means a run is not - its record carries the reason in
 `conditions.protocolFlags`, `conditions.exitCode` and `conditions.textCheck` - or the job failed on the host
 (`== job: FAILED <why>`, also in `host-logs/<invocation>/job.log`; a model file missing from `<models>` stops it before
 its first run), or the executor refused before the job (`error: ...` on stderr, no record). Exit 2 means nothing ran:
