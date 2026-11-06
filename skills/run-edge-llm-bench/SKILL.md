@@ -102,7 +102,8 @@ instead.) Fields that matter: `metrics.decodeTokensPerSecond`, `promptTokensPerS
 run is labelled, never pooled as speed; Android `coldRun` is always `true`); `engineVersion` +
 `engineArtifact` (on Android the binary found on the device, by sha256);
 `model.quantization` (Android adds `model.sha256`); the context budget in
-`conditions.contextTokens` (Android) or `metrics.contextTokensConfigured` (Mac).
+`conditions.contextTokens` (Android and Windows) or `metrics.contextTokensConfigured` (Mac); a
+Windows record also carries the generated-token cap in `conditions.outputTokenBudget`.
 Every run is also a row in `results/summary/device-runs.csv` (regenerated - never edit):
 
 ```bash
