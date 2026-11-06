@@ -10,8 +10,8 @@ An ad-hoc measurement is done when three things hold, in this order:
 1. every run has a **stored record** - a JSON record plus its raw console log
    under `results/raw/<campaign>/` (a number without a stored report is not a
    measurement),
-2. the runs **agree**: thermal state nominal at start, trial spread within a
-   few percent, no gate flag on the capture,
+2. the runs **agree**: thermal state nominal at start (on Windows: `quietGate`
+   `quiet`), decode trial spread within a few percent, no gate flag on the capture,
 3. the record **names** the device, the engine version it observed, the
    quantization label and the token budget - a rate without those compares
    to nothing.
@@ -34,7 +34,8 @@ Every FAIL prints the command that fixes it; with two phones attached it says
 First-time setup: ~15 min for the Android lane (prebuilt engine binaries on the
 releases page, an adb-authorized phone), ~45 min for the Mac lane (`ios/BenchmarkApp/scripts/bootstrap.sh`,
 then `scripts/build_yardstick_mac.sh`), half a day for the iPhone (Xcode signing,
-two increased-memory entitlements, GUI only). Plugging, signing, thermal environment and pin moves stay human.
+two increased-memory entitlements, GUI only); on a Windows PC the engine build alone takes 14 to 49 min, and
+doctor has no Windows lane (its section below). Plugging, signing, thermal environment and pin moves stay human.
 
 **1. Write the cells.** One line per cell, grammar in `matrices/README.md`:
 
@@ -88,7 +89,7 @@ beside its log; Mac records are one `.jsonl` per cell with one line per run:
 
 ```bash
 grep -h -o '"decodeTokensPerSecond": *[0-9.]*' results/raw/2026-09-12-skill-smoke-android/app-path-android/*.json
-grep -h -o '"decodeTokensPerSecond":[0-9.]*' results/raw/2026-09-12-skill-smoke-mac/*.jsonl
+grep -h -o '"decodeTokensPerSecond": *[0-9.]*' results/raw/2026-09-12-skill-smoke-mac/*.jsonl
 ```
 
 (A Mac native-benchmark cell writes one `YARDSTICK_NATIVE_OK ...` text line
@@ -104,7 +105,8 @@ Every run is also a row in `results/summary/device-runs.csv` (regenerated - neve
 python3 -c "import csv; [print(r['device'], r['runtime'], r['model_id'], r['task'], r['decode_tps'], r['thermal_initial']) for r in csv.DictReader(open('results/summary/device-runs.csv')) if '2026-09-12-skill-smoke' in r['campaign']]"
 ```
 
-Read `FLAGGED.txt`, `FAILURES.txt` and `SKIPPED.txt` beside the records first.
+Read `FLAGGED.txt`, `FAILURES.txt` and `SKIPPED.txt` beside the records first (the Windows lane writes none: see its
+section).
 
 **5. Compare only through a control.** A device drifts 16-25% between
 sittings, so today's number and last week's are not a delta. To compare with
@@ -193,29 +195,64 @@ the red points and pending requests, and ends on one screen of next steps (`docs
 
 ## A Windows PC over SSH
 
-`windows/README.md` is the setup: LiteRT-LM has no Windows release asset, so the engine is built on the PC
-(`windows/build_litert_lm.ps1`, about 50 min the first time), and the PC needs an OpenSSH server with PowerShell as its
-shell and the model files in one dir. Windows cells do not go through `./bench matrix`:
+`windows/README.md` is the setup. The PC needs an OpenSSH server with PowerShell as its shell and a key login from the
+Mac, the DirectX shader compiler from the PyPI wheel, the engine built on the PC under a label of its own
+(`windows/build_litert_lm.ps1`, 14 to 49 min; LiteRT-LM has no Windows release asset) and the model files in one dir,
+checked against the Hub. `./bench doctor` has no Windows lane; the build script checks for MSVC, Git Bash, Python 3.13,
+a JDK and Bazelisk first (not Git LFS, LongPathsEnabled or the symlink right its header also lists). Windows cells do
+not go through `./bench matrix`:
 
 ```bash
 cat > /tmp/one-windows.cells <<'EOF'
 windows litert-lm litert-community/gemma-4-E2B-it-litert-lm short-chat backend=gpu file=gemma-4-E2B-it.litertlm context-tokens=2048 runs=3
 EOF
 python3 scripts/validate_cells.py /tmp/one-windows.cells
-BENCH_WINDOWS_SSH_HOST=<host> python3 scripts/windows_ssh_executor.py /tmp/one-windows.cells \
-    --campaign <date>-windows-<what> --litert-label v0.19.0 \
+BENCH_WINDOWS_SSH_HOST=<host> BENCH_WINDOWS_ROOT='<root>' BENCH_WINDOWS_MODEL_DIR='<models>' \
+BENCH_WINDOWS_DEVICE_MODEL='<model> (<CPU> / <GPU>)' BENCH_EXTRA_PINS=pins-v0.19.0-<yours>.json \
+python3 scripts/windows_ssh_executor.py /tmp/one-windows.cells \
+    --campaign <date>-windows-<what> --litert-label v0.19.0-<yours> \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it.litertlm:2588147712
+python3 scripts/build_summary.py
+python3 -c "import glob, json; [print(c['regime'], m.get('firstEver', False), m.get('decodeTokensPerSecond'), m.get('promptTokensPerSecond'), c.get('hostBefore', {}).get('quietGate'), c['protocolFlags']) for f in sorted(glob.glob('results/raw/<date>-windows-<what>/*.jsonl')) for r in map(json.loads, open(f)) for m, c in [(r['metrics'], r['conditions'])]]"
 ```
 
-Exit 0 means every run is clean; exit 1 means a run is not, and the record carries the reason.
+`<host>` (default `winpc`), `<root>`, `<models>`, the label and its `pins.json` are the ones the README's setup made;
+`<what>` is a word of yours. `BENCH_WINDOWS_DEVICE_MODEL` names the PC for the reader; the host's own names come from
+`ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`.
+While the job runs, the executor prints the host's log as `host: ...` lines. On 2026-11-06 the three runs took 2 min
+on the host, after a wait of at most 30 min for a quiet one (total CPU under 25 %, NVIDIA memory in use under 800 MiB).
 
-- **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take `gemma-4-E2B-it.litertlm`, `npu` takes the bundle
-  of the PC's SoC and no `context-tokens=`. The GPU row checks that the log's `Selected adapter:` line names NVIDIA.
-- **Run 1 of a LiteRT-LM or Vulkan row is the cache build.** A new campaign removes the engine's caches, so `firstEver` marks run 1 and
-  `runs=3` leaves two to read. Read the cold and warm records apart: on the GPU a fresh process's first prefill is far
-  slower than its second.
-- **Read the host's load.** `conditions.hostBefore` and `hostAfter` carry the CPU, the top processes and the GPU around
-  the run; `quietGate` is `timeout` when the run started on a host that never went quiet.
+Exit 0 means every run is clean (`== 3/3 runs clean`). Exit 1 means a run is not - its record carries the reason in
+`conditions.protocolFlags`, `conditions.exitCode` and `conditions.textCheck` - or the job failed on the host
+(`== job: FAILED <why>`, also in `host-logs/<invocation>/job.log`; a model file missing from `<models>` stops it before
+its first run), or the executor refused before the job (`error: ...` on stderr, no record). Exit 2 means nothing ran:
+the arguments or the plan failed (a usage line or `ERROR: ...` on stderr), or that invocation's records are written
+already. The Windows lane writes no `FLAGGED.txt`, `FAILURES.txt` or `SKIPPED.txt`, and the executor does not rebuild
+`results/summary/`; the `build_summary.py` line does. The last line prints each record's regime, `firstEver`, decode
+and prefill rates (tok/s), `quietGate` and flags.
+
+- **The label names the build.** `--litert-label v0.19.0` names the one build `windows/engine-pins.json` lists. Another
+  build, even of the same commit, has come out with another sha256 every time so far (three builds of `83ce6067f`):
+  pass its own label and point `BENCH_EXTRA_PINS` at the `pins.json` the build script wrote beside the tool. Before the
+  job is staged, the executor stops with `error: ...` and exit 1 when the label is in neither registry or the files in
+  `<root>\engines\litert` are not that label's build.
+- **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take `gemma-4-E2B-it.litertlm`, `npu` takes
+  the bundle of the PC's SoC and no `context-tokens=`. The GPU row checks that the log's `Selected adapter:` line names
+  NVIDIA; a run on any other adapter carries `backend-not-registered`.
+- **Each LiteRT-LM run is a cold and a warm record.** One process holds two conversations (`metrics.coldRun`). A new
+  invocation (the executor started without `BENCH_WINDOWS_INVOCATION`) removes the engine's caches, so `firstEver`
+  marks run 1's cold record, the cache build, and `runs=3` leaves two cold records and three warm ones to read. Read the
+  two regimes apart. Decode agrees within a few percent; the GPU row's 20-token cold prefill does not (15.6 to 21.0
+  tok/s in the admitted cold records of 2026-11-05), and on the GPU a fresh process's first prefill is far slower than
+  its second.
+- **A wide decode spread is a sitting to throw out.** Decode trials that do not agree within a few percent are no
+  measurement (`spread-rule`, `methodology/fairness-rules.md`): run the cell again under a new `--campaign`. The same
+  `--campaign` appends the new records to the old `.jsonl`, and the two sittings do not pool.
+- **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
+  `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
+  processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
+  the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`, and `gpuSamples` every 5 s of a
+  GPU run, none for a run of about 5 s).
 
 ## Symptoms
 
@@ -234,7 +271,8 @@ Exit 0 means every run is clean; exit 1 means a run is not, and the record carri
 - **The quantization label travels with the row** ("int4" is not a spec; the
   record carries the exact label) and **failed runs stay** with their reason.
 - **Generated files are generated.** `results/summary/*` is rebuilt from raw
-  by every run; commit raw records and the regenerated summary together.
+  by every `./bench matrix` run, and on Windows by `scripts/build_summary.py`;
+  commit raw records and the regenerated summary together.
 - **Other engines the harness runs are outside this skill**, except as the anchor.
 
 ## Output layout
@@ -242,6 +280,7 @@ Exit 0 means every run is clean; exit 1 means a run is not, and the record carri
 ```
 results/raw/<campaign>-android/app-path-android/<arm>_<model>_<task>_<timestamp>_run<N>.json  (+ .log)
 results/raw/<campaign>-mac/<runtime>_<model>_<task>.jsonl   FAILURES.txt  SKIPPED.txt  session_provenance.txt
+results/raw/<campaign>/<arm>_<model>_<task>.jsonl            host-logs/<invocation>/  decoded/   (Windows)
 results/raw/<campaign>-android/profiles/                     <tag>_<backend>_{prof,ctrl}.log  .prof.json  PROFILE.md  profile-table.csv  SKIPPED.txt  FAILURES.txt
 results/summary/device-runs.csv                              one row per run, regenerated
 results/regression-reports/<date>-<engine>-<version>/        report.md  verdicts.json  invocation.txt
