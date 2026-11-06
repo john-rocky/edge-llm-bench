@@ -1131,7 +1131,9 @@ class WindowsRunnerRows(unittest.TestCase):
 class WindowsSshExecutor(unittest.TestCase):
     """scripts/windows_ssh_executor.py with its transport faked: the job goes up, its logs come down as records."""
 
-    def run_job(self, tmp, invocation=None):
+    EXE_SHA, DLL_SHA = "a" * 64, "b" * 64
+
+    def run_job(self, tmp, invocation=None, label="v", host_exe_sha=EXE_SHA):
         import windows_ssh_executor as ex
         cells = os.path.join(tmp, "win.cells")
         with open(cells, "w") as fh:
@@ -1139,11 +1141,19 @@ class WindowsSshExecutor(unittest.TestCase):
         specs = run_windows_matrix.parse_model_specs(["litert-lm:org/m=m_intel_PTL.litertlm:10"])
         plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
         seen = {"commands": [], "job": None}
+        # the build's own registry entry, as build_litert_lm.ps1 writes it beside the tool
+        extra = os.path.join(tmp, "pins-v.json")
+        with open(extra, "w") as fh:
+            json.dump({"windows_litert-lm": {"v": {"engine_version": "v0.19.0", "dll_files": {"x.dll": self.DLL_SHA},
+                                                  "litert_lm_advanced_main_windows_sha256": self.EXE_SHA}}}, fh)
 
         def fake_ssh(command, timeout=300, check=True, runner=None):
             del timeout, check, runner
             seen["commands"].append(command)
-            out = "JOBDONE OK\n" if "job.done" in command else "0\n" if "Win32_Process" in command else ""
+            if "Get-FileHash" in command and "'FILE '" in command:
+                out = f"FILE litert_lm_advanced_main_windows.exe {host_exe_sha}\nFILE x.dll {self.DLL_SHA}\n"
+            else:
+                out = "JOBDONE OK\n" if "job.done" in command else "0\n" if "Win32_Process" in command else ""
             return subprocess.CompletedProcess([], 0, out, "")
 
         def fake_up(local, remote, runner=None):
@@ -1161,8 +1171,9 @@ class WindowsSshExecutor(unittest.TestCase):
                 "peakWorkingSetBytes": 1 << 30, "command": "tool"}))
             (logs / "r00_run1.log").write_text(WindowsRunnerRows.NPU_HEAD + WindowsRunnerRows.ITERATION * 2)
 
-        args = argparse.Namespace(dry_run=False, litert_label="v", extra_catalog=None, engines_dir=None)
-        env = {"BENCH_WINDOWS_ROOT": r"C:\b", "BENCH_WINDOWS_MODEL_DIR": r"C:\m", "BENCH_WINDOWS_INVOCATION": invocation or ""}
+        args = argparse.Namespace(dry_run=False, litert_label=label, extra_catalog=None, engines_dir=None)
+        env = {"BENCH_WINDOWS_ROOT": r"C:\b", "BENCH_WINDOWS_MODEL_DIR": r"C:\m", "BENCH_WINDOWS_INVOCATION": invocation or "",
+               "BENCH_EXTRA_PINS": extra}
         with patch.dict(os.environ, env), patch.object(ex, "ssh", fake_ssh), patch.object(ex, "scp_up", fake_up), \
                 patch.object(ex, "scp_down", fake_down):
             rc = ex.run(plan, pathlib.Path(tmp) / "c", args)
@@ -1190,6 +1201,41 @@ class WindowsSshExecutor(unittest.TestCase):
             rc, seen, _ = self.run_job(tmp, invocation="inv1")
             self.assertEqual(rc, 2)
             self.assertEqual(seen["commands"], [])
+
+    def test_a_label_the_registries_do_not_hold_is_refused_before_the_host_is_touched(self):
+        import windows_ssh_executor as ex
+        with tempfile.TemporaryDirectory(prefix="render-rules-winlabel-") as tmp:
+            with self.assertRaises(RuntimeError) as cm:
+                self.run_job(tmp, label="v0.19.0-mine")
+            self.assertIn("BENCH_EXTRA_PINS", str(cm.exception))
+            self.assertIn("windows/README.md", str(cm.exception))
+            with self.assertRaises(RuntimeError):
+                self.run_job(tmp, label="unknown")  # the runner's default label
+        self.assertTrue(callable(ex.check_litert_build))
+
+    def test_a_host_build_that_is_not_the_label_is_refused_before_the_job(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-winsha-") as tmp:
+            seen_box = {}
+            try:
+                self.run_job(tmp, host_exe_sha="c" * 64)
+            except RuntimeError as exc:
+                seen_box["error"] = str(exc)
+            self.assertIn("litert_lm_advanced_main_windows.exe", seen_box.get("error", ""))
+            self.assertIn("not the build of --litert-label 'v'", seen_box.get("error", ""))
+            self.assertFalse((pathlib.Path(tmp) / "c" / "host-logs").exists())
+
+    def test_rows_without_litert_lm_skip_the_build_check(self):
+        import windows_ssh_executor as ex
+        with tempfile.TemporaryDirectory(prefix="render-rules-winnolitert-") as tmp:
+            cells = os.path.join(tmp, "llama.cells")
+            with open(cells, "w") as fh:
+                fh.write("windows llama.cpp unsloth/gemma-4-E2B-it-GGUF short-chat file=g.gguf context-tokens=2048 runs=1\n")
+            specs = run_windows_matrix.parse_model_specs(["llama.cpp:unsloth/gemma-4-E2B-it-GGUF=g.gguf:10"])
+            plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
+
+            def no_ssh(*a, **k):
+                raise AssertionError("the check must not reach the host for rows without LiteRT-LM")
+            ex.check_litert_build(plan, "unknown", runner=no_ssh)
 
 
 if __name__ == "__main__":

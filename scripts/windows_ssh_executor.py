@@ -26,6 +26,10 @@ windows/build_litert_lm.ps1 makes that dir and that entry. The NPU row loads Ope
   BENCH_WINDOWS_VK_DEVICES    GGML_VK_VISIBLE_DEVICES for the Vulkan llama.cpp rows (a host with two GPUs)
   BENCH_WINDOWS_LITERT_DIR    the dir under <root>\\engines of the LiteRT-LM build to run (default litert)
   BENCH_WINDOWS_INVOCATION    an invocation to resume (its finished runs are kept)
+
+Before anything runs on the host, a job with LiteRT-LM rows stops (exit 1) when --litert-label is in neither
+windows/engine-pins.json nor BENCH_EXTRA_PINS, or when the files in <root>\\engines\\<dir> are not that label's build:
+its records would name no engine.
 """
 
 import datetime
@@ -113,6 +117,32 @@ def stage_llama(plan: rwm.Plan, args) -> None:
         print(f"  {tool}: {label} expanded on the host")
 
 
+def check_litert_build(plan: rwm.Plan, label: str, runner=subprocess.run) -> None:
+    """Refuses, before anything runs, a LiteRT-LM job whose records would name no engine (windows/README.md, Setup 2).
+
+    The label has to be in windows/engine-pins.json or BENCH_EXTRA_PINS, and the files in <root>\\engines\\<dir> have to
+    be that label's build: a rebuild of the same commit differs by sha256, and its records would say unknown.
+    """
+    if not any(row.runtime == "litert-lm" for row in plan.rows):
+        return
+    pin = rwm.load_litert_pins().get(label)
+    if pin is None:
+        raise RuntimeError(f"--litert-label {label!r} is in neither windows/engine-pins.json nor BENCH_EXTRA_PINS, so "
+                           "the LiteRT-LM records would name no engine: pass the build's own label and point "
+                           "BENCH_EXTRA_PINS at the pins.json its build script wrote (windows/README.md, Setup 2)")
+    want = dict(pin.get("dll_files") or {})
+    want[rwm.LITERT_EXE] = pin.get("litert_lm_advanced_main_windows_sha256") or pin.get("sha256")
+    engine_dir = f"{root()}\\engines\\{env('BENCH_WINDOWS_LITERT_DIR', 'litert')}"
+    listing = ssh(f"Get-ChildItem '{engine_dir}' -File -ErrorAction SilentlyContinue | ForEach-Object "
+                  "{ 'FILE ' + $_.Name + ' ' + (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower() }",
+                  runner=runner).stdout
+    have = dict(line.split()[1:3] for line in listing.splitlines() if line.startswith("FILE ") and len(line.split()) == 3)
+    bad = sorted(name for name, sha in want.items() if have.get(name) != sha)
+    if bad:
+        raise RuntimeError(f"{engine_dir} is not the build of --litert-label {label!r} ({', '.join(bad)} differ or "
+                           "are missing): pass that build's own label and its pins.json (windows/README.md, Setup 2)")
+
+
 def write_job(plan: rwm.Plan, job_dir: pathlib.Path) -> None:
     """job.json + prompts\\<task>.txt, what run_job.ps1 reads."""
     job = json.loads(json.dumps(plan.job))
@@ -186,6 +216,9 @@ def wait_job(log_dir: str, sleep=time.sleep, clock=time.monotonic) -> str:
 def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
     if args.dry_run:
         print(json.dumps(plan.job, indent=1))
+        if any(row.runtime == "litert-lm" for row in plan.rows) and args.litert_label not in rwm.load_litert_pins():
+            print(f"warning: --litert-label {args.litert_label!r} is in neither windows/engine-pins.json nor "
+                  "BENCH_EXTRA_PINS; a real run refuses it", file=sys.stderr)
         return 0
     invocation = env("BENCH_WINDOWS_INVOCATION") or (
         datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6])
@@ -194,6 +227,7 @@ def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
     if marker.exists():
         print(f"{invocation}: its records are written already ({marker})", file=sys.stderr)
         return 2
+    check_litert_build(plan, args.litert_label)
     job_remote = f"{root()}\\jobs\\{invocation}"
     logs_remote = f"{root()}\\logs\\{invocation}"
     print(f"== host {host()}, invocation {invocation}")
