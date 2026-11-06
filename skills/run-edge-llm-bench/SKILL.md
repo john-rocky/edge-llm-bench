@@ -263,9 +263,9 @@ read the flags in the first line before the spread.
   capture, holds their warm decode to it (the Windows lane runs none). A regime past it does not agree (`spread-rule`,
   the table at the top of `methodology/fairness-rules.md`): do not quote it. The page's Windows rows read the cold
   median, so a cold spread past 5 % means running the cell again under a new `--campaign` (the same name with `-r2`,
-  then `-r3`). A warm spread past 5 % with the cold one within it needs no re-run: the measurement is done on its
-  cold median, and the warm median is not quoted. The same `--campaign` appends the new records to the old `.jsonl`,
-  and the two sittings do not pool.
+  then `-r3`). A warm spread past 5 % with the cold one within it needs no re-run: the page quotes only the cold
+  median, so on Windows the done definition's spread is the cold one. The same `--campaign` appends the new records
+  to the old `.jsonl`, and the two sittings do not pool.
   Rename the thrown-out sitting's `.jsonl` to `.jsonl.attempt1` before the re-run's `build_summary.py` (renamed after
   it, the line has to run once more): the summary reads `*.jsonl` only, and the repo keeps such a file as the audit
   trail.
@@ -275,10 +275,11 @@ read the flags in the first line before the spread.
   the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`, and `gpuSamples` every 5 s of a
   GPU run, none for a run of about 5 s). Each GPU reading (`hostBefore.gpu`, `gpuAfter`, each of `gpuSamples`) is
   one raw `nvidia-smi` read (name, driver, P-state, temperature, graphics and memory clocks, power, utilization,
-  memory used) that the harness does not check: graphics clocks no GPU runs at (5362 and 18150 MHz) were read on
-  2026-11-06. `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the processes that used
-  0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06 fix, hold a bare string
-  where one did and `{}` where none did.
+  memory used) that the harness does not check, and no step of this skill reads them: graphics clocks no GPU runs at
+  appear there (up to 41767 MHz in the committed 2026-11-05 host logs, always in a `hostBefore.gpu` or `gpuAfter`
+  line, never in `gpuSamples`). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
+  processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06
+  fix, hold a bare string where one did and `{}` where none did.
 
 ## Symptoms
 
