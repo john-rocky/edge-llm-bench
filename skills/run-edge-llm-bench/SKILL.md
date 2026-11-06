@@ -222,7 +222,8 @@ python3 -c "import glob, json, statistics; [print(f.split('/')[-1], g, d, 'sprea
 `<what>` is a word of yours. `BENCH_WINDOWS_DEVICE_MODEL` becomes the summary's `device` as written: build it by the
 README's rule (Run) from the host's own names, which come from
 `ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`.
-While the job runs, the executor prints the host's log as `host: ...` lines. On 2026-11-06 the three runs took 2 min
+While the job runs, the executor prints the host's log as `host: ...` lines; leave the host alone meanwhile (what
+you start there runs beside the timed runs; the executor's own poll reads the job's log every 30 s). On 2026-11-06 the three runs took 2 min
 on the host, after a wait of at most 30 min for a quiet one (total CPU under 25 %, NVIDIA memory in use under 800 MiB).
 
 Exit 0 means every run is clean (`== 3/3 runs clean`); it does not look at the spread, which only the block's last
