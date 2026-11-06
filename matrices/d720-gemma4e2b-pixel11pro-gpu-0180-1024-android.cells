@@ -1,0 +1,15 @@
+# 2026-11-06 D-720, arm A of one by-hand Pixel 11 Pro GPU A/B of LiteRT-LM v0.18.0 against v0.19.0-pregpu on
+# long-context-1024-gen256 (not page rows: the campaign names hold no `dashboard`, so the team page never reads them as a weekly
+# sitting). The row = matrices/dashboard-text-v1-android-a.cells row 31 with file= the renamed host copy, engine-build= this
+# arm's build and runs=1 (one launch per runner start); cooldown=300 kept (the dashboard's condition).
+# The file: litert-community/gemma-4-E2B-it-litert-lm gemma-4-E2B-it.litertlm (Hub main 3d48132a, LFS sha256
+# 181938105e0e..., 2,588,147,712 B, the file of every Pixel 11 Pro dashboard row since 2026-10-27) as a renamed host
+# copy (d720_work/copy/, an APFS clone of the HF cache blob, sha256 checked), so its phone copy, its links, caches and
+# markers are the slot's own and the night job's files on the phone stay untouched; each arm reads it through
+# run_cell.side_model_path's link in its own engines/<tag>/models, so each build keeps its own GPU program cache.
+# arm A: the side build v0.18.0 (android/engine-pins.json litert-lm.v0.18.0 = android/bin/v0.18.0; its GPU accelerator libLiteRtGpuAccelerator.so 75ee49f6..., our source build, loaded at run time), pushed for the slot into /data/local/tmp/llmbench/engines/v0.18.0 and removed after it.
+# The other arm: matrices/d720-gemma4e2b-pixel11pro-gpu-pregpu-1024-android.cells. One slot per task: the first launch
+# of each arm builds its program cache (firstEver), then A B B A; each arm into its own campaign dir; the runner's
+# 300 s cooldown and thermal wait before each launch; taskset 7c (ops/dashboard-v1/schedule.json pixel11pro cpu_mask),
+# BENCH_SITTING=1, GATE_RETRY=0. Driver: d720_work/slot.sh under d720_work/keeper.sh (the Pixel 11 Pro hold).
+android litert-lm litert-community/gemma-4-E2B-it-litert-lm long-context-1024-gen256 backend=gpu engine-build=v0.18.0 cooldown=300 file=~/code/edge-llm-bench/d720_work/copy/d720copy-gemma-4-E2B-it.litertlm context-tokens=2048 runs=1
