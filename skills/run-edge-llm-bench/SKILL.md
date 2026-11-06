@@ -39,7 +39,8 @@ First-time setup: ~15 min for the Android lane (prebuilt engine binaries on the
 releases page, an adb-authorized phone), ~45 min for the Mac lane (`ios/BenchmarkApp/scripts/bootstrap.sh`,
 then `scripts/build_yardstick_mac.sh`), half a day for the iPhone (Xcode signing,
 two increased-memory entitlements, GUI only); on a Windows PC the engine build alone takes 14 to 49 min, and
-doctor has no Windows lane (its section below). Plugging, signing, thermal environment and pin moves stay human.
+doctor has no Windows lane (skip it for a Windows cell; its section below). Plugging, signing, thermal environment
+and pin moves stay human.
 
 **1. Write the cells.** One line per cell, grammar in `matrices/README.md`:
 
@@ -203,9 +204,10 @@ the red points and pending requests, and ends on one screen of next steps (`docs
 `windows/README.md` is the setup. The PC needs an OpenSSH server with PowerShell as its shell and a key login from the
 Mac, the DirectX shader compiler from the PyPI wheel, the engine built on the PC under a label of its own
 (`windows/build_litert_lm.ps1`, 14 to 49 min; LiteRT-LM has no Windows release asset) and the model files in one dir,
-checked against the Hub. `./bench doctor` has no Windows lane; the build script checks for MSVC, Git Bash, Python 3.13,
-a JDK and Bazelisk first (not Git LFS, LongPathsEnabled or the symlink right its header also lists; the README's Setup
-has the lines that read them). Windows cells do not go through `./bench matrix`:
+checked against the Hub. `./bench doctor` has no Windows lane (it checks the Mac and the phone lanes: skip step 0 for
+a Windows cell); the build script checks for MSVC, Git Bash, Python 3.13, a JDK and Bazelisk first (not Git LFS,
+LongPathsEnabled or the symlink right its header also lists; the README's Setup has the lines that read them). Windows
+cells do not go through `./bench matrix`:
 
 ```bash
 cat > /tmp/one-windows.cells <<'EOF'
@@ -280,18 +282,20 @@ read the flags in the first line before the spread.
   line, never in `gpuSamples`). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
   processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06
   fix, hold a bare string where one did and `{}` where none did.
-- **Known, and none of it stops a cell or changes a counted rate:**
-  - Step 0's `./bench doctor` checks the Mac and the phone lanes, not a Windows PC: skip it for a Windows cell; the
-    README's setup reads and the build script's own checks are the preflight.
-  - Bazel prints `Header pruning has been disabled since Bazel failed to recognize the output of /showIncludes.`
-    during the build (seen on a Japanese Windows); the build goes on and the engine it stages runs.
-  - Run 1's cold record (`firstEver`, the cache build) is never counted, and its rates need not sit near the counted
-    runs', its first prefill on the GPU most of all.
-  - Each GPU run's raw log carries 60 lines of ``WARNING: [external/litert/litert/runtime/compiled_model.cc:1735]
-    Failed to get buffer requirements for tensor `kv_cache_k_<n>`.`` and `kv_cache_v_<n>` (the committed 2026-11-05
-    GPU row's logs too); the run passes every check.
+- **Known, and none of it stops a cell or flags a run:**
+  - Bazel prints `Header pruning has been disabled since Bazel failed to recognize the output of /showIncludes.` and
+    two more lines, one asking for the English language pack for Visual Studio (seen on a Japanese Windows); the build
+    goes on without the pack and the engine it stages runs.
+  - Run 1's cold record (`firstEver`, the cache build) is never counted, and its rates can sit far from the counted cold
+    records', on either side: in the committed 2026-11-05 GPU rows its prefill read 27 tok/s against 16 to 21, and in
+    one 2026-11-06 sitting 246 tok/s against 17 to 18, with a decode of 102 tok/s against 129 and an `Init Executor`
+    of 8.8 s against 1.6 to 1.7 s.
+  - Each GPU run's engine log (`host-logs/<invocation>/r<NN>_run<N>.log`) carries 60 lines of
+    ``WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor
+    `kv_cache_k_<n>`.`` and `kv_cache_v_<n>` (`kv_cache_k_0` to `_14` and `kv_cache_v_0` to `_14`, each twice; the
+    committed 2026-11-05 GPU rows' logs too); the run passes every check.
   - Microsoft Defender (`MsMpEng`) can lead `topProcesses` at close to one core while the gate reads `quiet`: the gate
-    tests the total CPU (under 25 %) and the NVIDIA memory in use, not single processes.
+    tests the total CPU (under 25 %) and the NVIDIA memory in use (under 800 MiB), not single processes.
 
 ## Symptoms
 
