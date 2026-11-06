@@ -1,0 +1,166 @@
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968291
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10a85fdc0 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10a85fdc0 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.000 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.013 sec (max single = 0.012 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A20 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple11  (1011)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+YARDSTICK_BEGIN runtime=onnxruntime-genai model=onnx-community/Qwen3-4B-ONNX task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_load model=onnx-community/Qwen3-4B-ONNX revision=98ddba15d05dede4435afb63f13280abcdbc2a48 folder=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 device_type=CPU ort=1.26.0 load_s=2.262 eos=151643,151645 max_length=2048 threads=engine-default processors=6 engine_default_threads=3(min(max(1,processors/2),16)) folder_intra_op_num_threads=none telemetry=ORT_DISABLE_TELEMETRY=1,api-disabled
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=22.927 prefill_ms=27573.653 first_step_ms=0.087 decode_ms=17209.853 prefill_tok_s=49.14 decode_tok_s=14.82 engine_ttft_ms=27573.740 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=14.82 decode_tok_s_wall=14.81 ttft_ms=27597 prefill_tok_s=49.1 prefill_tok_s_wall=49.1 prompt_tokens=1355 peak_mb=4858 median_mb=4070 median_resident_mb=2993 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=46.345 prefill_ms=30388.544 first_step_ms=0.089 decode_ms=22762.548 prefill_tok_s=44.59 decode_tok_s=11.20 engine_ttft_ms=30388.633 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=11.20 decode_tok_s_wall=11.20 ttft_ms=30436 prefill_tok_s=44.6 prefill_tok_s_wall=44.5 prompt_tokens=1355 peak_mb=5199 median_mb=4413 median_resident_mb=4616 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=47.947 prefill_ms=34021.643 first_step_ms=0.128 decode_ms=29284.542 prefill_tok_s=39.83 decode_tok_s=8.71 engine_ttft_ms=34021.771 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=8.71 decode_tok_s_wall=8.71 ttft_ms=34071 prefill_tok_s=39.8 prefill_tok_s_wall=39.8 prompt_tokens=1355 peak_mb=5199 median_mb=4413 median_resident_mb=4617 ctx=2048 tokens=255 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=48.732 prefill_ms=38481.665 first_step_ms=0.130 decode_ms=30843.020 prefill_tok_s=35.21 decode_tok_s=8.27 engine_ttft_ms=38481.795 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=8.27 decode_tok_s_wall=8.27 ttft_ms=38532 prefill_tok_s=35.2 prefill_tok_s_wall=35.2 prompt_tokens=1355 peak_mb=5199 median_mb=4414 median_resident_mb=4618 ctx=2048 tokens=255 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968291
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10a3f6220 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10a3f6220 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.004 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.015 sec (max single = 0.013 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A20 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple11  (1011)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+YARDSTICK_BEGIN runtime=onnxruntime-genai model=onnx-community/Qwen3-4B-ONNX task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_load model=onnx-community/Qwen3-4B-ONNX revision=98ddba15d05dede4435afb63f13280abcdbc2a48 folder=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 device_type=CPU ort=1.26.0 load_s=2.232 eos=151643,151645 max_length=2048 threads=engine-default processors=6 engine_default_threads=3(min(max(1,processors/2),16)) folder_intra_op_num_threads=none telemetry=ORT_DISABLE_TELEMETRY=1,api-disabled
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=29.664 prefill_ms=28622.325 first_step_ms=0.089 decode_ms=17850.532 prefill_tok_s=47.34 decode_tok_s=14.29 engine_ttft_ms=28622.414 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=14.29 decode_tok_s_wall=14.28 ttft_ms=28653 prefill_tok_s=47.3 prefill_tok_s_wall=47.3 prompt_tokens=1355 peak_mb=4856 median_mb=4067 median_resident_mb=2835 ctx=2048 tokens=255 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=48.989 prefill_ms=32048.452 first_step_ms=0.115 decode_ms=26991.023 prefill_tok_s=42.28 decode_tok_s=9.45 engine_ttft_ms=32048.566 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=9.45 decode_tok_s_wall=9.45 ttft_ms=32099 prefill_tok_s=42.3 prefill_tok_s_wall=42.2 prompt_tokens=1355 peak_mb=5199 median_mb=4413 median_resident_mb=4603 ctx=2048 tokens=255 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=52.346 prefill_ms=33609.635 first_step_ms=0.112 decode_ms=27944.612 prefill_tok_s=40.32 decode_tok_s=9.13 engine_ttft_ms=33609.747 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=9.13 decode_tok_s_wall=9.12 ttft_ms=33664 prefill_tok_s=40.3 prefill_tok_s_wall=40.3 prompt_tokens=1355 peak_mb=5199 median_mb=4413 median_resident_mb=4605 ctx=2048 tokens=255 thermal_initial=serious thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=44.328 prefill_ms=34969.543 first_step_ms=0.130 decode_ms=29198.251 prefill_tok_s=38.75 decode_tok_s=8.73 engine_ttft_ms=34969.673 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that on-device AI can do that a cloud model can't. Each item needs two full sentences of explanation. And I need to number every item.\n\nFirst, I need to recall what on-device AI can do. On-device AI processes data locally on the phone, without sending it to the cloud. This has several advantages, like privacy, reduced latency, and lower data usage.\n\nSo, the things that on-device AI can do that cloud models can't would be things that require real-time processing, local data storage, or features that are not feasible with cloud-based models.\n\nNow, I need to think of 25 distinct things. Let me start brainstorming.\n\n1. Real-time language translation without internet. On-device AI can process and translate text in real-time, even without an internet connection. Cloud models would require an internet connection to perform the translation.\n\n2. Localized voice recognition for privacy. On-device AI can process voice recognition locally on the phone, without sending the audio data to the cloud. This ensures that the user's voice data is processed locally, maintaining privacy.\n\n3. On-device AI can perform real-time image processing for privacy. For example, a phone's on-device AI"]
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=8.73 decode_tok_s_wall=8.73 ttft_ms=35015 prefill_tok_s=38.7 prefill_tok_s_wall=38.7 prompt_tokens=1355 peak_mb=5200 median_mb=4414 median_resident_mb=4606 ctx=2048 tokens=255 thermal_initial=serious thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.
