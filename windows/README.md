@@ -67,17 +67,17 @@ default `winpc`) and `<yours>` a name of yours for your build. The `powershell` 
    ssh <host> 'Get-Content C:\src\build.log -Tail 3'
    ```
 
-   `ReturnValue` 0 means PowerShell started; the log's first line follows within seconds, and no log after a minute means
-   the script's path in the command line is not there (PowerShell started and exited at once; a wrong `-Src`,
-   `-OutputBase` or `-EngineDir` still writes a log). The log ends with `staged <EngineDir>, exe sha256 <sha>` or with
-   `ERROR: <why>`, and the script stops its Bazel server after the build. When the build dies with
-   `Server terminated abruptly`, read Microsoft Defender below. Give each build a label of its own: two builds of the same
-   commit and flags came out the same size and 9 bytes apart (one GPU run of the second matched the row), so their
-   sha256s differ. A record names the label in `conditions.engineBuild` and the build's version in `engineVersion`, and
-   the executor starts no job when the sha256s of the tool and DLLs on the host do not match the label's entry (Run).
-   `windows/engine-pins.json` lists one LiteRT-LM build, `v0.19.0`, the one the dashboard's rows ran. For your own, copy
-   the entry the script wrote beside the tool to the Mac (`<root>` with forward slashes here) and point
-   `BENCH_EXTRA_PINS` at it:
+   `ReturnValue` 0 means PowerShell started; the log's first line follows within seconds, and no log after a minute
+   means the script's path in the command line is not there (PowerShell started and exited at once; a wrong `-Src`,
+   `-OutputBase` or `-EngineDir` still writes a log). Step 4 can run while it builds. The log ends with
+   `staged <EngineDir>, exe sha256 <sha>` or with `ERROR: <why>`, and the script stops its Bazel server after the build.
+   When the build dies with `Server terminated abruptly`, read Microsoft Defender below. Give each build a label of its
+   own: two builds of the same commit and flags came out the same size and 9 bytes apart (one GPU run of the second
+   matched the row), so their sha256s differ. A record names the label in `conditions.engineBuild` and the build's
+   version in `engineVersion`, and the executor starts no job when the sha256s of the tool and DLLs on the host do not
+   match the label's entry (Run). `windows/engine-pins.json` lists one LiteRT-LM build, `v0.19.0`, the one the
+   dashboard's rows ran. For your own, copy the entry the script wrote beside the tool to the Mac (`<root>` with forward
+   slashes here) and point `BENCH_EXTRA_PINS` at it:
 
    ```bash
    scp <host>:<root>/engines/litert/pins.json pins-v0.19.0-<yours>.json
@@ -129,12 +129,15 @@ whose build `windows/engine-pins.json` lists. Before the job is staged, the exec
 when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build.
 `BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`, which the summary's `device` column carries as
 written: it names the hardware, as the other lanes' model codes do (`SM-S942Q`, `Mac16,9`), and another spelling is
-another device there. Build it from the names the skill's `Get-CimInstance` line prints, by the rule the 2026-11-05 rows
-followed: `<Win32_ComputerSystem model> (<CPU> / <GPU>)`, the CPU's name without `Intel(R) ` and `(TM)`, and the GPU
-the rows run on (the NVIDIA one) without `NVIDIA GeForce ` and its last word `GPU`; the Intel GPU's line is not used.
-On the 2026-11-05 PC that gives `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`, and a PC of the same model
-and parts gives the same string. Unset, it is the `Win32_ComputerSystem` model alone, which names neither the CPU nor
-the GPU. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
+another device there. Build it from the host's own names
+(`ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`),
+by the rule the 2026-11-05 rows followed: `<Win32_ComputerSystem model> (<CPU> / <GPU>)`, the CPU's name without
+`Intel(R) ` and `(TM)`, and the GPU the rows run on (the NVIDIA one) without `NVIDIA GeForce ` and its last word `GPU`;
+the Intel GPU's line is not used. On the 2026-11-05 PC the rule gives
+`Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`; a PC of the same model and parts gives the same string. The
+rule is written for the one PC the lane has run, an Intel CPU with an NVIDIA GPU: on other parts, choose one string of
+the same form and keep it for every sitting of that PC. Unset, it is the `Win32_ComputerSystem` model alone, which names
+neither the CPU nor the GPU. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
 
 A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has.
 

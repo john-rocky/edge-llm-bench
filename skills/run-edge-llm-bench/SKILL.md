@@ -220,7 +220,7 @@ python3 -c "import glob, json, statistics; [print(f.split('/')[-1], g, d, 'sprea
 
 `<host>` (default `winpc`), `<root>`, `<models>`, the label and its `pins.json` are the ones the README's setup made;
 `<what>` is a word of yours. `BENCH_WINDOWS_DEVICE_MODEL` becomes the summary's `device` as written: build it by the
-README's rule (Run) from the host's own names, which come from
+rule in the README's Run section from the host's own names, which come from
 `ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`.
 While the job runs, the executor prints the host's log as `host: ...` lines; leave the host alone meanwhile (what
 you start there runs beside the timed runs; the executor's own poll reads the job's log every 30 s). On 2026-11-06 the three runs took 2 min
@@ -260,8 +260,9 @@ read the flags in the first line before the spread.
   the table at the top of `methodology/fairness-rules.md`): do not quote it. The page's Windows rows read the cold
   median, so a cold spread past 5 % means running the cell again under a new `--campaign` (the same name with `-r2`,
   then `-r3`). The same `--campaign` appends the new records to the old `.jsonl`, and the two sittings do not pool.
-  Rename the thrown-out sitting's `.jsonl` to `.jsonl.attempt1`: the summary reads `*.jsonl` only, and the repo keeps
-  such a file as the audit trail.
+  Rename the thrown-out sitting's `.jsonl` to `.jsonl.attempt1` before the re-run's `build_summary.py` (renamed after
+  it, the line has to run once more): the summary reads `*.jsonl` only, and the repo keeps such a file as the audit
+  trail.
 - **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
