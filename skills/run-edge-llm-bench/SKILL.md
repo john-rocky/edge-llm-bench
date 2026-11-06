@@ -13,8 +13,9 @@ An ad-hoc measurement is done when three things hold, in this order:
 2. the runs **agree**: thermal state nominal at start (on Windows: `quietGate`
    `quiet`), decode trial spread within a few percent ((max - min) / median of one
    regime's runs; the harness's checks flag past 5 %), no gate flag on the capture
-   (on Windows, which runs no gate: every record's `conditions.protocolFlags` empty,
-   as the executor's exit 0 means),
+   (Windows runs no gate; there the check is that every record's
+   `conditions.protocolFlags` is empty, which is what
+   `scripts/windows_ssh_executor.py`'s exit 0 means),
 3. the record **names** the device, the engine version it observed, the
    quantization label and the token budget - a rate without those compares
    to nothing.
@@ -270,8 +271,8 @@ read the flags in the first line before the spread.
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
   the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`, and `gpuSamples` every 5 s of a
   GPU run, none for a run of about 5 s). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
-  processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records hold a bare string where one did and
-  `{}` where none did.
+  processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06 fix,
+  hold a bare string where one did and `{}` where none did.
 
 ## Symptoms
 
