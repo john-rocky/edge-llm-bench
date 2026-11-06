@@ -123,9 +123,14 @@ model, which names neither the CPU nor the GPU. The 2026-11-05 rows carry
 `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. The executor does not rebuild `results/summary/`; the
 `build_summary.py` line does.
 
-A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has. On a host shared
-with other work, `BENCH_WINDOWS_BUSY_FILE` and `BENCH_WINDOWS_BUSY_LABEL` name a marker the job waits on, then holds from
-its start to its end. The executor copies the logs back after that; the copy reads files and measures nothing.
+A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has.
+
+On a host shared with other work, `BENCH_WINDOWS_BUSY_FILE` (a path on the host) and `BENCH_WINDOWS_BUSY_LABEL` (default
+`windows-job`) name a marker file. At its start and before each run, the job waits while the file holds another label
+(one read a minute), takes it over once it is 120 min old, and writes `<label> <time>` into it; at its end it removes the
+file if the text still starts with `<label> `. A marker that already starts with `<label> ` counts as the job's own. The
+executor copies the logs back after the job has removed it; the copy reads files and measures nothing. To hold the
+marker past the job, write `<label> <time>` into it yourself, leave the two variables unset, and remove it at the end.
 
 ## What a Windows machine does differently
 
