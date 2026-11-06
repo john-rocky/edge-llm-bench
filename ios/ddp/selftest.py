@@ -37,6 +37,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import uuid
 import zipfile
 from unittest.mock import patch
@@ -713,6 +714,105 @@ def check_matrix(tmp, archive, shas, template):
        and os.path.isdir(os.path.join(ynn_camp, "ddp-raw", SID)),
        f"ynnpack=1 stamps litert-lm-cpu-ynnpack and --no-keep-raw keeps ddp-raw on failure "
        f"(rc={rc_fail}, runtimes={[r['runtime'] for r in ynn_written]})")
+
+    # --jobs: rejects <1, and runs sessions concurrently while deduplicating shared archive/model/device checks.
+    with contextlib.redirect_stderr(io.StringIO()):
+        try:
+            mat.main([one_cell, "--jobs", "0"])
+            ok(False, "--jobs 0 must exit 2")
+        except SystemExit as exc:
+            ok(exc.code == 2, f"--jobs 0 exits 2 ({exc.code})")
+
+    par_cells = os.path.join(tmp, "par.cells")
+    write(par_cells, (
+        "ios litert-lm litert-community/Qwen3-1.7B short-chat backend=gpu runs=2\n"
+        "ios litert-lm litert-community/Qwen3-1.7B native-benchmark-1024x256 backend=gpu context-tokens=2048 runs=2\n"
+    ))
+    nat_recs, _ = native_records(template)
+    par_art_short = os.path.join(tmp, "par-short")
+    par_art_nat = os.path.join(tmp, "par-nat")
+    for adir, cell_recs in ((par_art_short, recs[:2]), (par_art_nat, nat_recs)):
+        os.makedirs(os.path.join(adir, "artifacts"), exist_ok=True)
+        for n, rec in cell_recs:
+            write(os.path.join(adir, "artifacts", n), json.dumps(rec))
+        write(os.path.join(adir, "artifacts", "records.txt"), "".join(n + "\n" for n, _ in cell_recs))
+        write(os.path.join(adir, "artifacts", "yardstick.done"), "0\n")
+        write(os.path.join(adir, "artifacts", "console.txt"), "YARDSTICK_ALL_DONE\n")
+        write(os.path.join(adir, "system.log"), "ok\n")
+        write(os.path.join(adir, "junit.xml"), "<testsuites/>\n")
+
+    # Wipe the fake bucket so both archive + model must be uploaded once across the 2 concurrent cells.
+    shutil.rmtree(os.path.join(tmp, "fake", "bucket"), ignore_errors=True)
+    par_barrier = threading.Barrier(2, timeout=5.0)
+    par_counts = {"devices": 0, "ls": 0, "upload": 0}
+    par_lock = threading.Lock()
+    par_sessions = {}
+
+    def fake_object_exists(url):
+        with par_lock:
+            par_counts["ls"] += 1
+        return os.path.exists(os.path.join(tmp, "fake", "bucket", url.removeprefix("gs://")))
+
+    def fake_gcloud(*args):
+        if args[:2] == ("storage", "cp") and args[2] != "-r":
+            src, url = args[2], args[3]
+            dst = os.path.join(tmp, "fake", "bucket", url.removeprefix("gs://"))
+            with par_lock:
+                par_counts["upload"] += 1
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copyfile(src, dst)
+            return ""
+        if args[:3] == ("storage", "cp", "-r"):
+            sid_match = re.search(r"/sessions/(session-[^/]+)/", args[3])
+            sid_here = sid_match.group(1)
+            src_dir = par_art_nat if par_sessions[sid_here] == NATIVE_TASK else par_art_short
+            dst_dir = args[-1].rstrip("/")
+            shutil.copytree(os.path.join(src_dir, "artifacts"), os.path.join(dst_dir, "artifacts"))
+            shutil.copyfile(os.path.join(src_dir, "system.log"), os.path.join(dst_dir, "system.log"))
+            shutil.copyfile(os.path.join(src_dir, "junit.xml"), os.path.join(dst_dir, "junit.xml"))
+            return ""
+        raise AssertionError(f"unexpected gcloud call: {args}")
+
+    def fake_gcloud_json(*args, project=None):
+        if args[:4] == ("beta", "device-run", "devices", "list"):
+            with par_lock:
+                par_counts["devices"] += 1
+            return [{"displayName": "iPhone 16 Pro", "osVersion": "18.3", "platform": "IOS",
+                     "modelCode": "iphone16pro", "name": f"projects/{PROJECT}/locations/global/devices/{DEVICE}"}]
+        if args[:5] == ("beta", "device-run", "sessions", "submit", "xctest"):
+            par_barrier.wait()  # proves both cells execute concurrently in the ThreadPoolExecutor
+            labels = dict(kv.split("=", 1) for kv in (flag(args, "--labels") or "").split(",") if "=" in kv)
+            sid_here = f"session-{labels['run']}"
+            with par_lock:
+                par_sessions[sid_here] = labels["task"]
+            return [{"name": f"projects/{PROJECT}/locations/global/sessions/{sid_here}"}]
+        if args[:4] == ("beta", "device-run", "sessions", "describe"):
+            sid_here = args[4]
+            desc = describe_json()
+            desc["name"] = f"projects/{PROJECT}/locations/global/sessions/{sid_here}"
+            pfx = f"gs://fake-bucket/automation/sessions/{sid_here}/job-000/execution-1111-2222/"
+            desc["sessionReport"]["jobReports"][0]["executionReports"][0]["outputFiles"] = [
+                {"gcsOutputFile": {"path": f"{pfx}system.log"}},
+                {"gcsOutputFile": {"path": f"{pfx}junit.xml"}},
+                {"gcsOutputFile": {"path": f"{pfx}artifacts/console.txt"}},
+            ]
+            return desc
+        raise AssertionError(f"unexpected gcloud_json call: {args}")
+
+    with patch.dict(os.environ, env_for(tmp, extra={"BENCH_RAW_ROOT": raw_dir}), clear=True), \
+         patch.object(mat.run_ddp_ios_lm, "object_exists", side_effect=fake_object_exists), \
+         patch.object(mat.run_ddp_ios_lm, "gcloud", side_effect=fake_gcloud), \
+         patch.object(mat.run_ddp_ios_lm, "gcloud_json", side_effect=fake_gcloud_json), \
+         contextlib.redirect_stdout(io.StringIO()):
+        rc_par = mat.main([par_cells, "--device", DEVICE, "--project", PROJECT, "--bucket", BUCKET,
+                           "--campaign", "mat-par", "--archives-dir", arch_dir,
+                           "--archive-builder", "prebuilt", "--jobs", "2", "--no-keep-raw"])
+    par_camp = os.path.join(raw_dir, "mat-par")
+    par_written = sorted(glob.glob(os.path.join(par_camp, "device-jsonl", "*.json")))
+    ok(rc_par == 0 and len(par_written) == 4 and par_counts == {"devices": 1, "ls": 2, "upload": 2}
+       and not os.path.exists(os.path.join(par_camp, "ddp-raw")),
+       f"--jobs 2 runs 2 sessions concurrently, deduplicates device/model/archive checks ({par_counts}), "
+       f"writes all 4 records and removes ddp-raw (rc={rc_par})")
 
 
 # ---------------------------------------------------------------- 6. native-benchmark rows
