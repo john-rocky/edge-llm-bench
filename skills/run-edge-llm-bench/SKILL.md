@@ -12,7 +12,9 @@ An ad-hoc measurement is done when three things hold, in this order:
    measurement),
 2. the runs **agree**: thermal state nominal at start (on Windows: `quietGate`
    `quiet`), decode trial spread within a few percent ((max - min) / median of one
-   regime's runs; the harness's checks flag past 5 %), no gate flag on the capture,
+   regime's runs; the harness's checks flag past 5 %), no gate flag on the capture
+   (on Windows, which runs no gate: every record's `conditions.protocolFlags` empty,
+   as the executor's exit 0 means),
 3. the record **names** the device, the engine version it observed, the
    quantization label and the token budget - a rate without those compares
    to nothing.
