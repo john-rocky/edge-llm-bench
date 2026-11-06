@@ -128,12 +128,13 @@ logs in `host-logs/<invocation>/`.
 whose build `windows/engine-pins.json` lists. Before the job is staged, the executor stops with `error: ...` and exit 1
 when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build.
 `BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`, which the summary's `device` column carries as
-written: another spelling is another device there. On a PC that has rows, pass the string they carry
-(`device.modelIdentifier` in `results/raw/<campaign>/*.jsonl`, the `device` column of `results/summary/device-runs.csv`);
-the 2026-11-05 rows carry `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. Unset, it is the host's `Win32_ComputerSystem`
-model, which names neither the CPU nor the GPU. For a new PC, write `<that model> (<CPU> / <GPU>)` from the names the
-skill's `Get-CimInstance` line prints, as the 2026-11-05 string did: the CPU's without `Intel(R) ` and `(TM)`, the NVIDIA
-GPU's (the one the rows run on) without `NVIDIA GeForce ` and its last word `GPU`; the Intel GPU's line is not used. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
+written: it names the hardware, as the other lanes' model codes do (`SM-S942Q`, `Mac16,9`), and another spelling is
+another device there. Build it from the names the skill's `Get-CimInstance` line prints, by the rule the 2026-11-05 rows
+followed: `<Win32_ComputerSystem model> (<CPU> / <GPU>)`, the CPU's name without `Intel(R) ` and `(TM)`, and the GPU
+the rows run on (the NVIDIA one) without `NVIDIA GeForce ` and its last word `GPU`; the Intel GPU's line is not used.
+On the 2026-11-05 PC that gives `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`, and a PC of the same model
+and parts gives the same string. Unset, it is the `Win32_ComputerSystem` model alone, which names neither the CPU nor
+the GPU. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
 
 A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has.
 
