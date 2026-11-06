@@ -262,7 +262,9 @@ read the flags in the first line before the spread.
   capture, holds their warm decode to it (the Windows lane runs none). A regime past it does not agree (`spread-rule`,
   the table at the top of `methodology/fairness-rules.md`): do not quote it. The page's Windows rows read the cold
   median, so a cold spread past 5 % means running the cell again under a new `--campaign` (the same name with `-r2`,
-  then `-r3`). The same `--campaign` appends the new records to the old `.jsonl`, and the two sittings do not pool.
+  then `-r3`). A warm spread past 5 % with the cold one within it needs no re-run: the measurement is done on its
+  cold median, and the warm median is not quoted. The same `--campaign` appends the new records to the old `.jsonl`,
+  and the two sittings do not pool.
   Rename the thrown-out sitting's `.jsonl` to `.jsonl.attempt1` before the re-run's `build_summary.py` (renamed after
   it, the line has to run once more): the summary reads `*.jsonl` only, and the repo keeps such a file as the audit
   trail.
