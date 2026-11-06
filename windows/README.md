@@ -88,8 +88,9 @@ default `winpc`) and `<yours>` a name of yours for your build. The `powershell` 
    non-debug DLLs of `...\runtime\3rdparty\tbb\bin`. The dispatch finds it on `PATH`, which the executor sets for that
    row only.
 
-4. Put the model files in `<models>` on the host and check each against the Hub's `lfs.sha256`; this step needs nothing
-   from steps 1 to 3 and can run while the build does. The repos are not gated, so no token is needed:
+4. Put the model files in `<models>` on the host and check each against the sha256 the Hub lists for it (`lfs.oid` in
+   the listing below); this step needs nothing from steps 1 to 3 and can run while the build does. The repos are not
+   gated, so no token is needed:
 
    ```powershell
    curl.exe -sSL --fail --create-dirs -o <models>\gemma-4-E2B-it.litertlm https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
