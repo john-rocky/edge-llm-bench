@@ -200,8 +200,8 @@ the red points and pending requests, and ends on one screen of next steps (`docs
 Mac, the DirectX shader compiler from the PyPI wheel, the engine built on the PC under a label of its own
 (`windows/build_litert_lm.ps1`, 14 to 49 min; LiteRT-LM has no Windows release asset) and the model files in one dir,
 checked against the Hub. `./bench doctor` has no Windows lane; the build script checks for MSVC, Git Bash, Python 3.13,
-a JDK and Bazelisk first (not Git LFS, LongPathsEnabled or the symlink right its header also lists). Windows cells do
-not go through `./bench matrix`:
+a JDK and Bazelisk first (not Git LFS, LongPathsEnabled or the symlink right its header also lists; the README's Setup
+has the lines that read them). Windows cells do not go through `./bench matrix`:
 
 ```bash
 cat > /tmp/one-windows.cells <<'EOF'

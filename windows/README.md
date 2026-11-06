@@ -26,7 +26,16 @@ workload, Git for Windows with LFS, Python 3.13 for all users, Bazelisk, a JDK w
 elevated shell or Developer Mode for symlinks. `./bench doctor` has no Windows lane. The build script checks for MSVC,
 Git Bash, Python 3.13 (`C:\Program Files\Python313`), `JAVA_HOME` and Bazelisk before anything else and stops at the
 first one missing, with `ERROR: <what>` as the log's last line; Git LFS, LongPathsEnabled and the symlink right are not
-among those checks.
+among those checks. They read on the host as:
+
+```powershell
+git lfs version
+(Get-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem).LongPathsEnabled
+([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+```
+
+A `git-lfs/<version>` line, `1`, and `True` for an elevated shell, which has the symlink right (Developer Mode is the
+header's other way to it); the administrator's SSH session on the 2026-11-06 PC printed all three.
 
 On the host, `<root>` holds the engines, the jobs and their logs, and `<models>` the model files. The executor's defaults
 are `%USERPROFILE%\bench` and `%USERPROFILE%\models`; `BENCH_WINDOWS_ROOT` and `BENCH_WINDOWS_MODEL_DIR` name others.
