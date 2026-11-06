@@ -60,6 +60,16 @@ with other work, `BENCH_WINDOWS_BUSY_FILE` and `BENCH_WINDOWS_BUSY_LABEL` name a
 - **System code page.** MSVC reads BOM-less UTF-8 sources in the system code page. On a Japanese Windows (932) the
   build stops in litert's `stablehlo_reduce_window.cc` with `C4430`, and a string literal elsewhere could change with no
   error, so the build script passes `/utf-8` to every action.
+- **Microsoft Defender and Bazel's Java.** On 2026-11-06 Defender stopped the Bazel server 90 s into a build on a new
+  output base, while Bazel unpacked the external repositories. It reported `Behavior:Win32/RansomJav.AB!MTB` on the JDK
+  that Bazel bundles (`%USERPROFILE%\_bazel_%USERNAME%\install\<hash>\embedded_tools\jdk\bin\java.exe`), stopped the
+  process, left the file in place and quarantined nothing. The same Bazel had built on this PC the day before. Bazel
+  prints only `Server terminated abruptly (error code: 2, error message: 'Stream removed')`; the event log
+  `Microsoft-Windows-Windows Defender/Operational` has the reason (events 1116 and 1117). The build went through after
+  adding both `Add-MpPreference -ExclusionProcess <that java.exe>` and
+  `Add-MpPreference -ExclusionPath <output base>,<source dir>`, with no detection in the three builds that followed.
+  `Remove-MpPreference` with the same values undoes them. A new Bazel version installs under a new `<hash>` dir, so the
+  process exclusion has to be added again.
 - **DirectX shader compiler.** With neither `dxcompiler.dll` nor `dxil.dll` beside the tool, Dawn's D3D12 backend does not
   create a device (`DynamicLib.Open: dxcompiler.dll Windows Error: 87`). The tag's `prebuilt/windows_x86_64` has neither,
   and the README note its build doc links to is not there; the PyPI wheel `litert-lm-api` carries both (`-DxcDir`).
