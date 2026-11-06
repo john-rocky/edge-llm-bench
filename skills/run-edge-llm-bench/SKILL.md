@@ -280,6 +280,18 @@ read the flags in the first line before the spread.
   line, never in `gpuSamples`). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
   processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06
   fix, hold a bare string where one did and `{}` where none did.
+- **Known, and none of it stops a cell or changes a counted rate:**
+  - Step 0's `./bench doctor` checks the Mac and the phone lanes, not a Windows PC: skip it for a Windows cell; the
+    README's setup reads and the build script's own checks are the preflight.
+  - Bazel prints `Header pruning has been disabled since Bazel failed to recognize the output of /showIncludes.`
+    during the build (seen on a Japanese Windows); the build goes on and the engine it stages runs.
+  - Run 1's cold record (`firstEver`, the cache build) is never counted, and its rates need not sit near the counted
+    runs', its first prefill on the GPU most of all.
+  - Each GPU run's raw log carries 60 lines of ``WARNING: [external/litert/litert/runtime/compiled_model.cc:1735]
+    Failed to get buffer requirements for tensor `kv_cache_k_<n>`.`` and `kv_cache_v_<n>` (the committed 2026-11-05
+    GPU row's logs too); the run passes every check.
+  - Microsoft Defender (`MsMpEng`) can lead `topProcesses` at close to one core while the gate reads `quiet`: the gate
+    tests the total CPU (under 25 %) and the NVIDIA memory in use, not single processes.
 
 ## Symptoms
 
