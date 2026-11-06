@@ -9,8 +9,8 @@ file, the host facts and the sha256 of every engine file in host.json. Windows P
       [-QuietWaitMinutes N]
 
 EngineDir holds the tools by name: litert\litert_lm_advanced_main_windows.exe and its DLLs (another build of it
-in the dir -LitertDirName names), llama-cpu\llama-cli.exe, llama-gpu\llama-cli.exe
-(scripts/windows_ssh_executor.py stages them).
+in the dir -LitertDirName names), llama-cpu\llama-cli.exe, llama-gpu\llama-cli.exe (Vulkan),
+llama-cuda\llama-cli.exe (CUDA, with the CUDA runtime DLLs beside it) (scripts/windows_ssh_executor.py stages them).
 A run already on disk (<id>_run<k>.json) is kept and skipped, so a stopped job can be started again.
 -PurgeEngineCaches removes the engines' caches beside the model files first (LiteRT-LM's program, weight and
 XNNPACK caches carry no engine version in their names): the first run of each row is then the one that writes them,
@@ -152,7 +152,7 @@ function Get-HostFacts {
         })
     $scheme = ((& powercfg /getactivescheme) -join " ")
     $binaries = [ordered]@{}
-    foreach ($tool in "litert", "llama-cpu", "llama-gpu", "openvino") {
+    foreach ($tool in "litert", "llama-cpu", "llama-gpu", "llama-cuda", "openvino") {
         $dir = Join-Path $EngineDir $(if ($tool -eq "litert") { $LitertDirName } else { $tool })
         if (-not (Test-Path $dir)) { continue }
         Get-ChildItem $dir -File | Where-Object { $_.Extension -in ".exe", ".dll" } | ForEach-Object {
@@ -245,7 +245,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
     $peak = [int64]0
     $timedOut = $false
     $gpuSamples = @()
-    $sampleGpu = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -eq "llama-gpu")
+    $sampleGpu = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")
     $nextGpu = 5.0
     while (-not $shell.HasExited) {
         if ($engine) {

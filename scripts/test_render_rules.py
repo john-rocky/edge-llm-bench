@@ -28,6 +28,7 @@ import argparse
 from contextlib import redirect_stdout
 import csv
 import datetime
+import hashlib
 import io
 import json
 import os
@@ -805,6 +806,7 @@ class CliAndUpstreamAdditions(unittest.TestCase):
             "windows litert-lm org/model long-context-1024-gen256 backend=gpu context-tokens=2048\n"
             "windows llama.cpp org/gguf short-chat context-tokens=2048\n"
             "windows llama.cpp org/gguf long-context-1024-gen256 backend=gpu context-tokens=2048\n"
+            "windows llama.cpp org/gguf short-chat backend=cuda context-tokens=2048\n"
         )
         with tempfile.TemporaryDirectory(prefix="render-rules-wincells-") as tmp:
             p = os.path.join(tmp, "win.cells")
@@ -819,7 +821,11 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 "windows litert-lm org/model short-chat context-tokens=2048\n":
                     "windows litert-lm needs backend=cpu|gpu",
                 "windows llama.cpp org/gguf short-chat backend=cpu context-tokens=2048\n":
-                    "windows llama.cpp takes no backend= (CPU) or backend=gpu (Vulkan)",
+                    "windows llama.cpp takes no backend= (CPU), backend=gpu (the Vulkan asset) or backend=cuda",
+                "windows litert-lm org/model short-chat backend=cuda context-tokens=2048\n":
+                    "backend='cuda' (want cpu|gpu|npu)",
+                "android llama.cpp org/gguf short-chat backend=cuda engine-build=b1\n":
+                    "backend='cuda' (want cpu|gpu|npu)",
                 "windows litert-lm org/model short-chat backend=gpu ynnpack=1 context-tokens=2048\n":
                     "ynnpack= is read for android litert-lm rows and mac / ios / windows litert-lm backend=cpu rows only",
                 "windows litert-lm org/model short-chat backend=gpu\n":
@@ -840,6 +846,7 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 fh.write(
                     "windows litert-lm org/model short-chat backend=cpu ynnpack=1 context-tokens=2048 runs=2\n"
                     "windows llama.cpp org/gguf short-chat backend=gpu context-tokens=2048 runs=2\n"
+                    "windows llama.cpp org/gguf short-chat backend=cuda context-tokens=2048 runs=2\n"
                 )
             litert_file = os.path.join(tmp, "model.litertlm")
             gguf_file = os.path.join(tmp, "model-Q4_0.gguf")
@@ -849,6 +856,8 @@ class CliAndUpstreamAdditions(unittest.TestCase):
             pins = run_windows_matrix.load_pins()
             vk_label = run_windows_matrix.pinned_label(pins, "gpu")
             vk_pin = pins[vk_label]
+            cuda_label = run_windows_matrix.pinned_label(pins, "cuda")
+            cuda_pin = pins[cuda_label]
             litert_sha = "ab" * 32
             extra_pins_path = os.path.join(tmp, "extra-pins.json")
             with open(extra_pins_path, "w") as fh:
@@ -864,6 +873,8 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                 for k, v in (vk_pin.get("dll_files") or {}).items():
                     binaries[f"llama-gpu/{k}"] = v
                 binaries["llama-gpu/llama-cli.exe"] = vk_pin["llama_cli_sha256"]
+                for k, v in run_windows_matrix.llama_files(cuda_pin).items():
+                    binaries[f"llama-cuda/{k}"] = v
                 (logs / "host.json").write_text(json.dumps({
                     "model": "Precision 7960 Tower", "os": "Windows 11 Pro",
                     "cpu": "Intel Xeon w7-3455", "gpus": [{"name": "NVIDIA RTX 4090"}],
@@ -898,7 +909,16 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     f"> {prompt_txt}\n{reply}\n"
                     "[ Prompt: 2500.0 t/s | Generation: 195.5 t/s ]\n"
                 )
-                for r_idx, console in (("r00", litert_console), ("r01", llama_console)):
+                cuda_console = (
+                    "ggml_cuda_init: found 1 CUDA devices (Total VRAM: 24564 MiB):\n"
+                    "  Device 0: NVIDIA RTX 4090, compute capability 8.9, VMM: yes, VRAM: 24564 MiB\n"
+                    "llama_prepare_model_devices: using device CUDA0 (NVIDIA RTX 4090) (0000:01:00.0) - 23000 MiB free\n"
+                    "load_tensors: CUDA0 model buffer size = 512.00 MiB\n"
+                    "load_tensors: offloaded 29/29 layers to GPU\n"
+                    f"> {prompt_txt}\n{reply}\n"
+                    "[ Prompt: 3100.0 t/s | Generation: 210.5 t/s ]\n"
+                )
+                for r_idx, console in (("r00", litert_console), ("r01", llama_console), ("r02", cuda_console)):
                     for run_i in (1, 2):
                         (logs / f"{r_idx}_run{run_i}.json").write_text(json.dumps({
                             "exitCode": 0, "timedOut": False,
@@ -921,7 +941,7 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     .read_text().splitlines()[-1]
                 )
                 self.assertTrue(unpinned_rec["engineVersion"].startswith("unknown ("))
-                return 0 if clean == total == 4 else 1
+                return 0 if clean == total == 6 else 1
 
             run_windows_matrix.register_executor("fake-lab", fake_executor)
             try:
@@ -956,6 +976,16 @@ class CliAndUpstreamAdditions(unittest.TestCase):
                     )
                 ) if ln.strip()
             ]
+            cuda_recs = [
+                json.loads(ln) for ln in open(
+                    os.path.join(raw_dir, "2026-10-29-win", "llama.cpp-cuda_org_gguf_short-chat.jsonl")
+                ) if ln.strip()
+            ]
+            self.assertEqual(cuda_recs[0]["engineVersion"], cuda_label)
+            self.assertEqual(cuda_recs[0]["conditions"]["ggmlDevice"], "CUDA0")
+            self.assertIn("Device 0: NVIDIA RTX 4090, compute capability 8.9",
+                          cuda_recs[0]["conditions"]["backendRegistered"])
+            self.assertEqual([r["metrics"].get("firstEver", False) for r in cuda_recs], [True, False])
             self.assertEqual(litert_recs[0]["engineVersion"], "21f113ea6eba")
             self.assertEqual(litert_recs[0]["timestamp"], "2026-10-29T12:00:01Z")
             self.assertEqual(
@@ -976,10 +1006,11 @@ class CliAndUpstreamAdditions(unittest.TestCase):
             j = json.load(open(os.path.join(dash_dir, "dashboard-v1.json")))
             by_arm = {c["arm"]: (c["status"], c["decode_tps"], c["n"]) for c in j["cells"]}
             # run 1 of litert-lm is firstEver (dropped); run 2 iter 1 is cold (80.0)
-            # run 1 of llama.cpp-gpu is firstEver (dropped); run 2 is cold (195.5)
+            # run 1 of llama.cpp-gpu is firstEver (dropped); run 2 is cold (195.5); llama.cpp-cuda the same (210.5)
             self.assertEqual(by_arm, {
                 "litert-lm-cpu-ynnpack": ("measured", 80.0, 1),
                 "llama.cpp-gpu": ("measured", 195.5, 1),
+                "llama.cpp-cuda": ("measured", 210.5, 1),
             })
 
 
@@ -1251,6 +1282,157 @@ class WindowsSshExecutor(unittest.TestCase):
             def no_ssh(*a, **k):
                 raise AssertionError("the check must not reach the host for rows without LiteRT-LM")
             ex.check_litert_build(plan, "unknown", runner=no_ssh)
+
+
+class WindowsCudaRow(unittest.TestCase):
+    """The llama.cpp CUDA row (backend=cuda): its own arm, tool dir and release asset, the CUDA runtime zip beside it."""
+
+    MAIN, CUDART = b"main zip", b"cudart zip"
+    CLI, CUDA_DLL, RT_DLL = "c" * 64, "d" * 64, "e" * 64
+
+    def pins(self):
+        def sha(data):
+            return hashlib.sha256(data).hexdigest()
+        return {
+            "vk": {"flavor": "vulkan", "artifact": "v.zip", "url": "https://example.invalid/v.zip", "size": 1,
+                   "sha256": "f" * 64, "llama_cli_sha256": self.CLI, "dll_files": {"ggml-vulkan.dll": "a" * 64}},
+            "cu": {"flavor": "cuda", "artifact": "llama-cuda.zip", "url": "https://example.invalid/llama-cuda.zip",
+                   "size": len(self.MAIN), "sha256": sha(self.MAIN),
+                   "cudart": {"artifact": "cudart.zip", "url": "https://example.invalid/cudart.zip",
+                              "size": len(self.CUDART), "sha256": sha(self.CUDART)},
+                   "llama_cli_sha256": self.CLI,
+                   "dll_files": {"ggml-cuda.dll": self.CUDA_DLL, "cudart64_13.dll": self.RT_DLL}},
+        }
+
+    def plan(self, tmp, rows):
+        cells = os.path.join(tmp, "win.cells")
+        with open(cells, "w") as fh:
+            fh.write("".join(f"windows llama.cpp org/gguf short-chat {r} file=g.gguf context-tokens=2048 runs=1\n"
+                             for r in rows))
+        specs = run_windows_matrix.parse_model_specs(["llama.cpp:org/gguf=g.gguf:10"])
+        return run_windows_matrix.plan_job([cells], "c", self.pins(), specs)
+
+    def test_the_cuda_row_is_its_own_arm_and_tool_on_the_gpu_rows_words(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincuda-") as tmp:
+            plan = self.plan(tmp, ["backend=gpu", "backend=cuda"])
+        self.assertEqual([(r.arm, r.tool) for r in plan.rows],
+                         [("llama.cpp-gpu", "llama-gpu"), ("llama.cpp-cuda", "llama-cuda")])
+        self.assertEqual(plan.job["engines"], {"llama-gpu": "v.zip", "llama-cuda": "llama-cuda.zip"})
+        vk, cu = (launch["args"] for launch in plan.job["launches"])
+        self.assertEqual(vk, cu)
+        self.assertNotIn("--device", cu)
+        self.assertIn("-ngl", cu)
+
+    def record(self, tmp, console, binaries):
+        plan = self.plan(tmp, ["backend=cuda"])
+        camp = pathlib.Path(tmp) / "c"
+        logs = camp / "host-logs" / "inv"
+        logs.mkdir(parents=True)
+        (logs / "host.json").write_text(json.dumps({"model": "PC", "binaries": binaries}))
+        (logs / "r00_run1.json").write_text(json.dumps({
+            "exitCode": 0, "timedOut": False, "start": "2026-11-06T23:00:00.0000000+09:00", "elapsedSeconds": 5,
+            "peakWorkingSetBytes": 1 << 30, "command": "llama-cli.exe"}))
+        (logs / "r00_run1.log").write_text(console)
+        clean, _ = run_windows_matrix.write_records(plan, camp, "inv", pins=self.pins(), harness="test")
+        with open(camp / f"{plan.rows[0].stem}.jsonl") as fh:
+            return clean, json.loads(fh.readline())
+
+    def console(self, device="CUDA0"):
+        prompt = run_windows_matrix.prompt_file("short-chat").read_text(encoding="utf-8")
+        return ("ggml_cuda_init: found 1 CUDA devices (Total VRAM: 16303 MiB):\n"
+                "  Device 0: NVIDIA GeForce RTX 5080 Laptop GPU, compute capability 12.0, VMM: yes, VRAM: 16303 MiB\n"
+                "0.00.178.886 I cmn  common_param: system_info: n_threads = 16 (n_threads_batch = 16) / 16 | "
+                "CUDA : ARCHS = 860,890,1200 | USE_GRAPHS = 1 | CPU : SSE3 = 1 |\n"
+                f"llama_prepare_model_devices: using device {device} (NVIDIA GeForce RTX 5080 Laptop GPU) "
+                "(0000:01:00.0) - 15232 MiB free\n"
+                f"load_tensors:      {device} model buffer size =  1407.73 MiB\n"
+                "load_tensors: offloaded 36/36 layers to GPU\n"
+                f"> {prompt}\nOn-device AI keeps your words on your own laptop and answers with no network at all.\n"
+                "[ Prompt: 1500.0 t/s | Generation: 200.0 t/s ]\n")
+
+    def host_files(self, **drop):
+        files = {f"llama-cuda/{k}": v for k, v in run_windows_matrix.llama_files(self.pins()["cu"]).items()}
+        return {k: v for k, v in files.items() if k.split("/", 1)[1] not in drop.get("names", ())}
+
+    def test_a_cuda_record_names_its_device_and_the_witness_reads_the_runtime_dlls(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincudarec-") as tmp:
+            clean, rec = self.record(tmp, self.console(), self.host_files())
+        self.assertEqual(clean, 1)
+        self.assertEqual((rec["runtime"], rec["engineVersion"]), ("llama.cpp-cuda", "cu"))
+        cond = rec["conditions"]
+        self.assertEqual((cond["ggmlDevice"], cond["protocolFlags"]), ("CUDA0", []))
+        self.assertIn("Device 0: NVIDIA GeForce RTX 5080 Laptop GPU, compute capability 12.0", cond["backendRegistered"])
+        self.assertIn("CUDA : ARCHS = 860,890,1200", cond["backendRegistered"])
+        self.assertTrue(rec["metrics"]["firstEver"])
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincudart-") as tmp:
+            _, rec = self.record(tmp, self.console(), self.host_files(names=("cudart64_13.dll",)))
+        self.assertEqual(rec["engineVersion"], "unknown (cudart64_13.dll unmatched in cu)")
+
+    def test_a_cuda_row_that_ran_on_vulkan_is_flagged(self):
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincudavk-") as tmp:
+            clean, rec = self.record(tmp, self.console(device="Vulkan0"), self.host_files())
+        self.assertEqual(clean, 0)
+        self.assertIsNone(rec["conditions"]["ggmlDevice"])
+        self.assertIn("backend-not-registered", rec["conditions"]["protocolFlags"])
+
+    def test_fetch_engines_fetches_the_cuda_runtime_zip_beside_its_own(self):
+        pins, fetched = self.pins(), []
+        body = {pins["cu"]["url"]: self.MAIN, pins["cu"]["cudart"]["url"]: self.CUDART}
+
+        def fetch(url, dest):
+            fetched.append(url)
+            pathlib.Path(dest).write_bytes(body[url])
+
+        with tempfile.TemporaryDirectory(prefix="render-rules-wincudafetch-") as tmp, redirect_stdout(io.StringIO()):
+            out = run_windows_matrix.fetch_engines(pathlib.Path(tmp), pins, ["cu"], fetch=fetch)
+            self.assertEqual([p.name for p in out["cu"]], ["llama-cuda.zip", "cudart.zip"])
+            self.assertEqual([p.read_bytes() for p in out["cu"]], [self.MAIN, self.CUDART])
+            run_windows_matrix.fetch_engines(pathlib.Path(tmp), pins, ["cu"], fetch=fetch)
+            self.assertEqual(len(fetched), 2)  # both verified on disk: nothing fetched again
+            out["cu"][1].unlink()  # the runtime zip gone: the dir moves aside and both come again
+            run_windows_matrix.fetch_engines(pathlib.Path(tmp), pins, ["cu"], fetch=fetch)
+            self.assertEqual(len(fetched), 4)
+            body[pins["cu"]["cudart"]["url"]] = b"tampered!!"
+            with self.assertRaisesRegex(ValueError, "cudart.zip did not match its pin"):
+                run_windows_matrix.fetch_engines(pathlib.Path(tmp) / "other", pins, ["cu"], fetch=fetch)
+            self.assertFalse(list((pathlib.Path(tmp) / "other").rglob("*.download")))
+
+    def stage(self, listings):
+        """windows_ssh_executor.stage_llama with the host faked: each file listing it asks for is the next of
+        `listings` (the names whose pinned sha256 the host holds). -> (scp targets, PowerShell commands)"""
+        import windows_ssh_executor as ex
+        pins, ups, commands = self.pins(), [], []
+        want = run_windows_matrix.llama_files(pins["cu"])
+
+        def fake_ssh(command, timeout=300, check=True, runner=None):
+            del timeout, check, runner
+            commands.append(command)
+            out = ""
+            if command.startswith("foreach ($n in "):
+                out = "".join(f"FILE {n} {want[n]}\n" for n in listings.pop(0))
+            return subprocess.CompletedProcess([], 0, out, "")
+
+        plan = run_windows_matrix.Plan(rows=[], models={}, labels={"llama-cuda": "cu"}, job={})
+        zips = {"cu": [pathlib.Path("/m/llama-cuda.zip"), pathlib.Path("/m/cudart.zip")]}
+        with patch.dict(os.environ, {"BENCH_WINDOWS_ROOT": r"C:\b"}), patch.object(ex, "ssh", fake_ssh), \
+                patch.object(ex, "scp_up", lambda local, remote, runner=None: ups.append(remote)), \
+                patch.object(ex.rwm, "load_pins", lambda: pins), \
+                patch.object(ex.rwm, "fetch_engines", lambda *a, **k: zips), redirect_stdout(io.StringIO()):
+            ex.stage_llama(plan, argparse.Namespace(engines_dir=None))
+        return ups, commands
+
+    def test_stage_puts_both_zips_in_the_cuda_dir_and_checks_every_pinned_file(self):
+        everything = ["llama-cli.exe", "ggml-cuda.dll", "cudart64_13.dll"]
+        # only llama-cli.exe matches (b11721's three assets carry one exe): the dir is staged, both zips
+        ups, commands = self.stage([["llama-cli.exe"], everything])
+        self.assertEqual(ups, [r"C:\b\engines\llama-cuda\llama-cuda.zip", r"C:\b\engines\llama-cuda\cudart.zip"])
+        self.assertEqual(len([c for c in commands if "Expand-Archive" in c]), 2)
+        ups, _ = self.stage([everything])  # every pinned file on the host already: nothing goes up
+        self.assertEqual(ups, [])
+        import windows_ssh_executor as ex
+        with self.assertRaisesRegex(RuntimeError, r"cudart64_13\.dll differ from cu after staging"):
+            self.stage([[], ["llama-cli.exe", "ggml-cuda.dll"]])
+        self.assertTrue(callable(ex.host_mismatch))
 
 
 if __name__ == "__main__":

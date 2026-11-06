@@ -4,7 +4,7 @@
 The Windows counterpart of scripts/run_mac_matrix.py and android/ddp/run_ddp.py. It plans the
 `windows` rows of one or more cells files (matrices/README.md grammar) using android/bench/run_cell.py's
 command rules, fetches and SHA256-verifies pinned Windows x64 llama.cpp release assets from
-windows/engine-pins.json, dispatches execution to a pluggable executor (`register_executor`), and
+windows/engine-pins.json (a CUDA label's CUDA runtime zip with it), dispatches execution to a pluggable executor (`register_executor`), and
 writes schema/result.v1.json records (`<campaign>/<stem>.jsonl` + `decoded/*.decoded.txt`) from the
 landed host logs (`<campaign>/<log_subdir>/<invocation>/`).
 
@@ -48,7 +48,13 @@ RSS_BASIS = "PeakWorkingSet64 of the engine process, read every 0.5 s while it r
 NAMESPACE = uuid.UUID("5d3f8a2e-1c47-4b8e-9a51-7e2c0f6b9d14")
 GPU_SUBSTR = "NVIDIA"
 ROW_KEYS = {"backend", "context-tokens", "runs", "ynnpack", "local", "file", "exclude", "manual"}
-LLAMA_FLAVOR = {"": "cpu", "gpu": "vulkan"}
+# A llama.cpp row's backend= -> the registry flavor of its release asset, and the tool dir it runs from on the host.
+# backend=gpu is the Vulkan asset (the arm llama.cpp-gpu), backend=cuda the CUDA one (llama.cpp-cuda): two arms, so the
+# two rows of one model and task land in capture files and cells of their own.
+LLAMA_FLAVOR = {"": "cpu", "gpu": "vulkan", "cuda": "cuda"}
+LLAMA_TOOL = {"": "llama-cpu", "gpu": "llama-gpu", "cuda": "llama-cuda"}
+# The device a GPU row's own `using device` line has to name: Vulkan<n> on the Vulkan asset, CUDA<n> on the CUDA one.
+LLAMA_DEVICE_PREFIX = {"gpu": "Vulkan", "cuda": "CUDA"}
 ANDROID_FLAGS = ("-t", "-ub", "--device")
 UNSAFE = frozenset(' \t"%!^&|<>')
 # run_cell's --chat-template-kwargs value for a Gemma 4 GGUF, quoted for sh: on the host one word, quoted for
@@ -103,7 +109,7 @@ class WinRow:
     def tool(self) -> str:
         if self.runtime == "litert-lm":
             return "litert"
-        return "llama-gpu" if self.backend else "llama-cpu"
+        return LLAMA_TOOL[self.backend]
 
 
 @dataclasses.dataclass
@@ -148,6 +154,17 @@ def load_litert_pins(pins_path: pathlib.Path = PINS_PATH) -> dict:
     return pins
 
 
+def pin_assets(pin: dict) -> list:
+    """The release assets a llama.cpp label stages, its own zip first: a CUDA label names the release's CUDA runtime
+    zip (`cudart`: the CUDA runtime and cuBLAS DLLs its CUDA backend loads) beside it, expanded into the same dir."""
+    return [pin] + ([pin["cudart"]] if pin.get("cudart") else [])
+
+
+def llama_files(pin: dict) -> dict:
+    """{file name: sha256} of the files of a label the witness reads on the host: llama-cli.exe and its dll_files."""
+    return {"llama-cli.exe": pin["llama_cli_sha256"], **(pin.get("dll_files") or {})}
+
+
 def pinned_label(pins: dict, backend: str) -> str:
     flavor = LLAMA_FLAVOR[backend]
     labels = [k for k, v in pins.items() if v.get("flavor") == flavor]
@@ -158,30 +175,34 @@ def pinned_label(pins: dict, backend: str) -> str:
 
 def fetch_engines(engines_dir: pathlib.Path, pins: dict, labels: list, dry_run: bool = False,
                   fetch=urllib.request.urlretrieve) -> dict:
-    """Download and verify pinned Windows llama.cpp zip assets; mismatching dirs move aside."""
+    """Download and verify pinned Windows llama.cpp zip assets (pin_assets: a CUDA label's runtime zip as well) into
+    <engines_dir>/llama-<label>/; a dir with an asset missing or mismatching moves aside. -> {label: [zip paths]}"""
 
-    def matches(p: pathlib.Path, pin: dict) -> bool:
-        return p.is_file() and p.stat().st_size == pin["size"] and file_sha256(p) == pin["sha256"]
+    def matches(p: pathlib.Path, asset: dict) -> bool:
+        return p.is_file() and p.stat().st_size == asset["size"] and file_sha256(p) == asset["sha256"]
 
     out = {}
     for label in labels:
-        pin = pins[label]
-        dest = out[label] = engines_dir / f"llama-{label}" / pin["artifact"]
-        if dry_run or matches(dest, pin):
-            print(f"  llama.cpp {label}: {dest} ({pin['sha256'][:12]})")
+        assets = pin_assets(pins[label])
+        dests = out[label] = [engines_dir / f"llama-{label}" / a["artifact"] for a in assets]
+        if dry_run or all(matches(d, a) for d, a in zip(dests, assets)):
+            for dest, asset in zip(dests, assets):
+                print(f"  llama.cpp {label}: {dest} ({asset['sha256'][:12]})")
             continue
-        if dest.parent.exists():
+        folder = dests[0].parent
+        if folder.exists():
             stamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
-            aside = dest.parent.with_name(f"{dest.parent.name}.unverified-{stamp}")
-            print(f"  llama.cpp {label}: moving {dest.parent} aside to {aside}")
-            dest.parent.rename(aside)
-        dest.parent.mkdir(parents=True)
-        tmp = dest.with_name(dest.name + ".download")
-        fetch(pin["url"], str(tmp))
-        if not matches(tmp, pin):
-            tmp.unlink(missing_ok=True)
-            raise ValueError(f"llama.cpp {label}: {pin['url']} did not match its pin")
-        tmp.rename(dest)
+            aside = folder.with_name(f"{folder.name}.unverified-{stamp}")
+            print(f"  llama.cpp {label}: moving {folder} aside to {aside}")
+            folder.rename(aside)
+        folder.mkdir(parents=True)
+        for dest, asset in zip(dests, assets):
+            tmp = dest.with_name(dest.name + ".download")
+            fetch(asset["url"], str(tmp))
+            if not matches(tmp, asset):
+                tmp.unlink(missing_ok=True)
+                raise ValueError(f"llama.cpp {label}: {asset['url']} did not match its pin")
+            tmp.rename(dest)
     return out
 
 
@@ -209,7 +230,7 @@ def load_rows(cells_files: list, engines: list | None = None) -> list:
                     problems.append(f"{where}: litert-lm needs backend=cpu|gpu|npu")
             elif rt == "llama.cpp":
                 if backend not in LLAMA_FLAVOR:
-                    problems.append(f"{where}: llama.cpp takes no backend= (CPU) or backend=gpu")
+                    problems.append(f"{where}: llama.cpp takes no backend= (CPU), backend=gpu (Vulkan) or backend=cuda")
             else:
                 problems.append(f"{where}: runtime must be litert-lm or llama.cpp")
             if task.startswith(("native-", "endurance-")):
@@ -252,10 +273,12 @@ def task_budget(task: str) -> int:
 
 
 def lab_args(row: WinRow, model_filename: str, budget: int, gpu_substr: str = GPU_SUBSTR) -> list:
-    """run_cell.engine_command's argv for a Windows row, less Android-specific flags."""
+    """run_cell.engine_command's argv for a Windows row, less Android-specific flags. The CUDA row takes the GPU
+    row's line (every layer on the device, flash attention on): the --device it names is an Android device and is
+    dropped here, and each release asset loads one GPU backend, so both GPU rows run the same words on their own asset."""
     cmd = run_cell.engine_command(
         row.runtime,
-        row.backend or None,
+        ("gpu" if row.backend == "cuda" else row.backend) or None,
         f"{{model:{model_filename}}}",
         row.task,
         f"{{job}}\\prompts\\{row.task}.txt",
@@ -444,7 +467,8 @@ def _launch_fields(row: WinRow, console: str, ctx: dict, gpu_substr: str = GPU_S
     if row.backend:
         lines = parsers.llama_backend_lines(console)
         used = [ln.split(": using device ")[1] for ln in lines
-                if ": using device " in ln and gpu_substr in ln]
+                if ": using device " in ln and gpu_substr in ln
+                and ln.split(": using device ")[1].startswith(LLAMA_DEVICE_PREFIX[row.backend])]
         device = used[0].split(" (")[0] if used else None
         cond.update(ggmlDevice=device, nGpuLayers=99, flashAttn="on", backendRegistered=lines)
         off = device is None or not parsers.llama_backend_registered(lines, device, device, "llama-cli")
@@ -498,8 +522,7 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
             artifact = f"{LITERT_EXE} sha256:{shas.get(LITERT_EXE)}"
         else:
             build = version = pinned_label(pins, row.backend)
-            want = dict(pins[build].get("dll_files") or {})
-            want["llama-cli.exe"] = pins[build]["llama_cli_sha256"]
+            want = llama_files(pins[build])
             bad = sorted(n for n, sha in want.items() if shas.get(f"{row.tool}/{n}") != sha)
             if bad:
                 version = f"unknown ({', '.join(bad)} unmatched in {build})"

@@ -1,5 +1,5 @@
 {
-  "_doc": "Windows x64 engine pins for scripts/run_windows_matrix.py. llama.cpp: the GitHub release asset (artifact, url, size, sha256) and the sha256s of llama-cli.exe and its DLLs, checked by the witness against the binaries observed on the host. litert-lm: LiteRT-LM's GitHub release ships no Windows binary, so an entry names a build made on the bench host by windows/build_litert_lm.ps1, which writes this entry as pins.json; the sha256s are that build's (litert_lm_advanced_main_windows_sha256, dll_files). A build on another host is another label: BENCH_EXTRA_PINS registers it under windows_litert-lm, or windows_llama.cpp for an unlisted llama.cpp (add-only).",
+  "_doc": "Windows x64 engine pins for scripts/run_windows_matrix.py. llama.cpp: the GitHub release asset (artifact, url, size, sha256) and the sha256s of llama-cli.exe and its DLLs, checked by the witness against the binaries observed on the host; a CUDA asset names the same release's CUDA runtime zip in cudart (artifact, url, size, sha256), which the executor expands into the same dir, and its dll_files hold that zip's DLLs too. litert-lm: LiteRT-LM's GitHub release ships no Windows binary, so an entry names a build made on the bench host by windows/build_litert_lm.ps1, which writes this entry as pins.json; the sha256s are that build's (litert_lm_advanced_main_windows_sha256, dll_files). A build on another host is another label: BENCH_EXTRA_PINS registers it under windows_litert-lm, or windows_llama.cpp for an unlisted llama.cpp (add-only).",
   "litert-lm": {
     "v0.19.0": {
       "tag": "v0.19.0",
@@ -48,6 +48,32 @@
       "dll_files": {
         "ggml-base.dll": "830d08955017d2e9b673d5fa44ca07d3d7fd987c250017366aac29e0f0c45e4f",
         "ggml-vulkan.dll": "15d11335d57311c721810b810a6e2842d1bd32a459093e574ecdecaf2da22b2d",
+        "ggml.dll": "40b0f218c4f018af980a0a695b97721b560a1a598ace2d7686028c9443234892",
+        "llama-cli-impl.dll": "e1448efddfa4a3f06c0feece71a76400a1a78652b7ec449a47b801a4b419b145",
+        "llama-common.dll": "8272348ee6890f58f585f29630bbe23a314d5e6c8b33036b0132b96175e3ae25",
+        "llama.dll": "d22ed15c25355ba7f25b1f529b717beb144a8034fbdfa70598f3547be5743365"
+      }
+    },
+    "b11721-win-cuda-13.4-x64": {
+      "tag": "b11721",
+      "flavor": "cuda",
+      "artifact": "llama-b11721-bin-win-cuda-13.4-x64.zip",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11721/llama-b11721-bin-win-cuda-13.4-x64.zip",
+      "size": 155120624,
+      "sha256": "3940b9610b05677978e79e4dca6e9002deccb20442b629a51d08019312ed3532",
+      "cudart": {
+        "artifact": "cudart-llama-bin-win-cuda-13.4-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11721/cudart-llama-bin-win-cuda-13.4-x64.zip",
+        "size": 423535356,
+        "sha256": "738f8c251ac22b70c3ae6f83a10cf222725df0395246a2cf58f32bdb85fbe668"
+      },
+      "llama_cli_sha256": "dd20bfed060a0c0b6f1c521d43e51f3b83c0013c2742336479f7ed5d905f1c35",
+      "dll_files": {
+        "cublas64_13.dll": "1119dbca0a808e0c8850bb4221e330daf0b5ddb348d62d37b6ac533854723df9",
+        "cublasLt64_13.dll": "0f5bc315fef706b5626248ebd74e8a48a9e82fa2f0cad38330f5f70984913107",
+        "cudart64_13.dll": "05bfafcb97bd53b0089568a96e1e5bd6921637bd0853ff7f5342bd31a6a16890",
+        "ggml-base.dll": "830d08955017d2e9b673d5fa44ca07d3d7fd987c250017366aac29e0f0c45e4f",
+        "ggml-cuda.dll": "2ff82a7d2a187857d49f5453afd4c05dde625532a2d11c24980d0543d9d30023",
         "ggml.dll": "40b0f218c4f018af980a0a695b97721b560a1a598ace2d7686028c9443234892",
         "llama-cli-impl.dll": "e1448efddfa4a3f06c0feece71a76400a1a78652b7ec449a47b801a4b419b145",
         "llama-common.dll": "8272348ee6890f58f585f29630bbe23a314d5e6c8b33036b0132b96175e3ae25",

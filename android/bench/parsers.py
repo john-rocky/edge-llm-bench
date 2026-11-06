@@ -334,12 +334,20 @@ def llama_bench_device_lines(tests):
 #   load_tensors: offloaded 29/29 layers to GPU
 #   load_tensors:         HTP0 model buffer size =   406.58 MiB   (also CPU / OpenCL)
 # The build loads both backends whichever device runs, so the registry lines of both appear.
+# The Windows CUDA release asset (scripts/run_windows_matrix.py, backend=cuda) adds its registry's device lines and
+# the kernels the build carries (b11721's CUDA 13.4 asset on the RTX 5080 Laptop, 2026-11-07):
+#   ggml_cuda_init: found 1 CUDA devices (Total VRAM: 16302 MiB):
+#     Device 0: NVIDIA GeForce RTX 5080 Laptop GPU, compute capability 12.0, VMM: yes, VRAM: 16302 MiB
+#   common_param: system_info: n_threads = 16 (n_threads_batch = 16) / 16 | CUDA : ARCHS = 750,800,860,890,900,1200,1210 | ...
 # A -lv 4 line carries a "<m>.<s>.<ms>.<us> <level> " prefix; the match starts after it.
 BACKEND_LINE_PATTERNS = (
     re.compile(r"ggml-hex: Hexagon Arch version v\d+, DMA64 (?:enabled|disabled)"),
     re.compile(r"ggml_opencl: device: '[^']+'"),
     re.compile(r"ggml_opencl: OpenCL driver: .+"),
     re.compile(r"ggml_opencl: kernel cache enabled at '[^']*'"),
+    re.compile(r"ggml_cuda_init: found \d+ CUDA devices"),
+    re.compile(r"Device \d+: [^,]+, compute capability \d+\.\d+"),
+    re.compile(r"CUDA : ARCHS = [\d,]+"),
     re.compile(r"\w+: using device \S+ \(.*"),
     re.compile(r"\w+: offloaded \d+/\d+ layers to GPU"),
     re.compile(r"\w+:\s+\S+ model buffer size =\s*[\d.]+ MiB"),

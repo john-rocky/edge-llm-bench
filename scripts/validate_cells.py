@@ -87,6 +87,9 @@ EXECUTORCH_BACKENDS["ios"] = {"xnnpack", "mlx"}
 # provider (cpu = the CPU EP; webgpu = the WebGPU plugin EP, Mac only); the Core AI stock arm
 # names the Neural Engine its engine is pinned to (arm core-ai-ane, docs/coreai-arm-v1.md)
 BACKENDS_OF = {"onnxruntime-genai": {"cpu", "webgpu"}, "core-ai": {"ane"}}
+# per (platform, runtime) on top of those: a windows llama.cpp row's cuda, the CUDA release asset
+# (arm llama.cpp-cuda; scripts/run_windows_matrix.py)
+BACKENDS_OF_PLATFORM = {("windows", "llama.cpp"): BACKENDS | {"cuda"}}
 # the Core AI stock arm's catalog ids: Apple's own exports on the stock path (bundle folders
 # stock_*, CoreAIRuntime.bundleSpec), the export's KV allocation in the id
 COREAI_STOCK_ID = re.compile(r"^core-ai/.+-stock-ctx(\d+|default)(?:-[a-z0-9]+)?$")
@@ -149,8 +152,9 @@ def parse_line(line):
         elif k in STR_KEYS:
             if not v:
                 raise ValueError(f"{k}= needs a value")
-            if k == "backend" and v not in BACKENDS_OF.get(rt, BACKENDS):
-                raise ValueError(f"backend={v!r} (want {'|'.join(sorted(BACKENDS_OF.get(rt, BACKENDS)))})")
+            allowed = BACKENDS_OF_PLATFORM.get((plat, rt)) or BACKENDS_OF.get(rt, BACKENDS)
+            if k == "backend" and v not in allowed:
+                raise ValueError(f"backend={v!r} (want {'|'.join(sorted(allowed))})")
             if k == "exclude-on":
                 parse_exclude_on(v)
             if k == "output-cap" and v not in OUTPUT_CAPS:
@@ -364,8 +368,9 @@ def validate_file(path, catalog=None, require_anchor=False, schedule_path=DEFAUL
                                   "(scripts/run_windows_matrix.py)")
                 elif rt == "litert-lm" and opts.get("backend") not in CPU_GPU | {"npu"}:
                     errors.append(f"{where}: windows litert-lm needs backend=cpu|gpu|npu (arm identity)")
-                elif rt == "llama.cpp" and opts.get("backend") not in (None, "gpu"):
-                    errors.append(f"{where}: windows llama.cpp takes no backend= (CPU) or backend=gpu (Vulkan)")
+                elif rt == "llama.cpp" and opts.get("backend") not in (None, "gpu", "cuda"):
+                    errors.append(f"{where}: windows llama.cpp takes no backend= (CPU), backend=gpu (the Vulkan "
+                                  "asset) or backend=cuda (the CUDA asset)")
                 if (NATIVE_TASK.match(task) or ENDURANCE_TASK.match(task) or ASR_TASK.match(task)
                         or VL_TASK.match(task) or TTS_TASK.match(task)):
                     errors.append(f"{where}: windows v1 supports prompt tasks only")

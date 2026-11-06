@@ -2,8 +2,8 @@
 """Runs the windows rows of cells files on a Windows PC reached over SSH.
 
 The transport of scripts/run_windows_matrix.py (`register_executor`, the runner's contract
-fn(plan, campaign_dir, args) -> int): it stages the pinned llama.cpp zips and windows/run_job.ps1 on the
-host, starts the job detached so that it outlives the SSH connection, waits for it, pulls the logs into
+fn(plan, campaign_dir, args) -> int): it stages the pinned llama.cpp zips (a CUDA label's CUDA runtime zip with
+its own) and windows/run_job.ps1 on the host, starts the job detached so that it outlives the SSH connection, waits for it, pulls the logs into
 <campaign>/host-logs/<invocation>/ and writes the records with run_windows_matrix.write_records.
 
   scripts/windows_ssh_executor.py matrices/dashboard-windows-v1.cells --campaign <date>-windows \\
@@ -96,24 +96,38 @@ def scp_down(remote: str, local: pathlib.Path, runner=subprocess.run) -> None:
     runner(["scp", "-q", "-r", source, str(local)], check=True, timeout=1800)
 
 
+def host_mismatch(remote_dir: str, want: dict) -> list:
+    """The names in want ({file name: sha256}) whose file in remote_dir on the host is missing or another sha256."""
+    names = ",".join(f"'{name}'" for name in sorted(want))
+    listing = ssh(f"foreach ($n in {names}) {{ $p = Join-Path '{remote_dir}' $n; if (Test-Path $p) "
+                  "{ 'FILE ' + $n + ' ' + (Get-FileHash -Algorithm SHA256 $p).Hash.ToLower() } }").stdout
+    have = dict(line.split()[1:3] for line in listing.splitlines() if line.startswith("FILE ") and len(line.split()) == 3)
+    return sorted(name for name, sha in want.items() if have.get(name) != sha)
+
+
 def stage_llama(plan: rwm.Plan, args) -> None:
-    """The pinned zips, verified on this machine, expanded on the host under engines\\<tool>\\."""
+    """The pinned zips, verified on this machine, expanded on the host under engines\\<tool>\\ (a CUDA label's runtime
+    zip into the same dir). A dir whose llama-cli.exe and dll_files all hold the label's sha256s is left as it is: the
+    exe alone does not tell the assets apart (b11721's CPU, Vulkan and CUDA zips carry one llama-cli.exe)."""
     if not plan.labels:
         return
     pins = rwm.load_pins()
     zips = rwm.fetch_engines(args.engines_dir, pins, sorted(set(plan.labels.values())))
     for tool, label in sorted(plan.labels.items()):
-        artifact = pins[label]["artifact"]
         remote_dir = f"{root()}\\engines\\{tool}"
-        have = ssh(f"$p = '{remote_dir}\\llama-cli.exe'; if (Test-Path $p) "
-                   "{ (Get-FileHash -Algorithm SHA256 $p).Hash.ToLower() }").stdout.strip()
-        if have == pins[label]["llama_cli_sha256"]:
+        want = rwm.llama_files(pins[label])
+        if not host_mismatch(remote_dir, want):
             print(f"  {tool}: {label} already on the host")
             continue
         ssh(f"New-Item -ItemType Directory -Force '{remote_dir}' | Out-Null")
-        scp_up(zips[label], f"{remote_dir}\\{artifact}")
-        ssh(f"Expand-Archive -Force '{remote_dir}\\{artifact}' '{remote_dir}'; "
-            f"Remove-Item '{remote_dir}\\{artifact}'", timeout=600)
+        for zip_path in zips[label]:
+            scp_up(zip_path, f"{remote_dir}\\{zip_path.name}")
+            # PowerShell 5.1's Expand-Archive draws a progress bar per write unless told not to
+            ssh(f"$ProgressPreference = 'SilentlyContinue'; Expand-Archive -Force '{remote_dir}\\{zip_path.name}' "
+                f"'{remote_dir}'; Remove-Item '{remote_dir}\\{zip_path.name}'", timeout=600)
+        bad = host_mismatch(remote_dir, want)
+        if bad:
+            raise RuntimeError(f"{remote_dir}: {', '.join(bad)} differ from {label} after staging")
         print(f"  {tool}: {label} expanded on the host")
 
 
