@@ -97,8 +97,11 @@ default `winpc`) and `<yours>` a name of yours for your build. The `powershell` 
    (Get-FileHash -Algorithm SHA256 <models>\gemma-4-E2B-it.litertlm).Hash.ToLower()
    ```
 
-   The Hub's sha256 and size of each file in one repo, read on the Mac (the GGUF of the llama.cpp rows is in
-   `unsloth/gemma-4-E2B-it-GGUF`):
+   The Hub's sha256 and size of each file in one repo, read on the Mac (the command reads
+   `litert-community/gemma-4-E2B-it-litert-lm`; put another repo's id in its place for the other files). The Gemma
+   rows' files are in that repo and `unsloth/gemma-4-E2B-it-GGUF`; the Qwen3 rows' in `litert-community/Qwen3-0.6B`,
+   `litert-community/Qwen3-1.7B` and `litert-community/Qwen3-4B` (LiteRT-LM) and `unsloth/Qwen3-0.6B-GGUF`,
+   `-1.7B-GGUF` and `-4B-GGUF` (llama.cpp); the cells file names each row's file with `file=`:
 
    ```bash
    curl -s https://huggingface.co/api/models/litert-community/gemma-4-E2B-it-litert-lm/tree/main | python3 -c 'import json, sys; [print(f["lfs"]["oid"], f["size"], f["path"]) for f in json.load(sys.stdin) if "lfs" in f]'
@@ -114,7 +117,14 @@ python3 scripts/windows_ssh_executor.py matrices/dashboard-windows-v1.cells --ca
     --litert-label v0.19.0-<yours> \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it.litertlm:2588147712 \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it_intel_PTL.litertlm:2948333568 \
-    --model-file llama.cpp:unsloth/gemma-4-E2B-it-GGUF=gemma-4-E2B-it-Q4_K_M.gguf:3106738272
+    --model-file llama.cpp:unsloth/gemma-4-E2B-it-GGUF=gemma-4-E2B-it-Q4_K_M.gguf:3106738272 \
+    --model-file litert-lm:litert-community/Qwen3-0.6B=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm:343490560 \
+    --model-file litert-lm:litert-community/Qwen3-1.7B=Qwen3_1.7B.litertlm:1754890240 \
+    --model-file litert-lm:litert-community/Qwen3-1.7B=Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm:977184032 \
+    --model-file litert-lm:litert-community/Qwen3-4B=qwen3_4b_mixed_int4.litertlm:2272935936 \
+    --model-file llama.cpp:unsloth/Qwen3-0.6B-GGUF=Qwen3-0.6B-Q4_K_M.gguf:396705472 \
+    --model-file llama.cpp:unsloth/Qwen3-1.7B-GGUF=Qwen3-1.7B-Q4_K_M.gguf:1107409472 \
+    --model-file llama.cpp:unsloth/Qwen3-4B-GGUF=Qwen3-4B-Q4_K_M.gguf:2497281312
 python3 scripts/build_summary.py
 python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells
 ```
@@ -226,6 +236,15 @@ an older one over), leave the two variables unset, and remove it at the end.
   nine runs of nine). The Intel GPU and `--define=litert_runtime_link_mode=dynamic` have not been tried.
 - **The NPU file is per SoC.** `backend=npu` rows name the bundle of their SoC with `file=` and take no
   `context-tokens=`: the bundle's KV cache is fixed at export.
+- **The Qwen3 rows.** They load the files the Android rows of `matrices/dashboard-text-v1.cells` load, under the same
+  catalog ids. None of the three repos (`litert-community/Qwen3-0.6B`, `-1.7B`, `-4B`) lists an Intel bundle (read
+  2026-11-07), so the Qwen3 blocks have no `backend=npu` row. Three of their four LiteRT-LM files were replaced on the
+  Hub under the same names on 2026-10-31 (`Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`, `Qwen3_1.7B.litertlm`,
+  `qwen3_4b_mixed_int4.litertlm`; the cards: new LiteRT Torch exports with GPU composite ops and external weights). The
+  runner labels a file by its name, and the names did not change, so by name alone a record would carry the earlier
+  content's label. A record of one of those files from that UTC date on takes the replacement's recipe label from
+  `REPLACED_FILE_LABELS` in `scripts/bench_common.py` instead, the table the summary corrects the Android rows of the
+  same files with; the summary applies it to the Windows rows too.
 
 ## Reproducibility
 
@@ -297,3 +316,20 @@ quiet. From the first to the second, the cold decode median moved by -1.0 % on `
 above) take every logical CPU, the three runs during which three or four sessions opened read 9 to 19 % below the mean
 of the three with two or none: six runs, a correlation, the cause not established. Keep other SSH clients off the host
 during a sitting.
+
+Two more sittings, `2026-11-07-windows-qwen3-s1` and `2026-11-07-windows-qwen3`, ran the column with the Qwen3 rows added
+(21 rows, 63 runs each), back to back at 02:56 and 03:57 JST on 2026-11-07 (2026-11-06 in UTC, the date of the records'
+`timestamp`). Their `host.json` lists the CUDA sittings' 187 engine files unchanged; the sha256 of the ten model files,
+read on the host before the first, equal the Hub's; the invocation was the Run section's, and every run was clean and
+quiet. From the first to the second, the cold decode median of the 16 rows counted in both moved by -3.6 to +3.3 %
+(Gemma 4 E2B's `litert-lm-gpu` -3.6 %, Qwen3 4B's `llama.cpp-gpu` +3.3 %, the other 14 within 2.3 %). Five rows read
+`out` in one of the two: in the first, Qwen3 0.6B's `llama.cpp-cuda` (7.29 %) and Gemma 4 E2B's `llama.cpp` (11.63 %);
+in the second, Qwen3 0.6B's `litert-lm-cpu` (5.40 %) and `llama.cpp` (12.61 %) and Qwen3 1.7B's `llama.cpp` (5.22 %).
+Against the second CUDA sitting, which started 3 h 38 min before the second of these the same night, Gemma 4 E2B's rows
+moved by +5.1 % (`litert-lm-cpu`), -4.9 % (`litert-lm-gpu`), +0.7 % (`litert-lm-npu`), -2.7 % (`llama.cpp-gpu`) and
+-1.0 % (`llama.cpp-cuda`); `llama.cpp` read `out` in the CUDA sitting. During both sittings SSH sessions opened on the
+host about twice a minute (the host's `OpenSSH/Operational` log), the executor's own poll, plus one every 5 minutes from
+a reachability check on the driving machine. Beyond those, the minute each sitting's job was staged (02:56 and 03:57)
+had 14 and 12 sessions in all, one opened at 04:09 to rewrite the marker file (see Run), and one at 04:46 came from the
+driving machine by a process not identified. In 78 of the 126 runs no session opened, in 38 one did, and in ten
+LiteRT-LM CPU runs of 19 to 133 s two to six did.
