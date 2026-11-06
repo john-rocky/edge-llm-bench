@@ -157,7 +157,8 @@ marker past the job, write `<label> <time>` into it yourself, leave the two vari
   adding both `Add-MpPreference -ExclusionProcess <that java.exe>` and
   `Add-MpPreference -ExclusionPath <output base>,<source dir>`, with no detection in the three builds that followed.
   `Remove-MpPreference` with the same values undoes them. A new Bazel version installs under a new `<hash>` dir, so the
-  process exclusion has to be added again.
+  process exclusion has to be added again. The exclusions are the fix for that stop, not a setup step: a build that is
+  not stopped needs neither.
 - **DirectX shader compiler.** With neither `dxcompiler.dll` nor `dxil.dll` beside the tool, Dawn's D3D12 backend does not
   create a device (`DynamicLib.Open: dxcompiler.dll Windows Error: 87`). The tag's `prebuilt/windows_x86_64` has neither,
   and the README note its build doc links to is not there; the PyPI wheel `litert-lm-api` carries both (`-DxcDir`).
