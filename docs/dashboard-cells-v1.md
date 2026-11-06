@@ -1697,11 +1697,13 @@ and its campaign names carry no `dashboard`, so the team page does not read them
 Reading the rows. The headline regime is cold, as on Android: a fresh process's first conversation. LiteRT-LM's rows also
 carry the same process's second conversation as warm. Each sitting starts with the engines' caches removed, so run 1 of
 the LiteRT-LM rows and of the Vulkan row is not admitted (`firstEver`), which is why the rows have `runs=3`; the llama.cpp
-CPU row admits all three. The page's prefill and TTFT columns are `arm_row`'s medians over every admitted record, here three warm to two
-cold, so on LiteRT-LM's rows they read the warm figures. That matters on the GPU row: the columns say about 20 ms and
-about 1200 tok/s, while a fresh process's first prefill took about a second at about 20 tok/s. The cold records hold
-those figures (`firstTokenLatencyMS`, `promptTokensPerSecond`).
+CPU row admits all three. The page's prefill and TTFT columns read the headline regime too (`arm_row`, from
+2026-11-06), so on LiteRT-LM's rows they are a fresh process's first conversation: on the GPU row about a second to the
+first token at about 20 tok/s. The warm records hold the second conversation's figures, about 20 ms and about 1200
+tok/s on 2026-11-05 (`firstTokenLatencyMS`, `promptTokensPerSecond`).
 
 Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
-the accelerator, the thread counts and YNNPACK. Two sittings were taken on 2026-11-05, `2026-11-05-windows-s1` and
-`2026-11-05-windows`; each stands alone and they are not pooled.
+the accelerator, the thread counts and YNNPACK. Seven sittings were taken, two on 2026-11-05 (`2026-11-05-windows-s1`,
+`2026-11-05-windows`) and five on 2026-11-06 (`2026-11-06-windows-drift-s1`, `-drift2-s1`, `-drift2`, `-drift3-s1`,
+`-drift3`); each stands alone, none are pooled, and the column shows each cell's latest. How far the rows moved between
+them is in `windows/README.md` ("Reproducibility").

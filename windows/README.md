@@ -206,3 +206,60 @@ an older one over), leave the two variables unset, and remove it at the end.
   nine runs of nine). The Intel GPU and `--define=litert_runtime_link_mode=dynamic` have not been tried.
 - **The NPU file is per SoC.** `backend=npu` rows name the bundle of their SoC with `file=` and take no
   `context-tokens=`: the bundle's KV cache is fixed at export.
+
+## Reproducibility
+
+The column was measured in seven sittings on the one PC: two back to back on 2026-11-05 (21:29 and 21:42 JST) and five
+on 2026-11-06 (17:18, 18:39, 18:55, 21:32 and 21:46). Each ran `matrices/dashboard-windows-v1.cells` through the
+invocation of the Run section, with the same engine files (each sitting's `host.json` lists the sha256 of every `.exe`
+and `.dll` in the engine folders under `<root>\engines`: 133 files, equal in all seven) and the same model files (sha256
+equal to the Hub's), on AC power with Windows' balanced plan, with no LiteRT-LM cache present at its start (the job
+removes any it finds; the 21:29 and 17:18 sittings found none), and every run clean (exit 0, text check passed, no
+protocol flag) and quiet (`hostBefore.quietGate`: before the run, the host's CPU read under 25 % in three reads a second
+apart and NVIDIA memory in use under 800 MiB). Each sitting stands alone (`render_leaderboard.arm_row` per campaign).
+The figures below are the change of a row's cold decode median from one sitting to another, the later sitting against
+the earlier. `n` is the cold runs a sitting counts: 2, and 3 on the llama.cpp CPU row (run 1 of the other rows is the
+row's first process in the sitting, `firstEver`, and is not counted). A row whose cold spread ((max - min) / median)
+passes 5 % in a sitting is not counted there (the spread rule) and reads `out`.
+
+Windows Update restarted the PC for KB5127648 after the 17:18 sitting: it initiated the restart at 17:29, before that
+sitting's last run (with `TiWorker` in the run's `hostBefore.topProcesses`), the PC restarted three times between 17:31
+and 17:35, and the update reported installed at 17:36: build 26200.6899 to 26200.9711, with the same GPU and NPU
+drivers. `device.systemVersion` names that build from the 18:39 sitting on.
+
+The two pairs taken at the same hour, a day apart (the four differences: each 2026-11-06 sitting of the pair against
+each 2026-11-05 sitting):
+
+| row | n | same night, 2026-11-05 | same night, 2026-11-06 | the 2026-11-06 pair against the 2026-11-05 pair, four differences | cold spread of the four sittings (21:29, 21:42, 21:32, 21:46) |
+|---|---|---|---|---|---|
+| `litert-lm-cpu` | 2 | -0.7 % | 0.0 % | -13.0 to -13.7 % | 0.91, 1.74, 1.28, 1.55 % |
+| `litert-lm-gpu` | 2 | +1.8 % | out | out | 3.75, 2.08, 5.09, 5.89 % |
+| `litert-lm-npu` | 2 | +0.2 % | +0.1 % | +1.7 to +2.0 % | 0.44, 1.03, 0.51, 0.21 % |
+| `llama.cpp` | 3 | -0.6 % | -0.5 % | +5.1 to +6.2 % | 0.28, 1.69, 0.27, 3.21 % |
+| `llama.cpp-gpu` | 2 | -0.3 % | +1.8 % | -18.6 to -20.3 % | 0.21, 0.37, 0.39, 3.61 % |
+
+The other three 2026-11-06 sittings, each against 2026-11-05 21:42:
+
+| row | 17:18, before the restart | 18:39 | 18:55 |
+|---|---|---|---|
+| `litert-lm-cpu` | +28.4 % | -14.1 % | -12.5 % |
+| `litert-lm-gpu` | -0.5 % | -11.0 % | out |
+| `litert-lm-npu` | +0.2 % | +2.6 % | +3.0 % |
+| `llama.cpp` | out | out | +6.8 % |
+| `llama.cpp-gpu` | out | -20.3 % | -20.7 % |
+
+Two sittings taken back to back agreed within 2 % on every counted row, on both days. A day apart at the same hour, four
+of the five rows moved by more than their own pair's same-night differences and by more than any of the four sittings'
+spreads, each in one direction, from -20 % to +6 %. The GPU row's spread passed 5 % in three of the four sittings after
+the update, and the eight cold runs after run 1 in those four sittings each read lower than each of the four in the
+2026-11-05 sittings. Within 2026-11-06, the pair at 18:39 and 18:55 and the pair at 21:32 and 21:46 agreed within 3 % on
+each row counted in all four of those sittings. What moved the rows is not established: the 17:18 sitting, taken before
+the restart, read +28.4 % on the LiteRT-LM CPU row against 2026-11-05 21:42. In that sitting both llama.cpp rows read
+`out`, with `OneDriveSetup` and `TiWorker` near one core in those runs' `hostBefore.topProcesses`. The cold prefill
+rate, which the tables leave out, moved as well: in the four sittings after the update, seven of the eight
+`llama.cpp-gpu` runs after run 1 read 35.9 to 52.0 % below the lowest of that row's four on 2026-11-05 (the eighth read
+2.6 % above their highest), and all eight `litert-lm-cpu` runs read 10.6 to 13.2 % above that row's highest, while its
+decode fell. Peak memory (`arm_row`'s median for the sitting) stayed within 2.4 % of either 2026-11-05 sitting on the
+LiteRT-LM GPU row and within 0.3 % on the other rows, in every sitting. So on this PC a row's figure from one sitting
+did not carry to a sitting taken on another day: set figures side by side only within one sitting, or across sittings
+taken back to back.
