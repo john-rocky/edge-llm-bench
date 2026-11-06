@@ -252,8 +252,14 @@ def run(plan: rwm.Plan, campaign_dir: pathlib.Path, args) -> int:
     clean, total = rwm.write_records(plan, campaign_dir, invocation, litert_label=args.litert_label,
                                      extra_catalog=args.extra_catalog, harness=HARNESS)
     marker.write_text(datetime.datetime.now().isoformat() + "\n", encoding="utf-8")
+    planned = sum(row.runs for row in plan.rows)
     print(f"== {clean}/{total} runs clean, records in {campaign_dir}")
-    return 0 if status == "OK" and clean == total else 1
+    if total < planned:
+        # A job that Windows stops (the Windows Update restart of 2026-11-06 17:31 JST) ends through its `finally`,
+        # which writes OK into job.done: the records alone would read as a clean sitting.
+        print(f"== {planned - total} of {planned} planned runs did not run on the host (job.done {status!r}): "
+              "the sitting is incomplete; retake it under a new --campaign")
+    return 0 if status == "OK" and clean == total == planned else 1
 
 
 rwm.register_executor("ssh", run)

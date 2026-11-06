@@ -127,7 +127,12 @@ logs in `host-logs/<invocation>/`.
 
 `--litert-label` names the build the LiteRT-LM rows run: your own label with `BENCH_EXTRA_PINS`, or `v0.19.0` on the host
 whose build `windows/engine-pins.json` lists. Before the job is staged, the executor stops with `error: ...` and exit 1
-when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build.
+when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build. After the
+job it exits 1 when a run is not clean (its record's `conditions.exitCode`, `textCheck` or `protocolFlags` says why),
+when the job failed on the host, or when fewer runs came back than the cells file plans
+(`== N of M planned runs did not run on the host`): on 2026-11-06 Windows Update restarted the PC one run into a
+sitting, and the stopped job's `job.done` still read `OK`. Retake such a sitting under a new `--campaign`, because the
+same campaign appends to its records.
 `BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`, which the summary's `device` column carries as
 written: it names the hardware, as the other lanes' model codes do (`SM-S942Q`, `Mac16,9`), and another spelling is
 another device there. Build it from the host's own names

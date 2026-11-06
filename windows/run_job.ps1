@@ -91,7 +91,9 @@ function Get-CpuBusyPercent {
     } catch { return $null }
 }
 
-# Foreign load right before a run: the top processes by CPU time used over one second. Callers wrap it in @(): from a
+# Foreign load right before a run: the top processes by CPU time used over one second. A process that started within
+# that second counts from zero: a build's compiler runs one short process per file, and a process that started after
+# the first read never showed in a list built from the processes alive at both reads. Callers wrap it in @(): from a
 # function, PowerShell 5.1 hands back one item as the item itself and none as AutomationNull, which ConvertTo-Json
 # writes as a bare string and as {}; wrapped, the record holds a list (possibly empty) every time.
 function Get-TopProcesses {
@@ -101,6 +103,7 @@ function Get-TopProcesses {
         Start-Sleep -Seconds 1
         return @(Get-Process | ForEach-Object {
                 $was = $a[$_.Id]
+                if ($null -eq $was -and -not $a.ContainsKey($_.Id)) { $was = 0 }
                 if ($null -ne $was -and $null -ne $_.CPU) {
                     [pscustomobject]@{ n = $_.ProcessName; s = [math]::Round($_.CPU - $was, 2) }
                 }
@@ -134,6 +137,9 @@ function Wait-Quiet {
 function Get-HostFacts {
     $cs = Get-CimInstance Win32_ComputerSystem
     $os = Get-CimInstance Win32_OperatingSystem
+    # The update build revision: Win32_OperatingSystem.Version stops at the build (10.0.26200), and the 2026-11-06
+    # update on the bench PC moved only this number (26200.6899 to 26200.9711), so the record names it.
+    $ubr = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -ErrorAction SilentlyContinue).UBR
     $battery = Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue | Select-Object -First 1
     $state = "unknown"
     if ($battery) {
@@ -159,7 +165,7 @@ function Get-HostFacts {
         model           = $(if ($DeviceModel) { $DeviceModel } else { $cs.Model })
         manufacturer    = $cs.Manufacturer
         systemModel     = $cs.Model
-        os              = "$($os.Caption) $($os.Version)"
+        os              = $(if ($ubr) { "$($os.Caption) $($os.Version).$ubr" } else { "$($os.Caption) $($os.Version)" })
         cpu             = (Get-CimInstance Win32_Processor | Select-Object -First 1).Name.Trim()
         gpus            = $gpus
         memoryBytes     = [int64]$cs.TotalPhysicalMemory

@@ -236,7 +236,10 @@ Exit 0 means every run is clean (`== 3/3 runs clean`); it does not look at the s
 line prints. Exit 1 means a run is not - its record carries the reason in
 `conditions.protocolFlags`, `conditions.exitCode` and `conditions.textCheck` - or the job failed on the host
 (`== job: FAILED <why>`, also in `host-logs/<invocation>/job.log`; a model file missing from `<models>` stops it before
-its first run), or the executor refused before the job (`error: ...` on stderr, no record). Exit 2 means nothing ran:
+its first run), or the executor refused before the job (`error: ...` on stderr, no record), or fewer runs came back
+than the cells file plans (`== N of M planned runs did not run on the host`: Windows stopped the job, as an update
+restart did on 2026-11-06, and its `job.done` still read `OK`; retake that sitting under a new `--campaign`, because the
+same one appends to its records). Exit 2 means nothing ran:
 the arguments or the plan failed (a usage line or `ERROR: ...` on stderr), or that invocation's records are written
 already. The Windows lane writes no `FLAGGED.txt`, `FAILURES.txt` or `SKIPPED.txt`, and the executor does not rebuild
 `results/summary/`; the `build_summary.py` line does. The last two lines print each record's regime, `firstEver`,
@@ -281,7 +284,10 @@ read the flags in the first line before the spread.
   appear there (up to 41767 MHz in the committed 2026-11-05 host logs, always in a `hostBefore.gpu` or `gpuAfter`
   line, never in `gpuSamples`). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
   processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records, written before the 2026-11-06
-  fix, hold a bare string where one did and `{}` where none did.
+  fix, hold a bare string where one did and `{}` where none did. A process that started within that second counts
+  from zero; the records written before that change (all of 2026-11-05 and the 2026-11-06 sittings up to
+  `2026-11-06-windows-drift2`) leave out a process that started after the first read, so a build's compiler, one
+  short process per file, is mostly missing from them.
 - **Known, and none of it stops a cell or flags a run:**
   - Bazel prints `Header pruning has been disabled since Bazel failed to recognize the output of /showIncludes.` and
     two more lines, one asking for the English language pack for Visual Studio (seen on a Japanese Windows); the build

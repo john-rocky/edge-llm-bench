@@ -25,8 +25,10 @@ Fixtures live in temp dirs; results/ is neither read nor written.
   python3 scripts/test_render_rules.py
 """
 import argparse
+from contextlib import redirect_stdout
 import csv
 import datetime
+import io
 import json
 import os
 import pathlib
@@ -1133,11 +1135,11 @@ class WindowsSshExecutor(unittest.TestCase):
 
     EXE_SHA, DLL_SHA = "a" * 64, "b" * 64
 
-    def run_job(self, tmp, invocation=None, label="v", host_exe_sha=EXE_SHA):
+    def run_job(self, tmp, invocation=None, label="v", host_exe_sha=EXE_SHA, runs=1):
         import windows_ssh_executor as ex
         cells = os.path.join(tmp, "win.cells")
         with open(cells, "w") as fh:
-            fh.write("windows litert-lm org/m short-chat backend=npu file=m_intel_PTL.litertlm runs=1\n")
+            fh.write(f"windows litert-lm org/m short-chat backend=npu file=m_intel_PTL.litertlm runs={runs}\n")
         specs = run_windows_matrix.parse_model_specs(["litert-lm:org/m=m_intel_PTL.litertlm:10"])
         plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
         seen = {"commands": [], "job": None}
@@ -1192,6 +1194,19 @@ class WindowsSshExecutor(unittest.TestCase):
             self.assertEqual(len(recs), 2)
             self.assertEqual(recs[0]["provenance"]["harness"], "scripts/windows_ssh_executor.py")
             self.assertEqual(recs[0]["conditions"]["protocolFlags"], [])
+
+    def test_a_job_the_host_stopped_early_is_not_a_clean_sitting(self):
+        # job.done says OK (a restart stops the job through its finally) but one run of the two planned came back
+        with tempfile.TemporaryDirectory(prefix="render-rules-winstopped-") as tmp:
+            out = io.StringIO()
+            with redirect_stdout(out):
+                rc, _, plan = self.run_job(tmp, runs=2)
+            self.assertEqual(rc, 1)
+            self.assertIn("== 1/1 runs clean", out.getvalue())
+            self.assertIn("1 of 2 planned runs did not run on the host", out.getvalue())
+            self.assertIn("retake it under a new --campaign", out.getvalue())
+            with open(pathlib.Path(tmp) / "c" / f"{plan.rows[0].stem}.jsonl") as fh:
+                self.assertEqual(len([json.loads(line) for line in fh]), 2)  # run 1's records are still written
 
     def test_a_resumed_job_keeps_the_caches_and_its_records_are_written_once(self):
         with tempfile.TemporaryDirectory(prefix="render-rules-winresume-") as tmp:
