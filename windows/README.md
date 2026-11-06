@@ -118,10 +118,12 @@ logs in `host-logs/<invocation>/`.
 `--litert-label` names the build the LiteRT-LM rows run: your own label with `BENCH_EXTRA_PINS`, or `v0.19.0` on the host
 whose build `windows/engine-pins.json` lists. Before the job is staged, the executor stops with `error: ...` and exit 1
 when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build.
-`BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`; unset, it is the host's `Win32_ComputerSystem`
-model, which names neither the CPU nor the GPU. The 2026-11-05 rows carry
-`Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. The executor does not rebuild `results/summary/`; the
-`build_summary.py` line does.
+`BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`, which the summary's `device` column carries as
+written: another spelling is another device there. On a PC that has rows, pass the string they carry; the 2026-11-05
+rows carry `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. Unset, it is the host's `Win32_ComputerSystem`
+model, which names neither the CPU nor the GPU. For a new PC, write `<that model> (<CPU> / <GPU>)` from the names the
+skill's `Get-CimInstance` line prints; the 2026-11-05 string leaves out `Intel(R)`, `(TM)`, `NVIDIA GeForce` and the
+last `GPU`. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
 
 A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has.
 
