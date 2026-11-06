@@ -1,17 +1,19 @@
-# The Windows column of the dashboard, v1: one Windows PC, Gemma 4 E2B and Qwen3 0.6B / 1.7B / 4B, short-chat. Run by
-# hand over SSH through scripts/windows_ssh_executor.py (windows/README.md), not by the night job. Same recipe rule as
-# everywhere: a row's file= is what it measures, and each arm's file is its own (quant-per-arm-rule).
+# The Windows column of the dashboard, v1: one Windows PC, Gemma 4 E2B / E4B and Qwen3 0.6B / 1.7B / 4B, short-chat.
+# Run by hand over SSH through scripts/windows_ssh_executor.py (windows/README.md), not by the night job. Same recipe
+# rule as everywhere: a row's file= is what it measures, and each arm's file is its own (quant-per-arm-rule).
 # runs=3: a new invocation purges the engine caches, so run 1 of a LiteRT-LM, Vulkan or CUDA row is not admitted
 # (firstEver). The model blocks run light to heavy, in the order of dashboard-text-v1.cells. The runner rests 30 s
 # between runs and takes no cooldown= (windows/run_job.ps1 -BetweenRunsSeconds), the 4B rows included.
 #
 # LiteRT-LM v0.19.0 built on the host. The NPU row is the repo's bundle for Intel Panther Lake, on the Intel dispatch;
-# the Qwen3 repos publish no Intel bundle, so the Qwen3 blocks have no NPU row.
+# the Qwen3 repos and the Gemma 4 E4B repo publish no Intel bundle, so those blocks have no NPU row.
 # llama.cpp: the pinned release assets of windows/engine-pins.json. backend=gpu = the Vulkan asset, on the discrete GPU;
 # backend=cuda = the CUDA asset with the release's CUDA runtime zip, on the NVIDIA GPU (the arm llama.cpp-cuda).
 # Qwen3 rows: the files of the Android rows of dashboard-text-v1.cells (the 1.7B CPU row the INT8 file, its GPU row the
 # block-32 INT4 file; the unsloth Q4_K_M GGUFs). Three of the LiteRT-LM files were replaced on the Hub under the same
 # names on 2026-10-31; the records carry the replacement's label (scripts/bench_common.py REPLACED_FILE_LABELS).
+# Gemma 4 E4B rows: the files of the Android rows too (gemma-4-E4B-it.litertlm on both LiteRT-LM rows, as on the E2B
+# block; the unsloth Q4_K_M GGUF).
 
 # --- Qwen3-0.6B ---
 windows litert-lm litert-community/Qwen3-0.6B short-chat backend=cpu file=Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm context-tokens=2048 runs=3
@@ -41,3 +43,10 @@ windows litert-lm litert-community/Qwen3-4B short-chat backend=gpu file=qwen3_4b
 windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=gpu file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 runs=3
 windows llama.cpp unsloth/Qwen3-4B-GGUF short-chat backend=cuda file=Qwen3-4B-Q4_K_M.gguf context-tokens=2048 runs=3
+
+# --- Gemma 4 E4B ---
+windows litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=cpu file=gemma-4-E4B-it.litertlm context-tokens=2048 runs=3
+windows litert-lm litert-community/gemma-4-E4B-it-litert-lm short-chat backend=gpu file=gemma-4-E4B-it.litertlm context-tokens=2048 runs=3
+windows llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 runs=3
+windows llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=gpu file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 runs=3
+windows llama.cpp unsloth/gemma-4-E4B-it-GGUF short-chat backend=cuda file=gemma-4-E4B-it-Q4_K_M.gguf context-tokens=2048 runs=3
