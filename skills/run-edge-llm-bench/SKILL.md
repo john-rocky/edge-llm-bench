@@ -330,4 +330,5 @@ Mac Studio M4 Max (macOS 27, v0.16.0 vendored), 2026-09-12. DDP lab phones, v0.1
 pinned binary: `akita-35` (Pixel 8a) and `m1q-36` (Galaxy S26), cpu and gpu,
 `session-d5585b53` and `session-9002dfea` from a Mac, 2026-10-15; `akita-35`, gpu,
 `session-17997931` and `session-b1179d6d` from an Ubuntu 24.04 container with no adb,
-2026-10-16. [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) on [LiteRT](https://github.com/google-ai-edge/litert).
+2026-10-16. A Windows PC over SSH (Stealth 16 AI+ B3WI, Windows 11 Home 10.0.26200,
+LiteRT-LM v0.19.0 built on the PC, gpu) from a Mac, 2026-11-06. [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) on [LiteRT](https://github.com/google-ai-edge/litert).
