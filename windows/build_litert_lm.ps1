@@ -105,6 +105,10 @@ function Build-Tools {
     $flags = "--config=windows --copt=/utf-8 --host_copt=/utf-8 --curses=no --color=no --show_progress_rate_limit=30"
     $rc = Invoke-Tool "bazelisk --output_base=`"$OutputBase`" build $Targets $flags"
     if ($rc -ne 0) { Stop-Build "bazel build: exit $rc" }
+    # The Bazel server stays up (and holds its memory) for hours after a build; the measurements come next.
+    Say "bazel shutdown"
+    $rc = Invoke-Tool "bazelisk --output_base=`"$OutputBase`" shutdown"
+    if ($rc -ne 0) { Say "bazel shutdown: exit $rc (the server stays up; the build is done)" }
 }
 
 function Stage-Tools {
