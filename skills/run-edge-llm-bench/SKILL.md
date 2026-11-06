@@ -11,7 +11,8 @@ An ad-hoc measurement is done when three things hold, in this order:
    under `results/raw/<campaign>/` (a number without a stored report is not a
    measurement),
 2. the runs **agree**: thermal state nominal at start (on Windows: `quietGate`
-   `quiet`), decode trial spread within a few percent, no gate flag on the capture,
+   `quiet`), decode trial spread within a few percent ((max - min) / median of one
+   regime's runs; the harness's checks flag past 5 %), no gate flag on the capture,
 3. the record **names** the device, the engine version it observed, the
    quantization label and the token budget - a rate without those compares
    to nothing.
@@ -214,6 +215,7 @@ python3 scripts/windows_ssh_executor.py /tmp/one-windows.cells \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it.litertlm:2588147712
 python3 scripts/build_summary.py
 python3 -c "import glob, json; [print(c['regime'], m.get('firstEver', False), m.get('decodeTokensPerSecond'), m.get('promptTokensPerSecond'), c.get('hostBefore', {}).get('quietGate'), c['protocolFlags']) for f in sorted(glob.glob('results/raw/<date>-windows-<what>/*.jsonl')) for r in map(json.loads, open(f)) for m, c in [(r['metrics'], r['conditions'])]]"
+python3 -c "import glob, json, statistics; [print(f.split('/')[-1], g, d, 'spread %.2f %%' % ((max(d) - min(d)) / statistics.median(d) * 100)) for f in sorted(glob.glob('results/raw/<date>-windows-<what>/*.jsonl')) for g in ('cold', 'warm') for d in [[r['metrics']['decodeTokensPerSecond'] for r in map(json.loads, open(f)) if r['conditions']['regime'] == g and not r['metrics'].get('firstEver')]] if d]"
 ```
 
 `<host>` (default `winpc`), `<root>`, `<models>`, the label and its `pins.json` are the ones the README's setup made;
@@ -229,8 +231,9 @@ Exit 0 means every run is clean (`== 3/3 runs clean`). Exit 1 means a run is not
 its first run), or the executor refused before the job (`error: ...` on stderr, no record). Exit 2 means nothing ran:
 the arguments or the plan failed (a usage line or `ERROR: ...` on stderr), or that invocation's records are written
 already. The Windows lane writes no `FLAGGED.txt`, `FAILURES.txt` or `SKIPPED.txt`, and the executor does not rebuild
-`results/summary/`; the `build_summary.py` line does. The last line prints each record's regime, `firstEver`, decode
-and prefill rates (tok/s), `quietGate` and flags.
+`results/summary/`; the `build_summary.py` line does. The last two lines print each record's regime, `firstEver`,
+decode and prefill rates (tok/s), `quietGate` and flags, then each regime's decode rates that count (a clean run's
+records but run 1's cold one) with their spread.
 
 - **The label names the build.** `--litert-label v0.19.0` names the one build `windows/engine-pins.json` lists. Another
   build, even of the same commit, has come out with another sha256 every time so far (three builds of `83ce6067f`):
@@ -246,9 +249,13 @@ and prefill rates (tok/s), `quietGate` and flags.
   two regimes apart. Decode agrees within a few percent; the GPU row's 20-token cold prefill does not (15.6 to 21.0
   tok/s in the admitted cold records of 2026-11-05), and on the GPU a fresh process's first prefill is far slower than
   its second.
-- **A wide decode spread is a sitting to throw out.** Decode trials that do not agree within a few percent are no
-  measurement (`spread-rule`, `methodology/fairness-rules.md`): run the cell again under a new `--campaign`. The same
-  `--campaign` appends the new records to the old `.jsonl`, and the two sittings do not pool.
+- **A wide decode spread is a sitting to throw out.** A regime's spread is (max - min) / median of its decode rates
+  over the records that count (run 1's cold record, the cache build, does not). The bar is 5 %: the page's Windows
+  rows read the cold median and mark a spread past `SPREAD_FLAG` (`scripts/render_leaderboard.py`), and
+  `scripts/cell_gate.py`, the gate other lanes run after a capture, holds the warm decode to the same bar (the Windows
+  lane runs none). Past it in either regime the runs do not agree (`spread-rule`, `methodology/fairness-rules.md`): run
+  the cell again under a new `--campaign`. The same `--campaign` appends the new records to the old `.jsonl`, and the
+  two sittings do not pool.
 - **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
