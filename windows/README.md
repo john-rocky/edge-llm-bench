@@ -15,36 +15,93 @@ writes the same `schema/result.v1.json` records as the other lanes.
 
 ## Setup
 
-The host needs an OpenSSH server with PowerShell as its default shell. The session the server gives is session 0;
-Direct3D 12, Vulkan and the Intel NPU all work from it, and a process started through WMI outlives the connection,
-which is how the job runs.
+The host needs an OpenSSH server whose default shell is Windows PowerShell (`DefaultShell` under
+`HKLM:\SOFTWARE\OpenSSH`, set to `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`) and a key login from the
+Mac: the executor calls `ssh <host>` for each step and each poll. The session the server gives is session 0; Direct3D 12,
+Vulkan and the Intel NPU all work from it, and a process started through WMI outlives the connection, which is how the
+build and the job run.
 
-1. Build the engine on the host (about 50 min the first time on a 16-core laptop; the script's header lists the tools):
+For the build, the host needs what the build script's header lists: Visual Studio 2022 or its Build Tools with the C++
+workload, Git for Windows with LFS, Python 3.13 for all users, Bazelisk, a JDK with `JAVA_HOME`, LongPathsEnabled, and an
+elevated shell or Developer Mode for symlinks. `./bench doctor` has no Windows lane. The build script checks for MSVC,
+Git Bash, Python 3.13 (`C:\Program Files\Python313`), `JAVA_HOME` and Bazelisk before anything else and stops at the
+first one missing, with `ERROR: <what>` as the log's last line; Git LFS, LongPathsEnabled and the symlink right are not
+among those checks.
+
+On the host, `<root>` holds the engines, the jobs and their logs, and `<models>` the model files. The executor's defaults
+are `%USERPROFILE%\bench` and `%USERPROFILE%\models`; `BENCH_WINDOWS_ROOT` and `BENCH_WINDOWS_MODEL_DIR` name others.
+The LiteRT-LM rows run the build in `<root>\engines\litert`. `<host>` is the SSH host (`BENCH_WINDOWS_SSH_HOST`,
+default `winpc`) and `<yours>` a name of yours for your build. The `powershell` blocks run on the host
+(`ssh <host> '<line>'` runs one from the Mac), the `bash` ones on the Mac from the repo root.
+
+1. Fetch the DirectX shader compiler on the host. With neither `dxcompiler.dll` nor `dxil.dll` beside the tool, Dawn's
+   Direct3D 12 backend does not create a device, and the tag's prebuilt DLLs have neither; the rows run with both. The PyPI
+   wheel `litert-lm-api` of the tag's version carries them (0.19.0 for v0.19.0; their sha256s are in
+   `windows/engine-pins.json`):
 
    ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File build_litert_lm.ps1 -Tag v0.19.0 -Label v0.19.0 `
-       -Src C:\src\LiteRT-LM -OutputBase C:\bzl -EngineDir C:\Users\me\bench\engines\litert -DxcDir <dir>
+   & "C:\Program Files\Python313\python.exe" -m pip download litert-lm-api==0.19.0 --no-deps -d C:\src\wheel
+   tar.exe -xf C:\src\wheel\litert_lm_api-0.19.0-py3-none-win_amd64.whl -C C:\src\wheel
    ```
 
-   LiteRT-LM has no Windows release asset, so the build is the host's own. `windows/engine-pins.json` lists builds by
-   label, and a record names its label only when the sha256s of the tool and DLLs on the host match that entry; otherwise
-   it says `unknown`. For a build the file does not list, point `BENCH_EXTRA_PINS` at the `pins.json` the script writes.
-   A rebuild needs its own label: two builds of the same commit and flags came out the same size and 9 bytes apart, so
-   their sha256s differ. One GPU run of the second matched the row.
+   The two DLLs are then in `C:\src\wheel\litert_lm`, the build's `-DxcDir`.
 
-2. For the NPU row, copy the OpenVINO runtime that build fetched to `<root>\engines\openvino`:
-   `<OutputBase>\external\intel_openvino\openvino\runtime\bin\intel64\Release\*` and the non-debug DLLs of
-   `...\runtime\3rdparty\tbb\bin`. The dispatch finds it on `PATH`, which the executor sets for that row only.
+2. Build the engine on the host. LiteRT-LM has no Windows release asset, so the build is the host's own: a full compile
+   took 49 min on a 16-core laptop (2026-11-05, the external repositories already fetched by an attempt that had
+   failed), 14 min for a later one in a new output base on the same PC (2026-11-06). The script clones LiteRT-LM into
+   `-Src` when it is not there. Copy the script over from the Mac and start it through WMI, so that the build outlives
+   the SSH session:
 
-3. Put the model files in one dir on the host and hash them against the Hub's `lfs.sha256`.
+   ```bash
+   scp windows/build_litert_lm.ps1 <host>:C:/src/build_litert_lm.ps1
+   ssh <host> 'Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = "powershell -NoProfile -ExecutionPolicy Bypass -File C:\src\build_litert_lm.ps1 -Tag v0.19.0 -Label v0.19.0-<yours> -Src C:\src\LiteRT-LM -OutputBase C:\bzl -EngineDir <root>\engines\litert -DxcDir C:\src\wheel\litert_lm -Log C:\src\build.log" }'
+   ssh <host> 'Get-Content C:\src\build.log -Tail 3'
+   ```
+
+   `ReturnValue` 0 means PowerShell started; the log's first line follows within seconds, and no log after a minute means
+   the script's path in the command line is not there (PowerShell started and exited at once; a wrong `-Src`,
+   `-OutputBase` or `-EngineDir` still writes a log). The log ends with `staged <EngineDir>, exe sha256 <sha>` or with
+   `ERROR: <why>`, and the script stops its Bazel server after the build. When the build dies with
+   `Server terminated abruptly`, read Microsoft Defender below. Give each build a label of its own: two builds of the same
+   commit and flags came out the same size and 9 bytes apart (one GPU run of the second matched the row), so their
+   sha256s differ. A record names the label in `conditions.engineBuild` and the build's version in `engineVersion`, and
+   the executor starts no job when the sha256s of the tool and DLLs on the host do not match the label's entry (Run).
+   `windows/engine-pins.json` lists one LiteRT-LM build, `v0.19.0`, the one the dashboard's rows ran. For your own, copy
+   the entry the script wrote beside the tool to the Mac (`<root>` with forward slashes here) and point
+   `BENCH_EXTRA_PINS` at it:
+
+   ```bash
+   scp <host>:<root>/engines/litert/pins.json pins-v0.19.0-<yours>.json
+   ```
+
+3. For the NPU row (the CPU and GPU rows skip this step), copy the OpenVINO runtime that build fetched to
+   `<root>\engines\openvino`: `<OutputBase>\external\intel_openvino\openvino\runtime\bin\intel64\Release\*` and the
+   non-debug DLLs of `...\runtime\3rdparty\tbb\bin`. The dispatch finds it on `PATH`, which the executor sets for that
+   row only.
+
+4. Put the model files in `<models>` on the host and check each against the Hub's `lfs.sha256`. The repos are not gated,
+   so no token is needed:
+
+   ```powershell
+   curl.exe -sSL --fail --create-dirs -o <models>\gemma-4-E2B-it.litertlm https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
+   (Get-FileHash -Algorithm SHA256 <models>\gemma-4-E2B-it.litertlm).Hash.ToLower()
+   ```
+
+   The Hub's sha256 and size of each file in one repo, read on the Mac (the GGUF of the llama.cpp rows is in
+   `unsloth/gemma-4-E2B-it-GGUF`):
+
+   ```bash
+   curl -s https://huggingface.co/api/models/litert-community/gemma-4-E2B-it-litert-lm/tree/main | python3 -c 'import json, sys; [print(f["lfs"]["oid"], f["size"], f["path"]) for f in json.load(sys.stdin) if "lfs" in f]'
+   ```
 
 ## Run
 
 ```bash
-BENCH_WINDOWS_ROOT='C:\Users\me\bench' BENCH_WINDOWS_MODEL_DIR='C:\Users\me\models' \
+BENCH_WINDOWS_SSH_HOST=<host> BENCH_WINDOWS_ROOT='<root>' BENCH_WINDOWS_MODEL_DIR='<models>' \
 BENCH_WINDOWS_DEVICE_MODEL='<model> (<CPU> / <GPU>)' BENCH_WINDOWS_VK_DEVICES=0 \
+BENCH_EXTRA_PINS=pins-v0.19.0-<yours>.json \
 python3 scripts/windows_ssh_executor.py matrices/dashboard-windows-v1.cells --campaign <date>-windows \
-    --litert-label v0.19.0 \
+    --litert-label v0.19.0-<yours> \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it.litertlm:2588147712 \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it_intel_PTL.litertlm:2948333568 \
     --model-file llama.cpp:unsloth/gemma-4-E2B-it-GGUF=gemma-4-E2B-it-Q4_K_M.gguf:3106738272
@@ -52,8 +109,23 @@ python3 scripts/build_summary.py
 python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells
 ```
 
+This runs the dashboard's whole Windows column and needs every file its `--model-file` lines name in `<models>`; a job
+whose model file is missing stops before its first run. For one cell, the skill has the block
+(`skills/run-edge-llm-bench/SKILL.md`, "A Windows PC over SSH"), with how to read the records. They land in
+`results/raw/<campaign>/`: one `.jsonl` per row with a line per record, the generated texts in `decoded/`, the host's
+logs in `host-logs/<invocation>/`.
+
+`--litert-label` names the build the LiteRT-LM rows run: your own label with `BENCH_EXTRA_PINS`, or `v0.19.0` on the host
+whose build `windows/engine-pins.json` lists. Before the job is staged, the executor stops with `error: ...` and exit 1
+when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build.
+`BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`; unset, it is the host's `Win32_ComputerSystem`
+model, which names neither the CPU nor the GPU. The 2026-11-05 rows carry
+`Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. The executor does not rebuild `results/summary/`; the
+`build_summary.py` line does.
+
 A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has. On a host shared
-with other work, `BENCH_WINDOWS_BUSY_FILE` and `BENCH_WINDOWS_BUSY_LABEL` name a marker the job waits on and holds.
+with other work, `BENCH_WINDOWS_BUSY_FILE` and `BENCH_WINDOWS_BUSY_LABEL` name a marker the job waits on, then holds from
+its start to its end. The executor copies the logs back after that; the copy reads files and measures nothing.
 
 ## What a Windows machine does differently
 
