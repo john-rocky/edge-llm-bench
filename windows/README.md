@@ -34,8 +34,8 @@ git lfs version
 ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 ```
 
-A `git-lfs/<version>` line, `1`, and `True` for an elevated shell, which has the symlink right (Developer Mode is the
-header's other way to it); the administrator's SSH session on the 2026-11-06 PC printed all three.
+Expected, in order: a `git-lfs/<version>` line, `1`, and `True` (an elevated shell, which has the symlink right;
+Developer Mode is the header's other way to it). The administrator's SSH session on the 2026-11-06 PC printed all three.
 
 On the host, `<root>` holds the engines, the jobs and their logs, and `<models>` the model files. The executor's defaults
 are `%USERPROFILE%\bench` and `%USERPROFILE%\models`; `BENCH_WINDOWS_ROOT` and `BENCH_WINDOWS_MODEL_DIR` name others.
@@ -128,11 +128,12 @@ logs in `host-logs/<invocation>/`.
 whose build `windows/engine-pins.json` lists. Before the job is staged, the executor stops with `error: ...` and exit 1
 when the label is in neither registry or when the files in `<root>\engines\litert` are not that label's build.
 `BENCH_WINDOWS_DEVICE_MODEL` is the record's `device.modelIdentifier`, which the summary's `device` column carries as
-written: another spelling is another device there. On a PC that has rows, pass the string they carry; the 2026-11-05
-rows carry `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. Unset, it is the host's `Win32_ComputerSystem`
+written: another spelling is another device there. On a PC that has rows, pass the string they carry
+(`device.modelIdentifier` in `results/raw/<campaign>/*.jsonl`, the `device` column of `results/summary/device-runs.csv`);
+the 2026-11-05 rows carry `Stealth 16 AI+ B3WI (Core Ultra 9 386H / RTX 5080 Laptop)`. Unset, it is the host's `Win32_ComputerSystem`
 model, which names neither the CPU nor the GPU. For a new PC, write `<that model> (<CPU> / <GPU>)` from the names the
-skill's `Get-CimInstance` line prints; the 2026-11-05 string leaves out `Intel(R)`, `(TM)`, `NVIDIA GeForce` and the
-last `GPU`. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
+skill's `Get-CimInstance` line prints, as the 2026-11-05 string did: the CPU's without `Intel(R) ` and `(TM)`, the NVIDIA
+GPU's (the one the rows run on) without `NVIDIA GeForce ` and its last word `GPU`; the Intel GPU's line is not used. The executor does not rebuild `results/summary/`; the `build_summary.py` line does.
 
 A stopped job picks up again with `BENCH_WINDOWS_INVOCATION=<invocation>` and keeps the runs it has.
 
@@ -141,7 +142,9 @@ On a host shared with other work, `BENCH_WINDOWS_BUSY_FILE` (a path on the host)
 (one read a minute), takes it over once it is 120 min old, and writes `<label> <time>` into it; at its end it removes the
 file if the text still starts with `<label> `. A marker that already starts with `<label> ` counts as the job's own. The
 executor copies the logs back after the job has removed it; the copy reads files and measures nothing. To hold the
-marker past the job, write `<label> <time>` into it yourself, leave the two variables unset, and remove it at the end.
+marker past the job, wait until the file is absent, write `<label> <time>` into it yourself with a label of yours (not
+`windows-job`, which a job run with the default label takes for its own), rewrite it within every 120 min (a job takes
+an older one over), leave the two variables unset, and remove it at the end.
 
 ## What a Windows machine does differently
 

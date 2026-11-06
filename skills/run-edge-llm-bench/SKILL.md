@@ -215,12 +215,13 @@ python3 scripts/windows_ssh_executor.py /tmp/one-windows.cells \
     --model-file litert-lm:litert-community/gemma-4-E2B-it-litert-lm=gemma-4-E2B-it.litertlm:2588147712
 python3 scripts/build_summary.py
 python3 -c "import glob, json; [print(c['regime'], m.get('firstEver', False), m.get('decodeTokensPerSecond'), m.get('promptTokensPerSecond'), c.get('hostBefore', {}).get('quietGate'), c['protocolFlags']) for f in sorted(glob.glob('results/raw/<date>-windows-<what>/*.jsonl')) for r in map(json.loads, open(f)) for m, c in [(r['metrics'], r['conditions'])]]"
-python3 -c "import glob, json, statistics; [print(f.split('/')[-1], g, d, 'spread %.2f %%' % ((max(d) - min(d)) / statistics.median(d) * 100)) for f in sorted(glob.glob('results/raw/<date>-windows-<what>/*.jsonl')) for g in ('cold', 'warm') for d in [[r['metrics']['decodeTokensPerSecond'] for r in map(json.loads, open(f)) if r['conditions']['regime'] == g and not r['metrics'].get('firstEver')]] if d]"
+python3 -c "import glob, json, statistics; [print(f.split('/')[-1], g, d, 'spread %.2f %%' % ((max(d) - min(d)) / statistics.median(d) * 100)) for f in sorted(glob.glob('results/raw/<date>-windows-<what>/*.jsonl')) for g in ('cold', 'warm', 'cold-process') for d in [[r['metrics']['decodeTokensPerSecond'] for r in map(json.loads, open(f)) if r['conditions']['regime'] == g and not r['metrics'].get('firstEver') and r['metrics'].get('decodeTokensPerSecond')]] if d]"
 ```
 
 `<host>` (default `winpc`), `<root>`, `<models>`, the label and its `pins.json` are the ones the README's setup made;
 `<what>` is a word of yours. `BENCH_WINDOWS_DEVICE_MODEL` becomes the summary's `device` as written, so a PC that has
-rows takes the string they carry (README, Run); for a new PC, the README's form from the host's own names:
+rows takes the string they carry (README, Run); for a new PC, the README's form from the host's own names (its GPU
+is the one the rows run on, the NVIDIA one):
 `ssh <host> '(Get-CimInstance Win32_ComputerSystem).Model; (Get-CimInstance Win32_Processor).Name; (Get-CimInstance Win32_VideoController).Name'`.
 While the job runs, the executor prints the host's log as `host: ...` lines. On 2026-11-06 the three runs took 2 min
 on the host, after a wait of at most 30 min for a quiet one (total CPU under 25 %, NVIDIA memory in use under 800 MiB).
@@ -232,11 +233,12 @@ its first run), or the executor refused before the job (`error: ...` on stderr, 
 the arguments or the plan failed (a usage line or `ERROR: ...` on stderr), or that invocation's records are written
 already. The Windows lane writes no `FLAGGED.txt`, `FAILURES.txt` or `SKIPPED.txt`, and the executor does not rebuild
 `results/summary/`; the `build_summary.py` line does. The last two lines print each record's regime, `firstEver`,
-decode and prefill rates (tok/s), `quietGate` and flags, then each regime's decode rates that count (a clean run's
-records but run 1's cold one) with their spread.
+decode and prefill rates (tok/s), `quietGate` and flags, then, per regime, the decode rates of every record but run
+1's cold one (the cache build), with their spread. The second line does not drop a flagged run's records: on exit 1,
+read the flags in the first line before the spread.
 
 - **The label names the build.** `--litert-label v0.19.0` names the one build `windows/engine-pins.json` lists. Another
-  build, even of the same commit, has come out with a sha256 of its own (four builds of `83ce6067f` in new output bases,
+  build, even of the same commit, has come out with a sha256 of its own (four full builds of `83ce6067f` on one PC,
   2026-11-05 to 11-06, four sha256s): pass its own label and point `BENCH_EXTRA_PINS` at the `pins.json` the build
   script wrote beside the tool. Before the
   job is staged, the executor stops with `error: ...` and exit 1 when the label is in neither registry or the files in
@@ -251,12 +253,12 @@ records but run 1's cold one) with their spread.
   tok/s in the admitted cold records of 2026-11-05), and on the GPU a fresh process's first prefill is far slower than
   its second.
 - **A wide decode spread is a sitting to throw out.** A regime's spread is (max - min) / median of its decode rates
-  over the records that count (run 1's cold record, the cache build, does not). The bar is 5 %: the page's Windows
-  rows read the cold median and mark a spread past `SPREAD_FLAG` (`scripts/render_leaderboard.py`), and
-  `scripts/cell_gate.py`, the gate other lanes run after a capture, holds the warm decode to the same bar (the Windows
-  lane runs none). Past it in either regime the runs do not agree (`spread-rule`, `methodology/fairness-rules.md`): run
-  the cell again under a new `--campaign`. The same `--campaign` appends the new records to the old `.jsonl`, and the
-  two sittings do not pool.
+  over the records that count (run 1's cold record, the cache build, does not). The bar is 5 %: the page marks a row past
+  `SPREAD_FLAG` (`scripts/render_leaderboard.py`), and `scripts/cell_gate.py`, the gate other lanes run after a
+  capture, holds their warm decode to it (the Windows lane runs none). A regime past it does not agree (`spread-rule`,
+  the table at the top of `methodology/fairness-rules.md`): do not quote it. The page's Windows rows read the cold
+  median, so a cold spread past 5 % means running the cell again under a new `--campaign`. The same `--campaign`
+  appends the new records to the old `.jsonl`, and the two sittings do not pool.
 - **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
