@@ -46,6 +46,7 @@ record or no yardstick.done came back (also when the download failed); 130 inter
 session named so it can be cancelled.
 """
 import argparse
+import contextlib
 import datetime
 import hashlib
 import json
@@ -57,6 +58,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 import zipfile
@@ -134,6 +136,33 @@ def label_value(text) -> str:
 
 
 def sha256_file(path) -> str:
+    p = pathlib.Path(path).resolve()
+    try:
+        st = p.stat()
+    except OSError:
+        st = None
+    key = (str(p), st.st_size, st.st_mtime_ns) if st is not None else None
+    lock = None
+    if key is not None:
+        with _BATCH_LOCK:
+            if _FILE_SHAS is not None:
+                if key in _FILE_SHAS:
+                    return _FILE_SHAS[key]
+                lock = _OBJECT_LOCKS.setdefault(f"sha256:{key[0]}", threading.Lock())
+    if lock is not None:
+        with lock:
+            with _BATCH_LOCK:
+                if _FILE_SHAS is not None and key in _FILE_SHAS:
+                    return _FILE_SHAS[key]
+            h = hashlib.sha256()
+            with open(path, "rb") as fh:
+                for block in iter(lambda: fh.read(1 << 20), b""):
+                    h.update(block)
+            digest = h.hexdigest()
+            with _BATCH_LOCK:
+                if _FILE_SHAS is not None:
+                    _FILE_SHAS[key] = digest
+            return digest
     h = hashlib.sha256()
     with open(path, "rb") as fh:
         for block in iter(lambda: fh.read(1 << 20), b""):
@@ -514,22 +543,83 @@ def object_exists(url: str) -> bool:
     return res.returncode == 0
 
 
+_BATCH_LOCK = threading.Lock()
+_OBJECT_LOCKS: dict[str, threading.Lock] = {}
+_VERIFIED_OBJECTS: set[str] | None = None
+_CATALOG_DEVICES: dict[tuple[str, str], dict | None] | None = None
+_FILE_SHAS: dict[tuple[str, int, int], str] | None = None
+_BATCH_JOBS: int = 1
+_LAYOUT_LOCK = threading.Lock()
+
+
+@contextlib.contextmanager
+def session_batch(jobs: int = 1):
+    """Shares verified gs:// object, device-catalog, and sha256 lookups across one matrix batch."""
+    global _VERIFIED_OBJECTS, _CATALOG_DEVICES, _FILE_SHAS, _BATCH_JOBS
+    with _BATCH_LOCK:
+        nested = _VERIFIED_OBJECTS is not None
+        if not nested:
+            _VERIFIED_OBJECTS = set()
+            _CATALOG_DEVICES = {}
+            _FILE_SHAS = {}
+            _BATCH_JOBS = max(1, int(jobs))
+    try:
+        yield
+    finally:
+        if not nested:
+            with _BATCH_LOCK:
+                _VERIFIED_OBJECTS = None
+                _CATALOG_DEVICES = None
+                _FILE_SHAS = None
+                _BATCH_JOBS = 1
+
+
 def ensure_object(local, url: str) -> None:
     """Uploads `local` to `url` unless an object is already there (content-addressed: same path, same bytes)."""
-    if object_exists(url):
-        print(f"in bucket: {url}")
-        return
-    if not local:
-        raise InputError(f"{url} is not in the bucket and there is no local file to upload")
-    print(f"uploading {shown(local)} ({os.path.getsize(local):,} bytes) -> {url}", flush=True)
-    gcloud("storage", "cp", str(local), url)
+    with _BATCH_LOCK:
+        if _VERIFIED_OBJECTS is not None and url in _VERIFIED_OBJECTS:
+            print(f"in bucket: {url}")
+            return
+        lock = _OBJECT_LOCKS.setdefault(url, threading.Lock())
+    with lock:
+        with _BATCH_LOCK:
+            if _VERIFIED_OBJECTS is not None and url in _VERIFIED_OBJECTS:
+                print(f"in bucket: {url}")
+                return
+        if object_exists(url):
+            print(f"in bucket: {url}")
+            with _BATCH_LOCK:
+                if _VERIFIED_OBJECTS is not None:
+                    _VERIFIED_OBJECTS.add(url)
+            return
+        if not local:
+            raise InputError(f"{url} is not in the bucket and there is no local file to upload")
+        print(f"uploading {shown(local)} ({os.path.getsize(local):,} bytes) -> {url}", flush=True)
+        gcloud("storage", "cp", str(local), url)
+        with _BATCH_LOCK:
+            if _VERIFIED_OBJECTS is not None:
+                _VERIFIED_OBJECTS.add(url)
 
 
 def catalog_device(device_id: str, project) -> dict | None:
-    for entry in gcloud_json("beta", "device-run", "devices", "list", project=project):
-        if isinstance(entry, dict) and entry.get("name", "").rsplit("/", 1)[-1] == device_id:
-            return entry
-    return None
+    key = (device_id, str(project))
+    with _BATCH_LOCK:
+        if _CATALOG_DEVICES is not None and key in _CATALOG_DEVICES:
+            return _CATALOG_DEVICES[key]
+        lock = _OBJECT_LOCKS.setdefault(f"device:{project}:{device_id}", threading.Lock())
+    with lock:
+        with _BATCH_LOCK:
+            if _CATALOG_DEVICES is not None and key in _CATALOG_DEVICES:
+                return _CATALOG_DEVICES[key]
+        found = None
+        for entry in gcloud_json("beta", "device-run", "devices", "list", project=project):
+            if isinstance(entry, dict) and entry.get("name", "").rsplit("/", 1)[-1] == device_id:
+                found = entry
+                break
+        with _BATCH_LOCK:
+            if _CATALOG_DEVICES is not None:
+                _CATALOG_DEVICES[key] = found
+        return found
 
 
 def session_id(submitted) -> str | None:
@@ -579,6 +669,13 @@ def describe(sid: str, project) -> dict:
 
 
 def wait_for_session(sid: str, project, max_secs: float) -> dict:
+    with _BATCH_LOCK:
+        jobs = _BATCH_JOBS
+    if jobs > 1:
+        # When N sessions queue against a single physical iPhone in the DDP pool,
+        # the tail session can wait up to (N - 1) * xctestTimeout before starting.
+        exec_budget = max(900.0, float(max_secs) - WAIT_MARGIN_MIN * 60.0)
+        max_secs = float(max_secs) + (jobs - 1) * exec_budget
     deadline = time.monotonic() + max_secs
     while True:
         session = describe(sid, project)
@@ -725,10 +822,11 @@ def lay_out(session_dir: pathlib.Path) -> dict:
         console = campaign_dir / p["consoleName"]
         header = (f"=== DDP session {sid}: {p['device']}, {p['recordRuntime']}, {p['modelId']}, {p['task']}, "
                   f"runs={p['runs']} ===")
-        before = console.read_text(errors="replace") if console.exists() else ""
-        if header not in before:
-            with open(console, "a") as fh:
-                fh.write(header + "\n" + index["console.txt"].read_text(errors="replace"))
+        with _LAYOUT_LOCK:
+            before = console.read_text(errors="replace") if console.exists() else ""
+            if header not in before:
+                with open(console, "a") as fh:
+                    fh.write(header + "\n" + index["console.txt"].read_text(errors="replace"))
     done = None
     try:
         done = int((session_dir / "yardstick.done").read_text().strip())

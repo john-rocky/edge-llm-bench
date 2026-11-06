@@ -22,6 +22,7 @@ by `run_ddp_ios_lm.py` as usual.
 """
 
 import argparse
+import concurrent.futures
 import dataclasses
 import datetime
 import os
@@ -257,7 +258,9 @@ def main(argv=None) -> int:
     ap.add_argument("--cool-wait", type=int, default=0,
                     help="default --cool-wait seconds before warm runs when row sets none")
     ap.add_argument("--cooldown", type=int, default=0,
-                    help="seconds to sleep between DDP sessions (default: 0)")
+                    help="seconds to sleep between DDP sessions when --jobs=1 (default: 0)")
+    ap.add_argument("--jobs", type=int, default=int(os.environ.get("BENCH_IOS_DDP_JOBS") or "1"),
+                    help="max concurrent DDP sessions (default: env BENCH_IOS_DDP_JOBS or 1)")
     ap.add_argument("--engines", default="all",
                     help="comma list of engines or runtimes to run (default: all)")
     ap.add_argument("--archives-dir", type=pathlib.Path, default=HERE / "out",
@@ -278,6 +281,8 @@ def main(argv=None) -> int:
     for c in args.cells:
         if not c.is_file():
             ap.error(f"{c}: no such cells file")
+    if args.jobs < 1:
+        ap.error(f"--jobs {args.jobs}: must be >= 1")
     if not args.campaign:
         args.campaign = os.environ.get("CAMPAIGN") or f"{datetime.date.today().isoformat()}-ddp-ios"
 
@@ -299,28 +304,48 @@ def main(argv=None) -> int:
         return rc
 
     campaign_dir = raw_root() / args.campaign
-    print(f"== [iOS DDP {args.device}] {len(planned)} sessions -> {campaign_dir}", flush=True)
+    workers = 1 if args.dry_run else min(args.jobs, len(planned))
+    mode_note = f", jobs={workers}" if workers > 1 else ""
+    print(f"== [iOS DDP {args.device}] {len(planned)} sessions{mode_note} -> {campaign_dir}", flush=True)
     failures = []
-    for idx, cell in enumerate(planned, 1):
-        if idx > 1 and args.cooldown > 0 and not args.dry_run:
-            time.sleep(args.cooldown)
-        arch = archive_path(args.archives_dir, cell.engine)
-        s_argv = session_argv(cell, arch, args)
-        print(f"-- [{idx}/{len(planned)}] {cell.name} {cell.model_id} {cell.task}", flush=True)
-        if args.dry_run and not arch.is_file():
-            print("   dry-run argv: run_ddp_ios_lm.py " + " ".join(s_argv), flush=True)
-            continue
-        saved_env = os.environ.get("BENCH_RAW_ROOT")
-        os.environ["BENCH_RAW_ROOT"] = str(campaign_dir.parent)
-        try:
-            rc = run_ddp_ios_lm.main(s_argv)
-        finally:
-            if saved_env is None:
-                os.environ.pop("BENCH_RAW_ROOT", None)
+    saved_env = os.environ.get("BENCH_RAW_ROOT")
+    os.environ["BENCH_RAW_ROOT"] = str(campaign_dir.parent)
+    try:
+        with run_ddp_ios_lm.session_batch(jobs=workers):
+            if workers <= 1:
+                for idx, cell in enumerate(planned, 1):
+                    if idx > 1 and args.cooldown > 0 and not args.dry_run:
+                        time.sleep(args.cooldown)
+                    arch = archive_path(args.archives_dir, cell.engine)
+                    s_argv = session_argv(cell, arch, args)
+                    print(f"-- [{idx}/{len(planned)}] {cell.name} {cell.model_id} {cell.task}", flush=True)
+                    if args.dry_run and not arch.is_file():
+                        print("   dry-run argv: run_ddp_ios_lm.py " + " ".join(s_argv), flush=True)
+                        continue
+                    rc = run_ddp_ios_lm.main(s_argv)
+                    if rc != 0:
+                        failures.append(f"{cell.name} {cell.model_id} {cell.task} (exit {rc})")
             else:
-                os.environ["BENCH_RAW_ROOT"] = saved_env
-        if rc != 0:
-            failures.append(f"{cell.name} {cell.model_id} {cell.task} (exit {rc})")
+                def _run_one(idx: int, cell: IosCell) -> int:
+                    arch = archive_path(args.archives_dir, cell.engine)
+                    s_argv = session_argv(cell, arch, args)
+                    print(f"-- [{idx}/{len(planned)}] {cell.name} {cell.model_id} {cell.task}", flush=True)
+                    try:
+                        return run_ddp_ios_lm.main(s_argv)
+                    except SystemExit as exc:
+                        return exc.code if isinstance(exc.code, int) else 2
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+                    futs = [(cell, pool.submit(_run_one, idx, cell)) for idx, cell in enumerate(planned, 1)]
+                    for cell, fut in futs:
+                        rc = fut.result()
+                        if rc != 0:
+                            failures.append(f"{cell.name} {cell.model_id} {cell.task} (exit {rc})")
+    finally:
+        if saved_env is None:
+            os.environ.pop("BENCH_RAW_ROOT", None)
+        else:
+            os.environ["BENCH_RAW_ROOT"] = saved_env
 
     if args.no_keep_raw and not failures and not args.dry_run and (campaign_dir / "ddp-raw").is_dir():
         shutil.rmtree(campaign_dir / "ddp-raw", ignore_errors=True)
