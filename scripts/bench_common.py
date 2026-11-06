@@ -281,8 +281,11 @@ def fmt_bw(u, estimate_mark: str = "~") -> str:
 # composite ops", "external weights"). android/bench/run_cell.py labels a file by its name, so the Android
 # rows captured since carry the replaced files' labels (first: the Galaxy S26 sitting of 2026-11-01 UTC).
 # The records' model sha256 (read 2026-11-03): every Android LiteRT-LM row of these files captured before
-# 2026-10-31 holds an earlier content, every row since the new one. -> (model id, file, first UTC date,
-# labels the rows carry, the label of the content they ran: the recipe as the Hub card states it)
+# 2026-10-31 holds an earlier content, every row since the new one. The Windows rows of these files (first: the
+# sittings of 2026-11-06 UTC, whose model files' sha256 on the PC were read equal to the Hub's before them) run the
+# same litert-lm-cpu / litert-lm-gpu arms on the new content, and scripts/run_windows_matrix.py labels them by the
+# same file names. -> (model id, file, first UTC date, labels the rows carry, the label of the content they ran: the
+# recipe as the Hub card states it)
 REPLACED_FILE_LABELS = (
     ("litert-community/Qwen3-0.6B", "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm", "2026-10-31",
      ("INT4 (dynamic, block-32 weights, FP32 act; GPU-graph build 2026-08-04)",),
@@ -312,7 +315,8 @@ def corrected_quant(runtime: str, model_id: str, quant: str, row=None) -> tuple[
     if (runtime.startswith("litert-lm") and "gemma-4" in model_id.lower()
             and quant == "INT4 (QAT)"):
         return "wNa8o8 (int2/int4/int8 + int8 activations, QAT)", True
-    if row is not None and row.get("platform") == "android" and runtime in ("litert-lm-cpu", "litert-lm-gpu"):
+    if (row is not None and row.get("platform") in ("android", "windows")
+            and runtime in ("litert-lm-cpu", "litert-lm-gpu")):
         for mid, fname, since, carried, label in REPLACED_FILE_LABELS:
             if (model_id == mid and (row.get("timestamp") or "")[:10] >= since
                     and file_is(row.get("model_file"), [fname])

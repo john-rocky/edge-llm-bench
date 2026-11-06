@@ -37,6 +37,7 @@ for _p in (REPO / "scripts", REPO / "android" / "bench"):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
+import bench_common  # noqa: E402
 import parsers  # noqa: E402
 import run_cell  # noqa: E402
 import validate_cells  # noqa: E402
@@ -552,6 +553,11 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
             first_ever = key not in built and (row.runtime == "litert-lm" or bool(row.backend))
             paired = row.runtime == "litert-lm"
             start = str(meta.get("start") or "")
+            # The label of the content the run loaded: a Hub file replaced in place under the same name (the
+            # litert-community Qwen3 files of 2026-10-31) takes the replacement's label from its date on, by the
+            # correction the summary applies (bench_common.REPLACED_FILE_LABELS)
+            run_quant = bench_common.corrected_quant(row.arm, row.model_id, quant, {
+                "platform": "windows", "timestamp": utc_timestamp(start) or "", "model_file": path.name})[0]
             peak = meta.get("peakWorkingSetBytes")
             text_failed = False
             with open(campaign_dir / f"{row.stem}.jsonl", "a", encoding="utf-8") as fh:
@@ -604,7 +610,7 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                         "engineArtifact": artifact,
                         "model": {
                             "id": row.model_id,
-                            "quantization": quant,
+                            "quantization": run_quant,
                             "file": path.name,
                             "onDiskSizeBytes": size,
                         },
