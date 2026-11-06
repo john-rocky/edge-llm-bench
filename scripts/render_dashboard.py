@@ -65,8 +65,13 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bench_common import (DEVICE_DISPLAY, atomic_write, bandwidth_ceiling,  # noqa: E402
                           bandwidth_utilization, fmt_bw, logical_model)
-from render_leaderboard import (CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT, SPREAD_FLAG,  # noqa: E402
-                                arm_row)
+# REGIME, PROTOCOL_TASK_PREFIX and headline_regime live in render_leaderboard since 2026-11-06
+# (D-719: arm_row reads prefill and TTFT by the same rule); imported here under the same names,
+# so `from render_dashboard import headline_regime` / `REGIME` (dashboard_job.py,
+# regression_watch.py, the team page's build.py) reads the one rule as before
+from render_leaderboard import (CPU_CAP_EXEMPT_ARMS, CPU_CAP_MAX_DROP_PCT,  # noqa: E402,F401
+                                PROTOCOL_TASK_PREFIX, REGIME, SPREAD_FLAG, arm_row,
+                                headline_regime)
 from validate_cells import parse_exclude_on, parse_line  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -75,27 +80,6 @@ DEFAULT_SCHEDULE = os.path.join("ops", "dashboard-v1", "schedule.json")
 SUMMARY_CSV = os.path.join(ROOT, "results", "summary", "device-runs.csv")
 # cells-file platform token -> device-runs.csv platform value
 CSV_PLATFORM = {"ios": "ios", "mac": "mac", "android": "android", "windows": "windows"}
-# headline regime per platform: Apple lanes have in-process warm runs, the
-# Android and Windows CLIs compare fresh-process cold runs — the column header says which
-REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
-# the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark
-# entry; methodology/agreed-protocol-gemma4.md, docs/dashboard-cells-v1.md)
-PROTOCOL_TASK_PREFIX = "native-benchmark-"
-
-
-def headline_regime(plat, task, a):
-    """The regime cell `task` on `plat` headlines from arm_row result `a` (cold-warm-split: one
-    regime per number, never mixed). A text-task cell reads its platform's (REGIME). A protocol
-    cell reads the agreed protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
-    for the side-by-side, cold reported separately as first use), wherever its session has warm
-    runs, on every platform and for every arm alike — LiteRT-LM benchmark() calls 2..N of a
-    launch, Core AI trials 1..N (the trials llm-benchmark averages), llama-bench's in-process
-    repeats — and its cold median only where the session has none (one call per launch, as the
-    sittings before 2026-10-08 ran). The one rule for this table and the team page
-    (litert-bench-dashboard make_cell)."""
-    if task.startswith(PROTOCOL_TASK_PREFIX):
-        return "warm" if a["warm_n"] else "cold"
-    return REGIME[plat]
 
 
 # the cpu-cap-rule line as the tables print it ("15 %"); the value lives in render_leaderboard

@@ -141,6 +141,76 @@ class ArmRow(unittest.TestCase):
         self.assertEqual(a["cold_median"], 30.5)
 
 
+def regime_row(prefill, cold, first_ever=False, platform="android",
+               task="long-context-1024-gen256", minute=0, ttft=None):
+    """A row of row() with its own prefill / TTFT, platform and task (D-719 fixtures)."""
+    r = row(20.0, cold, "PASS", first_ever, "litert-lm-cpu", "org/model", minute)
+    r.update(prefill_tps=str(prefill), platform=platform, task=task,
+             ttft_ms=str(ttft if ttft is not None else round(1339 / prefill * 1000, 1)))
+    return r
+
+
+class PrefillRegime(unittest.TestCase):
+    """D-719 (2026-11-06): arm_row reads prefill and TTFT over the runs of the regime the cell
+    headlines (headline_regime), as the surfaces read decode; pooled over both regimes, a cell
+    whose cold and warm prefill read apart moved with the mix of its runs."""
+
+    @staticmethod
+    def launches(pairs, first_ever_first=False):
+        """Two-iteration launches, (cold prefill, warm prefill) each, in order."""
+        rows = []
+        for i, (c, w) in enumerate(pairs):
+            rows += [regime_row(c, True, first_ever=first_ever_first and i == 0, minute=2 * i),
+                     regime_row(w, False, minute=2 * i + 1)]
+        return rows
+
+    def test_the_pixel_11_pro_case_reads_cold_against_cold(self):
+        # the Qwen3 0.6B CPU long-context-1024 cell (results/raw/2026-11-05-dashboard-v1-pixel11pro-
+        # a-android: its first-ever cold run 114.1 out of the pool; results/raw/2026-11-06-dashboard-
+        # v1-pixel11pro-retake-4cells-android: no first-ever run, one warm run at 115.21)
+        nov5 = arm_row(self.launches([(114.1, 169.05), (119.15, 172.38), (120.36, 168.62)], True))
+        nov6 = arm_row(self.launches([(122.99, 115.21), (113.17, 176.23), (115.52, 175.88)]))
+        self.assertEqual(nov5["prefill_regime"], "cold")
+        self.assertAlmostEqual(nov5["prefill"], 119.755)   # pooled with the warm runs: 168.62
+        self.assertAlmostEqual(nov6["prefill"], 115.52)    # pooled: 119.255
+        self.assertAlmostEqual((nov6["prefill"] / nov5["prefill"] - 1) * 100, -3.54, places=2)
+        # TTFT is read over the same runs
+        self.assertAlmostEqual(nov6["ttft"], round(1339 / 115.52 * 1000, 1))
+
+    def test_apple_text_cells_read_warm(self):
+        rows = [regime_row(p, c, platform="ios", task="short-chat", minute=i)
+                for i, (p, c) in enumerate([(50.0, True), (300.0, False), (310.0, False), (320.0, False)])]
+        a = arm_row(rows)
+        self.assertEqual((a["prefill_regime"], a["prefill"]), ("warm", 310.0))
+
+    def test_a_protocol_cell_reads_warm_where_its_session_has_warm_runs(self):
+        task = "native-benchmark-1024x256"
+        warm = [regime_row(p, c, task=task, minute=i)
+                for i, (p, c) in enumerate([(700.0, True), (900.0, False), (910.0, False)])]
+        a = arm_row(warm)
+        self.assertEqual((a["prefill_regime"], a["prefill"]), ("warm", 905.0))
+        cold = [regime_row(p, True, task=task, minute=i) for i, p in enumerate([700.0, 720.0, 740.0])]
+        a = arm_row(cold)
+        self.assertEqual((a["prefill_regime"], a["prefill"]), ("cold", 720.0))
+
+    def test_a_cold_only_cell_does_not_move(self):
+        rows = [regime_row(p, True, task="short-chat", minute=i) for i, p in enumerate([20.4, 26.9, 11.2])]
+        a = arm_row(rows)
+        self.assertEqual((a["prefill_regime"], a["prefill"]), ("cold", 20.4))
+
+    def test_a_session_of_two_platforms_keeps_the_pool_of_all_its_runs(self):
+        rows = [regime_row(100.0, True, minute=0), regime_row(300.0, False, platform="ios", minute=1),
+                regime_row(200.0, True, minute=2)]
+        a = arm_row(rows)
+        self.assertEqual((a["prefill_regime"], a["prefill"]), ("", 200.0))
+
+    def test_the_rule_is_render_dashboards(self):
+        # one rule: render_dashboard's names are render_leaderboard's objects
+        import render_leaderboard
+        self.assertIs(render_dashboard.headline_regime, render_leaderboard.headline_regime)
+        self.assertIs(render_dashboard.REGIME, render_leaderboard.REGIME)
+
+
 class SummaryColumn(unittest.TestCase):
     def test_text_check_column_three_values(self):
         records = {

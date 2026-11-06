@@ -80,6 +80,29 @@ CPU_CAP_EXEMPT_ARMS = frozenset({
     "executorch-vulkan",  # ExecuTorch, Vulkan delegate (GPU)
     "executorch-qnn",     # ExecuTorch, QNN delegate (Hexagon NPU)
 })
+# cold-warm-split, the headline regime per platform (moved here from render_dashboard on
+# 2026-11-06, D-719, so that arm_row reads prefill and TTFT by it as the surfaces read decode):
+# Apple lanes have in-process warm runs, the Android and Windows CLIs compare fresh-process cold
+# runs — the column header says which
+REGIME = {"ios": "warm", "mac": "warm", "android": "cold", "windows": "cold"}
+# the protocol task family (native-benchmark-<P>x<D>: one launch of an engine's own benchmark
+# entry; methodology/agreed-protocol-gemma4.md, docs/dashboard-cells-v1.md)
+PROTOCOL_TASK_PREFIX = "native-benchmark-"
+
+
+def headline_regime(plat, task, a):
+    """The regime cell `task` on `plat` headlines from arm_row result `a` (cold-warm-split: one
+    regime per number, never mixed). A text-task cell reads its platform's (REGIME). A protocol
+    cell reads the agreed protocol's regime, warm (methodology/agreed-protocol-gemma4.md: warm
+    for the side-by-side, cold reported separately as first use), wherever its session has warm
+    runs, on every platform and for every arm alike — LiteRT-LM benchmark() calls 2..N of a
+    launch, Core AI trials 1..N (the trials llm-benchmark averages), llama-bench's in-process
+    repeats — and its cold median only where the session has none (one call per launch, as the
+    sittings before 2026-10-08 ran). The one rule for this table, the team page
+    (litert-bench-dashboard make_cell) and arm_row's prefill and TTFT. Reads only a["warm_n"]."""
+    if task.startswith(PROTOCOL_TASK_PREFIX):
+        return "warm" if a["warm_n"] else "cold"
+    return REGIME[plat]
 
 
 def load(name):
@@ -207,9 +230,28 @@ def arm_row(rows, include_cpu_capped=False):
     # session's runs, with its spread, never a single trial).
     cmed = statistics.median(cold) if cold else None
     cspread = ((max(cold) - min(cold)) / cmed * 100) if cmed and len(cold) > 1 else 0.0
-    prefill = [fnum(r["prefill_tps"]) for r in meas]
+    # cold-warm-split for prefill and TTFT as for decode (D-719, 2026-11-06): one median over
+    # the runs of the regime the cell headlines (headline_regime: its platform's for a text
+    # task, warm for a protocol cell whose session has warm runs), never over both. Pooled
+    # together, a cell whose cold and warm prefill read apart moved with the mix of its runs:
+    # the Pixel 11 Pro's Qwen3 0.6B CPU long-context-1024 cell (cold 113-123 tok/s, warm
+    # 169-176) read 168.6 on 2026-11-05 (its first-ever cold run out of the pool) and 119.3 on
+    # the 2026-11-06 retake (none out; one warm run at 115.2), a 29.3 % fall that held the post
+    # (prefill-drop) where cold against cold read -3.5 % and warm against warm +4.0 %. A session
+    # whose platform or task is not one value, or a text task on a platform REGIME does not
+    # name, keeps the pool of all its runs (prefill_regime "").
+    plats = {r.get("platform") or "" for r in sess}
+    tasks = {r.get("task") or "" for r in sess}
+    p_regime = ""
+    if len(plats) == 1 and len(tasks) == 1:
+        plat, task = next(iter(plats)), next(iter(tasks))
+        if task.startswith(PROTOCOL_TASK_PREFIX) or plat in REGIME:
+            p_regime = headline_regime(plat, task, {"warm_n": len(warm)})
+    p_runs = ([r for r in meas if r["cold_run"] == ("False" if p_regime == "warm" else "True")]
+              if p_regime else meas)
+    prefill = [fnum(r["prefill_tps"]) for r in p_runs]
     prefill = [v for v in prefill if v]
-    ttft = [fnum(r["ttft_ms"]) for r in meas]
+    ttft = [fnum(r["ttft_ms"]) for r in p_runs]
     ttft = [v for v in ttft if v]
     # iOS rows carry phys_footprint; android rows only RSS (no Android
     # equivalent of footprint — never fabricated). Same column, semantics
@@ -241,6 +283,8 @@ def arm_row(rows, include_cpu_capped=False):
         "thermal_initial": sorted({r.get("thermal_initial") or "" for r in meas}),
         "prefill": statistics.median(prefill) if prefill else None,
         "ttft": statistics.median(ttft) if ttft else None,
+        # the regime prefill and ttft were read in ("cold" / "warm"; "" = all runs, see above)
+        "prefill_regime": p_regime,
         "mem": statistics.median(mem) if mem else None,
         "mem_peak": statistics.median(mem_peak) if mem_peak else None,
         "mem_peak_n": len(mem_peak),

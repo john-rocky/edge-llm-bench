@@ -78,6 +78,15 @@ Warm-up gains are **engine-dependent** (measured: Core AI ~2.5×, LiteRT E2B ~1.
 so cold rankings do not imply warm rankings — a table that compares engines must hold the regime
 fixed, and a table meant to be checked against official cards must be warm.
 
+Every number of a cell reads one regime (2026-11-06, D-719): decode, prefill and TTFT alike are
+medians over the runs of the regime the cell headlines (`render_leaderboard.headline_regime`: cold
+for a text task on Android and Windows, warm on the Apple lanes, warm for a protocol cell whose
+session has warm runs). Until then prefill and TTFT pooled both regimes, and a cell whose cold and
+warm prefill read apart moved with the mix of its runs: the Pixel 11 Pro's Qwen3 0.6B CPU
+long-context-1024 cell read 168.6 and then 119.3 tok/s in two sittings (a first-ever cold run left
+the first pool; one warm run read like a cold one in the second) where cold against cold read
+−3.5 %.
+
 Thermal guard for warm campaigns: ≥100 s cooldown between cells; verify
 `initialThermalState == nominal` in the per-run JSONL post-hoc, re-run flagged cells.
 
