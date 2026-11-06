@@ -1,0 +1,166 @@
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968291
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10c76da80 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10c76da80 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.015 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.003 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.017 sec (max single = 0.015 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A20 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple11  (1011)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+YARDSTICK_BEGIN runtime=onnxruntime-genai model=onnx-community/Qwen3-0.6B-ONNX task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_load model=onnx-community/Qwen3-0.6B-ONNX revision=da1453100cf3ff33ef56d17983fc7a8648706db6 folder=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 device_type=CPU ort=1.26.0 load_s=0.393 eos=151643,151645 max_length=2048 threads=engine-default processors=6 engine_default_threads=3(min(max(1,processors/2),16)) folder_intra_op_num_threads=none telemetry=ORT_DISABLE_TELEMETRY=1,api-disabled
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=16.667 prefill_ms=4874.867 first_step_ms=0.078 decode_ms=3997.156 prefill_tok_s=277.96 decode_tok_s=63.80 engine_ttft_ms=4874.946 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=63.80 decode_tok_s_wall=63.76 ttft_ms=4892 prefill_tok_s=278.0 prefill_tok_s_wall=277.0 prompt_tokens=1355 peak_mb=2336 median_mb=1567 median_resident_mb=1719 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=35.933 prefill_ms=5150.355 first_step_ms=0.077 decode_ms=4136.702 prefill_tok_s=263.09 decode_tok_s=61.64 engine_ttft_ms=5150.432 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=61.64 decode_tok_s_wall=61.61 ttft_ms=5188 prefill_tok_s=263.1 prefill_tok_s_wall=261.2 prompt_tokens=1355 peak_mb=2511 median_mb=1725 median_resident_mb=1900 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=36.631 prefill_ms=5252.919 first_step_ms=0.083 decode_ms=4300.962 prefill_tok_s=257.95 decode_tok_s=59.29 engine_ttft_ms=5253.002 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=59.29 decode_tok_s_wall=59.26 ttft_ms=5291 prefill_tok_s=258.0 prefill_tok_s_wall=256.1 prompt_tokens=1355 peak_mb=2511 median_mb=1726 median_resident_mb=1901 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=34.334 prefill_ms=5387.912 first_step_ms=0.089 decode_ms=4498.963 prefill_tok_s=251.49 decode_tok_s=56.68 engine_ttft_ms=5388.001 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=56.68 decode_tok_s_wall=56.65 ttft_ms=5424 prefill_tok_s=251.5 prefill_tok_s_wall=249.8 prompt_tokens=1355 peak_mb=2512 median_mb=1726 median_resident_mb=1901 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968291
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10ab29d70 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10ab29d70 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.016 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.014 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.014 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.006 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.017 sec (max single = 0.016 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A20 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple11  (1011)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+YARDSTICK_BEGIN runtime=onnxruntime-genai model=onnx-community/Qwen3-0.6B-ONNX task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_load model=onnx-community/Qwen3-0.6B-ONNX revision=da1453100cf3ff33ef56d17983fc7a8648706db6 folder=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 device_type=CPU ort=1.26.0 load_s=0.390 eos=151643,151645 max_length=2048 threads=engine-default processors=6 engine_default_threads=3(min(max(1,processors/2),16)) folder_intra_op_num_threads=none telemetry=ORT_DISABLE_TELEMETRY=1,api-disabled
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=15.935 prefill_ms=4908.514 first_step_ms=0.072 decode_ms=4002.673 prefill_tok_s=276.05 decode_tok_s=63.71 engine_ttft_ms=4908.585 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=63.71 decode_tok_s_wall=63.67 ttft_ms=4925 prefill_tok_s=276.1 prefill_tok_s_wall=275.1 prompt_tokens=1355 peak_mb=2335 median_mb=1566 median_resident_mb=1717 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=33.459 prefill_ms=5140.975 first_step_ms=0.089 decode_ms=4122.595 prefill_tok_s=263.57 decode_tok_s=61.85 engine_ttft_ms=5141.064 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=61.85 decode_tok_s_wall=61.82 ttft_ms=5176 prefill_tok_s=263.6 prefill_tok_s_wall=261.8 prompt_tokens=1355 peak_mb=2510 median_mb=1724 median_resident_mb=1899 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=35.268 prefill_ms=5245.898 first_step_ms=0.080 decode_ms=4296.314 prefill_tok_s=258.30 decode_tok_s=59.35 engine_ttft_ms=5245.978 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=59.35 decode_tok_s_wall=59.32 ttft_ms=5282 prefill_tok_s=258.3 prefill_tok_s_wall=256.5 prompt_tokens=1355 peak_mb=2510 median_mb=1725 median_resident_mb=1900 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=33.082 prefill_ms=5414.124 first_step_ms=0.081 decode_ms=4506.269 prefill_tok_s=250.27 decode_tok_s=56.59 engine_ttft_ms=5414.205 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, the user wants me to list 25 distinct things that a phone can do a phone can do that a cloud model cannot. Each item needs two full sentences of explanation.\n\nFirst, I need to identify 25 distinct things that a phone can do. Since the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25 distinct things that a phone can do.\n\nEach of these 25 things needs two full sentences of explanation. The first sentence should explain the thing, and the second sentence should explain the thing further.\n\nSince the user mentioned that the numbered blocks are filler text, I should focus on the 25"]
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=56.59 decode_tok_s_wall=56.56 ttft_ms=5449 prefill_tok_s=250.3 prefill_tok_s_wall=248.7 prompt_tokens=1355 peak_mb=2511 median_mb=1725 median_resident_mb=1900 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.

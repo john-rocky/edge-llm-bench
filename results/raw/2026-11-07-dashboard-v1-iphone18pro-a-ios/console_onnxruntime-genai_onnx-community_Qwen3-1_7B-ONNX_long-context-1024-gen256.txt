@@ -1,0 +1,166 @@
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968291
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10c6e3f70 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x10c6e3f70 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.000 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.005 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.005 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.014 sec (max single = 0.012 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A20 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple11  (1011)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+YARDSTICK_BEGIN runtime=onnxruntime-genai model=onnx-community/Qwen3-1.7B-ONNX task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_load model=onnx-community/Qwen3-1.7B-ONNX revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 folder=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 device_type=CPU ort=1.26.0 load_s=0.678 eos=151643,151645 max_length=2048 threads=engine-default processors=6 engine_default_threads=3(min(max(1,processors/2),16)) folder_intra_op_num_threads=none telemetry=ORT_DISABLE_TELEMETRY=1,api-disabled
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=16.136 prefill_ms=10754.156 first_step_ms=0.077 decode_ms=7826.754 prefill_tok_s=126.00 decode_tok_s=32.58 engine_ttft_ms=10754.232 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=32.58 decode_tok_s_wall=32.57 ttft_ms=10771 prefill_tok_s=126.0 prefill_tok_s_wall=125.8 prompt_tokens=1355 peak_mb=3696 median_mb=2909 median_resident_mb=3049 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=41.036 prefill_ms=11413.351 first_step_ms=0.084 decode_ms=8904.828 prefill_tok_s=118.72 decode_tok_s=28.64 engine_ttft_ms=11413.435 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=28.64 decode_tok_s_wall=28.63 ttft_ms=11457 prefill_tok_s=118.7 prefill_tok_s_wall=118.3 prompt_tokens=1355 peak_mb=3675 median_mb=2889 median_resident_mb=3051 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=nominal harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=32.092 prefill_ms=12039.664 first_step_ms=0.084 decode_ms=9613.930 prefill_tok_s=112.54 decode_tok_s=26.52 engine_ttft_ms=12039.747 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=26.52 decode_tok_s_wall=26.52 ttft_ms=12073 prefill_tok_s=112.5 prefill_tok_s_wall=112.2 prompt_tokens=1355 peak_mb=3675 median_mb=2889 median_resident_mb=3052 ctx=2048 tokens=255 thermal_initial=nominal thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=29.883 prefill_ms=12463.613 first_step_ms=0.112 decode_ms=11506.163 prefill_tok_s=108.72 decode_tok_s=22.16 engine_ttft_ms=12463.725 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=22.16 decode_tok_s_wall=22.16 ttft_ms=12495 prefill_tok_s=108.7 prefill_tok_s_wall=108.4 prompt_tokens=1355 peak_mb=3676 median_mb=2890 median_resident_mb=3052 ctx=2048 tokens=255 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.
+Launched application with com.example.CoreMLLLMChat bundle identifier.
+Waiting for the application to terminate…
+YARDSTICK_METAL_DEVICE name=Apple A20 Pro GPU registry_id=4294968291
+ggml_metal_device_init: testing tensor API for f16 support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x109b01d70 | th_max = 1024 | th_width =   32
+ggml_metal_device_init: testing tensor API for bfloat support
+ggml_metal_library_compile_pipeline: compiling pipeline: base = 'dummy_kernel', name = 'dummy_kernel'
+ggml_metal_library_compile_pipeline: loaded dummy_kernel                                  0x109b01d70 | th_max = 1024 | th_width =   32
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_compile_all: compiled 'fa_aux' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_f16' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_f32' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_0' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_q4_1' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_0' library in 0.001 sec
+ggml_metal_library_compile_all: compiled 'fa_q5_1' library in 0.015 sec
+ggml_metal_library_compile_all: compiled 'fa_q8_0' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'fa_tensor' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f16' library in 0.013 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_f32' library in 0.012 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_0' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q4_1' library in 0.002 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_0' library in 0.014 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q5_1' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'fa_vec_q8_0' library in 0.008 sec
+ggml_metal_library_compile_all: compiled 'mul_mv' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'mul_mv_mma' library in 0.006 sec
+ggml_metal_library_compile_all: compiled 'mul_mm' library in 0.009 sec
+ggml_metal_library_compile_all: compiled 'quantize' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'softmax' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'norm' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'unary' library in 0.004 sec
+ggml_metal_library_compile_all: compiled 'binbcast' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'reduce' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'tri' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'ssm' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'wkv' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'gated_delta_net' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'solve_tri' library in 0.011 sec
+ggml_metal_library_compile_all: compiled 'rope' library in 0.010 sec
+ggml_metal_library_compile_all: compiled 'conv' library in 0.007 sec
+ggml_metal_library_compile_all: compiled 'upscale' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'argsort' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'pool' library in 0.003 sec
+ggml_metal_library_compile_all: compiled 'misc' library in 0.003 sec
+ggml_metal_library_compile_all: loaded 36 libraries from embedded data in 0.016 sec (max single = 0.015 sec)
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0 (Apple A20 Pro GPU)
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple11  (1011)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal4  (5002)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = true
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  8589.95 MB
+YARDSTICK_BEGIN runtime=onnxruntime-genai model=onnx-community/Qwen3-1.7B-ONNX task=long-context-1024-gen256 runs=4 context_tokens=2048
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_load model=onnx-community/Qwen3-1.7B-ONNX revision=cc6a06a21d614e9b8e92a6adfab1074d4e7d2438 folder=onnxruntime/cpu_and_mobile/cpu-int4-kld-block-128 device_type=CPU ort=1.26.0 load_s=0.709 eos=151643,151645 max_length=2048 threads=engine-default processors=6 engine_default_threads=3(min(max(1,processors/2),16)) folder_intra_op_num_threads=none telemetry=ORT_DISABLE_TELEMETRY=1,api-disabled
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=16.287 prefill_ms=10814.123 first_step_ms=0.078 decode_ms=7976.579 prefill_tok_s=125.30 decode_tok_s=31.97 engine_ttft_ms=10814.201 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=1 cold=1 decode_tok_s=31.97 decode_tok_s_wall=31.96 ttft_ms=10831 prefill_tok_s=125.3 prefill_tok_s_wall=125.1 prompt_tokens=1355 peak_mb=3696 median_mb=2910 median_resident_mb=3049 ctx=2048 tokens=255 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=1 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=29.788 prefill_ms=11800.705 first_step_ms=0.089 decode_ms=9020.282 prefill_tok_s=114.82 decode_tok_s=28.27 engine_ttft_ms=11800.793 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=2 cold=0 decode_tok_s=28.27 decode_tok_s_wall=28.26 ttft_ms=11832 prefill_tok_s=114.8 prefill_tok_s_wall=114.5 prompt_tokens=1355 peak_mb=3675 median_mb=2889 median_resident_mb=3051 ctx=2048 tokens=255 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=2 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=31.170 prefill_ms=12095.051 first_step_ms=0.089 decode_ms=10347.774 prefill_tok_s=112.03 decode_tok_s=24.64 engine_ttft_ms=12095.140 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=3 cold=0 decode_tok_s=24.64 decode_tok_s_wall=24.64 ttft_ms=12128 prefill_tok_s=112.0 prefill_tok_s_wall=111.7 prompt_tokens=1355 peak_mb=3675 median_mb=2890 median_resident_mb=3052 ctx=2048 tokens=255 thermal_initial=fair thermal_final=fair harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=3 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_WARN context_tokens_forced=2048 below_estimate=2554
+YARDSTICK_NOTE ortgenai_run prompt_tokens=1355 picked_tokens=256 decode_tokens=255 generator_ms=31.764 prefill_ms=13291.227 first_step_ms=0.130 decode_ms=11687.283 prefill_tok_s=101.95 decode_tok_s=21.82 engine_ttft_ms=13291.357 stop=length max_length=2048 sampler=greedy templated_sha256=e8cfb3f021c4ce7c00b3ea24d91950ad3f5dd8f64dceb58a5058be68539b0fd9
+YARDSTICK_NOTE ortgenai_text ["<think>\nOkay, let's see. The user provided a lot of text, which seems to be filler text. The task is to list 25 distinct things on-device AI lets a phone do. \n\nFirst, I need to understand what the user is asking. They want a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 25 things that a phone can do with on-device AI. \n\nBut looking at the provided text, it's a series of filler text blocks. Each block starts with a number (like [0], [1], etc.) and then contains a lot of text. \n\nSo the user is asking for a list of 2"]
+YARDSTICK_RUN_OK run=4 cold=0 decode_tok_s=21.82 decode_tok_s_wall=21.81 ttft_ms=13325 prefill_tok_s=101.9 prefill_tok_s_wall=101.7 prompt_tokens=1355 peak_mb=3676 median_mb=2890 median_resident_mb=3053 ctx=2048 tokens=255 thermal_initial=fair thermal_final=serious harness=2026-07-30-agreed-protocol-r4
+YARDSTICK_ENERGY run=4 state=charging battery_delta_pct=0.0 joules=nil (run too short, or plugged in/charging)
+YARDSTICK_ALL_DONE
+The app terminated with the exit code 0.
