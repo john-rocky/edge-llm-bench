@@ -236,8 +236,9 @@ decode and prefill rates (tok/s), `quietGate` and flags, then each regime's deco
 records but run 1's cold one) with their spread.
 
 - **The label names the build.** `--litert-label v0.19.0` names the one build `windows/engine-pins.json` lists. Another
-  build, even of the same commit, has come out with another sha256 every time so far (three builds of `83ce6067f`):
-  pass its own label and point `BENCH_EXTRA_PINS` at the `pins.json` the build script wrote beside the tool. Before the
+  build, even of the same commit, has come out with a sha256 of its own (four builds of `83ce6067f` in new output bases,
+  2026-11-05 to 11-06, four sha256s): pass its own label and point `BENCH_EXTRA_PINS` at the `pins.json` the build
+  script wrote beside the tool. Before the
   job is staged, the executor stops with `error: ...` and exit 1 when the label is in neither registry or the files in
   `<root>\engines\litert` are not that label's build.
 - **`backend=` picks the arm, and `file=` has to fit it.** `cpu` and `gpu` take `gemma-4-E2B-it.litertlm`, `npu` takes
