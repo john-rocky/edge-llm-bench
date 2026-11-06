@@ -269,7 +269,9 @@ read the flags in the first line before the spread.
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
   processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
   the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`, and `gpuSamples` every 5 s of a
-  GPU run, none for a run of about 5 s).
+  GPU run, none for a run of about 5 s). `topProcesses` is a list of up to five `<process> <CPU seconds>` strings, the
+  processes that used 0.05 s or more of CPU in one second; the 2026-11-05 records hold a bare string where one did and
+  `{}` where none did.
 
 ## Symptoms
 

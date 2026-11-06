@@ -91,7 +91,9 @@ function Get-CpuBusyPercent {
     } catch { return $null }
 }
 
-# Foreign load right before a run: the top processes by CPU time used over one second.
+# Foreign load right before a run: the top processes by CPU time used over one second. Callers wrap it in @(): from a
+# function, PowerShell 5.1 hands back one item as the item itself and none as AutomationNull, which ConvertTo-Json
+# writes as a bare string and as {}; wrapped, the record holds a list (possibly empty) every time.
 function Get-TopProcesses {
     try {
         $a = @{}
@@ -224,7 +226,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
     }
 
     $gate = Wait-Quiet
-    $top = Get-TopProcesses
+    $top = @(Get-TopProcesses)
     $before = [ordered]@{ quietGate = $gate; cpuBusyPercent = Get-CpuBusyPercent; topProcesses = $top; gpu = Get-GpuSample }
     $sw = [Diagnostics.Stopwatch]::StartNew()
     $start = Get-Date -Format o
@@ -263,7 +265,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
     $exit = $shell.ExitCode
 
     foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k], "Process") }
-    $after = [ordered]@{ cpuBusyPercent = Get-CpuBusyPercent; topProcesses = Get-TopProcesses }
+    $after = [ordered]@{ cpuBusyPercent = Get-CpuBusyPercent; topProcesses = @(Get-TopProcesses) }
 
     Write-Json $metaPath ([ordered]@{
             exitCode            = $(if ($timedOut) { $null } else { [int]$exit })
