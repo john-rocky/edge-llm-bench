@@ -550,14 +550,19 @@ only on a night whose 02:00 job ended before 05:30. The auto logs have no 05:30 
 
 What can still go wrong:
 
-- The iPhone runner takes no gate deadline (`BENCH_GATE_DEADLINE` is Android's): a cell's re-run
-  follows it at once, inside the run, so a part's re-runs are in its length, and a slow night can
-  run past 08:00 (a run under way is never stopped).
-- The start test reads a part's newest run on record (`hold_eta.Sitting.start_length`: the newest,
-  not a median). A part run longer than about 2.45 h (08:00 less the 05:30 firing and the anchor
-  phase) leaves that part `TooLate` at every 05:30 firing until a shorter run of it is on record,
-  and only a sitting by hand in the day writes one (`./bench dashboard-job iphone18pro --part <tag>
-  --release-by none`). The 2026-10-29 parts' runs were about 5 min under that line.
+- Until 2026-11-07 the iPhone runner took no gate deadline: a cell's re-run follows it at once,
+  inside the run, so each re-run pushes every later cell back. That morning part a's eight re-runs
+  (60 min with their cooldowns and the pause one of them caused) held the phone to 08:06:21. Since
+  then the job hands the iPhone runner `BENCH_GATE_DEADLINE` too, and the runner starts a re-run
+  only when it and the cells after it end by then (§11). A part's own cells can still run past
+  08:00 if they take longer than on record (a run under way is never stopped).
+- The start test reads a part's newest run on record, apart from its gate re-runs
+  (`hold_eta.history` "rounds": an iPhone run less what its payload rows' re-runs took, from the
+  runner's CELL, cooldown and gate lines). 2026-11-06's part b: 2h28m, 1h43m of cells; 2026-11-07's
+  part a: 2h33m, 1h33m of cells. A part whose cells alone take more than about 2.45 h (08:00 less
+  the 05:30 firing and the anchor phase) is `TooLate` at every 05:30 firing until a shorter run of
+  it is on record, and only a sitting by hand in the day writes one (`./bench dashboard-job
+  iphone18pro --part <tag> --release-by none`).
 - Both 05:30 firings of the week are needed. A week with one (a lab unit's sitting that follows a
   Mac part past 05:30, the S26's third sitting, a Mac part that started late) measures part b only,
   and the next week starts with part b again, so part a waits for a week with two, or a sitting by
@@ -902,8 +907,18 @@ release_by the re-runs count only up to the gate's deadline, release_by less
 2 min (§11): the runner defers a later one, and the basis says `the gate
 re-runs a cell only when the re-run ends by HH:MM`. A Mac or iPhone run
 (their runners print no rounds) is counted whole, from its length in the
-logs, else from the device's `expected_hours`. A run past its length is taken
-to end now, so the time slips as it overruns.
+logs, else from the device's `expected_hours`. Since 2026-11-07 an iPhone
+payload run's length is split in two: its cells (the median of its runs
+less their gate re-runs, from the runner's CELL, cooldown and gate lines)
+and its re-runs (the rest). The re-runs it has made come off the second as it
+goes, and on a device with release_by they count only up to the gate's
+deadline; the basis says how much of the time left they are (`a: 1h30m in,
+18 cells, 3 gate re-runs, ~55m left, re-runs ~19m of it as on record`) and
+`+ any re-run the gate adds for a cell of a: 4 min, 10 after a serious
+capture, + the cell's runs again each, only one that ends with the cells after
+it by 07:58`. Before the run starts, on a device with release_by, it counts
+its cells only (the start test's length). A run past its length is taken to
+end now, so the time slips as it overruns.
 
 What it leaves out: a reboot before phase A (`reboot_before`: the first time
 is written after it); the re-runs of cells still to finish their last round
@@ -964,9 +979,8 @@ and its first weekly sitting ran 13:46–23:33 (2026-10-27), a lane's whole
 day. The iPhone 18 Pro got it on 2026-11-04: a sibling lane's ticket waited in
 its queue from 09:04 that morning, and a lane took the hold at 09:38:58, when
 the 05:30 sitting of the whole set (4.1 h) gave it back. Its set runs in two
-parts, one per 05:30 firing (§3, "The iPhone 18 Pro set in two parts"); the
-gate deadline below is Android's, so an iPhone part's re-runs are inside its
-length.
+parts, one per 05:30 firing (§3, "The iPhone 18 Pro set in two parts"); since
+2026-11-07 its runner takes the gate deadline below too.
 
 What the job does (`scripts/dashboard_job.py`):
 
@@ -1012,6 +1026,33 @@ What the job does (`scripts/dashboard_job.py`):
   2026-09-25 to 2026-11-02 the gate
   re-ran 0 to 5 cells after a run's last round, 7 to 34 min each with its
   cooldown, at most 65 min in one run (Pixel 8a, 2026-10-02).
+- The iPhone runner (`scripts/bench_matrix_iphone.sh`, since 2026-11-07)
+  re-runs a flagged cell right after it, so a re-run pushes every later cell
+  back, and a test of the re-run alone does not keep the hold's time: on
+  2026-11-07 part a ran eight re-runs (05:47–08:06, 60 min with their 240 s or
+  600 s cooldowns and the 600 s pause one of them caused) and the hold came
+  back at 08:06:21; with a re-run tested by itself (the Android runner's test,
+  the night's cells replayed with it) it would have come back about 08:00:40.
+  The job hands the iPhone runner the same
+  `BENCH_GATE_DEADLINE`, and the runner starts a payload cell's re-run only
+  when the re-run and the cells after it end by then: its cooldown, its runs
+  again at the length of its first capture, each later cell's cooldown and
+  runs at the longest seconds per run of a cell so far this session, the
+  pause a serious capture owes the next cell, and `SERIOUS_COOLDOWN` (600 s)
+  more after a HOT capture, whose re-run may turn serious (each of the 13
+  re-runs that caused that pause in the iPhone job logs, 2026-09-09 to
+  2026-11-07, followed a HOT capture). A later one is deferred as on Android: the capture moves to
+  `device-jsonl-flagged/`, `GATE_DEFERRED.txt` at the campaign dir's top
+  names the cell, its verdict and its row, the run's SESSION.json lists it,
+  and an anchor row's re-run is never deferred. 2026-11-07's part a replayed
+  through the runner (`DRY_RUN=1` with `DRY_RUN_PLAN`,
+  `scripts/testdata/hold-eta/2026-11-07-iphone18pro-a-plan.tsv`; the selftest
+  replays it): with no deadline its CELL lines fall at the night's times and
+  end 08:06:20; with 07:58 it runs six re-runs, defers two (Gemma 4 E4B
+  LiteRT-LM 1K at 07:17, Qwen3 1.7B ONNX short-chat at 07:45) and ends
+  07:54:52. 2026-11-06's part b (run 08:52–11:20, by hand), replayed the same
+  way from 05:33, ends 08:00:45 with its six re-runs and 07:52:37 with five
+  and one deferred.
 - The sitting closes with the runs it finished. The ledger reason names the
   runs left (`release_by 08:00: not started, left for a later firing this
   week: b2, ort, npu`), each payload SESSION.json carries `release_by`, and
@@ -1094,7 +1135,34 @@ such a lab unit's sitting leaves one part for a later week (§3, "The iPhone
 night that fails is taken again by hand, once, in the day (decided
 2026-10-31). Not covered: the Mac (no device hold; its window is
 `quiet_lock`), the lab units (no hold), and the iPhone 17 Pro (by hand
-only). The iPhone 18 Pro is covered since 2026-11-04, in two parts.
+only). The iPhone 18 Pro is covered since 2026-11-04, in two parts. A row its
+gate defers keeps its week open as on Android: the next sitting runs the rerun
+run before its part (the rerun run alone when both parts are admitted), and a
+rerun run's session covers no part. Its parts' cells take 1h43m (b) and 1h33m
+(a) on their newest runs, so a part started about 05:33 (after the anchor
+phase of the 05:30 firing) leaves 42–52 min for the gate to 07:58. The start
+test counts a rerun run 10 min a row, its anchor row among them, and tests the
+part after it when the part starts: part a (1h33m of cells; the week runs b
+first) must start by about 06:27, so a rerun run before it may take about 54
+min from 05:33, four deferred rows and the anchor row at 10 min a row
+(2026-11-06's part b, replayed: one deferred). The two-week simulation above
+was not run again for this.
+
+Where a row that part a defers goes (decided 2026-11-07). Part a is the week's
+last iPhone sitting, and the planned week above leaves the iPhone no third
+05:30 firing (it takes the two Mac nights'); real weeks leave some idle (the
+week of 2026-10-26: `no device to measure now` at 05:30 on 10-30, 10-31 and
+11-01). In this order: an idle 05:30 firing later that week runs the rerun run
+alone (`auto` lists the iPhone `rerun pending this week`, and the sitting gets
+no part); without one, the one sitting by hand of the 2026-10-31 decision (the
+rerun run alone, as every part is admitted) or the next week's part a, which
+runs the row anyway. Which of the two is chosen on the Sunday morning read of
+the week: the supervising session recommends one, the owner's decision desk
+decides; the job takes neither by itself. A hot morning can defer one or two
+rows a part (replayed: 2026-11-06's part b one, 2026-11-07's part a two), and
+on 2026-11-07 seven of part a's eight re-runs were flagged again (each retry
+kept with a `FLAGGED.txt` line), so a deferral loses little that the re-run
+would have given.
 
 By hand: `./bench dashboard-job <key> --release-by HH:MM` sets another time
 for one invocation, and `--release-by none` lifts it. A dry run logs the cut
@@ -1121,4 +1189,12 @@ firing took. The Pixel 11 Pro's first sitting under release_by (on the night
 auto's order gives it) should log `running its storage halves instead`, run
 a only, give the hold back about 06:20 (06:35 with a gate re-run) and leave
 b1 and b2; its second should run b1 + b2 and give the hold back about 07:05
-(07:40), in `logs/dashboard-job/<date>-pixel11pro.log`.
+(07:40), in `logs/dashboard-job/<date>-pixel11pro.log`. The iPhone 18 Pro's
+next sitting (a 05:30 firing) logs `the gate starts a re-run only when it and
+the cells after it end by 07:58 (BENCH_GATE_DEADLINE)`, its run's env carries
+`BENCH_GATE_DEADLINE`, the runner prints `gate deadline 07:58:00` before its
+first cell, the hold's basis carries `+ any re-run the gate adds for a cell of
+<part>`, and the hold comes back by 08:00; a deferral prints `=== gate:
+<verdict> — quarantined, re-run deferred: ~N min would end …, past the
+deadline 07:58:00 … ===` and leaves `GATE_DEFERRED.txt` at the payload dir's
+top, in `logs/dashboard-job/<date>-iphone18pro.log`.

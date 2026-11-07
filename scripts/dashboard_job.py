@@ -769,18 +769,28 @@ def release_deadline(dev, start, override=None):
 
 
 RERUN_TAG = "rerun"   # the run that takes the cells whose gate re-run release_by deferred (§11)
+# the runners that take BENCH_GATE_DEADLINE: android/bench/run_campaign.py (since 2026-11-02) and
+# scripts/bench_matrix_iphone.sh (since 2026-11-07); the Mac has no device hold and no release_by
+GATE_DEADLINE_PLATFORMS = ("android", "iphone")
 
 
 def gate_deferred(rel_path):
-    """The cells whose gate re-run the Android runner deferred in a payload run (GATE_DEFERRED.txt, written by
-    android/bench/run_campaign.py under BENCH_GATE_DEADLINE) -> [{"cell", "verdict", "row"}]: each row as its
-    cells file has it, for the run that takes the cell later in the week (plan_left "rerun")."""
+    """The cells whose gate re-run the runner deferred in a payload run (GATE_DEFERRED.txt, written under
+    BENCH_GATE_DEADLINE by android/bench/run_campaign.py in app-path-android/ and by scripts/bench_matrix_iphone.sh
+    at the campaign dir's top) -> [{"cell", "verdict", "row"}]: each row as its cells file has it, for the run
+    that takes the cell later in the week (plan_left "rerun", parts_rerun)."""
     out = []
-    for ln in read_lines(os.path.join(ROOT, rel_path, "app-path-android", "GATE_DEFERRED.txt")):
+    for ln in (read_lines(os.path.join(ROOT, rel_path, "app-path-android", "GATE_DEFERRED.txt"))
+               + read_lines(os.path.join(ROOT, rel_path, "GATE_DEFERRED.txt"))):
         m = re.match(r"^GATE_DEFERRED (.*?) verdict=(\S+(?: [\d.]+)?) .*?: row=(.*)$", ln)
         if m and m.group(3).strip():
             out.append({"cell": m.group(1), "verdict": m.group(2), "row": m.group(3).strip()})
     return out
+
+
+def is_rerun_file(cells_file):
+    """Whether a SESSION.json's cells file is a rerun run's (write_rerun_cells: rerun-<date>-<key>.cells)."""
+    return bool(cells_file) and os.path.basename(cells_file).startswith("rerun-")
 
 
 def rerun_rows_text(schedule, dev, rows):
@@ -914,7 +924,8 @@ def phase_b_plan(schedule, dev, args, halves):
     left = None if args.cells else getattr(args, "week_left", None)
     if halves:
         plan = [(h["cells"], float(h.get("min_free_gb", 0))) for h in halves]
-    elif left is not None and left["set"] != "whole":
+    elif left is not None and left["set"] != "whole" and not part:
+        # this week's sittings ran the set (or, on a device in parts, every part): the rerun run alone
         plan = []
     else:
         plan = [(args.cells or (part["cells"] if part else schedule["cells"]), 0.0)]
@@ -1070,6 +1081,10 @@ def window_plan(schedule, key, dev, args, info, deadline, now=None):
         f"expected to end {end:%H:%M}; a later run expected to end past release_by is not started")
     if dev["platform"] == "android":
         log(f"release_by {deadline:%F %H:%M}: the gate starts a block re-run only when it ends by "
+            f"{s.gate_deadline:%H:%M} (BENCH_GATE_DEADLINE); a later one is deferred, its capture quarantined and "
+            "its cell left for a later firing this week (the rerun run)")
+    elif dev["platform"] == "iphone":
+        log(f"release_by {deadline:%F %H:%M}: the gate starts a re-run only when it and the cells after it end by "
             f"{s.gate_deadline:%H:%M} (BENCH_GATE_DEADLINE); a later one is deferred, its capture quarantined and "
             "its cell left for a later firing this week (the rerun run)")
     return s
@@ -1679,14 +1694,17 @@ def attempt(schedule, key, dev, attempt_no, args):
         if problem:
             log(f"WARN the parts and {schedule['cells']} differ, the weekly job misses what no part holds: "
                 f"{problem}")
+    elif part_why:
+        log(f"the week's parts {'/'.join(p['tag'] for p in device_parts(dev))}: {part_why}")
     if left is not None:
         log(f"the week's plan: {', '.join(left_tags(dev, left))} left by this week's earlier sittings — "
             "this sitting runs those")
     # the device's release_by: the hold is given back by then (§11); never into a keeper's hold
     deadline = None if HOLD_KEEPER is not None else release_deadline(
         dev, getattr(args, "started_at", None) or datetime.datetime.now(), getattr(args, "release_by", None))
-    if deadline is not None and platform == "android":
-        # the Android runner starts a gate re-run only when it ends by then (§11)
+    if deadline is not None and platform in GATE_DEADLINE_PLATFORMS:
+        # the phone runners start a gate re-run only when it ends by then (the iPhone's: it and the cells
+        # after it, §11)
         env["BENCH_GATE_DEADLINE"] = str(int((deadline - datetime.timedelta(
             seconds=hold_eta.GATE_RESERVE_S)).timestamp()))
     if rerun_file:
@@ -1885,7 +1903,7 @@ def attempt(schedule, key, dev, attempt_no, args):
                     "(models + caches — the measured floor for min_free_gb)")
             created.append(rel_path)
             expected, have = cells_with_records(rel_path, cells_file, platform, dev["identifier"], key)
-            deferred = gate_deferred(rel_path) if platform == "android" else []
+            deferred = gate_deferred(rel_path) if platform in GATE_DEADLINE_PLATFORMS else []
             if deferred:
                 log(f"gate: {len(deferred)} re-run{'s' if len(deferred) > 1 else ''} deferred at release_by "
                     f"({'; '.join(d['cell'] for d in deferred)}): quarantined, the cell"
@@ -2447,6 +2465,8 @@ def part_sessions(parts, sessions, session_cells):
     by_file = {p["cells"]: p["tag"] for p in parts}
     out = {p["tag"]: [] for p in parts}
     for t, camp in sessions:
+        if is_rerun_file(session_cells.get(camp)):
+            continue   # a rerun run carries deferred rows (week_rerun), no part
         tag = by_file.get(session_cells.get(camp))
         for p in parts:
             if tag in (None, p["tag"]):
@@ -2460,11 +2480,12 @@ def parts_pending(parts, covered, monday):
 
 
 def sitting_part(schedule, key, dev, args, now=None, rows=None, admitted=None, skip=None,
-                 session_cells=None):
+                 session_cells=None, session_gate=None):
     """(the part of the device's weekly set this sitting runs, why), or (None, "") for a device without
     parts and for an explicit --cells file (single-file mode: a retake, a slot file). --part names it;
     else the first part, in the week's order, with no admitted session since Monday; else (every part
-    done this week: a sitting by hand) the part whose newest admitted session is the oldest."""
+    done this week: a sitting by hand) the part whose newest admitted session is the oldest, or none when a gate
+    deferred rows this week that no later session took (week_rerun): the sitting is the rerun run alone."""
     parts = device_parts(dev)
     if not parts or args.cells:
         return None, ""
@@ -2479,8 +2500,8 @@ def sitting_part(schedule, key, dev, args, now=None, rows=None, admitted=None, s
     admitted = load_admission() if admitted is None else admitted
     skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
     session_cells = load_session_cells() if session_cells is None else session_cells
-    covered = part_sessions(parts, device_sessions({"devices": {key: dev}}, rows, admitted, skip)[key],
-                            session_cells)
+    sessions = device_sessions({"devices": {key: dev}}, rows, admitted, skip)[key]
+    covered = part_sessions(parts, sessions, session_cells)
     pending = parts_pending(parts, covered, week_start(now))
     if pending:
         done = [f"{p['tag']} admitted {covered[p['tag']][0][0]:%F %H:%M}" for p in parts
@@ -2488,6 +2509,11 @@ def sitting_part(schedule, key, dev, args, now=None, rows=None, admitted=None, s
         return (next(p for p in parts if p["tag"] == pending[0]),
                 f"the first part pending this week (pending: {', '.join(pending)}"
                 + (f"; {', '.join(done)}" if done else "") + ")")
+    rerun = week_rerun(sessions, session_cells, week_start(now),
+                       load_session_gate() if session_gate is None else session_gate)
+    if rerun:
+        return None, (f"every part admitted this week; the rerun run alone ({len(rerun)} "
+                      f"row{'s' if len(rerun) > 1 else ''} whose gate re-run release_by deferred)")
     part = min(parts, key=lambda p: covered[p["tag"]][0][0])
     return part, (f"every part admitted this week; the one whose newest session is the oldest "
                   f"({covered[part['tag']][0][0]:%F %H:%M})")
@@ -2523,17 +2549,26 @@ def plan_left(schedule, dev, sessions, session_cells, monday, session_gate=None)
         rest = "whole"
     extras = [] if hand else [e["cells"] for e in dev.get("extra_cells", []) if e["cells"] not in files]
     out = {"set": rest, "extras": extras}
-    rerun = []
+    rerun = week_rerun(sessions, session_cells, monday, session_gate)
+    if rerun:
+        out["rerun"] = rerun
+    return out
+
+
+def week_rerun(sessions, session_cells, monday, session_gate=None):
+    """The rows an admitted session of the device since `monday` deferred (`session_gate`: load_session_gate) and
+    no later admitted session took (its "carries") without deferring them again, in order (plan_left "rerun"; a
+    device in parts: parts_rerun); none when a hand run (no SESSION.json) is among them: it covers the plan."""
+    rerun, hand = [], False
     for t, camp in sorted(sessions):          # oldest first: a row deferred again stays left
         if t < monday:
             continue
+        hand = hand or session_cells.get(camp) is None
         g = (session_gate or {}).get(camp) or {}
         again = g.get("deferred") or []
         rerun = [r for r in rerun if r not in (g.get("carries") or []) or r in again]
         rerun += [r for r in again if r not in rerun]
-    if rerun and not hand:
-        out["rerun"] = rerun
-    return out
+    return [] if hand else rerun
 
 
 def left_tags(dev, left):
@@ -2548,8 +2583,9 @@ def sitting_left(schedule, key, dev, args, now=None, rows=None, admitted=None, s
     """The runs of the weekly plan a sitting makes when earlier sittings this week made the others
     (plan_left), or None for the whole plan: nothing of it admitted this week, or all of it (a sitting by
     key on a week done runs it all again, as before), a device whose set is in parts (sitting_part), an
-    explicit --cells file."""
-    if device_parts(dev) or args.cells or dev.get("platform") == "ddp":
+    explicit --cells file. A device in parts: only the rows a gate deferred this week ({"set": None, "extras":
+    [], "rerun": rows}, week_rerun), else None; its part is sitting_part's."""
+    if args.cells or dev.get("platform") == "ddp":
         return None
     now = now or datetime.datetime.now().astimezone()
     rows = load_rows() if rows is None else rows
@@ -2557,8 +2593,11 @@ def sitting_left(schedule, key, dev, args, now=None, rows=None, admitted=None, s
     skip = regression_watch.retake_sitting_dirs(ROOT) if skip is None else skip
     session_cells = load_session_cells() if session_cells is None else session_cells
     session_gate = load_session_gate() if session_gate is None else session_gate
-    left = plan_left(schedule, dev, device_sessions({"devices": {key: dev}}, rows, admitted, skip)[key],
-                     session_cells, week_start(now), session_gate)
+    sessions = device_sessions({"devices": {key: dev}}, rows, admitted, skip)[key]
+    if device_parts(dev):
+        rerun = week_rerun(sessions, session_cells, week_start(now), session_gate)
+        return {"set": None, "extras": [], "rerun": rerun} if rerun else None
+    left = plan_left(schedule, dev, sessions, session_cells, week_start(now), session_gate)
     if not left.get("rerun") and ((left["set"] is None and not left["extras"]) or (
             left["set"] == "whole" and len(left["extras"]) == len(dev.get("extra_cells", [])))):
         return None
@@ -2653,9 +2692,13 @@ def resolve_device(schedule, key, exclude=None, now=None, rows=None, admitted=No
         if parts:
             # a weekly set in parts is done when every part has an admitted session this week
             todo = parts_pending(parts, part_sessions(parts, sessions[k], session_cells), monday)
-            week_done = not todo
-            if todo:
-                entry["detail"] += f"; part{'s' if len(todo) > 1 else ''} {', '.join(todo)} pending this week"
+            # and the rows a gate deferred this week keep it open (week_rerun, §11)
+            rerun = week_rerun(sessions[k], session_cells, monday, session_gate)
+            week_done = not todo and not rerun
+            if not week_done:
+                said = ([RERUN_TAG] if rerun else []) + (
+                    [f"part{'s' if len(todo) > 1 else ''} {', '.join(todo)}"] if todo else [])
+                entry["detail"] += f"; {', '.join(said)} pending this week"
         else:
             # done when every run of the weekly plan has an admitted session this week (plan_left): a
             # sitting stopped at release_by leaves runs for a later firing (§11)

@@ -83,6 +83,9 @@ DEFAULT_LAUNCH_S = 300.0   # no launch on record at all
 DEFAULT_LEAD_S = 30.0      # a run's start to its first launch, none on record
 MIN_SHARE_S = 600.0        # a whole run with no length on record gets at least this
 PROFILE_S = 600.0          # a retake's profile pair, none on record (2026-10-20 S26: 2 min 54 s)
+# one row of a rerun run counted whole (an iPhone's): the longest iPhone row with its cooldown in the 2026-11-06 and
+# 11-07 parts was 9.1 min (Qwen3 4B ONNX 1K, 300 s + 248 s); the session anchor row counts as one
+RERUN_ROW_S = 600.0
 HISTORY_LOGS = 16          # the device's newest job logs read for lengths (a week's sitting among by-hand days)
 HISTORY_KEEP = 5           # newest lengths per launch / run kept for the median
 # when the job rewrites the hold besides its events (a run's start and end, a round, the gate):
@@ -102,6 +105,16 @@ GATE_AHEAD = re.compile(r"^gate ahead: (\S+ \S+ \S+) \(")
 GATE_PLAN = re.compile(r"^gate plan: re-run (\d+) of \d+ payload cells[^:]*(?::\s*(.*))?$")
 GATE_RERUN = re.compile(r"^gate: .* re-run once")
 GATE_DEFER = re.compile(r"^gate: .* re-run deferred")
+# the iPhone runner (scripts/bench_matrix_iphone.sh): one launch per cell with all its runs, the gate's re-run
+# right after it; the gate line has no time of its own, the re-run's CELL line follows its cooldown
+IOS_CELL = re.compile(r"^=== CELL (\S+) / (\S+) / (\S+) runs=(\d+) .*\((\d\d):(\d\d):(\d\d)\) ===$")
+IOS_COOL = re.compile(r"^=== cooldown (\d+)s ===$")
+IOS_PAUSE = re.compile(r"^=== previous capture saw serious/critical thermal — pausing (\d+)s more before this cell ===$")
+IOS_GATE = re.compile(r"^=== gate: (.*?) — quarantine flagged capture, cooldown (\d+)s, re-run once ===$")
+IOS_DEFER = re.compile(r"^=== gate: .* re-run deferred")
+IOS_VERDICT = re.compile(r"^pulled=\d+ verdict=(.*)$")
+# scripts/bench_matrix_iphone.sh THERMAL_COOLDOWN / SERIOUS_COOLDOWN: the wait before an iPhone re-run
+IOS_GATE_COOLDOWN_S, IOS_SERIOUS_S = 240, 600
 
 
 def launch_label(runtime, backend, model_id, task):
@@ -125,6 +138,11 @@ def fmt_span(seconds):
 
 def _median(values):
     return statistics.median(values) if values else None
+
+
+def _serious(verdict):
+    """Whether a gate verdict's thermal states reached serious or critical (bench_matrix_iphone.sh's pause)."""
+    return "serious" in verdict or "critical" in verdict
 
 
 class Launch:
@@ -160,6 +178,15 @@ class Stage:
         self.deferred_late = 0      # of them, announced first (deferred after the cooldown)
         self.anchor_gate = False    # an anchor row's re-run announced before the rounds: its block is next
         self.in_gate = False
+        # an iPhone run, counted whole (rows None): its CELL lines and gate re-runs as the runner prints them
+        self.ios = False            # the plan's: an iPhone matrix run (plan_stages)
+        self.ios_cells = 0          # CELL lines, re-runs aside
+        self.ios_reruns = 0         # gate re-runs started, of payload rows
+        self.ios_rerun_s = 0.0      # what those cost: the gate line to the re-run's end, the pause its capture owed
+        self.ios_open = None        # the gate's re-run under way or announced
+        self.ios_label = None       # the cell of the newest CELL line
+        self.ios_cool = self.ios_pause = 0   # the cooldown and pause lines since the newest CELL line
+        self.ios_anchors = None     # the cells file's anchor rows ("<runtime> <model-id> <task>"): never deferred
 
     @property
     def key(self):
@@ -240,6 +267,9 @@ class Sitting:
         st = self.current
         if st is None:
             return False
+        moved = self._ios_line(st, line) if st.ios else None
+        if moved is not None:
+            return moved
         m = LAUNCH.match(line)
         if m:
             t = self._at(int(m.group(4)), int(m.group(5)), int(m.group(6)))
@@ -309,6 +339,80 @@ class Sitting:
             return True
         return False
 
+    def _ios_anchor(self, st, label):
+        """Whether `label` is an anchor row (an anchor row's re-run is never deferred, so its time is the run's
+        own): any row of the anchor phase (matrices/anchors.cells, whatever id a row had then: the 17 Pro's
+        anchors of 2026-09-09 ran litert-community/Qwen3-0.6B, renamed since), else an anchor row of the run's
+        cells file."""
+        if st.tag == "anchor" or os.path.basename(st.cells) == "anchors.cells":
+            return True
+        if st.ios_anchors is None:
+            try:
+                st.ios_anchors = {f"{c['runtime']} {c['model_id']} {c['task']}"
+                                  for c in load_cells(os.path.join(ROOT, st.cells))
+                                  if c["platform"] == "ios" and c["anchor"]}
+            except (OSError, ValueError, KeyError):
+                st.ios_anchors = set()
+        return label in st.ios_anchors
+
+    def _ios_close(self, st, end, pause=0):
+        """The gate's re-run under way ended at `end`: a payload row's counts into the run's re-run time, with
+        the pause before the next cell when its capture saw serious and the first capture did not (that
+        capture's own pause comes whether or not the cell is re-run)."""
+        o, st.ios_open = st.ios_open, None
+        if not o or o.get("start") is None or end is None or o["anchor"]:
+            return
+        caused = pause if (_serious(o.get("retry") or "") and not _serious(o["first"])) else 0
+        st.ios_rerun_s += o["cool"] + max((end - o["start"]).total_seconds(), 0.0) + caused
+
+    def _ios_line(self, st, line):
+        """An iPhone runner line (bench_matrix_iphone.sh) -> True / False as feed() returns, None when it is not
+        one. A CELL line after a gate line, of the same cell, is the re-run's; any other closes the re-run (its
+        end: that CELL line less its cooldown and pause)."""
+        m = IOS_CELL.match(line)
+        if m:
+            t = self._at(int(m.group(5)), int(m.group(6)), int(m.group(7)))
+            if t is None:
+                return False
+            self._tick(t)
+            label = f"{m.group(1)} {m.group(2)} {m.group(3)}"
+            o = st.ios_open
+            if o is not None and o.get("start") is None and label == st.ios_label:
+                o["start"] = t
+                st.ios_reruns += 0 if o["anchor"] else 1
+            else:
+                if o is not None:
+                    self._ios_close(st, t - datetime.timedelta(seconds=st.ios_cool + st.ios_pause), st.ios_pause)
+                st.ios_cells += 1
+                st.ios_label = label
+            st.ios_cool = st.ios_pause = 0
+            return False
+        m = IOS_COOL.match(line)
+        if m:
+            st.ios_cool = int(m.group(1))
+            return False
+        m = IOS_PAUSE.match(line)
+        if m:
+            st.ios_pause = int(m.group(1))
+            return False
+        m = IOS_GATE.match(line)
+        if m:
+            st.ios_open = {"first": m.group(1), "cool": int(m.group(2)), "start": None, "retry": None,
+                           "anchor": self._ios_anchor(st, st.ios_label or "")}
+            self.events += 1
+            return True
+        if IOS_DEFER.match(line):
+            st.deferred += 1
+            self.events += 1
+            return True
+        m = IOS_VERDICT.match(line)
+        if m:
+            o = st.ios_open
+            if o is not None and o.get("start") is not None and o.get("retry") is None:
+                o["retry"] = m.group(1)
+            return False
+        return None
+
     def _job_line(self, msg, t):
         m = RUN_START.match(msg)
         if m:
@@ -316,6 +420,7 @@ class Sitting:
             if self.current is not None:
                 # a run that never said its exit (stopped, or a dry run's command line) is over
                 self._close_launch(t, timed=False)
+                self._ios_close(self.current, t)
                 self.current.end = t
                 self.current = None
             st = next((s for s in self.stages if s.kind == kind and s.cells == cells
@@ -326,6 +431,9 @@ class Sitting:
                 idx = self.stages.index(self.current) + 1 if self.current in self.stages else len(self.stages)
                 self.stages.insert(idx, st)
             st.start = t
+            # an iPhone run (a history log's too): bench_matrix_iphone.sh's lines (_ios_line); the Mac runner's
+            # CELL lines look alike and stay unread
+            st.ios = st.ios or (kind == "matrix" and " --platform iphone " in f"{msg} ")
             self.current = st
             self.events += 1
             return True
@@ -333,6 +441,7 @@ class Sitting:
         if m and self.current is not None and self.current.kind == m.group(1):
             st = self.current
             self._close_launch(t)
+            self._ios_close(st, t)
             st.end, st.rc = t, int(m.group(2))
             self.current = None
             self.events += 1
@@ -403,6 +512,8 @@ class Sitting:
         is still uncounted)."""
         if st.rows is None:
             whole = self._whole(st) or MIN_SHARE_S
+            if st.ios and st.kind == "matrix" and st.tag != "anchor":
+                return self._ios_split(st, now, whole)
             if st.start is None:
                 return whole, 0.0, "", False
             gone = (now - st.start).total_seconds()
@@ -464,6 +575,32 @@ class Sitting:
                 words += f", {len(st.ahead)} gate re-run{'s' if len(st.ahead) > 1 else ''} ahead"
         return max(left, 0.0), max(gate, 0.0), words, gate_open
 
+    def _rounds_of(self, st):
+        v = (self.hist.get("rounds") or {}).get(st.key)
+        return _median(v[:3]) if v else None
+
+    def _ios_split(self, st, now, whole):
+        """An iPhone payload run (bench_matrix_iphone.sh re-runs a flagged cell right after it): its whole length
+        on record as its cells (history "rounds", the median) and the gate's re-runs (the rest of it). Once it
+        runs, the re-runs it made come off the second, the time of its cells off the first; the gate stays open
+        to its last cell."""
+        base = min(self._rounds_of(st) or whole, whole)
+        gate_all = max(whole - base, 0.0)
+        if st.start is None:
+            return base, gate_all, "", True
+        gone = (now - st.start).total_seconds()
+        o = st.ios_open
+        spent = st.ios_rerun_s
+        if o is not None and not o["anchor"]:
+            # the re-run under way: its cooldown began at the gate line (its CELL line less the cooldown)
+            began = (o["start"] - datetime.timedelta(seconds=o["cool"])) if o.get("start") else self.clock
+            spent += max((now - began).total_seconds(), 0.0) if began else 0.0
+        words = f"{fmt_span(gone)} in, {st.ios_cells} cell{'' if st.ios_cells == 1 else 's'}"
+        if st.ios_reruns or st.deferred:
+            words += (f", {st.ios_reruns} gate re-run{'' if st.ios_reruns == 1 else 's'}"
+                      + (f", {st.deferred} deferred (release_by)" if st.deferred else ""))
+        return max(base - (gone - spent), 0.0), max(gate_all - spent, 0.0), words, True
+
     def follows_payload(self, st):
         """Whether a payload run of this sitting comes before `st` (the anchor phase is no payload run)."""
         idx = self.stages.index(st) if st in self.stages else len(self.stages)
@@ -495,6 +632,7 @@ class Sitting:
         goes with its matrix run, never alone."""
         own = self.own_lengths()
         total, parts, open_gates, cut, bounded = 0.0, [], [], [], False
+        open_ios, bounded_ios = [], False
         gd = self.gate_deadline
         for st in self.stages:
             if st.skipped or st.end is not None:
@@ -511,19 +649,25 @@ class Sitting:
                 if st.kind != "profile" and now + datetime.timedelta(seconds=total + need) > self.deadline:
                     cut.append(st.tag)
                     continue
-            if gd is not None and st.rows is not None and gate > 0:
+            if gd is not None and (st.rows is not None or st.ios) and gate > 0:
                 # the runner starts a re-run only when it ends by the gate deadline: none is counted past it
                 room = max((gd - now).total_seconds() - total - rounds, 0.0)
                 if gate > room:
-                    gate, bounded = room, True
+                    gate = room
+                    if st.ios:
+                        bounded_ios = True
+                    else:
+                        bounded = True
             left = rounds + gate
             total += left
             if gate_open:
-                open_gates.append(st.tag)
+                (open_ios if st.ios else open_gates).append(st.tag)
+            # an iPhone run counts its re-runs as its record has them (_ios_split), bounded above: say how much
+            rr = f", re-runs ~{fmt_span(gate)} of it as on record" if st.ios and gate >= 60 else ""
             if st.start is not None:
-                parts.append(f"{st.tag}: {words + ', ' if words else ''}~{fmt_span(left)} left")
+                parts.append(f"{st.tag}: {words + ', ' if words else ''}~{fmt_span(left)} left{rr}")
             else:
-                parts.append(f"{st.tag} ~{fmt_span(left)}")
+                parts.append(f"{st.tag} ~{fmt_span(left)}{rr}")
         tail = (f"; release_by {self.deadline:%H:%M}: {', '.join(cut)} not started, left for a later firing"
                 if cut else "")
         if not parts:
@@ -533,9 +677,17 @@ class Sitting:
             basis += (f" (+ any re-run the gate adds for a cell of {', '.join(open_gates)} still to finish "
                       f"its last round: {GATE_COOLDOWN_S // 60} min + a block of the cell's runs each"
                       + (f", only one that ends by {gd:%H:%M}" if gd is not None else "") + ")")
+        if open_ios:
+            basis += (f" (+ any re-run the gate adds for a cell of {', '.join(open_ios)}: "
+                      f"{IOS_GATE_COOLDOWN_S // 60} min, {IOS_SERIOUS_S // 60} after a serious capture, + the cell's "
+                      "runs again each"
+                      + (f", only one that ends with the cells after it by {gd:%H:%M}" if gd is not None else "") + ")")
         if bounded:
             basis += (f" (the gate re-runs a cell only when the re-run ends by {gd:%H:%M}: a later one is deferred, "
                       "its cell left for a later sitting this week)")
+        if bounded_ios:
+            basis += (f" (the gate re-runs a cell only when the re-run and the cells after it end by {gd:%H:%M}: a "
+                      "later one is deferred, its cell left for a later sitting this week)")
         return now + datetime.timedelta(seconds=total), basis + tail
 
 
@@ -564,6 +716,11 @@ def history(log_dir, key, before=None, n=HISTORY_LOGS):
             if st.end is None or st.rc != 0 or st.start is None:
                 continue
             out["stages"][st.key].append((st.end - st.start).total_seconds())
+            if st.ios:
+                # an iPhone run: its cells without the gate's re-runs of its payload rows (each re-run follows
+                # its cell at once, bench_matrix_iphone.sh), which BENCH_GATE_DEADLINE bounds
+                out["rounds"][st.key].append(max((st.end - st.start).total_seconds() - st.ios_rerun_s, 0.0))
+                continue
             # to the end of the last round: the first re-run after it began GATE_COOLDOWN_S before its launch
             tail = next((l for l in st.launches if l.tail), None)
             rounds_end = min(tail.start - datetime.timedelta(seconds=GATE_COOLDOWN_S), st.end) if tail else st.end
@@ -588,6 +745,13 @@ def stage_rows(cells_path, platform_token, key):
     return rows
 
 
+def _rows(cells_path, platform_token, key):
+    try:
+        return len(stage_rows(cells_path, platform_token, key))
+    except (OSError, ValueError, KeyError):
+        return 0
+
+
 def _launches(cells_path, platform_token, key):
     try:
         return sum(runs for _, runs, _ in stage_rows(cells_path, platform_token, key))
@@ -609,11 +773,17 @@ def plan_stages(runs, dev, key, lengths, root=ROOT, platform_token="android", bu
                 rows = stage_rows(os.path.join(root, cells), "android", key)
             except (OSError, ValueError, KeyError):
                 rows = None
-        stages.append(Stage(kind, cells, tag, rows=rows))
+        st = Stage(kind, cells, tag, rows=rows)
+        st.ios = platform_token == "ios" and kind == "matrix"
+        stages.append(st)
     profiles = [x for k, v in lengths["stages"].items() if k.startswith("profile|") for x in v[:HISTORY_KEEP]]
     whole = [s for s in stages if s.rows is None]
     for s in whole:
-        if s.kind == "profile":
+        if s.tag == "rerun" and s.kind == "matrix":
+            # the rows a gate deferred earlier this week (dashboard_job.write_rerun_cells: a new file each
+            # time, never on record): RERUN_ROW_S each, the session anchor row among them
+            s.expected = max(_rows(os.path.join(root, s.cells), platform_token, key) * RERUN_ROW_S, MIN_SHARE_S)
+        elif s.kind == "profile":
             s.expected = _median(lengths["stages"].get(s.key, [])[:3]) or _median(profiles) or PROFILE_S
         else:
             s.expected = _median(lengths["stages"].get(s.key, [])[:3])

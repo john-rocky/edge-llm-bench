@@ -25,6 +25,18 @@
 #     to device-jsonl-flagged/ (kept for audit, out of build_summary's glob),
 #     the cell cools THERMAL_COOLDOWN and re-runs once; a flagged retry stands
 #     with a FLAGGED.txt note.
+#   - BENCH_GATE_DEADLINE=<epoch s> (the dashboard job's release_by less 2 min,
+#     scripts/dashboard_job.py): a payload cell's re-run starts only when it and
+#     the cells still to run end by then — its cooldown, its runs again at the
+#     length of its first capture, each later cell's cooldown and runs at the
+#     longest seconds per run of a cell this session, the pause a serious capture
+#     owes the next cell, and SERIOUS_COOLDOWN more after a HOT capture (its
+#     re-run may turn serious). This runner re-runs a cell right after it, so a
+#     re-run pushes every later cell back (2026-11-07: eight re-runs, an hour,
+#     held the phone to 08:06:21). A later one is deferred: the flagged capture is
+#     quarantined all the same, GATE_DEFERRED.txt names the cell, its verdict and
+#     its row, and a later sitting takes the cell (docs/dashboard-recurring-job-
+#     v1.md §11). An anchor row's re-run is never deferred.
 #
 # native-benchmark-<P>x<D> rows (2026-10-08, docs/coreai-arm-v1.md): one launch runs the
 # engine's own benchmark instead of a task — litert-lm --litert-native-benchmark (runs= calls of
@@ -38,7 +50,11 @@
 #
 #   DRY_RUN=1 scripts/bench_matrix_iphone.sh run <cells>   # print every launch; no device call
 #     (the loop below runs with xcrun / gtimeout / sleep replaced by printers and the campaign
-#     directory in a temp dir: nothing under results/, no wait)
+#     directory in a temp dir: nothing under results/, no wait). The clock is a virtual one
+#     (DRY_RUN_START, epoch s, default now) that each cooldown moves. DRY_RUN_PLAN=<file> replays
+#     a run on it: one line per cell, tab-separated, "<runtime> <model-id> <task>", the first
+#     capture's seconds and verdict, then the re-run's seconds and verdict (a cell not in the file:
+#     60 s, OK); scripts/dashboard_job_selftest.py replays 2026-11-07's part a this way.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -56,12 +72,16 @@ THERMAL_COOLDOWN="${THERMAL_COOLDOWN:-240}"          # s before the one thermal 
 # and again before the next cell, instead of the 240 s, and the run goes on.
 SERIOUS_COOLDOWN="${SERIOUS_COOLDOWN:-600}"
 CELL_TIMEOUT="${CELL_TIMEOUT:-3600}"                 # litert teardown stalls: keep 3600 for litert cells
+GATE_DEADLINE="${BENCH_GATE_DEADLINE:-}"             # epoch s; empty = none (the header's BENCH_GATE_DEADLINE)
+GATE_DEADLINE="${GATE_DEADLINE%%.*}"                 # whole seconds: a float (run_campaign.py takes one) leaves no -gt to fail
 CAMPAIGN="${CAMPAIGN:-$(date +%F)-iphone-matrix}"
 OUT="$REPO/results/raw/$CAMPAIGN"
+DRY_PLAN="${DRY_RUN_PLAN:-}"
 if [ "${DRY_RUN:-0}" = 1 ]; then
   # Every device call of this script goes through xcrun (gtimeout only wraps it): print it to
   # the terminal (fd 3) instead; `device info details` answers the two lines the provenance
-  # grep expects. The campaign directory is a temp dir and cooldowns do not wait.
+  # grep expects. The campaign directory is a temp dir and cooldowns do not wait: they move
+  # the virtual clock (DRY_NOW), as a replayed launch does (run_cell).
   exec 3>&1
   OUT="$(mktemp -d)/$CAMPAIGN"
   printf 'DRY-RUN campaign dir (temp): %s\n' "$OUT" >&3
@@ -70,10 +90,30 @@ if [ "${DRY_RUN:-0}" = 1 ]; then
     case "$*" in *"device info details"*) printf 'OS Version: (dry run)\nOS Build Update: (dry run)\n' ;; esac
   }
   gtimeout(){ while [ $# -gt 0 ] && [ "${1#--}" != "$1" ]; do shift; done; shift; "$@"; }
-  sleep(){ :; }
+  DRY_NOW="${DRY_RUN_START:-$(date +%s)}"
+  sleep(){ DRY_NOW=$((DRY_NOW + ${1%.*})); }
 fi
 
 log(){ printf '\n=== %s ===\n' "$*"; }
+
+now_s(){ # the clock in epoch seconds (a dry run's virtual one)
+  if [ "${DRY_RUN:-0}" = 1 ]; then echo "$DRY_NOW"; else date +%s; fi
+}
+
+hms(){ # <epoch s> -> HH:MM:SS local (date -r and date -d differ between macOS and Linux)
+  python3 -c 'import sys, time; print(time.strftime("%H:%M:%S", time.localtime(int(sys.argv[1]))))' "$1"
+}
+
+clock_hms(){ # the clock as HH:MM:SS (a CELL line's time)
+  if [ "${DRY_RUN:-0}" = 1 ]; then hms "$DRY_NOW"; else date +%H:%M:%S; fi
+}
+
+dry_plan(){ # "<runtime> <model-id> <task>" <field: 2 first seconds, 3 first verdict, 4 re-run seconds, 5 re-run verdict>
+  local v=""
+  [ -n "$DRY_PLAN" ] && v="$(awk -F'\t' -v k="$1" -v f="$2" '$1 == k { print $f; exit }' "$DRY_PLAN")"
+  if [ -z "$v" ]; then case "$2" in 2|4) v=60 ;; *) v=OK ;; esac; fi
+  echo "$v"
+}
 
 STAMP(){ echo "$OUT/.campaign_start"; }
 pull_new(){ # records (*.json) + endurance turn sidecars (*.turns.ndjson, next to their record)
@@ -108,6 +148,10 @@ PY
 
 cell_verdict(){ # <runtime> <model-id> <task> <runs> -> OK / SHORT n / HOT ... / SPREAD pct / DEAD n / COLLAPSE pct / GATE_ERROR
   local files v
+  # a replayed dry run: the plan's verdict for this capture (CELL_ATTEMPT 1 = first, 2 = re-run)
+  if [ "${DRY_RUN:-0}" = 1 ] && [ -n "$DRY_PLAN" ]; then
+    dry_plan "$CELL_LABEL" $(( CELL_ATTEMPT * 2 + 1 )); return 0
+  fi
   files="$(cell_files "$1" "$2" "$3")"
   [ -z "$files" ] && { echo "SHORT 0"; return 0; }
   # word-splitting is safe: device-jsonl names carry no spaces
@@ -135,13 +179,17 @@ quarantine_cell(){ # <runtime> <model-id> <task> <runs> — move the judged capt
 run_cell(){ # <runtime> <model-id> <task> <runs> [extra launch args...]
   local rt="$1" mid="$2" task="$3" runs="$4"; shift 4
   local logf="$OUT/console_$(echo "${rt}_${mid}_${task}" | tr '/.' '__').txt"
-  log "CELL $rt / $mid / $task runs=$runs $* ($(date +%H:%M:%S))"
+  log "CELL $rt / $mid / $task runs=$runs $* ($(clock_hms))"
   local rc=0
   gtimeout --kill-after=30 "$CELL_TIMEOUT" \
     xcrun devicectl device process launch --console --terminate-existing --device "$DEV" "$APP" \
     -- --yardstick-autorun --runtime "$rt" --model-id "$mid" --task "$task" --runs "$runs" "$@" \
     </dev/null 2>&1 | tee -a "$logf" \
     | grep -E "YARDSTICK_(BEGIN|RUN_OK|RUN_FAIL|FATAL|ALL_DONE)" || rc=$?
+  # a replayed dry run: the launch takes the plan's seconds on the virtual clock
+  if [ "${DRY_RUN:-0}" = 1 ] && [ -n "$DRY_PLAN" ]; then
+    DRY_NOW=$(( DRY_NOW + $(dry_plan "$rt $mid $task" $(( ${CELL_ATTEMPT:-1} * 2 ))) ))
+  fi
   # PIPESTATUS is bash-specific; recover the launch status from gtimeout's exit
   # conventions where it matters: 124 = timeout (runs already persisted on
   # device — lossless, note and continue).
@@ -263,6 +311,35 @@ preflight(){ # <cells-file>
   python3 "$REPO/scripts/validate_cells.py" --catalog "$CATALOG_JSON" "$1"
 }
 
+ALL_CELLS=()   # the run's cells as cells_for prints them, in order (rest_after reads them)
+
+rest_after(){ # <index in ALL_CELLS> <seconds per run> -> seconds the cells after it take with no gate re-run:
+  # each one's cooldown, then its runs at <seconds per run>
+  local i=$(( $1 + 1 )) s=0 r c
+  local f=()
+  while [ "$i" -lt "${#ALL_CELLS[@]}" ]; do
+    read -r -a f <<<"${ALL_CELLS[$i]}"
+    r="$(cell_opt runs "$DEFAULT_RUNS" "${f[@]:3}")"
+    c="$(cell_opt cooldown "$BASE_COOLDOWN" "${f[@]:3}")"
+    s=$(( s + c + r * $2 ))
+    i=$(( i + 1 ))
+  done
+  echo "$s"
+}
+
+gate_defer(){ # <runtime> <model-id> <task> <runs> <record runtime> <verdict> <seconds needed> <row>
+  # BENCH_GATE_DEADLINE: the re-run and the cells after it would end past it. The flagged capture leaves
+  # device-jsonl/ as for a re-run (no number pools it, spread-rule); GATE_DEFERRED.txt names the cell and
+  # its row as written for the sitting that takes it later (scripts/dashboard_job.py gate_deferred)
+  quarantine_cell "$5" "$2" "$3" "$4"
+  local end why
+  end=$(( $(now_s) + $7 ))
+  why="~$(( ($7 + 30) / 60 )) min would end $(hms "$end"), past the deadline $(hms "$GATE_DEADLINE")"
+  log "gate: $6 — quarantined, re-run deferred: $why (a later sitting takes the cell)"
+  echo "GATE_DEFERRED $1 $2 $3 verdict=$6 $why; $4 records quarantined, not re-run: row=$8" >> "$OUT/GATE_DEFERRED.txt"
+  echo "gate deferred $1 $2 $3 verdict=$6 ($why: quarantined, no re-run)" >> "$OUT/session_provenance.txt"
+}
+
 cmd_run(){
   local cells_file="${1:?usage: run <cells-file>}"
   python3 "$REPO/scripts/validate_cells.py" "$cells_file"
@@ -275,8 +352,17 @@ cmd_run(){
   echo "cells: $cells_file" >> "$OUT/session_provenance.txt"
 
   local first=1 refused=0 serious_wait=0
+  # every cell in the order the loop runs them, for the gate's deadline (rest_after)
+  local line ci=-1 per_run=0
+  ALL_CELLS=()
+  while IFS= read -r line; do ALL_CELLS+=("$line"); done < <(cells_for ios "$cells_file" 2>/dev/null)
+  if [ -n "$GATE_DEADLINE" ]; then
+    echo "gate deadline $(hms "$GATE_DEADLINE") (BENCH_GATE_DEADLINE): a payload cell's re-run starts only when it and the cells after it end by then" \
+      | tee -a "$OUT/session_provenance.txt"
+  fi
   # cells_for prints anchors first and logs CELL_SKIP lines to stderr.
   while read -r rt mid task rest; do
+    ci=$(( ci + 1 ))
     read -r -a opts <<<"${rest:-}"
     local runs cool ctx maxtok
     runs="$(cell_opt runs "$DEFAULT_RUNS" ${opts[@]+"${opts[@]}"})"
@@ -323,10 +409,17 @@ cmd_run(){
       native_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
       continue ;;
     esac
+    local t0 span
+    t0="$(now_s)"; CELL_LABEL="$rt $mid $task"; CELL_ATTEMPT=1
     run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
     local pulled verdict
     pulled="$(pull_new)"; verdict="$(cell_verdict "$rec_rt" "$mid" "$task" "$runs")"
     echo "pulled=$pulled verdict=$verdict"
+    # the first capture's launch, pull and verdict; per run, the longest of the session so far
+    span=$(( $(now_s) - t0 ))
+    if [ "$runs" -gt 0 ] && [ $(( (span + runs - 1) / runs )) -gt "$per_run" ]; then
+      per_run=$(( (span + runs - 1) / runs ))
+    fi
     local retry_cool="$THERMAL_COOLDOWN"
     case "$verdict" in *serious*|*critical*) retry_cool="$SERIOUS_COOLDOWN"; serious_wait="$SERIOUS_COOLDOWN" ;; esac
     # A phone that stopped accepting launches ends the session now: two cells in a
@@ -348,9 +441,24 @@ cmd_run(){
         | tee -a "$OUT/FLAGGED.txt"
     fi
     if [[ "$verdict" == HOT* || "$verdict" == SPREAD* || "$verdict" == DEAD* || "$verdict" == COLLAPSE* || "$verdict" == GATE_ERROR* ]]; then
+      if [ -n "$GATE_DEADLINE" ] && [ "$(cell_opt anchor "" ${opts[@]+"${opts[@]}"})" != 1 ]; then
+        # the re-run, then every cell after it (rest_after) and the pause owed before the next one
+        local need after=$(( ${#ALL_CELLS[@]} - ci - 1 ))
+        need=$(( retry_cool + span + $(rest_after "$ci" "$per_run") ))
+        if [ "$after" -gt 0 ]; then
+          need=$(( need + serious_wait ))
+          # a HOT capture's re-run may see serious and owe the next cell SERIOUS_COOLDOWN (2026-11-07 06:42)
+          if [[ "$verdict" == HOT* ]] && [ "$serious_wait" -eq 0 ]; then need=$(( need + SERIOUS_COOLDOWN )); fi
+        fi
+        if [ $(( $(now_s) + need )) -gt "$GATE_DEADLINE" ]; then
+          gate_defer "$rt" "$mid" "$task" "$runs" "$rec_rt" "$verdict" "$need" "ios $rt $mid $task${rest:+ $rest}"
+          continue
+        fi
+      fi
       log "gate: $verdict — quarantine flagged capture, cooldown ${retry_cool}s, re-run once"
       quarantine_cell "$rec_rt" "$mid" "$task" "$runs"
       sleep "$retry_cool"
+      CELL_ATTEMPT=2
       run_cell "$rt" "$mid" "$task" "$runs" ${extra[@]+"${extra[@]}"}
       pulled="$(pull_new)"; verdict="$(cell_verdict "$rec_rt" "$mid" "$task" "$runs")"
       echo "pulled=$pulled verdict=$verdict"
@@ -360,6 +468,7 @@ cmd_run(){
         | tee -a "$OUT/FLAGGED.txt"
     fi
   done < <(cells_for ios "$cells_file" 2> >(tee -a "$OUT/SKIPPED.txt" >&2))
+  [ "${DRY_RUN:-0}" = 1 ] && printf 'DRY-RUN clock at the end of the cells: %s\n' "$(clock_hms)" >&3
   cmd_report
 }
 

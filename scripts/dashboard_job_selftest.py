@@ -1068,6 +1068,7 @@ def main():
     hold_estimate_cases(tmp, dj)
     release_by_cases(tmp, dj)
     gate_deadline_cases(tmp, dj)
+    ios_gate_cases(tmp, dj)
 
     if _fails:
         print(f"\n{len(_fails)} failure(s); temp dir kept: {tmp}")
@@ -2011,6 +2012,250 @@ def gate_deadline_cases(tmp, dj):
         lock = "/tmp/edge-llm-bench-android-FAKE-Z.lock"   # the preflight's campaign-lock probe
         if os.path.exists(lock):
             os.remove(lock)
+
+IOS_PLAN = os.path.join(HOLD_ETA_DATA, "2026-11-07-iphone18pro-a-plan.tsv")
+IOS_PART_A = "matrices/dashboard-text-v1-ios-a.cells"
+
+
+def ios_gate_cases(tmp, dj):
+    """The iPhone runner's gate under BENCH_GATE_DEADLINE (since 2026-11-07, design §11): 2026-11-07's part a on
+    the iPhone 18 Pro replayed through scripts/bench_matrix_iphone.sh (DRY_RUN with that night's plan: each
+    cell's first capture and its re-run as long as they took, their verdicts) ran its eight re-runs to 08:06:20
+    as it did; with the deadline 07:58 the runner defers the re-runs that would push the cells after them past
+    it and the run ends 07:54:52; hold_eta reads that run's cells apart from its re-runs (the start test's
+    length) and bounds its re-runs by the deadline; the job hands the iPhone runner the deadline, and a
+    device in parts takes the deferred rows at its next sitting (the rerun run before its part)."""
+    import zoneinfo
+    import hold_eta
+    print("--- the iPhone gate's deadline: 2026-11-07 part a replayed through the runner")
+    tz = zoneinfo.ZoneInfo("Asia/Tokyo")
+    T = lambda hh, mm, ss=0: datetime.datetime(2026, 11, 7, hh, mm, ss, tzinfo=tz)  # noqa: E731
+
+    def runner(deadline=None, plan=IOS_PLAN, cells=IOS_PART_A, start=T(5, 33, 1), frac=""):
+        env = dict(os.environ, DRY_RUN="1", DRY_RUN_PLAN=plan, DRY_RUN_START=str(int(start.timestamp())),
+                   TZ="Asia/Tokyo", CAMPAIGN="selftest-ios-gate")
+        env.pop("BENCH_GATE_DEADLINE", None)
+        if deadline is not None:
+            env["BENCH_GATE_DEADLINE"] = str(int(deadline.timestamp())) + frac
+        r = subprocess.run(["bash", os.path.join(ROOT, "scripts", "bench_matrix_iphone.sh"), "run", cells],
+                           cwd=ROOT, env=env, capture_output=True, text=True)
+        out = r.stdout + r.stderr
+        camp = next((ln.split(": ", 1)[1] for ln in out.splitlines() if ln.startswith("DRY-RUN campaign dir")), "")
+        end = next((ln.rsplit(" ", 1)[1] for ln in out.splitlines() if ln.startswith("DRY-RUN clock at the end")), "")
+
+        def read(name):
+            try:
+                with open(os.path.join(camp, name)) as fh:
+                    return fh.read()
+            except OSError:
+                return ""
+        files = {n: read(n) for n in ("GATE_DEFERRED.txt", "session_provenance.txt", "FLAGGED.txt")}
+        if camp:
+            shutil.rmtree(os.path.dirname(camp), ignore_errors=True)
+        return r.returncode, out, end, files
+
+    def cell_times(out, label):
+        rt, mid, task = label.split(" ")
+        return [ln.rsplit("(", 1)[1][:8] for ln in out.splitlines()
+                if ln.startswith(f"=== CELL {rt} / {mid} / {task} runs=")]
+    reruns_log = ["05:51:18", "06:06:04", "06:46:17", "07:21:16", "07:40:03", "07:49:38", "07:56:43", "08:04:35"]
+    rc0, out0, end0, f0 = runner()
+    ok(rc0 == 0 and end0 == "08:06:20" and out0.count("re-run once ===") == 8
+       and all(f"({t}) ===" in out0 for t in reruns_log) and "re-run deferred" not in out0
+       and not f0["GATE_DEFERRED.txt"] and f0["FLAGGED.txt"].count("GATE_FAIL") == 7,
+       f"no deadline: the night as it ran, eight re-runs (the last from 08:04:35), the cells to 08:06:20, seven "
+       f"retries kept (exit {rc0}, end {end0}, {out0.count('re-run once ===')} re-runs)")
+
+    rc1, out1, end1, f1 = runner(deadline=T(7, 58))
+    d_lines = [ln for ln in f1["GATE_DEFERRED.txt"].splitlines() if ln.strip()]
+    with open(os.path.join(ROOT, IOS_PART_A)) as fh:
+        part_rows = [ln.split("#", 1)[0].strip() for ln in fh]
+    rows_def = [ln.split(": row=", 1)[1] for ln in d_lines]
+    ok(rc1 == 0 and end1 and end1 <= "07:58:00" and end1 == "07:54:52" and out1.count("re-run once ===") == 6
+       and out1.count("re-run deferred:") == 2 and len(d_lines) == 2 and all(r in part_rows for r in rows_def)
+       and "litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256" in rows_def[0]
+       and "onnx-community/Qwen3-1.7B-ONNX short-chat" in rows_def[1]
+       and "gate deadline 07:58:00 (BENCH_GATE_DEADLINE)" in f1["session_provenance.txt"]
+       and f1["session_provenance.txt"].count("gate deferred ") == 2,
+       f"deadline 07:58: six re-runs, two deferred (the re-run and the cells after it would end 08:08:53 and "
+       f"08:04:55), each row in GATE_DEFERRED.txt as part a has it; the cells end {end1}, so the hold is back "
+       f"before 08:00 (exit {rc1})")
+    m_e4b = cell_times(out1, "litert-lm litert-community/gemma-4-E4B-it-litert-lm long-context-1024-gen256")
+    ok(m_e4b == ["07:14:19"] and "~52 min would end 08:08:53, past the deadline 07:58:00" in out1,
+       f"the E4B long-context cell is launched once, its re-run deferred at 07:17:16 ({m_e4b})")
+
+    rc2, out2, end2, f2 = runner(deadline=T(12, 0))
+    ok(rc2 == 0 and end2 == "08:06:20" and out2.count("re-run once ===") == 8 and not f2["GATE_DEFERRED.txt"],
+       f"deadline 12:00: every re-run fits, the run as without one (end {end2})")
+    rc3, out3, end3, f3 = runner(deadline=T(7, 58), frac=".7")
+    ok(rc3 == 0 and end3 == "07:54:52" and out3.count("re-run deferred:") == 2 and "integer expression" not in out3
+       and "gate deadline 07:58:00 (BENCH_GATE_DEADLINE)" in f3["session_provenance.txt"],
+       f"deadline 07:58 handed with a fraction (as android/bench/run_campaign.py takes it): read in whole seconds, "
+       f"the same two deferred, the cells end {end3} (a test on the float ran no deferral: eight re-runs to 08:06:20)")
+
+    # an anchor row's re-run is never deferred; a payload row past the deadline is
+    pdir = os.path.join(tmp, "ios-gate")
+    os.makedirs(pdir, exist_ok=True)
+    tiny = os.path.join(pdir, "tiny-ios.cells")
+    with open(tiny, "w") as fh:
+        fh.write("ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1 runs=3\n"
+                 "ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat\n")
+    tplan = os.path.join(pdir, "tiny.plan.tsv")
+    with open(tplan, "w") as fh:
+        fh.write("mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat\t20\tHOT fair,fair,fair\t20\tOK\n"
+                 "llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat\t30\tSPREAD 9.0\t30\tOK\n")
+    rc3, out3, end3, f3 = runner(deadline=T(5, 33, 30), plan=tplan, cells=tiny)
+    ok(rc3 == 0 and out3.count("re-run once ===") == 1 and out3.count("re-run deferred:") == 1
+       and "mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat" not in f3["GATE_DEFERRED.txt"]
+       and "row=ios llama.cpp unsloth/Qwen3-0.6B-GGUF/Q4_K_M short-chat" in f3["GATE_DEFERRED.txt"],
+       f"past the deadline: the anchor row's re-run runs, the payload row's is deferred (exit {rc3})")
+
+    # hold_eta reads an iPhone run's cells apart from its re-runs (history "rounds"), from the runner's lines
+    hdir = os.path.join(tmp, "ios-logs")
+    os.makedirs(hdir, exist_ok=True)
+
+    def job_log(out, start, end):
+        body = [ln for ln in out.splitlines() if not ln.startswith("DRY-RUN ")]
+        return "\n".join([f"[{start:%Y-%m-%d %H:%M:%S}] $ gtimeout --kill-after=60 12600 /x/bench matrix "
+                          f"{IOS_PART_A} --platform iphone --campaign c   env: "] + body
+                         + [f"[{end:%Y-%m-%d %H:%M:%S}] bench matrix exit 0"]) + "\n"
+    with open(os.path.join(hdir, "2026-11-07-iphone18pro.log"), "w") as fh:
+        fh.write(job_log(out0, T(5, 33, 0).replace(tzinfo=None), T(8, 6, 20).replace(tzinfo=None)))
+    hist = hold_eta.history(hdir, "iphone18pro")
+    key = f"matrix|{IOS_PART_A}"
+    whole, rounds = hist["stages"].get(key, [0])[0], hist["rounds"].get(key, [0])[0]
+    ok(round(whole) == 9200 and 5500 <= rounds <= 5700,
+       f"history: part a's run {whole / 60:.0f} min, its cells apart from its eight re-runs {rounds / 60:.0f} min "
+       f"(the start test's length; 2026-11-07: 2h33m and 1h33m)")
+
+    # the hold's estimate of a running part a: the cells, then its re-runs bounded by the gate deadline, said so
+    stages = hold_eta.plan_stages([("matrix", "matrices/anchors.cells", "anchor"), ("matrix", IOS_PART_A, "a")],
+                                  {}, "iphone18pro", hist, platform_token="ios", budget_s=7200)
+    sit = hold_eta.Sitting(stages, hist, deadline=T(8, 0).replace(tzinfo=None))
+    log_lines = job_log(out1, T(5, 33, 0).replace(tzinfo=None), T(7, 54, 53).replace(tzinfo=None)).splitlines()
+    sit.feed(f"[2026-11-07 05:30:11] $ gtimeout --kill-after=60 2700 /x/bench matrix matrices/anchors.cells "
+             f"--platform iphone --campaign c-anchor   env: ")
+    sit.feed("[2026-11-07 05:33:00] bench matrix exit 0")
+    late, said, counted = [], "", ""
+    for ln in log_lines:
+        if sit.feed(ln) or ln.startswith("=== CELL"):
+            eta, basis = sit.estimate(sit.clock)
+            said = said or (basis if "re-run the gate adds" in basis else "")
+            counted = counted or (basis if "of it as on record" in basis else "")
+            if eta > T(7, 58).replace(tzinfo=None) and not ln.startswith("[2026-11-07 07:54"):
+                late.append(f"{sit.clock:%H:%M:%S} {eta:%H:%M}")
+    st_a = sit.stages[1]
+    ok(not late and "only one that ends with the cells after it by 07:58" in said and st_a.ios_reruns == 6
+       and st_a.deferred == 2 and "left, re-runs ~" in counted,
+       f"the estimate counts part a's re-runs only to 07:58, names what it counts of them and says the gate may "
+       f"add them ({late or counted[:120]}); 6 re-runs, 2 deferred read from the log")
+
+    # the job: the iPhone runner gets the deadline; window_plan's start test reads part a's cells (1h33m), not
+    # the night with its re-runs (2h33m), which would leave part a TooLate at every 05:30 firing
+    real_log, real_pre = dj.LOG_DIR, dj.PREFLIGHT["iphone"]
+    with open(dj.SCHEDULE) as fh:
+        real_s = json.load(fh)
+    dev = dict(real_s["devices"]["iphone18pro"])
+    dj.LOG_DIR = hdir
+    dj.PREFLIGHT["iphone"] = lambda d, dry, files: {}
+    real_rows, real_adm, real_cells = dj.load_rows, dj.load_admission, dj.load_session_cells
+    dj.load_rows, dj.load_admission, dj.load_session_cells = (lambda path=None: []), (lambda: {}), (lambda: {})
+    dj.HOLD_KEEPER = None
+    start = datetime.datetime.now()
+    by = (start + datetime.timedelta(minutes=150)).strftime("%H:%M")   # 05:30 to 08:00
+
+    def dry():
+        args = argparse.Namespace(suffix=None, dry_run=True, cells=None, part="a", release_by=by, started_at=start)
+        buf = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buf):
+                code = dj.attempt(dict(real_s), "iphone18pro", dev, 1, args)[0]
+        except dj.TooLate as e:
+            return "late", buf.getvalue() + str(e)
+        return code, buf.getvalue()
+    try:
+        code_new, text_new = dry()
+        old_hist = dict(hist, rounds={k: list(v) for k, v in hist["stages"].items()})
+        real_hist = hold_eta.history
+        hold_eta.history = lambda *a, **k: old_hist
+        try:
+            code_old, text_old = dry()
+        finally:
+            hold_eta.history = real_hist
+    finally:
+        dj.LOG_DIR, dj.PREFLIGHT["iphone"] = real_log, real_pre
+        dj.load_rows, dj.load_admission, dj.load_session_cells = real_rows, real_adm, real_cells
+    gd = (dj.release_deadline(dev, start, by) - datetime.timedelta(seconds=hold_eta.GATE_RESERVE_S))
+    ok(code_new == dj.EXIT_OK and "the gate starts a re-run only when it and the cells after it end by" in text_new
+       and f"BENCH_GATE_DEADLINE='{int(gd.timestamp())}'" in text_new
+       and f"bench matrix {IOS_PART_A} --platform iphone" in text_new and code_old == "late",
+       f"a dry run of part a 150 min before release_by: it fits on its cells (1h33m) and hands the runner "
+       f"BENCH_GATE_DEADLINE {gd:%H:%M}; read as the night with its re-runs (2h33m) it would be TooLate "
+       f"({code_new}, {code_old})")
+
+    # a device in parts: the rows a gate deferred this week keep the week open and run first at its next sitting
+    now = datetime.datetime.now().astimezone()
+    monday = dj.week_start(now)
+    t1 = max(now - datetime.timedelta(hours=3), monday + datetime.timedelta(minutes=1))
+    t2 = max(now - datetime.timedelta(hours=1), t1 + datetime.timedelta(minutes=1))
+    pb, pa = dev["parts"][0]["cells"], dev["parts"][1]["cells"]
+    cb, ca = "results/raw/2026-01-05-dashboard-v1-iphone18pro-b-ios", "results/raw/2026-01-06-dashboard-v1-iphone18pro-a-ios"
+    cr = "results/raw/2026-01-07-dashboard-v1-iphone18pro-rerun-ios"
+    row_b = next(r for r in (ln.split("#", 1)[0].strip() for ln in open(os.path.join(ROOT, pb)))
+                 if r.startswith("ios ") and "anchor=1" not in r)
+
+    def rec(camp, t):
+        return {"campaign": camp, "platform": dj.CSV_PLATFORM["ios"], "device": dev["identifier"],
+                "timestamp": t.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    names = {cb: pb, ca: pa, cr: "logs/dashboard-job/rerun-x.cells"}
+    gate = {cb: {"deferred": [row_b]}}
+    real_att = dj.iphone_attached
+    dj.iphone_attached = lambda udid: True
+    dev_auto = {k: v for k, v in dev.items() if k not in ("auto_window", "auto_idle_hours")}
+    holds = (dj.check_holds, dj.device_lock_holder)
+    dj.check_holds, dj.device_lock_holder = (lambda d, dry=False: None), (lambda k: None)
+    try:
+        def state(recs, g):
+            k, _, rep = dj.resolve_device({"devices": {"iphone18pro": dev_auto}}, "auto", now=now, rows=recs,
+                                          admitted={}, retakes={}, skip=set(), session_cells=names, session_gate=g)
+            return rep[0]["state"], rep[0]["detail"]
+        s_b = state([rec(cb, t1)], gate)
+        s_ba = state([rec(cb, t1), rec(ca, t2)], gate)
+        s_done = state([rec(cb, t1), rec(ca, t2), rec(cr, t2)], dict(gate, **{cr: {"carries": [row_b]}}))
+    finally:
+        dj.iphone_attached = real_att
+        dj.check_holds, dj.device_lock_holder = holds
+    ok(s_b[1].endswith("; rerun, part a pending this week") and s_ba[0] == "candidate"
+       and s_ba[1].endswith("; rerun pending this week") and s_done[0] == "done",
+       f"resolve_device, a device in parts: a row part b's gate deferred keeps the week open after both parts "
+       f"until a session carries it ({s_b[1][-40:]}; {s_ba[0]} {s_ba[1][-30:]}; {s_done[0]})")
+
+    def part_left(recs, g, **kw):
+        a = argparse.Namespace(**dict({"cells": None, "part": None}, **kw))
+        part, why = dj.sitting_part(real_s, "iphone18pro", dev, a, now=now, rows=recs, admitted={}, skip=set(),
+                                    session_cells=names, session_gate=g)
+        left = dj.sitting_left(real_s, "iphone18pro", dev, a, now=now, rows=recs, admitted={}, skip=set(),
+                               session_cells=names, session_gate=g)
+        a.part_entry, a.week_left = part, left
+        return (part or {}).get("tag"), why, left, dj.phase_b_plan(real_s, dev, a, None)[0]
+    after_b = part_left([rec(cb, t1)], gate)
+    after_ba = part_left([rec(cb, t1), rec(ca, t2)], gate)
+    ok(after_b[0] == "a" and after_b[2] == {"set": None, "extras": [], "rerun": [row_b]}
+       and after_b[3] == [(pa, 0.0)] and after_ba[0] is None and "the rerun run alone" in after_ba[1]
+       and after_ba[3] == [],
+       f"the next sitting: the rerun run, then part a; after both parts the rerun run alone ({after_b[0]}, "
+       f"{after_b[3]}; {after_ba[0]}, {after_ba[1]})")
+
+    rerun_text = dj.rerun_rows_text(real_s, dev, [row_b])
+    with open(os.path.join(pdir, "rerun-x.cells"), "w") as fh:
+        fh.write(rerun_text)
+    stage = hold_eta.plan_stages([("matrix", os.path.join(pdir, "rerun-x.cells"), "rerun")], dev, "iphone18pro",
+                                 {"launches": {}, "stages": {}, "leads": {}}, platform_token="ios", budget_s=7920)
+    ok(rerun_text.splitlines()[2].startswith("ios mlx-swift mlx-community/Qwen3-0.6B-4bit short-chat anchor=1")
+       and rerun_text.splitlines()[3] == row_b and stage[0].expected == 2 * hold_eta.RERUN_ROW_S,
+       f"the rerun run's cells file: the session anchor row, then the deferred row; counted at "
+       f"{hold_eta.RERUN_ROW_S / 60:.0f} min a row ({stage[0].expected / 60:.0f} min), not the part's budget")
+
 
 if __name__ == "__main__":
     sys.exit(main())

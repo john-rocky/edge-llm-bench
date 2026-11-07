@@ -55,3 +55,22 @@ cells to 08:07, and the hold was released at 08:07:52.
     python3 scripts/hold_eta.py replay scripts/testdata/hold-eta/2026-11-02-s26-job-log.txt s26 \
       --history scripts/testdata/hold-eta/history-s26-before-2026-11-02.json --cells-dir scripts/testdata/hold-eta \
       --halves --deadline "2026-11-02 08:00"
+
+## 2026-11-07: the iPhone gate's deadline (`ios_gate_cases`)
+
+The 2026-11-07 iPhone 18 Pro sitting of part a (05:30 firing, release_by
+08:00): the gate re-ran eight cells right after each, and the hold was
+released at 08:06:21.
+
+- `2026-11-07-iphone18pro-a-plan.tsv`: that run as `DRY_RUN_PLAN` of
+  `scripts/bench_matrix_iphone.sh` (tab-separated: the cell, its first
+  capture's seconds and verdict, its re-run's seconds and verdict), made from
+  `logs/dashboard-job/2026-11-07-iphone18pro.log`: a capture's seconds are
+  its CELL line to the gate line (the re-run's CELL time less its cooldown) or
+  to the next cell's cooldown. Replayed from 05:33:01 with no deadline the
+  runner prints that night's CELL times and ends 08:06:20; with
+  `BENCH_GATE_DEADLINE` 07:58 it defers two re-runs and ends 07:54:52.
+
+    TZ=Asia/Tokyo DRY_RUN=1 DRY_RUN_PLAN=scripts/testdata/hold-eta/2026-11-07-iphone18pro-a-plan.tsv \
+      DRY_RUN_START=1793997181 BENCH_GATE_DEADLINE=1794005880 \
+      scripts/bench_matrix_iphone.sh run matrices/dashboard-text-v1-ios-a.cells
