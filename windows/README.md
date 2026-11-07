@@ -98,10 +98,12 @@ default `winpc`) and `<yours>` a name of yours for your build. The `powershell` 
    ```
 
    The Hub's sha256 and size of each file in one repo, read on the Mac (the command reads
-   `litert-community/gemma-4-E2B-it-litert-lm`; put another repo's id in its place for the other files). The Gemma
-   rows' files are in that repo and `unsloth/gemma-4-E2B-it-GGUF`; the Qwen3 rows' in `litert-community/Qwen3-0.6B`,
-   `litert-community/Qwen3-1.7B` and `litert-community/Qwen3-4B` (LiteRT-LM) and `unsloth/Qwen3-0.6B-GGUF`,
-   `-1.7B-GGUF` and `-4B-GGUF` (llama.cpp); the cells file names each row's file with `file=`:
+   `litert-community/gemma-4-E2B-it-litert-lm`; put another repo's id in its place for the other files). The Gemma 4
+   E2B rows' files are in that repo and `unsloth/gemma-4-E2B-it-GGUF`; the Gemma 4 E4B rows' in
+   `litert-community/gemma-4-E4B-it-litert-lm` and `unsloth/gemma-4-E4B-it-GGUF`; the Qwen3 rows' in
+   `litert-community/Qwen3-0.6B`, `litert-community/Qwen3-1.7B` and `litert-community/Qwen3-4B` (LiteRT-LM) and
+   `unsloth/Qwen3-0.6B-GGUF`, `-1.7B-GGUF` and `-4B-GGUF` (llama.cpp); the cells file names each row's file with
+   `file=`:
 
    ```bash
    curl -s https://huggingface.co/api/models/litert-community/gemma-4-E2B-it-litert-lm/tree/main | python3 -c 'import json, sys; [print(f["lfs"]["oid"], f["size"], f["path"]) for f in json.load(sys.stdin) if "lfs" in f]'
@@ -124,7 +126,9 @@ python3 scripts/windows_ssh_executor.py matrices/dashboard-windows-v1.cells --ca
     --model-file litert-lm:litert-community/Qwen3-4B=qwen3_4b_mixed_int4.litertlm:2272935936 \
     --model-file llama.cpp:unsloth/Qwen3-0.6B-GGUF=Qwen3-0.6B-Q4_K_M.gguf:396705472 \
     --model-file llama.cpp:unsloth/Qwen3-1.7B-GGUF=Qwen3-1.7B-Q4_K_M.gguf:1107409472 \
-    --model-file llama.cpp:unsloth/Qwen3-4B-GGUF=Qwen3-4B-Q4_K_M.gguf:2497281312
+    --model-file llama.cpp:unsloth/Qwen3-4B-GGUF=Qwen3-4B-Q4_K_M.gguf:2497281312 \
+    --model-file litert-lm:litert-community/gemma-4-E4B-it-litert-lm=gemma-4-E4B-it.litertlm:3659530240 \
+    --model-file llama.cpp:unsloth/gemma-4-E4B-it-GGUF=gemma-4-E4B-it-Q4_K_M.gguf:4977171584
 python3 scripts/build_summary.py
 python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells
 ```
@@ -245,6 +249,17 @@ an older one over), leave the two variables unset, and remove it at the end.
   content's label. A record of one of those files from that UTC date on takes the replacement's recipe label from
   `REPLACED_FILE_LABELS` in `scripts/bench_common.py` instead, the table the summary corrects the Android rows of the
   same files with; the summary applies it to the Windows rows too.
+- **The Gemma 4 E4B rows.** They load the files the Android rows of `matrices/dashboard-text-v1.cells` load, under the
+  same catalog ids: `gemma-4-E4B-it.litertlm` on both LiteRT-LM rows (as the E2B block does with its file) and
+  `gemma-4-E4B-it-Q4_K_M.gguf` on the three llama.cpp rows, which run with thinking off like the E2B GGUF
+  (`--chat-template-kwargs`). `litert-community/gemma-4-E4B-it-litert-lm` lists no Intel bundle (read 2026-11-07), so
+  the block has no `backend=npu` row. Both files were replaced on the Hub under the same names before these rows were
+  added: the `.litertlm` on 2026-05-04 (its card asks anyone who downloaded it before 2026-05-05 to download it again
+  for speculative decoding), the GGUF on 2026-05-04 and 2026-07-17 (commits titled as chat template updates). The
+  sittings ran the content the Hub served on 2026-11-07, each file's sha256 checked on the host against the Hub's
+  before the first run. The `.litertlm`'s label (`wNa8o8`) is the one the 2026-07-17 audit set for Gemma 4 `.litertlm`
+  bundles (`corrected_quant` in `scripts/bench_common.py`), after this file's replacement, and the GGUF's is the
+  `Q4_K_M` of its name, so `REPLACED_FILE_LABELS` has no row for them.
 
 ## Reproducibility
 
@@ -333,3 +348,20 @@ a reachability check on the driving machine. Beyond those, the minute each sitti
 had 14 and 12 sessions in all, one opened at 04:09 to rewrite the marker file (see Run), and one at 04:46 came from the
 driving machine by a process not identified. In 78 of the 126 runs no session opened, in 38 one did, and in ten
 LiteRT-LM CPU runs of 19 to 133 s two to six did.
+
+Two more sittings, `2026-11-07-windows-e4b-s1` and `2026-11-07-windows-e4b`, ran the column with the Gemma 4 E4B rows
+added (26 rows, 78 runs each), back to back at 06:51 and 08:10 JST on 2026-11-07 (in UTC, the date of the records'
+`timestamp`, 2026-11-06 until 09:00 JST and 2026-11-07 for the second's last 38 records). Their `host.json` lists the
+Qwen3 sittings' 187 engine files unchanged; the sha256 of the twelve model files, read on the host before the first,
+equal the Hub's; the invocation was the Run section's, and every run was clean and quiet. From the first to the second,
+the cold decode median of the 21 rows counted in both moved by -2.5 to +3.7 % (Gemma 4 E4B's `litert-lm-gpu` -2.5 %,
+Qwen3 0.6B's `litert-lm-cpu` +3.7 %, the other 19 within 3.1 %). Five rows read `out` in one or both: in the first,
+Gemma 4 E2B's `litert-lm-gpu` (5.91 %) and Qwen3 1.7B's `llama.cpp` (10.67 %); in the second, Qwen3 0.6B's
+`llama.cpp-cuda` (6.18 %) and `llama.cpp` (12.26 %); in both, Gemma 4 E4B's `llama.cpp` (11.17 and 12.83 %), whose
+first run read 9.0 to 13.2 % above each of its other two in each sitting. Against the second Qwen3 sitting, which
+started 4 h 13 min before the second of these, the 17 rows counted in both (the other four read `out` in one or both)
+moved by -1.0 to +4.6 % (Gemma 4 E2B's `litert-lm-gpu` +4.6 %, the other 16 within 2.5 %). During both sittings SSH
+sessions opened on the host about twice a minute, the executor's own poll, plus one every 5 minutes from the
+reachability check. Beyond those, the minute each sitting's job was staged (06:51 and 08:10) had 13 sessions each, and
+one opened at 08:14 to rewrite the marker file. In 97 of the 156 runs no session opened, in 47 one did, and in twelve
+LiteRT-LM runs of 27 to 135 s two to five did.

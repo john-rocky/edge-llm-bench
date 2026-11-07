@@ -1681,10 +1681,10 @@ Pixel 8a's Qwen3-4B rows stay out (section "Per-device exclusion").
 
 ## Windows column (2026-11-05)
 
-`matrices/dashboard-windows-v1.cells`, one laptop (Core Ultra 9 386H, RTX 5080 Laptop), Gemma 4 E2B and, from the
-sittings of 2026-11-07 JST, Qwen3 0.6B / 1.7B / 4B, `short-chat`, run by hand over SSH (`windows/README.md`). It is not
-in `dashboard-text-v1.cells`: the night job has no Windows device, and its campaign names carry no `dashboard`, so the
-team page does not read them. Render the column with
+`matrices/dashboard-windows-v1.cells`, one laptop (Core Ultra 9 386H, RTX 5080 Laptop), Gemma 4 E2B / E4B and Qwen3
+0.6B / 1.7B / 4B (the Qwen3 rows from 02:56 JST on 2026-11-07, the E4B rows from 06:51 JST that day), `short-chat`,
+run by hand over SSH (`windows/README.md`). It is not in `dashboard-text-v1.cells`: the night job has no Windows
+device, and its campaign names carry no `dashboard`, so the team page does not read them. Render the column with
 `python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells`.
 
 | row | engine | file | allocation |
@@ -1696,14 +1696,16 @@ team page does not read them. Render the column with
 | `llama.cpp-gpu` | b11721 Vulkan release asset, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 | `llama.cpp-cuda` | b11721 CUDA 13.4 release asset, with that release's CUDA runtime zip, on the discrete GPU | `gemma-4-E2B-it-Q4_K_M.gguf` | 2048 |
 
-The Qwen3 blocks run five of these arms on the files the Android rows of `dashboard-text-v1.cells` load, by the same
-catalog ids, all at an allocation of 2048. They have no `litert-lm-npu` row: the Qwen3 repos publish no Intel bundle.
+The Qwen3 blocks and the Gemma 4 E4B block run five of these arms on the files the Android rows of
+`dashboard-text-v1.cells` load, by the same catalog ids, all at an allocation of 2048. They have no `litert-lm-npu`
+row: the Qwen3 repos and the E4B repo publish no Intel bundle.
 
 | model | `litert-lm-cpu` | `litert-lm-gpu` | `llama.cpp`, `llama.cpp-gpu`, `llama.cpp-cuda` |
 |---|---|---|---|
 | Qwen3 0.6B | `litert-community/Qwen3-0.6B`: `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm` | the same file | `unsloth/Qwen3-0.6B-GGUF`: `Qwen3-0.6B-Q4_K_M.gguf` |
 | Qwen3 1.7B | `litert-community/Qwen3-1.7B`: `Qwen3_1.7B.litertlm` | `Qwen3-1.7B_dynamic_wi4b32_afp32.litertlm` | `unsloth/Qwen3-1.7B-GGUF`: `Qwen3-1.7B-Q4_K_M.gguf` |
 | Qwen3 4B | `litert-community/Qwen3-4B`: `qwen3_4b_mixed_int4.litertlm` | the same file | `unsloth/Qwen3-4B-GGUF`: `Qwen3-4B-Q4_K_M.gguf` |
+| Gemma 4 E4B | `litert-community/gemma-4-E4B-it-litert-lm`: `gemma-4-E4B-it.litertlm` | the same file | `unsloth/gemma-4-E4B-it-GGUF`: `gemma-4-E4B-it-Q4_K_M.gguf` |
 
 Reading the rows. The headline regime is cold, as on Android: a fresh process's first conversation. LiteRT-LM's rows also
 carry the same process's second conversation as warm. Each sitting starts with the engines' caches removed, so run 1 of
@@ -1712,9 +1714,10 @@ llama.cpp CPU rows admit all three. Run 1 of the CUDA rows is not admitted eithe
 every llama.cpp row that has a `backend=`): in the first two sittings with a CUDA row (`2026-11-06-windows-cuda-s1`,
 `-cuda`), Gemma 4 E2B's run 1 read 5.2 and 6.9 % below the median of that row's other two runs. The page's prefill and TTFT
 columns read the headline regime too (`arm_row`, from 2026-11-06), so on LiteRT-LM's rows they are a fresh process's
-first conversation: on Gemma 4 E2B's GPU row about a second to the first token at about 20 tok/s. The warm records hold
-the second conversation's figures, about 20 ms and about 1200 tok/s on 2026-11-05 (`firstTokenLatencyMS`,
-`promptTokensPerSecond`). On the Qwen3 rows of LiteRT-LM each conversation's prefill ran as two calls, the prompt's
+first conversation: on Gemma 4 E2B's GPU row about a second to the first token at about 20 tok/s, on Gemma 4 E4B's
+about 2.7 s at about 7.5 tok/s. The warm records hold the second conversation's figures (`firstTokenLatencyMS`,
+`promptTokensPerSecond`): about 20 ms and about 1200 tok/s on E2B's GPU row on 2026-11-05, 50 to 60 ms and 410 to
+490 tok/s on E4B's in its two sittings. On the Qwen3 rows of LiteRT-LM each conversation's prefill ran as two calls, the prompt's
 19 tokens and then 2 more (the logs' `Prefill Turn 1` and `Prefill Turn 2` lines), and a call's time did not follow
 its token count: after a process's first call, the 2-token calls and the second conversation's 19-token call took
 about the same time (over both Qwen3 sittings, the two kinds together: 2.2 to 2.3 s, 2.0 s and 12.4 to 12.7 s on the
@@ -1723,10 +1726,12 @@ is the 19 tokens over the process's first call (the first conversation's `Prefil
 the 4B CPU row, whose first call took 16.1 to 16.4 s, it reads 1.2 tok/s, below that row's decode rate.
 
 Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
-the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Eleven sittings were taken: two
-on 2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
+the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Thirteen sittings were taken:
+two on 2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
 `-drift2-s1`, `-drift2`, `-drift3-s1`, `-drift3`), two with the CUDA row just after midnight JST on 2026-11-07
-(`2026-11-06-windows-cuda-s1`, `-cuda`, named for the UTC date of their records), and two with the Qwen3 rows at 02:56
-and 03:57 JST on 2026-11-07 (`2026-11-07-windows-qwen3-s1`, `-qwen3`; their records' UTC date is 2026-11-06); each
-stands alone, none are pooled, and the column shows each cell's latest. How far the rows moved between them is in
+(`2026-11-06-windows-cuda-s1`, `-cuda`, named for the UTC date of their records), two with the Qwen3 rows at 02:56
+and 03:57 JST on 2026-11-07 (`2026-11-07-windows-qwen3-s1`, `-qwen3`; their records' UTC date is 2026-11-06), and two
+with the Gemma 4 E4B rows at 06:51 and 08:10 JST that day (`2026-11-07-windows-e4b-s1`, `-e4b`; their records' UTC
+date is 2026-11-06, and 2026-11-07 for the second's last 38); each stands alone, none are pooled, and the column shows
+each cell's latest. How far the rows moved between them is in
 `windows/README.md` ("Reproducibility").

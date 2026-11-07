@@ -1,0 +1,191 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1794004601.599788    6976 litert_lm_lib.cc:728] Choose backend: cpu
+I0000 00:00:1794004601.599970    6976 litert_lm_lib.cc:967] executor_settings: backend: CPU
+backend_config:
+kv_increment_size: 16
+prefill_chunk_size: -1
+number_of_threads: 4
+enable_ynnpack: false
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: C:\Users\USER\models\qwen3_4b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: 
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+mtp_gating_config: Not set
+
+speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+
+I0000 00:00:1794004601.600167    6976 litert_lm_lib.cc:974] vision_executor_settings: not set
+I0000 00:00:1794004601.600177    6976 litert_lm_lib.cc:980] audio_executor_settings: not set
+I0000 00:00:1794004601.600191    6976 litert_lm_lib.cc:1003] Creating engine
+W0000 00:00:1794004601.600979    6976 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794004601.601000    6976 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794004601.601015    6976 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1794004601.601027    6976 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=0000029DB184C260, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=0000029DB1862360, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1794004601.601165    2144 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1794004601.601201    2144 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1794004601.601212    2144 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+W0000 00:00:1794004601.615892    6976 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=0000029DB1862660, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=0000029DB18628A0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=654, num_signatures=3
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1190, num_inputs=76, num_outputs=73, num_ops=556
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1190, num_inputs=76, num_outputs=73, num_ops=556
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1148, num_inputs=76, num_outputs=73, num_ops=518
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 686 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 686 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 686 tensors of signature decode have been updated for magic number  32771 to target number 2048
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1794004607.013123    6976 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794004607.013236    6976 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1794004607.013282    6976 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794004607.013298    6976 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1794004607.013313    6976 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794004607.013326    6976 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1794004607.013340    6976 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794004607.013353    6976 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=0000029E9B249300, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=0000029E9B248C40, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1794004610.597481    6976 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794004610.597679    6976 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794004610.597708    6976 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1794004610.597724    6976 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+I0000 00:00:1794004610.598380    6976 litert_lm_lib.cc:1298] Creating conversation
+I0000 00:00:1794004610.599826    6976 litert_lm_lib.cc:1310] Running single-turn conversation
+[thought] Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, it's when AI processes data directly on the user's device instead of sending it to the cloud. That makes sense because processing locally can save time and privacy.
+
+Wait, the user wants this in simple terms. So I need to avoid technical jargon. Let me think of an example. Maybe using a smartphone app that uses on-device AI. For instance, if you take a photo and the app recognizes objects in the photo without sending the photo[/thought]
+I0000 00:00:1794004663.893652    6976 litert_lm_lib.cc:211] Captured model output: Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, it's when AI processes data directly on the user's device instead of sending it to the cloud. That makes sense because processing locally can save time and privacy.
+
+Wait, the user wants this in simple terms. So I need to avoid technical jargon. Let me think of an example. Maybe using a smartphone app that uses on-device AI. For instance, if you take a photo and the app recognizes objects in the photo without sending the photo
+
+I0000 00:00:1794004663.893848    6976 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.08 ms
+    - Init Executor: 8996.42 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.68 ms
+    - Init Tokenizer: 250.31 ms
+    - Init Total: 8998.15 ms
+--------------------------------------------------
+  Time to first token: 16.37 s
+--------------------------------------------------
+  Prefill Turns (Total 2 turns):
+    Prefill Turn 1: Processed 19 tokens in 16.173073s duration.
+      Prefill Speed: 1.17 tokens/sec.
+    Prefill Turn 2: Processed 2 tokens in 12.5125663s duration.
+      Prefill Speed: 0.16 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 24.6062156s duration.
+      Decode Speed: 5.20 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794004663.894225    6976 litert_lm_lib.cc:1298] Creating conversation
+I0000 00:00:1794004663.895369    6976 litert_lm_lib.cc:1310] Running single-turn conversation
+[thought] Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, on-device AI refers to AI models that run directly on a user's device, like a smartphone or a tablet, instead of relying on cloud servers. But I need to make sure I get this right.
+
+So, the key points here are that the AI processing happens locally on the device. That means the device doesn't need to connect to the internet to perform tasks like image recognition or language processing. This is different from traditional AI, where data[/thought]
+I0000 00:00:1794004713.448864    6976 litert_lm_lib.cc:211] Captured model output: Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, on-device AI refers to AI models that run directly on a user's device, like a smartphone or a tablet, instead of relying on cloud servers. But I need to make sure I get this right.
+
+So, the key points here are that the AI processing happens locally on the device. That means the device doesn't need to connect to the internet to perform tasks like image recognition or language processing. This is different from traditional AI, where data
+
+I0000 00:00:1794004713.449073    6976 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.04 ms
+    - Init Executor: 8996.42 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.68 ms
+    - Init Tokenizer: 250.31 ms
+    - Init Total: 8998.15 ms
+--------------------------------------------------
+  Time to first token: 12.65 s
+--------------------------------------------------
+  Prefill Turns (Total 2 turns):
+    Prefill Turn 1: Processed 19 tokens in 12.462288s duration.
+      Prefill Speed: 1.52 tokens/sec.
+    Prefill Turn 2: Processed 2 tokens in 12.5796627s duration.
+      Prefill Speed: 0.16 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 24.5097953s duration.
+      Decode Speed: 5.22 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794004713.449512    6976 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.06 ms
+    - Init Executor: 8996.42 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.68 ms
+    - Init Session: 0.04 ms
+    - Init Tokenizer: 250.31 ms
+    - Init Total: 8998.15 ms
+--------------------------------------------------
+  Time to first token: 14.51 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 1.35 tokens/sec.
+    Prefill Turn 2:
+      Prefill Speed: 0.16 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 5.21 tokens/sec.
+--------------------------------------------------
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=0000029DB1862660, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=0000029DB18628A0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=0000029E9B249300, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=0000029E9B248C40, name=CpuAccelerator
