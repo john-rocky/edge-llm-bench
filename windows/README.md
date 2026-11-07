@@ -179,6 +179,29 @@ marker past the job, wait until the file is absent, write `<label> <time>` into 
 `windows-job`, which a job run with the default label takes for its own), rewrite it within every 120 min (a job takes
 an older one over), leave the two variables unset, and remove it at the end.
 
+Each record also carries two reads the job took on the host around its engine process: the SSH connections that
+reached the host meanwhile (`conditions.sshConnections`) and the logical processors' counters over it
+(`conditions.hostCpu`); nothing in the harness judges either. `conditions.sshConnections` holds the SSH connections the
+host's sshd accepted from the run's start to its end: their number (`accepted`) and each one's second into the run
+(`atSeconds`), read after the run from the host's `OpenSSH/Operational` event log, where OpenSSH writes one `Accepted`
+event per connection; a session opened before the run and still open during it is not counted. The executor's own poll
+is one of them every 30 s, so a 60 s run with no other SSH client counts about two. The log is circular (1 MiB: about
+7 h of this PC's SSH traffic on 2026-11-07) and is read right after each run; a run whose start the log no longer
+reaches by then (it turned over or was cleared during the run), or a run on a host whose log cannot be read, gets
+`accepted: null` and the reason.
+
+`conditions.hostCpu` holds, for each logical processor and for `_Total`, the share of time it was busy with any process
+(`busyPercent`, the `Processor Information` counter `% Processor Time`) and its performance against what Windows calls
+the processor's nominal performance (`performancePercent`, `% Processor Performance`, which can read over 100), both
+averaged over the run from reads right before the engine starts and right after it exits (`seconds` apart). It also
+holds the lowest `% Performance Limit` (`performanceLimitPercent`) of the reads after the first (one every 5 s while
+the engine runs, and the one after it exits) and the `Performance Limit Flags` any of the reads held
+(`performanceLimitFlags`, OR-ed, only where not 0); `limitReads` says how many reads were taken and is left out when
+fewer than two were, in which case both come from the read after the engine exits. Every iteration record of a run
+carries the run's values. `host.json` lists each logical processor's efficiency class, core, last-level cache index
+(`llc`: processors with the same index share that cache) and `maxMhz` (`cpuSets`), by which to read the keys of
+`hostCpu`. Records from the sittings up to `2026-11-07-windows-igpu` carry neither key: the job read neither then.
+
 ## What a Windows machine does differently
 
 - **System code page.** MSVC reads BOM-less UTF-8 sources in the system code page. On a Japanese Windows (932) the

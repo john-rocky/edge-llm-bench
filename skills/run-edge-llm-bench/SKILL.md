@@ -289,7 +289,10 @@ read the flags in the first line before the spread.
   fix, hold a bare string where one did and `{}` where none did. A process that started within that second counts
   from zero; the records written before that change (all of 2026-11-05 and the 2026-11-06 sittings up to
   `2026-11-06-windows-drift2`) leave out a process that started after the first read, so a build's compiler, one
-  short process per file, is mostly missing from them.
+  short process per file, is mostly missing from them. `conditions.sshConnections` counts the SSH connections the
+  host accepted during the run (the executor's poll is one every 30 s), and `conditions.hostCpu` holds each logical
+  processor's busy, performance and performance-limit percentages and limit flags over the run (`windows/README.md`,
+  Run); the harness judges neither, and records from the sittings up to `2026-11-07-windows-igpu` carry neither.
 - **Known, and none of it stops a cell or flags a run:**
   - Bazel prints `Header pruning has been disabled since Bazel failed to recognize the output of /showIncludes.` and
     two more lines, one asking for the English language pack for Visual Studio (seen on a Japanese Windows); the build

@@ -1194,6 +1194,36 @@ class WindowsRunnerRows(unittest.TestCase):
             self.assertEqual(bench_common.corrected_quant(arm, mid, new, row), (new, False))
             self.assertEqual(bench_common.corrected_quant(arm, mid, old, dict(row, platform="mac")), (old, False))
 
+    def test_a_runs_host_reads_pass_into_each_of_its_records(self):
+        # run_job.ps1 (2026-11-07) writes the SSH connections sshd accepted during the engine process and the logical
+        # processors' counters over it: every iteration record of the run carries both as the job wrote them, a null
+        # count with its reason too, and a run an older job script wrote carries neither key
+        head = "I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: cpu\nnumber_of_threads: 4\nmax_tokens: 2048\n"
+        ssh = {"accepted": 2, "atSeconds": [12.5, 42.6]}
+        cpu = {"seconds": 61.2, "busyPercent": {"0,0": 97.1, "_Total": 40.2}, "performancePercent": {"0,0": 88.0},
+               "performanceLimitPercent": {"0,0": 100.0}, "performanceLimitFlags": {}}
+        unread = ({"accepted": None, "reason": "the OpenSSH/Operational log was not read: x"},
+                  {"reason": "Processor Information not read: y"})
+        with tempfile.TemporaryDirectory(prefix="render-rules-winhost-") as tmp:
+            clean, recs = self.records(tmp, "backend=cpu file=m.litertlm context-tokens=2048", head,
+                                       metas=({"sshConnections": ssh, "hostCpu": cpu},
+                                              {"sshConnections": unread[0], "hostCpu": unread[1]}, {}))
+        self.assertEqual(clean, 3)
+        runs = {}
+        for r in recs:
+            runs.setdefault(r["conditions"]["launchID"], []).append(r["conditions"])
+        read, unreadable, older = runs.values()
+        self.assertTrue(read and unreadable and older)
+        for c in read:
+            self.assertEqual((c["sshConnections"], c["hostCpu"]), (ssh, cpu))
+        for c in unreadable:
+            self.assertEqual((c["sshConnections"], c["hostCpu"]), unread)
+        for c in older:
+            self.assertNotIn("sshConnections", c)
+            self.assertNotIn("hostCpu", c)
+        # recorded, never judged: neither read adds a flag
+        self.assertEqual({f for c in read + unreadable for f in c["protocolFlags"]}, set())
+
     NPU_HEAD = ("I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: npu\nmax_tokens: 0\n"
                 "RegisterAccelerator: ptr=000001C4D6DD87A0, name=NpuAccelerator\n"
                 "INFO: [invocation_context.cc:297] OpenVINO partition '(unnamed)' using device: NPU\n")

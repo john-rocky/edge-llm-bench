@@ -635,6 +635,11 @@ def write_records(plan: Plan, campaign_dir: pathlib.Path, invocation: str, *,
                         cond["hostBefore"] = meta["before"]
                     if meta.get("after"):
                         cond["hostAfter"] = meta["after"]
+                    for key in ("sshConnections", "hostCpu"):
+                        # two reads of the host around the whole engine process (run_job.ps1 since 2026-11-07),
+                        # the same in each of its iterations: recorded as the job read them, never judged here
+                        if key in meta:
+                            cond[key] = meta[key]
                     if prompt_ver:
                         cond["promptVersion"] = prompt_ver
                     if checking:

@@ -29,6 +29,19 @@ caches, the job removes them (gpuCachePurge), and a GPU run that starts with non
 (gpuCacheWrite: it compiles and writes them). Which adapter wrote which caches is kept in <LogDir>\gpu-caches.json
 for a resumed job; at its end the job removes the caches an adapter run wrote, so that no later job reads them.
 
+Each run's JSON also carries two reads of the host taken around the engine process, sshConnections and hostCpu;
+neither stops or flags a run. sshConnections: the SSH connections the host's sshd accepted from the run's start to its
+end, read after the run from the event log -SshLogName names (OpenSSH logs one "Accepted" event per connection), with
+each one's second into the run; a session opened before the run is not counted. The count includes the executor's own
+poll, one connection every 30 s. A null count carries the reason the log could not be read. hostCpu: each logical
+processor's busy share (every process's) and its performance against its nominal performance (which can read over
+100), averaged over the run from the Processor Information counters read right before the engine starts and right
+after it exits; its lowest performance limit over the reads after the first (one every 5 s while the engine runs, and
+the one after it exits); and its limit flags over all of them. The job's first read of those counters is the slow one
+(0.7 to 6.3 s on 2026-11-07; job.log says how long) and happens before its first run; each later read takes a
+millisecond or two. host.json lists each logical processor's efficiency class, core, last-level cache index and
+maxMhz (cpuSets).
+
 Written for the host side of scripts/windows_ssh_executor.py; the log and JSON shapes are what
 scripts/run_windows_matrix.py write_records reads.
 #>
@@ -47,6 +60,7 @@ param(
     [int]$QuietGpuMiB = 800,
     [int]$QuietGpuEnginePercent = 10,
     [int]$QuietWaitMinutes = 30,
+    [string]$SshLogName = "OpenSSH/Operational",
     [switch]$PurgeEngineCaches
 )
 
@@ -54,6 +68,8 @@ $ErrorActionPreference = "Stop"
 $LitertExe = "litert_lm_advanced_main_windows.exe"
 $GpuPrefKey = "Software\Microsoft\DirectX\UserGpuPreferences"
 $GpuCacheAdapter = @{}   # model file -> the adapter ("" = the engine's own choice) that wrote its GPU caches
+$CpuCategory = $null     # the Processor Information counter category, once read
+$CpuReadError = ""       # why the last read of it failed
 
 function Write-Utf8([string]$Path, [string]$Text) {
     [IO.File]::WriteAllText($Path, $Text, (New-Object Text.UTF8Encoding($false)))
@@ -192,6 +208,170 @@ function Save-GpuCacheAdapter {
     Write-Json (Join-Path $LogDir "gpu-caches.json") $GpuCacheAdapter
 }
 
+# The SSH connections the host's sshd accepted between two times: how many, and each one's second after $From.
+# OpenSSH logs every connection as three events of one id ("Accepted ...", "Received disconnect ...", "Disconnected
+# ..."), so the message is what picks the connections. Get-WinEvent reports a window without events as the error
+# NoMatchingEventsFound: a count of 0. The log is circular (1 MiB held about seven hours of the bench PC's SSH traffic
+# on 2026-11-07): a window that starts before its oldest event is not counted. A null count carries the reason.
+function Get-SshAccepted([datetime]$From, [datetime]$To) {
+    try {
+        $log = Get-WinEvent -ListLog $SshLogName -ErrorAction Stop
+        if (-not $log.IsEnabled) { return [ordered]@{ accepted = $null; reason = "the $SshLogName log is not enabled" } }
+        $oldest = Get-WinEvent -LogName $SshLogName -Oldest -MaxEvents 1 -ErrorAction SilentlyContinue
+        if ($null -eq $oldest) { return [ordered]@{ accepted = $null; reason = "the $SshLogName log holds no event" } }
+        if ($oldest.TimeCreated -gt $From) {
+            return [ordered]@{ accepted = $null; reason = "the $SshLogName log's oldest event ($($oldest.TimeCreated.ToString('o'))) is later than the run's start" }
+        }
+        $events = @()
+        try {
+            $events = @(Get-WinEvent -FilterHashtable @{ LogName = $SshLogName; StartTime = $From; EndTime = $To } -ErrorAction Stop |
+                    Where-Object { $_.Message -match '^sshd[^:]*: Accepted ' })
+        } catch {
+            if ($_.FullyQualifiedErrorId -notlike 'NoMatchingEventsFound*') { throw }
+        }
+        $at = @($events | Sort-Object TimeCreated | ForEach-Object { [math]::Round(($_.TimeCreated - $From).TotalSeconds, 1) })
+        return [ordered]@{ accepted = $events.Count; atSeconds = $at }
+    } catch {
+        return [ordered]@{ accepted = $null; reason = "the $SshLogName log was not read: $($_.Exception.Message)" }
+    }
+}
+
+# Every logical processor's Processor Information counters, raw, in one read inside this process (no WMI provider).
+# $null when the counters do not answer ($CpuReadError says why).
+function Read-CpuCounters {
+    try {
+        if ($null -eq $script:CpuCategory) {
+            $script:CpuCategory = New-Object Diagnostics.PerformanceCounterCategory('Processor Information')
+        }
+        return , $script:CpuCategory.ReadCategory()
+    } catch {
+        $script:CpuReadError = $_.Exception.Message
+        return $null
+    }
+}
+
+# A run's performance limit is read every 5 s while the engine runs, the reads right before and after included: per
+# logical processor the lowest % Performance Limit any read after the first held (an instantaneous counter: Calculate
+# over two reads returns the newer one's value), and the Performance Limit Flags any read held, OR-ed. A read that
+# fails is skipped; it never stops the run.
+function New-CpuLimits { return [ordered]@{ reads = 0; last = $null; lowest = @{}; flags = @{} } }
+
+function Add-CpuLimits($Acc, $Read) {
+    if ($null -eq $Read) { return }
+    try {
+        if ($null -ne $Acc.last -and $Read.Contains('% Performance Limit')) {
+            $prev = $Acc.last['% Performance Limit']
+            foreach ($n in @($Read['% Performance Limit'].Keys)) {
+                if ($n -match '^\d+,_total$' -or -not $prev.Contains($n)) { continue }
+                $v = [Diagnostics.CounterSample]::Calculate($prev[$n].Sample, $Read['% Performance Limit'][$n].Sample)
+                if (-not $Acc.lowest.ContainsKey($n) -or $v -lt $Acc.lowest[$n]) { $Acc.lowest[$n] = $v }
+            }
+        }
+        if ($Read.Contains('Performance Limit Flags')) {
+            foreach ($n in @($Read['Performance Limit Flags'].Keys)) {
+                if ($n -match '^\d+,_total$') { continue }
+                $f = [int64]$Read['Performance Limit Flags'][$n].RawValue
+                if ($f -ne 0) { $Acc.flags[$n] = $(if ($Acc.flags.ContainsKey($n)) { $Acc.flags[$n] -bor $f } else { $f }) }
+            }
+        }
+        $Acc.last = $Read
+        $Acc.reads++
+    } catch { }
+}
+
+# Each logical processor over one run, between two raw reads: busy (% Processor Time, every process's) and performance
+# (% Processor Performance: the processor's average performance while executing instructions, against its nominal
+# performance, which can read over 100). With $Limits (New-CpuLimits, at least two reads): the lowest performance limit
+# and the limit flags of those reads; without: the limit and the flags of the second read. Keys are the counters'
+# instances, "<group>,<processor>" and "_Total" (a group's own total is left out).
+function Get-CpuDuringRun($Before, $After, $Limits = $null) {
+    if ($null -eq $Before -or $null -eq $After) { return [ordered]@{ reason = "Processor Information not read: $CpuReadError" } }
+    try {
+        $names = @($After['% Processor Time'].Keys | Where-Object { $_ -notmatch '^\d+,_total$' } | Sort-Object {
+                if ($_ -eq '_total') { [int]::MaxValue } else { $g, $p = $_ -split ','; [int]$g * 1000 + [int]$p } })
+        $out = [ordered]@{ seconds = $null; busyPercent = [ordered]@{}; performancePercent = [ordered]@{};
+            performanceLimitPercent = [ordered]@{}; performanceLimitFlags = [ordered]@{} }
+        $useReads = ($null -ne $Limits) -and ($Limits.reads -ge 2)
+        $maps = [ordered]@{ '% Processor Time' = 'busyPercent'; '% Processor Performance' = 'performancePercent' }
+        if (-not $useReads) { $maps['% Performance Limit'] = 'performanceLimitPercent' }
+        foreach ($n in $names) {
+            $key = $(if ($n -eq '_total') { '_Total' } else { $n })
+            foreach ($c in $maps.Keys) {
+                if (-not $After.Contains($c)) { continue }
+                $v = [Diagnostics.CounterSample]::Calculate($Before[$c][$n].Sample, $After[$c][$n].Sample)
+                $out[$maps[$c]][$key] = [math]::Round($v, 1)
+            }
+            if ($useReads) {
+                if ($Limits.lowest.ContainsKey($n)) { $out.performanceLimitPercent[$key] = [math]::Round($Limits.lowest[$n], 1) }
+                if ($Limits.flags.ContainsKey($n)) { $out.performanceLimitFlags[$key] = $Limits.flags[$n] }
+            } elseif ($After.Contains('Performance Limit Flags')) {
+                $f = [int64]$After['Performance Limit Flags'][$n].RawValue
+                if ($f -ne 0) { $out.performanceLimitFlags[$key] = $f }
+            }
+        }
+        if ($useReads) { $out['limitReads'] = $Limits.reads }
+        $s0 = $Before['% Processor Time']['_total'].Sample
+        $s1 = $After['% Processor Time']['_total'].Sample
+        $out.seconds = [math]::Round(($s1.TimeStamp100nSec - $s0.TimeStamp100nSec) / 1e7, 3)
+        return $out
+    } catch {
+        return [ordered]@{ reason = "Processor Information: $($_.Exception.Message)" }
+    }
+}
+
+# Each logical processor's efficiency class (Windows' class of its core: a higher one is faster and less
+# power-efficient), core and last-level cache index (GetSystemCpuSetInformation; processors with the same index share
+# that cache) and the MaxMhz that CallNtPowerInformation's ProcessorInformation reports for it, for reading hostCpu.
+# Callers wrap it in @().
+function Get-CpuSets {
+    try {
+        if (-not ('BenchCpuSets' -as [type])) {
+            Add-Type -TypeDefinition @"
+using System; using System.Runtime.InteropServices;
+public static class BenchCpuSets {
+  [DllImport("kernel32.dll", SetLastError=true)]
+  public static extern bool GetSystemCpuSetInformation(IntPtr info, uint len, out uint ret, IntPtr proc, uint flags);
+  [DllImport("powrprof.dll")]
+  public static extern uint CallNtPowerInformation(int level, IntPtr input, uint inputLen, IntPtr output, uint outputLen);
+}
+"@
+        }
+        $mhz = @{}
+        $count = [Environment]::ProcessorCount
+        $pbuf = [Runtime.InteropServices.Marshal]::AllocHGlobal(24 * $count)
+        try {
+            # ProcessorInformation (11): one PROCESSOR_POWER_INFORMATION of six ULONGs per logical processor
+            if ([BenchCpuSets]::CallNtPowerInformation(11, [IntPtr]::Zero, 0, $pbuf, [uint32](24 * $count)) -eq 0) {
+                for ($i = 0; $i -lt $count; $i++) {
+                    $mhz[[Runtime.InteropServices.Marshal]::ReadInt32($pbuf, 24 * $i)] = [Runtime.InteropServices.Marshal]::ReadInt32($pbuf, 24 * $i + 4)
+                }
+            }
+        } finally { [Runtime.InteropServices.Marshal]::FreeHGlobal($pbuf) }
+        [uint32]$len = 0
+        [void][BenchCpuSets]::GetSystemCpuSetInformation([IntPtr]::Zero, 0, [ref]$len, [IntPtr]::Zero, 0)
+        $buf = [Runtime.InteropServices.Marshal]::AllocHGlobal([int]$len)
+        $sets = @()
+        try {
+            if (-not [BenchCpuSets]::GetSystemCpuSetInformation($buf, $len, [ref]$len, [IntPtr]::Zero, 0)) { throw "GetSystemCpuSetInformation failed" }
+            $off = 0
+            while ($off -lt $len) {
+                $size = [Runtime.InteropServices.Marshal]::ReadInt32($buf, $off)
+                $lp = [int][Runtime.InteropServices.Marshal]::ReadByte($buf, $off + 14)
+                $sets += [ordered]@{
+                    group           = [int][Runtime.InteropServices.Marshal]::ReadInt16($buf, $off + 12)
+                    lp              = $lp
+                    core            = [int][Runtime.InteropServices.Marshal]::ReadByte($buf, $off + 15)
+                    llc             = [int][Runtime.InteropServices.Marshal]::ReadByte($buf, $off + 16)
+                    efficiencyClass = [int][Runtime.InteropServices.Marshal]::ReadByte($buf, $off + 18)
+                    maxMhz          = $(if ($mhz.ContainsKey($lp)) { $mhz[$lp] } else { $null })
+                }
+                $off += $size
+            }
+        } finally { [Runtime.InteropServices.Marshal]::FreeHGlobal($buf) }
+        return $sets
+    } catch { return @("not read: $($_.Exception.Message)") }
+}
+
 function Get-HostFacts {
     $cs = Get-CimInstance Win32_ComputerSystem
     $os = Get-CimInstance Win32_OperatingSystem
@@ -232,6 +412,7 @@ function Get-HostFacts {
         powerScheme     = $scheme
         npuDriver       = $(if ($npu) { "$($npu.DeviceName) $($npu.DriverVersion)" } else { $null })
         binaries        = $binaries
+        cpuSets         = @(Get-CpuSets)
     }
 }
 
@@ -327,14 +508,22 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
     if ($want) { $before["gpuEnginePercent"] = Get-GpuEnginePercent }
     $applied = $null
     $prefGone = $null
+    $cpu0 = $null
+    $cpu1 = $null
+    $t0 = $null
+    $t1 = $null
+    $limits = New-CpuLimits
     try {
         if ($want) {
             Set-GpuPreference $tool $want
             $applied = Get-GpuPreference $tool
             Say "$name GpuPreference on the tool: $applied"
         }
+        $cpu0 = Read-CpuCounters
+        Add-CpuLimits $limits $cpu0
+        $t0 = Get-Date
         $sw = [Diagnostics.Stopwatch]::StartNew()
-        $start = Get-Date -Format o
+        $start = $t0.ToString("o")
         Say "$name start: $envText$tool $argLine"
         $shell = Start-Process -FilePath "$env:SystemRoot\System32\cmd.exe" -ArgumentList "/d /s /c `"$inner`"" `
             -WorkingDirectory (Split-Path $tool) -WindowStyle Hidden -PassThru
@@ -346,12 +535,17 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         $gpuSamples = @()
         $sampleGpu = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")
         $nextGpu = 5.0
+        $nextCpu = 5.0
         while (-not $shell.HasExited) {
             if ($engine) {
                 try {
                     $engine.Refresh()
                     if (-not $engine.HasExited -and $engine.PeakWorkingSet64 -gt $peak) { $peak = $engine.PeakWorkingSet64 }
                 } catch { }
+            }
+            if ($sw.Elapsed.TotalSeconds -ge $nextCpu) {
+                Add-CpuLimits $limits (Read-CpuCounters)
+                $nextCpu += 5.0
             }
             if ($sampleGpu -and $sw.Elapsed.TotalSeconds -ge $nextGpu) {
                 $gpuSamples += "$([int]$sw.Elapsed.TotalSeconds)s $(Get-GpuSample)"
@@ -368,6 +562,9 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         $shell.WaitForExit()
         $elapsed = $sw.Elapsed.TotalSeconds
         $exit = $shell.ExitCode
+        $cpu1 = Read-CpuCounters
+        Add-CpuLimits $limits $cpu1
+        $t1 = Get-Date
     } finally {
         # the value outlives the process: off right after the run, whatever stopped it
         if ($want) {
@@ -378,6 +575,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
 
     foreach ($k in $saved.Keys) { [Environment]::SetEnvironmentVariable($k, $saved[$k], "Process") }
     $after = [ordered]@{ cpuBusyPercent = Get-CpuBusyPercent; topProcesses = @(Get-TopProcesses) }
+    $ssh = Get-SshAccepted $t0 $t1
     if ($isGpu -and $Launch.modelFile) {
         $GpuCacheAdapter[[string]$Launch.modelFile] = $adapter
         Save-GpuCacheAdapter
@@ -399,6 +597,8 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
             gpuPreferenceLeftover = $leftover
             gpuCacheWrite         = $cacheWrite
             gpuCachePurge         = $purged
+            sshConnections        = $ssh
+            hostCpu               = Get-CpuDuringRun $cpu0 $cpu1 $limits
         })
     Say "$name exit=$exit timedOut=$timedOut elapsed=$([math]::Round($elapsed, 1)) peakMB=$([int]($peak / 1MB))"
     if ($want -and -not $prefGone) {
@@ -415,6 +615,9 @@ try {
     Wait-Busy
     Say "job $($job.campaign): $(@($job.launches).Count) launches"
     Write-Json (Join-Path $LogDir "host.json") (Get-HostFacts)
+    $cpuLoad = [Diagnostics.Stopwatch]::StartNew()
+    if ($null -eq (Read-CpuCounters)) { Say "Processor Information counters not read: $CpuReadError (each run's hostCpu carries the reason)" }
+    else { Say "Processor Information counters loaded in $([int]$cpuLoad.Elapsed.TotalMilliseconds) ms (the job's first read)" }
     if ($PurgeEngineCaches) {
         Get-ChildItem $ModelDir -File | Where-Object { $_.Name -match "_cache\.bin$|\.xnnpack_cache$" } | ForEach-Object {
             Say "purged $($_.Name) ($([int]($_.Length / 1MB)) MB)"
