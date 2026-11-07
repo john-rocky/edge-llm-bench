@@ -107,6 +107,8 @@ SHA256 = re.compile(r"[0-9a-f]{64}")
 NATIVE_TASK_PREFIX = "native-benchmark-"
 NATIVE_TASK = re.compile(NATIVE_TASK_PREFIX + r"[1-9]\d*x[1-9]\d*")
 EXIT_INPUT, EXIT_GCLOUD, EXIT_JOB, EXIT_RESULTS, EXIT_INTERRUPTED = 2, 3, 4, 5, 130
+# A dry run runs no subprocess: without --project or BENCH_DDP_PROJECT its plan shows this in their place.
+PROJECT_PLACEHOLDER = "$PROJECT"
 
 
 class InputError(Exception):
@@ -883,10 +885,12 @@ def main(argv=None) -> int:
                     help="results/raw/<campaign> (default: <today>-ddp-<device>-ios)")
     ap.add_argument("--timeout", default=None, help="the lab's --xctest-timeout, 1m to 1h (default: gpu 15m, cpu 30m)")
     ap.add_argument("--xcode-version", default="xcode-26-2", help="the lab's Xcode (software-versions list; default: %(default)s)")
-    ap.add_argument("--project", default=os.environ.get("BENCH_DDP_PROJECT", "litert-edge-portal"),
-                    help="the Cloud project the session is billed to (default: %(default)s)")
-    ap.add_argument("--bucket", default="gs://litert-edge-portal-devicerun",
-                    help="gs://<bucket>[/<prefix>] for the content-addressed inputs (default: %(default)s)")
+    ap.add_argument("--project", default=os.environ.get("BENCH_DDP_PROJECT") or None,
+                    help="the Cloud project the session is billed to "
+                         "(default: $BENCH_DDP_PROJECT, else gcloud's active project)")
+    ap.add_argument("--bucket", default=None,
+                    help="gs://<bucket>[/<prefix>] for the content-addressed inputs "
+                         "(default: gs://<project>-devicerun)")
     ap.add_argument("--flat-model-push", action="store_true",
                     help="push the model to Documents/<file>; the test moves it into the app's model directory")
     ap.add_argument("--dry-run", action="store_true", help="print the plan and the gcloud command; run nothing")
@@ -903,6 +907,16 @@ def main(argv=None) -> int:
         ap.error("--device and --model-id are required (or --records-only <session dir>)")
     if RUNTIMES[args.runtime]["backends"] and not args.backend:
         ap.error(f"--backend is required for --runtime {args.runtime}")
+    if args.project is None:
+        try:
+            args.project = PROJECT_PLACEHOLDER if args.dry_run else gcloud("config", "get-value", "project").strip()
+        except GcloudError as e:
+            print(f"run_ddp_ios_lm.py: {e}", file=sys.stderr)
+            return EXIT_GCLOUD
+        if not args.project:
+            ap.error("--project: none named: pass it, set BENCH_DDP_PROJECT, or `gcloud config set project <id>`")
+    if args.bucket is None:
+        args.bucket = f"gs://{args.project}-devicerun"
     args.bucket = args.bucket.rstrip("/")
     if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
         ap.error(f"--bucket {args.bucket!r}: gs://<bucket>[/<prefix>]")

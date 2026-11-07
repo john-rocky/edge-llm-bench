@@ -124,14 +124,15 @@ Android SDK.
 
 - gcloud, signed in, with your project set:
   `gcloud auth login && gcloud config set project <your project>`. The driver
-  uses `gcloud auth print-access-token` and `gcloud storage` only, and it does
-  not read gcloud's default project: pass `--project` on every run.
+  uses `gcloud auth print-access-token` and `gcloud storage`. A run takes its
+  project from `--project`, then `$BENCH_DDP_PROJECT`, then gcloud's active project.
 - A Cloud project where the Device Run API is enabled
   (`gcloud services enable devicerun.googleapis.com --project <your project>`),
   your account allowed to create sessions there, and a bucket in it you can
   read and write (`gs://<your project>-devicerun` is the name
-  `gcloud beta device-run` uses). The defaults in `android/ddp/run_ddp.py`
-  are this repo's own project and bucket, so pass `--project` and `--bucket`.
+  `gcloud beta device-run` uses, and the run's default without `--bucket` or
+  `$BENCH_DDP_BUCKET`). A dry run calls no gcloud: without the flag or the
+  variable its plan shows `$PROJECT`.
 - python3 >= 3.10 as `python3` on the PATH (`bench` starts with
   `#!/usr/bin/env python3`) and `huggingface_hub`, for instance in a venv:
   `python3 -m venv ~/elb-venv && . ~/elb-venv/bin/activate && pip install huggingface_hub`

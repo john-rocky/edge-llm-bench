@@ -202,8 +202,8 @@ def session_argv(cell: IosCell, archive: pathlib.Path, args) -> list:
         "--task", cell.task,
         "--runs", str(runs),
         "--archive", str(archive),
-        "--project", args.project,
-        "--bucket", args.bucket,
+        *(["--project", args.project] if args.project else []),
+        *(["--bucket", args.bucket] if args.bucket else []),
         "--campaign", args.campaign,
     ]
     if args.dry_run:
@@ -251,8 +251,10 @@ def main(argv=None) -> int:
     ap.add_argument("cells", nargs="+", type=pathlib.Path, help="cells files; their ios rows run")
     ap.add_argument("--campaign", help="campaign dir name (default: <date>-ddp-ios)")
     ap.add_argument("--device", default=os.environ.get("BENCH_IOS_DDP_DEVICE", DEFAULT_DEVICE))
-    ap.add_argument("--project", default=os.environ.get("BENCH_DDP_PROJECT", "litert-edge-portal"))
-    ap.add_argument("--bucket", default=os.environ.get("BENCH_DDP_BUCKET", "gs://litert-edge-portal-devicerun"))
+    ap.add_argument("--project", default=os.environ.get("BENCH_DDP_PROJECT") or None,
+                    help="the Cloud project (default: $BENCH_DDP_PROJECT, else run_ddp_ios_lm.py's)")
+    ap.add_argument("--bucket", default=os.environ.get("BENCH_DDP_BUCKET") or None,
+                    help="gs://<bucket>[/<prefix>] (default: $BENCH_DDP_BUCKET, else run_ddp_ios_lm.py's)")
     ap.add_argument("--runs", type=int, default=DEFAULT_RUNS,
                     help="default runs per cell when the row sets no runs= (default: %(default)s)")
     ap.add_argument("--cool-wait", type=int, default=0,

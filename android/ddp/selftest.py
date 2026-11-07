@@ -373,6 +373,8 @@ def check_bench_dry_run(tmp, bin_dir):
     marker = os.path.join(tmp, "gcloud-was-called")
     write(os.path.join(trap, "gcloud"), f"#!/bin/sh\necho \"$@\" >> {marker}\nexit 1\n", 0o755)
     env = dict(os.environ, PATH=trap + os.pathsep + "/usr/bin:/bin", BENCH_ANDROID_BIN_DIR=bin_dir)
+    env.pop("BENCH_DDP_PROJECT", None)
+    env.pop("BENCH_DDP_BUCKET", None)
     summary_csv = os.path.join(ROOT, "results", "summary", "device-runs.csv")
     before = os.path.getmtime(summary_csv) if os.path.exists(summary_csv) else None
     r = subprocess.run([sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD, "--ddp", "akita-35",
@@ -382,6 +384,9 @@ def check_bench_dry_run(tmp, bin_dir):
        and "skip: mac rows are not run on DDP" in r.stdout and '"jobs": 6' in r.stdout,
        f"bench --ddp akita-35 --dry-run: rc 0, ios / mac rows skipped, 6 jobs (rc {r.returncode}, {r.stderr[-300:]!r})")
     ok(not os.path.exists(marker), "the dry run never ran gcloud (a gcloud first on PATH that records calls)")
+    dry = next((json.loads(x)["summary"] for x in r.stdout.splitlines() if x.startswith('{"summary"')), {})
+    ok(dry.get("project") == "$PROJECT" and dry.get("bucket") == "gs://$PROJECT-devicerun",
+       f"no --project, no --bucket: the dry run's summary line shows the placeholders ({dry})")
     ok(before == after, "the dry run rebuilt no summary")
     r2 = subprocess.run([sys.executable, os.path.join(ROOT, "bench"), "matrix", DASHBOARD, "--dry-run"],
                         env=env, capture_output=True, text=True)
@@ -396,7 +401,7 @@ def check_bench_dry_run(tmp, bin_dir):
     ok(r3.returncode == 0 and summary.get("project") == "other-team-project"
        and summary.get("bucket") == "gs://other-team-bucket" and summary.get("cpucapWaitSeconds") == 0
        and sessions and all('"gs://other-team-bucket/automation/' in json.dumps(s["request"])
-                            and "litert-edge-portal" not in json.dumps(s["request"]) for s in sessions),
+                            and "$PROJECT" not in json.dumps(s["request"]) for s in sessions),
        f"bench --ddp m1q-36 --dry-run --project other-team-project --bucket gs://other-team-bucket/: the summary line "
        f"names both (trailing / dropped) and cpucapWaitSeconds 0, every request path in that bucket "
        f"(rc {r3.returncode}, {summary})")
@@ -970,6 +975,8 @@ def local(url):
 
 if a[:2] == ["auth", "print-access-token"]:
     print("fake-token-0001")
+elif a[:3] == ["config", "get-value", "project"]:
+    print(os.environ.get("FAKE_GCLOUD_PROJECT", ""))
 elif a[:2] == ["storage", "ls"]:
     if not os.path.exists(local(a[2])):
         sys.stderr.write("ERROR: (gcloud.storage.ls) One or more URLs matched no objects.\\n")
@@ -1306,6 +1313,28 @@ def check_billed_path(tmp, raw_root, bin_dir, models, sampler_head, att_short, a
     resumed = glob.glob(os.path.join(raw_root, "selftest-ddp-resume-android", "app-path-android", "*.json"))
     ok(rc4 in (0, 1) and len(st["posts"]) == n_posts and len(resumed) == 6,
        f"--resume <operation>: no new POST, the session polled, pulled and recorded (rc {rc4}, {len(resumed)} records)")
+    # no --project, no --bucket, nothing in the environment: gcloud's active project and that project's
+    # devicerun bucket; no active project, or no gcloud: refused before any POST
+    bare = ["--device", "akita-35", "--endpoint", endpoint, "--poll-seconds", "0.05", "--bin-dir", bin_dir]
+    os.symlink(os.path.join(bucket_root, "fake-bucket"), os.path.join(bucket_root, f"{PROJECT}-devicerun"))  # the fake writes under one name
+    n_posts = len(st["posts"])
+    with patch.dict(os.environ), patch.object(run_ddp, "model_file", fake_model):
+        os.environ.pop("BENCH_DDP_PROJECT", None)
+        os.environ.pop("BENCH_DDP_BUCKET", None)
+        rc5, _ = run_driver([cells, "--campaign", "selftest-ddp-gcloud-project-android"] + bare,
+                            dict(env, FAKE_GCLOUD_PROJECT=PROJECT))
+        posted5 = st["posts"][-1] if len(st["posts"]) == n_posts + 1 else {}
+        n_posts = len(st["posts"])
+        rc6, _ = run_driver([cells, "--campaign", "selftest-ddp-no-project-android"] + bare,
+                            dict(env, FAKE_GCLOUD_PROJECT=""))
+        rc7, _ = run_driver([cells, "--campaign", "selftest-ddp-no-gcloud-android"] + bare,
+                            dict(env, PATH=os.path.join(tmp, "no-gcloud-bin")))
+    out5 = posted5.get("sessionConfig", {}).get("outputDirectoryConfig", {}).get("gcsOutputDirectory", {}).get("path")
+    ok(rc5 in (0, 1) and out5 == f"gs://{PROJECT}-devicerun/automation/sessions",
+       f"no --project, no --bucket: the session POSTed to gcloud's active project, in gs://<project>-devicerun (rc {rc5}, {out5})")
+    ok(getattr(rc6, "code", None) == 2 and getattr(rc7, "code", None) == 2 and len(st["posts"]) == n_posts
+       and not os.path.exists(os.path.join(raw_root, "selftest-ddp-no-project-android")),
+       f"no active project, or no gcloud: exit 2 before any POST or campaign dir ({rc6!r}, {rc7!r})")
     # the witness of a changed sha: one .so, then the tool itself
     session = json.load(open(os.path.join(ddp, "session-1.json")))
     plan_s = json.load(open(os.path.join(ddp, "plan-1.json")))

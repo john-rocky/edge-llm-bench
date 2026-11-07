@@ -72,6 +72,7 @@ FAKE_GCLOUD = r"""#!/bin/bash
 echo "$*" >> "$FAKE_GCLOUD_LOG"
 D="$FAKE_GCLOUD_DIR"
 case "$*" in
+  "config get-value project") cat "$D/project" 2>/dev/null || true ;;
   *"devices list"*) cat "$D/devices.json" ;;
   "storage ls "*) [ -e "$D/bucket/${3#gs://}" ] ;;
   "storage cp -r "*)
@@ -159,6 +160,8 @@ def env_for(tmp, gcloud=True, extra=None):
            "BENCH_RAW_ROOT": os.path.join(tmp, "raw"), "HF_HUB_CACHE": os.path.join(tmp, "hf"),
            "HF_HUB_OFFLINE": "1", "PATH": f"{fake}:/usr/bin:/bin" if gcloud else empty}
     env.pop("HF_HOME", None)
+    env.pop("BENCH_DDP_PROJECT", None)
+    env.pop("BENCH_DDP_BUCKET", None)
     env.update(extra or {})
     return env
 
@@ -271,6 +274,13 @@ def check_dry_runs(tmp, shas):
            f"{mid} {be}: the app's argv = bench_matrix_iphone.sh's devicectl argv ({rows.get('args')})")
         ok(os.path.expanduser("~") not in r.stdout, f"{mid} {be}: no home path in the printed plan")
     ok(gcloud_calls(tmp) == [], f"four dry runs called gcloud 0 times ({gcloud_calls(tmp)[:2]})")
+    # no --project, no --bucket: the placeholders in the printed command, still no gcloud
+    r = driver(["--device", DEVICE, "--model-id", CELLS[0][0], "--backend", CELLS[0][1], "--archive", archive,
+                "--campaign", "x", "--dry-run"], env)
+    cmd = json_lines(r.stdout).get("command") or []
+    ok(r.returncode == 0 and "--project=$PROJECT" in cmd and any("gs://$PROJECT-devicerun/" in c for c in cmd)
+       and gcloud_calls(tmp) == [],
+       f"no --project, no --bucket: the dry run prints $PROJECT and gs://$PROJECT-devicerun, gcloud 0 times (rc {r.returncode})")
     # --flat-model-push, --context-tokens, --timeout
     r = driver(["--device", DEVICE, "--model-id", CELLS[2][0], "--backend", "gpu", "--archive", archive,
                 "--campaign", "x", "--flat-model-push", "--context-tokens", "2048", "--timeout", "45m", "--dry-run"], env)
@@ -540,6 +550,24 @@ def check_billed(tmp, archive, shas):
     r = driver(["--device", DEVICE, "--model-id", "litert-community/Qwen3-1.7B", "--backend", "gpu", "--archive", archive,
                 "--campaign", "selftest-ios-ddp-nogcloud"], env_for(tmp, gcloud=False))
     ok(r.returncode == 3 and "gcloud is not on PATH" in r.stderr, f"no gcloud: exit 3 ({r.returncode})")
+    # no --project, no --bucket: gcloud's active project, gs://<project>-devicerun; none active: refused
+    no_flags = ["--device", DEVICE, "--model-id", "litert-community/Qwen3-1.7B", "--backend", "gpu",
+                "--archive", archive, "--campaign", "selftest-ios-ddp-gcloud-project"]
+    stage_fake(tmp, describe_json())
+    stage_execution(tmp, recs, stale)
+    write(os.path.join(tmp, "fake", "project"), PROJECT + "\n")
+    open(os.path.join(tmp, "gcloud.log"), "w").close()
+    r = driver(no_flags, env_for(tmp))
+    calls = gcloud_calls(tmp)
+    ok(r.returncode == 0 and "config get-value project" in calls
+       and any("device-run sessions submit xctest" in c and f"--project={PROJECT}" in c
+               and f"gs://{PROJECT}-devicerun/" in c for c in calls),
+       f"no --project, no --bucket: the submit carries gcloud's active project and its devicerun bucket (rc {r.returncode}, {r.stderr[-300:]!r})")
+    os.remove(os.path.join(tmp, "fake", "project"))
+    open(os.path.join(tmp, "gcloud.log"), "w").close()
+    r = driver(no_flags[:-1] + ["selftest-ios-ddp-no-project"], env_for(tmp))
+    ok(r.returncode == 2 and "--project: none named" in r.stderr and gcloud_calls(tmp) == ["config get-value project"],
+       f"no active project: exit 2 before any other gcloud call (rc {r.returncode}, {gcloud_calls(tmp)})")
     # exit 2: the catalog says the id is not an iPhone
     stage_fake(tmp, describe_json(), devices_platform="ANDROID")
     r = billed(tmp, archive, "selftest-ios-ddp-android")

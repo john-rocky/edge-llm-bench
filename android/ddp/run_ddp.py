@@ -843,6 +843,20 @@ def register_executor(name, fn):
     EXECUTORS[name] = fn
 
 
+# A dry run calls no gcloud: without --project or BENCH_DDP_PROJECT its plan shows this in their place.
+PROJECT_PLACEHOLDER = "$PROJECT"
+
+
+def active_gcloud_project():
+    """`gcloud config get-value project`; None when none is set or gcloud is missing."""
+    try:
+        r = subprocess.run(["gcloud", "config", "get-value", "project"], capture_output=True, text=True,
+                           stdin=subprocess.DEVNULL)
+    except OSError:
+        return None
+    return r.stdout.strip() or None
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("cells", nargs="?")
@@ -862,9 +876,11 @@ def main(argv=None):
     ap.add_argument("--engine-build", metavar="LABEL",
                     help="the litert-lm entry of android/engine-pins.json whose files <bin-dir>/<LABEL>/ holds, "
                          "instead of android_pins' tag (android/scripts/pins_add.py writes the entry)")
-    ap.add_argument("--bucket", default="gs://litert-edge-portal-devicerun",
-                    help="gs://<bucket>[/<prefix>] for the inputs and the session outputs")
-    ap.add_argument("--project", default="litert-edge-portal", help="the Cloud project of the sessions")
+    ap.add_argument("--bucket", default=os.environ.get("BENCH_DDP_BUCKET") or None,
+                    help="gs://<bucket>[/<prefix>] for the inputs and the session outputs "
+                         "(default: $BENCH_DDP_BUCKET, else gs://<project>-devicerun)")
+    ap.add_argument("--project", default=os.environ.get("BENCH_DDP_PROJECT") or None,
+                    help="the Cloud project of the sessions (default: $BENCH_DDP_PROJECT, else gcloud's active project)")
     ap.add_argument("--endpoint", default="https://devicerun.googleapis.com/v1alpha")
     ap.add_argument("--poll-seconds", type=float, default=30)
     args = ap.parse_args(argv)
@@ -877,6 +893,12 @@ def main(argv=None):
     if args.engine_build is not None and not ENGINE_BUILD.fullmatch(args.engine_build):
         ap.error(f"--engine-build {args.engine_build!r}: a pins label, ^[A-Za-z0-9][A-Za-z0-9._-]*$ "
                  "(android/scripts/pins_add.py)")
+    if args.project is None:
+        args.project = active_gcloud_project() if args.executor == "rest" and not args.dry_run else PROJECT_PLACEHOLDER
+        if args.project is None:
+            ap.error("--project: none named: pass it, set BENCH_DDP_PROJECT, or `gcloud config set project <id>`")
+    if args.bucket is None:
+        args.bucket = f"gs://{args.project}-devicerun"
     if args.executor == "rest":
         args.bucket = args.bucket.rstrip("/")
         if not re.fullmatch(r"gs://[^/\s]+(/\S+)?", args.bucket):
