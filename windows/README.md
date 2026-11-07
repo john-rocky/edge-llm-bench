@@ -429,3 +429,24 @@ the cold decode median moved by +0.2 % on Qwen3 1.7B (cold spreads 0.18 and 0.52
 1.96 %) and +14.9 % on Gemma 4 E2B (0.27 and 0.03 %); what moved the E2B row is not established. Qwen3 0.6B read `out`
 in both (36.16 and 60.32 %), Gemma 4 E4B in the second (7.06 %). SSH sessions opened about twice a minute (the
 executor's poll) plus one every 5 minutes: none during 11 of the 30 runs, one during 17, two during the other two.
+
+Four more sittings ran Gemma 4 E2B's five rows (a cells file of those five lines, 15 runs each) back to back at 16:17,
+16:32, 16:46 and 17:02 JST on 2026-11-07, alternating the executor's two ways of waiting for the job:
+`2026-11-07-windows-wait-poll-1` and `2026-11-07-windows-wait-poll-2` with its earlier wait, a new SSH connection every
+30 s that read `job.log` and `job.done`, and `2026-11-07-windows-wait-session-1` and `2026-11-07-windows-wait-session-2`
+with the one session of the Run section. Their `host.json` lists the `adapter=igpu` sittings' 187 engine files
+unchanged, and every run was clean and quiet. In the two poll sittings the executor opened 39 and 41 SSH connections, 5
+and 6 of them during runs. In the two session sittings it opened 10 each, none during a run: nine before the first run,
+which stage and start the job and open the wait's session, and one after the last, which copies the logs. The wait's
+session stayed open until the job ended (816 and 786 s), and its loop's process used 0.69 and 0.64 s of CPU. The other
+sessions that opened during a run, one in each of the first, second and fourth sittings, came from the reachability
+check. The cold decode medians of `litert-lm-cpu` and `litert-lm-npu`, counted in all four sittings, and of `llama.cpp`,
+counted in the last three, each stayed within 2.2 %. Where the wait changed from one sitting to the next they moved by
+-0.93 to +1.91 %, and between the two sittings of the same wait by +0.97 to +2.16 %. In the first sitting a connection
+of the poll opened 5.3 s into `llama.cpp`'s second run of 6.8 s, which read 5.5 % below the mean of the sitting's other
+two and put the row's cold spread at 6.17 % (`out`); the other eleven `llama.cpp` runs, none with a connection, lay
+within 2.5 % of one another. The GPU rows read `out` with either wait: `litert-lm-gpu` in the second and third sittings
+(8.26 and 12.28 %), `llama.cpp-gpu` in the first, second and fourth (12.15, 10.82 and 12.61 %). Of `llama.cpp-gpu`'s
+second and third runs, the three that took about 4.2 s, ending before the job's first reading inside a run at 5 s (the
+CPU counters, and `nvidia-smi` on a GPU row), read 9.0 to 14.0 % above the five that took about 6.3 s, each with one
+such reading; what makes the difference is not established.
