@@ -1,0 +1,45 @@
+Using specified GCS bucket 'gs://$BUCKET'.
+Ensuring GCS bucket 'gs://$BUCKET' exists for project '$PROJECT_NO_API'...
+Uploading local model 'models/mobilenet/mobilenet_v2.tflite' to gs://$BUCKET/litert-cli/inputs/litert-cli-benchmark-682e5026/...
+Fetching GCP access token...
+Uploading run script '<tmp>/benchmark_model_run.sh' to gs://$BUCKET/litert-cli/inputs/litert-cli-benchmark-682e5026/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-682e5026' to DDP (Project: $PROJECT_NO_API, Devices: akita-35, Binary: gs://litert/binaries/2.2.0/android_arm64/benchmark_model)...
+Error: Failed to submit benchmark: 403 Forbidden
+{
+  "error": {
+    "code": 403,
+    "message": "Device Run API has not been used in project $PROJECT_NO_API before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/devicerun.googleapis.com/overview?project=$PROJECT_NO_API then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+    "status": "PERMISSION_DENIED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "SERVICE_DISABLED",
+        "domain": "googleapis.com",
+        "metadata": {
+          "serviceTitle": "Device Run API",
+          "activationUrl": "https://console.developers.google.com/apis/api/devicerun.googleapis.com/overview?project=$PROJECT_NO_API",
+          "containerInfo": "$PROJECT_NO_API",
+          "consumer": "projects/$PROJECT_NO_API",
+          "service": "devicerun.googleapis.com"
+        }
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+        "locale": "en-US",
+        "message": "Device Run API has not been used in project $PROJECT_NO_API before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/devicerun.googleapis.com/overview?project=$PROJECT_NO_API then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Google developers console API activation",
+            "url": "https://console.developers.google.com/apis/api/devicerun.googleapis.com/overview?project=$PROJECT_NO_API"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+List DDP device ids with: gcloud beta device-run devices list --project <PROJECT_ID>
+EXIT=1

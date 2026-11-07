@@ -1,0 +1,42 @@
+START=22:46:18
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://$BUCKET'.
+Ensuring GCS bucket 'gs://$BUCKET' exists for project '$PROJECT'...
+Uploading local model 'models/mobilenet/mobilenet_v2.tflite' to gs://$BUCKET/litert-cli/inputs/litert-cli-benchmark-fae56bc6/...
+Fetching GCP access token...
+Uploading run script '<tmp>/benchmark_model_run.sh' to gs://$BUCKET/litert-cli/inputs/litert-cli-benchmark-fae56bc6/...
+Submitting 'cpu' benchmark session 'litert-cli-benchmark-fae56bc6' to DDP (Project: $PROJECT, Devices: akita-35, Binary: gs://litert/binaries/2.2.0/android_arm64/benchmark_model)...
+Benchmark session submitted successfully!
+Waiting for session 'session-b1f64979' to complete (Operation: projects/$PROJECT/locations/global/operations/operation-1794059188611-65faff4a4ab09-b5cf81dc-e1285779, timeout: 1020 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/$BUCKET/litert-cli/sessions/session-b1f64979
+......
+Session 'session-b1f64979' finished: PASSED
+
+Job 'cpu-akita-35': PASSED
+Output files saved to: ~/.cache/litert-cli/ddp/session-b1f64979/cpu-akita-35
+11-07 05:47:24.074 21334 21334 I litert  : [benchmark_litert_model.cc:271] Loading model from: /data/local/tmp/litert-cli/mobilenet_v2.tflite
+11-07 05:47:24.076 21334 21334 I tflite  : Replacing 70 out of 70 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for subgraph 0 (main).
+11-07 05:47:24.079 21334 21334 I litert  : [benchmark_litert_model.h:218] Generated model runtime info: /data/local/tmp/litert-cli/runtime_info.pb
+11-07 05:47:25.599 21334 21334 I litert  : [benchmark_litert_model.h:89] 
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:92] Signature name:       main
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:94] Model initialization: 3.26 ms
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:96] Warmup (first):       14.29 ms
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:98] Warmup (avg):         10.54 ms (48 runs)
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:100] Inference (avg):      10.47 ms (96 runs)
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:104] Inference (min):      9.90 ms
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:106] Inference (max):      11.32 ms
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:108] Inference (std):      0.28
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:115] Throughput:           54.84 MB/s
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:124] 
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:126] Init footprint:       4.11 MB
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:128] Overall footprint:    22.88 MB
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:132] Peak memory:          58.04 MB
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:138] ======================================
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:178] Saving benchmark result to: /data/local/tmp/litert-cli/results.pb
+11-07 05:47:25.600 21334 21334 I litert  : [benchmark_litert_model.h:182] Saved benchmark result to: /data/local/tmp/litert-cli/results.pb
+Model caches: on
+First process (compiles the model and writes the caches, no inference): init 13.40 ms
+Caches it wrote: mobilenet_v2.xnnpack_cache (13954616 B)
+The measured process left them unchanged
+The measured process logged: XNNPack weight cache loaded from '/data/local/tmp/litert-cli/benchmark_cache/mobilenet_v2.xnnpack_cache'.
+EXIT=0
+END=22:47:56

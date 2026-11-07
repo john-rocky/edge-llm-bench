@@ -1,6 +1,6 @@
 # Evaluating HF LiteRT models on the Developer Device Platform (DDP)
 
-*Written 2026-09-09 against the DDP docs dated 2026-09-03 (Preview). Nothing here has run on DDP yet; every claim about the platform is from its documentation, and every claim about this harness is from the code in this repo.*
+*Written 2026-09-09 against the DDP docs dated 2026-09-03 (Preview); each later section records what ran. To measure your own model on a lab phone, start at [Measure a model on a lab phone with gcloud and LiteRT CLI](#measure-a-model-on-a-lab-phone-with-gcloud-and-litert-cli-run-2026-11-07).*
 
 **Goal (as asked by the LiteRT team):** evaluate the `.litertlm` files published under `litert-community` automatically on real devices, publish the numbers, and link each number back to the DDP run that produced it.
 
@@ -469,6 +469,117 @@ DDP runs iOS as XCTest (`gcloud beta device-run sessions submit xctest`), so the
 - **Limits.** `--xctest-timeout` 1 min to 1 h, without the device preparation and cleanup (the driver sets 15 min for GPU and 30 min for CPU); one session = one device type × one job; a pushed source is local or `gs://` (2.59 GB pushed and loaded, 2026-10-16). The lab re-signs the app: whether the app keeps its two memory entitlements (increased memory limit, extended virtual addressing) is not visible in the outputs; the 2.59 GB Gemma 4 E2B file loaded and ran on GPU and CPU. The archive must be signed with an App ID whose provisioning profile carries those entitlements: the archive of 2026-10-16 carries the attached bench app's App ID (`com.example.CoreMLLLMChat`), so it is never installed on the attached iPhone; a dedicated App ID needs a person with the Apple account in Xcode. `environment.lock.json` has no iOS v0.18.0 entry yet (the attached iPhone rows are v0.16.0, a different engine: never pooled); adding it is a person's decision.
 
 **Sessions, 2026-10-16** (`results/raw/2026-10-16-ddp-iphone16pro-18-3-ios/`). LiteRT-LM v0.18.0 short chat, `runs=4`, on `iphone16pro-18-3` (iPhone 16 Pro; the units report iPhone17,1 and iOS 18.3.2), Xcode `xcode-26-2`, one session per cell: `session-70a0e2dc-9c0f-4232-babf-77a7c15ceb49` (Qwen3-1.7B, GPU), `session-71bd2279-fb3e-4bd8-8a61-c6583dad3bf5` (Qwen3-1.7B int8, CPU), `session-2af96355-979f-444b-a3ba-9259d5863dd4` (Gemma 4 E2B, GPU), `session-869a5c6a-46ff-45c5-83a8-6d511476e383` (Gemma 4 E2B, CPU). All four PASSED, each on its own unit, with 4 records each (16). The sessions took 8.6, 20.0, 14.7 and 15.7 min from creation to end, of which the test itself 185, 622, 156 and 270 s and the device preparation before it (the install and the push of 0.98, 2.06, 2.59 and 2.59 GB) 304, 559, 700 and 654 s. Both GPU consoles register the Metal accelerator (`RegisterAccelerator … name=GPU Metal`, `YARDSTICK_METAL_DEVICE name=Apple A18 Pro GPU`). The units did not start every run at the nominal thermal state (`initialThermalState`: Qwen3-1.7B int8 CPU at serious from run 1, Gemma 4 E2B GPU at fair from run 1 and serious from run 3, Gemma 4 E2B CPU at fair from run 3, Qwen3-1.7B GPU at fair in run 4), and the attached-iPhone runner's gate (`scripts/cell_gate.py`, `--ok-thermal nominal`) calls each of the four first captures HOT: as that runner does with a HOT first capture, their records sit in `device-jsonl-flagged/` with one `FLAGGED.txt` line per cell and are not in `results/summary/`. The retake ran a harness that waits before run 1 until the unit's thermal state is nominal (read every 30 s, at most 600 s, inside `--xctest-timeout`, passed as 30 min for GPU and 45 min for CPU; the wait is in each record's `conditions.ddp.thermalGate*`): `session-9906c909-7ed7-4dcd-9d78-0aa71ad9c669`, `session-f3300117-e691-49f5-9e10-f65b94b2b769`, `session-f959404e-3fbf-4ad4-b830-fab49b3d0ecd` and `session-a04cbc40-6f5e-4c6b-b789-4a27edb35b48` (the same cells in the same order) all PASSED with 4 records each, every unit nominal at the first read (waited 0 s). The gate passes the Gemma 4 E2B GPU retake and calls the other three HOT from a later run (run 1 nominal in all four); as the runner does with a retake, the 16 retake records stand in `device-jsonl/` and in the summary, with one `FLAGGED.txt` line per HOT retake.
+
+## Measure a model on a lab phone with gcloud and LiteRT CLI (run 2026-11-07)
+
+You can measure a `.litertlm` or `.tflite` model on a lab phone with two public tools: `gcloud` prepares the project, and [LiteRT CLI](https://github.com/google-ai-edge/LiteRT-CLI) runs the session and prints numbers. The platform is in [Preview](https://docs.cloud.google.com/developer-device-platform/overview); sessions bill your Cloud project per device-minute.
+
+**Prepare the project once.** The first three lines were already done on our Mac. Every other command in this section ran as written.
+
+```bash
+gcloud components install beta          # only if `gcloud beta` is missing
+gcloud auth login
+gcloud auth application-default login   # LiteRT CLI takes its token from here
+export PROJECT=<your project, with billing enabled>
+gcloud services enable devicerun.googleapis.com --project "$PROJECT"
+gcloud beta device-run devices list --project "$PROJECT" --filter='name:(m1q-36 akita-35)'   # no --filter: 279 ids
+```
+
+```
+ID        MAKE     NAME        MODEL  HARDWARE_TYPE  OS_VERSION  CAPACITY  AVAILABILITY  PRODUCTS
+akita-35  Google   Pixel 8a    akita  PHYSICAL       35          MEDIUM    MEDIUM        Automation, Streaming
+m1q-36    Samsung  Galaxy S26  m1q    PHYSICAL       36          MEDIUM    MEDIUM        Automation, Streaming
+```
+
+**Run from a new directory.** The model is its Hub card's recommended file, 328 MiB.
+
+```bash
+uv venv --clear --python=3.13 --seed
+source .venv/bin/activate
+uv pip install litert-cli-nightly
+litert download litert-community/Qwen3-0.6B --file Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm --output models/qwen3
+MODEL=models/qwen3/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm
+litert benchmark "$MODEL" --ddp --cpu --devices "m1q-36, akita-35" --gcp-project "$PROJECT"
+litert benchmark "$MODEL" --ddp --gpu --devices "m1q-36, akita-35" --gcp-project "$PROJECT"
+```
+
+Each `benchmark` command uploads the model to `gs://<project>-devicerun/`, creating that bucket if needed, and waits. Here the two commands took 4:03 and 3:29 of wall time, 9.5 job-minutes in the session reports.
+
+**Read the result.** Each job ends:
+
+```
+Job 'gpu-m1q-36': PASSED
+Output files saved to: ~/.cache/litert-cli/ddp/session-2c5772b3/gpu-m1q-36
+[...]
+LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the other 4:
+  prefill 1282.3 tokens/s, decode 70.2 tokens/s, time to first token 0.81 s; init 2273 ms (cold 3396 ms in the first process); peak memory 490 MB (RSS)
+```
+
+```bash
+gcloud beta device-run sessions describe session-2c5772b3 --project "$PROJECT"   # the verdict again, any time
+```
+
+A first process writes the caches. The second loads them and runs five iterations; the median leaves out the first. Token counts are forced, no real prompt: by default 1024 prefill, 256 decode, context 1280. `provenance.txt` names the phone's build and the binary's and model's sha256.
+
+**The run.** A route check, not a leaderboard row.
+
+| Tool | Version |
+|---|---|
+| LiteRT CLI | `litert-cli-nightly` 0.3.0.dev20261106 |
+| Binary | `gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main`, created 2026-10-29, sha256 `8e199c6b` |
+| Model | `Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm`: dynamic INT4 block-32 weights, float activations; Hub commit `bd472017`, sha256 `bf1aba9c` |
+
+| Date | Device id | Phone | Session | Backend | Prefill tok/s | Decode tok/s | Decode spread | TTFT s | Init ms (cold first process) | Peak RSS MB |
+|---|---|---|---|---|---:|---:|---:|---:|---:|---:|
+| 2026-11-07 | `m1q-36` | SM-S942U1, Android 16 | `session-41f7fb49` | CPU, `lab-capped` | 284.1 | 34.1 | 1.5 % | 3.63 | 1089 (883) | 1518 |
+| 2026-11-07 | `m1q-36` | SM-S942U1, Android 16 | `session-2c5772b3` | GPU | 1282.3 | 70.2 | 0.5 % | 0.81 | 2273 (3396) | 490 |
+| 2026-11-07 | `akita-35` | Pixel 8a, Android 15 | `session-41f7fb49` | CPU, `lab-capped` | 177.7 | 28.3 | 2.4 % | 5.80 | 1129 (1678) | 1437 |
+| 2026-11-07 | `akita-35` | Pixel 8a, Android 15 | `session-b1839860` | GPU | 731.7 | 43.5 | 1.6 % | 1.42 | 2452 (5033) | 886 |
+
+`lab-capped`: LiteRT CLI reads no CPU clock ceilings, and this repo's wrapper found them lowered on these ids (every `m1q-36` record on 2026-10-18, 9 of 36 `akita-35` records on 2026-10-15). A `lab-capped` row is that lab unit's number, not the phone model's.
+
+A `.tflite` file takes the same command: MobileNet v2, `session-b1f64979`, `akita-35`, CPU, `lab-capped`, 10.47 ms per inference.
+
+**If it fails.** A wrong device id stops the submit. No session starts, and the upload stays in the bucket.
+
+```
+Error: Failed to submit benchmark: 400 Bad Request
+[...]
+    "message": "com.google.apps.framework.request.BadRequestException: Unknown catalog device id: nosuch-36",
+[...]
+List DDP device ids with: gcloud beta device-run devices list --project <PROJECT_ID>
+```
+
+If the API is off, `gcloud` asks whether to enable it, and a script waits there. `--quiet` skips the question and prints the error. LiteRT CLI prints the same message after `403 Forbidden`; its device-id hint does not apply. Run `services enable`.
+
+```
+API [devicerun.googleapis.com] not enabled on project
+[$PROJECT]. Would you like to enable and retry (this will take
+ a few minutes)? (y/N)?
+ERROR: (gcloud.beta.device-run.devices.list) PERMISSION_DENIED: Device Run API has not been used in project $PROJECT before or it is disabled. [...]
+  reason: SERVICE_DISABLED
+```
+
+**Limits.** The median can hide one slow iteration. In `session-2c5772b3`, one `akita-35` iteration decoded at 36.0 tok/s and three at 42.9 to 43.5. This repo re-runs a job above a 5 % decode spread, so the table holds `session-b1839860`. `grep 'Decode Speed' logcat.txt` prints every iteration.
+
+A rate says nothing about the reply: `--benchmark` never reads it. One gcloud session runs a real prompt through the same binary with [`reply_check.sh`](../results/raw/2026-11-07-ddp-runbook-m1q-36-android/reply-check/reply_check.sh):
+
+```bash
+BUCKET=$PROJECT-devicerun
+L=gs://litert/binaries/latest/android_arm64/litert_lm; D=/data/local/tmp/check
+PUSH="$MODEL=$D/model.litertlm,$L/litert_lm_advanced_main=$D/litert_lm_advanced_main"
+for so in libwebgpu_dawn libGemmaModelConstraintProvider libLiteRtDispatch_Qualcomm libLiteRtDispatch_MediaTek; do PUSH="$PUSH,$L/$so.so=$D/$so.so"; done
+gcloud beta device-run sessions submit android-executable --project "$PROJECT" --device m1q-36,akita-35 \
+  --executable ./reply_check.sh --other-files-to-push="$PUSH" --executable-timeout=15m
+# job-000 is the first id in --device. The reply is in logcat.txt: this session wrote no output.log, which the gcloud reference names.
+gcloud storage cat "gs://$BUCKET/automation/sessions/<session>/job-000/execution-000/logcat.txt" | grep -A3 'Captured model output'
+```
+
+In `session-92f7197a-2475-4bcb-aa44-56a9d6395025`, all four replies end "The capital of France is Paris." That covers one short prompt.
+
+`--ddp` refuses NPU. It cannot push a prompt file, so prompt tasks run through `bench matrix --ddp` (above). A device id names a pool of units, so compare numbers only inside one job.
+
+Records: `results/raw/2026-11-07-ddp-runbook-m1q-36-android/`, `results/raw/2026-11-07-ddp-runbook-akita-35-android/`.
 
 ## Next step
 

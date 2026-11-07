@@ -1,0 +1,149 @@
+START_GPU=22:57:00
+Note: GCS bucket not specified via '--gcp-bucket' or 'LITERT_GCP_BUCKET' environment variable. Using default project-bound bucket 'gs://$BUCKET'.
+Ensuring GCS bucket 'gs://$BUCKET' exists for project '$PROJECT'...
+Uploading local model 'models/qwen3/Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm' to gs://$BUCKET/litert-cli/inputs/litert-cli-benchmark-f63a0f48/...
+Fetching GCP access token...
+Uploading run script '<tmp>/litert_lm_run.sh' to gs://$BUCKET/litert-cli/inputs/litert-cli-benchmark-f63a0f48/...
+Submitting 'gpu' benchmark session 'litert-cli-benchmark-f63a0f48' to DDP (Project: $PROJECT, Devices: m1q-36, akita-35, Binary: gs://litert/binaries/latest/android_arm64/litert_lm/litert_lm_advanced_main)...
+Benchmark session submitted successfully!
+Waiting for session 'session-2c5772b3' to complete (Operation: projects/$PROJECT/locations/global/operations/operation-1794059857851-65fb01c887301-88e33b46-91c395ff, timeout: 4200 s). This may take a few minutes...
+View the outputs on the Cloud Console: https://console.cloud.google.com/storage/browser/$BUCKET/litert-cli/sessions/session-2c5772b3
+...........
+Session 'session-2c5772b3' finished: PASSED
+
+Job 'gpu-m1q-36': PASSED
+Output files saved to: ~/.cache/litert-cli/ddp/session-2c5772b3/gpu-m1q-36
+11-07 05:58:48.428 18498 18498 I native  : I0000 00:00:1794059928.428679   18498 litert_lm_lib.cc:728] Choose backend: gpu
+11-07 05:58:48.429 18498 18498 I native  : I0000 00:00:1794059928.429372   18498 litert_lm_lib.cc:975] executor_settings: backend: GPU
+11-07 05:58:48.429 18498 18498 I native  : I0000 00:00:1794059928.429399   18498 litert_lm_lib.cc:982] vision_executor_settings: not set
+11-07 05:58:48.429 18498 18498 I native  : I0000 00:00:1794059928.429402   18498 litert_lm_lib.cc:988] audio_executor_settings: not set
+11-07 05:58:48.429 18498 18498 I native  : I0000 00:00:1794059928.429406   18498 litert_lm_lib.cc:1011] Creating engine
+11-07 05:58:48.429 18498 18498 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-07 05:58:48.441 18498 18498 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-07 05:58:48.574 18498 18498 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+11-07 05:58:48.574 18498 18498 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+11-07 05:58:51.695 18498 18498 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-07 05:58:51.825 18498 18498 I native  : I0000 00:00:1794059931.825589   18498 litert_lm_lib.cc:1306] Creating conversation
+11-07 05:58:51.828 18498 18498 I native  : I0000 00:00:1794059931.828710   18498 litert_lm_lib.cc:1318] Running single-turn conversation
+11-07 05:58:56.581 18498 18498 I native  : I0000 00:00:1794059936.581170   18498 litert_lm_lib.cc:461] BenchmarkInfo:
+11-07 05:58:56.581 18498 18498 I native  :     - Init Executor: 3394.55 ms
+11-07 05:58:56.582 18498 18498 I native  :     - Init Total: 3395.77 ms
+11-07 05:58:56.582 18498 18498 I native  :   Time to first token: 0.83 s
+11-07 05:58:56.582 18498 18498 I native  :   Prefill Turns (Total 1 turns):
+11-07 05:58:56.582 18498 18498 I native  :     Prefill Turn 1: Processed 1024 tokens in 816.906822ms duration.
+11-07 05:58:56.582 18498 18498 I native  :       Prefill Speed: 1253.51 tokens/sec.
+11-07 05:58:56.582 18498 18498 I native  :   Decode Turns (Total 1 turns):
+11-07 05:58:56.583 18498 18498 I native  :     Decode Turn 1: Processed 256 tokens in 3.933434217s duration.
+11-07 05:58:56.583 18498 18498 I native  :       Decode Speed: 65.08 tokens/sec.
+11-07 05:58:56.616 18498 18498 I native  : I0000 00:00:1794059936.615711   18498 litert_lm_lib.cc:538] Peak system ram usage: 489.148MB.
+11-07 05:58:56.616 18498 18498 I native  : I0000 00:00:1794059936.616410   18498 litert_lm_lib.cc:539] Memory usage: max resident set size/physical footprint = 500.888 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 564.842 MB
+11-07 05:58:56.616 18498 18498 I native  : I0000 00:00:1794059936.616794   18498 litert_lm_lib.cc:541] Peak private footprint: 539.426MB.
+11-07 05:58:56.616 18498 18498 I native  : I0000 00:00:1794059936.616880   18498 litert_lm_lib.cc:515] Peak accelerator memory usage: 0MB.
+11-07 05:58:56.873 18560 18560 I native  : I0000 00:00:1794059936.873595   18560 litert_lm_lib.cc:728] Choose backend: gpu
+11-07 05:58:56.874 18560 18560 I native  : I0000 00:00:1794059936.874563   18560 litert_lm_lib.cc:975] executor_settings: backend: GPU
+11-07 05:58:56.874 18560 18560 I native  : I0000 00:00:1794059936.874596   18560 litert_lm_lib.cc:982] vision_executor_settings: not set
+11-07 05:58:56.874 18560 18560 I native  : I0000 00:00:1794059936.874608   18560 litert_lm_lib.cc:988] audio_executor_settings: not set
+11-07 05:58:56.874 18560 18560 I native  : I0000 00:00:1794059936.874619   18560 litert_lm_lib.cc:1011] Creating engine
+11-07 05:58:56.874 18560 18560 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-07 05:58:56.897 18560 18560 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-07 05:58:56.953 18560 18560 I litert  : [gpu_environment.cc:257] Created OpenCL device from provided device id and platform id.
+11-07 05:58:56.953 18560 18560 I litert  : [gpu_environment.cc:315] Reusing provided EGL environment.
+11-07 05:58:58.898 18560 18560 I native  : I0000 00:00:1794059938.897932   18560 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+11-07 05:58:58.993 18560 18560 I native  : I0000 00:00:1794059938.993075   18560 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+11-07 05:58:59.011 18560 18560 I native  : I0000 00:00:1794059939.011052   18560 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+11-07 05:58:59.034 18560 18560 I litert  : [gpu_registry.cc:121] Statically linked GPU accelerator registered.
+11-07 05:58:59.147 18560 18560 I native  : I0000 00:00:1794059939.147605   18560 litert_lm_lib.cc:1306] Creating conversation
+11-07 05:58:59.148 18560 18560 I native  : I0000 00:00:1794059939.148089   18560 litert_lm_lib.cc:1318] Running single-turn conversation
+11-07 05:59:03.910 18560 18560 I native  : I0000 00:00:1794059943.910295   18560 litert_lm_lib.cc:461] BenchmarkInfo:
+11-07 05:59:03.911 18560 18560 I native  :     - Init Executor: 2272.18 ms
+11-07 05:59:03.911 18560 18560 I native  :     - Init Total: 2272.68 ms
+11-07 05:59:03.911 18560 18560 I native  :   Time to first token: 0.84 s
+11-07 05:59:03.912 18560 18560 I native  :   Prefill Turns (Total 1 turns):
+11-07 05:59:03.912 18560 18560 I native  :     Prefill Turn 1: Processed 1024 tokens in 827.357135ms duration.
+11-07 05:59:03.912 18560 18560 I native  :       Prefill Speed: 1237.68 tokens/sec.
+11-07 05:59:03.912 18560 18560 I native  :   Decode Turns (Total 1 turns):
+11-07 05:59:03.912 18560 18560 I native  :     Decode Turn 1: Processed 256 tokens in 3.9332188s duration.
+11-07 05:59:03.912 18560 18560 I native  :       Decode Speed: 65.09 tokens/sec.
+11-07 05:59:03.949 18560 18560 I native  : I0000 00:00:1794059943.949779   18560 litert_lm_lib.cc:538] Peak system ram usage: 490.465MB.
+11-07 05:59:03.950 18560 18560 I native  : I0000 00:00:1794059943.950556   18560 litert_lm_lib.cc:539] Memory usage: max resident set size/physical footprint = 502.236 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 514.29 MB
+11-07 05:59:03.951 18560 18560 I native  : I0000 00:00:1794059943.950789   18560 litert_lm_lib.cc:541] Peak private footprint: 490.465MB.
+11-07 05:59:03.951 18560 18560 I native  : I0000 00:00:1794059943.951034   18560 litert_lm_lib.cc:515] Peak accelerator memory usage: 0MB.
+11-07 05:59:03.952 18560 18560 I native  : I0000 00:00:1794059943.952195   18560 litert_lm_lib.cc:1306] Creating conversation
+11-07 05:59:03.955 18560 18560 I native  : I0000 00:00:1794059943.954802   18560 litert_lm_lib.cc:1318] Running single-turn conversation
+11-07 05:59:08.409 18560 18560 I native  : I0000 00:00:1794059948.409036   18560 litert_lm_lib.cc:461] BenchmarkInfo:
+11-07 05:59:08.409 18560 18560 I native  :     - Init Executor: 2272.18 ms
+11-07 05:59:08.409 18560 18560 I native  :     - Init Total: 2272.68 ms
+11-07 05:59:08.409 18560 18560 I native  :   Time to first token: 0.81 s
+11-07 05:59:08.409 18560 18560 I native  :   Prefill Turns (Total 1 turns):
+11-07 05:59:08.409 18560 18560 I native  :     Prefill Turn 1: Processed 1024 tokens in 800.57776ms duration.
+11-07 05:59:08.409 18560 18560 I native  :       Prefill Speed: 1279.08 tokens/sec.
+11-07 05:59:08.409 18560 18560 I native  :   Decode Turns (Total 1 turns):
+11-07 05:59:08.409 18560 18560 I native  :     Decode Turn 1: Processed 256 tokens in 3.651638228s duration.
+11-07 05:59:08.409 18560 18560 I native  :       Decode Speed: 70.11 tokens/sec.
+11-07 05:59:08.451 18560 18560 I native  : I0000 00:00:1794059948.451709   18560 litert_lm_lib.cc:538] Peak system ram usage: 490.465MB.
+11-07 05:59:08.452 18560 18560 I native  : I0000 00:00:1794059948.452135   18560 litert_lm_lib.cc:539] Memory usage: max resident set size/physical footprint = 502.236 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 514.29 MB
+11-07 05:59:08.452 18560 18560 I native  : I0000 00:00:1794059948.452355   18560 litert_lm_lib.cc:541] Peak private footprint: 490.465MB.
+11-07 05:59:08.452 18560 18560 I native  : I0000 00:00:1794059948.452564   18560 litert_lm_lib.cc:515] Peak accelerator memory usage: 0MB.
+11-07 05:59:08.453 18560 18560 I native  : I0000 00:00:1794059948.453597   18560 litert_lm_lib.cc:1306] Creating conversation
+11-07 05:59:08.456 18560 18560 I native  : I0000 00:00:1794059948.456506   18560 litert_lm_lib.cc:1318] Running single-turn conversation
+11-07 05:59:12.902 18560 18560 I native  : I0000 00:00:1794059952.901612   18560 litert_lm_lib.cc:461] BenchmarkInfo:
+11-07 05:59:12.902 18560 18560 I native  :     - Init Executor: 2272.18 ms
+11-07 05:59:12.902 18560 18560 I native  :     - Init Total: 2272.68 ms
+11-07 05:59:12.903 18560 18560 I native  :   Time to first token: 0.81 s
+11-07 05:59:12.903 18560 18560 I native  :   Prefill Turns (Total 1 turns):
+11-07 05:59:12.903 18560 18560 I native  :     Prefill Turn 1: Processed 1024 tokens in 796.525521ms duration.
+11-07 05:59:12.903 18560 18560 I native  :       Prefill Speed: 1285.58 tokens/sec.
+11-07 05:59:12.903 18560 18560 I native  :   Decode Turns (Total 1 turns):
+11-07 05:59:12.903 18560 18560 I native  :     Decode Turn 1: Processed 256 tokens in 3.646766561s duration.
+11-07 05:59:12.903 18560 18560 I native  :       Decode Speed: 70.20 tokens/sec.
+11-07 05:59:12.950 18560 18560 I native  : I0000 00:00:1794059952.950228   18560 litert_lm_lib.cc:538] Peak system ram usage: 490.465MB.
+11-07 05:59:12.950 18560 18560 I native  : I0000 00:00:1794059952.950497   18560 litert_lm_lib.cc:539] Memory usage: max resident set size/physical footprint = 502.236 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 522.416 MB
+11-07 05:59:12.950 18560 18560 I native  : I0000 00:00:1794059952.950641   18560 litert_lm_lib.cc:541] Peak private footprint: 498.215MB.
+11-07 05:59:12.950 18560 18560 I native  : I0000 00:00:1794059952.950661   18560 litert_lm_lib.cc:515] Peak accelerator memory usage: 0MB.
+11-07 05:59:12.951 18560 18560 I native  : I0000 00:00:1794059952.951540   18560 litert_lm_lib.cc:1306] Creating conversation
+11-07 05:59:12.954 18560 18560 I native  : I0000 00:00:1794059952.954041   18560 litert_lm_lib.cc:1318] Running single-turn conversation
+11-07 05:59:17.380 18560 18560 I native  : I0000 00:00:1794059957.380251   18560 litert_lm_lib.cc:461] BenchmarkInfo:
+11-07 05:59:17.380 18560 18560 I native  :     - Init Executor: 2272.18 ms
+11-07 05:59:17.380 18560 18560 I native  :     - Init Total: 2272.68 ms
+11-07 05:59:17.380 18560 18560 I native  :   Time to first token: 0.81 s
+11-07 05:59:17.380 18560 18560 I native  :   Prefill Turns (Total 1 turns):
+11-07 05:59:17.381 18560 18560 I native  :     Prefill Turn 1: Processed 1024 tokens in 792.472968ms duration.
+11-07 05:59:17.381 18560 18560 I native  :       Prefill Speed: 1292.16 tokens/sec.
+11-07 05:59:17.381 18560 18560 I native  :   Decode Turns (Total 1 turns):
+11-07 05:59:17.381 18560 18560 I native  :     Decode Turn 1: Processed 256 tokens in 3.631950988s duration.
+11-07 05:59:17.381 18560 18560 I native  :       Decode Speed: 70.49 tokens/sec.
+11-07 05:59:17.450 18560 18560 I native  : I0000 00:00:1794059957.450255   18560 litert_lm_lib.cc:538] Peak system ram usage: 490.465MB.
+11-07 05:59:17.450 18560 18560 I native  : I0000 00:00:1794059957.450524   18560 litert_lm_lib.cc:539] Memory usage: max resident set size/physical footprint = 502.236 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 522.416 MB
+11-07 05:59:17.450 18560 18560 I native  : I0000 00:00:1794059957.450627   18560 litert_lm_lib.cc:541] Peak private footprint: 498.215MB.
+11-07 05:59:17.450 18560 18560 I native  : I0000 00:00:1794059957.450643   18560 litert_lm_lib.cc:515] Peak accelerator memory usage: 0MB.
+11-07 05:59:17.451 18560 18560 I native  : I0000 00:00:1794059957.451416   18560 litert_lm_lib.cc:1306] Creating conversation
+11-07 05:59:17.454 18560 18560 I native  : I0000 00:00:1794059957.454237   18560 litert_lm_lib.cc:1318] Running single-turn conversation
+11-07 05:59:21.935 18560 18560 I native  : I0000 00:00:1794059961.935548   18560 litert_lm_lib.cc:461] BenchmarkInfo:
+11-07 05:59:21.936 18560 18560 I native  :     - Init Executor: 2272.18 ms
+11-07 05:59:21.936 18560 18560 I native  :     - Init Total: 2272.68 ms
+11-07 05:59:21.936 18560 18560 I native  :   Time to first token: 0.85 s
+11-07 05:59:21.936 18560 18560 I native  :   Prefill Turns (Total 1 turns):
+11-07 05:59:21.936 18560 18560 I native  :     Prefill Turn 1: Processed 1024 tokens in 831.477448ms duration.
+11-07 05:59:21.936 18560 18560 I native  :       Prefill Speed: 1231.54 tokens/sec.
+11-07 05:59:21.936 18560 18560 I native  :   Decode Turns (Total 1 turns):
+11-07 05:59:21.936 18560 18560 I native  :     Decode Turn 1: Processed 256 tokens in 3.64774953s duration.
+11-07 05:59:21.936 18560 18560 I native  :       Decode Speed: 70.18 tokens/sec.
+11-07 05:59:21.999 18560 18560 I native  : I0000 00:00:1794059961.999605   18560 litert_lm_lib.cc:538] Peak system ram usage: 490.465MB.
+11-07 05:59:22.000 18560 18560 I native  : I0000 00:00:1794059961.999927   18560 litert_lm_lib.cc:539] Memory usage: max resident set size/physical footprint = 502.236 MB, total non-mmapped heap size = 1.84467e+13 MB, in-use heap size = 1.84467e+13 MB, private footprint = 522.416 MB
+11-07 05:59:22.000 18560 18560 I native  : I0000 00:00:1794059962.000241   18560 litert_lm_lib.cc:541] Peak private footprint: 498.215MB.
+11-07 05:59:22.000 18560 18560 I native  : I0000 00:00:1794059962.000537   18560 litert_lm_lib.cc:515] Peak accelerator memory usage: 0MB.
+11-07 05:59:22.001 18560 18560 I native  : I0000 00:00:1794059962.001020   18560 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 5 iterations):
+11-07 05:59:22.001 18560 18560 I native  :     - Init Executor: 2272.18 ms
+11-07 05:59:22.001 18560 18560 I native  :     - Init Total: 2272.68 ms
+11-07 05:59:22.002 18560 18560 I native  :   Time to first token: 0.81 s
+11-07 05:59:22.002 18560 18560 I native  :     Prefill Turn 1:
+11-07 05:59:22.002 18560 18560 I native  :       Prefill Speed: 1279.08 tokens/sec.
+11-07 05:59:22.002 18560 18560 I native  :     Decode Turn 1:
+11-07 05:59:22.002 18560 18560 I native  :       Decode Speed: 70.18 tokens/sec.
+11-07 05:59:22.002 18560 18560 I native  :   Peak system ram usage: 490.46MB.
+11-07 05:59:22.002 18560 18560 I native  :   Peak private footprint: 498.21MB.
+LiteRT-LM benchmark: second process, 5 iteration(s), 1 warm-up; median of the other 4:
+  prefill 1282.3 tokens/s, decode 70.2 tokens/s, time to first token 0.81 s; init 2273 ms (cold 3396 ms in the first process); peak memory 490 MB (RSS)
+
+EXIT_GPU=0
+END_GPU=23:00:29
