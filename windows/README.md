@@ -13,6 +13,9 @@ writes the same `schema/result.v1.json` records as the other lanes.
 | `matrices/dashboard-windows-v1.cells` | the rows of the dashboard's Windows column |
 | `windows/NOTES-v0.19.0.md` | what building and running v0.19.0 on one PC showed, with the numbers and logs |
 
+TensorRT Edge-LLM has no row in this column; its build notes on Windows x64 are in
+[tensorrt-edge-llm-windows-notes](https://github.com/john-rocky/tensorrt-edge-llm-windows-notes).
+
 ## Setup
 
 The host needs an OpenSSH server whose default shell is Windows PowerShell (`DefaultShell` under
