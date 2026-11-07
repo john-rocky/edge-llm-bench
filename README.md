@@ -277,7 +277,7 @@ always carries its reason — that is part of the method, not an apology.
 
 | engine | Mac Studio (M4 Max) | iPhone 17 Pro | Pixel 8a | Galaxy S26 | Windows laptop (Core Ultra 9 386H / RTX 5080 Laptop) |
 |---|---|---|---|---|---|
-| LiteRT-LM | measured | measured | measured (cpu, gpu) | measured (cpu, gpu) | measured (cpu, gpu, npu: Gemma 4 E2B; cpu, gpu: Gemma 4 E4B, Qwen3 0.6B / 1.7B / 4B) |
+| LiteRT-LM | measured | measured | measured (cpu, gpu) | measured (cpu, gpu) | measured (cpu, gpu, npu: Gemma 4 E2B; cpu, gpu: Gemma 4 E4B, Qwen3 0.6B / 1.7B / 4B; gpu on the integrated GPU too (`adapter=igpu`): all five models) |
 | llama.cpp | wired | wired | measured (cpu) | measured (cpu) | measured (cpu, vulkan, cuda: Gemma 4 E2B / E4B, Qwen3 0.6B / 1.7B / 4B) |
 | MLX | measured | measured | n/a — Apple-only | n/a — Apple-only | n/a — Apple-only |
 | Core AI | measured (Qwen3 0.6B / 1.7B / 4B, own exports; Gemma 4 rows excluded with the reason) | measured | n/a — Apple-only | n/a — Apple-only | n/a — Apple-only |

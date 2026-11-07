@@ -1682,7 +1682,8 @@ Pixel 8a's Qwen3-4B rows stay out (section "Per-device exclusion").
 ## Windows column (2026-11-05)
 
 `matrices/dashboard-windows-v1.cells`, one laptop (Core Ultra 9 386H, RTX 5080 Laptop), Gemma 4 E2B / E4B and Qwen3
-0.6B / 1.7B / 4B (the Qwen3 rows from 02:56 JST on 2026-11-07, the E4B rows from 06:51 JST that day), `short-chat`,
+0.6B / 1.7B / 4B (the Qwen3 rows from 02:56 JST on 2026-11-07, the E4B rows from 06:51 JST that day, the `adapter=igpu` rows from 13:26
+JST that day), `short-chat`,
 run by hand over SSH (`windows/README.md`). It is not in `dashboard-text-v1.cells`: the night job has no Windows
 device, and its campaign names carry no `dashboard`, so the team page does not read them. Render the column with
 `python3 scripts/render_dashboard.py --cells matrices/dashboard-windows-v1.cells`.
@@ -1727,12 +1728,13 @@ is the 19 tokens over the process's first call (the first conversation's `Prefil
 the 4B CPU row, whose first call took 16.1 to 16.4 s, it reads 1.2 tok/s, below that row's decode rate.
 
 Which forms these are, and why, is in `windows/README.md` ("What a Windows machine does differently"): the GPU file,
-the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Thirteen sittings were taken:
+the accelerator, the thread counts and YNNPACK, and which CUDA asset the CUDA rows run. Fifteen sittings were taken:
 two on 2026-11-05 (`2026-11-05-windows-s1`, `2026-11-05-windows`), five on 2026-11-06 (`2026-11-06-windows-drift-s1`,
 `-drift2-s1`, `-drift2`, `-drift3-s1`, `-drift3`), two with the CUDA row just after midnight JST on 2026-11-07
 (`2026-11-06-windows-cuda-s1`, `-cuda`, named for the UTC date of their records), two with the Qwen3 rows at 02:56
 and 03:57 JST on 2026-11-07 (`2026-11-07-windows-qwen3-s1`, `-qwen3`; their records' UTC date is 2026-11-06), and two
 with the Gemma 4 E4B rows at 06:51 and 08:10 JST that day (`2026-11-07-windows-e4b-s1`, `-e4b`; their records' UTC
-date is 2026-11-06, and 2026-11-07 for the second's last 38); each stands alone, none are pooled, and the column shows
+date is 2026-11-06, and 2026-11-07 for the second's last 38), and two sittings of the five `adapter=igpu` rows alone,
+at 13:26 and 13:43 JST that day (`2026-11-07-windows-igpu-s1`, `-igpu`); each stands alone, none are pooled, and the column shows
 each cell's latest. How far the rows moved between them is in
 `windows/README.md` ("Reproducibility").

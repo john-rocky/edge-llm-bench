@@ -1,0 +1,495 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1794026282.564643   17440 litert_lm_lib.cc:728] Choose backend: gpu
+I0000 00:00:1794026282.565544   17440 litert_lm_lib.cc:967] executor_settings: backend: GPU
+backend_config:
+max_top_k: 64
+
+max_tokens: 2048
+activation_data_type: Not set
+max_num_images: 0
+lora_rank: 0
+pad_token_id: -1
+cache_dir: 
+cache_file: Not set
+litert_dispatch_lib_dir: Not set
+model_assets: model_path: C:\Users\USER\models\qwen3_4b_mixed_int4.litertlm
+fake_weights_mode: FAKE_WEIGHTS_NONE
+
+advanced_settings: prefill_batch_sizes: []
+num_output_candidates: 1
+configure_magic_numbers: true
+verify_magic_numbers: false
+clear_kv_cache_before_prefill: true
+num_logits_to_print_after_decode: 0
+gpu_madvise_original_shared_tensors: true
+gpu_enable_metal_residency_set: false
+is_benchmark: true
+enable_profiling: false
+preferred_device_substr: Intel
+num_threads_to_upload: -1
+num_threads_to_compile: -1
+convert_weights_on_gpu: true
+wait_for_weights_conversion_complete_in_benchmark: true
+optimize_shader_compilation: true
+cache_compiled_shaders_only: false
+share_constant_tensors: true
+sampler_handles_input: true
+allow_src_quantized_fc_conv_ops: Not set
+hint_waiting_for_completion: Not set
+gpu_context_low_priority: Not set
+enable_speculative_decoding: false
+disable_delegate_clustering: false
+hint_kernel_batch_size: Not set
+error_on_invalid_sampled_token_id: false
+mtp_gating_config: Not set
+
+speculative_decoding_config: SpeculativeDecodingConfig{mode: Not set}
+
+I0000 00:00:1794026282.567156   17440 litert_lm_lib.cc:974] vision_executor_settings: not set
+I0000 00:00:1794026282.567165   17440 litert_lm_lib.cc:980] audio_executor_settings: not set
+I0000 00:00:1794026282.567175   17440 litert_lm_lib.cc:1003] Creating engine
+W0000 00:00:1794026282.567349   17440 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794026282.567362   17440 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794026282.567368   17440 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1794026282.567372   17440 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001C9C97B8050, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001C9C97F0CA0, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1794026282.567560   26660 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1794026282.567597   26660 litert_lm_loader.cc:407] Section not found: SP_Tokenizer
+W0000 00:00:1794026282.567608   26660 litert_lm_loader.cc:407] Section not found: HF_Tokenizer_Zlib
+W0000 00:00:1794026282.581735   17440 magic_number_configs_helper.cc:339] Too many prefill batch sizes=1 for magic numbers of prefill lengths=0. 1 small prefill batch sizes won't be used.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001C9C97F18A0, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001C9C97F1540, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:101] Loaded: num_subgraphs=654, num_signatures=3
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_128, subgraph_index=0, num_tensors=1190, num_inputs=76, num_outputs=73, num_ops=556
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=prefill_1024, subgraph_index=1, num_tensors=1190, num_inputs=76, num_outputs=73, num_ops=556
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:109]   signature=decode, subgraph_index=2, num_tensors=1148, num_inputs=76, num_outputs=73, num_ops=518
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:113] Magic number configs: num_configs=1
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:120]   config[0]: magic_number=32771, target_number=2048, signature_prefix=null
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 686 tensors of signature prefill_128 have been updated for magic number  32771 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 686 tensors of signature prefill_1024 have been updated for magic number  32771 to target number 2048
+INFO: [external/litert/litert/runtime/magic_number_utils.cc:536] 686 tensors of signature decode have been updated for magic number  32771 to target number 2048
+INFO: [external/litert/litert/runtime/compiled_model.cc:963] Flatbuffer model initialized directly from incoming litert model.
+INFO: [external/litert/ml_drift_delegate/delegate/delegate_webgpu.cc:349] Create WebGPU environment (use_low_power=0, enable_host_mapped_pointer=1)
+I0000 00:00:1794026283.870984   17440 environment.cc:526] Selected adapter: Intel(R) Graphics, arch=xe-3lpg, vendor=intel, backend=Direct3D 12, adapterType=Integrated GPU
+INFO: [external/litert/ml_drift_delegate/delegate/delegate_webgpu.cc:370] Created a WebGPU environment.
+INFO: [external/litert/litert/core/environment.cc:47] Adding options to the existing LiteRT environment
+INFO: [external/litert/litert/runtime/gpu_environment.cc:459] Failed to create OpenCL context.
+INFO: [external/litert\litert/runtime/gpu_environment.h:155] Created LiteRT GpuEnvironment.
+INFO: [external/litert/litert/core/environment.cc:47] Adding options to the existing LiteRT environment
+I0000 00:00:1794026283.930393   17440 delegate_webgpu.cc:758] # of threads to upload weights = 2
+I0000 00:00:1794026283.930486   17440 delegate_webgpu.cc:766] # of threads to compile kernels = 1
+I0000 00:00:1794026283.930512   17440 delegate_webgpu.cc:805] Disabling allow_src_quantized_fc_conv_ops on Intel GPU.
+I0000 00:00:1794026296.152517   17440 delegate_kernel.cc:360] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1794026296.152642   17440 delegate_kernel.cc:1015] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1794026296.474825   17440 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+I0000 00:00:1794026296.490895   17440 delegate_kernel.cc:360] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1794026296.491005   17440 delegate_kernel.cc:1015] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1794026296.622713   17440 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+I0000 00:00:1794026296.638948   17440 delegate_kernel.cc:360] Total 74 external tensors are used for delegate inputs and outputs
+I0000 00:00:1794026296.639041   17440 delegate_kernel.cc:1015] Initializing WebGPU-based API from serialized data.
+I0000 00:00:1794026296.702159   17440 delegate_kernel.cc:902] Initialized InferenceContext from serialized data.
+W0000 00:00:1794026296.706165   17440 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794026296.706227   17440 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_audio not found. Skipping.
+W0000 00:00:1794026296.706247   17440 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794026296.706261   17440 litert_lm_loader.cc:497] TFLite model for type: tf_lite_end_of_vision not found. Skipping.
+W0000 00:00:1794026296.706275   17440 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794026296.706287   17440 litert_lm_loader.cc:497] TFLite model for type: tf_lite_embedder not found. Skipping.
+W0000 00:00:1794026296.706300   17440 litert_lm_loader.cc:407] Section not found: TFLiteModel
+W0000 00:00:1794026296.706312   17440 litert_lm_loader.cc:497] TFLite model for type: tf_lite_per_layer_embedder not found. Skipping.
+INFO: [external/litert/litert/core/environment.cc:36] Creating LiteRT environment with options
+WARNING: [external/litert/litert/runtime/accelerators/npu_registry.cc:34] NPU accelerator could not be loaded and registered: kLiteRtStatusErrorNotFound.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001C9E3028B10, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerators/gpu_registry.cc:121] Statically linked GPU accelerator registered.
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:54] RegisterAccelerator: ptr=000001C9E3028F90, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerators/cpu_registry.cc:73] XNNPACK CPU accelerator registered.
+W0000 00:00:1794026296.824047   17440 litert_lm_loader.cc:550] TFLite model type: tf_lite_audio_encoder_hw not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794026296.824144   17440 litert_lm_loader.cc:550] TFLite model type: tf_lite_vision_encoder not found for prefer activation type. Use system's default backend activation type. System's default activation type for Text decoder is fp16. Vision encoder and audio encoder default is fp32.
+W0000 00:00:1794026296.824163   17440 litert_lm_loader.cc:532] TFLite model type: tf_lite_audio_encoder_hw not found for backend constraints. Skipping.
+W0000 00:00:1794026296.824177   17440 litert_lm_loader.cc:532] TFLite model type: tf_lite_vision_encoder not found for backend constraints. Skipping.
+I0000 00:00:1794026296.824807   17440 litert_lm_lib.cc:1298] Creating conversation
+I0000 00:00:1794026296.826186   17440 litert_lm_lib.cc:1310] Running single-turn conversation
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_33`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_32`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_29`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_32`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_29`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_35`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_28`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_31`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_30`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_30`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_33`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_31`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_35`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_28`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_34`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_34`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_18`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_8`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_33`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_9`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_10`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_21`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_26`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_10`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_26`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_32`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_29`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_21`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_32`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_29`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_13`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_35`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_20`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_13`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_28`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_31`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_24`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_17`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_6`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_7`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_19`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_24`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_4`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_16`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_30`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_11`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_2`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_19`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_3`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_5`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_27`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_16`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_18`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_11`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_27`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_30`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_33`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_14`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_0`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_1`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_14`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_22`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_22`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_17`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_8`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_9`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_25`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_7`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_6`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_4`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_31`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_25`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_20`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_35`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_2`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_28`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_12`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_5`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_23`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_34`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_12`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_3`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_1`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_0`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_k_15`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_34`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_15`.
+
+WARNING: [external/litert/litert/runtime/compiled_model.cc:1735] Failed to get buffer requirements for tensor `kv_cache_v_23`.
+
+I0000 00:00:1794026298.716898   17440 llm_litert_compiled_model_executor.cc:1748] Sampler will handle decode input tensors.
+[thought] Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, on-device AI refers to AI models that run directly on a user's device, like a smartphone or tablet, rather than relying on cloud servers. That's different from traditional AI, which usually processes data on remote servers.
+
+So, the main point here is that the AI works locally on the device. That makes sense. But why would someone want that? Well, using local processing can save data usage because the data doesn't have to go over[/thought]
+I0000 00:00:1794026304.549497   17440 litert_lm_lib.cc:211] Captured model output: Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, on-device AI refers to AI models that run directly on a user's device, like a smartphone or tablet, rather than relying on cloud servers. That's different from traditional AI, which usually processes data on remote servers.
+
+So, the main point here is that the AI works locally on the device. That makes sense. But why would someone want that? Well, using local processing can save data usage because the data doesn't have to go over
+
+I0000 00:00:1794026304.549677   17440 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.08 ms
+    - Init Executor: 14256.65 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.06 ms
+    - Init Tokenizer: 274.75 ms
+    - Init Total: 14257.60 ms
+--------------------------------------------------
+  Time to first token: 1.52 s
+--------------------------------------------------
+  Prefill Turns (Total 2 turns):
+    Prefill Turn 1: Processed 19 tokens in 1.4741903s duration.
+      Prefill Speed: 12.89 tokens/sec.
+    Prefill Turn 2: Processed 2 tokens in 443.9038ms duration.
+      Prefill Speed: 4.51 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 5.8029982s duration.
+      Decode Speed: 22.06 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794026304.549970   17440 litert_lm_lib.cc:1298] Creating conversation
+I0000 00:00:1794026304.551043   17440 litert_lm_lib.cc:1310] Running single-turn conversation
+[thought] Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, it's when AI models run directly on a user's device instead of relying on cloud servers. That makes sense because it can save data privacy and reduce latency.
+
+Wait, but I need to make sure I'm not mixing things up. Let me think. On-device AI processes data locally, so the user's data doesn't leave the device. That's a key point. For example, if you use a smartphone app that uses AI, like[/thought]
+I0000 00:00:1794026310.214744   17440 litert_lm_lib.cc:211] Captured model output: Okay, the user is asking for an explanation of "on-device AI" in simple terms. Let me start by recalling what I know about on-device AI. From what I remember, it's when AI models run directly on a user's device instead of relying on cloud servers. That makes sense because it can save data privacy and reduce latency.
+
+Wait, but I need to make sure I'm not mixing things up. Let me think. On-device AI processes data locally, so the user's data doesn't leave the device. That's a key point. For example, if you use a smartphone app that uses AI, like
+
+I0000 00:00:1794026310.214913   17440 litert_lm_lib.cc:461] BenchmarkInfo:
+  Init Phases (7):
+    - Init Conversation: 0.04 ms
+    - Init Executor: 14256.65 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.06 ms
+    - Init Tokenizer: 274.75 ms
+    - Init Total: 14257.60 ms
+--------------------------------------------------
+  Time to first token: 0.45 s
+--------------------------------------------------
+  Prefill Turns (Total 2 turns):
+    Prefill Turn 1: Processed 19 tokens in 412.8366ms duration.
+      Prefill Speed: 46.02 tokens/sec.
+    Prefill Turn 2: Processed 2 tokens in 445.0048ms duration.
+      Prefill Speed: 4.49 tokens/sec.
+--------------------------------------------------
+  Decode Turns (Total 1 turns):
+    Decode Turn 1: Processed 128 tokens in 4.8042287s duration.
+      Decode Speed: 26.64 tokens/sec.
+--------------------------------------------------
+  TextToTokenIds Turns (Total 0 turns):
+    No text to token ids turns recorded.
+--------------------------------------------------
+I0000 00:00:1794026310.215307   17440 litert_lm_lib.cc:673] Aggregated BenchmarkInfo (median of 2 iterations):
+  Init Phases (7):
+    - Init Conversation: 0.06 ms
+    - Init Executor: 14256.65 ms
+    - Init LLM metadata: 0.02 ms
+    - Init Model assets: 0.06 ms
+    - Init Session: 0.04 ms
+    - Init Tokenizer: 274.75 ms
+    - Init Total: 14257.60 ms
+--------------------------------------------------
+  Time to first token: 0.98 s
+--------------------------------------------------
+    Prefill Turn 1:
+      Prefill Speed: 29.46 tokens/sec.
+    Prefill Turn 2:
+      Prefill Speed: 4.50 tokens/sec.
+    Decode Turn 1:
+      Decode Speed: 24.35 tokens/sec.
+--------------------------------------------------
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001C9C97F18A0, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001C9C97F1540, name=CpuAccelerator
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001C9E3028B10, name=GPU WebGPU
+INFO: [external/litert/litert/runtime/accelerator_registry.cc:43] DestroyAccelerator: ptr=000001C9E3028F90, name=CpuAccelerator

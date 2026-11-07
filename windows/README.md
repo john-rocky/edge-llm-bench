@@ -384,3 +384,14 @@ sessions opened on the host about twice a minute, the executor's own poll, plus 
 reachability check. Beyond those, the minute each sitting's job was staged (06:51 and 08:10) had 13 sessions each, and
 one opened at 08:14 to rewrite the marker file. In 97 of the 156 runs no session opened, in 47 one did, and in twelve
 LiteRT-LM runs of 27 to 135 s two to five did.
+
+Two more sittings, `2026-11-07-windows-igpu-s1` and `2026-11-07-windows-igpu`, ran the five `adapter=igpu` rows alone
+(a cells file of those five lines, 15 runs each), back to back at 13:26 and 13:43 JST on 2026-11-07. Their `host.json`
+lists the E4B sittings' 187 engine files unchanged, the five model files' sha256 (read on the host beforehand) equal
+the Hub's, and every run was clean and quiet. Every record's `gpuAdapter` and every run's `Selected adapter:` line show
+`Intel(R) Graphics` with `adapterType=Integrated GPU`; every `gpuPreference` reads `GpuPreference=1;`. Each job removed
+the preference value after every run and, at its end, the ten cache files its runs wrote. From the first to the second,
+the cold decode median moved by +0.2 % on Qwen3 1.7B (cold spreads 0.18 and 0.52 %), -1.0 % on Qwen3 4B (3.83 and
+1.96 %) and +14.9 % on Gemma 4 E2B (0.27 and 0.03 %); what moved the E2B row is not established. Qwen3 0.6B read `out`
+in both (36.16 and 60.32 %), Gemma 4 E4B in the second (7.06 %). SSH sessions opened about twice a minute (the
+executor's poll) plus one every 5 minutes: none during 11 of the 30 runs, one during 17, two during the other two.
