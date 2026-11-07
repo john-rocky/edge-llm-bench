@@ -235,9 +235,15 @@ an older one over), leave the two variables unset, and remove it at the end.
   `NOT_FOUND: No available engine for backend: GPU_ARTISAN`. The GPU row measures `gemma-4-E2B-it.litertlm`.
 - **The GPU accelerator is the one built from source.** It runs, and it is the form Google's PyPI wheel carries (its log
   says `Statically linked GPU accelerator registered`). `prebuilt/windows_x86_64/libLiteRtWebGpuAccelerator.dll` of the
-  tag did not run in the one way tried: loaded by a tool of the same tag built in the default link mode without the static
-  accelerator, it registers, selects the NVIDIA adapter and stops with an access violation inside the DLL (`0xc0000005`,
-  nine runs of nine). The Intel GPU and `--define=litert_runtime_link_mode=dynamic` have not been tried.
+  tag did not run with a tool built from the tag's source in any of the three combinations tried. With the LiteRT runtime
+  built from source (a default-link-mode build with the default branch of `runtime/executor:default_static_gpu_accelerator`
+  emptied, which `build_litert_lm.ps1` has no switch for, or `--define=litert_runtime_link_mode=dynamic` with the
+  `libLiteRt.dll` that build makes), the DLL registers, selects the adapter and stops with an access violation inside the
+  DLL at offset `0x58b811` (`0xc0000005`: nine of nine runs on the NVIDIA GPU on 2026-11-05, three of three across both
+  GPUs on 2026-11-07). With the tag's prebuilt `libLiteRt.dll` next to the dynamic-mode tool, the run gets past that point
+  and stops before printing any text, with `0xc0000409` in `ucrtbase.dll` (one of one on the NVIDIA GPU, two of two on the
+  Intel GPU). The dynamic-mode tool runs on both GPUs with the accelerator DLL built in the same build; the rows do not
+  use it.
 - **The NPU file is per SoC.** `backend=npu` rows name the bundle of their SoC with `file=` and take no
   `context-tokens=`: the bundle's KV cache is fixed at export.
 - **The Qwen3 rows.** They load the files the Android rows of `matrices/dashboard-text-v1.cells` load, under the same
