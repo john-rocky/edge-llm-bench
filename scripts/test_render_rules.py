@@ -42,6 +42,7 @@ from unittest.mock import patch
 import warnings
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import bench_common  # noqa: E402
 import build_summary  # noqa: E402
 import render_dashboard  # noqa: E402
 import render_dashboard_html  # noqa: E402
@@ -1104,23 +1105,46 @@ class WindowsRunnerRows(unittest.TestCase):
         "    Decode Turn 1: Processed 128 tokens in 3.2842774s duration.\n"
         "      Decode Speed: 38.97 tokens/sec.\n")
 
-    def records(self, tmp, row, head, model="m.litertlm"):
+    def records(self, tmp, row, head, model="m.litertlm", mid="org/m", start="2026-11-05T20:00:00.0000000+09:00"):
         """write_records over one run's fake host logs: (clean runs, the run's records)."""
-        cells = self.cells(tmp, f"windows litert-lm org/m short-chat {row}\n")
-        specs = run_windows_matrix.parse_model_specs([f"litert-lm:org/m={model}:10"])
+        cells = self.cells(tmp, f"windows litert-lm {mid} short-chat {row}\n")
+        specs = run_windows_matrix.parse_model_specs([f"litert-lm:{mid}={model}:10"])
         plan = run_windows_matrix.plan_job([cells], "c", run_windows_matrix.load_pins(), specs)
         camp = pathlib.Path(tmp) / "c"
         logs = camp / "host-logs" / "inv"
         logs.mkdir(parents=True)
         (logs / "host.json").write_text(json.dumps({"model": "PC", "os": "Windows 11", "cpu": "x", "binaries": {}}))
         (logs / "r00_run1.json").write_text(json.dumps({
-            "exitCode": 0, "timedOut": False, "start": "2026-11-05T20:00:00.0000000+09:00", "elapsedSeconds": 10,
+            "exitCode": 0, "timedOut": False, "start": start, "elapsedSeconds": 10,
             "peakWorkingSetBytes": 1 << 30, "command": "tool", "before": {"quietGate": "quiet"},
             "after": {"cpuBusyPercent": 3}}))
         (logs / "r00_run1.log").write_text(head + self.ITERATION + self.ITERATION)
         clean, _ = run_windows_matrix.write_records(plan, camp, "inv", litert_pins={}, harness="test")
         with open(camp / f"{plan.rows[0].stem}.jsonl") as fh:
             return clean, [json.loads(line) for line in fh]
+
+    def test_a_file_replaced_on_the_hub_carries_the_replacements_label(self):
+        # litert-community/Qwen3-0.6B's dynamic INT4 file was replaced under the same name on 2026-10-31
+        # (bench_common.REPLACED_FILE_LABELS): a Windows run of it from that UTC date on carries the new content's
+        # label in its record, a run before it the file name's label (run_cell.guess_quant)
+        mid, fname = "litert-community/Qwen3-0.6B", "Qwen3-0.6B_dynamic_wi4b32_afp32.litertlm"
+        old = run_windows_matrix.run_cell.guess_quant(fname)
+        new = [lb for m, f, _since, carried, lb in bench_common.REPLACED_FILE_LABELS if (m, f) == (mid, fname)
+               and old in carried][0]
+        head = "I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: cpu\nnumber_of_threads: 4\nmax_tokens: 2048\n"
+        for start, want in (("2026-11-07T03:00:00.0000000+09:00", new), ("2026-10-31T08:00:00.0000000+09:00", old)):
+            with tempfile.TemporaryDirectory(prefix="render-rules-winrepl-") as tmp:
+                clean, recs = self.records(tmp, f"backend=cpu file={fname} context-tokens=2048", head, model=fname,
+                                           mid=mid, start=start)
+            self.assertEqual(clean, 1)
+            self.assertEqual(recs[0]["model"]["quantization"], want, start)
+        # the summary's correction reads a windows row as it reads an android one, on both arms; a mac row keeps the
+        # label its catalog wrote
+        for arm in ("litert-lm-cpu", "litert-lm-gpu"):
+            row = {"platform": "windows", "timestamp": "2026-11-06T18:00:00Z", "model_file": fname}
+            self.assertEqual(bench_common.corrected_quant(arm, mid, old, row), (new, True))
+            self.assertEqual(bench_common.corrected_quant(arm, mid, new, row), (new, False))
+            self.assertEqual(bench_common.corrected_quant(arm, mid, old, dict(row, platform="mac")), (old, False))
 
     NPU_HEAD = ("I0000 00:00:1.0 1 litert_lm_lib.cc:728] Choose backend: npu\nmax_tokens: 0\n"
                 "RegisterAccelerator: ptr=000001C4D6DD87A0, name=NpuAccelerator\n"
