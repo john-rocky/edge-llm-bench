@@ -6,7 +6,7 @@ file, the host facts and the sha256 of every engine file in host.json. Windows P
   powershell -NoProfile -ExecutionPolicy Bypass -File run_job.ps1 -JobDir <dir> -LogDir <dir>
       -ModelDir <dir> -EngineDir <dir> [-BusyFile <file> -BusyLabel <text>] [-DeviceModel <text>]
       [-LitertDirName <dir under EngineDir>] [-PurgeEngineCaches] [-QuietCpuPercent N] [-QuietGpuMiB N]
-      [-QuietGpuEnginePercent N] [-QuietWaitMinutes N] [-GpuSampleSeconds N]
+      [-QuietGpuEnginePercent N] [-QuietWaitMinutes N] [-GpuSampleSeconds N] [-AfterGpuReadSeconds N]
 
 EngineDir holds the tools by name: litert\litert_lm_advanced_main_windows.exe and its DLLs (another build of it
 in the dir -LitertDirName names), llama-cpu\llama-cli.exe, llama-gpu\llama-cli.exe (Vulkan),
@@ -43,8 +43,11 @@ the one after it exits); and its limit flags over all of them. The job's first r
 millisecond or two. host.json lists each logical processor's efficiency class, core, last-level cache index and
 maxMhz (cpuSets).
 
-Each run's JSON holds the NVIDIA GPU's state, one nvidia-smi read each (Get-GpuSample), right before the engine starts
-(before.gpu) and after it exits (gpuAfter). With -GpuSampleSeconds N above 0, a GPU run's JSON also holds one read every
+Each run's JSON holds the NVIDIA GPU's state, one nvidia-smi read each (Get-GpuSample), before the engine starts
+(before.gpu) and after it exits (gpuAfter). On a GPU row's run the job waits -AfterGpuReadSeconds (default 2) after
+that first read before it starts the engine; gpuReadToStartSeconds is the seconds measured from the read's end to the
+run's start (the moment the job launches the engine; its process follows by engineStartSeconds), on every row.
+With -GpuSampleSeconds N above 0, a GPU run's JSON also holds one read every
 N s while its engine runs (gpuSamples, each labelled with its whole second into the run; gpuSampleWindows, the seconds
 into the run, to the ms, at which each read started and ended); the default 0 takes none. gpuSampleSeconds is the N the
 job ran with, engineStartSeconds when the engine's process started, in seconds from the run's start.
@@ -69,6 +72,7 @@ param(
     [int]$QuietWaitMinutes = 30,
     [string]$SshLogName = "OpenSSH/Operational",
     [int]$GpuSampleSeconds = 0,
+    [int]$AfterGpuReadSeconds = 2,
     [switch]$PurgeEngineCaches
 )
 
@@ -480,6 +484,8 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
 
     # A LiteRT-LM GPU run on a chosen adapter (gpuPreference) and its model's GPU caches (see the head of this file).
     $isGpu = ($Launch.tool -eq "litert") -and (($Launch.args -join " ") -match "--backend=gpu")
+    # Any GPU row, llama.cpp's too: -GpuSampleSeconds and -AfterGpuReadSeconds apply to these.
+    $gpuRow = (($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")
     $want = [string]$Launch.gpuPreference
     $adapter = [string]$Launch.adapter
     $leftover = $null
@@ -513,7 +519,10 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
     $gate = $(if ($want) { Wait-Quiet -Engines } else { Wait-Quiet })
     $top = @(Get-TopProcesses)
     $before = [ordered]@{ quietGate = $gate; cpuBusyPercent = Get-CpuBusyPercent; topProcesses = $top; gpu = Get-GpuSample }
+    $sinceGpuRead = [Diagnostics.Stopwatch]::StartNew()
     if ($want) { $before["gpuEnginePercent"] = Get-GpuEnginePercent }
+    if ($gpuRow) { Start-Sleep -Seconds $AfterGpuReadSeconds }
+    $gpuReadToStart = $null
     $applied = $null
     $prefGone = $null
     $cpu0 = $null
@@ -533,6 +542,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         $sw = [Diagnostics.Stopwatch]::StartNew()
         $start = $t0.ToString("o")
         Say "$name start: $envText$tool $argLine"
+        $gpuReadToStart = [math]::Round($sinceGpuRead.Elapsed.TotalSeconds, 3)
         $shell = Start-Process -FilePath "$env:SystemRoot\System32\cmd.exe" -ArgumentList "/d /s /c `"$inner`"" `
             -WorkingDirectory (Split-Path $tool) -WindowStyle Hidden -PassThru
         $null = $shell.Handle   # keeps ExitCode readable after the exit
@@ -544,7 +554,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
         $gpuWindows = @()
         $engineStart = $null
         if ($engine) { try { $engineStart = [math]::Round(($engine.StartTime - $t0).TotalSeconds, 3) } catch { } }
-        $sampleGpu = ($GpuSampleSeconds -gt 0) -and (((($Launch.args -join " ") -match "--backend=gpu") -or ($Launch.tool -in "llama-gpu", "llama-cuda")))
+        $sampleGpu = ($GpuSampleSeconds -gt 0) -and $gpuRow
         $nextGpu = [double]$GpuSampleSeconds
         $nextCpu = 5.0
         while (-not $shell.HasExited) {
@@ -609,6 +619,7 @@ function Invoke-Run($Launch, [int]$RunIndex, [int]$TimeoutSeconds) {
             gpuSampleSeconds      = $GpuSampleSeconds
             gpuSampleWindows      = @($gpuWindows)
             engineStartSeconds    = $engineStart
+            gpuReadToStartSeconds = $gpuReadToStart
             gpuPreference         = $applied
             gpuPreferenceRemoved  = $prefGone
             gpuPreferenceLeftover = $leftover

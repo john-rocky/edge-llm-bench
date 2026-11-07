@@ -279,7 +279,9 @@ read the flags in the first line before the spread.
   trail.
 - **A Windows record has no thermal state.** The start condition is each run's `conditions.hostBefore.quietGate`:
   `quiet`, or `timeout` when the run started on a host that never went quiet. `hostBefore` carries the CPU, the top
-  processes and the GPU before the run, `hostAfter` the CPU and the top processes after it; the GPU after and during
+  processes and the GPU before the run (on a GPU row the job waits 2 s after that GPU read before it starts the engine;
+  the host log's `gpuReadToStartSeconds` holds the seconds from the read's end to the run's start), `hostAfter` the CPU
+  and the top processes after it; the GPU after and during
   the run is in the host log, `host-logs/<invocation>/r<NN>_run<N>.json` (`gpuAfter`; `gpuSamples` holds reads only
   with `BENCH_WINDOWS_GPU_SAMPLE_SECONDS=N`, one every N s of a GPU run, each read's start and end in
   `gpuSampleWindows`; the sittings up to `2026-11-07-windows-wait-session-2` took one every 5 s, none for a run of

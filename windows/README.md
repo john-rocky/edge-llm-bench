@@ -215,8 +215,13 @@ carries the run's values. `host.json` lists each logical processor's efficiency 
 
 Each run's host log (`host-logs/<invocation>/r<NN>_run<N>.json`) also holds the NVIDIA GPU's state, one `nvidia-smi`
 read each (name, driver, P-state, temperature, graphics and memory clocks, power, utilization, memory used), taken
-right before the engine starts (`before.gpu`, which the record carries as `conditions.hostBefore.gpu`) and after it
-exits (`gpuAfter`, read after the run's CPU, top-process and SSH-log reads, a second or more later), on every row. While
+before the engine starts (`before.gpu`, which the record carries as `conditions.hostBefore.gpu`) and after it exits
+(`gpuAfter`, read after the run's CPU, top-process and SSH-log reads, a second or more later), on every row. On a GPU
+row (an `adapter=igpu` one too) the job waits 2 s after `before.gpu` before it starts the engine (the job's
+`-AfterGpuReadSeconds`, default 2, which the executor does not set); each run's host log holds the seconds measured from
+that read's end to the run's start, when the job launches the engine (`gpuReadToStartSeconds`; on a CPU row, the same
+span with no wait). The sittings before `2026-11-07-windows-gpuwait-on-a1` and the `2026-11-07-windows-gpuwait-off-*`
+ones ran the job without the wait; their host logs lack the key (Reproducibility). While
 the engine runs the job takes none, unless `BENCH_WINDOWS_GPU_SAMPLE_SECONDS=N` asks for one every N s on a GPU row (an
 `adapter=igpu` one too): `gpuSamples`, with each read's start and end in seconds from the run's start in
 `gpuSampleWindows`. Each run's host log names the N it ran with (`gpuSampleSeconds`) and when the engine's process

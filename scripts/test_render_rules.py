@@ -1470,6 +1470,24 @@ class WindowsSshExecutor(unittest.TestCase):
             self.assertIn("BENCH_WINDOWS_GPU_SAMPLE_SECONDS='5s'", str(cm.exception))
             self.assertFalse((pathlib.Path(tmp) / "c" / "host-logs").exists())
 
+    def test_a_gpu_row_waits_two_seconds_after_the_gpu_read_before_its_engine(self):
+        # run_job.ps1 runs only on the Windows host, so this reads the order of its steps from the script's text
+        # (windows/README.md, Run and Reproducibility)
+        text = (pathlib.Path(__file__).resolve().parent.parent / "windows" / "run_job.ps1").read_text(encoding="utf-8")
+        self.assertIn("[int]$AfterGpuReadSeconds = 2,", text)
+        body = text[text.index("function Invoke-Run"):]
+        self.assertIn('$gpuRow = (($Launch.args -join " ") -match "--backend=gpu") -or '
+                      '($Launch.tool -in "llama-gpu", "llama-cuda")', body)
+        read = body.index("gpu = Get-GpuSample }")
+        wait = body.index("if ($gpuRow) { Start-Sleep -Seconds $AfterGpuReadSeconds }")
+        engine = body.index('$shell = Start-Process -FilePath "$env:SystemRoot\\System32\\cmd.exe"')
+        self.assertLess(read, wait)
+        self.assertLess(wait, engine)
+        for other_read in ("Get-GpuSample", "Get-GpuMemoryMiB", "nvidia-smi"):
+            self.assertNotIn(other_read, body[wait:engine])
+        self.assertLess(body.index("$gpuReadToStart = [math]::Round($sinceGpuRead.Elapsed.TotalSeconds, 3)", wait), engine)
+        self.assertIn("gpuReadToStartSeconds = $gpuReadToStart", body[engine:])
+
     def test_a_resumed_job_keeps_the_caches_and_its_records_are_written_once(self):
         with tempfile.TemporaryDirectory(prefix="render-rules-winresume-") as tmp:
             rc, seen, _ = self.run_job(tmp, invocation="inv1")
